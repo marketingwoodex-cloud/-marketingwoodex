@@ -1,36 +1,23 @@
-// Dashboard API: quotations (BOQ format). Requires CMS session.
+// Dashboard API: quotations (sectioned BOQ). Requires CMS session.
 // GET /.netlify/functions/cms-quotations[?status=draft]
-// POST { client_name*, phone?, email?, project?, site?, location?, title?, items[], discount?, terms?, notes? }
-// PATCH { id, status? | client_name?, ..., items[]?, discount?, terms?, notes? }
+// POST { client_name*, phone?, email?, project?, site?, location?, title?, description?,
+//        sections?[{name, items[]}], discount?, terms?, notes?, option_label?,
+//        parent_id? (creates a new version of that quotation) }
+// PATCH { id, status? | client_name?, ..., sections[]?, discount?, terms?, notes?, option_label? }
 // DELETE { id }
 import { bearerSession, json, verifySession } from "./_auth.mjs";
 import { sbConfigured, sbRest } from "./_supabase.mjs";
+import { clean, num, sanitizeSections, sectionTotals, flatItems } from "./_boq.mjs";
 
 const STATUSES = ["draft", "sent", "approved", "rejected"];
-const UNITS = ["job", "nos", "sft", "rft"];
-const clean = (v, n) => String(v ?? "").trim().slice(0, n);
-const num = (v) => {
-  const n = Number(v);
-  return Number.isFinite(n) && n >= 0 ? n : 0;
-};
+const UUID = /^[0-9a-f-]{36}$/i;
 
-function sanitizeItems(items) {
-  if (!Array.isArray(items)) return [];
-  return items.slice(0, 100).map((it) => {
-    const desc = clean(it?.desc, 300);
-    const qty = num(it?.qty);
-    const unit = UNITS.includes(String(it?.unit || "").toLowerCase())
-      ? String(it.unit).toLowerCase()
-      : "job";
-    const rate = num(it?.rate);
-    return { desc, qty, unit, rate, amount: Math.round(qty * rate * 100) / 100 };
-  }).filter((it) => it.desc);
-}
-
-function totals(items, discount) {
-  const subtotal = items.reduce((a, it) => a + it.amount, 0);
-  const d = Math.min(num(discount), subtotal);
-  return { subtotal: Math.round(subtotal), discount: Math.round(d), total: Math.round(subtotal - d) };
+function shape(row) {
+  if (!row) return row;
+  let sections = Array.isArray(row.sections) ? row.sections : [];
+  if (!sections.length && Array.isArray(row.items) && row.items.length)
+    sections = [{ name: "General", items: row.items }];
+  return { ...row, sections };
 }
 
 async function nextRef() {
@@ -62,7 +49,7 @@ export default async (req) => {
       (STATUSES.includes(status) ? `&status=eq.${status}` : "");
     const { status: s, data } = await sbRest("quotations", { query: q });
     if (s !== 200) return json(502, { error: "Could not load quotations." });
-    return json(200, { quotations: data });
+    return json(200, { quotations: (data || []).map(shape) });
   }
 
   let body = null;
@@ -75,77 +62,101 @@ export default async (req) => {
   if (req.method === "POST") {
     const client_name = clean(body?.client_name, 160);
     if (client_name.length < 2) return json(400, { error: "Client name is required." });
-    const items = sanitizeItems(body?.items);
-    if (!items.length) return json(400, { error: "Add at least one line item." });
-    const t = totals(items, body?.discount);
-    const ref_no = await nextRef();
-    let ins = null;
-    try {
-      ins = await sbRest("quotations", {
-        method: "POST",
-        body: {
-          ref_no,
-          client_name,
-          phone: clean(body?.phone, 40) || null,
-          email: clean(body?.email, 160) || null,
-          project: clean(body?.project, 200) || null,
-          site: clean(body?.site, 200) || null,
-          location: clean(body?.location, 200) || null,
-          title: clean(body?.title, 120) || "Interior",
-          items,
-          ...t,
-          terms: clean(body?.terms, 2000) || null,
-          notes: clean(body?.notes, 2000) || null,
-          status: "draft",
-        },
+    const sections = sanitizeSections(body?.sections);
+    if (!sections.length) return json(400, { error: "Add at least one section with items." });
+    const t = sectionTotals(sections, body?.discount);
+
+    // New version of an existing quotation?
+    let ref_no = null, version = 1, parent_id = null;
+    if (body?.parent_id && UUID.test(String(body.parent_id))) {
+      const { status: ps, data: pd } = await sbRest("quotations", {
+        query: `?select=ref_no,version&id=eq.${body.parent_id}&limit=1`,
       });
-    } catch { ins = null; }
-    if (!ins || (ins.status !== 201 && ins.status !== 200))
+      if (ps === 200 && pd && pd[0]) {
+        ref_no = pd[0].ref_no;
+        version = num(pd[0].version) + 1 || 2;
+        parent_id = body.parent_id;
+      }
+    }
+    if (!ref_no) ref_no = await nextRef();
+
+    const ins = await sbRest("quotations", {
+      method: "POST",
+      body: {
+        ref_no, version, parent_id,
+        client_name,
+        phone: clean(body?.phone, 40) || null,
+        email: clean(body?.email, 160) || null,
+        project: clean(body?.project, 200) || null,
+        site: clean(body?.site, 200) || null,
+        location: clean(body?.location, 200) || null,
+        title: clean(body?.title, 120) || "Interior",
+        description: clean(body?.description, 2000) || null,
+        option_label: clean(body?.option_label, 40) || null,
+        sections: t.sections,
+        items: flatItems(t.sections),
+        subtotal: t.subtotal, discount: t.discount, total: t.total,
+        terms: clean(body?.terms, 4000) || null,
+        notes: clean(body?.notes, 2000) || null,
+        status: "draft",
+      },
+    });
+    if (ins.status !== 201 && ins.status !== 200)
       return json(502, { error: "Could not save the quotation." });
     try {
       await sbRest("activity", {
         method: "POST",
-        body: { kind: "quotation", text: `Quotation ${ref_no} created for ${client_name}`, meta: {} },
+        body: { kind: "quotation", text: `Quotation ${ref_no} V${version} created for ${client_name}`, meta: {} },
       });
     } catch { /* best-effort */ }
-    return json(200, { ok: true, ref_no, quotation: ins.data?.[0] || null });
+    return json(200, { ok: true, ref_no, version, quotation: shape(ins.data?.[0]) || null });
   }
 
   if (req.method === "PATCH") {
     const id = String(body?.id || "");
-    if (!/^[0-9a-f-]{36}$/i.test(id)) return json(400, { error: "Invalid id." });
+    if (!UUID.test(id)) return json(400, { error: "Invalid id." });
     const patch = { updated_at: new Date().toISOString() };
     if (STATUSES.includes(body?.status)) patch.status = body.status;
-    // full edit (only sensible for drafts, but not enforced here)
-    if (body?.items) {
-      const items = sanitizeItems(body.items);
-      if (!items.length) return json(400, { error: "Add at least one line item." });
-      patch.items = items;
-      Object.assign(patch, totals(items, body?.discount));
+    if (body?.sections !== undefined) {
+      const sections = sanitizeSections(body.sections);
+      if (!sections.length) return json(400, { error: "Add at least one section with items." });
+      const t = sectionTotals(sections, body?.discount);
+      patch.sections = t.sections;
+      patch.items = flatItems(t.sections);
+      patch.subtotal = t.subtotal; patch.discount = t.discount; patch.total = t.total;
+    } else if (body?.discount !== undefined) {
+      // discount-only change: recompute from stored sections
+      const { status: gs, data: gd } = await sbRest("quotations", {
+        query: `?select=sections,items&id=eq.${id}&limit=1`,
+      });
+      if (gs === 200 && gd && gd[0]) {
+        const cur = shape(gd[0]);
+        const t = sectionTotals(cur.sections, body.discount);
+        patch.sections = t.sections; patch.items = flatItems(t.sections);
+        patch.subtotal = t.subtotal; patch.discount = t.discount; patch.total = t.total;
+      }
     }
-    for (const k of ["client_name", "phone", "email", "project", "site", "location", "title", "terms", "notes"]) {
-      if (typeof body?.[k] === "string") patch[k] = clean(body[k], k === "terms" || k === "notes" ? 2000 : 200) || null;
+    for (const k of ["client_name", "phone", "email", "project", "site", "location", "title", "description", "option_label", "terms", "notes"]) {
+      if (typeof body?.[k] === "string")
+        patch[k] = clean(body[k], k === "terms" || k === "notes" || k === "description" ? 4000 : 200) || null;
     }
+    if (body?.discount !== undefined && body?.sections === undefined) patch.discount = num(body.discount);
     if (patch.client_name !== undefined && patch.client_name !== null && patch.client_name.length < 2)
       return json(400, { error: "Client name is required." });
-    let res = null;
-    try {
-      res = await sbRest("quotations", { method: "PATCH", query: `?id=eq.${id}`, body: patch });
-    } catch { res = null; }
-    if (!res || (res.status !== 200 && res.status !== 204))
-      return json(502, { error: "Could not update the quotation." });
+    const { status: s } = await sbRest("quotations", {
+      method: "PATCH", query: `?id=eq.${id}`, body: patch,
+    });
+    if (s !== 200 && s !== 204) return json(502, { error: "Could not update the quotation." });
     return json(200, { ok: true });
   }
 
   if (req.method === "DELETE") {
     const id = String(body?.id || new URL(req.url).searchParams.get("id") || "");
-    if (!/^[0-9a-f-]{36}$/i.test(id)) return json(400, { error: "Invalid id." });
-    let res = null;
-    try {
-      res = await sbRest("quotations", { method: "DELETE", query: `?id=eq.${id}` });
-    } catch { res = null; }
-    if (!res || (res.status !== 200 && res.status !== 204))
-      return json(502, { error: "Could not delete the quotation." });
+    if (!UUID.test(id)) return json(400, { error: "Invalid id." });
+    const { status: s } = await sbRest("quotations", {
+      method: "DELETE", query: `?id=eq.${id}`,
+    });
+    if (s !== 200 && s !== 204) return json(502, { error: "Could not delete the quotation." });
     return json(200, { ok: true });
   }
 

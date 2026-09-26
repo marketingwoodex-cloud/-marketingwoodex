@@ -4,7 +4,9 @@
 import { bearerSession, json, verifySession } from "./_auth.mjs";
 import { sbConfigured, sbRest } from "./_supabase.mjs";
 
-const STATUSES = ["new", "contacted", "quoted", "closed"];
+const STATUSES = ["new", "contacted", "site_visit", "quoted", "won", "lost"];
+const LEGACY = { in_progress: "contacted", closed: "won" };
+const normStatus = (st) => LEGACY[st] || st;
 
 export default async (req) => {
   const user = verifySession(bearerSession(req));
@@ -32,11 +34,12 @@ export default async (req) => {
     const { id, status: st } = body || {};
     if (!/^[0-9a-f-]{36}$/i.test(String(id || "")))
       return json(400, { error: "Invalid id." });
-    if (!STATUSES.includes(st)) return json(400, { error: "Invalid status." });
+    const nst = normStatus(st);
+    if (!STATUSES.includes(nst)) return json(400, { error: "Invalid status." });
     const { status: s } = await sbRest("estimator_leads", {
       method: "PATCH",
       query: `?id=eq.${id}`,
-      body: { status: st },
+      body: { status: nst },
     });
     if (s !== 200 && s !== 204) return json(502, { error: "Could not update lead." });
     return json(200, { ok: true });

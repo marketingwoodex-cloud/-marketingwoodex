@@ -5,7 +5,9 @@
 import { bearerSession, json, verifySession } from "./_auth.mjs";
 import { sbConfigured, sbRest } from "./_supabase.mjs";
 
-const STATUSES = ["new", "in_progress", "quoted", "closed"];
+const STATUSES = ["new", "contacted", "site_visit", "quoted", "won", "lost"];
+const LEGACY = { in_progress: "contacted", closed: "won" };
+const normStatus = (st) => LEGACY[st] || st;
 
 export default async (req) => {
   const user = verifySession(bearerSession(req));
@@ -34,7 +36,8 @@ export default async (req) => {
     if (!/^[0-9a-f-]{36}$/i.test(String(id || "")))
       return json(400, { error: "Invalid id." });
     const patch = {};
-    if (STATUSES.includes(st)) patch.status = st;
+    const nst = normStatus(st);
+    if (STATUSES.includes(nst)) patch.status = nst;
     if (typeof notes === "string") patch.notes = notes.slice(0, 2000);
     if (!Object.keys(patch).length) return json(400, { error: "Nothing to update." });
     const { status: s } = await sbRest("enquiries", {

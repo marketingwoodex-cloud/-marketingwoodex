@@ -27,7 +27,7 @@ export default async (req) => {
     ),
   ]);
 
-  const byStatus = { new: 0, in_progress: 0, quoted: 0, closed: 0 };
+  const byStatus = { new: 0, contacted: 0, site_visit: 0, quoted: 0, won: 0, lost: 0 };
   let newThisWeek = 0;
   enquiries.forEach((e) => {
     if (byStatus[e.status] !== undefined) byStatus[e.status] += 1;

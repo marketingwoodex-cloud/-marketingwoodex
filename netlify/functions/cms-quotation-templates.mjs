@@ -1,24 +1,21 @@
-// Session-authenticated CRUD for quotation templates (per work type).
-// GET    -> { templates: [...] }  (ordered by name)
-// POST   -> { ok, id }            (create; name unique)
-// PATCH  -> { ok }                (update by id)
-// DELETE -> { ok }                (delete by id)
+// Dashboard API: quotation template library (sectioned). Requires CMS session.
+// GET /.netlify/functions/cms-quotation-templates
+// POST { name*, description?, sections?[{name, items[]}], terms?, upsert? }
+// POST { ..., upsert: true } upgrades the same-name template instead of duplicating.
+// PATCH { id, name?, description?, sections?, terms? }
+// DELETE { id }
 import { bearerSession, json, verifySession } from "./_auth.mjs";
 import { sbConfigured, sbRest } from "./_supabase.mjs";
+import { clean, sanitizeSections, flatItems } from "./_boq.mjs";
 
-const UNITS = ["job", "nos", "sft", "rft"];
 const UUID = /^[0-9a-f-]{36}$/i;
 
-function cleanItems(raw) {
-  if (!Array.isArray(raw)) return [];
-  return raw
-    .map((it) => ({
-      desc: String(it.desc || "").slice(0, 500).trim(),
-      qty: Math.max(0, Number(it.qty) || 0),
-      unit: UNITS.includes(it.unit) ? it.unit : "job",
-      rate: Math.max(0, Number(it.rate) || 0),
-    }))
-    .filter((it) => it.desc);
+function shape(row) {
+  if (!row) return row;
+  let sections = Array.isArray(row.sections) ? row.sections : [];
+  if (!sections.length && Array.isArray(row.items) && row.items.length)
+    sections = [{ name: "General", items: row.items }];
+  return { ...row, sections };
 }
 
 export default async (req) => {
@@ -27,11 +24,11 @@ export default async (req) => {
   if (!sbConfigured()) return json(503, { error: "Database is not configured yet." });
 
   if (req.method === "GET") {
-    const { status, data } = await sbRest("quotation_templates", {
-      query: "?select=id,name,items,terms,created_at&order=name.asc&limit=200",
+    const { status: s, data } = await sbRest("quotation_templates", {
+      query: "?select=*&order=name.asc&limit=100",
     });
-    if (status !== 200) return json(502, { error: "Could not load templates." });
-    return json(200, { templates: data || [] });
+    if (s !== 200) return json(502, { error: "Could not load templates." });
+    return json(200, { templates: (data || []).map(shape) });
   }
 
   let body = null;
@@ -42,59 +39,72 @@ export default async (req) => {
   }
 
   if (req.method === "POST") {
-    const name = String(body?.name || "").trim().slice(0, 120);
+    const name = clean(body?.name, 120);
     if (name.length < 2) return json(400, { error: "Template name required." });
-    let ins = null;
-    try {
-      ins = await sbRest("quotation_templates", {
-        method: "POST",
-        body: {
-          name,
-          items: cleanItems(body?.items),
-          terms: String(body?.terms || "").slice(0, 5000),
-        },
+    const sections = sanitizeSections(body?.sections);
+    if (!sections.length) return json(400, { error: "Add at least one section with items." });
+    const description = clean(body?.description, 2000);
+    const terms = clean(body?.terms, 4000);
+    if (body?.upsert) {
+      const { status: fs, data: found } = await sbRest("quotation_templates", {
+        query: `?select=id&name=eq.${encodeURIComponent(name)}&limit=1`,
       });
-    } catch {
-      ins = null;
+      if (fs === 200 && found && found.length) {
+        const { status: ps } = await sbRest("quotation_templates", {
+          method: "PATCH",
+          query: `?id=eq.${found[0].id}`,
+          body: { description, sections, items: flatItems(sections), terms, updated_at: new Date().toISOString() },
+        });
+        if (ps !== 200 && ps !== 204) return json(502, { error: "Could not upgrade template." });
+        return json(200, { ok: true, id: found[0].id, upgraded: true });
+      }
     }
-    if (!ins || (ins.status !== 201 && ins.status !== 200))
-      return json(502, { error: "Could not save the template." });
-    return json(200, { ok: true, id: ins.data?.[0]?.id || null });
+    const { status: s, data } = await sbRest("quotation_templates", {
+      method: "POST",
+      body: { name, description, sections, items: flatItems(sections), terms },
+    });
+    if (s !== 200 && s !== 201) {
+      const msg = JSON.stringify(data || "");
+      if (/duplicate|unique/i.test(msg)) return json(409, { error: "A template with this name already exists." });
+      return json(502, { error: "Could not save template." });
+    }
+    return json(200, { ok: true, id: data?.[0]?.id || null });
   }
 
   if (req.method === "PATCH") {
-    const id = String(body?.id || "");
-    if (!UUID.test(id)) return json(400, { error: "Invalid id." });
+    const { id } = body || {};
+    if (!UUID.test(String(id || ""))) return json(400, { error: "Invalid id." });
     const patch = { updated_at: new Date().toISOString() };
     if (body?.name !== undefined) {
-      const name = String(body.name).trim().slice(0, 120);
+      const name = clean(body.name, 120);
       if (name.length < 2) return json(400, { error: "Template name required." });
       patch.name = name;
     }
-    if (body?.items !== undefined) patch.items = cleanItems(body.items);
-    if (body?.terms !== undefined) patch.terms = String(body.terms).slice(0, 5000);
-    let res = null;
-    try {
-      res = await sbRest("quotation_templates", { method: "PATCH", query: `?id=eq.${id}`, body: patch });
-    } catch {
-      res = null;
+    if (body?.description !== undefined) patch.description = clean(body.description, 2000);
+    if (body?.terms !== undefined) patch.terms = clean(body.terms, 4000);
+    if (body?.sections !== undefined) {
+      const sections = sanitizeSections(body.sections);
+      if (!sections.length) return json(400, { error: "Add at least one section with items." });
+      patch.sections = sections;
+      patch.items = flatItems(sections);
     }
-    if (!res || (res.status !== 200 && res.status !== 204))
-      return json(502, { error: "Could not update the template." });
+    const { status: s } = await sbRest("quotation_templates", {
+      method: "PATCH",
+      query: `?id=eq.${id}`,
+      body: patch,
+    });
+    if (s !== 200 && s !== 204) return json(502, { error: "Could not update template." });
     return json(200, { ok: true });
   }
 
   if (req.method === "DELETE") {
-    const id = String(body?.id || "");
-    if (!UUID.test(id)) return json(400, { error: "Invalid id." });
-    let res = null;
-    try {
-      res = await sbRest("quotation_templates", { method: "DELETE", query: `?id=eq.${id}` });
-    } catch {
-      res = null;
-    }
-    if (!res || (res.status !== 200 && res.status !== 204))
-      return json(502, { error: "Could not delete the template." });
+    const { id } = body || {};
+    if (!UUID.test(String(id || ""))) return json(400, { error: "Invalid id." });
+    const { status: s } = await sbRest("quotation_templates", {
+      method: "DELETE",
+      query: `?id=eq.${id}`,
+    });
+    if (s !== 200 && s !== 204) return json(502, { error: "Could not delete template." });
     return json(200, { ok: true });
   }
 
