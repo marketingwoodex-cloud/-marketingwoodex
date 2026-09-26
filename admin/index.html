@@ -4,18 +4,17 @@
     <meta charset="utf-8" />
     <meta name="robots" content="noindex" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Woodex Page Builder</title>
+    <title>Woodex Dashboard</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230a0f1e'/%3E%3Ctext x='16' y='22' font-family='Arial' font-weight='bold' font-size='17' fill='white' text-anchor='middle'%3EW%3C/text%3E%3C/svg%3E" />
+    <link rel="stylesheet" href="./vendor/adminlte/bootstrap.min.css" />
+    <link rel="stylesheet" href="./vendor/adminlte/bootstrap-icons.min.css" />
+    <link rel="stylesheet" href="./vendor/adminlte/adminlte.min.css" />
     <link rel="stylesheet" href="./vendor/grapes.min.css" />
+    <link rel="stylesheet" href="./css/woodex-admin.css" />
     <style>
       :root { --navy: #0a0f1e; }
-      * { box-sizing: border-box; }
       html, body { height: 100%; }
-      body {
-        margin: 0;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-        background: var(--navy);
-        color: #fff;
-      }
+      body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
       /* ---------- sign-in gate ---------- */
       #wx-gate {
         min-height: 100%;
@@ -23,6 +22,7 @@
         align-items: center;
         justify-content: center;
         padding: 24px;
+        background: var(--navy);
       }
       #wx-gate .card {
         width: 100%;
@@ -32,6 +32,7 @@
         border-radius: 20px;
         padding: 36px 32px;
         box-shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
+        border: 0;
       }
       #wx-gate .brand { font-weight: 800; letter-spacing: 0.22em; font-size: 15px; margin: 0 0 6px; }
       #wx-gate .sub { margin: 0 0 26px; color: #5b6478; font-size: 14px; }
@@ -51,8 +52,8 @@
         background: #fdecec; color: #a12622; font-size: 13px;
       }
       #wx-gate .note { margin-top: 18px; font-size: 12px; color: #8a93a8; text-align: center; }
-      /* ---------- studio ---------- */
-      #wx-studio { display: none; height: 100vh; flex-direction: column; background: #f2f4f8; color: #1a2333; }
+      /* ---------- studio (page builder view) ---------- */
+      #wx-studio { display: none; height: 100%; flex-direction: column; background: #f2f4f8; color: #1a2333; }
       #wx-studio.open { display: flex; }
       .wx-topbar {
         display: flex; align-items: center; gap: 10px;
@@ -72,7 +73,6 @@
       .wx-btn.primary { background: #fff; color: var(--navy); border-color: #fff; }
       .wx-btn.primary:hover { background: #e8ecf5; }
       .wx-btn:disabled { opacity: 0.45; cursor: default; }
-      .wx-btn.on { background: #2a3556; }
       #wx-status { font-size: 12px; color: #9aa6c2; white-space: nowrap; }
       .wx-main { flex: 1; display: flex; min-height: 0; }
       .wx-side {
@@ -84,7 +84,6 @@
       .wx-canvas { flex: 1; min-width: 0; position: relative; }
       #gjs { height: 100%; }
       .wx-hint { font-size: 12px; color: #8a93a8; margin: 10px 2px; line-height: 1.5; }
-      /* GrapesJS panel overrides to match */
       .gjs-blocks-c { justify-content: flex-start; }
       .gjs-block { width: calc(50% - 6px); min-height: 70px; font-size: 12px; }
       #wx-upload-input { display: none; }
@@ -93,11 +92,12 @@
       }
     </style>
   </head>
-  <body>
+  <body class="layout-fixed sidebar-expand-lg">
+    <!-- ================= sign-in gate ================= -->
     <div id="wx-gate">
       <div class="card">
         <p class="brand">WOODEX</p>
-        <p class="sub">Page Builder sign in</p>
+        <p class="sub">Dashboard sign in</p>
         <form id="wx-form" autocomplete="off">
           <label for="wx-user">Username</label>
           <input id="wx-user" name="username" type="text" autocomplete="username" required />
@@ -110,64 +110,283 @@
       </div>
     </div>
 
-    <div id="wx-studio">
-      <div class="wx-topbar">
-        <span class="brand">WOODEX · Page Builder</span>
-        <select id="wx-page" title="Choose a page to edit"></select>
-        <button class="wx-btn" id="wx-device-desktop" title="Desktop preview">Desktop</button>
-        <button class="wx-btn" id="wx-device-mobile" title="Mobile preview">Mobile</button>
-        <button class="wx-btn" id="wx-undo" title="Undo">Undo</button>
-        <button class="wx-btn" id="wx-upload" title="Upload an image">Upload image</button>
-        <button class="wx-btn" id="wx-preview" title="Open the live page">View live</button>
-        <button class="wx-btn primary" id="wx-publish" disabled>Publish</button>
-        <span id="wx-status"></span>
-      </div>
-      <div class="wx-main">
-        <div class="wx-side">
-          <h4>Blocks</h4>
-          <div id="wx-blocks"></div>
-          <p class="wx-hint">Drag a block onto the page. Click any text to edit it. Drag sections by their edge to move them. Select an image to replace it.</p>
-          <h4>Layers</h4>
-          <div id="wx-layers"></div>
+    <!-- ================= app shell ================= -->
+    <div class="app-wrapper" id="wx-app" style="display: none">
+      <nav class="app-header navbar navbar-expand bg-body">
+        <div class="container-fluid">
+          <ul class="navbar-nav">
+            <li class="nav-item">
+              <a class="nav-link" data-lte-toggle="sidebar" href="#" role="button" title="Menu">
+                <i class="bi bi-list"></i>
+              </a>
+            </li>
+            <li class="nav-item d-none d-md-block"><span class="nav-link fw-bold" id="wx-view-title">Dashboard</span></li>
+          </ul>
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_blank" title="View live site"><i class="bi bi-globe"></i> <span class="d-none d-md-inline">Live site</span></a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#" id="wx-signout" title="Sign out"><i class="bi bi-box-arrow-right"></i> <span class="d-none d-md-inline">Sign out</span></a>
+            </li>
+          </ul>
         </div>
-        <div class="wx-canvas"><div id="gjs"></div></div>
-        <div class="wx-side right">
-          <h4>Style</h4>
-          <div id="wx-styles"></div>
-          <h4>Settings</h4>
-          <div id="wx-traits"></div>
+      </nav>
+
+      <aside class="app-sidebar" data-bs-theme="dark">
+        <div class="sidebar-brand">
+          <a href="#" class="brand-link" data-view="dashboard"><span class="brand-text">WOODEX</span></a>
+        </div>
+        <div class="sidebar-wrapper">
+          <nav class="mt-2">
+            <ul class="nav sidebar-menu flex-column" data-lte-toggle="treeview" role="menu" data-accordion="false">
+              <li class="nav-header">OVERVIEW</li>
+              <li class="nav-item">
+                <a href="#" class="nav-link active" data-view="dashboard"><i class="nav-icon bi bi-speedometer2"></i><p>Dashboard</p></a>
+              </li>
+              <li class="nav-item">
+                <a href="#" class="nav-link" data-view="enquiries"><i class="nav-icon bi bi-inbox"></i><p>Enquiries <span class="nav-badge badge text-bg-warning ms-1" id="nav-new-count" style="display:none"></span></p></a>
+              </li>
+              <li class="nav-header">GROWTH</li>
+              <li class="nav-item">
+                <a href="#" class="nav-link" data-view="soon" data-soon="Estimator Leads"><i class="nav-icon bi bi-calculator"></i><p>Estimator Leads</p></a>
+              </li>
+              <li class="nav-item">
+                <a href="#" class="nav-link" data-view="soon" data-soon="Blog Posts"><i class="nav-icon bi bi-newspaper"></i><p>Blog Posts</p></a>
+              </li>
+              <li class="nav-header">CONTENT</li>
+              <li class="nav-item">
+                <a href="#" class="nav-link" data-view="builder"><i class="nav-icon bi bi-layout-text-window-reverse"></i><p>Pages</p></a>
+              </li>
+              <li class="nav-item">
+                <a href="#" class="nav-link" data-view="soon" data-soon="Projects"><i class="nav-icon bi bi-kanban"></i><p>Projects</p></a>
+              </li>
+              <li class="nav-item">
+                <a href="#" class="nav-link" data-view="soon" data-soon="Media Library"><i class="nav-icon bi bi-images"></i><p>Media Library</p></a>
+              </li>
+              <li class="nav-item">
+                <a href="#" class="nav-link" data-view="soon" data-soon="Team"><i class="nav-icon bi bi-people"></i><p>Team</p></a>
+              </li>
+              <li class="nav-item">
+                <a href="#" class="nav-link" data-view="soon" data-soon="Settings"><i class="nav-icon bi bi-gear"></i><p>Settings</p></a>
+              </li>
+            </ul>
+          </nav>
+        </div>
+      </aside>
+
+      <main class="app-main">
+        <!-- ============ DASHBOARD ============ -->
+        <section class="wx-view app-content" id="view-dashboard">
+          <div class="container-fluid">
+            <div class="row">
+              <div class="col-lg-3 col-6">
+                <div class="small-box wx-navy-card">
+                  <div class="inner"><h3 id="stat-new">–</h3><p>New enquiries</p></div>
+                  <a href="#" class="small-box-footer" data-view="enquiries">View inbox <i class="bi bi-arrow-right"></i></a>
+                </div>
+              </div>
+              <div class="col-lg-3 col-6">
+                <div class="small-box text-bg-warning">
+                  <div class="inner"><h3 id="stat-week">–</h3><p>Enquiries this week</p></div>
+                  <a href="#" class="small-box-footer" data-view="enquiries">View inbox <i class="bi bi-arrow-right"></i></a>
+                </div>
+              </div>
+              <div class="col-lg-3 col-6">
+                <div class="small-box text-bg-info">
+                  <div class="inner"><h3 id="stat-leads">–</h3><p>Estimator leads</p></div>
+                  <a href="#" class="small-box-footer" data-view="soon" data-soon="Estimator Leads">Coming soon <i class="bi bi-arrow-right"></i></a>
+                </div>
+              </div>
+              <div class="col-lg-3 col-6">
+                <div class="small-box text-bg-success">
+                  <div class="inner"><h3 id="stat-posts">–</h3><p>Blog posts live</p></div>
+                  <a href="#" class="small-box-footer" data-view="soon" data-soon="Blog Posts">Coming soon <i class="bi bi-arrow-right"></i></a>
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-lg-7">
+                <div class="card">
+                  <div class="card-header"><h3 class="card-title">Latest enquiries</h3></div>
+                  <div class="card-body p-0">
+                    <table class="table table-hover mb-0">
+                      <thead><tr><th>Name</th><th>Phone</th><th>Type</th><th>Status</th></tr></thead>
+                      <tbody id="recent-body"><tr><td colspan="4" class="text-center text-muted py-4">Loading…</td></tr></tbody>
+                    </table>
+                  </div>
+                  <div class="card-footer"><a href="#" data-view="enquiries">Open full inbox →</a></div>
+                </div>
+              </div>
+              <div class="col-lg-5">
+                <div class="card">
+                  <div class="card-header"><h3 class="card-title">Activity</h3></div>
+                  <div class="card-body"><ul class="wx-activity" id="activity-list"><li class="text-muted">Loading…</li></ul></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============ ENQUIRIES ============ -->
+        <section class="wx-view app-content" id="view-enquiries" hidden>
+          <div class="container-fluid">
+            <div class="d-flex flex-wrap align-items-center gap-2 mb-3" id="enq-filters">
+              <button class="btn btn-sm btn-dark" data-filter="">All</button>
+              <button class="btn btn-sm btn-outline-dark" data-filter="new">New</button>
+              <button class="btn btn-sm btn-outline-dark" data-filter="in_progress">In progress</button>
+              <button class="btn btn-sm btn-outline-dark" data-filter="quoted">Quoted</button>
+              <button class="btn btn-sm btn-outline-dark" data-filter="closed">Closed</button>
+              <span class="ms-auto text-muted small" id="enq-count"></span>
+            </div>
+            <div class="card">
+              <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                  <thead><tr><th>Name</th><th>Phone</th><th>Type</th><th>Message</th><th>Received</th><th>Status</th></tr></thead>
+                  <tbody id="enq-body"><tr><td colspan="6" class="text-center text-muted py-4">Loading…</td></tr></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============ PAGE BUILDER ============ -->
+        <section class="wx-view" id="view-builder" hidden>
+          <div id="wx-studio">
+            <div class="wx-topbar">
+              <span class="brand">WOODEX · Page Builder</span>
+              <select id="wx-page" title="Choose a page to edit"></select>
+              <button class="wx-btn" id="wx-device-desktop" title="Desktop preview">Desktop</button>
+              <button class="wx-btn" id="wx-device-mobile" title="Mobile preview">Mobile</button>
+              <button class="wx-btn" id="wx-undo" title="Undo">Undo</button>
+              <button class="wx-btn" id="wx-upload" title="Upload an image">Upload image</button>
+              <button class="wx-btn" id="wx-preview" title="Open the live page">View live</button>
+              <button class="wx-btn primary" id="wx-publish" disabled>Publish</button>
+              <span id="wx-status"></span>
+            </div>
+            <div class="wx-main">
+              <div class="wx-side">
+                <h4>Blocks</h4>
+                <div id="wx-blocks"></div>
+                <p class="wx-hint">Drag a block onto the page. Click any text to edit it. Drag sections by their edge to move them. Select an image to replace it.</p>
+                <h4>Layers</h4>
+                <div id="wx-layers"></div>
+              </div>
+              <div class="wx-canvas"><div id="gjs"></div></div>
+              <div class="wx-side right">
+                <h4>Style</h4>
+                <div id="wx-styles"></div>
+                <h4>Settings</h4>
+                <div id="wx-traits"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============ COMING SOON ============ -->
+        <section class="wx-view app-content" id="view-soon" hidden>
+          <div class="container-fluid">
+            <div class="card" style="max-width: 560px; margin: 40px auto">
+              <div class="card-body text-center py-5">
+                <i class="bi bi-hammer" style="font-size: 40px; color: #0a0f1e"></i>
+                <h4 class="mt-3" id="soon-title">Coming soon</h4>
+                <p class="text-muted">This module is next on the build list. Enquiries and the page builder are live now.</p>
+                <a href="#" class="btn btn-dark" data-view="dashboard">Back to dashboard</a>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <!-- ============ enquiry detail modal ============ -->
+    <div class="modal fade" id="enquiryModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Enquiry</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <dl class="row mb-0">
+              <dt class="col-sm-3">Name</dt><dd class="col-sm-9" id="m-name"></dd>
+              <dt class="col-sm-3">Phone</dt><dd class="col-sm-9"><a href="#" id="m-phone"></a></dd>
+              <dt class="col-sm-3">Email</dt><dd class="col-sm-9" id="m-email"></dd>
+              <dt class="col-sm-3">Type</dt><dd class="col-sm-9" id="m-type"></dd>
+              <dt class="col-sm-3">Message</dt><dd class="col-sm-9" id="m-message"></dd>
+              <dt class="col-sm-3">Received</dt><dd class="col-sm-9" id="m-date"></dd>
+            </dl>
+            <hr />
+            <div class="mb-3">
+              <label class="form-label fw-bold" for="m-status">Status</label>
+              <select class="form-select" id="m-status">
+                <option value="new">New</option>
+                <option value="in_progress">In progress</option>
+                <option value="quoted">Quoted</option>
+                <option value="closed">Closed</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-bold" for="m-notes">Notes</label>
+              <textarea class="form-control" id="m-notes" rows="3" placeholder="Internal notes…"></textarea>
+            </div>
+            <div class="alert alert-danger py-2" id="m-error" style="display: none"></div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-dark" id="m-save">Save changes</button>
+          </div>
         </div>
       </div>
     </div>
-    <input type="file" id="wx-upload-input" accept="image/png,image/jpeg,image/gif,image/webp,image/svg+xml" />
 
+    <input type="file" id="wx-upload-input" accept="image/png,image/jpeg,image/gif,image/webp,image/svg+xml" />
     <script src="./vendor/grapes.min.js"></script>
+    <script src="./vendor/adminlte/bootstrap.bundle.min.js"></script>
+    <script src="./vendor/adminlte/adminlte.min.js"></script>
     <script>
       (function () {
         "use strict";
-        /* ================= sign-in gate ================= */
+        /* ================= helpers ================= */
         var session = null; // memory only, never persisted
+        function api(path, opts) {
+          opts = opts || {};
+          var method = opts.method || "POST";
+          return fetch(path, {
+            method: method,
+            headers: Object.assign(
+              { "content-type": "application/json" },
+              session ? { authorization: "Bearer " + session } : {}
+            ),
+            body: opts.body ? JSON.stringify(opts.body) : undefined,
+          });
+        }
+        function esc(s) {
+          return String(s == null ? "" : s)
+            .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+        }
+        function timeAgo(iso) {
+          var t = new Date(iso).getTime(), d = Date.now() - t;
+          if (d < 3600e3) return Math.max(1, Math.round(d / 60e3)) + "m ago";
+          if (d < 86400e3) return Math.round(d / 3600e3) + "h ago";
+          return Math.round(d / 86400e3) + "d ago";
+        }
+        var STATUS_BADGE = { new: "warning", in_progress: "info", quoted: "primary", closed: "success" };
+        function statusBadge(s) {
+          return '<span class="badge text-bg-' + (STATUS_BADGE[s] || "secondary") + ' wx-status">' + esc(String(s).replace("_", " ")) + "</span>";
+        }
+
+        /* ================= sign-in gate ================= */
         var form = document.getElementById("wx-form");
         var userEl = document.getElementById("wx-user");
         var passEl = document.getElementById("wx-pass");
         var submitEl = document.getElementById("wx-submit");
         var errorEl = document.getElementById("wx-error");
-
         function showError(msg) {
           errorEl.textContent = msg;
           errorEl.style.display = "block";
         }
-        function api(path, body) {
-          return fetch(path, {
-            method: "POST",
-            headers: {
-              "content-type": "application/json",
-              ...(session ? { authorization: "Bearer " + session } : {}),
-            },
-            body: JSON.stringify(body || {}),
-          });
-        }
-
         form.addEventListener("submit", async function (e) {
           e.preventDefault();
           errorEl.style.display = "none";
@@ -175,8 +394,7 @@
           submitEl.textContent = "Signing in...";
           try {
             var res = await api("/.netlify/functions/cms-auth", {
-              username: userEl.value,
-              password: passEl.value,
+              body: { username: userEl.value, password: passEl.value },
             });
             var data = null;
             try { data = await res.json(); } catch (err) {}
@@ -188,8 +406,8 @@
             passEl.value = "";
             userEl.value = "";
             document.getElementById("wx-gate").style.display = "none";
-            document.getElementById("wx-studio").classList.add("open");
-            initStudio();
+            document.getElementById("wx-app").style.display = "";
+            showView("dashboard");
           } catch (err) {
             showError("Could not reach the sign in service. Check your connection.");
           } finally {
@@ -198,8 +416,171 @@
           }
         });
         userEl.focus();
+        document.getElementById("wx-signout").addEventListener("click", function (e) {
+          e.preventDefault();
+          location.reload(); // drops the memory-only session
+        });
 
-        /* ================= studio ================= */
+        /* ================= view router ================= */
+        var TITLES = { dashboard: "Dashboard", enquiries: "Enquiries", builder: "Pages · Page Builder", soon: "Coming soon" };
+        var builderStarted = false;
+        function showView(name, soonLabel) {
+          document.querySelectorAll(".wx-view").forEach(function (v) { v.hidden = true; });
+          var el = document.getElementById("view-" + name);
+          if (el) el.hidden = false;
+          document.querySelectorAll("[data-view].nav-link").forEach(function (a) {
+            a.classList.toggle("active", a.getAttribute("data-view") === name);
+          });
+          if (name === "soon" && soonLabel) {
+            document.getElementById("soon-title").textContent = soonLabel;
+            document.getElementById("wx-view-title").textContent = soonLabel;
+          } else {
+            document.getElementById("wx-view-title").textContent = TITLES[name] || name;
+          }
+          if (name === "dashboard") loadDashboard();
+          if (name === "enquiries") loadEnquiries(currentFilter);
+          if (name === "builder") {
+            document.getElementById("wx-studio").classList.add("open");
+            initStudio();
+          } else {
+            document.getElementById("wx-studio").classList.remove("open");
+          }
+          window.scrollTo(0, 0);
+        }
+        document.addEventListener("click", function (e) {
+          var a = e.target.closest("[data-view]");
+          if (!a) return;
+          e.preventDefault();
+          showView(a.getAttribute("data-view"), a.getAttribute("data-soon"));
+        });
+
+        /* ================= dashboard ================= */
+        var dashLoaded = false;
+        async function loadDashboard() {
+          try {
+            var res = await api("/.netlify/functions/cms-stats", { method: "GET" });
+            var data = await res.json();
+            if (!res.ok || !data || !data.stats) throw new Error("stats failed");
+            var s = data.stats;
+            document.getElementById("stat-new").textContent = s.enquiries_new;
+            document.getElementById("stat-week").textContent = s.enquiries_new_week;
+            document.getElementById("stat-leads").textContent = s.estimator_leads;
+            document.getElementById("stat-posts").textContent = s.blog_published;
+            var badge = document.getElementById("nav-new-count");
+            if (s.enquiries_new > 0) { badge.textContent = s.enquiries_new; badge.style.display = ""; }
+            else badge.style.display = "none";
+            var tb = document.getElementById("recent-body");
+            if (!data.recent_enquiries.length) {
+              tb.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-4">No enquiries yet.</td></tr>';
+            } else {
+              tb.innerHTML = data.recent_enquiries.map(function (r) {
+                return "<tr><td>" + esc(r.name) + "</td><td>" + esc(r.phone) +
+                  "</td><td>" + esc(r.project_type || "–") + "</td><td>" + statusBadge(r.status) + "</td></tr>";
+              }).join("");
+            }
+            var al = document.getElementById("activity-list");
+            al.innerHTML = data.activity.length
+              ? data.activity.map(function (a) {
+                  return "<li>" + esc(a.text) + "<time>" + timeAgo(a.created_at) + "</time></li>";
+                }).join("")
+              : '<li class="text-muted">Nothing yet.</li>';
+          } catch (err) {
+            document.getElementById("recent-body").innerHTML =
+              '<tr><td colspan="4" class="text-center text-muted py-4">Could not load. The database may not be connected yet.</td></tr>';
+          }
+          dashLoaded = true;
+        }
+
+        /* ================= enquiries inbox ================= */
+        var currentFilter = "", enquiriesCache = [], modalRow = null, modal = null;
+        function wireFilters() {
+          document.getElementById("enq-filters").addEventListener("click", function (e) {
+            var b = e.target.closest("[data-filter]");
+            if (!b) return;
+            currentFilter = b.getAttribute("data-filter");
+            this.querySelectorAll(".btn").forEach(function (x) {
+              x.className = "btn btn-sm " + (x === b ? "btn-dark" : "btn-outline-dark");
+            });
+            loadEnquiries(currentFilter);
+          });
+        }
+        async function loadEnquiries(filter) {
+          var tb = document.getElementById("enq-body");
+          tb.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">Loading…</td></tr>';
+          try {
+            var res = await api("/.netlify/functions/cms-enquiries" + (filter ? "?status=" + filter : ""), { method: "GET" });
+            var data = await res.json();
+            if (!res.ok || !data || !data.enquiries) throw new Error("load failed");
+            enquiriesCache = data.enquiries;
+            document.getElementById("enq-count").textContent = data.enquiries.length + " shown";
+            if (!data.enquiries.length) {
+              tb.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">No enquiries here.</td></tr>';
+              return;
+            }
+            tb.innerHTML = data.enquiries.map(function (r) {
+              var msg = esc(r.message || "–");
+              if (msg.length > 60) msg = msg.slice(0, 60) + "…";
+              return '<tr data-id="' + r.id + '" style="cursor:pointer"><td>' + esc(r.name) +
+                "</td><td>" + esc(r.phone) + "</td><td>" + esc(r.project_type || "–") +
+                "</td><td>" + msg + "</td><td>" + timeAgo(r.created_at) +
+                "</td><td>" + statusBadge(r.status) + "</td></tr>";
+            }).join("");
+          } catch (err) {
+            tb.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">Could not load enquiries.</td></tr>';
+          }
+        }
+        function openModal(id) {
+          var r = enquiriesCache.find(function (x) { return x.id === id; });
+          if (!r) return;
+          modalRow = r;
+          document.getElementById("m-name").textContent = r.name || "–";
+          var ph = document.getElementById("m-phone");
+          ph.textContent = r.phone || "–";
+          ph.href = r.phone ? "tel:" + r.phone.replace(/[^+\d]/g, "") : "#";
+          document.getElementById("m-email").textContent = r.email || "–";
+          document.getElementById("m-type").textContent = r.project_type || "–";
+          document.getElementById("m-message").textContent = r.message || "–";
+          document.getElementById("m-date").textContent = new Date(r.created_at).toLocaleString();
+          document.getElementById("m-status").value = r.status;
+          document.getElementById("m-notes").value = r.notes || "";
+          document.getElementById("m-error").style.display = "none";
+          if (!modal) modal = new bootstrap.Modal(document.getElementById("enquiryModal"));
+          modal.show();
+        }
+        async function saveModal() {
+          var errEl = document.getElementById("m-error");
+          errEl.style.display = "none";
+          var btn = document.getElementById("m-save");
+          btn.disabled = true;
+          try {
+            var res = await api("/.netlify/functions/cms-enquiries", {
+              body: {
+                id: modalRow.id,
+                status: document.getElementById("m-status").value,
+                notes: document.getElementById("m-notes").value,
+              },
+            });
+            var data = await res.json().catch(function () { return null; });
+            if (!res.ok || !data || !data.ok) throw new Error((data && data.error) || "save failed");
+            modalRow.status = document.getElementById("m-status").value;
+            modalRow.notes = document.getElementById("m-notes").value;
+            modal.hide();
+            loadEnquiries(currentFilter);
+          } catch (err) {
+            errEl.textContent = err.message;
+            errEl.style.display = "block";
+          } finally {
+            btn.disabled = false;
+          }
+        }
+        wireFilters();
+        document.getElementById("enq-body").addEventListener("click", function (e) {
+          var tr = e.target.closest("tr[data-id]");
+          if (tr) openModal(tr.getAttribute("data-id"));
+        });
+        document.getElementById("m-save").addEventListener("click", saveModal);
+
+        /* ================= page builder (GrapesJS) ================= */
         var editor = null, pages = [], current = null;
         var originalDoc = "", savedScripts = [];
         var dirty = false, studioStarted = false, lastMirror = null;
@@ -247,8 +628,6 @@
             if (!res.ok) throw new Error("load failed");
             var doc = await res.text();
             originalDoc = doc;
-            // Pull body scripts aside (nav, effects): the canvas must not run them,
-            // but they are re-attached verbatim on publish.
             var parser = new DOMParser();
             var d = parser.parseFromString(doc, "text/html");
             savedScripts = [];
@@ -256,19 +635,14 @@
               savedScripts.push(s.outerHTML);
               s.remove();
             });
-            // Capture the page's own <style> block (no-JS fallbacks etc.).
             var headStyle = "";
             d.querySelectorAll("head style").forEach(function (s) {
               headStyle += s.textContent + "\n";
             });
             editor.setComponents(d.body.innerHTML);
-            // The site's CSS keys off the <body> id / classes / data-*
-            // (e.g. "#home-page .hm-hero"). Mirror them onto the canvas body
-            // so the editor renders exactly like the live page.
             try {
               var cDoc = editor.Canvas.getDocument();
               var cBody = cDoc.body;
-              // Undo the previous page's mirrored identity first.
               if (lastMirror) {
                 if (lastMirror.id) cBody.removeAttribute("id");
                 lastMirror.classes.forEach(function (c) { cBody.classList.remove(c); });
@@ -297,7 +671,7 @@
                 cDoc.head.appendChild(st);
               }
               st.textContent = headStyle;
-            } catch (err) { /* canvas not ready; styles still apply */ }
+            } catch (err) {}
             editor.UndoManager.clear();
             markClean("Editing " + p.url);
           } catch (err) {
@@ -326,16 +700,13 @@
               }
             }
             var res = await api("/.netlify/functions/cms-save", {
-              path: current.path,
-              html: doc,
-              message: "Page Builder: update " + current.path,
+              body: { path: current.path, html: doc, message: "Page Builder: update " + current.path },
             });
             var data = null;
             try { data = await res.json(); } catch (err) {}
             if (!res.ok || !data || !data.ok) {
               throw new Error((data && data.error) || "publish failed");
             }
-            // Refresh the baseline so further edits diff cleanly.
             originalDoc = doc;
             editor.UndoManager.clear();
             markClean("Published. Live in about a minute.");
@@ -352,8 +723,7 @@
           reader.onload = async function () {
             try {
               var res = await api("/.netlify/functions/cms-upload", {
-                filename: file.name,
-                data: reader.result,
+                body: { filename: file.name, data: reader.result },
               });
               var data = null;
               try { data = await res.json(); } catch (err) {}
@@ -429,10 +799,13 @@
             .then(function (list) {
               pages = list;
               pageSelect.innerHTML = "";
+              var dec = document.createElement("textarea");
               pages.forEach(function (p) {
                 var o = document.createElement("option");
                 o.value = p.url;
-                o.textContent = p.title.length > 60 ? p.title.slice(0, 60) + "..." : p.title;
+                dec.innerHTML = p.title;
+                var t = dec.value;
+                o.textContent = t.length > 60 ? t.slice(0, 60) + "..." : t;
                 pageSelect.appendChild(o);
               });
               openPage(pages[0]);
