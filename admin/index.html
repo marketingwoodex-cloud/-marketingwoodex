@@ -1,11 +1,234 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="robots" content="noindex" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Woodex Content Manager</title>
+    <style>
+      :root { --navy: #0a0f1e; }
+      * { box-sizing: border-box; }
+      html, body { height: 100%; }
+      body {
+        margin: 0;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        background: var(--navy);
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+      }
+      .card {
+        width: 100%;
+        max-width: 380px;
+        background: #fff;
+        color: var(--navy);
+        border-radius: 20px;
+        padding: 36px 32px;
+        box-shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
+      }
+      .brand {
+        font-weight: 800;
+        letter-spacing: 0.22em;
+        font-size: 15px;
+        margin: 0 0 6px;
+      }
+      .sub { margin: 0 0 26px; color: #5b6478; font-size: 14px; }
+      label { display: block; font-size: 13px; font-weight: 600; margin: 14px 0 6px; }
+      input {
+        width: 100%;
+        padding: 12px 14px;
+        border: 1.5px solid #dfe3ec;
+        border-radius: 999px;
+        font-size: 15px;
+        outline: none;
+      }
+      input:focus { border-color: var(--navy); }
+      button {
+        width: 100%;
+        margin-top: 22px;
+        padding: 13px;
+        border: 0;
+        border-radius: 999px;
+        background: var(--navy);
+        color: #fff;
+        font-size: 15px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      button:disabled { opacity: 0.55; cursor: wait; }
+      .error {
+        display: none;
+        margin-top: 14px;
+        padding: 10px 14px;
+        border-radius: 12px;
+        background: #fdecec;
+        color: #a12622;
+        font-size: 13px;
+      }
+      .fallback { display: none; margin-top: 18px; font-size: 13px; color: #5b6478; }
+      .fallback code {
+        display: block;
+        word-break: break-all;
+        background: #f2f4f8;
+        border-radius: 10px;
+        padding: 10px;
+        margin: 8px 0;
+        font-size: 12px;
+        user-select: all;
+      }
+      .note { margin-top: 18px; font-size: 12px; color: #8a93a8; text-align: center; }
+    </style>
   </head>
   <body>
-    <script src="./sveltia-cms.js"></script>
+    <div class="card" id="wx-gate">
+      <p class="brand">WOODEX</p>
+      <p class="sub">Content Manager sign in</p>
+      <form id="wx-form" autocomplete="off">
+        <label for="wx-user">Username</label>
+        <input id="wx-user" name="username" type="text" autocomplete="username" required />
+        <label for="wx-pass">Password</label>
+        <input id="wx-pass" name="password" type="password" autocomplete="current-password" required />
+        <button type="submit" id="wx-submit">Sign in</button>
+        <div class="error" id="wx-error"></div>
+      </form>
+      <div class="fallback" id="wx-fallback">
+        <p>Automatic sign in did not complete. Copy this access key, open
+        <strong>Sign In Using Access Token</strong> below, and paste it there:</p>
+        <code id="wx-fallback-token"></code>
+      </div>
+      <p class="note">Changes you save here publish to the live website.</p>
+    </div>
+
+    <script>
+      (function () {
+        "use strict";
+        var form = document.getElementById("wx-form");
+        var userEl = document.getElementById("wx-user");
+        var passEl = document.getElementById("wx-pass");
+        var submitEl = document.getElementById("wx-submit");
+        var errorEl = document.getElementById("wx-error");
+        var gateEl = document.getElementById("wx-gate");
+        var fallbackEl = document.getElementById("wx-fallback");
+        var fallbackTokenEl = document.getElementById("wx-fallback-token");
+        var sveltiaLoaded = false;
+
+        function showError(msg) {
+          errorEl.textContent = msg;
+          errorEl.style.display = "block";
+        }
+        function sleep(ms) {
+          return new Promise(function (r) { setTimeout(r, ms); });
+        }
+
+        // Fill Sveltia's own "Sign In Using Access Token" dialog automatically.
+        // The token is kept only in memory for this tab.
+        async function autoSignIn(token) {
+          function visibleButtons() {
+            return Array.prototype.filter.call(
+              document.querySelectorAll("button"),
+              function (b) { return b.offsetParent !== null; }
+            );
+          }
+          var deadline = Date.now() + 30000;
+          var tokenBtn = null;
+          while (Date.now() < deadline && !tokenBtn) {
+            tokenBtn = visibleButtons().find(function (b) {
+              return /access token/i.test(b.textContent || "");
+            }) || null;
+            if (!tokenBtn) await sleep(400);
+          }
+          if (!tokenBtn) return false;
+          tokenBtn.click();
+
+          var input = null;
+          var deadline2 = Date.now() + 10000;
+          while (Date.now() < deadline2 && !input) {
+            var boxes = Array.prototype.filter.call(
+              document.querySelectorAll('input[type="text"], input:not([type]), textarea'),
+              function (el) { return el.offsetParent !== null; }
+            );
+            input = boxes[boxes.length - 1] || null;
+            if (!input) await sleep(300);
+          }
+          if (!input) return false;
+
+          // Set the value the way Svelte's binding expects.
+          var proto = input.tagName === "TEXTAREA"
+            ? HTMLTextAreaElement.prototype
+            : HTMLInputElement.prototype;
+          var setter = Object.getOwnPropertyDescriptor(proto, "value").set;
+          setter.call(input, token);
+          input.dispatchEvent(new Event("input", { bubbles: true }));
+          input.dispatchEvent(new Event("change", { bubbles: true }));
+          await sleep(400);
+
+          var scope = input.closest('[role="dialog"]') || document;
+          var ok = Array.prototype.filter.call(
+            scope.querySelectorAll("button"),
+            function (b) { return b.offsetParent !== null; }
+          ).find(function (b) {
+            var t = b.textContent || "";
+            return /sign in/i.test(t) && !/access token/i.test(t);
+          });
+          if (!ok || ok.disabled) return false;
+          ok.click();
+          return true;
+        }
+
+        function loadSveltia(token) {
+          if (sveltiaLoaded) return;
+          sveltiaLoaded = true;
+          gateEl.style.display = "none";
+          var s = document.createElement("script");
+          s.src = "./sveltia-cms.js";
+          s.onload = async function () {
+            var ok = await autoSignIn(token);
+            if (!ok) {
+              // Fallback: let the user paste the key manually.
+              gateEl.style.display = "block";
+              form.style.display = "none";
+              fallbackTokenEl.textContent = token;
+              fallbackEl.style.display = "block";
+            }
+          };
+          s.onerror = function () {
+            gateEl.style.display = "block";
+            showError("Could not load the editor. Please reload and try again.");
+          };
+          document.body.appendChild(s);
+        }
+
+        form.addEventListener("submit", async function (e) {
+          e.preventDefault();
+          errorEl.style.display = "none";
+          submitEl.disabled = true;
+          submitEl.textContent = "Signing in...";
+          try {
+            var res = await fetch("/.netlify/functions/cms-auth", {
+              method: "POST",
+              headers: { "content-type": "application/json" },
+              body: JSON.stringify({ username: userEl.value, password: passEl.value }),
+            });
+            var data = null;
+            try { data = await res.json(); } catch (err) { /* ignore */ }
+            if (!res.ok || !data || !data.token) {
+              showError((data && data.error) || "Sign in failed. Please try again.");
+              return;
+            }
+            passEl.value = "";
+            loadSveltia(data.token);
+          } catch (err) {
+            showError("Could not reach the sign in service. Check your connection.");
+          } finally {
+            submitEl.disabled = false;
+            submitEl.textContent = "Sign in";
+          }
+        });
+
+        userEl.focus();
+      })();
+    </script>
   </body>
 </html>
