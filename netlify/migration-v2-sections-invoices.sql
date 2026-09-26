@@ -73,6 +73,7 @@ create index if not exists invoices_quot_idx on invoices (quotation_id);
 
 -- ============ 4. lead pipeline statuses ============
 -- Normalize legacy statuses to the New → Contacted → Site Visit → Quoted → Won/Lost pipeline.
-update enquiries set status = 'contacted', updated_at = now() where status = 'in_progress';
-update enquiries set status = 'won', updated_at = now() where status = 'closed';
-update estimator_leads set status = 'won', updated_at = now() where status = 'closed';
+-- (enquiries / estimator_leads have no updated_at column, so it is not touched here.)
+update enquiries set status = 'contacted' where status = 'in_progress';
+update enquiries set status = 'won' where status = 'closed';
+update estimator_leads set status = 'won' where status = 'closed';
