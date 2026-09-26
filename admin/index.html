@@ -94,9 +94,8 @@
         <div class="error" id="wx-error"></div>
       </form>
       <div class="fallback" id="wx-fallback">
-        <p>Automatic sign in did not complete. Copy this access key, open
-        <strong>Sign In Using Access Token</strong> below, and paste it there:</p>
-        <code id="wx-fallback-token"></code>
+        <p>Automatic sign in did not finish.</p>
+        <button type="button" id="wx-retry" style="margin-top:4px">Try again</button>
       </div>
       <p class="note">Changes you save here publish to the live website.</p>
     </div>
@@ -111,7 +110,6 @@
         var errorEl = document.getElementById("wx-error");
         var gateEl = document.getElementById("wx-gate");
         var fallbackEl = document.getElementById("wx-fallback");
-        var fallbackTokenEl = document.getElementById("wx-fallback-token");
         var sveltiaLoaded = false;
 
         function showError(msg) {
@@ -121,24 +119,27 @@
         function sleep(ms) {
           return new Promise(function (r) { setTimeout(r, ms); });
         }
+        function visibleButtons() {
+          return Array.prototype.filter.call(
+            document.querySelectorAll("button"),
+            function (b) { return b.offsetParent !== null; }
+          );
+        }
+        function loginButton() {
+          return visibleButtons().find(function (b) {
+            return /access token/i.test(b.textContent || "");
+          }) || null;
+        }
+        function editorVisible() {
+          // The editor renders a Collections sidebar; the login screen does not.
+          return !loginButton() &&
+            /collections/i.test(document.body.innerText || "");
+        }
 
         // Fill Sveltia's own "Sign In Using Access Token" dialog automatically.
-        // The token is kept only in memory for this tab.
+        // The token is kept only in memory for this tab and never displayed.
         async function autoSignIn(token) {
-          function visibleButtons() {
-            return Array.prototype.filter.call(
-              document.querySelectorAll("button"),
-              function (b) { return b.offsetParent !== null; }
-            );
-          }
-          var deadline = Date.now() + 30000;
-          var tokenBtn = null;
-          while (Date.now() < deadline && !tokenBtn) {
-            tokenBtn = visibleButtons().find(function (b) {
-              return /access token/i.test(b.textContent || "");
-            }) || null;
-            if (!tokenBtn) await sleep(400);
-          }
+          var tokenBtn = loginButton();
           if (!tokenBtn) return false;
           tokenBtn.click();
 
@@ -201,18 +202,42 @@
           if (sveltiaLoaded) return;
           sveltiaLoaded = true;
           gateEl.style.display = "none";
+
+          function showRetry() {
+            gateEl.style.display = "block";
+            form.style.display = "none";
+            fallbackEl.style.display = "block";
+          }
+
+          async function boot() {
+            // Wait for Sveltia to render either the login screen or a
+            // restored editor session (returning visitors may already be in).
+            var deadline = Date.now() + 15000;
+            var btn = null;
+            while (Date.now() < deadline && !btn && !editorVisible()) {
+              btn = loginButton();
+              if (!btn) await sleep(400);
+            }
+            if (!btn) {
+              // Either the editor restored itself, or nothing rendered.
+              // If the editor is up we are done; otherwise offer a retry.
+              if (!editorVisible()) showRetry();
+              return;
+            }
+            var ok = await autoSignIn(token);
+            if (!ok && !editorVisible()) showRetry();
+          }
+
+          var retryEl = document.getElementById("wx-retry");
+          retryEl.addEventListener("click", function () {
+            fallbackEl.style.display = "none";
+            gateEl.style.display = "none";
+            boot();
+          });
+
           var s = document.createElement("script");
           s.src = "./sveltia-cms.js";
-          s.onload = async function () {
-            var ok = await autoSignIn(token);
-            if (!ok) {
-              // Fallback: let the user paste the key manually.
-              gateEl.style.display = "block";
-              form.style.display = "none";
-              fallbackTokenEl.textContent = token;
-              fallbackEl.style.display = "block";
-            }
-          };
+          s.onload = boot;
           s.onerror = function () {
             gateEl.style.display = "block";
             showError("Could not load the editor. Please reload and try again.");
