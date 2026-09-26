@@ -1,0 +1,33 @@
+# yaml-language-server: $schema=https://unpkg.com/@sveltia/cms/schema/sveltia-cms.json
+
+# Woodex content model. Each "file" below is one JSON document in /content/
+# that the site loader (assets/js/wx-loader.js) reads at page load.
+# Field names map to data-wx keys: home.hero_kicker -> data-wx="home.hero.kicker".
+# Fields ending in _image are treated as images by the loader.
+
+backend:
+  name: github
+  repo: OWNER/REPO # TODO: set to your GitHub repo, e.g. woodex/woodex-website
+  branch: main
+
+media_folder: assets/uploads
+public_folder: /assets/uploads
+
+collections:
+  - name: pages
+    label: Pages
+    files:
+      - name: home
+        label: Homepage
+        file: content/home.json
+        fields:
+          - { label: Hero kicker, name: hero_kicker, widget: string }
+          - { label: Hero title, name: hero_title, widget: string }
+          - { label: Hero subtitle, name: hero_sub, widget: text }
+      - name: insights
+        label: Insights
+        file: content/insights.json
+        fields:
+          - { label: Hero kicker, name: hero_kicker, widget: string }
+          - { label: Hero title, name: hero_title, widget: string }
+          - { label: Hero intro, name: hero_sub, widget: text }
