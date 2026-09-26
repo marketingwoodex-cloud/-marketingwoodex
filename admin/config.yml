@@ -7,7 +7,7 @@
 
 backend:
   name: github
-  repo: OWNER/REPO # TODO: set to your GitHub repo, e.g. woodex/woodex-website
+  repo: marketingwoodex-cloud/-marketingwoodex
   branch: main
 
 media_folder: assets/uploads
