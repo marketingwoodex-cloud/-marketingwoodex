@@ -152,6 +152,9 @@
                 <a href="#" class="nav-link" data-view="leads"><i class="nav-icon bi bi-calculator"></i><p>Estimator Leads</p></a>
               </li>
               <li class="nav-item">
+                <a href="#" class="nav-link" data-view="quotations"><i class="nav-icon bi bi-file-earmark-text"></i><p>Quotations</p></a>
+              </li>
+              <li class="nav-item">
                 <a href="#" class="nav-link" data-view="soon" data-soon="Blog Posts"><i class="nav-icon bi bi-newspaper"></i><p>Blog Posts</p></a>
               </li>
               <li class="nav-header">CONTENT</li>
@@ -266,6 +269,29 @@
                 <table class="table table-hover mb-0">
                   <thead><tr><th>Name</th><th>Phone</th><th>Service</th><th>Size</th><th>Estimate</th><th>Received</th><th>Status</th></tr></thead>
                   <tbody id="lead-body"><tr><td colspan="7" class="text-center text-muted py-4">Loading…</td></tr></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============ QUOTATIONS ============ -->
+        <section class="wx-view app-content" id="view-quotations" hidden>
+          <div class="container-fluid">
+            <div class="d-flex flex-wrap align-items-center gap-2 mb-3" id="quot-filters">
+              <button class="btn btn-sm btn-dark" data-filter="">All</button>
+              <button class="btn btn-sm btn-outline-dark" data-filter="draft">Draft</button>
+              <button class="btn btn-sm btn-outline-dark" data-filter="sent">Sent</button>
+              <button class="btn btn-sm btn-outline-dark" data-filter="approved">Approved</button>
+              <button class="btn btn-sm btn-outline-dark" data-filter="rejected">Rejected</button>
+              <span class="ms-auto text-muted small" id="quot-count"></span>
+              <button class="btn btn-sm btn-dark" id="quot-new"><i class="bi bi-plus-lg"></i> New quotation</button>
+            </div>
+            <div class="card">
+              <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                  <thead><tr><th>Ref</th><th>Client</th><th>Project</th><th>Total</th><th>Status</th><th>Created</th></tr></thead>
+                  <tbody id="quot-body"><tr><td colspan="6" class="text-center text-muted py-4">Loading…</td></tr></tbody>
                 </table>
               </div>
             </div>
@@ -405,7 +431,76 @@
       </div>
     </div>
 
+    <!-- ============ quotation builder modal ============ -->
+    <div class="modal fade" id="quotModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="q-title">New quotation</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="row g-3 mb-4">
+              <div class="col-md-4"><label class="form-label fw-bold" for="q-client">Client name *</label><input class="form-control" id="q-client" /></div>
+              <div class="col-md-4"><label class="form-label fw-bold" for="q-phone">Phone</label><input class="form-control" id="q-phone" /></div>
+              <div class="col-md-4"><label class="form-label fw-bold" for="q-email">Email</label><input class="form-control" id="q-email" /></div>
+              <div class="col-md-4"><label class="form-label fw-bold" for="q-project">Project</label><input class="form-control" id="q-project" placeholder="e.g. Renovation of office interior" /></div>
+              <div class="col-md-4"><label class="form-label fw-bold" for="q-site">Site</label><input class="form-control" id="q-site" placeholder="e.g. The Platinum Ventures" /></div>
+              <div class="col-md-4"><label class="form-label fw-bold" for="q-location">Location</label><input class="form-control" id="q-location" placeholder="e.g. Gulberg, Lahore" /></div>
+              <div class="col-md-6"><label class="form-label fw-bold" for="q-jobtitle">Title</label><input class="form-control" id="q-jobtitle" value="Interior" /></div>
+            </div>
+            <h6 class="fw-bold">Line items</h6>
+            <div class="table-responsive">
+              <table class="table table-sm align-middle">
+                <thead><tr><th style="width:44%">Description</th><th>Qty</th><th>Unit</th><th>Rate (Rs)</th><th>Amount</th><th></th></tr></thead>
+                <tbody id="q-items"></tbody>
+              </table>
+            </div>
+            <div class="d-flex flex-wrap gap-2 mb-4">
+              <select class="form-select" id="q-catalog" style="max-width:340px"></select>
+              <button type="button" class="btn btn-outline-dark btn-sm" id="q-add-catalog">Add from rate book</button>
+              <button type="button" class="btn btn-outline-dark btn-sm" id="q-add-row">Add blank row</button>
+            </div>
+            <div class="row g-3 mb-4">
+              <div class="col-md-4"><label class="form-label fw-bold">Subtotal</label><input class="form-control" id="q-subtotal" readonly /></div>
+              <div class="col-md-4"><label class="form-label fw-bold" for="q-discount">Discount (Rs)</label><input class="form-control" id="q-discount" type="number" min="0" value="0" /></div>
+              <div class="col-md-4"><label class="form-label fw-bold">Total</label><input class="form-control fw-bold" id="q-total" readonly /></div>
+            </div>
+            <div class="mb-3"><label class="form-label fw-bold" for="q-terms">Terms</label><textarea class="form-control" id="q-terms" rows="3"></textarea></div>
+            <div class="mb-3"><label class="form-label fw-bold" for="q-notes">Internal notes</label><textarea class="form-control" id="q-notes" rows="2" placeholder="Not printed on the quotation…"></textarea></div>
+            <div class="alert alert-danger py-2" id="q-error" style="display:none"></div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-dark" id="q-save">Save quotation</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ quotation preview modal ============ -->
+    <div class="modal fade" id="quotPrevModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Quotation <span id="qp-ref"></span></h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body" id="qp-body"></div>
+          <div class="modal-footer flex-wrap gap-2">
+            <button type="button" class="btn btn-outline-dark" id="qp-whatsapp"><i class="bi bi-whatsapp"></i> WhatsApp</button>
+            <button type="button" class="btn btn-outline-dark" id="qp-print"><i class="bi bi-printer"></i> Print</button>
+            <button type="button" class="btn btn-outline-dark" id="qp-edit"><i class="bi bi-pencil"></i> Edit</button>
+            <button type="button" class="btn btn-dark" id="qp-sent">Mark sent</button>
+            <button type="button" class="btn btn-outline-danger" id="qp-delete">Delete</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <input type="file" id="wx-upload-input" accept="image/png,image/jpeg,image/gif,image/webp,image/svg+xml" />
+    <script src="/assets/js/estimator-rates.js"></script>
     <script src="./vendor/grapes.min.js"></script>
     <script src="./vendor/adminlte/bootstrap.bundle.min.js"></script>
     <script src="./vendor/adminlte/adminlte.min.js"></script>
@@ -437,7 +532,7 @@
           if (d < 86400e3) return Math.round(d / 3600e3) + "h ago";
           return Math.round(d / 86400e3) + "d ago";
         }
-        var STATUS_BADGE = { new: "warning", in_progress: "info", contacted: "info", quoted: "primary", closed: "success" };
+        var STATUS_BADGE = { new: "warning", in_progress: "info", contacted: "info", quoted: "primary", closed: "success", draft: "secondary", sent: "info", approved: "success", rejected: "danger" };
         function statusBadge(s) {
           return '<span class="badge text-bg-' + (STATUS_BADGE[s] || "secondary") + ' wx-status">' + esc(String(s).replace("_", " ")) + "</span>";
         }
@@ -487,7 +582,7 @@
         });
 
         /* ================= view router ================= */
-        var TITLES = { dashboard: "Dashboard", enquiries: "Enquiries", leads: "Estimator Leads", builder: "Pages · Page Builder", soon: "Coming soon" };
+        var TITLES = { dashboard: "Dashboard", enquiries: "Enquiries", leads: "Estimator Leads", quotations: "Quotations", builder: "Pages · Page Builder", soon: "Coming soon" };
         var builderStarted = false;
         function showView(name, soonLabel) {
           document.querySelectorAll(".wx-view").forEach(function (v) { v.hidden = true; });
@@ -505,6 +600,7 @@
           if (name === "dashboard") loadDashboard();
           if (name === "enquiries") loadEnquiries(currentFilter);
           if (name === "leads") loadLeads(leadFilter);
+          if (name === "quotations") loadQuotations(quotFilter);
           if (name === "builder") {
             document.getElementById("wx-studio").classList.add("open");
             initStudio();
@@ -752,6 +848,275 @@
           if (tr) openLeadModal(tr.getAttribute("data-id"));
         });
         document.getElementById("l-save").addEventListener("click", saveLeadModal);
+
+
+        /* ================= quotations ================= */
+        var quotFilter = "", quotCache = [], quotEditId = null, quotModal = null, quotPrevModal = null, quotPrevRow = null;
+        var QUOT_UNITS = ["job", "nos", "sft", "rft"];
+
+        function quotTermsDefault() {
+          var R = window.WX_RATES;
+          return R && R.terms ? R.terms.join("\n") : "";
+        }
+        function buildCatalogSelect() {
+          var sel = document.getElementById("q-catalog");
+          sel.innerHTML = "";
+          var R = window.WX_RATES, cats = {};
+          (R && R.catalog || []).forEach(function (it, i) {
+            (cats[it.cat] = cats[it.cat] || []).push({ it: it, i: i });
+          });
+          Object.keys(cats).forEach(function (c) {
+            var g = document.createElement("optgroup");
+            g.label = c;
+            cats[c].forEach(function (e) {
+              var o = document.createElement("option");
+              o.value = e.i;
+              o.textContent = e.it.desc + " — Rs " + Number(e.it.rate).toLocaleString("en-PK") + "/" + e.it.unit;
+              g.appendChild(o);
+            });
+            sel.appendChild(g);
+          });
+        }
+        function addQuotRow(item) {
+          item = item || {};
+          var tr = document.createElement("tr");
+          tr.innerHTML =
+            '<td><input class="form-control form-control-sm q-desc" value="" /></td>' +
+            '<td><input class="form-control form-control-sm q-qty" type="number" min="0" step="any" style="width:80px" /></td>' +
+            '<td><select class="form-select form-select-sm q-unit">' +
+            QUOT_UNITS.map(function (u) { return '<option value="' + u + '">' + u + "</option>"; }).join("") + "</select></td>" +
+            '<td><input class="form-control form-control-sm q-rate" type="number" min="0" step="any" style="width:120px" /></td>' +
+            '<td class="q-amt fw-bold"></td>' +
+            '<td><button type="button" class="btn btn-sm btn-outline-danger q-del" title="Remove row">&times;</button></td>';
+          tr.querySelector(".q-desc").value = item.desc || "";
+          tr.querySelector(".q-qty").value = item.qty != null ? item.qty : 1;
+          tr.querySelector(".q-unit").value = item.unit || "job";
+          tr.querySelector(".q-rate").value = item.rate != null ? item.rate : "";
+          tr.querySelector(".q-del").onclick = function () { tr.remove(); recalcQuot(); };
+          tr.querySelectorAll("input,select").forEach(function (el) {
+            el.addEventListener("input", recalcQuot);
+          });
+          document.getElementById("q-items").appendChild(tr);
+          recalcQuot();
+        }
+        function readQuotItems() {
+          var rows = [];
+          document.querySelectorAll("#q-items tr").forEach(function (tr) {
+            rows.push({
+              desc: tr.querySelector(".q-desc").value.trim(),
+              qty: Number(tr.querySelector(".q-qty").value) || 0,
+              unit: tr.querySelector(".q-unit").value,
+              rate: Number(tr.querySelector(".q-rate").value) || 0,
+            });
+          });
+          return rows.filter(function (r) { return r.desc; });
+        }
+        function recalcQuot() {
+          var sub = 0;
+          document.querySelectorAll("#q-items tr").forEach(function (tr) {
+            var amt = (Number(tr.querySelector(".q-qty").value) || 0) * (Number(tr.querySelector(".q-rate").value) || 0);
+            sub += amt;
+            tr.querySelector(".q-amt").textContent = fmtPKR(amt);
+          });
+          var disc = Math.min(Number(document.getElementById("q-discount").value) || 0, sub);
+          document.getElementById("q-subtotal").value = fmtPKR(sub);
+          document.getElementById("q-total").value = fmtPKR(sub - disc);
+        }
+        function openQuotBuilder(id) {
+          quotEditId = id || null;
+          var r = id ? quotCache.find(function (x) { return x.id === id; }) : null;
+          document.getElementById("q-title").textContent = r ? "Edit quotation " + r.ref_no : "New quotation";
+          document.getElementById("q-client").value = r ? r.client_name || "" : "";
+          document.getElementById("q-phone").value = r ? r.phone || "" : "";
+          document.getElementById("q-email").value = r ? r.email || "" : "";
+          document.getElementById("q-project").value = r ? r.project || "" : "";
+          document.getElementById("q-site").value = r ? r.site || "" : "";
+          document.getElementById("q-location").value = r ? r.location || "" : "";
+          document.getElementById("q-jobtitle").value = r ? r.title || "Interior" : "Interior";
+          document.getElementById("q-items").innerHTML = "";
+          (r && r.items && r.items.length ? r.items : [{}]).forEach(addQuotRow);
+          document.getElementById("q-discount").value = r ? r.discount || 0 : 0;
+          document.getElementById("q-terms").value = r ? r.terms || "" : quotTermsDefault();
+          document.getElementById("q-notes").value = r ? r.notes || "" : "";
+          document.getElementById("q-error").style.display = "none";
+          recalcQuot();
+          if (!quotModal) quotModal = new bootstrap.Modal(document.getElementById("quotModal"));
+          quotModal.show();
+        }
+        async function saveQuot() {
+          var errEl = document.getElementById("q-error");
+          errEl.style.display = "none";
+          var btn = document.getElementById("q-save");
+          var items = readQuotItems();
+          var payload = {
+            client_name: document.getElementById("q-client").value.trim(),
+            phone: document.getElementById("q-phone").value.trim(),
+            email: document.getElementById("q-email").value.trim(),
+            project: document.getElementById("q-project").value.trim(),
+            site: document.getElementById("q-site").value.trim(),
+            location: document.getElementById("q-location").value.trim(),
+            title: document.getElementById("q-jobtitle").value.trim() || "Interior",
+            items: items,
+            discount: Number(document.getElementById("q-discount").value) || 0,
+            terms: document.getElementById("q-terms").value.trim(),
+            notes: document.getElementById("q-notes").value.trim(),
+          };
+          if (payload.client_name.length < 2) { errEl.textContent = "Client name is required."; errEl.style.display = "block"; return; }
+          if (!items.length) { errEl.textContent = "Add at least one line item."; errEl.style.display = "block"; return; }
+          btn.disabled = true;
+          try {
+            var res, data;
+            if (quotEditId) {
+              res = await api("/.netlify/functions/cms-quotations", { method: "PATCH", body: Object.assign({ id: quotEditId }, payload) });
+            } else {
+              res = await api("/.netlify/functions/cms-quotations", { body: payload });
+            }
+            data = await res.json().catch(function () { return null; });
+            if (!res.ok || !data || !data.ok) throw new Error((data && data.error) || "save failed");
+            quotModal.hide();
+            loadQuotations(quotFilter);
+          } catch (err) {
+            errEl.textContent = err.message;
+            errEl.style.display = "block";
+          } finally {
+            btn.disabled = false;
+          }
+        }
+        function wireQuotFilters() {
+          document.getElementById("quot-filters").addEventListener("click", function (e) {
+            var b = e.target.closest("[data-filter]");
+            if (!b) return;
+            quotFilter = b.getAttribute("data-filter");
+            this.querySelectorAll("[data-filter]").forEach(function (x) {
+              x.className = "btn btn-sm " + (x === b ? "btn-dark" : "btn-outline-dark");
+            });
+            loadQuotations(quotFilter);
+          });
+        }
+        async function loadQuotations(filter) {
+          var tb = document.getElementById("quot-body");
+          tb.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">Loading…</td></tr>';
+          try {
+            var res = await api("/.netlify/functions/cms-quotations" + (filter ? "?status=" + filter : ""), { method: "GET" });
+            var data = await res.json();
+            if (!res.ok || !data || !data.quotations) throw new Error("load failed");
+            quotCache = data.quotations;
+            document.getElementById("quot-count").textContent = data.quotations.length + " shown";
+            if (!data.quotations.length) {
+              tb.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">No quotations yet. Create the first one.</td></tr>';
+              return;
+            }
+            tb.innerHTML = data.quotations.map(function (r) {
+              return '<tr data-id="' + r.id + '" style="cursor:pointer"><td class="fw-bold">' + esc(r.ref_no) +
+                "</td><td>" + esc(r.client_name) + "</td><td>" + esc(r.project || "–") +
+                "</td><td>" + esc(fmtPKR(r.total)) + "</td><td>" + statusBadge(r.status) +
+                "</td><td>" + timeAgo(r.created_at) + "</td></tr>";
+            }).join("");
+          } catch (err) {
+            tb.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">Could not load quotations. The quotations table may not exist yet.</td></tr>';
+          }
+        }
+        function quotDocHtml(r) {
+          var rows = (r.items || []).map(function (it, i) {
+            return "<tr><td>" + (i + 1) + "</td><td>" + esc(it.desc) + "</td><td>" + esc(it.qty) +
+              "</td><td>" + esc(it.unit) + "</td><td>" + Number(it.rate).toLocaleString("en-PK") +
+              "</td><td>" + Number(it.amount).toLocaleString("en-PK") + "</td></tr>";
+          }).join("");
+          var terms = (r.terms || "").split("\n").filter(function (t) { return t.trim(); })
+            .map(function (t) { return "<li>" + esc(t.trim()) + "</li>"; }).join("");
+          return (
+            '<div style="font-family:Georgia,serif;max-width:760px;margin:0 auto;color:#111">' +
+            '<div style="text-align:center;border-bottom:3px solid #0a0f1e;padding-bottom:14px;margin-bottom:18px">' +
+            '<div style="font-size:26px;font-weight:bold;letter-spacing:2px">WOODEX INTERIOR</div>' +
+            '<div style="font-size:12px;color:#555">M-71, Zainab Tower, Model Town Link Road, Lahore · +92 322 4000768 · info@woodex.com.pk</div></div>' +
+            '<table style="width:100%;font-size:14px;margin-bottom:14px"><tr>' +
+            '<td><strong>Ref:</strong> ' + esc(r.ref_no) + '</td>' +
+            '<td style="text-align:right"><strong>Date:</strong> ' + new Date(r.created_at).toLocaleDateString("en-PK") + '</td></tr>' +
+            (r.project ? '<tr><td colspan="2"><strong>Project:</strong> ' + esc(r.project) + '</td></tr>' : '') +
+            (r.site ? '<tr><td colspan="2"><strong>Site:</strong> ' + esc(r.site) + '</td></tr>' : '') +
+            (r.location ? '<tr><td colspan="2"><strong>Location:</strong> ' + esc(r.location) + '</td></tr>' : '') +
+            '<tr><td colspan="2"><strong>Title:</strong> ' + esc(r.title || "Interior") + '</td></tr>' +
+            (r.client_name ? '<tr><td colspan="2"><strong>Client:</strong> ' + esc(r.client_name) + (r.phone ? ' · ' + esc(r.phone) : '') + '</td></tr>' : '') +
+            '</table>' +
+            '<table style="width:100%;border-collapse:collapse;font-size:13.5px">' +
+            '<thead><tr style="background:#0a0f1e;color:#fff">' +
+            '<th style="padding:8px;border:1px solid #0a0f1e">Sr.#</th><th style="padding:8px;border:1px solid #0a0f1e;text-align:left">Description</th>' +
+            '<th style="padding:8px;border:1px solid #0a0f1e">Qty</th><th style="padding:8px;border:1px solid #0a0f1e">Unit</th>' +
+            '<th style="padding:8px;border:1px solid #0a0f1e">Rate</th><th style="padding:8px;border:1px solid #0a0f1e">Amount</th></tr></thead>' +
+            '<tbody>' + rows + '</tbody>' +
+            '<tfoot><tr><td colspan="5" style="padding:8px;border:1px solid #999;text-align:right"><strong>Total</strong></td>' +
+            '<td style="padding:8px;border:1px solid #999"><strong>' + Number(r.total).toLocaleString("en-PK") + '</strong></td></tr></tfoot></table>' +
+            (terms ? '<div style="font-size:13px;margin-top:14px"><strong>Terms:</strong><ul>' + terms + '</ul></div>' : '') +
+            '<div style="margin-top:26px;font-size:14px">Regards,<br><strong>Imtiaz Ahmad</strong><br>Woodex Interior</div>' +
+            '</div>'
+          );
+        }
+        function openQuotPreview(id) {
+          var r = quotCache.find(function (x) { return x.id === id; });
+          if (!r) return;
+          quotPrevRow = r;
+          document.getElementById("qp-ref").textContent = r.ref_no;
+          document.getElementById("qp-body").innerHTML = quotDocHtml(r);
+          document.getElementById("qp-edit").style.display = (r.status === "draft" || r.status === "sent") ? "" : "none";
+          document.getElementById("qp-sent").style.display = r.status === "draft" ? "" : "none";
+          document.getElementById("qp-delete").style.display = r.status === "draft" ? "" : "none";
+          var tel = (r.phone || "").replace(/[^+\d]/g, "").replace(/^\+/, "");
+          var waText = encodeURIComponent("Assalam-o-Alaikum " + r.client_name + ", please find your Woodex quotation " +
+            r.ref_no + (r.project ? " for " + r.project : "") + " totalling " + fmtPKR(r.total) + ". " +
+            "50% advance applies with the work order. Let me know if you have any questions. — Imtiaz Ahmad, Woodex Interior");
+          document.getElementById("qp-whatsapp").onclick = function () {
+            window.open(tel ? "https://wa.me/" + tel + "?text=" + waText : "https://wa.me/?text=" + waText, "_blank");
+          };
+          if (!quotPrevModal) quotPrevModal = new bootstrap.Modal(document.getElementById("quotPrevModal"));
+          quotPrevModal.show();
+        }
+        function quotPrint() {
+          var r = quotPrevRow;
+          if (!r) return;
+          var w = window.open("", "_blank");
+          w.document.write('<!DOCTYPE html><html><head><title>Quotation ' + esc(r.ref_no) + '</title>' +
+            '<style>@media print{body{margin:0}}</style></head><body>' + quotDocHtml(r) +
+            '<script>window.onload=function(){window.print();}<\/script></body></html>');
+          w.document.close();
+        }
+        async function quotSetStatus(id, status) {
+          var res = await api("/.netlify/functions/cms-quotations", { method: "PATCH", body: { id: id, status: status } });
+          var data = await res.json().catch(function () { return null; });
+          if (!res.ok || !data || !data.ok) throw new Error((data && data.error) || "update failed");
+        }
+        wireQuotFilters();
+        buildCatalogSelect();
+        document.getElementById("quot-new").addEventListener("click", function () { openQuotBuilder(null); });
+        document.getElementById("q-add-row").addEventListener("click", function () { addQuotRow({}); });
+        document.getElementById("q-add-catalog").addEventListener("click", function () {
+          var R = window.WX_RATES, it = R && R.catalog[Number(document.getElementById("q-catalog").value)];
+          if (it) addQuotRow({ desc: it.desc, qty: 1, unit: it.unit, rate: it.rate });
+        });
+        document.getElementById("q-discount").addEventListener("input", recalcQuot);
+        document.getElementById("q-save").addEventListener("click", saveQuot);
+        document.getElementById("quot-body").addEventListener("click", function (e) {
+          var tr = e.target.closest("tr[data-id]");
+          if (tr) openQuotPreview(tr.getAttribute("data-id"));
+        });
+        document.getElementById("qp-print").addEventListener("click", quotPrint);
+        document.getElementById("qp-edit").addEventListener("click", function () {
+          quotPrevModal.hide();
+          openQuotBuilder(quotPrevRow.id);
+        });
+        document.getElementById("qp-sent").addEventListener("click", async function () {
+          try { await quotSetStatus(quotPrevRow.id, "sent"); quotPrevRow.status = "sent"; quotPrevModal.hide(); loadQuotations(quotFilter); }
+          catch (err) { alert(err.message); }
+        });
+        document.getElementById("qp-delete").addEventListener("click", async function () {
+          if (!confirm("Delete quotation " + quotPrevRow.ref_no + "? This cannot be undone.")) return;
+          try {
+            var res = await api("/.netlify/functions/cms-quotations", { method: "DELETE", body: { id: quotPrevRow.id } });
+            var data = await res.json().catch(function () { return null; });
+            if (!res.ok || !data || !data.ok) throw new Error((data && data.error) || "delete failed");
+            quotPrevModal.hide();
+            loadQuotations(quotFilter);
+          } catch (err) { alert(err.message); }
+        });
 
         /* ================= page builder (GrapesJS) ================= */
         var editor = null, pages = [], current = null;
