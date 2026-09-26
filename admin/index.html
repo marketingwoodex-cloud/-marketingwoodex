@@ -174,7 +174,7 @@
                 <a href="#" class="nav-link" data-view="media"><i class="nav-icon bi bi-images"></i><p>Media Library</p></a>
               </li>
               <li class="nav-item">
-                <a href="#" class="nav-link" data-view="soon" data-soon="Team"><i class="nav-icon bi bi-people"></i><p>Team</p></a>
+                <a href="#" class="nav-link" data-view="team"><i class="nav-icon bi bi-people"></i><p>Team</p></a>
               </li>
               <li class="nav-item">
                 <a href="#" class="nav-link" data-view="soon" data-soon="Settings"><i class="nav-icon bi bi-gear"></i><p>Settings</p></a>
@@ -365,6 +365,24 @@
               </div>
             </div>
             <p class="text-muted small mt-2">Publishing writes the article to <code>/insights/&lt;slug&gt;/</code> on the live site and refreshes the Insights index.</p>
+          </div>
+        </section>
+
+        <!-- ============ TEAM ============ -->
+        <section class="wx-view app-content" id="view-team" hidden>
+          <div class="container-fluid">
+            <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+              <input class="form-control form-control-sm" id="team-search" style="max-width:240px" placeholder="Search team…" />
+              <span class="ms-auto text-muted small" id="team-count"></span>
+              <button class="btn btn-sm btn-outline-dark" id="team-samples">Load samples</button>
+              <button class="btn btn-sm btn-dark" id="team-new"><i class="bi bi-plus-lg"></i> Add member</button>
+            </div>
+            <div class="table-responsive">
+              <table class="table table-hover align-middle">
+                <thead><tr><th></th><th>Name</th><th>Role</th><th>Phone</th><th class="text-end">Actions</th></tr></thead>
+                <tbody id="team-rows"><tr><td colspan="5" class="text-muted">Loading…</td></tr></tbody>
+              </table>
+            </div>
           </div>
         </section>
 
@@ -764,6 +782,49 @@
       </div>
     </div>
 
+    <!-- ============ team modal ============ -->
+    <div class="modal fade" id="teamModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="team-modal-title">Add team member</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <input type="hidden" id="t-id" />
+            <div class="row g-3">
+              <div class="col-12">
+                <label class="form-label">Name</label>
+                <input class="form-control" id="t-name" />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Role</label>
+                <input class="form-control" id="t-role" placeholder="e.g. Interior Designer" />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Phone</label>
+                <input class="form-control" id="t-phone" placeholder="e.g. 0300 1234567" />
+              </div>
+              <div class="col-12">
+                <label class="form-label">Photo</label>
+                <input class="form-control" id="t-photo" placeholder="/assets/uploads/…" />
+              </div>
+              <div class="col-12 d-flex align-items-center gap-2">
+                <input type="file" id="t-photo-file" accept="image/*" class="d-none" />
+                <button type="button" class="btn btn-outline-dark" id="t-photo-upload"><i class="bi bi-upload"></i> Upload</button>
+                <button type="button" class="btn btn-outline-dark" id="t-photo-library" title="Pick from the media library"><i class="bi bi-images"></i> Library</button>
+                <img id="t-photo-preview" alt="" style="height:44px;width:44px;object-fit:cover;border-radius:50%;display:none" />
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline-dark" data-bs-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-dark" id="team-save">Save</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- ============ project modal ============ -->
     <div class="modal fade" id="projectModal" tabindex="-1" aria-hidden="true">
       <div class="modal-dialog modal-lg">
@@ -921,7 +982,7 @@
         });
 
         /* ================= view router ================= */
-        var TITLES = { dashboard: "Dashboard", enquiries: "Enquiries", leads: "Estimator Leads", quotations: "Quotations", templates: "Quotation Templates", invoices: "Invoices", blog: "Blog Posts", media: "Media Library", projects: "Projects", builder: "Pages · Page Builder", soon: "Coming soon" };
+        var TITLES = { dashboard: "Dashboard", enquiries: "Enquiries", leads: "Estimator Leads", quotations: "Quotations", templates: "Quotation Templates", invoices: "Invoices", blog: "Blog Posts", media: "Media Library", projects: "Projects", team: "Team", builder: "Pages · Page Builder", soon: "Coming soon" };
         var builderStarted = false;
         function showView(name, soonLabel) {
           document.querySelectorAll(".wx-view").forEach(function (v) { v.hidden = true; });
@@ -945,6 +1006,7 @@
           if (name === "blog") loadBlog(blogFilter);
           if (name === "media") loadMedia();
           if (name === "projects") loadProjects();
+          if (name === "team") loadTeam();
           if (name === "builder") {
             document.getElementById("wx-studio").classList.add("open");
             initStudio();
@@ -2515,6 +2577,165 @@
           if (mediaPickerModal) mediaPickerModal.hide();
           if (mediaPickerOnPick) mediaPickerOnPick(it);
           else copyMediaUrl(it.url);
+        });
+
+        /* ================= team ================= */
+        var teamMembers = [];
+        var teamModal = null;
+        var teamEditingId = null;
+
+        var TEAM_SAMPLES = [
+          { name: "SAMPLE - Project Manager", role: "Project Manager", phone: "+92 300 0000000", photo: "" },
+          { name: "SAMPLE - Interior Designer", role: "Interior Designer", phone: "+92 300 0000000", photo: "" },
+          { name: "SAMPLE - Site Supervisor", role: "Site Supervisor", phone: "+92 300 0000000", photo: "" },
+        ];
+
+        function teamInitials(name) {
+          return String(name || "?").trim().split(/\s+/).slice(0, 2).map(function (w) { return w[0]; }).join("").toUpperCase();
+        }
+
+        function teamAvatar(m, size) {
+          size = size || 40;
+          if (m.photo) return '<img src="' + esc(m.photo) + '" alt="" style="width:' + size + "px;height:" + size + 'px;object-fit:cover;border-radius:50%" />';
+          return '<span class="d-inline-flex align-items-center justify-content-center rounded-circle text-white" style="width:' + size + "px;height:" + size + 'px;background:#0a0f1e;font-size:' + Math.round(size * 0.35) + 'px">' + esc(teamInitials(m.name)) + "</span>";
+        }
+
+        function loadTeam() {
+          var tb = document.getElementById("team-rows");
+          tb.innerHTML = '<tr><td colspan="5" class="text-muted">Loading…</td></tr>';
+          api("/.netlify/functions/cms-team", { method: "GET" })
+            .then(function (r) { return r.json().then(function (j) { return { s: r.status, j: j }; }); })
+            .then(function (res) {
+              if (res.s !== 200) { tb.innerHTML = '<tr><td colspan="5" class="text-danger">Could not load team.</td></tr>'; return; }
+              teamMembers = res.j.team || [];
+              renderTeam();
+            })
+            .catch(function () { tb.innerHTML = '<tr><td colspan="5" class="text-danger">Could not load team.</td></tr>'; });
+        }
+
+        function renderTeam() {
+          var tb = document.getElementById("team-rows");
+          var q = (document.getElementById("team-search").value || "").toLowerCase().trim();
+          var rows = teamMembers.filter(function (m) { return !q || (m.name || "").toLowerCase().indexOf(q) !== -1; });
+          document.getElementById("team-count").textContent = rows.length + " member" + (rows.length === 1 ? "" : "s");
+          if (!rows.length) { tb.innerHTML = '<tr><td colspan="5" class="text-muted">No team members found.</td></tr>'; return; }
+          tb.innerHTML = rows.map(function (m) {
+            return "<tr><td>" + teamAvatar(m) + "</td>" +
+              "<td><strong>" + esc(m.name) + "</strong></td>" +
+              "<td>" + esc(m.role || "—") + "</td>" +
+              "<td>" + (m.phone ? '<a href="tel:' + esc(m.phone.replace(/\s+/g, "")) + '">' + esc(m.phone) + "</a>" : "—") + "</td>" +
+              '<td class="text-end"><div class="btn-group btn-group-sm">' +
+              '<button class="btn btn-outline-dark" data-tact="edit" data-id="' + m.id + '">Edit</button>' +
+              '<button class="btn btn-outline-danger" data-tact="delete" data-id="' + m.id + '">Delete</button>' +
+              "</div></td></tr>";
+          }).join("");
+        }
+
+        function openTeamModal(m) {
+          teamEditingId = m ? m.id : null;
+          document.getElementById("team-modal-title").textContent = m ? "Edit team member" : "Add team member";
+          document.getElementById("t-name").value = m ? m.name : "";
+          document.getElementById("t-role").value = m ? (m.role || "") : "";
+          document.getElementById("t-phone").value = m ? (m.phone || "") : "";
+          document.getElementById("t-photo").value = m ? (m.photo || "") : "";
+          teamPhotoPreview();
+          if (!teamModal) teamModal = new bootstrap.Modal(document.getElementById("teamModal"));
+          teamModal.show();
+        }
+
+        function teamPhotoPreview() {
+          var url = document.getElementById("t-photo").value.trim();
+          var pv = document.getElementById("t-photo-preview");
+          if (/^\/[A-Za-z0-9]/.test(url)) { pv.src = url; pv.style.display = ""; }
+          else pv.style.display = "none";
+        }
+
+        function teamSetPhoto(url) {
+          document.getElementById("t-photo").value = url;
+          teamPhotoPreview();
+          registerMedia(url, url.split("/").pop(), null).catch(function () {});
+        }
+
+        function teamSave() {
+          var name = document.getElementById("t-name").value.trim();
+          if (name.length < 2) { alert("Name is required."); return; }
+          var payload = {
+            name: name,
+            role: document.getElementById("t-role").value.trim(),
+            phone: document.getElementById("t-phone").value.trim(),
+            photo: document.getElementById("t-photo").value.trim(),
+          };
+          var btn = document.getElementById("team-save");
+          btn.disabled = true;
+          var call = teamEditingId
+            ? api("/.netlify/functions/cms-team", { method: "PATCH", body: Object.assign({ id: teamEditingId }, payload) })
+            : api("/.netlify/functions/cms-team", { method: "POST", body: payload });
+          call
+            .then(function (r) { return r.json().then(function (j) { return { s: r.status, j: j }; }); })
+            .then(function (res) {
+              btn.disabled = false;
+              if (res.s !== 200) { alert(res.j.error || "Could not save."); return; }
+              if (teamModal) teamModal.hide();
+              loadTeam();
+            })
+            .catch(function () { btn.disabled = false; alert("Could not save."); });
+        }
+
+        document.getElementById("team-new").addEventListener("click", function () { openTeamModal(null); });
+        document.getElementById("team-save").addEventListener("click", teamSave);
+        document.getElementById("team-search").addEventListener("input", renderTeam);
+        document.getElementById("t-photo").addEventListener("input", teamPhotoPreview);
+        document.getElementById("t-photo-upload").addEventListener("click", function () {
+          document.getElementById("t-photo-file").click();
+        });
+        document.getElementById("t-photo-file").addEventListener("change", function () {
+          var f = this.files && this.files[0];
+          this.value = "";
+          if (!f) return;
+          var rd = new FileReader();
+          rd.onload = function () {
+            api("/.netlify/functions/cms-upload", { body: { filename: f.name, data: rd.result } })
+              .then(function (r) { return r.json(); })
+              .then(function (j) {
+                if (!j.url) throw new Error(j.error || "Upload failed.");
+                teamSetPhoto(j.url);
+              })
+              .catch(function (err) { alert(err.message || "Upload failed."); });
+          };
+          rd.readAsDataURL(f);
+        });
+        document.getElementById("t-photo-library").addEventListener("click", function () {
+          openMediaPicker(function (item) { teamSetPhoto(item.url); }, "Click an image to use it as the photo.");
+        });
+        document.getElementById("team-samples").addEventListener("click", function () {
+          var btn = this;
+          btn.disabled = true;
+          var missing = TEAM_SAMPLES.filter(function (s) {
+            return !teamMembers.some(function (m) { return m.name === s.name; });
+          });
+          if (!missing.length) { alert("Sample members are already loaded."); btn.disabled = false; return; }
+          var chain = Promise.resolve();
+          missing.forEach(function (s) {
+            chain = chain.then(function () {
+              return api("/.netlify/functions/cms-team", { method: "POST", body: s }).then(function (r) { return r.json(); });
+            });
+          });
+          chain.then(function () { btn.disabled = false; loadTeam(); alert(missing.length + " sample member(s) loaded."); })
+            .catch(function () { btn.disabled = false; alert("Could not load samples."); });
+        });
+        document.getElementById("team-rows").addEventListener("click", function (e) {
+          var b = e.target.closest("[data-tact]");
+          if (!b) return;
+          var m = teamMembers.find(function (x) { return x.id === b.getAttribute("data-id"); });
+          if (!m) return;
+          var act = b.getAttribute("data-tact");
+          if (act === "edit") openTeamModal(m);
+          else if (act === "delete") {
+            if (!confirm('Remove "' + m.name + '" from the team?')) return;
+            api("/.netlify/functions/cms-team", { method: "DELETE", body: { id: m.id } })
+              .then(function () { loadTeam(); })
+              .catch(function () { alert("Delete failed."); });
+          }
         });
 
         /* ================= projects ================= */
