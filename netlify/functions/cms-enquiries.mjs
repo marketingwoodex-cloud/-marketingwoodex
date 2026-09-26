@@ -1,6 +1,7 @@
-// Dashboard API: list and update enquiries. Requires CMS session.
+// Dashboard API: list, update and delete enquiries. Requires CMS session.
 // GET /.netlify/functions/cms-enquiries[?status=new]
 // PATCH { id, status?, notes? }
+// DELETE { id }
 import { bearerSession, json, verifySession } from "./_auth.mjs";
 import { sbConfigured, sbRest } from "./_supabase.mjs";
 
@@ -42,6 +43,24 @@ export default async (req) => {
       body: patch,
     });
     if (s !== 200 && s !== 204) return json(502, { error: "Could not update enquiry." });
+    return json(200, { ok: true });
+  }
+
+  if (req.method === "DELETE") {
+    let body = null;
+    try {
+      body = await req.json();
+    } catch {
+      return json(400, { error: "Invalid request." });
+    }
+    const { id } = body || {};
+    if (!/^[0-9a-f-]{36}$/i.test(String(id || "")))
+      return json(400, { error: "Invalid id." });
+    const { status: s } = await sbRest("enquiries", {
+      method: "DELETE",
+      query: `?id=eq.${id}`,
+    });
+    if (s !== 200 && s !== 204) return json(502, { error: "Could not delete enquiry." });
     return json(200, { ok: true });
   }
 

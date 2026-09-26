@@ -399,6 +399,7 @@
             <div class="alert alert-danger py-2" id="m-error" style="display: none"></div>
           </div>
           <div class="modal-footer">
+            <button type="button" class="btn btn-outline-danger me-auto" id="m-delete">Delete</button>
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
             <button type="button" class="btn btn-dark" id="m-save">Save changes</button>
           </div>
@@ -793,6 +794,28 @@
           }
         }
         wireFilters();
+        async function deleteEnquiry() {
+          if (!modalRow) return;
+          if (!confirm("Delete this enquiry permanently?")) return;
+          var errEl = document.getElementById("m-error");
+          errEl.style.display = "none";
+          try {
+            var res = await api("/.netlify/functions/cms-enquiries", {
+              method: "DELETE",
+              body: { id: modalRow.id },
+            });
+            var data = null;
+            try { data = await res.json(); } catch (err) {}
+            if (!res.ok) throw new Error((data && data.error) || "Delete failed.");
+            modal.hide();
+            loadEnquiries(currentFilter);
+            loadDashboard();
+          } catch (err) {
+            errEl.textContent = err.message;
+            errEl.style.display = "block";
+          }
+        }
+        document.getElementById("m-delete").addEventListener("click", deleteEnquiry);
         document.getElementById("enq-body").addEventListener("click", function (e) {
           var tr = e.target.closest("tr[data-id]");
           if (tr) openModal(tr.getAttribute("data-id"));
