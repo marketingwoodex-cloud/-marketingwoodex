@@ -165,16 +165,36 @@
           await sleep(400);
 
           var scope = input.closest('[role="dialog"]') || document;
-          var ok = Array.prototype.filter.call(
-            scope.querySelectorAll("button"),
-            function (b) { return b.offsetParent !== null; }
-          ).find(function (b) {
-            var t = b.textContent || "";
-            return /sign in/i.test(t) && !/access token/i.test(t);
-          });
-          if (!ok || ok.disabled) return false;
+          function findOk() {
+            return Array.prototype.filter.call(
+              scope.querySelectorAll("button"),
+              function (b) { return b.offsetParent !== null; }
+            ).find(function (b) {
+              var t = b.textContent || "";
+              return /sign in/i.test(t) && !/access token/i.test(t);
+            }) || null;
+          }
+          // Wait for Svelte to enable the button after the input event,
+          // then click and confirm the dialog actually closes.
+          var ok = null;
+          var deadline3 = Date.now() + 8000;
+          while (Date.now() < deadline3 && !(ok && !ok.disabled)) {
+            ok = findOk();
+            if (!(ok && !ok.disabled)) await sleep(300);
+          }
+          if (!ok) return false;
           ok.click();
-          return true;
+          await sleep(1200);
+          var dialogGone = !input.isConnected || input.offsetParent === null;
+          if (!dialogGone) {
+            ok = findOk();
+            if (ok && !ok.disabled) {
+              ok.click();
+              await sleep(1500);
+              dialogGone = !input.isConnected || input.offsetParent === null;
+            }
+          }
+          return dialogGone;
         }
 
         function loadSveltia(token) {
