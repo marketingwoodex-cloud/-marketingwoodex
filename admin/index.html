@@ -202,7 +202,7 @@
         /* ================= studio ================= */
         var editor = null, pages = [], current = null;
         var originalDoc = "", savedScripts = [];
-        var dirty = false, studioStarted = false;
+        var dirty = false, studioStarted = false, lastMirror = null;
 
         var statusEl = document.getElementById("wx-status");
         var publishBtn = document.getElementById("wx-publish");
@@ -256,7 +256,48 @@
               savedScripts.push(s.outerHTML);
               s.remove();
             });
+            // Capture the page's own <style> block (no-JS fallbacks etc.).
+            var headStyle = "";
+            d.querySelectorAll("head style").forEach(function (s) {
+              headStyle += s.textContent + "\n";
+            });
             editor.setComponents(d.body.innerHTML);
+            // The site's CSS keys off the <body> id / classes / data-*
+            // (e.g. "#home-page .hm-hero"). Mirror them onto the canvas body
+            // so the editor renders exactly like the live page.
+            try {
+              var cDoc = editor.Canvas.getDocument();
+              var cBody = cDoc.body;
+              // Undo the previous page's mirrored identity first.
+              if (lastMirror) {
+                if (lastMirror.id) cBody.removeAttribute("id");
+                lastMirror.classes.forEach(function (c) { cBody.classList.remove(c); });
+                lastMirror.datas.forEach(function (n) { cBody.removeAttribute(n); });
+              }
+              var srcBody = d.body;
+              var mirror = { id: "", classes: [], datas: [] };
+              if (srcBody.id) { cBody.id = srcBody.id; mirror.id = srcBody.id; }
+              if (srcBody.className) {
+                srcBody.classList.forEach(function (c) {
+                  cBody.classList.add(c);
+                  mirror.classes.push(c);
+                });
+              }
+              Array.prototype.forEach.call(srcBody.attributes, function (a) {
+                if (a.name.indexOf("data-") === 0) {
+                  cBody.setAttribute(a.name, a.value);
+                  mirror.datas.push(a.name);
+                }
+              });
+              lastMirror = mirror;
+              var st = cDoc.getElementById("wx-head-style");
+              if (!st) {
+                st = cDoc.createElement("style");
+                st.id = "wx-head-style";
+                cDoc.head.appendChild(st);
+              }
+              st.textContent = headStyle;
+            } catch (err) { /* canvas not ready; styles still apply */ }
             editor.UndoManager.clear();
             markClean("Editing " + p.url);
           } catch (err) {
