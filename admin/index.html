@@ -168,7 +168,7 @@
                 <a href="#" class="nav-link" data-view="builder"><i class="nav-icon bi bi-layout-text-window-reverse"></i><p>Pages</p></a>
               </li>
               <li class="nav-item">
-                <a href="#" class="nav-link" data-view="soon" data-soon="Projects"><i class="nav-icon bi bi-kanban"></i><p>Projects</p></a>
+                <a href="#" class="nav-link" data-view="projects"><i class="nav-icon bi bi-kanban"></i><p>Projects</p></a>
               </li>
               <li class="nav-item">
                 <a href="#" class="nav-link" data-view="media"><i class="nav-icon bi bi-images"></i><p>Media Library</p></a>
@@ -365,6 +365,30 @@
               </div>
             </div>
             <p class="text-muted small mt-2">Publishing writes the article to <code>/insights/&lt;slug&gt;/</code> on the live site and refreshes the Insights index.</p>
+          </div>
+        </section>
+
+        <!-- ============ PROJECTS ============ -->
+        <section class="wx-view app-content" id="view-projects" hidden>
+          <div class="container-fluid">
+            <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+              <div class="btn-group btn-group-sm" role="group" id="proj-status-filter">
+                <button class="btn btn-outline-dark active" data-ps="all">All</button>
+                <button class="btn btn-outline-dark" data-ps="active">Active</button>
+                <button class="btn btn-outline-dark" data-ps="draft">Draft</button>
+              </div>
+              <select class="form-select form-select-sm" id="proj-cat-filter" style="max-width:180px"><option value="">All categories</option></select>
+              <input class="form-control form-control-sm" id="proj-search" style="max-width:220px" placeholder="Search projects…" />
+              <span class="ms-auto text-muted small" id="proj-count"></span>
+              <button class="btn btn-sm btn-outline-dark" id="proj-samples">Load samples</button>
+              <button class="btn btn-sm btn-dark" id="proj-new"><i class="bi bi-plus-lg"></i> New project</button>
+            </div>
+            <div class="table-responsive">
+              <table class="table table-hover align-middle">
+                <thead><tr><th></th><th>Project</th><th>Category</th><th>Location</th><th>Images</th><th>Status</th><th class="text-end">Actions</th></tr></thead>
+                <tbody id="proj-rows"><tr><td colspan="7" class="text-muted">Loading…</td></tr></tbody>
+              </table>
+            </div>
           </div>
         </section>
 
@@ -740,6 +764,62 @@
       </div>
     </div>
 
+    <!-- ============ project modal ============ -->
+    <div class="modal fade" id="projectModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="proj-modal-title">New project</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <input type="hidden" id="p-id" />
+            <div class="row g-3">
+              <div class="col-md-8">
+                <label class="form-label">Title</label>
+                <input class="form-control" id="p-title" />
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Status</label>
+                <select class="form-select" id="p-status">
+                  <option value="active">Active</option>
+                  <option value="draft">Draft</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Category</label>
+                <input class="form-control" id="p-category" list="p-cat-list" placeholder="e.g. Office, Retail, Residential" />
+                <datalist id="p-cat-list"></datalist>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Location</label>
+                <input class="form-control" id="p-location" placeholder="e.g. Lahore" />
+              </div>
+              <div class="col-12">
+                <label class="form-label">Description</label>
+                <textarea class="form-control" id="p-desc" rows="3"></textarea>
+              </div>
+              <div class="col-12">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                  <label class="form-label mb-0">Gallery</label>
+                  <span class="ms-auto"></span>
+                  <input type="file" id="p-img-file" accept="image/*" multiple class="d-none" />
+                  <button type="button" class="btn btn-sm btn-outline-dark" id="p-img-upload"><i class="bi bi-upload"></i> Upload</button>
+                  <button type="button" class="btn btn-sm btn-outline-dark" id="p-img-library"><i class="bi bi-images"></i> From library</button>
+                </div>
+                <div class="row g-2" id="p-gallery"><div class="col-12 text-muted small">No images yet.</div></div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <span class="me-auto text-muted small" id="p-slug-hint"></span>
+            <button type="button" class="btn btn-outline-dark" data-bs-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-dark" id="proj-save">Save project</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- ============ media picker modal ============ -->
     <div class="modal fade" id="mediaPickerModal" tabindex="-1" aria-hidden="true">
       <div class="modal-dialog modal-xl">
@@ -841,7 +921,7 @@
         });
 
         /* ================= view router ================= */
-        var TITLES = { dashboard: "Dashboard", enquiries: "Enquiries", leads: "Estimator Leads", quotations: "Quotations", templates: "Quotation Templates", invoices: "Invoices", blog: "Blog Posts", media: "Media Library", builder: "Pages · Page Builder", soon: "Coming soon" };
+        var TITLES = { dashboard: "Dashboard", enquiries: "Enquiries", leads: "Estimator Leads", quotations: "Quotations", templates: "Quotation Templates", invoices: "Invoices", blog: "Blog Posts", media: "Media Library", projects: "Projects", builder: "Pages · Page Builder", soon: "Coming soon" };
         var builderStarted = false;
         function showView(name, soonLabel) {
           document.querySelectorAll(".wx-view").forEach(function (v) { v.hidden = true; });
@@ -864,6 +944,7 @@
           if (name === "invoices") loadInvoices(invFilter);
           if (name === "blog") loadBlog(blogFilter);
           if (name === "media") loadMedia();
+          if (name === "projects") loadProjects();
           if (name === "builder") {
             document.getElementById("wx-studio").classList.add("open");
             initStudio();
@@ -2434,6 +2515,257 @@
           if (mediaPickerModal) mediaPickerModal.hide();
           if (mediaPickerOnPick) mediaPickerOnPick(it);
           else copyMediaUrl(it.url);
+        });
+
+        /* ================= projects ================= */
+        var projects = [];
+        var projStatusFilter = "all";
+        var projectModal = null;
+        var projGallery = [];
+        var projEditingId = null;
+
+        var PROJECT_SAMPLES = [
+          {
+            title: "SAMPLE - Corporate office fit-out", category: "Office", location: "Lahore",
+            description: "Sample project for testing the Projects module. A full corporate office fit-out with workstations, meeting rooms and a reception.",
+            images: [
+              { url: "/assets/img/img-5048d9095862.webp", caption: "Sample - open office" },
+              { url: "/assets/img/img-81b231a6c390.webp", caption: "Sample - lounge" },
+            ],
+            status: "active",
+          },
+          {
+            title: "SAMPLE - Retail store interior", category: "Retail", location: "Lahore",
+            description: "Sample project for testing the Projects module. A retail store interior with display fixtures and lighting.",
+            images: [
+              { url: "/assets/img/img-27c481fa9a3d.webp", caption: "Sample - joinery" },
+              { url: "/assets/img/img-1d6ad6c77d0f.webp", caption: "Sample - interior" },
+            ],
+            status: "active",
+          },
+          {
+            title: "SAMPLE - Residential renovation", category: "Residential", location: "Islamabad",
+            description: "Sample project for testing the Projects module. A full home renovation with new kitchen, wardrobes and finishes.",
+            images: [
+              { url: "/assets/img/img-774a712057fc.webp", caption: "Sample - living room" },
+              { url: "/assets/img/img-c349a92a4ae0.webp", caption: "Sample - bedroom" },
+            ],
+            status: "draft",
+          },
+        ];
+
+        function loadProjects() {
+          var tb = document.getElementById("proj-rows");
+          tb.innerHTML = '<tr><td colspan="7" class="text-muted">Loading…</td></tr>';
+          api("/.netlify/functions/cms-projects", { method: "GET" })
+            .then(function (r) { return r.json().then(function (j) { return { s: r.status, j: j }; }); })
+            .then(function (res) {
+              if (res.s !== 200) { tb.innerHTML = '<tr><td colspan="7" class="text-danger">Could not load projects.</td></tr>'; return; }
+              projects = res.j.projects || [];
+              fillProjCatFilter();
+              renderProjects();
+            })
+            .catch(function () { tb.innerHTML = '<tr><td colspan="7" class="text-danger">Could not load projects.</td></tr>'; });
+        }
+
+        function fillProjCatFilter() {
+          var cats = [];
+          projects.forEach(function (p) { if (p.category && cats.indexOf(p.category) === -1) cats.push(p.category); });
+          cats.sort();
+          var sel = document.getElementById("proj-cat-filter");
+          var cur = sel.value;
+          sel.innerHTML = '<option value="">All categories</option>' + cats.map(function (c) {
+            return '<option value="' + esc(c) + '">' + esc(c) + "</option>";
+          }).join("");
+          if (cats.indexOf(cur) !== -1) sel.value = cur;
+          var dl = document.getElementById("p-cat-list");
+          if (dl) dl.innerHTML = cats.map(function (c) { return '<option value="' + esc(c) + '">'; }).join("");
+        }
+
+        function filteredProjects() {
+          var cat = document.getElementById("proj-cat-filter").value;
+          var q = (document.getElementById("proj-search").value || "").toLowerCase().trim();
+          return projects.filter(function (p) {
+            if (projStatusFilter !== "all" && p.status !== projStatusFilter) return false;
+            if (cat && p.category !== cat) return false;
+            if (q && (p.title || "").toLowerCase().indexOf(q) === -1 && (p.location || "").toLowerCase().indexOf(q) === -1) return false;
+            return true;
+          });
+        }
+
+        function renderProjects() {
+          var tb = document.getElementById("proj-rows");
+          var rows = filteredProjects();
+          document.getElementById("proj-count").textContent = rows.length + " project" + (rows.length === 1 ? "" : "s");
+          if (!rows.length) { tb.innerHTML = '<tr><td colspan="7" class="text-muted">No projects found.</td></tr>'; return; }
+          tb.innerHTML = rows.map(function (p) {
+            var imgs = Array.isArray(p.images) ? p.images : [];
+            var thumb = imgs.length ? '<img src="' + esc(imgs[0].url) + '" alt="" style="width:52px;height:38px;object-fit:cover;border-radius:6px" />' : '<span class="text-muted">—</span>';
+            var badge = p.status === "draft"
+              ? '<span class="badge text-bg-secondary">Draft</span>'
+              : '<span class="badge text-bg-success">Active</span>';
+            return "<tr>" +
+              "<td>" + thumb + "</td>" +
+              "<td><strong>" + esc(p.title) + '</strong><div class="text-muted small">' + esc(p.slug || "") + "</div></td>" +
+              "<td>" + esc(p.category || "—") + "</td>" +
+              "<td>" + esc(p.location || "—") + "</td>" +
+              "<td>" + imgs.length + "</td>" +
+              "<td>" + badge + "</td>" +
+              '<td class="text-end"><div class="btn-group btn-group-sm">' +
+              '<button class="btn btn-outline-dark" data-pact="edit" data-id="' + p.id + '">Edit</button>' +
+              '<button class="btn btn-outline-danger" data-pact="delete" data-id="' + p.id + '">Delete</button>' +
+              "</div></td></tr>";
+          }).join("");
+        }
+
+        function openProjectModal(p) {
+          projEditingId = p ? p.id : null;
+          projGallery = p && Array.isArray(p.images) ? p.images.map(function (im) { return { url: im.url, caption: im.caption || "" }; }) : [];
+          document.getElementById("proj-modal-title").textContent = p ? "Edit project" : "New project";
+          document.getElementById("p-title").value = p ? p.title : "";
+          document.getElementById("p-status").value = p ? p.status : "active";
+          document.getElementById("p-category").value = p ? (p.category || "") : "";
+          document.getElementById("p-location").value = p ? (p.location || "") : "";
+          document.getElementById("p-desc").value = p ? (p.description || "") : "";
+          document.getElementById("p-slug-hint").textContent = p && p.slug ? ("URL: /projects/" + p.slug) : "The URL slug is generated from the title.";
+          renderProjGallery();
+          if (!projectModal) projectModal = new bootstrap.Modal(document.getElementById("projectModal"));
+          projectModal.show();
+        }
+
+        function renderProjGallery() {
+          var g = document.getElementById("p-gallery");
+          if (!projGallery.length) { g.innerHTML = '<div class="col-12 text-muted small">No images yet.</div>'; return; }
+          g.innerHTML = projGallery.map(function (im, i) {
+            return '<div class="col-12"><div class="d-flex align-items-center gap-2 border rounded p-2">' +
+              '<img src="' + esc(im.url) + '" alt="" style="width:64px;height:48px;object-fit:cover;border-radius:6px" />' +
+              '<input class="form-control form-control-sm" data-pcap="' + i + '" value="' + esc(im.caption || "") + '" placeholder="Caption (optional)" />' +
+              '<button type="button" class="btn btn-sm btn-outline-dark" data-pimg="up" data-i="' + i + '" title="Move up">↑</button>' +
+              '<button type="button" class="btn btn-sm btn-outline-dark" data-pimg="down" data-i="' + i + '" title="Move down">↓</button>' +
+              '<button type="button" class="btn btn-sm btn-outline-danger" data-pimg="del" data-i="' + i + '" title="Remove">×</button>' +
+              "</div></div>";
+          }).join("");
+        }
+
+        function projSave() {
+          var title = document.getElementById("p-title").value.trim();
+          if (title.length < 2) { alert("Project title is required."); return; }
+          var payload = {
+            title: title,
+            category: document.getElementById("p-category").value.trim(),
+            location: document.getElementById("p-location").value.trim(),
+            description: document.getElementById("p-desc").value.trim(),
+            images: projGallery,
+            status: document.getElementById("p-status").value,
+          };
+          var btn = document.getElementById("proj-save");
+          btn.disabled = true;
+          var call = projEditingId
+            ? api("/.netlify/functions/cms-projects", { method: "PATCH", body: Object.assign({ id: projEditingId }, payload) })
+            : api("/.netlify/functions/cms-projects", { method: "POST", body: payload });
+          call
+            .then(function (r) { return r.json().then(function (j) { return { s: r.status, j: j }; }); })
+            .then(function (res) {
+              btn.disabled = false;
+              if (res.s !== 200) { alert(res.j.error || "Could not save."); return; }
+              if (projectModal) projectModal.hide();
+              loadProjects();
+            })
+            .catch(function () { btn.disabled = false; alert("Could not save."); });
+        }
+
+        // ---- project events ----
+        document.getElementById("proj-new").addEventListener("click", function () { openProjectModal(null); });
+        document.getElementById("proj-samples").addEventListener("click", function () {
+          var btn = this;
+          btn.disabled = true;
+          var missing = PROJECT_SAMPLES.filter(function (s) {
+            return !projects.some(function (p) { return p.title === s.title; });
+          });
+          if (!missing.length) { alert("Sample projects are already loaded."); btn.disabled = false; return; }
+          var chain = Promise.resolve();
+          missing.forEach(function (s) {
+            chain = chain.then(function () {
+              return api("/.netlify/functions/cms-projects", { method: "POST", body: s })
+                .then(function (r) { return r.json(); });
+            });
+          });
+          chain.then(function () { btn.disabled = false; loadProjects(); alert(missing.length + " sample project(s) loaded."); })
+            .catch(function () { btn.disabled = false; alert("Could not load samples."); });
+        });
+        document.getElementById("proj-status-filter").addEventListener("click", function (e) {
+          var b = e.target.closest("[data-ps]");
+          if (!b) return;
+          projStatusFilter = b.getAttribute("data-ps");
+          this.querySelectorAll("[data-ps]").forEach(function (x) { x.classList.toggle("active", x === b); });
+          renderProjects();
+        });
+        document.getElementById("proj-cat-filter").addEventListener("change", renderProjects);
+        document.getElementById("proj-search").addEventListener("input", renderProjects);
+        document.getElementById("proj-save").addEventListener("click", projSave);
+        document.getElementById("proj-rows").addEventListener("click", function (e) {
+          var b = e.target.closest("[data-pact]");
+          if (!b) return;
+          var p = projects.find(function (x) { return x.id === b.getAttribute("data-id"); });
+          if (!p) return;
+          var act = b.getAttribute("data-pact");
+          if (act === "edit") openProjectModal(p);
+          else if (act === "delete") {
+            if (!confirm('Delete project "' + p.title + '"?')) return;
+            api("/.netlify/functions/cms-projects", { method: "DELETE", body: { id: p.id } })
+              .then(function () { loadProjects(); })
+              .catch(function () { alert("Delete failed."); });
+          }
+        });
+        document.getElementById("p-gallery").addEventListener("input", function (e) {
+          var inp = e.target.closest("[data-pcap]");
+          if (inp) projGallery[Number(inp.getAttribute("data-pcap"))].caption = inp.value;
+        });
+        document.getElementById("p-gallery").addEventListener("click", function (e) {
+          var b = e.target.closest("[data-pimg]");
+          if (!b) return;
+          var i = Number(b.getAttribute("data-i"));
+          var act = b.getAttribute("data-pimg");
+          if (act === "up" && i > 0) { var t = projGallery[i - 1]; projGallery[i - 1] = projGallery[i]; projGallery[i] = t; }
+          else if (act === "down" && i < projGallery.length - 1) { var u = projGallery[i + 1]; projGallery[i + 1] = projGallery[i]; projGallery[i] = u; }
+          else if (act === "del") { projGallery.splice(i, 1); }
+          renderProjGallery();
+        });
+        document.getElementById("p-img-upload").addEventListener("click", function () {
+          document.getElementById("p-img-file").click();
+        });
+        document.getElementById("p-img-file").addEventListener("change", function () {
+          var files = Array.prototype.slice.call(this.files || []);
+          this.value = "";
+          var chain = Promise.resolve();
+          files.forEach(function (f) {
+            if (f.type.indexOf("image/") !== 0) return;
+            chain = chain.then(function () {
+              return new Promise(function (resolve, reject) {
+                var rd = new FileReader();
+                rd.onload = function () {
+                  api("/.netlify/functions/cms-upload", { body: { filename: f.name, data: rd.result } })
+                    .then(function (r) { return r.json(); })
+                    .then(function (j) {
+                      if (!j.url) throw new Error(j.error || "Upload failed.");
+                      projGallery.push({ url: j.url, caption: "" });
+                      return registerMedia(j.url, f.name, f.size).catch(function () {});
+                    })
+                    .then(function () { renderProjGallery(); resolve(); })
+                    .catch(reject);
+                };
+                rd.onerror = reject;
+                rd.readAsDataURL(f);
+              });
+            });
+          });
+          chain.catch(function (err) { alert(err.message || "Upload failed."); });
+        });
+        document.getElementById("p-img-library").addEventListener("click", function () {
+          openMediaPicker(function (item) {
+            projGallery.push({ url: item.url, caption: "" });
+            renderProjGallery();
+          }, "Click an image to add it to the gallery.");
         });
 
         /* ================= blog posts ================= */
