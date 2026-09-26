@@ -149,7 +149,7 @@
               </li>
               <li class="nav-header">GROWTH</li>
               <li class="nav-item">
-                <a href="#" class="nav-link" data-view="soon" data-soon="Estimator Leads"><i class="nav-icon bi bi-calculator"></i><p>Estimator Leads</p></a>
+                <a href="#" class="nav-link" data-view="leads"><i class="nav-icon bi bi-calculator"></i><p>Estimator Leads</p></a>
               </li>
               <li class="nav-item">
                 <a href="#" class="nav-link" data-view="soon" data-soon="Blog Posts"><i class="nav-icon bi bi-newspaper"></i><p>Blog Posts</p></a>
@@ -195,7 +195,7 @@
               <div class="col-lg-3 col-6">
                 <div class="small-box text-bg-info">
                   <div class="inner"><h3 id="stat-leads">–</h3><p>Estimator leads</p></div>
-                  <a href="#" class="small-box-footer" data-view="soon" data-soon="Estimator Leads">Coming soon <i class="bi bi-arrow-right"></i></a>
+                  <a href="#" class="small-box-footer" data-view="leads">Coming soon <i class="bi bi-arrow-right"></i></a>
                 </div>
               </div>
               <div class="col-lg-3 col-6">
@@ -244,6 +244,28 @@
                 <table class="table table-hover mb-0">
                   <thead><tr><th>Name</th><th>Phone</th><th>Type</th><th>Message</th><th>Received</th><th>Status</th></tr></thead>
                   <tbody id="enq-body"><tr><td colspan="6" class="text-center text-muted py-4">Loading…</td></tr></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============ ESTIMATOR LEADS ============ -->
+        <section class="wx-view app-content" id="view-leads" hidden>
+          <div class="container-fluid">
+            <div class="d-flex flex-wrap align-items-center gap-2 mb-3" id="lead-filters">
+              <button class="btn btn-sm btn-dark" data-filter="">All</button>
+              <button class="btn btn-sm btn-outline-dark" data-filter="new">New</button>
+              <button class="btn btn-sm btn-outline-dark" data-filter="contacted">Contacted</button>
+              <button class="btn btn-sm btn-outline-dark" data-filter="quoted">Quoted</button>
+              <button class="btn btn-sm btn-outline-dark" data-filter="closed">Closed</button>
+              <span class="ms-auto text-muted small" id="lead-count"></span>
+            </div>
+            <div class="card">
+              <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                  <thead><tr><th>Name</th><th>Phone</th><th>Service</th><th>Size</th><th>Estimate</th><th>Received</th><th>Status</th></tr></thead>
+                  <tbody id="lead-body"><tr><td colspan="7" class="text-center text-muted py-4">Loading…</td></tr></tbody>
                 </table>
               </div>
             </div>
@@ -340,6 +362,49 @@
       </div>
     </div>
 
+    <!-- ============ estimator lead detail modal ============ -->
+    <div class="modal fade" id="leadModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Estimator lead</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <dl class="row mb-0">
+              <dt class="col-sm-3">Name</dt><dd class="col-sm-9" id="l-name"></dd>
+              <dt class="col-sm-3">Phone</dt><dd class="col-sm-9"><a href="#" id="l-phone"></a></dd>
+              <dt class="col-sm-3">Email</dt><dd class="col-sm-9" id="l-email"></dd>
+              <dt class="col-sm-3">Service</dt><dd class="col-sm-9" id="l-service"></dd>
+              <dt class="col-sm-3">Size</dt><dd class="col-sm-9" id="l-size"></dd>
+              <dt class="col-sm-3">Finish</dt><dd class="col-sm-9" id="l-finish"></dd>
+              <dt class="col-sm-3">Estimate</dt><dd class="col-sm-9" id="l-estimate"></dd>
+              <dt class="col-sm-3">Received</dt><dd class="col-sm-9" id="l-date"></dd>
+            </dl>
+            <hr />
+            <div class="mb-3">
+              <label class="form-label fw-bold" for="l-status">Status</label>
+              <select class="form-select" id="l-status">
+                <option value="new">New</option>
+                <option value="contacted">Contacted</option>
+                <option value="quoted">Quoted</option>
+                <option value="closed">Closed</option>
+              </select>
+            </div>
+            <div class="d-flex gap-2">
+              <a href="#" class="btn btn-outline-dark flex-fill" id="l-whatsapp" target="_blank" rel="noopener"><i class="bi bi-whatsapp"></i> WhatsApp</a>
+              <a href="#" class="btn btn-outline-dark flex-fill" id="l-call"><i class="bi bi-telephone"></i> Call</a>
+            </div>
+            <div class="alert alert-danger py-2 mt-3" id="l-error" style="display: none"></div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-dark" id="l-save">Save changes</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <input type="file" id="wx-upload-input" accept="image/png,image/jpeg,image/gif,image/webp,image/svg+xml" />
     <script src="./vendor/grapes.min.js"></script>
     <script src="./vendor/adminlte/bootstrap.bundle.min.js"></script>
@@ -372,7 +437,7 @@
           if (d < 86400e3) return Math.round(d / 3600e3) + "h ago";
           return Math.round(d / 86400e3) + "d ago";
         }
-        var STATUS_BADGE = { new: "warning", in_progress: "info", quoted: "primary", closed: "success" };
+        var STATUS_BADGE = { new: "warning", in_progress: "info", contacted: "info", quoted: "primary", closed: "success" };
         function statusBadge(s) {
           return '<span class="badge text-bg-' + (STATUS_BADGE[s] || "secondary") + ' wx-status">' + esc(String(s).replace("_", " ")) + "</span>";
         }
@@ -422,7 +487,7 @@
         });
 
         /* ================= view router ================= */
-        var TITLES = { dashboard: "Dashboard", enquiries: "Enquiries", builder: "Pages · Page Builder", soon: "Coming soon" };
+        var TITLES = { dashboard: "Dashboard", enquiries: "Enquiries", leads: "Estimator Leads", builder: "Pages · Page Builder", soon: "Coming soon" };
         var builderStarted = false;
         function showView(name, soonLabel) {
           document.querySelectorAll(".wx-view").forEach(function (v) { v.hidden = true; });
@@ -439,6 +504,7 @@
           }
           if (name === "dashboard") loadDashboard();
           if (name === "enquiries") loadEnquiries(currentFilter);
+          if (name === "leads") loadLeads(leadFilter);
           if (name === "builder") {
             document.getElementById("wx-studio").classList.add("open");
             initStudio();
@@ -579,6 +645,113 @@
           if (tr) openModal(tr.getAttribute("data-id"));
         });
         document.getElementById("m-save").addEventListener("click", saveModal);
+
+        /* ================= estimator leads ================= */
+        var leadFilter = "", leadsCache = [], leadRow = null, leadModal = null;
+        var SVC_LABEL = { "interior-design": "Interior Design", "fit-out": "Office Fit-Out", renovation: "Renovation",
+          architecture: "Architecture", "3d-visualization": "3D Visualization", furniture: "Custom Furniture" };
+        var FIN_LABEL = { essential: "Essential", standard: "Standard", premium: "Premium" };
+        function fmtPKR(n) {
+          n = Number(n) || 0;
+          if (n >= 10000000) return "Rs " + (n / 10000000).toFixed(1).replace(/\.0$/, "") + " crore";
+          if (n >= 100000) return "Rs " + (n / 100000).toFixed(1).replace(/\.0$/, "") + " lac";
+          return "Rs " + n.toLocaleString("en-PK");
+        }
+        function leadSize(r) {
+          if (r.service_type === "3d-visualization") return (r.area_sqft || "–") + " views";
+          return (r.area_sqft ? Number(r.area_sqft).toLocaleString("en-PK") + " sq ft" : "–");
+        }
+        function leadEstimate(r) {
+          if (r.estimate_min == null || r.estimate_max == null) return "–";
+          return fmtPKR(r.estimate_min) + " – " + fmtPKR(r.estimate_max);
+        }
+        function wireLeadFilters() {
+          document.getElementById("lead-filters").addEventListener("click", function (e) {
+            var b = e.target.closest("[data-filter]");
+            if (!b) return;
+            leadFilter = b.getAttribute("data-filter");
+            this.querySelectorAll(".btn").forEach(function (x) {
+              x.className = "btn btn-sm " + (x === b ? "btn-dark" : "btn-outline-dark");
+            });
+            loadLeads(leadFilter);
+          });
+        }
+        async function loadLeads(filter) {
+          var tb = document.getElementById("lead-body");
+          tb.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">Loading…</td></tr>';
+          try {
+            var res = await api("/.netlify/functions/cms-estimator-leads" + (filter ? "?status=" + filter : ""), { method: "GET" });
+            var data = await res.json();
+            if (!res.ok || !data || !data.leads) throw new Error("load failed");
+            leadsCache = data.leads;
+            document.getElementById("lead-count").textContent = data.leads.length + " shown";
+            if (!data.leads.length) {
+              tb.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">No estimator leads yet. Share the estimator page to get some.</td></tr>';
+              return;
+            }
+            tb.innerHTML = data.leads.map(function (r) {
+              return '<tr data-id="' + r.id + '" style="cursor:pointer"><td>' + esc(r.name) +
+                "</td><td>" + esc(r.phone) + "</td><td>" + esc(SVC_LABEL[r.service_type] || r.service_type || "–") +
+                "</td><td>" + esc(leadSize(r)) + "</td><td>" + esc(leadEstimate(r)) +
+                "</td><td>" + timeAgo(r.created_at) + "</td><td>" + statusBadge(r.status) + "</td></tr>";
+            }).join("");
+          } catch (err) {
+            tb.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">Could not load estimator leads.</td></tr>';
+          }
+        }
+        function openLeadModal(id) {
+          var r = leadsCache.find(function (x) { return x.id === id; });
+          if (!r) return;
+          leadRow = r;
+          document.getElementById("l-name").textContent = r.name || "–";
+          var ph = document.getElementById("l-phone");
+          ph.textContent = r.phone || "–";
+          var tel = r.phone ? r.phone.replace(/[^+\d]/g, "") : "";
+          ph.href = tel ? "tel:" + tel : "#";
+          document.getElementById("l-email").textContent = r.email || "–";
+          document.getElementById("l-service").textContent = SVC_LABEL[r.service_type] || r.service_type || "–";
+          document.getElementById("l-size").textContent = leadSize(r);
+          document.getElementById("l-finish").textContent = FIN_LABEL[(r.selections || {}).finish] || "–";
+          document.getElementById("l-estimate").textContent = leadEstimate(r);
+          document.getElementById("l-date").textContent = new Date(r.created_at).toLocaleString();
+          document.getElementById("l-status").value = r.status;
+          document.getElementById("l-error").style.display = "none";
+          var waNum = tel.replace(/^\+/, "");
+          var waText = encodeURIComponent("Assalam-o-Alaikum " + (r.name || "") + ", this is Woodex Interior. You used our cost estimator for " +
+            (SVC_LABEL[r.service_type] || "your project") + " (" + leadSize(r) + ", estimate " + leadEstimate(r) +
+            "). Shall we arrange a free site visit to prepare your detailed quotation?");
+          document.getElementById("l-whatsapp").href = waNum ? "https://wa.me/" + waNum + "?text=" + waText : "#";
+          document.getElementById("l-call").href = tel ? "tel:" + tel : "#";
+          if (!leadModal) leadModal = new bootstrap.Modal(document.getElementById("leadModal"));
+          leadModal.show();
+        }
+        async function saveLeadModal() {
+          var errEl = document.getElementById("l-error");
+          errEl.style.display = "none";
+          var btn = document.getElementById("l-save");
+          btn.disabled = true;
+          try {
+            var res = await api("/.netlify/functions/cms-estimator-leads", {
+              body: { id: leadRow.id, status: document.getElementById("l-status").value },
+            });
+            var data = await res.json().catch(function () { return null; });
+            if (!res.ok || !data || !data.ok) throw new Error((data && data.error) || "save failed");
+            leadRow.status = document.getElementById("l-status").value;
+            leadModal.hide();
+            loadLeads(leadFilter);
+          } catch (err) {
+            errEl.textContent = err.message;
+            errEl.style.display = "block";
+          } finally {
+            btn.disabled = false;
+          }
+        }
+        wireLeadFilters();
+        document.getElementById("lead-body").addEventListener("click", function (e) {
+          var tr = e.target.closest("tr[data-id]");
+          if (tr) openLeadModal(tr.getAttribute("data-id"));
+        });
+        document.getElementById("l-save").addEventListener("click", saveLeadModal);
 
         /* ================= page builder (GrapesJS) ================= */
         var editor = null, pages = [], current = null;

@@ -30,24 +30,33 @@ export default async (req) => {
   if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
     return json(400, { error: "Please enter a valid email." });
 
-  const { status } = await sbRest("enquiries", {
-    method: "POST",
-    body: {
-      name,
-      phone,
-      email: email || null,
-      project_type: project_type || null,
-      message: message || null,
-      source: "website",
-      status: "new",
-    },
-  });
-  if (status !== 201 && status !== 200)
+  let ins = null;
+  try {
+    ins = await sbRest("enquiries", {
+      method: "POST",
+      body: {
+        name,
+        phone,
+        email: email || null,
+        project_type: project_type || null,
+        message: message || null,
+        source: "website",
+        status: "new",
+      },
+    });
+  } catch {
+    ins = null;
+  }
+  if (!ins || (ins.status !== 201 && ins.status !== 200))
     return json(502, { error: "Could not save your enquiry. Please try WhatsApp instead." });
 
-  await sbRest("activity", {
-    method: "POST",
-    body: { kind: "enquiry", text: `New enquiry from ${name}`, meta: { phone } },
-  });
+  try {
+    await sbRest("activity", {
+      method: "POST",
+      body: { kind: "enquiry", text: `New enquiry from ${name}`, meta: { phone } },
+    });
+  } catch {
+    /* activity is best-effort */
+  }
   return json(200, { ok: true });
 };
