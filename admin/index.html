@@ -171,7 +171,7 @@
                 <a href="#" class="nav-link" data-view="soon" data-soon="Projects"><i class="nav-icon bi bi-kanban"></i><p>Projects</p></a>
               </li>
               <li class="nav-item">
-                <a href="#" class="nav-link" data-view="soon" data-soon="Media Library"><i class="nav-icon bi bi-images"></i><p>Media Library</p></a>
+                <a href="#" class="nav-link" data-view="media"><i class="nav-icon bi bi-images"></i><p>Media Library</p></a>
               </li>
               <li class="nav-item">
                 <a href="#" class="nav-link" data-view="soon" data-soon="Team"><i class="nav-icon bi bi-people"></i><p>Team</p></a>
@@ -368,6 +368,23 @@
           </div>
         </section>
 
+        <!-- ============ MEDIA LIBRARY ============ -->
+        <section class="wx-view app-content" id="view-media" hidden>
+          <div class="container-fluid">
+            <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+              <input class="form-control form-control-sm" id="media-search" style="max-width:260px" placeholder="Search files…" />
+              <span class="ms-auto text-muted small" id="media-count"></span>
+              <input type="file" id="media-file" accept="image/*" multiple class="d-none" />
+              <button class="btn btn-sm btn-outline-dark" id="media-samples">Load samples</button>
+              <button class="btn btn-sm btn-dark" id="media-upload"><i class="bi bi-upload"></i> Upload images</button>
+            </div>
+            <div class="row g-3" id="media-grid">
+              <div class="col-12 text-muted">Loading…</div>
+            </div>
+            <p class="text-muted small mt-3">Uploads are stored in the website repo and served from the live site. Deleting a library item also removes its uploaded file.</p>
+          </div>
+        </section>
+
         <!-- ============ PAGE BUILDER ============ -->
         <section class="wx-view" id="view-builder" hidden>
           <div id="wx-studio">
@@ -378,6 +395,7 @@
               <button class="wx-btn" id="wx-device-mobile" title="Mobile preview">Mobile</button>
               <button class="wx-btn" id="wx-undo" title="Undo">Undo</button>
               <button class="wx-btn" id="wx-upload" title="Upload an image">Upload image</button>
+              <button class="wx-btn" id="wx-media" title="Pick from the media library">Media library</button>
               <button class="wx-btn" id="wx-preview" title="Open the live page">View live</button>
               <button class="wx-btn primary" id="wx-publish" disabled>Publish</button>
               <span id="wx-status"></span>
@@ -697,6 +715,7 @@
               <div class="col-md-4 d-flex align-items-end gap-2">
                 <input type="file" id="b-cover-file" accept="image/*" class="d-none" />
                 <button type="button" class="btn btn-outline-dark" id="b-cover-upload"><i class="bi bi-upload"></i> Upload</button>
+                <button type="button" class="btn btn-outline-dark" id="b-cover-library" title="Pick from the media library"><i class="bi bi-images"></i></button>
                 <img id="b-cover-preview" alt="" style="height:38px;border-radius:6px;display:none" />
               </div>
             </div>
@@ -716,6 +735,26 @@
             <button type="button" class="btn btn-outline-dark" id="b-preview">Preview</button>
             <button type="button" class="btn btn-outline-dark" id="b-save">Save draft</button>
             <button type="button" class="btn btn-dark" id="b-publish">Publish</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ media picker modal ============ -->
+    <div class="modal fade" id="mediaPickerModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Media library</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <input class="form-control form-control-sm mb-3" id="media-picker-search" style="max-width:260px" placeholder="Search files…" />
+            <div class="row g-3" id="media-picker-grid"><div class="col-12 text-muted">Loading…</div></div>
+          </div>
+          <div class="modal-footer">
+            <span class="me-auto text-muted small" id="media-picker-hint">Click an image to use it.</span>
+            <button type="button" class="btn btn-outline-dark" data-bs-dismiss="modal">Close</button>
           </div>
         </div>
       </div>
@@ -802,7 +841,7 @@
         });
 
         /* ================= view router ================= */
-        var TITLES = { dashboard: "Dashboard", enquiries: "Enquiries", leads: "Estimator Leads", quotations: "Quotations", templates: "Quotation Templates", invoices: "Invoices", blog: "Blog Posts", builder: "Pages · Page Builder", soon: "Coming soon" };
+        var TITLES = { dashboard: "Dashboard", enquiries: "Enquiries", leads: "Estimator Leads", quotations: "Quotations", templates: "Quotation Templates", invoices: "Invoices", blog: "Blog Posts", media: "Media Library", builder: "Pages · Page Builder", soon: "Coming soon" };
         var builderStarted = false;
         function showView(name, soonLabel) {
           document.querySelectorAll(".wx-view").forEach(function (v) { v.hidden = true; });
@@ -824,6 +863,7 @@
           if (name === "templates") loadTemplates();
           if (name === "invoices") loadInvoices(invFilter);
           if (name === "blog") loadBlog(blogFilter);
+          if (name === "media") loadMedia();
           if (name === "builder") {
             document.getElementById("wx-studio").classList.add("open");
             initStudio();
@@ -2172,6 +2212,15 @@
           document.getElementById("wx-upload").addEventListener("click", function () {
             document.getElementById("wx-upload-input").click();
           });
+          document.getElementById("wx-media").addEventListener("click", function () {
+            openMediaPicker(function (item) {
+              editor.AssetManager.add({ src: item.url });
+              var sel = editor.getSelected();
+              if (sel && sel.is("image")) sel.set("src", item.url);
+              setStatus("Library image added.");
+              markDirty();
+            }, "Click an image to place it on the page.");
+          });
           document.getElementById("wx-upload-input").addEventListener("change", function (e) {
             uploadImage(e.target.files[0]);
             e.target.value = "";
@@ -2200,6 +2249,193 @@
             })
             .catch(function () { setStatus("Could not load the page list."); });
         }
+        /* ================= media library ================= */
+        var mediaItems = [];
+        var mediaPickerModal = null;
+        var mediaPickerOnPick = null;
+
+        var MEDIA_SAMPLES = [
+          { url: "/assets/img/img-774a712057fc.webp", filename: "SAMPLE - Living room interior" },
+          { url: "/assets/img/img-81b231a6c390.webp", filename: "SAMPLE - Studio lounge" },
+          { url: "/assets/img/img-27c481fa9a3d.webp", filename: "SAMPLE - Custom joinery" },
+          { url: "/assets/img/img-c349a92a4ae0.webp", filename: "SAMPLE - Residential interior" },
+          { url: "/assets/img/img-5048d9095862.webp", filename: "SAMPLE - Office interior" },
+          { url: "/assets/img/img-1d6ad6c77d0f.webp", filename: "SAMPLE - Woodex interior" },
+        ];
+
+        function fmtBytes(n) {
+          n = Number(n) || 0;
+          if (n < 1024) return n + " B";
+          if (n < 1048576) return (n / 1024).toFixed(1) + " KB";
+          return (n / 1048576).toFixed(1) + " MB";
+        }
+
+        function loadMedia() {
+          var grid = document.getElementById("media-grid");
+          grid.innerHTML = '<div class="col-12 text-muted">Loading…</div>';
+          api("/.netlify/functions/cms-media", { method: "GET" })
+            .then(function (r) { return r.json().then(function (j) { return { s: r.status, j: j }; }); })
+            .then(function (res) {
+              if (res.s !== 200) { grid.innerHTML = '<div class="col-12 text-danger">Could not load the library.</div>'; return; }
+              mediaItems = res.j.media || [];
+              renderMediaGrid();
+            })
+            .catch(function () { grid.innerHTML = '<div class="col-12 text-danger">Could not load the library.</div>'; });
+        }
+
+        function mediaMatches(it, q) {
+          return !q || (it.filename || "").toLowerCase().indexOf(q) !== -1 || (it.url || "").toLowerCase().indexOf(q) !== -1;
+        }
+
+        function renderMediaGrid() {
+          var grid = document.getElementById("media-grid");
+          var q = (document.getElementById("media-search").value || "").toLowerCase().trim();
+          var rows = mediaItems.filter(function (it) { return mediaMatches(it, q); });
+          document.getElementById("media-count").textContent = rows.length + " file" + (rows.length === 1 ? "" : "s");
+          if (!rows.length) { grid.innerHTML = '<div class="col-12 text-muted">No files yet. Upload images or load the samples.</div>'; return; }
+          grid.innerHTML = rows.map(function (it) {
+            return '<div class="col-6 col-md-4 col-lg-3"><div class="card h-100">' +
+              '<img src="' + esc(it.url) + '" class="card-img-top" alt="" loading="lazy" style="height:150px;object-fit:cover;cursor:pointer" data-mact="copy" data-id="' + it.id + '" title="Click to copy URL" />' +
+              '<div class="card-body p-2"><div class="small fw-bold text-truncate" title="' + esc(it.filename || "") + '">' + esc(it.filename || "Untitled") + '</div>' +
+              '<div class="text-muted" style="font-size:11px">' + fmtBytes(it.size_bytes) + "</div>" +
+              '<div class="d-flex gap-1 mt-1"><button class="btn btn-sm btn-outline-dark" data-mact="copy" data-id="' + it.id + '">Copy URL</button>' +
+              '<button class="btn btn-sm btn-outline-dark" data-mact="rename" data-id="' + it.id + '">Rename</button>' +
+              '<button class="btn btn-sm btn-outline-danger ms-auto" data-mact="delete" data-id="' + it.id + '">Delete</button></div>' +
+              "</div></div></div>";
+          }).join("");
+        }
+
+        function copyMediaUrl(url) {
+          function done() {
+            var c = document.getElementById("media-count");
+            var old = c.textContent;
+            c.textContent = "URL copied.";
+            setTimeout(function () { c.textContent = old; }, 1500);
+          }
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(url).then(done, function () { prompt("Copy the URL:", url); });
+          } else { prompt("Copy the URL:", url); }
+        }
+
+        function registerMedia(url, filename, sizeBytes) {
+          return api("/.netlify/functions/cms-media", { method: "POST", body: { url: url, filename: filename, size_bytes: sizeBytes } })
+            .then(function (r) { return r.json().then(function (j) { return { s: r.status, j: j }; }); })
+            .then(function (res) { if (res.s !== 200) throw new Error(res.j.error || "Could not register the file."); });
+        }
+
+        function uploadMediaFiles(files) {
+          var list = Array.prototype.slice.call(files || []).filter(function (f) { return f.type.indexOf("image/") === 0; });
+          if (!list.length) return;
+          var count = document.getElementById("media-count");
+          count.textContent = "Uploading…";
+          var chain = Promise.resolve(), done = 0;
+          list.forEach(function (f) {
+            chain = chain.then(function () {
+              return new Promise(function (resolve, reject) {
+                var rd = new FileReader();
+                rd.onload = function () {
+                  api("/.netlify/functions/cms-upload", { body: { filename: f.name, data: rd.result } })
+                    .then(function (r) { return r.json().then(function (j) { return { s: r.status, j: j }; }); })
+                    .then(function (res) {
+                      if (res.s !== 200 || !res.j.url) throw new Error(res.j.error || "Upload failed.");
+                      return registerMedia(res.j.url, f.name, f.size);
+                    })
+                    .then(function () { done++; count.textContent = "Uploaded " + done + "/" + list.length + "…"; resolve(); })
+                    .catch(reject);
+                };
+                rd.onerror = reject;
+                rd.readAsDataURL(f);
+              });
+            });
+          });
+          chain.then(function () { loadMedia(); }).catch(function (err) { alert(err.message || "Upload failed."); loadMedia(); });
+        }
+
+        function openMediaPicker(onPick, hint) {
+          mediaPickerOnPick = onPick || null;
+          document.getElementById("media-picker-hint").textContent = hint || "Click an image to use it.";
+          document.getElementById("media-picker-search").value = "";
+          if (!mediaPickerModal) mediaPickerModal = new bootstrap.Modal(document.getElementById("mediaPickerModal"));
+          mediaPickerModal.show();
+          renderMediaPicker();
+          if (!mediaItems.length) {
+            api("/.netlify/functions/cms-media", { method: "GET" })
+              .then(function (r) { return r.json(); })
+              .then(function (j) { mediaItems = j.media || []; renderMediaPicker(); })
+              .catch(function () {});
+          }
+        }
+
+        function renderMediaPicker() {
+          var grid = document.getElementById("media-picker-grid");
+          var q = (document.getElementById("media-picker-search").value || "").toLowerCase().trim();
+          var rows = mediaItems.filter(function (it) { return mediaMatches(it, q); });
+          if (!rows.length) { grid.innerHTML = '<div class="col-12 text-muted">No files found.</div>'; return; }
+          grid.innerHTML = rows.map(function (it) {
+            return '<div class="col-4 col-md-3"><div class="card"><img src="' + esc(it.url) + '" class="card-img-top" alt="" loading="lazy" style="height:110px;object-fit:cover;cursor:pointer" data-pick="' + it.id + '" />' +
+              '<div class="card-body p-1"><div class="text-truncate" style="font-size:11px" title="' + esc(it.filename || "") + '">' + esc(it.filename || "Untitled") + "</div></div></div></div>";
+          }).join("");
+        }
+
+        // ---- media events ----
+        document.getElementById("media-upload").addEventListener("click", function () {
+          document.getElementById("media-file").click();
+        });
+        document.getElementById("media-file").addEventListener("change", function () {
+          uploadMediaFiles(this.files);
+          this.value = "";
+        });
+        document.getElementById("media-search").addEventListener("input", renderMediaGrid);
+        document.getElementById("media-samples").addEventListener("click", function () {
+          var btn = this;
+          btn.disabled = true;
+          var missing = MEDIA_SAMPLES.filter(function (s) {
+            return !mediaItems.some(function (m) { return m.url === s.url; });
+          });
+          if (!missing.length) { alert("Sample files are already in the library."); btn.disabled = false; return; }
+          var chain = Promise.resolve();
+          missing.forEach(function (s) { chain = chain.then(function () { return registerMedia(s.url, s.filename, null); }); });
+          chain.then(function () { btn.disabled = false; loadMedia(); alert(missing.length + " sample file(s) added."); })
+            .catch(function (err) { btn.disabled = false; alert(err.message || "Could not load samples."); });
+        });
+        document.getElementById("media-grid").addEventListener("click", function (e) {
+          var b = e.target.closest("[data-mact]");
+          if (!b) return;
+          var id = b.getAttribute("data-id");
+          var it = mediaItems.find(function (m) { return m.id === id; });
+          if (!it) return;
+          var act = b.getAttribute("data-mact");
+          if (act === "copy") { copyMediaUrl(it.url); }
+          else if (act === "rename") {
+            var name = prompt("File name:", it.filename || "");
+            if (name && name.trim() && name.trim() !== it.filename) {
+              api("/.netlify/functions/cms-media", { method: "PATCH", body: { id: id, filename: name.trim() } })
+                .then(function () { loadMedia(); })
+                .catch(function () { alert("Rename failed."); });
+            }
+          }
+          else if (act === "delete") {
+            if (!confirm('Delete "' + (it.filename || it.url) + '"? This also removes the uploaded file.')) return;
+            api("/.netlify/functions/cms-media", { method: "DELETE", body: { id: id } })
+              .then(function (r) { return r.json().then(function (j) { return { s: r.status, j: j }; }); })
+              .then(function (res) {
+                if (res.s !== 200) throw new Error(res.j.error || "Delete failed.");
+                loadMedia();
+              })
+              .catch(function (err) { alert(err.message || "Delete failed."); });
+          }
+        });
+        document.getElementById("media-picker-search").addEventListener("input", renderMediaPicker);
+        document.getElementById("media-picker-grid").addEventListener("click", function (e) {
+          var img = e.target.closest("[data-pick]");
+          if (!img) return;
+          var it = mediaItems.find(function (m) { return m.id === img.getAttribute("data-pick"); });
+          if (!it) return;
+          if (mediaPickerModal) mediaPickerModal.hide();
+          if (mediaPickerOnPick) mediaPickerOnPick(it);
+          else copyMediaUrl(it.url);
+        });
+
         /* ================= blog posts ================= */
         var blogFilter = "";
         var blogPosts = [];
@@ -2550,6 +2786,13 @@
         });
         document.getElementById("b-cover-upload").addEventListener("click", function () {
           document.getElementById("b-cover-file").click();
+        });
+        document.getElementById("b-cover-library").addEventListener("click", function () {
+          openMediaPicker(function (item) {
+            document.getElementById("b-cover").value = item.url;
+            var pv = document.getElementById("b-cover-preview");
+            pv.src = item.url; pv.style.display = "";
+          }, "Click an image to use it as the cover.");
         });
         document.getElementById("b-cover-file").addEventListener("change", function () {
           var f = this.files && this.files[0];
