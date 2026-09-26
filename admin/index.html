@@ -161,7 +161,7 @@
                 <a href="#" class="nav-link" data-view="invoices"><i class="nav-icon bi bi-receipt"></i><p>Invoices</p></a>
               </li>
               <li class="nav-item">
-                <a href="#" class="nav-link" data-view="soon" data-soon="Blog Posts"><i class="nav-icon bi bi-newspaper"></i><p>Blog Posts</p></a>
+                <a href="#" class="nav-link" data-view="blog"><i class="nav-icon bi bi-newspaper"></i><p>Blog Posts</p></a>
               </li>
               <li class="nav-header">CONTENT</li>
               <li class="nav-item">
@@ -210,7 +210,7 @@
               <div class="col-lg-3 col-6">
                 <div class="small-box text-bg-success">
                   <div class="inner"><h3 id="stat-posts">–</h3><p>Blog posts live</p></div>
-                  <a href="#" class="small-box-footer" data-view="soon" data-soon="Blog Posts">Coming soon <i class="bi bi-arrow-right"></i></a>
+                  <a href="#" class="small-box-footer" data-view="blog">Open blog <i class="bi bi-arrow-right"></i></a>
                 </div>
               </div>
             </div>
@@ -342,6 +342,29 @@
                 </table>
               </div>
             </div>
+          </div>
+        </section>
+
+        <!-- ============ BLOG POSTS ============ -->
+        <section class="wx-view app-content" id="view-blog" hidden>
+          <div class="container-fluid">
+            <div class="d-flex flex-wrap align-items-center gap-2 mb-3" id="blog-filters">
+              <button class="btn btn-sm btn-dark" data-filter="">All</button>
+              <button class="btn btn-sm btn-outline-dark" data-filter="draft">Drafts</button>
+              <button class="btn btn-sm btn-outline-dark" data-filter="published">Published</button>
+              <span class="ms-auto text-muted small" id="blog-count"></span>
+              <button class="btn btn-sm btn-outline-dark" id="blog-samples">Load samples</button>
+              <button class="btn btn-sm btn-dark" id="blog-new"><i class="bi bi-plus-lg"></i> New post</button>
+            </div>
+            <div class="card">
+              <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                  <thead><tr><th>Title</th><th>Slug</th><th>Status</th><th>Updated</th><th class="text-end">Actions</th></tr></thead>
+                  <tbody id="blog-body"><tr><td colspan="5" class="text-center text-muted py-4">Loading…</td></tr></tbody>
+                </table>
+              </div>
+            </div>
+            <p class="text-muted small mt-2">Publishing writes the article to <code>/insights/&lt;slug&gt;/</code> on the live site and refreshes the Insights index.</p>
           </div>
         </section>
 
@@ -657,6 +680,48 @@
     <script src="/assets/js/estimator-rates.js"></script>
     <script src="/assets/js/quotation-templates.js"></script>
     <script src="./vendor/grapes.min.js"></script>
+    <!-- ============ blog editor modal ============ -->
+    <div class="modal fade" id="blogModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="blog-modal-title">New post</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="row g-3 mb-3">
+              <div class="col-md-8"><label class="form-label fw-bold" for="b-title">Title *</label><input class="form-control" id="b-title" placeholder="e.g. What a kitchen renovation really costs" /></div>
+              <div class="col-md-4"><label class="form-label fw-bold" for="b-slug">Slug</label><input class="form-control" id="b-slug" placeholder="auto from title" /></div>
+              <div class="col-12"><label class="form-label fw-bold" for="b-excerpt">Excerpt</label><textarea class="form-control" id="b-excerpt" rows="2" maxlength="300" placeholder="One or two lines shown on the Insights index and in search results."></textarea></div>
+              <div class="col-md-8"><label class="form-label fw-bold" for="b-cover">Cover image</label><input class="form-control" id="b-cover" placeholder="/assets/img/… or upload" /></div>
+              <div class="col-md-4 d-flex align-items-end gap-2">
+                <input type="file" id="b-cover-file" accept="image/*" class="d-none" />
+                <button type="button" class="btn btn-outline-dark" id="b-cover-upload"><i class="bi bi-upload"></i> Upload</button>
+                <img id="b-cover-preview" alt="" style="height:38px;border-radius:6px;display:none" />
+              </div>
+            </div>
+            <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+              <span class="fw-bold">Content blocks</span>
+              <span class="ms-auto"></span>
+              <button type="button" class="btn btn-sm btn-outline-dark" data-badd="heading">+ Heading</button>
+              <button type="button" class="btn btn-sm btn-outline-dark" data-badd="paragraph">+ Paragraph</button>
+              <button type="button" class="btn btn-sm btn-outline-dark" data-badd="image">+ Image</button>
+              <button type="button" class="btn btn-sm btn-outline-dark" data-badd="quote">+ Quote</button>
+              <button type="button" class="btn btn-sm btn-outline-dark" data-badd="list">+ List</button>
+            </div>
+            <div id="b-blocks" class="d-flex flex-column gap-2"></div>
+          </div>
+          <div class="modal-footer">
+            <span class="me-auto text-muted small" id="b-status"></span>
+            <button type="button" class="btn btn-outline-dark" id="b-preview">Preview</button>
+            <button type="button" class="btn btn-outline-dark" id="b-save">Save draft</button>
+            <button type="button" class="btn btn-dark" id="b-publish">Publish</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./blog-render.js"></script>
     <script src="./vendor/adminlte/bootstrap.bundle.min.js"></script>
     <script src="./vendor/adminlte/adminlte.min.js"></script>
     <script>
@@ -737,7 +802,7 @@
         });
 
         /* ================= view router ================= */
-        var TITLES = { dashboard: "Dashboard", enquiries: "Enquiries", leads: "Estimator Leads", quotations: "Quotations", templates: "Quotation Templates", invoices: "Invoices", builder: "Pages · Page Builder", soon: "Coming soon" };
+        var TITLES = { dashboard: "Dashboard", enquiries: "Enquiries", leads: "Estimator Leads", quotations: "Quotations", templates: "Quotation Templates", invoices: "Invoices", blog: "Blog Posts", builder: "Pages · Page Builder", soon: "Coming soon" };
         var builderStarted = false;
         function showView(name, soonLabel) {
           document.querySelectorAll(".wx-view").forEach(function (v) { v.hidden = true; });
@@ -758,6 +823,7 @@
           if (name === "quotations") { loadQuotations(quotFilter); loadTemplates(); }
           if (name === "templates") loadTemplates();
           if (name === "invoices") loadInvoices(invFilter);
+          if (name === "blog") loadBlog(blogFilter);
           if (name === "builder") {
             document.getElementById("wx-studio").classList.add("open");
             initStudio();
@@ -2134,6 +2200,393 @@
             })
             .catch(function () { setStatus("Could not load the page list."); });
         }
+        /* ================= blog posts ================= */
+        var blogFilter = "";
+        var blogPosts = [];
+        var blogEditing = null;
+        var blogPrevSlug = "";
+        var blogBlocks = [];
+        var blogModal = null;
+        var LIVE_ORIGIN = "https://neon-crumble-53c90c.netlify.app";
+
+        function slugifyJS(s) {
+          return String(s || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 80) || "post";
+        }
+
+        function loadBlog(filter) {
+          blogFilter = typeof filter === "string" ? filter : blogFilter;
+          var body = document.getElementById("blog-body");
+          body.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">Loading…</td></tr>';
+          api("/.netlify/functions/cms-blog-posts", { method: "GET" })
+            .then(function (r) { return r.json().then(function (j) { return { s: r.status, j: j }; }); })
+            .then(function (res) {
+              if (res.s !== 200) { body.innerHTML = '<tr><td colspan="5" class="text-center text-danger py-4">Could not load posts.</td></tr>'; return; }
+              blogPosts = res.j.posts || [];
+              renderBlogRows();
+            })
+            .catch(function () { body.innerHTML = '<tr><td colspan="5" class="text-center text-danger py-4">Could not load posts.</td></tr>'; });
+        }
+
+        function renderBlogRows() {
+          var body = document.getElementById("blog-body");
+          var rows = blogPosts.filter(function (p) { return !blogFilter || p.status === blogFilter; });
+          document.getElementById("blog-count").textContent = rows.length + " post" + (rows.length === 1 ? "" : "s");
+          if (!rows.length) { body.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">No posts yet. Create the first one.</td></tr>'; return; }
+          body.innerHTML = rows.map(function (p) {
+            var acts = '<button class="btn btn-sm btn-outline-dark me-1" data-bact="edit" data-id="' + p.id + '">Edit</button>';
+            if (p.status === "published") {
+              acts += '<a class="btn btn-sm btn-outline-dark me-1" target="_blank" rel="noopener" href="/insights/' + esc(p.slug) + '/">View</a>';
+              acts += '<button class="btn btn-sm btn-outline-warning me-1" data-bact="unpublish" data-id="' + p.id + '">Unpublish</button>';
+            } else {
+              acts += '<button class="btn btn-sm btn-dark me-1" data-bact="publish" data-id="' + p.id + '">Publish</button>';
+            }
+            acts += '<button class="btn btn-sm btn-outline-danger" data-bact="delete" data-id="' + p.id + '">Delete</button>';
+            return "<tr><td><strong>" + esc(p.title) + "</strong>" + (p.excerpt ? '<div class="text-muted small">' + esc(p.excerpt).slice(0, 90) + "</div>" : "") + "</td>" +
+              "<td><code>/insights/" + esc(p.slug) + "/</code></td>" +
+              "<td>" + statusBadge(p.status) + "</td>" +
+              "<td class=\"text-muted small\">" + timeAgo(p.updated_at) + "</td>" +
+              '<td class="text-end">' + acts + "</td></tr>";
+          }).join("");
+        }
+
+        function openBlogEditor(id) {
+          blogEditing = id || null;
+          blogPrevSlug = "";
+          blogBlocks = [];
+          document.getElementById("b-title").value = "";
+          document.getElementById("b-slug").value = "";
+          document.getElementById("b-excerpt").value = "";
+          document.getElementById("b-cover").value = "";
+          document.getElementById("b-cover-preview").style.display = "none";
+          document.getElementById("b-status").textContent = "";
+          document.getElementById("blog-modal-title").textContent = id ? "Edit post" : "New post";
+          document.getElementById("b-publish").textContent = "Publish";
+          if (!id) { renderBlogBlocks(); showBlogModal(); return; }
+          api("/.netlify/functions/cms-blog-posts?id=" + encodeURIComponent(id), { method: "GET" })
+            .then(function (r) { return r.json(); })
+            .then(function (j) {
+              var p = j.post;
+              if (!p) { alert("Post not found."); return; }
+              blogPrevSlug = p.slug || "";
+              document.getElementById("b-title").value = p.title || "";
+              document.getElementById("b-slug").value = p.slug || "";
+              document.getElementById("b-excerpt").value = p.excerpt || "";
+              document.getElementById("b-cover").value = p.cover_image || "";
+              if (p.cover_image) { var pv = document.getElementById("b-cover-preview"); pv.src = p.cover_image; pv.style.display = ""; }
+              blogBlocks = WxBlogRender.parseBlocks(p.content);
+              if (!blogBlocks.length) blogBlocks = [{ type: "paragraph", text: "" }];
+              document.getElementById("b-publish").textContent = p.status === "published" ? "Republish" : "Publish";
+              renderBlogBlocks();
+              showBlogModal();
+            })
+            .catch(function () { alert("Could not load the post."); });
+        }
+
+        function showBlogModal() {
+          if (!blogModal) blogModal = new bootstrap.Modal(document.getElementById("blogModal"));
+          blogModal.show();
+        }
+
+        var BLOCK_LABELS = { heading: "Heading", paragraph: "Paragraph", image: "Image", quote: "Quote", list: "List" };
+
+        function renderBlogBlocks() {
+          var wrap = document.getElementById("b-blocks");
+          if (!blogBlocks.length) { wrap.innerHTML = '<p class="text-muted small mb-0">No blocks yet. Add one above.</p>'; return; }
+          wrap.innerHTML = blogBlocks.map(function (b, i) {
+            var field = "";
+            if (b.type === "image") {
+              field = '<input class="form-control mb-1" data-bf="url" data-i="' + i + '" placeholder="Image URL (/assets/…)" value="' + esc(b.url || "") + '" />' +
+                '<input class="form-control" data-bf="caption" data-i="' + i + '" placeholder="Caption (optional)" value="' + esc(b.caption || "") + '" />';
+            } else if (b.type === "list") {
+              field = '<textarea class="form-control" rows="3" data-bf="text" data-i="' + i + '" placeholder="One item per line">' + esc(b.text || "") + "</textarea>";
+            } else {
+              field = '<textarea class="form-control" rows="' + (b.type === "heading" ? 1 : 3) + '" data-bf="text" data-i="' + i + '" placeholder="' + (b.type === "heading" ? "Section heading" : b.type === "quote" ? "Pull quote" : "Write…") + '">' + esc(b.text || "") + "</textarea>";
+            }
+            return '<div class="card"><div class="card-body p-2">' +
+              '<div class="d-flex align-items-center gap-1 mb-1"><span class="badge text-bg-dark">' + BLOCK_LABELS[b.type] + '</span><span class="ms-auto"></span>' +
+              '<button type="button" class="btn btn-sm btn-outline-dark" data-bmove="-1" data-i="' + i + '" title="Move up">↑</button>' +
+              '<button type="button" class="btn btn-sm btn-outline-dark" data-bmove="1" data-i="' + i + '" title="Move down">↓</button>' +
+              '<button type="button" class="btn btn-sm btn-outline-danger" data-bdel="' + i + '" title="Delete block">✕</button></div>' +
+              field + "</div></div>";
+          }).join("");
+        }
+
+        function syncBlocksFromDOM() {
+          document.querySelectorAll("#b-blocks [data-bf]").forEach(function (el) {
+            var i = Number(el.getAttribute("data-i")), f = el.getAttribute("data-bf");
+            if (blogBlocks[i]) blogBlocks[i][f] = el.value;
+          });
+        }
+
+        function collectBlog(status) {
+          syncBlocksFromDOM();
+          var title = document.getElementById("b-title").value.trim();
+          if (title.length < 3) { alert("Please add a title."); return null; }
+          var slug = document.getElementById("b-slug").value.trim() || slugifyJS(title);
+          return {
+            title: title, slug: slug,
+            excerpt: document.getElementById("b-excerpt").value.trim().slice(0, 300),
+            cover_image: document.getElementById("b-cover").value.trim(),
+            content: blogBlocks.filter(function (b) { return (b.text || "").trim() || (b.type === "image" && (b.url || "").trim()); }),
+            status: status,
+          };
+        }
+
+        function saveBlogPost(data, isNew) {
+          var url = "/.netlify/functions/cms-blog-posts";
+          var payload = isNew ? data : Object.assign({ id: blogEditing }, data);
+          return api(url, { method: isNew ? "POST" : "PATCH", body: payload })
+            .then(function (r) { return r.json().then(function (j) { return { s: r.status, j: j }; }); })
+            .then(function (res) {
+              if (res.s !== 200 || !res.j.post) throw new Error(res.j.error || "Save failed.");
+              return res.j.post;
+            });
+        }
+
+        function publishedNormalized(exceptSlug) {
+          return blogPosts
+            .filter(function (p) { return p.status === "published" && p.slug !== exceptSlug; })
+            .map(function (p) { return WxBlogRender.normalizePost({ slug: p.slug, title: p.title, excerpt: p.excerpt, cover_image: p.cover_image, content: "[]" }); });
+        }
+
+        function cmsSavePage(path, html, message) {
+          return api("/.netlify/functions/cms-save", { body: { path: path, html: html, message: message } })
+            .then(function (r) { return r.json().then(function (j) { return { s: r.status, j: j }; }); })
+            .then(function (res) { if (res.s !== 200) throw new Error(res.j.error || "Publish failed."); });
+        }
+
+        function refreshInsightsIndex(extra) {
+          var all = publishedNormalized(extra ? extra.slug : null).concat(extra ? [extra] : []);
+          return cmsSavePage("insights/index.html", WxBlogRender.renderInsightsIndex(all), "CMS: refresh Insights index");
+        }
+
+        function syncBlogCache(saved) {
+          var row = blogPosts.find(function (p) { return p.id === saved.id; });
+          if (row) {
+            row.status = saved.status; row.slug = saved.slug; row.title = saved.title;
+            row.excerpt = saved.excerpt; row.cover_image = saved.cover_image; row.updated_at = saved.updated_at;
+          } else {
+            blogPosts.unshift({ id: saved.id, slug: saved.slug, title: saved.title, excerpt: saved.excerpt, cover_image: saved.cover_image, status: saved.status, published_at: saved.published_at, updated_at: saved.updated_at, created_at: saved.created_at });
+          }
+        }
+
+        function setBlogBusy(busy, msg) {
+          ["b-save", "b-publish", "b-preview"].forEach(function (id) { document.getElementById(id).disabled = busy; });
+          document.getElementById("b-status").textContent = msg || "";
+        }
+
+        // Publish the open editor: save as published, write the article page, refresh the index.
+        function publishFromEditor() {
+          var data = collectBlog("published");
+          if (!data) return;
+          var isNew = !blogEditing;
+          setBlogBusy(true, "Saving…");
+          var oldSlug = blogPrevSlug;
+          saveBlogPost(data, isNew)
+            .then(function (saved) {
+              blogEditing = saved.id;
+              syncBlogCache(saved);
+              setBlogBusy(true, "Writing the article page…");
+              var norm = WxBlogRender.normalizePost(saved);
+              var html = WxBlogRender.renderPostHTML(saved, [norm].concat(publishedNormalized(saved.slug)).concat(WxBlogRender.STATIC_ARTICLES).slice(0, 4));
+              var chain = cmsSavePage("insights/" + saved.slug + "/index.html", html, "CMS: publish post " + saved.slug);
+              if (oldSlug && oldSlug !== saved.slug) {
+                chain = chain.then(function () {
+                  return api("/.netlify/functions/cms-delete", { body: { path: "insights/" + oldSlug + "/index.html", message: "CMS: remove renamed post " + oldSlug } });
+                });
+              }
+              return chain.then(function () {
+                setBlogBusy(true, "Refreshing the Insights index…");
+                return refreshInsightsIndex(norm);
+              }).then(function () { return saved; });
+            })
+            .then(function (saved) {
+              blogPrevSlug = saved.slug;
+              setBlogBusy(false, "Published. The live site rebuilds in about a minute.");
+              document.getElementById("b-publish").textContent = "Republish";
+              loadBlog();
+            })
+            .catch(function (err) { setBlogBusy(false, ""); alert(err.message || "Publish failed."); });
+        }
+
+        // Publish directly from the list (draft -> published).
+        function publishFromList(id) {
+          var row = blogPosts.find(function (p) { return p.id === id; });
+          if (!row) return;
+          if (!confirm('Publish "' + row.title + '" to the live Insights page?')) return;
+          api("/.netlify/functions/cms-blog-posts?id=" + encodeURIComponent(id), { method: "GET" })
+            .then(function (r) { return r.json(); })
+            .then(function (j) {
+              var full = j.post;
+              if (!full) throw new Error("Post not found.");
+              return saveBlogPost({ id: id, status: "published" }, false).then(function (saved) {
+                saved.content = full.content; saved.cover_image = full.cover_image; saved.excerpt = full.excerpt;
+                syncBlogCache(saved);
+                var norm = WxBlogRender.normalizePost(saved);
+                return cmsSavePage("insights/" + saved.slug + "/index.html",
+                  WxBlogRender.renderPostHTML(saved, [norm].concat(publishedNormalized(saved.slug)).concat(WxBlogRender.STATIC_ARTICLES).slice(0, 4)),
+                  "CMS: publish post " + saved.slug)
+                  .then(function () { return refreshInsightsIndex(norm); });
+              });
+            })
+            .then(function () { loadBlog(); alert("Published. The live site rebuilds in about a minute."); })
+            .catch(function (err) { alert(err.message || "Publish failed."); });
+        }
+
+        function unpublishFromList(id) {
+          var row = blogPosts.find(function (p) { return p.id === id; });
+          if (!row) return;
+          if (!confirm('Unpublish "' + row.title + '"? It will be removed from the live site.')) return;
+          saveBlogPost({ id: id, status: "draft" }, false)
+            .then(function (saved) {
+              syncBlogCache(saved);
+              return api("/.netlify/functions/cms-delete", { body: { path: "insights/" + saved.slug + "/index.html", message: "CMS: unpublish post " + saved.slug } })
+                .then(function () { return refreshInsightsIndex(null); });
+            })
+            .then(function () { loadBlog(); })
+            .catch(function (err) { alert(err.message || "Unpublish failed."); });
+        }
+
+        function deleteBlogPost(id) {
+          var row = blogPosts.find(function (p) { return p.id === id; });
+          if (!row) return;
+          if (!confirm('Delete "' + row.title + '" permanently?')) return;
+          api("/.netlify/functions/cms-blog-posts", { method: "DELETE", body: { id: id } })
+            .then(function (r) { return r.json().then(function (j) { return { s: r.status, j: j }; }); })
+            .then(function (res) {
+              if (res.s !== 200) throw new Error(res.j.error || "Delete failed.");
+              blogPosts = blogPosts.filter(function (p) { return p.id !== id; });
+              var chain = Promise.resolve();
+              if (res.j.wasPublished && res.j.slug) {
+                chain = chain
+                  .then(function () { return api("/.netlify/functions/cms-delete", { body: { path: "insights/" + res.j.slug + "/index.html", message: "CMS: delete post " + res.j.slug } }); })
+                  .then(function () { return refreshInsightsIndex(null); });
+              }
+              return chain;
+            })
+            .then(function () { loadBlog(); })
+            .catch(function (err) { alert(err.message || "Delete failed."); });
+        }
+
+        function previewBlog() {
+          var data = collectBlog("draft");
+          if (!data) return;
+          var norm = WxBlogRender.normalizePost(Object.assign({ published_at: new Date().toISOString() }, data));
+          var html = WxBlogRender.renderPostHTML(
+            Object.assign({ published_at: new Date().toISOString() }, data),
+            [norm].concat(publishedNormalized(data.slug)).concat(WxBlogRender.STATIC_ARTICLES).slice(0, 4)
+          ).split('src="/assets/').join('src="' + LIVE_ORIGIN + '/assets/')
+            .split('href="/assets/').join('href="' + LIVE_ORIGIN + '/assets/');
+          var w = window.open("", "_blank");
+          if (w) { w.document.open(); w.document.write(html); w.document.close(); }
+        }
+
+        // ---- blog events ----
+        document.getElementById("blog-filters").addEventListener("click", function (e) {
+          var b = e.target.closest("[data-filter]");
+          if (!b) return;
+          blogFilter = b.getAttribute("data-filter");
+          this.querySelectorAll("[data-filter]").forEach(function (x) {
+            x.classList.toggle("btn-dark", x === b);
+            x.classList.toggle("btn-outline-dark", x !== b);
+          });
+          renderBlogRows();
+        });
+        document.getElementById("blog-new").addEventListener("click", function () { openBlogEditor(null); });
+        document.getElementById("blog-samples").addEventListener("click", function () {
+          var btn = this;
+          btn.disabled = true;
+          var missing = WxBlogRender.SAMPLE_POSTS.filter(function (s) {
+            return !blogPosts.some(function (p) { return p.slug === s.slug; });
+          });
+          if (!missing.length) { alert("Sample posts are already loaded."); btn.disabled = false; return; }
+          var chain = Promise.resolve();
+          missing.forEach(function (s) {
+            chain = chain.then(function () {
+              return api("/.netlify/functions/cms-blog-posts", { method: "POST", body: { title: s.title, slug: s.slug, excerpt: s.excerpt, cover_image: s.cover_image, content: s.content } })
+                .then(function (r) { return r.json(); });
+            });
+          });
+          chain.then(function () { btn.disabled = false; loadBlog(); alert(missing.length + " sample draft post(s) loaded."); })
+            .catch(function () { btn.disabled = false; alert("Could not load samples."); });
+        });
+        document.getElementById("blog-body").addEventListener("click", function (e) {
+          var b = e.target.closest("[data-bact]");
+          if (!b) return;
+          var id = b.getAttribute("data-id"), act = b.getAttribute("data-bact");
+          if (act === "edit") openBlogEditor(id);
+          else if (act === "publish") publishFromList(id);
+          else if (act === "unpublish") unpublishFromList(id);
+          else if (act === "delete") deleteBlogPost(id);
+        });
+        document.querySelectorAll("#blogModal [data-badd]").forEach(function (btn) {
+          btn.addEventListener("click", function () {
+            syncBlocksFromDOM();
+            blogBlocks.push({ type: btn.getAttribute("data-badd"), text: "" });
+            renderBlogBlocks();
+            var areas = document.querySelectorAll("#b-blocks textarea, #b-blocks input");
+            var last = areas[areas.length - 1];
+            if (last) last.focus();
+          });
+        });
+        document.getElementById("b-blocks").addEventListener("click", function (e) {
+          var mv = e.target.closest("[data-bmove]"), del = e.target.closest("[data-bdel]");
+          if (mv) {
+            syncBlocksFromDOM();
+            var i = Number(mv.getAttribute("data-i")), d = Number(mv.getAttribute("data-bmove"));
+            var j = i + d;
+            if (j < 0 || j >= blogBlocks.length) return;
+            var tmp = blogBlocks[i]; blogBlocks[i] = blogBlocks[j]; blogBlocks[j] = tmp;
+            renderBlogBlocks();
+          } else if (del) {
+            syncBlocksFromDOM();
+            blogBlocks.splice(Number(del.getAttribute("data-bdel")), 1);
+            renderBlogBlocks();
+          }
+        });
+        document.getElementById("b-title").addEventListener("input", function () {
+          var slugEl = document.getElementById("b-slug");
+          if (!slugEl.value) slugEl.value = slugifyJS(this.value);
+        });
+        document.getElementById("b-cover-upload").addEventListener("click", function () {
+          document.getElementById("b-cover-file").click();
+        });
+        document.getElementById("b-cover-file").addEventListener("change", function () {
+          var f = this.files && this.files[0];
+          if (!f) return;
+          var rd = new FileReader();
+          rd.onload = function () {
+            document.getElementById("b-status").textContent = "Uploading image…";
+            api("/.netlify/functions/cms-upload", { body: { filename: f.name, data: rd.result } })
+              .then(function (r) { return r.json().then(function (j) { return { s: r.status, j: j }; }); })
+              .then(function (res) {
+                if (res.s !== 200 || !res.j.url) throw new Error(res.j.error || "Upload failed.");
+                document.getElementById("b-cover").value = res.j.url;
+                var pv = document.getElementById("b-cover-preview");
+                pv.src = res.j.url; pv.style.display = "";
+                document.getElementById("b-status").textContent = "";
+              })
+              .catch(function (err) { document.getElementById("b-status").textContent = ""; alert(err.message || "Upload failed."); });
+          };
+          rd.readAsDataURL(f);
+          this.value = "";
+        });
+        document.getElementById("b-save").addEventListener("click", function () {
+          var data = collectBlog("draft");
+          if (!data) return;
+          var isNew = !blogEditing;
+          setBlogBusy(true, "Saving…");
+          saveBlogPost(data, isNew)
+            .then(function (saved) {
+              blogEditing = saved.id; blogPrevSlug = saved.slug;
+              setBlogBusy(false, "Draft saved " + timeAgo(saved.updated_at) + ".");
+              loadBlog();
+            })
+            .catch(function (err) { setBlogBusy(false, ""); alert(err.message || "Save failed."); });
+        });
+        document.getElementById("b-publish").addEventListener("click", publishFromEditor);
+        document.getElementById("b-preview").addEventListener("click", previewBlog);
+
       })();
     </script>
   </body>

@@ -44,6 +44,22 @@ export async function ghPutFile(path, base64Content, message) {
 
 export const toBase64 = (str) => Buffer.from(str, "utf8").toString("base64");
 
+export async function ghDeleteFile(path, message) {
+  if (!process.env.CMS_GITHUB_TOKEN) throw new Error("CMS not configured (token missing)");
+  const existing = await ghGetFile(path);
+  if (!existing?.sha) return { deleted: false };
+  const res = await fetch(`${API}/repos/${OWNER}/${REPO}/contents/${encodeURIComponent(path)}`, {
+    method: "DELETE",
+    headers: headers(),
+    body: JSON.stringify({ message, sha: existing.sha, branch: BRANCH }),
+  });
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`GitHub delete failed (${res.status}): ${text.slice(0, 200)}`);
+  }
+  return { deleted: true };
+}
+
 // Only page HTML files inside the site may be written (never admin/, netlify/, .git/).
 export function validPagePath(p) {
   if (typeof p !== "string" || p.length > 200) return false;
