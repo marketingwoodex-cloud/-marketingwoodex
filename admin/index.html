@@ -155,6 +155,9 @@
                 <a href="#" class="nav-link" data-view="quotations"><i class="nav-icon bi bi-file-earmark-text"></i><p>Quotations</p></a>
               </li>
               <li class="nav-item">
+                <a href="#" class="nav-link" data-view="templates"><i class="nav-icon bi bi-grid-1x2"></i><p>Templates</p></a>
+              </li>
+              <li class="nav-item">
                 <a href="#" class="nav-link" data-view="soon" data-soon="Blog Posts"><i class="nav-icon bi bi-newspaper"></i><p>Blog Posts</p></a>
               </li>
               <li class="nav-header">CONTENT</li>
@@ -294,6 +297,21 @@
                   <tbody id="quot-body"><tr><td colspan="6" class="text-center text-muted py-4">Loading…</td></tr></tbody>
                 </table>
               </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============ QUOTATION TEMPLATES ============ -->
+        <section class="wx-view app-content" id="view-templates" hidden>
+          <div class="container-fluid">
+            <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+              <span class="text-muted small">One template per work type. A quotation built from a template stays fully editable for each client.</span>
+              <span class="ms-auto"></span>
+              <button class="btn btn-sm btn-outline-dark" id="tmpl-seed">Load defaults</button>
+              <button class="btn btn-sm btn-dark" id="tmpl-new"><i class="bi bi-plus-lg"></i> New template</button>
+            </div>
+            <div class="row g-3" id="tmpl-grid">
+              <div class="col-12 text-muted">Loading…</div>
             </div>
           </div>
         </section>
@@ -441,6 +459,10 @@
           </div>
           <div class="modal-body">
             <div class="row g-3 mb-4">
+              <div class="col-md-8"><label class="form-label fw-bold" for="q-template">Start from template</label><select class="form-select" id="q-template"><option value="">Blank quotation</option></select></div>
+              <div class="col-md-4 d-flex align-items-end"><button type="button" class="btn btn-outline-dark w-100" id="q-apply-template">Apply template</button></div>
+            </div>
+            <div class="row g-3 mb-4">
               <div class="col-md-4"><label class="form-label fw-bold" for="q-client">Client name *</label><input class="form-control" id="q-client" /></div>
               <div class="col-md-4"><label class="form-label fw-bold" for="q-phone">Phone</label><input class="form-control" id="q-phone" /></div>
               <div class="col-md-4"><label class="form-label fw-bold" for="q-email">Email</label><input class="form-control" id="q-email" /></div>
@@ -499,8 +521,42 @@
       </div>
     </div>
 
+    <!-- ============ quotation template editor modal ============ -->
+    <div class="modal fade" id="tmplModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="t-title">New template</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="row g-3 mb-4">
+              <div class="col-md-6"><label class="form-label fw-bold" for="t-name">Template name *</label><input class="form-control" id="t-name" placeholder="e.g. Civil Work" /></div>
+            </div>
+            <h6 class="fw-bold">Default line items</h6>
+            <div class="table-responsive">
+              <table class="table table-sm align-middle">
+                <thead><tr><th style="width:44%">Description</th><th>Qty</th><th>Unit</th><th>Rate (Rs)</th><th>Amount</th><th></th></tr></thead>
+                <tbody id="t-items"></tbody>
+              </table>
+            </div>
+            <div class="d-flex flex-wrap gap-2 mb-4">
+              <button type="button" class="btn btn-outline-dark btn-sm" id="t-add-row">Add row</button>
+            </div>
+            <div class="mb-3"><label class="form-label fw-bold" for="t-terms">Default terms (each client can still change these per quotation)</label><textarea class="form-control" id="t-terms" rows="4"></textarea></div>
+            <div class="alert alert-danger py-2" id="t-error" style="display:none"></div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-dark" id="t-save">Save template</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <input type="file" id="wx-upload-input" accept="image/png,image/jpeg,image/gif,image/webp,image/svg+xml" />
     <script src="/assets/js/estimator-rates.js"></script>
+    <script src="/assets/js/quotation-templates.js"></script>
     <script src="./vendor/grapes.min.js"></script>
     <script src="./vendor/adminlte/bootstrap.bundle.min.js"></script>
     <script src="./vendor/adminlte/adminlte.min.js"></script>
@@ -582,7 +638,7 @@
         });
 
         /* ================= view router ================= */
-        var TITLES = { dashboard: "Dashboard", enquiries: "Enquiries", leads: "Estimator Leads", quotations: "Quotations", builder: "Pages · Page Builder", soon: "Coming soon" };
+        var TITLES = { dashboard: "Dashboard", enquiries: "Enquiries", leads: "Estimator Leads", quotations: "Quotations", templates: "Quotation Templates", builder: "Pages · Page Builder", soon: "Coming soon" };
         var builderStarted = false;
         function showView(name, soonLabel) {
           document.querySelectorAll(".wx-view").forEach(function (v) { v.hidden = true; });
@@ -600,7 +656,8 @@
           if (name === "dashboard") loadDashboard();
           if (name === "enquiries") loadEnquiries(currentFilter);
           if (name === "leads") loadLeads(leadFilter);
-          if (name === "quotations") loadQuotations(quotFilter);
+          if (name === "quotations") { loadQuotations(quotFilter); loadTemplates(); }
+          if (name === "templates") loadTemplates();
           if (name === "builder") {
             document.getElementById("wx-studio").classList.add("open");
             initStudio();
@@ -877,31 +934,32 @@
             sel.appendChild(g);
           });
         }
-        function addQuotRow(item) {
-          item = item || {};
-          var tr = document.createElement("tr");
-          tr.innerHTML =
-            '<td><input class="form-control form-control-sm q-desc" value="" /></td>' +
+        /* shared line-item row helpers (quotation builder + template editor) */
+        function itemRowHtml() {
+          return '<td><input class="form-control form-control-sm q-desc" value="" /></td>' +
             '<td><input class="form-control form-control-sm q-qty" type="number" min="0" step="any" style="width:80px" /></td>' +
             '<td><select class="form-select form-select-sm q-unit">' +
             QUOT_UNITS.map(function (u) { return '<option value="' + u + '">' + u + "</option>"; }).join("") + "</select></td>" +
             '<td><input class="form-control form-control-sm q-rate" type="number" min="0" step="any" style="width:120px" /></td>' +
             '<td class="q-amt fw-bold"></td>' +
             '<td><button type="button" class="btn btn-sm btn-outline-danger q-del" title="Remove row">&times;</button></td>';
+        }
+        function addItemRow(tbody, item, onInput) {
+          item = item || {};
+          var tr = document.createElement("tr");
+          tr.innerHTML = itemRowHtml();
           tr.querySelector(".q-desc").value = item.desc || "";
           tr.querySelector(".q-qty").value = item.qty != null ? item.qty : 1;
           tr.querySelector(".q-unit").value = item.unit || "job";
           tr.querySelector(".q-rate").value = item.rate != null ? item.rate : "";
-          tr.querySelector(".q-del").onclick = function () { tr.remove(); recalcQuot(); };
-          tr.querySelectorAll("input,select").forEach(function (el) {
-            el.addEventListener("input", recalcQuot);
-          });
-          document.getElementById("q-items").appendChild(tr);
-          recalcQuot();
+          tr.querySelector(".q-del").onclick = function () { tr.remove(); if (onInput) onInput(); };
+          if (onInput) tr.querySelectorAll("input,select").forEach(function (el) { el.addEventListener("input", onInput); });
+          tbody.appendChild(tr);
+          if (onInput) onInput();
         }
-        function readQuotItems() {
+        function readItemRows(tbody) {
           var rows = [];
-          document.querySelectorAll("#q-items tr").forEach(function (tr) {
+          tbody.querySelectorAll("tr").forEach(function (tr) {
             rows.push({
               desc: tr.querySelector(".q-desc").value.trim(),
               qty: Number(tr.querySelector(".q-qty").value) || 0,
@@ -911,16 +969,27 @@
           });
           return rows.filter(function (r) { return r.desc; });
         }
-        function recalcQuot() {
+        function recalcRows(tbody, subEl, discEl, totEl) {
           var sub = 0;
-          document.querySelectorAll("#q-items tr").forEach(function (tr) {
+          tbody.querySelectorAll("tr").forEach(function (tr) {
             var amt = (Number(tr.querySelector(".q-qty").value) || 0) * (Number(tr.querySelector(".q-rate").value) || 0);
             sub += amt;
             tr.querySelector(".q-amt").textContent = fmtPKR(amt);
           });
-          var disc = Math.min(Number(document.getElementById("q-discount").value) || 0, sub);
-          document.getElementById("q-subtotal").value = fmtPKR(sub);
-          document.getElementById("q-total").value = fmtPKR(sub - disc);
+          if (subEl && totEl) {
+            var disc = discEl ? Math.min(Number(discEl.value) || 0, sub) : 0;
+            subEl.value = fmtPKR(sub);
+            totEl.value = fmtPKR(sub - disc);
+          }
+        }
+        function addQuotRow(item) {
+          addItemRow(document.getElementById("q-items"), item, recalcQuot);
+        }
+        function readQuotItems() {
+          return readItemRows(document.getElementById("q-items"));
+        }
+        function recalcQuot() {
+          recalcRows(document.getElementById("q-items"), document.getElementById("q-subtotal"), document.getElementById("q-discount"), document.getElementById("q-total"));
         }
         function openQuotBuilder(id) {
           quotEditId = id || null;
@@ -1017,38 +1086,60 @@
           }
         }
         function quotDocHtml(r) {
+          var NAVY = "#0a0f1e";
           var rows = (r.items || []).map(function (it, i) {
-            return "<tr><td>" + (i + 1) + "</td><td>" + esc(it.desc) + "</td><td>" + esc(it.qty) +
-              "</td><td>" + esc(it.unit) + "</td><td>" + Number(it.rate).toLocaleString("en-PK") +
-              "</td><td>" + Number(it.amount).toLocaleString("en-PK") + "</td></tr>";
+            return "<tr>" +
+              '<td style="padding:9px 10px;border:1px solid #dfe3ec;text-align:center">' + (i + 1) + "</td>" +
+              '<td style="padding:9px 10px;border:1px solid #dfe3ec">' + esc(it.desc) + "</td>" +
+              '<td style="padding:9px 10px;border:1px solid #dfe3ec;text-align:center">' + esc(it.qty) + "</td>" +
+              '<td style="padding:9px 10px;border:1px solid #dfe3ec;text-align:center">' + esc(it.unit) + "</td>" +
+              '<td style="padding:9px 10px;border:1px solid #dfe3ec;text-align:right">' + Number(it.rate).toLocaleString("en-PK") + "</td>" +
+              '<td style="padding:9px 10px;border:1px solid #dfe3ec;text-align:right">' + Number(it.amount).toLocaleString("en-PK") + "</td></tr>";
           }).join("");
           var terms = (r.terms || "").split("\n").filter(function (t) { return t.trim(); })
-            .map(function (t) { return "<li>" + esc(t.trim()) + "</li>"; }).join("");
+            .map(function (t, i) {
+              return '<div style="margin:5px 0"><span style="color:' + NAVY + ';font-weight:700">' + (i + 1) + ".</span> " + esc(t.trim()) + "</div>";
+            }).join("");
           return (
-            '<div style="font-family:Georgia,serif;max-width:760px;margin:0 auto;color:#111">' +
-            '<div style="text-align:center;border-bottom:3px solid #0a0f1e;padding-bottom:14px;margin-bottom:18px">' +
-            '<div style="font-size:26px;font-weight:bold;letter-spacing:2px">WOODEX INTERIOR</div>' +
-            '<div style="font-size:12px;color:#555">M-71, Zainab Tower, Model Town Link Road, Lahore · +92 322 4000768 · info@woodex.com.pk</div></div>' +
-            '<table style="width:100%;font-size:14px;margin-bottom:14px"><tr>' +
-            '<td><strong>Ref:</strong> ' + esc(r.ref_no) + '</td>' +
-            '<td style="text-align:right"><strong>Date:</strong> ' + new Date(r.created_at).toLocaleDateString("en-PK") + '</td></tr>' +
-            (r.project ? '<tr><td colspan="2"><strong>Project:</strong> ' + esc(r.project) + '</td></tr>' : '') +
-            (r.site ? '<tr><td colspan="2"><strong>Site:</strong> ' + esc(r.site) + '</td></tr>' : '') +
-            (r.location ? '<tr><td colspan="2"><strong>Location:</strong> ' + esc(r.location) + '</td></tr>' : '') +
-            '<tr><td colspan="2"><strong>Title:</strong> ' + esc(r.title || "Interior") + '</td></tr>' +
-            (r.client_name ? '<tr><td colspan="2"><strong>Client:</strong> ' + esc(r.client_name) + (r.phone ? ' · ' + esc(r.phone) : '') + '</td></tr>' : '') +
-            '</table>' +
+            '<div style="font-family:\'Segoe UI\',Arial,sans-serif;max-width:780px;margin:0 auto;color:#1a2333">' +
+            '<div style="background:' + NAVY + ';color:#fff;padding:28px 32px">' +
+            '<div style="display:flex;justify-content:space-between;align-items:center">' +
+            '<div><div style="font-size:24px;font-weight:800;letter-spacing:3px">WOODEX</div>' +
+            '<div style="font-size:11px;letter-spacing:6px;color:#aeb6c9;margin-top:2px">INTERIOR</div></div>' +
+            '<div style="text-align:right"><div style="font-size:22px;font-weight:700;letter-spacing:2px">QUOTATION</div>' +
+            '<div style="font-size:12px;color:#aeb6c9;margin-top:6px">' + esc(r.ref_no) + " · " + new Date(r.created_at).toLocaleDateString("en-PK") + "</div></div>" +
+            "</div></div>" +
+            '<div style="display:flex;gap:32px;padding:24px 32px;border-bottom:1px solid #e5e7eb">' +
+            '<div style="flex:1"><div style="font-size:11px;text-transform:uppercase;letter-spacing:2px;color:' + NAVY + ';font-weight:700;margin-bottom:8px">Client</div>' +
+            '<div style="font-size:16px;font-weight:700">' + esc(r.client_name || "–") + "</div>" +
+            (r.phone ? '<div style="font-size:13px;color:#5b6478;margin-top:2px">' + esc(r.phone) + "</div>" : "") +
+            (r.email ? '<div style="font-size:13px;color:#5b6478">' + esc(r.email) + "</div>" : "") + "</div>" +
+            '<div style="flex:1"><div style="font-size:11px;text-transform:uppercase;letter-spacing:2px;color:' + NAVY + ';font-weight:700;margin-bottom:8px">Project</div>' +
+            (r.project ? '<div style="font-size:14px;font-weight:600">' + esc(r.project) + "</div>" : "") +
+            (r.site ? '<div style="font-size:13px;color:#5b6478;margin-top:2px">' + esc(r.site) + "</div>" : "") +
+            (r.location ? '<div style="font-size:13px;color:#5b6478">' + esc(r.location) + "</div>" : "") +
+            (r.title ? '<div style="font-size:13px;color:#5b6478">' + esc(r.title) + "</div>" : "") + "</div></div>" +
+            '<div style="padding:24px 32px">' +
             '<table style="width:100%;border-collapse:collapse;font-size:13.5px">' +
-            '<thead><tr style="background:#0a0f1e;color:#fff">' +
-            '<th style="padding:8px;border:1px solid #0a0f1e">Sr.#</th><th style="padding:8px;border:1px solid #0a0f1e;text-align:left">Description</th>' +
-            '<th style="padding:8px;border:1px solid #0a0f1e">Qty</th><th style="padding:8px;border:1px solid #0a0f1e">Unit</th>' +
-            '<th style="padding:8px;border:1px solid #0a0f1e">Rate</th><th style="padding:8px;border:1px solid #0a0f1e">Amount</th></tr></thead>' +
-            '<tbody>' + rows + '</tbody>' +
-            '<tfoot><tr><td colspan="5" style="padding:8px;border:1px solid #999;text-align:right"><strong>Total</strong></td>' +
-            '<td style="padding:8px;border:1px solid #999"><strong>' + Number(r.total).toLocaleString("en-PK") + '</strong></td></tr></tfoot></table>' +
-            (terms ? '<div style="font-size:13px;margin-top:14px"><strong>Terms:</strong><ul>' + terms + '</ul></div>' : '') +
-            '<div style="margin-top:26px;font-size:14px">Regards,<br><strong>Imtiaz Ahmad</strong><br>Woodex Interior</div>' +
-            '</div>'
+            '<thead><tr style="background:' + NAVY + ';color:#fff">' +
+            '<th style="padding:10px;border:1px solid ' + NAVY + ';width:36px">#</th>' +
+            '<th style="padding:10px;border:1px solid ' + NAVY + ';text-align:left">Description</th>' +
+            '<th style="padding:10px;border:1px solid ' + NAVY + ';width:52px">Qty</th>' +
+            '<th style="padding:10px;border:1px solid ' + NAVY + ';width:52px">Unit</th>' +
+            '<th style="padding:10px;border:1px solid ' + NAVY + ';width:90px">Rate</th>' +
+            '<th style="padding:10px;border:1px solid ' + NAVY + ';width:110px">Amount</th>' +
+            "</tr></thead><tbody>" + rows + "</tbody></table>" +
+            '<div style="display:flex;justify-content:flex-end"><div style="width:300px;font-size:13.5px">' +
+            '<div style="display:flex;justify-content:space-between;padding:8px 10px;border:1px solid #dfe3ec;border-top:0"><span>Subtotal</span><span>' + Number(r.subtotal).toLocaleString("en-PK") + "</span></div>" +
+            (r.discount > 0 ? '<div style="display:flex;justify-content:space-between;padding:8px 10px;border:1px solid #dfe3ec;border-top:0"><span>Discount</span><span>' + Number(r.discount).toLocaleString("en-PK") + "</span></div>" : "") +
+            '<div style="display:flex;justify-content:space-between;padding:10px;background:' + NAVY + ';color:#fff;font-weight:700;font-size:15px"><span>Total</span><span>Rs ' + Number(r.total).toLocaleString("en-PK") + "</span></div>" +
+            "</div></div>" +
+            (terms ? '<div style="margin-top:24px"><div style="font-size:11px;text-transform:uppercase;letter-spacing:2px;color:' + NAVY + ';font-weight:700;margin-bottom:8px;border-left:4px solid ' + NAVY + ';padding-left:10px">Terms</div><div style="font-size:13px;color:#3c4457">' + terms + "</div></div>" : "") +
+            '<div style="margin-top:28px;font-size:14px">Regards,<br><strong>Imtiaz Ahmad</strong><br><span style="color:#5b6478;font-size:13px">Woodex Interior</span></div>' +
+            "</div>" +
+            '<div style="background:' + NAVY + ';color:#aeb6c9;font-size:11.5px;padding:16px 32px;text-align:center;letter-spacing:0.5px">' +
+            "M-71, Zainab Tower, Model Town Link Road, Lahore &nbsp;·&nbsp; +92 322 4000768 &nbsp;·&nbsp; info@woodex.com.pk &nbsp;·&nbsp; woodex.com.pk</div>" +
+            "</div>"
           );
         }
         function openQuotPreview(id) {
@@ -1116,6 +1207,147 @@
             quotPrevModal.hide();
             loadQuotations(quotFilter);
           } catch (err) { alert(err.message); }
+        });
+
+        /* ================= quotation templates ================= */
+        var tmplCache = [], tmplEditId = null, tmplModal = null;
+
+        function recalcTmpl() {
+          recalcRows(document.getElementById("t-items"));
+        }
+        async function loadTemplates() {
+          var grid = document.getElementById("tmpl-grid");
+          try {
+            var res = await api("/.netlify/functions/cms-quotation-templates", { method: "GET" });
+            var data = await res.json();
+            if (!res.ok || !data || !data.templates) throw new Error("load failed");
+            tmplCache = data.templates;
+          } catch (err) {
+            tmplCache = [];
+            grid.innerHTML = '<div class="col-12 text-muted">Could not load templates. The quotation_templates table may not exist yet.</div>';
+            refreshQuotTemplateOptions();
+            return;
+          }
+          renderTemplates();
+          refreshQuotTemplateOptions();
+        }
+        function renderTemplates() {
+          var grid = document.getElementById("tmpl-grid");
+          document.getElementById("tmpl-seed").style.display = tmplCache.length ? "none" : "";
+          if (!tmplCache.length) {
+            grid.innerHTML = '<div class="col-12 text-muted">No templates yet. Load the defaults or create one.</div>';
+            return;
+          }
+          grid.innerHTML = tmplCache.map(function (t) {
+            var n = (t.items || []).length;
+            var terms = (t.terms || "").split("\n").filter(function (x) { return x.trim(); }).slice(0, 2).join(" · ");
+            return '<div class="col-md-6 col-xl-4"><div class="card h-100"><div class="card-body">' +
+              '<h6 class="fw-bold mb-1">' + esc(t.name) + "</h6>" +
+              '<div class="text-muted small mb-2">' + n + " line item" + (n === 1 ? "" : "s") + "</div>" +
+              (terms ? '<div class="small text-muted mb-3">' + esc(terms) + "</div>" : "") +
+              '<div class="d-flex gap-2">' +
+              '<button class="btn btn-sm btn-outline-dark" data-tedit="' + t.id + '">Edit</button>' +
+              '<button class="btn btn-sm btn-outline-danger" data-tdel="' + t.id + '">Delete</button>' +
+              "</div></div></div></div>";
+          }).join("");
+        }
+        function refreshQuotTemplateOptions() {
+          var sel = document.getElementById("q-template");
+          sel.innerHTML = '<option value="">Blank quotation</option>' +
+            tmplCache.map(function (t) { return '<option value="' + t.id + '">' + esc(t.name) + "</option>"; }).join("");
+        }
+        async function seedTemplates() {
+          var defaults = window.WX_QUOT_TEMPLATES || [];
+          if (!defaults.length) { alert("No default templates found."); return; }
+          if (!confirm("Load " + defaults.length + " default templates?")) return;
+          var btn = document.getElementById("tmpl-seed");
+          btn.disabled = true;
+          try {
+            for (var i = 0; i < defaults.length; i++) {
+              var t = defaults[i];
+              await api("/.netlify/functions/cms-quotation-templates", {
+                body: { name: t.name, items: t.items, terms: t.terms },
+              });
+            }
+            loadTemplates();
+          } catch (err) {
+            alert("Seeding failed: " + err.message);
+          } finally {
+            btn.disabled = false;
+          }
+        }
+        function openTmplEditor(id) {
+          tmplEditId = id || null;
+          var t = id ? tmplCache.find(function (x) { return x.id === id; }) : null;
+          document.getElementById("t-title").textContent = t ? "Edit template" : "New template";
+          document.getElementById("t-name").value = t ? t.name : "";
+          var tb = document.getElementById("t-items");
+          tb.innerHTML = "";
+          (t && t.items && t.items.length ? t.items : [{}]).forEach(function (it) { addItemRow(tb, it, recalcTmpl); });
+          document.getElementById("t-terms").value = t ? t.terms || "" : "";
+          document.getElementById("t-error").style.display = "none";
+          if (!tmplModal) tmplModal = new bootstrap.Modal(document.getElementById("tmplModal"));
+          tmplModal.show();
+        }
+        async function saveTemplate() {
+          var errEl = document.getElementById("t-error");
+          errEl.style.display = "none";
+          var name = document.getElementById("t-name").value.trim();
+          var items = readItemRows(document.getElementById("t-items"));
+          if (name.length < 2) { errEl.textContent = "Template name is required."; errEl.style.display = "block"; return; }
+          if (!items.length) { errEl.textContent = "Add at least one line item."; errEl.style.display = "block"; return; }
+          var btn = document.getElementById("t-save");
+          btn.disabled = true;
+          try {
+            var payload = { name: name, items: items, terms: document.getElementById("t-terms").value.trim() };
+            var res, data;
+            if (tmplEditId) {
+              res = await api("/.netlify/functions/cms-quotation-templates", { method: "PATCH", body: Object.assign({ id: tmplEditId }, payload) });
+            } else {
+              res = await api("/.netlify/functions/cms-quotation-templates", { body: payload });
+            }
+            data = await res.json().catch(function () { return null; });
+            if (!res.ok || !data || !data.ok) throw new Error((data && data.error) || "save failed");
+            tmplModal.hide();
+            loadTemplates();
+          } catch (err) {
+            errEl.textContent = err.message;
+            errEl.style.display = "block";
+          } finally {
+            btn.disabled = false;
+          }
+        }
+        document.getElementById("tmpl-new").addEventListener("click", function () { openTmplEditor(null); });
+        document.getElementById("tmpl-seed").addEventListener("click", seedTemplates);
+        document.getElementById("t-add-row").addEventListener("click", function () { addItemRow(document.getElementById("t-items"), {}, recalcTmpl); });
+        document.getElementById("t-save").addEventListener("click", saveTemplate);
+        document.getElementById("tmpl-grid").addEventListener("click", async function (e) {
+          var eb = e.target.closest("[data-tedit]");
+          var db = e.target.closest("[data-tdel]");
+          if (eb) { openTmplEditor(eb.getAttribute("data-tedit")); return; }
+          if (db) {
+            var t = tmplCache.find(function (x) { return x.id === db.getAttribute("data-tdel"); });
+            if (!t || !confirm('Delete template "' + t.name + '"? Quotations already made from it are not affected.')) return;
+            try {
+              var res = await api("/.netlify/functions/cms-quotation-templates", { method: "DELETE", body: { id: t.id } });
+              var data = await res.json().catch(function () { return null; });
+              if (!res.ok || !data || !data.ok) throw new Error((data && data.error) || "delete failed");
+              loadTemplates();
+            } catch (err) { alert(err.message); }
+          }
+        });
+        document.getElementById("q-apply-template").addEventListener("click", function () {
+          var id = document.getElementById("q-template").value;
+          if (!id) return;
+          var t = tmplCache.find(function (x) { return x.id === id; });
+          if (!t) return;
+          var tb = document.getElementById("q-items");
+          if (tb.querySelectorAll("tr").length && !confirm('Replace the current line items with the "' + t.name + '" template?')) return;
+          tb.innerHTML = "";
+          (t.items || []).forEach(function (it) { addItemRow(tb, it, recalcQuot); });
+          if (!tb.querySelectorAll("tr").length) addItemRow(tb, {}, recalcQuot);
+          document.getElementById("q-terms").value = t.terms || "";
+          recalcQuot();
         });
 
         /* ================= page builder (GrapesJS) ================= */
