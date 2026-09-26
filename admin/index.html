@@ -4,7 +4,8 @@
     <meta charset="utf-8" />
     <meta name="robots" content="noindex" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Woodex Content Manager</title>
+    <title>Woodex Page Builder</title>
+    <link rel="stylesheet" href="./vendor/grapes.min.css" />
     <style>
       :root { --navy: #0a0f1e; }
       * { box-sizing: border-box; }
@@ -14,12 +15,16 @@
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         background: var(--navy);
         color: #fff;
+      }
+      /* ---------- sign-in gate ---------- */
+      #wx-gate {
+        min-height: 100%;
         display: flex;
         align-items: center;
         justify-content: center;
         padding: 24px;
       }
-      .card {
+      #wx-gate .card {
         width: 100%;
         max-width: 380px;
         background: #fff;
@@ -28,221 +33,139 @@
         padding: 36px 32px;
         box-shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
       }
-      .brand {
-        font-weight: 800;
-        letter-spacing: 0.22em;
-        font-size: 15px;
-        margin: 0 0 6px;
+      #wx-gate .brand { font-weight: 800; letter-spacing: 0.22em; font-size: 15px; margin: 0 0 6px; }
+      #wx-gate .sub { margin: 0 0 26px; color: #5b6478; font-size: 14px; }
+      #wx-gate label { display: block; font-size: 13px; font-weight: 600; margin: 14px 0 6px; }
+      #wx-gate input {
+        width: 100%; padding: 12px 14px; border: 1.5px solid #dfe3ec;
+        border-radius: 999px; font-size: 15px; outline: none;
       }
-      .sub { margin: 0 0 26px; color: #5b6478; font-size: 14px; }
-      label { display: block; font-size: 13px; font-weight: 600; margin: 14px 0 6px; }
-      input {
-        width: 100%;
-        padding: 12px 14px;
-        border: 1.5px solid #dfe3ec;
-        border-radius: 999px;
-        font-size: 15px;
-        outline: none;
+      #wx-gate input:focus { border-color: var(--navy); }
+      #wx-gate button[type="submit"] {
+        width: 100%; margin-top: 22px; padding: 13px; border: 0; border-radius: 999px;
+        background: var(--navy); color: #fff; font-size: 15px; font-weight: 700; cursor: pointer;
       }
-      input:focus { border-color: var(--navy); }
-      button {
-        width: 100%;
-        margin-top: 22px;
-        padding: 13px;
-        border: 0;
-        border-radius: 999px;
-        background: var(--navy);
-        color: #fff;
-        font-size: 15px;
-        font-weight: 700;
-        cursor: pointer;
+      #wx-gate button[type="submit"]:disabled { opacity: 0.55; cursor: wait; }
+      #wx-gate .error {
+        display: none; margin-top: 14px; padding: 10px 14px; border-radius: 12px;
+        background: #fdecec; color: #a12622; font-size: 13px;
       }
-      button:disabled { opacity: 0.55; cursor: wait; }
-      .error {
-        display: none;
-        margin-top: 14px;
-        padding: 10px 14px;
-        border-radius: 12px;
-        background: #fdecec;
-        color: #a12622;
-        font-size: 13px;
+      #wx-gate .note { margin-top: 18px; font-size: 12px; color: #8a93a8; text-align: center; }
+      /* ---------- studio ---------- */
+      #wx-studio { display: none; height: 100vh; flex-direction: column; background: #f2f4f8; color: #1a2333; }
+      #wx-studio.open { display: flex; }
+      .wx-topbar {
+        display: flex; align-items: center; gap: 10px;
+        background: var(--navy); color: #fff; padding: 10px 14px;
       }
-      .fallback { display: none; margin-top: 18px; font-size: 13px; color: #5b6478; }
-      .fallback code {
-        display: block;
-        word-break: break-all;
-        background: #f2f4f8;
-        border-radius: 10px;
-        padding: 10px;
-        margin: 8px 0;
-        font-size: 12px;
-        user-select: all;
+      .wx-topbar .brand { font-weight: 800; letter-spacing: 0.18em; font-size: 13px; white-space: nowrap; }
+      .wx-topbar select {
+        flex: 1; max-width: 340px; padding: 8px 12px; border-radius: 999px;
+        border: 1px solid #2a3550; background: #141b30; color: #fff; font-size: 13px;
       }
-      .note { margin-top: 18px; font-size: 12px; color: #8a93a8; text-align: center; }
+      .wx-btn {
+        padding: 8px 16px; border-radius: 999px; border: 1px solid #2a3550;
+        background: transparent; color: #fff; font-size: 13px; font-weight: 600; cursor: pointer;
+        white-space: nowrap;
+      }
+      .wx-btn:hover { background: #1a2340; }
+      .wx-btn.primary { background: #fff; color: var(--navy); border-color: #fff; }
+      .wx-btn.primary:hover { background: #e8ecf5; }
+      .wx-btn:disabled { opacity: 0.45; cursor: default; }
+      .wx-btn.on { background: #2a3556; }
+      #wx-status { font-size: 12px; color: #9aa6c2; white-space: nowrap; }
+      .wx-main { flex: 1; display: flex; min-height: 0; }
+      .wx-side {
+        width: 230px; background: #fff; border-right: 1px solid #e3e8f2;
+        overflow-y: auto; padding: 12px; font-size: 13px;
+      }
+      .wx-side h4 { margin: 6px 0 10px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: #8a93a8; }
+      .wx-side.right { border-right: 0; border-left: 1px solid #e3e8f2; width: 250px; }
+      .wx-canvas { flex: 1; min-width: 0; position: relative; }
+      #gjs { height: 100%; }
+      .wx-hint { font-size: 12px; color: #8a93a8; margin: 10px 2px; line-height: 1.5; }
+      /* GrapesJS panel overrides to match */
+      .gjs-blocks-c { justify-content: flex-start; }
+      .gjs-block { width: calc(50% - 6px); min-height: 70px; font-size: 12px; }
+      #wx-upload-input { display: none; }
+      @media (max-width: 900px) {
+        .wx-side { display: none; }
+      }
     </style>
   </head>
   <body>
-    <div class="card" id="wx-gate">
-      <p class="brand">WOODEX</p>
-      <p class="sub">Content Manager sign in</p>
-      <form id="wx-form" autocomplete="off">
-        <label for="wx-user">Username</label>
-        <input id="wx-user" name="username" type="text" autocomplete="username" required />
-        <label for="wx-pass">Password</label>
-        <input id="wx-pass" name="password" type="password" autocomplete="current-password" required />
-        <button type="submit" id="wx-submit">Sign in</button>
-        <div class="error" id="wx-error"></div>
-      </form>
-      <div class="fallback" id="wx-fallback">
-        <p>Automatic sign in did not finish.</p>
-        <button type="button" id="wx-retry" style="margin-top:4px">Try again</button>
+    <div id="wx-gate">
+      <div class="card">
+        <p class="brand">WOODEX</p>
+        <p class="sub">Page Builder sign in</p>
+        <form id="wx-form" autocomplete="off">
+          <label for="wx-user">Username</label>
+          <input id="wx-user" name="username" type="text" autocomplete="username" required />
+          <label for="wx-pass">Password</label>
+          <input id="wx-pass" name="password" type="password" autocomplete="current-password" required />
+          <button type="submit" id="wx-submit">Sign in</button>
+          <div class="error" id="wx-error"></div>
+        </form>
+        <p class="note">Changes you publish here go live on the website.</p>
       </div>
-      <p class="note">Changes you save here publish to the live website.</p>
     </div>
 
+    <div id="wx-studio">
+      <div class="wx-topbar">
+        <span class="brand">WOODEX · Page Builder</span>
+        <select id="wx-page" title="Choose a page to edit"></select>
+        <button class="wx-btn" id="wx-device-desktop" title="Desktop preview">Desktop</button>
+        <button class="wx-btn" id="wx-device-mobile" title="Mobile preview">Mobile</button>
+        <button class="wx-btn" id="wx-undo" title="Undo">Undo</button>
+        <button class="wx-btn" id="wx-upload" title="Upload an image">Upload image</button>
+        <button class="wx-btn" id="wx-preview" title="Open the live page">View live</button>
+        <button class="wx-btn primary" id="wx-publish" disabled>Publish</button>
+        <span id="wx-status"></span>
+      </div>
+      <div class="wx-main">
+        <div class="wx-side">
+          <h4>Blocks</h4>
+          <div id="wx-blocks"></div>
+          <p class="wx-hint">Drag a block onto the page. Click any text to edit it. Drag sections by their edge to move them. Select an image to replace it.</p>
+          <h4>Layers</h4>
+          <div id="wx-layers"></div>
+        </div>
+        <div class="wx-canvas"><div id="gjs"></div></div>
+        <div class="wx-side right">
+          <h4>Style</h4>
+          <div id="wx-styles"></div>
+          <h4>Settings</h4>
+          <div id="wx-traits"></div>
+        </div>
+      </div>
+    </div>
+    <input type="file" id="wx-upload-input" accept="image/png,image/jpeg,image/gif,image/webp,image/svg+xml" />
+
+    <script src="./vendor/grapes.min.js"></script>
     <script>
       (function () {
         "use strict";
+        /* ================= sign-in gate ================= */
+        var session = null; // memory only, never persisted
         var form = document.getElementById("wx-form");
         var userEl = document.getElementById("wx-user");
         var passEl = document.getElementById("wx-pass");
         var submitEl = document.getElementById("wx-submit");
         var errorEl = document.getElementById("wx-error");
-        var gateEl = document.getElementById("wx-gate");
-        var fallbackEl = document.getElementById("wx-fallback");
-        var sveltiaLoaded = false;
 
         function showError(msg) {
           errorEl.textContent = msg;
           errorEl.style.display = "block";
         }
-        function sleep(ms) {
-          return new Promise(function (r) { setTimeout(r, ms); });
-        }
-        function visibleButtons() {
-          return Array.prototype.filter.call(
-            document.querySelectorAll("button"),
-            function (b) { return b.offsetParent !== null; }
-          );
-        }
-        function loginButton() {
-          return visibleButtons().find(function (b) {
-            return /access token/i.test(b.textContent || "");
-          }) || null;
-        }
-        function editorVisible() {
-          // The editor renders a Collections sidebar; the login screen does not.
-          return !loginButton() &&
-            /collections/i.test(document.body.innerText || "");
-        }
-
-        // Fill Sveltia's own "Sign In Using Access Token" dialog automatically.
-        // The token is kept only in memory for this tab and never displayed.
-        async function autoSignIn(token) {
-          var tokenBtn = loginButton();
-          if (!tokenBtn) return false;
-          tokenBtn.click();
-
-          var input = null;
-          var deadline2 = Date.now() + 10000;
-          while (Date.now() < deadline2 && !input) {
-            var boxes = Array.prototype.filter.call(
-              document.querySelectorAll('input[type="text"], input:not([type]), textarea'),
-              function (el) { return el.offsetParent !== null; }
-            );
-            input = boxes[boxes.length - 1] || null;
-            if (!input) await sleep(300);
-          }
-          if (!input) return false;
-
-          // Set the value the way Svelte's binding expects.
-          var proto = input.tagName === "TEXTAREA"
-            ? HTMLTextAreaElement.prototype
-            : HTMLInputElement.prototype;
-          var setter = Object.getOwnPropertyDescriptor(proto, "value").set;
-          setter.call(input, token);
-          input.dispatchEvent(new Event("input", { bubbles: true }));
-          input.dispatchEvent(new Event("change", { bubbles: true }));
-          await sleep(400);
-
-          var scope = input.closest('[role="dialog"]') || document;
-          function findOk() {
-            return Array.prototype.filter.call(
-              scope.querySelectorAll("button"),
-              function (b) { return b.offsetParent !== null; }
-            ).find(function (b) {
-              var t = b.textContent || "";
-              return /sign in/i.test(t) && !/access token/i.test(t);
-            }) || null;
-          }
-          // Wait for Svelte to enable the button after the input event,
-          // then click and confirm the dialog actually closes.
-          var ok = null;
-          var deadline3 = Date.now() + 8000;
-          while (Date.now() < deadline3 && !(ok && !ok.disabled)) {
-            ok = findOk();
-            if (!(ok && !ok.disabled)) await sleep(300);
-          }
-          if (!ok) return false;
-          ok.click();
-          await sleep(1200);
-          var dialogGone = !input.isConnected || input.offsetParent === null;
-          if (!dialogGone) {
-            ok = findOk();
-            if (ok && !ok.disabled) {
-              ok.click();
-              await sleep(1500);
-              dialogGone = !input.isConnected || input.offsetParent === null;
-            }
-          }
-          return dialogGone;
-        }
-
-        function loadSveltia(token) {
-          if (sveltiaLoaded) return;
-          sveltiaLoaded = true;
-          gateEl.style.display = "none";
-
-          function showRetry() {
-            gateEl.style.display = "block";
-            form.style.display = "none";
-            fallbackEl.style.display = "block";
-          }
-
-          async function boot() {
-            // Wait for Sveltia to render either the login screen or a
-            // restored editor session (returning visitors may already be in).
-            var deadline = Date.now() + 15000;
-            var btn = null;
-            while (Date.now() < deadline && !btn && !editorVisible()) {
-              btn = loginButton();
-              if (!btn) await sleep(400);
-            }
-            if (!btn) {
-              // Either the editor restored itself, or nothing rendered.
-              // If the editor is up we are done; otherwise offer a retry.
-              if (!editorVisible()) showRetry();
-              return;
-            }
-            var ok = await autoSignIn(token);
-            if (!ok && !editorVisible()) showRetry();
-          }
-
-          var retryEl = document.getElementById("wx-retry");
-          retryEl.addEventListener("click", function () {
-            fallbackEl.style.display = "none";
-            gateEl.style.display = "none";
-            boot();
+        function api(path, body) {
+          return fetch(path, {
+            method: "POST",
+            headers: {
+              "content-type": "application/json",
+              ...(session ? { authorization: "Bearer " + session } : {}),
+            },
+            body: JSON.stringify(body || {}),
           });
-
-          var s = document.createElement("script");
-          s.src = "./sveltia-cms.js";
-          s.onload = boot;
-          s.onerror = function () {
-            gateEl.style.display = "block";
-            showError("Could not load the editor. Please reload and try again.");
-          };
-          document.body.appendChild(s);
         }
 
         form.addEventListener("submit", async function (e) {
@@ -251,19 +174,22 @@
           submitEl.disabled = true;
           submitEl.textContent = "Signing in...";
           try {
-            var res = await fetch("/.netlify/functions/cms-auth", {
-              method: "POST",
-              headers: { "content-type": "application/json" },
-              body: JSON.stringify({ username: userEl.value, password: passEl.value }),
+            var res = await api("/.netlify/functions/cms-auth", {
+              username: userEl.value,
+              password: passEl.value,
             });
             var data = null;
-            try { data = await res.json(); } catch (err) { /* ignore */ }
-            if (!res.ok || !data || !data.token) {
+            try { data = await res.json(); } catch (err) {}
+            if (!res.ok || !data || !data.session) {
               showError((data && data.error) || "Sign in failed. Please try again.");
               return;
             }
+            session = data.session;
             passEl.value = "";
-            loadSveltia(data.token);
+            userEl.value = "";
+            document.getElementById("wx-gate").style.display = "none";
+            document.getElementById("wx-studio").classList.add("open");
+            initStudio();
           } catch (err) {
             showError("Could not reach the sign in service. Check your connection.");
           } finally {
@@ -271,8 +197,207 @@
             submitEl.textContent = "Sign in";
           }
         });
-
         userEl.focus();
+
+        /* ================= studio ================= */
+        var editor = null, pages = [], current = null;
+        var originalDoc = "", savedScripts = [];
+        var dirty = false, studioStarted = false;
+
+        var statusEl = document.getElementById("wx-status");
+        var publishBtn = document.getElementById("wx-publish");
+        var pageSelect = document.getElementById("wx-page");
+
+        function setStatus(t) { statusEl.textContent = t; }
+        function markDirty() {
+          dirty = true;
+          publishBtn.disabled = false;
+          setStatus("Unsaved changes");
+        }
+        function markClean(msg) {
+          dirty = false;
+          publishBtn.disabled = true;
+          setStatus(msg || "");
+        }
+
+        function addBlocks(bm) {
+          var basic = "Basic";
+          bm.add("wx-section", { label: "Section", category: basic,
+            content: '<section style="padding:64px 24px"><div style="max-width:1100px;margin:0 auto"><h2>New section heading</h2><p>Double click to edit this text.</p></div></section>' });
+          bm.add("wx-heading", { label: "Heading", category: basic, content: "<h2>Heading</h2>" });
+          bm.add("wx-text", { label: "Text", category: basic, content: "<p>Double click to edit this text.</p>" });
+          bm.add("wx-image", { label: "Image", category: basic, content: { type: "image" } });
+          bm.add("wx-button", { label: "Button", category: basic,
+            content: '<a href="#" style="display:inline-block;padding:12px 30px;background:#0a0f1e;color:#fff;border-radius:999px;text-decoration:none;font-weight:600">Button</a>' });
+          bm.add("wx-cols", { label: "2 columns", category: basic,
+            content: '<div style="display:flex;gap:28px;flex-wrap:wrap;padding:8px 0"><div style="flex:1;min-width:220px"><h3>Column one</h3><p>Text here.</p></div><div style="flex:1;min-width:220px"><h3>Column two</h3><p>Text here.</p></div></div>' });
+          bm.add("wx-divider", { label: "Divider", category: basic, content: '<hr style="border:0;border-top:1px solid #e3e8f2;margin:32px 0" />' });
+        }
+
+        async function openPage(p) {
+          if (dirty && !confirm("You have unsaved changes. Switch page and lose them?")) {
+            pageSelect.value = current ? current.url : "";
+            return;
+          }
+          current = p;
+          pageSelect.value = p.url;
+          setStatus("Loading " + p.url + " ...");
+          try {
+            var res = await fetch(p.url, { cache: "no-store" });
+            if (!res.ok) throw new Error("load failed");
+            var doc = await res.text();
+            originalDoc = doc;
+            // Pull body scripts aside (nav, effects): the canvas must not run them,
+            // but they are re-attached verbatim on publish.
+            var parser = new DOMParser();
+            var d = parser.parseFromString(doc, "text/html");
+            savedScripts = [];
+            d.querySelectorAll("body script").forEach(function (s) {
+              savedScripts.push(s.outerHTML);
+              s.remove();
+            });
+            editor.setComponents(d.body.innerHTML);
+            editor.UndoManager.clear();
+            markClean("Editing " + p.url);
+          } catch (err) {
+            setStatus("Could not load " + p.url);
+          }
+        }
+
+        async function publish() {
+          if (!current || !dirty) return;
+          publishBtn.disabled = true;
+          setStatus("Publishing ...");
+          try {
+            var bodyHtml = editor.getHtml();
+            var genCss = editor.getCss() || "";
+            var newBody = bodyHtml + (savedScripts.length ? "\n" + savedScripts.join("\n") : "");
+            var doc = originalDoc.replace(
+              /(<body[^>]*>)[\s\S]*?(<\/body\s*>)/i,
+              function (m, open, close) { return open + "\n" + newBody + "\n" + close; }
+            );
+            if (genCss.trim()) {
+              var styleTag = '<style data-wx-builder="1">\n' + genCss + "\n</style>";
+              if (/data-wx-builder="1"/.test(doc)) {
+                doc = doc.replace(/<style data-wx-builder="1">[\s\S]*?<\/style>/, function () { return styleTag; });
+              } else {
+                doc = doc.replace(/<\/head\s*>/i, function () { return styleTag + "\n</head>"; });
+              }
+            }
+            var res = await api("/.netlify/functions/cms-save", {
+              path: current.path,
+              html: doc,
+              message: "Page Builder: update " + current.path,
+            });
+            var data = null;
+            try { data = await res.json(); } catch (err) {}
+            if (!res.ok || !data || !data.ok) {
+              throw new Error((data && data.error) || "publish failed");
+            }
+            // Refresh the baseline so further edits diff cleanly.
+            originalDoc = doc;
+            editor.UndoManager.clear();
+            markClean("Published. Live in about a minute.");
+          } catch (err) {
+            setStatus("Publish failed: " + err.message);
+            publishBtn.disabled = false;
+          }
+        }
+
+        function uploadImage(file) {
+          if (!file) return;
+          setStatus("Uploading image ...");
+          var reader = new FileReader();
+          reader.onload = async function () {
+            try {
+              var res = await api("/.netlify/functions/cms-upload", {
+                filename: file.name,
+                data: reader.result,
+              });
+              var data = null;
+              try { data = await res.json(); } catch (err) {}
+              if (!res.ok || !data || !data.ok) throw new Error((data && data.error) || "upload failed");
+              editor.AssetManager.add({ src: data.url });
+              var sel = editor.getSelected();
+              if (sel && sel.is("image")) sel.set("src", data.url);
+              setStatus("Image uploaded.");
+              markDirty();
+            } catch (err) {
+              setStatus("Upload failed: " + err.message);
+            }
+          };
+          reader.readAsDataURL(file);
+        }
+
+        function initStudio() {
+          if (studioStarted) return;
+          studioStarted = true;
+
+          editor = grapesjs.init({
+            container: "#gjs",
+            fromElement: false,
+            height: "100%",
+            width: "auto",
+            storageManager: false,
+            panels: { defaults: [] },
+            deviceManager: {
+              devices: [
+                { name: "Desktop", width: "" },
+                { name: "Tablet", width: "768px", widthMedia: "992px" },
+                { name: "Mobile", width: "375px", widthMedia: "768px" },
+              ],
+            },
+            canvas: { styles: ["/assets/site.css"] },
+            blockManager: { appendTo: "#wx-blocks" },
+            layerManager: { appendTo: "#wx-layers" },
+            styleManager: { appendTo: "#wx-styles" },
+            traitManager: { appendTo: "#wx-traits" },
+            assetManager: { upload: false },
+          });
+          addBlocks(editor.BlockManager);
+
+          editor.on("update", function () { markDirty(); });
+
+          document.getElementById("wx-device-desktop").addEventListener("click", function () {
+            editor.setDevice("Desktop");
+          });
+          document.getElementById("wx-device-mobile").addEventListener("click", function () {
+            editor.setDevice("Mobile");
+          });
+          document.getElementById("wx-undo").addEventListener("click", function () {
+            editor.UndoManager.undo();
+          });
+          document.getElementById("wx-preview").addEventListener("click", function () {
+            if (current) window.open(current.url, "_blank");
+          });
+          document.getElementById("wx-upload").addEventListener("click", function () {
+            document.getElementById("wx-upload-input").click();
+          });
+          document.getElementById("wx-upload-input").addEventListener("change", function (e) {
+            uploadImage(e.target.files[0]);
+            e.target.value = "";
+          });
+          publishBtn.addEventListener("click", publish);
+          pageSelect.addEventListener("change", function () {
+            var p = pages.find(function (x) { return x.url === pageSelect.value; });
+            if (p) openPage(p);
+          });
+
+          fetch("./pages.json", { cache: "no-store" })
+            .then(function (r) { return r.json(); })
+            .then(function (list) {
+              pages = list;
+              pageSelect.innerHTML = "";
+              pages.forEach(function (p) {
+                var o = document.createElement("option");
+                o.value = p.url;
+                o.textContent = p.title.length > 60 ? p.title.slice(0, 60) + "..." : p.title;
+                pageSelect.appendChild(o);
+              });
+              openPage(pages[0]);
+            })
+            .catch(function () { setStatus("Could not load the page list."); });
+        }
       })();
     </script>
   </body>
