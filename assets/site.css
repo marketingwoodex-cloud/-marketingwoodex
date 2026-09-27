@@ -2272,3 +2272,15 @@ html:not(.js) .ih-faq-a,html:not(.js) .in-faq-a,html:not(.js) .ph-faq-a,html:not
     #home-page .hm-filter-btn.is-active{background:#fff;border-color:#fff;color:var(--hm-navy)}
     @media(max-width:820px){#home-page .hm-project-grid{grid-template-columns:1fr 1fr;grid-template-rows:repeat(3,280px)}#home-page .hm-project-grid .hm-project:first-child{grid-column:auto;grid-row:auto}}
     @media(max-width:600px){#home-page .hm-project-grid{grid-template-columns:1fr;grid-template-rows:none}#home-page .hm-project{height:330px}}
+
+    /* Client reviews (batch 2026-09-27) */
+    #home-page .hm-reviews{background:#fff}
+    #home-page .hm-review-card{max-width:640px;margin:0 auto;background:var(--hm-navy);border-radius:20px;padding:52px 40px;text-align:center;color:#fff}
+    #home-page .hm-review-score strong{display:block;font-size:clamp(3.4rem,6vw,4.6rem);line-height:1;letter-spacing:-.04em;font-weight:600}
+    #home-page .hm-stars{display:flex;justify-content:center;gap:6px;margin:16px 0 12px}
+    #home-page .hm-stars svg{width:22px;height:22px;fill:#fff}
+    #home-page .hm-review-score small{color:rgba(255,255,255,.66);font-size:.85rem}
+    #home-page .hm-review-ctas{display:flex;align-items:center;justify-content:center;gap:26px;margin-top:30px;flex-wrap:wrap}
+    #home-page .hm-review-link{color:#fff;font-size:.88rem;font-weight:600;text-decoration:underline;text-underline-offset:4px}
+    #home-page .hm-review-link:hover{color:rgba(255,255,255,.75)}
+    @media(max-width:600px){#home-page .hm-review-card{padding:40px 24px}}
