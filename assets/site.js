@@ -264,3 +264,27 @@
   s.defer = true;
   document.head.appendChild(s);
 })();
+
+/* Homepage project category filters. */
+(function () {
+  'use strict';
+  var doc = document;
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var btns = doc.querySelectorAll('#home-projects [data-filter]');
+  if (!btns.length) return;
+  var cards = doc.querySelectorAll('#home-projects .hm-project');
+  Array.prototype.forEach.call(btns, function (btn) {
+    btn.addEventListener('click', function () {
+      Array.prototype.forEach.call(btns, function (b) { b.classList.remove('is-active'); b.setAttribute('aria-pressed', 'false'); });
+      btn.classList.add('is-active');
+      btn.setAttribute('aria-pressed', 'true');
+      var f = btn.getAttribute('data-filter');
+      Array.prototype.forEach.call(cards, function (card) {
+        var show = f === 'all' || card.getAttribute('data-cat') === f;
+        card.classList.toggle('is-hidden', !show);
+        card.classList.remove('is-shown');
+        if (show && !reduceMotion) { void card.offsetWidth; card.classList.add('is-shown'); }
+      });
+    });
+  });
+})();
