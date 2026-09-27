@@ -1,11 +1,12 @@
 // Dashboard API: list, update and delete enquiries. Requires CMS session.
 // GET /.netlify/functions/cms-enquiries[?status=new]
-// PATCH { id, status?, notes? }
+// PATCH { id, status?, notes?, pipeline_stage? }
 // DELETE { id }
 import { bearerSession, json, verifySession, canWrite } from "./_auth.mjs";
 import { sbConfigured, sbRest } from "./_supabase.mjs";
 
 const STATUSES = ["new", "contacted", "site_visit", "quoted", "won", "lost"];
+const PIPELINE_STAGES = ["new", "contacted", "site_visit", "quoted", "won", "lost"];
 const LEGACY = { in_progress: "contacted", closed: "won" };
 const normStatus = (st) => LEGACY[st] || st;
 
@@ -33,12 +34,17 @@ export default async (req) => {
     } catch {
       return json(400, { error: "Invalid request." });
     }
-    const { id, status: st, notes } = body || {};
+    const { id, status: st, notes, pipeline_stage } = body || {};
     if (!/^[0-9a-f-]{36}$/i.test(String(id || "")))
       return json(400, { error: "Invalid id." });
     const patch = {};
     const nst = normStatus(st);
     if (STATUSES.includes(nst)) patch.status = nst;
+    if (pipeline_stage !== undefined) {
+      if (!PIPELINE_STAGES.includes(pipeline_stage))
+        return json(400, { error: "Invalid pipeline stage." });
+      patch.pipeline_stage = pipeline_stage;
+    }
     if (typeof notes === "string") patch.notes = notes.slice(0, 2000);
     if (!Object.keys(patch).length) return json(400, { error: "Nothing to update." });
     const { status: s } = await sbRest("enquiries", {

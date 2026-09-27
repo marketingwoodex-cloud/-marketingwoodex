@@ -226,6 +226,35 @@
   }
 })();
 
+/* Page-view counter for the dashboard Analytics view — path only, no identity. */
+(function () {
+  if (location.pathname.indexOf("/admin") === 0) return;
+  try {
+    var payload = JSON.stringify({ path: location.pathname });
+    if (navigator.sendBeacon) {
+      navigator.sendBeacon("/.netlify/functions/analytics-track", new Blob([payload], { type: "application/json" }));
+    } else {
+      fetch("/.netlify/functions/analytics-track", { method: "POST", headers: { "content-type": "application/json" }, body: payload, keepalive: true });
+    }
+  } catch (e) { /* analytics must never break the page */ }
+})();
+
+/* Dashboard-managed theme — loads only on public pages. */
+(function () {
+  if (location.pathname.indexOf("/admin") === 0) return;
+  var c = document.createElement("script");
+  c.src = "/assets/js/theme-config.js";
+  c.defer = true;
+  c.onload = function () {
+    var s = document.createElement("script");
+    s.src = "/assets/js/theme-apply.js";
+    s.defer = true;
+    document.head.appendChild(s);
+  };
+  c.onerror = function () { /* no theme published yet; skip silently */ };
+  document.head.appendChild(c);
+})();
+
 /* WhatsApp handoff widget — loads on every public page. */
 (function () {
   if (location.pathname.indexOf("/admin") === 0) return;

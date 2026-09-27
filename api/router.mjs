@@ -21,6 +21,18 @@ import cmsStats from "../netlify/functions/cms-stats.mjs";
 import cmsTeam from "../netlify/functions/cms-team.mjs";
 import cmsUpload from "../netlify/functions/cms-upload.mjs";
 import cmsUsers from "../netlify/functions/cms-users.mjs";
+import cmsAnalytics from "../netlify/functions/cms-analytics.mjs";
+import cmsBackups from "../netlify/functions/cms-backups.mjs";
+import cmsClients from "../netlify/functions/cms-clients.mjs";
+import cmsHealth from "../netlify/functions/cms-health.mjs";
+import cmsLocations from "../netlify/functions/cms-locations.mjs";
+import cmsRedirects from "../netlify/functions/cms-redirects.mjs";
+import cmsServices from "../netlify/functions/cms-services.mjs";
+import cmsSiteVisits from "../netlify/functions/cms-site-visits.mjs";
+import cmsTestimonials from "../netlify/functions/cms-testimonials.mjs";
+import cmsVersions from "../netlify/functions/cms-versions.mjs";
+import analyticsTrack from "../netlify/functions/analytics-track.mjs";
+import cmsMenuItems from "../netlify/functions/cms-menu-items.mjs";
 import enquirySubmit from "../netlify/functions/enquiry-submit.mjs";
 import estimatorSubmit from "../netlify/functions/estimator-submit.mjs";
 
@@ -41,6 +53,18 @@ const HANDLERS = {
   "cms-team": cmsTeam,
   "cms-upload": cmsUpload,
   "cms-users": cmsUsers,
+  "cms-analytics": cmsAnalytics,
+  "cms-backups": cmsBackups,
+  "cms-clients": cmsClients,
+  "cms-health": cmsHealth,
+  "cms-locations": cmsLocations,
+  "cms-redirects": cmsRedirects,
+  "cms-services": cmsServices,
+  "cms-site-visits": cmsSiteVisits,
+  "cms-testimonials": cmsTestimonials,
+  "cms-versions": cmsVersions,
+  "analytics-track": analyticsTrack,
+  "cms-menu-items": cmsMenuItems,
   "enquiry-submit": enquirySubmit,
   "estimator-submit": estimatorSubmit,
 };

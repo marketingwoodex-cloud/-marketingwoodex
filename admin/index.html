@@ -123,6 +123,22 @@
             <li class="nav-item d-none d-md-block"><span class="nav-link fw-bold" id="wx-view-title">Dashboard</span></li>
           </ul>
           <ul class="navbar-nav ms-auto">
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false" title="Quick actions"><i class="bi bi-plus-lg"></i> <span class="d-none d-md-inline">New</span></a>
+              <ul class="dropdown-menu dropdown-menu-end" id="wx-quick-actions">
+                <li><a class="dropdown-item" href="#" data-qa="page">New Page</a></li>
+                <li><a class="dropdown-item" href="#" data-qa="service">New Service</a></li>
+                <li><a class="dropdown-item" href="#" data-qa="location">New Location</a></li>
+                <li><a class="dropdown-item" href="#" data-qa="project">New Project</a></li>
+                <li><a class="dropdown-item" href="#" data-qa="post">New Blog Post</a></li>
+                <li><a class="dropdown-item" href="#" data-qa="testimonial">New Testimonial</a></li>
+                <li><a class="dropdown-item" href="#" data-qa="member">New Team Member</a></li>
+                <li><a class="dropdown-item" href="#" data-qa="media">Upload Media</a></li>
+                <li><hr class="dropdown-divider" /></li>
+                <li><a class="dropdown-item" href="#" data-qa="quote">New Quote</a></li>
+                <li><a class="dropdown-item" href="#" data-qa="invoice">New Invoice</a></li>
+              </ul>
+            </li>
             <li class="nav-item">
               <a class="nav-link" href="/" target="_blank" title="View live site"><i class="bi bi-globe"></i> <span class="d-none d-md-inline">Live site</span></a>
             </li>
@@ -146,11 +162,20 @@
                 <a href="#" class="nav-link active" data-view="dashboard"><i class="nav-icon bi bi-speedometer2"></i><p>Dashboard</p></a>
               </li>
               <li class="nav-item">
+                <a href="#" class="nav-link" data-view="analytics"><i class="nav-icon bi bi-graph-up"></i><p>Analytics</p></a>
+              </li>
+              <li class="nav-header">CRM &amp; SALES</li>
+              <li class="nav-item">
                 <a href="#" class="nav-link" data-view="enquiries"><i class="nav-icon bi bi-inbox"></i><p>Enquiries <span class="nav-badge badge text-bg-warning ms-1" id="nav-new-count" style="display:none"></span></p></a>
               </li>
-              <li class="nav-header">GROWTH</li>
               <li class="nav-item">
                 <a href="#" class="nav-link" data-view="leads"><i class="nav-icon bi bi-calculator"></i><p>Estimator Leads</p></a>
+              </li>
+              <li class="nav-item">
+                <a href="#" class="nav-link" data-view="pipeline"><i class="nav-icon bi bi-funnel"></i><p>Pipeline</p></a>
+              </li>
+              <li class="nav-item">
+                <a href="#" class="nav-link" data-view="visits"><i class="nav-icon bi bi-calendar-check"></i><p>Site Visits</p></a>
               </li>
               <li class="nav-item">
                 <a href="#" class="nav-link" data-view="quotations"><i class="nav-icon bi bi-file-earmark-text"></i><p>Quotations</p></a>
@@ -162,14 +187,26 @@
                 <a href="#" class="nav-link" data-view="invoices"><i class="nav-icon bi bi-receipt"></i><p>Invoices</p></a>
               </li>
               <li class="nav-item">
-                <a href="#" class="nav-link" data-view="blog"><i class="nav-icon bi bi-newspaper"></i><p>Blog Posts</p></a>
+                <a href="#" class="nav-link" data-view="clients"><i class="nav-icon bi bi-briefcase"></i><p>Clients</p></a>
               </li>
-              <li class="nav-header">CONTENT</li>
+              <li class="nav-header">WEBSITE</li>
               <li class="nav-item">
                 <a href="#" class="nav-link" data-view="builder"><i class="nav-icon bi bi-layout-text-window-reverse"></i><p>Pages</p></a>
               </li>
               <li class="nav-item">
+                <a href="#" class="nav-link" data-view="services"><i class="nav-icon bi bi-grid"></i><p>Services</p></a>
+              </li>
+              <li class="nav-item">
+                <a href="#" class="nav-link" data-view="locations"><i class="nav-icon bi bi-geo-alt"></i><p>Locations</p></a>
+              </li>
+              <li class="nav-item">
                 <a href="#" class="nav-link" data-view="projects"><i class="nav-icon bi bi-kanban"></i><p>Projects</p></a>
+              </li>
+              <li class="nav-item">
+                <a href="#" class="nav-link" data-view="blog"><i class="nav-icon bi bi-newspaper"></i><p>Insights</p></a>
+              </li>
+              <li class="nav-item">
+                <a href="#" class="nav-link" data-view="testimonials"><i class="nav-icon bi bi-chat-quote"></i><p>Testimonials</p></a>
               </li>
               <li class="nav-item">
                 <a href="#" class="nav-link" data-view="media"><i class="nav-icon bi bi-images"></i><p>Media Library</p></a>
@@ -177,11 +214,36 @@
               <li class="nav-item">
                 <a href="#" class="nav-link" data-view="team"><i class="nav-icon bi bi-people"></i><p>Team</p></a>
               </li>
+              <li class="nav-header">DESIGN</li>
               <li class="nav-item">
-                <a href="#" class="nav-link" data-view="settings"><i class="nav-icon bi bi-gear"></i><p>Settings</p></a>
+                <a href="#" class="nav-link" data-view="theme"><i class="nav-icon bi bi-palette"></i><p>Theme</p></a>
               </li>
+              <li class="nav-item">
+                <a href="#" class="nav-link" data-view="navigation"><i class="nav-icon bi bi-menu-button-wide"></i><p>Navigation</p></a>
+              </li>
+              <li class="nav-header">SEO</li>
+              <li class="nav-item">
+                <a href="#" class="nav-link" data-view="seo"><i class="nav-icon bi bi-search"></i><p>SEO Manager</p></a>
+              </li>
+              <li class="nav-header">SETTINGS</li>
+              <li class="nav-item">
+                <a href="#" class="nav-link" data-view="settings"><i class="nav-icon bi bi-gear"></i><p>Site Settings</p></a>
+              </li>
+              <li class="nav-header">SYSTEM</li>
               <li class="nav-item" id="nav-users-item" hidden>
-                <a href="#" class="nav-link" data-view="users"><i class="nav-icon bi bi-person-gear"></i><p>Users</p></a>
+                <a href="#" class="nav-link" data-view="users"><i class="nav-icon bi bi-person-gear"></i><p>Users &amp; Roles</p></a>
+              </li>
+              <li class="nav-item">
+                <a href="#" class="nav-link" data-view="audit"><i class="nav-icon bi bi-list-check"></i><p>Audit Trail</p></a>
+              </li>
+              <li class="nav-item">
+                <a href="#" class="nav-link" data-view="versions"><i class="nav-icon bi bi-clock-history"></i><p>Versions</p></a>
+              </li>
+              <li class="nav-item">
+                <a href="#" class="nav-link" data-view="backups"><i class="nav-icon bi bi-hdd"></i><p>Backups</p></a>
+              </li>
+              <li class="nav-item">
+                <a href="#" class="nav-link" data-view="health"><i class="nav-icon bi bi-heart-pulse"></i><p>System Health</p></a>
               </li>
             </ul>
           </nav>
@@ -553,6 +615,48 @@
         </section>
 
         <!-- ============ COMING SOON ============ -->
+        <section class="wx-view app-content" id="view-pipeline" hidden>
+          <div class="container-fluid" id="wx-root-pipeline"></div>
+        </section>
+        <section class="wx-view app-content" id="view-visits" hidden>
+          <div class="container-fluid" id="wx-root-visits"></div>
+        </section>
+        <section class="wx-view app-content" id="view-clients" hidden>
+          <div class="container-fluid" id="wx-root-clients"></div>
+        </section>
+        <section class="wx-view app-content" id="view-testimonials" hidden>
+          <div class="container-fluid" id="wx-root-testimonials"></div>
+        </section>
+        <section class="wx-view app-content" id="view-services" hidden>
+          <div class="container-fluid" id="wx-root-services"></div>
+        </section>
+        <section class="wx-view app-content" id="view-locations" hidden>
+          <div class="container-fluid" id="wx-root-locations"></div>
+        </section>
+        <section class="wx-view app-content" id="view-analytics" hidden>
+          <div class="container-fluid" id="wx-root-analytics"></div>
+        </section>
+        <section class="wx-view app-content" id="view-theme" hidden>
+          <div class="container-fluid" id="wx-root-theme"></div>
+        </section>
+        <section class="wx-view app-content" id="view-navigation" hidden>
+          <div class="container-fluid" id="wx-root-navigation"></div>
+        </section>
+        <section class="wx-view app-content" id="view-seo" hidden>
+          <div class="container-fluid" id="wx-root-seo"></div>
+        </section>
+        <section class="wx-view app-content" id="view-audit" hidden>
+          <div class="container-fluid" id="wx-root-audit"></div>
+        </section>
+        <section class="wx-view app-content" id="view-versions" hidden>
+          <div class="container-fluid" id="wx-root-versions"></div>
+        </section>
+        <section class="wx-view app-content" id="view-backups" hidden>
+          <div class="container-fluid" id="wx-root-backups"></div>
+        </section>
+        <section class="wx-view app-content" id="view-health" hidden>
+          <div class="container-fluid" id="wx-root-health"></div>
+        </section>
         <section class="wx-view app-content" id="view-soon" hidden>
           <div class="container-fluid">
             <div class="card" style="max-width: 560px; margin: 40px auto">
@@ -1037,6 +1141,9 @@
 
     <script src="./blog-render.js"></script>
     <script src="./project-render.js"></script>
+    <script src="./service-render.js"></script>
+    <script src="./location-render.js"></script>
+    <script src="./blueprint.js"></script>
     <script src="./vendor/adminlte/bootstrap.bundle.min.js"></script>
     <script src="./vendor/adminlte/adminlte.min.js"></script>
     <script>
@@ -4128,6 +4235,16 @@
         document.getElementById("b-publish").addEventListener("click", publishFromEditor);
         document.getElementById("b-preview").addEventListener("click", previewBlog);
 
+
+        /* Bridge for blueprint.js (separate module with the Master Blueprint views). */
+        window.WxDash = {
+          api: api, esc: esc, statusBadge: statusBadge, timeAgo: timeAgo,
+          cmsSavePage: cmsSavePage, showView: showView,
+          session: function () { return session; },
+          user: function () { return { username: sessionUser, role: sessionRole }; },
+          canWrite: function () { return sessionRole === "admin" || sessionRole === "editor"; },
+          isAdmin: function () { return sessionRole === "admin"; }
+        };
       })();
     </script>
   </body>

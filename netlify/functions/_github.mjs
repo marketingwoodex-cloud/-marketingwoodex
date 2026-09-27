@@ -66,7 +66,8 @@ export async function ghDeleteFile(path, message) {
 export function validPagePath(p) {
   if (typeof p !== "string" || p.length > 200) return false;
   if (p.includes("..") || p.startsWith("admin/") || p.startsWith("netlify/")) return false;
-  if (p === "assets/js/site-config.js" || p === "assets/js/estimator-rates.js") return true;
+  if (p === "assets/js/site-config.js" || p === "assets/js/estimator-rates.js" || p === "assets/js/theme-config.js" || p === "assets/js/nav-config.js") return true;
+  if (p === "sitemap.xml" || p === "robots.txt") return true;
   if (!/^[A-Za-z0-9][A-Za-z0-9._/-]*\.html$/.test(p)) return false;
   return true;
 }
