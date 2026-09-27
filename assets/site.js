@@ -35,6 +35,7 @@
     ['contact-motion-ready', '[data-contact-reveal]'],
     ['fitout-hub-motion-ready', '[data-hub-reveal]'],
     ['home-motion-ready', '[data-home-reveal]'],
+    ['home-svc-motion-ready', '[data-svc-reveal]'],
     ['ih-motion-ready', '[data-ih-reveal]'], ['in-motion-ready', '[data-in-reveal]'],
     ['ph-motion-ready', '[data-ph-reveal]'], ['st-motion-ready', '[data-st-reveal]'],
     ['ct-motion-ready', '[data-ct-reveal]'],
