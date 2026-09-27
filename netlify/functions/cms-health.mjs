@@ -19,9 +19,11 @@ export default async (req) => {
     } catch { /* stays down */ }
   }
 
-  // GitHub: token validity AND write capability. GET /repos/{owner}/{repo}
-  // returns a `permissions` object for the token; `push: true` means the
-  // token can publish. This detects a read-only token without writing anything.
+  // GitHub: token validity and the token's user's repo role. NOTE: for classic
+  // PATs, `permissions.push` reflects the USER's repo role, not the token's
+  // scopes — a 403 on actual write ("Resource not accessible by personal
+  // access token") means the token itself lacks Contents write even when
+  // push:true is reported. Only a real publish proves write access.
   let github = "down";
   let github_push = null;
   let github_note = "No token configured.";
@@ -38,7 +40,7 @@ export default async (req) => {
         if (perms && typeof perms.push === "boolean") {
           github_push = perms.push;
           github_note = perms.push
-            ? "Token can publish to the website repo."
+            ? "Repo allows pushes for this token's user — confirm with a real publish (permissions alone do not prove the token can write)."
             : "Token is READ-ONLY — publishing is disabled. Grant Contents: Read and write.";
         } else {
           github_note = "Token valid; write access could not be determined.";
