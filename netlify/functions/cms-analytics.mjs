@@ -41,6 +41,7 @@ export default async (req) => {
     const key = dayKey(r.viewed_at);
     if (key in dayIdx) byDay[dayIdx[key]].views++;
   }
+  const today = byDay.length ? byDay[byDay.length - 1].views : 0;
 
-  return json(200, { total, byDay, topPages });
+  return json(200, { total, today, byDay, topPages });
 };

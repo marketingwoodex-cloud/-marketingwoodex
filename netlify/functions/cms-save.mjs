@@ -20,7 +20,7 @@ export default async (req) => {
   const { path, html } = body || {};
   if (!validPagePath(path)) return json(400, { error: "Invalid page path." });
   // Only the dashboard-managed JS config files and SEO files may be published this way.
-  const isJsConfig = path === "assets/js/estimator-rates.js" || path === "assets/js/site-config.js" || path === "assets/js/theme-config.js";
+  const isJsConfig = path === "assets/js/estimator-rates.js" || path === "assets/js/site-config.js" || path === "assets/js/theme-config.js" || path === "assets/js/nav-config.js";
   const isSeoFile = path === "sitemap.xml" || path === "robots.txt";
   if (typeof html !== "string" || (!isSeoFile && html.length < 100) || html.length > 2_000_000) {
     return json(400, { error: "Invalid page content." });

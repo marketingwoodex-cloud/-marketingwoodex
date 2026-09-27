@@ -4,12 +4,12 @@ import { sbRest } from "./_supabase.mjs";
 
 const MAX_VERSIONS = 20;
 
-export async function saveVersion(page_path, html, username) {
+export async function saveVersion(page_path, html, username, note) {
   try {
     if (!page_path || !html) return null;
     const res = await sbRest("page_versions", {
       method: "POST",
-      body: { page_path, html, created_by: username || null },
+      body: { page_path, html, created_by: username || null, note: note || null },
     });
     if (res.status !== 201 && res.status !== 200) return null;
     // Prune to the newest 20.

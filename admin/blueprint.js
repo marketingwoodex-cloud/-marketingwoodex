@@ -4,8 +4,15 @@
  * talks to it through window.WxDash. */
 (function () {
   "use strict";
-  var D = window.WxDash;
-  if (!D) return;
+  function boot(tries) {
+    var D = window.WxDash;
+    if (!D) {
+      if (tries > 0) setTimeout(function () { boot(tries - 1); }, 250);
+      return;
+    }
+    init(D);
+  }
+  function init(D) {
   var esc = D.esc;
 
   var TITLES2 = {
@@ -873,13 +880,19 @@
         });
       }).catch(function (e) { list.innerHTML = '<p class="text-muted">' + esc(e.message) + "</p>"; });
     };
-    function previewVersion(v, path) {
-      openBpModal("Preview — " + path + " (" + new Date(v.created_at).toLocaleString() + ")",
-        '<iframe id="wx-ver-frame" style="width:100%;height:60vh;border:1px solid #ddd;border-radius:8px" title="Version preview"></iframe>',
+    function previewVersion(v) {
+      openBpModal("Preview — " + v.page_path + " (" + new Date(v.created_at).toLocaleString() + ")",
+        '<div class="text-muted small mb-2">Loading snapshot…</div><iframe id="wx-ver-frame" style="width:100%;height:60vh;border:1px solid #ddd;border-radius:8px" title="Version preview"></iframe>',
         null, null);
-      var fr = document.getElementById("wx-ver-frame");
-      if (fr && v.html) fr.srcdoc = v.html;
-      else if (fr) fr.srcdoc = "<p style='font-family:sans-serif;padding:24px'>No snapshot content stored.</p>";
+      D.api("/.netlify/functions/cms-versions?id=" + encodeURIComponent(v.id), { method: "GET" }).then(jres).then(function (res) {
+        var data = needOk(res, "Could not load version.");
+        var fr = document.getElementById("wx-ver-frame");
+        if (fr && data.version && data.version.html) fr.srcdoc = data.version.html;
+        else if (fr) fr.srcdoc = "<p style='font-family:sans-serif;padding:24px'>No snapshot content stored.</p>";
+      }).catch(function (e) {
+        var fr = document.getElementById("wx-ver-frame");
+        if (fr) fr.srcdoc = "<p style='font-family:sans-serif;padding:24px'>" + esc(e.message || "Could not load.") + "</p>";
+      });
     }
   }
 
@@ -978,4 +991,10 @@
       if (LOADERS[v]) setTimeout(function () { setTitle(v); LOADERS[v](); }, 0);
     }
   });
+  }
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", function () { boot(40); });
+  } else {
+    boot(40);
+  }
 })();

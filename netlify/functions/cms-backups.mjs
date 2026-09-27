@@ -19,6 +19,11 @@ const TABLES = [
   "locations",
   "redirects",
   "menu_items",
+  "invoices",
+  "quotations",
+  "quotation_templates",
+  "page_views",
+  "page_versions",
 ];
 const ROW_CAP = 2000;
 
