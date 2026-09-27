@@ -22,7 +22,12 @@ export default async (req) => {
     const filter = STATUSES.includes(status) ? `&status=eq.${status}` : "";
     const q = `?select=*&order=created_at.desc&limit=${limit}&offset=${offset}${filter}`;
     const { status: s, data, total } = await sbRest("estimator_leads", { query: q, count: "exact" });
-    if (s !== 200) return json(502, { error: "Could not load estimator leads." });
+    // PostgREST answers a limited read with 206 Partial Content when more rows exist.
+    if (s !== 200 && s !== 206) {
+      // 416 = offset ran past the end (rows deleted between pages): honest empty page.
+      if (s === 416) return json(200, { leads: [], total: total ?? 0, limit, offset });
+      return json(502, { error: "Could not load estimator leads." });
+    }
     return json(200, { leads: data, total: total ?? (data || []).length, limit, offset });
   }
 
