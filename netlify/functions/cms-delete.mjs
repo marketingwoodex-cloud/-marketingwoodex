@@ -18,7 +18,8 @@ export default async (req) => {
   try {
     const result = await ghDeleteFile(path, body?.message || `CMS: remove ${path}`);
     return json(200, { ok: true, deleted: result.deleted });
-  } catch {
-    return json(502, { error: "Could not remove the page from the website repo." });
+  } catch (err) {
+    const m = /GitHub (?:write|delete) failed \((\d+)\)/.exec(err?.message || "");
+    return json(502, { error: m ? `Could not remove the page from the website repo (GitHub ${m[1]}).` : "Could not remove the page from the website repo." });
   }
 };

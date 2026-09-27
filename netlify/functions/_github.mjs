@@ -11,9 +11,13 @@ const headers = () => ({
   "user-agent": "woodex-cms",
 });
 
+// Encode each path segment but keep the slashes: the Contents API treats
+// %2F inconsistently, so encodeURIComponent on the whole path is wrong.
+const ghPath = (path) => String(path).split("/").map(encodeURIComponent).join("/");
+
 export async function ghGetFile(path) {
   const res = await fetch(
-    `${API}/repos/${OWNER}/${REPO}/contents/${encodeURIComponent(path)}?ref=${BRANCH}`,
+    `${API}/repos/${OWNER}/${REPO}/contents/${ghPath(path)}?ref=${BRANCH}`,
     { headers: headers() }
   );
   if (res.status === 404) return null;
@@ -30,7 +34,7 @@ export async function ghPutFile(path, base64Content, message) {
     branch: BRANCH,
   };
   if (existing?.sha) body.sha = existing.sha;
-  const res = await fetch(`${API}/repos/${OWNER}/${REPO}/contents/${encodeURIComponent(path)}`, {
+  const res = await fetch(`${API}/repos/${OWNER}/${REPO}/contents/${ghPath(path)}`, {
     method: "PUT",
     headers: headers(),
     body: JSON.stringify(body),
@@ -48,7 +52,7 @@ export async function ghDeleteFile(path, message) {
   if (!process.env.CMS_GITHUB_TOKEN) throw new Error("CMS not configured (token missing)");
   const existing = await ghGetFile(path);
   if (!existing?.sha) return { deleted: false };
-  const res = await fetch(`${API}/repos/${OWNER}/${REPO}/contents/${encodeURIComponent(path)}`, {
+  const res = await fetch(`${API}/repos/${OWNER}/${REPO}/contents/${ghPath(path)}`, {
     method: "DELETE",
     headers: headers(),
     body: JSON.stringify({ message, sha: existing.sha, branch: BRANCH }),

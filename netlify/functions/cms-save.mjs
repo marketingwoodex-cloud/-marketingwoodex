@@ -49,6 +49,9 @@ export default async (req) => {
     );
     return json(200, { ok: true, commit: result?.commit?.sha || null });
   } catch (err) {
-    return json(502, { error: "Could not save to the website repo." });
+    // Surface GitHub's status (403/404/422/…) so a failed publish is
+    // diagnosable; the message carries no credentials.
+    const m = /GitHub (?:write|delete) failed \((\d+)\)/.exec(err?.message || "");
+    return json(502, { error: m ? `Could not save to the website repo (GitHub ${m[1]}).` : "Could not save to the website repo." });
   }
 };
