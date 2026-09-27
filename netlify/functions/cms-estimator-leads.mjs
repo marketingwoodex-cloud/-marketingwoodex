@@ -9,6 +9,7 @@ const LEGACY = { in_progress: "contacted", closed: "won" };
 const normStatus = (st) => LEGACY[st] || st;
 
 export default async (req) => {
+  if (!["GET","PATCH"].includes(req.method)) return json(405, { error: "Method not allowed." });
   const user = await verifySession(bearerSession(req));
   if (!user) return json(401, { error: bearerSession(req) ? "Session expired. Please sign in again." : "Authentication required. Please sign in." });
   if (req.method !== "GET" && !canWrite(user)) return json(403, { error: "Your role is read-only." });

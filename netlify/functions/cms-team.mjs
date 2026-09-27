@@ -11,6 +11,7 @@ const clean = (v, n) => String(v ?? "").replace(/\s+/g, " ").trim().slice(0, n);
 const validPhoto = (u) => /^\/[A-Za-z0-9][A-Za-z0-9._/-]*$/.test(String(u || ""));
 
 export default async (req) => {
+  if (!["GET","POST","PATCH","DELETE"].includes(req.method)) return json(405, { error: "Method not allowed." });
   const user = await verifySession(bearerSession(req));
   if (!user) return json(401, { error: bearerSession(req) ? "Session expired. Please sign in again." : "Authentication required. Please sign in." });
   if (req.method !== "GET" && !canWrite(user)) return json(403, { error: "Your role is read-only." });

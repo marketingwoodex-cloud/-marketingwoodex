@@ -945,7 +945,7 @@
         '<div class="row">' +
         card("Website", "ok", "Dashboard reachable") +
         card("Supabase", data.supabase, "Database") +
-        card("GitHub", data.github, "Publishing") +
+        card("GitHub", data.github, data.github_note || "Publishing") +
         card("CMS API", "ok", "Authenticated") +
         "</div>" +
         '<div class="card"><div class="card-body d-flex justify-content-between align-items-center">' +

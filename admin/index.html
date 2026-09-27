@@ -1158,23 +1158,36 @@
         var sessionRole = null;
         function api(path, opts) {
           opts = opts || {};
-          var method = opts.method || "POST";
-          return fetch(path, {
-            method: method,
-            headers: Object.assign(
-              { "content-type": "application/json" },
-              session ? { authorization: "Bearer " + session } : {}
-            ),
-            body: opts.body ? JSON.stringify(opts.body) : undefined,
-          }).then(function (res) {
-            // Sliding rotation: the server issues a fresh token on the
-            // X-Session-Refresh header for sessions older than 6h.
-            try {
-              var fresh = res.headers.get("x-session-refresh");
-              if (fresh && /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(fresh)) session = fresh;
-            } catch (e) {}
-            return res;
-          });
+          var method = (opts.method || "POST").toUpperCase();
+          // Transient transport faults (dropped connections) are retried with
+          // backoff for safe methods only — never auto-retry a write, so a
+          // request that reached the server is not submitted twice.
+          var attempts = method === "GET" || method === "HEAD" ? 3 : 1;
+          function attempt(n) {
+            return fetch(path, {
+              method: method,
+              headers: Object.assign(
+                { "content-type": "application/json" },
+                session ? { authorization: "Bearer " + session } : {}
+              ),
+              body: opts.body ? JSON.stringify(opts.body) : undefined,
+            }).then(function (res) {
+              // Sliding rotation: the server issues a fresh token on the
+              // X-Session-Refresh header for sessions older than 6h.
+              try {
+                var fresh = res.headers.get("x-session-refresh");
+                if (fresh && /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(fresh)) session = fresh;
+              } catch (e) {}
+              return res;
+            }).catch(function (err) {
+              if (n < attempts) {
+                return new Promise(function (resolve) { setTimeout(resolve, 700 * n); })
+                  .then(function () { return attempt(n + 1); });
+              }
+              throw err;
+            });
+          }
+          return attempt(1);
         }
         function esc(s) {
           return String(s == null ? "" : s)

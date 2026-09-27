@@ -9,6 +9,7 @@ import { saveVersion } from "./_versions.mjs";
 const UUID = /^[0-9a-f-]{36}$/i;
 
 export default async (req) => {
+  if (!["GET","POST"].includes(req.method)) return json(405, { error: "Method not allowed." });
   const user = await verifySession(bearerSession(req));
   if (!user) return json(401, { error: bearerSession(req) ? "Session expired. Please sign in again." : "Authentication required. Please sign in." });
   if (req.method !== "GET" && !canWrite(user)) return json(403, { error: "Your role is read-only." });

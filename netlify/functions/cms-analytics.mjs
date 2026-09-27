@@ -8,9 +8,9 @@ const dayKey = (iso) =>
   new Date(iso).toLocaleDateString("en-CA", { timeZone: TZ }); // YYYY-MM-DD
 
 export default async (req) => {
+  if (req.method !== "GET") return json(405, { error: "Method not allowed." });
   const user = await verifySession(bearerSession(req));
   if (!user) return json(401, { error: bearerSession(req) ? "Session expired. Please sign in again." : "Authentication required. Please sign in." });
-  if (req.method !== "GET" && !canWrite(user)) return json(403, { error: "Your role is read-only." });
   if (!sbConfigured()) return json(503, { error: "Database is not configured yet." });
 
   const since = new Date(Date.now() - 30 * 24 * 3600 * 1000).toISOString();

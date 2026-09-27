@@ -9,10 +9,10 @@ async function rows(table, query) {
 }
 
 export default async (req) => {
+  if (req.method !== "GET") return json(405, { error: "Method not allowed." });
   const user = await verifySession(bearerSession(req));
   if (!user) return json(401, { error: bearerSession(req) ? "Session expired. Please sign in again." : "Authentication required. Please sign in." });
   if (!sbConfigured()) return json(503, { error: "Database is not configured yet." });
-  if (req.method !== "GET") return json(405, { error: "Method not allowed." });
 
   const weekAgo = Date.now() - 7 * 24 * 3600 * 1000;
   const [enquiries, leads, posts, projects, activity, recent] = await Promise.all([
