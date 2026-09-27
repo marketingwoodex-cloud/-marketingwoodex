@@ -2249,3 +2249,8 @@ html:not(.js) .ih-faq-a,html:not(.js) .in-faq-a,html:not(.js) .ph-faq-a,html:not
     @media(prefers-reduced-motion:reduce){
       .home-svc-motion-ready #home-page [data-svc-reveal]{opacity:1!important;transform:none!important;transition:none!important;animation:none!important}
     }
+
+    /* Homepage tagline strip (batch 2026-09-27) */
+    #home-page .hm-tagline{background:var(--hm-navy);border-top:1px solid rgba(255,255,255,.14);padding:54px 0;text-align:center;color:#fff}
+    #home-page .hm-tagline p{margin:0;font-size:clamp(1.45rem,2.8vw,2.15rem);line-height:1.25;letter-spacing:-.02em;font-weight:500;text-wrap:balance}
+    @media(max-width:600px){#home-page .hm-tagline{padding:40px 0}}
