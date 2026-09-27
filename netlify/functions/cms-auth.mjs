@@ -21,45 +21,55 @@ const clientIp = (req) =>
 
 // Cross-instance failed-login count inside the window. Returns null when the
 // shared store cannot be reached (caller falls back to the memory counter).
-async function sharedFailCount(ip) {
+async function sharedFailCount(kind, key) {
   try {
-    if (!sbConfigured()) return null;
+    if (!sbConfigured() || !key) return null;
     const since = new Date(Date.now() - WINDOW_MS).toISOString();
     const { status, data } = await sbRest("activity", {
-      query: `?select=id&kind=eq.login_fail&text=eq.${encodeURIComponent(ip)}&created_at=gte.${encodeURIComponent(since)}&limit=100`,
+      query: `?select=id&kind=eq.${kind}&text=eq.${encodeURIComponent(key)}&created_at=gte.${encodeURIComponent(since)}&limit=100`,
     });
-    if (status !== 200) return null;
+    if (status !== 200 && status !== 206) return null;
     return (data || []).length;
   } catch {
     return null;
   }
 }
 
-async function recordFail(ip) {
+async function recordFail(ip, username) {
   const now = Date.now();
   const e = memAttempts.get(ip);
   if (!e || now > e.resetAt) memAttempts.set(ip, { count: 1, resetAt: now + WINDOW_MS });
   else e.count += 1;
   try {
     if (!sbConfigured()) return;
-    await sbRest("activity", { method: "POST", body: { kind: "login_fail", text: ip } });
+    const rows = [{ kind: "login_fail", text: ip }];
+    if (username) rows.push({ kind: "login_fail_user", text: username });
+    for (const row of rows) {
+      await sbRest("activity", { method: "POST", body: row });
+    }
     // Opportunistic pruning so brute-force rows never pile up.
     const cutoff = new Date(now - 2 * WINDOW_MS).toISOString();
     await sbRest("activity", {
       method: "DELETE",
-      query: `?kind=eq.login_fail&created_at=lt.${encodeURIComponent(cutoff)}`,
+      query: `?kind=in.(login_fail,login_fail_user)&created_at=lt.${encodeURIComponent(cutoff)}`,
     }).catch(() => {});
   } catch { /* memory counter still enforced */ }
 }
 
-async function clearFails(ip) {
+async function clearFails(ip, username) {
   memAttempts.delete(ip);
   try {
     if (!sbConfigured()) return;
     await sbRest("activity", {
       method: "DELETE",
       query: `?kind=eq.login_fail&text=eq.${encodeURIComponent(ip)}`,
-    });
+    }).catch(() => {});
+    if (username) {
+      await sbRest("activity", {
+        method: "DELETE",
+        query: `?kind=eq.login_fail_user&text=eq.${encodeURIComponent(username)}`,
+      }).catch(() => {});
+    }
   } catch {}
 }
 
@@ -68,20 +78,23 @@ export default async (req) => {
 
   const ip = clientIp(req);
   const now = Date.now();
-  const shared = await sharedFailCount(ip);
-  if (shared !== null ? shared >= MAX_ATTEMPTS : false) {
-    return json(429, { error: "Too many attempts. Please wait a few minutes." });
-  }
-  const entry = memAttempts.get(ip);
-  if (shared === null && entry && now <= entry.resetAt && entry.count >= MAX_ATTEMPTS) {
-    return json(429, { error: "Too many attempts. Please wait a few minutes." });
-  }
-
   let body = null;
   try {
     body = await req.json();
   } catch {
     return json(400, { error: "Invalid request." });
+  }
+  const uname = typeof body?.username === "string" ? body.username.trim().toLowerCase().slice(0, 40) : "";
+  // Enforce both buckets: per-IP (naive brute force) and per-username
+  // (distributed brute force from rotating IPs).
+  const overLimit = async (kind, key, memKey) => {
+    const shared = await sharedFailCount(kind, key);
+    if (shared !== null) return shared >= MAX_ATTEMPTS;
+    const e = memKey && memAttempts.get(memKey);
+    return !!(e && now <= e.resetAt && e.count >= MAX_ATTEMPTS);
+  };
+  if ((await overLimit("login_fail", ip, ip)) || (uname && (await overLimit("login_fail_user", uname, null)))) {
+    return json(429, { error: "Too many attempts. Please wait a few minutes." });
   }
 
   const expectedUser = process.env.CMS_ADMIN_USER || "";
@@ -95,7 +108,7 @@ export default async (req) => {
     safeEqual(sha256hex(body?.password), expectedPassHash.toLowerCase());
 
   if (userOk && passOk && secret) {
-    await clearFails(ip);
+    await clearFails(ip, expectedUser.toLowerCase());
     return json(200, { session: issueSession(expectedUser, "admin"), username: expectedUser, role: "admin" });
   }
 
@@ -110,12 +123,12 @@ export default async (req) => {
       if (row && row.active && /^[0-9a-f]{64}$/i.test(row.pass_sha256 || "") &&
           safeEqual(sha256hex(body.password), String(row.pass_sha256).toLowerCase())) {
         const role = ["admin", "editor", "viewer"].includes(row.role) ? row.role : "viewer";
-        await clearFails(ip);
+        await clearFails(ip, row.username);
         return json(200, { session: issueSession(row.username, role), username: row.username, role });
       }
     } catch { /* fall through to 401 */ }
   }
 
-  await recordFail(ip);
+  await recordFail(ip, uname);
   return json(401, { error: "Incorrect username or password." });
 };
