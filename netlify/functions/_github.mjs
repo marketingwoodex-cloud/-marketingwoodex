@@ -41,9 +41,17 @@ export async function ghPutFile(path, base64Content, message) {
   });
   if (!res.ok) {
     const text = await res.text().catch(() => "");
-    throw new Error(`GitHub write failed (${res.status}): ${text.slice(0, 200)}`);
+    let detail = "";
+    try { detail = jsonErrorDetail(JSON.parse(text)); } catch { detail = text.replace(/[\r\n]+/g, " ").slice(0, 140); }
+    throw new Error(`GitHub write failed (${res.status}): ${detail}`);
   }
   return res.json();
+}
+
+function jsonErrorDetail(j) {
+  const msg = (j && j.message ? String(j.message) : "").replace(/[\r\n]+/g, " ").slice(0, 140);
+  const errs = Array.isArray(j?.errors) ? j.errors.map((e) => String(e?.message || e?.code || "")).filter(Boolean).join("; ").slice(0, 140) : "";
+  return [msg, errs].filter(Boolean).join(" | ");
 }
 
 export const toBase64 = (str) => Buffer.from(str, "utf8").toString("base64");
