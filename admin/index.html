@@ -2359,7 +2359,10 @@
             openMediaPicker(function (item) {
               editor.AssetManager.add({ src: item.url });
               var sel = editor.getSelected();
-              if (sel && sel.is("image")) sel.set("src", item.url);
+              if (sel && sel.is("image")) {
+                sel.set("src", item.url);
+                try { sel.addAttributes({ alt: item.alt_text || "" }); } catch (e) {}
+              }
               setStatus("Library image added.");
               markDirty();
             }, "Click an image to place it on the page.");
@@ -2430,18 +2433,40 @@
           return !q || (it.filename || "").toLowerCase().indexOf(q) !== -1 || (it.url || "").toLowerCase().indexOf(q) !== -1;
         }
 
+        function fmtDims(it) {
+          var w = Number(it.width) || 0, h = Number(it.height) || 0;
+          return (w > 0 && h > 0) ? w + " × " + h : "";
+        }
+
+        function mediaMetaLine(it) {
+          var parts = [];
+          var d = fmtDims(it);
+          if (d) parts.push(d);
+          var b = fmtBytes(it.size_bytes);
+          if (b && b !== "0 B") parts.push(b);
+          return parts.join(" · ") || "—";
+        }
+
         function renderMediaGrid() {
           var grid = document.getElementById("media-grid");
           var q = (document.getElementById("media-search").value || "").toLowerCase().trim();
           var rows = mediaItems.filter(function (it) { return mediaMatches(it, q); });
-          document.getElementById("media-count").textContent = rows.length + " file" + (rows.length === 1 ? "" : "s");
+          var missing = rows.filter(function (it) { return !(it.alt_text && it.alt_text.trim()); }).length;
+          document.getElementById("media-count").textContent = rows.length + " file" + (rows.length === 1 ? "" : "s") +
+            (missing ? " · " + missing + " missing alt" : "");
           if (!rows.length) { grid.innerHTML = '<div class="col-12 text-muted">No files yet. Upload images or load the samples.</div>'; return; }
           grid.innerHTML = rows.map(function (it) {
+            var alt = (it.alt_text || "").trim();
+            var altLine = alt
+              ? '<div class="text-muted text-truncate" style="font-size:11px" title="' + esc(alt) + '">Alt: ' + esc(alt) + "</div>"
+              : '<div style="font-size:11px"><span class="badge bg-warning text-dark">Missing alt</span></div>';
             return '<div class="col-6 col-md-4 col-lg-3"><div class="card h-100">' +
-              '<img src="' + esc(it.url) + '" class="card-img-top" alt="" loading="lazy" style="height:150px;object-fit:cover;cursor:pointer" data-mact="copy" data-id="' + it.id + '" title="Click to copy URL" />' +
+              '<img src="' + esc(it.url) + '" class="card-img-top" alt="' + esc(alt) + '" loading="lazy" style="height:150px;object-fit:cover;cursor:pointer" data-mact="copy" data-id="' + it.id + '" title="Click to copy URL" />' +
               '<div class="card-body p-2"><div class="small fw-bold text-truncate" title="' + esc(it.filename || "") + '">' + esc(it.filename || "Untitled") + '</div>' +
-              '<div class="text-muted" style="font-size:11px">' + fmtBytes(it.size_bytes) + "</div>" +
-              '<div class="d-flex gap-1 mt-1"><button class="btn btn-sm btn-outline-dark" data-mact="copy" data-id="' + it.id + '">Copy URL</button>' +
+              '<div class="text-muted" style="font-size:11px">' + esc(mediaMetaLine(it)) + "</div>" +
+              altLine +
+              '<div class="d-flex gap-1 mt-1 flex-wrap"><button class="btn btn-sm btn-outline-dark" data-mact="copy" data-id="' + it.id + '">Copy URL</button>' +
+              '<button class="btn btn-sm btn-outline-dark" data-mact="alt" data-id="' + it.id + '">Alt</button>' +
               '<button class="btn btn-sm btn-outline-dark" data-mact="rename" data-id="' + it.id + '">Rename</button>' +
               '<button class="btn btn-sm btn-outline-danger ms-auto" data-mact="delete" data-id="' + it.id + '">Delete</button></div>' +
               "</div></div></div>";
@@ -2460,34 +2485,91 @@
           } else { prompt("Copy the URL:", url); }
         }
 
-        function registerMedia(url, filename, sizeBytes) {
-          return api("/.netlify/functions/cms-media", { method: "POST", body: { url: url, filename: filename, size_bytes: sizeBytes } })
+        function registerMedia(url, filename, sizeBytes, extra) {
+          var body = { url: url, filename: filename, size_bytes: sizeBytes };
+          if (extra) {
+            if (extra.alt_text) body.alt_text = extra.alt_text;
+            if (extra.width) body.width = extra.width;
+            if (extra.height) body.height = extra.height;
+          }
+          return api("/.netlify/functions/cms-media", { method: "POST", body: body })
             .then(function (r) { return r.json().then(function (j) { return { s: r.status, j: j }; }); })
-            .then(function (res) { if (res.s !== 200) throw new Error(res.j.error || "Could not register the file."); });
+            .then(function (res) {
+              if (res.s !== 200) throw new Error(res.j.error || "Could not register the file.");
+              if (res.j.item && res.j.item._needsMigration && !mediaMigrationWarned) {
+                mediaMigrationWarned = true;
+                alert("Heads up: to enable alt text and dimensions, run this once in the Supabase SQL editor:\n\nALTER TABLE media ADD COLUMN IF NOT EXISTS alt_text text;\nALTER TABLE media ADD COLUMN IF NOT EXISTS width integer;\nALTER TABLE media ADD COLUMN IF NOT EXISTS height integer;");
+              }
+            });
+        }
+        var mediaMigrationWarned = false;
+        var MEDIA_MAX_SIDE = 1920;
+
+        // Read an image file, downscale it if it is larger than MEDIA_MAX_SIDE,
+        // and report its final dimensions. SVG/GIF are never re-encoded.
+        function prepareImageFile(file) {
+          return new Promise(function (resolve) {
+            function done(dataUrl, name, size, width, height) {
+              resolve({ dataUrl: dataUrl, filename: name, sizeBytes: size, width: width, height: height });
+            }
+            function readOriginal(w, h) {
+              var rd = new FileReader();
+              rd.onload = function () { done(rd.result, file.name, file.size, w || null, h || null); };
+              rd.onerror = function () { done(null); };
+              rd.readAsDataURL(file);
+            }
+            var noResize = file.type === "image/svg+xml" || file.type === "image/gif";
+            var img = new Image();
+            var objUrl = URL.createObjectURL(file);
+            img.onload = function () {
+              URL.revokeObjectURL(objUrl);
+              var w = img.naturalWidth || 0, h = img.naturalHeight || 0;
+              var longest = Math.max(w, h);
+              if (noResize || !w || !h || longest <= MEDIA_MAX_SIDE) { readOriginal(w, h); return; }
+              var scale = MEDIA_MAX_SIDE / longest;
+              var cw = Math.round(w * scale), ch = Math.round(h * scale);
+              var cv = document.createElement("canvas");
+              cv.width = cw; cv.height = ch;
+              cv.getContext("2d").drawImage(img, 0, 0, cw, ch);
+              var keepPng = file.type === "image/png";
+              var mime = keepPng ? "image/png" : "image/jpeg";
+              cv.toBlob(function (blob) {
+                if (!blob) { readOriginal(w, h); return; }
+                var name = file.name;
+                if (!keepPng) name = name.replace(/\.[a-z0-9]+$/i, "") + ".jpg";
+                var rd = new FileReader();
+                rd.onload = function () { done(rd.result, name, blob.size, cw, ch); };
+                rd.onerror = function () { done(null); };
+                rd.readAsDataURL(blob);
+              }, mime, 0.85);
+            };
+            img.onerror = function () {
+              URL.revokeObjectURL(objUrl);
+              readOriginal(null, null);
+            };
+            img.src = objUrl;
+          });
         }
 
         function uploadMediaFiles(files) {
           var list = Array.prototype.slice.call(files || []).filter(function (f) { return f.type.indexOf("image/") === 0; });
           if (!list.length) return;
           var count = document.getElementById("media-count");
-          count.textContent = "Uploading…";
           var chain = Promise.resolve(), done = 0;
           list.forEach(function (f) {
             chain = chain.then(function () {
-              return new Promise(function (resolve, reject) {
-                var rd = new FileReader();
-                rd.onload = function () {
-                  api("/.netlify/functions/cms-upload", { body: { filename: f.name, data: rd.result } })
-                    .then(function (r) { return r.json().then(function (j) { return { s: r.status, j: j }; }); })
-                    .then(function (res) {
-                      if (res.s !== 200 || !res.j.url) throw new Error(res.j.error || "Upload failed.");
-                      return registerMedia(res.j.url, f.name, f.size);
-                    })
-                    .then(function () { done++; count.textContent = "Uploaded " + done + "/" + list.length + "…"; resolve(); })
-                    .catch(reject);
-                };
-                rd.onerror = reject;
-                rd.readAsDataURL(f);
+              count.textContent = "Preparing " + (done + 1) + "/" + list.length + "…";
+              return prepareImageFile(f).then(function (prep) {
+                if (!prep.dataUrl) throw new Error("Could not read " + f.name + ".");
+                count.textContent = "Uploading " + (done + 1) + "/" + list.length + "…";
+                return api("/.netlify/functions/cms-upload", { body: { filename: prep.filename, data: prep.dataUrl } })
+                  .then(function (r) { return r.json().then(function (j) { return { s: r.status, j: j }; }); })
+                  .then(function (res) {
+                    if (res.s !== 200 || !res.j.url) throw new Error(res.j.error || "Upload failed.");
+                    return registerMedia(res.j.url, prep.filename, prep.sizeBytes,
+                      { width: prep.width, height: prep.height });
+                  })
+                  .then(function () { done++; count.textContent = "Uploaded " + done + "/" + list.length + "…"; });
               });
             });
           });
@@ -2515,8 +2597,10 @@
           var rows = mediaItems.filter(function (it) { return mediaMatches(it, q); });
           if (!rows.length) { grid.innerHTML = '<div class="col-12 text-muted">No files found.</div>'; return; }
           grid.innerHTML = rows.map(function (it) {
-            return '<div class="col-4 col-md-3"><div class="card"><img src="' + esc(it.url) + '" class="card-img-top" alt="" loading="lazy" style="height:110px;object-fit:cover;cursor:pointer" data-pick="' + it.id + '" />' +
-              '<div class="card-body p-1"><div class="text-truncate" style="font-size:11px" title="' + esc(it.filename || "") + '">' + esc(it.filename || "Untitled") + "</div></div></div></div>";
+            var dims = fmtDims(it);
+            return '<div class="col-4 col-md-3"><div class="card"><img src="' + esc(it.url) + '" class="card-img-top" alt="' + esc(it.alt_text || "") + '" loading="lazy" style="height:110px;object-fit:cover;cursor:pointer" data-pick="' + it.id + '" />' +
+              '<div class="card-body p-1"><div class="text-truncate" style="font-size:11px" title="' + esc(it.filename || "") + '">' + esc(it.filename || "Untitled") + "</div>" +
+              (dims ? '<div class="text-muted" style="font-size:10px">' + esc(dims) + "</div>" : "") + "</div></div></div>";
           }).join("");
         }
 
@@ -2557,6 +2641,19 @@
                 .catch(function () { alert("Rename failed."); });
             }
           }
+          else if (act === "alt") {
+            var cur = prompt("Alt text — describe the image for SEO and screen readers:", it.alt_text || "");
+            if (cur === null) return;
+            cur = cur.trim();
+            if (cur === (it.alt_text || "")) return;
+            api("/.netlify/functions/cms-media", { method: "PATCH", body: { id: id, alt_text: cur } })
+              .then(function (r) { return r.json().then(function (j) { return { s: r.status, j: j }; }); })
+              .then(function (res) {
+                if (res.s !== 200) throw new Error(res.j.error || "Could not save alt text.");
+                loadMedia();
+              })
+              .catch(function (err) { alert(err.message || "Could not save alt text."); });
+          }
           else if (act === "delete") {
             if (!confirm('Delete "' + (it.filename || it.url) + '"? This also removes the uploaded file.')) return;
             api("/.netlify/functions/cms-media", { method: "DELETE", body: { id: id } })
@@ -2596,7 +2693,7 @@
 
         function teamAvatar(m, size) {
           size = size || 40;
-          if (m.photo) return '<img src="' + esc(m.photo) + '" alt="" style="width:' + size + "px;height:" + size + 'px;object-fit:cover;border-radius:50%" />';
+          if (m.photo) return '<img src="' + esc(m.photo) + '" alt="' + esc(m.name || "Team member") + '" style="width:' + size + "px;height:" + size + 'px;object-fit:cover;border-radius:50%" />';
           return '<span class="d-inline-flex align-items-center justify-content-center rounded-circle text-white" style="width:' + size + "px;height:" + size + 'px;background:#0a0f1e;font-size:' + Math.round(size * 0.35) + 'px">' + esc(teamInitials(m.name)) + "</span>";
         }
 
@@ -2858,8 +2955,10 @@
           var g = document.getElementById("p-gallery");
           if (!projGallery.length) { g.innerHTML = '<div class="col-12 text-muted small">No images yet.</div>'; return; }
           g.innerHTML = projGallery.map(function (im, i) {
+            var gdims = (Number(im.width) > 0 && Number(im.height) > 0) ? im.width + " × " + im.height : "";
             return '<div class="col-12"><div class="d-flex align-items-center gap-2 border rounded p-2">' +
-              '<img src="' + esc(im.url) + '" alt="" style="width:64px;height:48px;object-fit:cover;border-radius:6px" />' +
+              '<div class="text-center"><img src="' + esc(im.url) + '" alt="' + esc(im.alt || "") + '" style="width:64px;height:48px;object-fit:cover;border-radius:6px" />' +
+              (gdims ? '<div class="text-muted" style="font-size:10px">' + esc(gdims) + "</div>" : "") + "</div>" +
               '<input class="form-control form-control-sm" data-pcap="' + i + '" value="' + esc(im.caption || "") + '" placeholder="Caption (optional)" />' +
               '<button type="button" class="btn btn-sm btn-outline-dark" data-pimg="up" data-i="' + i + '" title="Move up">↑</button>' +
               '<button type="button" class="btn btn-sm btn-outline-dark" data-pimg="down" data-i="' + i + '" title="Move down">↓</button>' +
@@ -2984,7 +3083,7 @@
         });
         document.getElementById("p-img-library").addEventListener("click", function () {
           openMediaPicker(function (item) {
-            projGallery.push({ url: item.url, caption: "" });
+            projGallery.push({ url: item.url, caption: "", alt: item.alt_text || "", width: item.width || null, height: item.height || null });
             renderProjGallery();
           }, "Click an image to add it to the gallery.");
         });

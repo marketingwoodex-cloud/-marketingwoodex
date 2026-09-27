@@ -45,18 +45,46 @@ export default async (req) => {
       filename: clean(body?.filename, 160) || url.split("/").pop(),
       size_bytes: Number(body?.size_bytes) > 0 ? Math.round(Number(body.size_bytes)) : null,
     };
-    const { status, data } = await sbRest("media", { method: "POST", body: row });
+    // SEO + sizing fields (need the media migration; gracefully degrade without it).
+    const altText = clean(body?.alt_text, 200);
+    const width = Number(body?.width) > 0 ? Math.round(Number(body.width)) : null;
+    const height = Number(body?.height) > 0 ? Math.round(Number(body.height)) : null;
+    const full = { ...row };
+    if (altText) full.alt_text = altText;
+    if (width) full.width = width;
+    if (height) full.height = height;
+    let res = await sbRest("media", { method: "POST", body: full });
+    let needsMigration = false;
+    if ((altText || width || height) && res.status !== 201 && res.status !== 200 &&
+        /column/i.test(JSON.stringify(res.data || ""))) {
+      // Columns don't exist yet — save the legacy fields so the upload still works.
+      needsMigration = true;
+      res = await sbRest("media", { method: "POST", body: row });
+    }
+    const { status, data } = res;
     if (status !== 201 && status !== 200) return json(502, { error: "Could not save media record." });
-    return json(200, { item: Array.isArray(data) ? data[0] : data });
+    const item = Array.isArray(data) ? data[0] : data;
+    if (needsMigration) item._needsMigration = true;
+    return json(200, { item });
   }
 
   if (req.method === "PATCH") {
     const id = body?.id;
     if (!UUID.test(id || "")) return json(400, { error: "Invalid id." });
-    const filename = clean(body?.filename, 160);
-    if (filename.length < 2) return json(400, { error: "Name is required." });
-    const { status } = await sbRest("media", { method: "PATCH", query: `?id=eq.${id}`, body: { filename } });
-    if (status !== 200 && status !== 204) return json(502, { error: "Could not rename." });
+    const patch = {};
+    if (body?.filename !== undefined) {
+      const filename = clean(body.filename, 160);
+      if (filename.length < 2) return json(400, { error: "Name is required." });
+      patch.filename = filename;
+    }
+    if (body?.alt_text !== undefined) patch.alt_text = clean(body.alt_text, 200);
+    if (!Object.keys(patch).length) return json(400, { error: "Nothing to update." });
+    const { status, data } = await sbRest("media", { method: "PATCH", query: `?id=eq.${id}`, body: patch });
+    if ((status === 400 || status === 500) && patch.alt_text !== undefined &&
+        /column/i.test(JSON.stringify(data || ""))) {
+      return json(400, { error: "Alt text needs a database update first. Run the media migration in the Supabase SQL editor, then try again." });
+    }
+    if (status !== 200 && status !== 204) return json(502, { error: "Could not update." });
     return json(200, { ok: true });
   }
 
