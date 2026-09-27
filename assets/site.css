@@ -2284,3 +2284,20 @@ html:not(.js) .ih-faq-a,html:not(.js) .in-faq-a,html:not(.js) .ph-faq-a,html:not
     #home-page .hm-review-link{color:#fff;font-size:.88rem;font-weight:600;text-decoration:underline;text-underline-offset:4px}
     #home-page .hm-review-link:hover{color:rgba(255,255,255,.75)}
     @media(max-width:600px){#home-page .hm-review-card{padding:40px 24px}}
+
+    /* All services animated list (batch 2026-09-27) */
+    #home-page .hm-all{background:var(--hm-navy);color:#fff}
+    #home-page .hm-all-list{list-style:none;margin:44px 0 0;padding:0;border-top:1px solid rgba(255,255,255,.14)}
+    #home-page.all-js .hm-all-list li{opacity:0;transform:translateY(18px);transition:opacity .6s var(--ease),transform .6s var(--ease)}
+    #home-page .hm-all-list.is-inview li{opacity:1;transform:none}
+    #home-page .hm-all-list li{border-bottom:1px solid rgba(255,255,255,.14)}
+    #home-page .hm-all-list a{display:flex;align-items:center;gap:18px;padding:22px 6px;color:#fff;text-decoration:none;transition:padding .3s var(--ease),background .3s}
+    #home-page .hm-all-list a:hover{padding-left:16px;background:rgba(255,255,255,.03)}
+    #home-page .hm-all-name{font-size:clamp(1.05rem,1.8vw,1.35rem);font-weight:600;letter-spacing:-.01em}
+    #home-page .hm-all-sub{margin-left:auto;color:rgba(255,255,255,.55);font-size:.82rem;text-align:right;max-width:46%}
+    #home-page .hm-all-arrow{flex:none;font-size:1.15rem;line-height:1;transition:transform .3s var(--ease)}
+    #home-page .hm-all-list a:hover .hm-all-arrow{transform:translate(3px,-3px)}
+    #home-page .hm-all-est{border-bottom:none;margin-top:18px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.22);border-radius:14px}
+    #home-page .hm-all-est a{padding:24px 22px}
+    @media(max-width:600px){#home-page .hm-all-list a{gap:12px;padding:18px 4px}#home-page .hm-all-sub{font-size:.72rem;max-width:42%}}
+    @media(prefers-reduced-motion:reduce){#home-page .hm-all-list li{opacity:1!important;transform:none!important;transition:none!important}}

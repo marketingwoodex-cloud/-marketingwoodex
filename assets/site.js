@@ -288,3 +288,24 @@
     });
   });
 })();
+
+/* All-services staggered list reveal. */
+(function () {
+  'use strict';
+  var doc = document;
+  var list = doc.querySelector('#all-services .hm-all-list');
+  if (!list) return;
+  doc.body.classList.add('all-js');
+  var items = list.querySelectorAll('li');
+  if (!('IntersectionObserver' in window)) { list.classList.add('is-inview'); return; }
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  Array.prototype.forEach.call(items, function (li, i) {
+    li.style.transitionDelay = reduceMotion ? '0ms' : (i * 60) + 'ms';
+  });
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) {
+      if (e.isIntersecting) { list.classList.add('is-inview'); io.disconnect(); }
+    });
+  }, { threshold: 0.15 });
+  io.observe(list);
+})();
