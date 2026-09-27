@@ -4,20 +4,20 @@
 // PATCH { id, ...fields }
 // DELETE { id }
 import { bearerSession, json, verifySession, canWrite } from "./_auth.mjs";
-import { sbConfigured, sbRest } from "./_supabase.mjs";
+import { sbConfigured, sbRest, cleanSearch } from "./_supabase.mjs";
 
 const UUID = /^[0-9a-f-]{36}$/i;
 const clean = (v, n) => String(v ?? "").replace(/\s+/g, " ").trim().slice(0, n);
 
 export default async (req) => {
-  const user = verifySession(bearerSession(req));
-  if (!user) return json(401, { error: "Session expired. Please sign in again." });
+  const user = await verifySession(bearerSession(req));
+  if (!user) return json(401, { error: bearerSession(req) ? "Session expired. Please sign in again." : "Authentication required. Please sign in." });
   if (req.method !== "GET" && !canWrite(user)) return json(403, { error: "Your role is read-only." });
   if (!sbConfigured()) return json(503, { error: "Database is not configured yet." });
 
   if (req.method === "GET") {
     const url = new URL(req.url);
-    const q = clean(url.searchParams.get("q"), 60);
+    const q = cleanSearch(url.searchParams.get("q"));
     let query = "?select=*&order=created_at.desc&limit=200";
     if (q) query += `&or=(name.ilike.*${encodeURIComponent(q)}*,company.ilike.*${encodeURIComponent(q)}*,phone.ilike.*${encodeURIComponent(q)}*)`;
     const { status, data } = await sbRest("clients", { query });

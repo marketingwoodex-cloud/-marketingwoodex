@@ -9,20 +9,71 @@ import { sbConfigured, sbRest } from "./_supabase.mjs";
 
 const MAX_ATTEMPTS = 25;
 const WINDOW_MS = 10 * 60 * 1000;
-const attempts = new Map();
+// In-memory counter is only a fallback for when Supabase is unreachable.
+// The real enforcement is shared across all serverless instances via the
+// activity table (kind = "login_fail", text = client IP).
+const memAttempts = new Map();
 
 const clientIp = (req) =>
   req.headers.get("x-nf-client-connection-ip") ||
   (req.headers.get("x-forwarded-for") || "").split(",")[0].trim() ||
   "unknown";
 
+// Cross-instance failed-login count inside the window. Returns null when the
+// shared store cannot be reached (caller falls back to the memory counter).
+async function sharedFailCount(ip) {
+  try {
+    if (!sbConfigured()) return null;
+    const since = new Date(Date.now() - WINDOW_MS).toISOString();
+    const { status, data } = await sbRest("activity", {
+      query: `?select=id&kind=eq.login_fail&text=eq.${encodeURIComponent(ip)}&created_at=gte.${encodeURIComponent(since)}&limit=100`,
+    });
+    if (status !== 200) return null;
+    return (data || []).length;
+  } catch {
+    return null;
+  }
+}
+
+async function recordFail(ip) {
+  const now = Date.now();
+  const e = memAttempts.get(ip);
+  if (!e || now > e.resetAt) memAttempts.set(ip, { count: 1, resetAt: now + WINDOW_MS });
+  else e.count += 1;
+  try {
+    if (!sbConfigured()) return;
+    await sbRest("activity", { method: "POST", body: { kind: "login_fail", text: ip } });
+    // Opportunistic pruning so brute-force rows never pile up.
+    const cutoff = new Date(now - 2 * WINDOW_MS).toISOString();
+    await sbRest("activity", {
+      method: "DELETE",
+      query: `?kind=eq.login_fail&created_at=lt.${encodeURIComponent(cutoff)}`,
+    }).catch(() => {});
+  } catch { /* memory counter still enforced */ }
+}
+
+async function clearFails(ip) {
+  memAttempts.delete(ip);
+  try {
+    if (!sbConfigured()) return;
+    await sbRest("activity", {
+      method: "DELETE",
+      query: `?kind=eq.login_fail&text=eq.${encodeURIComponent(ip)}`,
+    });
+  } catch {}
+}
+
 export default async (req) => {
   if (req.method !== "POST") return json(405, { error: "Method not allowed." });
 
   const ip = clientIp(req);
   const now = Date.now();
-  const entry = attempts.get(ip);
-  if (entry && now <= entry.resetAt && entry.count >= MAX_ATTEMPTS) {
+  const shared = await sharedFailCount(ip);
+  if (shared !== null ? shared >= MAX_ATTEMPTS : false) {
+    return json(429, { error: "Too many attempts. Please wait a few minutes." });
+  }
+  const entry = memAttempts.get(ip);
+  if (shared === null && entry && now <= entry.resetAt && entry.count >= MAX_ATTEMPTS) {
     return json(429, { error: "Too many attempts. Please wait a few minutes." });
   }
 
@@ -44,7 +95,7 @@ export default async (req) => {
     safeEqual(sha256hex(body?.password), expectedPassHash.toLowerCase());
 
   if (userOk && passOk && secret) {
-    attempts.delete(ip);
+    await clearFails(ip);
     return json(200, { session: issueSession(expectedUser, "admin"), username: expectedUser, role: "admin" });
   }
 
@@ -59,14 +110,12 @@ export default async (req) => {
       if (row && row.active && /^[0-9a-f]{64}$/i.test(row.pass_sha256 || "") &&
           safeEqual(sha256hex(body.password), String(row.pass_sha256).toLowerCase())) {
         const role = ["admin", "editor", "viewer"].includes(row.role) ? row.role : "viewer";
-        attempts.delete(ip);
+        await clearFails(ip);
         return json(200, { session: issueSession(row.username, role), username: row.username, role });
       }
     } catch { /* fall through to 401 */ }
   }
 
-  const e = attempts.get(ip);
-  if (!e || now > e.resetAt) attempts.set(ip, { count: 1, resetAt: now + WINDOW_MS });
-  else e.count += 1;
+  await recordFail(ip);
   return json(401, { error: "Incorrect username or password." });
 };

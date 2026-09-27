@@ -99,12 +99,14 @@
     setTitle("pipeline");
     var root = document.getElementById("wx-root-pipeline");
     root.innerHTML = loadingCard("Loading pipeline…");
-    D.api("/.netlify/functions/cms-enquiries", { method: "GET" }).then(jres).then(function (res) {
+    D.api("/.netlify/functions/cms-enquiries?limit=500", { method: "GET" }).then(jres).then(function (res) {
       var data = needOk(res, "Could not load enquiries.");
       var rows = data.enquiries || [];
+      var grand = data.total != null ? data.total : rows.length;
       var counts = {}; STAGES.forEach(function (s) { counts[s] = 0; });
       rows.forEach(function (r) { counts[stageOf(r)]++; });
       var total = rows.length, conv = total ? Math.round(counts.won / total * 100) : 0;
+      var scopeNote = grand > total ? "Showing " + total + " of " + grand + " enquiries" : total + " enquiries";
       var cards = STAGES.map(function (st) {
         return '<div class="col-6 col-md-2 mb-3"><div class="card h-100"><div class="card-body text-center">' +
           '<div class="h3 mb-1">' + counts[st] + "</div>" + D.statusBadge(st) + "</div></div></div>";
@@ -125,7 +127,7 @@
         '<div class="row">' + cards + "</div>" +
         '<div class="card"><div class="card-header d-flex justify-content-between align-items-center">' +
         '<span class="fw-bold">Active pipeline</span>' +
-        '<span class="text-muted small">' + total + " enquiries · " + conv + "% won</span></div>" +
+        '<span class="text-muted small">' + scopeNote + " · " + conv + "% won</span></div>" +
         '<div class="table-responsive"><table class="table table-hover mb-0"><thead><tr>' +
         "<th>Name</th><th>Phone</th><th>Type</th><th>Source</th><th>Received</th><th>Stage</th>" +
         "</tr></thead><tbody>" +

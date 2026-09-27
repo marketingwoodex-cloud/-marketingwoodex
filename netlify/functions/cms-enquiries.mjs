@@ -11,20 +11,21 @@ const LEGACY = { in_progress: "contacted", closed: "won" };
 const normStatus = (st) => LEGACY[st] || st;
 
 export default async (req) => {
-  const user = verifySession(bearerSession(req));
-  if (!user) return json(401, { error: "Session expired. Please sign in again." });
+  const user = await verifySession(bearerSession(req));
+  if (!user) return json(401, { error: bearerSession(req) ? "Session expired. Please sign in again." : "Authentication required. Please sign in." });
   if (req.method !== "GET" && !canWrite(user)) return json(403, { error: "Your role is read-only." });
   if (!sbConfigured()) return json(503, { error: "Database is not configured yet." });
 
   if (req.method === "GET") {
     const url = new URL(req.url);
     const status = url.searchParams.get("status");
-    const q =
-      `?select=*&order=created_at.desc&limit=100` +
-      (STATUSES.includes(status) ? `&status=eq.${status}` : "");
-    const { status: s, data } = await sbRest("enquiries", { query: q });
+    const limit = Math.min(500, Math.max(1, Number(url.searchParams.get("limit")) || 100));
+    const offset = Math.max(0, Number(url.searchParams.get("offset")) || 0);
+    const filter = STATUSES.includes(status) ? `&status=eq.${status}` : "";
+    const q = `?select=*&order=created_at.desc&limit=${limit}&offset=${offset}${filter}`;
+    const { status: s, data, total } = await sbRest("enquiries", { query: q, count: "exact" });
     if (s !== 200) return json(502, { error: "Could not load enquiries." });
-    return json(200, { enquiries: data });
+    return json(200, { enquiries: data, total: total ?? (data || []).length, limit, offset });
   }
 
   if (req.method === "PATCH") {

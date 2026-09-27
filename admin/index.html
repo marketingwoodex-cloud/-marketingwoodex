@@ -326,6 +326,9 @@
                   <tbody id="enq-body"><tr><td colspan="6" class="text-center text-muted py-4">Loading…</td></tr></tbody>
                 </table>
               </div>
+              <div class="card-footer text-center" id="enq-more-wrap" hidden>
+                <button class="btn btn-outline-secondary btn-sm" id="enq-more" type="button">Load more</button>
+              </div>
             </div>
           </div>
         </section>
@@ -349,6 +352,9 @@
                   <thead><tr><th>Name</th><th>Phone</th><th>Service</th><th>Size</th><th>Estimate</th><th>Received</th><th>Status</th></tr></thead>
                   <tbody id="lead-body"><tr><td colspan="7" class="text-center text-muted py-4">Loading…</td></tr></tbody>
                 </table>
+              </div>
+              <div class="card-footer text-center" id="lead-more-wrap" hidden>
+                <button class="btn btn-outline-secondary btn-sm" id="lead-more" type="button">Load more</button>
               </div>
             </div>
           </div>
@@ -1160,6 +1166,14 @@
               session ? { authorization: "Bearer " + session } : {}
             ),
             body: opts.body ? JSON.stringify(opts.body) : undefined,
+          }).then(function (res) {
+            // Sliding rotation: the server issues a fresh token on the
+            // X-Session-Refresh header for sessions older than 6h.
+            try {
+              var fresh = res.headers.get("x-session-refresh");
+              if (fresh && /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(fresh)) session = fresh;
+            } catch (e) {}
+            return res;
           });
         }
         function esc(s) {
@@ -1323,20 +1337,28 @@
             loadEnquiries(currentFilter);
           });
         }
-        async function loadEnquiries(filter) {
+        var enqOffset = 0, enqTotal = 0, enqFilter = "";
+        var ENQ_PAGE = 100;
+        async function loadEnquiries(filter, append) {
+          if (filter !== undefined) enqFilter = filter || "";
+          if (!append) { enqOffset = 0; enquiriesCache = []; }
           var tb = document.getElementById("enq-body");
-          tb.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">Loading…</td></tr>';
+          if (!append) tb.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">Loading…</td></tr>';
           try {
-            var res = await api("/.netlify/functions/cms-enquiries" + (filter ? "?status=" + filter : ""), { method: "GET" });
+            var qs = "?limit=" + ENQ_PAGE + "&offset=" + enqOffset + (enqFilter ? "&status=" + encodeURIComponent(enqFilter) : "");
+            var res = await api("/.netlify/functions/cms-enquiries" + qs, { method: "GET" });
             var data = await res.json();
             if (!res.ok || !data || !data.enquiries) throw new Error("load failed");
-            enquiriesCache = data.enquiries;
-            document.getElementById("enq-count").textContent = data.enquiries.length + " shown";
-            if (!data.enquiries.length) {
+            enquiriesCache = append ? enquiriesCache.concat(data.enquiries) : data.enquiries;
+            enqTotal = data.total != null ? data.total : enquiriesCache.length;
+            enqOffset = enquiriesCache.length;
+            document.getElementById("enq-count").textContent = enquiriesCache.length + " of " + enqTotal + " shown";
+            document.getElementById("enq-more-wrap").hidden = enquiriesCache.length >= enqTotal;
+            if (!enquiriesCache.length) {
               tb.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">No enquiries here.</td></tr>';
               return;
             }
-            tb.innerHTML = data.enquiries.map(function (r) {
+            tb.innerHTML = enquiriesCache.map(function (r) {
               var msg = esc(r.message || "–");
               if (msg.length > 60) msg = msg.slice(0, 60) + "…";
               return '<tr data-id="' + r.id + '" style="cursor:pointer"><td>' + esc(r.name) +
@@ -1345,9 +1367,12 @@
                 "</td><td>" + statusBadge(r.status) + "</td></tr>";
             }).join("");
           } catch (err) {
-            tb.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">Could not load enquiries.</td></tr>';
+            if (!append) tb.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">Could not load enquiries.</td></tr>';
           }
         }
+        document.getElementById("enq-more").addEventListener("click", function () {
+          loadEnquiries(undefined, true);
+        });
         function openModal(id) {
           var r = enquiriesCache.find(function (x) { return x.id === id; });
           if (!r) return;
@@ -1451,29 +1476,40 @@
             loadLeads(leadFilter);
           });
         }
-        async function loadLeads(filter) {
+        var leadOffset = 0, leadTotal = 0, leadFilter = "";
+        var LEAD_PAGE = 100;
+        async function loadLeads(filter, append) {
+          if (filter !== undefined) leadFilter = filter || "";
+          if (!append) { leadOffset = 0; leadsCache = []; }
           var tb = document.getElementById("lead-body");
-          tb.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">Loading…</td></tr>';
+          if (!append) tb.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">Loading…</td></tr>';
           try {
-            var res = await api("/.netlify/functions/cms-estimator-leads" + (filter ? "?status=" + filter : ""), { method: "GET" });
+            var qs = "?limit=" + LEAD_PAGE + "&offset=" + leadOffset + (leadFilter ? "&status=" + encodeURIComponent(leadFilter) : "");
+            var res = await api("/.netlify/functions/cms-estimator-leads" + qs, { method: "GET" });
             var data = await res.json();
             if (!res.ok || !data || !data.leads) throw new Error("load failed");
-            leadsCache = data.leads;
-            document.getElementById("lead-count").textContent = data.leads.length + " shown";
-            if (!data.leads.length) {
+            leadsCache = append ? leadsCache.concat(data.leads) : data.leads;
+            leadTotal = data.total != null ? data.total : leadsCache.length;
+            leadOffset = leadsCache.length;
+            document.getElementById("lead-count").textContent = leadsCache.length + " of " + leadTotal + " shown";
+            document.getElementById("lead-more-wrap").hidden = leadsCache.length >= leadTotal;
+            if (!leadsCache.length) {
               tb.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">No estimator leads yet. Share the estimator page to get some.</td></tr>';
               return;
             }
-            tb.innerHTML = data.leads.map(function (r) {
+            tb.innerHTML = leadsCache.map(function (r) {
               return '<tr data-id="' + r.id + '" style="cursor:pointer"><td>' + esc(r.name) +
                 "</td><td>" + esc(r.phone) + "</td><td>" + esc(SVC_LABEL[r.service_type] || r.service_type || "–") +
                 "</td><td>" + esc(leadSize(r)) + "</td><td>" + esc(leadEstimate(r)) +
                 "</td><td>" + timeAgo(r.created_at) + "</td><td>" + statusBadge(r.status) + "</td></tr>";
             }).join("");
           } catch (err) {
-            tb.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">Could not load estimator leads.</td></tr>';
+            if (!append) tb.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">Could not load estimator leads.</td></tr>';
           }
         }
+        document.getElementById("lead-more").addEventListener("click", function () {
+          loadLeads(undefined, true);
+        });
         function openLeadModal(id) {
           var r = leadsCache.find(function (x) { return x.id === id; });
           if (!r) return;

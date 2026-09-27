@@ -4,7 +4,7 @@
 // PATCH { id, filename? }
 // DELETE { id } — removes the DB record and the file from the repo
 import { bearerSession, json, verifySession, canWrite } from "./_auth.mjs";
-import { sbConfigured, sbRest } from "./_supabase.mjs";
+import { sbConfigured, sbRest, cleanSearch } from "./_supabase.mjs";
 import { ghDeleteFile } from "./_github.mjs";
 
 const UUID = /^[0-9a-f-]{36}$/i;
@@ -19,14 +19,14 @@ function urlToPath(u) {
 }
 
 export default async (req) => {
-  const user = verifySession(bearerSession(req));
-  if (!user) return json(401, { error: "Session expired. Please sign in again." });
+  const user = await verifySession(bearerSession(req));
+  if (!user) return json(401, { error: bearerSession(req) ? "Session expired. Please sign in again." : "Authentication required. Please sign in." });
   if (req.method !== "GET" && !canWrite(user)) return json(403, { error: "Your role is read-only." });
   if (!sbConfigured()) return json(503, { error: "Database is not configured yet." });
 
   if (req.method === "GET") {
     const url = new URL(req.url);
-    const q = clean(url.searchParams.get("q"), 60);
+    const q = cleanSearch(url.searchParams.get("q"));
     const limit = Math.min(200, Math.max(1, Number(url.searchParams.get("limit")) || 60));
     let query = `?select=*&order=created_at.desc&limit=${limit}`;
     if (q) query += `&filename=ilike.*${encodeURIComponent(q)}*`;

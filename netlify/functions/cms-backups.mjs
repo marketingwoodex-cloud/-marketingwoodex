@@ -28,8 +28,8 @@ const TABLES = [
 const ROW_CAP = 2000;
 
 export default async (req) => {
-  const user = verifySession(bearerSession(req));
-  if (!user) return json(401, { error: "Session expired. Please sign in again." });
+  const user = await verifySession(bearerSession(req));
+  if (!user) return json(401, { error: bearerSession(req) ? "Session expired. Please sign in again." : "Authentication required. Please sign in." });
   if (!isAdmin(user)) return json(403, { error: "Admin access required." });
   if (req.method !== "GET") return json(405, { error: "Method not allowed." });
   if (!sbConfigured()) return json(503, { error: "Database is not configured yet." });

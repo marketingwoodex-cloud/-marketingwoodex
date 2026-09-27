@@ -4,8 +4,8 @@ import { bearerSession, json, verifySession } from "./_auth.mjs";
 import { sbConfigured, sbRest } from "./_supabase.mjs";
 
 export default async (req) => {
-  const user = verifySession(bearerSession(req));
-  if (!user) return json(401, { error: "Session expired. Please sign in again." });
+  const user = await verifySession(bearerSession(req));
+  if (!user) return json(401, { error: bearerSession(req) ? "Session expired. Please sign in again." : "Authentication required. Please sign in." });
   if (req.method !== "GET") return json(405, { error: "Method not allowed." });
 
   let supabase = "down";

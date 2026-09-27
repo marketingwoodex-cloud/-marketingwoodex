@@ -15,8 +15,8 @@ function validUsername(u) {
 }
 
 export default async (req) => {
-  const user = verifySession(bearerSession(req));
-  if (!user) return json(401, { error: "Session expired. Please sign in again." });
+  const user = await verifySession(bearerSession(req));
+  if (!user) return json(401, { error: bearerSession(req) ? "Session expired. Please sign in again." : "Authentication required. Please sign in." });
   if (!isAdmin(user)) return json(403, { error: "Only admins can manage users." });
   if (!sbConfigured()) return json(503, { error: "Database is not configured yet." });
 

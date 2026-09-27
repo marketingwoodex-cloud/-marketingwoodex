@@ -9,8 +9,8 @@ async function rows(table, query) {
 }
 
 export default async (req) => {
-  const user = verifySession(bearerSession(req));
-  if (!user) return json(401, { error: "Session expired. Please sign in again." });
+  const user = await verifySession(bearerSession(req));
+  if (!user) return json(401, { error: bearerSession(req) ? "Session expired. Please sign in again." : "Authentication required. Please sign in." });
   if (!sbConfigured()) return json(503, { error: "Database is not configured yet." });
   if (req.method !== "GET") return json(405, { error: "Method not allowed." });
 
