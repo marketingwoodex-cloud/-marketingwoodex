@@ -34,15 +34,17 @@ export default async (req) => {
   if (req.method !== "GET") return json(405, { error: "Method not allowed." });
   if (!sbConfigured()) return json(503, { error: "Database is not configured yet." });
 
-  const tables = {};
-  for (const t of TABLES) {
+  // Read tables in parallel: sequential reads risk exceeding the serverless
+  // time limit as the table list grows.
+  const results = await Promise.all(TABLES.map(async (t) => {
     try {
       const { status, data } = await sbRest(t, { query: `?select=*&limit=${ROW_CAP}` });
-      tables[t] = status === 200 ? (data || []) : { error: `read failed (${status})` };
+      return [t, status === 200 ? (data || []) : { error: `read failed (${status})` }];
     } catch {
-      tables[t] = { error: "read failed" };
+      return [t, { error: "read failed" }];
     }
-  }
+  }));
+  const tables = Object.fromEntries(results);
   // cms_users exported WITHOUT password hashes.
   try {
     const { status, data } = await sbRest("cms_users",
