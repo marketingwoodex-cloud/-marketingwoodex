@@ -2,4 +2,3 @@ User-agent: *
 Allow: /
 
 Sitemap: https://woodex.com.pk/sitemap.xml
-# PUBLISH-PROBE-20260927-2140
