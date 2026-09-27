@@ -3,7 +3,7 @@
 // POST { name*, role?, photo?, phone? }
 // PATCH { id, ...fields }
 // DELETE { id }
-import { bearerSession, json, verifySession } from "./_auth.mjs";
+import { bearerSession, json, verifySession, canWrite } from "./_auth.mjs";
 import { sbConfigured, sbRest } from "./_supabase.mjs";
 
 const UUID = /^[0-9a-f-]{36}$/i;
@@ -13,6 +13,7 @@ const validPhoto = (u) => /^\/[A-Za-z0-9][A-Za-z0-9._/-]*$/.test(String(u || "")
 export default async (req) => {
   const user = verifySession(bearerSession(req));
   if (!user) return json(401, { error: "Session expired. Please sign in again." });
+  if (req.method !== "GET" && !canWrite(user)) return json(403, { error: "Your role is read-only." });
   if (!sbConfigured()) return json(503, { error: "Database is not configured yet." });
 
   if (req.method === "GET") {

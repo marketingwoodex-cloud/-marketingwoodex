@@ -1,12 +1,13 @@
 // Woodex CMS delete — removes a published page file from the website repo.
 // POST { path } with Authorization: Bearer <session>
-import { bearerSession, json, verifySession } from "./_auth.mjs";
+import { bearerSession, json, verifySession, canWrite } from "./_auth.mjs";
 import { ghDeleteFile, validPagePath } from "./_github.mjs";
 
 export default async (req) => {
   if (req.method !== "POST") return json(405, { error: "Method not allowed." });
   const user = verifySession(bearerSession(req));
   if (!user) return json(401, { error: "Session expired. Please sign in again." });
+  if (req.method !== "GET" && !canWrite(user)) return json(403, { error: "Your role is read-only." });
 
   let body = null;
   try { body = await req.json(); } catch { return json(400, { error: "Invalid request." }); }

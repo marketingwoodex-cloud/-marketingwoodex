@@ -129,6 +129,7 @@
             <li class="nav-item">
               <a class="nav-link" href="#" id="wx-signout" title="Sign out"><i class="bi bi-box-arrow-right"></i> <span class="d-none d-md-inline">Sign out</span></a>
             </li>
+            <li class="nav-item d-none d-md-block"><span class="nav-link"><span class="badge text-bg-dark" id="wx-role-badge" hidden></span></span></li>
           </ul>
         </div>
       </nav>
@@ -177,7 +178,10 @@
                 <a href="#" class="nav-link" data-view="team"><i class="nav-icon bi bi-people"></i><p>Team</p></a>
               </li>
               <li class="nav-item">
-                <a href="#" class="nav-link" data-view="soon" data-soon="Settings"><i class="nav-icon bi bi-gear"></i><p>Settings</p></a>
+                <a href="#" class="nav-link" data-view="settings"><i class="nav-icon bi bi-gear"></i><p>Settings</p></a>
+              </li>
+              <li class="nav-item" id="nav-users-item" hidden>
+                <a href="#" class="nav-link" data-view="users"><i class="nav-icon bi bi-person-gear"></i><p>Users</p></a>
               </li>
             </ul>
           </nav>
@@ -185,6 +189,9 @@
       </aside>
 
       <main class="app-main">
+        <div class="alert alert-warning small mb-0 rounded-0" id="wx-readonly" hidden>
+          You are signed in as a <strong>Viewer</strong> — read-only access. You can browse everything but cannot change anything.
+        </div>
         <!-- ============ DASHBOARD ============ -->
         <section class="wx-view app-content" id="view-dashboard">
           <div class="container-fluid">
@@ -371,6 +378,7 @@
         <!-- ============ TEAM ============ -->
         <section class="wx-view app-content" id="view-team" hidden>
           <div class="container-fluid">
+            <div id="team-photo-warning"></div>
             <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
               <input class="form-control form-control-sm" id="team-search" style="max-width:240px" placeholder="Search team…" />
               <span class="ms-auto text-muted small" id="team-count"></span>
@@ -381,6 +389,89 @@
               <table class="table table-hover align-middle">
                 <thead><tr><th></th><th>Name</th><th>Role</th><th>Phone</th><th class="text-end">Actions</th></tr></thead>
                 <tbody id="team-rows"><tr><td colspan="5" class="text-muted">Loading…</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============ SETTINGS ============ -->
+        <section class="wx-view app-content" id="view-settings" hidden>
+          <div class="container-fluid" style="max-width:920px">
+            <div class="alert alert-info small" role="alert">
+              Settings are stored in the database. <strong>Publish to website</strong> writes the public values —
+              contact details, social links and estimator rates — into the live site files.
+            </div>
+            <div class="card mb-3">
+              <div class="card-header fw-bold">Site information</div>
+              <div class="card-body row g-3">
+                <div class="col-md-6"><label class="form-label small">Site name</label><input class="form-control" id="s-site-name" /></div>
+                <div class="col-md-6"><label class="form-label small">Tagline</label><input class="form-control" id="s-site-tagline" /></div>
+                <div class="col-md-6"><label class="form-label small">Address</label><input class="form-control" id="s-site-address" /></div>
+                <div class="col-md-6"><label class="form-label small">Hours</label><input class="form-control" id="s-site-hours" /></div>
+                <div class="col-12">
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="s-whatsapp-widget" checked />
+                    <label class="form-check-label" for="s-whatsapp-widget">Show the WhatsApp chat button on the website</label>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="card mb-3">
+              <div class="card-header fw-bold">Contact details</div>
+              <div class="card-body row g-3">
+                <div class="col-md-6"><label class="form-label small">Phone 1</label><input class="form-control" id="s-phone1" /></div>
+                <div class="col-md-6"><label class="form-label small">Phone 2</label><input class="form-control" id="s-phone2" /></div>
+                <div class="col-md-6"><label class="form-label small">Email</label><input class="form-control" id="s-email" type="email" /></div>
+                <div class="col-md-6"><label class="form-label small">WhatsApp number <span class="text-muted">(digits only, with country code)</span></label><input class="form-control" id="s-whatsapp" /></div>
+              </div>
+            </div>
+            <div class="card mb-3">
+              <div class="card-header fw-bold">Social links</div>
+              <div class="card-body row g-3">
+                <div class="col-md-6"><label class="form-label small">Instagram</label><input class="form-control" id="s-social-instagram" placeholder="https://…" /></div>
+                <div class="col-md-6"><label class="form-label small">Facebook</label><input class="form-control" id="s-social-facebook" placeholder="https://…" /></div>
+                <div class="col-md-6"><label class="form-label small">TikTok</label><input class="form-control" id="s-social-tiktok" placeholder="https://…" /></div>
+                <div class="col-md-6"><label class="form-label small">LinkedIn</label><input class="form-control" id="s-social-linkedin" placeholder="https://…" /></div>
+                <div class="col-md-6"><label class="form-label small">YouTube</label><input class="form-control" id="s-social-youtube" placeholder="https://…" /></div>
+                <div class="col-md-6"><label class="form-label small">Pinterest</label><input class="form-control" id="s-social-pinterest" placeholder="https://…" /></div>
+                <div class="col-md-6"><label class="form-label small">X</label><input class="form-control" id="s-social-x" placeholder="https://…" /></div>
+              </div>
+            </div>
+            <div class="card mb-3">
+              <div class="card-header fw-bold">Estimator rates <span class="text-muted fw-normal small">PKR</span></div>
+              <div class="card-body">
+                <p class="text-muted small">Per sq ft — or per view for 3D visualization. Starting figures shown on the public estimator.</p>
+                <div class="table-responsive">
+                  <table class="table table-sm align-middle">
+                    <thead><tr><th>Service</th><th style="width:130px">Essential</th><th style="width:130px">Standard</th><th style="width:130px">Premium</th></tr></thead>
+                    <tbody id="rates-rows"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+            <div class="d-flex flex-wrap gap-2 align-items-center mb-4">
+              <button class="btn btn-dark" id="settings-save">Save settings</button>
+              <button class="btn btn-outline-dark" id="settings-publish">Publish to website</button>
+              <span class="text-muted small" id="settings-status"></span>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============ USERS ============ -->
+        <section class="wx-view app-content" id="view-users" hidden>
+          <div class="container-fluid" style="max-width:920px">
+            <div class="alert alert-info small" role="alert">
+              <strong>Admin</strong> manages everything including users. <strong>Editor</strong> can change content but not users.
+              <strong>Viewer</strong> is read only. The main admin sign-in is managed separately and always works.
+            </div>
+            <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+              <span class="text-muted small" id="users-count"></span>
+              <button class="btn btn-sm btn-dark ms-auto" id="user-new"><i class="bi bi-plus-lg"></i> Add user</button>
+            </div>
+            <div class="table-responsive">
+              <table class="table table-hover align-middle">
+                <thead><tr><th>Username</th><th>Role</th><th>Status</th><th class="text-end">Actions</th></tr></thead>
+                <tbody id="user-rows"><tr><td colspan="4" class="text-muted">Loading…</td></tr></tbody>
               </table>
             </div>
           </div>
@@ -782,6 +873,49 @@
       </div>
     </div>
 
+    <!-- ============ user modal ============ -->
+    <div class="modal fade" id="userModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="user-modal-title">Add user</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="row g-3">
+              <div class="col-12">
+                <label class="form-label">Username</label>
+                <input class="form-control" id="u-name" placeholder="e.g. site.editor" autocomplete="off" />
+                <div class="form-text">3–40 chars: lowercase letters, numbers, dot, dash, underscore.</div>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Password <span class="text-muted" id="u-pass-hint">(min 8 chars)</span></label>
+                <input class="form-control" id="u-pass" type="password" autocomplete="new-password" />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Role</label>
+                <select class="form-select" id="u-role">
+                  <option value="editor">Editor — can change content</option>
+                  <option value="viewer">Viewer — read only</option>
+                  <option value="admin">Admin — full access, manages users</option>
+                </select>
+              </div>
+              <div class="col-12" id="u-active-wrap" hidden>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="u-active" />
+                  <label class="form-check-label" for="u-active">Account active</label>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline-dark" data-bs-dismiss="modal">Cancel</button>
+            <button type="button" class="btn btn-dark" id="user-save">Save user</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- ============ team modal ============ -->
     <div class="modal fade" id="teamModal" tabindex="-1" aria-hidden="true">
       <div class="modal-dialog">
@@ -902,6 +1036,7 @@
     </div>
 
     <script src="./blog-render.js"></script>
+    <script src="./project-render.js"></script>
     <script src="./vendor/adminlte/bootstrap.bundle.min.js"></script>
     <script src="./vendor/adminlte/adminlte.min.js"></script>
     <script>
@@ -909,6 +1044,8 @@
         "use strict";
         /* ================= helpers ================= */
         var session = null; // memory only, never persisted
+        var sessionUser = null;
+        var sessionRole = null;
         function api(path, opts) {
           opts = opts || {};
           var method = opts.method || "POST";
@@ -963,6 +1100,13 @@
               return;
             }
             session = data.session;
+            sessionUser = data.username || null;
+            sessionRole = data.role || "admin";
+            var roleBadge = document.getElementById("wx-role-badge");
+            roleBadge.textContent = sessionRole;
+            roleBadge.hidden = false;
+            document.getElementById("nav-users-item").hidden = sessionRole !== "admin";
+            document.getElementById("wx-readonly").hidden = sessionRole !== "viewer";
             passEl.value = "";
             userEl.value = "";
             document.getElementById("wx-gate").style.display = "none";
@@ -982,9 +1126,10 @@
         });
 
         /* ================= view router ================= */
-        var TITLES = { dashboard: "Dashboard", enquiries: "Enquiries", leads: "Estimator Leads", quotations: "Quotations", templates: "Quotation Templates", invoices: "Invoices", blog: "Blog Posts", media: "Media Library", projects: "Projects", team: "Team", builder: "Pages · Page Builder", soon: "Coming soon" };
+        var TITLES = { dashboard: "Dashboard", enquiries: "Enquiries", leads: "Estimator Leads", quotations: "Quotations", templates: "Quotation Templates", invoices: "Invoices", blog: "Blog Posts", media: "Media Library", projects: "Projects", team: "Team", settings: "Settings", users: "Users", builder: "Pages · Page Builder", soon: "Coming soon" };
         var builderStarted = false;
         function showView(name, soonLabel) {
+          if (name === "users" && sessionRole !== "admin") { name = "dashboard"; }
           document.querySelectorAll(".wx-view").forEach(function (v) { v.hidden = true; });
           var el = document.getElementById("view-" + name);
           if (el) el.hidden = false;
@@ -1007,6 +1152,8 @@
           if (name === "media") loadMedia();
           if (name === "projects") loadProjects();
           if (name === "team") loadTeam();
+          if (name === "settings") loadSettings();
+          if (name === "users") loadUsers();
           if (name === "builder") {
             document.getElementById("wx-studio").classList.add("open");
             initStudio();
@@ -2715,10 +2862,20 @@
           var q = (document.getElementById("team-search").value || "").toLowerCase().trim();
           var rows = teamMembers.filter(function (m) { return !q || (m.name || "").toLowerCase().indexOf(q) !== -1; });
           document.getElementById("team-count").textContent = rows.length + " member" + (rows.length === 1 ? "" : "s");
+          var missing = teamMembers.filter(function (m) { return !m.photo; });
+          var warn = document.getElementById("team-photo-warning");
+          if (missing.length) {
+            warn.innerHTML = '<div class="alert alert-warning d-flex align-items-center gap-2" role="alert">' +
+              '<i class="bi bi-exclamation-triangle-fill"></i><div><strong>' + missing.length + " team member" + (missing.length === 1 ? "" : "s") +
+              " need" + (missing.length === 1 ? "s" : "") + " a photo.</strong> Every member needs a real photo — no placeholders, no stock. " +
+              "Click Edit on a highlighted row to add one.</div></div>";
+          } else { warn.innerHTML = ""; }
           if (!rows.length) { tb.innerHTML = '<tr><td colspan="5" class="text-muted">No team members found.</td></tr>'; return; }
           tb.innerHTML = rows.map(function (m) {
-            return "<tr><td>" + teamAvatar(m) + "</td>" +
-              "<td><strong>" + esc(m.name) + "</strong></td>" +
+            var noPhoto = !m.photo;
+            return '<tr class="' + (noPhoto ? "table-warning" : "") + '"><td>' + teamAvatar(m) + "</td>" +
+              "<td><strong>" + esc(m.name) + "</strong>" +
+              (noPhoto ? ' <span class="badge text-bg-warning">No photo</span>' : "") + "</td>" +
               "<td>" + esc(m.role || "—") + "</td>" +
               "<td>" + (m.phone ? '<a href="tel:' + esc(m.phone.replace(/\s+/g, "")) + '">' + esc(m.phone) + "</a>" : "—") + "</td>" +
               '<td class="text-end"><div class="btn-group btn-group-sm">' +
@@ -2835,6 +2992,425 @@
           }
         });
 
+        /* ================= settings ================= */
+        var SETTING_DEFAULTS = {
+          site: { name: "Woodex Interior", tagline: "One brief. One standard. One accountable team.", address: "M-71, Zainab Tower, Model Town Link Road, Lahore", hours: "Mon\u2013Sat 9:30 AM\u20136:30 PM, Sunday closed" },
+          contact: { phone1: "+92 322 4000768", phone2: "+92 321 4686884", email: "info@woodex.com.pk", whatsapp: "923224000768" },
+          social: { instagram: "https://instagram.com/woodexinterior", facebook: "https://facebook.com/woodexinterior", tiktok: "", linkedin: "", youtube: "https://www.youtube.com/channel/UCnQtrPWmnylsmnl74z8kX4w", pinterest: "https://pinterest.com/woodex_interior", x: "https://x.com/woodexinterior" }
+        };
+        var RATE_SERVICES_META = [
+          { key: "interior-design", label: "Interior Design", hint: "Design concept, drawings and material palette", unit: "sqft", unitLabel: "Area (sq ft)" },
+          { key: "fit-out", label: "Office Fit-Out", hint: "Complete turnkey execution, civil to handover", unit: "sqft", unitLabel: "Area (sq ft)" },
+          { key: "renovation", label: "Renovation", hint: "Upgrade of an existing residential or commercial space", unit: "sqft", unitLabel: "Area (sq ft)" },
+          { key: "architecture", label: "Architecture", hint: "House and building design with approvals support", unit: "sqft", unitLabel: "Covered area (sq ft)" },
+          { key: "3d-visualization", label: "3D Visualization", hint: "Photorealistic views from the Woodex 3D Studio", unit: "views", unitLabel: "Number of views" },
+          { key: "furniture", label: "Custom Furniture", hint: "Kitchens, wardrobes and office furniture, made to order", unit: "sqft", unitLabel: "Space area (sq ft)" }
+        ];
+        var RATE_DEFAULTS = {
+          "interior-design": { essential: 150, standard: 250, premium: 400 },
+          "fit-out": { essential: 2800, standard: 4200, premium: 6500 },
+          "renovation": { essential: 1200, standard: 2000, premium: 3200 },
+          "architecture": { essential: 200, standard: 350, premium: 550 },
+          "3d-visualization": { essential: 15000, standard: 25000, premium: 45000 },
+          "furniture": { essential: 1500, standard: 2500, premium: 4000 }
+        };
+        var RATE_FINISHES = [
+          {
+            "key": "essential",
+            "label": "Essential",
+            "hint": "Clean, durable, budget-conscious"
+          },
+          {
+            "key": "standard",
+            "label": "Standard",
+            "hint": "The Woodex standard most clients choose"
+          },
+          {
+            "key": "premium",
+            "label": "Premium",
+            "hint": "Top materials and detailing throughout"
+          }
+        ];
+        var RATE_CATALOG = [
+          {
+            "cat": "Dismantling",
+            "desc": "Dismantling / removal works — old walls, windows, doors, debris clearing",
+            "unit": "job",
+            "rate": 70000
+          },
+          {
+            "cat": "Electrical & HVAC",
+            "desc": "Electrical points, switches and COB lights (labour)",
+            "unit": "job",
+            "rate": 55000
+          },
+          {
+            "cat": "Electrical & HVAC",
+            "desc": "HVAC pipe with drain, fixing",
+            "unit": "rft",
+            "rate": 850
+          },
+          {
+            "cat": "Electrical & HVAC",
+            "desc": "Split unit installation with MS bracket stand",
+            "unit": "nos",
+            "rate": 7500
+          },
+          {
+            "cat": "Plumbing",
+            "desc": "Plumbing and sanitary repair works, complete",
+            "unit": "job",
+            "rate": 26000
+          },
+          {
+            "cat": "Plumbing",
+            "desc": "Sanitary fixtures labour — commode, vanity, fittings",
+            "unit": "job",
+            "rate": 24000
+          },
+          {
+            "cat": "Civil Works",
+            "desc": "4\" brick wall, complete",
+            "unit": "sft",
+            "rate": 380
+          },
+          {
+            "cat": "Civil Works",
+            "desc": "Plaster works",
+            "unit": "sft",
+            "rate": 70
+          },
+          {
+            "cat": "Civil Works",
+            "desc": "Plaster repair works",
+            "unit": "job",
+            "rate": 18000
+          },
+          {
+            "cat": "Civil Works",
+            "desc": "Floor tiles (labour)",
+            "unit": "sft",
+            "rate": 80
+          },
+          {
+            "cat": "Civil Works",
+            "desc": "Washroom tiles on walls and floor (labour)",
+            "unit": "sft",
+            "rate": 80
+          },
+          {
+            "cat": "Ceiling",
+            "desc": "POP false ceiling, complete",
+            "unit": "sft",
+            "rate": 130
+          },
+          {
+            "cat": "Glass & Aluminium",
+            "desc": "12mm tempered glass partition with sliding panel",
+            "unit": "job",
+            "rate": 35000
+          },
+          {
+            "cat": "Glass & Aluminium",
+            "desc": "Wooden hanging beam for glass partition",
+            "unit": "sft",
+            "rate": 650
+          },
+          {
+            "cat": "Glass & Aluminium",
+            "desc": "Aluminium window with 8mm glass",
+            "unit": "sft",
+            "rate": 1200
+          },
+          {
+            "cat": "Doors",
+            "desc": "Flash door 3.5x7 with frame and complete hardware",
+            "unit": "nos",
+            "rate": 30000
+          },
+          {
+            "cat": "Furniture",
+            "desc": "Dining table 4'6\" x 3'0\"",
+            "unit": "nos",
+            "rate": 13500
+          },
+          {
+            "cat": "Furniture",
+            "desc": "Dining table 3' x 3'",
+            "unit": "nos",
+            "rate": 11000
+          },
+          {
+            "cat": "Furniture",
+            "desc": "Dining chair",
+            "unit": "nos",
+            "rate": 10500
+          },
+          {
+            "cat": "Furniture",
+            "desc": "Sofa seat",
+            "unit": "nos",
+            "rate": 15500
+          },
+          {
+            "cat": "Furniture",
+            "desc": "Bar stool",
+            "unit": "nos",
+            "rate": 4500
+          },
+          {
+            "cat": "Furniture",
+            "desc": "Dining running table, high gloss finish",
+            "unit": "rft",
+            "rate": 6500
+          }
+        ];
+        var RATE_TERMS = [
+          "50% advance payment with work order.",
+          "Payment will be charged on the actual dimension / size of area.",
+          "Rates are valid for 15 days as per market rates."
+        ];
+        var settingsCache = {};
+        var settingsLoaded = false;
+
+        function wxNum(v, d) { v = Number(v); return Number.isFinite(v) && v >= 0 ? Math.round(v) : d; }
+
+        function settingsRateMap() {
+          var m = {};
+          RATE_SERVICES_META.forEach(function (s) {
+            var saved = (settingsCache.rates && settingsCache.rates.services && settingsCache.rates.services[s.key]) || {};
+            m[s.key] = {
+              essential: wxNum(saved.essential, RATE_DEFAULTS[s.key].essential),
+              standard: wxNum(saved.standard, RATE_DEFAULTS[s.key].standard),
+              premium: wxNum(saved.premium, RATE_DEFAULTS[s.key].premium)
+            };
+          });
+          return m;
+        }
+
+        function buildRatesRows() {
+          var m = settingsRateMap();
+          document.getElementById("rates-rows").innerHTML = RATE_SERVICES_META.map(function (s) {
+            var r = m[s.key];
+            return "<tr><td><strong>" + esc(s.label) + '</strong><div class="text-muted small">' + esc(s.unit === "views" ? "per view" : "per sq ft") + "</div></td>" +
+              ["essential", "standard", "premium"].map(function (f) {
+                return '<td><input class="form-control form-control-sm" type="number" min="0" data-rate-svc="' + s.key + '" data-rate-finish="' + f + '" value="' + r[f] + '" /></td>';
+              }).join("") + "</tr>";
+          }).join("");
+        }
+
+        function fillSettings() {
+          function set(id, v) { document.getElementById(id).value = v == null ? "" : v; }
+          var site = Object.assign({}, SETTING_DEFAULTS.site, settingsCache.site || {});
+          var contact = Object.assign({}, SETTING_DEFAULTS.contact, settingsCache.contact || {});
+          var social = Object.assign({}, SETTING_DEFAULTS.social, settingsCache.social || {});
+          set("s-site-name", site.name); set("s-site-tagline", site.tagline);
+          set("s-site-address", site.address); set("s-site-hours", site.hours);
+          document.getElementById("s-whatsapp-widget").checked = site.whatsapp_widget !== false;
+          set("s-phone1", contact.phone1); set("s-phone2", contact.phone2);
+          set("s-email", contact.email); set("s-whatsapp", contact.whatsapp);
+          ["instagram", "facebook", "tiktok", "linkedin", "youtube", "pinterest", "x"].forEach(function (k) {
+            set("s-social-" + k, social[k]);
+          });
+          buildRatesRows();
+        }
+
+        function loadSettings() {
+          if (settingsLoaded) return;
+          settingsLoaded = true;
+          var st = document.getElementById("settings-status");
+          st.textContent = "Loading\u2026";
+          api("/.netlify/functions/cms-settings", { method: "GET" })
+            .then(function (r) { return r.json().then(function (j) { return { s: r.status, j: j }; }); })
+            .then(function (res) {
+              if (res.s !== 200) throw new Error(res.j.error || "Could not load settings.");
+              settingsCache = res.j.settings || {};
+              fillSettings();
+              st.textContent = "";
+            })
+            .catch(function (err) {
+              settingsLoaded = false;
+              fillSettings();
+              st.textContent = err.message || "Could not load settings.";
+            });
+        }
+
+        function collectSettings() {
+          function val(id) { return document.getElementById(id).value.trim(); }
+          var rates = { services: {} };
+          Array.prototype.forEach.call(document.querySelectorAll("#rates-rows input[data-rate-svc]"), function (inp) {
+            var k = inp.getAttribute("data-rate-svc"), f = inp.getAttribute("data-rate-finish");
+            rates.services[k] = rates.services[k] || {};
+            rates.services[k][f] = wxNum(inp.value, RATE_DEFAULTS[k][f]);
+          });
+          var social = {};
+          ["instagram", "facebook", "tiktok", "linkedin", "youtube", "pinterest", "x"].forEach(function (k) {
+            social[k] = val("s-social-" + k);
+          });
+          return {
+            site: { name: val("s-site-name"), tagline: val("s-site-tagline"), address: val("s-site-address"), hours: val("s-site-hours"), whatsapp_widget: document.getElementById("s-whatsapp-widget").checked },
+            contact: { phone1: val("s-phone1"), phone2: val("s-phone2"), email: val("s-email"), whatsapp: val("s-whatsapp").replace(/\D/g, "") },
+            social: social,
+            rates: rates
+          };
+        }
+
+        function saveSettings() {
+          var data = collectSettings();
+          var chain = Promise.resolve();
+          ["site", "contact", "social", "rates"].forEach(function (k) {
+            chain = chain.then(function () {
+              return api("/.netlify/functions/cms-settings", { method: "POST", body: { key: k, value: data[k] } })
+                .then(function (r) { return r.json().then(function (j) { return { s: r.status, j: j }; }); })
+                .then(function (res) { if (res.s !== 200) throw new Error(res.j.error || "Save failed."); });
+            });
+          });
+          return chain.then(function () { settingsCache = data; });
+        }
+
+        function buildRateBookJS(m) {
+          var book = {
+            services: RATE_SERVICES_META.map(function (s) {
+              var r = m[s.key] || RATE_DEFAULTS[s.key];
+              return { key: s.key, label: s.label, hint: s.hint, unit: s.unit, unitLabel: s.unitLabel,
+                rates: { essential: r.essential, standard: r.standard, premium: r.premium } };
+            }),
+            finishes: RATE_FINISHES, catalog: RATE_CATALOG, terms: RATE_TERMS
+          };
+          return "/* Woodex estimator rate book (PKR). Managed from the dashboard: Settings \u2192 Estimator rates. */\nwindow.WX_RATES = " + JSON.stringify(book, null, 2) + ";\n";
+        }
+
+        function buildSiteConfigJS(data) {
+          var cfg = { site: data.site, contact: data.contact, social: data.social,
+            whatsapp: (data.contact && data.contact.whatsapp) || "923224000768",
+            whatsapp_widget: !data.site || data.site.whatsapp_widget !== false };
+          return "/* Woodex public site config. Managed from the dashboard: Settings \u2192 Publish to website. */\nwindow.WOODEX_CONFIG = " + JSON.stringify(cfg, null, 2) + ";\n";
+        }
+
+        document.getElementById("settings-save").addEventListener("click", function () {
+          var st = document.getElementById("settings-status");
+          st.textContent = "Saving\u2026";
+          saveSettings().then(function () { st.textContent = "Saved."; })
+            .catch(function (err) { st.textContent = err.message || "Save failed."; });
+        });
+
+        document.getElementById("settings-publish").addEventListener("click", function () {
+          if (!confirm("Publish contact details, social links and estimator rates to the live site?")) return;
+          var st = document.getElementById("settings-status");
+          st.textContent = "Publishing\u2026";
+          saveSettings()
+            .then(function () {
+              var data = collectSettings();
+              return cmsSavePage("assets/js/estimator-rates.js", buildRateBookJS(data.rates.services), "CMS: publish estimator rates")
+                .then(function () { return cmsSavePage("assets/js/site-config.js", buildSiteConfigJS(data), "CMS: publish site config"); });
+            })
+            .then(function () { st.textContent = "Published. The live site rebuilds in about a minute."; })
+            .catch(function (err) { st.textContent = err.message || "Publish failed."; });
+        });
+        /* ================= users ================= */
+        var cmsUsers = [];
+        var userModal = null;
+        var userEditingId = null;
+
+        function loadUsers() {
+          var tb = document.getElementById("user-rows");
+          tb.innerHTML = '<tr><td colspan="4" class="text-muted">Loading…</td></tr>';
+          api("/.netlify/functions/cms-users", { method: "GET" })
+            .then(function (r) { return r.json().then(function (j) { return { s: r.status, j: j }; }); })
+            .then(function (res) {
+              if (res.s !== 200) { tb.innerHTML = '<tr><td colspan="4" class="text-danger">' + esc(res.j.error || "Could not load users.") + "</td></tr>"; return; }
+              cmsUsers = res.j.users || [];
+              renderUsers();
+            })
+            .catch(function () { tb.innerHTML = '<tr><td colspan="4" class="text-danger">Could not load users.</td></tr>'; });
+        }
+
+        function userRoleBadge(r) {
+          var cls = r === "admin" ? "text-bg-dark" : r === "editor" ? "text-bg-primary" : "text-bg-secondary";
+          return '<span class="badge ' + cls + '">' + esc(r) + "</span>";
+        }
+
+        function renderUsers() {
+          var tb = document.getElementById("user-rows");
+          document.getElementById("users-count").textContent = cmsUsers.length + " user" + (cmsUsers.length === 1 ? "" : "s");
+          if (!cmsUsers.length) { tb.innerHTML = '<tr><td colspan="4" class="text-muted">No users yet. Add the first one above.</td></tr>'; return; }
+          tb.innerHTML = cmsUsers.map(function (u) {
+            var self = sessionUser && u.username === sessionUser;
+            return "<tr>" +
+              "<td><strong>" + esc(u.username) + "</strong>" + (self ? ' <span class="badge text-bg-info">you</span>' : "") + "</td>" +
+              "<td>" + userRoleBadge(u.role) + "</td>" +
+              "<td>" + (u.active ? '<span class="badge text-bg-success">Active</span>' : '<span class="badge text-bg-secondary">Disabled</span>') + "</td>" +
+              '<td class="text-end"><div class="btn-group btn-group-sm">' +
+              '<button class="btn btn-outline-dark" data-uact="edit" data-id="' + u.id + '">Edit</button>' +
+              (u.active
+                ? '<button class="btn btn-outline-warning" data-uact="deactivate" data-id="' + u.id + '">Disable</button>'
+                : '<button class="btn btn-outline-success" data-uact="activate" data-id="' + u.id + '">Enable</button>') +
+              (self ? "" : '<button class="btn btn-outline-danger" data-uact="delete" data-id="' + u.id + '">Delete</button>') +
+              "</div></td></tr>";
+          }).join("");
+        }
+
+        function openUserModal(u) {
+          userEditingId = u ? u.id : null;
+          document.getElementById("user-modal-title").textContent = u ? "Edit user" : "Add user";
+          document.getElementById("u-name").value = u ? u.username : "";
+          document.getElementById("u-name").disabled = Boolean(u);
+          document.getElementById("u-pass").value = "";
+          document.getElementById("u-pass-hint").textContent = u ? "(leave blank to keep)" : "(min 8 chars)";
+          document.getElementById("u-role").value = u ? u.role : "editor";
+          document.getElementById("u-active-wrap").hidden = !u;
+          document.getElementById("u-active").checked = u ? Boolean(u.active) : true;
+          if (!userModal) userModal = new bootstrap.Modal(document.getElementById("userModal"));
+          userModal.show();
+        }
+
+        function saveUser() {
+          var payload, method;
+          if (userEditingId) {
+            method = "PATCH";
+            payload = { id: userEditingId, role: document.getElementById("u-role").value, active: document.getElementById("u-active").checked };
+            var pw = document.getElementById("u-pass").value;
+            if (pw) payload.password = pw;
+          } else {
+            method = "POST";
+            payload = {
+              username: document.getElementById("u-name").value.trim(),
+              password: document.getElementById("u-pass").value,
+              role: document.getElementById("u-role").value
+            };
+          }
+          api("/.netlify/functions/cms-users", { method: method, body: payload })
+            .then(function (r) { return r.json().then(function (j) { return { s: r.status, j: j }; }); })
+            .then(function (res) {
+              if (res.s !== 200) throw new Error(res.j.error || "Save failed.");
+              userModal.hide();
+              loadUsers();
+            })
+            .catch(function (err) { alert(err.message || "Save failed."); });
+        }
+
+        document.getElementById("user-new").addEventListener("click", function () { openUserModal(null); });
+        document.getElementById("user-save").addEventListener("click", saveUser);
+        document.getElementById("user-rows").addEventListener("click", function (e) {
+          var b = e.target.closest("[data-uact]");
+          if (!b) return;
+          var u = cmsUsers.find(function (x) { return x.id === b.getAttribute("data-id"); });
+          if (!u) return;
+          var act = b.getAttribute("data-uact");
+          if (act === "edit") openUserModal(u);
+          else if (act === "activate" || act === "deactivate") {
+            if (sessionUser && u.username === sessionUser && act === "deactivate") { alert("You cannot disable your own account."); return; }
+            api("/.netlify/functions/cms-users", { method: "PATCH", body: { id: u.id, active: act === "activate" } })
+              .then(function () { loadUsers(); })
+              .catch(function () { alert("Update failed."); });
+          } else if (act === "delete") {
+            if (!confirm('Delete user "' + u.username + '"?')) return;
+            api("/.netlify/functions/cms-users", { method: "DELETE", body: { id: u.id } })
+              .then(function () { loadUsers(); })
+              .catch(function () { alert("Delete failed."); });
+          }
+        });
+
         /* ================= projects ================= */
         var projects = [];
         var projStatusFilter = "all";
@@ -2922,6 +3498,10 @@
             var badge = p.status === "draft"
               ? '<span class="badge text-bg-secondary">Draft</span>'
               : '<span class="badge text-bg-success">Active</span>';
+            if (p.published) badge += ' <span class="badge text-bg-primary">Live</span>';
+            var pubBtn = p.published
+              ? '<button class="btn btn-outline-warning" data-pact="unpublish" data-id="' + p.id + '">Unpublish</button>'
+              : '<button class="btn btn-outline-success" data-pact="publish" data-id="' + p.id + '">Publish</button>';
             return "<tr>" +
               "<td>" + thumb + "</td>" +
               "<td><strong>" + esc(p.title) + '</strong><div class="text-muted small">' + esc(p.slug || "") + "</div></td>" +
@@ -2930,6 +3510,7 @@
               "<td>" + imgs.length + "</td>" +
               "<td>" + badge + "</td>" +
               '<td class="text-end"><div class="btn-group btn-group-sm">' +
+              pubBtn +
               '<button class="btn btn-outline-dark" data-pact="edit" data-id="' + p.id + '">Edit</button>' +
               '<button class="btn btn-outline-danger" data-pact="delete" data-id="' + p.id + '">Delete</button>' +
               "</div></td></tr>";
@@ -2938,7 +3519,7 @@
 
         function openProjectModal(p) {
           projEditingId = p ? p.id : null;
-          projGallery = p && Array.isArray(p.images) ? p.images.map(function (im) { return { url: im.url, caption: im.caption || "" }; }) : [];
+          projGallery = p && Array.isArray(p.images) ? p.images.map(function (im) { return { url: im.url, caption: im.caption || "", alt: im.alt || "", width: im.width || null, height: im.height || null }; }) : [];
           document.getElementById("proj-modal-title").textContent = p ? "Edit project" : "New project";
           document.getElementById("p-title").value = p ? p.title : "";
           document.getElementById("p-status").value = p ? p.status : "active";
@@ -3030,6 +3611,8 @@
           if (!p) return;
           var act = b.getAttribute("data-pact");
           if (act === "edit") openProjectModal(p);
+          else if (act === "publish") publishProject(p);
+          else if (act === "unpublish") unpublishProject(p);
           else if (act === "delete") {
             if (!confirm('Delete project "' + p.title + '"?')) return;
             api("/.netlify/functions/cms-projects", { method: "DELETE", body: { id: p.id } })
@@ -3037,6 +3620,69 @@
               .catch(function () { alert("Delete failed."); });
           }
         });
+
+        function refreshProjectsIndex(publishedList) {
+          var list = publishedList || projects.filter(function (x) { return x.published && x.status !== "draft"; });
+          return cmsSavePage("projects/index.html",
+            WxProjectRender.renderIndexHTML(list),
+            "CMS: refresh Projects index");
+        }
+
+        function publishProject(p) {
+          if (p.status === "draft") { alert("Set the project to Active before publishing."); return; }
+          if (!confirm('Publish "' + p.title + '" to /projects/' + p.slug + '/?')) return;
+          document.getElementById("proj-count").textContent = "Publishing…";
+          var chain = Promise.resolve();
+          if (p.published && p.published_slug && p.published_slug !== p.slug) {
+            chain = chain.then(function () {
+              return api("/.netlify/functions/cms-delete", { method: "POST",
+                body: { path: "projects/" + p.published_slug + "/index.html", message: "CMS: unpublish renamed project " + p.published_slug } })
+                .catch(function () {});
+            });
+          }
+          chain
+            .then(function () {
+              return cmsSavePage("projects/" + p.slug + "/index.html",
+                WxProjectRender.renderProjectHTML(p),
+                "CMS: publish project " + p.slug);
+            })
+            .then(function () {
+              return api("/.netlify/functions/cms-projects", { method: "PATCH",
+                body: { id: p.id, published: true, published_slug: p.slug } })
+                .then(function (r) { return r.json().then(function (j) { return { s: r.status, j: j }; }); })
+                .then(function (res) { if (res.s !== 200) throw new Error(res.j.error || "Could not mark project as published."); });
+            })
+            .then(function () {
+              var updated = projects.map(function (x) {
+                return x.id === p.id ? Object.assign({}, x, { published: true, published_slug: p.slug }) : x;
+              });
+              return refreshProjectsIndex(updated.filter(function (x) { return x.published && x.status !== "draft"; }));
+            })
+            .then(function () { loadProjects(); alert("Published: /projects/" + p.slug + "/ — the live site rebuilds in about a minute."); })
+            .catch(function (err) { alert(err.message || "Publish failed."); loadProjects(); });
+        }
+
+        function unpublishProject(p) {
+          if (!confirm('Unpublish "' + p.title + '"? Its page will be removed from the live site.')) return;
+          document.getElementById("proj-count").textContent = "Unpublishing…";
+          var slug = p.published_slug || p.slug;
+          api("/.netlify/functions/cms-delete", { method: "POST",
+              body: { path: "projects/" + slug + "/index.html", message: "CMS: unpublish project " + slug } })
+            .then(function (r) { return r.json().then(function (j) { return { s: r.status, j: j }; }); })
+            .then(function (res) { if (res.s !== 200 && !(res.j && res.j.deleted === false)) throw new Error(res.j.error || "Could not remove the page."); })
+            .then(function () {
+              return api("/.netlify/functions/cms-projects", { method: "PATCH",
+                body: { id: p.id, published: false, published_slug: null } })
+                .then(function (r) { return r.json().then(function (j) { return { s: r.status, j: j }; }); })
+                .then(function (res) { if (res.s !== 200) throw new Error(res.j.error || "Could not update project."); });
+            })
+            .then(function () {
+              var updated = projects.filter(function (x) { return !(x.id === p.id); });
+              return refreshProjectsIndex(updated.filter(function (x) { return x.published && x.status !== "draft"; }));
+            })
+            .then(function () { loadProjects(); alert("Unpublished."); })
+            .catch(function (err) { alert(err.message || "Unpublish failed."); loadProjects(); });
+        }
         document.getElementById("p-gallery").addEventListener("input", function (e) {
           var inp = e.target.closest("[data-pcap]");
           if (inp) projGallery[Number(inp.getAttribute("data-pcap"))].caption = inp.value;

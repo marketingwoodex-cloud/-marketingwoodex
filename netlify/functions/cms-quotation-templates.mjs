@@ -4,7 +4,7 @@
 // POST { ..., upsert: true } upgrades the same-name template instead of duplicating.
 // PATCH { id, name?, description?, sections?, terms? }
 // DELETE { id }
-import { bearerSession, json, verifySession } from "./_auth.mjs";
+import { bearerSession, json, verifySession, canWrite } from "./_auth.mjs";
 import { sbConfigured, sbRest } from "./_supabase.mjs";
 import { clean, sanitizeSections, flatItems } from "./_boq.mjs";
 
@@ -21,6 +21,7 @@ function shape(row) {
 export default async (req) => {
   const user = verifySession(bearerSession(req));
   if (!user) return json(401, { error: "Session expired. Please sign in again." });
+  if (req.method !== "GET" && !canWrite(user)) return json(403, { error: "Your role is read-only." });
   if (!sbConfigured()) return json(503, { error: "Database is not configured yet." });
 
   if (req.method === "GET") {

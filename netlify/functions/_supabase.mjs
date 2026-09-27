@@ -5,14 +5,14 @@ const KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
 
 export const sbConfigured = () => Boolean(URL && KEY);
 
-export async function sbRest(path, { method = "GET", body = null, query = "" } = {}) {
+export async function sbRest(path, { method = "GET", body = null, query = "", prefer = "" } = {}) {
   const res = await fetch(`${URL}/rest/v1/${path}${query}`, {
     method,
     headers: {
       apikey: KEY,
       Authorization: `Bearer ${KEY}`,
       "Content-Type": "application/json",
-      Prefer: method === "POST" ? "return=representation" : "return=minimal",
+      Prefer: prefer || (method === "POST" ? "return=representation" : "return=minimal"),
     },
     body: body ? JSON.stringify(body) : undefined,
   });

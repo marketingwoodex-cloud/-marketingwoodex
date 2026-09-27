@@ -6,7 +6,7 @@
 // DELETE { id }
 // Content is stored as a JSON string of blocks:
 //   [{type:'heading'|'paragraph'|'image'|'quote'|'list', text, url?, caption?}]
-import { bearerSession, json, verifySession } from "./_auth.mjs";
+import { bearerSession, json, verifySession, canWrite } from "./_auth.mjs";
 import { sbConfigured, sbRest } from "./_supabase.mjs";
 
 const UUID = /^[0-9a-f-]{36}$/i;
@@ -67,6 +67,7 @@ function shapeList(r) {
 export default async (req) => {
   const user = verifySession(bearerSession(req));
   if (!user) return json(401, { error: "Session expired. Please sign in again." });
+  if (req.method !== "GET" && !canWrite(user)) return json(403, { error: "Your role is read-only." });
   if (!sbConfigured()) return json(503, { error: "Database is not configured yet." });
 
   const url = new URL(req.url);

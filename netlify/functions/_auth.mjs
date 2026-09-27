@@ -17,9 +17,9 @@ export const safeEqual = (a, b) => {
   return x.length === y.length && timingSafeEqual(x, y);
 };
 
-export function issueSession(username) {
+export function issueSession(username, role) {
   const secret = process.env.CMS_SESSION_SECRET || "";
-  const payload = b64url(JSON.stringify({ u: username, exp: Date.now() + 12 * 3600 * 1000 }));
+  const payload = b64url(JSON.stringify({ u: username, r: role || "admin", exp: Date.now() + 12 * 3600 * 1000 }));
   const sig = b64url(createHmac("sha256", secret).update(payload).digest());
   return `${payload}.${sig}`;
 }
@@ -34,11 +34,16 @@ export function verifySession(token) {
     if (!safeEqual(sig, expected)) return null;
     const data = JSON.parse(unb64url(payload).toString("utf8"));
     if (!data.u || !data.exp || Date.now() > data.exp) return null;
-    return data.u;
+    const role = ["admin", "editor", "viewer"].includes(data.r) ? data.r : "admin";
+    return { username: data.u, role };
   } catch {
     return null;
   }
 }
+
+// Editor and admin can change data; viewer is read-only.
+export const canWrite = (user) => Boolean(user && user.role !== "viewer");
+export const isAdmin = (user) => Boolean(user && user.role === "admin");
 
 export const json = (status, data) =>
   new Response(JSON.stringify(data), {

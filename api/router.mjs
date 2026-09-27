@@ -16,9 +16,11 @@ import cmsProjects from "../netlify/functions/cms-projects.mjs";
 import cmsQuotationTemplates from "../netlify/functions/cms-quotation-templates.mjs";
 import cmsQuotations from "../netlify/functions/cms-quotations.mjs";
 import cmsSave from "../netlify/functions/cms-save.mjs";
+import cmsSettings from "../netlify/functions/cms-settings.mjs";
 import cmsStats from "../netlify/functions/cms-stats.mjs";
 import cmsTeam from "../netlify/functions/cms-team.mjs";
 import cmsUpload from "../netlify/functions/cms-upload.mjs";
+import cmsUsers from "../netlify/functions/cms-users.mjs";
 import enquirySubmit from "../netlify/functions/enquiry-submit.mjs";
 import estimatorSubmit from "../netlify/functions/estimator-submit.mjs";
 
@@ -34,9 +36,11 @@ const HANDLERS = {
   "cms-quotation-templates": cmsQuotationTemplates,
   "cms-quotations": cmsQuotations,
   "cms-save": cmsSave,
+  "cms-settings": cmsSettings,
   "cms-stats": cmsStats,
   "cms-team": cmsTeam,
   "cms-upload": cmsUpload,
+  "cms-users": cmsUsers,
   "enquiry-submit": enquirySubmit,
   "estimator-submit": estimatorSubmit,
 };

@@ -1,6 +1,6 @@
 // Woodex CMS upload — stores an image in the website repo and returns its URL.
 // POST { filename, data } (data = dataURL or raw base64) with Authorization: Bearer <session>
-import { bearerSession, json, verifySession } from "./_auth.mjs";
+import { bearerSession, json, verifySession, canWrite } from "./_auth.mjs";
 import { ghPutFile } from "./_github.mjs";
 
 const MAX_BYTES = 4_000_000; // 4 MB
@@ -9,6 +9,7 @@ export default async (req) => {
   if (req.method !== "POST") return json(405, { error: "Method not allowed." });
   const user = verifySession(bearerSession(req));
   if (!user) return json(401, { error: "Session expired. Please sign in again." });
+  if (req.method !== "GET" && !canWrite(user)) return json(403, { error: "Your role is read-only." });
 
   let body = null;
   try {

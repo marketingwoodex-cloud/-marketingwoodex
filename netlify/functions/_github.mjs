@@ -61,9 +61,12 @@ export async function ghDeleteFile(path, message) {
 }
 
 // Only page HTML files inside the site may be written (never admin/, netlify/, .git/).
+// Dashboard-managed JS config (assets/js/site-config.js, assets/js/estimator-rates.js)
+// is also writable so Settings can publish to the live site.
 export function validPagePath(p) {
   if (typeof p !== "string" || p.length > 200) return false;
-  if (!/^[A-Za-z0-9][A-Za-z0-9._/-]*\.html$/.test(p)) return false;
   if (p.includes("..") || p.startsWith("admin/") || p.startsWith("netlify/")) return false;
+  if (p === "assets/js/site-config.js" || p === "assets/js/estimator-rates.js") return true;
+  if (!/^[A-Za-z0-9][A-Za-z0-9._/-]*\.html$/.test(p)) return false;
   return true;
 }

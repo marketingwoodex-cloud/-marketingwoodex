@@ -225,3 +225,12 @@
     });
   }
 })();
+
+/* WhatsApp handoff widget — loads on every public page. */
+(function () {
+  if (location.pathname.indexOf("/admin") === 0) return;
+  var s = document.createElement("script");
+  s.src = "/assets/js/whatsapp-widget.js";
+  s.defer = true;
+  document.head.appendChild(s);
+})();

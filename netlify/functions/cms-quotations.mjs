@@ -5,7 +5,7 @@
 //        parent_id? (creates a new version of that quotation) }
 // PATCH { id, status? | client_name?, ..., sections[]?, discount?, terms?, notes?, option_label? }
 // DELETE { id }
-import { bearerSession, json, verifySession } from "./_auth.mjs";
+import { bearerSession, json, verifySession, canWrite } from "./_auth.mjs";
 import { sbConfigured, sbRest } from "./_supabase.mjs";
 import { clean, num, sanitizeSections, sectionTotals, flatItems } from "./_boq.mjs";
 
@@ -39,6 +39,7 @@ async function nextRef() {
 export default async (req) => {
   const user = verifySession(bearerSession(req));
   if (!user) return json(401, { error: "Session expired. Please sign in again." });
+  if (req.method !== "GET" && !canWrite(user)) return json(403, { error: "Your role is read-only." });
   if (!sbConfigured()) return json(503, { error: "Database is not configured yet." });
 
   if (req.method === "GET") {

@@ -3,7 +3,7 @@
 // POST { title*, category?, location?, description?, images?, status? }
 // PATCH { id, ...fields }
 // DELETE { id }
-import { bearerSession, json, verifySession } from "./_auth.mjs";
+import { bearerSession, json, verifySession, canWrite } from "./_auth.mjs";
 import { sbConfigured, sbRest } from "./_supabase.mjs";
 
 const UUID = /^[0-9a-f-]{36}$/i;
@@ -19,6 +19,9 @@ function sanitizeImages(v) {
   return v.slice(0, 40).map((im) => ({
     url: clean(im?.url, 500),
     caption: clean(im?.caption, 160),
+    alt: clean(im?.alt, 160) || null,
+    width: Number.isFinite(Number(im?.width)) && Number(im.width) > 0 ? Math.floor(Number(im.width)) : null,
+    height: Number.isFinite(Number(im?.height)) && Number(im.height) > 0 ? Math.floor(Number(im.height)) : null,
   })).filter((im) => /^\/[A-Za-z0-9][A-Za-z0-9._/-]*$/.test(im.url));
 }
 
@@ -36,6 +39,7 @@ async function uniqueSlug(base, exceptId) {
 export default async (req) => {
   const user = verifySession(bearerSession(req));
   if (!user) return json(401, { error: "Session expired. Please sign in again." });
+  if (req.method !== "GET" && !canWrite(user)) return json(403, { error: "Your role is read-only." });
   if (!sbConfigured()) return json(503, { error: "Database is not configured yet." });
 
   if (req.method === "GET") {
@@ -93,10 +97,18 @@ export default async (req) => {
     if (body?.description !== undefined) patch.description = clean(body.description, 4000) || null;
     if (body?.images !== undefined) patch.images = sanitizeImages(body.images);
     if (body?.status !== undefined) patch.status = body.status === "draft" ? "draft" : "active";
+    if (body?.published !== undefined) patch.published = body.published === true;
+    if (body?.published_slug !== undefined)
+      patch.published_slug = body.published_slug ? slugify(body.published_slug).slice(0, 120) : null;
     if (!Object.keys(patch).length) return json(400, { error: "Nothing to update." });
-    const { status } = await sbRest("projects",
+    const { status, data: errData } = await sbRest("projects",
       { method: "PATCH", query: `?id=eq.${id}`, body: patch });
-    if (status !== 200 && status !== 204) return json(502, { error: "Could not update project." });
+    if (status !== 200 && status !== 204) {
+      const msg = JSON.stringify(errData || {});
+      if (/published/.test(msg) && /column/i.test(msg))
+        return json(400, { error: "The projects table needs the publish columns. Run the migration SQL in Supabase first." });
+      return json(502, { error: "Could not update project." });
+    }
     const refetch = await sbRest("projects", { query: `?select=*&id=eq.${id}&limit=1` });
     const saved = refetch.data?.[0] || null;
     await sbRest("activity", { method: "POST",
