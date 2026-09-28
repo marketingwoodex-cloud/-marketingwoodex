@@ -83,7 +83,7 @@ export function validPagePath(p) {
   // Never allow writes inside code/config areas, whatever the extension.
   if (/^(admin|netlify|api|mcp-server|\.git|\.github)\//.test(low)) return false;
   if (p === "assets/js/site-config.js" || p === "assets/js/estimator-rates.js" || p === "assets/js/theme-config.js" || p === "assets/js/nav-config.js") return true;
-  if (p === "sitemap.xml" || p === "robots.txt") return true;
+  if (p === "sitemap.xml" || p === "robots.txt" || p === "vercel.json") return true;
   if (!/^[A-Za-z0-9][A-Za-z0-9._/-]*\.html$/.test(p)) return false;
   return true;
 }
