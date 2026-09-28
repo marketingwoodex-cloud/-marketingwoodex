@@ -9,7 +9,6 @@
     <link rel="stylesheet" href="./vendor/adminlte/bootstrap.min.css" />
     <link rel="stylesheet" href="./vendor/adminlte/bootstrap-icons.min.css" />
     <link rel="stylesheet" href="./vendor/adminlte/adminlte.min.css" />
-    <link rel="stylesheet" href="./vendor/grapes.min.css" />
     <link rel="stylesheet" href="./css/woodex-admin.css" />
     <link rel="stylesheet" href="./css/wx-dashboard.css" />
     <script src="./vendor/chart.umd.js" defer></script>
@@ -54,41 +53,89 @@
         background: #fdecec; color: #a12622; font-size: 13px;
       }
       #wx-gate .note { margin-top: 18px; font-size: 12px; color: #8a93a8; text-align: center; }
-      /* ---------- studio (page builder view) ---------- */
-      #wx-studio { display: none; height: 100%; flex-direction: column; background: #f2f4f8; color: #1a2333; }
+      /* ---------- studio (block page builder view, Phase 2) ---------- */
+      #wx-studio { display: none; height: 100%; flex-direction: column; background: #0b0f1c; color: #e8ecf5; }
       #wx-studio.open { display: flex; }
       .wx-topbar {
-        display: flex; align-items: center; gap: 10px;
-        background: var(--navy); color: #fff; padding: 10px 14px;
+        display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+        background: #0f1526; border-bottom: 1px solid #1e2740; padding: 10px 14px;
       }
-      .wx-topbar .brand { font-weight: 800; letter-spacing: 0.18em; font-size: 13px; white-space: nowrap; }
+      .wx-topbar .brand { font-weight: 800; letter-spacing: 0.18em; font-size: 13px; white-space: nowrap; color: #d4af6a; }
       .wx-topbar select {
-        flex: 1; max-width: 340px; padding: 8px 12px; border-radius: 999px;
-        border: 1px solid #2a3550; background: #141b30; color: #fff; font-size: 13px;
+        flex: 1; min-width: 220px; max-width: 380px; padding: 8px 12px; border-radius: 8px;
+        border: 1px solid #26304d; background: #131a2e; color: #fff; font-size: 13px;
       }
       .wx-btn {
-        padding: 8px 16px; border-radius: 999px; border: 1px solid #2a3550;
-        background: transparent; color: #fff; font-size: 13px; font-weight: 600; cursor: pointer;
-        white-space: nowrap;
+        padding: 8px 16px; border-radius: 8px; border: 1px solid #26304d;
+        background: transparent; color: #e8ecf5; font-size: 13px; font-weight: 600;
+        cursor: pointer; white-space: nowrap; text-decoration: none; display: inline-block;
       }
-      .wx-btn:hover { background: #1a2340; }
-      .wx-btn.primary { background: #fff; color: var(--navy); border-color: #fff; }
-      .wx-btn.primary:hover { background: #e8ecf5; }
-      .wx-btn:disabled { opacity: 0.45; cursor: default; }
-      #wx-status { font-size: 12px; color: #9aa6c2; white-space: nowrap; }
+      .wx-btn:hover { background: #18203a; }
+      .wx-btn.primary { background: #d4af6a; color: #14181f; border-color: #d4af6a; }
+      .wx-btn.primary:hover { background: #e3c489; }
+      .wx-btn.danger { border-color: #7f2f3a; color: #ff8f9c; }
+      .wx-btn.danger:hover { background: #2a1218; }
+      .wx-btn:disabled, .wx-btn.is-off { opacity: 0.4; cursor: default; pointer-events: none; }
+      .wx-btn.small { padding: 6px 12px; font-size: 12px; }
+      #wx-status { font-size: 12px; color: #8fa0c2; }
       .wx-main { flex: 1; display: flex; min-height: 0; }
       .wx-side {
-        width: 230px; background: #fff; border-right: 1px solid #e3e8f2;
-        overflow-y: auto; padding: 12px; font-size: 13px;
+        width: 255px; background: #0f1526; border-right: 1px solid #1e2740;
+        overflow-y: auto; padding: 14px; font-size: 13px;
       }
-      .wx-side h4 { margin: 6px 0 10px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: #8a93a8; }
-      .wx-side.right { border-right: 0; border-left: 1px solid #e3e8f2; width: 250px; }
-      .wx-canvas { flex: 1; min-width: 0; position: relative; }
-      #gjs { height: 100%; }
-      .wx-hint { font-size: 12px; color: #8a93a8; margin: 10px 2px; line-height: 1.5; }
-      .gjs-blocks-c { justify-content: flex-start; }
-      .gjs-block { width: calc(50% - 6px); min-height: 70px; font-size: 12px; }
-      #wx-upload-input { display: none; }
+      .wx-side h4 { margin: 14px 0 8px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: #d4af6a; }
+      .wx-side.right { border-right: 0; border-left: 1px solid #1e2740; width: 310px; }
+      .wx-canvas { flex: 1; min-width: 0; overflow-y: auto; padding: 16px 18px; background: #0b0f1c; }
+      .wx-hint { font-size: 12px; color: #8fa0c2; line-height: 1.55; margin: 10px 0; }
+      .pb-field { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: #8fa0c2; margin-bottom: 10px; }
+      .pb-field input, .pb-field textarea, .pb-field select {
+        display: block; width: 100%; margin-top: 5px; padding: 8px 10px; border-radius: 8px;
+        border: 1px solid #26304d; background: #131a2e; color: #fff; font-size: 13px;
+        text-transform: none; letter-spacing: normal; font-family: inherit;
+      }
+      .pb-field textarea { resize: vertical; font-family: ui-monospace, Consolas, monospace; font-size: 12px; line-height: 1.5; }
+      .pb-field input[readonly] { opacity: 0.6; }
+      .pb-canvas-head {
+        display: flex; justify-content: space-between; align-items: center;
+        margin-bottom: 10px; color: #d4af6a; font-size: 13px;
+        letter-spacing: 0.06em; text-transform: uppercase;
+      }
+      .pb-card {
+        display: flex; align-items: center; gap: 12px; background: #101728;
+        border: 1px solid #1e2740; border-radius: 10px; padding: 10px 12px;
+        margin-bottom: 8px; cursor: pointer;
+      }
+      .pb-card:hover { border-color: #334066; }
+      .pb-card.is-sel { border-color: #d4af6a; box-shadow: 0 0 0 1px #d4af6a; }
+      .pb-card.is-hidden { opacity: 0.45; }
+      .pb-num {
+        width: 26px; height: 26px; border-radius: 50%; background: #1a2340; color: #8fa0c2;
+        display: flex; align-items: center; justify-content: center; font-size: 11px; flex: none;
+      }
+      .pb-type {
+        font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: #d4af6a;
+        background: #17203a; border-radius: 999px; padding: 3px 8px; flex: none;
+      }
+      .pb-snip { flex: 1; min-width: 0; font-size: 12.5px; color: #aab6d4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .pb-ctl { display: flex; gap: 4px; flex: none; }
+      .pb-ctl button {
+        min-width: 28px; height: 26px; border-radius: 6px; border: 1px solid #26304d;
+        background: #131a2e; color: #aab6d4; cursor: pointer; font-size: 13px; line-height: 1;
+      }
+      .pb-ctl button:hover { background: #1a2340; color: #fff; }
+      .pb-empty {
+        border: 1px dashed #26304d; border-radius: 12px; padding: 36px 24px;
+        text-align: center; color: #8fa0c2; font-size: 13.5px; line-height: 1.6;
+      }
+      .pb-card-info {
+        background: #101728; border: 1px solid #1e2740; border-radius: 8px;
+        padding: 10px; font-size: 12px; color: #8fa0c2; word-break: break-all; margin-bottom: 6px;
+      }
+      .pb-actions { display: flex; gap: 8px; margin: 10px 0; }
+      .pb-modal { position: fixed; inset: 0; background: rgba(4, 7, 14, 0.72); display: flex; align-items: center; justify-content: center; z-index: 1050; }
+      .pb-modal[hidden] { display: none; }
+      .pb-modal-card { width: min(440px, 92vw); background: #0f1526; border: 1px solid #26304d; border-radius: 14px; padding: 20px; box-shadow: 0 24px 60px rgba(0,0,0,.5); }
+      .pb-modal-card h3 { margin: 0 0 14px; font-size: 16px; color: #d4af6a; }
       @media (max-width: 900px) {
         .wx-side { display: none; }
       }
@@ -733,32 +780,75 @@
         <section class="wx-view" id="view-builder" hidden>
           <div id="wx-studio">
             <div class="wx-topbar">
-              <span class="brand">WOODEX · Page Builder</span>
-              <select id="wx-page" title="Choose a page to edit"></select>
-              <button class="wx-btn" id="wx-device-desktop" title="Desktop preview">Desktop</button>
-              <button class="wx-btn" id="wx-device-mobile" title="Mobile preview">Mobile</button>
-              <button class="wx-btn" id="wx-undo" title="Undo">Undo</button>
-              <button class="wx-btn" id="wx-upload" title="Upload an image">Upload image</button>
-              <button class="wx-btn" id="wx-media" title="Pick from the media library">Media library</button>
-              <button class="wx-btn" id="wx-preview" title="Open the live page">View live</button>
-              <button class="wx-btn primary" id="wx-publish" disabled>Publish</button>
-              <span id="wx-status"></span>
+              <span class="brand">WOODEX &middot; PAGES</span>
+              <select id="wx-page" title="Choose a page to edit"><option value="">&#8212; Select a page &#8212;</option></select>
+              <button class="wx-btn" id="wx-new-page" type="button">New page</button>
+              <a class="wx-btn is-off" id="wx-view-live" target="_blank" rel="noopener">View live</a>
+              <button class="wx-btn" id="wx-save" type="button" disabled>Save draft</button>
+              <button class="wx-btn primary" id="wx-publish" type="button" disabled>Publish</button>
+              <span id="wx-status">Loading page list&#8230;</span>
             </div>
             <div class="wx-main">
               <div class="wx-side">
-                <h4>Blocks</h4>
+                <h4>Page settings</h4>
+                <label class="pb-field">SEO title
+                  <input id="wx-meta-title" maxlength="180" placeholder="Page title">
+                </label>
+                <label class="pb-field">Meta description
+                  <textarea id="wx-meta-desc" rows="3" maxlength="400"></textarea>
+                </label>
+                <label class="pb-field">Canonical URL
+                  <input id="wx-meta-canon" readonly>
+                </label>
+                <div class="pb-card-info" id="wx-page-info">No page open.</div>
+                <h4>Danger zone</h4>
+                <button class="wx-btn danger" id="wx-delete-page" type="button" disabled>Delete page&#8230;</button>
+                <p class="wx-hint">Saving stores a draft in the repo. Publishing splices your sections into the live page &#8212; the page&#8217;s own styles and scripts stay untouched. Live in about a minute.</p>
+              </div>
+              <div class="wx-canvas">
+                <div class="pb-canvas-head">
+                  <b id="wx-blocks-count">Sections</b>
+                  <button class="wx-btn small" id="wx-add-block" type="button" disabled>+ Add section</button>
+                </div>
                 <div id="wx-blocks"></div>
-                <p class="wx-hint">Drag a block onto the page. Click any text to edit it. Drag sections by their edge to move them. Select an image to replace it.</p>
-                <h4>Layers</h4>
-                <div id="wx-layers"></div>
+                <div class="pb-empty" id="wx-blocks-empty">Select a page from the top bar. Its sections appear here &#8212; reorder, edit, hide or remove them, then hit <b>Publish</b>.</div>
               </div>
-              <div class="wx-canvas"><div id="gjs"></div></div>
               <div class="wx-side right">
-                <h4>Style</h4>
-                <div id="wx-styles"></div>
-                <h4>Settings</h4>
-                <div id="wx-traits"></div>
+                <h4>Section editor</h4>
+                <div id="wx-block-detail">
+                  <p class="wx-hint">Click the pencil on a section to edit its HTML here. Sections are the top-level blocks of the page&#8217;s main area.</p>
+                </div>
+                <label class="pb-field" id="wx-be-wrap" hidden>Section HTML
+                  <textarea id="wx-be-html" rows="16" spellcheck="false"></textarea>
+                </label>
+                <div class="pb-actions" id="wx-be-actions" hidden>
+                  <button class="wx-btn primary small" id="wx-be-apply" type="button">Apply</button>
+                  <button class="wx-btn small" id="wx-be-cancel" type="button">Cancel</button>
+                </div>
+                <div id="wx-be-facts" class="wx-hint"></div>
               </div>
+            </div>
+          </div>
+          <div class="pb-modal" id="wx-np-modal" hidden>
+            <div class="pb-modal-card">
+              <h3>New page</h3>
+              <label class="pb-field">URL path
+                <input id="np-slug" placeholder="/my-page/">
+              </label>
+              <label class="pb-field">Page title
+                <input id="np-title" maxlength="180">
+              </label>
+              <label class="pb-field">Meta description
+                <textarea id="np-desc" rows="2" maxlength="400"></textarea>
+              </label>
+              <label class="pb-field">Start from (template donor)
+                <select id="np-donor"></select>
+              </label>
+              <div class="pb-actions">
+                <button class="wx-btn primary small" id="np-create" type="button">Create page</button>
+                <button class="wx-btn small" id="np-cancel" type="button">Cancel</button>
+              </div>
+              <p class="wx-hint" id="np-status"></p>
             </div>
           </div>
         </section>
@@ -1080,10 +1170,8 @@
       </div>
     </div>
 
-    <input type="file" id="wx-upload-input" accept="image/png,image/jpeg,image/gif,image/webp,image/svg+xml" />
     <script src="/assets/js/estimator-rates.js"></script>
     <script src="/assets/js/quotation-templates.js"></script>
-    <script src="./vendor/grapes.min.js"></script>
     <!-- ============ blog editor modal ============ -->
     <div class="modal fade" id="blogModal" tabindex="-1" aria-hidden="true">
       <div class="modal-dialog modal-xl">
@@ -1430,7 +1518,7 @@
           if (name === "users") loadUsers();
           if (name === "builder") {
             document.getElementById("wx-studio").classList.add("open");
-            initStudio();
+            pbInit();
           } else {
             document.getElementById("wx-studio").classList.remove("open");
           }
@@ -2794,250 +2882,335 @@
           openInvBuilder(null, quotPrevRow.id);
         });
 
-        /* ================= page builder (GrapesJS) ================= */
-        var editor = null, pages = [], current = null;
-        var originalDoc = "", savedScripts = [];
-        var dirty = false, studioStarted = false, lastMirror = null;
-
+        /* ================= block page builder (Phase 2) ================= */
+        var pbPages = [], pbSlug = "", pbBlocks = [], pbMeta = null;
+        var pbDirty = false, pbStarted = false, pbSel = -1, pbBusy = false;
         var statusEl = document.getElementById("wx-status");
+        var saveBtn = document.getElementById("wx-save");
         var publishBtn = document.getElementById("wx-publish");
         var pageSelect = document.getElementById("wx-page");
+        var PB_ENDPOINT = "/.netlify/functions/cms-pages";
 
-        function setStatus(t) { statusEl.textContent = t; }
-        function markDirty() {
-          dirty = true;
-          publishBtn.disabled = false;
-          setStatus("Unsaved changes");
+        function pbStatus(t) { statusEl.textContent = t; }
+        function pbMarkDirty() {
+          pbDirty = true; saveBtn.disabled = false; publishBtn.disabled = false;
+          pbStatus("Unsaved changes");
         }
-        function markClean(msg) {
-          dirty = false;
-          publishBtn.disabled = true;
-          setStatus(msg || "");
+        function pbMarkClean(msg) {
+          pbDirty = false; saveBtn.disabled = true; publishBtn.disabled = false;
+          pbStatus(msg || "");
         }
-
-        function addBlocks(bm) {
-          var basic = "Basic";
-          bm.add("wx-section", { label: "Section", category: basic,
-            content: '<section style="padding:64px 24px"><div style="max-width:1100px;margin:0 auto"><h2>New section heading</h2><p>Double click to edit this text.</p></div></section>' });
-          bm.add("wx-heading", { label: "Heading", category: basic, content: "<h2>Heading</h2>" });
-          bm.add("wx-text", { label: "Text", category: basic, content: "<p>Double click to edit this text.</p>" });
-          bm.add("wx-image", { label: "Image", category: basic, content: { type: "image" } });
-          bm.add("wx-button", { label: "Button", category: basic,
-            content: '<a href="#" style="display:inline-block;padding:12px 30px;background:#0a0f1e;color:#fff;border-radius:999px;text-decoration:none;font-weight:600">Button</a>' });
-          bm.add("wx-cols", { label: "2 columns", category: basic,
-            content: '<div style="display:flex;gap:28px;flex-wrap:wrap;padding:8px 0"><div style="flex:1;min-width:220px"><h3>Column one</h3><p>Text here.</p></div><div style="flex:1;min-width:220px"><h3>Column two</h3><p>Text here.</p></div></div>' });
-          bm.add("wx-divider", { label: "Divider", category: basic, content: '<hr style="border:0;border-top:1px solid #e3e8f2;margin:32px 0" />' });
+        function pbSnippet(html) {
+          var t = String(html || "").replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+          return t.length > 90 ? t.slice(0, 90) + "\u2026" : (t || "(empty section)");
         }
 
-        async function openPage(p) {
-          if (dirty && !confirm("You have unsaved changes. Switch page and lose them?")) {
-            pageSelect.value = current ? current.url : "";
+        function pbRenderBlocks() {
+          var wrap = document.getElementById("wx-blocks");
+          var empty = document.getElementById("wx-blocks-empty");
+          var count = document.getElementById("wx-blocks-count");
+          wrap.innerHTML = "";
+          if (!pbMeta) {
+            empty.hidden = false;
+            count.textContent = "Sections";
             return;
           }
-          current = p;
-          pageSelect.value = p.url;
-          setStatus("Loading " + p.url + " ...");
+          empty.hidden = true;
+          count.textContent = "Sections (" + pbBlocks.length + ")";
+          pbBlocks.forEach(function (b, i) {
+            var card = document.createElement("div");
+            card.className = "pb-card" + (b.hidden ? " is-hidden" : "") + (i === pbSel ? " is-sel" : "");
+            card.innerHTML =
+              '<span class="pb-num">' + (i + 1) + "</span>" +
+              '<span class="pb-type">' + esc(b.type || "raw") + (b.hidden ? " \u00b7 hidden" : "") + "</span>" +
+              '<span class="pb-snip">' + esc(pbSnippet(b.html)) + "</span>" +
+              '<span class="pb-ctl">' +
+              '<button type="button" data-a="up" title="Move up" ' + (i === 0 ? "disabled" : "") + ">&uarr;</button>" +
+              '<button type="button" data-a="down" title="Move down" ' + (i === pbBlocks.length - 1 ? "disabled" : "") + ">&darr;</button>" +
+              '<button type="button" data-a="edit" title="Edit HTML">&#9998;</button>' +
+              '<button type="button" data-a="hide" title="' + (b.hidden ? "Show section" : "Hide section") + '">' + (b.hidden ? "Show" : "Hide") + "</button>" +
+              '<button type="button" data-a="del" title="Remove section">&times;</button>' +
+              "</span>";
+            card.addEventListener("click", function (e) {
+              var btn = e.target.closest ? e.target.closest("button[data-a]") : null;
+              var a = btn ? btn.getAttribute("data-a") : null;
+              if (!a) { pbSelect(i); return; }
+              if (btn.disabled) return;
+              var t;
+              if (a === "up" && i > 0) {
+                t = pbBlocks[i - 1]; pbBlocks[i - 1] = pbBlocks[i]; pbBlocks[i] = t;
+                pbSel = i - 1; pbMarkDirty(); pbRenderBlocks(); pbFillEditor();
+              } else if (a === "down" && i < pbBlocks.length - 1) {
+                t = pbBlocks[i + 1]; pbBlocks[i + 1] = pbBlocks[i]; pbBlocks[i] = t;
+                pbSel = i + 1; pbMarkDirty(); pbRenderBlocks(); pbFillEditor();
+              } else if (a === "edit") {
+                pbSelect(i);
+                document.getElementById("wx-be-html").focus();
+              } else if (a === "hide") {
+                b.hidden = !b.hidden; pbMarkDirty(); pbRenderBlocks();
+              } else if (a === "del") {
+                if (!confirm("Remove section " + (i + 1) + "? (takes effect on Save/Publish)")) return;
+                pbBlocks.splice(i, 1);
+                if (pbSel === i) pbSel = -1; else if (pbSel > i) pbSel -= 1;
+                pbMarkDirty(); pbRenderBlocks(); pbFillEditor();
+              }
+            });
+            wrap.appendChild(card);
+          });
+        }
+
+        function pbSelect(i) {
+          pbSel = i;
+          pbRenderBlocks();
+          pbFillEditor();
+        }
+
+        function pbFillEditor() {
+          var wrap = document.getElementById("wx-be-wrap");
+          var actions = document.getElementById("wx-be-actions");
+          var detail = document.getElementById("wx-block-detail");
+          var facts = document.getElementById("wx-be-facts");
+          if (pbSel < 0 || !pbBlocks[pbSel]) {
+            wrap.hidden = true; actions.hidden = true;
+            detail.innerHTML = '<p class="wx-hint">Click the pencil on a section to edit its HTML here. Sections are the top-level blocks of the page\u2019s main area.</p>';
+            facts.textContent = "";
+            return;
+          }
+          var b = pbBlocks[pbSel];
+          wrap.hidden = false; actions.hidden = false;
+          detail.innerHTML = "<b>Section " + (pbSel + 1) + "</b> \u2014 " + esc(b.type || "raw");
+          document.getElementById("wx-be-html").value = b.html;
+          facts.textContent = "id: " + b.id + " \u00b7 " + String(b.html || "").length + " bytes" +
+            (b.hidden ? " \u00b7 currently hidden" : "");
+        }
+
+        function pbSyncMeta() {
+          if (!pbMeta) return;
+          pbMeta.title = document.getElementById("wx-meta-title").value.trim();
+          pbMeta.description = document.getElementById("wx-meta-desc").value.trim();
+          document.getElementById("wx-page-info").innerHTML =
+            "<b>" + esc(pbSlug) + "</b><br>" + pbBlocks.length + " sections \u00b7 drafts in <code>content/pages/</code>";
+          pbMarkDirty();
+        }
+
+        async function pbOpen(slug) {
+          if (pbDirty && !confirm("You have unsaved changes. Discard them and switch page?")) {
+            pageSelect.value = pbSlug;
+            return;
+          }
+          pbStatus("Loading " + slug + " \u2026");
           try {
-            var res = await fetch(p.url, { cache: "no-store" });
-            if (!res.ok) throw new Error("load failed");
-            var doc = await res.text();
-            originalDoc = doc;
-            var parser = new DOMParser();
-            var d = parser.parseFromString(doc, "text/html");
-            savedScripts = [];
-            d.querySelectorAll("body script").forEach(function (s) {
-              savedScripts.push(s.outerHTML);
-              s.remove();
-            });
-            var headStyle = "";
-            d.querySelectorAll("head style").forEach(function (s) {
-              headStyle += s.textContent + "\n";
-            });
-            editor.setComponents(d.body.innerHTML);
-            try {
-              var cDoc = editor.Canvas.getDocument();
-              var cBody = cDoc.body;
-              if (lastMirror) {
-                if (lastMirror.id) cBody.removeAttribute("id");
-                lastMirror.classes.forEach(function (c) { cBody.classList.remove(c); });
-                lastMirror.datas.forEach(function (n) { cBody.removeAttribute(n); });
-              }
-              var srcBody = d.body;
-              var mirror = { id: "", classes: [], datas: [] };
-              if (srcBody.id) { cBody.id = srcBody.id; mirror.id = srcBody.id; }
-              if (srcBody.className) {
-                srcBody.classList.forEach(function (c) {
-                  cBody.classList.add(c);
-                  mirror.classes.push(c);
-                });
-              }
-              Array.prototype.forEach.call(srcBody.attributes, function (a) {
-                if (a.name.indexOf("data-") === 0) {
-                  cBody.setAttribute(a.name, a.value);
-                  mirror.datas.push(a.name);
-                }
-              });
-              lastMirror = mirror;
-              var st = cDoc.getElementById("wx-head-style");
-              if (!st) {
-                st = cDoc.createElement("style");
-                st.id = "wx-head-style";
-                cDoc.head.appendChild(st);
-              }
-              st.textContent = headStyle;
-            } catch (err) {}
-            editor.UndoManager.clear();
-            markClean("Editing " + p.url);
+            var res = await api(PB_ENDPOINT + "?action=get&slug=" + encodeURIComponent(slug), { method: "GET" });
+            var data = null;
+            try { data = await res.json(); } catch (e) {}
+            if (!res.ok || !data || !data.blocks) throw new Error((data && data.error) || "load failed");
+            pbSlug = data.slug || slug;
+            pbBlocks = data.blocks || [];
+            pbMeta = data.meta || {};
+            pbSel = -1;
+            document.getElementById("wx-meta-title").value = pbMeta.title || "";
+            document.getElementById("wx-meta-desc").value = pbMeta.description || "";
+            document.getElementById("wx-meta-canon").value = pbMeta.canonical || "";
+            document.getElementById("wx-page-info").innerHTML =
+              "<b>" + esc(pbSlug) + "</b><br>" + pbBlocks.length + " sections \u00b7 drafts in <code>content/pages/</code>";
+            var live = document.getElementById("wx-view-live");
+            live.href = pbSlug; live.classList.remove("is-off");
+            document.getElementById("wx-delete-page").disabled = pbSlug === "/";
+            document.getElementById("wx-add-block").disabled = false;
+            pbRenderBlocks(); pbFillEditor();
+            pbMarkClean("Editing " + pbSlug);
           } catch (err) {
-            setStatus("Could not load " + p.url);
+            pbStatus("Could not load " + slug + ": " + err.message);
           }
         }
 
-        async function publish() {
-          if (!current || !dirty) return;
-          publishBtn.disabled = true;
-          setStatus("Publishing ...");
+        async function pbLoadList() {
           try {
-            var bodyHtml = editor.getHtml();
-            var genCss = editor.getCss() || "";
-            var newBody = bodyHtml + (savedScripts.length ? "\n" + savedScripts.join("\n") : "");
-            var doc = originalDoc.replace(
-              /(<body[^>]*>)[\s\S]*?(<\/body\s*>)/i,
-              function (m, open, close) { return open + "\n" + newBody + "\n" + close; }
-            );
-            if (genCss.trim()) {
-              var styleTag = '<style data-wx-builder="1">\n' + genCss + "\n</style>";
-              if (/data-wx-builder="1"/.test(doc)) {
-                doc = doc.replace(/<style data-wx-builder="1">[\s\S]*?<\/style>/, function () { return styleTag; });
-              } else {
-                doc = doc.replace(/<\/head\s*>/i, function () { return styleTag + "\n</head>"; });
-              }
+            var res = await api(PB_ENDPOINT + "?action=list", { method: "GET" });
+            var data = null;
+            try { data = await res.json(); } catch (e) {}
+            if (!res.ok || !data) throw new Error("list failed");
+            pbPages = data.pages || [];
+            var dec = document.createElement("textarea");
+            pageSelect.innerHTML = '<option value="">\u2014 Select a page \u2014</option>';
+            pbPages.forEach(function (pg) {
+              var o = document.createElement("option");
+              o.value = pg.slug;
+              dec.innerHTML = pg.title || pg.slug;
+              var t = dec.value;
+              o.textContent = (t.length > 54 ? t.slice(0, 54) + "\u2026" : t) + "   " + pg.slug;
+              pageSelect.appendChild(o);
+            });
+            if (!pbSlug && pbPages.length) {
+              pageSelect.value = "/";
+              await pbOpen("/");
+            } else {
+              pbStatus(pbPages.length + " pages loaded");
             }
-            var res = await api("/.netlify/functions/cms-save", {
-              body: { path: current.path, html: doc, message: "Page Builder: update " + current.path },
+          } catch (err) {
+            pbStatus("Could not load the page list.");
+          }
+        }
+
+        async function pbSave() {
+          if (!pbMeta || !pbSlug) return false;
+          if (!pbMeta.title) { pbStatus("SEO title is required before saving."); return false; }
+          pbStatus("Saving draft \u2026");
+          var res = await api(PB_ENDPOINT, { body: { action: "save", slug: pbSlug, meta: pbMeta, blocks: pbBlocks } });
+          var data = null;
+          try { data = await res.json(); } catch (e) {}
+          if (!res.ok || !data || !data.ok) throw new Error((data && data.error) || "save failed");
+          pbMarkClean("Draft saved (site not changed yet)");
+          return true;
+        }
+
+        async function pbPublish() {
+          if (!pbMeta || !pbSlug || pbBusy) return;
+          pbBusy = true;
+          publishBtn.disabled = true; saveBtn.disabled = true;
+          try {
+            pbStatus("Publishing \u2026");
+            if (pbDirty) await pbSave();
+            var res = await api(PB_ENDPOINT, { body: { action: "publish", slug: pbSlug } });
+            var data = null;
+            try { data = await res.json(); } catch (e) {}
+            if (!res.ok || !data || !data.ok) throw new Error((data && data.error) || "publish failed");
+            var live = document.getElementById("wx-view-live");
+            live.href = pbSlug + "?v=" + Date.now();
+            pbMarkClean("Published \u2713 live in about a minute");
+          } catch (err) {
+            pbStatus("Publish failed: " + err.message);
+            publishBtn.disabled = false; saveBtn.disabled = pbDirty ? false : true;
+          } finally {
+            pbBusy = false;
+          }
+        }
+
+        function pbAddBlock() {
+          if (!pbMeta) return;
+          pbBlocks.push({
+            id: "b" + Date.now().toString(36),
+            type: "raw",
+            html: '<section style="padding:56px 0"><div class="wrap"><h2>New section</h2><p>Edit this text in the section editor on the right.</p></div></section>'
+          });
+          pbSel = pbBlocks.length - 1;
+          pbMarkDirty(); pbRenderBlocks(); pbFillEditor();
+          document.getElementById("wx-be-html").focus();
+        }
+
+        function pbOpenNewPage() {
+          var donor = document.getElementById("np-donor");
+          donor.innerHTML = "";
+          pbPages.slice(0, 40).forEach(function (pg) {
+            var o = document.createElement("option");
+            o.value = pg.slug; o.textContent = pg.slug;
+            if (pg.slug === "/kitchen-design/" || pg.slug === "/contact/") o.selected = true;
+            donor.appendChild(o);
+          });
+          document.getElementById("np-slug").value = "";
+          document.getElementById("np-title").value = "";
+          document.getElementById("np-desc").value = "";
+          document.getElementById("np-status").textContent = "";
+          document.getElementById("wx-np-modal").hidden = false;
+          document.getElementById("np-slug").focus();
+        }
+
+        async function pbCreatePage() {
+          var slug = document.getElementById("np-slug").value.trim();
+          if (slug && slug[0] !== "/") slug = "/" + slug;
+          if (slug && slug[slug.length - 1] !== "/") slug += "/";
+          var title = document.getElementById("np-title").value.trim();
+          var status = document.getElementById("np-status");
+          if (!/^\/(?:[A-Za-z0-9][A-Za-z0-9-]*\/)+$/.test(slug)) {
+            status.textContent = "URL path looks invalid (use /my-page/)."; return;
+          }
+          if (!title) { status.textContent = "Page title is required."; return; }
+          status.textContent = "Creating \u2026";
+          try {
+            var res = await api(PB_ENDPOINT, {
+              body: {
+                action: "create", slug: slug, title: title,
+                description: document.getElementById("np-desc").value.trim(),
+                donor: document.getElementById("np-donor").value
+              }
             });
             var data = null;
-            try { data = await res.json(); } catch (err) {}
-            if (!res.ok || !data || !data.ok) {
-              throw new Error((data && data.error) || "publish failed");
-            }
-            originalDoc = doc;
-            editor.UndoManager.clear();
-            markClean("Published. Live in about a minute.");
+            try { data = await res.json(); } catch (e) {}
+            if (!res.ok || !data || !data.ok) throw new Error((data && data.error) || "create failed");
+            document.getElementById("wx-np-modal").hidden = true;
+            await pbLoadList();
+            pageSelect.value = slug;
+            await pbOpen(slug);
+            pbStatus("Page created \u2713");
           } catch (err) {
-            setStatus("Publish failed: " + err.message);
-            publishBtn.disabled = false;
+            status.textContent = "Create failed: " + err.message;
           }
         }
 
-        function uploadImage(file) {
-          if (!file) return;
-          setStatus("Uploading image ...");
-          var reader = new FileReader();
-          reader.onload = async function () {
-            try {
-              var res = await api("/.netlify/functions/cms-upload", {
-                body: { filename: file.name, data: reader.result },
-              });
-              var data = null;
-              try { data = await res.json(); } catch (err) {}
-              if (!res.ok || !data || !data.ok) throw new Error((data && data.error) || "upload failed");
-              editor.AssetManager.add({ src: data.url });
-              var sel = editor.getSelected();
-              if (sel && sel.is("image")) sel.set("src", data.url);
-              setStatus("Image uploaded.");
-              markDirty();
-            } catch (err) {
-              setStatus("Upload failed: " + err.message);
-            }
-          };
-          reader.readAsDataURL(file);
+        async function pbDeletePage() {
+          if (!pbSlug || pbSlug === "/") return;
+          if (!confirm("Delete " + pbSlug + "? The live page will be removed.")) return;
+          var redirect = prompt("Optional: redirect this URL somewhere (e.g. /contact/). Leave empty to just remove it.", "");
+          if (redirect === null) return;
+          pbStatus("Deleting \u2026");
+          try {
+            var res = await api(PB_ENDPOINT, { body: { action: "delete", slug: pbSlug, redirect_to: redirect || "" } });
+            var data = null;
+            try { data = await res.json(); } catch (e) {}
+            if (!res.ok || !data || !data.ok) throw new Error((data && data.error) || "delete failed");
+            pbSlug = ""; pbBlocks = []; pbMeta = null; pbSel = -1; pbDirty = false;
+            document.getElementById("wx-meta-title").value = "";
+            document.getElementById("wx-meta-desc").value = "";
+            document.getElementById("wx-meta-canon").value = "";
+            document.getElementById("wx-page-info").textContent = "No page open.";
+            document.getElementById("wx-view-live").classList.add("is-off");
+            document.getElementById("wx-add-block").disabled = true;
+            document.getElementById("wx-delete-page").disabled = true;
+            saveBtn.disabled = true; publishBtn.disabled = true;
+            pbRenderBlocks(); pbFillEditor();
+            await pbLoadList();
+            pbStatus(data.warning ? ("Deleted with warning: " + data.warning) : "Page deleted \u2713");
+          } catch (err) {
+            pbStatus("Delete failed: " + err.message);
+          }
         }
 
-        function initStudio() {
-          if (studioStarted) return;
-          studioStarted = true;
-
-          editor = grapesjs.init({
-            container: "#gjs",
-            fromElement: false,
-            height: "100%",
-            width: "auto",
-            storageManager: false,
-            panels: { defaults: [] },
-            deviceManager: {
-              devices: [
-                { name: "Desktop", width: "" },
-                { name: "Tablet", width: "768px", widthMedia: "992px" },
-                { name: "Mobile", width: "375px", widthMedia: "768px" },
-              ],
-            },
-            canvas: { styles: ["/assets/site.css"] },
-            blockManager: { appendTo: "#wx-blocks" },
-            layerManager: { appendTo: "#wx-layers" },
-            styleManager: { appendTo: "#wx-styles" },
-            traitManager: { appendTo: "#wx-traits" },
-            assetManager: { upload: false },
+        function pbInit() {
+          if (pbStarted) return;
+          pbStarted = true;
+          saveBtn.addEventListener("click", function () {
+            pbSave().catch(function (err) { pbStatus("Save failed: " + err.message); });
           });
-          addBlocks(editor.BlockManager);
-
-          editor.on("update", function () { markDirty(); });
-
-          document.getElementById("wx-device-desktop").addEventListener("click", function () {
-            editor.setDevice("Desktop");
+          publishBtn.addEventListener("click", pbPublish);
+          document.getElementById("wx-add-block").addEventListener("click", pbAddBlock);
+          document.getElementById("wx-new-page").addEventListener("click", pbOpenNewPage);
+          document.getElementById("wx-delete-page").addEventListener("click", pbDeletePage);
+          document.getElementById("wx-be-apply").addEventListener("click", function () {
+            if (pbSel < 0 || !pbBlocks[pbSel]) return;
+            pbBlocks[pbSel].html = document.getElementById("wx-be-html").value;
+            pbMarkDirty(); pbRenderBlocks(); pbFillEditor();
+            pbStatus("Section updated \u2014 remember to Save/Publish");
           });
-          document.getElementById("wx-device-mobile").addEventListener("click", function () {
-            editor.setDevice("Mobile");
+          document.getElementById("wx-be-cancel").addEventListener("click", function () {
+            pbSel = -1; pbRenderBlocks(); pbFillEditor();
           });
-          document.getElementById("wx-undo").addEventListener("click", function () {
-            editor.UndoManager.undo();
+          ["wx-meta-title", "wx-meta-desc"].forEach(function (id) {
+            document.getElementById(id).addEventListener("input", pbSyncMeta);
           });
-          document.getElementById("wx-preview").addEventListener("click", function () {
-            if (current) window.open(current.url, "_blank");
-          });
-          document.getElementById("wx-upload").addEventListener("click", function () {
-            document.getElementById("wx-upload-input").click();
-          });
-          document.getElementById("wx-media").addEventListener("click", function () {
-            openMediaPicker(function (item) {
-              editor.AssetManager.add({ src: item.url });
-              var sel = editor.getSelected();
-              if (sel && sel.is("image")) {
-                sel.set("src", item.url);
-                try { sel.addAttributes({ alt: item.alt_text || "" }); } catch (e) {}
-              }
-              setStatus("Library image added.");
-              markDirty();
-            }, "Click an image to place it on the page.");
-          });
-          document.getElementById("wx-upload-input").addEventListener("change", function (e) {
-            uploadImage(e.target.files[0]);
-            e.target.value = "";
-          });
-          publishBtn.addEventListener("click", publish);
           pageSelect.addEventListener("change", function () {
-            var p = pages.find(function (x) { return x.url === pageSelect.value; });
-            if (p) openPage(p);
+            if (!pageSelect.value) return;
+            pbOpen(pageSelect.value);
           });
-
-          fetch("./pages.json", { cache: "no-store" })
-            .then(function (r) { return r.json(); })
-            .then(function (list) {
-              pages = list;
-              pageSelect.innerHTML = "";
-              var dec = document.createElement("textarea");
-              pages.forEach(function (p) {
-                var o = document.createElement("option");
-                o.value = p.url;
-                dec.innerHTML = p.title;
-                var t = dec.value;
-                o.textContent = t.length > 60 ? t.slice(0, 60) + "..." : t;
-                pageSelect.appendChild(o);
-              });
-              openPage(pages[0]);
-            })
-            .catch(function () { setStatus("Could not load the page list."); });
+          document.getElementById("np-cancel").addEventListener("click", function () {
+            document.getElementById("wx-np-modal").hidden = true;
+          });
+          document.getElementById("np-create").addEventListener("click", pbCreatePage);
+          document.getElementById("wx-np-modal").addEventListener("click", function (e) {
+            if (e.target === this) this.hidden = true;
+          });
+          pbLoadList();
         }
+
         /* ================= media library ================= */
         var mediaItems = [];
         var mediaPickerModal = null;
