@@ -22,7 +22,7 @@ TAG_RE = re.compile(r"<!--.*?-->|<(?P<close>/?)(?P<tag>[a-zA-Z][a-zA-Z0-9]*)\b[^
 
 def slug_of(path):
     d = os.path.dirname(path)
-    return "/" if d == "." else f"/{d}/"
+    return "/" if d in ("", ".") else f"/{d}/"
 
 def path_of(slug):
     return "index.html" if slug == "/" else f"{slug.strip('/')}/index.html"
