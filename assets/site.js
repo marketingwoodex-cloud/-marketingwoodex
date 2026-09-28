@@ -227,11 +227,19 @@
   }
 })();
 
-/* Page-view counter for the dashboard Analytics view — path only, no identity. */
+/* Page-view counter for the dashboard Analytics view — anonymous path only. */
 (function () {
   if (location.pathname.indexOf("/admin") === 0) return;
   try {
-    var payload = JSON.stringify({ path: location.pathname });
+    var vid = null;
+    try {
+      vid = localStorage.getItem("wx_vid");
+      if (!vid || !/^[0-9a-f-]{36}$/i.test(vid)) {
+        vid = (crypto && crypto.randomUUID) ? crypto.randomUUID() : null;
+        if (vid) localStorage.setItem("wx_vid", vid);
+      }
+    } catch (e) { /* storage blocked: send path only */ }
+    var payload = JSON.stringify({ path: location.pathname, vid: vid });
     if (navigator.sendBeacon) {
       navigator.sendBeacon("/.netlify/functions/analytics-track", new Blob([payload], { type: "application/json" }));
     } else {

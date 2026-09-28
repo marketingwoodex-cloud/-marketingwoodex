@@ -1,6 +1,8 @@
 // Public analytics tracker. No auth by design (called by the live website).
-// POST { path } — records a page view. Always returns { ok: true } so the
-// endpoint never reveals whether a path was accepted.
+// POST { path, vid? } — records a page view with an optional anonymous
+// visitor id (random UUID minted client-side, first-party, no cookies).
+// Always returns { ok: true } so the endpoint never reveals whether a path
+// was accepted.
 import { json } from "./_auth.mjs";
 import { sbConfigured, sbRest } from "./_supabase.mjs";
 
@@ -28,8 +30,15 @@ export default async (req) => {
   try {
     const body = await req.json();
     const path = body?.path;
+    // Anonymous visitor id: a plain UUID, first-party only. Invalid ids dropped.
+    const vid = typeof body?.vid === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(body.vid)
+      ? body.vid : null;
     if (validPath(path) && sbConfigured()) {
-      await sbRest("page_views", { method: "POST", body: { path } });
+      let res = await sbRest("page_views", { method: "POST", body: vid ? { path, vid } : { path } });
+      // vid column not migrated yet -> keep the view, drop the id.
+      if (vid && res.status !== 201 && res.status !== 200) {
+        await sbRest("page_views", { method: "POST", body: { path } }).catch(() => {});
+      }
     }
   } catch { /* never leak errors */ }
   return json(200, { ok: true });

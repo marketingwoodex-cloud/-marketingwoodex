@@ -11,6 +11,8 @@
     <link rel="stylesheet" href="./vendor/adminlte/adminlte.min.css" />
     <link rel="stylesheet" href="./vendor/grapes.min.css" />
     <link rel="stylesheet" href="./css/woodex-admin.css" />
+    <link rel="stylesheet" href="./css/wx-dashboard.css" />
+    <script src="./vendor/chart.umd.js" defer></script>
     <style>
       :root { --navy: #0a0f1e; }
       html, body { height: 100%; }
@@ -123,6 +125,18 @@
             <li class="nav-item d-none d-md-block"><span class="nav-link fw-bold" id="wx-view-title">Dashboard</span></li>
           </ul>
           <ul class="navbar-nav ms-auto">
+            <li class="nav-item wx-search-item d-none d-lg-block">
+              <span class="nav-link wx-search" title="Search">
+                <i class="bi bi-search"></i>
+                <input id="wx-nav-search" type="search" placeholder="Search pages, projects, clients, or anything..." autocomplete="off" />
+                <span class="wx-kbd">&#8984; K</span>
+              </span>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link wx-bell" href="#" data-view="enquiries" title="Notifications">
+                <i class="bi bi-bell"></i><span class="wx-bell-dot" id="wx-bell-count" hidden>0</span>
+              </a>
+            </li>
             <li class="nav-item dropdown">
               <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false" title="Quick actions"><i class="bi bi-plus-lg"></i> <span class="d-none d-md-inline">New</span></a>
               <ul class="dropdown-menu dropdown-menu-end" id="wx-quick-actions">
@@ -256,52 +270,181 @@
         </div>
         <!-- ============ DASHBOARD ============ -->
         <section class="wx-view app-content" id="view-dashboard">
-          <div class="container-fluid">
-            <div class="row">
-              <div class="col-lg-3 col-6">
-                <div class="small-box wx-navy-card">
-                  <div class="inner"><h3 id="stat-new">–</h3><p>New enquiries</p></div>
-                  <a href="#" class="small-box-footer" data-view="enquiries">View inbox <i class="bi bi-arrow-right"></i></a>
-                </div>
-              </div>
-              <div class="col-lg-3 col-6">
-                <div class="small-box text-bg-warning">
-                  <div class="inner"><h3 id="stat-week">–</h3><p>Enquiries this week</p></div>
-                  <a href="#" class="small-box-footer" data-view="enquiries">View inbox <i class="bi bi-arrow-right"></i></a>
-                </div>
-              </div>
-              <div class="col-lg-3 col-6">
-                <div class="small-box text-bg-info">
-                  <div class="inner"><h3 id="stat-leads">–</h3><p>Estimator leads</p></div>
-                  <a href="#" class="small-box-footer" data-view="leads">Coming soon <i class="bi bi-arrow-right"></i></a>
-                </div>
-              </div>
-              <div class="col-lg-3 col-6">
-                <div class="small-box text-bg-success">
-                  <div class="inner"><h3 id="stat-posts">–</h3><p>Blog posts live</p></div>
-                  <a href="#" class="small-box-footer" data-view="blog">Open blog <i class="bi bi-arrow-right"></i></a>
-                </div>
-              </div>
-            </div>
-            <div class="row">
-              <div class="col-lg-7">
-                <div class="card">
-                  <div class="card-header"><h3 class="card-title">Latest enquiries</h3></div>
-                  <div class="card-body p-0">
-                    <table class="table table-hover mb-0">
-                      <thead><tr><th>Name</th><th>Phone</th><th>Type</th><th>Status</th></tr></thead>
-                      <tbody id="recent-body"><tr><td colspan="4" class="text-center text-muted py-4">Loading…</td></tr></tbody>
-                    </table>
+          <div class="container-fluid wx-dash">
+            <div class="wx-dash-cols">
+              <div class="wx-dash-main">
+
+                <!-- welcome hero -->
+                <section class="wx-hero">
+                  <img class="wx-hero-bg" src="/assets/img/img-c349a92a4ae0.webp" alt="" />
+                  <div class="wx-hero-body">
+                    <p class="wx-hero-kicker">Welcome back, Admin &#128075;</p>
+                    <h1>Your Interior Vision<br />Builds Here</h1>
+                    <p class="wx-hero-sub">Manage your website, clients, projects and business &ndash; all in one place.</p>
+                    <a class="wx-btn-gold" href="/" target="_blank" rel="noopener">Visit Live Site &rarr;</a>
                   </div>
-                  <div class="card-footer"><a href="#" data-view="enquiries">Open full inbox →</a></div>
+                  <div class="wx-hero-growth">
+                    <span class="lbl">Total Growth</span>
+                    <span class="val" id="dash-growth">&ndash;</span>
+                    <span class="note">vs last <span id="dash-days">30</span> days</span>
+                  </div>
+                </section>
+
+                <!-- KPI row -->
+                <div class="wx-kpis">
+                  <div class="wx-kpi">
+                    <span class="ico"><i class="bi bi-people"></i></span>
+                    <div>
+                      <p class="lbl">Total Leads</p>
+                      <p class="val" id="dash-leads">&ndash;</p>
+                      <span class="delta"><b id="dash-leads-delta">&ndash;</b> vs last <span class="dash-days-mirror">30</span> days</span>
+                    </div>
+                  </div>
+                  <div class="wx-kpi">
+                    <span class="ico gold"><i class="bi bi-file-earmark-text"></i></span>
+                    <div>
+                      <p class="lbl">Quotation Value</p>
+                      <p class="val" id="dash-quote-value">&ndash;</p>
+                      <span class="delta" id="dash-quotes-note">active quotes</span>
+                    </div>
+                  </div>
+                  <div class="wx-kpi">
+                    <span class="ico green"><i class="bi bi-calendar-check"></i></span>
+                    <div>
+                      <p class="lbl">Scheduled Visits</p>
+                      <p class="val" id="dash-visits">&ndash;</p>
+                      <span class="delta">this week</span>
+                    </div>
+                  </div>
+                  <div class="wx-kpi">
+                    <span class="ico violet"><i class="bi bi-chat-dots"></i></span>
+                    <div>
+                      <p class="lbl">Active Chats</p>
+                      <p class="val" id="dash-chats">0</p>
+                      <span class="delta">live chat arriving in Phase 3</span>
+                    </div>
+                  </div>
                 </div>
-              </div>
-              <div class="col-lg-5">
-                <div class="card">
-                  <div class="card-header"><h3 class="card-title">Activity</h3></div>
-                  <div class="card-body"><ul class="wx-activity" id="activity-list"><li class="text-muted">Loading…</li></ul></div>
+
+                <!-- analytics + recent enquiries -->
+                <div class="wx-row-2">
+                  <section class="wx-card">
+                    <div class="wx-card-head">
+                      <h3>Website Analytics</h3>
+                      <div class="wx-tabs" id="dash-tabs">
+                        <button class="wx-tab active" data-series="visitors" type="button">Visitors</button>
+                        <button class="wx-tab" data-series="views" type="button">Page Views</button>
+                        <button class="wx-tab" data-series="leads" type="button">Leads</button>
+                        <button class="wx-tab" data-series="conversions" type="button">Conversions</button>
+                      </div>
+                    </div>
+                    <div class="wx-analytics-body">
+                      <div class="wx-chart-box"><canvas id="dash-chart"></canvas></div>
+                      <div class="wx-side-stats">
+                        <div class="wx-side-stat">
+                          <i class="bi bi-eye"></i>
+                          <div class="lbl">Total Page Views</div>
+                          <div class="val" id="dash-views">&ndash;</div>
+                        </div>
+                        <div class="wx-side-stat">
+                          <i class="bi bi-person"></i>
+                          <div class="lbl">Unique Visitors</div>
+                          <div class="val" id="dash-unique">&ndash;</div>
+                        </div>
+                        <div class="wx-side-stat">
+                          <i class="bi bi-stopwatch"></i>
+                          <div class="lbl">Views per Visitor</div>
+                          <div class="val" id="dash-ratio">&ndash;</div>
+                        </div>
+                      </div>
+                    </div>
+                  </section>
+                  <section class="wx-card">
+                    <div class="wx-card-head">
+                      <h3>Recent Enquiries</h3>
+                      <a class="wx-viewall" href="#" data-view="enquiries">View all &rarr;</a>
+                    </div>
+                    <ul class="wx-enq-list" id="dash-enq-list"><li class="wx-empty">Loading&hellip;</li></ul>
+                  </section>
                 </div>
+
+                <!-- projects + blog -->
+                <div class="wx-row-2">
+                  <section class="wx-card">
+                    <div class="wx-card-head">
+                      <h3>Latest Projects</h3>
+                      <a class="wx-viewall" href="#" data-view="projects">View all &rarr;</a>
+                    </div>
+                    <div class="wx-proj-grid" id="dash-projects"><span class="wx-empty">Loading&hellip;</span></div>
+                  </section>
+                  <section class="wx-card">
+                    <div class="wx-card-head">
+                      <h3>Recent Blog Posts</h3>
+                      <a class="wx-viewall" href="#" data-view="blog">View all &rarr;</a>
+                    </div>
+                    <ul class="wx-posts" id="dash-posts"><li class="wx-empty">Loading&hellip;</li></ul>
+                  </section>
+                </div>
+
+                <!-- activity -->
+                <section class="wx-card">
+                  <div class="wx-card-head">
+                    <h3>Recent Activity</h3>
+                    <a class="wx-viewall" href="#" data-view="audit">View all &rarr;</a>
+                  </div>
+                  <ul class="wx-activity-dash" id="dash-activity"><li class="wx-empty">Loading&hellip;</li></ul>
+                </section>
+
               </div>
+
+              <!-- right rail -->
+              <aside class="wx-dash-rail">
+                <div class="wx-rail-head">
+                  <button class="wx-range" id="dash-range" type="button" title="Change range">
+                    <i class="bi bi-calendar3"></i> <span id="dash-range-label">&ndash;</span>
+                  </button>
+                  <a class="wx-btn-gold" href="#" data-view="builder"><i class="bi bi-lightning-charge"></i> Quick Actions</a>
+                </div>
+
+                <section class="wx-card">
+                  <div class="wx-card-head"><h3>Quick Actions</h3></div>
+                  <div class="wx-qa-list">
+                    <a class="wx-qa" href="#" data-view="projects"><span class="ico"><i class="bi bi-kanban"></i></span><span class="t"><b>Add New Project</b><span>Create and publish project</span></span><span class="arr">&rsaquo;</span></a>
+                    <a class="wx-qa" href="#" data-view="blog"><span class="ico"><i class="bi bi-newspaper"></i></span><span class="t"><b>New Blog Post</b><span>Write and publish content</span></span><span class="arr">&rsaquo;</span></a>
+                    <a class="wx-qa" href="#" data-view="builder"><span class="ico"><i class="bi bi-layout-text-window-reverse"></i></span><span class="t"><b>Edit Homepage</b><span>Live page customization</span></span><span class="arr">&rsaquo;</span></a>
+                    <a class="wx-qa" href="#" data-view="media"><span class="ico"><i class="bi bi-images"></i></span><span class="t"><b>Upload Media</b><span>Images, videos, documents</span></span><span class="arr">&rsaquo;</span></a>
+                    <a class="wx-qa" href="#" data-view="services"><span class="ico"><i class="bi bi-grid"></i></span><span class="t"><b>Add New Service</b><span>Manage service pages</span></span><span class="arr">&rsaquo;</span></a>
+                  </div>
+                </section>
+
+                <section class="wx-card">
+                  <div class="wx-card-head"><h3>Live Site Preview</h3></div>
+                  <a class="wx-live-thumb" href="/" target="_blank" rel="noopener">
+                    <img src="/assets/img/img-1d6ad6c77d0f.webp" alt="Live site preview" loading="lazy" />
+                  </a>
+                  <div class="wx-live-row"><span class="wx-live-dot"></span> Your website is live and running</div>
+                  <a class="wx-open-tab" href="/" target="_blank" rel="noopener">Open in New Tab &#8599;</a>
+                </section>
+
+                <section class="wx-card">
+                  <div class="wx-card-head"><h3>System Status</h3></div>
+                  <div class="wx-sys">
+                    <div class="row"><span class="nm">Website</span><span class="st" id="sys-website"><i></i> Online</span></div>
+                    <div class="row"><span class="nm">Database (Supabase)</span><span class="st" id="sys-db"><i></i> Checking&hellip;</span></div>
+                    <div class="row"><span class="nm">GitHub</span><span class="st" id="sys-github"><i></i> Checking&hellip;</span></div>
+                    <div class="row"><span class="nm">Vercel</span><span class="st" id="sys-vercel"><i></i> Deployed</span></div>
+                  </div>
+                </section>
+
+                <section class="wx-quote-card">
+                  <div class="q">&ldquo;Woodex transformed our office space beyond expectations. The team is professional, creative and highly responsive.&rdquo;</div>
+                  <div class="who">
+                    <span class="av">FK</span>
+                    <div><b>Fatima Khan</b><span>CEO, Galaxy Enterprises</span></div>
+                    <span class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</span>
+                  </div>
+                </section>
+              </aside>
             </div>
           </div>
         </section>
@@ -1257,7 +1400,7 @@
         });
 
         /* ================= view router ================= */
-        var TITLES = { dashboard: "Dashboard", enquiries: "Enquiries", leads: "Estimator Leads", quotations: "Quotations", templates: "Quotation Templates", invoices: "Invoices", blog: "Blog Posts", media: "Media Library", projects: "Projects", team: "Team", settings: "Settings", users: "Users", builder: "Pages · Page Builder", soon: "Coming soon" };
+        var TITLES = { dashboard: "Dashboard", analytics: "Analytics", enquiries: "Enquiries", leads: "Estimator Leads", pipeline: "Pipeline", visits: "Site Visits", quotations: "Quotations", templates: "Quotation Templates", invoices: "Invoices", clients: "Clients", builder: "Pages · Page Builder", services: "Services", locations: "Locations", projects: "Projects", blog: "Insights", testimonials: "Testimonials", media: "Media Library", team: "Team", theme: "Theme", navigation: "Navigation", seo: "SEO Manager", settings: "Site Settings", users: "Users & Roles", audit: "Audit Trail", versions: "Versions", backups: "Backups", health: "System Health", soon: "Coming soon" };
         var builderStarted = false;
         function showView(name, soonLabel) {
           if (name === "users" && sessionRole !== "admin") { name = "dashboard"; }
@@ -1300,42 +1443,242 @@
           showView(a.getAttribute("data-view"), a.getAttribute("data-soon"));
         });
 
-        /* ================= dashboard ================= */
-        var dashLoaded = false;
-        async function loadDashboard() {
+        /* ================= dashboard (Phase 1 redesign) ================= */
+        var dashLoaded = false, dashDays = 30, dashSeriesKey = "visitors", dashChart = null, dashWired = false;
+        function fmtCompactPKR(n) {
+          n = Number(n) || 0;
+          if (n >= 1e9) return "Rs " + (n / 1e9).toFixed(1) + "B";
+          if (n >= 1e6) return "Rs " + (n / 1e6).toFixed(1) + "M";
+          if (n >= 1e3) return "Rs " + Math.round(n / 1e3) + "K";
+          return "Rs " + n;
+        }
+        function fmtDay(iso) {
+          try { return new Date(iso + "T00:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" }); }
+          catch (e) { return iso; }
+        }
+        function fmtRange(labels) {
+          if (!labels || !labels.length) return "\u2013";
+          var a = fmtDay(labels[0]), b = fmtDay(labels[labels.length - 1]);
           try {
-            var res = await api("/.netlify/functions/cms-stats", { method: "GET" });
+            var y = new Date(labels[labels.length - 1] + "T00:00:00").getFullYear();
+            return a + " \u2013 " + b + ", " + y;
+          } catch (e) { return a + " \u2013 " + b; }
+        }
+        function dashSet(id, v) { var el = document.getElementById(id); if (el) el.textContent = v; }
+
+        function renderDashChart() {
+          if (!window.Chart) return;
+          var data = window.__dashData;
+          var cv = document.getElementById("dash-chart");
+          if (!cv || !data || !data.series) return;
+          var labels = (data.series.labels || []).map(fmtDay);
+          var values = data.series[dashSeriesKey] || [];
+          var ctx = cv.getContext("2d");
+          var grad = ctx.createLinearGradient(0, 0, 0, 240);
+          grad.addColorStop(0, "rgba(233,201,123,0.38)");
+          grad.addColorStop(1, "rgba(233,201,123,0.02)");
+          if (dashChart) { try { dashChart.destroy(); } catch (e) {} dashChart = null; }
+          dashChart = new Chart(ctx, {
+            type: "line",
+            data: {
+              labels: labels,
+              datasets: [{
+                data: values,
+                borderColor: "#e9c97b",
+                backgroundColor: grad,
+                fill: true,
+                tension: 0.35,
+                borderWidth: 2,
+                pointRadius: 0,
+                pointHoverRadius: 4,
+                pointHoverBackgroundColor: "#e9c97b"
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              interaction: { mode: "index", intersect: false },
+              plugins: { legend: { display: false }, tooltip: { backgroundColor: "#0d1320", borderColor: "rgba(255,255,255,.12)", borderWidth: 1, titleColor: "#f5f7fa", bodyColor: "#f5f7fa", displayColors: false } },
+              scales: {
+                x: { grid: { color: "rgba(255,255,255,0.05)" }, ticks: { color: "#8a8f9c", maxTicksLimit: 8, font: { size: 10 } }, border: { display: false } },
+                y: { grid: { color: "rgba(255,255,255,0.05)" }, ticks: { color: "#8a8f9c", font: { size: 10 }, precision: 0 }, beginAtZero: true, border: { display: false } }
+              }
+            }
+          });
+        }
+
+        function wireDashboard() {
+          if (dashWired) return;
+          dashWired = true;
+          var tabs = document.getElementById("dash-tabs");
+          if (tabs) tabs.addEventListener("click", function (e) {
+            var b = e.target.closest(".wx-tab");
+            if (!b) return;
+            tabs.querySelectorAll(".wx-tab").forEach(function (x) { x.classList.remove("active"); });
+            b.classList.add("active");
+            dashSeriesKey = b.getAttribute("data-series") || "visitors";
+            renderDashChart();
+          });
+          var range = document.getElementById("dash-range");
+          if (range) range.addEventListener("click", function () {
+            var cycle = [7, 30, 90];
+            dashDays = cycle[(cycle.indexOf(dashDays) + 1) % cycle.length];
+            loadDashboard();
+          });
+        }
+
+        async function loadDashboard() {
+          wireDashboard();
+          try {
+            var res = await api("/.netlify/functions/cms-stats?days=" + dashDays, { method: "GET" });
             var data = await res.json();
             if (!res.ok || !data || !data.stats) throw new Error("stats failed");
+            window.__dashData = data;
             var s = data.stats;
-            document.getElementById("stat-new").textContent = s.enquiries_new;
-            document.getElementById("stat-week").textContent = s.enquiries_new_week;
-            document.getElementById("stat-leads").textContent = s.estimator_leads;
-            document.getElementById("stat-posts").textContent = s.blog_published;
+
+            /* KPIs */
+            dashSet("dash-leads", s.leads_total != null ? s.leads_total : s.enquiries_total);
+            var delta = Number(s.leads_delta_pct);
+            var dEl = document.getElementById("dash-leads-delta");
+            if (dEl) {
+              dEl.textContent = (delta >= 0 ? "\u2191 +" : "\u2193 ") + Math.abs(delta) + "%";
+              dEl.classList.toggle("down", delta < 0);
+            }
+            var gEl = document.getElementById("dash-growth");
+            if (gEl) {
+              gEl.textContent = (delta >= 0 ? "+" : "\u2212") + Math.abs(delta) + "% \u2191";
+              gEl.classList.toggle("down", delta < 0);
+              if (delta < 0) gEl.textContent = Math.abs(delta) + "% \u2193";
+            }
+            dashSet("dash-quote-value", fmtCompactPKR(s.quotation_value_pkr));
+            dashSet("dash-quotes-note", (s.quotes_active || 0) + " quotes sent or approved");
+            dashSet("dash-visits", s.visits_week != null ? s.visits_week : "\u2013");
+            dashSet("dash-chats", s.active_chats != null ? s.active_chats : 0);
+            dashSet("dash-days", dashDays);
+            document.querySelectorAll(".dash-days-mirror").forEach(function (el) { el.textContent = dashDays; });
+            dashSet("dash-range-label", fmtRange(data.series && data.series.labels));
+            dashSet("dash-views", (s.views_total || 0).toLocaleString());
+            dashSet("dash-unique", s.unique_visitors != null ? s.unique_visitors.toLocaleString() : "\u2013");
+            dashSet("dash-ratio", s.views_per_visitor != null ? s.views_per_visitor : "\u2013");
+
+            /* sidebar + bell badges */
             var badge = document.getElementById("nav-new-count");
-            if (s.enquiries_new > 0) { badge.textContent = s.enquiries_new; badge.style.display = ""; }
-            else badge.style.display = "none";
-            var tb = document.getElementById("recent-body");
-            if (!data.recent_enquiries.length) {
-              tb.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-4">No enquiries yet.</td></tr>';
-            } else {
-              tb.innerHTML = data.recent_enquiries.map(function (r) {
-                return "<tr><td>" + esc(r.name) + "</td><td>" + esc(r.phone) +
-                  "</td><td>" + esc(r.project_type || "–") + "</td><td>" + statusBadge(r.status) + "</td></tr>";
+            if (badge) {
+              if (s.enquiries_new > 0) { badge.textContent = s.enquiries_new; badge.style.display = ""; }
+              else badge.style.display = "none";
+            }
+            var bell = document.getElementById("wx-bell-count");
+            if (bell) {
+              if (s.enquiries_new > 0) { bell.textContent = s.enquiries_new; bell.hidden = false; }
+              else bell.hidden = true;
+            }
+
+            /* recent enquiries */
+            var enq = document.getElementById("dash-enq-list");
+            if (enq) {
+              if (!data.recent_enquiries.length) enq.innerHTML = '<li class="wx-empty">No enquiries yet.</li>';
+              else enq.innerHTML = data.recent_enquiries.map(function (r) {
+                var initial = esc((r.name || "?").trim().charAt(0).toUpperCase());
+                var when = timeAgo(r.created_at);
+                return '<li data-view="enquiries">' +
+                  '<span class="av">' + initial + '</span>' +
+                  '<span class="who"><b>' + esc(r.name) + '</b><span>' + esc(r.project_type || "General enquiry") + '</span></span>' +
+                  '<span class="when">' + when + '</span>' +
+                  statusBadge(r.status) + '</li>';
               }).join("");
             }
-            var al = document.getElementById("activity-list");
-            al.innerHTML = data.activity.length
-              ? data.activity.map(function (a) {
-                  return "<li>" + esc(a.text) + "<time>" + timeAgo(a.created_at) + "</time></li>";
-                }).join("")
-              : '<li class="text-muted">Nothing yet.</li>';
+
+            /* latest projects */
+            var pj = document.getElementById("dash-projects");
+            if (pj) {
+              if (!data.recent_projects.length) pj.innerHTML = '<span class="wx-empty">No projects yet.</span>';
+              else pj.innerHTML = data.recent_projects.map(function (p) {
+                var ph = p.thumb
+                  ? '<img src="' + esc(p.thumb) + '" alt="' + esc(p.title) + '" loading="lazy" />'
+                  : '<div class="noimg"><i class="bi bi-image"></i></div>';
+                return '<a class="wx-proj" href="#" data-view="projects">' +
+                  '<span class="ph">' + ph + '<span class="st">' + esc(p.status || "draft") + '</span></span>' +
+                  '<span class="meta"><b>' + esc(p.title) + '</b><span>' + esc(p.category || "Project") + ' \u00b7 ' + timeAgo(p.created_at) + '</span></span></a>';
+              }).join("");
+            }
+
+            /* recent posts */
+            var ps = document.getElementById("dash-posts");
+            if (ps) {
+              if (!data.recent_posts.length) ps.innerHTML = '<li class="wx-empty">No posts yet.</li>';
+              else ps.innerHTML = data.recent_posts.map(function (p) {
+                var th = p.cover_image
+                  ? '<img class="th" src="' + esc(p.cover_image) + '" alt="" loading="lazy" />'
+                  : '<span class="th"></span>';
+                var pub = p.status === "published";
+                return '<li data-view="blog">' + th +
+                  '<span class="info"><b>' + esc(p.title) + '</b><span>' + timeAgo(p.updated_at) + ' \u00b7 ' + esc(p.status || "draft") + '</span></span>' +
+                  '<span class="dot' + (pub ? "" : " draft") + '"></span></li>';
+              }).join("");
+            }
+
+            /* activity */
+            var al = document.getElementById("dash-activity");
+            if (al) {
+              al.innerHTML = data.activity.length
+                ? data.activity.map(function (a) {
+                    return '<li><i class="bi bi-circle-fill" style="font-size:7px"></i>' + esc(a.text) + '<time>' + timeAgo(a.created_at) + '</time></li>';
+                  }).join("")
+                : '<li class="wx-empty">Nothing yet.</li>';
+            }
+
+            renderDashChart();
           } catch (err) {
-            document.getElementById("recent-body").innerHTML =
-              '<tr><td colspan="4" class="text-center text-muted py-4">Could not load. The database may not be connected yet.</td></tr>';
+            var enq2 = document.getElementById("dash-enq-list");
+            if (enq2) enq2.innerHTML = '<li class="wx-empty">Could not load stats. The database may not be connected yet.</li>';
           }
+
+          /* system status (best effort, independent of stats) */
+          try {
+            var hr = await api("/.netlify/functions/cms-health", { method: "GET" });
+            var hd = await hr.json();
+            var db = document.getElementById("sys-db");
+            if (db && hd) {
+              var ok = hd.supabase === "ok";
+              db.className = "st" + (ok ? "" : " bad");
+              db.innerHTML = "<i></i> " + (ok ? "Connected" : "Not connected");
+            }
+            var gh = document.getElementById("sys-github");
+            if (gh && hd) {
+              var gok = hd.github === "ok";
+              gh.className = "st" + (gok ? (hd.github_push === false ? " warn" : "") : " bad");
+              gh.innerHTML = "<i></i> " + (gok ? (hd.github_push === false ? "Connected (read-only)" : "Connected") : "Not connected");
+              if (hd.github_note) gh.title = hd.github_note;
+            }
+          } catch (e) { /* status stays "Checking…" */ }
+
           dashLoaded = true;
         }
+
+        /* ============ global nav search (sidebar filter) ============ */
+        (function () {
+          var input = document.getElementById("wx-nav-search");
+          if (!input) return;
+          function applyFilter() {
+            var q = (input.value || "").trim().toLowerCase();
+            document.querySelectorAll(".app-sidebar .nav-item").forEach(function (li) {
+              if (li.id === "nav-users-item" && li.hidden) return;
+              var txt = (li.textContent || "").toLowerCase();
+              li.style.display = (!q || txt.indexOf(q) !== -1) ? "" : "none";
+            });
+          }
+          input.addEventListener("input", applyFilter);
+          input.addEventListener("keydown", function (e) {
+            if (e.key === "Escape") { input.value = ""; applyFilter(); input.blur(); }
+          });
+          document.addEventListener("keydown", function (e) {
+            if ((e.metaKey || e.ctrlKey) && (e.key === "k" || e.key === "K")) {
+              e.preventDefault();
+              input.focus();
+              input.select();
+            }
+          });
+        })();
 
         /* ================= enquiries inbox ================= */
         var currentFilter = "", enquiriesCache = [], modalRow = null, modal = null;

@@ -74,6 +74,13 @@ create index if not exists activity_kind_text_created_idx on public.activity (ki
 create index if not exists activity_created_at_idx         on public.activity (created_at desc);
 
 -- ---------------------------------------------------------------------------
+-- 3b. page_views: anonymous visitor id (unique-visitor analytics)
+-- ---------------------------------------------------------------------------
+alter table public.page_views add column if not exists vid text;
+create index if not exists page_views_created_at_idx on public.page_views (created_at desc);
+create index if not exists page_views_vid_idx on public.page_views (vid);
+
+-- ---------------------------------------------------------------------------
 -- 4. blog_posts  (Insights CMS)
 -- ---------------------------------------------------------------------------
 create table if not exists public.blog_posts (
