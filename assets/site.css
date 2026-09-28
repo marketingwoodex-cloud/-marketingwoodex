@@ -895,7 +895,7 @@
     #home-page .hm-hero-content{position:relative;z-index:1;padding:160px 0 54px}
     #home-page .hm-hero-copy{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(280px,.55fr);gap:38px 80px;align-items:end}
     #home-page .hm-hero-title{margin:0;max-width:760px;font-size:clamp(3.2rem,6vw,5.8rem);line-height:.95;letter-spacing:-.04em;color:#fff}
-    #home-page #home-hero-title{color:#000}
+    #home-page #home-hero-title{color:#f00}
     #home-page .hm-hero-aside{padding:0 0 8px;border-bottom:1px solid rgba(255,255,255,.34)}
     #home-page .hm-hero-aside p{max-width:440px;margin:0 0 24px;color:rgba(255,255,255,.82);font-size:.98rem}
     #home-page .hm-display{display:block;margin:22px 0 32px;font-size:clamp(6rem,16vw,13rem);line-height:.72;letter-spacing:-.07em;font-weight:500;color:#fff;white-space:nowrap}
