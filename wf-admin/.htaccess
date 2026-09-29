@@ -1,0 +1,107 @@
+# ============================================================================
+# WOODEX — Hostinger (LiteSpeed/Apache) configuration — H1 foundation
+# Generated to mirror vercel.json exactly: 20 redirects + 31 function rewrites
+# ============================================================================
+Options -Indexes
+RewriteEngine On
+RewriteBase /
+
+# --- Force HTTPS (Hostinger Auto-SSL also enabled in hPanel) ---
+RewriteCond %{HTTPS} !=on
+RewriteCond %{HTTP:X-Forwarded-Proto} !https
+RewriteRule ^(.*)$ https://%{HTTP_HOST}/$1 [R=301,L]
+
+# --- Legacy redirects (from vercel.json: 20 rules) ---
+RewriteRule ^contact-us-2/$ /contact/ [R=301,L]
+RewriteRule ^design-planning/$ /interior-design/ [R=301,L]
+RewriteRule ^about\.html$ /about/ [R=301,L]
+RewriteRule ^services\.html$ /interior-design/ [R=301,L]
+RewriteRule ^portfolio\.html$ /projects/ [R=301,L]
+RewriteRule ^contact\.html$ /contact/ [R=301,L]
+RewriteRule ^privacy\.html$ /privacy/ [R=301,L]
+RewriteRule ^insights\.html$ /insights/ [R=301,L]
+RewriteRule ^page/17/$ / [R=301,L]
+RewriteRule ^project-the-arched-residence$ /projects/ [R=301,L]
+RewriteRule ^project-the-open-house$ /projects/ [R=301,L]
+RewriteRule ^project-the-collective-workspace$ /projects/ [R=301,L]
+RewriteRule ^project-the-oak-edit$ /projects/ [R=301,L]
+RewriteRule ^project-the-soft-retreat$ /projects/ [R=301,L]
+RewriteRule ^project-the-gathering-room$ /projects/ [R=301,L]
+RewriteRule ^insight-the-warmth-of-natural-materials$ /insights/ [R=301,L]
+RewriteRule ^insight-a-home-that-flows$ /insights/ [R=301,L]
+RewriteRule ^insight-layering-light$ /insights/ [R=301,L]
+RewriteRule ^services/$ /interior-design/ [R=301,L]
+RewriteRule ^admin$ /admin/ [R=302,L]
+
+# --- CMS API: keep admin JS working unchanged (31 netlify paths -> PHP) ---
+# Pass the login token header to PHP (Apache/LiteSpeed strip it by default)
+<IfModule mod_authz_core.c>
+  CGIPassAuth On
+</IfModule>
+SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1
+
+RewriteRule ^.netlify/functions/cms-auth$ /api/router.php?fn=cms-auth [L,QSA]
+RewriteRule ^.netlify/functions/cms-blog-posts$ /api/router.php?fn=cms-blog-posts [L,QSA]
+RewriteRule ^.netlify/functions/cms-delete$ /api/router.php?fn=cms-delete [L,QSA]
+RewriteRule ^.netlify/functions/cms-enquiries$ /api/router.php?fn=cms-enquiries [L,QSA]
+RewriteRule ^.netlify/functions/cms-estimator-leads$ /api/router.php?fn=cms-estimator-leads [L,QSA]
+RewriteRule ^.netlify/functions/cms-invoices$ /api/router.php?fn=cms-invoices [L,QSA]
+RewriteRule ^.netlify/functions/cms-media$ /api/router.php?fn=cms-media [L,QSA]
+RewriteRule ^.netlify/functions/cms-projects$ /api/router.php?fn=cms-projects [L,QSA]
+RewriteRule ^.netlify/functions/cms-quotation-templates$ /api/router.php?fn=cms-quotation-templates [L,QSA]
+RewriteRule ^.netlify/functions/cms-quotations$ /api/router.php?fn=cms-quotations [L,QSA]
+RewriteRule ^.netlify/functions/cms-save$ /api/router.php?fn=cms-save [L,QSA]
+RewriteRule ^.netlify/functions/cms-stats$ /api/router.php?fn=cms-stats [L,QSA]
+RewriteRule ^.netlify/functions/cms-team$ /api/router.php?fn=cms-team [L,QSA]
+RewriteRule ^.netlify/functions/cms-upload$ /api/router.php?fn=cms-upload [L,QSA]
+RewriteRule ^.netlify/functions/enquiry-submit$ /api/router.php?fn=enquiry-submit [L,QSA]
+RewriteRule ^.netlify/functions/estimator-submit$ /api/router.php?fn=estimator-submit [L,QSA]
+RewriteRule ^.netlify/functions/cms-settings$ /api/router.php?fn=cms-settings [L,QSA]
+RewriteRule ^.netlify/functions/cms-users$ /api/router.php?fn=cms-users [L,QSA]
+RewriteRule ^.netlify/functions/cms-analytics$ /api/router.php?fn=cms-analytics [L,QSA]
+RewriteRule ^.netlify/functions/cms-backups$ /api/router.php?fn=cms-backups [L,QSA]
+RewriteRule ^.netlify/functions/cms-clients$ /api/router.php?fn=cms-clients [L,QSA]
+RewriteRule ^.netlify/functions/cms-health$ /api/router.php?fn=cms-health [L,QSA]
+RewriteRule ^.netlify/functions/cms-locations$ /api/router.php?fn=cms-locations [L,QSA]
+RewriteRule ^.netlify/functions/cms-pages$ /api/router.php?fn=cms-pages [L,QSA]
+RewriteRule ^.netlify/functions/cms-redirects$ /api/router.php?fn=cms-redirects [L,QSA]
+RewriteRule ^.netlify/functions/cms-services$ /api/router.php?fn=cms-services [L,QSA]
+RewriteRule ^.netlify/functions/cms-site-visits$ /api/router.php?fn=cms-site-visits [L,QSA]
+RewriteRule ^.netlify/functions/cms-testimonials$ /api/router.php?fn=cms-testimonials [L,QSA]
+RewriteRule ^.netlify/functions/cms-versions$ /api/router.php?fn=cms-versions [L,QSA]
+RewriteRule ^.netlify/functions/analytics-track$ /api/router.php?fn=analytics-track [L,QSA]
+RewriteRule ^.netlify/functions/cms-menu-items$ /api/router.php?fn=cms-menu-items [L,QSA]
+
+# --- Pretty URLs: request page.html only when page/ directory exists ---
+RewriteCond %{REQUEST_URI} !^/admin
+RewriteCond %{DOCUMENT_ROOT}/$1/ -d
+RewriteRule ^(.+)\.html$ /$1/ [R=301,L]
+
+# --- Never expose server files ---
+RewriteRule \.(sql|log|env|sh|bak|json\.bak)$ - [F,L]
+
+# --- HTML never cached (publish = instant) ---
+<IfModule mod_headers.c>
+  <FilesMatch "\.html$">
+    Header set Cache-Control "no-cache, must-revalidate"
+  </FilesMatch>
+</IfModule>
+
+# --- Static assets cache ---
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType image/jpeg "access plus 7 days"
+  ExpiresByType image/png "access plus 7 days"
+  ExpiresByType image/webp "access plus 7 days"
+  ExpiresByType image/svg+xml "access plus 7 days"
+  ExpiresByType image/x-icon "access plus 7 days"
+  ExpiresByType text/css "access plus 1 day"
+  ExpiresByType application/javascript "access plus 1 day"
+  ExpiresByType font/woff2 "access plus 30 days"
+</IfModule>
+
+# --- Custom 404 ---
+ErrorDocument 404 /404.html
+
+# --- Default document ---
+DirectoryIndex index.html
