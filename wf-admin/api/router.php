@@ -99,6 +99,108 @@ if ($fn === 'cms-auth') {
     wx_json(200, ['session' => wx_issue_session($row['username'], $role), 'username' => $row['username'], 'role' => $role]);
 }
 
+/* ---------------------------------------------------------------- cms-chat
+   Visitor side is public (visitor_id ownership checked); agent side authed. */
+if ($fn === 'cms-chat') {
+    $pdo = wx_pdo();
+    $action = (string)($body['action'] ?? $_GET['action'] ?? '');
+    $isAgent = ($action === 'threads' || $action === 'thread' || $action === 'reply');
+
+    if ($action === 'open' && wx_method() === 'POST') {
+        $vid = preg_replace('/[^A-Za-z0-9_-]/', '', (string)($body['visitor_id'] ?? ''));
+        if (strlen($vid) < 6) wx_json(400, ['error' => 'Invalid visitor.']);
+        $page = mb_substr((string)($body['page'] ?? '/'), 0, 300);
+        $name = mb_substr(trim((string)($body['name'] ?? '')), 0, 160);
+        $st = $pdo->prepare("SELECT * FROM chat_channels WHERE visitor_id=? AND status='open' ORDER BY created_at DESC LIMIT 1");
+        $st->execute([$vid]);
+        $ch = $st->fetch();
+        if (!$ch) {
+            $id = wx_uuid();
+            $st = $pdo->prepare('INSERT INTO chat_channels (id, visitor_id, page, visitor_name, status, last_msg_at) VALUES (?, ?, ?, ?, "open", NOW())');
+            $st->execute([$id, $vid, $page, $name !== '' ? $name : null]);
+            $st = $pdo->prepare('SELECT * FROM chat_channels WHERE id=?');
+            $st->execute([$id]);
+            $ch = $st->fetch();
+            wx_audit('chat', 'New chat channel' . ($name !== '' ? ' from ' . $name : ''));
+        }
+        wx_json(200, ['channel' => $ch]);
+    }
+
+    if ($action === 'message' && wx_method() === 'POST') {
+        $cid = (string)($body['channel_id'] ?? '');
+        $vid = preg_replace('/[^A-Za-z0-9_-]/', '', (string)($body['visitor_id'] ?? ''));
+        $text = trim((string)($body['body'] ?? ''));
+        if ($text === '' || strlen($text) > 4000) wx_json(400, ['error' => 'Message required.']);
+        $st = $pdo->prepare('SELECT id FROM chat_channels WHERE id=? AND visitor_id=?');
+        $st->execute([$cid, $vid]);
+        if (!$st->fetch()) wx_json(403, ['error' => 'Not your channel.']);
+        $st = $pdo->prepare('INSERT INTO chat_messages (id, channel_id, `from`, body, created_at) VALUES (?, ?, "visitor", ?, NOW())');
+        $st->execute([wx_uuid(), $cid, mb_substr($text, 0, 4000)]);
+        $pdo->prepare('UPDATE chat_channels SET unread_admin=1, last_msg_at=NOW() WHERE id=?')->execute([$cid]);
+        wx_json(200, ['ok' => true]);
+    }
+
+    if ($action === 'poll' && wx_method() === 'GET') {
+        $cid = (string)($_GET['channel_id'] ?? '');
+        $vid = preg_replace('/[^A-Za-z0-9_-]/', '', (string)($_GET['visitor_id'] ?? ''));
+        $since = (int)($_GET['since'] ?? 0);
+        $st = $pdo->prepare('SELECT id FROM chat_channels WHERE id=? AND visitor_id=?');
+        $st->execute([$cid, $vid]);
+        if (!$st->fetch()) wx_json(403, ['error' => 'Not your channel.']);
+        $st = $pdo->prepare('SELECT id, `from`, body, agent_name, created_at FROM chat_messages WHERE channel_id=? AND LENGTH(REPLACE(id, "-", "")) >= 0 ORDER BY created_at ASC, id ASC LIMIT 200');
+        $st->execute([$cid]);
+        $msgs = $st->fetchAll();
+        // client-side cursor: filter by numeric-less id ordering is fragile — return all + since as timestamp cursor
+        wx_json(200, ['messages' => $msgs]);
+    }
+
+    if ($isAgent) {
+        $au = wx_auth(false);
+        if ($action === 'threads') {
+            $chs = $pdo->query('SELECT * FROM chat_channels ORDER BY COALESCE(last_msg_at, created_at) DESC LIMIT 100')->fetchAll();
+            foreach ($chs as &$ch) {
+                $st = $pdo->prepare('SELECT body, created_at FROM chat_messages WHERE channel_id=? ORDER BY created_at DESC LIMIT 1');
+                $st->execute([$ch['id']]);
+                $ch['last'] = $st->fetch() ?: null;
+                $st = $pdo->prepare('SELECT COUNT(*) FROM chat_messages WHERE channel_id=? AND `from`="visitor"');
+                $st->execute([$ch['id']]);
+                $ch['msg_count'] = (int)$st->fetchColumn();
+            }
+            unset($ch);
+            $unread = (int)$pdo->query('SELECT COUNT(*) FROM chat_channels WHERE unread_admin=1')->fetchColumn();
+            wx_json(200, ['channels' => $chs, 'unread' => $unread]);
+        }
+        if ($action === 'thread') {
+            $cid = (string)($_GET['id'] ?? $body['id'] ?? '');
+            $st = $pdo->prepare('SELECT * FROM chat_channels WHERE id=?');
+            $st->execute([$cid]);
+            $ch = $st->fetch();
+            if (!$ch) wx_json(404, ['error' => 'Channel not found.']);
+            $st = $pdo->prepare('SELECT * FROM chat_messages WHERE channel_id=? ORDER BY created_at ASC, id ASC LIMIT 500');
+            $st->execute([$cid]);
+            $msgs = $st->fetchAll();
+            $pdo->prepare('UPDATE chat_channels SET unread_admin=0 WHERE id=?')->execute([$cid]);
+            wx_json(200, ['channel' => $ch, 'messages' => $msgs]);
+        }
+        if ($action === 'reply' && wx_method() === 'POST') {
+            wx_need_write($au);
+            $cid = (string)($body['id'] ?? '');
+            $text = trim((string)($body['body'] ?? ''));
+            if ($text === '' || strlen($text) > 4000) wx_json(400, ['error' => 'Message required.']);
+            $st = $pdo->prepare('SELECT id FROM chat_channels WHERE id=?');
+            $st->execute([$cid]);
+            if (!$st->fetch()) wx_json(404, ['error' => 'Channel not found.']);
+            $st = $pdo->prepare('INSERT INTO chat_messages (id, channel_id, `from`, body, agent_name, created_at) VALUES (?, ?, "agent", ?, ?, NOW())');
+            $st->execute([wx_uuid(), $cid, mb_substr($text, 0, 4000), $au['username']]);
+            $pdo->prepare('UPDATE chat_channels SET unread_admin=0, last_msg_at=NOW(), assigned_to=? WHERE id=?')->execute([$au['username'], $cid]);
+            wx_audit('chat', 'Agent reply on channel ' . substr($cid, 0, 8), ['agent' => $au['username']]);
+            wx_json(200, ['ok' => true]);
+        }
+        wx_json(400, ['error' => 'Unknown chat action.']);
+    }
+    wx_json(400, ['error' => 'Unknown chat action.']);
+}
+
 /* ============================================================ auth required */
 $user = wx_auth(false);
 function wx_need_write(array $u): void
@@ -767,6 +869,66 @@ if ($fn === 'cms-upload') {
         $st->execute([wx_uuid(), $url, (string)$f['name'], (int)$f['size']]);
     } catch (Throwable $e) { /* media table optional */ }
     wx_json(200, ['ok' => true, 'url' => $url]);
+}
+
+/* ------------------------------------------------- cms-mail (quotations/invoices) */
+if ($fn === 'cms-mail') {
+    wx_method_guard(['POST']);
+    $au = wx_auth(true);
+    $action = (string)($body['action'] ?? '');
+    $id = (string)($body['id'] ?? '');
+    if (!preg_match('/^[A-Za-z0-9-]{6,40}$/', $id)) wx_json(400, ['error' => 'Invalid id.']);
+    if ($action === 'send-quotation') {
+        $st = wx_pdo()->prepare('SELECT * FROM quotations WHERE id=?');
+        $st->execute([$id]);
+        $q = $st->fetch();
+        if (!$q) wx_json(404, ['error' => 'Quotation not found.']);
+        $to = trim((string)($body['to'] ?? '')) ?: (string)($q['email'] ?? '');
+        if ($to === '' || !filter_var($to, FILTER_VALIDATE_EMAIL)) wx_json(400, ['error' => 'A valid recipient email is required (set it on the quotation).']);
+        $items = json_decode((string)($q['items'] ?? '[]'), true) ?: [];
+        $rows = '';
+        foreach ($items as $it) {
+            $rows .= '<tr><td style="padding:6px 8px;border-bottom:1px solid #eee">' . htmlspecialchars((string)($it['desc'] ?? $it['name'] ?? '')) .
+                '</td><td style="padding:6px 8px;border-bottom:1px solid #eee;text-align:right">' . htmlspecialchars((string)($it['amount'] ?? '')) . '</td></tr>';
+        }
+        $html = '<div style="font-family:Arial,sans-serif;color:#1a2233;max-width:640px">'
+              . '<h2 style="color:#0a0f1e">Woodex Interior — Quotation ' . htmlspecialchars((string)$q['ref_no']) . '</h2>'
+              . '<p>Dear ' . htmlspecialchars((string)$q['client_name']) . ',</p>'
+              . '<p>Thank you for your interest. Your quotation <b>' . htmlspecialchars((string)$q['title']) . '</b>'
+              . ($q['project'] ? ' for <b>' . htmlspecialchars((string)$q['project']) . '</b>' : '') . ' is ready.</p>'
+              . '<table style="border-collapse:collapse;width:100%">' . $rows . '</table>'
+              . '<p style="text-align:right;font-size:16px"><b>Total: PKR ' . number_format((float)$q['total'], 0) . '</b></p>'
+              . '<p style="color:#5b6478;font-size:13px">Valid until 14 days from issue · Woodex Interior, Lahore</p></div>';
+        $okMail = wx_mail($to, 'Quotation ' . $q['ref_no'] . ' — Woodex Interior', $html);
+        if (!$okMail) wx_json(502, ['error' => 'Could not send email — check the mailbox settings in config (hPanel → Emails).']);
+        $pdo = wx_pdo();
+        $pdo->prepare("UPDATE quotations SET status = CASE WHEN status='draft' THEN 'sent' ELSE status END, updated_at=NOW() WHERE id=?")->execute([$id]);
+        wx_audit('mail', 'Emailed quotation ' . $q['ref_no'] . ' to ' . $to, ['agent' => $au['username']]);
+        wx_json(200, ['ok' => true, 'to' => $to]);
+    }
+    if ($action === 'send-invoice') {
+        $st = wx_pdo()->prepare('SELECT * FROM invoices WHERE id=?');
+        $st->execute([$id]);
+        $q = $st->fetch();
+        if (!$q) wx_json(404, ['error' => 'Invoice not found.']);
+        $to = trim((string)($body['to'] ?? '')) ?: (string)($q['email'] ?? '');
+        if ($to === '' || !filter_var($to, FILTER_VALIDATE_EMAIL)) wx_json(400, ['error' => 'A valid recipient email is required (set it on the invoice).']);
+        $html = '<div style="font-family:Arial,sans-serif;color:#1a2233;max-width:640px">'
+              . '<h2 style="color:#0a0f1e">Woodex Interior — Invoice ' . htmlspecialchars((string)$q['inv_no']) . '</h2>'
+              . '<p>Dear ' . htmlspecialchars((string)$q['client_name']) . ',</p>'
+              . '<p>Please find invoice <b>' . htmlspecialchars((string)$q['inv_no']) . '</b>'
+              . ($q['project'] ? ' for <b>' . htmlspecialchars((string)$q['project']) . '</b>' : '') . '.</p>'
+              . '<p style="font-size:18px"><b>Total: PKR ' . number_format((float)$q['total'], 0) . '</b>'
+              . ((float)$q['amount_paid'] > 0 ? ' · Paid: PKR ' . number_format((float)$q['amount_paid'], 0) : '') . '</p>'
+              . '<p style="color:#5b6478;font-size:13px">Due: ' . htmlspecialchars((string)($q['due_date'] ?? '—')) . ' · Woodex Interior, Lahore</p></div>';
+        $okMail = wx_mail($to, 'Invoice ' . $q['inv_no'] . ' — Woodex Interior', $html);
+        if (!$okMail) wx_json(502, ['error' => 'Could not send email — check the mailbox settings in config (hPanel → Emails).']);
+        $pdo = wx_pdo();
+        $pdo->prepare("UPDATE invoices SET payment_status = CASE WHEN payment_status='draft' THEN 'sent' ELSE payment_status END, updated_at=NOW() WHERE id=?")->execute([$id]);
+        wx_audit('mail', 'Emailed invoice ' . $q['inv_no'] . ' to ' . $to, ['agent' => $au['username']]);
+        wx_json(200, ['ok' => true, 'to' => $to]);
+    }
+    wx_json(400, ['error' => 'Unknown mail action.']);
 }
 
 wx_json(400, ['error' => 'Unknown function.']);

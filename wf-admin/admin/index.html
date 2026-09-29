@@ -266,7 +266,7 @@
                 <a href="#" class="nav-link" data-view="clients"><i class="nav-icon bi bi-briefcase"></i><p>Clients</p></a>
               </li>
               <li class="nav-item">
-                <a href="#" class="nav-link" data-view="soon" data-soon="Live Chat" data-nav="Live Chat"><i class="nav-icon bi bi-chat-dots"></i><p>Live Chat</p></a>
+                <a href="#" class="nav-link" data-view="chat" data-nav="chat"><i class="nav-icon bi bi-chat-dots"></i><p>Live Chat</p></a>
               </li>
               <li class="nav-header">WEBSITE</li>
               <li class="nav-item">
@@ -913,6 +913,34 @@
         </section>
 
         <!-- ============ REPORTS ============ -->
+        <section class="wx-view app-content" id="view-chat" hidden>
+          <div class="container-fluid">
+            <div class="wxc-filterbar">
+              <b>Conversations</b>
+              <span class="text-muted small">Visitor chats refresh every 5 seconds</span>
+              <span class="spacer"></span>
+              <span class="badge bg-primary" id="chat-unread">0</span>
+              <button class="btn btn-sm btn-outline-dark" id="chat-refresh">Refresh</button>
+            </div>
+            <div class="wxc-chat" style="grid-template-columns: 320px minmax(0, 1fr);">
+              <div class="wxc-chat-list">
+                <div style="padding:10px 12px;border-bottom:1px solid #e6e9f2;font-size:12.5px;color:#5b6478">INBOX</div>
+                <div id="chat-threads" style="overflow-y:auto;max-height:520px"><div class="wxc-empty" style="padding:16px">Loading…</div></div>
+              </div>
+              <div class="wxc-chat-thread">
+                <div style="padding:12px 16px;border-bottom:1px solid #e6e9f2">
+                  <b id="chat-title">Select a conversation</b>
+                  <div class="text-muted small" id="chat-sub">Visitors appear here when they open the chat bubble</div>
+                </div>
+                <div id="chat-msgs" style="flex:1;overflow-y:auto;padding:16px;background:#f8fafd;min-height:340px;max-height:460px"></div>
+                <form id="chat-form" style="display:flex;gap:8px;padding:12px;border-top:1px solid #e6e9f2;background:#fff">
+                  <input id="chat-input" class="form-control" placeholder="Type a reply…" style="border-radius:999px" autocomplete="off">
+                  <button type="submit" class="btn btn-dark" style="border-radius:999px;padding-x:18px">Send</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </section>
         <section class="wx-view app-content" id="view-reports" hidden>
           <div class="container-fluid" id="wx-root-reports"></div>
         </section>
@@ -1123,6 +1151,7 @@
           </div>
           <div class="modal-body" id="qp-body"></div>
           <div class="modal-footer flex-wrap gap-2">
+            <button type="button" class="btn btn-dark" id="qp-email"><i class="bi bi-envelope"></i> Email</button>
             <button type="button" class="btn btn-outline-dark" id="qp-whatsapp"><i class="bi bi-whatsapp"></i> WhatsApp</button>
             <button type="button" class="btn btn-outline-dark" id="qp-pdf"><i class="bi bi-file-earmark-pdf"></i> PDF</button>
             <button type="button" class="btn btn-outline-dark" id="qp-print"><i class="bi bi-printer"></i> Print</button>
@@ -1222,6 +1251,7 @@
           </div>
           <div class="modal-body" id="ip-body"></div>
           <div class="modal-footer flex-wrap gap-2">
+            <button type="button" class="btn btn-dark" id="ip-email"><i class="bi bi-envelope"></i> Email</button>
             <button type="button" class="btn btn-outline-dark" id="ip-whatsapp"><i class="bi bi-whatsapp"></i> WhatsApp</button>
             <button type="button" class="btn btn-outline-dark" id="ip-pdf"><i class="bi bi-file-earmark-pdf"></i> PDF</button>
             <button type="button" class="btn btn-outline-dark" id="ip-print"><i class="bi bi-printer"></i> Print</button>
@@ -1579,7 +1609,7 @@
         });
 
         /* ================= view router ================= */
-        var TITLES = { dashboard: "Dashboard", analytics: "Analytics", reports: "Reports", enquiries: "Enquiries", leads: "Leads & Estimator", pipeline: "Pipeline", visits: "Site Visits", quotations: "Quotations", templates: "Quotation Templates", invoices: "Invoices", clients: "Clients", builder: "Pages · Page Builder", services: "Services", locations: "Locations", projects: "Projects", blog: "Insights", testimonials: "Testimonials", media: "Media Library", team: "Team", theme: "Theme", navigation: "Navigation", seo: "SEO Manager", settings: "Site Settings", users: "Users & Roles", audit: "Audit Trail", versions: "Versions", backups: "Backups", health: "System Health", soon: "Coming soon" };
+        var TITLES = { dashboard: "Dashboard", analytics: "Analytics", reports: "Reports", chat: "Live Chat", enquiries: "Enquiries", leads: "Leads & Estimator", pipeline: "Pipeline", visits: "Site Visits", quotations: "Quotations", templates: "Quotation Templates", invoices: "Invoices", clients: "Clients", builder: "Pages · Page Builder", services: "Services", locations: "Locations", projects: "Projects", blog: "Insights", testimonials: "Testimonials", media: "Media Library", team: "Team", theme: "Theme", navigation: "Navigation", seo: "SEO Manager", settings: "Site Settings", users: "Users & Roles", audit: "Audit Trail", versions: "Versions", backups: "Backups", health: "System Health", soon: "Coming soon" };
         var builderStarted = false;
         function showView(name, soonLabel, navKey) {
           if (name === "users" && sessionRole !== "admin") { name = "dashboard"; navKey = null; }
@@ -1611,6 +1641,7 @@
           }
           if (name === "dashboard") loadDashboard();
           if (name === "reports") loadReports();
+          if (name === "chat") loadChat();
           if (name === "enquiries") loadEnquiries(currentFilter);
           if (name === "leads") loadLeads(leadFilter);
           if (name === "quotations") { loadQuotations(quotFilter); loadTemplates(); }
@@ -2517,6 +2548,21 @@
           document.getElementById("qp-whatsapp").onclick = function () {
             window.open(tel ? "https://wa.me/" + tel + "?text=" + waText : "https://wa.me/?text=" + waText, "_blank");
           };
+          var qpEm = document.getElementById("qp-email");
+          if (qpEm) qpEm.onclick = function () {
+            var r = quotPrevRow; if (!r) return;
+            var to = r.email || window.prompt("Recipient email:", "") || "";
+            if (!to) return;
+            qpEm.disabled = true; qpEm.textContent = "Sending…";
+            api("/api/router.php?fn=cms-mail", { body: { action: "send-quotation", id: r.id, to: to } })
+              .then(function (res) { return res.json().then(function (j) { return { s: res.status, j: j }; }); })
+              .then(function (x) {
+                qpEm.disabled = false;
+                if (x.s === 200) { qpEm.innerHTML = "Sent ✓"; setTimeout(function () { qpEm.innerHTML = "&#9993; Email"; }, 2500); }
+                else { qpEm.innerHTML = "&#9993; Email"; alert((x.j && x.j.error) || "Could not send."); }
+              })
+              .catch(function () { qpEm.disabled = false; qpEm.innerHTML = "&#9993; Email"; alert("Could not send."); });
+          };
           if (!quotPrevModal) quotPrevModal = new bootstrap.Modal(document.getElementById("quotPrevModal"));
           quotPrevModal.show();
         }
@@ -2940,6 +2986,21 @@
           document.getElementById("ip-whatsapp").onclick = function () {
             window.open(tel ? "https://wa.me/" + tel + "?text=" + waText : "https://wa.me/?text=" + waText, "_blank");
           };
+          var ipEm = document.getElementById("ip-email");
+          if (ipEm) ipEm.onclick = function () {
+            var r = invPrevRow; if (!r) return;
+            var to = r.email || window.prompt("Recipient email:", "") || "";
+            if (!to) return;
+            ipEm.disabled = true; ipEm.textContent = "Sending…";
+            api("/api/router.php?fn=cms-mail", { body: { action: "send-invoice", id: r.id, to: to } })
+              .then(function (res) { return res.json().then(function (j) { return { s: res.status, j: j }; }); })
+              .then(function (x) {
+                ipEm.disabled = false;
+                if (x.s === 200) { ipEm.innerHTML = "Sent ✓"; setTimeout(function () { ipEm.innerHTML = "&#9993; Email"; }, 2500); }
+                else { ipEm.innerHTML = "&#9993; Email"; alert((x.j && x.j.error) || "Could not send."); }
+              })
+              .catch(function () { ipEm.disabled = false; ipEm.innerHTML = "&#9993; Email"; alert("Could not send."); });
+          };
           if (!invPrevModal) invPrevModal = new bootstrap.Modal(document.getElementById("invPrevModal"));
           invPrevModal.show();
         }
@@ -3075,6 +3136,95 @@
               '<div class="fs-5 fw-bold">' + k[1] + "</div></div></div></div>";
           }).join("");
         }
+
+        /* ================= live chat agent console (H6) ================= */
+        var chatChannelId = null, chatSeen = {};
+        function chatApi(body, method) {
+          var url = "/api/router.php?fn=cms-chat";
+          if (method === "GET" && body) {
+            url += "&" + Object.keys(body).map(function (k) { return k + "=" + encodeURIComponent(body[k]); }).join("&");
+          }
+          return api(url, { method: method || "POST", body: method === "GET" ? undefined : body })
+            .then(function (r) { return r.json(); });
+        }
+        function loadChat() {
+          chatApi({ action: "threads" }, "GET").then(function (d) {
+            var wrap = document.getElementById("chat-threads");
+            var un = document.getElementById("chat-unread");
+            if (un) un.textContent = d.unread || 0;
+            if (!wrap) return;
+            var list = d.channels || [];
+            if (!list.length) { wrap.innerHTML = '<div class="wxc-empty" style="padding:16px">No conversations yet. Visitors will appear here when they use the chat bubble on the website.</div>'; return; }
+            wrap.innerHTML = list.map(function (c) {
+              var last = c.last ? c.last.body : "";
+              var when = (c.last && c.last.created_at) || c.created_at || "";
+              return '<div class="wxc-chat-item' + (c.id === chatChannelId ? ' active' : '') + '" data-chat="' + c.id + '" data-name="' + ((c.visitor_name || "Visitor") + "").replace(/"/g, "&quot;") + '" data-page="' + ((c.page || "") + "").replace(/"/g, "&quot;") + '">' +
+                '<div style="flex:1;min-width:0"><b style="display:block;font-size:13px">' + esc(c.visitor_name || "Visitor") + (c.unread_admin == 1 ? ' <span class="badge bg-primary">new</span>' : '') + '</b>' +
+                '<span style="font-size:12px;color:#5b6478;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc(last) + '</span></div>' +
+                '<span style="font-size:11px;color:#8a93a8;white-space:nowrap">' + esc(String(when).slice(5, 16)) + '</span></div>';
+            }).join("");
+          }).catch(function () {});
+        }
+        function openChat(id, name, page) {
+          chatChannelId = id;
+          document.getElementById("chat-title").textContent = name || "Visitor";
+          document.getElementById("chat-sub").textContent = (page || "") + " · live";
+          chatApi({ action: "thread", id: id }, "GET").then(function (d) {
+            chatSeen = {};
+            var box = document.getElementById("chat-msgs");
+            box.innerHTML = "";
+            (d.messages || []).forEach(function (m) {
+              chatSeen[m.id] = 1;
+              chatAppend(m, box);
+            });
+            box.scrollTop = box.scrollHeight;
+            loadChat();
+          }).catch(function () {});
+        }
+        function chatAppend(m, box) {
+          box = box || document.getElementById("chat-msgs");
+          if (!box) return;
+          var mine = m.from === "agent";
+          var w = document.createElement("div");
+          w.style.cssText = "display:flex;" + (mine ? "justify-content:flex-end" : "");
+          var b = document.createElement("div");
+          b.className = "wxc-bubble " + (mine ? "agent" : "visitor");
+          b.textContent = (mine ? "" : (m.agent_name ? m.agent_name + ": " : "")) + m.body;
+          w.appendChild(b);
+          box.appendChild(w);
+          box.scrollTop = box.scrollHeight;
+        }
+        document.addEventListener("click", function (e) {
+          var t = e.target.closest("[data-chat]");
+          if (t) openChat(t.getAttribute("data-chat"), t.getAttribute("data-name"), t.getAttribute("data-page"));
+        });
+        var chatForm = document.getElementById("chat-form");
+        if (chatForm) chatForm.addEventListener("submit", function (e) {
+          e.preventDefault();
+          var inp = document.getElementById("chat-input");
+          var text = (inp.value || "").trim();
+          if (!text || !chatChannelId) return;
+          inp.value = "";
+          chatApi({ action: "reply", id: chatChannelId, body: text }).then(function () {
+            var mine = { from: "agent", body: text, agent_name: sessionUser };
+            chatSeen["local" + Date.now()] = 1;
+            chatAppend(mine);
+          }).catch(function () { inp.value = text; });
+        });
+        var chatRefresh = document.getElementById("chat-refresh");
+        if (chatRefresh) chatRefresh.addEventListener("click", loadChat);
+        setInterval(function () {
+          var v = document.getElementById("view-chat");
+          if (!v || v.hidden) return;
+          loadChat();
+          if (chatChannelId) {
+            chatApi({ action: "thread", id: chatChannelId }, "GET").then(function (d) {
+              var box = document.getElementById("chat-msgs");
+              var fresh = (d.messages || []).filter(function (m) { return !chatSeen[m.id]; });
+              fresh.forEach(function (m) { chatSeen[m.id] = 1; chatAppend(m, box); });
+            }).catch(function () {});
+          }
+        }, 5000);
 
         async function loadReports() {
           var root = document.getElementById("wx-root-reports");

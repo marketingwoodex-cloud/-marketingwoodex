@@ -348,3 +348,56 @@ function wx_valid_page_path(string $path): bool
     if (in_array($path, $allowedExact, true)) return true;
     return (bool)preg_match('#^[A-Za-z0-9._/-]+\.html$#', $path);
 }
+
+/* ---------------------------------------------------------- SMTP (Hostinger) */
+/**
+ * Minimal SMTPS sender (SSL :465, AUTH LOGIN) — no dependencies.
+ * Config: config.php → mail.from/host/port/user/pass. Returns true on 250.
+ */
+function wx_mail(string $to, string $subject, string $htmlBody, string $textBody = ''): bool
+{
+    $m = wx_config()['mail'] ?? [];
+    $host = (string)($m['host'] ?? 'smtp.hostinger.com');
+    $port = (int)($m['port'] ?? 465);
+    $user = (string)($m['user'] ?? '');
+    $pass = (string)($m['pass'] ?? '');
+    $from = (string)($m['from'] ?? $user);
+    if ($user === '' || $pass === '' || $to === '') return false;
+
+    $fp = @stream_socket_client('ssl://' . $host . ':' . $port, $errno, $errstr, 12);
+    if (!$fp) return false;
+    stream_set_timeout($fp, 12);
+    $read = function () use ($fp): string {
+        $out = '';
+        while ($line = fgets($fp, 515)) {
+            $out .= $line;
+            if (isset($line[3]) && $line[3] === ' ') break;
+        }
+        return $out;
+    };
+    $cmd = function (string $send, string $expect) use ($fp, $read): bool {
+        if ($send !== '') fwrite($fp, $send . "\r\n");
+        $resp = $read();
+        return str_starts_with($resp, $expect);
+    };
+    $ok = $read();
+    if (!str_starts_with($ok, '220')) { fclose($fp); return false; }
+    if (!$cmd('EHLO woodex.local', '250')) { fclose($fp); return false; }
+    if (!$cmd('AUTH LOGIN', '334')) { fclose($fp); return false; }
+    if (!$cmd(base64_encode($user), '334')) { fclose($fp); return false; }
+    if (!$cmd(base64_encode($pass), '235')) { fclose($fp); return false; }
+    if (!$cmd('MAIL FROM:<' . $from . '>', '250')) { fclose($fp); return false; }
+    if (!$cmd('RCPT TO:<' . $to . '>', '250')) { fclose($fp); return false; }
+    if (!$cmd('DATA', '354')) { fclose($fp); return false; }
+    $mime = "From: Woodex Interior <" . $from . ">\r\n"
+          . "To: <" . $to . ">\r\n"
+          . "Subject: =?UTF-8?B?" . base64_encode($subject) . "?=\r\n"
+          . "MIME-Version: 1.0\r\n"
+          . "Content-Type: text/html; charset=UTF-8\r\n"
+          . "Date: " . date('r') . "\r\n\r\n"
+          . $htmlBody . "\r\n.";
+    $okData = $cmd($mime, '250');
+    $cmd('QUIT', '221');
+    fclose($fp);
+    return $okData;
+}
