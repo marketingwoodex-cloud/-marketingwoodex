@@ -239,6 +239,9 @@
               <li class="nav-item">
                 <a href="#" class="nav-link" data-view="analytics"><i class="nav-icon bi bi-graph-up"></i><p>Analytics</p></a>
               </li>
+              <li class="nav-item">
+                <a href="#" class="nav-link" data-view="soon" data-soon="Reports" data-nav="Reports"><i class="nav-icon bi bi-bar-chart-line"></i><p>Reports</p></a>
+              </li>
               <li class="nav-header">CRM &amp; SALES</li>
               <li class="nav-item">
                 <a href="#" class="nav-link" data-view="enquiries"><i class="nav-icon bi bi-inbox"></i><p>Enquiries <span class="nav-badge badge text-bg-warning ms-1" id="nav-new-count" style="display:none"></span></p></a>
@@ -250,10 +253,13 @@
                 <a href="#" class="nav-link" data-view="pipeline"><i class="nav-icon bi bi-funnel"></i><p>Pipeline</p></a>
               </li>
               <li class="nav-item">
-                <a href="#" class="nav-link" data-view="visits"><i class="nav-icon bi bi-calendar-check"></i><p>Visits &amp; Appointments</p></a>
+                <a href="#" class="nav-link" data-view="visits"><i class="nav-icon bi bi-calendar-check"></i><p>Site Visits</p></a>
               </li>
               <li class="nav-item">
                 <a href="#" class="nav-link" data-view="quotations"><i class="nav-icon bi bi-file-earmark-text"></i><p>Quotations</p></a>
+              </li>
+              <li class="nav-item">
+                <a href="#" class="nav-link" data-view="templates"><i class="nav-icon bi bi-grid-1x2"></i><p>Templates</p></a>
               </li>
               <li class="nav-item">
                 <a href="#" class="nav-link" data-view="invoices"><i class="nav-icon bi bi-receipt"></i><p>Invoices</p></a>
@@ -262,11 +268,14 @@
                 <a href="#" class="nav-link" data-view="clients"><i class="nav-icon bi bi-briefcase"></i><p>Clients</p></a>
               </li>
               <li class="nav-item">
-                <a href="#" class="nav-link" data-view="soon" data-soon="Live Chat"><i class="nav-icon bi bi-chat-dots"></i><p>Live Chat <span class="badge text-bg-info ms-1">3</span></p></a>
+                <a href="#" class="nav-link" data-view="soon" data-soon="Live Chat" data-nav="Live Chat"><i class="nav-icon bi bi-chat-dots"></i><p>Live Chat</p></a>
               </li>
               <li class="nav-header">WEBSITE</li>
               <li class="nav-item">
-                <a href="#" class="nav-link" data-view="builder"><i class="nav-icon bi bi-layout-text-window-reverse"></i><p>Pages</p></a>
+                <a href="#" class="nav-link" data-view="builder" data-nav="pages"><i class="nav-icon bi bi-layout-text-window-reverse"></i><p>Pages</p></a>
+              </li>
+              <li class="nav-item">
+                <a href="#" class="nav-link" data-view="builder" data-nav="visual"><i class="nav-icon bi bi-easel"></i><p>Visual Builder</p></a>
               </li>
               <li class="nav-item">
                 <a href="#" class="nav-link" data-view="services"><i class="nav-icon bi bi-grid"></i><p>Services</p></a>
@@ -284,42 +293,66 @@
                 <a href="#" class="nav-link" data-view="testimonials"><i class="nav-icon bi bi-chat-quote"></i><p>Testimonials</p></a>
               </li>
               <li class="nav-item">
-                <a href="#" class="nav-link" data-view="media"><i class="nav-icon bi bi-images"></i><p>Media Library</p></a>
-              </li>
-              <li class="nav-item">
                 <a href="#" class="nav-link" data-view="team"><i class="nav-icon bi bi-people"></i><p>Team</p></a>
-              </li>
-              <li class="nav-header">COMMERCIAL</li>
-              <li class="nav-item">
-                <a href="#" class="nav-link" data-view="templates"><i class="nav-icon bi bi-grid-1x2"></i><p>Templates</p></a>
-              </li>
-              <li class="nav-item">
-                <a href="#" class="nav-link" data-view="soon" data-soon="Forms"><i class="nav-icon bi bi-input-cursor-text"></i><p>Forms</p></a>
-              </li>
-              <li class="nav-item">
-                <a href="#" class="nav-link" data-view="soon" data-soon="Pricing &amp; Estimator"><i class="nav-icon bi bi-tags"></i><p>Pricing &amp; Estimator</p></a>
               </li>
               <li class="nav-header">DESIGN</li>
               <li class="nav-item">
                 <a href="#" class="nav-link" data-view="theme"><i class="nav-icon bi bi-palette"></i><p>Theme</p></a>
               </li>
               <li class="nav-item">
-                <a href="#" class="nav-link" data-view="navigation"><i class="nav-icon bi bi-menu-button-wide"></i><p>Navigation</p></a>
+                <a href="#" class="nav-link" data-view="soon" data-soon="Header &amp; Navigation" data-nav="Header &amp; Navigation"><i class="nav-icon bi bi-window"></i><p>Header &amp; Navigation</p></a>
+              </li>
+              <li class="nav-item">
+                <a href="#" class="nav-link" data-view="navigation"><i class="nav-icon bi bi-menu-button-wide"></i><p>Mega Menu</p></a>
+              </li>
+              <li class="nav-item">
+                <a href="#" class="nav-link" data-view="soon" data-soon="Footer" data-nav="Footer"><i class="nav-icon bi bi-text-paragraph"></i><p>Footer</p></a>
+              </li>
+              <li class="nav-item">
+                <a href="#" class="nav-link" data-view="soon" data-soon="Global Sections" data-nav="Global Sections"><i class="nav-icon bi bi-collection"></i><p>Global Sections</p></a>
+              </li>
+              <li class="nav-header">MEDIA</li>
+              <li class="nav-item">
+                <a href="#" class="nav-link" data-view="media"><i class="nav-icon bi bi-images"></i><p>Media Library</p></a>
+              </li>
+              <li class="nav-item">
+                <a href="#" class="nav-link" data-view="soon" data-soon="Galleries" data-nav="Galleries"><i class="nav-icon bi bi-card-image"></i><p>Galleries</p></a>
+              </li>
+              <li class="nav-item">
+                <a href="#" class="nav-link" data-view="soon" data-soon="Image Optimization" data-nav="Image Optimization"><i class="nav-icon bi bi-lightning"></i><p>Image Optimization</p></a>
               </li>
               <li class="nav-header">SEO</li>
               <li class="nav-item">
                 <a href="#" class="nav-link" data-view="seo"><i class="nav-icon bi bi-search"></i><p>SEO Manager</p></a>
+              </li>
+              <li class="nav-item">
+                <a href="#" class="nav-link" data-view="soon" data-soon="Schema" data-nav="Schema"><i class="nav-icon bi bi-diagram-3"></i><p>Schema</p></a>
+              </li>
+              <li class="nav-item">
+                <a href="#" class="nav-link" data-view="soon" data-soon="Redirects" data-nav="Redirects"><i class="nav-icon bi bi-shuffle"></i><p>Redirects</p></a>
+              </li>
+              <li class="nav-item">
+                <a href="#" class="nav-link" data-view="soon" data-soon="Sitemap" data-nav="Sitemap"><i class="nav-icon bi bi-sitemap"></i><p>Sitemap</p></a>
               </li>
               <li class="nav-header">SETTINGS</li>
               <li class="nav-item">
                 <a href="#" class="nav-link" data-view="settings"><i class="nav-icon bi bi-gear"></i><p>Site Settings</p></a>
               </li>
               <li class="nav-item">
-                <a href="#" class="nav-link" data-view="soon" data-soon="Integrations"><i class="nav-icon bi bi-plug"></i><p>Integrations</p></a>
+                <a href="#" class="nav-link" data-view="soon" data-soon="Integrations" data-nav="Integrations"><i class="nav-icon bi bi-plug"></i><p>Integrations</p></a>
+              </li>
+              <li class="nav-item">
+                <a href="#" class="nav-link" data-view="soon" data-soon="WhatsApp" data-nav="WhatsApp"><i class="nav-icon bi bi-whatsapp"></i><p>WhatsApp</p></a>
+              </li>
+              <li class="nav-item">
+                <a href="#" class="nav-link" data-view="soon" data-soon="Estimator Rates" data-nav="Estimator Rates"><i class="nav-icon bi bi-tags"></i><p>Estimator Rates</p></a>
               </li>
               <li class="nav-header">SYSTEM</li>
               <li class="nav-item" id="nav-users-item" hidden>
                 <a href="#" class="nav-link" data-view="users"><i class="nav-icon bi bi-person-gear"></i><p>Users &amp; Roles</p></a>
+              </li>
+              <li class="nav-item">
+                <a href="#" class="nav-link" data-view="soon" data-soon="Activity" data-nav="Activity"><i class="nav-icon bi bi-activity"></i><p>Activity</p></a>
               </li>
               <li class="nav-item">
                 <a href="#" class="nav-link" data-view="audit"><i class="nav-icon bi bi-list-check"></i><p>Audit Trail</p></a>
@@ -369,7 +402,7 @@
                   <div class="wx-kpi">
                     <span class="ico"><i class="bi bi-people"></i></span>
                     <div>
-                      <p class="lbl">Total Leads</p>
+                      <p class="lbl">Qualified Leads</p>
                       <p class="val" id="dash-leads">&ndash;</p>
                       <span class="delta"><b id="dash-leads-delta">&ndash;</b> vs last <span class="dash-days-mirror">30</span> days</span>
                     </div>
@@ -385,7 +418,7 @@
                   <div class="wx-kpi">
                     <span class="ico green"><i class="bi bi-calendar-check"></i></span>
                     <div>
-                      <p class="lbl">Scheduled Visits</p>
+                      <p class="lbl">Scheduled Site Visits</p>
                       <p class="val" id="dash-visits">&ndash;</p>
                       <span class="delta">this week</span>
                     </div>
@@ -1516,20 +1549,30 @@
         });
 
         /* ================= view router ================= */
-        var TITLES = { dashboard: "Dashboard", analytics: "Analytics", enquiries: "Enquiries", leads: "Leads & Estimator", pipeline: "Pipeline", visits: "Visits & Appointments", quotations: "Quotations", templates: "Quotation Templates", invoices: "Invoices", clients: "Clients", builder: "Pages · Page Builder", services: "Services", locations: "Locations", projects: "Projects", blog: "Insights", testimonials: "Testimonials", media: "Media Library", team: "Team", theme: "Theme", navigation: "Navigation", seo: "SEO Manager", settings: "Site Settings", users: "Users & Roles", audit: "Audit Trail", versions: "Versions", backups: "Backups", health: "System Health", soon: "Coming soon" };
+        var TITLES = { dashboard: "Dashboard", analytics: "Analytics", enquiries: "Enquiries", leads: "Leads & Estimator", pipeline: "Pipeline", visits: "Site Visits", quotations: "Quotations", templates: "Quotation Templates", invoices: "Invoices", clients: "Clients", builder: "Pages · Page Builder", services: "Services", locations: "Locations", projects: "Projects", blog: "Insights", testimonials: "Testimonials", media: "Media Library", team: "Team", theme: "Theme", navigation: "Navigation", seo: "SEO Manager", settings: "Site Settings", users: "Users & Roles", audit: "Audit Trail", versions: "Versions", backups: "Backups", health: "System Health", soon: "Coming soon" };
         var builderStarted = false;
-        function showView(name, soonLabel) {
-          if (name === "users" && sessionRole !== "admin") { name = "dashboard"; }
+        function showView(name, soonLabel, navKey) {
+          if (name === "users" && sessionRole !== "admin") { name = "dashboard"; navKey = null; }
           document.querySelectorAll(".wx-view").forEach(function (v) { v.hidden = true; });
           var el = document.getElementById("view-" + name);
           if (el) el.hidden = false;
-          document.querySelectorAll("[data-view].nav-link").forEach(function (a) {
-            var match = a.getAttribute("data-view") === name;
+          var key = navKey || name;
+          var links = document.querySelectorAll("[data-view].nav-link");
+          var found = false;
+          links.forEach(function (a) {
+            a.classList.remove("active");
+            var k = a.getAttribute("data-nav") || a.getAttribute("data-view");
+            var match = k === key;
             if (match && name === "soon" && soonLabel) {
               match = (a.getAttribute("data-soon") || "") === soonLabel;
             }
-            a.classList.toggle("active", match);
+            if (match) { a.classList.add("active"); found = true; }
           });
+          if (!found) {
+            links.forEach(function (a) {
+              if (!found && a.getAttribute("data-view") === name) { a.classList.add("active"); found = true; }
+            });
+          }
           if (name === "soon" && soonLabel) {
             document.getElementById("soon-title").textContent = soonLabel;
             document.getElementById("wx-view-title").textContent = soonLabel;
@@ -1560,7 +1603,7 @@
           var a = e.target.closest("[data-view]");
           if (!a) return;
           e.preventDefault();
-          showView(a.getAttribute("data-view"), a.getAttribute("data-soon"));
+          showView(a.getAttribute("data-view"), a.getAttribute("data-soon"), a.getAttribute("data-nav"));
         });
 
         /* ================= dashboard (Phase 1 redesign) ================= */
