@@ -160,3 +160,9 @@ Each phase ends with a live preview + test report; the next phase starts only af
 **Files:** `admin/admin-content.js`, `api/content-lib.php` (PHP, untested until Hostinger), `a6()` in `tools/frontend-v1-admin.mjs` (tested), CSS in `admin.css` and `assets/v1.css`, icons in `vendor/icons.js`.
 
 **Tested (Node, headless):** import 8+6; every re-rendered page keeps the same text and images; new article published (file, listing card, sitemap); scheduled item auto-published; 3 testimonials on home + about; 4 team members on about; FAQ group; a clear AI "add a key" message; 0 JS errors.
+
+## A6b — Service pages, City pages, Business info (done)
+- **Service pages** (`#/services`, `admin-fields.js`): every non-blog/non-project page opens as a smart-field form (text, links, images + alt, SEO title/description/share image). Only changed fields are written; FAQ JSON-LD is rebuilt when FAQs change. "Open in builder" is available for layout changes.
+- **City pages** (`#/cities`): edit live cities; **New city** copies a template city (name and address swapped in `<head>`/`<main>` only), with optional AI localisation; **Bulk create with AI** takes up to 25 cities per run → drafts → review → **Publish city** (writes the page and adds it to the sitemap). Add the city to the footer yourself via Header & footer.
+- **Business info** (`#/business`): email, phones, WhatsApp, address, hours. **Check changes** is a dry run; **Update website** rewrites all pages (every spelling of the hours), `site.js` and the WhatsApp widget, with backups.
+- API: `cms_page_kinds`, `cms_sitemap_add`, `cms_biz_get/save/assets`, type `city`, AI task `city` (Node + `content-lib.php`).

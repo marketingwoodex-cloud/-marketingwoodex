@@ -9,7 +9,9 @@ declare(strict_types=1);
 if (!defined('PRIVATE_DIR')) { http_response_code(404); exit; }
 
 const CMS_FILE   = PRIVATE_DIR . '/content.json';
-const CMS_TYPES  = ['post', 'study', 'testimonial', 'member', 'faq'];
+const CMS_TYPES  = ['post', 'study', 'testimonial', 'member', 'faq', 'city'];
+const BIZ_DEF = ['email' => 'info@woodex.com.pk', 'phone1' => '+92 322 4000768', 'phone2' => '+92 321 4686884', 'wa' => '+92 322 4000768', 'addr1' => 'M-71, Zainab Tower', 'addr2' => 'Model Town Link Road', 'city' => 'Lahore', 'country' => 'Pakistan', 'days' => 'Mon–Sat', 'open' => '09:30', 'close' => '18:30'];
+const BIZ_ASSETS = ['assets/site.js', 'assets/js/whatsapp-widget.js'];
 const CMS_PAGES  = ['post' => 'insights', 'study' => 'projects'];
 const AI_SECRETS = ['anthropicKey', 'openaiKey', 'openrouterKey'];
 const AI_DEF = ['provider' => 'anthropic', 'anthropicKey' => '', 'anthropicModel' => 'claude-sonnet-4-5', 'openaiKey' => '', 'openaiModel' => 'gpt-4o-mini', 'openrouterKey' => '', 'openrouterModel' => 'nousresearch/hermes-3-llama-3.1-405b',
@@ -52,8 +54,8 @@ function ai_call(array $a, string $system, string $user): string {
     $p = $a['provider']; $key = $a[$p . 'Key'] ?? ''; $model = $a[$p . 'Model'] ?? '';
     if ($key === '') fail('Add an API key for ' . (['anthropic' => 'Claude', 'openai' => 'OpenAI', 'openrouter' => 'OpenRouter'][$p] ?? $p) . ' in Content → AI settings');
     if (!function_exists('curl_init')) fail('The server has no cURL extension', 500);
-    if ($p === 'anthropic') { $url = 'https://api.anthropic.com/v1/messages'; $h = ['x-api-key: ' . $key, 'anthropic-version: 2023-06-01', 'content-type: application/json']; $body = ['model' => $model, 'max_tokens' => 2500, 'system' => $system, 'messages' => [['role' => 'user', 'content' => $user]]]; }
-    else { $url = $p === 'openai' ? 'https://api.openai.com/v1/chat/completions' : 'https://openrouter.ai/api/v1/chat/completions'; $h = ['authorization: Bearer ' . $key, 'content-type: application/json', 'HTTP-Referer: https://woodex.com.pk', 'X-Title: Woodex Admin']; $body = ['model' => $model, 'max_tokens' => 2500, 'messages' => [['role' => 'system', 'content' => $system], ['role' => 'user', 'content' => $user]]]; }
+    if ($p === 'anthropic') { $url = 'https://api.anthropic.com/v1/messages'; $h = ['x-api-key: ' . $key, 'anthropic-version: 2023-06-01', 'content-type: application/json']; $body = ['model' => $model, 'max_tokens' => 6000, 'system' => $system, 'messages' => [['role' => 'user', 'content' => $user]]]; }
+    else { $url = $p === 'openai' ? 'https://api.openai.com/v1/chat/completions' : 'https://openrouter.ai/api/v1/chat/completions'; $h = ['authorization: Bearer ' . $key, 'content-type: application/json', 'HTTP-Referer: https://woodex.com.pk', 'X-Title: Woodex Admin']; $body = ['model' => $model, 'max_tokens' => 6000, 'messages' => [['role' => 'system', 'content' => $system], ['role' => 'user', 'content' => $user]]]; }
     $ch = curl_init($url); curl_setopt_array($ch, [CURLOPT_POST => true, CURLOPT_HTTPHEADER => $h, CURLOPT_POSTFIELDS => json_encode($body), CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 60]);
     $raw = curl_exec($ch); $code = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE); $err = curl_error($ch); curl_close($ch);
     if ($raw === false) fail('AI request failed: ' . mb_substr($err, 0, 200), 502);
@@ -70,18 +72,44 @@ function ai_prompt(string $task, array $i): ?string {
         case 'alt': return "Write alt text (max 110 characters, no \"image of\") for a photo on the Woodex website. File: {$s('file', 200)}. Context: {$s('context', 600)}. Return only the alt text.";
         case 'improve': return "Rewrite this paragraph to be clearer and tighter, same meaning and length or shorter. Return only the paragraph.\n\n{$s('text', 3000)}";
         case 'excerpt': return "Write a card summary (max 150 characters) for this page. Return only the text.\nTitle: {$s('title', 200)}\n{$s('text', 3000)}";
+        case 'city': $t = is_array($i['texts'] ?? null) ? array_slice(array_values(array_filter($i['texts'], 'is_string')), 0, 120) : []; $city = $s('city', 80); $src = $s('source', 80);
+            return "You are localising a Woodex city landing page from $src to $city, Pakistan. The studio is based in Lahore and serves $city with site visits.\nRewrite each string for $city: mention real $city areas/neighbourhoods where natural, keep facts honest (the studio and showroom are in Lahore, not in $city), keep roughly the same length, keep **bold** markers and [link](url) markup unchanged.\nReturn ONLY a JSON array of exactly " . count($t) . " strings in the same order.\n\n" . mb_substr(json_encode($t, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), 0, 14000);
         case 'faqs': return "Write 4 FAQs a Pakistani client would ask about: {$s('title', 200)}.\nContext: {$s('text', 3000)}\nReturn ONLY JSON: [{\"q\":\"...\",\"a\":\"1-3 sentences\"}]";
     }
     return null;
 }
 function cms_safe_rel($r): bool { return is_string($r) && preg_match('~^[a-z0-9][a-z0-9/_\-.]*\.html$~i', $r) && strpos($r, '..') === false && !preg_match('~^(_private|builder|admin|api|assets)/~', $r); }
 
+function cms_city_rel_ok($r): bool { return is_string($r) && preg_match('~^[a-z0-9][a-z0-9-]{0,59}/index\.html$~', $r) && !preg_match('~^(builder|admin|api|assets|insights|projects)/~', $r); }
+function cms_file_backup(string $rel): void { $d = PRIVATE_DIR . '/backups/' . preg_replace('~[^a-z0-9]+~i', '_', trim($rel, '/')); if (!is_dir($d)) @mkdir($d, 0750, true); @copy(ROOT_DIR . '/' . $rel, $d . '/' . gmdate('Ymd-His') . '-' . substr(basename($rel), -12)); }
 function content_actions(string $action, array $in): bool {
     if (!preg_match('~^(cms_|ai_)~', $action)) return false;
     $ED = ['owner', 'admin', 'editor']; $OA = ['owner', 'admin'];
     $c = cms_load();
     $idx = function ($id) use (&$c): int { foreach ($c['items'] as $k => $x) if ((int)$x['id'] === (int)$id) return $k; fail('Item not found', 404); return -1; };
     switch ($action) {
+        case 'cms_page_kinds':
+            need($ED); $kinds = [];
+            $it = new RecursiveIteratorIterator(new RecursiveCallbackFilterIterator(new RecursiveDirectoryIterator(ROOT_DIR, FilesystemIterator::SKIP_DOTS), function ($f) { return !($f->isDir() && dirname($f->getPathname()) === ROOT_DIR && preg_match('~^(_private|builder|admin|api|assets|node_modules)$~', $f->getFilename())); }));
+            foreach ($it as $f) { if (substr($f->getFilename(), -5) !== '.html') continue; $rel = str_replace('\\', '/', substr($f->getPathname(), strlen(ROOT_DIR) + 1)); if (!cms_safe_rel($rel)) continue;
+                $h = (string)file_get_contents($f->getPathname(), false, null, 0, 12000); $kinds[$rel] = preg_match('~<body[^>]*data-page="([^"]*)"~i', $h, $m) ? $m[1] : ''; }
+            out(['ok' => true, 'kinds' => $kinds]);
+        case 'cms_sitemap_add':
+            need($ED); $rel = (string)($in['rel'] ?? ''); if (!cms_safe_rel($rel) || !is_file(ROOT_DIR . '/' . $rel)) fail('Page not found'); sitemap_add($rel); out(['ok' => true]);
+        case 'cms_biz_get': need($ED); out(['ok' => true, 'biz' => array_merge(BIZ_DEF, $c['biz'] ?? []), 'applied' => array_merge(BIZ_DEF, $c['bizApplied'] ?? [])]);
+        case 'cms_biz_save':
+            $u = need($OA); $b = is_array($in['biz'] ?? null) ? $in['biz'] : []; $o = [];
+            foreach (BIZ_DEF as $key => $def) { $v = clip($b[$key] ?? '', 160); $o[$key] = $v !== '' ? $v : $def; }
+            if (!preg_match('~^[^@\s]+@[^@\s]+\.[^@\s]+$~', $o['email'])) fail('Check the email address');
+            foreach (['phone1', 'phone2', 'wa'] as $key) if (strlen(preg_replace('~\D~', '', $o[$key])) < 10) fail('Check the phone numbers (use +92 format)');
+            if (!preg_match('~^\d{2}:\d{2}$~', $o['open']) || !preg_match('~^\d{2}:\d{2}$~', $o['close'])) fail('Check the opening hours');
+            $c['biz'] = $o; if (!empty($in['applied'])) $c['bizApplied'] = $o; cms_save_file($c); log_act($u, !empty($in['applied']) ? 'business.apply' : 'business.save', '');
+            out(['ok' => true, 'biz' => $o, 'applied' => array_merge(BIZ_DEF, $c['bizApplied'] ?? [])]);
+        case 'cms_biz_assets':
+            $u = need($OA); $pairs = [];
+            foreach ((is_array($in['pairs'] ?? null) ? $in['pairs'] : []) as $p) if (is_array($p) && is_string($p[0] ?? null) && is_string($p[1] ?? null) && strlen($p[0]) >= 4 && strlen($p[0]) < 200 && strlen($p[1]) < 200 && !preg_match('~[<>\\\\`]~', $p[1])) $pairs[] = $p;
+            $n = 0; foreach (BIZ_ASSETS as $rel) { $f = ROOT_DIR . '/' . $rel; if (!is_file($f)) continue; $x = (string)file_get_contents($f); $before = $x; foreach ($pairs as $p) $x = str_replace($p[0], $p[1], $x); if ($x !== $before) { cms_file_backup($rel); file_put_contents($f, $x, LOCK_EX); $n++; } }
+            log_act($u, 'business.assets', $n . ' files'); out(['ok' => true, 'files' => $n]);
         case 'cms_list':
             need($ED); $ty = in_array($in['type'] ?? '', CMS_TYPES, true) ? $in['type'] : null; $out = [];
             foreach (array_reverse($c['items']) as $x) { if ($ty && $x['type'] !== $ty) continue; $x['hasPending'] = !empty($x['pending']); unset($x['pending']); $out[] = $x; }
@@ -92,7 +120,12 @@ function content_actions(string $action, array $in): bool {
             $title = clip($in['title'] ?? '', 160); if ($title === '') fail(in_array($type, ['testimonial', 'member'], true) ? 'Name is required' : 'Title is required');
             $data = is_array($in['data'] ?? null) ? $in['data'] : []; if (strlen(json_encode($data)) > 400000) fail('Content is too large');
             $k = !empty($in['id']) ? $idx($in['id']) : -1; $it = $k >= 0 ? $c['items'][$k] : null;
-            $slug = isset(CMS_PAGES[$type]) ? strtolower((string)($in['slug'] ?? '')) : '';
+            $slug = isset(CMS_PAGES[$type]) || $type === 'city' ? strtolower((string)($in['slug'] ?? '')) : '';
+            if ($type === 'city') {
+                if (!preg_match('~^[a-z0-9][a-z0-9-]{0,59}$~', $slug) || in_array($slug, ['builder', 'admin', 'api', 'assets', 'insights', 'projects'], true)) fail('Page address: lowercase letters, numbers and dashes only');
+                if ((!$it || empty($it['rel'])) && is_file(ROOT_DIR . '/' . $slug . '/index.html')) fail('A page already exists at /' . $slug . '/');
+                foreach ($c['items'] as $j => $x) if ($x['type'] === 'city' && $x['slug'] === $slug && $j !== $k) fail('Another draft already uses that address');
+            }
             $claim = (string)($in['claim'] ?? '');
             if (isset(CMS_PAGES[$type])) {
                 if (!preg_match('~^[a-z0-9][a-z0-9-]{0,59}$~', $slug)) fail('Page address: lowercase letters, numbers and dashes only');
@@ -118,9 +151,9 @@ function content_actions(string $action, array $in): bool {
             cms_save_file($c); log_act($u, 'content.save', $type . ': ' . $title);
             $pub = $it; unset($pub['pending']); out(['ok' => true, 'item' => $pub]);
         case 'cms_published':
-            $u = need($ED); $k = $idx($in['id'] ?? 0); $it = $c['items'][$k]; if (!isset(CMS_PAGES[$it['type']])) fail('Not a page item');
-            $rel = (string)($in['rel'] ?? ''); if (!cms_rel_ok($rel, $it['type']) || !is_file(ROOT_DIR . '/' . $rel)) fail('Page was not written');
-            $it['rel'] = $rel; $it['status'] = 'published'; $it['published_at'] = $it['published_at'] ?? cms_now(); unset($it['pending']); $it['publishAt'] = null;
+            $u = need($ED); $k = $idx($in['id'] ?? 0); $it = $c['items'][$k]; if (!isset(CMS_PAGES[$it['type']]) && $it['type'] !== 'city') fail('Not a page item');
+            $rel = (string)($in['rel'] ?? ''); if (!($it['type'] === 'city' ? cms_city_rel_ok($rel) : cms_rel_ok($rel, $it['type'])) || !is_file(ROOT_DIR . '/' . $rel)) fail('Page was not written');
+            $it['rel'] = $rel; $it['status'] = 'published'; $it['published_at'] = $it['published_at'] ?? cms_now(); unset($it['pending']); $it['publishAt'] = null; if ($it['type'] === 'city') $it['data'] = ['source' => (string)($it['data']['source'] ?? '')];
             $c['items'][$k] = $it; cms_save_file($c); sitemap_add($rel); log_act($u, 'content.publish', $it['title']); out(['ok' => true, 'item' => $it]);
         case 'cms_status':
             $u = need($ED); $k = $idx($in['id'] ?? 0); if (isset(CMS_PAGES[$c['items'][$k]['type']])) fail('Use Publish for pages');

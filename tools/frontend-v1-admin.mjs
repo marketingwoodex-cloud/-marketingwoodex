@@ -495,7 +495,7 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
 
   // =================================================================== A6 — content collections (blog, portfolio, testimonials, team, FAQs) + AI
   const CMS = path.join(PRIV, "content.json");
-  const CTYPES = ["post", "study", "testimonial", "member", "faq"];
+  const CTYPES = ["post", "study", "testimonial", "member", "faq", "city"];
   const PAGE_TYPES = { post: "insights", study: "projects" };
   const AI_DEF = { provider: "anthropic", anthropicKey: "", anthropicModel: "claude-sonnet-4-5", openaiKey: "", openaiModel: "gpt-4o-mini", openrouterKey: "", openrouterModel: "nousresearch/hermes-3-llama-3.1-405b", voice: "Calm, plain, confident British English. Short sentences. No hype, no exclamation marks. Woodex Interior is a design, fit-out and renovation studio in Lahore, Pakistan." };
   const AI_SECRETS = ["anthropicKey", "openaiKey", "openrouterKey"];
@@ -526,9 +526,9 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
     if (!key) throw new Fail("Add an API key for " + ({ anthropic: "Claude", openai: "OpenAI", openrouter: "OpenRouter" }[p] || p) + " in Content → AI settings");
     let r, j;
     try {
-      if (p === "anthropic") { r = await fetch("https://api.anthropic.com/v1/messages", { method: "POST", headers: { "x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json" }, body: JSON.stringify({ model, max_tokens: 2500, system, messages: [{ role: "user", content: user }] }), signal: AbortSignal.timeout(60000) }); j = await r.json(); if (!r.ok) throw new Error(j.error && j.error.message || r.status); return (j.content || []).map((x) => x.text || "").join(""); }
+      if (p === "anthropic") { r = await fetch("https://api.anthropic.com/v1/messages", { method: "POST", headers: { "x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json" }, body: JSON.stringify({ model, max_tokens: 6000, system, messages: [{ role: "user", content: user }] }), signal: AbortSignal.timeout(60000) }); j = await r.json(); if (!r.ok) throw new Error(j.error && j.error.message || r.status); return (j.content || []).map((x) => x.text || "").join(""); }
       const url = p === "openai" ? "https://api.openai.com/v1/chat/completions" : "https://openrouter.ai/api/v1/chat/completions";
-      r = await fetch(url, { method: "POST", headers: { authorization: "Bearer " + key, "content-type": "application/json", "HTTP-Referer": "https://woodex.com.pk", "X-Title": "Woodex Admin" }, body: JSON.stringify({ model, max_tokens: 2500, messages: [{ role: "system", content: system }, { role: "user", content: user }] }), signal: AbortSignal.timeout(60000) });
+      r = await fetch(url, { method: "POST", headers: { authorization: "Bearer " + key, "content-type": "application/json", "HTTP-Referer": "https://woodex.com.pk", "X-Title": "Woodex Admin" }, body: JSON.stringify({ model, max_tokens: 6000, messages: [{ role: "system", content: system }, { role: "user", content: user }] }), signal: AbortSignal.timeout(60000) });
       j = await r.json(); if (!r.ok) throw new Error(j.error && j.error.message || r.status); return j.choices[0].message.content || "";
     } catch (e) { throw new Fail("AI request failed: " + String(e.message || e).slice(0, 200), 502); }
   }
@@ -538,14 +538,34 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
     alt: (i) => `Write alt text (max 110 characters, no "image of") for a photo on the Woodex website. File: ${i.file || ""}. Context: ${i.context || ""}. Return only the alt text.`,
     improve: (i) => `Rewrite this paragraph to be clearer and tighter, same meaning and length or shorter. Return only the paragraph.\n\n${String(i.text || "").slice(0, 3000)}`,
     excerpt: (i) => `Write a card summary (max 150 characters) for this page. Return only the text.\nTitle: ${i.title}\n${String(i.text || "").slice(0, 3000)}`,
+    city: (i) => `You are localising a Woodex city landing page from ${i.source} to ${i.city}, Pakistan. The studio is based in Lahore and serves ${i.city} with site visits.\nRewrite each string for ${i.city}: mention real ${i.city} areas/neighbourhoods where natural, keep facts honest (the studio and showroom are in Lahore, not in ${i.city}), keep roughly the same length, keep **bold** markers and [link](url) markup unchanged.\nReturn ONLY a JSON array of exactly ${(i.texts || []).length} strings in the same order.\n\n${JSON.stringify((i.texts || []).slice(0, 120)).slice(0, 14000)}`,
     faqs: (i) => `Write 4 FAQs a Pakistani client would ask about: ${i.title}.\nContext: ${String(i.text || "").slice(0, 3000)}\nReturn ONLY JSON: [{"q":"...","a":"1-3 sentences"}]`,
   };
+  const BIZ_DEF = { email: "info@woodex.com.pk", phone1: "+92 322 4000768", phone2: "+92 321 4686884", wa: "+92 322 4000768", addr1: "M-71, Zainab Tower", addr2: "Model Town Link Road", city: "Lahore", country: "Pakistan", days: "Mon–Sat", open: "09:30", close: "18:30" };
+  const BIZ_ASSETS = ["assets/site.js", "assets/js/whatsapp-widget.js"];
+  const safeRel = (r) => typeof r === "string" && /^[a-z0-9][a-z0-9/_\-.]*\.html$/i.test(r) && !r.includes("..") && !/^(_private|builder|admin|api|assets)\//.test(r);
+  const cityRelOk = (r) => typeof r === "string" && /^[a-z0-9][a-z0-9-]{0,59}\/index\.html$/.test(r) && !/^(builder|admin|api|assets|insights|projects)\//.test(r);
   async function a6(action, inp, need, db, ip) {
     if (!/^(cms_|ai_)/.test(action)) return null;
     const ED = ["owner", "admin", "editor"], OA = ["owner", "admin"];
     const c = cmsLoad(), done = (o) => { jw(CMS, c); save(db); return o; };
     const find = (id) => { const it = c.items.find((x) => x.id === +id); if (!it) throw new Fail("Item not found", 404); return it; };
     switch (action) {
+      case "cms_page_kinds": { need(ED); const out = {}; const walk = (d) => { for (const f of fs.readdirSync(d, { withFileTypes: true })) { const a = path.join(d, f.name); if (f.isDirectory()) { if (!/^(_private|builder|admin|api|assets|node_modules)$/.test(f.name) || d !== ROOT) walk(a); } else if (f.name.endsWith(".html")) { const rel = path.relative(ROOT, a).split(path.sep).join("/"); if (!safeRel(rel)) continue; const m = /<body[^>]*data-page="([^"]*)"/i.exec(fs.readFileSync(a, "utf8").slice(0, 12000)); out[rel] = m ? m[1] : ""; } } }; walk(ROOT); return { ok: true, kinds: out }; }
+      case "cms_sitemap_add": { need(ED); const rel = String(inp.rel || ""); if (!safeRel(rel) || !fs.existsSync(path.join(ROOT, rel))) throw new Fail("Page not found"); sitemapAdd(rel); return { ok: true }; }
+      case "cms_biz_get": { need(ED); return { ok: true, biz: Object.assign({}, BIZ_DEF, c.biz || {}), applied: Object.assign({}, BIZ_DEF, c.bizApplied || {}) }; }
+      case "cms_biz_save": {
+        const u = need(OA), b = inp.biz || {}, o = {}; for (const k of Object.keys(BIZ_DEF)) o[k] = clip(b[k], 160) || BIZ_DEF[k];
+        if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(o.email)) throw new Fail("Check the email address");
+        for (const k of ["phone1", "phone2", "wa"]) if (o[k].replace(/\D/g, "").length < 10) throw new Fail("Check the phone numbers (use +92 format)");
+        if (!/^\d{2}:\d{2}$/.test(o.open) || !/^\d{2}:\d{2}$/.test(o.close)) throw new Fail("Check the opening hours");
+        c.biz = o; if (inp.applied) c.bizApplied = { ...o }; log(db, u, inp.applied ? "business.apply" : "business.save", "", ip); return done({ ok: true, biz: o, applied: Object.assign({}, BIZ_DEF, c.bizApplied || {}) });
+      }
+      case "cms_biz_assets": {
+        const u = need(OA), pairs = (Array.isArray(inp.pairs) ? inp.pairs : []).filter((p) => Array.isArray(p) && typeof p[0] === "string" && typeof p[1] === "string" && p[0].length >= 4 && p[0].length < 200 && p[1].length < 200 && !/[<>\\`]/.test(p[1]));
+        let n = 0; for (const rel of BIZ_ASSETS) { const f = path.join(ROOT, rel); if (!fs.existsSync(f)) continue; let x = fs.readFileSync(f, "utf8"); const before = x; for (const [a, b2] of pairs) x = x.split(a).join(b2); if (x !== before) { cmsBackup(rel); fs.writeFileSync(f, x); n++; } }
+        log(db, u, "business.assets", n + " files", ip); return { ok: true, files: n };
+      }
       case "cms_list": { need(ED); const ty = CTYPES.includes(inp.type) ? inp.type : null; return { ok: true, items: c.items.filter((x) => !ty || x.type === ty).map(({ pending, ...x }) => ({ ...x, hasPending: !!pending })).reverse(), aiReady: !!c.ai[c.ai.provider + "Key"] }; }
       case "cms_get": { need(ED); const { pending, ...it } = find(inp.id); return { ok: true, item: it }; }
       case "cms_save": {
@@ -560,8 +580,9 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
           if (c.items.some((x) => x.type === type && x.slug === slug && x !== it)) throw new Fail("Another item already uses that address");
           if (!it || !it.rel) { const rel = PAGE_TYPES[type] + "/" + slug + "/index.html"; if (fs.existsSync(path.join(ROOT, rel)) && !(inp.claim === rel)) throw new Fail("A page already exists at /" + PAGE_TYPES[type] + "/" + slug + "/"); }
         }
+        if (type === "city") { const cs = String(inp.slug || "").toLowerCase(); if (!/^[a-z0-9][a-z0-9-]{0,59}$/.test(cs)) throw new Fail("Page address: lowercase letters, numbers and dashes only"); if ((!it || !it.rel) && fs.existsSync(path.join(ROOT, cs, "index.html"))) throw new Fail("A page already exists at /" + cs + "/"); if (c.items.some((x) => x.type === "city" && x.slug === cs && x !== it)) throw new Fail("Another draft already uses that address"); inp.slug = cs; }
         if (!it) { it = { id: ++c.seq, type, status: "draft", created_at: now(), created_by: u.name, rel: null }; c.items.push(it); }
-        Object.assign(it, { title, slug, data, seo: { title: clip(inp.seo && inp.seo.title, 90), desc: clip(inp.seo && inp.seo.desc, 200), og: clip(inp.seo && inp.seo.og, 300) }, order: +inp.order || 0, updated_at: now(), updated_by: u.name });
+        Object.assign(it, { title, slug: type === "city" ? inp.slug : slug, data, seo: { title: clip(inp.seo && inp.seo.title, 90), desc: clip(inp.seo && inp.seo.desc, 200), og: clip(inp.seo && inp.seo.og, 300) }, order: +inp.order || 0, updated_at: now(), updated_by: u.name });
         if (inp.claim && PAGE_TYPES[type] && inp.claim === PAGE_TYPES[type] + "/" + slug + "/index.html") { it.rel = inp.claim; it.status = "published"; it.imported = true; }
         const st = String(inp.status || "");
         if (st === "draft" && it.status === "scheduled") { it.status = "draft"; delete it.pending; }
@@ -575,9 +596,9 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
         log(db, u, "content.save", type + ": " + title, ip); return done({ ok: true, item: it });
       }
       case "cms_published": { // called by the browser after it wrote the page with the builder API
-        const u = need(ED), it = find(inp.id); if (!PAGE_TYPES[it.type]) throw new Fail("Not a page item");
-        const rel = String(inp.rel || ""); if (!cmsRelOk(rel, it.type) || !fs.existsSync(path.join(ROOT, rel))) throw new Fail("Page was not written");
-        it.rel = rel; it.status = "published"; it.published_at = it.published_at || now(); delete it.pending; it.publishAt = null; sitemapAdd(rel);
+        const u = need(ED), it = find(inp.id); if (!PAGE_TYPES[it.type] && it.type !== "city") throw new Fail("Not a page item");
+        const rel = String(inp.rel || ""); if (!(it.type === "city" ? cityRelOk(rel) : cmsRelOk(rel, it.type)) || !fs.existsSync(path.join(ROOT, rel))) throw new Fail("Page was not written");
+        it.rel = rel; it.status = "published"; it.published_at = it.published_at || now(); delete it.pending; it.publishAt = null; if (it.type === "city") it.data = { source: (it.data || {}).source || "" }; sitemapAdd(rel);
         log(db, u, "content.publish", it.title, ip); return done({ ok: true, item: it });
       }
       case "cms_status": { const u = need(ED), it = find(inp.id); if (PAGE_TYPES[it.type]) throw new Fail("Use Publish for pages"); it.status = inp.status === "published" ? "published" : "draft"; log(db, u, "content." + it.status, it.title, ip); return done({ ok: true, item: it }); }

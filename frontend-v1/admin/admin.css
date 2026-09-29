@@ -298,3 +298,30 @@ small.bad{color:var(--bad)}small.warnc{color:var(--warn)}
 .fg{margin:0 0 14px}.fg-q{margin:0;padding-left:20px;color:var(--txt2);font-size:14px}.fg-rows{max-height:50vh;overflow:auto;margin-bottom:10px}
 .ai-pp{margin-top:4px}
 @media(max-width:700px){.kvr{grid-template-columns:1fr 1fr 36px}.bk-img{flex-direction:column}}
+/* A6b smart fields / cities / business */
+.fe-bar{display:flex;gap:12px;align-items:center;padding:10px 14px;margin-bottom:12px;flex-wrap:wrap}
+.fe-bar input{flex:1;min-width:200px}
+.fe-sec{margin-bottom:10px}
+.fe-sec>summary{display:flex;gap:10px;align-items:center;padding:12px 16px;cursor:pointer;list-style:none}
+.fe-sec>summary::-webkit-details-marker{display:none}
+.fe-sec>summary b{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fe-sec[open]>summary svg{transform:rotate(180deg)}
+.fe-n{width:24px;height:24px;border-radius:50%;background:var(--bg,#f2f4f7);display:grid;place-items:center;font-size:12px;font-weight:600}
+.fe-body{padding:4px 16px 16px;display:grid;gap:10px}
+.sf{display:grid;gap:4px}
+.sf-l{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:#667085;font-weight:600;display:flex;gap:4px;align-items:center}
+.sf-l svg,.sf-href svg{width:12px;height:12px}
+.sf textarea{resize:vertical}
+.sf-href{display:flex;gap:6px;align-items:center;color:#667085}
+.sf-href input{flex:1;font-size:12px;padding:4px 8px}
+.sf-img{grid-template-columns:120px 1fr;gap:12px;align-items:center}
+.sf-img .imf-p{height:80px;border-radius:8px;background-size:cover;background-position:center;background-color:#eef0f3;cursor:pointer}
+.sf-imgf{display:grid;gap:6px;justify-items:start}
+.sf-imgf input{width:100%}
+.bk-prog{display:grid;gap:4px;margin:10px 0;max-height:240px;overflow:auto}
+.bk-prog>div{display:flex;gap:8px;align-items:center;font-size:14px}
+.bk-prog .dot{width:8px;height:8px;border-radius:50%;background:#d0d5dd}
+.bk-prog .run .dot{background:#f79009}.bk-prog .ok .dot{background:#12b76a}.bk-prog .bad .dot{background:#f04438}.bk-prog .bad small{color:#f04438}
+.bz-prev{font-size:14px;line-height:1.6}.bz-prev address{font-style:normal;margin-bottom:8px}.bz-prev a{color:var(--pri,#465fff)}
+.bz-pairs{margin:0;padding-left:18px;font-size:13px;line-height:1.8}.bz-pairs s{color:#98a2b3}
+.warnc{color:#dc6803}

@@ -50,6 +50,8 @@
     ["portfolio", "Portfolio", "image", "owner,admin,editor"],
     ["testimonials", "Testimonials", "message-square", "owner,admin,editor"],
     ["team", "Team", "users", "owner,admin,editor"],
+    ["services", "Service pages", "layers", "owner,admin,editor"],
+    ["cities", "City pages", "map-pin", "owner,admin,editor"],
     ["faqs", "FAQ groups", "help-circle", "owner,admin,editor"],
     ["Business"],
     ["enquiries", "Enquiries & leads", "inbox", "owner,admin,sales"],
@@ -60,6 +62,7 @@
     ["invoices", "Invoices", "receipt", "owner,admin,sales"],
     ["projects", "Projects", "briefcase"],
     ["Site"],
+    ["business", "Business info", "building", "owner,admin"],
     ["global", "Header & footer", "panel-left", "owner,admin"],
     ["redirects", "Redirects", "refresh-cw", "owner,admin"],
     ["media", "Media", "image", "owner,admin,editor", "A7"],
@@ -121,12 +124,12 @@
   function route() {
     if (!S.user) return;
     var parts = (location.hash.replace(/^#\/?/, "") || "dashboard").split("/"), v = parts[0];
-    var SUB = { quote: "quotes", template: "templates", invoice: "invoices", post: "blog", study: "portfolio" };
+    var SUB = { quote: "quotes", template: "templates", invoice: "invoices", post: "blog", study: "portfolio", fields: "services", citydraft: "cities" };
     var def = NAV.find(function (n) { return n[0] === (SUB[v] || v); });
     if (!def && v !== "profile") v = "dashboard", def = NAV[1];
     if (def && def[3] && !can(def[3])) { v = "dashboard"; toast("You do not have access to that section", true); }
     S.view = v; S.charts.forEach(function (c) { c.destroy(); }); S.charts = [];
-    var nv = { quote: "quotes", template: "templates", invoice: "invoices", post: "blog", study: "portfolio" }[v] || v; $$(".nav-a").forEach(function (a) { a.classList.toggle("on", a.dataset.v === nv); });
+    var nv = { quote: "quotes", template: "templates", invoice: "invoices", post: "blog", study: "portfolio", fields: "services", citydraft: "cities" }[v] || v; $$(".nav-a").forEach(function (a) { a.classList.toggle("on", a.dataset.v === nv); });
     $("#app").classList.remove("open");
     var view = $("#view"); view.className = "content"; $("#app").classList.toggle("mini", v === "builder" && innerWidth > 1024 ? true : $("#app").classList.contains("mini") && S.lastView !== "builder");
     S.lastView = v;

@@ -566,7 +566,7 @@
       $("#ai-t").onclick = function () { var b = this; busy(b, true); api("cms_ai_save", { ai: body() }).then(function () { return api("ai_test"); }).then(function (r2) { busy(b, false); $("#ai-err").textContent = r2.ok ? "" : r2.error; if (r2.ok) toast("Connected: " + r2.text); }); };
     });
   }
-  W.aiSettings = aiSettings;
+  W.aiSettings = aiSettings; W.pickImage = pickImage; W.cmsPreview = preview;
 
   W.VIEWS.blog = listView("post"); W.VIEWS.portfolio = listView("study");
   W.VIEWS.post = editorView("post"); W.VIEWS.study = editorView("study");
