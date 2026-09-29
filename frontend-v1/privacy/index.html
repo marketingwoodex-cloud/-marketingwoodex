@@ -138,26 +138,5 @@ html:not(.js) .hm-slider-dots{display:none}
     <div class="footer-bottom"><span>© 2026 Woodex Interior</span><div><a href="/privacy/">Privacy</a><a href="https://woodexfurniture.pk" target="_blank" rel="noopener">Woodex Furniture™ ↗</a></div></div>
   </div></footer>
 <script src="/assets/site.js" defer></script>
-<script>
-(function(){var f=document.getElementById('visit-form');if(!f)return;
-var status=document.getElementById('cf-status');
-var btn=f.querySelector('button[type=submit]');
-function show(msg,ok){status.textContent=msg;status.style.display='block';status.style.color=ok?'#1c7a3d':'#a12622';}
-f.addEventListener('submit',function(e){e.preventDefault();
-var name=document.getElementById('cf-name').value.trim();
-var phone=document.getElementById('cf-phone').value.trim();
-if(!name||!phone){show('Please add your name and phone so we can call you back.',false);return;}
-btn.disabled=true;var orig=btn.textContent;btn.textContent='Sending...';
-fetch('/.netlify/functions/enquiry-submit',{method:'POST',headers:{'content-type':'application/json'},
-body:JSON.stringify({name:name,phone:phone,email:document.getElementById('cf-email').value.trim(),
-project_type:document.getElementById('cf-type').value,message:document.getElementById('cf-msg').value.trim(),
-_hp:document.getElementById('cf-hp').value})})
-.then(function(r){return r.json().then(function(d){return{ok:r.ok,d:d};});})
-.then(function(x){
-if(x.ok&&x.d&&x.d.ok){f.reset();show('Thanks '+name.split(' ')[0]+' — we will call you back shortly.',true);}
-else{show((x.d&&x.d.error)||'Could not send. Please message us on WhatsApp instead.',false);}})
-.catch(function(){show('Could not send. Please message us on WhatsApp or call +92 322 4000768.',false);})
-.finally(function(){btn.disabled=false;btn.textContent=orig;});});})();
-</script>
 </body>
 </html>

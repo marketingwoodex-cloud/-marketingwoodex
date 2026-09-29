@@ -3,6 +3,5 @@ Allow: /
 Disallow: /builder/
 Disallow: /api/
 Disallow: /admin/
-Disallow: /_private/
 
 Sitemap: https://woodex.com.pk/sitemap.xml

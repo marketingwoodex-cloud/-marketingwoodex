@@ -2208,3 +2208,11 @@ html:not(.js) .ih-faq-a,html:not(.js) .in-faq-a,html:not(.js) .ph-faq-a,html:not
     @media(prefers-reduced-motion:reduce){
       .home-svc-motion-ready #home-page [data-svc-reveal]{opacity:1!important;transform:none!important;transition:none!important;animation:none!important}
     }
+
+/* Go-live fixes (mobile): kitchen section heads had no small-screen rule; the commercial-interior
+   mobile rule only scoped its first selector, so the desktop grids won on phones. */
+@media (max-width:820px){
+  #kitchen-page .kd-head{grid-template-columns:1fr;gap:16px;align-items:start}
+  #commercial-interior-page .ci-hero-grid,#commercial-interior-page .ci-services-head,#commercial-interior-page .ci-process-head,
+  #commercial-interior-page .ci-pricing-grid,#commercial-interior-page .ci-faq-grid,#commercial-interior-page .ci-contact-grid{grid-template-columns:1fr;gap:36px}
+}
