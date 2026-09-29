@@ -1,12 +1,16 @@
 # WOODEX — Backend Master Plan
 
-**Version:** 1.1 · **Date:** 2026-09-29 · **Status:** awaiting approval (phase gates)
+**Version:** 1.2 · **Date:** 2026-09-29 · **Status:** awaiting approval (phase gates)
 **Relationship:** extends `MASTER-PLAN.md` (Phases 0–6). Phase 0, 1, 2 are delivered;
 this plan governs the **backend/module build-out** that follows, in build order.
 
-**v1.1 adds:** Connectivity Verification (B4), Site Control center, CRM Control Room
-(B7: dashboard + import/export + full tracking), live-chat agent console scope (B5.1),
-client database design (Appendix A), settings button/contrast + session fixes (done).
+**v1.2 adds:** D0 design-system conversion (mockup boards → `docs/design/DESIGN-SYSTEM.md`,
+every admin view to light content style), view build matrix, deployment-readiness
+section (Vercel + Hostinger DNS cutover, "ready to upload" checklist), D6 resolved
+(4200168), repo organization (`docs/design/` as durable design source of truth).
+
+**v1.1:** Connectivity Verification (B4), Site Control, CRM Control Room (B7),
+live-chat agent console (B5.1), client DB design (Appendix A), settings fixes.
 
 ---
 
@@ -20,6 +24,8 @@ client database design (Appendix A), settings button/contrast + session fixes (d
 | Enquiries (CRM list) + Page Builder | ✅ live |
 | Reports (range, KPIs, chart, CSV) | ✅ live (fills after Supabase migration) |
 | **Settings buttons contrast + session-expiry sign-in bounce** | ✅ **fixed this session** |
+| **Design system spec** (mockup boards ingested → `docs/design/DESIGN-SYSTEM.md`) | ✅ **done** |
+| All views converted to design-system look (light content, KPI cards, pills) | 🔲 D0 |
 | Pages **management** (add/import/status/SEO) | 🔲 B1 |
 | Live Chat (visitor + agent console), Header/Footer/Global Sections, Galleries, Image Optimization, Schema, WhatsApp module, Integrations + connectivity checks | 🔲 placeholders |
 | CRM Control Room (dashboard, import/export, full tracking) | 🔲 B7 |
@@ -33,18 +39,52 @@ SEO, duplicate, delete-with-redirect); *Visual Builder* = the section editor.
 
 ## Decisions required (approval gate 0)
 
-- **D6 — WhatsApp number.** Site currently uses **+92 322 4000768** (wa.me/923224000768,
-  230 occurrences). Requested number was **+92 322 4200768**. Confirm which is correct
-  before any global replace (one digit differs: 4000768 vs 4200768).
-- **D7 — WhatsApp scope.** Original D2 was “wa.me only”. B2 proposes adding Meta
-  Cloud API for **outbound notifications** (new enquiry → WhatsApp alert to admin,
-  quotation sent → client ping). wa.me remains the customer-facing click-to-chat.
-- **D8 — AI integrations.** B4 connectors: **Claude (Anthropic)**, **Codex/OpenAI**,
-  **Hermes** — used for content drafts, meta descriptions, reply suggestions.
-  Confirm providers + that API keys are customer-supplied (stored server-side only).
+- **D6 — WhatsApp number: RESOLVED → +92 322 4200168** (user statement
+  2026-09-29). Note: site currently hardcodes **4000768** (230 places) and an
+  earlier message said **4200768** — B2 will replace all with 4200168 from the
+  single Settings source; one final visual confirm before the global replace.
+- **D7 — WhatsApp Cloud API (Meta): treated as YES** (“mata” = Meta read) —
+  outbound enquiry/quotation alerts; wa.me stays customer-facing. Confirm in chat.
+- **D8 — AI providers: Claude confirmed** (“claude”); Codex + Hermes optional
+  extras (adapter supports all three; enable whichever keys you add).
+- **D10 — Design authority:** the attached mockup boards, transcribed into
+  `docs/design/DESIGN-SYSTEM.md`, govern all admin view design (sidebar = §29,
+  already built; content areas = light theme per spec).
 - **D9 — Hosting connectivity.** For the connectivity verifier: Hostinger check =
   DNS lookup only (D1 keeps Hostinger DNS-only); confirmation not needed unless
   you also want a Hostinger API module.
+
+---
+
+## D0 — Design System Conversion + Page Builds · *first build phase*
+
+**Goal:** every admin view looks like the approved mockup boards (light content,
+KPI cards, pills, blue primary actions) and the pending pages get built on top.
+
+Spec: **`docs/design/DESIGN-SYSTEM.md`** (tokens, components, view matrix).
+
+### Deliverables
+1. **Light content theme:** `.wx-view` areas switch to `--panel #fff` on `#f4f6fa`,
+   dark headings, borders `#e6e9f2` — sidebar stays navy (§29). Sign-in gate keeps
+   its dark style. Kill remaining dark-Card overrides.
+2. **Component kit CSS** (one file `admin/css/wx-components.css`): KPI card w/
+   icon tile + delta chip, filter bar, status pills (9 colors), pagination,
+   buttons (blue primary / white secondary), form controls + toggles, kanban
+   columns, chat layout, activity feed, status-dot rows.
+3. **View-by-view conversion** following the matrix in DESIGN-SYSTEM §4:
+   Dashboard (CRM style) → Reports → Enquiries → Leads kanban (board 2) →
+   Quotations table (board 1) → Invoices → Clients → Projects grid →
+   Media Library folders → Settings vertical tabs → System status board.
+   (Live Chat = B5.1 build, styled with kit from day one.)
+4. **Regression:** all existing functionality keeps working (nav, publish,
+   reports CSV, collapse groups) — visual only.
+
+### Acceptance gate (D0)
+- Side-by-side each converted view vs its mockup: same layout, KPI positions,
+  pill colors, button hierarchy.
+- `tools/smoke.mjs` green; no dark-on-dark or invisible text anywhere;
+  contrast spot-check (WCAG AA) on pills/buttons/links.
+- Your “done ✅” on the preview.
 
 ---
 
@@ -265,13 +305,13 @@ quotation → invoice → payment, with full control (import/export, tracking, f
 ## Suggested build order & gates
 
 ```
-D6/D7/D8 confirm ──► B1 Pages management ──► B3 Backup/Export ──► B4 Integrations
-        │                     │                                        + B4.0 connectivity
-        │                     └──► B7 CRM Control Room ◄── (needs B1 patterns, B3 safety)
-        └──► B2 WhatsApp (D7)          ▲
-        B5.1 Live Chat (parallel with B1 — realtime, independent)
-        B5.2–B5.7 after B1 (all touch publish pipeline)
-        B6 continuous throughout
+D0 Design conversion (mockups) ──► B1 Pages management ──► B3 Backup/Export
+        │                                   │                      │
+        │                                   ▼                      ▼
+        │                            B7 CRM Control Room    B4 Integrations + connectivity
+        │                                   │                      │
+        └──► B5.1 Live Chat (parallel)      └──► B2 WhatsApp (D6=4200168, D7=Meta)
+                    B5.2–B5.7 after B1          B6 continuous ──► Deployment readiness
 ```
 
 - **Gate rule (unchanged):** each B-phase ends with your test on the preview +
@@ -331,6 +371,34 @@ Indexes: `leads(status, owner)` · `quotations(status)` · `invoices(status, due
 
 ---
 
+## Deployment readiness — "ready to upload" (Vercel + Hostinger)
+
+**Hosting model (D1):** site runs on **Vercel**; **Hostinger = DNS only**.
+Checklist executed at go-live (after approval, with B3 backup in place):
+
+1. **Vercel project `woodex` (team `marketig`):** connected to the repo,
+   branch `arena/01a0e87c-marketingwoodex` (promote to `main` only if you want
+   auto-deploys), 9 env vars set in **all three environments**, `COMPLETE-MIGRATION.sql`
+   run (step ③ of B-verification), production domain bound.
+2. **Hostinger DNS records** (hPanel → Domains → woodex.com.pk → DNS/Nameservers):
+
+   | Type | Name | Value |
+   |---|---|---|
+   | A | @ | `76.76.21.21` (Vercel apex) |
+   | CNAME | www | `cname.vercel-dns.com` |
+   | (keep) | @ MX/email | existing records untouched |
+
+   Then Vercel → Domains → add `woodex.com.pk` + `www.woodex.com.pk` →
+   SSL auto-issues (wait for “Valid”).
+3. **Pre-cutover smoke:** `tools/smoke.mjs` green, home + 3 deep links + admin
+   login on the *.vercel.app URL, CMS publish round-trip on production.
+4. **Cutover:** change Hostinger A/CNAME → wait TTL → HTTPS works → old-site
+   301 map active (old 16 URLs per sitemap cutover list) → GSC resubmit sitemap.
+5. **Post-cutover:** credential rotation (Supabase secret, GitHub PAT, Vercel
+   token, admin pass) — the chat-exposed setup secrets included.
+6. **Rollback:** DNS reverts to previous values; old site stays at Hostinger
+   until you delete it.
+
 ## Go-live linkage (from MASTER-PLAN)
 
 Renames/keeps: media metadata columns, project publishing columns, `cms_users`,
@@ -349,3 +417,7 @@ public page tests, **credential rotation**, final acceptance — executed with B
   (dashboard, CSV import/export, lead/estimation/quotation/invoice tracking),
   B5.1 expanded to full agent console, Appendix A client DB design, D9.
   Recorded fixes: settings button contrast pass + 401 sign-in bounce.
+- **v1.2** — + D0 design-system conversion driven by approved mockup boards
+  (spec in `docs/design/DESIGN-SYSTEM.md`, view build matrix), deployment
+  readiness section (Vercel + Hostinger DNS cutover checklist), D6 resolved
+  to +92 322 4200168, D7/D8 recorded, repo organized under `docs/`.
