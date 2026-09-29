@@ -9,9 +9,6 @@
     <link rel="stylesheet" href="./vendor/adminlte/bootstrap.min.css" />
     <link rel="stylesheet" href="./vendor/adminlte/bootstrap-icons.min.css" />
     <link rel="stylesheet" href="./vendor/adminlte/adminlte.min.css" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="./css/woodex-admin.css" />
     <link rel="stylesheet" href="./css/wx-dashboard.css" />
     <script src="./vendor/chart.umd.js" defer></script>
@@ -240,7 +237,7 @@
                 <a href="#" class="nav-link" data-view="analytics"><i class="nav-icon bi bi-graph-up"></i><p>Analytics</p></a>
               </li>
               <li class="nav-item">
-                <a href="#" class="nav-link" data-view="soon" data-soon="Reports" data-nav="Reports"><i class="nav-icon bi bi-bar-chart-line"></i><p>Reports</p></a>
+                <a href="#" class="nav-link" data-view="reports"><i class="nav-icon bi bi-bar-chart-line"></i><p>Reports</p></a>
               </li>
               <li class="nav-header">CRM &amp; SALES</li>
               <li class="nav-item">
@@ -914,6 +911,11 @@
           </div>
         </section>
 
+        <!-- ============ REPORTS ============ -->
+        <section class="wx-view app-content" id="view-reports" hidden>
+          <div class="container-fluid" id="wx-root-reports"></div>
+        </section>
+
         <!-- ============ COMING SOON ============ -->
         <section class="wx-view app-content" id="view-pipeline" hidden>
           <div class="container-fluid" id="wx-root-pipeline"></div>
@@ -1549,7 +1551,7 @@
         });
 
         /* ================= view router ================= */
-        var TITLES = { dashboard: "Dashboard", analytics: "Analytics", enquiries: "Enquiries", leads: "Leads & Estimator", pipeline: "Pipeline", visits: "Site Visits", quotations: "Quotations", templates: "Quotation Templates", invoices: "Invoices", clients: "Clients", builder: "Pages · Page Builder", services: "Services", locations: "Locations", projects: "Projects", blog: "Insights", testimonials: "Testimonials", media: "Media Library", team: "Team", theme: "Theme", navigation: "Navigation", seo: "SEO Manager", settings: "Site Settings", users: "Users & Roles", audit: "Audit Trail", versions: "Versions", backups: "Backups", health: "System Health", soon: "Coming soon" };
+        var TITLES = { dashboard: "Dashboard", analytics: "Analytics", reports: "Reports", enquiries: "Enquiries", leads: "Leads & Estimator", pipeline: "Pipeline", visits: "Site Visits", quotations: "Quotations", templates: "Quotation Templates", invoices: "Invoices", clients: "Clients", builder: "Pages · Page Builder", services: "Services", locations: "Locations", projects: "Projects", blog: "Insights", testimonials: "Testimonials", media: "Media Library", team: "Team", theme: "Theme", navigation: "Navigation", seo: "SEO Manager", settings: "Site Settings", users: "Users & Roles", audit: "Audit Trail", versions: "Versions", backups: "Backups", health: "System Health", soon: "Coming soon" };
         var builderStarted = false;
         function showView(name, soonLabel, navKey) {
           if (name === "users" && sessionRole !== "admin") { name = "dashboard"; navKey = null; }
@@ -1580,6 +1582,7 @@
             document.getElementById("wx-view-title").textContent = TITLES[name] || name;
           }
           if (name === "dashboard") loadDashboard();
+          if (name === "reports") loadReports();
           if (name === "enquiries") loadEnquiries(currentFilter);
           if (name === "leads") loadLeads(leadFilter);
           if (name === "quotations") { loadQuotations(quotFilter); loadTemplates(); }
@@ -1605,6 +1608,36 @@
           e.preventDefault();
           showView(a.getAttribute("data-view"), a.getAttribute("data-soon"), a.getAttribute("data-nav"));
         });
+
+        /* ---------- sidebar collapsible groups (blueprint: group-by-group dropdown) ---------- */
+        (function () {
+          var state = {};
+          try { state = JSON.parse(localStorage.getItem("wx-nav-groups") || "{}"); } catch (e) {}
+          function applyGroup(h, hide) {
+            h.classList.toggle("is-collapsed", !!hide);
+            var el = h.nextElementSibling;
+            while (el && !el.classList.contains("nav-header")) {
+              if (el.id === "nav-users-item") {
+                el.hidden = !!hide || (typeof sessionRole !== "undefined" && sessionRole !== "admin");
+              } else {
+                el.hidden = !!hide;
+              }
+              el = el.nextElementSibling;
+            }
+          }
+          document.querySelectorAll(".app-sidebar .nav-header").forEach(function (h) {
+            var label = (h.textContent || "").replace(/\s+/g, " ").trim();
+            if (state[label]) applyGroup(h, true);
+            h.addEventListener("click", function () {
+              var hide = !h.classList.contains("is-collapsed");
+              applyGroup(h, hide);
+              try {
+                state[label] = hide;
+                localStorage.setItem("wx-nav-groups", JSON.stringify(state));
+              } catch (e) {}
+            });
+          });
+        })();
 
         /* ================= dashboard (Phase 1 redesign) ================= */
         var dashLoaded = false, dashDays = 30, dashSeriesKey = "visitors", dashChart = null, dashWired = false;
@@ -2956,6 +2989,146 @@
           refreshInvQuotOptions();
           openInvBuilder(null, quotPrevRow.id);
         });
+
+        /* ================= reports (blueprint §1 + §2) ================= */
+        var reportsDays = 30, reportsChart = null, repData = null;
+
+        function repFmt(n) {
+          if (n == null || isNaN(n)) return "\u2013";
+          return Number(n).toLocaleString("en-US");
+        }
+
+        function repShell(root) {
+          if (root.firstChild) return;
+          root.innerHTML =
+            '<div class="d-flex flex-wrap align-items-center justify-content-between mb-3 gap-2">' +
+            '<div><h4 class="mb-0">Reports</h4><small class="text-muted">Traffic, leads and business summary</small></div>' +
+            '<div class="btn-group" role="group" aria-label="Report range">' +
+            '<button type="button" class="btn btn-sm btn-outline-dark" data-rep-days="7">7 days</button>' +
+            '<button type="button" class="btn btn-sm btn-outline-dark" data-rep-days="30">30 days</button>' +
+            '<button type="button" class="btn btn-sm btn-outline-dark" data-rep-days="90">90 days</button>' +
+            '<button type="button" class="btn btn-sm btn-dark" id="rep-csv">Download CSV</button>' +
+            "</div></div>" +
+            '<div id="rep-kpis" class="row g-3 mb-3"></div>' +
+            '<div class="card mb-3"><div class="card-body">' +
+            '<div class="d-flex justify-content-between mb-2"><b>Traffic trend</b><span class="text-muted small" id="rep-range-label"></span></div>' +
+            '<div style="height: 280px"><canvas id="rep-chart"></canvas></div>' +
+            "</div></div>" +
+            '<div class="card"><div class="card-body">' +
+            '<b class="d-block mb-2">Daily data</b>' +
+            '<div class="table-responsive"><table class="table table-sm align-middle" id="rep-table">' +
+            "<thead><tr><th>Date</th><th>Visitors</th><th>Page views</th><th>Leads</th><th>Conversions</th></tr></thead>" +
+            "<tbody></tbody></table></div></div></div>";
+          root.addEventListener("click", function (e) {
+            var b = e.target.closest ? e.target.closest("[data-rep-days]") : null;
+            if (b) {
+              reportsDays = parseInt(b.getAttribute("data-rep-days"), 10) || 30;
+              root.querySelectorAll("[data-rep-days]").forEach(function (x) {
+                x.classList.toggle("btn-outline-dark", x !== b);
+                x.classList.toggle("btn-dark", x === b);
+              });
+              loadReports();
+              return;
+            }
+            if (e.target && e.target.id === "rep-csv") repCsv();
+          });
+        }
+
+        function repKpis(items, note) {
+          var el = document.getElementById("rep-kpis");
+          if (!el) return;
+          if (!items) {
+            el.innerHTML = '<div class="col-12"><div class="alert alert-light border mb-0">' + (note || "No data yet.") + "</div></div>";
+            return;
+          }
+          el.innerHTML = items.map(function (k) {
+            return '<div class="col-6 col-xl-3"><div class="card h-100"><div class="card-body py-3">' +
+              '<div class="text-muted small mb-1">' + k[0] + "</div>" +
+              '<div class="fs-5 fw-bold">' + k[1] + "</div></div></div></div>";
+          }).join("");
+        }
+
+        async function loadReports() {
+          var root = document.getElementById("wx-root-reports");
+          if (!root) return;
+          repShell(root);
+          var label = document.getElementById("rep-range-label");
+          if (label) label.textContent = "Last " + reportsDays + " days \u2026";
+          var tbody = document.querySelector("#rep-table tbody");
+          if (tbody) tbody.innerHTML = '<tr><td colspan="5" class="text-muted">Loading\u2026</td></tr>';
+          try {
+            var res = await api("/.netlify/functions/cms-stats?days=" + reportsDays, { method: "GET" });
+            var d = null;
+            try { d = await res.json(); } catch (e) {}
+            if (!res.ok || !d || !d.stats) throw new Error((d && d.error) || "no data");
+            var st = d.stats, ser = d.series || {};
+            repData = ser;
+            repKpis([
+              ["Page views", repFmt(st.views_total)],
+              ["Unique visitors", repFmt(st.unique_visitors)],
+              ["Enquiries (total)", repFmt(st.enquiries_total)],
+              ["New enquiries (week)", repFmt(st.enquiries_new_week)],
+              ["Estimator leads", repFmt(st.estimator_leads)],
+              ["Quotation value", typeof fmtCompactPKR === "function" ? fmtCompactPKR(st.quotation_value_pkr || 0) : repFmt(st.quotation_value_pkr)],
+              ["Site visits (week)", repFmt(st.visits_week)],
+              ["Blog published", repFmt(st.blog_published) + " / " + repFmt(st.blog_posts)],
+            ]);
+            if (label) label.textContent = "Last " + reportsDays + " days";
+            // chart
+            var canvas = document.getElementById("rep-chart");
+            if (canvas && typeof Chart !== "undefined") {
+              if (reportsChart) { try { reportsChart.destroy(); } catch (e) {} }
+              reportsChart = new Chart(canvas.getContext("2d"), {
+                type: "line",
+                data: {
+                  labels: (ser.labels || []).map(function (x) { return typeof fmtDay === "function" ? fmtDay(x) : x; }),
+                  datasets: [
+                    { label: "Visitors", data: ser.visitors || [], borderColor: "#0a0f1e", backgroundColor: "rgba(233,201,123,.25)", fill: true, tension: 0.35, pointRadius: 0 },
+                    { label: "Page views", data: ser.views || [], borderColor: "#e9c97b", backgroundColor: "transparent", tension: 0.35, pointRadius: 0 },
+                  ],
+                },
+                options: {
+                  maintainAspectRatio: false,
+                  plugins: { legend: { position: "bottom" } },
+                  scales: { y: { beginAtZero: true, ticks: { precision: 0 } } },
+                },
+              });
+            }
+            // table
+            if (tbody) {
+              var rows = [];
+              for (var i = 0; i < (ser.labels || []).length; i++) {
+                rows.push("<tr><td>" + (typeof fmtDay === "function" ? fmtDay(ser.labels[i]) : ser.labels[i]) + "</td><td>" +
+                  repFmt((ser.visitors || [])[i]) + "</td><td>" + repFmt((ser.views || [])[i]) + "</td><td>" +
+                  repFmt((ser.leads || [])[i]) + "</td><td>" + repFmt((ser.conversions || [])[i]) + "</td></tr>");
+              }
+              tbody.innerHTML = rows.length ? rows.join("") : '<tr><td colspan="5" class="text-muted">No daily rows in this range.</td></tr>';
+            }
+          } catch (err) {
+            repKpis(null, "No live data yet \u2014 connect Supabase (env vars) and run the migration SQL, then Reports fills automatically. (" + (err.message || "offline") + ")");
+            if (tbody) tbody.innerHTML = '<tr><td colspan="5" class="text-muted">Waiting for live data.</td></tr>';
+            repData = null;
+          }
+        }
+
+        function repCsv() {
+          if (!repData || !repData.labels || !repData.labels.length) {
+            alert("No data to export yet.");
+            return;
+          }
+          var lines = ["Date,Visitors,Page views,Leads,Conversions"];
+          for (var i = 0; i < repData.labels.length; i++) {
+            lines.push([repData.labels[i], (repData.visitors || [])[i] || 0, (repData.views || [])[i] || 0,
+              (repData.leads || [])[i] || 0, (repData.conversions || [])[i] || 0].join(","));
+          }
+          var blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8" });
+          var a = document.createElement("a");
+          a.href = URL.createObjectURL(blob);
+          a.download = "woodex-report-" + reportsDays + "d.csv";
+          document.body.appendChild(a);
+          a.click();
+          setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+        }
 
         /* ================= block page builder (Phase 2) ================= */
         var pbPages = [], pbSlug = "", pbBlocks = [], pbMeta = null;
