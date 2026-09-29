@@ -139,3 +139,24 @@ Each phase ends with a live preview + test report; the next phase starts only af
 **Flow:** enquiry → Create quotation (from a template) → edit sections and items (live totals) → PDF / send by WhatsApp → mark sent (lead moves to *Quote sent*) → new **version** (V2) or **option** (Option 2) under the same number → approve (other versions are superseded; lead moves to *Won* with its value) → convert to invoice (same number, payment schedule) → project opened automatically → record payments (overpayment blocked, receipts WI-10100-R1…) → project stages Planning → Completed, with site photos and updates.
 
 **Tested (Node, headless):** the Renovation template totals match the Excel exactly (Civil 682,000 · Flooring 1,618,875 …); 12-page A4 PDF; version/option/approve/supersede; invoice; partial payment and overpayment guard; project photo upload and stage change; 0 JS errors.
+
+---
+
+## A6a: Content collections (DONE, 2026-09-29) · A6b (services + city pages) next
+
+**Decisions:** manage everything, split into A6a and A6b; import the existing pages; block editor; SEO + drafts + scheduling; AI writing help with a choice of provider (Claude / OpenAI / OpenRouter, e.g. Hermes).
+
+**Admin → Content**
+- **Blog & insights / Portfolio**: forms with title, kicker, standfirst, hero, details strip, blocks (heading, paragraph with **bold**/*italic*/[links], list, image, quote), facts box (portfolio), short-version bullets, FAQs (or insert an FAQ group), pull quote, CTA heading and related items; SEO title/description with a Google preview; share image and listing card. Actions: Preview (desktop/mobile), Publish now, Schedule, Save draft.
+  - Pages are rendered in the browser into the **existing page design** (the head, header, CTA, trust strip and footer come from a sibling page) and written through `builder.php` (same backups and checks). Publishing also updates the card on `/insights/` or `/projects/` and adds the URL to `sitemap.xml`. JSON-LD is rebuilt (Article/CreativeWork, BreadcrumbList, FAQPage).
+  - **Import existing**: the 8 articles and 6 projects are parsed into forms; live pages stay untouched until an item is published.
+  - Live pages can't be deleted (per the page-management rule); drafts can.
+- **Testimonials / Team**: cards with drag-to-order and a Live switch. "Pages & heading" chooses the pages; "Update website" writes a `<!--wx:testimonials-->` / `<!--wx:team-->` section above the "Why Woodex" strip (styles in `assets/v1.css`).
+- **FAQ groups**: reusable question sets (inserted into articles now; city/service pages in A6b).
+- **AI**: draft a full article, improve a paragraph, alt text, SEO meta, card text, suggest FAQs. Keys are stored server-side and never returned.
+
+**Scheduling:** times are stored in UTC. Due items publish on the next admin request; for exact timing on Hostinger add a cron job every 5 minutes: `curl -s "https://woodex.com.pk/api/admin.php?action=cron"`.
+
+**Files:** `admin/admin-content.js`, `api/content-lib.php` (PHP, untested until Hostinger), `a6()` in `tools/frontend-v1-admin.mjs` (tested), CSS in `admin.css` and `assets/v1.css`, icons in `vendor/icons.js`.
+
+**Tested (Node, headless):** import 8+6; every re-rendered page keeps the same text and images; new article published (file, listing card, sitemap); scheduled item auto-published; 3 testimonials on home + about; 4 team members on about; FAQ group; a clear AI "add a key" message; 0 JS errors.

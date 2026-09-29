@@ -314,3 +314,23 @@ body main>.wx-fx>:not(.wx-bgv):not(.wx-ovl):not(.wx-sep){position:relative;z-ind
 .wx-bars>div{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;gap:6px;font-size:.85rem}
 .wx-bars b{display:block;width:100%;max-width:64px;background:var(--wx-navy);border-radius:8px 8px 0 0;height:var(--v,50%)}
 .wx-bars small{color:var(--wx-muted)}
+
+/* ---------- A6: testimonials + team sections (managed in Admin → Content) ---------- */
+.wx-tst,.wx-team{padding-block:var(--wx-section)}
+.wx-tst{background:var(--wx-beige)}
+.wx-sec-h{max-width:640px;margin:0 0 var(--wx-head-gap)}
+.wx-sec-h h2{margin:6px 0 0}
+.wx-tst .wx-kicker,.wx-team .wx-kicker{margin:0;font-size:.8rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--wx-muted)}
+.wx-tst-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--s-3)}
+.wx-tst-card{margin:0;background:#fff;border:1px solid var(--wx-line);border-radius:var(--wx-r-lg);padding:var(--s-4);display:flex;flex-direction:column;gap:var(--s-2)}
+.wx-stars{color:var(--wx-navy);letter-spacing:3px;font-size:15px}.wx-stars span{opacity:.2}
+.wx-tst-card blockquote{margin:0;font-size:1.05rem;line-height:1.6;color:var(--wx-navy);flex:1}
+.wx-tst-card figcaption{display:flex;gap:12px;align-items:center;padding-top:var(--s-2);border-top:1px solid var(--wx-line)}
+.wx-tst-card figcaption img,.wx-tst-card .wx-av{width:48px;height:48px;border-radius:50%;object-fit:cover;flex:none}
+.wx-tst-card .wx-av{display:grid;place-items:center;background:var(--wx-navy);color:#fff;font-weight:600}
+.wx-tst-card figcaption b{display:block}.wx-tst-card figcaption small{color:var(--wx-muted);font-size:.85rem}
+.wx-team-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--s-3)}
+.wx-team-card{margin:0}.wx-team-card img,.wx-team-ph{width:100%;aspect-ratio:5/6;object-fit:cover;border-radius:var(--wx-r-lg);background:var(--wx-surface);display:block}
+.wx-team-card h3{margin:var(--s-2) 0 2px;font-size:1.1rem}.wx-team-role{margin:0;color:var(--wx-muted);font-size:.92rem}.wx-team-card p:not(.wx-team-role){margin:8px 0 0;font-size:.92rem;color:var(--wx-muted)}
+@media(max-width:1000px){.wx-tst-grid{grid-template-columns:1fr 1fr}.wx-team-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:640px){.wx-tst-grid{grid-template-columns:1fr}}

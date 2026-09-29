@@ -45,6 +45,12 @@
     ["pages", "Pages", "file-text", "owner,admin,editor"],
     ["builder", "Page builder", "square-pen", "owner,admin,editor"],
     ["library", "Section library", "blocks", "owner,admin,editor"],
+    ["Content"],
+    ["blog", "Blog & insights", "book-open", "owner,admin,editor"],
+    ["portfolio", "Portfolio", "image", "owner,admin,editor"],
+    ["testimonials", "Testimonials", "message-square", "owner,admin,editor"],
+    ["team", "Team", "users", "owner,admin,editor"],
+    ["faqs", "FAQ groups", "help-circle", "owner,admin,editor"],
     ["Business"],
     ["enquiries", "Enquiries & leads", "inbox", "owner,admin,sales"],
     ["pipeline", "Pipeline", "kanban", "owner,admin,sales"],
@@ -115,12 +121,12 @@
   function route() {
     if (!S.user) return;
     var parts = (location.hash.replace(/^#\/?/, "") || "dashboard").split("/"), v = parts[0];
-    var SUB = { quote: "quotes", template: "templates", invoice: "invoices" };
+    var SUB = { quote: "quotes", template: "templates", invoice: "invoices", post: "blog", study: "portfolio" };
     var def = NAV.find(function (n) { return n[0] === (SUB[v] || v); });
     if (!def && v !== "profile") v = "dashboard", def = NAV[1];
     if (def && def[3] && !can(def[3])) { v = "dashboard"; toast("You do not have access to that section", true); }
     S.view = v; S.charts.forEach(function (c) { c.destroy(); }); S.charts = [];
-    var nv = { quote: "quotes", template: "templates", invoice: "invoices" }[v] || v; $$(".nav-a").forEach(function (a) { a.classList.toggle("on", a.dataset.v === nv); });
+    var nv = { quote: "quotes", template: "templates", invoice: "invoices", post: "blog", study: "portfolio" }[v] || v; $$(".nav-a").forEach(function (a) { a.classList.toggle("on", a.dataset.v === nv); });
     $("#app").classList.remove("open");
     var view = $("#view"); view.className = "content"; $("#app").classList.toggle("mini", v === "builder" && innerWidth > 1024 ? true : $("#app").classList.contains("mini") && S.lastView !== "builder");
     S.lastView = v;
@@ -157,7 +163,7 @@
             (r.recent.length ? '<ul class="feed">' + r.recent.map(function (a) { var t = actText(a); return '<li><span class="dot">' + ic(t.icon) + "</span><div><b>" + esc(a.user_name || "System") + "</b> " + esc(t.text) + (a.target ? ' <span class="muted">' + esc(a.target) + "</span>" : "") + "<small>" + ago(a.created_at) + "</small></div></li>"; }).join("") + "</ul>" : '<div class="empty">No activity yet.</div>') +
           "</div></div>" +
           '<div class="card"><div class="card-h"><h3>Admin v2 roadmap</h3><span class="badge gold">Phase A2</span></div><div class="card-b"><div class="roadmap" style="grid-template-columns:1fr 1fr">' +
-            [["A1", "Dashboard, login, roles", 1], ["A2", "Pages manager, header/footer", 1], ["A3", "Section library", 1], ["A4", "Enquiries & CRM, WhatsApp", 1], ["A5", "Quotes, invoices, projects", 1], ["A6", "Blog, services, locations"], ["A7", "Media, backups, health"], ["A8", "Settings, APIs, AI"]]
+            [["A1", "Dashboard, login, roles", 1], ["A2", "Pages manager, header/footer", 1], ["A3", "Section library", 1], ["A4", "Enquiries & CRM, WhatsApp", 1], ["A5", "Quotes, invoices, projects", 1], ["A6", "Blog, portfolio, testimonials, team (A6a) · services & cities next (A6b)"], ["A7", "Media, backups, health"], ["A8", "Settings, APIs, AI"]]
               .map(function (x) { return '<div class="rm"><span class="badge ' + (x[2] ? "ok" : "") + '">' + x[0] + (x[2] ? " · live" : "") + "</span><b>" + x[1] + "</b></div>"; }).join("") +
           "</div></div></div>" +
         "</div>";

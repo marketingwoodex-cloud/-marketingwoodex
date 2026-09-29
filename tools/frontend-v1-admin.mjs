@@ -493,12 +493,122 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
     return null;
   }
 
+  // =================================================================== A6 — content collections (blog, portfolio, testimonials, team, FAQs) + AI
+  const CMS = path.join(PRIV, "content.json");
+  const CTYPES = ["post", "study", "testimonial", "member", "faq"];
+  const PAGE_TYPES = { post: "insights", study: "projects" };
+  const AI_DEF = { provider: "anthropic", anthropicKey: "", anthropicModel: "claude-sonnet-4-5", openaiKey: "", openaiModel: "gpt-4o-mini", openrouterKey: "", openrouterModel: "nousresearch/hermes-3-llama-3.1-405b", voice: "Calm, plain, confident British English. Short sentences. No hype, no exclamation marks. Woodex Interior is a design, fit-out and renovation studio in Lahore, Pakistan." };
+  const AI_SECRETS = ["anthropicKey", "openaiKey", "openrouterKey"];
+  const cmsLoad = () => { const c = jr(CMS, {}); c.items = c.items || []; c.seq = c.seq || 0; c.ai = Object.assign({}, AI_DEF, c.ai || {}); return c; };
+  const aiPub = (a) => { const o = { ...a }; AI_SECRETS.forEach((k) => { o[k + "Set"] = !!a[k]; o[k] = ""; }); return o; };
+  const cmsBackup = (rel) => { const abs = path.join(ROOT, rel); if (!fs.existsSync(abs)) return; const d = path.join(PRIV, "backups", rel.replace(/[^a-z0-9]+/gi, "_")); fs.mkdirSync(d, { recursive: true }); const t = new Date(), p = (n, l = 2) => String(n).padStart(l, "0"); fs.copyFileSync(abs, path.join(d, `${t.getFullYear()}${p(t.getMonth() + 1)}${p(t.getDate())}-${p(t.getHours())}${p(t.getMinutes())}${p(t.getSeconds())}-${p(t.getMilliseconds(), 3)}.html`)); };
+  const cmsRelOk = (rel, type) => new RegExp("^" + PAGE_TYPES[type] + "/[a-z0-9][a-z0-9-]{0,59}/index\\.html$").test(rel);
+  const htmlOk = (h) => typeof h === "string" && h.length < 3 * 1024 * 1024 && /<html/i.test(h) && /<\/html>/i.test(h) && !/<[^>]+\s(contenteditable|data-wx-ed)[\s=>]/i.test(h);
+  const sitemapAdd = (rel) => { const f = path.join(ROOT, "sitemap.xml"); if (!fs.existsSync(f)) return; const loc = "https://woodex.com.pk/" + rel.replace(/index\.html$/, ""); let x = fs.readFileSync(f, "utf8"); if (x.includes("<loc>" + loc + "</loc>") || !x.includes("</urlset>")) return; fs.writeFileSync(f, x.replace("</urlset>", "  <url><loc>" + loc + "</loc></url>\n</urlset>")); };
+  /** Publish scheduled items whose time has come. Runs on every admin request (and can be hit by cron). */
+  function cmsTick(db) {
+    const c = cmsLoad(), t = now(); let n = 0;
+    for (const it of c.items) {
+      if (it.status !== "scheduled" || !it.publishAt || it.publishAt > t) continue;
+      if (it.pending && PAGE_TYPES[it.type]) {
+        const { rel, html, card } = it.pending; if (!cmsRelOk(rel, it.type) || !htmlOk(html)) { it.status = "draft"; it.error = "Scheduled page was invalid"; continue; }
+        const abs = path.join(ROOT, rel); cmsBackup(rel); fs.mkdirSync(path.dirname(abs), { recursive: true }); fs.writeFileSync(abs, html);
+        const li = path.join(ROOT, PAGE_TYPES[it.type], "index.html"), href = "/" + rel.replace(/index\.html$/, "");
+        if (card && fs.existsSync(li)) { let L = fs.readFileSync(li, "utf8"); if (!L.includes('href="' + href + '"')) { const m = L.match(/<div class="hx-cards">/); if (m) { cmsBackup(PAGE_TYPES[it.type] + "/index.html"); L = L.replace(m[0], m[0] + "\n" + card); fs.writeFileSync(li, L); } } }
+        it.rel = rel; delete it.pending; sitemapAdd(rel);
+      }
+      it.status = "published"; it.published_at = t; n++; if (db) log(db, null, "content.autopublish", it.title);
+    }
+    if (n) jw(CMS, c); return n;
+  }
+  async function aiCall(a, system, user) {
+    const p = a.provider, key = a[p + "Key"], model = a[p + "Model"];
+    if (!key) throw new Fail("Add an API key for " + ({ anthropic: "Claude", openai: "OpenAI", openrouter: "OpenRouter" }[p] || p) + " in Content → AI settings");
+    let r, j;
+    try {
+      if (p === "anthropic") { r = await fetch("https://api.anthropic.com/v1/messages", { method: "POST", headers: { "x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json" }, body: JSON.stringify({ model, max_tokens: 2500, system, messages: [{ role: "user", content: user }] }), signal: AbortSignal.timeout(60000) }); j = await r.json(); if (!r.ok) throw new Error(j.error && j.error.message || r.status); return (j.content || []).map((x) => x.text || "").join(""); }
+      const url = p === "openai" ? "https://api.openai.com/v1/chat/completions" : "https://openrouter.ai/api/v1/chat/completions";
+      r = await fetch(url, { method: "POST", headers: { authorization: "Bearer " + key, "content-type": "application/json", "HTTP-Referer": "https://woodex.com.pk", "X-Title": "Woodex Admin" }, body: JSON.stringify({ model, max_tokens: 2500, messages: [{ role: "system", content: system }, { role: "user", content: user }] }), signal: AbortSignal.timeout(60000) });
+      j = await r.json(); if (!r.ok) throw new Error(j.error && j.error.message || r.status); return j.choices[0].message.content || "";
+    } catch (e) { throw new Fail("AI request failed: " + String(e.message || e).slice(0, 200), 502); }
+  }
+  const AI_TASKS = {
+    outline: (i) => `Write a full blog article for the Woodex website.\nTitle: ${i.title}\nNotes from the team: ${i.notes || "(none)"}\nReturn ONLY JSON: {"dek":"one-sentence standfirst","blocks":[{"t":"h","text":"..."},{"t":"p","text":"..."},{"t":"list","items":["**Label:** text"]}],"summary":["three short takeaways"],"faqs":[{"q":"...","a":"..."}],"quote":"one pull quote"}. 5-7 sections, each a heading plus 1-2 paragraphs. Use **bold** sparingly. Prices in PKR where relevant.`,
+    meta: (i) => `Write SEO metadata for this page.\nTitle: ${i.title}\nText: ${String(i.text || "").slice(0, 4000)}\nReturn ONLY JSON: {"title":"max 60 characters, ends with | Woodex Interior","desc":"140-158 characters"}`,
+    alt: (i) => `Write alt text (max 110 characters, no "image of") for a photo on the Woodex website. File: ${i.file || ""}. Context: ${i.context || ""}. Return only the alt text.`,
+    improve: (i) => `Rewrite this paragraph to be clearer and tighter, same meaning and length or shorter. Return only the paragraph.\n\n${String(i.text || "").slice(0, 3000)}`,
+    excerpt: (i) => `Write a card summary (max 150 characters) for this page. Return only the text.\nTitle: ${i.title}\n${String(i.text || "").slice(0, 3000)}`,
+    faqs: (i) => `Write 4 FAQs a Pakistani client would ask about: ${i.title}.\nContext: ${String(i.text || "").slice(0, 3000)}\nReturn ONLY JSON: [{"q":"...","a":"1-3 sentences"}]`,
+  };
+  async function a6(action, inp, need, db, ip) {
+    if (!/^(cms_|ai_)/.test(action)) return null;
+    const ED = ["owner", "admin", "editor"], OA = ["owner", "admin"];
+    const c = cmsLoad(), done = (o) => { jw(CMS, c); save(db); return o; };
+    const find = (id) => { const it = c.items.find((x) => x.id === +id); if (!it) throw new Fail("Item not found", 404); return it; };
+    switch (action) {
+      case "cms_list": { need(ED); const ty = CTYPES.includes(inp.type) ? inp.type : null; return { ok: true, items: c.items.filter((x) => !ty || x.type === ty).map(({ pending, ...x }) => ({ ...x, hasPending: !!pending })).reverse(), aiReady: !!c.ai[c.ai.provider + "Key"] }; }
+      case "cms_get": { need(ED); const { pending, ...it } = find(inp.id); return { ok: true, item: it }; }
+      case "cms_save": {
+        const u = need(ED), type = String(inp.type || ""); if (!CTYPES.includes(type)) throw new Fail("Unknown content type");
+        const title = clip(inp.title, 160); if (!title) throw new Fail(type === "testimonial" || type === "member" ? "Name is required" : "Title is required");
+        const data = inp.data && typeof inp.data === "object" ? inp.data : {}; if (JSON.stringify(data).length > 400000) throw new Fail("Content is too large");
+        let it = inp.id ? find(inp.id) : null;
+        const slug = PAGE_TYPES[type] ? String(inp.slug || "").toLowerCase() : "";
+        if (PAGE_TYPES[type]) {
+          if (!/^[a-z0-9][a-z0-9-]{0,59}$/.test(slug)) throw new Fail("Page address: lowercase letters, numbers and dashes only");
+          if (it && it.rel && it.slug !== slug) throw new Fail("The address of a published page cannot be changed");
+          if (c.items.some((x) => x.type === type && x.slug === slug && x !== it)) throw new Fail("Another item already uses that address");
+          if (!it || !it.rel) { const rel = PAGE_TYPES[type] + "/" + slug + "/index.html"; if (fs.existsSync(path.join(ROOT, rel)) && !(inp.claim === rel)) throw new Fail("A page already exists at /" + PAGE_TYPES[type] + "/" + slug + "/"); }
+        }
+        if (!it) { it = { id: ++c.seq, type, status: "draft", created_at: now(), created_by: u.name, rel: null }; c.items.push(it); }
+        Object.assign(it, { title, slug, data, seo: { title: clip(inp.seo && inp.seo.title, 90), desc: clip(inp.seo && inp.seo.desc, 200), og: clip(inp.seo && inp.seo.og, 300) }, order: +inp.order || 0, updated_at: now(), updated_by: u.name });
+        if (inp.claim && PAGE_TYPES[type] && inp.claim === PAGE_TYPES[type] + "/" + slug + "/index.html") { it.rel = inp.claim; it.status = "published"; it.imported = true; }
+        const st = String(inp.status || "");
+        if (st === "draft" && it.status === "scheduled") { it.status = "draft"; delete it.pending; }
+        if (st === "scheduled") {
+          const at = String(inp.publishAt || "").replace("T", " ").slice(0, 16); if (!/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/.test(at)) throw new Fail("Pick a publish date and time");
+          if (it.rel) throw new Fail("This item is already live. Just publish your changes.");
+          if (PAGE_TYPES[type]) { const p = inp.pending || {}; if (!cmsRelOk(p.rel, type) || !htmlOk(p.html)) throw new Fail("Could not prepare the scheduled page"); it.pending = { rel: p.rel, html: p.html, card: clip(p.card, 4000) }; }
+          it.status = "scheduled"; it.publishAt = at + ":00";
+        }
+        if (st === "published" && !PAGE_TYPES[type]) { it.status = "published"; it.published_at = it.published_at || now(); }
+        log(db, u, "content.save", type + ": " + title, ip); return done({ ok: true, item: it });
+      }
+      case "cms_published": { // called by the browser after it wrote the page with the builder API
+        const u = need(ED), it = find(inp.id); if (!PAGE_TYPES[it.type]) throw new Fail("Not a page item");
+        const rel = String(inp.rel || ""); if (!cmsRelOk(rel, it.type) || !fs.existsSync(path.join(ROOT, rel))) throw new Fail("Page was not written");
+        it.rel = rel; it.status = "published"; it.published_at = it.published_at || now(); delete it.pending; it.publishAt = null; sitemapAdd(rel);
+        log(db, u, "content.publish", it.title, ip); return done({ ok: true, item: it });
+      }
+      case "cms_status": { const u = need(ED), it = find(inp.id); if (PAGE_TYPES[it.type]) throw new Fail("Use Publish for pages"); it.status = inp.status === "published" ? "published" : "draft"; log(db, u, "content." + it.status, it.title, ip); return done({ ok: true, item: it }); }
+      case "cms_reorder": { need(ED); (Array.isArray(inp.ids) ? inp.ids : []).forEach((id, n) => { const it = c.items.find((x) => x.id === +id); if (it) it.order = n + 1; }); return done({ ok: true }); }
+      case "cms_delete": { const u = need(OA), it = find(inp.id); if (it.rel) throw new Fail("This page is live. Pages cannot be deleted; edit it instead."); c.items = c.items.filter((x) => x !== it); log(db, u, "content.delete", it.title, ip); return done({ ok: true }); }
+      case "cms_placements": { need(ED); return { ok: true, placements: c.placements || { testimonial: ["index.html", "about/index.html"], member: ["about/index.html"] } }; }
+      case "cms_placements_save": { const u = need(OA), p = inp.placements || {}; c.placements = {}; ["testimonial", "member"].forEach((k) => { c.placements[k] = (Array.isArray(p[k]) ? p[k] : []).filter((r) => /^[a-z0-9][a-z0-9/_\-.]*\.html$/i.test(r) && !r.includes("..") && !/^(_private|builder|admin|api|assets)\//.test(r)).slice(0, 80); const st = p[k + "Set"] || {}; c.placements[k + "Set"] = { kicker: clip(st.kicker, 60), heading: clip(st.heading, 120) }; }); log(db, u, "content.placements", "", ip); return done({ ok: true, placements: c.placements }); }
+      case "cms_ai_get": need(OA); return { ok: true, ai: aiPub(c.ai) };
+      case "cms_ai_save": {
+        const u = need(OA), s = inp.ai || {};
+        for (const k of Object.keys(AI_DEF)) { if (!(k in s)) continue; if (AI_SECRETS.includes(k) && s[k] === "" && !s[k + "Clear"]) continue; c.ai[k] = clip(s[k], k === "voice" ? 800 : 300); }
+        if (!["anthropic", "openai", "openrouter"].includes(c.ai.provider)) c.ai.provider = "anthropic";
+        log(db, u, "settings.ai", c.ai.provider, ip); return done({ ok: true, ai: aiPub(c.ai) });
+      }
+      case "ai_run": {
+        const u = need(ED), task = String(inp.task || ""); if (!AI_TASKS[task]) throw new Fail("Unknown AI task");
+        const text = await aiCall(c.ai, "You write website copy for Woodex Interior. " + c.ai.voice, AI_TASKS[task](inp.input || {}));
+        log(db, u, "ai." + task, "", ip); save(db); return { ok: true, text };
+      }
+      case "ai_test": { need(OA); const t = await aiCall(c.ai, "Reply with one word.", "Say OK."); return { ok: true, text: t.slice(0, 60) }; }
+    }
+    return null;
+  }
+
   const adminApi = async function (req, inp) {
     const action = String(inp.action || "status"), ip = req.socket.remoteAddress || "";
-    let db = load();
+    let db = load(); if (db) { try { if (cmsTick(db)) save(db); } catch (e) { console.error("cmsTick", e.message); } }
     const need = (roles) => { const u = current(db, req); if (!u) throw new Fail("Not signed in", 401); if (roles && !roles.includes(u.role)) throw new Fail("You do not have permission for this", 403); return u; };
     const done = (o) => { save(db); return o; };
     switch (action) {
+      case "cron": return { ok: true, published: 0 };
       case "status": { const u = current(db, req); return { ok: true, needsSetup: !db, driver: "json", builderLocked: true, user: u ? pub(u) : null }; }
       case "setup": {
         if (db) throw new Fail("Already set up", 403);
@@ -560,7 +670,7 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
         return done({ ok: true, rows: all.slice((page - 1) * per, page * per).map(({ user_name, action, target, ip, created_at }) => ({ user_name, action, target, ip, created_at })), total: all.length, per, page });
       }
       default: {
-        const r = (await a2(action, inp, need, db, ip)) || (await a4(action, inp, need, db, ip)) || a5(action, inp, need, db, ip); if (r) return r;
+        const r = (await a2(action, inp, need, db, ip)) || (await a4(action, inp, need, db, ip)) || a5(action, inp, need, db, ip) || (await a6(action, inp, need, db, ip)); if (r) return r;
         throw new Fail("Unknown action", 404);
       }
     }
