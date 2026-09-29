@@ -1565,6 +1565,18 @@
           e.preventDefault();
           location.reload(); // drops the memory-only session
         });
+        // Fresh/back-forward page loads without a session always start at a
+        // CLEAN sign-in gate — never a stale "session expired" message.
+        window.addEventListener("pageshow", function () {
+          try {
+            if (!session) {
+              document.getElementById("wx-app").style.display = "none";
+              document.getElementById("wx-gate").style.display = "";
+              var ge = document.getElementById("wx-error");
+              if (ge) { ge.textContent = ""; ge.style.display = "none"; }
+            }
+          } catch (e) {}
+        });
 
         /* ================= view router ================= */
         var TITLES = { dashboard: "Dashboard", analytics: "Analytics", reports: "Reports", enquiries: "Enquiries", leads: "Leads & Estimator", pipeline: "Pipeline", visits: "Site Visits", quotations: "Quotations", templates: "Quotation Templates", invoices: "Invoices", clients: "Clients", builder: "Pages · Page Builder", services: "Services", locations: "Locations", projects: "Projects", blog: "Insights", testimonials: "Testimonials", media: "Media Library", team: "Team", theme: "Theme", navigation: "Navigation", seo: "SEO Manager", settings: "Site Settings", users: "Users & Roles", audit: "Audit Trail", versions: "Versions", backups: "Backups", health: "System Health", soon: "Coming soon" };
