@@ -34,6 +34,12 @@ RewriteRule ^services/$ /interior-design/ [R=301,L]
 RewriteRule ^admin$ /admin/ [R=302,L]
 
 # --- CMS API: keep admin JS working unchanged (31 netlify paths -> PHP) ---
+# Pass the login token header to PHP (Apache/LiteSpeed strip it by default)
+<IfModule mod_authz_core.c>
+  CGIPassAuth On
+</IfModule>
+SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1
+
 RewriteRule ^.netlify/functions/cms-auth$ /api/router.php?fn=cms-auth [L,QSA]
 RewriteRule ^.netlify/functions/cms-blog-posts$ /api/router.php?fn=cms-blog-posts [L,QSA]
 RewriteRule ^.netlify/functions/cms-delete$ /api/router.php?fn=cms-delete [L,QSA]
