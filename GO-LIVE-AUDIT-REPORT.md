@@ -134,3 +134,32 @@ Add a CSP in report-only mode first, then enforce it:
 10. ☐ Run PageSpeed Insights on the home page, `/kitchen-design/` and `/lahore/` for mobile and desktop. Target: 90+ for SEO and Best Practices, 75+ for mobile Performance.
 11. ☐ Tell all users to sign in again, since sessions reset on deploy.
 12. ☐ Take the first backup and download it off-site.
+
+---
+
+## Update 29 Sep 2026: fixes applied and builder QA
+**Fixed:**
+- **B1:** The builder password is retired once Woodex Admin is installed; builder sign-in goes through the admin, with 2FA.
+- **H1:** Builder tokens are tied to the admin session. Signing out, "sign out other devices", a password change, disabling a user or downgrading their role ends builder access immediately.
+- **H2 and H3:** Mobile overflow fixed. All 87 pages have no sideways scroll at 390px or 360px.
+- **H4:** The 3 broken requests on every page (Netlify beacon, theme-config, site-config) are removed.
+- **M1:** On 64 pages, the first-screen image now loads eagerly, and the first one gets `fetchpriority="high"`.
+- **L1, L3, L4:** Privacy page Netlify script removed, 6 titles and 5 descriptions resized, `/_private/` removed from `robots.txt`.
+
+**Builder bugs found and fixed during QA:**
+1. The **Contact form element posted to `/api/contact` (404)**, so leads were lost. It now goes to `/api/forms.php` with a honeypot, Turnstile and the WhatsApp thank-you box, and leads reach the CRM.
+2. After a session expired mid-edit, the **sign-in card appeared behind the editor** and couldn't be clicked. Fixed. Re-signing in through Woodex Admin, including from a second tab, now hands the session back safely, point-to-point. Edits are kept.
+3. There was no leave-page warning while header/footer changes were being copied to all pages. A warning now appears and page switching is blocked until it finishes.
+4. Images covered by text overlays, such as hero images, couldn't be selected. A second click now selects the layer underneath.
+5. A stale panel could throw a JS error. A guard was added.
+
+**QA coverage:** 150+ automated checks.
+- **Security:** 26 checks.
+- **Editor:** select and edit text, toolbar, right-click menu, undo/redo, save, history/restore, autosave draft recovery, styles per device and state, advanced settings, all 12 sections and 30 elements.
+- **Panels and media:** layers, pages, SEO, theme, media, upload validation, blocks, global sections with push to all pages.
+- **Page management:** new and duplicate page, ZIP and HTML export, page code, header propagation to all 87 pages, edit-conflict warning (409).
+- **Live pages:** elements tested on the published page (accordion, tabs, counters, countdown, bars, form → CRM).
+- **Roles:** editors get builder access; sales and other roles don't.
+- **Round-trip:** every page opened and saved with no content change (87/87).
+
+**Still open (see checklist):** PHP/MySQL smoke test on Hostinger (B2), CSP (M2, needs testing with the live tracking codes), page weight (M3), backup storage (M4), new passwords and 2FA (M5).
