@@ -43,13 +43,27 @@ function save_config(array $c): void { file_put_contents(CONFIG_FILE, json_encod
    works inside iframes/proxies where third-party cookies are blocked). */
 function secret(): string { $c = config(); if (empty($c['secret'])) { $c['secret'] = bin2hex(random_bytes(32)); save_config($c); } return $c['secret']; }
 function make_token(): string { $exp = (string)(time() + 12 * 3600); return $exp . '.' . hash_hmac('sha256', 'wx|' . $exp, secret()); }
+/** Woodex Admin installed? Then the shared builder password is retired and only admin-issued tokens work. */
+function admin_installed(): bool { return is_file(PRIVATE_DIR . '/db.json'); }
 function logged_in(): bool {
+    static $ok = null; if ($ok !== null) return $ok;
     $t = (string)($_SERVER['HTTP_X_WX_CSRF'] ?? '');
-    if (empty(config()['password_hash'])) return false;
-    // "exp.hmac" (builder password) or "exp.uid.hmac" (signed in through Woodex Admin)
-    if (preg_match('~^(\d{10})\.([a-f0-9]{64})$~', $t, $m)) return (int)$m[1] >= time() && hash_equals(hash_hmac('sha256', 'wx|' . $m[1], secret()), $m[2]);
-    if (preg_match('~^(\d{10})\.(\d+)\.([a-f0-9]{64})$~', $t, $m)) return (int)$m[1] >= time() && hash_equals(hash_hmac('sha256', 'wx|' . $m[1] . '|' . $m[2], secret()), $m[3]);
-    return false;
+    if (empty(config()['password_hash'])) return $ok = false;
+    if (!admin_installed()) { // legacy "exp.hmac" (builder password) — only before admin setup
+        return $ok = (bool)preg_match('~^(\d{10})\.([a-f0-9]{64})$~', $t, $m) && (int)$m[1] >= time() && hash_equals(hash_hmac('sha256', 'wx|' . $m[1], secret()), $m[2]);
+    }
+    // "exp.uid.sid.hmac" from Woodex Admin — bound to a live admin session, active user with a builder role
+    if (!preg_match('~^(\d{10})\.(\d+)\.([a-f0-9]{16})\.([a-f0-9]{64})$~', $t, $m) || (int)$m[1] < time()) return $ok = false;
+    if (!hash_equals(hash_hmac('sha256', 'wx|' . $m[1] . '|' . $m[2] . '|' . $m[3], secret()), $m[4])) return $ok = false;
+    $sec = json_decode((string)@file_get_contents(PRIVATE_DIR . '/security.json'), true) ?: [];
+    $live = false; foreach ($sec[$m[2]]['sessions'] ?? [] as $s) if (($s['sid'] ?? '') === $m[3] && (int)($s['exp'] ?? 0) > time()) $live = true;
+    if (!$live) return $ok = false;
+    try {
+        $c = json_decode((string)file_get_contents(PRIVATE_DIR . '/db.json'), true) ?: [];
+        $pdo = new PDO('mysql:host=' . ($c['host'] ?: 'localhost') . ';dbname=' . $c['name'] . ';charset=utf8mb4', $c['user'], $c['pass'], [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
+        $st = $pdo->prepare('SELECT role, active FROM wx_users WHERE id=?'); $st->execute([(int)$m[2]]); $u = $st->fetch(PDO::FETCH_ASSOC);
+    } catch (Throwable $e) { error_log('builder auth: ' . $e->getMessage()); return $ok = false; }
+    return $ok = ($u && (int)$u['active'] === 1 && in_array($u['role'], ['owner', 'admin', 'editor'], true));
 }
 function token_uid(): ?int { return preg_match('~^\d{10}\.(\d+)\.~', (string)($_SERVER['HTTP_X_WX_CSRF'] ?? ''), $m) ? (int)$m[1] : null; }
 /** activity line for Woodex Admin (ingested into MySQL by admin.php) */
@@ -133,16 +147,17 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST' && $action !== 'status') fail('POST re
 
 switch ($action) {
     case 'status':
-        out(['ok' => true, 'loggedIn' => logged_in(), 'needsSetup' => empty(config()['password_hash'])]);
+        out(['ok' => true, 'loggedIn' => logged_in(), 'needsSetup' => !admin_installed() && empty(config()['password_hash']), 'adminOnly' => admin_installed()]);
 
     case 'setup': // first run only: choose the admin password
-        if (!empty(config()['password_hash'])) fail('Already set up', 403);
+        if (admin_installed() || !empty(config()['password_hash'])) fail('Already set up', 403);
         $pw = (string)($in['password'] ?? '');
         if (strlen($pw) < 8) fail('Password must be at least 8 characters');
         save_config(['password_hash' => password_hash($pw, PASSWORD_DEFAULT), 'secret' => bin2hex(random_bytes(32)), 'created' => date('c')]);
         out(['ok' => true, 'csrf' => make_token()]);
 
     case 'login':
+        if (admin_installed()) fail('Sign in through Woodex Admin (/admin/) to edit pages', 403);
         throttle();
         $c = config();
         if (empty($c['password_hash']) || !password_verify((string)($in['password'] ?? ''), $c['password_hash'])) {
@@ -154,6 +169,7 @@ switch ($action) {
         out(['ok' => true]);
 
     case 'password':
+        if (admin_installed()) fail('Change your password in Woodex Admin → Profile', 403);
         require_auth();
         $c = config();
         if (!password_verify((string)($in['current'] ?? ''), $c['password_hash'] ?? '')) fail('Current password is wrong', 401);

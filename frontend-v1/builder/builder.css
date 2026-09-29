@@ -9,7 +9,7 @@ h2{font-size:15px;margin:0 0 6px}h2 small{color:var(--mut);font-weight:400;font-
 .hint{color:var(--mut);font-size:12px;margin:0 0 12px}
 
 /* login */
-.login{position:fixed;inset:0;display:grid;place-items:center;background:radial-gradient(circle at 30% 20%,#1a2547,#0b1020 60%)}
+.login{position:fixed;inset:0;z-index:100000;display:grid;place-items:center;background:radial-gradient(circle at 30% 20%,#1a2547,#0b1020 60%)}
 .login-card{width:min(380px,92vw);background:#fff;border-radius:16px;padding:32px;display:grid;gap:10px;box-shadow:0 30px 80px rgba(0,0,0,.4)}
 .login-card h1{margin:0;font-size:22px}.login-card p{margin:0;color:var(--mut)}
 .login-card input{height:42px;border:1px solid var(--line2);border-radius:8px;padding:0 12px;width:100%}

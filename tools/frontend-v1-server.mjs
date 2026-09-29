@@ -25,11 +25,13 @@ const MIME = { ".html": "text/html; charset=utf-8", ".css": "text/css", ".js": "
 // ---------------------------------------------------------------- auth
 const makeToken = () => { const exp = String(Math.floor(Date.now() / 1000) + 12 * 3600); return exp + "." + crypto.createHmac("sha256", secret()).update("wx|" + exp).digest("hex"); };
 function loggedIn(req) {
-  // "exp.hmac" (builder password) or "exp.uid.hmac" (signed in through Woodex Admin)
-  const t = String(req.headers["x-wx-csrf"] || ""), m = /^(\d{10})\.(?:(\d+)\.)?([a-f0-9]{64})$/.exec(t);
+  // Once Woodex Admin is installed, only admin-issued tokens (exp.uid.sid.hmac, bound to a live admin session) are accepted.
+  const t = String(req.headers["x-wx-csrf"] || "");
+  if (adminApi.installed()) return adminApi.builderOk(t);
+  const m = /^(\d{10})\.([a-f0-9]{64})$/.exec(t); // legacy builder-password token (before admin setup only)
   if (!m || +m[1] < Date.now() / 1000) return false;
-  const good = crypto.createHmac("sha256", secret()).update("wx|" + m[1] + (m[2] ? "|" + m[2] : "")).digest("hex");
-  return crypto.timingSafeEqual(Buffer.from(good), Buffer.from(m[3]));
+  const good = crypto.createHmac("sha256", secret()).update("wx|" + m[1]).digest("hex");
+  return crypto.timingSafeEqual(Buffer.from(good), Buffer.from(m[2]));
 }
 const tokenUid = (req) => { const m = /^\d{10}\.(\d+)\./.exec(String(req.headers["x-wx-csrf"] || "")); return m ? +m[1] : null; };
 const safeEq = (a, b) => { const x = crypto.createHash("sha256").update(String(a)).digest(), y = crypto.createHash("sha256").update(String(b)).digest(); return crypto.timingSafeEqual(x, y); };
@@ -136,9 +138,10 @@ async function api(req, body) {
   const ip = req.socket.remoteAddress;
 
   switch (action) {
-    case "status": return { ok: true, loggedIn: loggedIn(req), needsSetup: false };
+    case "status": return { ok: true, loggedIn: loggedIn(req), needsSetup: false, adminOnly: adminApi.installed() };
     case "setup": throw new Fail("Already set up", 403);
     case "login": {
+      if (adminApi.installed()) throw new Fail("Sign in through Woodex Admin (/admin/) to edit pages", 403);
       const t = tries.get(ip) || { n: 0, t: 0 };
       if (t.n >= 8 && Date.now() - t.t < 600000) throw new Fail("Too many attempts — wait 10 minutes", 429);
       if (!safeEq(inp.password || "", PASSWORD)) { tries.set(ip, { n: t.n + 1, t: Date.now() }); await new Promise((r) => setTimeout(r, 400)); throw new Fail("Wrong password", 401); }
@@ -146,6 +149,7 @@ async function api(req, body) {
     }
     case "logout": return { ok: true };
     case "password": {
+      if (adminApi.installed()) throw new Fail("Change your password in Woodex Admin → Profile", 403);
       need();
       if (!safeEq(inp.current || "", PASSWORD)) throw new Fail("Current password is wrong", 401);
       if (String(inp.next || "").length < 8) throw new Fail("New password must be at least 8 characters");

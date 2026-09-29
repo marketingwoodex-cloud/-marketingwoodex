@@ -20,13 +20,42 @@
     return fetch(API, o).then(function (r) {
       return r.json().catch(function () { return { ok: false, error: "Server error (" + r.status + ")" }; }).then(function (j) {
         j.status = r.status;
-        if (r.status === 401 && action !== "login" && action !== "status") { sessionStorage.removeItem("wxTok"); S.csrf = null; showLogin(false); }
+        if (r.status === 401 && action !== "login" && action !== "status") {
+          sessionStorage.removeItem("wxTok"); S.csrf = null;
+          if (S.adminOnly) adminRenew().then(function (ok) { if (ok) toast("Session renewed — please try that again."); else showLogin(false); }); else showLogin(false);
+        }
         return j;
       });
     }).catch(function () { return { ok: false, error: "Cannot reach the server — refresh the page" }; });
   }
   function toast(m, err) { var t = $("#toast"); t.textContent = m; t.className = "toast show" + (err ? " err" : ""); clearTimeout(t._h); t._h = setTimeout(function () { t.className = "toast"; }, err ? 5000 : 2200); }
+  /* Woodex Admin installed → the builder password is retired. Sign-in happens in /admin/, which hands over a
+     session-bound builder token (sessionStorage "wxTok"). An expired token is renewed silently from the admin session. */
+  function adminRenew() {
+    var at = sessionStorage.getItem("wxaTok"); if (!at) return Promise.resolve(false);
+    return fetch("/api/admin.php", { method: "POST", headers: { "Content-Type": "application/json", "X-WX-ADM": at }, body: JSON.stringify({ action: "me" }) })
+      .then(function (r) { return r.json(); }).then(function (r) {
+        if (r.ok && r.builderToken) { S.csrf = r.builderToken; sessionStorage.setItem("wxTok", r.builderToken); return true; }
+        return false;
+      }).catch(function () { return false; });
+  }
+  // Re-sign-in window (opened by us) sends the new session back: accept it only from that exact window.
+  var adminWin = null;
+  window.addEventListener("message", function (e) {
+    var d = e.data || {}; if (e.origin !== location.origin || !adminWin || e.source !== adminWin || d.t !== "wx-session" || !S.adminOnly) return;
+    if (!/^\d{10}\.\d+\.[a-f0-9]{16}\.[a-f0-9]{64}$/.test(String(d.bld || ""))) return;
+    sessionStorage.setItem("wxaTok", d.adm); sessionStorage.setItem("wxTok", d.bld); S.csrf = d.bld;
+    if (S.doc) { $("#login").hidden = true; toast("Signed in again, your edits are safe. Click Save."); } else boot();
+  });
+  function showAdminLogin(msg) {
+    $("#app").hidden = !S.doc; $("#login").hidden = false; $("#login-form").dataset.admin = "1";
+    $("#login-title").textContent = "Page Builder";
+    $("#login-sub").textContent = msg || "Sign in through Woodex Admin to edit the website.";
+    $$("#login-form label, #login-pass, #login-confirm-wrap").forEach(function (x) { x.hidden = true; });
+    $("#login-pass").required = false; $("#login-btn").textContent = "Sign in with Woodex Admin";
+  }
   function showLogin(setup) {
+    if (S.adminOnly) return showAdminLogin(S.doc ? "Your session ended. Sign in again in Woodex Admin, then come back and click Save — your edits are kept in this tab." : "");
     $("#app").hidden = !S.doc; $("#login").hidden = false;
     $("#login-title").textContent = setup ? "Create builder password" : "Page Builder";
     $("#login-sub").textContent = setup ? "First run: choose the admin password (min 8 characters)." : "Sign in to edit the website.";
@@ -35,6 +64,10 @@
   }
   $("#login-form").addEventListener("submit", function (e) {
     e.preventDefault();
+    if (this.dataset.admin === "1") {
+      if (S.doc) { adminRenew().then(function (ok) { if (ok) { $("#login").hidden = true; toast("Signed in again, your edits are safe. Click Save."); } else adminWin = window.open("/admin/#builder", "wx-admin-signin"); }); return; }
+      location.href = "/admin/#builder"; return;
+    }
     var setup = this.dataset.setup === "1", pw = $("#login-pass").value;
     if (setup && pw !== $("#login-pass2").value) { $("#login-err").textContent = "Passwords do not match"; return; }
     $("#login-btn").disabled = true;
@@ -58,7 +91,12 @@
     });
     api("theme_get").then(function (r) { if (r.ok) { S.theme = r.vars || {}; fillTheme(); } });
   }
-  api("status").then(function (r) { if (r.loggedIn) boot(); else { sessionStorage.removeItem("wxTok"); S.csrf = null; showLogin(r.needsSetup); } });
+  api("status").then(function (r) {
+    S.adminOnly = !!r.adminOnly; document.body.classList.toggle("wx-admin-only", S.adminOnly);
+    if (r.loggedIn) return boot();
+    sessionStorage.removeItem("wxTok"); S.csrf = null;
+    (S.adminOnly ? adminRenew() : Promise.resolve(false)).then(function (ok) { if (ok) boot(); else showLogin(r.needsSetup); });
+  });
 
   // =================================================================== SANITIZE (A3/A4)
   function sanitize(root) {
@@ -194,10 +232,10 @@
   }
   function propagateGlobal(changes) {
     var others = S.pages.filter(function (p) { return p.path !== S.path; }), i = 0, upd = 0, skip = [], fail = [];
-    $("#save").disabled = true;
+    $("#save").disabled = true; S.propagating = true;
     function next() {
       if (i >= others.length) {
-        S.regOrig = regionSnap(S.doc); updateDirty();
+        S.propagating = false; S.regOrig = regionSnap(S.doc); updateDirty();
         modal("<h2>Header / footer updated</h2><p>✅ <b>" + upd + "</b> other pages updated (a backup was made for each).</p>" +
           (skip.length ? "<p>⏭ <b>" + skip.length + "</b> pages were left as they are because that part is different on those pages:</p><p class='hint'>" + skip.map(esc).join(", ") + "</p>" : "") +
           (fail.length ? "<p style='color:#dc2626'>⚠ Failed: " + fail.map(esc).join(", ") + "</p>" : ""));
@@ -268,7 +306,23 @@
     if (S.editing && S.editing.contains(t)) { if (t.closest("a")) e.preventDefault(); return; }
     e.preventDefault(); e.stopPropagation();
     if (S.preview) return;
-    var el = pick(t); if (el) select(el);
+    var el = pick(t);
+    // Click-through: clicking an already-selected box again selects what lies underneath it
+    // (e.g. a hero image covered by a text overlay).
+    if (el && el === S.sel && !isTextLeaf(el) && S.doc.elementsFromPoint) {
+      var stack = S.doc.elementsFromPoint(e.clientX, e.clientY), under = null;
+      for (var i = 0; i < stack.length; i++) {
+        var c = pick(stack[i]); if (!c || c === el || el.contains(c) || c.contains(el)) continue;
+        under = c; break;
+      }
+      // step into an image inside the container underneath (images often ignore the mouse via CSS)
+      if (under && under.tagName !== "IMG") {
+        var ims = under.querySelectorAll("img");
+        for (var j = 0; j < ims.length; j++) { var r = ims[j].getBoundingClientRect(); if (e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom) { under = ims[j]; break; } }
+      }
+      if (under) { select(under); toast("Selected the layer underneath — click again to go deeper"); return; }
+    }
+    if (el) select(el);
   }
   function select(el) {
     finishEdit(); S.sel = el;
@@ -551,6 +605,7 @@
   function baseStyle(el, p) { return withBase(function () { return getStyle(el, p); }); }
   function setBase(el, p, v) { withBase(function () { setStyle(el, p, v); }); }
   function renderContent() {
+    if (!S.sel || !S.sel.isConnected) return;
     var el = S.sel, h = "", link = el.closest("a"), sec = isSection(el);
     if (isTextLeaf(el) && el.tagName !== "IMG") {
       var tagSel = /^(H[1-6]|P)$/.test(el.tagName) ? field("Tag", '<select id="c-tag">' + ["H1", "H2", "H3", "H4", "H5", "H6", "P"].map(function (t) { return "<option" + (t === el.tagName ? " selected" : "") + ">" + t + "</option>"; }).join("") + "</select>") : "";
@@ -943,8 +998,8 @@
     });
   }
   $("#save").onclick = function () { save(); };
-  window.addEventListener("beforeunload", function (e) { if (!$("#save").disabled) { e.preventDefault(); e.returnValue = ""; } });
-  $("#page-select").onchange = function () { if (!$("#save").disabled && !confirm("You have unsaved changes. Leave without saving?")) { this.value = S.path; return; } loadPage(this.value); };
+  window.addEventListener("beforeunload", function (e) { if (!$("#save").disabled || S.propagating) { e.preventDefault(); e.returnValue = ""; } });
+  $("#page-select").onchange = function () { if (S.propagating) { this.value = S.path; return toast("Please wait — still updating the header/footer on all pages", true); } if (!$("#save").disabled && !confirm("You have unsaved changes. Leave without saving?")) { this.value = S.path; return; } loadPage(this.value); };
 
   // =================================================================== MENU / MODAL
   function modal(h) { $("#modal-body").innerHTML = h; $("#modal").hidden = false; }
@@ -956,13 +1011,19 @@
     b.onclick = function () {
       var a = b.dataset.act;
       if (window.__wx3 && /^(newpage|duppage|export|zip|pagecode|keys)$/.test(a)) window.__wx3.menu(a);
-      if (a === "logout") { sessionStorage.removeItem("wxTok"); location.reload(); }
+      if (a === "logout") {
+        var at = sessionStorage.getItem("wxaTok"); sessionStorage.removeItem("wxTok");
+        if (!S.adminOnly || !at) return location.reload();
+        fetch("/api/admin.php", { method: "POST", headers: { "Content-Type": "application/json", "X-WX-ADM": at }, body: JSON.stringify({ action: "logout" }) })
+          .catch(function () {}).then(function () { sessionStorage.removeItem("wxaTok"); location.href = "/admin/"; });
+      }
       if (a === "backups") api("backups", { path: S.path }).then(function (r) {
         if (!r.ok) return toast(r.error, true);
         var rows = r.backups.map(function (x) { var f = x.file; return "<div><span>" + f.slice(0, 4) + "-" + f.slice(4, 6) + "-" + f.slice(6, 8) + " " + f.slice(9, 11) + ":" + f.slice(11, 13) + ":" + f.slice(13, 15) + " · " + Math.round(x.size / 1024) + " KB</span><button class='btn btn-sm' data-f='" + f + "'>Restore</button></div>"; }).join("");
         modal("<h2>Page history</h2><p class='hint'>A backup is made before every save (last 30 kept).</p><div class='bk-list'>" + (rows || "<p class='hint'>No backups yet.</p>") + "</div>");
         $$(".bk-list button").forEach(function (btn) { btn.onclick = function () { if (!confirm("Restore this version? The current one is backed up first.")) return; api("restore", { path: S.path, file: btn.dataset.f }).then(function (r2) { if (!r2.ok) return toast(r2.error, true); closeModal(); toast("Restored ✓"); loadPage(S.path); }); }; });
       });
+      if (a === "password" && S.adminOnly) { location.href = "/admin/#profile"; return; }
       if (a === "password") {
         modal("<h2>Change password</h2><form id='pw-form'><label>Current password<input type='password' id='pw-c' required></label><label>New password (min 8)<input type='password' id='pw-n' minlength='8' required></label><button class='btn btn-pri'>Update</button></form>");
         $("#pw-form").onsubmit = function (e) { e.preventDefault(); api("password", { current: $("#pw-c").value, next: $("#pw-n").value }).then(function (r) { if (!r.ok) return toast(r.error, true); S.csrf = r.csrf; sessionStorage.setItem("wxTok", r.csrf); closeModal(); toast("Password updated ✓"); }); };

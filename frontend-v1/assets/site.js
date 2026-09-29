@@ -211,6 +211,27 @@
       }).finally(function () { if (btn) { btn.disabled = false; btn.textContent = label; } });
     });
   }
+  /* Forms added with the page builder ("Contact form" element) → same pipeline: honeypot, Turnstile, CRM, WhatsApp. */
+  Array.prototype.forEach.call(doc.querySelectorAll('form.wx-form, form[action="/api/contact"]'), function (form) {
+    if (form.dataset.wxWired) return; form.dataset.wxWired = '1';
+    form.setAttribute('action', '/api/forms.php'); form.setAttribute('novalidate', '');
+    if (!form.querySelector('[name="_hp"]')) { var hp = doc.createElement('input'); hp.type = 'text'; hp.name = '_hp'; hp.tabIndex = -1; hp.autocomplete = 'off'; hp.setAttribute('aria-hidden', 'true'); hp.style.cssText = 'position:absolute;left:-9999px;width:1px;height:1px;opacity:0'; form.appendChild(hp); }
+    var st = doc.createElement('div'); st.className = 'wx-form-status'; st.setAttribute('aria-live', 'polite'); st.style.cssText = 'display:none;margin-top:12px;padding:14px 16px;border-radius:10px;background:#f3efe6;color:#0a0f1e;font-size:15px;line-height:1.5'; form.after(st);
+    WXForms.guard(form);
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      if (!form.reportValidity()) return;
+      var d = {}; new FormData(form).forEach(function (v, k) { if (k !== 'cf-turnstile-response') d[k] = String(v); });
+      if (!d.service) d.service = form.getAttribute('data-wx-service') || (doc.title || '').split('|')[0].trim();
+      var btn = form.querySelector('[type=submit]'), label = btn ? btn.textContent : '';
+      if (btn) { btn.disabled = true; btn.textContent = 'Sending…'; }
+      WXForms.send(form.getAttribute('data-wx-form') || 'website', d, form).then(function (r) {
+        form.reset(); WXForms.success(st, d, r.id, d.service ? ['Page: ' + d.service] : []);
+      }).catch(function (err) {
+        st.textContent = err.message + ' You can also WhatsApp us on +92 322 4000768.'; st.style.display = 'block';
+      }).finally(function () { if (btn) { btn.disabled = false; btn.textContent = label; } });
+    });
+  });
   wireForm('brief-form', 'form-status', 'brief', function (d) { d.message = d.details || ''; delete d.details; return ['Service: ' + (d.service || '-'), 'Timeline: ' + (d.timeline || '-')]; });
   wireForm('fitout-quote-form', 'fitout-form-status', 'office-fitout', function (d) { d.service = 'Office fit-out'; d.message = d.notes || ''; delete d.notes; return ['Office fit-out: ' + (d.location || '') + (d.size ? ', ' + d.size : ''), 'Budget: ' + (d.budget || '-')]; });
   wireForm('fitout-hub-form', 'fitout-hub-form-status', 'fitout-hub', function (d) { d.service = 'Fit-out: ' + (d.sector || ''); d.message = d.details || ''; delete d.details; return ['Fit-out: ' + (d.sector || '') + ', ' + (d.location || '')]; });
@@ -248,42 +269,8 @@
   }
 })();
 
-/* Page-view counter for the dashboard Analytics view — anonymous path only. */
-(function () {
-  if (location.pathname.indexOf("/admin") === 0) return;
-  try {
-    var vid = null;
-    try {
-      vid = localStorage.getItem("wx_vid");
-      if (!vid || !/^[0-9a-f-]{36}$/i.test(vid)) {
-        vid = (crypto && crypto.randomUUID) ? crypto.randomUUID() : null;
-        if (vid) localStorage.setItem("wx_vid", vid);
-      }
-    } catch (e) { /* storage blocked: send path only */ }
-    var payload = JSON.stringify({ path: location.pathname, vid: vid });
-    if (navigator.sendBeacon) {
-      navigator.sendBeacon("/.netlify/functions/analytics-track", new Blob([payload], { type: "application/json" }));
-    } else {
-      fetch("/.netlify/functions/analytics-track", { method: "POST", headers: { "content-type": "application/json" }, body: payload, keepalive: true });
-    }
-  } catch (e) { /* analytics must never break the page */ }
-})();
-
-/* Dashboard-managed theme — loads only on public pages. */
-(function () {
-  if (location.pathname.indexOf("/admin") === 0) return;
-  var c = document.createElement("script");
-  c.src = "/assets/js/theme-config.js";
-  c.defer = true;
-  c.onload = function () {
-    var s = document.createElement("script");
-    s.src = "/assets/js/theme-apply.js";
-    s.defer = true;
-    document.head.appendChild(s);
-  };
-  c.onerror = function () { /* no theme published yet; skip silently */ };
-  document.head.appendChild(c);
-})();
+/* (Page views are measured by the GA4 / Tag Manager codes set in Woodex Admin → Settings → Integrations.
+   The builder theme is a static /assets/theme.css link, so no runtime theme loader is needed.) */
 
 /* WhatsApp handoff widget — loads on every public page. */
 (function () {

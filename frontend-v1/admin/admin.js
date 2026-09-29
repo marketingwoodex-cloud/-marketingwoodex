@@ -89,9 +89,20 @@
     if (mode === "setup") { $("#s-db").hidden = st.driver !== "mysql"; $("#s-bp").hidden = !st.builderLocked; $("#s-uname").focus(); }
     else $("#l-email").focus();
   }
+  /* Opened from the page builder to sign in again? Hand the fresh session back to that builder window only
+     (point-to-point postMessage to our opener, same origin, /builder/ path; tabs don't share sessionStorage). */
+  function wxShare() {
+    try {
+      var o = window.opener; if (!o || o.closed || !S.token || !S.btoken) return;
+      if (o.location.origin !== location.origin || o.location.pathname.indexOf("/builder/") !== 0) return;
+      o.postMessage({ t: "wx-session", adm: S.token, bld: S.btoken }, location.origin);
+      toast("Signed in — you can go back to the page builder tab and click Save.");
+    } catch (e) { /* not our opener */ }
+  }
   function signedIn(r) {
     S.token = r.token || S.token; S.user = r.user; S.btoken = r.builderToken || null;
     sessionStorage.setItem("wxaTok", S.token); if (S.btoken) sessionStorage.setItem("wxTok", S.btoken);
+    wxShare();
     $("#auth").hidden = true; $("#app").hidden = false;
     $("#u-name").textContent = S.user.name; $("#u-role").textContent = S.user.role; $("#u-av").textContent = initials(S.user.name);
     renderNav(); route();

@@ -1,8 +1,7 @@
 /* Woodex WhatsApp handoff widget.
  * Floating chat button on every public page. Opens a small panel with quick
  * replies; sending hands off to WhatsApp (wa.me) with a prefilled message.
- * The number comes from /assets/js/site-config.js (dashboard Settings),
- * falling back to the studio default. No tracking, no storage.
+ * The number is the studio default (override with window.WOODEX_CONFIG.whatsapp). No tracking, no storage.
  */
 (function () {
   "use strict";
@@ -12,13 +11,8 @@
   var DEFAULT_NUMBER = "923224000768";
 
   function loadConfig(done) {
-    var cfg = window.WOODEX_CONFIG || null;
-    if (cfg) { done(cfg); return; }
-    var s = document.createElement("script");
-    s.src = "/assets/js/site-config.js";
-    s.onload = function () { done(window.WOODEX_CONFIG || {}); };
-    s.onerror = function () { done({}); };
-    document.head.appendChild(s);
+    // Optional override: a page can set window.WOODEX_CONFIG = { whatsapp: "92…" } before this script.
+    done(window.WOODEX_CONFIG || {});
   }
 
   function el(tag, cls, html) {

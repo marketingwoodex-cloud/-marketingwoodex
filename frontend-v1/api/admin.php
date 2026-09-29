@@ -31,7 +31,8 @@ function jwrite(string $f, array $d): void { file_put_contents($f, json_encode($
 
 // ---------- shared secret (same as builder.php) ----------
 function bsecret(): string { $c = jread(BCONFIG); if (empty($c['secret'])) { $c['secret'] = bin2hex(random_bytes(32)); jwrite(BCONFIG, $c); } return $c['secret']; }
-function builder_token(int $uid): string { $exp = (string)(time() + 12 * 3600); return $exp . '.' . $uid . '.' . hash_hmac('sha256', 'wx|' . $exp . '|' . $uid, bsecret()); }
+/** Builder token = exp.uid.sid.sig — bound to the current admin session (sign-out / revoke / disable ends builder access). */
+function builder_token(int $uid): string { $sid = (string)($GLOBALS['WX_SID'] ?? ''); $exp = (string)(time() + 12 * 3600); return $exp . '.' . $uid . '.' . $sid . '.' . hash_hmac('sha256', 'wx|' . $exp . '|' . $uid . '|' . $sid, bsecret()); }
 
 // ---------- DB ----------
 function db(): PDO {
@@ -75,7 +76,7 @@ function ingest(): void {
 
 // ---------- auth ----------
 /** Token = uid.exp.sid.sig — the session id makes every sign-in listable and revocable (security-lib.php). */
-function token_for(array $u): string { $e = time() + 12 * 3600; $exp = (string)$e; $sid = sec_new_session($u, $e); return $u['id'] . '.' . $exp . '.' . $sid . '.' . hash_hmac('sha256', 'adm|' . $u['id'] . '|' . $exp . '|' . $u['pw_ver'] . '|' . $sid, bsecret()); }
+function token_for(array $u): string { $e = time() + 12 * 3600; $exp = (string)$e; $sid = sec_new_session($u, $e); $GLOBALS['WX_SID'] = $sid; return $u['id'] . '.' . $exp . '.' . $sid . '.' . hash_hmac('sha256', 'adm|' . $u['id'] . '|' . $exp . '|' . $u['pw_ver'] . '|' . $sid, bsecret()); }
 function current_user(): ?array {
     if (!preg_match('~^(\d+)\.(\d{10})\.([a-f0-9]{16})\.([a-f0-9]{64})$~', (string)($_SERVER['HTTP_X_WX_ADM'] ?? ''), $m) || (int)$m[2] < time()) return null;
     $u = q('SELECT * FROM wx_users WHERE id=? AND active=1', [(int)$m[1]])->fetch(); if (!$u) return null;
@@ -278,6 +279,7 @@ switch ($action) {
             if ((int)$old['id'] === (int)$me['id'] && !$active) fail('You cannot deactivate yourself');
             q('UPDATE wx_users SET name=?,email=?,role=?,active=?' . ($pw !== '' || !$active ? ',pw_ver=pw_ver+1' : '') . ' WHERE id=?', [$name, $email, $role, $active, $id]);
             if ($pw !== '') { valid_pw($pw); q('UPDATE wx_users SET pass_hash=? WHERE id=?', [password_hash($pw, PASSWORD_DEFAULT), $id]); }
+            if (($pw !== '' || !$active || $old['role'] !== $role) && (int)$old['id'] !== (int)$me['id']) { $s = sec_get_u($id); $s['sessions'] = []; sec_put_u($id, $s); } // sign out everywhere (admin + builder)
             log_act($me, 'user.update', $email);
         } else {
             valid_pw($pw);

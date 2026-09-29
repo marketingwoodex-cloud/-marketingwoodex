@@ -17,8 +17,9 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
   const verify = (pw, h) => { const [, s, k] = String(h || "").split("$"); if (!s) return false; const a = crypto.scryptSync(String(pw), s, 32), b = Buffer.from(k, "hex"); return a.length === b.length && crypto.timingSafeEqual(a, b); };
   const hmac = (s) => crypto.createHmac("sha256", secret()).update(s).digest("hex");
   /** Token = uid.exp.sid.sig — the session id makes every sign-in listable and revocable (Security → Sessions). */
+  let lastSid = null; // sid of the session tokenFor() just created (bound into the builder token)
   const tokenFor = (u, req, ip) => {
-    const exp = String(Math.floor(Date.now() / 1000) + 12 * 3600), sid = crypto.randomBytes(8).toString("hex");
+    const exp = String(Math.floor(Date.now() / 1000) + 12 * 3600), sid = crypto.randomBytes(8).toString("hex"); lastSid = sid;
     u.sessions = (u.sessions || []).filter((x) => x.exp > Date.now() / 1000).slice(-9);
     u.sessions.push({ sid, exp: +exp, ip: ip || "", ua: String((req && req.headers["user-agent"]) || "").slice(0, 200), created: now(), seen: now() });
     return u.id + "." + exp + "." + sid + "." + hmac("adm|" + u.id + "|" + exp + "|" + u.pw_ver + "|" + sid);
@@ -31,7 +32,8 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
   const totpOk = (secret, code, u) => { code = String(code || "").replace(/\s/g, ""); if (!/^\d{6}$/.test(code)) return false; const key = b32dec(secret), t = Math.floor(Date.now() / 30000);
     for (const d of [-1, 0, 1]) if (hotp(key, t + d) === code) { if (u) { if ((u.totp_last || 0) >= t + d) return false; u.totp_last = t + d; } return true; } return false; };
   const sha = (x) => crypto.createHash("sha256").update(String(x)).digest("hex");
-  const builderToken = (uid) => { const exp = String(Math.floor(Date.now() / 1000) + 12 * 3600); return exp + "." + uid + "." + hmac("wx|" + exp + "|" + uid); };
+  /** Builder token = exp.uid.sid.sig — bound to the admin session: signing out / revoking / disabling kills builder access too. */
+  const builderToken = (uid, sid) => { const exp = String(Math.floor(Date.now() / 1000) + 12 * 3600); return exp + "." + uid + "." + sid + "." + hmac("wx|" + exp + "|" + uid + "|" + sid); };
   const pub = (u) => ({ id: u.id, name: u.name, email: u.email, role: u.role, active: !!u.active, created_at: u.created_at, last_login: u.last_login });
   const canBuild = (u) => ["owner", "admin", "editor"].includes(u.role);
   const validPw = (p) => { if (String(p || "").length < 8) throw new Fail("Password must be at least 8 characters"); };
@@ -74,7 +76,7 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
       if (u.known.length && u.alerts !== false) loginAlert(u, ip, ua);
       u.known = [...u.known, dev].slice(-20);
     }
-    return { ok: true, token: tokenFor(u, req, ip), builderToken: canBuild(u) ? builderToken(u.id) : null, user: pub(u) };
+    return { ok: true, token: tokenFor(u, req, ip), builderToken: canBuild(u) ? builderToken(u.id, lastSid) : null, user: pub(u) };
   }
   function loginAlert(u, ip, ua) {
     const text = `Hello ${u.name},\n\nYour Woodex Admin account was just signed in to from a new device.\n\nTime: ${now()} UTC\nIP address: ${ip}\nDevice: ${ua.slice(0, 160)}\n\nIf this was you, ignore this email. If not, sign in, change your password and use Security → "Sign out all other devices".`;
@@ -870,7 +872,7 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
         db = { users: [], activity: [], seqU: 1, seqA: 0 };
         const u = { id: 1, name, email, role: "owner", pass_hash: hash(inp.password), active: 1, pw_ver: 1, created_at: now(), last_login: null }; db.users.push(u);
         log(db, u, "setup", "", ip);
-        return done({ ok: true, token: tokenFor(u, req, ip), builderToken: builderToken(u.id), user: pub(u) });
+        return done({ ok: true, token: tokenFor(u, req, ip), builderToken: builderToken(u.id, lastSid), user: pub(u) });
       }
       case "login": {
         if (!db) throw new Fail("Admin is not set up yet", 503);
@@ -923,7 +925,7 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
         log(db, u, "session.revoke", inp.others ? "all other devices" : "one device", ip); return done({ ok: true });
       }
       case "sec_alerts": { const u = need(); u.alerts = !!inp.on; return done({ ok: true, alerts: u.alerts }); }
-      case "me": { const u = need(); return { ok: true, user: pub(u), builderToken: canBuild(u) ? builderToken(u.id) : null }; }
+      case "me": { const u = need(); return { ok: true, user: pub(u), builderToken: canBuild(u) ? builderToken(u.id, u._sid) : null }; }
       case "logout": { const u = current(db, req); if (u) { u.sessions = (u.sessions || []).filter((x) => x.sid !== u._sid); log(db, u, "logout", "", ip); save(db); } return { ok: true }; }
       case "profile": { const u = need(); const n = String(inp.name || "").trim(); if (!n) throw new Fail("Name is required"); u.name = n.slice(0, 120); log(db, u, "profile.update", "", ip); return done({ ok: true, user: pub(u) }); }
       case "password": {
@@ -944,7 +946,8 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
           if (old.role === "owner" && (role !== "owner" || !active) && db.users.filter((x) => x.role === "owner" && x.active).length < 2) throw new Fail("There must be at least one active owner");
           if (old.id === me.id && !active) throw new Fail("You cannot deactivate yourself");
           if (pw) validPw(pw);
-          Object.assign(old, { name, email, role, active }); if (pw || !active) old.pw_ver++; if (pw) old.pass_hash = hash(pw);
+          const bump = pw || !active || old.role !== role; Object.assign(old, { name, email, role, active }); if (pw || !active) old.pw_ver++; if (pw) old.pass_hash = hash(pw);
+          if (bump && old.id !== me.id) old.sessions = []; // sign out everywhere (admin + builder) when access changes
           log(db, me, "user.update", email, ip);
         } else { validPw(pw); db.users.push({ id: ++db.seqU, name, email, role, pass_hash: hash(pw), active, pw_ver: 1, created_at: now(), last_login: null }); log(db, me, "user.create", email, ip); }
         return done({ ok: true });
@@ -968,6 +971,16 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
         throw new Fail("Unknown action", 404);
       }
     }
+  };
+  adminApi.installed = () => !!load();
+  /** Builder token check: signature + user active + builder role + admin session still alive. */
+  adminApi.builderOk = function (t) {
+    const m = /^(\d{10})\.(\d+)\.([a-f0-9]{16})\.([a-f0-9]{64})$/.exec(String(t || ""));
+    if (!m || +m[1] < Date.now() / 1000) return false;
+    const good = hmac("wx|" + m[1] + "|" + m[2] + "|" + m[3]);
+    if (!crypto.timingSafeEqual(Buffer.from(good), Buffer.from(m[4]))) return false;
+    const db = load(), u = db && db.users.find((x) => x.id === +m[2]);
+    return !!(u && u.active && canBuild(u) && (u.sessions || []).some((x) => x.sid === m[3] && x.exp > Date.now() / 1000));
   };
   adminApi.forms = formsApi; adminApi.backupFile = backupFile;
   adminApi.publicGuard = function (rel) {
