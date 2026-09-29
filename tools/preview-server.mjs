@@ -44,9 +44,22 @@ function send(res, status, body, headers = {}) {
   res.end(body);
 }
 
+// Site redirects — same rules Vercel applies (vercel.json), so /admin -> /admin/
+// etc. work locally too. Sources are repo-controlled path-to-regexp patterns;
+// for this file's simple entries a regex literal match is equivalent.
+let REDIRECTS = [];
+try {
+  REDIRECTS = JSON.parse(fs.readFileSync(path.join(ROOT, "vercel.json"), "utf8")).redirects || [];
+} catch { /* no redirects */ }
+
 const server = http.createServer((req, res) => {
   let urlPath;
-  try { urlPath = new URL(req.url, "http://local").pathname; } catch { return send(res, 400, "bad url"); }
+  let urlSearch = "";
+  try {
+    const u = new URL(req.url, "http://local");
+    urlPath = u.pathname;
+    urlSearch = u.search;
+  } catch { return send(res, 400, "bad url"); }
 
   // API: emulate vercel.json rewrite /.netlify/functions/<fn> -> /api/router?fn=<fn>
   if (urlPath.startsWith("/.netlify/functions/") || urlPath === "/api/router") {
@@ -58,6 +71,28 @@ const server = http.createServer((req, res) => {
       req.url = "/api/router" + search;
     }
     return router(req, res);
+  }
+
+  // 1) configured redirects (Vercel parity)
+  for (const r of REDIRECTS) {
+    let m = null;
+    try { m = urlPath.match(new RegExp("^(?:" + r.source + ")$")); } catch { /* bad pattern */ }
+    if (m) {
+      const dest = String(r.destination || "").replace(/\$(\d+)/g, (_, n) => m[Number(n)] || "");
+      if (dest && dest !== urlPath) {
+        res.writeHead(r.permanent === false ? 302 : 301, { location: dest + urlSearch, "cache-control": "no-store" });
+        return res.end();
+      }
+    }
+  }
+
+  // 2) directory without trailing slash -> redirect (so ./relative assets resolve)
+  if (!urlPath.endsWith("/")) {
+    const asDir = safeJoin(urlPath + "/index.html");
+    if (asDir && fs.existsSync(asDir) && fs.statSync(asDir).isFile()) {
+      res.writeHead(302, { location: urlPath + "/" + urlSearch, "cache-control": "no-store" });
+      return res.end();
+    }
   }
 
   const abs = safeJoin(urlPath === "/" ? "/index.html" : urlPath);
