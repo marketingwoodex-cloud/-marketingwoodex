@@ -110,3 +110,55 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
   padding: 3px 7px;
   border-radius: 6px;
 }
+
+/* ============ button contrast pass (dark theme) ============
+   Fixes: invisible "Publish to website" (btn-outline-dark text was
+   near-black on dark navy) and low-shape "Save settings" (btn-dark
+   blended into the background). Gold = primary action, matching the
+   active-nav pill and brand accents. */
+.app-wrapper .btn-dark,
+#view-users .btn-dark,
+.wx-view .btn-dark {
+  background: var(--wxd-gold, #e9c97b);
+  border-color: var(--wxd-gold, #e9c97b);
+  color: #0a0f1e !important;
+  font-weight: 600;
+}
+.app-wrapper .btn-dark:hover,
+.wx-view .btn-dark:hover {
+  filter: brightness(1.07);
+  border-color: var(--wxd-gold, #e9c97b);
+}
+.app-wrapper .btn-outline-dark,
+.wx-view .btn-outline-dark {
+  color: #e9edf7;
+  border-color: #6b7696;
+  background: rgba(255, 255, 255, 0.02);
+  font-weight: 600;
+}
+.app-wrapper .btn-outline-dark:hover,
+.app-wrapper .btn-outline-dark:focus,
+.wx-view .btn-outline-dark:hover,
+.wx-view .btn-outline-dark:focus {
+  background: var(--wxd-gold, #e9c97b);
+  border-color: var(--wxd-gold, #e9c97b);
+  color: #0a0f1e !important;
+}
+.app-wrapper .btn-outline-secondary {
+  color: #c6ccdd;
+  border-color: #6b7696;
+}
+.app-wrapper .btn-outline-secondary:hover {
+  background: #3a4360;
+  color: #fff;
+}
+/* keep destructive outline readable but calmer on dark */
+.app-wrapper .btn-outline-danger {
+  color: #ff8f9b;
+  border-color: #a34450;
+}
+.app-wrapper .btn-outline-danger:hover {
+  background: #dc3545;
+  border-color: #dc3545;
+  color: #fff !important;
+}

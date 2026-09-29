@@ -1472,6 +1472,21 @@
                 var fresh = res.headers.get("x-session-refresh");
                 if (fresh && /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(fresh)) session = fresh;
               } catch (e) {}
+              // Session lost mid-use (expired / tab reopened elsewhere): bounce
+              // back to the sign-in gate with a clear message instead of
+              // surfacing cryptic "Authentication required" errors inline.
+              try {
+                if (res.status === 401 && document.getElementById("wx-app").style.display !== "none") {
+                  session = null; sessionUser = null; sessionRole = null;
+                  document.getElementById("wx-app").style.display = "none";
+                  var gate = document.getElementById("wx-gate");
+                  gate.style.display = "";
+                  var gerr = document.getElementById("wx-error");
+                  if (gerr) { gerr.textContent = "Your session expired — please sign in again."; gerr.style.display = "block"; }
+                  var guser = document.getElementById("wx-user");
+                  if (guser) guser.focus();
+                }
+              } catch (e) {}
               return res;
             }).catch(function (err) {
               if (n < attempts) {
