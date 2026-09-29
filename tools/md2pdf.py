@@ -4,8 +4,9 @@ import re, sys
 from fpdf import FPDF
 from fpdf.enums import XPos, YPos
 
-SRC = "/home/user/-marketingwoodex/MASTER-PLAN.md"
-OUT = "/home/user/-marketingwoodex/MASTER-PLAN.pdf"
+import sys
+SRC = sys.argv[1] if len(sys.argv) > 1 else "/home/user/-marketingwoodex/MASTER-PLAN.md"
+OUT = sys.argv[2] if len(sys.argv) > 2 else SRC.replace(".md", ".pdf")
 
 NAVY   = (10, 15, 30)
 CARD   = (18, 24, 38)
