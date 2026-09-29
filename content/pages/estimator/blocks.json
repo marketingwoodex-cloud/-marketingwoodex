@@ -6,8 +6,11 @@
  },
  {
   "id": "2d7c4102b7",
-  "type": "raw",
-  "html": "\n<section class=\"est-hero\">\n  <div class=\"wrap\">\n    <span class=\"est-kicker\">Cost estimator</span>\n    <h1>What will your project cost?</h1>\n    <p>Pick a service, tell us the size, choose a finish. You get an honest starting range in under a minute, based on our recent projects across Lahore.</p>\n  </div>\n</section>"
+  "type": "hero",
+  "html": "\n<section class=\"est-hero\">\n  <div class=\"wrap\">\n    <span class=\"est-kicker\">Cost estimator</span>\n    <h1>What will your project cost?</h1>\n    <p>Pick a service, tell us the size, choose a finish. You get an honest starting range in under a minute, based on our recent projects across Lahore.</p>\n  </div>\n</section>",
+  "fields": {
+   "heading": "What will your project cost?"
+  }
  },
  {
   "id": "31fe95c351",

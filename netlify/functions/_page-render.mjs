@@ -73,12 +73,23 @@ export function validateBlocks(blocks) {
       : `blk${Date.now().toString(36)}${i}`;
     if (ids.has(id)) throw new Error(`Duplicate block id: ${id}`);
     ids.add(id);
-    return {
+    const base = {
       id,
       type,
       ...(b.hidden ? { hidden: true } : {}),
       html: sanitizeBlockHtml(b.html),
     };
+    // Structured editing layer (typed blocks). html remains the publish
+    // source of truth; fields only drive the editor's regeneration step.
+    if (b.fields !== undefined && b.fields !== null) {
+      if (typeof b.fields !== "object" || Array.isArray(b.fields)) {
+        throw new Error(`Block ${i}: fields must be an object.`);
+      }
+      const fs = JSON.stringify(b.fields);
+      if (fs.length > 120_000) throw new Error(`Block ${i}: fields too large.`);
+      base.fields = b.fields;
+    }
+    return base;
   });
 }
 

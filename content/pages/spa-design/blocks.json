@@ -1,8 +1,16 @@
 [
  {
   "id": "861f771c83",
-  "type": "raw",
-  "html": "\n\n    <section class=\"sp-hero\" aria-labelledby=\"spa-title\"><div class=\"sp-wrap sp-hero-grid\">\n      <div class=\"sp-hero-copy sp-reveal\">\n        <nav class=\"sp-crumbs\" aria-label=\"Breadcrumb\"><a href=\"/\" data-page-route=\"home\">Home</a><span>&gt;</span><a href=\"/interior-design/\" data-page-route=\"interior\">Interior Design</a><span>&gt;</span><a href=\"/commercial-interior/\" data-page-route=\"commercialInterior\">Commercial Interiors</a><span>&gt;</span><span>Spa Design</span></nav>\n        <h1 id=\"spa-title\">Spa Design in Lahore — Calm Spaces, Premium Wellness</h1>\n        <p class=\"sp-copy\">We plan treatment rooms, relaxation lounges, reception and wet areas as one calm journey. Every zone is shaped for privacy, comfort and a genuine sense of escape.</p>\n        <div class=\"sp-hero-actions\"><a class=\"sp-btn sp-btn-light\" href=\"/contact/\" data-page-route=\"contact\">Get a Free Consultation</a><a class=\"sp-btn sp-btn-outline\" href=\"https://wa.me/923224000768\">WhatsApp Woodex</a></div>\n        <div class=\"sp-trust\" aria-label=\"Woodex experience\"><span><strong>200+</strong>spaces delivered</span><span><strong>10 years</strong>experience</span><span><strong>1 year</strong>workmanship warranty</span><span><strong>4 cities</strong>served</span></div>\n      </div>\n      <figure class=\"sp-hero-media sp-reveal\"><img src=\"/assets/img/img-af83a84f72d2.webp\" width=\"1920\" height=\"1280\" alt=\"Serene spa interior with warm stone, timber, soft lighting and treatment towels\" loading=\"lazy\" decoding=\"async\"><figcaption>Quiet materials, soft light and considered privacy</figcaption></figure>\n    </div></section>"
+  "type": "hero",
+  "html": "\n\n    <section class=\"sp-hero\" aria-labelledby=\"spa-title\"><div class=\"sp-wrap sp-hero-grid\">\n      <div class=\"sp-hero-copy sp-reveal\">\n        <nav class=\"sp-crumbs\" aria-label=\"Breadcrumb\"><a href=\"/\" data-page-route=\"home\">Home</a><span>&gt;</span><a href=\"/interior-design/\" data-page-route=\"interior\">Interior Design</a><span>&gt;</span><a href=\"/commercial-interior/\" data-page-route=\"commercialInterior\">Commercial Interiors</a><span>&gt;</span><span>Spa Design</span></nav>\n        <h1 id=\"spa-title\">Spa Design in Lahore — Calm Spaces, Premium Wellness</h1>\n        <p class=\"sp-copy\">We plan treatment rooms, relaxation lounges, reception and wet areas as one calm journey. Every zone is shaped for privacy, comfort and a genuine sense of escape.</p>\n        <div class=\"sp-hero-actions\"><a class=\"sp-btn sp-btn-light\" href=\"/contact/\" data-page-route=\"contact\">Get a Free Consultation</a><a class=\"sp-btn sp-btn-outline\" href=\"https://wa.me/923224000768\">WhatsApp Woodex</a></div>\n        <div class=\"sp-trust\" aria-label=\"Woodex experience\"><span><strong>200+</strong>spaces delivered</span><span><strong>10 years</strong>experience</span><span><strong>1 year</strong>workmanship warranty</span><span><strong>4 cities</strong>served</span></div>\n      </div>\n      <figure class=\"sp-hero-media sp-reveal\"><img src=\"/assets/img/img-af83a84f72d2.webp\" width=\"1920\" height=\"1280\" alt=\"Serene spa interior with warm stone, timber, soft lighting and treatment towels\" loading=\"lazy\" decoding=\"async\"><figcaption>Quiet materials, soft light and considered privacy</figcaption></figure>\n    </div></section>",
+  "fields": {
+   "heading": "Spa Design in Lahore — Calm Spaces, Premium Wellness",
+   "copy": "We plan treatment rooms, relaxation lounges, reception and wet areas as one calm journey. Every zone is shaped for privacy, comfort and a genuine sense of escape.",
+   "cta_text": "Get a Free Consultation",
+   "cta_href": "/contact/",
+   "img_src": "/assets/img/img-af83a84f72d2.webp",
+   "img_alt": "Serene spa interior with warm stone, timber, soft lighting and treatment towels"
+  }
  },
  {
   "id": "7f1a31acef",
@@ -26,8 +34,38 @@
  },
  {
   "id": "5864a95514",
-  "type": "raw",
-  "html": "\n\n    <section class=\"sp-section sp-faq\" id=\"spa-faq\"><div class=\"sp-wrap sp-faq-grid\">\n      <div class=\"sp-faq-intro sp-reveal\"><h2>Spa Design FAQs</h2><p class=\"sp-copy\">Straight answers on calm, room capacity, wet areas, timing, branding and 3D approval.</p></div>\n      <div class=\"sp-faq-list sp-reveal\">\n        <div class=\"sp-faq-item\"><button class=\"sp-faq-q\" type=\"button\" aria-expanded=\"true\"><span>How does spa design create calm?</span><span class=\"plus\" aria-hidden=\"true\">+</span></button><div class=\"sp-faq-a\"><div><p>We use quiet circulation, soft lighting, controlled acoustics and a restrained material palette to reduce visual and sensory noise.</p></div></div></div>\n        <div class=\"sp-faq-item\"><button class=\"sp-faq-q\" type=\"button\" aria-expanded=\"false\"><span>How many treatment rooms fit my space?</span><span class=\"plus\" aria-hidden=\"true\">+</span></button><div class=\"sp-faq-a\"><div><p>Capacity depends on floor area, room type, storage, services and circulation. We test layouts before confirming the right number.</p></div></div></div>\n        <div class=\"sp-faq-item\"><button class=\"sp-faq-q\" type=\"button\" aria-expanded=\"false\"><span>Do you plan steam, sauna, and jacuzzi areas?</span><span class=\"plus\" aria-hidden=\"true\">+</span></button><div class=\"sp-faq-a\"><div><p>Yes. We plan wet zones around drainage, ventilation, waterproofing, privacy and safe guest movement.</p></div></div></div>\n        <div class=\"sp-faq-item\"><button class=\"sp-faq-q\" type=\"button\" aria-expanded=\"false\"><span>How long does design take?</span><span class=\"plus\" aria-hidden=\"true\">+</span></button><div class=\"sp-faq-a\"><div><p>A compact spa commonly takes three to four weeks. Larger wellness spaces with wet areas need more coordination time.</p></div></div></div>\n        <div class=\"sp-faq-item\"><button class=\"sp-faq-q\" type=\"button\" aria-expanded=\"false\"><span>Can you match my wellness brand?</span><span class=\"plus\" aria-hidden=\"true\">+</span></button><div class=\"sp-faq-a\"><div><p>Yes. Materials, lighting, scent zones, signage and details are shaped around your brand in a quiet, natural way.</p></div></div></div>\n        <div class=\"sp-faq-item\"><button class=\"sp-faq-q\" type=\"button\" aria-expanded=\"false\"><span>Do I get 3D visuals before execution?</span><span class=\"plus\" aria-hidden=\"true\">+</span></button><div class=\"sp-faq-a\"><div><p>Yes. Key treatment rooms, reception, lounge and wet areas are shown in 3D before site work begins.</p></div></div></div>\n      </div>\n    </div></section>"
+  "type": "faq",
+  "html": "\n\n    <section class=\"sp-section sp-faq\" id=\"spa-faq\"><div class=\"sp-wrap sp-faq-grid\">\n      <div class=\"sp-faq-intro sp-reveal\"><h2>Spa Design FAQs</h2><p class=\"sp-copy\">Straight answers on calm, room capacity, wet areas, timing, branding and 3D approval.</p></div>\n      <div class=\"sp-faq-list sp-reveal\">\n        <div class=\"sp-faq-item\"><button class=\"sp-faq-q\" type=\"button\" aria-expanded=\"true\"><span>How does spa design create calm?</span><span class=\"plus\" aria-hidden=\"true\">+</span></button><div class=\"sp-faq-a\"><div><p>We use quiet circulation, soft lighting, controlled acoustics and a restrained material palette to reduce visual and sensory noise.</p></div></div></div>\n        <div class=\"sp-faq-item\"><button class=\"sp-faq-q\" type=\"button\" aria-expanded=\"false\"><span>How many treatment rooms fit my space?</span><span class=\"plus\" aria-hidden=\"true\">+</span></button><div class=\"sp-faq-a\"><div><p>Capacity depends on floor area, room type, storage, services and circulation. We test layouts before confirming the right number.</p></div></div></div>\n        <div class=\"sp-faq-item\"><button class=\"sp-faq-q\" type=\"button\" aria-expanded=\"false\"><span>Do you plan steam, sauna, and jacuzzi areas?</span><span class=\"plus\" aria-hidden=\"true\">+</span></button><div class=\"sp-faq-a\"><div><p>Yes. We plan wet zones around drainage, ventilation, waterproofing, privacy and safe guest movement.</p></div></div></div>\n        <div class=\"sp-faq-item\"><button class=\"sp-faq-q\" type=\"button\" aria-expanded=\"false\"><span>How long does design take?</span><span class=\"plus\" aria-hidden=\"true\">+</span></button><div class=\"sp-faq-a\"><div><p>A compact spa commonly takes three to four weeks. Larger wellness spaces with wet areas need more coordination time.</p></div></div></div>\n        <div class=\"sp-faq-item\"><button class=\"sp-faq-q\" type=\"button\" aria-expanded=\"false\"><span>Can you match my wellness brand?</span><span class=\"plus\" aria-hidden=\"true\">+</span></button><div class=\"sp-faq-a\"><div><p>Yes. Materials, lighting, scent zones, signage and details are shaped around your brand in a quiet, natural way.</p></div></div></div>\n        <div class=\"sp-faq-item\"><button class=\"sp-faq-q\" type=\"button\" aria-expanded=\"false\"><span>Do I get 3D visuals before execution?</span><span class=\"plus\" aria-hidden=\"true\">+</span></button><div class=\"sp-faq-a\"><div><p>Yes. Key treatment rooms, reception, lounge and wet areas are shown in 3D before site work begins.</p></div></div></div>\n      </div>\n    </div></section>",
+  "fields": {
+   "heading": "Spa Design FAQs",
+   "copy": "Straight answers on calm, room capacity, wet areas, timing, branding and 3D approval.",
+   "items": [
+    {
+     "q": "How does spa design create calm?",
+     "a": "<p>We use quiet circulation, soft lighting, controlled acoustics and a restrained material palette to reduce visual and sensory noise.</p>"
+    },
+    {
+     "q": "How many treatment rooms fit my space?",
+     "a": "<p>Capacity depends on floor area, room type, storage, services and circulation. We test layouts before confirming the right number.</p>"
+    },
+    {
+     "q": "Do you plan steam, sauna, and jacuzzi areas?",
+     "a": "<p>Yes. We plan wet zones around drainage, ventilation, waterproofing, privacy and safe guest movement.</p>"
+    },
+    {
+     "q": "How long does design take?",
+     "a": "<p>A compact spa commonly takes three to four weeks. Larger wellness spaces with wet areas need more coordination time.</p>"
+    },
+    {
+     "q": "Can you match my wellness brand?",
+     "a": "<p>Yes. Materials, lighting, scent zones, signage and details are shaped around your brand in a quiet, natural way.</p>"
+    },
+    {
+     "q": "Do I get 3D visuals before execution?",
+     "a": "<p>Yes. Key treatment rooms, reception, lounge and wet areas are shown in 3D before site work begins.</p>"
+    }
+   ]
+  }
  },
  {
   "id": "5a8aeb4767",
@@ -36,7 +74,21 @@
  },
  {
   "id": "1a3ce6be5d",
-  "type": "raw",
-  "html": "\n\n    <section class=\"sp-section sp-contact\" id=\"spa-contact\"><div class=\"sp-wrap sp-contact-grid\">\n      <div class=\"sp-reveal\"><h2>Talk to Woodex</h2><p class=\"sp-copy\">Tell us about the site, treatment rooms, wet areas and wellness experience you want to create.</p><div class=\"sp-contact-actions\"><a class=\"sp-btn sp-btn-light\" href=\"/contact/\" data-page-route=\"contact\">Get a Free Consultation</a><a class=\"sp-btn sp-btn-outline\" href=\"https://wa.me/923224000768\">WhatsApp Woodex</a></div></div>\n      <div class=\"sp-contact-list sp-reveal\"><div class=\"sp-contact-item\"><small>Call</small><a href=\"tel:+923224000768\">+92 322 4000768</a></div><div class=\"sp-contact-item\"><small>Call</small><a href=\"tel:+923214686884\">+92 321 4686884</a></div><div class=\"sp-contact-item\"><small>Email</small><a href=\"mailto:info@woodex.com.pk\">info@woodex.com.pk</a></div><div class=\"sp-contact-item\"><small>Studio</small><address>M-71 Zainab Tower, Model Town Link Road Lahore</address></div><div class=\"sp-contact-item\"><small>Hours</small><span>Mon-Sat 9:30-6:30</span></div><div class=\"sp-contact-item\"><small>Sunday</small><span>Sunday closed</span></div><div class=\"sp-contact-item\"><small>WhatsApp</small><a href=\"https://wa.me/923224000768\">wa.me/923224000768</a></div></div>\n    </div></section>\n  \n"
+  "type": "cta",
+  "html": "\n\n    <section class=\"sp-section sp-contact\" id=\"spa-contact\"><div class=\"sp-wrap sp-contact-grid\">\n      <div class=\"sp-reveal\"><h2>Talk to Woodex</h2><p class=\"sp-copy\">Tell us about the site, treatment rooms, wet areas and wellness experience you want to create.</p><div class=\"sp-contact-actions\"><a class=\"sp-btn sp-btn-light\" href=\"/contact/\" data-page-route=\"contact\">Get a Free Consultation</a><a class=\"sp-btn sp-btn-outline\" href=\"https://wa.me/923224000768\">WhatsApp Woodex</a></div></div>\n      <div class=\"sp-contact-list sp-reveal\"><div class=\"sp-contact-item\"><small>Call</small><a href=\"tel:+923224000768\">+92 322 4000768</a></div><div class=\"sp-contact-item\"><small>Call</small><a href=\"tel:+923214686884\">+92 321 4686884</a></div><div class=\"sp-contact-item\"><small>Email</small><a href=\"mailto:info@woodex.com.pk\">info@woodex.com.pk</a></div><div class=\"sp-contact-item\"><small>Studio</small><address>M-71 Zainab Tower, Model Town Link Road Lahore</address></div><div class=\"sp-contact-item\"><small>Hours</small><span>Mon-Sat 9:30-6:30</span></div><div class=\"sp-contact-item\"><small>Sunday</small><span>Sunday closed</span></div><div class=\"sp-contact-item\"><small>WhatsApp</small><a href=\"https://wa.me/923224000768\">wa.me/923224000768</a></div></div>\n    </div></section>\n  \n",
+  "fields": {
+   "heading": "Talk to Woodex",
+   "copy": "Tell us about the site, treatment rooms, wet areas and wellness experience you want to create.",
+   "actions": [
+    {
+     "text": "Get a Free Consultation",
+     "href": "/contact/"
+    },
+    {
+     "text": "WhatsApp Woodex",
+     "href": "https://wa.me/923224000768"
+    }
+   ]
+  }
  }
 ]

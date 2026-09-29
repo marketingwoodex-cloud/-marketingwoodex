@@ -1,8 +1,15 @@
 [
  {
   "id": "4dc400c9f0",
-  "type": "raw",
-  "html": "\n\n    <section class=\"arch-section arch-hero\" aria-labelledby=\"architecture-title\"><div class=\"wrap arch-hero-grid\">\n      <div class=\"arch-hero-copy arch-reveal\"><nav class=\"crumbs\" aria-label=\"Breadcrumb\"><a href=\"/\">Home</a><span>→</span><span>Services</span><span>→</span><span>Architecture</span></nav><h1 id=\"architecture-title\">Architecture Services in Lahore</h1><p class=\"lead\">Building design, working drawings, elevations and authority submissions. From first concept to a construction-ready package.</p><div class=\"actions\"><a class=\"btn\" href=\"#architecture-contact\">Book a consultation</a><a class=\"btn btn-light\" href=\"#architecture-services\">View services</a></div></div>\n      <figure class=\"arch-image arch-hero-media arch-reveal\"><img src=\"/assets/img/img-dce06249b137.webp\" alt=\"Contemporary house exterior used as a placeholder for a Woodex architecture project\" width=\"1920\" height=\"1280\" loading=\"lazy\" decoding=\"async\"><figcaption class=\"arch-hero-note\"><strong>Designed to be built</strong><span>Concept · drawings · approvals</span></figcaption></figure>\n    </div></section>"
+  "type": "hero",
+  "html": "\n\n    <section class=\"arch-section arch-hero\" aria-labelledby=\"architecture-title\"><div class=\"wrap arch-hero-grid\">\n      <div class=\"arch-hero-copy arch-reveal\"><nav class=\"crumbs\" aria-label=\"Breadcrumb\"><a href=\"/\">Home</a><span>→</span><span>Services</span><span>→</span><span>Architecture</span></nav><h1 id=\"architecture-title\">Architecture Services in Lahore</h1><p class=\"lead\">Building design, working drawings, elevations and authority submissions. From first concept to a construction-ready package.</p><div class=\"actions\"><a class=\"btn\" href=\"#architecture-contact\">Book a consultation</a><a class=\"btn btn-light\" href=\"#architecture-services\">View services</a></div></div>\n      <figure class=\"arch-image arch-hero-media arch-reveal\"><img src=\"/assets/img/img-dce06249b137.webp\" alt=\"Contemporary house exterior used as a placeholder for a Woodex architecture project\" width=\"1920\" height=\"1280\" loading=\"lazy\" decoding=\"async\"><figcaption class=\"arch-hero-note\"><strong>Designed to be built</strong><span>Concept · drawings · approvals</span></figcaption></figure>\n    </div></section>",
+  "fields": {
+   "heading": "Architecture Services in Lahore",
+   "cta_text": "Book a consultation",
+   "cta_href": "#architecture-contact",
+   "img_src": "/assets/img/img-dce06249b137.webp",
+   "img_alt": "Contemporary house exterior used as a placeholder for a Woodex architecture project"
+  }
  },
  {
   "id": "9574abf0c5",
@@ -36,8 +43,45 @@
  },
  {
   "id": "16ebd6ac68",
-  "type": "raw",
-  "html": "\n\n    <section class=\"arch-section arch-dark\" id=\"architecture-process\"><div class=\"wrap arch-process-layout\">\n      <div class=\"arch-process-side arch-reveal\"><h2>Our Architecture Process</h2><p>Eight clear stages from the first brief to the final construction package.</p><figure class=\"arch-image arch-process-image\"><img src=\"/assets/img/img-c349a92a4ae0.webp\" alt=\"Detailed architectural visualization used to represent design development\" width=\"2240\" height=\"1120\" loading=\"lazy\" decoding=\"async\"></figure><div class=\"arch-timeline\"><strong>Typical timeline:</strong> 4–12 weeks, depending on project size and authority processing.</div></div>\n      <div class=\"arch-process-list arch-reveal\" id=\"arch-process-list\" tabindex=\"0\" aria-label=\"Eight-step architecture process\">\n        <article class=\"arch-step\"><small></small><h3>Brief &amp; Site Survey</h3><p>We understand the requirements, visit the site, take measurements and check the relevant zoning and bylaws.</p></article>\n        <article class=\"arch-step\"><small></small><h3>Site Survey</h3><p>Boundaries, levels, access, utilities and neighbouring structures are recorded in detail.</p></article>\n        <article class=\"arch-step\"><small></small><h3>Concept Design, 2D + 3D</h3><p>Floor plans, elevations and 3D views establish the design. Two revision rounds are included.</p></article>\n        <article class=\"arch-step\"><small></small><h3>Design Development</h3><p>Dimensions, materials, structural grids and service zones are technically resolved.</p></article>\n        <article class=\"arch-step\"><small></small><h3>Working Drawings</h3><p>Plans, sections, elevations and details are prepared in AutoCAD or Revit.</p></article>\n        <article class=\"arch-step\"><small></small><h3>Authority Submission</h3><p>The required drawing set is prepared and coordinated with the relevant authority.</p></article>\n        <article class=\"arch-step\"><small></small><h3>Structural Coordination</h3><p>We align the architecture with the structural engineering team for buildability.</p></article>\n        <article class=\"arch-step is-active\"><small></small><h3>Final Handover</h3><p>The complete construction-ready drawing package is issued to the client or contractor.</p></article>\n      </div>\n    </div></section>"
+  "type": "process",
+  "html": "\n\n    <section class=\"arch-section arch-dark\" id=\"architecture-process\"><div class=\"wrap arch-process-layout\">\n      <div class=\"arch-process-side arch-reveal\"><h2>Our Architecture Process</h2><p>Eight clear stages from the first brief to the final construction package.</p><figure class=\"arch-image arch-process-image\"><img src=\"/assets/img/img-c349a92a4ae0.webp\" alt=\"Detailed architectural visualization used to represent design development\" width=\"2240\" height=\"1120\" loading=\"lazy\" decoding=\"async\"></figure><div class=\"arch-timeline\"><strong>Typical timeline:</strong> 4–12 weeks, depending on project size and authority processing.</div></div>\n      <div class=\"arch-process-list arch-reveal\" id=\"arch-process-list\" tabindex=\"0\" aria-label=\"Eight-step architecture process\">\n        <article class=\"arch-step\"><small></small><h3>Brief &amp; Site Survey</h3><p>We understand the requirements, visit the site, take measurements and check the relevant zoning and bylaws.</p></article>\n        <article class=\"arch-step\"><small></small><h3>Site Survey</h3><p>Boundaries, levels, access, utilities and neighbouring structures are recorded in detail.</p></article>\n        <article class=\"arch-step\"><small></small><h3>Concept Design, 2D + 3D</h3><p>Floor plans, elevations and 3D views establish the design. Two revision rounds are included.</p></article>\n        <article class=\"arch-step\"><small></small><h3>Design Development</h3><p>Dimensions, materials, structural grids and service zones are technically resolved.</p></article>\n        <article class=\"arch-step\"><small></small><h3>Working Drawings</h3><p>Plans, sections, elevations and details are prepared in AutoCAD or Revit.</p></article>\n        <article class=\"arch-step\"><small></small><h3>Authority Submission</h3><p>The required drawing set is prepared and coordinated with the relevant authority.</p></article>\n        <article class=\"arch-step\"><small></small><h3>Structural Coordination</h3><p>We align the architecture with the structural engineering team for buildability.</p></article>\n        <article class=\"arch-step is-active\"><small></small><h3>Final Handover</h3><p>The complete construction-ready drawing package is issued to the client or contractor.</p></article>\n      </div>\n    </div></section>",
+  "fields": {
+   "steps": [
+    {
+     "title": "Brief &amp; Site Survey",
+     "copy": "We understand the requirements, visit the site, take measurements and check the relevant zoning and bylaws."
+    },
+    {
+     "title": "Site Survey",
+     "copy": "Boundaries, levels, access, utilities and neighbouring structures are recorded in detail."
+    },
+    {
+     "title": "Concept Design, 2D + 3D",
+     "copy": "Floor plans, elevations and 3D views establish the design. Two revision rounds are included."
+    },
+    {
+     "title": "Design Development",
+     "copy": "Dimensions, materials, structural grids and service zones are technically resolved."
+    },
+    {
+     "title": "Working Drawings",
+     "copy": "Plans, sections, elevations and details are prepared in AutoCAD or Revit."
+    },
+    {
+     "title": "Authority Submission",
+     "copy": "The required drawing set is prepared and coordinated with the relevant authority."
+    },
+    {
+     "title": "Structural Coordination",
+     "copy": "We align the architecture with the structural engineering team for buildability."
+    },
+    {
+     "title": "Final Handover",
+     "copy": "The complete construction-ready drawing package is issued to the client or contractor."
+    }
+   ],
+   "heading": "Our Architecture Process"
+  }
  },
  {
   "id": "af1ceefa40",
@@ -61,7 +105,20 @@
  },
  {
   "id": "eccaec8211",
-  "type": "raw",
-  "html": "\n\n    <section class=\"arch-section arch-soft\" id=\"architecture-contact\"><div class=\"wrap arch-contact-grid\">\n      <figure class=\"arch-image arch-contact-media arch-reveal\"><img src=\"/assets/img/img-dce06249b137.webp\" alt=\"Completed building project used as a placeholder for starting an architecture brief\" width=\"1920\" height=\"1280\" loading=\"lazy\" decoding=\"async\"><figcaption class=\"arch-caption\">Bring the plot size, location and what you want to build</figcaption></figure>\n      <div class=\"arch-contact-copy arch-reveal\"><h2>Start Your Architecture Project</h2><p class=\"lead\">Tell us about the site and the building you have in mind. We will help define the right scope before work begins.</p><div class=\"arch-contact-details\"><div><strong>Call</strong><a href=\"tel:+923224000768\">+92 322 4000768</a><br><a href=\"tel:+923214686884\">+92 321 4686884</a></div><div><strong>Email</strong><a href=\"mailto:info@woodex.com.pk\">info@woodex.com.pk</a></div><div><strong>Visit</strong><span>M-71, Zainab Tower, Model Town Link Road, Lahore</span></div><div><strong>Hours</strong><span><b>Mon-Sat 9:30-6:30</b></span></div></div><div class=\"arch-contact-actions\"><a class=\"btn\" href=\"mailto:info@woodex.com.pk?subject=Architecture%20Consultation\">Book a consultation</a><a class=\"btn btn-secondary\" href=\"https://wa.me/923224000768\">WhatsApp Woodex</a></div></div>\n    </div></section>\n  \n"
+  "type": "cta",
+  "html": "\n\n    <section class=\"arch-section arch-soft\" id=\"architecture-contact\"><div class=\"wrap arch-contact-grid\">\n      <figure class=\"arch-image arch-contact-media arch-reveal\"><img src=\"/assets/img/img-dce06249b137.webp\" alt=\"Completed building project used as a placeholder for starting an architecture brief\" width=\"1920\" height=\"1280\" loading=\"lazy\" decoding=\"async\"><figcaption class=\"arch-caption\">Bring the plot size, location and what you want to build</figcaption></figure>\n      <div class=\"arch-contact-copy arch-reveal\"><h2>Start Your Architecture Project</h2><p class=\"lead\">Tell us about the site and the building you have in mind. We will help define the right scope before work begins.</p><div class=\"arch-contact-details\"><div><strong>Call</strong><a href=\"tel:+923224000768\">+92 322 4000768</a><br><a href=\"tel:+923214686884\">+92 321 4686884</a></div><div><strong>Email</strong><a href=\"mailto:info@woodex.com.pk\">info@woodex.com.pk</a></div><div><strong>Visit</strong><span>M-71, Zainab Tower, Model Town Link Road, Lahore</span></div><div><strong>Hours</strong><span><b>Mon-Sat 9:30-6:30</b></span></div></div><div class=\"arch-contact-actions\"><a class=\"btn\" href=\"mailto:info@woodex.com.pk?subject=Architecture%20Consultation\">Book a consultation</a><a class=\"btn btn-secondary\" href=\"https://wa.me/923224000768\">WhatsApp Woodex</a></div></div>\n    </div></section>\n  \n",
+  "fields": {
+   "heading": "Start Your Architecture Project",
+   "actions": [
+    {
+     "text": "Book a consultation",
+     "href": "mailto:info@woodex.com.pk?subject=Architecture%20Consultation"
+    },
+    {
+     "text": "WhatsApp Woodex",
+     "href": "https://wa.me/923224000768"
+    }
+   ]
+  }
  }
 ]

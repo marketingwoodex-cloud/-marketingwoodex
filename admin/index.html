@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="./css/woodex-admin.css" />
     <link rel="stylesheet" href="./css/wx-dashboard.css" />
     <script src="./vendor/chart.umd.js" defer></script>
+    <script src="./pb-blocks.js"></script>
     <style>
       :root { --navy: #0a0f1e; }
       html, body { height: 100%; }
@@ -132,6 +133,16 @@
         padding: 10px; font-size: 12px; color: #8fa0c2; word-break: break-all; margin-bottom: 6px;
       }
       .pb-actions { display: flex; gap: 8px; margin: 10px 0; }
+      #wx-be-form h4 { margin: 14px 0 6px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: #d4af6a; }
+      .pb-listitem { background: #101728; border: 1px solid #1e2740; border-radius: 8px; padding: 8px 10px; margin-bottom: 8px; }
+      .pb-listbar { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; font-size: 11px; color: #8fa0c2; }
+      .pb-listbar b { flex: 1; text-transform: uppercase; letter-spacing: 0.06em; }
+      .pb-listbar button {
+        min-width: 24px; height: 22px; border-radius: 5px; border: 1px solid #26304d;
+        background: #131a2e; color: #aab6d4; cursor: pointer; font-size: 12px; line-height: 1;
+      }
+      .pb-listbar button:hover { background: #1a2340; color: #fff; }
+      .pb-listbar button:disabled { opacity: 0.35; cursor: default; }
       .pb-modal { position: fixed; inset: 0; background: rgba(4, 7, 14, 0.72); display: flex; align-items: center; justify-content: center; z-index: 1050; }
       .pb-modal[hidden] { display: none; }
       .pb-modal-card { width: min(440px, 92vw); background: #0f1526; border: 1px solid #26304d; border-radius: 14px; padding: 20px; box-shadow: 0 24px 60px rgba(0,0,0,.5); }
@@ -818,6 +829,7 @@
                 <div id="wx-block-detail">
                   <p class="wx-hint">Click the pencil on a section to edit its HTML here. Sections are the top-level blocks of the page&#8217;s main area.</p>
                 </div>
+                <div id="wx-be-form" hidden></div>
                 <label class="pb-field" id="wx-be-wrap" hidden>Section HTML
                   <textarea id="wx-be-html" rows="16" spellcheck="false"></textarea>
                 </label>
@@ -2965,21 +2977,180 @@
           pbFillEditor();
         }
 
+        function pbIsTyped(b) {
+          return !!(b && b.type && b.type !== "raw" && window.PB);
+        }
+
+        var PB_FORMS = {
+          hero: { scalars: [["label", "Eyebrow label"], ["heading", "Headline (H1)"], ["copy", "Supporting paragraph"], ["cta_text", "Button label"], ["cta_href", "Button link"], ["img_src", "Image URL"], ["img_alt", "Image alt text"]] },
+          faq: { scalars: [["label", "Eyebrow"], ["heading", "Heading"], ["copy", "Intro"]], list: { key: "items", title: "Questions", qLabel: "Question", aLabel: "Answer (HTML)", aRows: 4 } },
+          process: { scalars: [["label", "Eyebrow"], ["heading", "Heading"], ["copy", "Intro"]], list: { key: "steps", title: "Steps", qLabel: "Step title", aLabel: "Step description", aRows: 2 } },
+          cta: { scalars: [["label", "Eyebrow"], ["heading", "Heading"], ["copy", "Text"]], actions: true },
+          pullquote: { scalars: [["text", "Quote"]] }
+        };
+
+        var pbRenderTimer = null;
+        function pbRenderSoon() {
+          if (pbRenderTimer) clearTimeout(pbRenderTimer);
+          pbRenderTimer = setTimeout(function () { pbRenderBlocks(); }, 250);
+        }
+
+        function pbApplyRegen() {
+          var b = pbBlocks[pbSel];
+          if (!b) return;
+          if (pbIsTyped(b)) b.html = window.PB.regen(b);
+          pbMarkDirty();
+          pbRenderSoon();
+        }
+
+        function pbFieldInput(labelText, fk, value, rows) {
+          var lab = document.createElement("label");
+          lab.className = "pb-field";
+          lab.textContent = labelText;
+          var el;
+          if (rows && rows > 1) {
+            el = document.createElement("textarea");
+            el.rows = rows;
+          } else {
+            el = document.createElement("input");
+          }
+          el.value = value == null ? "" : value;
+          el.setAttribute("data-fk", fk);
+          lab.appendChild(el);
+          return lab;
+        }
+
+        function pbBuildForm(b) {
+          var form = document.getElementById("wx-be-form");
+          form.innerHTML = "";
+          var schema = PB_FORMS[b.type];
+          if (!schema) return;
+          if (schema.scalars) {
+            schema.scalars.forEach(function (pair) {
+              var fk = pair[0];
+              if (!(fk in b.fields)) return;
+              var v = b.fields[fk] == null ? "" : String(b.fields[fk]);
+              var isLong = v.length > 60 || fk === "copy" || fk === "a";
+              form.appendChild(pbFieldInput(pair[1], fk, v, isLong ? 4 : 1));
+            });
+          }
+          if (schema.list && Array.isArray(b.fields[schema.list.key])) {
+            var L = schema.list;
+            var head = document.createElement("h4");
+            head.textContent = L.title + " (" + b.fields[L.key].length + ")";
+            form.appendChild(head);
+            b.fields[L.key].forEach(function (item, i) {
+              var box = document.createElement("div");
+              box.className = "pb-listitem";
+              var bar = document.createElement("div");
+              bar.className = "pb-listbar";
+              bar.innerHTML = "<b>" + (i + 1) + "</b>";
+              [["up", "\u2191"], ["down", "\u2193"], ["del", "\u00d7"]].forEach(function (a) {
+                var btn = document.createElement("button");
+                btn.type = "button"; btn.textContent = a[1];
+                btn.title = a[0] === "del" ? "Remove" : a[0];
+                btn.setAttribute("data-la", a[0]);
+                btn.setAttribute("data-i", String(i));
+                if ((a[0] === "up" && i === 0) || (a[0] === "down" && i === b.fields[L.key].length - 1)) btn.disabled = true;
+                bar.appendChild(btn);
+              });
+              box.appendChild(bar);
+              box.appendChild(pbFieldInput(L.qLabel, L.key + "." + i + ".q", item.q, 1));
+              box.appendChild(pbFieldInput(L.aLabel, L.key + "." + i + ".a", item.a, L.aRows || 3));
+              form.appendChild(box);
+            });
+            var add = document.createElement("button");
+            add.className = "wx-btn small";
+            add.type = "button";
+            add.id = "wx-la-add";
+            add.textContent = "+ Add " + (b.type === "faq" ? "question" : "step");
+            form.appendChild(add);
+          }
+          if (schema.actions && Array.isArray(b.fields.actions)) {
+            var ah = document.createElement("h4");
+            ah.textContent = "Buttons (" + b.fields.actions.length + ")";
+            form.appendChild(ah);
+            b.fields.actions.forEach(function (act, i) {
+              var box = document.createElement("div");
+              box.className = "pb-listitem";
+              var bar = document.createElement("div");
+              bar.className = "pb-listbar";
+              bar.innerHTML = "<b>Button " + (i + 1) + "</b>";
+              box.appendChild(bar);
+              box.appendChild(pbFieldInput("Label", "actions." + i + ".text", act.text, 1));
+              box.appendChild(pbFieldInput("Link", "actions." + i + ".href", act.href, 1));
+              form.appendChild(box);
+            });
+          }
+        }
+
+        function pbSetFieldValue(path, value) {
+          var b = pbBlocks[pbSel];
+          if (!b || !b.fields) return;
+          var parts = String(path).split(".");
+          if (parts.length === 1) {
+            b.fields[parts[0]] = value;
+          } else if (parts.length === 3) {
+            var arr = b.fields[parts[0]];
+            var idx = parseInt(parts[1], 10);
+            if (Array.isArray(arr) && arr[idx]) arr[idx][parts[2]] = value;
+          }
+          pbApplyRegen();
+        }
+
+        function pbListAction(action, idx) {
+          var b = pbBlocks[pbSel];
+          if (!b || !b.fields) return;
+          var schema = PB_FORMS[b.type] || {};
+          var key = schema.list ? schema.list.key : null;
+          var arr = key ? b.fields[key] : null;
+          if (action === "add" && key) {
+            var proto = b.type === "faq" ? { q: "New question", a: "<p>New answer</p>" } : { title: "New step", copy: "Describe this step." };
+            arr.push(proto);
+          } else if (key && Array.isArray(arr)) {
+            idx = parseInt(idx, 10);
+            if (action === "up" && idx > 0) { var t = arr[idx - 1]; arr[idx - 1] = arr[idx]; arr[idx] = t; }
+            else if (action === "down" && idx < arr.length - 1) { var t2 = arr[idx + 1]; arr[idx + 1] = arr[idx]; arr[idx] = t2; }
+            else if (action === "del") {
+              if (!confirm("Remove this " + (b.type === "faq" ? "question" : "step") + "?")) return;
+              arr.splice(idx, 1);
+            }
+          }
+          pbApplyRegen();
+          pbFillEditor();
+        }
+
         function pbFillEditor() {
           var wrap = document.getElementById("wx-be-wrap");
           var actions = document.getElementById("wx-be-actions");
           var detail = document.getElementById("wx-block-detail");
           var facts = document.getElementById("wx-be-facts");
+          var form = document.getElementById("wx-be-form");
           if (pbSel < 0 || !pbBlocks[pbSel]) {
-            wrap.hidden = true; actions.hidden = true;
-            detail.innerHTML = '<p class="wx-hint">Click the pencil on a section to edit its HTML here. Sections are the top-level blocks of the page\u2019s main area.</p>';
+            wrap.hidden = true; actions.hidden = true; form.hidden = true;
+            detail.innerHTML = '<p class="wx-hint">Click the pencil on a section to edit it here. Structured sections (hero, FAQ, CTA, process, quote) open friendly fields \u2014 everything else edits as HTML.</p>';
             facts.textContent = "";
             return;
           }
           var b = pbBlocks[pbSel];
-          wrap.hidden = false; actions.hidden = false;
-          detail.innerHTML = "<b>Section " + (pbSel + 1) + "</b> \u2014 " + esc(b.type || "raw");
-          document.getElementById("wx-be-html").value = b.html;
+          var typed = pbIsTyped(b) && PB_FORMS[b.type];
+          if (typed) {
+            wrap.hidden = true; actions.hidden = true; form.hidden = false;
+            detail.innerHTML = "<b>Section " + (pbSel + 1) + "</b> \u2014 " + esc(b.type) +
+              ' <button type="button" class="wx-btn small" id="wx-be-raw" style="margin-left:6px">Edit as HTML</button>';
+            document.getElementById("wx-be-raw").addEventListener("click", function () {
+              if (!confirm("Switch this section to raw HTML editing? Structured fields will be removed (the HTML stays exactly as it is).")) return;
+              b.type = "raw";
+              delete b.fields;
+              pbMarkDirty(); pbRenderBlocks(); pbFillEditor();
+            });
+            pbBuildForm(b);
+          } else {
+            form.hidden = true;
+            wrap.hidden = false; actions.hidden = false;
+            detail.innerHTML = "<b>Section " + (pbSel + 1) + "</b> \u2014 " + esc(b.type || "raw");
+            document.getElementById("wx-be-html").value = b.html;
+          }
           facts.textContent = "id: " + b.id + " \u00b7 " + String(b.html || "").length + " bytes" +
             (b.hidden ? " \u00b7 currently hidden" : "");
         }
@@ -3193,6 +3364,18 @@
           });
           document.getElementById("wx-be-cancel").addEventListener("click", function () {
             pbSel = -1; pbRenderBlocks(); pbFillEditor();
+          });
+          var pbForm = document.getElementById("wx-be-form");
+          pbForm.addEventListener("input", function (e) {
+            var t = e.target;
+            if (t && t.getAttribute && t.getAttribute("data-fk")) pbSetFieldValue(t.getAttribute("data-fk"), t.value);
+          });
+          pbForm.addEventListener("click", function (e) {
+            var btn = e.target.closest ? e.target.closest("button") : null;
+            if (!btn) return;
+            if (btn.id === "wx-la-add") { pbListAction("add"); return; }
+            var la = btn.getAttribute("data-la");
+            if (la) pbListAction(la, btn.getAttribute("data-i"));
           });
           ["wx-meta-title", "wx-meta-desc"].forEach(function (id) {
             document.getElementById(id).addEventListener("input", pbSyncMeta);

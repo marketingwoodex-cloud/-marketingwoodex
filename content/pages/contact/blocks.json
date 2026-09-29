@@ -1,8 +1,16 @@
 [
  {
   "id": "77da4c9812",
-  "type": "raw",
-  "html": "\n\n    <section class=\"ct-hero\" aria-labelledby=\"contact-hero-title\">\n      <figure class=\"ct-hero-media\" aria-hidden=\"true\"><img src=\"/assets/img/img-1d6ad6c77d0f.webp\" alt=\"\" width=\"1920\" height=\"1280\" loading=\"lazy\" decoding=\"async\"></figure>\n      <div class=\"ct-wrap ct-hero-grid\">\n        <div class=\"ct-hero-copy\" data-contact-reveal=\"\">\n          <nav class=\"crumbs\" aria-label=\"Breadcrumb\"><a href=\"/\">Home</a><span>→</span><span>Contact</span></nav>\n          <p class=\"ct-label\">Contact</p>\n          <h1 id=\"contact-hero-title\">Let’s talk about your space</h1>\n        </div>\n        <div class=\"ct-hero-aside\" data-contact-reveal=\"\">\n          <p>Based in Lahore, working across Islamabad, Karachi and nationwide. Tell us what you need and we will respond with next steps.</p>\n          <a class=\"btn\" href=\"#contact-cards\">Start your project</a>\n        </div>\n      </div>\n    </section>"
+  "type": "hero",
+  "html": "\n\n    <section class=\"ct-hero\" aria-labelledby=\"contact-hero-title\">\n      <figure class=\"ct-hero-media\" aria-hidden=\"true\"><img src=\"/assets/img/img-1d6ad6c77d0f.webp\" alt=\"\" width=\"1920\" height=\"1280\" loading=\"lazy\" decoding=\"async\"></figure>\n      <div class=\"ct-wrap ct-hero-grid\">\n        <div class=\"ct-hero-copy\" data-contact-reveal=\"\">\n          <nav class=\"crumbs\" aria-label=\"Breadcrumb\"><a href=\"/\">Home</a><span>→</span><span>Contact</span></nav>\n          <p class=\"ct-label\">Contact</p>\n          <h1 id=\"contact-hero-title\">Let’s talk about your space</h1>\n        </div>\n        <div class=\"ct-hero-aside\" data-contact-reveal=\"\">\n          <p>Based in Lahore, working across Islamabad, Karachi and nationwide. Tell us what you need and we will respond with next steps.</p>\n          <a class=\"btn\" href=\"#contact-cards\">Start your project</a>\n        </div>\n      </div>\n    </section>",
+  "fields": {
+   "heading": "Let’s talk about your space",
+   "label": "Contact",
+   "cta_text": "Start your project",
+   "cta_href": "#contact-cards",
+   "img_src": "/assets/img/img-1d6ad6c77d0f.webp",
+   "img_alt": ""
+  }
  },
  {
   "id": "4a5a5b829d",
@@ -11,8 +19,22 @@
  },
  {
   "id": "2eee0e964e",
-  "type": "raw",
-  "html": "\n\n    <section class=\"ct-section ct-visit\" id=\"contact-visit\"><div class=\"ct-wrap ct-visit-grid\">\n      <div class=\"ct-visit-copy\" data-contact-reveal=\"\"><p class=\"ct-label\">Visit us</p><h2>Woodex Interior, Lahore.</h2><div class=\"ct-rule\" aria-hidden=\"true\"></div><address class=\"ct-address\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z\"></path><circle cx=\"12\" cy=\"10\" r=\"2.5\"></circle></svg>M-71, Zainab Tower<br>Model Town Link Road<br>Lahore, Pakistan</address><p>Parking is available at the tower. If you are bringing drawings, call ahead so a designer is free to sit with you.</p><div class=\"ct-hours\"><span class=\"ct-dot\" aria-hidden=\"true\"></span><strong>Mon–Sat 9:30–6:30</strong></div><div class=\"ct-actions\"><a class=\"btn\" href=\"https://wa.me/923224000768\">Message on WhatsApp</a><a class=\"btn btn-secondary\" href=\"/3d-visualization/\">View our work</a></div></div>\n      <div class=\"ct-visit-form\" data-contact-reveal=\"\">\n        <form class=\"ct-form\" id=\"visit-form\" novalidate>\n          <h3>Send an enquiry</h3>\n          <p class=\"ct-form-sub\">Tell us a little about the space and we will call you back.</p>\n          <div class=\"ct-field\"><label for=\"cf-name\">Name</label><input id=\"cf-name\" name=\"name\" type=\"text\" autocomplete=\"name\" required></div>\n          <div class=\"ct-field-row\">\n            <div class=\"ct-field\"><label for=\"cf-phone\">Phone</label><input id=\"cf-phone\" name=\"phone\" type=\"tel\" autocomplete=\"tel\" required></div>\n            <div class=\"ct-field\"><label for=\"cf-email\">Email</label><input id=\"cf-email\" name=\"email\" type=\"email\" autocomplete=\"email\"></div>\n          </div>\n          <div class=\"ct-field\"><label for=\"cf-type\">Project type</label><select id=\"cf-type\" name=\"type\">\n            <option>Interior design</option><option>Fit-out</option><option>Renovation</option>\n            <option>Architecture</option><option>3D visualization</option><option>Furniture</option><option>Something else</option>\n          </select></div>\n          <div class=\"ct-field\"><label for=\"cf-msg\">About the space</label><textarea id=\"cf-msg\" name=\"message\" rows=\"4\" placeholder=\"Location, approximate size, what you want done\"></textarea></div>\n          <input type=\"text\" id=\"cf-hp\" name=\"_hp\" tabindex=\"-1\" autocomplete=\"off\" style=\"position:absolute;left:-9999px\" aria-hidden=\"true\" />\n          <button class=\"btn\" type=\"submit\">Send enquiry</button>\n          <p class=\"ct-form-note\">Prefer talking? Call <a href=\"tel:+923224000768\">+92 322 4000768</a>.</p>\n          <p class=\"ct-form-status\" id=\"cf-status\" style=\"display:none;margin-top:12px;font-size:14px\"></p>\n        </form>\n      </div>\n    </div></section>"
+  "type": "cta",
+  "html": "\n\n    <section class=\"ct-section ct-visit\" id=\"contact-visit\"><div class=\"ct-wrap ct-visit-grid\">\n      <div class=\"ct-visit-copy\" data-contact-reveal=\"\"><p class=\"ct-label\">Visit us</p><h2>Woodex Interior, Lahore.</h2><div class=\"ct-rule\" aria-hidden=\"true\"></div><address class=\"ct-address\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z\"></path><circle cx=\"12\" cy=\"10\" r=\"2.5\"></circle></svg>M-71, Zainab Tower<br>Model Town Link Road<br>Lahore, Pakistan</address><p>Parking is available at the tower. If you are bringing drawings, call ahead so a designer is free to sit with you.</p><div class=\"ct-hours\"><span class=\"ct-dot\" aria-hidden=\"true\"></span><strong>Mon–Sat 9:30–6:30</strong></div><div class=\"ct-actions\"><a class=\"btn\" href=\"https://wa.me/923224000768\">Message on WhatsApp</a><a class=\"btn btn-secondary\" href=\"/3d-visualization/\">View our work</a></div></div>\n      <div class=\"ct-visit-form\" data-contact-reveal=\"\">\n        <form class=\"ct-form\" id=\"visit-form\" novalidate>\n          <h3>Send an enquiry</h3>\n          <p class=\"ct-form-sub\">Tell us a little about the space and we will call you back.</p>\n          <div class=\"ct-field\"><label for=\"cf-name\">Name</label><input id=\"cf-name\" name=\"name\" type=\"text\" autocomplete=\"name\" required></div>\n          <div class=\"ct-field-row\">\n            <div class=\"ct-field\"><label for=\"cf-phone\">Phone</label><input id=\"cf-phone\" name=\"phone\" type=\"tel\" autocomplete=\"tel\" required></div>\n            <div class=\"ct-field\"><label for=\"cf-email\">Email</label><input id=\"cf-email\" name=\"email\" type=\"email\" autocomplete=\"email\"></div>\n          </div>\n          <div class=\"ct-field\"><label for=\"cf-type\">Project type</label><select id=\"cf-type\" name=\"type\">\n            <option>Interior design</option><option>Fit-out</option><option>Renovation</option>\n            <option>Architecture</option><option>3D visualization</option><option>Furniture</option><option>Something else</option>\n          </select></div>\n          <div class=\"ct-field\"><label for=\"cf-msg\">About the space</label><textarea id=\"cf-msg\" name=\"message\" rows=\"4\" placeholder=\"Location, approximate size, what you want done\"></textarea></div>\n          <input type=\"text\" id=\"cf-hp\" name=\"_hp\" tabindex=\"-1\" autocomplete=\"off\" style=\"position:absolute;left:-9999px\" aria-hidden=\"true\" />\n          <button class=\"btn\" type=\"submit\">Send enquiry</button>\n          <p class=\"ct-form-note\">Prefer talking? Call <a href=\"tel:+923224000768\">+92 322 4000768</a>.</p>\n          <p class=\"ct-form-status\" id=\"cf-status\" style=\"display:none;margin-top:12px;font-size:14px\"></p>\n        </form>\n      </div>\n    </div></section>",
+  "fields": {
+   "heading": "Woodex Interior, Lahore.",
+   "label": "Visit us",
+   "actions": [
+    {
+     "text": "Message on WhatsApp",
+     "href": "https://wa.me/923224000768"
+    },
+    {
+     "text": "View our work",
+     "href": "/3d-visualization/"
+    }
+   ]
+  }
  },
  {
   "id": "6c5aca3a33",

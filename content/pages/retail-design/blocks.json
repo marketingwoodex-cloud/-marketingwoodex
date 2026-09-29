@@ -1,8 +1,16 @@
 [
  {
   "id": "89bb4d5bfb",
-  "type": "raw",
-  "html": "\n\n    <section class=\"rt-hero\" aria-labelledby=\"retail-title\"><div class=\"rt-wrap rt-hero-grid\">\n      <div class=\"rt-hero-copy rt-reveal\">\n        <nav class=\"rt-crumbs\" aria-label=\"Breadcrumb\"><a href=\"/\" data-page-route=\"home\">Home</a><span>&gt;</span><a href=\"/interior-design/\" data-page-route=\"interior\">Interior Design</a><span>&gt;</span><a href=\"/commercial-interior/\" data-page-route=\"commercialInterior\">Commercial Interiors</a><span>&gt;</span><span>Retail Design</span></nav>\n        <h1 id=\"retail-title\">Retail Design in Lahore — Stores That Sell</h1>\n        <p class=\"rt-copy\">We shape layouts, displays, lighting and brand details around easy browsing. Every decision helps customers find products, feel comfortable and move naturally toward a purchase.</p>\n        <div class=\"rt-hero-actions\"><a class=\"rt-btn rt-btn-light\" href=\"/contact/\" data-page-route=\"contact\">Get a Free Consultation</a><a class=\"rt-btn rt-btn-outline\" href=\"https://wa.me/923224000768\">WhatsApp Woodex</a></div>\n        <div class=\"rt-trust\" aria-label=\"Woodex experience\"><span><strong>200+</strong>spaces delivered</span><span><strong>10 years</strong>experience</span><span><strong>1 year</strong>workmanship warranty</span><span><strong>4 cities</strong>served</span></div>\n      </div>\n      <figure class=\"rt-hero-media rt-reveal\"><img src=\"/assets/img/img-c693554a31d5.webp\" width=\"2048\" height=\"1024\" alt=\"Warm contemporary retail store with product shelving and illuminated displays\" loading=\"lazy\" decoding=\"async\"><figcaption>Clear browsing, stronger product focus</figcaption></figure>\n    </div></section>"
+  "type": "hero",
+  "html": "\n\n    <section class=\"rt-hero\" aria-labelledby=\"retail-title\"><div class=\"rt-wrap rt-hero-grid\">\n      <div class=\"rt-hero-copy rt-reveal\">\n        <nav class=\"rt-crumbs\" aria-label=\"Breadcrumb\"><a href=\"/\" data-page-route=\"home\">Home</a><span>&gt;</span><a href=\"/interior-design/\" data-page-route=\"interior\">Interior Design</a><span>&gt;</span><a href=\"/commercial-interior/\" data-page-route=\"commercialInterior\">Commercial Interiors</a><span>&gt;</span><span>Retail Design</span></nav>\n        <h1 id=\"retail-title\">Retail Design in Lahore — Stores That Sell</h1>\n        <p class=\"rt-copy\">We shape layouts, displays, lighting and brand details around easy browsing. Every decision helps customers find products, feel comfortable and move naturally toward a purchase.</p>\n        <div class=\"rt-hero-actions\"><a class=\"rt-btn rt-btn-light\" href=\"/contact/\" data-page-route=\"contact\">Get a Free Consultation</a><a class=\"rt-btn rt-btn-outline\" href=\"https://wa.me/923224000768\">WhatsApp Woodex</a></div>\n        <div class=\"rt-trust\" aria-label=\"Woodex experience\"><span><strong>200+</strong>spaces delivered</span><span><strong>10 years</strong>experience</span><span><strong>1 year</strong>workmanship warranty</span><span><strong>4 cities</strong>served</span></div>\n      </div>\n      <figure class=\"rt-hero-media rt-reveal\"><img src=\"/assets/img/img-c693554a31d5.webp\" width=\"2048\" height=\"1024\" alt=\"Warm contemporary retail store with product shelving and illuminated displays\" loading=\"lazy\" decoding=\"async\"><figcaption>Clear browsing, stronger product focus</figcaption></figure>\n    </div></section>",
+  "fields": {
+   "heading": "Retail Design in Lahore — Stores That Sell",
+   "copy": "We shape layouts, displays, lighting and brand details around easy browsing. Every decision helps customers find products, feel comfortable and move naturally toward a purchase.",
+   "cta_text": "Get a Free Consultation",
+   "cta_href": "/contact/",
+   "img_src": "/assets/img/img-c693554a31d5.webp",
+   "img_alt": "Warm contemporary retail store with product shelving and illuminated displays"
+  }
  },
  {
   "id": "6ecb65ee07",
@@ -26,8 +34,38 @@
  },
  {
   "id": "b957ac6336",
-  "type": "raw",
-  "html": "\n\n    <section class=\"rt-section rt-faq\" id=\"retail-faq\"><div class=\"rt-wrap rt-faq-grid\">\n      <div class=\"rt-faq-intro rt-reveal\"><h2>Retail Design FAQs</h2><p class=\"rt-copy\">Straight answers on sales, layouts, lighting, trial rooms, rented shops and 3D approval.</p></div>\n      <div class=\"rt-faq-list rt-reveal\">\n        <div class=\"rt-faq-item\"><button class=\"rt-faq-q\" type=\"button\" aria-expanded=\"true\"><span>How can retail design increase sales?</span><span class=\"plus\" aria-hidden=\"true\">+</span></button><div class=\"rt-faq-a\"><div><p>A clear layout makes products easier to find, keeps priority ranges in strong sightlines and gives customers a comfortable path from entrance to checkout.</p></div></div></div>\n        <div class=\"rt-faq-item\"><button class=\"rt-faq-q\" type=\"button\" aria-expanded=\"false\"><span>What makes a good store layout?</span><span class=\"plus\" aria-hidden=\"true\">+</span></button><div class=\"rt-faq-a\"><div><p>A good layout balances customer flow, product visibility, accessible circulation, staff movement and a checkout position that feels natural.</p></div></div></div>\n        <div class=\"rt-faq-item\"><button class=\"rt-faq-q\" type=\"button\" aria-expanded=\"false\"><span>How should retail products be lit?</span><span class=\"plus\" aria-hidden=\"true\">+</span></button><div class=\"rt-faq-a\"><div><p>Ambient lighting supports comfort, while adjustable accent lighting reveals product colour, texture and detail without glare.</p></div></div></div>\n        <div class=\"rt-faq-item\"><button class=\"rt-faq-q\" type=\"button\" aria-expanded=\"false\"><span>Does Woodex design trial rooms?</span><span class=\"plus\" aria-hidden=\"true\">+</span></button><div class=\"rt-faq-a\"><div><p>Yes. We plan privacy, mirrors, seating, lighting and circulation so trial rooms feel comfortable and support the wider sales floor.</p></div></div></div>\n        <div class=\"rt-faq-item\"><button class=\"rt-faq-q\" type=\"button\" aria-expanded=\"false\"><span>Can you design a rented shop?</span><span class=\"plus\" aria-hidden=\"true\">+</span></button><div class=\"rt-faq-a\"><div><p>Yes. We can prioritize modular displays, reversible finishes and landlord conditions for a leased retail space.</p></div></div></div>\n        <div class=\"rt-faq-item\"><button class=\"rt-faq-q\" type=\"button\" aria-expanded=\"false\"><span>Will we receive 3D visuals before execution?</span><span class=\"plus\" aria-hidden=\"true\">+</span></button><div class=\"rt-faq-a\"><div><p>Yes. Key customer views, displays and the checkout area are visualized in 3D before site work begins.</p></div></div></div>\n      </div>\n    </div></section>"
+  "type": "faq",
+  "html": "\n\n    <section class=\"rt-section rt-faq\" id=\"retail-faq\"><div class=\"rt-wrap rt-faq-grid\">\n      <div class=\"rt-faq-intro rt-reveal\"><h2>Retail Design FAQs</h2><p class=\"rt-copy\">Straight answers on sales, layouts, lighting, trial rooms, rented shops and 3D approval.</p></div>\n      <div class=\"rt-faq-list rt-reveal\">\n        <div class=\"rt-faq-item\"><button class=\"rt-faq-q\" type=\"button\" aria-expanded=\"true\"><span>How can retail design increase sales?</span><span class=\"plus\" aria-hidden=\"true\">+</span></button><div class=\"rt-faq-a\"><div><p>A clear layout makes products easier to find, keeps priority ranges in strong sightlines and gives customers a comfortable path from entrance to checkout.</p></div></div></div>\n        <div class=\"rt-faq-item\"><button class=\"rt-faq-q\" type=\"button\" aria-expanded=\"false\"><span>What makes a good store layout?</span><span class=\"plus\" aria-hidden=\"true\">+</span></button><div class=\"rt-faq-a\"><div><p>A good layout balances customer flow, product visibility, accessible circulation, staff movement and a checkout position that feels natural.</p></div></div></div>\n        <div class=\"rt-faq-item\"><button class=\"rt-faq-q\" type=\"button\" aria-expanded=\"false\"><span>How should retail products be lit?</span><span class=\"plus\" aria-hidden=\"true\">+</span></button><div class=\"rt-faq-a\"><div><p>Ambient lighting supports comfort, while adjustable accent lighting reveals product colour, texture and detail without glare.</p></div></div></div>\n        <div class=\"rt-faq-item\"><button class=\"rt-faq-q\" type=\"button\" aria-expanded=\"false\"><span>Does Woodex design trial rooms?</span><span class=\"plus\" aria-hidden=\"true\">+</span></button><div class=\"rt-faq-a\"><div><p>Yes. We plan privacy, mirrors, seating, lighting and circulation so trial rooms feel comfortable and support the wider sales floor.</p></div></div></div>\n        <div class=\"rt-faq-item\"><button class=\"rt-faq-q\" type=\"button\" aria-expanded=\"false\"><span>Can you design a rented shop?</span><span class=\"plus\" aria-hidden=\"true\">+</span></button><div class=\"rt-faq-a\"><div><p>Yes. We can prioritize modular displays, reversible finishes and landlord conditions for a leased retail space.</p></div></div></div>\n        <div class=\"rt-faq-item\"><button class=\"rt-faq-q\" type=\"button\" aria-expanded=\"false\"><span>Will we receive 3D visuals before execution?</span><span class=\"plus\" aria-hidden=\"true\">+</span></button><div class=\"rt-faq-a\"><div><p>Yes. Key customer views, displays and the checkout area are visualized in 3D before site work begins.</p></div></div></div>\n      </div>\n    </div></section>",
+  "fields": {
+   "heading": "Retail Design FAQs",
+   "copy": "Straight answers on sales, layouts, lighting, trial rooms, rented shops and 3D approval.",
+   "items": [
+    {
+     "q": "How can retail design increase sales?",
+     "a": "<p>A clear layout makes products easier to find, keeps priority ranges in strong sightlines and gives customers a comfortable path from entrance to checkout.</p>"
+    },
+    {
+     "q": "What makes a good store layout?",
+     "a": "<p>A good layout balances customer flow, product visibility, accessible circulation, staff movement and a checkout position that feels natural.</p>"
+    },
+    {
+     "q": "How should retail products be lit?",
+     "a": "<p>Ambient lighting supports comfort, while adjustable accent lighting reveals product colour, texture and detail without glare.</p>"
+    },
+    {
+     "q": "Does Woodex design trial rooms?",
+     "a": "<p>Yes. We plan privacy, mirrors, seating, lighting and circulation so trial rooms feel comfortable and support the wider sales floor.</p>"
+    },
+    {
+     "q": "Can you design a rented shop?",
+     "a": "<p>Yes. We can prioritize modular displays, reversible finishes and landlord conditions for a leased retail space.</p>"
+    },
+    {
+     "q": "Will we receive 3D visuals before execution?",
+     "a": "<p>Yes. Key customer views, displays and the checkout area are visualized in 3D before site work begins.</p>"
+    }
+   ]
+  }
  },
  {
   "id": "3b69597a61",
@@ -36,7 +74,21 @@
  },
  {
   "id": "232a01d5d2",
-  "type": "raw",
-  "html": "\n\n    <section class=\"rt-section rt-contact\" id=\"retail-contact\"><div class=\"rt-wrap rt-contact-grid\">\n      <div class=\"rt-reveal\"><h2>Talk to Woodex</h2><p class=\"rt-copy\">Tell us about the shop, product range and when you want to open.</p><div class=\"rt-contact-actions\"><a class=\"rt-btn rt-btn-light\" href=\"/contact/\" data-page-route=\"contact\">Get a Free Consultation</a><a class=\"rt-btn rt-btn-outline\" href=\"https://wa.me/923224000768\">WhatsApp Woodex</a></div></div>\n      <div class=\"rt-contact-list rt-reveal\"><div class=\"rt-contact-item\"><small>Call</small><a href=\"tel:+923224000768\">+92 322 4000768</a></div><div class=\"rt-contact-item\"><small>Call</small><a href=\"tel:+923214686884\">+92 321 4686884</a></div><div class=\"rt-contact-item\"><small>Email</small><a href=\"mailto:info@woodex.com.pk\">info@woodex.com.pk</a></div><div class=\"rt-contact-item\"><small>Studio</small><address>M-71 Zainab Tower, Model Town Link Road Lahore</address></div><div class=\"rt-contact-item\"><small>Hours</small><span>Mon-Sat 9:30-6:30</span></div><div class=\"rt-contact-item\"><small>Sunday</small><span>Sunday closed</span></div><div class=\"rt-contact-item\"><small>WhatsApp</small><a href=\"https://wa.me/923224000768\">wa.me/923224000768</a></div></div>\n    </div></section>\n  \n"
+  "type": "cta",
+  "html": "\n\n    <section class=\"rt-section rt-contact\" id=\"retail-contact\"><div class=\"rt-wrap rt-contact-grid\">\n      <div class=\"rt-reveal\"><h2>Talk to Woodex</h2><p class=\"rt-copy\">Tell us about the shop, product range and when you want to open.</p><div class=\"rt-contact-actions\"><a class=\"rt-btn rt-btn-light\" href=\"/contact/\" data-page-route=\"contact\">Get a Free Consultation</a><a class=\"rt-btn rt-btn-outline\" href=\"https://wa.me/923224000768\">WhatsApp Woodex</a></div></div>\n      <div class=\"rt-contact-list rt-reveal\"><div class=\"rt-contact-item\"><small>Call</small><a href=\"tel:+923224000768\">+92 322 4000768</a></div><div class=\"rt-contact-item\"><small>Call</small><a href=\"tel:+923214686884\">+92 321 4686884</a></div><div class=\"rt-contact-item\"><small>Email</small><a href=\"mailto:info@woodex.com.pk\">info@woodex.com.pk</a></div><div class=\"rt-contact-item\"><small>Studio</small><address>M-71 Zainab Tower, Model Town Link Road Lahore</address></div><div class=\"rt-contact-item\"><small>Hours</small><span>Mon-Sat 9:30-6:30</span></div><div class=\"rt-contact-item\"><small>Sunday</small><span>Sunday closed</span></div><div class=\"rt-contact-item\"><small>WhatsApp</small><a href=\"https://wa.me/923224000768\">wa.me/923224000768</a></div></div>\n    </div></section>\n  \n",
+  "fields": {
+   "heading": "Talk to Woodex",
+   "copy": "Tell us about the shop, product range and when you want to open.",
+   "actions": [
+    {
+     "text": "Get a Free Consultation",
+     "href": "/contact/"
+    },
+    {
+     "text": "WhatsApp Woodex",
+     "href": "https://wa.me/923224000768"
+    }
+   ]
+  }
  }
 ]

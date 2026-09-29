@@ -1,8 +1,17 @@
 [
  {
   "id": "5e32d52d76",
-  "type": "raw",
-  "html": "\n\n    <section class=\"lr-hero\" aria-labelledby=\"living-room-hero-title\"><div class=\"lr-wrap lr-hero-grid\">\n      <div class=\"lr-hero-copy lr-reveal\">\n        <nav class=\"lr-crumbs\" aria-label=\"Breadcrumb\"><a href=\"/\" data-page-route=\"home\">Home</a><span>&gt;</span><a href=\"/interior-design/\" data-page-route=\"interior\">Interior Design</a><span>&gt;</span><span>Living Room Design</span></nav>\n        <p class=\"lr-label\">Comfort shaped around your day</p><h1 id=\"living-room-hero-title\">Living Room Design in Lahore</h1>\n        <p class=\"lr-copy\">A living room should welcome people in and work naturally every day. We bring seating, entertainment, lighting and finishes into one comfortable plan.</p>\n        <div><a class=\"lr-btn lr-btn-light\" href=\"/contact/\" data-page-route=\"contact\">Get a Free Consultation</a></div>\n      </div>\n      <figure class=\"lr-hero-media lr-reveal\"><img src=\"/assets/img/img-df7c7a7703ae.webp\" width=\"1920\" height=\"1280\" alt=\"Warm living room with comfortable seating, timber cabinetry and a family gathering by the fireplace\" loading=\"lazy\" decoding=\"async\"><figcaption>Living room design concept</figcaption></figure>\n    </div></section>"
+  "type": "hero",
+  "html": "\n\n    <section class=\"lr-hero\" aria-labelledby=\"living-room-hero-title\"><div class=\"lr-wrap lr-hero-grid\">\n      <div class=\"lr-hero-copy lr-reveal\">\n        <nav class=\"lr-crumbs\" aria-label=\"Breadcrumb\"><a href=\"/\" data-page-route=\"home\">Home</a><span>&gt;</span><a href=\"/interior-design/\" data-page-route=\"interior\">Interior Design</a><span>&gt;</span><span>Living Room Design</span></nav>\n        <p class=\"lr-label\">Comfort shaped around your day</p><h1 id=\"living-room-hero-title\">Living Room Design in Lahore</h1>\n        <p class=\"lr-copy\">A living room should welcome people in and work naturally every day. We bring seating, entertainment, lighting and finishes into one comfortable plan.</p>\n        <div><a class=\"lr-btn lr-btn-light\" href=\"/contact/\" data-page-route=\"contact\">Get a Free Consultation</a></div>\n      </div>\n      <figure class=\"lr-hero-media lr-reveal\"><img src=\"/assets/img/img-df7c7a7703ae.webp\" width=\"1920\" height=\"1280\" alt=\"Warm living room with comfortable seating, timber cabinetry and a family gathering by the fireplace\" loading=\"lazy\" decoding=\"async\"><figcaption>Living room design concept</figcaption></figure>\n    </div></section>",
+  "fields": {
+   "heading": "Living Room Design in Lahore",
+   "label": "Comfort shaped around your day",
+   "copy": "A living room should welcome people in and work naturally every day. We bring seating, entertainment, lighting and finishes into one comfortable plan.",
+   "cta_text": "Get a Free Consultation",
+   "cta_href": "/contact/",
+   "img_src": "/assets/img/img-df7c7a7703ae.webp",
+   "img_alt": "Warm living room with comfortable seating, timber cabinetry and a family gathering by the fireplace"
+  }
  },
  {
   "id": "727c5c3dc0",
@@ -26,8 +35,39 @@
  },
  {
   "id": "92698b6e37",
-  "type": "raw",
-  "html": "\n\n    <section class=\"lr-section lr-faq\" id=\"living-room-faq\"><div class=\"lr-wrap lr-faq-grid\">\n      <div class=\"lr-faq-intro lr-reveal\"><p class=\"lr-label\">Before we begin</p><h2>Living Room Design FAQs</h2><p class=\"lr-copy\">Short answers to common questions about layout, cost and timing.</p></div>\n      <div class=\"lr-faq-list lr-reveal\">\n        <div class=\"lr-faq-item\"><button class=\"lr-faq-q\" type=\"button\" aria-expanded=\"true\"><span>How much does living room design cost?</span><span class=\"plus\" aria-hidden=\"true\">+</span></button><div class=\"lr-faq-a\"><div><p>Design consultation starts from around PKR 12,000. Full packages range from PKR 15,000–35,000 depending on size and complexity.</p></div></div></div>\n        <div class=\"lr-faq-item\"><button class=\"lr-faq-q\" type=\"button\" aria-expanded=\"false\"><span>How should furniture be arranged in a small living room?</span><span class=\"plus\" aria-hidden=\"true\">+</span></button><div class=\"lr-faq-a\"><div><p>Keep a clear path through the room and choose furniture that fits the scale. A defined conversation area makes a compact room feel calmer.</p></div></div></div>\n        <div class=\"lr-faq-item\"><button class=\"lr-faq-q\" type=\"button\" aria-expanded=\"false\"><span>Where should the TV go?</span><span class=\"plus\" aria-hidden=\"true\">+</span></button><div class=\"lr-faq-a\"><div><p>The TV should sit at a comfortable viewing height with minimal glare. We plan seating, media storage and cable routes around it.</p></div></div></div>\n        <div class=\"lr-faq-item\"><button class=\"lr-faq-q\" type=\"button\" aria-expanded=\"false\"><span>What colour scheme works?</span><span class=\"plus\" aria-hidden=\"true\">+</span></button><div class=\"lr-faq-a\"><div><p>The best palette responds to daylight, room size and the mood you want. We build one cohesive scheme across walls, furniture and textiles.</p></div></div></div>\n        <div class=\"lr-faq-item\"><button class=\"lr-faq-q\" type=\"button\" aria-expanded=\"false\"><span>How long does design take?</span><span class=\"plus\" aria-hidden=\"true\">+</span></button><div class=\"lr-faq-a\"><div><p>A typical living room takes 1–2 weeks from consultation to the final design package.</p></div></div></div>\n        <div class=\"lr-faq-item\"><button class=\"lr-faq-q\" type=\"button\" aria-expanded=\"false\"><span>Do you design open-plan living rooms connected to dining or kitchen?</span><span class=\"plus\" aria-hidden=\"true\">+</span></button><div class=\"lr-faq-a\"><div><p>Yes. We coordinate furniture, colour and lighting so each zone feels distinct while the full space stays connected.</p></div></div></div>\n      </div>\n    </div></section>"
+  "type": "faq",
+  "html": "\n\n    <section class=\"lr-section lr-faq\" id=\"living-room-faq\"><div class=\"lr-wrap lr-faq-grid\">\n      <div class=\"lr-faq-intro lr-reveal\"><p class=\"lr-label\">Before we begin</p><h2>Living Room Design FAQs</h2><p class=\"lr-copy\">Short answers to common questions about layout, cost and timing.</p></div>\n      <div class=\"lr-faq-list lr-reveal\">\n        <div class=\"lr-faq-item\"><button class=\"lr-faq-q\" type=\"button\" aria-expanded=\"true\"><span>How much does living room design cost?</span><span class=\"plus\" aria-hidden=\"true\">+</span></button><div class=\"lr-faq-a\"><div><p>Design consultation starts from around PKR 12,000. Full packages range from PKR 15,000–35,000 depending on size and complexity.</p></div></div></div>\n        <div class=\"lr-faq-item\"><button class=\"lr-faq-q\" type=\"button\" aria-expanded=\"false\"><span>How should furniture be arranged in a small living room?</span><span class=\"plus\" aria-hidden=\"true\">+</span></button><div class=\"lr-faq-a\"><div><p>Keep a clear path through the room and choose furniture that fits the scale. A defined conversation area makes a compact room feel calmer.</p></div></div></div>\n        <div class=\"lr-faq-item\"><button class=\"lr-faq-q\" type=\"button\" aria-expanded=\"false\"><span>Where should the TV go?</span><span class=\"plus\" aria-hidden=\"true\">+</span></button><div class=\"lr-faq-a\"><div><p>The TV should sit at a comfortable viewing height with minimal glare. We plan seating, media storage and cable routes around it.</p></div></div></div>\n        <div class=\"lr-faq-item\"><button class=\"lr-faq-q\" type=\"button\" aria-expanded=\"false\"><span>What colour scheme works?</span><span class=\"plus\" aria-hidden=\"true\">+</span></button><div class=\"lr-faq-a\"><div><p>The best palette responds to daylight, room size and the mood you want. We build one cohesive scheme across walls, furniture and textiles.</p></div></div></div>\n        <div class=\"lr-faq-item\"><button class=\"lr-faq-q\" type=\"button\" aria-expanded=\"false\"><span>How long does design take?</span><span class=\"plus\" aria-hidden=\"true\">+</span></button><div class=\"lr-faq-a\"><div><p>A typical living room takes 1–2 weeks from consultation to the final design package.</p></div></div></div>\n        <div class=\"lr-faq-item\"><button class=\"lr-faq-q\" type=\"button\" aria-expanded=\"false\"><span>Do you design open-plan living rooms connected to dining or kitchen?</span><span class=\"plus\" aria-hidden=\"true\">+</span></button><div class=\"lr-faq-a\"><div><p>Yes. We coordinate furniture, colour and lighting so each zone feels distinct while the full space stays connected.</p></div></div></div>\n      </div>\n    </div></section>",
+  "fields": {
+   "label": "Before we begin",
+   "heading": "Living Room Design FAQs",
+   "copy": "Short answers to common questions about layout, cost and timing.",
+   "items": [
+    {
+     "q": "How much does living room design cost?",
+     "a": "<p>Design consultation starts from around PKR 12,000. Full packages range from PKR 15,000–35,000 depending on size and complexity.</p>"
+    },
+    {
+     "q": "How should furniture be arranged in a small living room?",
+     "a": "<p>Keep a clear path through the room and choose furniture that fits the scale. A defined conversation area makes a compact room feel calmer.</p>"
+    },
+    {
+     "q": "Where should the TV go?",
+     "a": "<p>The TV should sit at a comfortable viewing height with minimal glare. We plan seating, media storage and cable routes around it.</p>"
+    },
+    {
+     "q": "What colour scheme works?",
+     "a": "<p>The best palette responds to daylight, room size and the mood you want. We build one cohesive scheme across walls, furniture and textiles.</p>"
+    },
+    {
+     "q": "How long does design take?",
+     "a": "<p>A typical living room takes 1–2 weeks from consultation to the final design package.</p>"
+    },
+    {
+     "q": "Do you design open-plan living rooms connected to dining or kitchen?",
+     "a": "<p>Yes. We coordinate furniture, colour and lighting so each zone feels distinct while the full space stays connected.</p>"
+    }
+   ]
+  }
  },
  {
   "id": "f6583580eb",
@@ -36,7 +76,22 @@
  },
  {
   "id": "1551b9205a",
-  "type": "raw",
-  "html": "\n\n    <section class=\"lr-section lr-contact\" id=\"living-room-contact\"><div class=\"lr-wrap lr-contact-grid\">\n      <div class=\"lr-reveal\"><p class=\"lr-label\">Start with your room</p><h2>Talk to Woodex</h2><p class=\"lr-copy\">Share the room size, what needs to change and how you want the space to feel.</p><div class=\"lr-contact-actions\"><a class=\"lr-btn lr-btn-light\" href=\"/contact/\" data-page-route=\"contact\">Get a Free Consultation</a><a class=\"lr-btn lr-btn-light\" href=\"https://wa.me/923224000768\">WhatsApp Woodex</a></div></div>\n      <div class=\"lr-contact-list lr-reveal\"><div class=\"lr-contact-item\"><small>Call</small><a href=\"tel:+923224000768\">+92 322 4000768</a></div><div class=\"lr-contact-item\"><small>Call</small><a href=\"tel:+923214686884\">+92 321 4686884</a></div><div class=\"lr-contact-item\"><small>Email</small><a href=\"mailto:info@woodex.com.pk\">info@woodex.com.pk</a></div><div class=\"lr-contact-item\"><small>Studio</small><address>M-71 Zainab Tower, Model Town Link Road Lahore</address></div><div class=\"lr-contact-item\"><small>Hours</small><span>Mon-Sat 9:30-6:30</span></div><div class=\"lr-contact-item\"><small>Sunday</small><span>Sunday closed</span></div><div class=\"lr-contact-item\"><small>WhatsApp</small><a href=\"https://wa.me/923224000768\">https://wa.me/923224000768</a></div></div>\n    </div></section>\n  \n"
+  "type": "cta",
+  "html": "\n\n    <section class=\"lr-section lr-contact\" id=\"living-room-contact\"><div class=\"lr-wrap lr-contact-grid\">\n      <div class=\"lr-reveal\"><p class=\"lr-label\">Start with your room</p><h2>Talk to Woodex</h2><p class=\"lr-copy\">Share the room size, what needs to change and how you want the space to feel.</p><div class=\"lr-contact-actions\"><a class=\"lr-btn lr-btn-light\" href=\"/contact/\" data-page-route=\"contact\">Get a Free Consultation</a><a class=\"lr-btn lr-btn-light\" href=\"https://wa.me/923224000768\">WhatsApp Woodex</a></div></div>\n      <div class=\"lr-contact-list lr-reveal\"><div class=\"lr-contact-item\"><small>Call</small><a href=\"tel:+923224000768\">+92 322 4000768</a></div><div class=\"lr-contact-item\"><small>Call</small><a href=\"tel:+923214686884\">+92 321 4686884</a></div><div class=\"lr-contact-item\"><small>Email</small><a href=\"mailto:info@woodex.com.pk\">info@woodex.com.pk</a></div><div class=\"lr-contact-item\"><small>Studio</small><address>M-71 Zainab Tower, Model Town Link Road Lahore</address></div><div class=\"lr-contact-item\"><small>Hours</small><span>Mon-Sat 9:30-6:30</span></div><div class=\"lr-contact-item\"><small>Sunday</small><span>Sunday closed</span></div><div class=\"lr-contact-item\"><small>WhatsApp</small><a href=\"https://wa.me/923224000768\">https://wa.me/923224000768</a></div></div>\n    </div></section>\n  \n",
+  "fields": {
+   "heading": "Talk to Woodex",
+   "label": "Start with your room",
+   "copy": "Share the room size, what needs to change and how you want the space to feel.",
+   "actions": [
+    {
+     "text": "Get a Free Consultation",
+     "href": "/contact/"
+    },
+    {
+     "text": "WhatsApp Woodex",
+     "href": "https://wa.me/923224000768"
+    }
+   ]
+  }
  }
 ]

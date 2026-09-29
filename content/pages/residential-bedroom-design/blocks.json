@@ -1,8 +1,17 @@
 [
  {
   "id": "7cb3a99b10",
-  "type": "raw",
-  "html": "\n\n    <section class=\"bd-hero\" aria-labelledby=\"bedroom-hero-title\"><div class=\"bd-wrap bd-hero-grid\">\n      <div class=\"bd-hero-copy bd-reveal\">\n        <nav class=\"bd-crumbs\" aria-label=\"Breadcrumb\"><a href=\"/\" data-page-route=\"home\">Home</a><span>→</span><a href=\"/interior-design/\" data-page-route=\"interior\">Interior Design</a><span>→</span><span>Bedroom Design</span></nav>\n        <p class=\"bd-label\">A room made for rest</p><h1 id=\"bedroom-hero-title\">Bedroom Design in Lahore</h1>\n        <p class=\"bd-copy\">Your bedroom should feel calm from the moment you enter. We shape the layout, storage, lighting and finishes around the way you rest and live.</p>\n        <div><a class=\"bd-btn bd-btn-light\" href=\"/contact/\" data-page-route=\"contact\">Get a Free Consultation</a></div>\n      </div>\n      <figure class=\"bd-hero-media bd-reveal\"><img src=\"/assets/img/img-42bae79b5c89.webp\" width=\"1920\" height=\"1280\" alt=\"Serene premium master bedroom with soft neutral finishes and warm lighting\" loading=\"lazy\" decoding=\"async\"><figcaption>Bedroom design concept</figcaption></figure>\n    </div></section>"
+  "type": "hero",
+  "html": "\n\n    <section class=\"bd-hero\" aria-labelledby=\"bedroom-hero-title\"><div class=\"bd-wrap bd-hero-grid\">\n      <div class=\"bd-hero-copy bd-reveal\">\n        <nav class=\"bd-crumbs\" aria-label=\"Breadcrumb\"><a href=\"/\" data-page-route=\"home\">Home</a><span>→</span><a href=\"/interior-design/\" data-page-route=\"interior\">Interior Design</a><span>→</span><span>Bedroom Design</span></nav>\n        <p class=\"bd-label\">A room made for rest</p><h1 id=\"bedroom-hero-title\">Bedroom Design in Lahore</h1>\n        <p class=\"bd-copy\">Your bedroom should feel calm from the moment you enter. We shape the layout, storage, lighting and finishes around the way you rest and live.</p>\n        <div><a class=\"bd-btn bd-btn-light\" href=\"/contact/\" data-page-route=\"contact\">Get a Free Consultation</a></div>\n      </div>\n      <figure class=\"bd-hero-media bd-reveal\"><img src=\"/assets/img/img-42bae79b5c89.webp\" width=\"1920\" height=\"1280\" alt=\"Serene premium master bedroom with soft neutral finishes and warm lighting\" loading=\"lazy\" decoding=\"async\"><figcaption>Bedroom design concept</figcaption></figure>\n    </div></section>",
+  "fields": {
+   "heading": "Bedroom Design in Lahore",
+   "label": "A room made for rest",
+   "copy": "Your bedroom should feel calm from the moment you enter. We shape the layout, storage, lighting and finishes around the way you rest and live.",
+   "cta_text": "Get a Free Consultation",
+   "cta_href": "/contact/",
+   "img_src": "/assets/img/img-42bae79b5c89.webp",
+   "img_alt": "Serene premium master bedroom with soft neutral finishes and warm lighting"
+  }
  },
  {
   "id": "3aba96c3c6",
@@ -26,8 +35,38 @@
  },
  {
   "id": "1fad39758a",
-  "type": "raw",
-  "html": "\n\n    <section class=\"bd-section bd-faq\" id=\"bedroom-faq\"><div class=\"bd-wrap bd-faq-grid\">\n      <div class=\"bd-faq-intro bd-reveal\"><h2>Bedroom Design FAQs</h2><p class=\"bd-copy\">Short answers to the questions homeowners ask before starting.</p></div>\n      <div class=\"bd-faq-list bd-reveal\">\n        <div class=\"bd-faq-item\"><button class=\"bd-faq-q\" type=\"button\" aria-expanded=\"true\"><span>How much does bedroom design cost in Lahore?</span><span class=\"plus\" aria-hidden=\"true\">+</span></button><div class=\"bd-faq-a\"><div><p>The initial consultation is free. Design consultation starts from around PKR 12,000, while full packages range from PKR 15,000-35,000.</p></div></div></div>\n        <div class=\"bd-faq-item\"><button class=\"bd-faq-q\" type=\"button\" aria-expanded=\"false\"><span>How can I make a small bedroom feel larger?</span><span class=\"plus\" aria-hidden=\"true\">+</span></button><div class=\"bd-faq-a\"><div><p>Light colours, clear circulation, mirrors, wall-mounted pieces and storage under the bed can make the room feel calmer and more open.</p></div></div></div>\n        <div class=\"bd-faq-item\"><button class=\"bd-faq-q\" type=\"button\" aria-expanded=\"false\"><span>Should I choose a walk-in closet or a wardrobe?</span><span class=\"plus\" aria-hidden=\"true\">+</span></button><div class=\"bd-faq-a\"><div><p>A walk-in closet suits larger rooms. A well-planned built-in wardrobe uses less floor space and can be equally organised.</p></div></div></div>\n        <div class=\"bd-faq-item\"><button class=\"bd-faq-q\" type=\"button\" aria-expanded=\"false\"><span>What colours work best in a bedroom?</span><span class=\"plus\" aria-hidden=\"true\">+</span></button><div class=\"bd-faq-a\"><div><p>Soft blues, greens, warm greys, creams and taupes often feel restful. We also consider daylight, room size and your preferred mood.</p></div></div></div>\n        <div class=\"bd-faq-item\"><button class=\"bd-faq-q\" type=\"button\" aria-expanded=\"false\"><span>How long does bedroom design take?</span><span class=\"plus\" aria-hidden=\"true\">+</span></button><div class=\"bd-faq-a\"><div><p>A typical bedroom takes 1-2 weeks from consultation to the final design package.</p></div></div></div>\n        <div class=\"bd-faq-item\"><button class=\"bd-faq-q\" type=\"button\" aria-expanded=\"false\"><span>Do you design kids bedrooms?</span><span class=\"plus\" aria-hidden=\"true\">+</span></button><div class=\"bd-faq-a\"><div><p>Yes. See our <a class=\"bd-inline-link\" href=\"/residential-kids-room-design/\" data-page-route=\"kidsRoom\">Kids Room Design page</a> for safety, storage, study space and room to grow.</p></div></div></div>\n      </div>\n    </div></section>"
+  "type": "faq",
+  "html": "\n\n    <section class=\"bd-section bd-faq\" id=\"bedroom-faq\"><div class=\"bd-wrap bd-faq-grid\">\n      <div class=\"bd-faq-intro bd-reveal\"><h2>Bedroom Design FAQs</h2><p class=\"bd-copy\">Short answers to the questions homeowners ask before starting.</p></div>\n      <div class=\"bd-faq-list bd-reveal\">\n        <div class=\"bd-faq-item\"><button class=\"bd-faq-q\" type=\"button\" aria-expanded=\"true\"><span>How much does bedroom design cost in Lahore?</span><span class=\"plus\" aria-hidden=\"true\">+</span></button><div class=\"bd-faq-a\"><div><p>The initial consultation is free. Design consultation starts from around PKR 12,000, while full packages range from PKR 15,000-35,000.</p></div></div></div>\n        <div class=\"bd-faq-item\"><button class=\"bd-faq-q\" type=\"button\" aria-expanded=\"false\"><span>How can I make a small bedroom feel larger?</span><span class=\"plus\" aria-hidden=\"true\">+</span></button><div class=\"bd-faq-a\"><div><p>Light colours, clear circulation, mirrors, wall-mounted pieces and storage under the bed can make the room feel calmer and more open.</p></div></div></div>\n        <div class=\"bd-faq-item\"><button class=\"bd-faq-q\" type=\"button\" aria-expanded=\"false\"><span>Should I choose a walk-in closet or a wardrobe?</span><span class=\"plus\" aria-hidden=\"true\">+</span></button><div class=\"bd-faq-a\"><div><p>A walk-in closet suits larger rooms. A well-planned built-in wardrobe uses less floor space and can be equally organised.</p></div></div></div>\n        <div class=\"bd-faq-item\"><button class=\"bd-faq-q\" type=\"button\" aria-expanded=\"false\"><span>What colours work best in a bedroom?</span><span class=\"plus\" aria-hidden=\"true\">+</span></button><div class=\"bd-faq-a\"><div><p>Soft blues, greens, warm greys, creams and taupes often feel restful. We also consider daylight, room size and your preferred mood.</p></div></div></div>\n        <div class=\"bd-faq-item\"><button class=\"bd-faq-q\" type=\"button\" aria-expanded=\"false\"><span>How long does bedroom design take?</span><span class=\"plus\" aria-hidden=\"true\">+</span></button><div class=\"bd-faq-a\"><div><p>A typical bedroom takes 1-2 weeks from consultation to the final design package.</p></div></div></div>\n        <div class=\"bd-faq-item\"><button class=\"bd-faq-q\" type=\"button\" aria-expanded=\"false\"><span>Do you design kids bedrooms?</span><span class=\"plus\" aria-hidden=\"true\">+</span></button><div class=\"bd-faq-a\"><div><p>Yes. See our <a class=\"bd-inline-link\" href=\"/residential-kids-room-design/\" data-page-route=\"kidsRoom\">Kids Room Design page</a> for safety, storage, study space and room to grow.</p></div></div></div>\n      </div>\n    </div></section>",
+  "fields": {
+   "heading": "Bedroom Design FAQs",
+   "copy": "Short answers to the questions homeowners ask before starting.",
+   "items": [
+    {
+     "q": "How much does bedroom design cost in Lahore?",
+     "a": "<p>The initial consultation is free. Design consultation starts from around PKR 12,000, while full packages range from PKR 15,000-35,000.</p>"
+    },
+    {
+     "q": "How can I make a small bedroom feel larger?",
+     "a": "<p>Light colours, clear circulation, mirrors, wall-mounted pieces and storage under the bed can make the room feel calmer and more open.</p>"
+    },
+    {
+     "q": "Should I choose a walk-in closet or a wardrobe?",
+     "a": "<p>A walk-in closet suits larger rooms. A well-planned built-in wardrobe uses less floor space and can be equally organised.</p>"
+    },
+    {
+     "q": "What colours work best in a bedroom?",
+     "a": "<p>Soft blues, greens, warm greys, creams and taupes often feel restful. We also consider daylight, room size and your preferred mood.</p>"
+    },
+    {
+     "q": "How long does bedroom design take?",
+     "a": "<p>A typical bedroom takes 1-2 weeks from consultation to the final design package.</p>"
+    },
+    {
+     "q": "Do you design kids bedrooms?",
+     "a": "<p>Yes. See our <a class=\"bd-inline-link\" href=\"/residential-kids-room-design/\" data-page-route=\"kidsRoom\">Kids Room Design page</a> for safety, storage, study space and room to grow.</p>"
+    }
+   ]
+  }
  },
  {
   "id": "16679880f8",
@@ -36,7 +75,21 @@
  },
  {
   "id": "36838eba3d",
-  "type": "raw",
-  "html": "\n\n    <section class=\"bd-section bd-contact\" id=\"bedroom-contact\"><div class=\"bd-wrap bd-contact-grid\">\n      <div class=\"bd-reveal\"><h2>Talk to Woodex</h2><p class=\"bd-copy\">Tell us the bedroom size, what needs to change and how you want the room to feel.</p><div class=\"bd-contact-actions\"><a class=\"bd-btn bd-btn-light\" href=\"/contact/\" data-page-route=\"contact\">Get a Free Consultation</a><a class=\"bd-btn bd-btn-light\" href=\"https://wa.me/923224000768\">WhatsApp Woodex</a></div></div>\n      <div class=\"bd-contact-list bd-reveal\"><div class=\"bd-contact-item\"><small>Call</small><a href=\"tel:+923224000768\">+92 322 4000768</a></div><div class=\"bd-contact-item\"><small>Call</small><a href=\"tel:+923214686884\">+92 321 4686884</a></div><div class=\"bd-contact-item\"><small>Email</small><a href=\"mailto:info@woodex.com.pk\">info@woodex.com.pk</a></div><div class=\"bd-contact-item\"><small>Studio</small><address>M-71 Zainab Tower, Model Town Link Road Lahore</address></div><div class=\"bd-contact-item\"><small>Hours</small><span>Mon-Sat 9:30-6:30, Sunday closed</span></div><div class=\"bd-contact-item\"><small>WhatsApp</small><a href=\"https://wa.me/923224000768\">wa.me/923224000768</a></div></div>\n    </div></section>\n  \n"
+  "type": "cta",
+  "html": "\n\n    <section class=\"bd-section bd-contact\" id=\"bedroom-contact\"><div class=\"bd-wrap bd-contact-grid\">\n      <div class=\"bd-reveal\"><h2>Talk to Woodex</h2><p class=\"bd-copy\">Tell us the bedroom size, what needs to change and how you want the room to feel.</p><div class=\"bd-contact-actions\"><a class=\"bd-btn bd-btn-light\" href=\"/contact/\" data-page-route=\"contact\">Get a Free Consultation</a><a class=\"bd-btn bd-btn-light\" href=\"https://wa.me/923224000768\">WhatsApp Woodex</a></div></div>\n      <div class=\"bd-contact-list bd-reveal\"><div class=\"bd-contact-item\"><small>Call</small><a href=\"tel:+923224000768\">+92 322 4000768</a></div><div class=\"bd-contact-item\"><small>Call</small><a href=\"tel:+923214686884\">+92 321 4686884</a></div><div class=\"bd-contact-item\"><small>Email</small><a href=\"mailto:info@woodex.com.pk\">info@woodex.com.pk</a></div><div class=\"bd-contact-item\"><small>Studio</small><address>M-71 Zainab Tower, Model Town Link Road Lahore</address></div><div class=\"bd-contact-item\"><small>Hours</small><span>Mon-Sat 9:30-6:30, Sunday closed</span></div><div class=\"bd-contact-item\"><small>WhatsApp</small><a href=\"https://wa.me/923224000768\">wa.me/923224000768</a></div></div>\n    </div></section>\n  \n",
+  "fields": {
+   "heading": "Talk to Woodex",
+   "copy": "Tell us the bedroom size, what needs to change and how you want the room to feel.",
+   "actions": [
+    {
+     "text": "Get a Free Consultation",
+     "href": "/contact/"
+    },
+    {
+     "text": "WhatsApp Woodex",
+     "href": "https://wa.me/923224000768"
+    }
+   ]
+  }
  }
 ]

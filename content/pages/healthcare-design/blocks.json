@@ -1,8 +1,16 @@
 [
  {
   "id": "78e3661428",
-  "type": "raw",
-  "html": "\n\n    <section class=\"hc-hero\" aria-labelledby=\"healthcare-title\"><div class=\"hc-wrap hc-hero-grid\">\n      <div class=\"hc-hero-copy hc-reveal\">\n        <nav class=\"hc-crumbs\" aria-label=\"Breadcrumb\"><a href=\"/\" data-page-route=\"home\">Home</a><span>&gt;</span><a href=\"/interior-design/\" data-page-route=\"interior\">Interior Design</a><span>&gt;</span><a href=\"/commercial-interior/\" data-page-route=\"commercialInterior\">Commercial Interiors</a><span>&gt;</span><span>Healthcare Design</span></nav>\n        <h1 id=\"healthcare-title\">Healthcare Design in Lahore — Clinics, Labs &amp; Care Spaces</h1>\n        <p class=\"hc-copy\">Woodex designs clinics, dental practices, labs, pharmacies and wellness centres. Clean, calming spaces help patients feel at ease while staff work efficiently.</p>\n        <div class=\"hc-hero-actions\"><a class=\"hc-btn hc-btn-light\" href=\"/contact/\" data-page-route=\"contact\">Get a Free Consultation</a><a class=\"hc-btn hc-btn-outline\" href=\"https://wa.me/923224000768\">WhatsApp Woodex</a></div>\n        <div class=\"hc-trust\" aria-label=\"Woodex experience\"><span><strong>200+</strong>spaces delivered</span><span><strong>10 years</strong>experience</span><span><strong>1 year</strong>workmanship warranty</span><span><strong>4 cities</strong>served</span></div>\n      </div>\n      <figure class=\"hc-hero-media hc-reveal\"><img src=\"/assets/img/img-fcc680fef653.webp\" width=\"1920\" height=\"1280\" alt=\"Modern clinic reception and calm waiting area with warm timber and soft seating\" loading=\"lazy\" decoding=\"async\"><figcaption>Calm arrival, clear check-in and comfortable waiting</figcaption></figure>\n    </div></section>"
+  "type": "hero",
+  "html": "\n\n    <section class=\"hc-hero\" aria-labelledby=\"healthcare-title\"><div class=\"hc-wrap hc-hero-grid\">\n      <div class=\"hc-hero-copy hc-reveal\">\n        <nav class=\"hc-crumbs\" aria-label=\"Breadcrumb\"><a href=\"/\" data-page-route=\"home\">Home</a><span>&gt;</span><a href=\"/interior-design/\" data-page-route=\"interior\">Interior Design</a><span>&gt;</span><a href=\"/commercial-interior/\" data-page-route=\"commercialInterior\">Commercial Interiors</a><span>&gt;</span><span>Healthcare Design</span></nav>\n        <h1 id=\"healthcare-title\">Healthcare Design in Lahore — Clinics, Labs &amp; Care Spaces</h1>\n        <p class=\"hc-copy\">Woodex designs clinics, dental practices, labs, pharmacies and wellness centres. Clean, calming spaces help patients feel at ease while staff work efficiently.</p>\n        <div class=\"hc-hero-actions\"><a class=\"hc-btn hc-btn-light\" href=\"/contact/\" data-page-route=\"contact\">Get a Free Consultation</a><a class=\"hc-btn hc-btn-outline\" href=\"https://wa.me/923224000768\">WhatsApp Woodex</a></div>\n        <div class=\"hc-trust\" aria-label=\"Woodex experience\"><span><strong>200+</strong>spaces delivered</span><span><strong>10 years</strong>experience</span><span><strong>1 year</strong>workmanship warranty</span><span><strong>4 cities</strong>served</span></div>\n      </div>\n      <figure class=\"hc-hero-media hc-reveal\"><img src=\"/assets/img/img-fcc680fef653.webp\" width=\"1920\" height=\"1280\" alt=\"Modern clinic reception and calm waiting area with warm timber and soft seating\" loading=\"lazy\" decoding=\"async\"><figcaption>Calm arrival, clear check-in and comfortable waiting</figcaption></figure>\n    </div></section>",
+  "fields": {
+   "heading": "Healthcare Design in Lahore — Clinics, Labs &amp; Care Spaces",
+   "copy": "Woodex designs clinics, dental practices, labs, pharmacies and wellness centres. Clean, calming spaces help patients feel at ease while staff work efficiently.",
+   "cta_text": "Get a Free Consultation",
+   "cta_href": "/contact/",
+   "img_src": "/assets/img/img-fcc680fef653.webp",
+   "img_alt": "Modern clinic reception and calm waiting area with warm timber and soft seating"
+  }
  },
  {
   "id": "c09199c43a",
@@ -26,8 +34,38 @@
  },
  {
   "id": "3bdd59a615",
-  "type": "raw",
-  "html": "\n\n    <section class=\"hc-section hc-faq\" id=\"healthcare-faq\"><div class=\"hc-wrap hc-faq-grid\">\n      <div class=\"hc-faq-intro hc-reveal\"><h2>Healthcare Design FAQs</h2><p class=\"hc-copy\">Straight answers on patient comfort, materials, labs, timing, specialist clinics and 3D approval.</p></div>\n      <div class=\"hc-faq-list hc-reveal\">\n        <div class=\"hc-faq-item\"><button class=\"hc-faq-q\" type=\"button\" aria-expanded=\"true\"><span>How can healthcare design help patients feel calmer?</span><span class=\"plus\" aria-hidden=\"true\">+</span></button><div class=\"hc-faq-a\"><div><p>Clear wayfinding, comfortable waiting, soft acoustics and balanced lighting reduce uncertainty and make the visit feel less clinical.</p></div></div></div>\n        <div class=\"hc-faq-item\"><button class=\"hc-faq-q\" type=\"button\" aria-expanded=\"false\"><span>What materials are suitable for clinics?</span><span class=\"plus\" aria-hidden=\"true\">+</span></button><div class=\"hc-faq-a\"><div><p>We favour durable, low-maintenance and easy-clean finishes suited to each room, with slip resistance and hygiene needs considered early.</p></div></div></div>\n        <div class=\"hc-faq-item\"><button class=\"hc-faq-q\" type=\"button\" aria-expanded=\"false\"><span>Do you plan labs and diagnostic areas?</span><span class=\"plus\" aria-hidden=\"true\">+</span></button><div class=\"hc-faq-a\"><div><p>Yes. We coordinate workflow, counters, storage, equipment positions, services and staff movement for practical daily use.</p></div></div></div>\n        <div class=\"hc-faq-item\"><button class=\"hc-faq-q\" type=\"button\" aria-expanded=\"false\"><span>How long does healthcare design take?</span><span class=\"plus\" aria-hidden=\"true\">+</span></button><div class=\"hc-faq-a\"><div><p>A compact clinic commonly takes three to four weeks. Larger facilities need more time for specialist rooms and equipment coordination.</p></div></div></div>\n        <div class=\"hc-faq-item\"><button class=\"hc-faq-q\" type=\"button\" aria-expanded=\"false\"><span>Can you design dental and specialist clinics?</span><span class=\"plus\" aria-hidden=\"true\">+</span></button><div class=\"hc-faq-a\"><div><p>Yes. We plan dental, dermatology, physiotherapy and other specialist clinics around their equipment, privacy and patient journey.</p></div></div></div>\n        <div class=\"hc-faq-item\"><button class=\"hc-faq-q\" type=\"button\" aria-expanded=\"false\"><span>Do I get 3D visuals before execution?</span><span class=\"plus\" aria-hidden=\"true\">+</span></button><div class=\"hc-faq-a\"><div><p>Yes. Key reception, waiting, consultation and treatment areas are shown in 3D before site work begins.</p></div></div></div>\n      </div>\n    </div></section>"
+  "type": "faq",
+  "html": "\n\n    <section class=\"hc-section hc-faq\" id=\"healthcare-faq\"><div class=\"hc-wrap hc-faq-grid\">\n      <div class=\"hc-faq-intro hc-reveal\"><h2>Healthcare Design FAQs</h2><p class=\"hc-copy\">Straight answers on patient comfort, materials, labs, timing, specialist clinics and 3D approval.</p></div>\n      <div class=\"hc-faq-list hc-reveal\">\n        <div class=\"hc-faq-item\"><button class=\"hc-faq-q\" type=\"button\" aria-expanded=\"true\"><span>How can healthcare design help patients feel calmer?</span><span class=\"plus\" aria-hidden=\"true\">+</span></button><div class=\"hc-faq-a\"><div><p>Clear wayfinding, comfortable waiting, soft acoustics and balanced lighting reduce uncertainty and make the visit feel less clinical.</p></div></div></div>\n        <div class=\"hc-faq-item\"><button class=\"hc-faq-q\" type=\"button\" aria-expanded=\"false\"><span>What materials are suitable for clinics?</span><span class=\"plus\" aria-hidden=\"true\">+</span></button><div class=\"hc-faq-a\"><div><p>We favour durable, low-maintenance and easy-clean finishes suited to each room, with slip resistance and hygiene needs considered early.</p></div></div></div>\n        <div class=\"hc-faq-item\"><button class=\"hc-faq-q\" type=\"button\" aria-expanded=\"false\"><span>Do you plan labs and diagnostic areas?</span><span class=\"plus\" aria-hidden=\"true\">+</span></button><div class=\"hc-faq-a\"><div><p>Yes. We coordinate workflow, counters, storage, equipment positions, services and staff movement for practical daily use.</p></div></div></div>\n        <div class=\"hc-faq-item\"><button class=\"hc-faq-q\" type=\"button\" aria-expanded=\"false\"><span>How long does healthcare design take?</span><span class=\"plus\" aria-hidden=\"true\">+</span></button><div class=\"hc-faq-a\"><div><p>A compact clinic commonly takes three to four weeks. Larger facilities need more time for specialist rooms and equipment coordination.</p></div></div></div>\n        <div class=\"hc-faq-item\"><button class=\"hc-faq-q\" type=\"button\" aria-expanded=\"false\"><span>Can you design dental and specialist clinics?</span><span class=\"plus\" aria-hidden=\"true\">+</span></button><div class=\"hc-faq-a\"><div><p>Yes. We plan dental, dermatology, physiotherapy and other specialist clinics around their equipment, privacy and patient journey.</p></div></div></div>\n        <div class=\"hc-faq-item\"><button class=\"hc-faq-q\" type=\"button\" aria-expanded=\"false\"><span>Do I get 3D visuals before execution?</span><span class=\"plus\" aria-hidden=\"true\">+</span></button><div class=\"hc-faq-a\"><div><p>Yes. Key reception, waiting, consultation and treatment areas are shown in 3D before site work begins.</p></div></div></div>\n      </div>\n    </div></section>",
+  "fields": {
+   "heading": "Healthcare Design FAQs",
+   "copy": "Straight answers on patient comfort, materials, labs, timing, specialist clinics and 3D approval.",
+   "items": [
+    {
+     "q": "How can healthcare design help patients feel calmer?",
+     "a": "<p>Clear wayfinding, comfortable waiting, soft acoustics and balanced lighting reduce uncertainty and make the visit feel less clinical.</p>"
+    },
+    {
+     "q": "What materials are suitable for clinics?",
+     "a": "<p>We favour durable, low-maintenance and easy-clean finishes suited to each room, with slip resistance and hygiene needs considered early.</p>"
+    },
+    {
+     "q": "Do you plan labs and diagnostic areas?",
+     "a": "<p>Yes. We coordinate workflow, counters, storage, equipment positions, services and staff movement for practical daily use.</p>"
+    },
+    {
+     "q": "How long does healthcare design take?",
+     "a": "<p>A compact clinic commonly takes three to four weeks. Larger facilities need more time for specialist rooms and equipment coordination.</p>"
+    },
+    {
+     "q": "Can you design dental and specialist clinics?",
+     "a": "<p>Yes. We plan dental, dermatology, physiotherapy and other specialist clinics around their equipment, privacy and patient journey.</p>"
+    },
+    {
+     "q": "Do I get 3D visuals before execution?",
+     "a": "<p>Yes. Key reception, waiting, consultation and treatment areas are shown in 3D before site work begins.</p>"
+    }
+   ]
+  }
  },
  {
   "id": "25e66a6e20",
@@ -36,7 +74,21 @@
  },
  {
   "id": "a77fcb0ec3",
-  "type": "raw",
-  "html": "\n\n    <section class=\"hc-section hc-contact\" id=\"healthcare-contact\"><div class=\"hc-wrap hc-contact-grid\">\n      <div class=\"hc-reveal\"><h2>Talk to Woodex</h2><p class=\"hc-copy\">Tell us about the facility, specialties, room count and patient experience you want to create.</p><div class=\"hc-contact-actions\"><a class=\"hc-btn hc-btn-light\" href=\"/contact/\" data-page-route=\"contact\">Get a Free Consultation</a><a class=\"hc-btn hc-btn-outline\" href=\"https://wa.me/923224000768\">WhatsApp Woodex</a></div></div>\n      <div class=\"hc-contact-list hc-reveal\"><div class=\"hc-contact-item\"><small>Call</small><a href=\"tel:+923224000768\">+92 322 4000768</a></div><div class=\"hc-contact-item\"><small>Call</small><a href=\"tel:+923214686884\">+92 321 4686884</a></div><div class=\"hc-contact-item\"><small>Email</small><a href=\"mailto:info@woodex.com.pk\">info@woodex.com.pk</a></div><div class=\"hc-contact-item\"><small>Studio</small><address>M-71 Zainab Tower, Model Town Link Road Lahore</address></div><div class=\"hc-contact-item\"><small>Hours</small><span>Mon-Sat 9:30-6:30</span></div><div class=\"hc-contact-item\"><small>Sunday</small><span>Sunday closed</span></div><div class=\"hc-contact-item\"><small>WhatsApp</small><a href=\"https://wa.me/923224000768\">wa.me/923224000768</a></div></div>\n    </div></section>\n  \n"
+  "type": "cta",
+  "html": "\n\n    <section class=\"hc-section hc-contact\" id=\"healthcare-contact\"><div class=\"hc-wrap hc-contact-grid\">\n      <div class=\"hc-reveal\"><h2>Talk to Woodex</h2><p class=\"hc-copy\">Tell us about the facility, specialties, room count and patient experience you want to create.</p><div class=\"hc-contact-actions\"><a class=\"hc-btn hc-btn-light\" href=\"/contact/\" data-page-route=\"contact\">Get a Free Consultation</a><a class=\"hc-btn hc-btn-outline\" href=\"https://wa.me/923224000768\">WhatsApp Woodex</a></div></div>\n      <div class=\"hc-contact-list hc-reveal\"><div class=\"hc-contact-item\"><small>Call</small><a href=\"tel:+923224000768\">+92 322 4000768</a></div><div class=\"hc-contact-item\"><small>Call</small><a href=\"tel:+923214686884\">+92 321 4686884</a></div><div class=\"hc-contact-item\"><small>Email</small><a href=\"mailto:info@woodex.com.pk\">info@woodex.com.pk</a></div><div class=\"hc-contact-item\"><small>Studio</small><address>M-71 Zainab Tower, Model Town Link Road Lahore</address></div><div class=\"hc-contact-item\"><small>Hours</small><span>Mon-Sat 9:30-6:30</span></div><div class=\"hc-contact-item\"><small>Sunday</small><span>Sunday closed</span></div><div class=\"hc-contact-item\"><small>WhatsApp</small><a href=\"https://wa.me/923224000768\">wa.me/923224000768</a></div></div>\n    </div></section>\n  \n",
+  "fields": {
+   "heading": "Talk to Woodex",
+   "copy": "Tell us about the facility, specialties, room count and patient experience you want to create.",
+   "actions": [
+    {
+     "text": "Get a Free Consultation",
+     "href": "/contact/"
+    },
+    {
+     "text": "WhatsApp Woodex",
+     "href": "https://wa.me/923224000768"
+    }
+   ]
+  }
  }
 ]

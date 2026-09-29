@@ -1,8 +1,16 @@
 [
  {
   "id": "66e7956db0",
-  "type": "raw",
-  "html": "\n\n    <section class=\"ab-hero\" aria-labelledby=\"about-hero-title\">\n      <figure class=\"ab-hero-media\" aria-hidden=\"true\"><img src=\"/assets/img/img-dce06249b137.webp\" alt=\"\" width=\"1920\" height=\"1280\" loading=\"lazy\" decoding=\"async\"></figure>\n      <div class=\"ab-wrap ab-hero-grid\">\n        <div class=\"ab-hero-copy\" data-about-reveal=\"\">\n          <nav class=\"crumbs\" aria-label=\"Breadcrumb\"><a href=\"/\">Home</a><span>→</span><span>About</span></nav>\n          <p class=\"ab-label\">About the studio</p>\n          <h1 id=\"about-hero-title\">Design and build, held to one standard</h1>\n        </div>\n        <div class=\"ab-hero-note\" data-about-reveal=\"\">\n          <p>Woodex Interior was founded in Lahore in 2016. We plan, design and deliver offices, commercial spaces and premium homes across Pakistan with one accountable team.</p>\n          <div class=\"actions\"><a class=\"btn\" href=\"#about-visit\">Start your project</a><a class=\"btn btn-light\" href=\"#about-disciplines\">Explore our services</a></div>\n        </div>\n      </div>\n    </section>"
+  "type": "hero",
+  "html": "\n\n    <section class=\"ab-hero\" aria-labelledby=\"about-hero-title\">\n      <figure class=\"ab-hero-media\" aria-hidden=\"true\"><img src=\"/assets/img/img-dce06249b137.webp\" alt=\"\" width=\"1920\" height=\"1280\" loading=\"lazy\" decoding=\"async\"></figure>\n      <div class=\"ab-wrap ab-hero-grid\">\n        <div class=\"ab-hero-copy\" data-about-reveal=\"\">\n          <nav class=\"crumbs\" aria-label=\"Breadcrumb\"><a href=\"/\">Home</a><span>→</span><span>About</span></nav>\n          <p class=\"ab-label\">About the studio</p>\n          <h1 id=\"about-hero-title\">Design and build, held to one standard</h1>\n        </div>\n        <div class=\"ab-hero-note\" data-about-reveal=\"\">\n          <p>Woodex Interior was founded in Lahore in 2016. We plan, design and deliver offices, commercial spaces and premium homes across Pakistan with one accountable team.</p>\n          <div class=\"actions\"><a class=\"btn\" href=\"#about-visit\">Start your project</a><a class=\"btn btn-light\" href=\"#about-disciplines\">Explore our services</a></div>\n        </div>\n      </div>\n    </section>",
+  "fields": {
+   "heading": "Design and build, held to one standard",
+   "label": "About the studio",
+   "cta_text": "Start your project",
+   "cta_href": "#about-visit",
+   "img_src": "/assets/img/img-dce06249b137.webp",
+   "img_alt": ""
+  }
  },
  {
   "id": "ed41ec0195",

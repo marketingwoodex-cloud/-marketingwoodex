@@ -6,8 +6,15 @@
  },
  {
   "id": "9947d53e57",
-  "type": "raw",
-  "html": "\n    <section class=\"hero\" aria-labelledby=\"hero-title\">\n      <div class=\"hero-bg\"><img src=\"/assets/img/img-c349a92a4ae0.webp\" alt=\"Photorealistic 3D interior render of a contemporary living room with warm timber detailing\" width=\"2240\" height=\"1120\" loading=\"lazy\" decoding=\"async\"></div>\n      <div class=\"wrap hero-inner\">\n        <nav class=\"crumbs\" aria-label=\"Breadcrumb\"><a href=\"/\">Home</a><span>→</span><span>Services</span><span>→</span><span>3D Visualization Studio</span></nav>\n        <p class=\"eyebrow light\">Independent visualization, made in house</p>\n        <h1 id=\"hero-title\">3D Visualization Studio in Lahore</h1>\n        <p class=\"lead\">Photorealistic renders, walkthroughs, virtual tours and shadow studies made in house for clearer decisions before construction.</p>\n        <div class=\"actions\"><a class=\"btn\" href=\"#brief\">Start a brief</a><a class=\"btn btn-light\" href=\"#work\">View a 3D study</a></div>\n        <div class=\"trust\" aria-label=\"Studio highlights\"><span>In House 3ds Max</span><span>2 to 5 Day Turnaround</span><span>Ready for Marketing</span><span>External Clients Welcome</span></div>\n      </div>\n    </section>"
+  "type": "hero",
+  "html": "\n    <section class=\"hero\" aria-labelledby=\"hero-title\">\n      <div class=\"hero-bg\"><img src=\"/assets/img/img-c349a92a4ae0.webp\" alt=\"Photorealistic 3D interior render of a contemporary living room with warm timber detailing\" width=\"2240\" height=\"1120\" loading=\"lazy\" decoding=\"async\"></div>\n      <div class=\"wrap hero-inner\">\n        <nav class=\"crumbs\" aria-label=\"Breadcrumb\"><a href=\"/\">Home</a><span>→</span><span>Services</span><span>→</span><span>3D Visualization Studio</span></nav>\n        <p class=\"eyebrow light\">Independent visualization, made in house</p>\n        <h1 id=\"hero-title\">3D Visualization Studio in Lahore</h1>\n        <p class=\"lead\">Photorealistic renders, walkthroughs, virtual tours and shadow studies made in house for clearer decisions before construction.</p>\n        <div class=\"actions\"><a class=\"btn\" href=\"#brief\">Start a brief</a><a class=\"btn btn-light\" href=\"#work\">View a 3D study</a></div>\n        <div class=\"trust\" aria-label=\"Studio highlights\"><span>In House 3ds Max</span><span>2 to 5 Day Turnaround</span><span>Ready for Marketing</span><span>External Clients Welcome</span></div>\n      </div>\n    </section>",
+  "fields": {
+   "heading": "3D Visualization Studio in Lahore",
+   "cta_text": "Start a brief",
+   "cta_href": "#brief",
+   "img_src": "/assets/img/img-c349a92a4ae0.webp",
+   "img_alt": "Photorealistic 3D interior render of a contemporary living room with warm timber detailing"
+  }
  },
  {
   "id": "6f00156d6c",

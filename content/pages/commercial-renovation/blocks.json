@@ -1,8 +1,16 @@
 [
  {
   "id": "164abe8d45",
-  "type": "raw",
-  "html": "\n<section class=\"rv-hero\"><div class=\"rv-wrap rv-hero-grid\"><div class=\"rv-hero-copy rv-reveal\"><nav class=\"rv-crumbs\" aria-label=\"Breadcrumb\"><a href=\"/\">Home</a><span>&gt;</span><a href=\"/renovation/\">Renovation</a><span>&gt;</span><span>Commercial Renovation</span></nav><h1>Commercial Renovation in Lahore</h1><p class=\"rv-copy\">Upgrade an existing commercial property without treating every area the same. Woodex separates landlord, tenant and shared-space needs, then plans the work around access, trading and building services.</p><div class=\"rv-hero-actions\"><a class=\"rv-btn rv-btn-light\" href=\"#renovation-sector-contact\">Get a Free Consultation</a><a class=\"rv-btn rv-btn-outline\" href=\"https://wa.me/923224000768\">WhatsApp Woodex</a></div><div class=\"rv-proof\"><span><strong>Itemized BOQ</strong>Trade-by-trade clarity</span><span><strong>Phased delivery</strong>Lower disruption</span><span><strong>Existing spaces</strong>Upgrade, not first build</span></div></div><figure class=\"rv-hero-media rv-reveal\"><img src=\"/assets/img/img-81b231a6c390.webp\" alt=\"Contemporary commercial interior representing property renovation in Lahore\" width=\"1920\" height=\"1280\" loading=\"lazy\" decoding=\"async\"><figcaption>Tenant improvements and shared spaces coordinated as one programme</figcaption></figure></div></section>"
+  "type": "hero",
+  "html": "\n<section class=\"rv-hero\"><div class=\"rv-wrap rv-hero-grid\"><div class=\"rv-hero-copy rv-reveal\"><nav class=\"rv-crumbs\" aria-label=\"Breadcrumb\"><a href=\"/\">Home</a><span>&gt;</span><a href=\"/renovation/\">Renovation</a><span>&gt;</span><span>Commercial Renovation</span></nav><h1>Commercial Renovation in Lahore</h1><p class=\"rv-copy\">Upgrade an existing commercial property without treating every area the same. Woodex separates landlord, tenant and shared-space needs, then plans the work around access, trading and building services.</p><div class=\"rv-hero-actions\"><a class=\"rv-btn rv-btn-light\" href=\"#renovation-sector-contact\">Get a Free Consultation</a><a class=\"rv-btn rv-btn-outline\" href=\"https://wa.me/923224000768\">WhatsApp Woodex</a></div><div class=\"rv-proof\"><span><strong>Itemized BOQ</strong>Trade-by-trade clarity</span><span><strong>Phased delivery</strong>Lower disruption</span><span><strong>Existing spaces</strong>Upgrade, not first build</span></div></div><figure class=\"rv-hero-media rv-reveal\"><img src=\"/assets/img/img-81b231a6c390.webp\" alt=\"Contemporary commercial interior representing property renovation in Lahore\" width=\"1920\" height=\"1280\" loading=\"lazy\" decoding=\"async\"><figcaption>Tenant improvements and shared spaces coordinated as one programme</figcaption></figure></div></section>",
+  "fields": {
+   "heading": "Commercial Renovation in Lahore",
+   "copy": "Upgrade an existing commercial property without treating every area the same. Woodex separates landlord, tenant and shared-space needs, then plans the work around access, trading and building services.",
+   "cta_text": "Get a Free Consultation",
+   "cta_href": "#renovation-sector-contact",
+   "img_src": "/assets/img/img-81b231a6c390.webp",
+   "img_alt": "Contemporary commercial interior representing property renovation in Lahore"
+  }
  },
  {
   "id": "6e548f00e5",
@@ -26,8 +34,38 @@
  },
  {
   "id": "29f9e4bc94",
-  "type": "raw",
-  "html": "<section class=\"rv-section\" id=\"renovation-sector-faq\"><div class=\"rv-wrap rv-faq-grid\"><div class=\"rv-faq-intro rv-reveal\"><h2>Commercial Renovation FAQs</h2><p class=\"rv-copy\">Six practical answers before survey, costing and site work.</p></div><div class=\"rv-faq-list rv-reveal\"><div class=\"rv-faq-item\"><button class=\"rv-faq-q\" type=\"button\" aria-expanded=\"true\"><span>What commercial properties do you renovate?</span><span class=\"plus\" aria-hidden=\"true\">+</span></button><div class=\"rv-faq-a\"><div><p>We work on offices, business premises, mixed-use interiors, shared areas and tenant improvement scopes.</p></div></div></div><div class=\"rv-faq-item\"><button class=\"rv-faq-q\" type=\"button\" aria-expanded=\"false\"><span>Can you separate landlord and tenant work?</span><span class=\"plus\" aria-hidden=\"true\">+</span></button><div class=\"rv-faq-a\"><div><p>Yes. The survey and BOQ can split base-building, common-area and tenant-specific responsibilities.</p></div></div></div><div class=\"rv-faq-item\"><button class=\"rv-faq-q\" type=\"button\" aria-expanded=\"false\"><span>Can the property remain partly operational?</span><span class=\"plus\" aria-hidden=\"true\">+</span></button><div class=\"rv-faq-a\"><div><p>Often, yes. We phase work by unit, floor or access zone and plan shutdowns in advance.</p></div></div></div><div class=\"rv-faq-item\"><button class=\"rv-faq-q\" type=\"button\" aria-expanded=\"false\"><span>Do you handle service upgrades?</span><span class=\"plus\" aria-hidden=\"true\">+</span></button><div class=\"rv-faq-a\"><div><p>Yes. Electrical, lighting, plumbing, HVAC and data changes can be coordinated within the agreed scope.</p></div></div></div><div class=\"rv-faq-item\"><button class=\"rv-faq-q\" type=\"button\" aria-expanded=\"false\"><span>Can you convert a space to a new use?</span><span class=\"plus\" aria-hidden=\"true\">+</span></button><div class=\"rv-faq-a\"><div><p>Yes, where the existing building condition and approvals allow it. We define the interior scope after a survey.</p></div></div></div><div class=\"rv-faq-item\"><button class=\"rv-faq-q\" type=\"button\" aria-expanded=\"false\"><span>How is commercial pricing confirmed?</span><span class=\"plus\" aria-hidden=\"true\">+</span></button><div class=\"rv-faq-a\"><div><p>An exact quote follows the condition survey, approved scope, materials and phasing plan.</p></div></div></div></div></div></section>"
+  "type": "faq",
+  "html": "<section class=\"rv-section\" id=\"renovation-sector-faq\"><div class=\"rv-wrap rv-faq-grid\"><div class=\"rv-faq-intro rv-reveal\"><h2>Commercial Renovation FAQs</h2><p class=\"rv-copy\">Six practical answers before survey, costing and site work.</p></div><div class=\"rv-faq-list rv-reveal\"><div class=\"rv-faq-item\"><button class=\"rv-faq-q\" type=\"button\" aria-expanded=\"true\"><span>What commercial properties do you renovate?</span><span class=\"plus\" aria-hidden=\"true\">+</span></button><div class=\"rv-faq-a\"><div><p>We work on offices, business premises, mixed-use interiors, shared areas and tenant improvement scopes.</p></div></div></div><div class=\"rv-faq-item\"><button class=\"rv-faq-q\" type=\"button\" aria-expanded=\"false\"><span>Can you separate landlord and tenant work?</span><span class=\"plus\" aria-hidden=\"true\">+</span></button><div class=\"rv-faq-a\"><div><p>Yes. The survey and BOQ can split base-building, common-area and tenant-specific responsibilities.</p></div></div></div><div class=\"rv-faq-item\"><button class=\"rv-faq-q\" type=\"button\" aria-expanded=\"false\"><span>Can the property remain partly operational?</span><span class=\"plus\" aria-hidden=\"true\">+</span></button><div class=\"rv-faq-a\"><div><p>Often, yes. We phase work by unit, floor or access zone and plan shutdowns in advance.</p></div></div></div><div class=\"rv-faq-item\"><button class=\"rv-faq-q\" type=\"button\" aria-expanded=\"false\"><span>Do you handle service upgrades?</span><span class=\"plus\" aria-hidden=\"true\">+</span></button><div class=\"rv-faq-a\"><div><p>Yes. Electrical, lighting, plumbing, HVAC and data changes can be coordinated within the agreed scope.</p></div></div></div><div class=\"rv-faq-item\"><button class=\"rv-faq-q\" type=\"button\" aria-expanded=\"false\"><span>Can you convert a space to a new use?</span><span class=\"plus\" aria-hidden=\"true\">+</span></button><div class=\"rv-faq-a\"><div><p>Yes, where the existing building condition and approvals allow it. We define the interior scope after a survey.</p></div></div></div><div class=\"rv-faq-item\"><button class=\"rv-faq-q\" type=\"button\" aria-expanded=\"false\"><span>How is commercial pricing confirmed?</span><span class=\"plus\" aria-hidden=\"true\">+</span></button><div class=\"rv-faq-a\"><div><p>An exact quote follows the condition survey, approved scope, materials and phasing plan.</p></div></div></div></div></div></section>",
+  "fields": {
+   "heading": "Commercial Renovation FAQs",
+   "copy": "Six practical answers before survey, costing and site work.",
+   "items": [
+    {
+     "q": "What commercial properties do you renovate?",
+     "a": "<p>We work on offices, business premises, mixed-use interiors, shared areas and tenant improvement scopes.</p>"
+    },
+    {
+     "q": "Can you separate landlord and tenant work?",
+     "a": "<p>Yes. The survey and BOQ can split base-building, common-area and tenant-specific responsibilities.</p>"
+    },
+    {
+     "q": "Can the property remain partly operational?",
+     "a": "<p>Often, yes. We phase work by unit, floor or access zone and plan shutdowns in advance.</p>"
+    },
+    {
+     "q": "Do you handle service upgrades?",
+     "a": "<p>Yes. Electrical, lighting, plumbing, HVAC and data changes can be coordinated within the agreed scope.</p>"
+    },
+    {
+     "q": "Can you convert a space to a new use?",
+     "a": "<p>Yes, where the existing building condition and approvals allow it. We define the interior scope after a survey.</p>"
+    },
+    {
+     "q": "How is commercial pricing confirmed?",
+     "a": "<p>An exact quote follows the condition survey, approved scope, materials and phasing plan.</p>"
+    }
+   ]
+  }
  },
  {
   "id": "51bd84767c",
@@ -36,7 +74,21 @@
  },
  {
   "id": "fd15c00328",
-  "type": "raw",
-  "html": "<section class=\"rv-section rv-dark\" id=\"renovation-sector-contact\"><div class=\"rv-wrap rv-contact-grid\"><div class=\"rv-reveal\"><h2>Talk to Woodex</h2><p class=\"rv-copy\">Share the property type, occupied areas, tenant responsibilities and the upgrade you need.</p><div class=\"rv-contact-actions\"><a class=\"rv-btn rv-btn-light\" href=\"mailto:info@woodex.com.pk?subject=Commercial%20Renovation%20Consultation\">Get a Free Consultation</a><a class=\"rv-btn rv-btn-outline\" href=\"https://wa.me/923224000768\">WhatsApp Woodex</a></div></div><div class=\"rv-contact-list rv-reveal\"><div class=\"rv-contact-item\"><small>Call</small><a href=\"tel:+923224000768\">+92 322 4000768</a></div><div class=\"rv-contact-item\"><small>Call</small><a href=\"tel:+923214686884\">+92 321 4686884</a></div><div class=\"rv-contact-item\"><small>Email</small><a href=\"mailto:info@woodex.com.pk\">info@woodex.com.pk</a></div><div class=\"rv-contact-item\"><small>Studio</small><address>M-71, Zainab Tower, Model Town Link Road, Lahore</address></div><div class=\"rv-contact-item\"><small>Hours</small><span>Mon–Sat 9:30–6:30</span></div><div class=\"rv-contact-item\"><small>WhatsApp</small><a href=\"https://wa.me/923224000768\">+92 322 4000768</a></div></div></div></section>\n"
+  "type": "cta",
+  "html": "<section class=\"rv-section rv-dark\" id=\"renovation-sector-contact\"><div class=\"rv-wrap rv-contact-grid\"><div class=\"rv-reveal\"><h2>Talk to Woodex</h2><p class=\"rv-copy\">Share the property type, occupied areas, tenant responsibilities and the upgrade you need.</p><div class=\"rv-contact-actions\"><a class=\"rv-btn rv-btn-light\" href=\"mailto:info@woodex.com.pk?subject=Commercial%20Renovation%20Consultation\">Get a Free Consultation</a><a class=\"rv-btn rv-btn-outline\" href=\"https://wa.me/923224000768\">WhatsApp Woodex</a></div></div><div class=\"rv-contact-list rv-reveal\"><div class=\"rv-contact-item\"><small>Call</small><a href=\"tel:+923224000768\">+92 322 4000768</a></div><div class=\"rv-contact-item\"><small>Call</small><a href=\"tel:+923214686884\">+92 321 4686884</a></div><div class=\"rv-contact-item\"><small>Email</small><a href=\"mailto:info@woodex.com.pk\">info@woodex.com.pk</a></div><div class=\"rv-contact-item\"><small>Studio</small><address>M-71, Zainab Tower, Model Town Link Road, Lahore</address></div><div class=\"rv-contact-item\"><small>Hours</small><span>Mon–Sat 9:30–6:30</span></div><div class=\"rv-contact-item\"><small>WhatsApp</small><a href=\"https://wa.me/923224000768\">+92 322 4000768</a></div></div></div></section>\n",
+  "fields": {
+   "heading": "Talk to Woodex",
+   "copy": "Share the property type, occupied areas, tenant responsibilities and the upgrade you need.",
+   "actions": [
+    {
+     "text": "Get a Free Consultation",
+     "href": "mailto:info@woodex.com.pk?subject=Commercial%20Renovation%20Consultation"
+    },
+    {
+     "text": "WhatsApp Woodex",
+     "href": "https://wa.me/923224000768"
+    }
+   ]
+  }
  }
 ]

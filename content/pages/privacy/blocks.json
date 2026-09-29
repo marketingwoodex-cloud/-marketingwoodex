@@ -1,8 +1,11 @@
 [
  {
   "id": "da480f1869",
-  "type": "raw",
-  "html": "\n    <section class=\"est-hero\" style=\"padding:48px 0 28px\">\n      <div class=\"wrap\">\n        <nav class=\"crumbs\" aria-label=\"Breadcrumb\"><a href=\"/\">Home</a><span>&rarr;</span><a href=\"/privacy/\">Privacy</a></nav>\n        <span class=\"est-kicker\">Legal</span>\n        <h1>Privacy policy</h1>\n        <p>This page explains what information Woodex Interior collects through this website, why we collect it, and the choices you have. It applies to our contact forms, cost estimator, live chat and WhatsApp enquiries.</p>\n      </div>\n    </section>"
+  "type": "hero",
+  "html": "\n    <section class=\"est-hero\" style=\"padding:48px 0 28px\">\n      <div class=\"wrap\">\n        <nav class=\"crumbs\" aria-label=\"Breadcrumb\"><a href=\"/\">Home</a><span>&rarr;</span><a href=\"/privacy/\">Privacy</a></nav>\n        <span class=\"est-kicker\">Legal</span>\n        <h1>Privacy policy</h1>\n        <p>This page explains what information Woodex Interior collects through this website, why we collect it, and the choices you have. It applies to our contact forms, cost estimator, live chat and WhatsApp enquiries.</p>\n      </div>\n    </section>",
+  "fields": {
+   "heading": "Privacy policy"
+  }
  },
  {
   "id": "4375c577cd",

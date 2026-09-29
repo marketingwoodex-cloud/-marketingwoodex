@@ -1,8 +1,17 @@
 [
  {
   "id": "e4691188a4",
-  "type": "raw",
-  "html": "\n<section class=\"fo-hero\" aria-labelledby=\"fitout-service-title\"><div class=\"fo-wrap fo-hero-grid\"><div class=\"fo-hero-copy fo-reveal\"><nav class=\"fo-crumbs\" aria-label=\"Breadcrumb\"><a href=\"/\" data-page-route=\"home\">Home</a><span>›</span><a href=\"/fit-out/\" data-page-route=\"fitout-hub\">Fit Out</a><span>›</span><span>Restaurant Fit-Out</span></nav><p class=\"fo-label\">Woodex Fit-Out · Lahore</p><h1 id=\"fitout-service-title\">Restaurant &amp; Café Fit-Out in Lahore</h1><p class=\"fo-copy\">Kitchen performance and guest atmosphere designed together for cafés, restaurants, QSR outlets and cloud kitchens.</p><div class=\"fo-actions\"><a class=\"fo-btn\" href=\"#fitout-service-contact\">Get a Free Consultation</a></div></div><figure class=\"fo-image fo-hero-media fo-reveal\"><img src=\"/assets/img/img-6f26e32ab200.webp\" alt=\"Warm restaurant dining interior representing a Woodex hospitality fit-out\" fetchpriority=\"high\" width=\"1920\" height=\"1280\"><figcaption class=\"fo-hero-note\"><strong>Kitchen workflow, dining atmosphere and compliant services</strong><span>6–12 weeks</span></figcaption></figure></div></section>"
+  "type": "hero",
+  "html": "\n<section class=\"fo-hero\" aria-labelledby=\"fitout-service-title\"><div class=\"fo-wrap fo-hero-grid\"><div class=\"fo-hero-copy fo-reveal\"><nav class=\"fo-crumbs\" aria-label=\"Breadcrumb\"><a href=\"/\" data-page-route=\"home\">Home</a><span>›</span><a href=\"/fit-out/\" data-page-route=\"fitout-hub\">Fit Out</a><span>›</span><span>Restaurant Fit-Out</span></nav><p class=\"fo-label\">Woodex Fit-Out · Lahore</p><h1 id=\"fitout-service-title\">Restaurant &amp; Café Fit-Out in Lahore</h1><p class=\"fo-copy\">Kitchen performance and guest atmosphere designed together for cafés, restaurants, QSR outlets and cloud kitchens.</p><div class=\"fo-actions\"><a class=\"fo-btn\" href=\"#fitout-service-contact\">Get a Free Consultation</a></div></div><figure class=\"fo-image fo-hero-media fo-reveal\"><img src=\"/assets/img/img-6f26e32ab200.webp\" alt=\"Warm restaurant dining interior representing a Woodex hospitality fit-out\" fetchpriority=\"high\" width=\"1920\" height=\"1280\"><figcaption class=\"fo-hero-note\"><strong>Kitchen workflow, dining atmosphere and compliant services</strong><span>6–12 weeks</span></figcaption></figure></div></section>",
+  "fields": {
+   "heading": "Restaurant &amp; Café Fit-Out in Lahore",
+   "label": "Woodex Fit-Out · Lahore",
+   "copy": "Kitchen performance and guest atmosphere designed together for cafés, restaurants, QSR outlets and cloud kitchens.",
+   "cta_text": "Get a Free Consultation",
+   "cta_href": "#fitout-service-contact",
+   "img_src": "/assets/img/img-6f26e32ab200.webp",
+   "img_alt": "Warm restaurant dining interior representing a Woodex hospitality fit-out"
+  }
  },
  {
   "id": "ae0669ec43",
@@ -11,8 +20,38 @@
  },
  {
   "id": "ef25fe82c7",
-  "type": "raw",
-  "html": "<section class=\"fo-section fo-dark\" id=\"fitout-service-process\"><div class=\"fo-wrap fo-process-grid\"><div class=\"fo-sticky fo-reveal\"><p class=\"fo-label\">A controlled programme</p><h2>6 steps from brief to handover</h2><p>Decisions are approved in sequence so the site team can build with fewer changes and clearer accountability.</p><figure class=\"fo-image fo-process-media\"><img loading=\"lazy\" src=\"/assets/img/img-6f26e32ab200.webp\" alt=\"Restaurant Fit-Out interior accompanying the Woodex project process\" width=\"1920\" height=\"1280\"></figure></div><div class=\"fo-process-list fo-reveal\"><article class=\"fo-step\"><b>01</b><h3>Survey and chef brief</h3><p>Review the site, menu, equipment and kitchen workflow.</p></article><article class=\"fo-step\"><b>02</b><h3>Kitchen and dining design</h3><p>Approve layouts and 3D views for front and back of house.</p></article><article class=\"fo-step\"><b>03</b><h3>Compliance review</h3><p>Check ventilation, drainage, finishes and wash areas against PFA needs.</p></article><article class=\"fo-step\"><b>04</b><h3>Construction and MEP</h3><p>Coordinate build, electrical, plumbing, HVAC, ducting and hoods.</p></article><article class=\"fo-step\"><b>05</b><h3>Equipment and finishing</h3><p>Install counters, lighting, finishes and coordinate equipment.</p></article><article class=\"fo-step\"><b>06</b><h3>Handover support</h3><p>Snag, clean and prepare the venue for inspection and opening.</p></article></div></div></section>"
+  "type": "process",
+  "html": "<section class=\"fo-section fo-dark\" id=\"fitout-service-process\"><div class=\"fo-wrap fo-process-grid\"><div class=\"fo-sticky fo-reveal\"><p class=\"fo-label\">A controlled programme</p><h2>6 steps from brief to handover</h2><p>Decisions are approved in sequence so the site team can build with fewer changes and clearer accountability.</p><figure class=\"fo-image fo-process-media\"><img loading=\"lazy\" src=\"/assets/img/img-6f26e32ab200.webp\" alt=\"Restaurant Fit-Out interior accompanying the Woodex project process\" width=\"1920\" height=\"1280\"></figure></div><div class=\"fo-process-list fo-reveal\"><article class=\"fo-step\"><b>01</b><h3>Survey and chef brief</h3><p>Review the site, menu, equipment and kitchen workflow.</p></article><article class=\"fo-step\"><b>02</b><h3>Kitchen and dining design</h3><p>Approve layouts and 3D views for front and back of house.</p></article><article class=\"fo-step\"><b>03</b><h3>Compliance review</h3><p>Check ventilation, drainage, finishes and wash areas against PFA needs.</p></article><article class=\"fo-step\"><b>04</b><h3>Construction and MEP</h3><p>Coordinate build, electrical, plumbing, HVAC, ducting and hoods.</p></article><article class=\"fo-step\"><b>05</b><h3>Equipment and finishing</h3><p>Install counters, lighting, finishes and coordinate equipment.</p></article><article class=\"fo-step\"><b>06</b><h3>Handover support</h3><p>Snag, clean and prepare the venue for inspection and opening.</p></article></div></div></section>",
+  "fields": {
+   "steps": [
+    {
+     "title": "Survey and chef brief",
+     "copy": "Review the site, menu, equipment and kitchen workflow."
+    },
+    {
+     "title": "Kitchen and dining design",
+     "copy": "Approve layouts and 3D views for front and back of house."
+    },
+    {
+     "title": "Compliance review",
+     "copy": "Check ventilation, drainage, finishes and wash areas against PFA needs."
+    },
+    {
+     "title": "Construction and MEP",
+     "copy": "Coordinate build, electrical, plumbing, HVAC, ducting and hoods."
+    },
+    {
+     "title": "Equipment and finishing",
+     "copy": "Install counters, lighting, finishes and coordinate equipment."
+    },
+    {
+     "title": "Handover support",
+     "copy": "Snag, clean and prepare the venue for inspection and opening."
+    }
+   ],
+   "label": "A controlled programme",
+   "heading": "6 steps from brief to handover"
+  }
  },
  {
   "id": "5280645df7",
@@ -26,8 +65,38 @@
  },
  {
   "id": "bc0b03ee32",
-  "type": "raw",
-  "html": "<section class=\"fo-section fo-dark\" id=\"fitout-service-faq\"><div class=\"fo-wrap fo-faq-grid\"><div class=\"fo-sticky fo-reveal\"><p class=\"fo-label\">Practical answers</p><h2>Restaurant Fit-Out FAQs</h2><p>Six short answers about scope, timing and cost.</p></div><div class=\"fo-faq-list fo-reveal\"><div class=\"fo-faq-item\"><button class=\"fo-faq-q\" type=\"button\" aria-expanded=\"true\"><span>How much does a restaurant fit-out cost?</span><span class=\"plus\" aria-hidden=\"true\">+</span></button><div class=\"fo-faq-a\"><div><p>A typical 2,000 sq. ft. restaurant ranges from PKR 14M to 32M, depending on finish level and kitchen complexity.</p></div></div></div><div class=\"fo-faq-item\"><button class=\"fo-faq-q\" type=\"button\" aria-expanded=\"false\"><span>How long does it take?</span><span class=\"plus\" aria-hidden=\"true\">+</span></button><div class=\"fo-faq-a\"><div><p>A café often takes 6–8 weeks. A full restaurant commonly takes 8–12 weeks.</p></div></div></div><div class=\"fo-faq-item\"><button class=\"fo-faq-q\" type=\"button\" aria-expanded=\"false\"><span>Do you coordinate with our chef?</span><span class=\"plus\" aria-hidden=\"true\">+</span></button><div class=\"fo-faq-a\"><div><p>Yes. We map prep, cooking, plating and service around the menu and equipment list.</p></div></div></div><div class=\"fo-faq-item\"><button class=\"fo-faq-q\" type=\"button\" aria-expanded=\"false\"><span>Do you support PFA compliance?</span><span class=\"plus\" aria-hidden=\"true\">+</span></button><div class=\"fo-faq-a\"><div><p>Yes. Ventilation, drainage, food-safe finishes, handwashing and waste handling are reviewed at design stage.</p></div></div></div><div class=\"fo-faq-item\"><button class=\"fo-faq-q\" type=\"button\" aria-expanded=\"false\"><span>Can you fit out multiple chain locations?</span><span class=\"plus\" aria-hidden=\"true\">+</span></button><div class=\"fo-faq-a\"><div><p>Yes. We can create one approved prototype for consistent, faster rollout.</p></div></div></div><div class=\"fo-faq-item\"><button class=\"fo-faq-q\" type=\"button\" aria-expanded=\"false\"><span>Can Woodex make counters and restaurant furniture?</span><span class=\"plus\" aria-hidden=\"true\">+</span></button><div class=\"fo-faq-a\"><div><p>Yes. Woodex Furniture™ manufactures bar counters, displays, service stations and fitted seating.</p></div></div></div></div></div></section>"
+  "type": "faq",
+  "html": "<section class=\"fo-section fo-dark\" id=\"fitout-service-faq\"><div class=\"fo-wrap fo-faq-grid\"><div class=\"fo-sticky fo-reveal\"><p class=\"fo-label\">Practical answers</p><h2>Restaurant Fit-Out FAQs</h2><p>Six short answers about scope, timing and cost.</p></div><div class=\"fo-faq-list fo-reveal\"><div class=\"fo-faq-item\"><button class=\"fo-faq-q\" type=\"button\" aria-expanded=\"true\"><span>How much does a restaurant fit-out cost?</span><span class=\"plus\" aria-hidden=\"true\">+</span></button><div class=\"fo-faq-a\"><div><p>A typical 2,000 sq. ft. restaurant ranges from PKR 14M to 32M, depending on finish level and kitchen complexity.</p></div></div></div><div class=\"fo-faq-item\"><button class=\"fo-faq-q\" type=\"button\" aria-expanded=\"false\"><span>How long does it take?</span><span class=\"plus\" aria-hidden=\"true\">+</span></button><div class=\"fo-faq-a\"><div><p>A café often takes 6–8 weeks. A full restaurant commonly takes 8–12 weeks.</p></div></div></div><div class=\"fo-faq-item\"><button class=\"fo-faq-q\" type=\"button\" aria-expanded=\"false\"><span>Do you coordinate with our chef?</span><span class=\"plus\" aria-hidden=\"true\">+</span></button><div class=\"fo-faq-a\"><div><p>Yes. We map prep, cooking, plating and service around the menu and equipment list.</p></div></div></div><div class=\"fo-faq-item\"><button class=\"fo-faq-q\" type=\"button\" aria-expanded=\"false\"><span>Do you support PFA compliance?</span><span class=\"plus\" aria-hidden=\"true\">+</span></button><div class=\"fo-faq-a\"><div><p>Yes. Ventilation, drainage, food-safe finishes, handwashing and waste handling are reviewed at design stage.</p></div></div></div><div class=\"fo-faq-item\"><button class=\"fo-faq-q\" type=\"button\" aria-expanded=\"false\"><span>Can you fit out multiple chain locations?</span><span class=\"plus\" aria-hidden=\"true\">+</span></button><div class=\"fo-faq-a\"><div><p>Yes. We can create one approved prototype for consistent, faster rollout.</p></div></div></div><div class=\"fo-faq-item\"><button class=\"fo-faq-q\" type=\"button\" aria-expanded=\"false\"><span>Can Woodex make counters and restaurant furniture?</span><span class=\"plus\" aria-hidden=\"true\">+</span></button><div class=\"fo-faq-a\"><div><p>Yes. Woodex Furniture™ manufactures bar counters, displays, service stations and fitted seating.</p></div></div></div></div></div></section>",
+  "fields": {
+   "label": "Practical answers",
+   "heading": "Restaurant Fit-Out FAQs",
+   "items": [
+    {
+     "q": "How much does a restaurant fit-out cost?",
+     "a": "<p>A typical 2,000 sq. ft. restaurant ranges from PKR 14M to 32M, depending on finish level and kitchen complexity.</p>"
+    },
+    {
+     "q": "How long does it take?",
+     "a": "<p>A café often takes 6–8 weeks. A full restaurant commonly takes 8–12 weeks.</p>"
+    },
+    {
+     "q": "Do you coordinate with our chef?",
+     "a": "<p>Yes. We map prep, cooking, plating and service around the menu and equipment list.</p>"
+    },
+    {
+     "q": "Do you support PFA compliance?",
+     "a": "<p>Yes. Ventilation, drainage, food-safe finishes, handwashing and waste handling are reviewed at design stage.</p>"
+    },
+    {
+     "q": "Can you fit out multiple chain locations?",
+     "a": "<p>Yes. We can create one approved prototype for consistent, faster rollout.</p>"
+    },
+    {
+     "q": "Can Woodex make counters and restaurant furniture?",
+     "a": "<p>Yes. Woodex Furniture™ manufactures bar counters, displays, service stations and fitted seating.</p>"
+    }
+   ]
+  }
  },
  {
   "id": "8acfd04b05",
@@ -36,7 +105,17 @@
  },
  {
   "id": "9d119e8cfe",
-  "type": "raw",
-  "html": "<section class=\"fo-section fo-contact\" id=\"fitout-service-contact\"><div class=\"fo-wrap fo-contact-grid\"><div class=\"fo-contact-copy fo-reveal\"><p class=\"fo-label\">Talk to Woodex</p><h2>Start with the space and your opening date</h2><p>Share the location, area and current condition. We will help define the right scope and next step.</p><div class=\"fo-contact-actions\"><a class=\"fo-btn\" href=\"mailto:info@woodex.com.pk?subject=Restaurant%20Fit-Out%20Consultation\">Get a Free Consultation</a></div></div><div class=\"fo-contact-card fo-reveal\"><div class=\"fo-contact-item\"><small>Call</small><a href=\"tel:+923224000768\">+92 322 4000768</a></div><div class=\"fo-contact-item\"><small>Call</small><a href=\"tel:+923214686884\">+92 321 4686884</a></div><div class=\"fo-contact-item\"><small>Email</small><a href=\"mailto:info@woodex.com.pk\">info@woodex.com.pk</a></div><div class=\"fo-contact-item\"><small>Studio</small><address>M-71, Zainab Tower, Model Town Link Road, Lahore</address></div><div class=\"fo-contact-item\"><small>Hours</small><span>Mon–Sat 9:30–6:30</span></div><div class=\"fo-contact-item\"><small>WhatsApp</small><a href=\"https://wa.me/923224000768\">+92 322 4000768</a></div></div></div></section>\n"
+  "type": "cta",
+  "html": "<section class=\"fo-section fo-contact\" id=\"fitout-service-contact\"><div class=\"fo-wrap fo-contact-grid\"><div class=\"fo-contact-copy fo-reveal\"><p class=\"fo-label\">Talk to Woodex</p><h2>Start with the space and your opening date</h2><p>Share the location, area and current condition. We will help define the right scope and next step.</p><div class=\"fo-contact-actions\"><a class=\"fo-btn\" href=\"mailto:info@woodex.com.pk?subject=Restaurant%20Fit-Out%20Consultation\">Get a Free Consultation</a></div></div><div class=\"fo-contact-card fo-reveal\"><div class=\"fo-contact-item\"><small>Call</small><a href=\"tel:+923224000768\">+92 322 4000768</a></div><div class=\"fo-contact-item\"><small>Call</small><a href=\"tel:+923214686884\">+92 321 4686884</a></div><div class=\"fo-contact-item\"><small>Email</small><a href=\"mailto:info@woodex.com.pk\">info@woodex.com.pk</a></div><div class=\"fo-contact-item\"><small>Studio</small><address>M-71, Zainab Tower, Model Town Link Road, Lahore</address></div><div class=\"fo-contact-item\"><small>Hours</small><span>Mon–Sat 9:30–6:30</span></div><div class=\"fo-contact-item\"><small>WhatsApp</small><a href=\"https://wa.me/923224000768\">+92 322 4000768</a></div></div></div></section>\n",
+  "fields": {
+   "heading": "Start with the space and your opening date",
+   "label": "Talk to Woodex",
+   "actions": [
+    {
+     "text": "Get a Free Consultation",
+     "href": "mailto:info@woodex.com.pk?subject=Restaurant%20Fit-Out%20Consultation"
+    }
+   ]
+  }
  }
 ]

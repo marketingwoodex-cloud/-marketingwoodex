@@ -1,8 +1,15 @@
 [
  {
   "id": "9d554d7f7e",
-  "type": "raw",
-  "html": "\n\n    <section class=\"hub-hero\" aria-labelledby=\"fitout-hub-title\"><div class=\"wrap hub-hero-grid\">\n      <div class=\"hub-hero-copy\" data-hub-reveal=\"\"><nav class=\"crumbs\" aria-label=\"Breadcrumb\"><a href=\"/\">Home</a><span>→</span><span>Fit Out</span></nav><p class=\"hub-tag\">Lahore fit-out specialists</p><h1 id=\"fitout-hub-title\">Fit-Out &amp; Build in Lahore</h1><p class=\"lead\">From bare shell to finished space. One accountable team coordinates every trade, finish and final handover.</p><div class=\"actions\"><a class=\"btn\" href=\"#fitout-hub-contact\">Request a Fit-Out Quote</a><a class=\"btn btn-light\" href=\"https://wa.me/923224000768\">WhatsApp</a></div></div>\n      <figure class=\"hub-image hub-hero-media\" data-hub-reveal=\"\"><img src=\"/assets/img/img-1d6ad6c77d0f.webp\" alt=\"Contemporary completed office fit-out with workstations, meeting rooms and integrated lighting\" width=\"1920\" height=\"1280\" loading=\"lazy\" decoding=\"async\"><figcaption class=\"hub-hero-note\"><strong>Built for the way the space works</strong><span>Lahore · Office fit-out</span></figcaption></figure>\n    </div></section>"
+  "type": "hero",
+  "html": "\n\n    <section class=\"hub-hero\" aria-labelledby=\"fitout-hub-title\"><div class=\"wrap hub-hero-grid\">\n      <div class=\"hub-hero-copy\" data-hub-reveal=\"\"><nav class=\"crumbs\" aria-label=\"Breadcrumb\"><a href=\"/\">Home</a><span>→</span><span>Fit Out</span></nav><p class=\"hub-tag\">Lahore fit-out specialists</p><h1 id=\"fitout-hub-title\">Fit-Out &amp; Build in Lahore</h1><p class=\"lead\">From bare shell to finished space. One accountable team coordinates every trade, finish and final handover.</p><div class=\"actions\"><a class=\"btn\" href=\"#fitout-hub-contact\">Request a Fit-Out Quote</a><a class=\"btn btn-light\" href=\"https://wa.me/923224000768\">WhatsApp</a></div></div>\n      <figure class=\"hub-image hub-hero-media\" data-hub-reveal=\"\"><img src=\"/assets/img/img-1d6ad6c77d0f.webp\" alt=\"Contemporary completed office fit-out with workstations, meeting rooms and integrated lighting\" width=\"1920\" height=\"1280\" loading=\"lazy\" decoding=\"async\"><figcaption class=\"hub-hero-note\"><strong>Built for the way the space works</strong><span>Lahore · Office fit-out</span></figcaption></figure>\n    </div></section>",
+  "fields": {
+   "heading": "Fit-Out &amp; Build in Lahore",
+   "cta_text": "Request a Fit-Out Quote",
+   "cta_href": "#fitout-hub-contact",
+   "img_src": "/assets/img/img-1d6ad6c77d0f.webp",
+   "img_alt": "Contemporary completed office fit-out with workstations, meeting rooms and integrated lighting"
+  }
  },
  {
   "id": "92d34b9c2f",
@@ -21,8 +28,37 @@
  },
  {
   "id": "a472d1f637",
-  "type": "raw",
-  "html": "\n\n    <section class=\"hub-section hub-dark\" id=\"fitout-hub-process\"><div class=\"wrap hub-process-layout\">\n      <div class=\"hub-process-sticky\" data-hub-reveal=\"\"><p class=\"hub-tag\">A controlled build</p><h2>Six clear steps to handover</h2><p class=\"lead\">Scope, cost and sequence are agreed before site work starts.</p><figure class=\"hub-image hub-process-image\"><img src=\"/assets/img/img-dce06249b137.webp\" alt=\"Woodex project exterior representing coordinated construction delivery\" width=\"1920\" height=\"1280\" loading=\"lazy\" decoding=\"async\"><figcaption class=\"hub-caption\">Programme, procurement and site delivery</figcaption></figure></div>\n      <div class=\"hub-process-list\" data-hub-process=\"\"><article class=\"hub-step is-active\"><h3>Survey</h3><p>We review the shell, services, access and building rules.</p></article><article class=\"hub-step is-active\"><h3>Coordinate</h3><p>Layouts and technical details are checked for buildability.</p></article><article class=\"hub-step is-active\"><h3>Price</h3><p>An itemized BOQ sets the agreed scope and budget.</p></article><article class=\"hub-step is-active\"><h3>Procure</h3><p>Materials are approved and sequenced for site.</p></article><article class=\"hub-step is-active\"><h3>Build</h3><p>Trades work through one managed construction programme.</p></article><article class=\"hub-step is-active\"><h3>Handover</h3><p>We snag, test, clean and hand over the finished space.</p></article></div>\n    </div></section>"
+  "type": "process",
+  "html": "\n\n    <section class=\"hub-section hub-dark\" id=\"fitout-hub-process\"><div class=\"wrap hub-process-layout\">\n      <div class=\"hub-process-sticky\" data-hub-reveal=\"\"><p class=\"hub-tag\">A controlled build</p><h2>Six clear steps to handover</h2><p class=\"lead\">Scope, cost and sequence are agreed before site work starts.</p><figure class=\"hub-image hub-process-image\"><img src=\"/assets/img/img-dce06249b137.webp\" alt=\"Woodex project exterior representing coordinated construction delivery\" width=\"1920\" height=\"1280\" loading=\"lazy\" decoding=\"async\"><figcaption class=\"hub-caption\">Programme, procurement and site delivery</figcaption></figure></div>\n      <div class=\"hub-process-list\" data-hub-process=\"\"><article class=\"hub-step is-active\"><h3>Survey</h3><p>We review the shell, services, access and building rules.</p></article><article class=\"hub-step is-active\"><h3>Coordinate</h3><p>Layouts and technical details are checked for buildability.</p></article><article class=\"hub-step is-active\"><h3>Price</h3><p>An itemized BOQ sets the agreed scope and budget.</p></article><article class=\"hub-step is-active\"><h3>Procure</h3><p>Materials are approved and sequenced for site.</p></article><article class=\"hub-step is-active\"><h3>Build</h3><p>Trades work through one managed construction programme.</p></article><article class=\"hub-step is-active\"><h3>Handover</h3><p>We snag, test, clean and hand over the finished space.</p></article></div>\n    </div></section>",
+  "fields": {
+   "steps": [
+    {
+     "title": "Survey",
+     "copy": "We review the shell, services, access and building rules."
+    },
+    {
+     "title": "Coordinate",
+     "copy": "Layouts and technical details are checked for buildability."
+    },
+    {
+     "title": "Price",
+     "copy": "An itemized BOQ sets the agreed scope and budget."
+    },
+    {
+     "title": "Procure",
+     "copy": "Materials are approved and sequenced for site."
+    },
+    {
+     "title": "Build",
+     "copy": "Trades work through one managed construction programme."
+    },
+    {
+     "title": "Handover",
+     "copy": "We snag, test, clean and hand over the finished space."
+    }
+   ],
+   "heading": "Six clear steps to handover"
+  }
  },
  {
   "id": "c73b24c5a7",

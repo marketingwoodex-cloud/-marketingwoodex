@@ -1,8 +1,16 @@
 [
  {
   "id": "8d1a049221",
-  "type": "raw",
-  "html": "\n\n    <section class=\"ct-hero\" aria-labelledby=\"city-hero-title\">\n      <figure class=\"ct-hero-media\" aria-hidden=\"true\"><img src=\"/assets/img/img-469cf01b2548.jpg\" alt=\"\" width=\"3000\" height=\"4000\" loading=\"lazy\" decoding=\"async\"></figure>\n      <div class=\"ct-wrap ct-hero-grid\">\n        <div class=\"ct-hero-copy\" data-ct-reveal=\"\">\n          <nav class=\"crumbs\" aria-label=\"Breadcrumb\"><a href=\"/\">Home</a><span>→</span><span>Bahawalpur</span></nav>\n          <p class=\"ct-label\">Where we work</p>\n          <h1 id=\"city-hero-title\">Interior design in Bahawalpur</h1>\n        </div>\n        <div class=\"ct-hero-note\" data-ct-reveal=\"\">\n          <p>Our studio is at M-71, Zainab Tower, Model Town Link Road, Lahore, and we serve Bahawalpur from it. Site visits are grouped into planned rounds covering each stage of the work.</p>\n          <div class=\"actions\"><a class=\"btn\" href=\"/contact/\">Start a Bahawalpur project</a><a class=\"btn btn-light\" href=\"/insights/design-process-explained/\">How we work</a></div>\n        </div>\n      </div>\n    </section>"
+  "type": "hero",
+  "html": "\n\n    <section class=\"ct-hero\" aria-labelledby=\"city-hero-title\">\n      <figure class=\"ct-hero-media\" aria-hidden=\"true\"><img src=\"/assets/img/img-469cf01b2548.jpg\" alt=\"\" width=\"3000\" height=\"4000\" loading=\"lazy\" decoding=\"async\"></figure>\n      <div class=\"ct-wrap ct-hero-grid\">\n        <div class=\"ct-hero-copy\" data-ct-reveal=\"\">\n          <nav class=\"crumbs\" aria-label=\"Breadcrumb\"><a href=\"/\">Home</a><span>→</span><span>Bahawalpur</span></nav>\n          <p class=\"ct-label\">Where we work</p>\n          <h1 id=\"city-hero-title\">Interior design in Bahawalpur</h1>\n        </div>\n        <div class=\"ct-hero-note\" data-ct-reveal=\"\">\n          <p>Our studio is at M-71, Zainab Tower, Model Town Link Road, Lahore, and we serve Bahawalpur from it. Site visits are grouped into planned rounds covering each stage of the work.</p>\n          <div class=\"actions\"><a class=\"btn\" href=\"/contact/\">Start a Bahawalpur project</a><a class=\"btn btn-light\" href=\"/insights/design-process-explained/\">How we work</a></div>\n        </div>\n      </div>\n    </section>",
+  "fields": {
+   "heading": "Interior design in Bahawalpur",
+   "label": "Where we work",
+   "cta_text": "Start a Bahawalpur project",
+   "cta_href": "/contact/",
+   "img_src": "/assets/img/img-469cf01b2548.jpg",
+   "img_alt": ""
+  }
  },
  {
   "id": "9d22998552",
@@ -21,8 +29,30 @@
  },
  {
   "id": "affe2734c1",
-  "type": "raw",
-  "html": "\n\n    <section class=\"ct-section ct-soft\" id=\"city-faq\"><div class=\"ct-wrap\">\n      <header class=\"ct-center\" data-ct-reveal=\"\"><p class=\"ct-label\">FAQ</p><h2>Questions, answered</h2></header>\n      <div class=\"ct-faq-list\">\n      <div class=\"ct-faq-item\" data-ct-reveal=\"\">\n        <button class=\"ct-faq-q\" type=\"button\" aria-expanded=\"true\"><span>Do you work outside Lahore?</span><span class=\"plus\">+</span></button>\n        <div class=\"ct-faq-a\"><div><p>Yes. Our studio is in Lahore and we take projects across Pakistan, including Bahawalpur. Design, drawings and coordination run from Lahore, with site visits scheduled through each phase.</p></div></div>\n      </div>\n      <div class=\"ct-faq-item\" data-ct-reveal=\"\">\n        <button class=\"ct-faq-q\" type=\"button\" aria-expanded=\"false\"><span>How do site visits work?</span><span class=\"plus\">+</span></button>\n        <div class=\"ct-faq-a\"><div><p>We plan visits around milestones: first measurement, mid-work checks and finishing. You always know the date before we travel.</p></div></div>\n      </div>\n      <div class=\"ct-faq-item\" data-ct-reveal=\"\">\n        <button class=\"ct-faq-q\" type=\"button\" aria-expanded=\"false\"><span>Can you start from drawings only?</span><span class=\"plus\">+</span></button>\n        <div class=\"ct-faq-a\"><div><p>Yes. If you have architectural drawings, we develop the design and quantities from them and verify everything on our first site visit.</p></div></div>\n      </div>\n      <div class=\"ct-faq-item\" data-ct-reveal=\"\">\n        <button class=\"ct-faq-q\" type=\"button\" aria-expanded=\"false\"><span>How often do you visit the site in Bahawalpur?</span><span class=\"plus\">+</span></button>\n        <div class=\"ct-faq-a\"><div><p>Visits are grouped into planned rounds at each milestone: measurement, mid-work and finishing. Dates are set in advance.</p></div></div>\n      </div>\n      </div>\n    </div></section>"
+  "type": "faq",
+  "html": "\n\n    <section class=\"ct-section ct-soft\" id=\"city-faq\"><div class=\"ct-wrap\">\n      <header class=\"ct-center\" data-ct-reveal=\"\"><p class=\"ct-label\">FAQ</p><h2>Questions, answered</h2></header>\n      <div class=\"ct-faq-list\">\n      <div class=\"ct-faq-item\" data-ct-reveal=\"\">\n        <button class=\"ct-faq-q\" type=\"button\" aria-expanded=\"true\"><span>Do you work outside Lahore?</span><span class=\"plus\">+</span></button>\n        <div class=\"ct-faq-a\"><div><p>Yes. Our studio is in Lahore and we take projects across Pakistan, including Bahawalpur. Design, drawings and coordination run from Lahore, with site visits scheduled through each phase.</p></div></div>\n      </div>\n      <div class=\"ct-faq-item\" data-ct-reveal=\"\">\n        <button class=\"ct-faq-q\" type=\"button\" aria-expanded=\"false\"><span>How do site visits work?</span><span class=\"plus\">+</span></button>\n        <div class=\"ct-faq-a\"><div><p>We plan visits around milestones: first measurement, mid-work checks and finishing. You always know the date before we travel.</p></div></div>\n      </div>\n      <div class=\"ct-faq-item\" data-ct-reveal=\"\">\n        <button class=\"ct-faq-q\" type=\"button\" aria-expanded=\"false\"><span>Can you start from drawings only?</span><span class=\"plus\">+</span></button>\n        <div class=\"ct-faq-a\"><div><p>Yes. If you have architectural drawings, we develop the design and quantities from them and verify everything on our first site visit.</p></div></div>\n      </div>\n      <div class=\"ct-faq-item\" data-ct-reveal=\"\">\n        <button class=\"ct-faq-q\" type=\"button\" aria-expanded=\"false\"><span>How often do you visit the site in Bahawalpur?</span><span class=\"plus\">+</span></button>\n        <div class=\"ct-faq-a\"><div><p>Visits are grouped into planned rounds at each milestone: measurement, mid-work and finishing. Dates are set in advance.</p></div></div>\n      </div>\n      </div>\n    </div></section>",
+  "fields": {
+   "label": "FAQ",
+   "heading": "Questions, answered",
+   "items": [
+    {
+     "q": "Do you work outside Lahore?",
+     "a": "<p>Yes. Our studio is in Lahore and we take projects across Pakistan, including Bahawalpur. Design, drawings and coordination run from Lahore, with site visits scheduled through each phase.</p>"
+    },
+    {
+     "q": "How do site visits work?",
+     "a": "<p>We plan visits around milestones: first measurement, mid-work checks and finishing. You always know the date before we travel.</p>"
+    },
+    {
+     "q": "Can you start from drawings only?",
+     "a": "<p>Yes. If you have architectural drawings, we develop the design and quantities from them and verify everything on our first site visit.</p>"
+    },
+    {
+     "q": "How often do you visit the site in Bahawalpur?",
+     "a": "<p>Visits are grouped into planned rounds at each milestone: measurement, mid-work and finishing. Dates are set in advance.</p>"
+    }
+   ]
+  }
  },
  {
   "id": "eadd3312a6",
@@ -31,7 +61,21 @@
  },
  {
   "id": "f65020d5fc",
-  "type": "raw",
-  "html": "\n\n    <section class=\"ct-section\" id=\"cta\"><div class=\"ct-wrap\"><div class=\"ct-cta\"><div class=\"ct-cta-grid\">\n      <div class=\"ct-cta-copy\" data-ct-reveal=\"\">\n        <p class=\"ct-label\">Start a project</p>\n        <h2>Start your Bahawalpur project with one accountable team.</h2>\n        <div class=\"ct-cta-meta\">\n          <address>M-71, Zainab Tower<br>Model Town Link Road<br>Lahore, Pakistan</address>\n          <p><a href=\"tel:+923224000768\">+92 322 4000768</a><br><a href=\"tel:+923214686884\">+92 321 4686884</a><br><a href=\"mailto:info@woodex.com.pk\">info@woodex.com.pk</a></p>\n          <p><strong>Mon–Sat 9:30–6:30</strong><br>Sunday closed</p>\n        </div>\n        <div class=\"actions\"><a class=\"btn\" href=\"mailto:info@woodex.com.pk\">Email the studio</a><a class=\"btn btn-light\" href=\"tel:+923224000768\">Call +92 322 4000768</a></div>\n      </div>\n      <figure class=\"ct-image ct-cta-media\" data-ct-reveal=\"\"><img src=\"/assets/img/img-fcc680fef653.webp\" alt=\"Finished interior used as project photography placeholder\" width=\"1920\" height=\"1280\" loading=\"lazy\" decoding=\"async\"><figcaption>Project photography placeholder · Woodex</figcaption></figure>\n    </div></div></div></section>\n\n"
+  "type": "cta",
+  "html": "\n\n    <section class=\"ct-section\" id=\"cta\"><div class=\"ct-wrap\"><div class=\"ct-cta\"><div class=\"ct-cta-grid\">\n      <div class=\"ct-cta-copy\" data-ct-reveal=\"\">\n        <p class=\"ct-label\">Start a project</p>\n        <h2>Start your Bahawalpur project with one accountable team.</h2>\n        <div class=\"ct-cta-meta\">\n          <address>M-71, Zainab Tower<br>Model Town Link Road<br>Lahore, Pakistan</address>\n          <p><a href=\"tel:+923224000768\">+92 322 4000768</a><br><a href=\"tel:+923214686884\">+92 321 4686884</a><br><a href=\"mailto:info@woodex.com.pk\">info@woodex.com.pk</a></p>\n          <p><strong>Mon–Sat 9:30–6:30</strong><br>Sunday closed</p>\n        </div>\n        <div class=\"actions\"><a class=\"btn\" href=\"mailto:info@woodex.com.pk\">Email the studio</a><a class=\"btn btn-light\" href=\"tel:+923224000768\">Call +92 322 4000768</a></div>\n      </div>\n      <figure class=\"ct-image ct-cta-media\" data-ct-reveal=\"\"><img src=\"/assets/img/img-fcc680fef653.webp\" alt=\"Finished interior used as project photography placeholder\" width=\"1920\" height=\"1280\" loading=\"lazy\" decoding=\"async\"><figcaption>Project photography placeholder · Woodex</figcaption></figure>\n    </div></div></div></section>\n\n",
+  "fields": {
+   "heading": "Start your Bahawalpur project with one accountable team.",
+   "label": "Start a project",
+   "actions": [
+    {
+     "text": "Email the studio",
+     "href": "mailto:info@woodex.com.pk"
+    },
+    {
+     "text": "Call +92 322 4000768",
+     "href": "tel:+923224000768"
+    }
+   ]
+  }
  }
 ]
