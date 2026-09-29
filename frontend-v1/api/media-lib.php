@@ -1,0 +1,228 @@
+<?php
+/**
+ * Woodex Admin v2 — Phase A7: media library, site backups, site health.
+ * Included by api/admin.php. Mirrors tools/frontend-v1-admin.mjs a7() one-to-one.
+ * Images are resized/converted in the browser (canvas), so no GD/Imagick is required on the server.
+ * Backups are .zip files (ZipArchive) containing pages, _private data files, a MySQL dump (db-dump.json) and, for weekly/full, all images.
+ */
+declare(strict_types=1);
+if (!defined('PRIVATE_DIR')) { http_response_code(404); exit; }
+
+const MEDIA_FILE = PRIVATE_DIR . '/media.json';
+const MTRASH_DIR = PRIVATE_DIR . '/media-trash';
+const SBK_DIR    = PRIVATE_DIR . '/site-backups';
+const HEALTH_FILE = PRIVATE_DIR . '/health.json';
+const IMG_DIRS   = ['assets/img', 'assets/uploads'];
+const SITE_URL_DEF = 'https://woodex.com.pk';
+
+function a7_sniff(string $b): ?string {
+    if (strncmp($b, "\xFF\xD8", 2) === 0) return 'jpg'; if (strncmp($b, "\x89PNG", 4) === 0) return 'png';
+    if (substr($b, 0, 4) === 'RIFF' && substr($b, 8, 4) === 'WEBP') return 'webp'; if (substr($b, 0, 3) === 'GIF') return 'gif'; return null;
+}
+function a7_media_ok($u): bool { return is_string($u) && preg_match('~^/assets/(img|uploads)/([a-z0-9-]+/)?[a-z0-9][a-z0-9._-]*\.(webp|jpe?g|png|gif|svg|avif)$~i', $u) && strpos($u, '..') === false; }
+function a7_walk(string $dir, string $re, bool $skipReserved = false): array {
+    $out = []; if (!is_dir($dir)) return $out;
+    foreach (scandir($dir) ?: [] as $f) {
+        if ($f === '.' || $f === '..') continue; $a = $dir . '/' . $f;
+        if (is_dir($a)) { if ($skipReserved && realpath($dir) === realpath(ROOT_DIR) && preg_match('~^(_private|builder|admin|api|assets|node_modules)$~', $f)) continue; $out = array_merge($out, a7_walk($a, $re, $skipReserved)); }
+        elseif (preg_match($re, $f)) $out[] = $a;
+    }
+    return $out;
+}
+function a7_rel(string $a): string { return ltrim(str_replace('\\', '/', substr($a, strlen(ROOT_DIR))), '/'); }
+function a7_pages(): array { return array_map('a7_rel', a7_walk(ROOT_DIR, '~\.html$~', true)); }
+function a7_corpus(): array {
+    $c = []; foreach (a7_pages() as $r) $c[$r] = (string)file_get_contents(ROOT_DIR . '/' . $r);
+    foreach (a7_walk(ROOT_DIR . '/assets', '~\.(css|js)$~') as $a) $c[a7_rel($a)] = (string)file_get_contents($a);
+    foreach (glob(PRIVATE_DIR . '/*.json') ?: [] as $f) if (!preg_match('~/(media|health|db|config|redirects)\.json$~', $f)) $c['_private/' . basename($f)] = (string)file_get_contents($f);
+    // stored content in MySQL settings (company logo etc.)
+    try { foreach (q("SELECT k, v FROM wx_settings")->fetchAll() as $row) $c['_private/settings-' . $row['k'] . '.json'] = (string)$row['v']; } catch (Throwable $e) {}
+    return $c;
+}
+function a7_media(): array { $m = jread(MEDIA_FILE); $m['alt'] = $m['alt'] ?? []; $m['trash'] = $m['trash'] ?? []; $m['seq'] = (int)($m['seq'] ?? 0); return $m; }
+function a7_now(): string { return gmdate('Y-m-d H:i:s'); }
+
+// ---------------------------------------------------------------- backups
+function a7_bk_list(): array {
+    $out = []; foreach (glob(SBK_DIR . '/*.zip') ?: [] as $f) { $n = basename($f); if (!preg_match('~^(daily|weekly|full|safety)-\d{8}-\d{6}\.zip$~', $n)) continue; $out[] = ['name' => $n, 'kind' => explode('-', $n)[0], 'size' => filesize($f), 'at' => gmdate('Y-m-d H:i:s', filemtime($f))]; }
+    usort($out, fn($a, $b) => strcmp($b['name'], $a['name'])); return $out;
+}
+function a7_backup(string $kind, ?array $u = null): array {
+    if (!class_exists('ZipArchive')) fail('The ZipArchive PHP extension is not enabled on this hosting');
+    if (!is_dir(SBK_DIR)) mkdir(SBK_DIR, 0750, true);
+    @file_put_contents(SBK_DIR . '/.htaccess', "Require all denied\nDeny from all\n");
+    @set_time_limit(300);
+    $name = $kind . '-' . gmdate('Ymd-His') . '.zip'; $z = new ZipArchive();
+    if ($z->open(SBK_DIR . '/' . $name, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) fail('Could not create the backup file');
+    $add = function (string $rel) use ($z) { $a = ROOT_DIR . '/' . $rel; if (is_file($a)) $z->addFile($a, $rel); elseif (is_dir($a)) foreach (a7_walk($a, '~.~') as $f) $z->addFile($f, a7_rel($f)); };
+    foreach (a7_pages() as $r) $add($r);
+    foreach (['sitemap.xml', 'robots.txt', '.htaccess', 'assets/site.js', 'assets/js', 'assets/v1.css'] as $r) $add($r);
+    foreach (scandir(PRIVATE_DIR) ?: [] as $f) if ($f[0] !== '.' && !preg_match('~^(backups|site-backups|media-trash|trash)$~', $f)) $add('_private/' . $f);
+    if ($kind !== 'daily') foreach (IMG_DIRS as $d) $add($d);
+    // MySQL dump (all wx_ tables) as JSON
+    $dump = [];
+    foreach (q("SHOW TABLES LIKE 'wx\\_%'")->fetchAll(PDO::FETCH_NUM) as $t) { $dump[$t[0]] = q('SELECT * FROM `' . $t[0] . '`')->fetchAll(); }
+    $z->addFromString('db-dump.json', json_encode($dump, JSON_UNESCAPED_UNICODE));
+    $z->close();
+    foreach (['daily' => 7, 'weekly' => 4, 'full' => 10, 'safety' => 3] as $k => $keep) { $fs = glob(SBK_DIR . '/' . $k . '-*.zip') ?: []; sort($fs); while (count($fs) > $keep) @unlink(array_shift($fs)); }
+    return ['name' => $name, 'size' => filesize(SBK_DIR . '/' . $name), 'by' => $u['name'] ?? 'cron'];
+}
+function a7_backup_auto(): array {
+    $l = a7_bk_list(); $age = function ($k) use ($l) { foreach ($l as $b) if ($b['kind'] === $k) return (time() - filemtime(SBK_DIR . '/' . $b['name'])) / 3600; return 1e9; };
+    $made = []; if ($age('daily') > 20) $made[] = a7_backup('daily')['name']; if ($age('weekly') > 24 * 6.5) $made[] = a7_backup('weekly')['name'];
+    $h = jread(HEALTH_FILE); $h['lastCron'] = a7_now(); jwrite(HEALTH_FILE, $h); return $made;
+}
+function a7_restore(string $file): void {
+    @set_time_limit(300); $z = new ZipArchive(); if ($z->open($file) !== true) fail('Could not open the backup');
+    $root = realpath(ROOT_DIR);
+    for ($i = 0; $i < $z->numFiles; $i++) {
+        $n = $z->getNameIndex($i); if ($n === 'db-dump.json' || substr($n, -1) === '/') continue;
+        if (strpos($n, '..') !== false || $n[0] === '/' || preg_match('~^(api|admin|builder)/~', $n)) continue; // never overwrite code
+        $dst = $root . '/' . $n; if (!is_dir(dirname($dst))) mkdir(dirname($dst), 0755, true); file_put_contents($dst, $z->getFromIndex($i), LOCK_EX);
+    }
+    $dump = json_decode((string)$z->getFromName('db-dump.json'), true); $z->close();
+    if (is_array($dump)) {
+        $pdo = db(); $pdo->beginTransaction();
+        try {
+            foreach ($dump as $table => $rows) {
+                if (!preg_match('~^wx_[a-z0-9_]+$~', $table) || $table === 'wx_throttle') continue;
+                $pdo->exec('DELETE FROM `' . $table . '`');
+                foreach ($rows as $row) { $cols = array_keys($row); $pdo->prepare('INSERT INTO `' . $table . '` (`' . implode('`,`', $cols) . '`) VALUES (' . implode(',', array_fill(0, count($cols), '?')) . ')')->execute(array_values($row)); }
+            }
+            $pdo->commit();
+        } catch (Throwable $e) { $pdo->rollBack(); throw $e; }
+    }
+}
+
+// ---------------------------------------------------------------- health
+function a7_health_scan(): array {
+    $redir = array_map(fn($r) => rtrim((string)$r['from'], '/'), jread(PRIVATE_DIR . '/redirects.json'));
+    $pages = a7_pages(); $issues = []; $titles = []; $sizes = [];
+    $add = function ($rel, $type, $sev, $msg, $extra = []) use (&$issues) { $issues[] = array_merge(['rel' => $rel, 'type' => $type, 'sev' => $sev, 'msg' => $msg], $extra); };
+    $fileFor = function (string $href): string { $p = rawurldecode(preg_split('~[?#]~', $href)[0]); if ($p === '' || $p === '/') return 'index.html'; $p = ltrim($p, '/'); if (substr($p, -1) === '/') return $p . 'index.html'; return preg_match('~\.[a-z0-9]+$~i', $p) ? $p : $p . '/index.html'; };
+    foreach ($pages as $rel) {
+        if ($rel === '404.html') continue; $h = (string)file_get_contents(ROOT_DIR . '/' . $rel);
+        $title = preg_match('~<title[^>]*>(.*?)</title>~is', $h, $m) ? trim(html_entity_decode($m[1])) : '';
+        $desc = preg_match('~<meta[^>]+name="description"[^>]*content="([^"]*)"~i', $h, $m) ? html_entity_decode($m[1]) : null;
+        if ($title === '') $add($rel, 'seo', 3, 'Missing page title'); else { $tl = mb_strlen($title); if ($tl > 65) $add($rel, 'seo', 1, "Title is long ($tl characters, aim for 60)"); if ($tl < 20) $add($rel, 'seo', 1, 'Title is very short'); $titles[$title][] = $rel; }
+        if (!$desc) $add($rel, 'seo', 2, 'Missing meta description'); else { $dl = mb_strlen($desc); if ($dl > 165) $add($rel, 'seo', 1, "Description is long ($dl, aim for 150-158)"); elseif ($dl < 70) $add($rel, 'seo', 1, "Description is short ($dl)"); }
+        $main = preg_replace('~<script[\s\S]*?</script>~i', '', $h); $h1 = preg_match_all('~<h1[\s>]~i', $main);
+        if ($h1 === 0) $add($rel, 'seo', 2, 'No main heading (H1)'); elseif ($h1 > 1) $add($rel, 'seo', 1, "$h1 main headings (H1), use one");
+        if (!preg_match('~<link[^>]+rel="canonical"~i', $h)) $add($rel, 'seo', 1, 'No canonical link');
+        $noAlt = 0; preg_match_all('~<img\b[^>]*>~i', $main, $im); foreach ($im[0] as $t) { $has = preg_match('~\salt\s*=\s*"([^"]*)"~i', $t, $am); if ((!$has || trim($am[1]) === '') && !preg_match('~aria-hidden="true"|role="presentation"~', $t)) $noAlt++; }
+        if ($noAlt) $add($rel, 'alt', 2, "$noAlt image(s) without alt text", ['count' => $noAlt]);
+        $seen = [];
+        preg_match_all('~\shref="(/[^"]*)"~i', $main, $lm); foreach ($lm[1] as $href) { if (preg_match('~^//|^/(api|admin|builder)/~', $href) || isset($seen[$href])) continue; $seen[$href] = 1; if (!is_file(ROOT_DIR . '/' . $fileFor($href)) && !in_array(rtrim(preg_split('~[?#]~', $href)[0], '/'), $redir, true)) $add($rel, 'link', 3, 'Broken link: ' . $href, ['target' => $href]); }
+        preg_match_all('~\s(?:src|href|content)="((?:https://woodex\.com\.pk)?/assets/[^"]+\.(?:webp|jpe?g|png|gif|svg|avif))"~i', $main, $mm);
+        foreach ($mm[1] as $u) { $u = str_replace(SITE_URL_DEF, '', $u); if (isset($seen[$u])) continue; $seen[$u] = 1; $f = ROOT_DIR . explode('?', $u)[0];
+            if (!is_file($f)) { $add($rel, 'image', 3, 'Missing image: ' . $u, ['target' => $u]); continue; }
+            $sz = $sizes[$u] ?? ($sizes[$u] = filesize($f)); if ($sz > 350 * 1024) $add($rel, 'image', 1, 'Large image ' . basename($u) . ' (' . round($sz / 1024) . ' KB)', ['target' => $u, 'size' => $sz]); }
+    }
+    foreach ($titles as $rels) if (count($rels) > 1) foreach ($rels as $r) $add($r, 'seo', 1, 'Same title as ' . (count($rels) - 1) . ' other page(s)');
+    $pen = 0; foreach ($issues as $i) $pen += $i['sev'] === 3 ? 3 : ($i['sev'] === 2 ? 1.2 : 0.35);
+    $score = (int)max(0, min(100, round(100 - $pen * 100 / max(1, count($pages) * 4))));
+    $counts = []; foreach (['seo', 'alt', 'link', 'image'] as $k) $counts[$k] = count(array_filter($issues, fn($i) => $i['type'] === $k));
+    return ['score' => $score, 'pages' => count($pages), 'at' => a7_now(), 'issues' => $issues, 'counts' => $counts];
+}
+
+// ---------------------------------------------------------------- actions
+function media_actions(string $action, array $in): bool {
+    if (!preg_match('~^(media_|backup_|health_)~', $action)) return false;
+    $ED = ['owner', 'admin', 'editor']; $OA = ['owner', 'admin'];
+    switch ($action) {
+        case 'media_list':
+            need($ED); $m = a7_media(); $corpus = a7_corpus(); $files = [];
+            foreach (IMG_DIRS as $d) foreach (a7_walk(ROOT_DIR . '/' . $d, '~\.(webp|jpe?g|png|gif|svg|avif)$~i') as $a) {
+                $url = '/' . a7_rel($a); $base = ltrim($url, '/'); $name = basename($a); $used = [];
+                foreach ($corpus as $r => $t) if (strpos($t, $base) !== false || (strlen($name) > 10 && strpos($t, $name) !== false)) $used[] = $r;
+                $sub = trim(str_replace('\\', '/', substr(dirname($a), strlen(ROOT_DIR . '/' . $d))), '/');
+                $files[] = ['url' => $url, 'name' => $name, 'folder' => $d === 'assets/img' ? 'site' : ($sub ?: 'uploads'), 'size' => filesize($a), 'mtime' => gmdate('Y-m-d H:i:s', filemtime($a)), 'alt' => $m['alt'][$url] ?? '', 'used' => $used];
+            }
+            usort($files, fn($a, $b) => strcmp($b['mtime'], $a['mtime']));
+            $folders = []; foreach (glob(ROOT_DIR . '/assets/uploads/*', GLOB_ONLYDIR) ?: [] as $f) $folders[] = basename($f);
+            out(['ok' => true, 'files' => $files, 'folders' => $folders, 'trash' => count($m['trash'])]);
+        case 'media_folder':
+            need($ED); $n = trim(preg_replace('~[^a-z0-9]+~', '-', strtolower((string)($in['name'] ?? ''))), '-'); $n = substr($n, 0, 40); if ($n === '') fail('Folder name: letters and numbers');
+            if (!is_dir(ROOT_DIR . '/assets/uploads/' . $n)) mkdir(ROOT_DIR . '/assets/uploads/' . $n, 0755, true); out(['ok' => true, 'name' => $n]);
+        case 'media_upload':
+        case 'media_replace':
+            $u = need($action === 'media_upload' ? $ED : $OA); $data = base64_decode((string)($in['data'] ?? ''), true);
+            if ($data === false || $data === '' || strlen($data) > 8 * 1024 * 1024) fail('Image is empty or larger than 8 MB'); $ext = a7_sniff($data); if (!$ext) fail('Only JPG, PNG, WebP or GIF images are allowed');
+            if ($action === 'media_replace') {
+                $url = (string)($in['url'] ?? ''); if (!a7_media_ok($url)) fail('Invalid image'); $abs = ROOT_DIR . $url; if (!is_file($abs)) fail('Image not found', 404);
+                $cur = str_replace('jpeg', 'jpg', strtolower(pathinfo($abs, PATHINFO_EXTENSION))); if ($cur !== $ext) fail("The new file must be the same format ($cur)");
+                $m = a7_media(); if (!is_dir(MTRASH_DIR)) mkdir(MTRASH_DIR, 0750, true); $tf = time() . '-' . basename($abs); copy($abs, MTRASH_DIR . '/' . $tf);
+                $before = filesize($abs); $m['trash'][] = ['id' => ++$m['seq'], 'url' => $url, 'file' => $tf, 'size' => $before, 'at' => a7_now(), 'by' => $u['name'], 'why' => 'replaced']; jwrite(MEDIA_FILE, $m);
+                file_put_contents($abs, $data, LOCK_EX); log_act($u, 'media.optimise', $url); out(['ok' => true, 'url' => $url, 'before' => $before, 'after' => strlen($data)]);
+            }
+            $folder = preg_replace('~[^a-z0-9-]~', '', (string)($in['folder'] ?? '')); $dir = ROOT_DIR . '/assets/uploads' . ($folder ? '/' . $folder : ''); if ($folder && !is_dir($dir)) fail('Folder not found');
+            if (!is_dir($dir)) mkdir($dir, 0755, true);
+            $base = trim(preg_replace('~[^a-z0-9]+~', '-', preg_replace('~\.[a-z0-9]+$~', '', strtolower((string)($in['name'] ?? 'image')))), '-') ?: 'image'; $name = substr($base, 0, 40) . '-' . bin2hex(random_bytes(3)) . '.' . $ext;
+            file_put_contents($dir . '/' . $name, $data, LOCK_EX); $url = '/assets/uploads/' . ($folder ? $folder . '/' : '') . $name;
+            if (!empty($in['alt'])) { $m = a7_media(); $m['alt'][$url] = clip($in['alt'], 200); jwrite(MEDIA_FILE, $m); }
+            log_act($u, 'media.upload', $url); out(['ok' => true, 'url' => $url, 'size' => strlen($data)]);
+        case 'media_alt':
+            $u = need($ED); $url = (string)($in['url'] ?? ''); $alt = clip($in['alt'] ?? '', 200); if (!a7_media_ok($url)) fail('Invalid image');
+            $m = a7_media(); $m['alt'][$url] = $alt; jwrite(MEDIA_FILE, $m); $pages = 0;
+            if (!empty($in['apply']) && $alt !== '') {
+                $ea = htmlspecialchars($alt, ENT_QUOTES | ENT_HTML5);
+                foreach (a7_pages() as $rel) {
+                    $abs = ROOT_DIR . '/' . $rel; $h = (string)file_get_contents($abs); if (strpos($h, $url) === false) continue;
+                    $n = preg_replace_callback('~<img\b[^>]*>~i', function ($mm) use ($url, $ea) { $t = $mm[0]; if (strpos($t, 'src="' . $url . '"') === false && strpos($t, 'src="' . SITE_URL_DEF . $url . '"') === false) return $t; if (preg_match('~\salt="[^"]+"~', $t)) return $t; return preg_match('~\salt=""~', $t) ? preg_replace('~\salt=""~', ' alt="' . $ea . '"', $t, 1) : preg_replace('~^<img~i', '<img alt="' . $ea . '"', $t, 1); }, $h);
+                    if ($n !== $h) { cms_file_backup($rel); file_put_contents($abs, $n, LOCK_EX); $pages++; }
+                }
+            }
+            log_act($u, 'media.alt', $url); out(['ok' => true, 'pages' => $pages]);
+        case 'media_trash':
+            $u = need($OA); $m = a7_media(); $urls = array_slice(array_values(array_filter(is_array($in['urls'] ?? null) ? $in['urls'] : [], 'a7_media_ok')), 0, 200);
+            $corpus = !empty($in['force']) ? [] : a7_corpus(); $moved = []; $blocked = []; if (!is_dir(MTRASH_DIR)) mkdir(MTRASH_DIR, 0750, true);
+            foreach ($urls as $url) {
+                $abs = ROOT_DIR . $url; if (!is_file($abs)) continue; $hit = false; foreach ($corpus as $t) if (strpos($t, ltrim($url, '/')) !== false) { $hit = true; break; }
+                if ($hit) { $blocked[] = $url; continue; }
+                $tf = time() . '-' . bin2hex(random_bytes(2)) . '-' . basename($abs); $m['trash'][] = ['id' => ++$m['seq'], 'url' => $url, 'file' => $tf, 'size' => filesize($abs), 'at' => a7_now(), 'by' => $u['name'], 'why' => 'deleted']; rename($abs, MTRASH_DIR . '/' . $tf); $moved[] = $url;
+            }
+            jwrite(MEDIA_FILE, $m); log_act($u, 'media.trash', count($moved) . ' file(s)'); out(['ok' => true, 'moved' => $moved, 'blocked' => $blocked]);
+        case 'media_trash_list': need($OA); out(['ok' => true, 'trash' => array_reverse(a7_media()['trash'])]);
+        case 'media_restore':
+        case 'media_purge':
+            $u = need($OA); $m = a7_media(); $ids = !empty($in['all']) ? array_column($m['trash'], 'id') : [(int)($in['id'] ?? 0)]; $n = 0;
+            foreach ($ids as $id) {
+                $i = null; foreach ($m['trash'] as $k => $t) if ((int)$t['id'] === (int)$id) $i = $k; if ($i === null) continue; $t = $m['trash'][$i]; $src = MTRASH_DIR . '/' . basename($t['file']);
+                if ($action === 'media_restore') { if (!a7_media_ok($t['url'])) continue; $dst = ROOT_DIR . $t['url']; if (is_file($dst) && $t['why'] !== 'replaced') fail('A file with that name exists again'); if (!is_dir(dirname($dst))) mkdir(dirname($dst), 0755, true); if (is_file($src)) copy($src, $dst); }
+                if (is_file($src)) unlink($src); array_splice($m['trash'], $i, 1); $n++;
+            }
+            jwrite(MEDIA_FILE, $m); log_act($u, $action === 'media_restore' ? 'media.restore' : 'media.purge', $n . ' file(s)'); out(['ok' => true, 'n' => $n]);
+        case 'backup_list': need($OA); $h = jread(HEALTH_FILE); out(['ok' => true, 'backups' => a7_bk_list(), 'lastCron' => $h['lastCron'] ?? null, 'format' => 'zip']);
+        case 'backup_run': $u = need($OA); $b = a7_backup(($in['kind'] ?? '') === 'daily' ? 'daily' : 'full', $u); log_act($u, 'backup.create', $b['name']); out(['ok' => true, 'backup' => $b]);
+        case 'backup_delete':
+            $u = need($OA); foreach (a7_bk_list() as $b) if ($b['name'] === ($in['name'] ?? '')) { unlink(SBK_DIR . '/' . $b['name']); log_act($u, 'backup.delete', $b['name']); out(['ok' => true]); }
+            fail('Backup not found', 404);
+        case 'backup_restore':
+            $u = need($OA); foreach (a7_bk_list() as $b) if ($b['name'] === ($in['name'] ?? '')) { $s = a7_backup('safety', $u); a7_restore(SBK_DIR . '/' . $b['name']); log_act($u, 'backup.restore', $b['name'] . ' (safety copy ' . $s['name'] . ')'); out(['ok' => true, 'safety' => $s['name']]); }
+            fail('Backup not found', 404);
+        case 'health_get': need($ED); $h = jread(HEALTH_FILE); out(['ok' => true, 'scan' => $h['scan'] ?? null, 'psi' => (object)($h['psi'] ?? []), 'psiKeySet' => !empty($h['psiKey']), 'site' => $h['site'] ?? SITE_URL_DEF, 'lastCron' => $h['lastCron'] ?? null]);
+        case 'health_scan': $u = need($ED); $h = jread(HEALTH_FILE); $h['scan'] = a7_health_scan(); jwrite(HEALTH_FILE, $h); log_act($u, 'health.scan', $h['scan']['score'] . '/100'); out(['ok' => true, 'scan' => $h['scan']]);
+        case 'health_settings':
+            need($OA); $h = jread(HEALTH_FILE); if (is_string($in['psiKey'] ?? null) && $in['psiKey'] !== '') $h['psiKey'] = substr(trim($in['psiKey']), 0, 100); if (!empty($in['clearKey'])) unset($h['psiKey']);
+            if (preg_match('~^https://[a-z0-9.-]+$~i', (string)($in['site'] ?? ''))) $h['site'] = $in['site']; jwrite(HEALTH_FILE, $h); out(['ok' => true, 'psiKeySet' => !empty($h['psiKey']), 'site' => $h['site'] ?? SITE_URL_DEF]);
+        case 'health_psi':
+            need($ED); $h = jread(HEALTH_FILE); $rel = (string)($in['rel'] ?? 'index.html'); if (!preg_match('~^[a-z0-9][a-z0-9/_\-.]*\.html$~i', $rel) || strpos($rel, '..') !== false) fail('Invalid page');
+            $strategy = ($in['strategy'] ?? '') === 'desktop' ? 'desktop' : 'mobile'; $url = ($h['site'] ?? SITE_URL_DEF) . '/' . preg_replace('~index\.html$~', '', $rel);
+            $qs = http_build_query(['url' => $url, 'strategy' => $strategy] + (!empty($h['psiKey']) ? ['key' => $h['psiKey']] : [])) . '&category=performance&category=accessibility&category=best-practices&category=seo';
+            @set_time_limit(120); $ch = curl_init('https://www.googleapis.com/pagespeedonline/v5/runPagespeed?' . $qs); curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 100]);
+            $raw = curl_exec($ch); $code = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE); curl_close($ch); $j = json_decode((string)$raw, true);
+            if ($code !== 200 || !isset($j['lighthouseResult'])) fail('PageSpeed: ' . substr((string)($j['error']['message'] ?? 'request failed'), 0, 200));
+            $cat = $j['lighthouseResult']['categories']; $au = $j['lighthouseResult']['audits']; $sc = fn($k) => isset($cat[$k]['score']) ? (int)round($cat[$k]['score'] * 100) : null;
+            $res = ['at' => a7_now(), 'strategy' => $strategy, 'perf' => $sc('performance'), 'a11y' => $sc('accessibility'), 'bp' => $sc('best-practices'), 'seo' => $sc('seo'), 'lcp' => $au['largest-contentful-paint']['displayValue'] ?? null, 'cls' => $au['cumulative-layout-shift']['displayValue'] ?? null, 'tbt' => $au['total-blocking-time']['displayValue'] ?? null];
+            $h = jread(HEALTH_FILE); $k = $rel . '|' . $strategy; $h['psi'][$k] = array_slice(array_merge([$res], $h['psi'][$k] ?? []), 0, 10); jwrite(HEALTH_FILE, $h); out(['ok' => true, 'result' => $res]);
+    }
+    return false;
+}
+/** Raw download of a backup file: GET/POST admin.php?action=backup_dl&name=… with the X-WX-ADM header. */
+function media_download(): void {
+    $u = current_user(); if (!$u || !in_array($u['role'], ['owner', 'admin'], true)) { http_response_code(403); exit('Forbidden'); }
+    $name = (string)($_GET['name'] ?? ''); foreach (a7_bk_list() as $b) if ($b['name'] === $name) {
+        $f = SBK_DIR . '/' . $name; header('Content-Type: application/zip'); header('Content-Disposition: attachment; filename="woodex-' . $name . '"'); header('Content-Length: ' . filesize($f)); header('Cache-Control: no-store'); readfile($f); exit;
+    }
+    http_response_code(404); exit('Not found');
+}

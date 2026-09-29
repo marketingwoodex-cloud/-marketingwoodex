@@ -198,12 +198,14 @@ function region_spans(string $h, array $scope): array {
 require __DIR__ . '/crm-lib.php';
 require __DIR__ . '/sales-lib.php';
 require __DIR__ . '/content-lib.php';
+require __DIR__ . '/media-lib.php';
 
 // ---------- request ----------
 $in = json_decode((string)file_get_contents('php://input'), true) ?: [];
 $action = (string)($in['action'] ?? ($_GET['action'] ?? 'status'));
-if ($_SERVER['REQUEST_METHOD'] !== 'POST' && $action !== 'status' && $action !== 'cron') fail('POST required', 405);
-if ($action === 'cron') { $n = 0; try { $n = cms_tick(); } catch (Throwable $e) { error_log('cron: ' . $e->getMessage()); } out(['ok' => true, 'published' => $n]); }
+if ($_SERVER['REQUEST_METHOD'] !== 'POST' && $action !== 'status' && $action !== 'cron' && $action !== 'backup_dl') fail('POST required', 405);
+if ($action === 'cron') { $n = 0; $bk = []; try { $n = cms_tick(); } catch (Throwable $e) { error_log('cron: ' . $e->getMessage()); } try { $bk = a7_backup_auto(); } catch (Throwable $e) { error_log('backup: ' . $e->getMessage()); } out(['ok' => true, 'published' => $n, 'backups' => $bk]); }
+if ($action === 'backup_dl') media_download();
 
 try {
 if ($action !== "setup" && $action !== "status") { try { cms_tick(); } catch (Throwable $e) { error_log("cms_tick: " . $e->getMessage()); } }
@@ -396,6 +398,6 @@ switch ($action) {
         if (!$dry && $total) log_act($u, 'global.replace', '"' . mb_substr($find, 0, 60) . '" → "' . mb_substr($rep, 0, 60) . '" (' . count($res) . ' pages)');
         out(['ok' => true, 'pages' => $res, 'total' => $total, 'dry' => $dry]);
 
-    default: if (!crm_actions($action, $in) && !sales_actions($action, $in) && !content_actions($action, $in)) fail('Unknown action', 404);
+    default: if (!crm_actions($action, $in) && !sales_actions($action, $in) && !content_actions($action, $in) && !media_actions($action, $in)) fail('Unknown action', 404);
 }
 } catch (PDOException $e) { error_log('admin.php: ' . $e->getMessage()); fail('Database error', 500); }

@@ -190,6 +190,13 @@ switch ($action) {
         $files = glob(backup_dir_for($rel) . '/*.html') ?: []; rsort($files);
         out(['ok' => true, 'backups' => array_map(fn($f) => ['file' => basename($f), 'size' => filesize($f)], $files)]);
 
+    case 'backup_get':
+        require_auth();
+        $rel = (string)($in['path'] ?? ''); page_path($rel);
+        $file = basename((string)($in['file'] ?? ''));
+        if (!preg_match('~^\d{8}-\d{6}(-\d{3})?\.html$~', $file)) fail('Invalid backup');
+        $src = backup_dir_for($rel) . '/' . $file; if (!is_file($src)) fail('Backup not found', 404);
+        out(['ok' => true, 'html' => (string)file_get_contents($src)]);
     case 'restore':
         require_auth();
         $rel = (string)($in['path'] ?? ''); $abs = page_path($rel);

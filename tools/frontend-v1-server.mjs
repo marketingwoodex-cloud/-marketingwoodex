@@ -168,6 +168,12 @@ async function api(req, body) {
       const files = fs.existsSync(bd) ? fs.readdirSync(bd).filter((f) => f.endsWith(".html")).sort().reverse() : [];
       return { ok: true, backups: files.map((f) => ({ file: f, size: fs.statSync(path.join(bd, f)).size })) };
     }
+    case "backup_get": {
+      need(); const { rel } = pagePath(inp.path); const file = path.basename(String(inp.file || ""));
+      if (!/^\d{8}-\d{6}(-\d{3})?\.html$/.test(file)) throw new Fail("Invalid backup");
+      const src = path.join(backupDir(rel), file); if (!fs.existsSync(src)) throw new Fail("Backup not found", 404);
+      return { ok: true, html: fs.readFileSync(src, "utf8") };
+    }
     case "restore": {
       need(); const { rel, abs } = pagePath(inp.path); const file = path.basename(String(inp.file || ""));
       if (!/^\d{8}-\d{6}(-\d{3})?\.html$/.test(file)) throw new Fail("Invalid backup");
@@ -315,10 +321,16 @@ http.createServer(async (req, res) => {
       return res.end(JSON.stringify(out));
     }
 
+    if (p === "/api/admin.php" && url.searchParams.get("action") === "backup_dl") {
+      const f = adminApi.backupFile(req, String(url.searchParams.get("name") || ""));
+      if (!f) { res.writeHead(403); return res.end("Forbidden"); }
+      res.writeHead(200, { "Content-Type": "application/gzip", "Content-Disposition": 'attachment; filename="woodex-' + path.basename(f) + '"', "Content-Length": fs.statSync(f).size });
+      return fs.createReadStream(f).pipe(res);
+    }
     if (p === "/api/admin.php") {
       const chunks = []; for await (const c of req) chunks.push(c);
       let status = 200, out;
-      try { let inp = {}; try { inp = JSON.parse(Buffer.concat(chunks).toString() || "{}"); } catch {} out = await adminApi(req, inp); }
+      try { let inp = {}; try { inp = JSON.parse(Buffer.concat(chunks).toString() || "{}"); } catch {} if (req.method === "GET" && url.searchParams.get("action") === "cron") inp = { action: "cron" }; out = await adminApi(req, inp); }
       catch (e) { status = e.code || 500; out = { ok: false, error: e.code ? e.message : "Server error" }; if (!e.code) console.error(e); }
       res.writeHead(status, { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" });
       return res.end(JSON.stringify(out));

@@ -3,6 +3,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import crypto from "node:crypto";
+import { execFileSync } from "node:child_process";
 
 const ROLES = ["owner", "admin", "editor", "sales"];
 class Fail extends Error { constructor(m, c = 400) { super(m); this.code = c; } }
@@ -623,13 +624,169 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
     return null;
   }
 
+  // ================================================================== A7: media library, site backups, site health
+  const MEDIA = path.join(PRIV, "media.json"), MTRASH = path.join(PRIV, "media-trash"), SBK = path.join(PRIV, "site-backups"), HEALTH = path.join(PRIV, "health.json");
+  const IMG_DIRS = ["assets/img", "assets/uploads"], IMG_RE = /\.(webp|jpe?g|png|gif|svg|avif)$/i, SITE_URL = "https://woodex.com.pk";
+  const sniff = (b) => b[0] === 0xff && b[1] === 0xd8 ? "jpg" : b[0] === 0x89 && b[1] === 0x50 ? "png" : b.slice(0, 4).toString() === "RIFF" && b.slice(8, 12).toString() === "WEBP" ? "webp" : b.slice(0, 3).toString() === "GIF" ? "gif" : null;
+  const mediaRelOk = (u) => typeof u === "string" && /^\/assets\/(img|uploads)\/([a-z0-9-]+\/)?[a-z0-9][a-z0-9._-]*\.(webp|jpe?g|png|gif|svg|avif)$/i.test(u) && !u.includes("..");
+  const walkFiles = (dir, test, out = [], skipRoot = null) => { if (!fs.existsSync(dir)) return out; for (const f of fs.readdirSync(dir, { withFileTypes: true })) { const a = path.join(dir, f.name); if (f.isDirectory()) { if (skipRoot && dir === ROOT && skipRoot.test(f.name)) continue; walkFiles(a, test, out, skipRoot); } else if (test(f.name)) out.push(a); } return out; };
+  const relOf = (a) => path.relative(ROOT, a).split(path.sep).join("/");
+  const htmlPages = () => walkFiles(ROOT, (n) => n.endsWith(".html"), [], /^(_private|builder|admin|api|assets|node_modules)$/).map(relOf);
+  /** Text of everything that can reference an image: pages, CSS/JS, stored content (drafts, company logo…). */
+  function usageCorpus() {
+    const parts = htmlPages().map((rel) => [rel, fs.readFileSync(path.join(ROOT, rel), "utf8")]);
+    for (const a of walkFiles(path.join(ROOT, "assets"), (n) => /\.(css|js)$/.test(n))) parts.push([relOf(a), fs.readFileSync(a, "utf8")]);
+    for (const f of fs.existsSync(PRIV) ? fs.readdirSync(PRIV).filter((n) => n.endsWith(".json") && !/^(media|health|admin-db|crm|db|config|redirects)\.json$/.test(n)) : []) parts.push(["_private/" + f, fs.readFileSync(path.join(PRIV, f), "utf8")]);
+    return parts;
+  }
+  const mediaLoad = () => { const m = jr(MEDIA, {}); m.alt = m.alt || {}; m.trash = m.trash || []; m.seq = m.seq || 0; return m; };
+  function backupOne(kind, u) {
+    fs.mkdirSync(SBK, { recursive: true });
+    const t = new Date(), p = (n) => String(n).padStart(2, "0"), name = `${kind}-${t.getFullYear()}${p(t.getMonth() + 1)}${p(t.getDate())}-${p(t.getHours())}${p(t.getMinutes())}${p(t.getSeconds())}.tar.gz`;
+    const list = [...htmlPages(), "sitemap.xml", "robots.txt", ".htaccess", "assets/site.js", "assets/js", "assets/v1.css"].filter((r) => fs.existsSync(path.join(ROOT, r)));
+    if (fs.existsSync(PRIV)) for (const f of fs.readdirSync(PRIV)) if (!/^(backups|site-backups|media-trash|trash)$/.test(f)) list.push("_private/" + f);
+    if (kind !== "daily") list.push(...IMG_DIRS.filter((d) => fs.existsSync(path.join(ROOT, d))));
+    const lf = path.join(SBK, ".list"); fs.writeFileSync(lf, list.join("\n"));
+    execFileSync("tar", ["czf", path.join(SBK, name), "-C", ROOT, "-T", lf]); fs.unlinkSync(lf);
+    // retention: 7 daily, 4 weekly, 10 manual, 3 safety
+    const keep = { daily: 7, weekly: 4, full: 10, safety: 3 };
+    for (const k of Object.keys(keep)) { const fsx = fs.readdirSync(SBK).filter((f) => f.startsWith(k + "-")).sort(); while (fsx.length > keep[k]) fs.unlinkSync(path.join(SBK, fsx.shift())); }
+    return { name, size: fs.statSync(path.join(SBK, name)).size, by: u ? u.name : "cron" };
+  }
+  const bkList = () => (fs.existsSync(SBK) ? fs.readdirSync(SBK).filter((f) => /^(daily|weekly|full|safety)-\d{8}-\d{6}\.(tar\.gz|zip)$/.test(f)).sort().reverse().map((f) => { const s = fs.statSync(path.join(SBK, f)); return { name: f, kind: f.split("-")[0], size: s.size, at: s.mtime.toISOString().slice(0, 19).replace("T", " ") }; }) : []);
+  function backupAuto() {
+    const l = bkList(), age = (k) => { const b = l.find((x) => x.kind === k); return b ? (Date.now() - fs.statSync(path.join(SBK, b.name)).mtimeMs) / 36e5 : 1e9; };
+    const made = []; if (age("daily") > 20) made.push(backupOne("daily").name); if (age("weekly") > 24 * 6.5) made.push(backupOne("weekly").name);
+    const h = jr(HEALTH, {}); h.lastCron = now(); jw(HEALTH, h); return made;
+  }
+  // ---- health scan
+  function healthScan() {
+    const redir = jr(REDIR, []).map((r) => r.from.replace(/\/$/, "")), pages = htmlPages(), issues = [], titles = {}, sizeCache = {};
+    const fileFor = (href) => { let p = decodeURIComponent(href.split(/[?#]/)[0]); if (!p || p === "/") return "index.html"; p = p.replace(/^\/+/, ""); if (p.endsWith("/")) return p + "index.html"; return /\.[a-z0-9]+$/i.test(p) ? p : p + "/index.html"; };
+    const add = (rel, type, sev, msg, extra) => issues.push({ rel, type, sev, msg, ...(extra || {}) });
+    for (const rel of pages) {
+      if (rel === "404.html") continue;
+      const h = fs.readFileSync(path.join(ROOT, rel), "utf8"), attr = (tag, a) => { const m = new RegExp("\\s" + a + "\\s*=\\s*\"([^\"]*)\"", "i").exec(tag); return m ? m[1] : null; };
+      const title = ((/<title[^>]*>([\s\S]*?)<\/title>/i.exec(h) || [])[1] || "").trim(), desc = attr((/<meta[^>]+name="description"[^>]*>/i.exec(h) || [""])[0], "content");
+      if (!title) add(rel, "seo", 3, "Missing page title"); else { if (title.length > 65) add(rel, "seo", 1, `Title is long (${title.length} characters, aim for 60)`); if (title.length < 20) add(rel, "seo", 1, "Title is very short"); (titles[title] = titles[title] || []).push(rel); }
+      if (!desc) add(rel, "seo", 2, "Missing meta description"); else if (desc.length > 165) add(rel, "seo", 1, `Description is long (${desc.length}, aim for 150-158)`); else if (desc.length < 70) add(rel, "seo", 1, `Description is short (${desc.length})`);
+      const main = h.replace(/<script[\s\S]*?<\/script>/gi, ""), h1 = (main.match(/<h1[\s>]/gi) || []).length;
+      if (h1 === 0) add(rel, "seo", 2, "No main heading (H1)"); else if (h1 > 1) add(rel, "seo", 1, `${h1} main headings (H1), use one`);
+      if (!/<link[^>]+rel="canonical"/i.test(h)) add(rel, "seo", 1, "No canonical link");
+      let noAlt = 0; for (const m of main.matchAll(/<img\b[^>]*>/gi)) { const a = attr(m[0], "alt"); if ((a === null || !a.trim()) && !/aria-hidden="true"|role="presentation"/.test(m[0])) noAlt++; }
+      if (noAlt) add(rel, "alt", 2, `${noAlt} image(s) without alt text`, { count: noAlt });
+      const seen = new Set();
+      for (const m of main.matchAll(/\shref="(\/[^"]*)"/gi)) { const href = m[1]; if (/^\/\/|^\/(api|admin|builder)\//.test(href) || seen.has(href)) continue; seen.add(href); const f = fileFor(href); if (!fs.existsSync(path.join(ROOT, f)) && !redir.includes(href.split(/[?#]/)[0].replace(/\/$/, ""))) add(rel, "link", 3, "Broken link: " + href, { target: href }); }
+      for (const m of main.matchAll(/\s(?:src|href|content)="((?:https:\/\/woodex\.com\.pk)?\/assets\/[^"]+\.(?:webp|jpe?g|png|gif|svg|avif))"/gi)) {
+        const u = m[1].replace(SITE_URL, ""), f = path.join(ROOT, u.split("?")[0]); if (seen.has(u)) continue; seen.add(u);
+        if (!fs.existsSync(f)) { add(rel, "image", 3, "Missing image: " + u, { target: u }); continue; }
+        const sz = sizeCache[u] ?? (sizeCache[u] = fs.statSync(f).size); if (sz > 350 * 1024) add(rel, "image", 1, `Large image ${u.split("/").pop()} (${Math.round(sz / 1024)} KB)`, { target: u, size: sz });
+      }
+    }
+    for (const [t, rels] of Object.entries(titles)) if (rels.length > 1) rels.forEach((r) => add(r, "seo", 1, `Same title as ${rels.length - 1} other page(s)`));
+    const pen = issues.reduce((a, i) => a + (i.sev === 3 ? 3 : i.sev === 2 ? 1.2 : 0.35), 0), score = Math.max(0, Math.min(100, Math.round(100 - pen * 100 / (pages.length * 4))));
+    return { score, pages: pages.length, at: now(), issues, counts: ["seo", "alt", "link", "image"].reduce((o, k) => (o[k] = issues.filter((i) => i.type === k).length, o), {}) };
+  }
+
+  async function a7(action, inp, need, db, ip) {
+    if (!/^(media_|backup_|health_)/.test(action)) return null;
+    const ED = ["owner", "admin", "editor"], OA = ["owner", "admin"];
+    switch (action) {
+      case "media_list": {
+        need(ED); const m = mediaLoad(), corpus = usageCorpus(), files = [];
+        for (const d of IMG_DIRS) for (const a of walkFiles(path.join(ROOT, d), (n) => IMG_RE.test(n))) {
+          const url = "/" + relOf(a), s = fs.statSync(a), base = url.slice(1), name = path.basename(a);
+          const used = corpus.filter(([, t]) => t.includes(base) || (name.length > 10 && t.includes(name))).map(([r]) => r);
+          files.push({ url, name, folder: d === "assets/img" ? "site" : (path.relative(path.join(ROOT, d), path.dirname(a)).split(path.sep).join("/") || "uploads"), size: s.size, mtime: s.mtime.toISOString().slice(0, 19).replace("T", " "), alt: m.alt[url] || "", used });
+        }
+        const folders = fs.existsSync(path.join(ROOT, "assets/uploads")) ? fs.readdirSync(path.join(ROOT, "assets/uploads"), { withFileTypes: true }).filter((f) => f.isDirectory()).map((f) => f.name) : [];
+        return { ok: true, files: files.sort((a, b) => b.mtime.localeCompare(a.mtime)), folders, trash: m.trash.length };
+      }
+      case "media_folder": { need(ED); const n = String(inp.name || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40); if (!n) throw new Fail("Folder name: letters and numbers"); fs.mkdirSync(path.join(ROOT, "assets/uploads", n), { recursive: true }); return { ok: true, name: n }; }
+      case "media_upload": case "media_replace": {
+        const u = need(action === "media_upload" ? ED : OA), data = Buffer.from(String(inp.data || ""), "base64");
+        if (!data.length || data.length > 8 * 1024 * 1024) throw new Fail("Image is empty or larger than 8 MB"); const ext = sniff(data); if (!ext) throw new Fail("Only JPG, PNG, WebP or GIF images are allowed");
+        if (action === "media_replace") {
+          const url = String(inp.url || ""); if (!mediaRelOk(url)) throw new Fail("Invalid image"); const abs = path.join(ROOT, url); if (!fs.existsSync(abs)) throw new Fail("Image not found", 404);
+          const cur = path.extname(abs).slice(1).toLowerCase().replace("jpeg", "jpg"); if (cur !== ext) throw new Fail("The new file must be the same format (" + cur + ")");
+          const m = mediaLoad(); fs.mkdirSync(MTRASH, { recursive: true }); const tf = Date.now() + "-" + path.basename(abs); fs.copyFileSync(abs, path.join(MTRASH, tf));
+          m.trash.push({ id: ++m.seq, url, file: tf, size: fs.statSync(abs).size, at: now(), by: u.name, why: "replaced" }); jw(MEDIA, m);
+          const before = fs.statSync(abs).size; fs.writeFileSync(abs, data); log(db, u, "media.optimise", url, ip); save(db); return { ok: true, url, before, after: data.length };
+        }
+        const folder = String(inp.folder || "").replace(/[^a-z0-9-]/g, ""), dir = path.join(ROOT, "assets/uploads", folder); if (folder && !fs.existsSync(dir)) throw new Fail("Folder not found");
+        fs.mkdirSync(dir, { recursive: true });
+        const base = (String(inp.name || "image").toLowerCase().replace(/\.[a-z0-9]+$/, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "image").slice(0, 40), name = `${base}-${crypto.randomBytes(3).toString("hex")}.${ext}`;
+        fs.writeFileSync(path.join(dir, name), data); const url = "/assets/uploads/" + (folder ? folder + "/" : "") + name;
+        if (inp.alt) { const m = mediaLoad(); m.alt[url] = clip(inp.alt, 200); jw(MEDIA, m); }
+        log(db, u, "media.upload", url, ip); save(db); return { ok: true, url, size: data.length };
+      }
+      case "media_alt": {
+        const u = need(ED), url = String(inp.url || ""), alt = clip(inp.alt, 200); if (!mediaRelOk(url)) throw new Fail("Invalid image");
+        const m = mediaLoad(); m.alt[url] = alt; jw(MEDIA, m); let pages = 0;
+        if (inp.apply && alt) {
+          const ea = alt.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
+          for (const rel of htmlPages()) {
+            const abs = path.join(ROOT, rel), h = fs.readFileSync(abs, "utf8"); if (!h.includes(url)) continue;
+            const n = h.replace(/<img\b[^>]*>/gi, (tag) => { if (!tag.includes('src="' + url + '"') && !tag.includes('src="' + SITE_URL + url + '"')) return tag; if (/\salt="[^"]+"/.test(tag)) return tag; return /\salt=""/.test(tag) ? tag.replace(/\salt=""/, ` alt="${ea}"`) : tag.replace(/^<img/i, `<img alt="${ea}"`); });
+            if (n !== h) { cmsBackup(rel); fs.writeFileSync(abs, n); pages++; }
+          }
+        }
+        log(db, u, "media.alt", url, ip); save(db); return { ok: true, pages };
+      }
+      case "media_trash": {
+        const u = need(OA), m = mediaLoad(), urls = (Array.isArray(inp.urls) ? inp.urls : []).filter(mediaRelOk).slice(0, 200), corpus = inp.force ? [] : usageCorpus(), moved = [], blocked = [];
+        fs.mkdirSync(MTRASH, { recursive: true });
+        for (const url of urls) {
+          const abs = path.join(ROOT, url); if (!fs.existsSync(abs)) continue;
+          if (corpus.some(([, t]) => t.includes(url.slice(1)))) { blocked.push(url); continue; }
+          const tf = Date.now() + "-" + crypto.randomBytes(2).toString("hex") + "-" + path.basename(abs); m.trash.push({ id: ++m.seq, url, file: tf, size: fs.statSync(abs).size, at: now(), by: u.name, why: "deleted" }); fs.renameSync(abs, path.join(MTRASH, tf)); moved.push(url);
+        }
+        jw(MEDIA, m); log(db, u, "media.trash", moved.length + " file(s)", ip); save(db); return { ok: true, moved, blocked };
+      }
+      case "media_trash_list": { need(OA); return { ok: true, trash: mediaLoad().trash.slice().reverse() }; }
+      case "media_restore": case "media_purge": {
+        const u = need(OA), m = mediaLoad(), ids = inp.all ? m.trash.map((t) => t.id) : [+inp.id]; let n = 0;
+        for (const id of ids) {
+          const i = m.trash.findIndex((t) => t.id === id); if (i < 0) continue; const t = m.trash[i], src = path.join(MTRASH, t.file);
+          if (action === "media_restore") { const dst = path.join(ROOT, t.url); if (fs.existsSync(dst) && t.why !== "replaced") throw new Fail("A file with that name exists again"); fs.mkdirSync(path.dirname(dst), { recursive: true }); if (fs.existsSync(src)) fs.copyFileSync(src, dst); }
+          if (fs.existsSync(src)) fs.unlinkSync(src); m.trash.splice(i, 1); n++;
+        }
+        jw(MEDIA, m); log(db, u, action === "media_restore" ? "media.restore" : "media.purge", n + " file(s)", ip); save(db); return { ok: true, n };
+      }
+      case "backup_list": { need(OA); const h = jr(HEALTH, {}); return { ok: true, backups: bkList(), lastCron: h.lastCron || null, format: "tar.gz" }; }
+      case "backup_run": { const u = need(OA), kind = inp.kind === "daily" ? "daily" : "full"; const b = backupOne(kind, u); log(db, u, "backup.create", b.name, ip); save(db); return { ok: true, backup: b }; }
+      case "backup_delete": { const u = need(OA), b = bkList().find((x) => x.name === inp.name); if (!b) throw new Fail("Backup not found", 404); fs.unlinkSync(path.join(SBK, b.name)); log(db, u, "backup.delete", b.name, ip); save(db); return { ok: true }; }
+      case "backup_restore": {
+        const u = need(OA), b = bkList().find((x) => x.name === inp.name); if (!b) throw new Fail("Backup not found", 404);
+        const safety = backupOne("safety", u); execFileSync("tar", ["xzf", path.join(SBK, b.name), "-C", ROOT]);
+        db = load(); log(db, u, "backup.restore", b.name + " (safety copy " + safety.name + ")", ip); save(db); return { ok: true, safety: safety.name };
+      }
+      case "health_get": { need(ED); const h = jr(HEALTH, {}); return { ok: true, scan: h.scan || null, psi: h.psi || {}, psiKeySet: !!h.psiKey, site: h.site || SITE_URL, lastCron: h.lastCron || null }; }
+      case "health_scan": { const u = need(ED), h = jr(HEALTH, {}); h.scan = healthScan(); jw(HEALTH, h); log(db, u, "health.scan", h.scan.score + "/100", ip); save(db); return { ok: true, scan: h.scan }; }
+      case "health_settings": { need(OA); const h = jr(HEALTH, {}); if (typeof inp.psiKey === "string" && inp.psiKey !== "") h.psiKey = inp.psiKey.trim().slice(0, 100); if (inp.clearKey) delete h.psiKey; if (/^https:\/\/[a-z0-9.-]+$/i.test(inp.site || "")) h.site = inp.site; jw(HEALTH, h); return { ok: true, psiKeySet: !!h.psiKey, site: h.site || SITE_URL }; }
+      case "health_psi": {
+        need(ED); const h = jr(HEALTH, {}), rel = String(inp.rel || "index.html"); if (!/^[a-z0-9][a-z0-9/_\-.]*\.html$/i.test(rel) || rel.includes("..")) throw new Fail("Invalid page");
+        const strategy = inp.strategy === "desktop" ? "desktop" : "mobile", url = (h.site || SITE_URL) + "/" + rel.replace(/index\.html$/, "");
+        const q = new URLSearchParams({ url, strategy }); ["performance", "accessibility", "best-practices", "seo"].forEach((c) => q.append("category", c)); if (h.psiKey) q.set("key", h.psiKey);
+        const r = await fetch("https://www.googleapis.com/pagespeedonline/v5/runPagespeed?" + q, { signal: AbortSignal.timeout(90000) }).catch((e) => ({ ok: false, statusText: e.message }));
+        if (!r.ok) { let msg = r.statusText || "request failed"; try { msg = (await r.json()).error.message; } catch {} throw new Fail("PageSpeed: " + String(msg).slice(0, 200)); }
+        const j = await r.json(), cat = j.lighthouseResult.categories, au = j.lighthouseResult.audits, sc = (k) => (cat[k] ? Math.round(cat[k].score * 100) : null);
+        const res = { at: now(), strategy, perf: sc("performance"), a11y: sc("accessibility"), bp: sc("best-practices"), seo: sc("seo"), lcp: au["largest-contentful-paint"] && au["largest-contentful-paint"].displayValue, cls: au["cumulative-layout-shift"] && au["cumulative-layout-shift"].displayValue, tbt: au["total-blocking-time"] && au["total-blocking-time"].displayValue };
+        const h2 = jr(HEALTH, {}); h2.psi = h2.psi || {}; const k = rel + "|" + strategy; h2.psi[k] = [res, ...(h2.psi[k] || [])].slice(0, 10); jw(HEALTH, h2); return { ok: true, result: res };
+      }
+    }
+    return null;
+  }
+  // raw file download for backups (called by the preview server before JSON handling)
+  function backupFile(req, name) { const db = load(); const u = db && current(db, req); if (!u || !["owner", "admin"].includes(u.role)) return null; const b = bkList().find((x) => x.name === name); return b ? path.join(SBK, b.name) : null; }
+
   const adminApi = async function (req, inp) {
     const action = String(inp.action || "status"), ip = req.socket.remoteAddress || "";
     let db = load(); if (db) { try { if (cmsTick(db)) save(db); } catch (e) { console.error("cmsTick", e.message); } }
     const need = (roles) => { const u = current(db, req); if (!u) throw new Fail("Not signed in", 401); if (roles && !roles.includes(u.role)) throw new Fail("You do not have permission for this", 403); return u; };
     const done = (o) => { save(db); return o; };
     switch (action) {
-      case "cron": return { ok: true, published: 0 };
+      case "cron": { let backups = []; try { backups = backupAuto(); } catch (e) { console.error("backup", e.message); } return { ok: true, published: 0, backups }; }
       case "status": { const u = current(db, req); return { ok: true, needsSetup: !db, driver: "json", builderLocked: true, user: u ? pub(u) : null }; }
       case "setup": {
         if (db) throw new Fail("Already set up", 403);
@@ -691,12 +848,12 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
         return done({ ok: true, rows: all.slice((page - 1) * per, page * per).map(({ user_name, action, target, ip, created_at }) => ({ user_name, action, target, ip, created_at })), total: all.length, per, page });
       }
       default: {
-        const r = (await a2(action, inp, need, db, ip)) || (await a4(action, inp, need, db, ip)) || a5(action, inp, need, db, ip) || (await a6(action, inp, need, db, ip)); if (r) return r;
+        const r = (await a2(action, inp, need, db, ip)) || (await a4(action, inp, need, db, ip)) || a5(action, inp, need, db, ip) || (await a6(action, inp, need, db, ip)) || (await a7(action, inp, need, db, ip)); if (r) return r;
         throw new Fail("Unknown action", 404);
       }
     }
   };
-  adminApi.forms = formsApi;
+  adminApi.forms = formsApi; adminApi.backupFile = backupFile;
   adminApi.publicGuard = function (rel) {
     // preview-only: mimic the managed .htaccess rules (redirects, drafts 404)
     const url = "/" + rel.replace(/index\.html$/, ""), r = jr(REDIR, []).find((x) => x.from === url || x.from === url + "/");

@@ -19,7 +19,7 @@
   function bapi(action, data) {
     return fetch(BAPI, { method: "POST", headers: { "Content-Type": "application/json", "X-WX-CSRF": S.btoken || "" }, body: JSON.stringify(Object.assign({ action: action }, data || {})) }).then(function (r) { return r.json(); }).catch(function () { return { ok: false }; });
   }
-  function modal(html) { $("#modal-card").innerHTML = html; fillIcons($("#modal-card")); $("#modal").hidden = false; var f = $("#modal-card input,#modal-card select"); if (f) f.focus(); }
+  function modal(html, cls) { $("#modal-card").innerHTML = html; $("#modal-card").className = cls ? "modal-card " + cls : $("#modal-card").className.replace(/ wide/g, ""); fillIcons($("#modal-card")); $("#modal").hidden = false; var f = $("#modal-card input,#modal-card select"); if (f) f.focus(); }
   function closeModal() { $("#modal").hidden = true; }
   $("#modal").addEventListener("mousedown", function (e) { if (e.target.id === "modal") closeModal(); });
   document.addEventListener("keydown", function (e) { if (e.key === "Escape") closeModal(); if (e.key === "/" && !/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName) && !$("#app").hidden) { e.preventDefault(); $("#gsearch").focus(); } });
@@ -65,8 +65,9 @@
     ["business", "Business info", "building", "owner,admin"],
     ["global", "Header & footer", "panel-left", "owner,admin"],
     ["redirects", "Redirects", "refresh-cw", "owner,admin"],
-    ["media", "Media", "image", "owner,admin,editor", "A7"],
-    ["backups", "Backups", "hard-drive", "owner,admin", "A7"],
+    ["media", "Media library", "image", "owner,admin,editor"],
+    ["health", "Site health", "heart-pulse", "owner,admin,editor"],
+    ["backups", "Backups", "hard-drive", "owner,admin"],
     ["Team"],
     ["users", "Team & roles", "users", "owner,admin"],
     ["activity", "Activity log", "activity", "owner,admin"],
