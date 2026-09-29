@@ -181,11 +181,22 @@ function wx_h(?string $s): string { return htmlspecialchars((string)$s, ENT_QUOT
      → Optional: open with <code>?force=1</code> only if you must reinstall.</p>
 
 <?php elseif ($done): ?>
-  <div class="ok"><b>✓ Installation complete</b>All tables created and your admin login is set.</div>
+  <?php
+    $cfgDone = is_file($configFile) ? include $configFile : [];
+    $ckey = is_array($cfgDone) ? (string)($cfgDone['cron_key'] ?? '') : '';
+    $chost = (string)($_SERVER['HTTP_HOST'] ?? 'your-domain.com');
+    $cmailHost = preg_replace('/^www\./', '', $chost);
+    $cronUrl = 'https://' . $chost . '/cron/backup.php?key=' . $ckey;
+  ?>
+  <div class="ok"><b>✓ Installation complete</b>Tables created, admin login set, config saved.</div>
   <p class="step">
-    <b>1.</b> <a href="/admin/">Sign in to the dashboard</a><br>
-    <b>2.</b> Delete this file (<code>install.php</code>) from public_html —<?= $selfDelete ? 'done automatically' : 'recommended' ?><br>
-    <b>3.</b> Tell your guide: <i>H2 done</i> — API activation is next.
+    <b>1.</b> <a href="/admin/">Sign in to the dashboard</a> and look around.<br>
+    <b>2.</b> Nightly backups — hPanel → <b>Advanced → Cron Jobs</b>: add this exact command, <b>daily at 03:00</b>:<br>
+    <code style="word-break:break-all;display:inline-block;margin-top:4px"><?= wx_h($cronUrl) ?></code><br>
+    <span class="hint">Backup key: <code><?= wx_h($ckey) ?></code> (also saved in config/config.php). Test it once now — a file should appear in <code>backups/</code>.</span><br>
+    <b>3.</b> Email — create a mailbox in hPanel → <b>Emails</b> (e.g. <code>info@<?= wx_h($cmailHost) ?></code>). If you skipped SMTP above, edit <code>config/config.php</code> and fill <code>mail.user</code> + <code>mail.pass</code> with that mailbox.<br>
+    <b>4.</b> Delete <code>install.php</code> — <?= $selfDelete ? 'done automatically' : 'do it now in File Manager' ?><br>
+    <b>5.</b> Run the staging checklist in your deploy guide <b>before</b> pointing DNS.
   </p>
   <?php if ($selfDelete): @unlink(__FILE__); endif; ?>
 
