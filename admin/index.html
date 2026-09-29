@@ -9,7 +9,10 @@
     <link rel="stylesheet" href="./vendor/adminlte/bootstrap.min.css" />
     <link rel="stylesheet" href="./vendor/adminlte/bootstrap-icons.min.css" />
     <link rel="stylesheet" href="./vendor/adminlte/adminlte.min.css" />
-    <link rel="stylesheet" href="./css/woodex-admin.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="./css/woodex-admin.css" />
     <link rel="stylesheet" href="./css/wx-dashboard.css" />
     <script src="./vendor/chart.umd.js" defer></script>
     <script src="./pb-blocks.js"></script>
@@ -241,25 +244,25 @@
                 <a href="#" class="nav-link" data-view="enquiries"><i class="nav-icon bi bi-inbox"></i><p>Enquiries <span class="nav-badge badge text-bg-warning ms-1" id="nav-new-count" style="display:none"></span></p></a>
               </li>
               <li class="nav-item">
-                <a href="#" class="nav-link" data-view="leads"><i class="nav-icon bi bi-calculator"></i><p>Estimator Leads</p></a>
+                <a href="#" class="nav-link" data-view="leads"><i class="nav-icon bi bi-calculator"></i><p>Leads &amp; Estimator</p></a>
               </li>
               <li class="nav-item">
                 <a href="#" class="nav-link" data-view="pipeline"><i class="nav-icon bi bi-funnel"></i><p>Pipeline</p></a>
               </li>
               <li class="nav-item">
-                <a href="#" class="nav-link" data-view="visits"><i class="nav-icon bi bi-calendar-check"></i><p>Site Visits</p></a>
+                <a href="#" class="nav-link" data-view="visits"><i class="nav-icon bi bi-calendar-check"></i><p>Visits &amp; Appointments</p></a>
               </li>
               <li class="nav-item">
                 <a href="#" class="nav-link" data-view="quotations"><i class="nav-icon bi bi-file-earmark-text"></i><p>Quotations</p></a>
-              </li>
-              <li class="nav-item">
-                <a href="#" class="nav-link" data-view="templates"><i class="nav-icon bi bi-grid-1x2"></i><p>Templates</p></a>
               </li>
               <li class="nav-item">
                 <a href="#" class="nav-link" data-view="invoices"><i class="nav-icon bi bi-receipt"></i><p>Invoices</p></a>
               </li>
               <li class="nav-item">
                 <a href="#" class="nav-link" data-view="clients"><i class="nav-icon bi bi-briefcase"></i><p>Clients</p></a>
+              </li>
+              <li class="nav-item">
+                <a href="#" class="nav-link" data-view="soon" data-soon="Live Chat"><i class="nav-icon bi bi-chat-dots"></i><p>Live Chat <span class="badge text-bg-info ms-1">3</span></p></a>
               </li>
               <li class="nav-header">WEBSITE</li>
               <li class="nav-item">
@@ -286,6 +289,16 @@
               <li class="nav-item">
                 <a href="#" class="nav-link" data-view="team"><i class="nav-icon bi bi-people"></i><p>Team</p></a>
               </li>
+              <li class="nav-header">COMMERCIAL</li>
+              <li class="nav-item">
+                <a href="#" class="nav-link" data-view="templates"><i class="nav-icon bi bi-grid-1x2"></i><p>Templates</p></a>
+              </li>
+              <li class="nav-item">
+                <a href="#" class="nav-link" data-view="soon" data-soon="Forms"><i class="nav-icon bi bi-input-cursor-text"></i><p>Forms</p></a>
+              </li>
+              <li class="nav-item">
+                <a href="#" class="nav-link" data-view="soon" data-soon="Pricing &amp; Estimator"><i class="nav-icon bi bi-tags"></i><p>Pricing &amp; Estimator</p></a>
+              </li>
               <li class="nav-header">DESIGN</li>
               <li class="nav-item">
                 <a href="#" class="nav-link" data-view="theme"><i class="nav-icon bi bi-palette"></i><p>Theme</p></a>
@@ -300,6 +313,9 @@
               <li class="nav-header">SETTINGS</li>
               <li class="nav-item">
                 <a href="#" class="nav-link" data-view="settings"><i class="nav-icon bi bi-gear"></i><p>Site Settings</p></a>
+              </li>
+              <li class="nav-item">
+                <a href="#" class="nav-link" data-view="soon" data-soon="Integrations"><i class="nav-icon bi bi-plug"></i><p>Integrations</p></a>
               </li>
               <li class="nav-header">SYSTEM</li>
               <li class="nav-item" id="nav-users-item" hidden>
@@ -1500,7 +1516,7 @@
         });
 
         /* ================= view router ================= */
-        var TITLES = { dashboard: "Dashboard", analytics: "Analytics", enquiries: "Enquiries", leads: "Estimator Leads", pipeline: "Pipeline", visits: "Site Visits", quotations: "Quotations", templates: "Quotation Templates", invoices: "Invoices", clients: "Clients", builder: "Pages · Page Builder", services: "Services", locations: "Locations", projects: "Projects", blog: "Insights", testimonials: "Testimonials", media: "Media Library", team: "Team", theme: "Theme", navigation: "Navigation", seo: "SEO Manager", settings: "Site Settings", users: "Users & Roles", audit: "Audit Trail", versions: "Versions", backups: "Backups", health: "System Health", soon: "Coming soon" };
+        var TITLES = { dashboard: "Dashboard", analytics: "Analytics", enquiries: "Enquiries", leads: "Leads & Estimator", pipeline: "Pipeline", visits: "Visits & Appointments", quotations: "Quotations", templates: "Quotation Templates", invoices: "Invoices", clients: "Clients", builder: "Pages · Page Builder", services: "Services", locations: "Locations", projects: "Projects", blog: "Insights", testimonials: "Testimonials", media: "Media Library", team: "Team", theme: "Theme", navigation: "Navigation", seo: "SEO Manager", settings: "Site Settings", users: "Users & Roles", audit: "Audit Trail", versions: "Versions", backups: "Backups", health: "System Health", soon: "Coming soon" };
         var builderStarted = false;
         function showView(name, soonLabel) {
           if (name === "users" && sessionRole !== "admin") { name = "dashboard"; }
@@ -1508,7 +1524,11 @@
           var el = document.getElementById("view-" + name);
           if (el) el.hidden = false;
           document.querySelectorAll("[data-view].nav-link").forEach(function (a) {
-            a.classList.toggle("active", a.getAttribute("data-view") === name);
+            var match = a.getAttribute("data-view") === name;
+            if (match && name === "soon" && soonLabel) {
+              match = (a.getAttribute("data-soon") || "") === soonLabel;
+            }
+            a.classList.toggle("active", match);
           });
           if (name === "soon" && soonLabel) {
             document.getElementById("soon-title").textContent = soonLabel;
