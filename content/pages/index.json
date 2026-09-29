@@ -2,6 +2,11 @@
  "generated": "phase2",
  "pages": [
   {
+   "slug": "/",
+   "title": "Woodex Interior | Design, Fit-Out &amp; Architecture Lahore",
+   "path": "index.html"
+  },
+  {
    "slug": "/1-kanal-house-design/",
    "title": "1 Kanal House Design Lahore | Woodex Architecture",
    "path": "1-kanal-house-design/index.html"
@@ -152,9 +157,9 @@
    "path": "hyderabad/index.html"
   },
   {
-   "slug": "/",
-   "title": "Woodex Interior | Design, Fit-Out &amp; Architecture Lahore",
-   "path": "index.html"
+   "slug": "/insights/",
+   "title": "Insights | Woodex Interior",
+   "path": "insights/index.html"
   },
   {
    "slug": "/insights/3d-visualization-guide/",
@@ -170,11 +175,6 @@
    "slug": "/insights/home-renovation-checklist/",
    "title": "A calm home renovation checklist | Woodex Interior",
    "path": "insights/home-renovation-checklist/index.html"
-  },
-  {
-   "slug": "/insights/",
-   "title": "Insights | Woodex Interior",
-   "path": "insights/index.html"
   },
   {
    "slug": "/insights/interior-design-cost-pakistan/",
@@ -277,6 +277,11 @@
    "path": "privacy/index.html"
   },
   {
+   "slug": "/projects/",
+   "title": "Projects | Woodex Interior",
+   "path": "projects/index.html"
+  },
+  {
    "slug": "/projects/cafe-corner/",
    "title": "A café that holds a crowd | Woodex Interior",
    "path": "projects/cafe-corner/index.html"
@@ -290,11 +295,6 @@
    "slug": "/projects/courtyard-house/",
    "title": "A house around a courtyard | Woodex Interior",
    "path": "projects/courtyard-house/index.html"
-  },
-  {
-   "slug": "/projects/",
-   "title": "Projects | Woodex Interior",
-   "path": "projects/index.html"
   },
   {
    "slug": "/projects/office-floor/",
