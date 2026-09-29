@@ -1,0 +1,311 @@
+/* ============================================================================
+   wx-components.css — D0 Design System Conversion (mockup boards → live admin)
+   Loads LAST (after woodex-admin.css + wx-dashboard.css) so it wins ties.
+   - Sidebar (navy) + sign-in gate + block-builder studio keep their dark look.
+   - All .wx-view content areas become light: #f4f6fa bg, white cards,
+     dark headings, blue #2563eb primary actions (per docs/design/DESIGN-SYSTEM.md).
+   - Also ships the reusable component kit (pills, KPI, filter bar, kanban,
+     chat) used by upcoming B5.1 / B7 builds.
+   ============================================================================ */
+
+/* ---------- 1. Palette flip: dashboard variables → light ---------- */
+:root {
+  --wxd-bg: #f4f6fa;
+  --wxd-card: #ffffff;
+  --wxd-card-2: #f8fafd;
+  --wxd-line: #e6e9f2;
+  --wxd-text: #1a2233;
+  --wxd-muted: #5b6478;
+  --wxd-blue: #2563eb;
+  /* gold/green/red kept from wx-dashboard */
+}
+
+/* ---------- 2. App frame: light topbar + light content shell ---------- */
+body { background: #f4f6fa; color: #1a2233; }
+.app-main { background: #f4f6fa; }
+.app-header {
+  background: #ffffff !important;
+  border-bottom: 1px solid #e6e9f2 !important;
+}
+.app-header .nav-link { color: #333c55 !important; }
+.app-header .nav-link:hover { color: #2563eb !important; }
+.app-header #wx-view-title { color: #1a2233 !important; letter-spacing: 0.02em; }
+.app-header .dropdown-menu { border-color: #e6e9f2; }
+
+/* global search pill */
+.wx-search {
+  background: #f1f4fa !important;
+  border: 1px solid #e6e9f2 !important;
+  color: #5b6478 !important;
+}
+.wx-search input { color: #1a2233; }
+.wx-search input::placeholder { color: #8a93a8; }
+.wx-search .wx-kbd { border-color: #d7dbe8 !important; color: #5b6478 !important; }
+
+/* bell keeps gold dot; icon body text follows header */
+.wx-bell .bi-bell { color: #333c55 !important; }
+
+/* ---------- 3. Force light surfaces on every admin view ---------- */
+.wx-view {
+  background: #f4f6fa !important;
+  color: #1a2233;
+}
+.wx-view h1, .wx-view h2, .wx-view h3, .wx-view h4,
+.app-main h1, .app-main h2, .app-main h3 { color: #1a2233; }
+.app-main .card,
+.wx-view .card {
+  background: #ffffff;
+  color: #1a2233;
+  border: 1px solid #e6e9f2;
+  box-shadow: 0 1px 2px rgba(10, 15, 30, 0.04);
+}
+.app-main .card-header,
+.wx-view .card-header {
+  background: #f8fafd;
+  border-bottom: 1px solid #e6e9f2;
+  color: #1a2233;
+}
+.app-main .card-footer, .wx-view .card-footer {
+  background: #f8fafd;
+  border-top: 1px solid #e6e9f2;
+}
+.wx-view .text-muted, .app-main .text-muted { color: #5b6478 !important; }
+.wx-view a:not(.btn):not(.nav-link):not(.page-link) { color: #2563eb; }
+
+/* tables */
+.wx-view .table, .app-main .table { color: #1a2233; }
+.wx-view .table > :not(caption) > * > *,
+.app-main .table > :not(caption) > * > * {
+  background: transparent;
+  color: inherit;
+  border-bottom-color: #eef1f7;
+}
+.wx-view .table thead th, .app-main .table thead th {
+  color: #5b6478;
+  font-size: 11.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+  border-bottom: 1px solid #e6e9f2 !important;
+}
+.wx-view .table-hover tbody tr:hover,
+.app-main .table-hover tbody tr:hover { background: #f8fafd; }
+
+/* forms */
+.wx-view .form-control, .wx-view .form-select,
+.app-main .form-control, .app-main .form-select,
+.app-header .form-control {
+  background: #ffffff;
+  border-color: #d7dbe8;
+  color: #1a2233;
+}
+.wx-view .form-control:focus, .wx-view .form-select:focus,
+.app-main .form-control:focus, .app-main .form-select:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.14);
+}
+.wx-view .form-control::placeholder { color: #8a93a8; }
+.wx-view label, .wx-view .form-label, .app-main label, .app-main .form-label { color: #333c55; }
+.input-group-text { background: #f1f4fa; border-color: #d7dbe8; color: #5b6478; }
+
+/* alerts stay semantic but softer on light */
+.alert-info { background: #e8f4fd; border-color: #bfe3f7; color: #0c4a6e; }
+.alert-warning { background: #fef3e2; border-color: #fde1bd; color: #7c4a03; }
+.alert-danger { background: #fdecec; border-color: #f8cfcf; color: #8f1d1d; }
+
+/* ---------- 4. Button system (blue primary — replaces dark-theme pass) ---------- */
+.app-wrapper .btn-dark, .wx-view .btn-dark, #view-users .btn-dark,
+.btn-dark {
+  background: #2563eb !important;
+  border-color: #2563eb !important;
+  color: #ffffff !important;
+  font-weight: 600;
+  filter: none;
+}
+.app-wrapper .btn-dark:hover, .wx-view .btn-dark:hover, .btn-dark:hover {
+  background: #1d4fd8 !important;
+  border-color: #1d4fd8 !important;
+  filter: none;
+}
+.app-wrapper .btn-outline-dark, .wx-view .btn-outline-dark, .btn-outline-dark {
+  color: #333c55 !important;
+  border-color: #d7dbe8 !important;
+  background: #ffffff;
+  font-weight: 600;
+}
+.app-wrapper .btn-outline-dark:hover, .app-wrapper .btn-outline-dark:focus,
+.wx-view .btn-outline-dark:hover, .wx-view .btn-outline-dark:focus,
+.btn-outline-dark:hover, .btn-outline-dark:focus {
+  background: #f1f4fa !important;
+  color: #1a2233 !important;
+  border-color: #c6ccdd !important;
+}
+/* active filter chip = filled blue (mockup) */
+.btn-outline-dark.active, .btn-dark.active {
+  background: #2563eb !important;
+  border-color: #2563eb !important;
+  color: #ffffff !important;
+}
+.app-wrapper .btn-outline-secondary, .btn-outline-secondary {
+  color: #333c55 !important;
+  border-color: #d7dbe8 !important;
+}
+.app-wrapper .btn-outline-secondary:hover, .btn-outline-secondary:hover {
+  background: #f1f4fa !important;
+  color: #1a2233 !important;
+}
+.app-wrapper .btn-outline-danger, .btn-outline-danger {
+  color: #dc2626 !important;
+  border-color: #f2b8be !important;
+}
+.app-wrapper .btn-outline-danger:hover, .btn-outline-danger:hover {
+  background: #dc2626 !important;
+  border-color: #dc2626 !important;
+  color: #ffffff !important;
+}
+.btn:focus-visible { box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.25); }
+
+/* ---------- 5. Status pills (mockup soft chips) ---------- */
+.badge.bg-primary   { background: #e7efff !important; color: #1d4fd8 !important; }
+.badge.bg-secondary { background: #eef1f7 !important; color: #5b6478 !important; }
+.badge.bg-success   { background: #e7f8ee !important; color: #15803d !important; }
+.badge.bg-danger    { background: #fdecec !important; color: #b91c1c !important; }
+.badge.bg-warning   { background: #fef3e2 !important; color: #b45309 !important; }
+.badge.bg-info      { background: #e0f6fb !important; color: #0e7490 !important; }
+.badge.bg-dark      { background: #eef1f7 !important; color: #1a2233 !important; }
+.badge.bg-light     { background: #eef1f7 !important; color: #333c55 !important; border: 1px solid #e6e9f2; }
+.wx-status { text-transform: capitalize; font-weight: 600; }
+
+/* ---------- 6. Pagination + dropdowns ---------- */
+.page-item.active .page-link {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: #fff;
+}
+.page-link { color: #2563eb; }
+.dropdown-menu > li > a { color: #333c55; }
+.dropdown-menu > li > a:hover { background: #f1f4fa; color: #1a2233; }
+
+/* ---------- 7. Dashboard hard-coded dark remnants → light ---------- */
+#view-dashboard .wx-enq-list li:hover,
+#view-dashboard .wx-posts li:hover { background: #f4f6fa; }
+.wx-enq-list .av {
+  background: #eef1f7 !important;
+  color: #2563eb !important;
+}
+.wx-kpi .ico {
+  background: #e8f0ff !important;
+  color: #2563eb !important;
+}
+.wx-kpi .ico.gold { background: #fdf1dd !important; color: #d97706 !important; }
+.wx-kpi .ico.green { background: #e7f8ee !important; color: #16a34a !important; }
+.wx-kpi .ico.violet { background: #f1ebfe !important; color: #7c3aed !important; }
+.wx-kpi .val { color: var(--wxd-text); }
+.wx-qa .ico {
+  background: #eef1f7 !important;
+  color: #2563eb !important;
+}
+.wx-proj .ph { background: #eef1f7 !important; }
+.wx-proj .ph .noimg { color: #9aa3bd !important; }
+.wx-posts .th { background: #eef1f7 !important; }
+.wx-activity-dash li { color: #333c55 !important; }
+.wx-activity-dash li .bi { color: #d97706 !important; }
+.wx-side-stat .ico { color: #d97706 !important; }
+.wx-live-row { color: #333c55 !important; }
+.wx-sys .row .nm { color: #333c55 !important; }
+.wx-viewall:hover { color: #2563eb !important; }
+.wx-range:hover { border-color: #2563eb !important; }
+.wx-open-tab:hover { border-color: #2563eb !important; color: #2563eb !important; }
+
+/* hero stays a dark feature panel (matches mockup) — keep explicit light text */
+#view-dashboard .wx-hero,
+#view-dashboard .wx-hero-growth,
+#view-dashboard .wx-quote-card { color: #f5f7fa; }
+#view-dashboard .wx-hero-growth .lbl,
+#view-dashboard .wx-hero-growth .note,
+#view-dashboard .wx-quote-card .who span { color: #9aa3bd !important; }
+#view-dashboard .wx-quote-card .who b { color: #f5f7fa !important; }
+#view-dashboard .wx-quote-card .q { color: #dfe3ec; }
+#view-dashboard .wx-hero-sub { color: #b9c0cf; }
+
+/* chart tab strip */
+.wx-tab.active {
+  background: var(--wxd-gold) !important;
+  border-color: var(--wxd-gold) !important;
+  color: #0a0f1e !important;
+}
+
+/* ---------- 8. Component kit (for B5.1 Live Chat / B7 CRM builds) ---------- */
+/* KPI card with icon tile + delta (mockup pattern) */
+.wxc-kpi {
+  background: #fff; border: 1px solid #e6e9f2; border-radius: 12px;
+  padding: 16px 18px; display: flex; gap: 13px; align-items: flex-start;
+}
+.wxc-kpi .tile {
+  width: 40px; height: 40px; flex: none; border-radius: 10px;
+  display: grid; place-items: center; font-size: 17px;
+}
+.wxc-kpi .tile.blue   { background: #e8f0ff; color: #2563eb; }
+.wxc-kpi .tile.green  { background: #e7f8ee; color: #16a34a; }
+.wxc-kpi .tile.amber  { background: #fdf1dd; color: #d97706; }
+.wxc-kpi .tile.red    { background: #fdecec; color: #dc2626; }
+.wxc-kpi .tile.violet { background: #f1ebfe; color: #7c3aed; }
+.wxc-kpi .lbl { font-size: 12px; color: #5b6478; margin: 0 0 4px; }
+.wxc-kpi .val { font-size: 24px; font-weight: 800; color: #1a2233; line-height: 1; letter-spacing: -0.01em; }
+.wxc-kpi .delta { display: inline-block; margin-top: 7px; font-size: 11.5px; font-weight: 700;
+  padding: 2px 7px; border-radius: 999px; background: #e7f8ee; color: #15803d; }
+.wxc-kpi .delta.down { background: #fdecec; color: #b91c1c; }
+.wxc-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px; }
+
+/* filter bar */
+.wxc-filterbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
+  background: #fff; border: 1px solid #e6e9f2; border-radius: 12px;
+  padding: 10px 12px; margin-bottom: 14px;
+}
+.wxc-filterbar .form-select, .wxc-filterbar .form-control { max-width: 200px; font-size: 13px; }
+.wxc-filterbar .range { font-size: 12.5px; color: #333c55; background: #f1f4fa;
+  border: 1px solid #e6e9f2; border-radius: 999px; padding: 6px 12px; }
+.wxc-filterbar .spacer { margin-left: auto; }
+
+/* kanban */
+.wxc-kanban { display: grid; grid-template-columns: repeat(5, minmax(200px, 1fr)); gap: 12px; }
+.wxc-kanban-col { background: #f8fafd; border: 1px solid #e6e9f2; border-radius: 12px; padding: 10px; }
+.wxc-kanban-col .hd { display: flex; align-items: center; gap: 8px; font-size: 12.5px; font-weight: 700;
+  color: #1a2233; padding: 4px 6px 10px; }
+.wxc-kanban-col .hd .count { margin-left: auto; background: #eef1f7; color: #5b6478;
+  border-radius: 999px; font-size: 11px; padding: 2px 8px; }
+.wxc-kanban-card { background: #fff; border: 1px solid #e6e9f2; border-radius: 10px;
+  padding: 10px 11px; margin-bottom: 8px; }
+.wxc-kanban-card:hover { border-color: #c6ccdd; box-shadow: 0 2px 8px rgba(10,15,30,.06); }
+.wxc-kanban-card b { display: block; font-size: 13px; color: #1a2233; }
+.wxc-kanban-card span { font-size: 11.5px; color: #5b6478; }
+.wxc-kanban-more { font-size: 12px; color: #5b6478; text-align: center; padding: 6px; }
+
+/* timeline */
+.wxc-timeline { list-style: none; margin: 0; padding: 0; }
+.wxc-timeline li { position: relative; padding: 0 0 16px 22px; font-size: 13px; color: #333c55; }
+.wxc-timeline li::before { content: ""; position: absolute; left: 4px; top: 4px; width: 9px; height: 9px;
+  border-radius: 50%; background: #2563eb; }
+.wxc-timeline li::after { content: ""; position: absolute; left: 8px; top: 16px; bottom: 0; width: 1px; background: #e6e9f2; }
+.wxc-timeline li:last-child::after { display: none; }
+.wxc-timeline time { display: block; font-size: 11.5px; color: #8a93a8; }
+
+/* chat (B5.1) */
+.wxc-chat { display: grid; grid-template-columns: 300px minmax(0, 1fr) 300px; gap: 14px; min-height: 480px; }
+.wxc-chat-list, .wxc-chat-thread, .wxc-chat-side { background: #fff; border: 1px solid #e6e9f2;
+  border-radius: 14px; display: flex; flex-direction: column; overflow: hidden; }
+.wxc-chat-item { display: flex; gap: 10px; padding: 11px 12px; border-bottom: 1px solid #f2f4f9; cursor: pointer; }
+.wxc-chat-item:hover, .wxc-chat-item.active { background: #f4f6fa; }
+.wxc-bubble { max-width: 72%; padding: 9px 13px; border-radius: 14px; font-size: 13.5px; line-height: 1.5; margin-bottom: 8px; }
+.wxc-bubble.visitor { background: #f1f4fa; color: #1a2233; border-bottom-left-radius: 4px; }
+.wxc-bubble.agent { background: #2563eb; color: #fff; margin-left: auto; border-bottom-right-radius: 4px; }
+
+/* system status rows */
+.wxc-status-row { display: flex; align-items: center; gap: 10px; padding: 10px 4px;
+  border-bottom: 1px solid #f2f4f9; font-size: 13.5px; color: #333c55; }
+.wxc-status-row:last-child { border-bottom: 0; }
+.wxc-status-row .dot { width: 9px; height: 9px; border-radius: 50%; background: #16a34a; flex: none; }
+.wxc-status-row .dot.warn { background: #d97706; }
+.wxc-status-row .dot.bad { background: #dc2626; }
+.wxc-status-row .st { margin-left: auto; font-size: 12.5px; color: #5b6478; }
