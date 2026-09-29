@@ -118,6 +118,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$installed) {
                         'pass' => $mailPass,
                     ],
                     'session_name' => 'woodex_cms',
+                    'session_secret' => bin2hex(random_bytes(32)),
                     'backup_keep_days' => 14,
                     'installed_at' => date('c'),
                 ];
