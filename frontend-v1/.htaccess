@@ -1,0 +1,27 @@
+# Woodex frontend-v1 — Hostinger (Apache/LiteSpeed)
+Options -Indexes
+ErrorDocument 404 /404.html
+
+# Force HTTPS
+<IfModule mod_rewrite.c>
+RewriteEngine On
+RewriteCond %{HTTPS} !=on
+RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+# Block private data and dotfiles
+RewriteRule ^_private(/|$) - [F,L]
+RewriteRule (^|/)\.(?!well-known) - [F,L]
+</IfModule>
+
+<IfModule mod_headers.c>
+Header always set X-Content-Type-Options "nosniff"
+Header always set X-Frame-Options "SAMEORIGIN"
+Header always set Referrer-Policy "strict-origin-when-cross-origin"
+Header always set Strict-Transport-Security "max-age=31536000"
+<FilesMatch "\.(css|js|webp|jpg|jpeg|png|gif|svg|woff2)$">
+Header set Cache-Control "public, max-age=2592000"
+</FilesMatch>
+</IfModule>
+
+<IfModule mod_deflate.c>
+AddOutputFilterByType DEFLATE text/html text/css text/javascript application/javascript application/json image/svg+xml
+</IfModule>

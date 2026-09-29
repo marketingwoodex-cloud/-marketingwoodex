@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Woodex Admin</title>
+<link rel="icon" href="/favicon.ico">
+<link rel="stylesheet" href="admin.css">
+<script>try{if(localStorage.getItem("wxaTheme")==="dark"||(!localStorage.getItem("wxaTheme")&&matchMedia("(prefers-color-scheme: dark)").matches))document.documentElement.classList.add("dark")}catch(e){}</script>
+</head>
+<body>
+
+<!-- ============ AUTH (setup / login) ============ -->
+<div class="auth" id="auth" hidden>
+  <div class="auth-card">
+    <div class="brand"><span class="logo">W</span><div><b>Woodex</b><small>Admin</small></div></div>
+
+    <form id="login-form" hidden>
+      <h1>Sign in</h1><p class="muted">Welcome back. Sign in to manage the website.</p>
+      <label>Email<input type="email" id="l-email" autocomplete="username" required></label>
+      <label>Password<input type="password" id="l-pass" autocomplete="current-password" required></label>
+      <p class="err" id="l-err"></p>
+      <button class="btn pri block" id="l-btn">Sign in</button>
+    </form>
+
+    <form id="setup-form" hidden>
+      <h1>Set up Woodex Admin</h1><p class="muted">One-time setup. Creates the database tables and your owner account.</p>
+      <fieldset id="s-db"><legend>Database <small>(hPanel → Databases → MySQL)</small></legend>
+        <div class="g2"><label>Host<input id="s-host" value="localhost"></label><label>Database name<input id="s-name"></label></div>
+        <div class="g2"><label>Database user<input id="s-user"></label><label>Database password<input type="password" id="s-dpass"></label></div>
+      </fieldset>
+      <fieldset><legend>Owner account</legend>
+        <div class="g2"><label>Your name<input id="s-uname" required></label><label>Email<input type="email" id="s-email" required></label></div>
+        <label>Password <small>(8+ characters)</small><input type="password" id="s-pass" minlength="8" required></label>
+      </fieldset>
+      <fieldset id="s-bp"><legend>Security check</legend>
+        <label>Current page-builder password<input type="password" id="s-bpass"></label>
+        <p class="hint">Proves you own this site. After setup everyone signs in with their own email.</p>
+      </fieldset>
+      <p class="err" id="s-err"></p>
+      <button class="btn pri block" id="s-btn">Install &amp; create owner</button>
+    </form>
+  </div>
+</div>
+
+<!-- ============ APP ============ -->
+<div class="app" id="app" hidden>
+  <aside class="side" id="side">
+    <div class="side-top"><a href="#/dashboard" class="brand"><span class="logo">W</span><div><b>Woodex</b><small>Admin v2</small></div></a>
+      <button class="icon-btn side-x" id="side-x" aria-label="Close menu"><i data-i="x"></i></button></div>
+    <nav id="nav"></nav>
+    <div class="side-foot"><a href="/" target="_blank" rel="noopener"><i data-i="external-link"></i>View website</a></div>
+  </aside>
+  <div class="side-shade" id="side-shade"></div>
+
+  <div class="main">
+    <header class="top">
+      <button class="icon-btn" id="menu-btn" aria-label="Toggle menu"><i data-i="panel-left"></i></button>
+      <div class="top-search"><i data-i="search"></i><input id="gsearch" placeholder="Search pages…  ( / )" list="gsearch-list" autocomplete="off"><datalist id="gsearch-list"></datalist></div>
+      <div class="top-r">
+        <button class="icon-btn" id="dark-btn" aria-label="Dark mode"><i data-i="moon" class="i-moon"></i><i data-i="sun" class="i-sun"></i></button>
+        <div class="dd" id="user-dd">
+          <button class="user-btn" id="user-btn"><span class="av" id="u-av">?</span><span class="u-txt"><b id="u-name">…</b><small id="u-role"></small></span><i data-i="chevron-down"></i></button>
+          <div class="dd-menu" id="user-menu" hidden>
+            <a href="#/profile"><i data-i="user"></i>My profile</a>
+            <a href="#/activity" data-roles="owner,admin"><i data-i="activity"></i>Activity log</a>
+            <button id="logout"><i data-i="log-out"></i>Sign out</button>
+          </div>
+        </div>
+      </div>
+    </header>
+    <main class="content" id="view"></main>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status"></div>
+<div class="modal" id="modal" hidden><div class="modal-card" id="modal-card"></div></div>
+
+<script src="vendor/icons.js"></script>
+<script src="vendor/chart.umd.js" defer></script>
+<script src="admin.js" defer></script>
+<script src="admin-pages.js" defer></script>
+<script src="/builder/wx-css.js" defer></script>
+<script src="/builder/blocks.js" defer></script>
+<script src="admin-library.js" defer></script>
+<script src="admin-crm.js" defer></script>
+<script src="vendor/quote-starter.js" defer></script>
+<script src="admin-print.js" defer></script>
+<script src="admin-sales.js" defer></script>
+</body>
+</html>
