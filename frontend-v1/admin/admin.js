@@ -71,7 +71,8 @@
     ["Team"],
     ["users", "Team & roles", "users", "owner,admin"],
     ["activity", "Activity log", "activity", "owner,admin"],
-    ["settings", "Settings & APIs", "settings", "owner,admin", "A8"]
+    ["security", "My security", "shield"],
+    ["settings", "Settings & APIs", "settings", "owner,admin"]
   ];
   function renderNav() {
     $("#nav").innerHTML = NAV.filter(function (n) { return n.length === 1 || !n[3] || can(n[3]); }).map(function (n) {
@@ -84,7 +85,7 @@
   // ---------------------------------------------------------------- auth flow
   function showAuth(mode, st) {
     $("#app").hidden = true; $("#auth").hidden = false;
-    $("#login-form").hidden = mode !== "login"; $("#setup-form").hidden = mode !== "setup";
+    $("#login-form").hidden = mode !== "login"; $("#tfa-form").hidden = true; $("#setup-form").hidden = mode !== "setup";
     if (mode === "setup") { $("#s-db").hidden = st.driver !== "mysql"; $("#s-bp").hidden = !st.builderLocked; $("#s-uname").focus(); }
     else $("#l-email").focus();
   }
@@ -100,8 +101,15 @@
 
   $("#login-form").onsubmit = function (e) {
     e.preventDefault(); var b = $("#l-btn"); b.disabled = true; $("#l-err").textContent = "";
-    api("login", { email: $("#l-email").value, password: $("#l-pass").value }).then(function (r) { b.disabled = false; if (!r.ok) return ($("#l-err").textContent = r.error); $("#l-pass").value = ""; signedIn(r); });
+    api("login", { email: $("#l-email").value, password: $("#l-pass").value }).then(function (r) { b.disabled = false; if (!r.ok) return ($("#l-err").textContent = r.error); $("#l-pass").value = "";
+      if (r.need2fa) { S.ticket = r.ticket; $("#login-form").hidden = true; $("#tfa-form").hidden = false; $("#t-code").value = ""; $("#t-err").textContent = ""; $("#t-code").focus(); return; }
+      signedIn(r); });
   };
+  $("#tfa-form").onsubmit = function (e) {
+    e.preventDefault(); var b = $("#t-btn"); b.disabled = true; $("#t-err").textContent = "";
+    api("login_2fa", { ticket: S.ticket, code: $("#t-code").value }).then(function (r) { b.disabled = false; if (!r.ok) { $("#t-err").textContent = r.error; if (/expired/.test(r.error)) setTimeout(function () { showAuth("login"); }, 1500); return; } S.ticket = null; signedIn(r); });
+  };
+  $("#t-back").onclick = function () { showAuth("login"); };
   $("#setup-form").onsubmit = function (e) {
     e.preventDefault(); var b = $("#s-btn"); b.disabled = true; $("#s-err").textContent = "";
     api("setup", { dbHost: $("#s-host").value, dbName: $("#s-name").value, dbUser: $("#s-user").value, dbPass: $("#s-dpass").value, name: $("#s-uname").value, email: $("#s-email").value, password: $("#s-pass").value, builderPassword: $("#s-bpass").value })
@@ -167,7 +175,7 @@
             (r.recent.length ? '<ul class="feed">' + r.recent.map(function (a) { var t = actText(a); return '<li><span class="dot">' + ic(t.icon) + "</span><div><b>" + esc(a.user_name || "System") + "</b> " + esc(t.text) + (a.target ? ' <span class="muted">' + esc(a.target) + "</span>" : "") + "<small>" + ago(a.created_at) + "</small></div></li>"; }).join("") + "</ul>" : '<div class="empty">No activity yet.</div>') +
           "</div></div>" +
           '<div class="card"><div class="card-h"><h3>Admin v2 roadmap</h3><span class="badge gold">Phase A2</span></div><div class="card-b"><div class="roadmap" style="grid-template-columns:1fr 1fr">' +
-            [["A1", "Dashboard, login, roles", 1], ["A2", "Pages manager, header/footer", 1], ["A3", "Section library", 1], ["A4", "Enquiries & CRM, WhatsApp", 1], ["A5", "Quotes, invoices, projects", 1], ["A6", "Blog, portfolio, testimonials, team (A6a) · services & cities next (A6b)"], ["A7", "Media, backups, health"], ["A8", "Settings, APIs, AI"]]
+            [["A1", "Dashboard, login, roles", 1], ["A2", "Pages manager, header/footer", 1], ["A3", "Section library", 1], ["A4", "Enquiries & CRM, WhatsApp", 1], ["A5", "Quotes, invoices, projects", 1], ["A6", "Blog, portfolio, team, services, cities, business info", 1], ["A7", "Media, backups, site health", 1], ["A8", "Settings, integrations, security", 1]]
               .map(function (x) { return '<div class="rm"><span class="badge ' + (x[2] ? "ok" : "") + '">' + x[0] + (x[2] ? " · live" : "") + "</span><b>" + x[1] + "</b></div>"; }).join("") +
           "</div></div></div>" +
         "</div>";

@@ -24,6 +24,14 @@
       <button class="btn pri block" id="l-btn">Sign in</button>
     </form>
 
+    <form id="tfa-form" hidden>
+      <h1>Two-step sign in</h1><p class="muted">Open your authenticator app and enter the 6-digit code for Woodex Admin. Lost your phone? Enter one of your recovery codes.</p>
+      <label>Code<input id="t-code" inputmode="numeric" autocomplete="one-time-code" maxlength="9" required placeholder="123456"></label>
+      <p class="err" id="t-err"></p>
+      <button class="btn pri block" id="t-btn">Verify</button>
+      <button type="button" class="btn block ghost" id="t-back" style="margin-top:8px">Back</button>
+    </form>
+
     <form id="setup-form" hidden>
       <h1>Set up Woodex Admin</h1><p class="muted">One-time setup. Creates the database tables and your owner account.</p>
       <fieldset id="s-db"><legend>Database <small>(hPanel → Databases → MySQL)</small></legend>
@@ -91,5 +99,7 @@
 <script src="admin-content.js" defer></script>
 <script src="admin-fields.js" defer></script>
 <script src="admin-media.js" defer></script>
+<script src="vendor/qrcode.js" defer></script>
+<script src="admin-settings.js" defer></script>
 </body>
 </html>

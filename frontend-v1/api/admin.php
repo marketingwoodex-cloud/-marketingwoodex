@@ -74,11 +74,14 @@ function ingest(): void {
 }
 
 // ---------- auth ----------
-function token_for(array $u): string { $exp = (string)(time() + 12 * 3600); return $u['id'] . '.' . $exp . '.' . hash_hmac('sha256', 'adm|' . $u['id'] . '|' . $exp . '|' . $u['pw_ver'], bsecret()); }
+/** Token = uid.exp.sid.sig — the session id makes every sign-in listable and revocable (security-lib.php). */
+function token_for(array $u): string { $e = time() + 12 * 3600; $exp = (string)$e; $sid = sec_new_session($u, $e); return $u['id'] . '.' . $exp . '.' . $sid . '.' . hash_hmac('sha256', 'adm|' . $u['id'] . '|' . $exp . '|' . $u['pw_ver'] . '|' . $sid, bsecret()); }
 function current_user(): ?array {
-    if (!preg_match('~^(\d+)\.(\d{10})\.([a-f0-9]{64})$~', (string)($_SERVER['HTTP_X_WX_ADM'] ?? ''), $m) || (int)$m[2] < time()) return null;
+    if (!preg_match('~^(\d+)\.(\d{10})\.([a-f0-9]{16})\.([a-f0-9]{64})$~', (string)($_SERVER['HTTP_X_WX_ADM'] ?? ''), $m) || (int)$m[2] < time()) return null;
     $u = q('SELECT * FROM wx_users WHERE id=? AND active=1', [(int)$m[1]])->fetch(); if (!$u) return null;
-    return hash_equals(hash_hmac('sha256', 'adm|' . $u['id'] . '|' . $m[2] . '|' . $u['pw_ver'], bsecret()), $m[3]) ? $u : null;
+    if (!hash_equals(hash_hmac('sha256', 'adm|' . $u['id'] . '|' . $m[2] . '|' . $u['pw_ver'] . '|' . $m[3], bsecret()), $m[4])) return null;
+    if (!sec_session_ok((int)$u['id'], $m[3])) return null; // signed out remotely
+    $GLOBALS['WX_SID'] = $m[3]; return $u;
 }
 function need(array $roles = []): array { $u = current_user(); if (!$u) fail('Not signed in', 401); if ($roles && !in_array($u['role'], $roles, true)) fail('You do not have permission for this', 403); return $u; }
 function pub(array $u): array { return ['id' => (int)$u['id'], 'name' => $u['name'], 'email' => $u['email'], 'role' => $u['role'], 'active' => (bool)$u['active'], 'created_at' => $u['created_at'], 'last_login' => $u['last_login']]; }
@@ -199,6 +202,7 @@ require __DIR__ . '/crm-lib.php';
 require __DIR__ . '/sales-lib.php';
 require __DIR__ . '/content-lib.php';
 require __DIR__ . '/media-lib.php';
+require __DIR__ . '/security-lib.php';
 
 // ---------- request ----------
 $in = json_decode((string)file_get_contents('php://input'), true) ?: [];
@@ -235,14 +239,13 @@ switch ($action) {
         throttle();
         $u = q('SELECT * FROM wx_users WHERE email=?', [strtolower(trim((string)($in['email'] ?? '')))])->fetch();
         if (!$u || !$u['active'] || !password_verify((string)($in['password'] ?? ''), $u['pass_hash'])) { throttle(true); usleep(400000); fail('Wrong email or password', 401); }
-        q('UPDATE wx_users SET last_login=? WHERE id=?', [now(), $u['id']]); log_act($u, 'login');
-        out(['ok' => true, 'token' => token_for($u), 'builderToken' => in_array($u['role'], ['owner', 'admin', 'editor'], true) ? builder_token((int)$u['id']) : null, 'user' => pub($u)]);
+        sec_login_after_password($u);
 
     case 'me':
         $u = need(); out(['ok' => true, 'user' => pub($u), 'builderToken' => in_array($u['role'], ['owner', 'admin', 'editor'], true) ? builder_token((int)$u['id']) : null]);
 
     case 'logout':
-        if ($u = current_user()) log_act($u, 'logout'); out(['ok' => true]);
+        if ($u = current_user()) { $s = sec_get_u((int)$u['id']); $s['sessions'] = array_values(array_filter($s['sessions'] ?? [], fn($x) => $x['sid'] !== ($GLOBALS['WX_SID'] ?? ''))); sec_put_u((int)$u['id'], $s); log_act($u, 'logout'); } out(['ok' => true]);
 
     case 'profile':
         $u = need(); $name = trim((string)($in['name'] ?? '')); if (!$name) fail('Name is required');
@@ -254,7 +257,7 @@ switch ($action) {
         if (!password_verify((string)($in['current'] ?? ''), $u['pass_hash'])) fail('Current password is wrong', 401);
         valid_pw((string)($in['next'] ?? ''));
         q('UPDATE wx_users SET pass_hash=?, pw_ver=pw_ver+1 WHERE id=?', [password_hash((string)$in['next'], PASSWORD_DEFAULT), $u['id']]);
-        $u = q('SELECT * FROM wx_users WHERE id=?', [$u['id']])->fetch(); log_act($u, 'password.change');
+        $u = q('SELECT * FROM wx_users WHERE id=?', [$u['id']])->fetch(); log_act($u, 'password.change'); $s = sec_get_u((int)$u['id']); $s['sessions'] = []; sec_put_u((int)$u['id'], $s);
         out(['ok' => true, 'token' => token_for($u)]);
 
     case 'users':
@@ -398,6 +401,6 @@ switch ($action) {
         if (!$dry && $total) log_act($u, 'global.replace', '"' . mb_substr($find, 0, 60) . '" → "' . mb_substr($rep, 0, 60) . '" (' . count($res) . ' pages)');
         out(['ok' => true, 'pages' => $res, 'total' => $total, 'dry' => $dry]);
 
-    default: if (!crm_actions($action, $in) && !sales_actions($action, $in) && !content_actions($action, $in) && !media_actions($action, $in)) fail('Unknown action', 404);
+    default: if (!crm_actions($action, $in) && !sales_actions($action, $in) && !content_actions($action, $in) && !media_actions($action, $in) && !security_actions($action, $in)) fail('Unknown action', 404);
 }
 } catch (PDOException $e) { error_log('admin.php: ' . $e->getMessage()); fail('Database error', 500); }

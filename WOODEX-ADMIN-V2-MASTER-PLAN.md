@@ -173,3 +173,11 @@ Each phase ends with a live preview + test report; the next phase starts only af
 - **Site health** (`#/health`): score plus SEO (title/description length, H1, canonical, duplicate titles), alt text, broken internal links (redirect-aware), missing and oversized images; filter by type/severity, with a Fix link to the smart-field editor. **Google PageSpeed** (mobile/desktop, 4 scores + LCP/CLS/TBT, history of 10 per page, change vs. last run); the API key is optional and stored server-side.
 - Roles: owner/admin restore, delete, optimise and manage backups; editors upload, edit alt text and run checks.
 - PHP: `api/media-lib.php` (needs ZipArchive + cURL, both standard on Hostinger). Builder API gained `backup_get`.
+
+## A8 — Settings, integrations, security (done)
+- **Settings → General**: site name (og:site_name), header logo (width recalculated for a 72px height), favicon and default share image. Check changes is a dry run; Update website rewrites every page through the builder API, with backups.
+- **Settings → Integrations**: Email/SMTP (send test), Cloudflare Turnstile (keys checked against Cloudflare), tracking codes (GA4, Tag Manager, Meta Pixel, Search Console verification) injected as one managed `<!-- wx:tracking -->` block in every page's `<head>` (empty = removed; adding and removing is byte-identical). AI and PageSpeed status link to their screens. WhatsApp stays on wa.me links (Cloud API not used, per decision).
+- **Settings → System**: server, zip/curl/openssl, cron last run, email/spam status, disk use.
+- **My security** (every user): two-step sign-in (TOTP authenticator app, QR via bundled `vendor/qrcode.js` (MIT), 8 one-time recovery codes, replay-protected), login alerts by email for new devices, signed-in devices list with sign out one / all others, recent sign-ins. Owner/admin see Team security: sign someone out everywhere, reset their two-step.
+- Tokens are now `uid.exp.sid.sig`; sessions are revocable; changing the password signs out all devices. (Existing sign-ins must log in again once after deploying.)
+- PHP: `api/security-lib.php` (state in `_private/security.json` and `settings.json`, no DB migration).

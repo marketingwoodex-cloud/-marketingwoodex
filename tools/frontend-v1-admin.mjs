@@ -16,17 +16,33 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
   const hash = (pw) => { const s = crypto.randomBytes(16).toString("hex"); return "scrypt$" + s + "$" + crypto.scryptSync(pw, s, 32).toString("hex"); };
   const verify = (pw, h) => { const [, s, k] = String(h || "").split("$"); if (!s) return false; const a = crypto.scryptSync(String(pw), s, 32), b = Buffer.from(k, "hex"); return a.length === b.length && crypto.timingSafeEqual(a, b); };
   const hmac = (s) => crypto.createHmac("sha256", secret()).update(s).digest("hex");
-  const tokenFor = (u) => { const exp = String(Math.floor(Date.now() / 1000) + 12 * 3600); return u.id + "." + exp + "." + hmac("adm|" + u.id + "|" + exp + "|" + u.pw_ver); };
+  /** Token = uid.exp.sid.sig — the session id makes every sign-in listable and revocable (Security → Sessions). */
+  const tokenFor = (u, req, ip) => {
+    const exp = String(Math.floor(Date.now() / 1000) + 12 * 3600), sid = crypto.randomBytes(8).toString("hex");
+    u.sessions = (u.sessions || []).filter((x) => x.exp > Date.now() / 1000).slice(-9);
+    u.sessions.push({ sid, exp: +exp, ip: ip || "", ua: String((req && req.headers["user-agent"]) || "").slice(0, 200), created: now(), seen: now() });
+    return u.id + "." + exp + "." + sid + "." + hmac("adm|" + u.id + "|" + exp + "|" + u.pw_ver + "|" + sid);
+  };
+  // ---- TOTP (RFC 6238) for two-factor sign-in
+  const B32 = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+  const b32enc = (buf) => { let bits = "", out = ""; for (const b of buf) bits += b.toString(2).padStart(8, "0"); for (let i = 0; i < bits.length; i += 5) out += B32[parseInt(bits.slice(i, i + 5).padEnd(5, "0"), 2)]; return out; };
+  const b32dec = (str) => { let bits = ""; for (const c of String(str).toUpperCase().replace(/[^A-Z2-7]/g, "")) bits += B32.indexOf(c).toString(2).padStart(5, "0"); const out = []; for (let i = 0; i + 8 <= bits.length; i += 8) out.push(parseInt(bits.slice(i, i + 8), 2)); return Buffer.from(out); };
+  const hotp = (key, ctr) => { const b = Buffer.alloc(8); b.writeBigUInt64BE(BigInt(ctr)); const h = crypto.createHmac("sha1", key).update(b).digest(), o = h[19] & 15; return String(((h.readUInt32BE(o) & 0x7fffffff) % 1e6)).padStart(6, "0"); };
+  const totpOk = (secret, code, u) => { code = String(code || "").replace(/\s/g, ""); if (!/^\d{6}$/.test(code)) return false; const key = b32dec(secret), t = Math.floor(Date.now() / 30000);
+    for (const d of [-1, 0, 1]) if (hotp(key, t + d) === code) { if (u) { if ((u.totp_last || 0) >= t + d) return false; u.totp_last = t + d; } return true; } return false; };
+  const sha = (x) => crypto.createHash("sha256").update(String(x)).digest("hex");
   const builderToken = (uid) => { const exp = String(Math.floor(Date.now() / 1000) + 12 * 3600); return exp + "." + uid + "." + hmac("wx|" + exp + "|" + uid); };
   const pub = (u) => ({ id: u.id, name: u.name, email: u.email, role: u.role, active: !!u.active, created_at: u.created_at, last_login: u.last_login });
   const canBuild = (u) => ["owner", "admin", "editor"].includes(u.role);
   const validPw = (p) => { if (String(p || "").length < 8) throw new Fail("Password must be at least 8 characters"); };
 
   function current(db, req) {
-    const m = /^(\d+)\.(\d{10})\.([a-f0-9]{64})$/.exec(String(req.headers["x-wx-adm"] || ""));
+    const m = /^(\d+)\.(\d{10})\.([a-f0-9]{16})\.([a-f0-9]{64})$/.exec(String(req.headers["x-wx-adm"] || ""));
     if (!db || !m || +m[2] < Date.now() / 1000) return null;
     const u = db.users.find((x) => x.id === +m[1] && x.active);
-    return u && hmac("adm|" + u.id + "|" + m[2] + "|" + u.pw_ver) === m[3] ? u : null;
+    if (!u || hmac("adm|" + u.id + "|" + m[2] + "|" + u.pw_ver + "|" + m[3]) !== m[4]) return null;
+    const s = (u.sessions || []).find((x) => x.sid === m[3]); if (!s) return null; // signed out remotely
+    s.seen = now(); u._sid = m[3]; return u;
   }
   function log(db, u, action, target = "", ip = "") { db.activity.push({ id: ++db.seqA, user_id: u ? u.id : null, user_name: u ? u.name : null, action, target: String(target).slice(0, 255), ip, created_at: now() }); if (db.activity.length > 5000) db.activity.splice(0, db.activity.length - 5000); }
   function ingest(db) {
@@ -50,6 +66,20 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
     return s;
   }
   const tries = new Map();
+  function finishLogin(db, u, req, ip) {
+    u.last_login = now(); log(db, u, "login", "", ip);
+    const ua = String(req.headers["user-agent"] || ""), dev = sha(ip + "|" + ua.replace(/[\d.]+/g, "")).slice(0, 16);
+    u.known = u.known || [];
+    if (!u.known.includes(dev)) {
+      if (u.known.length && u.alerts !== false) loginAlert(u, ip, ua);
+      u.known = [...u.known, dev].slice(-20);
+    }
+    return { ok: true, token: tokenFor(u, req, ip), builderToken: canBuild(u) ? builderToken(u.id) : null, user: pub(u) };
+  }
+  function loginAlert(u, ip, ua) {
+    const text = `Hello ${u.name},\n\nYour Woodex Admin account was just signed in to from a new device.\n\nTime: ${now()} UTC\nIP address: ${ip}\nDevice: ${ua.slice(0, 160)}\n\nIf this was you, ignore this email. If not, sign in, change your password and use Security → "Sign out all other devices".`;
+    try { fs.mkdirSync(PRIV, { recursive: true }); fs.appendFileSync(path.join(PRIV, "outbox.jsonl"), JSON.stringify({ t: now(), channel: "email", to: u.email, subject: "New sign-in to Woodex Admin", text }) + "\n"); } catch {}
+  }
   // =================================================================== A2 — pages, SEO, status, redirects, global parts
   const BACKUPS = path.join(PRIV, "backups"), PMETA = path.join(PRIV, "pages.json"), REDIR = path.join(PRIV, "redirects.json");
   const RESERVED = /^(_private|builder|admin|api|assets)\//;
@@ -780,6 +810,50 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
   // raw file download for backups (called by the preview server before JSON handling)
   function backupFile(req, name) { const db = load(); const u = db && current(db, req); if (!u || !["owner", "admin"].includes(u.role)) return null; const b = bkList().find((x) => x.name === name); return b ? path.join(SBK, b.name) : null; }
 
+
+  // ================================================================== A8: settings & integrations
+  const SETF = path.join(PRIV, "settings.json");
+  const GEN_DEF = { siteName: "Woodex Interior", logo: "/assets/img/img-f941b08b9510.png", favicon: "/assets/img/favicon.svg", share: "/assets/img/img-c7d3a3ebd62b.jpg" };
+  const TRK_DEF = { ga4: "", gtm: "", pixel: "", gsc: "" };
+  const setLoad = () => { const x = jr(SETF, {}); return { general: { ...GEN_DEF, ...(x.general || {}) }, generalApplied: { ...GEN_DEF, ...(x.generalApplied || {}) }, tracking: { ...TRK_DEF, ...(x.tracking || {}) }, trackingApplied: x.trackingApplied || null }; };
+  const imgOk = (u) => typeof u === "string" && /^\/assets\/(img|uploads)\/[a-z0-9/_.-]+\.(png|jpe?g|webp|svg|gif|ico)$/i.test(u) && !u.includes("..");
+  async function a8(action, inp, need, db, ip) {
+    if (!/^set_/.test(action)) return null;
+    const OA = ["owner", "admin"];
+    switch (action) {
+      case "set_get": {
+        need(OA); const x = setLoad(), c = crmCfg(), ai = cmsLoad().ai;
+        return { ok: true, ...x, mail: { emailOn: c.emailOn, emailTo: c.emailTo, smtpHost: c.smtpHost, smtpPort: c.smtpPort, smtpUser: c.smtpUser, smtpFrom: c.smtpFrom, smtpPassSet: !!c.smtpPass }, turnstile: { tsSite: c.tsSite, tsSecretSet: !!c.tsSecret },
+          ai: { provider: ai.provider, ready: !!ai[ai.provider + "Key"] }, psi: !!jr(path.join(PRIV, "health.json"), {}).psiKey,
+          system: { server: "Node " + process.version + " (preview)", zip: "tar (preview)", curl: true, openssl: true, cron: jr(path.join(PRIV, "health.json"), {}).lastCron || null, disk: null } };
+      }
+      case "set_general_save": {
+        const u = need(OA), g = inp.general || {}, x = jr(SETF, {}), o = {};
+        o.siteName = clip(g.siteName, 80) || GEN_DEF.siteName; if (/[<>"]/.test(o.siteName)) throw new Fail("Site name cannot contain < > or quotes");
+        for (const k of ["logo", "favicon", "share"]) { o[k] = clip(g[k], 200) || GEN_DEF[k]; if (!imgOk(o[k])) throw new Fail("Pick the " + k + " from the media library"); }
+        x.general = o; if (inp.applied) x.generalApplied = { ...o }; jw(SETF, x); log(db, u, inp.applied ? "settings.general_apply" : "settings.general", "", ip); save(db);
+        return { ok: true, ...setLoad() };
+      }
+      case "set_tracking_save": {
+        const u = need(OA), t = inp.tracking || {}, x = jr(SETF, {}), o = {
+          ga4: clip(t.ga4, 20).toUpperCase(), gtm: clip(t.gtm, 20).toUpperCase(), pixel: clip(t.pixel, 20).replace(/\D/g, ""), gsc: clip(t.gsc, 120).replace(/^.*content="([^"]+)".*$/, "$1") };
+        if (o.ga4 && !/^G-[A-Z0-9]{4,15}$/.test(o.ga4)) throw new Fail("GA4 measurement ID looks like G-XXXXXXXXXX");
+        if (o.gtm && !/^GTM-[A-Z0-9]{4,12}$/.test(o.gtm)) throw new Fail("Tag Manager ID looks like GTM-XXXXXXX");
+        if (o.pixel && !/^\d{8,20}$/.test(o.pixel)) throw new Fail("Meta Pixel ID is a number (8-20 digits)");
+        if (o.gsc && !/^[A-Za-z0-9_-]{10,100}$/.test(o.gsc)) throw new Fail("Search Console code: paste the content value of the meta tag");
+        x.tracking = o; if (inp.applied) x.trackingApplied = { ...o, at: now() }; jw(SETF, x); log(db, u, inp.applied ? "settings.tracking_apply" : "settings.tracking", "", ip); save(db);
+        return { ok: true, ...setLoad() };
+      }
+      case "set_ts_test": {
+        need(OA); const c = crmCfg(); if (!c.tsSite || !c.tsSecret) throw new Fail("Add both Turnstile keys first");
+        const r = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", { method: "POST", body: new URLSearchParams({ secret: c.tsSecret, response: "wx-test" }), signal: AbortSignal.timeout(8000) }).then((x) => x.json()).catch((e) => ({ neterr: e.message }));
+        if (r.neterr) throw new Fail("Could not reach Cloudflare: " + r.neterr);
+        const codes = r["error-codes"] || []; if (codes.includes("invalid-input-secret")) throw new Fail("Cloudflare says the secret key is wrong");
+        return { ok: true, result: "Secret key accepted by Cloudflare" };
+      }
+    }
+    return null;
+  }
   const adminApi = async function (req, inp) {
     const action = String(inp.action || "status"), ip = req.socket.remoteAddress || "";
     let db = load(); if (db) { try { if (cmsTick(db)) save(db); } catch (e) { console.error("cmsTick", e.message); } }
@@ -796,7 +870,7 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
         db = { users: [], activity: [], seqU: 1, seqA: 0 };
         const u = { id: 1, name, email, role: "owner", pass_hash: hash(inp.password), active: 1, pw_ver: 1, created_at: now(), last_login: null }; db.users.push(u);
         log(db, u, "setup", "", ip);
-        return done({ ok: true, token: tokenFor(u), builderToken: builderToken(u.id), user: pub(u) });
+        return done({ ok: true, token: tokenFor(u, req, ip), builderToken: builderToken(u.id), user: pub(u) });
       }
       case "login": {
         if (!db) throw new Fail("Admin is not set up yet", 503);
@@ -804,15 +878,57 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
         if (t.n >= 8 && Date.now() - t.t < 600000) throw new Fail("Too many attempts — wait 10 minutes", 429);
         const u = db.users.find((x) => x.email === String(inp.email || "").trim().toLowerCase());
         if (!u || !u.active || !verify(inp.password, u.pass_hash)) { tries.set(ip, { n: Date.now() - t.t < 600000 ? t.n + 1 : 1, t: Date.now() }); await new Promise((r) => setTimeout(r, 400)); throw new Fail("Wrong email or password", 401); }
-        u.last_login = now(); log(db, u, "login", "", ip);
-        return done({ ok: true, token: tokenFor(u), builderToken: canBuild(u) ? builderToken(u.id) : null, user: pub(u) });
+        tries.delete(ip);
+        if (u.totp_on) { const exp = Math.floor(Date.now() / 1000) + 300; return { ok: true, need2fa: true, ticket: u.id + "." + exp + "." + hmac("2fa|" + u.id + "|" + exp + "|" + u.pw_ver) }; }
+        return done(finishLogin(db, u, req, ip));
       }
+      case "login_2fa": {
+        if (!db) throw new Fail("Admin is not set up yet", 503);
+        const t = tries.get("2fa" + ip) || { n: 0, t: 0 }; if (t.n >= 6 && Date.now() - t.t < 600000) throw new Fail("Too many attempts — wait 10 minutes", 429);
+        const m = /^(\d+)\.(\d{10})\.([a-f0-9]{64})$/.exec(String(inp.ticket || "")), u = m && db.users.find((x) => x.id === +m[1] && x.active);
+        if (!u || +m[2] < Date.now() / 1000 || hmac("2fa|" + u.id + "|" + m[2] + "|" + u.pw_ver) !== m[3]) throw new Fail("Sign-in expired, enter your password again", 401);
+        const code = String(inp.code || "").trim(); let ok = totpOk(u.totp, code, u), used = false;
+        if (!ok && /^[a-z0-9]{4}-?[a-z0-9]{4}$/i.test(code)) { const h = sha(code.toLowerCase().replace("-", "")), i = (u.recovery || []).indexOf(h); if (i > -1) { u.recovery.splice(i, 1); ok = used = true; } }
+        if (!ok) { tries.set("2fa" + ip, { n: Date.now() - t.t < 600000 ? t.n + 1 : 1, t: Date.now() }); save(db); await new Promise((r) => setTimeout(r, 400)); throw new Fail("That code is not right. Check the time on your phone", 401); }
+        if (used) log(db, u, "2fa.recovery_used", (u.recovery || []).length + " left", ip);
+        return done(finishLogin(db, u, req, ip));
+      }
+      case "sec_get": {
+        const u = need(); const cur = u._sid;
+        return done({ ok: true, totp: !!u.totp_on, recoveryLeft: (u.recovery || []).length, alerts: u.alerts !== false,
+          sessions: (u.sessions || []).filter((x) => x.exp > Date.now() / 1000).map((x) => ({ sid: x.sid, ip: x.ip, ua: x.ua, created: x.created, seen: x.seen, current: x.sid === cur })).reverse(),
+          logins: db.activity.filter((a) => a.user_id === u.id && /^(login|2fa\.)/.test(a.action)).slice(-10).reverse().map(({ action, ip, created_at }) => ({ action, ip, created_at })),
+          team: ["owner", "admin"].includes(u.role) ? db.users.map((x) => ({ id: x.id, name: x.name, role: x.role, totp: !!x.totp_on, sessions: (x.sessions || []).filter((s) => s.exp > Date.now() / 1000).length })) : null });
+      }
+      case "sec_2fa_begin": { const u = need(); u.totp_pending = b32enc(crypto.randomBytes(20)); return done({ ok: true, secret: u.totp_pending, uri: "otpauth://totp/" + encodeURIComponent("Woodex Admin:" + u.email) + "?secret=" + u.totp_pending + "&issuer=" + encodeURIComponent("Woodex Admin") }); }
+      case "sec_2fa_enable": {
+        const u = need(); if (!u.totp_pending) throw new Fail("Start the setup again"); if (!totpOk(u.totp_pending, inp.code)) throw new Fail("That code is not right. Scan again or check your phone's time");
+        u.totp = u.totp_pending; delete u.totp_pending; u.totp_on = true; const codes = Array.from({ length: 8 }, () => crypto.randomBytes(4).toString("hex")); u.recovery = codes.map(sha);
+        log(db, u, "2fa.enable", "", ip); return done({ ok: true, codes: codes.map((c) => c.slice(0, 4) + "-" + c.slice(4)) });
+      }
+      case "sec_2fa_disable": case "sec_recovery_new": {
+        const u = need(); if (!verify(inp.password, u.pass_hash)) throw new Fail("Password is wrong", 401);
+        if (action === "sec_2fa_disable") { u.totp_on = false; delete u.totp; u.recovery = []; log(db, u, "2fa.disable", "", ip); return done({ ok: true }); }
+        if (!u.totp_on) throw new Fail("Two-factor is not on"); const codes = Array.from({ length: 8 }, () => crypto.randomBytes(4).toString("hex")); u.recovery = codes.map(sha); log(db, u, "2fa.recovery_new", "", ip); return done({ ok: true, codes: codes.map((c) => c.slice(0, 4) + "-" + c.slice(4)) });
+      }
+      case "sec_2fa_reset": {
+        const me = need(["owner", "admin"]), t = db.users.find((x) => x.id === +inp.user_id); if (!t) throw new Fail("User not found", 404);
+        if (t.role === "owner" && me.role !== "owner") throw new Fail("Only the owner can do this", 403);
+        t.totp_on = false; delete t.totp; t.recovery = []; t.sessions = []; log(db, me, "2fa.reset", t.email, ip); return done({ ok: true });
+      }
+      case "sec_revoke": {
+        const u = need(); const cur = u._sid;
+        if (inp.user_id && +inp.user_id !== u.id) { if (!["owner", "admin"].includes(u.role)) throw new Fail("No permission", 403); const t = db.users.find((x) => x.id === +inp.user_id); if (!t) throw new Fail("User not found", 404); if (t.role === "owner" && u.role !== "owner") throw new Fail("Only the owner can do this", 403); t.sessions = []; log(db, u, "session.revoke_all", t.email, ip); return done({ ok: true }); }
+        u.sessions = (u.sessions || []).filter((x) => (inp.others ? x.sid === cur : x.sid !== String(inp.sid || "") || x.sid === cur));
+        log(db, u, "session.revoke", inp.others ? "all other devices" : "one device", ip); return done({ ok: true });
+      }
+      case "sec_alerts": { const u = need(); u.alerts = !!inp.on; return done({ ok: true, alerts: u.alerts }); }
       case "me": { const u = need(); return { ok: true, user: pub(u), builderToken: canBuild(u) ? builderToken(u.id) : null }; }
-      case "logout": { const u = current(db, req); if (u) { log(db, u, "logout", "", ip); save(db); } return { ok: true }; }
+      case "logout": { const u = current(db, req); if (u) { u.sessions = (u.sessions || []).filter((x) => x.sid !== u._sid); log(db, u, "logout", "", ip); save(db); } return { ok: true }; }
       case "profile": { const u = need(); const n = String(inp.name || "").trim(); if (!n) throw new Fail("Name is required"); u.name = n.slice(0, 120); log(db, u, "profile.update", "", ip); return done({ ok: true, user: pub(u) }); }
       case "password": {
         const u = need(); if (!verify(inp.current, u.pass_hash)) throw new Fail("Current password is wrong", 401); validPw(inp.next);
-        u.pass_hash = hash(inp.next); u.pw_ver++; log(db, u, "password.change", "", ip); return done({ ok: true, token: tokenFor(u) });
+        u.pass_hash = hash(inp.next); u.pw_ver++; u.sessions = []; log(db, u, "password.change", "", ip); return done({ ok: true, token: tokenFor(u, req, ip) });
       }
       case "users": need(["owner", "admin"]); return { ok: true, users: db.users.map(pub) };
       case "user_save": {
@@ -848,7 +964,7 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
         return done({ ok: true, rows: all.slice((page - 1) * per, page * per).map(({ user_name, action, target, ip, created_at }) => ({ user_name, action, target, ip, created_at })), total: all.length, per, page });
       }
       default: {
-        const r = (await a2(action, inp, need, db, ip)) || (await a4(action, inp, need, db, ip)) || a5(action, inp, need, db, ip) || (await a6(action, inp, need, db, ip)) || (await a7(action, inp, need, db, ip)); if (r) return r;
+        const r = (await a2(action, inp, need, db, ip)) || (await a4(action, inp, need, db, ip)) || a5(action, inp, need, db, ip) || (await a6(action, inp, need, db, ip)) || (await a7(action, inp, need, db, ip)) || (await a8(action, inp, need, db, ip)); if (r) return r;
         throw new Fail("Unknown action", 404);
       }
     }

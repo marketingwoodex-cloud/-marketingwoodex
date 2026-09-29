@@ -366,3 +366,21 @@ small.bad{color:var(--bad)}small.warnc{color:var(--warn)}
 .ps-t td,.ps-t th{padding:6px 4px;font-size:12.5px}.ps-t td small{font-size:10px}
 .ps-set{margin-top:12px;font-size:13px}.ps-set summary{cursor:pointer;font-weight:600}
 @media (max-width:1100px){.hl-top{grid-template-columns:1fr 1fr}.md-det{grid-template-columns:1fr}.grid3{grid-template-columns:1fr}}
+/* A8 settings / security */
+.st-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(420px,1fr));gap:16px;align-items:start}
+.st-card .card-h h3{display:flex;gap:8px;align-items:center}.st-card .card-h h3 svg{width:18px;height:18px;color:#667085}
+.st-p{font-size:13px;margin:0 0 12px}.st-p code,.card-b code{background:var(--bg,#f2f4f7);padding:1px 5px;border-radius:4px;font-size:12px}
+.st-act{display:flex;gap:8px;justify-content:flex-end;margin-top:12px;flex-wrap:wrap}
+.st-res{font-size:13px;margin:8px 0 0;min-height:1em}
+.st-img{margin:10px 0}.st-img .imf-p{background-size:contain;background-repeat:no-repeat;background-color:#f2f4f7}
+.st-prev{display:grid;gap:12px}
+.st-tab{display:flex;gap:8px;align-items:center;background:#eef0f3;border-radius:10px 10px 0 0;padding:8px 12px;font-size:13px;max-width:240px}.st-tab img{width:16px;height:16px}
+.st-hdr{background:#fff;border:1px solid #eaecf0;border-radius:10px;padding:12px}.st-hdr img{height:40px}
+.st-share{border:1px solid #eaecf0;border-radius:10px;overflow:hidden;font-size:12px}.st-share>div{aspect-ratio:1.91/1;background-size:cover;background-position:center}.st-share small,.st-share b{display:block;padding:0 10px}.st-share small{color:#667085;padding-top:8px}.st-share b{padding-bottom:10px}
+.rc{background:var(--bg,#f9fafb);border:1px solid var(--line,#eaecf0);border-radius:12px;padding:14px}
+.rc-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:10px 0}.rc-grid code{font-size:15px;text-align:center;padding:6px;background:var(--card,#fff);border-radius:6px;letter-spacing:.05em}
+.tf-qr{display:grid;place-items:center;margin:8px 0}.tf-qr svg{width:200px;height:200px;background:#fff;border-radius:8px}
+.tf-key{font-size:14px;letter-spacing:.06em;word-break:break-all}
+.tf-steps{padding-left:20px;margin:8px 0;font-size:14px}
+.tf-in{font-size:24px;letter-spacing:.3em;text-align:center;width:100%}
+@media (max-width:900px){.st-grid{grid-template-columns:1fr}}
