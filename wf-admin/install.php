@@ -119,6 +119,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$installed) {
                     ],
                     'session_name' => 'woodex_cms',
                     'session_secret' => bin2hex(random_bytes(32)),
+                    'cron_key' => bin2hex(random_bytes(16)),
                     'backup_keep_days' => 14,
                     'installed_at' => date('c'),
                 ];
