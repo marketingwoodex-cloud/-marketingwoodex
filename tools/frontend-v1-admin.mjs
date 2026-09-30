@@ -278,6 +278,7 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
   const SOURCES = { contact: "Contact form", estimator: "Cost estimator", brief: "3D brief", "fitout-hub": "Fit-out quote", "office-fitout": "Office fit-out quote", whatsapp: "WhatsApp widget", chat: "Live chat", manual: "Added by team", import: "CSV import" };
   const CRM = path.join(PRIV, "crm.json"), OUTBOX = path.join(PRIV, "outbox.jsonl");
   const OFFERS = path.join(PRIV, "offers.json");
+  const GSA = path.join(PRIV, "google-sa.json");
   const crmCfg = () => Object.assign({ emailOn: false, emailTo: "", smtpHost: "", smtpPort: 465, smtpUser: "", smtpPass: "", smtpFrom: "", waOn: false, waToken: "", waPhoneId: "", waTo: "", waTemplate: "", waLang: "en", tsSite: "", tsSecret: "" }, jr(CRM, {}));
   const SECRETS = ["smtpPass", "waToken", "tsSecret"];
   const cfgPub = (c) => { const o = { ...c }; SECRETS.forEach((k) => { o[k + "Set"] = !!c[k]; o[k] = ""; }); return o; };
@@ -387,6 +388,19 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
         log(db, u, inp.id ? "client.update" : "client.create", c.name, ip); return done({ ok: true, client: c });
       }
       case "client_delete": { const u = need(["owner", "admin"]), c = db.clients.find((x) => x.id === +inp.id); if (!c) throw new Fail("Client not found", 404); db.clients = db.clients.filter((x) => x !== c); db.leads.forEach((l) => { if (l.client_id === c.id) l.client_id = null; }); log(db, u, "client.delete", c.name, ip); return done({ ok: true }); }
+      case "gdata_status": { need(["owner", "admin", "sales", "editor"]); const c = jr(GSA, {}); return { ok: true, connected: !!c.email, email: c.email || "", ga4: c.ga4 || "", gsc: c.gsc || "" }; }
+      case "gdata_save": { need(["owner", "admin"]); const c = jr(GSA, {});
+        if (inp.keyJson) { let k; try { k = JSON.parse(inp.keyJson); } catch { k = null; } if (!k || k.type !== "service_account" || !k.client_email || !k.private_key) throw new Fail('This is not a service-account key file (it must contain "type": "service_account")'); c.email = k.client_email; }
+        if ("ga4" in inp) c.ga4 = String(inp.ga4 || "").replace(/\D/g, ""); if ("gsc" in inp) { const g = String(inp.gsc || "").trim(); if (g && !/^(sc-domain:[a-z0-9.-]+|https?:\/\/\S+\/)$/i.test(g)) throw new Fail("Search Console property: use sc-domain:woodex.com.pk or https://woodex.com.pk/ (with the ending /)"); c.gsc = g; }
+        jw(GSA, c); return { ok: true, connected: !!c.email, email: c.email || "", ga4: c.ga4, gsc: c.gsc }; }
+      case "gdata_clear": { need(["owner", "admin"]); try { fs.unlinkSync(GSA); } catch {} return { ok: true }; }
+      case "gdata_report": { need(["owner", "admin", "sales", "editor"]); const c = jr(GSA, {}); if (!c.email) return { ok: true, connected: false };
+        const days = [7, 28, 90].includes(+inp.days) ? +inp.days : 28; let seed = 7; const rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
+        const daily = [], sd = []; for (let i = days; i >= 1; i--) { const d = new Date(Date.now() - i * 864e5).toISOString().slice(0, 10); const u = Math.round(40 + rnd() * 60 + (days - i) * 0.6); daily.push({ date: d, users: u, sessions: Math.round(u * 1.3), views: Math.round(u * 2.6) }); sd.push({ date: d, clicks: Math.round(u * 0.35), impressions: Math.round(u * 9) }); }
+        const sum = (a, k) => a.reduce((t, x) => t + x[k], 0), cl = sum(sd, "clicks"), im = sum(sd, "impressions");
+        return { ok: true, connected: true, cached: false, preview: true, days, at: new Date().toISOString(),
+          ga4: c.ga4 ? { daily, totals: { users: sum(daily, "users"), sessions: sum(daily, "sessions"), views: sum(daily, "views") }, pages: [["/", 1240], ["/renovation/", 610], ["/interior-design/", 480], ["/projects/", 390], ["/contact/", 250]].map(([p, v]) => ({ path: p, views: v })), sources: [["Organic Search", 820], ["Direct", 510], ["Organic Social", 260], ["Referral", 90]].map(([n, v]) => ({ name: n, sessions: v })) } : { error: "Add your GA4 Property ID (Analytics → Admin → Property details)." },
+          gsc: c.gsc ? { daily: sd, totals: { clicks: cl, impressions: im, ctr: Math.round(cl / im * 1000) / 10, position: 14.2 }, queries: [["interior designer lahore", 120, 2100, 6.1], ["woodex interior", 95, 300, 1.2], ["home renovation lahore", 40, 1800, 11.4], ["office fit out lahore", 22, 900, 9.8]].map(([q, a, b, p]) => ({ q, clicks: a, impressions: b, position: p })) } : { error: "Add your Search Console property (e.g. sc-domain:woodex.com.pk)." } }; }
       case "crm_wa_status": { need(["owner", "admin"]); const c = crmCfg(); if (!c.waToken || !c.waPhoneId) return { ok: true, connected: false };
         return { ok: true, connected: true, info: { ok: true, number: "+92 300 1234567 (preview)", name: "Woodex Interior", quality: "GREEN" } }; }
       case "crm_wa_connect": { const u = need(["owner", "admin"]); const c = crmCfg(); const tok = String(inp.token || "").trim() || c.waToken, pid = String(inp.phoneId || "").replace(/\D/g, "");
