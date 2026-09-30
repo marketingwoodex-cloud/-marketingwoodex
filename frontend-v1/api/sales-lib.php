@@ -194,6 +194,7 @@ function sales_actions(string $action, array $in): bool {
                 if ($to === 'approved') lead_stage((int)$x['lead_id'], ['new', 'contacted', 'visit', 'quote', 'lost'], 'won', $u, q_label($x) . ' approved', (int)$x['total']);
                 if ($to === 'sent') lead_stage((int)$x['lead_id'], ['new', 'contacted', 'visit'], 'quote', $u, q_label($x) . ' sent');
             }
+            if ($to === 'sent' && $from === 'draft' && empty($in['silent'])) { $nr = notify_client('quote', ['name' => $x['client']['name'] ?? '', 'phone' => $x['client']['phone'] ?? '', 'email' => $x['client']['email'] ?? '', 'ref' => q_label($x), 'project' => $x['project'] ?: '', 'link' => q_view_url($x)]); }
             log_act($u, 'quote.' . $to, q_label($x)); out(['ok' => true, 'quote' => q_pub($x)]);
         case 'quote_link':
             need($SALES); $x = doc_get('wx_quotes', $in['id'] ?? 0, 'Quotation'); out(['ok' => true, 'link' => q_view_url($x)]);
@@ -285,7 +286,8 @@ function sales_actions(string $action, array $in): bool {
             if (array_key_exists('manager', $in)) $p['manager'] = (int)$in['manager'] ?: null;
             if (array_key_exists('value', $in)) $p['value'] = (int)round(numv($in['value']));
             if ($before !== $p['stage']) $p['updates'][] = hist($u, "Stage: $before → {$p['stage']}") + ['sys' => true];
-            $p = doc_put('wx_projects', $p); log_act($u, $id ? 'project.update' : 'project.create', $p['name']); out(['ok' => true, 'project' => $p]);
+            $p = doc_put('wx_projects', $p); if ($id && $before !== $p['stage']) $p = notify_project_stage($p, $before);
+            log_act($u, $id ? 'project.update' : 'project.create', $p['name']); out(['ok' => true, 'project' => $p]);
         case 'proj_update':
             $u = need($ALL); $p = doc_get('wx_projects', $in['id'] ?? 0, 'Project'); $t = clip($in['text'] ?? '', 2000); if ($t === '') fail('Write an update first');
             $p['updates'][] = hist($u, $t); $p = doc_put('wx_projects', $p); log_act($u, 'project.note', $p['name']); out(['ok' => true, 'project' => $p]);

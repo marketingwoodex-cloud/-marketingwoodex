@@ -80,5 +80,6 @@ try {
     if (function_exists('fastcgi_finish_request')) fastcgi_finish_request(); else { @ob_end_flush(); @flush(); }
     ignore_user_abort(true);
     try { send_alerts($lead); } catch (Throwable $e) { error_log('forms.php alerts: ' . $e->getMessage()); }
+    if (function_exists('notify_client')) notify_client('lead', ['name' => $name, 'phone' => $phone, 'email' => $email, 'ref' => 'Enquiry #' . $id, 'project' => $lead['service']]);
     exit;
 } catch (PDOException $e) { error_log('forms.php: ' . $e->getMessage()); fail('Could not save your enquiry. Please WhatsApp us.', 500); }
