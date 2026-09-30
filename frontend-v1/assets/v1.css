@@ -1,29 +1,29 @@
 /* =====================================================================
    Woodex frontend-v1 — design system layer
    Loaded AFTER site.css on every page. Keeps the existing brand palette
-   (black / white / navy #0a0f1e) and DM Sans; unifies spacing, alignment,
+   (black / white / navy #0c1628) and DM Sans; unifies spacing, alignment,
    type scale, buttons, cards and adds the new shared section blocks.
    ===================================================================== */
 
 /* ---------- 1. Font: DM Sans was referenced but never loaded ---------- */
-@font-face{font-family:"DM Sans";src:url("/assets/fonts/dm-sans-400.woff2") format("woff2");font-weight:400;font-style:normal;font-display:swap}
-@font-face{font-family:"DM Sans";src:url("/assets/fonts/dm-sans-500.woff2") format("woff2");font-weight:500;font-style:normal;font-display:swap}
-@font-face{font-family:"DM Sans";src:url("/assets/fonts/dm-sans-600.woff2") format("woff2");font-weight:600;font-style:normal;font-display:swap}
-@font-face{font-family:"DM Sans";src:url("/assets/fonts/dm-sans-700.woff2") format("woff2");font-weight:700;font-style:normal;font-display:swap}
+@font-face{font-family:"Plus Jakarta Sans";src:url("/assets/fonts/dm-sans-400.woff2") format("woff2");font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:"Plus Jakarta Sans";src:url("/assets/fonts/dm-sans-500.woff2") format("woff2");font-weight:500;font-style:normal;font-display:swap}
+@font-face{font-family:"Plus Jakarta Sans";src:url("/assets/fonts/dm-sans-600.woff2") format("woff2");font-weight:600;font-style:normal;font-display:swap}
+@font-face{font-family:"Plus Jakarta Sans";src:url("/assets/fonts/dm-sans-700.woff2") format("woff2");font-weight:700;font-style:normal;font-display:swap}
 
 /* ---------- 2. Tokens (single source of truth) ---------- */
 :root{
   --wx-ink:#000;
-  --wx-navy:#0a0f1e;
+  --wx-navy:#0c1628;
   --wx-muted:#525252;
   --wx-paper:#fff;
-  --wx-surface:#f7f7f7;
+  --wx-surface:#f4efe7;
   --wx-beige:#fcf2e8;
   --wx-silver:#c0c0c0;
-  --wx-line:rgba(10,15,30,.14);
+  --wx-line:rgba(12,22,40,.14);
   --wx-line-dark:rgba(255,255,255,.2);
 
-  --wx-font:"DM Sans",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  --wx-font:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
 
   /* spacing scale (8pt) */
   --s-1:8px;--s-2:16px;--s-3:24px;--s-4:32px;--s-5:48px;--s-6:64px;--s-7:96px;--s-8:128px;
@@ -33,7 +33,7 @@
   --wx-gutter:clamp(20px,4vw,48px);
 
   --wx-r-sm:8px;--wx-r-md:12px;--wx-r-lg:16px;--wx-r-xl:20px;
-  --wx-shadow:0 18px 50px rgba(10,15,30,.10);
+  --wx-shadow:0 18px 50px rgba(12,22,40,.10);
   --wx-ease:cubic-bezier(.22,1,.36,1);
 
   /* keep legacy variable names in sync */
@@ -147,7 +147,7 @@ main textarea{min-height:120px}
    BUILDER: section style options + section library blocks
    ===================================================================== */
 main h1,main h2,main h3{font-family:var(--wx-font-head,var(--wx-font))}
-:root{--wx-accent:#0a0f1e}
+:root{--wx-accent:#0c1628}
 
 /* section options (set from the builder's Section panel) */
 main>section.wx-bg-light{background:var(--wx-surface)!important;color:var(--wx-ink)}
@@ -240,7 +240,7 @@ main>section.wx-center .wx-actions{justify-content:center}
 /* builder elements */
 .wx-el-spacer{height:48px}
 .wx-el-divider{border:0;border-top:1px solid var(--wx-line);margin:var(--s-4) 0}
-.wx-el-video{position:relative;aspect-ratio:16/9;border-radius:var(--wx-r-lg);overflow:hidden;background:#000}
+.wx-el-video{position:relative;aspect-ratio:16/9;border-radius:var(--wx-r-lg);overflow:hidden;background:#0c1628}
 .wx-el-video iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
 .wx-el-map{aspect-ratio:16/7;border-radius:var(--wx-r-lg);overflow:hidden}
 .wx-el-map iframe{width:100%;height:100%;border:0}
@@ -334,3 +334,26 @@ a.wx-wa .wx-icon{width:22px;height:22px}
 .wx-team-card h3{margin:var(--s-2) 0 2px;font-size:1.1rem}.wx-team-role{margin:0;color:var(--wx-muted);font-size:.92rem}.wx-team-card p:not(.wx-team-role){margin:8px 0 0;font-size:.92rem;color:var(--wx-muted)}
 @media(max-width:1000px){.wx-tst-grid{grid-template-columns:1fr 1fr}.wx-team-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:640px){.wx-tst-grid{grid-template-columns:1fr}}
+
+/* ================= Woodex v26 theme layer (Phase 2, 30 Sep 2026) =================
+   Palette: navy #0c1628 · card #152033 · cream #f4efe7 · wood #b8956a · ink #12151c
+   Font: Plus Jakarta Sans (self-hosted). Builder Theme panel (theme.css) still overrides. */
+@font-face{font-family:"Plus Jakarta Sans";src:url("/assets/fonts/plus-jakarta-sans-400.woff2") format("woff2");font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:"Plus Jakarta Sans";src:url("/assets/fonts/plus-jakarta-sans-500.woff2") format("woff2");font-weight:500;font-style:normal;font-display:swap}
+@font-face{font-family:"Plus Jakarta Sans";src:url("/assets/fonts/plus-jakarta-sans-600.woff2") format("woff2");font-weight:600;font-style:normal;font-display:swap}
+@font-face{font-family:"Plus Jakarta Sans";src:url("/assets/fonts/plus-jakarta-sans-700.woff2") format("woff2");font-weight:700;font-style:normal;font-display:swap}
+:root{--navy:#0c1628;--navy-2:#121e34;--card:#152033;--cream:#f4efe7;--cream-2:#ebe4d8;--wood:#b8956a;--wood-2:#c9a97a;--ink:#12151c;--muted:#6a6560;--surface:#f4efe7;--beige:#f4efe7;--wx-navy:#0c1628;--wx-font:"Plus Jakarta Sans",system-ui,sans-serif}
+body{font-family:"Plus Jakarta Sans",system-ui,sans-serif;color:var(--ink)}
+h1{letter-spacing:-.04em!important;word-spacing:.04em}h2{letter-spacing:-.03em!important;word-spacing:.03em}h3{letter-spacing:-.02em}
+::selection{background:var(--wood);color:#fff}
+:focus-visible{outline:2px solid var(--wood);outline-offset:3px}
+/* Gold accent — small touches only */
+.eyebrow:before,[class$="-label"]:before,[class*="-label "]:before{background:var(--wood)!important}
+.mega-number,.footer-column h3{color:var(--wood)!important}
+.desktop-nav>a:hover,.desktop-nav>a[aria-current="page"],.footer a:hover{color:var(--wood-2)}
+.site-header .desktop-nav>a[aria-current="page"]{text-decoration:underline;text-decoration-color:var(--wood);text-underline-offset:6px;text-decoration-thickness:2px}
+/* Footer: v26 deep navy with warm divider */
+.footer{background:var(--navy)!important}
+.footer-word{color:rgba(184,149,106,.10)!important;border-top-color:rgba(184,149,106,.25)!important}
+/* Alternating white / cream: applied by site.js only to sections that are really white */
+.wx-cream{background-color:var(--cream)!important}

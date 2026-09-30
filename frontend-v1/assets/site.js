@@ -280,3 +280,21 @@
   s.defer = true;
   document.head.appendChild(s);
 })();
+
+/* v26 theme: alternate white / cream on light sections only (dark sections untouched) */
+(function(){
+  function run(){
+    if(window.self!==window.top)return;
+    var secs=[].slice.call(document.querySelectorAll('main > section, main > div > section'));
+    var n=0;
+    secs.forEach(function(s){
+      var bg=getComputedStyle(s).backgroundColor, img=getComputedStyle(s).backgroundImage;
+      var white=(bg==='rgb(255, 255, 255)'||bg==='rgba(0, 0, 0, 0)')&&img==='none';
+      if(!white){n=0;return;}
+      if(s.querySelector(':scope > img, :scope > picture, :scope > video, iframe')&&s.offsetHeight>0&&s.className.indexOf('map')>-1)return;
+      if(n%2===1)s.classList.add('wx-cream');
+      n++;
+    });
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run);else run();
+})();
