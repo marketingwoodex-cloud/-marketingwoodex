@@ -67,7 +67,7 @@ UI libraries converted to Woodex blocks (no Tailwind) · ~40 new blocks · ONE f
 
 - [ ] 3.1 Sidebar: navy, hover-expand rail, pin, flyouts in mini mode, live count badges (leads, inbox), user card
 - [x] 3.2 Dashboard: action chips · 4 KPI cards (trend vs last period) · Statistics chart (Overview/Sales/Revenue, 7/28/90) · monthly target meter (PKR, editable) · pipeline funnel · recent enquiries · today's follow-ups · Google/website strip · activity · role-based
-- [ ] 3.3 Login: split screen (photo + tagline | grouped card: Google, email/password, remember me, forgot, 2-step note)
+- [x] 3.3 Login: split screen (photo + tagline | grouped card: Google, email/password, remember me, forgot, 2-step note)
 - [ ] 3.4 Page pattern on list screens: breadcrumb, title + gold primary button, filter bar, mini KPI cards, table, empty state, error + retry (Leads, Clients, Quotes, Invoices, Projects)
 - [ ] 3.5 Integrations card grid + API keys table (masked, toggle, test, MCP tokens)
 - [ ] 3.6 Inbox redesign (contacts | thread | lead panel)

@@ -13,13 +13,19 @@
 
 <!-- ============ AUTH (setup / login) ============ -->
 <div class="auth" id="auth" hidden>
+  <aside class="auth-side" aria-hidden="true">
+    <div class="as-brand"><span class="logo">W</span><b>Woodex Interior</b></div>
+    <div class="as-copy"><span class="as-kicker">Admin v2</span><h2>Run the whole studio<br>from one place.</h2>
+      <ul><li>Enquiries, pipeline &amp; follow-ups</li><li>Quotations, invoices &amp; payments</li><li>Live chat, WhatsApp &amp; AI replies</li><li>Pages, blog, SEO &amp; speed</li></ul></div>
+    <small class="as-foot">© Woodex Interior · woodex.com.pk</small>
+  </aside>
   <div class="auth-card">
     <div class="brand"><span class="logo">W</span><div><b>Woodex</b><small>Admin</small></div></div>
 
     <form id="login-form" hidden>
       <h1>Sign in</h1><p class="muted">Welcome back. Sign in to manage the website.</p>
       <label>Email<input type="email" id="l-email" autocomplete="username" required></label>
-      <label>Password<input type="password" id="l-pass" autocomplete="current-password" required></label>
+      <label>Password<span class="pw-wrap"><input type="password" id="l-pass" autocomplete="current-password" required><button type="button" class="pw-eye" aria-label="Show password" onclick="var i=this.previousElementSibling;i.type=i.type==='password'?'text':'password';this.classList.toggle('on')">Show</button></span></label>
       <p class="err" id="l-err"></p>
       <button class="btn pri block" id="l-btn">Sign in</button>
       <p style="text-align:center;margin:10px 0 0;font-size:13px"><a href="#" id="l-forgot">Forgot password?</a></p>
