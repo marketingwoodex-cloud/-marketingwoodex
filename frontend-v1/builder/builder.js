@@ -459,6 +459,14 @@
   }
   libButtons(window.WX_BLOCKS || [], $("#lib-sections"), "section");
   libButtons(window.WX_ELEMENTS || [], $("#lib-elements"), "element");
+  // P16: all 50 v26 templates listed directly in the Sections tab (click or drag), filter by category
+  (function () {
+    var T = window.WX_TEMPLATES || [], box = $("#lib-v26"), sel = $("#v26-cat"); if (!box || !T.length) return;
+    $("#v26-n").textContent = "(" + T.length + ")";
+    T.map(function (t) { return t.cat; }).filter(function (c, i, a) { return a.indexOf(c) === i; }).forEach(function (c) { sel.insertAdjacentHTML("beforeend", "<option>" + esc(c) + "</option>"); });
+    function draw() { var c = sel.value; libButtons(T.filter(function (t) { return !c || t.cat === c; }).map(function (t) { return { id: t.id, icon: t.icon || "▦", name: t.name, html: t.html }; }), box, "section"); }
+    sel.onchange = draw; draw();
+  })();
 
   var dropAt = null;
   function hideDrop() { $("#ov-drop").style.display = "none"; dropAt = null; }
@@ -1327,7 +1335,7 @@
   };
 
   // ---- search in lists (D9)
-  $$(".lib-q[data-q]").forEach(function (q) { q.oninput = function () { var v = q.value.toLowerCase(); $$("#" + q.dataset.q + " button").forEach(function (b) { b.hidden = b.textContent.toLowerCase().indexOf(v) < 0; }); }; });
+  $$(".lib-q[data-q]").forEach(function (q) { q.oninput = function () { var v = q.value.toLowerCase(); $$("#" + q.dataset.q + " button" + (q.dataset.q === "lib-sections" ? ", #lib-v26 button" : "")).forEach(function (b) { b.hidden = b.textContent.toLowerCase().indexOf(v) < 0; }); }; });
   $("#layers-q").oninput = function () {
     var q = this.value.trim().toLowerCase(); if (!q) return renderLayers(true);
     var box = $("#layers"); box.innerHTML = "";

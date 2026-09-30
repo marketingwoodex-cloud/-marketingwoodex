@@ -18,7 +18,7 @@ Work only in `frontend-v1/`. Every phase: QA on preview → FULL zip in `deploy/
 - [x] 2  Bulk create cities: "Copy from" list loads; error + Retry if empty
 - [x] 3  Service & site pages list loads (builder API) with search
 - [x] 4  FAQ groups: explain purpose on screen + sample groups (Renovation, Pricing, Cities) + where each shows on site
-- [ ] 5  Page builder: runtime page view, new page create + save, Layers, Theme panel; **50 v26 templates in Sections tab**
+- [x] 5  Page builder: runtime page view, new page create + save, Layers, Theme panel; **50 v26 templates in Sections tab**
 - [ ] 6  Dashboard: live CRM, quotation, invoice data (not only website) — done in Phase 3 dashboard
 - [ ] 7  Section library: loads, v26 templates (50), save own sections
 - [ ] 8  Blog: AI writer works (SSL fixed); **AI model auto-list from provider API**; empty-state help
