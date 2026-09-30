@@ -102,13 +102,11 @@
       if ($("#wa-off")) $("#wa-off").onclick = function () { if (confirm("Disconnect WhatsApp? Automatic replies, alerts and offers stop until you connect again.")) api("crm_wa_disconnect").then(function () { toast("Disconnected"); waCard(box); }); };
     });
   }
-  var base = W.VIEWS.settings;
-  if (base) W.VIEWS.settings = function (el, parts) {
-    var r = base(el, parts);
-    var tries = 0, t = setInterval(function () {
-      var card = document.getElementById("in-wa"); tries++;
-      if (card || tries > 40) { clearInterval(t); if (!card) return; var body = card.querySelector(".card-b") || card; var box = document.createElement("div"); box.id = "wa-box"; [].slice.call(body.children).forEach(function (c) { if (c.classList.contains("st-p")) c.remove(); }); body.appendChild(box); var bd = card.querySelector(".badge"); if (bd) bd.remove(); waCard(box); }
-    }, 150);
-    return r;
-  };
+  // attach whenever the Integrations tab renders its WhatsApp card
+  new MutationObserver(function () {
+    var card = document.getElementById("in-wa"); if (!card || card.querySelector("#wa-box")) return;
+    var body = card.querySelector(".card-b") || card; [].slice.call(body.querySelectorAll(".st-p")).forEach(function (c) { c.remove(); });
+    var bd = card.querySelector(".card-h .badge"); if (bd) bd.remove();
+    var box = document.createElement("div"); box.id = "wa-box"; body.appendChild(box); waCard(box);
+  }).observe(document.body, { childList: true, subtree: true });
 })();

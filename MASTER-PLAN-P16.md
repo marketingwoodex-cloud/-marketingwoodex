@@ -22,10 +22,10 @@ Work only in `frontend-v1/`. Every phase: QA on preview → FULL zip in `deploy/
 - [ ] 6  Dashboard: live CRM, quotation, invoice data (not only website) — done in Phase 3 dashboard
 - [x] 7  Section library: loads, v26 templates (50), save own sections
 - [x] 8  Blog: AI writer works (SSL fixed); **AI model auto-list from provider API**; empty-state help
-- [ ] 9  Integrations: reorganised (see Phase 3); WhatsApp change/reconnect number + discount offers to leads
+- [x] 9  Integrations: reorganised (see Phase 3); WhatsApp change/reconnect number + discount offers to leads
 - [ ] 10 Google (free): Sign-in with Google + Analytics 4 + Search Console data on dashboard
-- [ ] 11 Speed test works (PageSpeed via SSL fix; key optional; clear error)
-- [ ] 12 Health check works (links, SSL, DB, disk, backups)
+- [x] 11 Speed test works (PageSpeed via SSL fix; key optional; clear error)
+- [x] 12 Health check works (links, SSL, DB, disk, backups)
 - [x] 13 Header/footer editor loads + saves (auto-updates all pages)
 - [ ] QA script: every admin route, zero JS errors / failed APIs / stuck loaders → full zip
 
