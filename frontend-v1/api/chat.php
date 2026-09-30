@@ -58,7 +58,7 @@ switch ($act) {
                 chat_add((int)$c['id'], 'ai', 'Woodex assistant', $r);
                 if ($human) q('UPDATE wx_chats SET needs=1 WHERE id=?', [$c['id']]);
             } elseif (!(int)q("SELECT COUNT(*) FROM wx_chat_msgs WHERE chat_id=? AND who='sys'", [$c['id']])->fetchColumn()) {
-                chat_add((int)$c['id'], 'sys', '', chat_open_now() ? 'Thanks! A team member will reply here in a few minutes. You can also leave your phone number and we will call you.' : 'Thanks for your message! We are away right now (' . $cfg['hours'] . '). Leave your name and phone number and we will call you back first thing.');
+                chat_add((int)$c['id'], 'sys', '', chat_open_now() ? 'Thanks! A team member will reply here in a few minutes. You can also leave your phone number and we will call you.' : $cfg['afterHours']);
                 q('UPDATE wx_chats SET needs=1 WHERE id=?', [$c['id']]);
             }
         }
