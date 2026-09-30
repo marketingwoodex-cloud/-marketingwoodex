@@ -176,10 +176,13 @@
     e.preventDefault(); var b = $("#fp-btn"); b.disabled = true; $("#fp-err").textContent = ""; $("#fp-ok").textContent = "";
     api("pw_forgot", { email: $("#fp-email").value }).then(function (r) { b.disabled = false; if (!r.ok) return ($("#fp-err").textContent = r.error); $("#fp-ok").textContent = r.message + (r.hint ? " " + r.hint : ""); });
   };
-  var resetTok = (location.hash.match(/^#reset=([\w.]+)$/) || [])[1];
-  if (resetTok) {
+  var resetTok;
+  function checkReset() {
+    resetTok = (location.hash.match(/^#reset=([\w.]+)$/) || [])[1];
+    if (!resetTok) return;
     var tries = 0, iv = setInterval(function () { if (++tries > 40) return clearInterval(iv); var a = $("#auth"); if (a && !a.hidden) { clearInterval(iv); authShow("rp-form"); $("#rp-pass").focus(); } }, 150);
   }
+  checkReset(); window.addEventListener("hashchange", checkReset);
   if ($("#rp-form")) $("#rp-form").onsubmit = function (e) {
     e.preventDefault(); $("#rp-err").textContent = "";
     if ($("#rp-pass").value !== $("#rp-pass2").value) return ($("#rp-err").textContent = "The two passwords are not the same");
