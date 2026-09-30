@@ -5,7 +5,7 @@
   var W = window.WXA; if (!W) return;
   var esc = W.esc, ic = W.ic, q = "", ch = "all";
   var QUICK = ["Could you share your phone number so our designer can call you?", "Would you like to book a free site visit this week?", "I will prepare a quotation and send it to you today.", "Thank you! Our team will call you shortly."];
-  function ini(n) { n = String(n || "").trim(); if (!n || /^Visitor/.test(n)) return "?"; return n.split(/\s+/).slice(0, 2).map(function (x) { return x[0]; }).join("").toUpperCase(); }
+  function ini(n) { n = String(n || "").trim(); if (!n || /^Visitor/.test(n) || !/\p{L}/u.test(n)) return "?"; var w = n.replace(/\([^)]*\)/g, " ").replace(/[^\p{L}\p{N}\s]/gu, " ").trim().split(/\s+/).filter(Boolean); return w.length ? w.slice(0, 2).map(function (x) { return x[0]; }).join("").toUpperCase() : "?"; }
   function hue(s) { var h = 0; s = String(s); for (var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) % 360; return h; }
 
   function list(lc) {
