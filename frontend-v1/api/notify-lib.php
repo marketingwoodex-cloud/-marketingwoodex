@@ -37,7 +37,7 @@ function notify_client(string $event, array $d, bool $force = false): array {
     $res = [];
     try {
         notify_migrate(); $c = notify_cfg(); $ev = $c['ev'][$event] ?? null; if (!$ev || (!$ev['on'] && !$force)) return ['skipped' => 'off'];
-        $co = company_cfg(); $v = ['name' => trim((string)($d['name'] ?? '')) ?: 'Customer', 'company' => $co['name'], 'phone' => trim(explode(',', (string)$co['phones'])[0] ?? ''),
+        $co = function_exists('company_cfg') ? company_cfg() : ['name' => 'Woodex Interior', 'phones' => '+92 322 4000768']; $v = ['name' => trim((string)($d['name'] ?? '')) ?: 'Customer', 'company' => $co['name'], 'phone' => trim(preg_split('~[,·]~u', (string)$co['phones'])[0] ?? ''),
             'ref' => (string)($d['ref'] ?? ''), 'project' => (string)($d['project'] ?? '') ?: 'your project', 'link' => (string)($d['link'] ?? '')];
         $text = trim(preg_replace("~[^\n]*\{link\}[^\n]*\n?~u", $v['link'] === '' ? '' : '$0', $ev['text'])); $text = notify_fill($text, $v);
         $crm = crm_cfg();

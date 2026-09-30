@@ -67,6 +67,18 @@ function smtp_send(array $c, array $to, string $subject, string $text, array $at
     } catch (Throwable $e) { fclose($fp); return 'SMTP: ' . $e->getMessage(); }
     fclose($fp); return '';
 }
+/** Send a plain WhatsApp text (inside the 24-hour customer window) with the Cloud API number from Settings → Integrations. */
+function wa_text(string $to, string $text): string {
+    $c = crm_cfg(); if (!$c['waToken'] || !$c['waPhoneId']) return 'WhatsApp is not connected (Settings → Integrations)';
+    if (!function_exists('curl_init')) return 'cURL missing';
+    $ch = curl_init('https://graph.facebook.com/v21.0/' . rawurlencode($c['waPhoneId']) . '/messages');
+    curl_setopt_array($ch, [CURLOPT_POST => true, CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 10, CURLOPT_HTTPHEADER => ['Authorization: Bearer ' . $c['waToken'], 'Content-Type: application/json'],
+        CURLOPT_POSTFIELDS => json_encode(['messaging_product' => 'whatsapp', 'to' => preg_replace('~\D~', '', $to), 'type' => 'text', 'text' => ['body' => mb_substr($text, 0, 4000)]])]);
+    $r = curl_exec($ch); $code = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE); $err = curl_error($ch); curl_close($ch);
+    if ($r === false) return 'failed: ' . $err;
+    if ($code >= 300) { $j = json_decode((string)$r, true); return 'failed: ' . ($j['error']['message'] ?? "HTTP $code"); }
+    return '';
+}
 function wa_send(array $c, string $to, array $l, string $text): string {
     $to = preg_replace('~\D~', '', $to);
     $body = $c['waTemplate'] !== ''

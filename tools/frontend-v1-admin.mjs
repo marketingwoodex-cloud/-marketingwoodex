@@ -1001,6 +1001,32 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
     if (c.mode === "ai" && !db.chatMsgs.some((m) => m.chat_id === c.id && m.who === "sys")) { chatAdd(db, c, "sys", "", chatOpenNow() ? "Thanks! A team member will reply here in a few minutes. You can also leave your phone number and we will call you." : "Thanks for your message! We are away right now (" + cfg.hours + "). Leave your name and phone number and we will call you back first thing."); c.needs = 1; }
     save(db); return { ...vpub(c, isNew ? 0 : +inp.since || 0), ...(token ? { token } : {}) };
   };
+  // ---- Phase 12 mirror: client updates (preview writes to _private/outbox/*-update.txt; PHP sends real WhatsApp/email)
+  const NTF = path.join(PRIV, "notify.json"), NT_EV = { lead: "Enquiry received", quote: "Quotation sent", started: "Work started", handover: "Handover" };
+  const ntMsg = (en, ur) => "Dear {name},\n" + en + "\n\nمحترم {name}، " + ur + "\n\n{company} · {phone}";
+  const NT_DEF = { email: true, wa: true, waLang: "en", ev: {
+    lead: { on: true, subject: "We received your enquiry: {company}", tpl: "", text: ntMsg("Thank you for contacting {company}. Our team will call you shortly.", "{company} سے رابطہ کرنے کا شکریہ۔ ہماری ٹیم جلد آپ سے رابطہ کرے گی۔") },
+    quote: { on: true, subject: "Your quotation {ref} from {company}", tpl: "", text: ntMsg("Your quotation {ref} for {project} is ready: {link}", "{project} کے لیے آپ کی کوٹیشن {ref} تیار ہے: {link}") },
+    started: { on: true, subject: "Work has started on {project}", tpl: "", text: ntMsg("Good news! Work has started on {project}.", "خوشخبری! {project} پر کام شروع ہو گیا ہے۔") },
+    handover: { on: true, subject: "Your project {project} is ready", tpl: "", text: ntMsg("{project} is complete and ready for handover. Thank you!", "{project} مکمل ہو گیا ہے اور حوالگی کے لیے تیار ہے۔ شکریہ!") } } };
+  const ntCfg = () => { const c = Object.assign({}, NT_DEF, jr(NTF, {})); c.ev = Object.assign({}, NT_DEF.ev, c.ev || {}); for (const k in NT_DEF.ev) c.ev[k] = Object.assign({}, NT_DEF.ev[k], c.ev[k] || {}); return c; };
+  const ntLog = [];
+  async function p12(action, inp, need, db, ip) {
+    if (!action.startsWith("notify_")) return null;
+    const done = (x) => x;
+    switch (action) {
+      case "notify_get": need(["owner", "admin"]); return { ok: true, cfg: ntCfg(), events: NT_EV, waReady: false, emailReady: false, log: ntLog.slice(0, 60) };
+      case "notify_save": { need(["owner", "admin"]); const s = inp.cfg || {}, c = ntCfg(); for (const k of ["email", "wa"]) if (k in s) c[k] = !!s[k]; if (s.waLang) c.waLang = String(s.waLang);
+        for (const k in NT_EV) if (s.ev && s.ev[k]) { const x = s.ev[k]; if ("on" in x) c.ev[k].on = !!x.on; for (const f of ["text", "subject", "tpl"]) if (f in x) c.ev[k][f] = String(x[f]).slice(0, 3000); }
+        jw(NTF, c); return done({ ok: true, cfg: c }); }
+      case "notify_test": { const u = need(["owner", "admin"]); const e = inp.event; if (!NT_EV[e]) return { ok: false, error: "Unknown event" }; const ph = String(inp.phone || "").trim(), em = String(inp.email || "").trim(); if (!ph && !em) return { ok: false, error: "Enter your phone or email to receive the test" };
+        const ev = ntCfg().ev[e], v = { name: u.name, company: "Woodex Interior", phone: "+92 322 4000768", ref: "WI-10000", project: "Test project", link: "https://woodex.com.pk/" }, fill = (t) => t.replace(/\{(\w+)\}/g, (m, k) => (k in v ? v[k] : m));
+        const ob = path.join(PRIV, "outbox"); fs.mkdirSync(ob, { recursive: true }); fs.writeFileSync(path.join(ob, Date.now() + "-update.txt"), "To: " + [ph, em].filter(Boolean).join(" / ") + "\nSubject: " + fill(ev.subject) + "\n\n" + fill(ev.text));
+        const result = {}; if (ph) { result.whatsapp = "sent (preview outbox)"; ntLog.unshift({ t: now(), event: e, ref: v.ref, name: u.name, channel: "wa", dest: ph, result: "sent" }); } if (em) { result.email = "sent (preview outbox)"; ntLog.unshift({ t: now(), event: e, ref: v.ref, name: u.name, channel: "email", dest: em, result: "sent" }); }
+        return { ok: true, result }; }
+    }
+    return null;
+  }
   async function p10(action, inp, need, db, ip, req) {
     if (!/^(chat_|notif_)/.test(action)) return null;
     ensureChat(db); ensureCrm(db); const SALES = ["owner", "admin", "sales"], done = (o) => { save(db); return o; };
@@ -1185,7 +1211,7 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
         return done({ ok: true, rows: all.slice((page - 1) * per, page * per).map(({ user_name, action, target, ip, created_at }) => ({ user_name, action, target, ip, created_at })), total: all.length, per, page });
       }
       default: {
-        const r = (await a2(action, inp, need, db, ip)) || (await a4(action, inp, need, db, ip)) || a5(action, inp, need, db, ip) || (await a6(action, inp, need, db, ip)) || (await a7(action, inp, need, db, ip)) || (await a8(action, inp, need, db, ip)) || (await p8(action, inp, need, db, ip, req)) || (await p10(action, inp, need, db, ip, req)); if (r) return r;
+        const r = (await a2(action, inp, need, db, ip)) || (await a4(action, inp, need, db, ip)) || a5(action, inp, need, db, ip) || (await a6(action, inp, need, db, ip)) || (await a7(action, inp, need, db, ip)) || (await a8(action, inp, need, db, ip)) || (await p8(action, inp, need, db, ip, req)) || (await p10(action, inp, need, db, ip, req)) || (await p12(action, inp, need, db, ip)); if (r) return r;
         throw new Fail("Unknown action", 404);
       }
     }

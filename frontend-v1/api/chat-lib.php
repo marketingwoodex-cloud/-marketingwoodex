@@ -111,18 +111,6 @@ function chat_ai_reply(array $c): string {
     $cfg = chat_cfg(); if (!$cfg['ai'] || $c['mode'] !== 'ai') return '';
     return chat_ai_call(chat_ai_system($c), chat_turns((int)$c['id']));
 }
-/** Send a plain WhatsApp text (inside the 24-hour customer window) with the Cloud API number from Settings → Integrations. */
-function wa_text(string $to, string $text): string {
-    $c = crm_cfg(); if (!$c['waToken'] || !$c['waPhoneId']) return 'WhatsApp is not connected (Settings → Integrations)';
-    if (!function_exists('curl_init')) return 'cURL missing';
-    $ch = curl_init('https://graph.facebook.com/v21.0/' . rawurlencode($c['waPhoneId']) . '/messages');
-    curl_setopt_array($ch, [CURLOPT_POST => true, CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 10, CURLOPT_HTTPHEADER => ['Authorization: Bearer ' . $c['waToken'], 'Content-Type: application/json'],
-        CURLOPT_POSTFIELDS => json_encode(['messaging_product' => 'whatsapp', 'to' => preg_replace('~\D~', '', $to), 'type' => 'text', 'text' => ['body' => mb_substr($text, 0, 4000)]])]);
-    $r = curl_exec($ch); $code = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE); $err = curl_error($ch); curl_close($ch);
-    if ($r === false) return 'failed: ' . $err;
-    if ($code >= 300) { $j = json_decode((string)$r, true); return 'failed: ' . ($j['error']['message'] ?? "HTTP $code"); }
-    return '';
-}
 
 function chat_actions(string $action, array $in): bool {
     if (!preg_match('~^(chat_|notif_)~', $action)) return false;
