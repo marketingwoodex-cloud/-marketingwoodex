@@ -14,10 +14,10 @@ Work only in `frontend-v1/`. Every phase: QA on preview → FULL zip in `deploy/
 - [ ] **User:** upload step-1 zip, send System check screenshot (all ✓) — confirms bugs 5, 7, 8, 11, 12, 13 root causes
 
 ## Phase 2 — Fix the 13 reported bugs (deep QA per module)
-- [ ] 1  Test-AI: readable chat bubbles (font, contrast, size, dark/light), copy button
-- [ ] 2  Bulk create cities: "Copy from" list loads; error + Retry if empty
-- [ ] 3  Service & site pages list loads (builder API) with search
-- [ ] 4  FAQ groups: explain purpose on screen + sample groups (Renovation, Pricing, Cities) + where each shows on site
+- [x] 1  Test-AI: readable chat bubbles (font, contrast, size, dark/light), copy button
+- [x] 2  Bulk create cities: "Copy from" list loads; error + Retry if empty
+- [x] 3  Service & site pages list loads (builder API) with search
+- [x] 4  FAQ groups: explain purpose on screen + sample groups (Renovation, Pricing, Cities) + where each shows on site
 - [ ] 5  Page builder: runtime page view, new page create + save, Layers, Theme panel; **50 v26 templates in Sections tab**
 - [ ] 6  Dashboard: live CRM, quotation, invoice data (not only website) — done in Phase 3 dashboard
 - [ ] 7  Section library: loads, v26 templates (50), save own sections
@@ -26,7 +26,7 @@ Work only in `frontend-v1/`. Every phase: QA on preview → FULL zip in `deploy/
 - [ ] 10 Google (free): Sign-in with Google + Analytics 4 + Search Console data on dashboard
 - [ ] 11 Speed test works (PageSpeed via SSL fix; key optional; clear error)
 - [ ] 12 Health check works (links, SSL, DB, disk, backups)
-- [ ] 13 Header/footer editor loads + saves (auto-updates all pages)
+- [x] 13 Header/footer editor loads + saves (auto-updates all pages)
 - [ ] QA script: every admin route, zero JS errors / failed APIs / stuck loaders → full zip
 
 ## Phase 3 — Advanced UI/UX + features
