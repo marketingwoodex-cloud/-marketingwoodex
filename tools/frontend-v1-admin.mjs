@@ -274,7 +274,7 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
 
   // =================================================================== A4 — forms, leads, pipeline, clients, alerts
   const STAGES = ["new", "contacted", "visit", "quote", "won", "lost"];
-  const SOURCES = { contact: "Contact form", estimator: "Cost estimator", brief: "3D brief", "fitout-hub": "Fit-out quote", "office-fitout": "Office fit-out quote", manual: "Added by team", import: "CSV import" };
+  const SOURCES = { contact: "Contact form", estimator: "Cost estimator", brief: "3D brief", "fitout-hub": "Fit-out quote", "office-fitout": "Office fit-out quote", whatsapp: "WhatsApp widget", manual: "Added by team", import: "CSV import" };
   const CRM = path.join(PRIV, "crm.json"), OUTBOX = path.join(PRIV, "outbox.jsonl");
   const crmCfg = () => Object.assign({ emailOn: false, emailTo: "", smtpHost: "", smtpPort: 465, smtpUser: "", smtpPass: "", smtpFrom: "", waOn: false, waToken: "", waPhoneId: "", waTo: "", waTemplate: "", waLang: "en", tsSite: "", tsSecret: "" }, jr(CRM, {}));
   const SECRETS = ["smtpPass", "waToken", "tsSecret"];
@@ -309,10 +309,16 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
   async function formsApi(req, inp) {
     const c = crmCfg();
     if (inp.action === "config") return { ok: true, turnstile: c.tsSite || "" };
+    if (inp.action === "wa_click") {
+      const f = path.join(PRIV, "wa-stats.json"), st = jr(f, {}), d = new Date().toISOString().slice(0, 10);
+      st.days = st.days || {}; st.days[d] = (st.days[d] || 0) + 1;
+      for (const [k, v] of [["pages", String(inp.page || "/").replace(/[^a-z0-9/_-]/gi, "").slice(0, 120) || "/"], ["services", String(inp.service || "").replace(/[^\w &/-]/g, "").slice(0, 60)]]) { st[k] = st[k] || {}; if (v && (st[k][v] || Object.keys(st[k]).length < 300)) st[k][v] = (st[k][v] || 0) + 1; }
+      jw(f, st); return { ok: true };
+    }
     const ip = req.socket.remoteAddress || "";
     if (clip(inp._hp) || clip(inp.company_hp)) return { ok: true, id: 0 }; // bot: pretend success
     const h = (formHits.get(ip) || []).filter((t) => Date.now() - t < 600000); if (h.length >= 5) throw new Fail("Too many enquiries from this connection. Please WhatsApp us instead.", 429); h.push(Date.now()); formHits.set(ip, h);
-    if (c.tsSecret) {
+    if (c.tsSecret && inp.form !== "whatsapp") {
       const tok = clip(inp["cf-turnstile-response"] || inp.turnstile, 2048); if (!tok) throw new Fail("Please complete the spam check", 400);
       try { const r = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", { method: "POST", body: new URLSearchParams({ secret: c.tsSecret, response: tok, remoteip: ip }), signal: AbortSignal.timeout(6000) }); const j = await r.json(); if (!j.success) throw new Fail("Spam check failed — please try again", 400); }
       catch (e) { if (e instanceof Fail) throw e; /* Cloudflare unreachable: accept rather than lose the lead */ }

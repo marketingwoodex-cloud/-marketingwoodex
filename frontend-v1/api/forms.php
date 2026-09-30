@@ -38,6 +38,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') out(['ok' => true, 'turnstile' => crm_
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') fail('POST required', 405);
 $raw = (string)file_get_contents('php://input');
 $in = json_decode($raw, true); if (!is_array($in)) $in = $_POST;
+// Phase 8 — WhatsApp widget click counter (no personal data): {days:{Y-m-d:n}, pages:{path:n}, services:{name:n}}
+if (($in['action'] ?? '') === 'wa_click') {
+    $f = PRIVATE_DIR . '/wa-stats.json'; $fp = fopen($f . '.lock', 'c'); flock($fp, LOCK_EX);
+    $st = is_file($f) ? (json_decode((string)file_get_contents($f), true) ?: []) : []; $d = date('Y-m-d');
+    $st['days'][$d] = (int)($st['days'][$d] ?? 0) + 1; krsort($st['days']); $st['days'] = array_slice($st['days'], 0, 120, true);
+    foreach (['pages' => substr(preg_replace('~[^a-z0-9/_-]~i', '', (string)($in['page'] ?? '/')), 0, 120) ?: '/', 'services' => substr(preg_replace('~[^\w &/-]~u', '', (string)($in['service'] ?? '')), 0, 60)] as $k => $v)
+        if ($v !== '' && (isset($st[$k][$v]) || count($st[$k] ?? []) < 300)) $st[$k][$v] = (int)($st[$k][$v] ?? 0) + 1;
+    file_put_contents($f, json_encode($st), LOCK_EX); flock($fp, LOCK_UN); out(['ok' => true]);
+}
 
 try {
     if (clip($in['_hp'] ?? '') !== '' || clip($in['company_hp'] ?? '') !== '') out(['ok' => true, 'id' => 0]); // bot: pretend success
@@ -48,7 +57,7 @@ try {
     if (!$t || time() - (int)$t['t'] >= 600) q('REPLACE INTO wx_throttle (ip,n,t) VALUES (?,1,?)', [$key, time()]); else q('UPDATE wx_throttle SET n=n+1 WHERE ip=?', [$key]);
 
     $cfg = crm_cfg();
-    if ($cfg['tsSecret'] !== '') {
+    if ($cfg['tsSecret'] !== '' && ($in['form'] ?? '') !== 'whatsapp') { // the WhatsApp widget has no Turnstile box (honeypot + rate limit still apply)
         $tok = clip($in['cf-turnstile-response'] ?? ($in['turnstile'] ?? ''), 2048); if ($tok === '') fail('Please complete the spam check');
         $ch = curl_init('https://challenges.cloudflare.com/turnstile/v0/siteverify');
         curl_setopt_array($ch, [CURLOPT_POST => true, CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 6, CURLOPT_POSTFIELDS => http_build_query(['secret' => $cfg['tsSecret'], 'response' => $tok, 'remoteip' => ip()])]);
