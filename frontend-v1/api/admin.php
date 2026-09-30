@@ -225,7 +225,31 @@ if ($action !== "setup" && $action !== "status") { try { cms_tick(); } catch (Th
 switch ($action) {
     case 'status':
         $set = is_file(DB_FILE);
+        if ($set) { $dbOk = true; try { db(); } catch (Throwable $e) { $dbOk = false; }
+            if (!$dbOk) out(['ok' => true, 'needsSetup' => false, 'dbError' => true, 'driver' => 'mysql', 'builderLocked' => !empty(jread(BCONFIG)['password_hash']), 'user' => null]); }
         out(['ok' => true, 'needsSetup' => !$set, 'driver' => 'mysql', 'builderLocked' => !empty(jread(BCONFIG)['password_hash']), 'user' => $set && ($u = current_user()) ? pub($u) : null]);
+
+    /* P15: reconnect the database (new Hostinger DB/user/password). Proof of ownership = builder password.
+       Only allowed while the saved connection is broken. Keeps existing tables; creates missing ones. */
+    case 'db_reconnect':
+        throttle();
+        $bc = jread(BCONFIG);
+        if (empty($bc['password_hash']) || !password_verify((string)($in['builderPassword'] ?? ''), $bc['password_hash'])) { throttle(true); usleep(400000); fail('The builder password is wrong', 401); }
+        if (is_file(DB_FILE)) { $works = false; try { connect(jread(DB_FILE)); $works = true; } catch (Throwable $e) {} if ($works) fail('The database connection already works. Please sign in normally.', 409); }
+        $c = ['host' => trim((string)($in['dbHost'] ?? 'localhost')) ?: 'localhost', 'name' => trim((string)($in['dbName'] ?? '')), 'user' => trim((string)($in['dbUser'] ?? '')), 'pass' => (string)($in['dbPass'] ?? '')];
+        if (!$c['name'] || !$c['user']) fail('Enter the database name and user');
+        try { $pdo = connect($c); } catch (Throwable $e) { fail('Could not connect. Check the name, user and password in hPanel → Databases (they start with u128159657_).'); }
+        migrate($pdo);
+        $n = (int)$pdo->query('SELECT COUNT(*) FROM wx_users')->fetchColumn();
+        if ($n === 0) {
+            $name = trim((string)($in['name'] ?? '')); $email = strtolower(trim((string)($in['email'] ?? ''))); $pw = (string)($in['password'] ?? '');
+            if (!$name || !filter_var($email, FILTER_VALIDATE_EMAIL)) out(['ok' => false, 'needsOwner' => true, 'error' => 'This database is empty. Enter your name, email and a new password to create the owner account.'], 400);
+            valid_pw($pw);
+            $pdo->prepare('INSERT INTO wx_users (name,email,role,pass_hash,created_at) VALUES (?,?,?,?,?)')->execute([$name, $email, 'owner', password_hash($pw, PASSWORD_DEFAULT), now()]);
+        }
+        jwrite(DB_FILE, $c);
+        out(['ok' => true, 'users' => max($n, 1), 'fresh' => $n === 0]);
+
 
     case 'setup':
         if (is_file(DB_FILE)) fail('Already set up', 403);
