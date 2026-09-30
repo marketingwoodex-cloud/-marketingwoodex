@@ -1011,6 +1011,41 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
     handover: { on: true, subject: "Your project {project} is ready", tpl: "", text: ntMsg("{project} is complete and ready for handover. Thank you!", "{project} مکمل ہو گیا ہے اور حوالگی کے لیے تیار ہے۔ شکریہ!") } } };
   const ntCfg = () => { const c = Object.assign({}, NT_DEF, jr(NTF, {})); c.ev = Object.assign({}, NT_DEF.ev, c.ev || {}); for (const k in NT_DEF.ev) c.ev[k] = Object.assign({}, NT_DEF.ev[k], c.ev[k] || {}); return c; };
   const ntLog = [];
+  // ---- Phase 13 mirror: SEO manager (same actions as api/seo-lib.php; no AI in preview)
+  const SEOF = path.join(PRIV, "seo.json"), SEO_SCH = ["LocalBusiness", "Service", "Article", "FAQPage", "BreadcrumbList"];
+  const seoData = () => { const d = jr(SEOF, {}); d.pages = d.pages || {}; return d; };
+  const seoTypes = (h) => { const t = []; h = h.replace(/<script type="application\/ld\+json" id="wx-seo-schema">[\s\S]*?<\/script>/i, ""); for (const m of h.matchAll(/<script[^>]+application\/ld\+json[^>]*>([\s\S]*?)<\/script>/gi)) { try { (function w(o) { if (!o || typeof o !== "object") return; if (o["@type"]) [].concat(o["@type"]).forEach((x) => t.push(String(x))); Object.values(o).forEach(w); })(JSON.parse(m[1])); } catch {} } return [...new Set(t)]; };
+  const seoFaq = (h) => [...h.matchAll(/<details\b[^>]*>\s*<summary\b[^>]*>([\s\S]*?)<\/summary>([\s\S]*?)<\/details>/gi)].map((m) => ({ "@type": "Question", name: m[1].replace(/<[^>]+>/g, "").trim(), acceptedAnswer: { "@type": "Answer", text: m[2].replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim() } })).filter((x) => x.name && x.acceptedAnswer.text).slice(0, 20);
+  async function p13(action, inp, need, db, ip) {
+    if (!action.startsWith("seo_")) return null;
+    const ED = ["owner", "admin", "editor"];
+    switch (action) {
+      case "seo_list": { need(ED); const sm = fs.existsSync(path.join(ROOT, "sitemap.xml")) ? (fs.readFileSync(path.join(ROOT, "sitemap.xml"), "utf8").match(/<loc>/g) || []).length : 0; const hl = jr(path.join(PRIV, "health.json"), {});
+        return { ok: true, pages: seoData().pages, robots: fs.existsSync(path.join(ROOT, "robots.txt")) ? fs.readFileSync(path.join(ROOT, "robots.txt"), "utf8") : "", sitemap: sm, scanAt: hl.scan ? hl.scan.at : null, broken: hl.scan ? (hl.scan.issues || []).filter((x) => x.type === "link").length : 0, schemas: SEO_SCH, aiReady: false }; }
+      case "seo_page": { need(ED); const rel = relOk(inp.path), h = fs.readFileSync(path.join(ROOT, rel), "utf8"); const m = h.match(/<script type="application\/ld\+json" id="wx-seo-schema">([\s\S]*?)<\/script>/i); let mine = []; try { mine = m ? JSON.parse(m[1])["@graph"].map((x) => x["@type"]) : []; } catch {}
+        return { ok: true, existing: seoTypes(h), managed: mine, faq: seoFaq(h).length, seo: seoData().pages[rel] || null }; }
+      case "seo_save": { const u = need(ED), rel = relOk(inp.path), d = seoData(), p = d.pages[rel] || {}; p.kw = String(inp.kw || "").trim().slice(0, 120); p.related = (inp.related || []).map((x) => String(x).trim()).filter(Boolean).slice(0, 4);
+        for (const k of ["seo", "read"]) if (inp[k] != null) p[k] = Math.max(0, Math.min(100, +inp[k] | 0));
+        let res = null; if (Array.isArray(inp.schema)) { p.schema = SEO_SCH.filter((t) => inp.schema.includes(t)); backupPage(rel); const abs = path.join(ROOT, rel); let h = fs.readFileSync(abs, "utf8"); const have = seoTypes(h), base = "https://woodex.com.pk", url = base + urlOf(rel), g = [], added = [];
+          const title = ((h.match(/<title>([\s\S]*?)<\/title>/i) || [])[1] || "").trim(), h1 = ((h.match(/<h1\b[^>]*>([\s\S]*?)<\/h1>/i) || [])[1] || "").replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim(), desc = ((h.match(/<meta name="description" content="([^"]*)"/i) || [])[1] || "");
+          for (const t of p.schema) { if (have.includes(t)) continue;
+            if (t === "LocalBusiness") g.push({ "@type": "LocalBusiness", "@id": base + "/#business", name: "Woodex Interior", url: base + "/", telephone: "+92 322 4000768", address: { "@type": "PostalAddress", streetAddress: "M-71, Zainab Tower, Model Town Link Road, Lahore", addressLocality: "Lahore", addressCountry: "PK" } });
+            if (t === "Service") g.push({ "@type": "Service", name: h1 || title, description: desc, url, areaServed: "Pakistan", provider: { "@id": base + "/#business", "@type": "LocalBusiness", name: "Woodex Interior" } });
+            if (t === "Article") g.push({ "@type": "Article", headline: (h1 || title).slice(0, 110), description: desc, mainEntityOfPage: url, author: { "@type": "Organization", name: "Woodex Interior" } });
+            if (t === "FAQPage") { const f = seoFaq(h); if (!f.length) continue; g.push({ "@type": "FAQPage", mainEntity: f }); }
+            if (t === "BreadcrumbList") { const parts = urlOf(rel).split("/").filter(Boolean); if (!parts.length) continue; let acc = ""; g.push({ "@type": "BreadcrumbList", itemListElement: [{ "@type": "ListItem", position: 1, name: "Home", item: base + "/" }].concat(parts.map((x, k) => { acc += "/" + x; return { "@type": "ListItem", position: k + 2, name: k === parts.length - 1 && h1 ? h1 : x.replace(/-/g, " "), item: base + acc + "/" }; })) }); }
+            added.push(t); }
+          h = h.replace(/\s*<script type="application\/ld\+json" id="wx-seo-schema">[\s\S]*?<\/script>/i, "");
+          if (g.length) h = h.replace(/<\/head>/i, () => '<script type="application/ld+json" id="wx-seo-schema">' + JSON.stringify({ "@context": "https://schema.org", "@graph": g }).replace(/</g, "\\u003c") + "</script>\n</head>");
+          fs.writeFileSync(abs, h); res = { added, existing: have }; }
+        p.t = now(); d.pages[rel] = p; jw(SEOF, d); log(db, u, "seo.save", rel, ip); return { ok: true, page: p, schema: res }; }
+      case "seo_scores": { need(ED); const d = seoData(); for (const [rel, s] of Object.entries(inp.scores || {})) d.pages[rel] = Object.assign(d.pages[rel] || {}, { seo: +s.seo | 0, read: +s.read | 0 }); jw(SEOF, d); return { ok: true }; }
+      case "seo_ai": need(ED); return { ok: false, error: "Add an API key in Blog & insights → AI settings (the preview has no AI)" };
+      case "seo_robots_save": { need(["owner", "admin"]); const t = String(inp.text || "").replace(/\r/g, ""); if (/^\s*Disallow:\s*\/\s*$/mi.test(t)) return { ok: false, error: "This would block Google from the whole site (Disallow: /). Remove that line." }; fs.writeFileSync(path.join(ROOT, "robots.txt"), t.trimEnd() + "\n"); return { ok: true }; }
+      case "seo_sitemap": { need(ED); publishRules(); return { ok: true, count: (fs.readFileSync(path.join(ROOT, "sitemap.xml"), "utf8").match(/<loc>/g) || []).length }; }
+    }
+    return null;
+  }
   async function p12(action, inp, need, db, ip) {
     if (!action.startsWith("notify_")) return null;
     const done = (x) => x;
@@ -1211,7 +1246,7 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
         return done({ ok: true, rows: all.slice((page - 1) * per, page * per).map(({ user_name, action, target, ip, created_at }) => ({ user_name, action, target, ip, created_at })), total: all.length, per, page });
       }
       default: {
-        const r = (await a2(action, inp, need, db, ip)) || (await a4(action, inp, need, db, ip)) || a5(action, inp, need, db, ip) || (await a6(action, inp, need, db, ip)) || (await a7(action, inp, need, db, ip)) || (await a8(action, inp, need, db, ip)) || (await p8(action, inp, need, db, ip, req)) || (await p10(action, inp, need, db, ip, req)) || (await p12(action, inp, need, db, ip)); if (r) return r;
+        const r = (await a2(action, inp, need, db, ip)) || (await a4(action, inp, need, db, ip)) || a5(action, inp, need, db, ip) || (await a6(action, inp, need, db, ip)) || (await a7(action, inp, need, db, ip)) || (await a8(action, inp, need, db, ip)) || (await p8(action, inp, need, db, ip, req)) || (await p10(action, inp, need, db, ip, req)) || (await p12(action, inp, need, db, ip)) || (await p13(action, inp, need, db, ip)); if (r) return r;
         throw new Fail("Unknown action", 404);
       }
     }

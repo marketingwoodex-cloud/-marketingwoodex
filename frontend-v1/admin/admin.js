@@ -69,6 +69,7 @@
     ["global", "Header & footer", "panel-left", "owner,admin"],
     ["redirects", "Redirects", "refresh-cw", "owner,admin"],
     ["media", "Media library", "image", "owner,admin,editor"],
+    ["seo", "SEO", "search", "owner,admin,editor"],
     ["health", "Site health", "heart-pulse", "owner,admin,editor"],
     ["backups", "Backups", "hard-drive", "owner,admin"],
     ["Team"],
