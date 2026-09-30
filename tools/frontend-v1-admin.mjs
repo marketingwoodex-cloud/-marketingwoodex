@@ -129,10 +129,49 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
     return { path: rel, url: urlOf(rel), title, description: desc, canonical: can, ogImage: og, noindex: /noindex/i.test(robots), status: (meta[rel] || {}).status || "published",
       mtime: Math.floor(st.mtimeMs / 1000), size: st.size, words, issues, score: Math.max(0, 100 - issues.length * 12), folder: rel.split("/").length > 2 ? rel.split("/")[0] : "" };
   }
+  // ---- P16 3.8b redirects v2 (mirror of api/redirects-lib.php)
+  const RD_CFG = path.join(PRIV, "redirect-cfg.json"), RD_404 = path.join(PRIV, "r404.json"), RD_PLAN = path.join(ROOT, "api", "redirect-plan.json");
+  const rdCfg = () => Object.assign({ www: true, spam: true, seeded: false }, jr(RD_CFG, {}));
+  const rdOne = (r) => { let type = +r.type || 301; if (![301, 302, 410].includes(type)) type = 301; const match = r.match === "prefix" ? "prefix" : "exact";
+    return { from: "/" + String(r.from || "").replace(/^\/+|\/+$/g, "") + "/", to: type === 410 ? "" : String(r.to || "").trim(), type, match, src: String(r.src || "").trim().slice(0, 60), on: r.on === undefined ? true : !!r.on }; };
+  const rdClean = (rows) => { const list = [], seen = {};
+    for (const r of rows) { if (!r || !String(r.from || "").replace(/[\/ ]/g, "")) continue; const x = rdOne(r);
+      if (!/^\/[a-z0-9/_\-.&]*$/i.test(x.from)) throw new Fail('Old address "' + x.from + '" is not valid (letters, numbers, - _ . / & only)');
+      if (/^\/(admin|api|assets|builder|_private)\//i.test(x.from)) throw new Fail('"' + x.from + '" is a system folder and cannot be redirected');
+      if (x.type !== 410) { if (!x.to) throw new Fail("Choose a new address for " + x.from);
+        if (!/^(https?:\/\/[^\s"<>]+|\/[a-z0-9/_\-.#?=&]*)$/i.test(x.to)) throw new Fail('New address "' + x.to + '" is not valid');
+        if (x.to.replace(/\/+$/, "") === x.from.replace(/\/+$/, "")) throw new Fail("A redirect cannot point to itself (" + x.from + ")"); }
+      const k = (x.from + "|" + x.match).toLowerCase(); if (seen[k]) continue; seen[k] = 1; list.push(x); }
+    return list; };
+  const rdMerge = (cur, add) => { const have = {}; cur.forEach((r) => (have[r.from.toLowerCase()] = 1)); let n = 0;
+    add.forEach((r) => { const x = rdOne(r); if (have[x.from.toLowerCase()]) return; cur.push(x); have[x.from.toLowerCase()] = 1; n++; }); return { list: cur, added: n }; };
+  const rdList = () => { let cur = jr(REDIR, []).map(rdOne); const c = rdCfg();
+    if (!c.seeded) { cur = rdMerge(cur, jr(RD_PLAN, [])).list; jw(REDIR, cur); c.seeded = true; jw(RD_CFG, c); publishRules(); } return cur; };
+  const rdLines = (q) => { const c = rdCfg(), L = [];
+    if (c.www) L.push("# one official address: no www", "RewriteCond %{HTTP_HOST} ^www\\.(.+)$ [NC]", "RewriteRule ^ https://%1%{REQUEST_URI} [R=301,L]");
+    if (c.spam) L.push("# hacked-spam cleanup: tell Google these are gone for good", "RewriteCond %{REQUEST_URI} (casino|gokkasten|gokautomat|blackjack|roulette|free-spins|itm-[0-9]{4,}) [NC]", "RewriteRule ^ - [G,L]", "RewriteCond %{QUERY_STRING} (^|&)(p|page_id|attachment_id|cat)=[0-9]+ [NC]", "RewriteRule ^$ /? [R=301,L]");
+    jr(REDIR, []).map(rdOne).forEach((r) => { if (!r.on) return; const pt = "^" + q(r.from.replace(/^\/+|\/+$/g, "")) + (r.match === "prefix" ? "(/.*)?$" : "/?$");
+      L.push(r.type === 410 ? "RewriteRule " + pt + " - [G,L]" : "RewriteRule " + pt + " " + r.to + " [R=" + r.type + ",L]"); });
+    return L; };
+  const rdExists = (pth) => pth === "/" || fs.existsSync(path.join(ROOT, pth.replace(/\/+$/, ""), "index.html")) || (fs.existsSync(path.join(ROOT, pth)) && fs.statSync(path.join(ROOT, pth)).isFile());
+  const rdTest = (list) => { const from = {}; list.forEach((r) => { if (r.on) from[r.from.toLowerCase()] = r; });
+    return list.map((r, i) => { let st = "ok", msg = r.type === 410 ? "Gone (410)" : "Target page exists";
+      if (!r.on) { st = "off"; msg = "Switched off"; }
+      else if (rdExists(r.from)) { st = "warn"; msg = "A live page exists at this address; the redirect hides it"; }
+      else if (r.type !== 410 && r.to[0] === "/") { const pth = r.to.replace(/[?#].*$/, ""), nx = from[("/" + pth.replace(/^\/+|\/+$/g, "") + "/").toLowerCase()];
+        if (nx) { st = "warn"; msg = "Chain: " + r.to + " redirects again to " + (nx.to || "410") + ". Point it straight to the final page"; }
+        else if (!rdExists(pth)) { st = "bad"; msg = "Target page not found (" + pth + ")"; } }
+      else if (r.type !== 410) msg = "External link (not checked)";
+      return { i, status: st, msg }; }); };
+  const rd404List = () => Object.entries(jr(RD_404, {})).map(([p, v]) => ({ path: p, n: v.n | 0, last: v.last || "", ref: v.ref || "" })).sort((a, b) => b.n - a.n).slice(0, 200);
+  const rd404Log = (p, ref, ipAddr) => { let pth = "/" + String(p || "").replace(/[?#].*$/, "").slice(0, 200).replace(/^\/+|\/+$/g, "") + "/";
+    if (pth === "//" || /^\/(admin|api|assets|builder|_private)\//i.test(pth) || /\.(js|css|map|png|jpe?g|webp|gif|svg|ico|woff2?)\/$/i.test(pth)) return;
+    const d = jr(RD_404, {}); if (!d[pth] && Object.keys(d).length >= 300) { const lo = Object.entries(d).sort((a, b) => a[1].n - b[1].n)[0]; delete d[lo[0]]; }
+    const e = d[pth] || { n: 0 }; e.n++; e.last = new Date().toISOString(); ref = String(ref || "").replace(/[\s"<>]/g, "").slice(0, 200); if (ref && !/localhost|e2b\.app/.test(ref)) e.ref = ref; d[pth] = e; jw(RD_404, d); };
   function publishRules() {
     const meta = jr(PMETA, {}), red = jr(REDIR, []), q = (s) => s.replace(/[.*+?^${}()|[\]\\\/-]/g, "\\$&");
     const lines = ["# BEGIN WOODEX-ADMIN (managed by /admin — do not edit by hand)", "<IfModule mod_rewrite.c>", "RewriteEngine On"];
-    red.forEach((r) => lines.push("RewriteRule ^" + q(r.from.replace(/^\/+|\/+$/g, "")) + "/?$ " + r.to + " [R=301,L]"));
+    rdLines(q).forEach((l) => lines.push(l)); // P16 3.8b
     Object.keys(meta).forEach((rel) => { if (meta[rel].status === "draft") lines.push("RewriteRule ^" + q(rel.replace(/index\.html$/, "")) + "(index\\.html)?$ - [R=404,L]"); });
     lines.push("</IfModule>", "# END WOODEX-ADMIN");
     const ht = path.join(ROOT, ".htaccess"); let cur = fs.existsSync(ht) ? fs.readFileSync(ht, "utf8") : "";
@@ -192,19 +231,18 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
         const f = path.join(bdir(rel), file); if (!fs.existsSync(f)) throw new Fail("Backup not found", 404);
         return { ok: true, html: fs.readFileSync(f, "utf8") };
       }
-      case "redirects": need(["owner", "admin"]); return { ok: true, redirects: jr(REDIR, []) };
+      case "redirects": { need(["owner", "admin"]); const l = rdList(), c = rdCfg(); return { ok: true, redirects: l, cfg: { www: c.www, spam: c.spam }, planCount: jr(RD_PLAN, []).length, test: rdTest(l), missed: Object.keys(jr(RD_404, {})).length }; }
       case "redirects_save": {
-        const u = need(["owner", "admin"]), list = [];
-        for (const r of inp.redirects || []) {
-          const from = "/" + String(r.from || "").replace(/^\/+|\/+$/g, "") + "/", to = String(r.to || "").trim();
-          if (from === "//") continue;
-          if (!/^\/[a-z0-9/_\-.]*$/i.test(from)) throw new Fail('Old address "' + from + '" is not valid');
-          if (!/^(https?:\/\/[^\s"<>]+|\/[a-z0-9/_\-.#?=&]*)$/i.test(to)) throw new Fail('New address "' + to + '" is not valid');
-          if (to.replace(/\/+$/, "") === from.replace(/\/+$/, "")) throw new Fail("A redirect cannot point to itself");
-          list.push({ from, to });
-        }
-        jw(REDIR, list); publishRules(); log(db, u, "redirects.save", list.length + " redirects", ip); return done({ ok: true, redirects: list });
+        const u = need(["owner", "admin"]), list = rdClean(inp.redirects || []);
+        if (inp.cfg && typeof inp.cfg === "object") { const c = rdCfg(); c.www = "www" in inp.cfg ? !!inp.cfg.www : c.www; c.spam = "spam" in inp.cfg ? !!inp.cfg.spam : c.spam; c.seeded = true; jw(RD_CFG, c); }
+        jw(REDIR, list); publishRules(); log(db, u, "redirects.save", list.length + " redirects", ip); return done({ ok: true, redirects: list, test: rdTest(list) });
       }
+      case "redirects_plan": {
+        const u = need(["owner", "admin"]), m = rdMerge(jr(REDIR, []).map(rdOne), jr(RD_PLAN, []));
+        jw(REDIR, m.list); publishRules(); log(db, u, "redirects.save", "loaded plan (+" + m.added + ")", ip); return done({ ok: true, redirects: m.list, added: m.added, test: rdTest(m.list) });
+      }
+      case "r404_list": need(["owner", "admin"]); return { ok: true, rows: rd404List() };
+      case "r404_clear": { need(["owner", "admin"]); const pth = String(inp.path || ""); if (!pth) jw(RD_404, {}); else { const d = jr(RD_404, {}); delete d[pth]; jw(RD_404, d); } return { ok: true, rows: rd404List() }; }
       case "global_menu": {
         const u = need(["owner", "admin"]), d = String(inp.desktop || ""), mob = String(inp.mobile || "");
         if (unsafe(d) || unsafe(mob)) throw new Fail("Scripts are not allowed in the menu");
@@ -1450,11 +1488,14 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
     return { status: 200, html };
   };
   adminApi.chat = chatPublic;
+  adminApi.r404 = (body, ipAddr) => { try { const b = JSON.parse(body || "{}"); rd404Log(b.p, b.r, ipAddr); } catch {} };
   adminApi.forms = formsApi; adminApi.backupFile = backupFile; adminApi.rawAction = rawAction;
   adminApi.publicGuard = function (rel) {
     // preview-only: mimic the managed .htaccess rules (redirects, drafts 404)
-    const url = "/" + rel.replace(/index\.html$/, ""), r = jr(REDIR, []).find((x) => x.from === url || x.from === url + "/");
-    if (r) return { redirect: r.to };
+    const url = "/" + rel.replace(/index\.html$/, ""), u2 = (url.endsWith("/") ? url : url + "/").toLowerCase(), c = rdCfg();
+    if (c.spam && /(casino|gokkasten|gokautomat|blackjack|roulette|free-spins|itm-[0-9]{4,})/i.test(url)) return { gone: true };
+    const r = jr(REDIR, []).map(rdOne).find((x) => x.on && (x.match === "prefix" ? u2.startsWith(x.from.toLowerCase()) : x.from.toLowerCase() === u2));
+    if (r) return r.type === 410 ? { gone: true } : { redirect: r.to, code: r.type };
     const m = jr(PMETA, {})[rel]; if (m && m.status === "draft") return { notFound: true };
     return null;
   };

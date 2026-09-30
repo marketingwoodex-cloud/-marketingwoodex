@@ -328,6 +328,7 @@ http.createServer(async (req, res) => {
       res.writeHead(r.status, { ...cors, ...(r.headers || {}), "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" });
       return res.end(r.body ? JSON.stringify(r.body) : "");
     }
+    if (p === "/api/r404.php") { const ch = []; for await (const c of req) ch.push(c); adminApi.r404(Buffer.concat(ch).toString().slice(0, 2000)); res.writeHead(204); return res.end(); }
     if (p === "/api/chat.php") {
       const chunks = []; for await (const c of req) chunks.push(c);
       let status = 200, out; try { let inp = {}; try { inp = JSON.parse(Buffer.concat(chunks).toString() || "{}"); } catch {} out = adminApi.chat(req, inp); } catch (e) { status = e.code || 500; out = { ok: false, error: e.code ? e.message : "Server error" }; if (!e.code) console.error(e); }
@@ -366,7 +367,8 @@ http.createServer(async (req, res) => {
     if (!/^\/(admin|builder|api|assets)\//.test(p)) {
       const rel = (p.endsWith("/") ? p + "index.html" : /\.[a-z0-9]+$/i.test(p) ? p : p + "/index.html").replace(/^\/+/, "");
       const g = adminApi.publicGuard(rel);
-      if (g && g.redirect) { res.writeHead(301, { Location: g.redirect }); return res.end(); }
+      if (g && g.redirect) { res.writeHead(g.code || 301, { Location: g.redirect }); return res.end(); }
+      if (g && g.gone) { res.writeHead(410, { "Content-Type": "text/plain" }); return res.end("410 Gone"); }
       if (g && g.notFound) { res.writeHead(404, { "Content-Type": MIME[".html"] }); return fs.createReadStream(path.join(ROOT, "404.html")).pipe(res); }
     }
     let file = path.join(ROOT, p);

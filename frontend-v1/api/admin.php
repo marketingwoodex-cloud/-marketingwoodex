@@ -177,7 +177,7 @@ function page_info(string $rel, array $meta): array {
 function publish_rules(): void {
     $meta = jread(PAGES_META); $red = jread(REDIRECTS);
     $lines = ['# BEGIN WOODEX-ADMIN (managed by /admin — do not edit by hand)', '<IfModule mod_rewrite.c>', 'RewriteEngine On'];
-    foreach ($red as $r) $lines[] = 'RewriteRule ^' . preg_quote(trim($r['from'], '/'), '') . '/?$ ' . $r['to'] . ' [R=301,L]';
+    foreach (rd_lines() as $l) $lines[] = $l; // P16 3.8b: www, spam 410, 301/302/410 exact+prefix
     foreach ($meta as $rel => $m) if (($m['status'] ?? '') === 'draft') $lines[] = 'RewriteRule ^' . preg_quote(preg_replace('~index\.html$~', '', $rel), '') . '(index\.html)?$ - [R=404,L]';
     $lines[] = '</IfModule>'; $lines[] = '# END WOODEX-ADMIN';
     $ht = ROOT_DIR . '/.htaccess'; $cur = is_file($ht) ? (string)file_get_contents($ht) : '';
@@ -212,6 +212,7 @@ require __DIR__ . '/notify-lib.php';
 require __DIR__ . '/seo-lib.php';
 require __DIR__ . '/google-data-lib.php';
 require __DIR__ . '/dash-lib.php';
+require __DIR__ . '/redirects-lib.php';
 if (defined('WX_LIB_ONLY')) return; // api/mcp.php reuses the helpers and actions
 
 // ---------- request ----------
@@ -429,19 +430,7 @@ switch ($action) {
         out(['ok' => true, 'html' => file_get_contents($f)]);
 
     // ---------------- A2: redirects
-    case 'redirects':
-        need(['owner', 'admin']); out(['ok' => true, 'redirects' => jread(REDIRECTS)]);
-    case 'redirects_save':
-        $u = need(['owner', 'admin']); $list = [];
-        foreach ((array)($in['redirects'] ?? []) as $r) {
-            $from = '/' . trim((string)($r['from'] ?? ''), '/') . '/'; $to = trim((string)($r['to'] ?? ''));
-            if ($from === '//' ) continue;
-            if (!preg_match('~^/[a-z0-9/_\-.]*$~i', $from)) fail('Old address "' . $from . '" is not valid');
-            if (!preg_match('~^(https?://[^\s"<>]+|/[a-z0-9/_\-.#?=&]*)$~i', $to)) fail('New address "' . $to . '" is not valid');
-            if (rtrim($to, '/') === rtrim($from, '/')) fail('A redirect cannot point to itself');
-            $list[] = ['from' => $from, 'to' => $to];
-        }
-        jwrite(REDIRECTS, $list); publish_rules(); log_act($u, 'redirects.save', count($list) . ' redirects'); out(['ok' => true, 'redirects' => $list]);
+    // P16 3.8b: 'redirects' / 'redirects_save' now live in redirects-lib.php (redirects_actions)
 
     // ---------------- A2: global parts (header menu / mobile menu / footer)
     case 'global_menu':
@@ -514,6 +503,6 @@ switch ($action) {
         if (!$dry && $total) log_act($u, 'global.replace', '"' . mb_substr($find, 0, 60) . '" → "' . mb_substr($rep, 0, 60) . '" (' . count($res) . ' pages)');
         out(['ok' => true, 'pages' => $res, 'total' => $total, 'dry' => $dry]);
 
-    default: if (!crm_actions($action, $in) && !sales_actions($action, $in) && !content_actions($action, $in) && !media_actions($action, $in) && !security_actions($action, $in) && !gdata_actions($action, $in) && !dash_actions($action, $in) && !p8_actions($action, $in) && !chat_actions($action, $in) && !notify_actions($action, $in) && !seo_actions($action, $in)) fail('Unknown action', 404);
+    default: if (!crm_actions($action, $in) && !sales_actions($action, $in) && !content_actions($action, $in) && !media_actions($action, $in) && !security_actions($action, $in) && !gdata_actions($action, $in) && !dash_actions($action, $in) && !p8_actions($action, $in) && !chat_actions($action, $in) && !notify_actions($action, $in) && !seo_actions($action, $in) && !redirects_actions($action, $in)) fail('Unknown action', 404);
 }
 } catch (PDOException $e) { error_log('admin.php: ' . $e->getMessage()); fail('Database error', 500); }

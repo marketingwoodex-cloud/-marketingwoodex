@@ -73,6 +73,6 @@ UI libraries converted to Woodex blocks (no Tailwind) · ~40 new blocks · ONE f
 - [x] 3.6 Inbox redesign (contacts | thread | lead panel)
 - [x] 3.7 Users: All users · Profile · Activity feed
 - [x] 3.8 Page builder: ~40 new blocks from Flowbite / Meraki UI designs (MIT) rebuilt in v1.css + Charts.css stats; new "UI kit" category
-- [ ] 3.8b Redirects (see REDIRECT-PLAN.md): www→non-www site-wide 301; 24 verified 301s (Google index + old WP menu + user table); 410 Gone for hacked spam (casino/Lego/Hello world); upgrade Admin Redirects manager (301/302/410, patterns, www switch, preloaded plan, target test + loop check, 404 monitor with one-click redirect, CSV, hit counts); active in final zip
+- [x] 3.8b Redirects (see REDIRECT-PLAN.md): www→non-www site-wide 301; 24 verified 301s (Google index + old WP menu + user table); 410 Gone for hacked spam (casino/Lego/Hello world); upgrade Admin Redirects manager (301/302/410, patterns, www switch, preloaded plan, target test + loop check, 404 monitor with one-click redirect, CSV, hit counts); active in final zip
 - [ ] 3.9 Go-live audit: every admin route (click/forms/errors), every API action (PHP lint + mirror tests), every public page (links, mobile, Lighthouse key pages), fix all
 - [ ] 3.10 FINAL full zip `deploy/p16/woodex-live-p16-full.zip` + README + CHANGES
