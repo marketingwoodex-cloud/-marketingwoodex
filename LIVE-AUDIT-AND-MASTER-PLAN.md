@@ -112,3 +112,34 @@ Each phase follows the same routine: questions, then build, then test, then your
 1. Built and tested in `frontend-v1/` (automated browser tests on desktop and mobile).
 2. A new `deploy/woodex-live-vX.zip`, plus a short list of the files that changed.
 3. Upload to `public_html`, extract, and tick **Overwrite**. The admin database and `_private` data are kept.
+
+## 6. Next plan: owner requests added on 30 Sep 2026 (after Phase 6)
+
+### P9: Quotation system v2
+- Single-page PDF: fixed header and footer, with the body in between. When the items table grows, it continues on page 2, 3 and so on, repeating the header and footer.
+- A scope-of-work template for every service: 3D visualization, interior design (residential and commercial), renovation, turnkey, fit-out, architecture, and more.
+- Decoration item templates: typing "paint" suggests paint work lines. The same goes for wood, glass, ceiling, flooring, electrical, plumbing and others.
+- Send the quote by email or WhatsApp.
+
+### P10: Live chat agent (whole website)
+- A chat widget on every page, answering from the site's complete information (services, prices, process, FAQs, contact details).
+- Quote replies: answers any question about a Woodex quotation. It checks the client's phone and quote number first.
+- Hands over to a human and saves each chat as a lead.
+
+### P11: WhatsApp agent training
+- The same knowledge base as live chat, plus an admin screen to train it (Q&A pairs, tone, and topics it must not answer).
+
+### P12: Client integration updates
+- Automatic WhatsApp and email updates to clients at each stage (quote sent, site visit, work started, handover).
+
+### P13: Complete SEO system (Yoast-style), page by page
+- For every page, project, insight and new page: focus keyword, SEO score, readability, title and description preview, schema, OG image, canonical, noindex.
+- Also: sitemap, redirects and broken-link checks.
+
+### P14: Insights blog templates + AI SEO writer
+- Article templates, an AI writer that aims for a good SEO score, and blocks: before/after image comparison, gallery, quote, table, FAQ, CTA.
+
+### P15: Responsive + PageSpeed
+- Check the full site on phone, tablet and desktop, fix what breaks, and aim for 90+ PageSpeed on mobile and desktop.
+
+(Section import and v26 templates were done in Phase 5; "use a section block on any page" is covered by the builder's global sections.)
