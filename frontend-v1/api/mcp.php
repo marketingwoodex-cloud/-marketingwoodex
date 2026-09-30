@@ -90,8 +90,8 @@ function run_tool(callable $fn, string $tool, callable $post): void {
         header('Content-Type: application/json; charset=utf-8'); http_response_code(200);
         if (!is_array($r)) { mcp_log_call($tool, false, 'server error'); echo json_encode(['jsonrpc' => '2.0', 'id' => $rid, 'result' => mcp_text('Server error while running ' . $tool, true)]); return; }
         if (empty($r['ok'])) { mcp_log_call($tool, false, (string)($r['error'] ?? '')); echo json_encode(['jsonrpc' => '2.0', 'id' => $rid, 'result' => mcp_text((string)($r['error'] ?? 'Failed'), true)]); return; }
-        $data = $post($r); mcp_log_call($tool, true);
-        echo json_encode(['jsonrpc' => '2.0', 'id' => $rid, 'result' => mcp_text($data)], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        $data = $post($r); mcp_log_call($tool, !is_string($data));
+        echo json_encode(['jsonrpc' => '2.0', 'id' => $rid, 'result' => mcp_text($data, is_string($data))], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
     });
     try { $fn(); } catch (Throwable $e) { error_log('mcp: ' . $e->getMessage()); out(['ok' => false, 'error' => 'Server error']); }
     out(['ok' => false, 'error' => 'No result']);

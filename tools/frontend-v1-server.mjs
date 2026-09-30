@@ -316,6 +316,16 @@ http.createServer(async (req, res) => {
       return res.end(JSON.stringify(out));
     }
 
+    if (p === "/api/mcp.php") {
+      const cors = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Methods": "POST, OPTIONS", "Access-Control-Allow-Headers": "Authorization, Content-Type, Accept, Mcp-Session-Id, MCP-Protocol-Version" };
+      if (req.method === "OPTIONS") { res.writeHead(204, cors); return res.end(); }
+      if (req.method !== "POST") { res.writeHead(405, { ...cors, Allow: "POST", "Content-Type": "application/json" }); return res.end(JSON.stringify({ error: "This is the Woodex MCP endpoint. Connect with an MCP client using POST." })); }
+      const chunks = []; for await (const c of req) chunks.push(c);
+      let body = null; try { body = JSON.parse(Buffer.concat(chunks).toString()); } catch {}
+      let r; try { r = await adminApi.mcp(req, body); } catch (e) { console.error(e); r = { status: 500, body: { jsonrpc: "2.0", id: null, error: { code: -32603, message: "Server error" } } }; }
+      res.writeHead(r.status, { ...cors, ...(r.headers || {}), "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" });
+      return res.end(r.body ? JSON.stringify(r.body) : "");
+    }
     if (p === "/api/forms.php") {
       const chunks = []; for await (const c of req) chunks.push(c);
       let status = 200, out;

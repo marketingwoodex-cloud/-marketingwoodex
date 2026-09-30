@@ -39,6 +39,7 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
   const validPw = (p) => { if (String(p || "").length < 8) throw new Fail("Password must be at least 8 characters"); };
 
   function current(db, req) {
+    if (req && req._wxAs) return (db && db.users.find((x) => x.id === req._wxAs && x.active)) || null; // MCP bearer-token user
     const m = /^(\d+)\.(\d{10})\.([a-f0-9]{16})\.([a-f0-9]{64})$/.exec(String(req.headers["x-wx-adm"] || ""));
     if (!db || !m || +m[2] < Date.now() / 1000) return null;
     const u = db.users.find((x) => x.id === +m[1] && x.active);
@@ -879,6 +880,68 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
   const TRK_DEF = { ga4: "", gtm: "", pixel: "", gsc: "" };
   const setLoad = () => { const x = jr(SETF, {}); return { general: { ...GEN_DEF, ...(x.general || {}) }, generalApplied: { ...GEN_DEF, ...(x.generalApplied || {}) }, tracking: { ...TRK_DEF, ...(x.tracking || {}) }, trackingApplied: x.trackingApplied || null }; };
   const imgOk = (u) => typeof u === "string" && /^\/assets\/(img|uploads)\/[a-z0-9/_.-]+\.(png|jpe?g|webp|svg|gif|ico)$/i.test(u) && !u.includes("..");
+  // ---- Phase 8: Google sign-in (existing users only), AI Agent (MCP) tokens, WhatsApp stats
+  const GFILE = path.join(PRIV, "google.json"), MFILE = path.join(PRIV, "mcp.json");
+  const gCid = () => String(jr(GFILE, {}).clientId || "").trim();
+  const mLoad = () => { const m = jr(MFILE, {}); m.tokens = m.tokens || []; m.log = m.log || []; return m; };
+  const mPub = (t) => ({ id: t.id, name: t.name, user: t.user_name || "", hint: t.hint, created_at: t.created_at, last_used: t.last_used || null, uses: t.uses || 0 });
+  async function gVerify(cred) {
+    const cid = gCid(); if (!cid) throw new Fail("Google sign-in is not set up yet");
+    if (!/^[\w-]+\.[\w-]+\.[\w-]+$/.test(String(cred || ""))) throw new Fail("Invalid Google response");
+    let t = {}; try { t = await (await fetch("https://oauth2.googleapis.com/tokeninfo?id_token=" + encodeURIComponent(cred), { signal: AbortSignal.timeout(10000) })).json(); } catch {}
+    if (!t.sub || t.aud !== cid || !["accounts.google.com", "https://accounts.google.com"].includes(t.iss) || +t.exp < Date.now() / 1000) throw new Fail("Google sign-in could not be verified", 401);
+    if (String(t.email_verified) !== "true") throw new Fail("Your Google email is not verified", 401);
+    return { sub: String(t.sub), email: String(t.email || "").toLowerCase() };
+  }
+  async function p8(action, inp, need, db, ip, req) {
+    if (!/^(google_|mcp_|wa_stats$)/.test(action)) return null;
+    const OA = ["owner", "admin"], done = (o) => { save(db); return o; };
+    switch (action) {
+      case "google_cfg": return { ok: true, clientId: gCid() };
+      case "google_login": {
+        const g = await gVerify(inp.credential);
+        const u = db.users.find((x) => x.google_sub === g.sub) || db.users.find((x) => g.email && x.email === g.email);
+        if (!u || !u.active) { log(db, null, "login.google_denied", g.email, ip); save(db); throw new Fail("This Google account is not an Admin user. Ask the owner to add " + (g.email || "your email") + " in Users.", 403); }
+        if (!u.google_sub) { u.google_sub = g.sub; u.google_email = g.email; }
+        if (u.totp_on) { const exp = Math.floor(Date.now() / 1000) + 300; save(db); return { ok: true, need2fa: true, ticket: u.id + "." + exp + "." + hmac("2fa|" + u.id + "|" + exp + "|" + u.pw_ver) }; }
+        return done(finishLogin(db, u, req, ip));
+      }
+      case "google_me": { const u = need(); return { ok: true, clientId: gCid(), linked: !!u.google_sub, email: u.google_email || "" }; }
+      case "google_link": {
+        const u = need(), g = await gVerify(inp.credential);
+        if (db.users.some((x) => x.id !== u.id && x.google_sub === g.sub)) throw new Fail("That Google account is linked to another user");
+        u.google_sub = g.sub; u.google_email = g.email; log(db, u, "google.link", g.email, ip); return done({ ok: true, linked: true, email: g.email });
+      }
+      case "google_unlink": { const u = need(); delete u.google_sub; delete u.google_email; log(db, u, "google.unlink", "", ip); return done({ ok: true, linked: false }); }
+      case "google_save": {
+        const u = need(["owner"]), cid = String(inp.clientId || "").trim();
+        if (cid && !/^[\w-]+\.apps\.googleusercontent\.com$/.test(cid)) throw new Fail("The client ID should end with .apps.googleusercontent.com");
+        jw(GFILE, { clientId: cid }); log(db, u, "google.settings", cid ? "on" : "off", ip); return done({ ok: true, clientId: cid });
+      }
+      case "mcp_tokens": { need(OA); return { ok: true, tokens: mLoad().tokens.slice().reverse().map(mPub) }; }
+      case "mcp_token_new": {
+        const u = need(OA), m = mLoad(), name = clip(inp.name, 60) || "AI agent";
+        if (m.tokens.length >= 20) throw new Fail("Maximum 20 tokens. Revoke an old one first.");
+        const raw = "wxmcp_" + crypto.randomBytes(24).toString("hex");
+        m.tokens.push({ id: crypto.randomBytes(6).toString("hex"), name, hash: sha(raw), hint: raw.slice(-4), user_id: u.id, user_name: u.name, created_at: now(), last_used: null, uses: 0 });
+        jw(MFILE, m); log(db, u, "mcp.token_new", name, ip); return done({ ok: true, token: raw, tokens: m.tokens.slice().reverse().map(mPub) });
+      }
+      case "mcp_token_revoke": {
+        const u = need(OA), m = mLoad(), n = m.tokens.length; m.tokens = m.tokens.filter((t) => t.id !== String(inp.id || ""));
+        if (m.tokens.length === n) throw new Fail("Token not found", 404);
+        jw(MFILE, m); log(db, u, "mcp.token_revoke", String(inp.id), ip); return done({ ok: true, tokens: m.tokens.slice().reverse().map(mPub) });
+      }
+      case "mcp_log": { need(OA); return { ok: true, log: mLoad().log.slice(-100).reverse() }; }
+      case "wa_stats": {
+        need(); const w = jr(path.join(PRIV, "wa-stats.json"), {}), days = w.days || {}, keys = Object.keys(days).sort();
+        const since = (n) => new Date(Date.now() - (n - 1) * 864e5).toISOString().slice(0, 10), sum = (n) => keys.filter((k) => k >= since(n)).reduce((a, k) => a + days[k], 0);
+        const top = (o) => Object.fromEntries(Object.entries(o || {}).sort((a, b) => b[1] - a[1]).slice(0, 10));
+        const leads30 = (db.leads || []).filter((l) => l.source === "whatsapp" && l.created_at >= since(30)).length;
+        return { ok: true, today: days[new Date().toISOString().slice(0, 10)] || 0, d7: sum(7), d30: sum(30), leads30, days: Object.fromEntries(keys.slice(-30).map((k) => [k, days[k]])), pages: top(w.pages), services: top(w.services) };
+      }
+    }
+    return null;
+  }
   async function a8(action, inp, need, db, ip) {
     if (!/^set_/.test(action)) return null;
     const OA = ["owner", "admin"];
@@ -1027,7 +1090,7 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
         return done({ ok: true, rows: all.slice((page - 1) * per, page * per).map(({ user_name, action, target, ip, created_at }) => ({ user_name, action, target, ip, created_at })), total: all.length, per, page });
       }
       default: {
-        const r = (await a2(action, inp, need, db, ip)) || (await a4(action, inp, need, db, ip)) || a5(action, inp, need, db, ip) || (await a6(action, inp, need, db, ip)) || (await a7(action, inp, need, db, ip)) || (await a8(action, inp, need, db, ip)); if (r) return r;
+        const r = (await a2(action, inp, need, db, ip)) || (await a4(action, inp, need, db, ip)) || a5(action, inp, need, db, ip) || (await a6(action, inp, need, db, ip)) || (await a7(action, inp, need, db, ip)) || (await a8(action, inp, need, db, ip)) || (await p8(action, inp, need, db, ip, req)); if (r) return r;
         throw new Fail("Unknown action", 404);
       }
     }
@@ -1041,6 +1104,78 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
     if (!crypto.timingSafeEqual(Buffer.from(good), Buffer.from(m[4]))) return false;
     const db = load(), u = db && db.users.find((x) => x.id === +m[2]);
     return !!(u && u.active && canBuild(u) && (u.sessions || []).some((x) => x.sid === m[3] && x.exp > Date.now() / 1000));
+  };
+  /** MCP (Streamable HTTP, JSON responses) — mirror of api/mcp.php. Returns {status, body|null, headers}. */
+  adminApi.mcp = async function (req, body) {
+    const H = { "WWW-Authenticate": 'Bearer realm="woodex-mcp"' }, rid = body && typeof body === "object" && !Array.isArray(body) ? (body.id ?? null) : null;
+    const rpc = (result, error, status = 200, headers) => ({ status, headers, body: { jsonrpc: "2.0", id: rid, ...(error ? { error } : { result }) } });
+    const text = (d, isError = false) => ({ content: [{ type: "text", text: typeof d === "string" ? d : JSON.stringify(d, null, 2) }], isError });
+    const m0 = /^Bearer\s+(\S+)$/i.exec(String(req.headers.authorization || "").trim()), raw = m0 ? m0[1] : new URL(req.url, "http://x").searchParams.get("key") || "";
+    const M = mLoad(), T = raw && M.tokens.find((t) => t.hash === sha(raw));
+    if (!T) return rpc(null, { code: -32001, message: "Missing or invalid token. Create one in Woodex Admin → Settings → AI Agent." }, 401, H);
+    const db0 = load(), user = db0 && db0.users.find((x) => x.id === T.user_id && x.active);
+    if (!user) return rpc(null, { code: -32001, message: "The Admin user of this token is inactive" }, 401, H);
+    if (!body || Array.isArray(body) || body.jsonrpc !== "2.0" || !body.method) return rpc(null, { code: Array.isArray(body) ? -32600 : -32700, message: Array.isArray(body) ? "Batch requests are not supported" : "Invalid JSON-RPC request" }, 400);
+    if (!("id" in body)) return { status: 202, body: null };
+    const logCall = (tool, ok, note = "") => { const m = mLoad(); const t = m.tokens.find((x) => x.id === T.id); if (t) { t.last_used = now(); t.uses = (t.uses || 0) + 1; } m.log.push({ t: now(), token: T.name, tool, ok, note: String(note).slice(0, 160), ip: req.socket.remoteAddress || "" }); m.log = m.log.slice(-500); jw(MFILE, m); };
+    const P = body.params || {}, VER = ["2025-06-18", "2025-03-26", "2024-11-05"];
+    const call = async (action, inp = {}) => { const r2 = { headers: {}, socket: req.socket, url: "/api/admin.php", _wxAs: user.id }; try { return await adminApi(r2, { ...inp, action }); } catch (e) { return { ok: false, error: e instanceof Fail ? e.message : "Server error" }; } };
+    const S = (props = {}, req2 = []) => ({ type: "object", properties: props, required: req2 }), st = (d) => ({ type: "string", description: d }), it = (d) => ({ type: "integer", description: d });
+    const TOOLS = {
+      list_leads: ["Lists website enquiries (leads) newest first. Filter by stage or a search word.", S({ stage: st("new, contacted, visit, quote, won or lost"), search: st("Matches name, phone, email, service or message"), limit: it("Max rows (default 25, max 200)") }), true],
+      get_lead: ["Full details of one lead including its notes/history.", S({ id: it("Lead id") }, ["id"]), true],
+      add_lead_note: ["Adds a note to a lead (marked as written by the AI agent). Does not change the stage.", S({ id: it("Lead id"), text: st("Note text") }, ["id", "text"]), false],
+      list_quotes: ["Lists quotations (number, client, status, total).", S({ status: st("draft, sent, approved, invoiced, rejected, superseded"), search: st("Matches number, client or project"), limit: it("Max rows (default 25)") }), true],
+      get_quote: ["Full quotation with sections, items and totals.", S({ id: it("Quotation id") }, ["id"]), true],
+      create_quote_draft: ["Creates a NEW quotation as a draft for the team to review. It is never sent to the client. Units: sft, rft, sqmt, nos, each, set, point, job, lumpsum.", S({ client: { type: "object", properties: { name: st("Client name"), phone: st("Phone"), email: st("Email"), address: st("Address") }, required: ["name"] }, project: st("Project title"), site: st("Site address"), kind: st("residential, commercial, renovation, fitout or other"), sections: { type: "array", items: { type: "object", properties: { name: st("Section name, e.g. Kitchen"), items: { type: "array", items: { type: "object", properties: { desc: st("Description"), qty: { type: "number" }, unit: st("Unit"), rate: { type: "number", description: "Rate in PKR" } }, required: ["desc"] } } } } }, notes: st("Internal/client notes"), lead_id: it("Link to this lead (optional)") }, ["client"]), false],
+      list_clients: ["Lists clients with contact details.", S({ search: st("Matches name, phone or email"), limit: it("Max rows (default 50)") }), true],
+      list_pages: ["Lists all website pages with title, description, URL and SEO status.", S(), true],
+      site_stats: ["Dashboard numbers: pages, leads this month, unread leads, quotation and sales totals.", S(), true],
+      monthly_report: ["Report for one month: leads by source and stage, won/lost, quotations and their value.", S({ month: st("YYYY-MM (default: current month)") }), true],
+      whatsapp_stats: ["WhatsApp button clicks (today, 7 and 30 days), top pages and services, WhatsApp leads.", S(), true],
+      create_blog_draft: ["Creates an Insights blog post as a DRAFT (not published). Body in simple markdown: \"## Heading\", \"- list item\", blank line between paragraphs.", S({ title: st("Post title"), slug: st("Page address (optional)"), excerpt: st("1–2 sentence summary"), body: st("Article body in simple markdown") }, ["title", "body"]), false],
+    };
+    switch (body.method) {
+      case "initialize": logCall("initialize", true, (P.clientInfo || {}).name || ""); return rpc({ protocolVersion: VER.includes(P.protocolVersion) ? P.protocolVersion : VER[0], capabilities: { tools: { listChanged: false } }, serverInfo: { name: "woodex-admin", title: "Woodex Interior Admin", version: "1.0.0" }, instructions: "Woodex Interior (Lahore) admin data. Currency is PKR. You can read leads, quotations, clients, pages and reports, and create drafts (quotation, blog post) or lead notes. Drafts are reviewed by the team before anything is sent or published. Signed in as " + user.name + " (" + user.role + ")." });
+      case "ping": return rpc({});
+      case "tools/list": return rpc({ tools: Object.entries(TOOLS).map(([name, [description, inputSchema, ro]]) => ({ name, description, inputSchema, annotations: { readOnlyHint: ro, destructiveHint: false, idempotentHint: ro, openWorldHint: false } })) });
+      case "resources/list": return rpc({ resources: [] });
+      case "prompts/list": return rpc({ prompts: [] });
+      case "tools/call": break;
+      default: return rpc(null, { code: -32601, message: "Method not found: " + body.method });
+    }
+    const tool = String(P.name || ""), a = P.arguments || {};
+    if (!TOOLS[tool]) return rpc(null, { code: -32602, message: "Unknown tool: " + tool });
+    const has = (row, q, keys) => !q || keys.some((k) => String(typeof row[k] === "object" ? JSON.stringify(row[k]) : row[k] ?? "").toLowerCase().includes(q.toLowerCase()));
+    const lim = (v, d, mx = 200) => (+v > 0 ? Math.min(+v, mx) : d);
+    const pick = (o, ks) => Object.fromEntries(ks.filter((k) => k in o).map((k) => [k, o[k]]));
+    const LK = ["id", "created_at", "name", "phone", "email", "service", "message", "stage", "source", "page", "value", "followup", "assigned_name", "tags", "lost_reason"];
+    const run = async (action, inp, post) => { const r = await call(action, inp); if (!r.ok) { logCall(tool, false, r.error); return rpc(text(r.error || "Failed", true)); } const { ok, ...rest } = r, out = post ? post(r) : rest; logCall(tool, typeof out !== "string"); return rpc(text(out, typeof out === "string")); };
+    switch (tool) {
+      case "list_leads": return run("leads_list", {}, (r) => { const rows = r.leads.filter((l) => (!a.stage || l.stage === a.stage) && has(l, String(a.search || "").trim(), ["name", "phone", "email", "service", "message"])).slice(0, lim(a.limit, 25)); return { count: rows.length, stages: r.stages, leads: rows.map((l) => ({ ...pick(l, LK), notes: (l.notes || []).length })) }; });
+      case "get_lead": return run("leads_list", {}, (r) => { const l = r.leads.find((x) => +x.id === +a.id); return l ? { ...pick(l, LK), notes: l.notes || [] } : "Lead not found"; });
+      case "add_lead_note": if (!String(a.text || "").trim()) return rpc(text("Write a note first", true)); return run("lead_note", { id: +a.id, text: "[AI agent · " + T.name + "] " + String(a.text).trim() }, (r) => ({ ok: true, lead: r.lead && r.lead.id, message: "Note added" }));
+      case "list_quotes": return run("quotes_list", {}, (r) => { const rows = r.quotes.filter((x) => (!a.status || x.status === a.status) && has(x, String(a.search || "").trim(), ["no", "client", "project"])).slice(0, lim(a.limit, 25)); return { count: rows.length, quotes: rows.map((x) => pick(x, ["id", "no", "label", "version", "option", "status", "client", "project", "site", "kind", "date", "total", "subtotal", "created_by", "created_at", "sent_at", "approved_at", "lead_id"])) }; });
+      case "get_quote": return run("quote_get", { id: +a.id }, (r) => { const { history, ...q } = r.quote; return { quote: q, versions: r.family, invoice: r.invoice ? { no: r.invoice.no, status: r.invoice.status } : null }; });
+      case "create_quote_draft": { const inp = pick(a, ["client", "project", "site", "kind", "sections", "notes", "lead_id"]); inp.notes = (String(inp.notes || "") + "\n(Draft prepared by AI agent: " + T.name + ")").trim(); return run("quote_save", inp, (r) => ({ ok: true, id: r.quote.id, no: r.quote.no, status: r.quote.status, total: r.quote.total, message: "Draft saved. Open Admin → Quotations to review and send it." })); }
+      case "list_clients": return run("clients_list", {}, (r) => { const rows = (r.clients || []).filter((c) => has(c, String(a.search || "").trim(), ["name", "phone", "email", "company"])).slice(0, lim(a.limit, 50)); return { count: rows.length, clients: rows }; });
+      case "list_pages": return run("pages_list", {}, (r) => ({ count: r.pages.length, pages: r.pages }));
+      case "site_stats": return run("dashboard", {}, (r) => r.stats);
+      case "whatsapp_stats": return run("wa_stats", {});
+      case "monthly_report": {
+        const mo = /^\d{4}-\d{2}$/.test(a.month || "") ? a.month : new Date().toISOString().slice(0, 7);
+        const L = await call("leads_list"), Q = await call("quotes_list"); if (!L.ok || !Q.ok) { logCall(tool, false, L.error || Q.error); return rpc(text(L.error || Q.error, true)); }
+        const ls = L.leads.filter((l) => String(l.created_at).slice(0, 7) === mo), cnt = (k) => ls.reduce((o, l) => ((o[l[k]] = (o[l[k]] || 0) + 1), o), {});
+        const qs = Q.quotes.filter((x) => String(x.created_at || "").slice(0, 7) === mo), ap = Q.quotes.filter((x) => String(x.approved_at || "").slice(0, 7) === mo), val = (xs) => xs.reduce((s, x) => s + (+x.total || 0), 0);
+        logCall(tool, true); return rpc(text({ month: mo, leads: ls.length, leadsBySource: cnt("source"), leadsByStage: cnt("stage"), quotationsCreated: qs.length, quotationsValue: val(qs), quotationsApproved: ap.length, approvedValue: val(ap), currency: "PKR" }));
+      }
+      case "create_blog_draft": {
+        const title = String(a.title || "").trim(), bodyMd = String(a.body || ""); if (!title || !bodyMd.trim()) return rpc(text("Title and body are required", true));
+        let slug = (String(a.slug || "").toLowerCase().trim() || title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")).replace(/[^a-z0-9-]/g, "").slice(0, 60) || "post-" + Date.now();
+        const blocks = []; for (const chunk of bodyMd.replace(/\r/g, "").trim().split(/\n{2,}/)) { let para = null; for (const ln of chunk.split("\n").map((x) => x.trim()).filter(Boolean)) { let m; if ((m = /^#{1,4}\s+(.+)$/.exec(ln))) { blocks.push({ t: "h", text: m[1].slice(0, 200) }); para = null; } else if ((m = /^(?:[-*•]|\d+[.)])\s+(.+)$/.exec(ln))) { const last = blocks[blocks.length - 1]; if (last && last.t === "list") last.items.push(m[1]); else blocks.push({ t: "list", items: [m[1]] }); para = null; } else if ((m = /^>\s*(.+)$/.exec(ln))) { blocks.push({ t: "quote", text: m[1] }); para = null; } else if (para) para.text += " " + ln; else { para = { t: "p", text: ln }; blocks.push(para); } } }
+        return run("cms_save", { type: "post", title, slug, status: "draft", data: { excerpt: clip(a.excerpt, 300), blocks: blocks.slice(0, 120), aiAgent: T.name }, seo: { description: clip(a.excerpt, 160) } }, (r) => ({ ok: true, id: r.item && r.item.id, slug, status: "draft", message: "Draft saved. Open Admin → Insights to add a hero image, review and publish." }));
+      }
+    }
   };
   adminApi.forms = formsApi; adminApi.backupFile = backupFile; adminApi.rawAction = rawAction;
   adminApi.publicGuard = function (rel) {
