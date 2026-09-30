@@ -2313,3 +2313,13 @@ html:not(.js) .ih-faq-a,html:not(.js) .in-faq-a,html:not(.js) .ph-faq-a,html:not
 .wx-talk .wx-form-status{color:#0c1628}
 @media(max-width:900px){.wx-talk-grid{grid-template-columns:1fr}.wx-talk-image{height:240px}}
 @media(max-width:560px){.wx-talk-row{grid-template-columns:1fr}.wx-talk-form .btn{justify-self:stretch}}
+/* Phase 3a fixes */
+#home-page .wx-filter-grid .hm-project[hidden]{display:none!important}
+#home-page .wx-filter-grid .hm-project{margin:0!important;top:auto!important;left:auto!important;transform:none;align-self:stretch;min-height:0!important}
+#home-page .wx-filter-grid .hm-project.is-out{opacity:0;transform:scale(.96)}
+#home-page .wx-filter-grid figcaption{background:none!important;padding:0!important;border:0!important;backdrop-filter:none!important}
+.wx-talk-panel .wx-talk-form input,.wx-talk-panel .wx-talk-form select,.wx-talk-panel .wx-talk-form textarea{background:rgba(255,255,255,.07)!important;color:#fff!important;border:1px solid rgba(255,255,255,.2)!important;box-shadow:none!important;min-height:0;height:auto}
+.wx-talk-panel .wx-talk-form select{appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23fff' fill='none' stroke-width='1.5'/%3E%3C/svg%3E")!important;background-repeat:no-repeat!important;background-position:right 14px center!important;padding-right:38px}
+.wx-talk-panel .wx-talk-form select option{background:#fff;color:#0c1628}
+.wx-talk-panel .wx-talk-form input:focus,.wx-talk-panel .wx-talk-form select:focus,.wx-talk-panel .wx-talk-form textarea:focus{border-color:#b8956a!important;background-color:rgba(255,255,255,.1)!important}
+#home-page .wx-filter-grid .hm-project{width:auto!important;max-width:none!important;justify-self:stretch}

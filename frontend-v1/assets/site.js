@@ -139,7 +139,7 @@
     prevBtn.addEventListener('click', function () { at--; update(false); kick(); });
     if (nextBtn) nextBtn.addEventListener('click', function () { at++; update(false); kick(); });
     /* v26 Phase 3: autoplay (5 s) while on screen; pauses on hover, focus or touch; loops to the start. */
-    var section = track.closest('section') || track.parentElement, hold = false, inView = false, auto = null;
+    var section = track.parentElement, hold = false, inView = false, auto = null;
     function tick() {
       if (hold || !inView || doc.visibilityState !== 'visible') return;
       var max = Math.max(0, cards.length - visibleCount(track));
