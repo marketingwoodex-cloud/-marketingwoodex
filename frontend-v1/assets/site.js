@@ -90,7 +90,7 @@
       if (reduceMotion || paused || timer || !slides.length) return;
       timer = setInterval(function () {
         if (doc.visibilityState === 'visible') show(idx + 1, false);
-      }, 6500);
+      }, 5000);
     }
     function restart() { stop(); start(); }
     dots.forEach(function (d) {
@@ -134,9 +134,23 @@
       prevBtn.disabled = at === 0;
       if (nextBtn) nextBtn.disabled = at === max;
       if (status) status.textContent = String(at + 1).padStart(2, '0') + ' / ' + String(cards.length).padStart(2, '0');
+      track.dispatchEvent(new CustomEvent('wx-slide', { detail: at }));
     }
-    prevBtn.addEventListener('click', function () { at--; update(false); });
-    if (nextBtn) nextBtn.addEventListener('click', function () { at++; update(false); });
+    prevBtn.addEventListener('click', function () { at--; update(false); kick(); });
+    if (nextBtn) nextBtn.addEventListener('click', function () { at++; update(false); kick(); });
+    /* v26 Phase 3: autoplay (5 s) while on screen; pauses on hover, focus or touch; loops to the start. */
+    var section = track.closest('section') || track.parentElement, hold = false, inView = false, auto = null;
+    function tick() {
+      if (hold || !inView || doc.visibilityState !== 'visible') return;
+      var max = Math.max(0, cards.length - visibleCount(track));
+      if (max === 0) return;
+      at = at >= max ? 0 : at + 1; update(false);
+    }
+    function kick() { if (auto) clearInterval(auto); auto = reduceMotion ? null : setInterval(tick, 5000); }
+    ['mouseenter', 'focusin', 'touchstart'].forEach(function (ev) { section.addEventListener(ev, function () { hold = true; }, { passive: true }); });
+    ['mouseleave', 'focusout', 'touchend'].forEach(function (ev) { section.addEventListener(ev, function () { hold = false; }, { passive: true }); });
+    if ('IntersectionObserver' in window) new IntersectionObserver(function (es) { inView = es[0].isIntersecting; }, { threshold: 0.35 }).observe(track.parentElement);
+    kick();
     window.addEventListener('resize', function () { update(true); });
     update(true);
   });
@@ -297,4 +311,72 @@
     });
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run);else run();
+})();
+
+
+/* ===== v26 Phase 3a: motion (scroll reveal, step images, studies filter) ===== */
+(function () {
+  var doc = document, reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (window.self !== window.top) return; /* never inside the page builder */
+  function managed(el) { /* skip elements already animated by a page's own script */
+    for (var n = el; n && n !== doc.body; n = n.parentElement) {
+      if (n.classList && (n.classList.contains('seen') || /(^|\s|-)reveal(\s|$)/.test(n.className))) return true;
+      if (n.attributes) for (var i = 0; i < n.attributes.length; i++) if (/^data-.*reveal/.test(n.attributes[i].name)) return true;
+    }
+    return false;
+  }
+  /* 1. Scroll reveal: headings, labels, lead text, cards and images rise in, cards staggered. */
+  if (!reduce && 'IntersectionObserver' in window) {
+    var secs = [].slice.call(doc.querySelectorAll('main section'));
+    secs.shift(); /* hero stays instant */
+    var targets = [];
+    secs.forEach(function (sec) {
+      [].slice.call(sec.querySelectorAll('h2, h3, [class*="label"], [class*="kicker"], .eyebrow, .lead, [class*="-card"], [class*="-item"], figure, .btn, [class*="-step"]')).forEach(function (el) {
+        if (el.closest('.mega-menu, .site-header, form, [id$="-track"]') || managed(el) || el.offsetHeight === 0) return;
+        if (el.parentElement && el.parentElement.closest('.wxr')) return;
+        var r = el.getBoundingClientRect(); if (r.top < innerHeight * 0.9) return; /* already on screen */
+        el.classList.add(el.tagName === 'FIGURE' ? 'wxr-img' : 'wxr', 'wxr');
+        var sib = el.parentElement ? [].indexOf.call(el.parentElement.children, el) : 0;
+        el.style.transitionDelay = Math.min(sib, 5) * 90 + 'ms';
+        targets.push(el);
+      });
+    });
+    var io = new IntersectionObserver(function (es) {
+      es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('wxr-in'); io.unobserve(e.target); } });
+    }, { threshold: 0.12, rootMargin: '0px 0px -6% 0px' });
+    targets.forEach(function (el) { io.observe(el); });
+    setTimeout(function () { targets.forEach(function (el) { el.classList.add('wxr-in'); }); }, 12000); /* safety */
+  }
+  /* 2. Process sliders: the side image changes with every step (renovation "Built around occupancy" and similar). */
+  var pool = [];
+  [].forEach.call(doc.querySelectorAll('main img'), function (im) { var s = im.getAttribute('src'); if (s && pool.indexOf(s) < 0 && !/logo|\.svg/.test(s)) pool.push(s); });
+  [].forEach.call(doc.querySelectorAll('[id$="-process-track"], [id$="-journey-track"]'), function (track) {
+    var sec = track.closest('section'); if (!sec || pool.length < 2) return;
+    var fig = [].filter.call(sec.querySelectorAll('figure, [class*="media"], [class*="image"]'), function (f) { return f.querySelector('img') && !track.contains(f); })[0];
+    if (!fig) return;
+    var img = fig.querySelector('img'), start = pool.indexOf(img.getAttribute('src'));
+    fig.classList.add('wx-swap');
+    track.addEventListener('wx-slide', function (e) {
+      var src = pool[(Math.max(start, 0) + e.detail) % pool.length];
+      if (img.getAttribute('src') === src) return;
+      var ghost = img.cloneNode(); ghost.className = 'wx-swap-ghost'; ghost.src = src; ghost.removeAttribute('loading');
+      fig.appendChild(ghost);
+      ghost.onload = function () { requestAnimationFrame(function () { ghost.classList.add('in'); }); setTimeout(function () { img.src = src; ghost.remove(); }, 750); };
+    });
+  });
+  /* 3. Filter tabs (home "Selected studies"). */
+  [].forEach.call(doc.querySelectorAll('.wx-filter'), function (bar) {
+    var grid = bar.nextElementSibling; if (!grid) return;
+    bar.addEventListener('click', function (e) {
+      var b = e.target.closest('[data-filter]'); if (!b) return;
+      var k = b.getAttribute('data-filter');
+      [].forEach.call(bar.children, function (x) { x.setAttribute('aria-selected', String(x === b)); });
+      [].forEach.call(grid.children, function (c) {
+        var show = k === 'all' || (' ' + c.getAttribute('data-cat') + ' ').indexOf(' ' + k + ' ') > -1;
+        c.classList.toggle('is-out', !show);
+        if (show) { c.hidden = false; c.classList.remove('is-pop'); void c.offsetWidth; c.classList.add('is-pop'); }
+        else setTimeout(function () { if (c.classList.contains('is-out')) c.hidden = true; }, 260);
+      });
+    });
+  });
 })();

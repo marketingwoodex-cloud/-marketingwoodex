@@ -2234,3 +2234,82 @@ html:not(.js) .ih-faq-a,html:not(.js) .in-faq-a,html:not(.js) .ph-faq-a,html:not
 /* B4 service-menu scroll boxes: hide native scrollbar, soft fade at the edges */
 .reno-menu-list,#architecture-page .arch-plot-list,#architecture-page .arch-process-list,.id-services-viewport,#kitchen-page .kd-scope-scroll,#living-room-page .lr-scope-scroll,#dining-room-page .dr-scope-scroll,#home-office-page .ho-scope-scroll,#kids-room-page .kr-scope-scroll,#basement-page .bs-scope-scroll,.ch-ledger,#office-interior-page .oi-scope-scroll,#home-refurbishment-page .hr-scope-scroll{scrollbar-width:none!important;-ms-overflow-style:none;-webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 28px,#000 calc(100% - 56px),transparent 100%);mask-image:linear-gradient(to bottom,transparent 0,#000 28px,#000 calc(100% - 56px),transparent 100%)}
 .reno-menu-list::-webkit-scrollbar,#architecture-page .arch-plot-list::-webkit-scrollbar,#architecture-page .arch-process-list::-webkit-scrollbar,.id-services-viewport::-webkit-scrollbar,#kitchen-page .kd-scope-scroll::-webkit-scrollbar,#living-room-page .lr-scope-scroll::-webkit-scrollbar,#dining-room-page .dr-scope-scroll::-webkit-scrollbar,#home-office-page .ho-scope-scroll::-webkit-scrollbar,#kids-room-page .kr-scope-scroll::-webkit-scrollbar,#basement-page .bs-scope-scroll::-webkit-scrollbar,.ch-ledger::-webkit-scrollbar,#office-interior-page .oi-scope-scroll::-webkit-scrollbar,#home-refurbishment-page .hr-scope-scroll::-webkit-scrollbar{display:none}
+
+/* ===== v26 Phase 3a: motion + sections ===== */
+/* Scroll reveal (added by site.js only below the fold; nothing is hidden without JS) */
+.wxr{opacity:0;transform:translate3d(0,34px,0);transition:opacity .8s cubic-bezier(.22,1,.36,1),transform .9s cubic-bezier(.22,1,.36,1)}
+.wxr-img{opacity:0;clip-path:inset(12% 0 0 0 round 16px);transform:scale(1.04)!important;transition:opacity .9s ease,clip-path 1.1s cubic-bezier(.22,1,.36,1),transform 1.3s cubic-bezier(.22,1,.36,1)!important}
+.wxr.wxr-in,.wxr-img.wxr-in{opacity:1;transform:none!important;clip-path:inset(0 0 0 0 round 0)}
+@media(prefers-reduced-motion:reduce){.wxr,.wxr-img{opacity:1!important;transform:none!important;clip-path:none!important;transition:none!important}}
+/* Step image crossfade */
+.wx-swap{position:relative;overflow:hidden}
+.wx-swap-ghost{position:absolute!important;inset:0;width:100%!important;height:100%!important;object-fit:cover;opacity:0;transform:scale(1.06);transition:opacity .7s ease,transform 1.2s cubic-bezier(.22,1,.36,1)}
+.wx-swap-ghost.in{opacity:1;transform:scale(1)}
+/* Hero: 6 slides, active dot shows a 5-second progress bar */
+#home-page .hm-slider-dot.is-active:before{background:rgba(255,255,255,.35);overflow:hidden}
+#home-page .hm-slider-dot.is-active:after{content:"";position:absolute;left:calc(50% - 14px);top:calc(50% - 3.5px);height:7px;width:28px;border-radius:99px;background:#fff;transform-origin:left;animation:wxHeroProg 5s linear forwards}
+#home-page .hm-hero:hover .hm-slider-dot.is-active:after{animation-play-state:paused}
+@keyframes wxHeroProg{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@media(prefers-reduced-motion:reduce){#home-page .hm-slider-dot.is-active:after{animation:none;transform:none}}
+/* Home services: cards rise one after another (handled by .wxr stagger) + v26 hover */
+#home-page .hm-service-card{transition:transform .45s cubic-bezier(.22,1,.36,1),border-color .3s,background .3s}
+#home-page .hm-service-card:hover{transform:translateY(-6px);border-color:var(--wood,#b8956a)}
+/* Selected studies: filter tabs + 4-column grid */
+.wx-filter{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 26px}
+.wx-filter button{padding:10px 18px;border-radius:999px;border:1px solid rgba(12,22,40,.18);background:#fff;color:#0c1628;font-size:.85rem;font-weight:600;cursor:pointer;transition:background .25s,color .25s,border-color .25s}
+.wx-filter button:hover{border-color:#0c1628}
+.wx-filter button[aria-selected="true"]{background:#0c1628;color:#fff;border-color:#0c1628}
+.hm-projects .wx-filter button{background:transparent;color:inherit;border-color:currentColor;opacity:.75}
+.hm-projects .wx-filter button[aria-selected="true"]{opacity:1;background:var(--wood,#b8956a);border-color:var(--wood,#b8956a);color:#0c1628}
+#home-page .wx-filter-grid{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:16px!important}
+#home-page .wx-filter-grid .hm-project{position:relative;display:block;height:auto!important;aspect-ratio:4/5;border-radius:20px;overflow:hidden;color:#fff;text-decoration:none;grid-column:auto!important;grid-row:auto!important}
+#home-page .wx-filter-grid .hm-project img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .9s cubic-bezier(.22,1,.36,1)}
+#home-page .wx-filter-grid .hm-project:hover img{transform:scale(1.06)}
+#home-page .wx-filter-grid .hm-project:after{content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(12,22,40,.82),rgba(12,22,40,0) 55%)}
+#home-page .wx-filter-grid figcaption{position:absolute;z-index:2;left:18px;right:18px;bottom:18px;display:grid;gap:4px}
+#home-page .wx-filter-grid figcaption small{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--wood-2,#c9a97a)}
+#home-page .wx-filter-grid figcaption strong{font-size:1.05rem;font-weight:600;line-height:1.3}
+.wx-filter-grid .is-out{opacity:0;transform:scale(.96);transition:opacity .25s,transform .25s}
+.wx-filter-grid .is-pop{animation:wxPop .5s cubic-bezier(.22,1,.36,1)}
+@keyframes wxPop{from{opacity:0;transform:translateY(18px) scale(.97)}to{opacity:1;transform:none}}
+@media(max-width:1000px){#home-page .wx-filter-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+@media(max-width:560px){#home-page .wx-filter-grid{grid-template-columns:1fr!important}#home-page .wx-filter-grid .hm-project{aspect-ratio:4/3}.wx-filter{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}.wx-filter button{flex:none}}
+/* Home FAQ: dark v26 style with bordered accordion cards (owner reference) */
+#home-page .hm-faq{background:#0c1628;color:#fff}
+#home-page .hm-faq h2{color:#fff}
+#home-page .hm-faq .hm-kicker{color:var(--wood-2,#c9a97a)}
+#home-page .hm-faq .hm-btn{background:#fff;color:#0c1628}
+#home-page .hm-faq-media{border-radius:20px;overflow:hidden}
+#home-page .hm-faq-item{border:1px solid rgba(255,255,255,.16)!important;border-radius:18px;padding:0 24px;margin:0 0 14px;background:rgba(255,255,255,.02);transition:border-color .3s,background .3s}
+#home-page .hm-faq-item:hover{border-color:rgba(201,169,122,.55)!important}
+#home-page .hm-faq-item:has([aria-expanded="true"]){background:rgba(255,255,255,.05);border-color:rgba(201,169,122,.6)!important}
+#home-page .hm-faq-q{color:#fff!important;padding:22px 0!important;font-size:1.05rem;font-weight:600}
+#home-page .hm-faq-q .plus{display:grid;place-items:center;width:34px;height:34px;border-radius:50%;border:1px solid rgba(255,255,255,.3);background:transparent!important;color:#fff!important;transition:transform .35s,background .3s}
+#home-page .hm-faq-q[aria-expanded="true"] .plus{transform:rotate(45deg);background:var(--wood,#b8956a)!important;border-color:var(--wood,#b8956a);color:#0c1628!important}
+#home-page .hm-faq-a p{color:rgba(255,255,255,.72)!important}
+/* "Talk to Woodex": balanced 2-column block with quick form (renovation first; reused on service pages in 3b) */
+.wx-talk-grid{display:grid;grid-template-columns:minmax(0,.95fr) minmax(0,1.05fr);gap:clamp(36px,6vw,80px);align-items:center}
+.wx-talk-copy h2{margin-bottom:14px}
+.wx-talk-copy .lead{color:var(--muted,#6a6560);max-width:520px}
+.wx-talk-image{margin:26px 0 22px;height:300px;border-radius:20px;overflow:hidden}
+.wx-talk-image img{width:100%;height:100%;object-fit:cover}
+.wx-talk-points{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.wx-talk-points li{position:relative;padding-left:28px;font-weight:500}
+.wx-talk-points li:before{content:"";position:absolute;left:0;top:.45em;width:14px;height:8px;border-left:2px solid var(--wood,#b8956a);border-bottom:2px solid var(--wood,#b8956a);transform:rotate(-45deg)}
+.wx-talk-panel{padding:clamp(26px,4vw,44px);border-radius:24px;background:#0c1628;color:#fff;box-shadow:0 30px 70px rgba(12,22,40,.18)}
+.wx-talk-panel h3{color:#fff;margin-bottom:6px}
+.wx-talk-panel>p{color:rgba(255,255,255,.7);margin-bottom:22px}
+.wx-talk-form{display:grid;gap:14px}
+.wx-talk-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.wx-talk-form label{display:grid;gap:6px}
+.wx-talk-form label span{font-size:.74rem;letter-spacing:.06em;text-transform:uppercase;color:rgba(255,255,255,.6)}
+.wx-talk-form input,.wx-talk-form select,.wx-talk-form textarea{width:100%;padding:13px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.06);color:#fff;font:inherit;font-size:.92rem}
+.wx-talk-form select option{color:#0c1628}
+.wx-talk-form input::placeholder,.wx-talk-form textarea::placeholder{color:rgba(255,255,255,.4)}
+.wx-talk-form input:focus,.wx-talk-form select:focus,.wx-talk-form textarea:focus{outline:none;border-color:var(--wood,#b8956a);background:rgba(255,255,255,.09)}
+.wx-talk-form .btn{justify-self:start;background:#fff!important;color:#0c1628!important;border-color:#fff!important}
+.wx-talk-alt{margin:2px 0 0;font-size:.82rem;color:rgba(255,255,255,.6)}
+.wx-talk-alt a{color:#fff}
+.wx-talk .wx-form-status{color:#0c1628}
+@media(max-width:900px){.wx-talk-grid{grid-template-columns:1fr}.wx-talk-image{height:240px}}
+@media(max-width:560px){.wx-talk-row{grid-template-columns:1fr}.wx-talk-form .btn{justify-self:stretch}}
