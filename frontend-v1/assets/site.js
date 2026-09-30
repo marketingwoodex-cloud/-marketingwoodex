@@ -387,3 +387,9 @@
     });
   });
 })();
+
+/* Phase 14: before/after slider */
+(function () {
+  function init() { document.querySelectorAll(".wx-ba-r").forEach(function (r) { var w = r.parentNode; var f = function () { w.style.setProperty("--p", r.value + "%"); }; r.addEventListener("input", f); f(); }); }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init); else init();
+})();

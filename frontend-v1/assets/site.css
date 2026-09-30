@@ -2344,3 +2344,19 @@ html:not(.js) .ih-faq-a,html:not(.js) .in-faq-a,html:not(.js) .ph-faq-a,html:not
 .wx-car-btn:disabled{opacity:.3;cursor:default}
 @media(max-width:1000px){.wx-car-track>.gallery-card{flex-basis:calc((100% - 16px)/2)!important}}
 @media(max-width:600px){.wx-car-track>.gallery-card{flex-basis:88%!important;min-height:380px}}
+
+/* Phase 14: article blocks (before/after, gallery, table, FAQ, CTA) */
+.wx-ba{margin:36px 0}.wx-ba-w{position:relative;overflow:hidden;border-radius:14px;aspect-ratio:3/2;background:#e9e3d9;--p:50%}
+.wx-ba-w img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;margin:0}
+.wx-ba-w .wx-ba-b{clip-path:inset(0 calc(100% - var(--p)) 0 0)}
+.wx-ba-w::after{content:"";position:absolute;top:0;bottom:0;left:var(--p);width:3px;margin-left:-1.5px;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,.15);pointer-events:none}
+.wx-ba-r{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:ew-resize;margin:0}
+.wx-ba-l{position:absolute;top:12px;padding:4px 10px;border-radius:999px;background:rgba(12,22,40,.72);color:#fff;font-size:12px;letter-spacing:.06em;text-transform:uppercase;pointer-events:none}
+.wx-ba-l.b{left:12px}.wx-ba-l.a{right:12px}.wx-ba figcaption,.wx-gal-c{font-size:14px;color:#6b6358;margin-top:10px}
+.wx-gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin:36px 0 6px}.wx-gal img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:10px;margin:0}
+.wx-tbl{overflow-x:auto;margin:28px 0}.wx-tbl table{width:100%;border-collapse:collapse;font-size:15px;min-width:460px}
+.wx-tbl th,.wx-tbl td{padding:12px 14px;text-align:left;border-bottom:1px solid #e6dfd3;vertical-align:top}.wx-tbl th{background:#0c1628;color:#fff;font-weight:600}.wx-tbl tr:nth-child(even) td{background:#f8f4ee}
+.wx-faq{margin:28px 0}.wx-faq details{border:1px solid #e6dfd3;border-radius:12px;padding:14px 18px;margin-bottom:10px;background:#fff}
+.wx-faq summary{cursor:pointer;font-weight:600;list-style:none;display:flex;justify-content:space-between;gap:12px}.wx-faq summary::after{content:"+";color:#b8956a;font-size:20px;line-height:1}.wx-faq details[open] summary::after{content:"–"}.wx-faq details p{margin:10px 0 0}
+.wx-cta{margin:40px 0;padding:32px;border-radius:16px;background:#0c1628;color:#fff}.wx-cta h3{color:#fff;margin:0 0 8px}.wx-cta p{color:rgba(255,255,255,.8);margin:0 0 18px}
+.wx-cta a{display:inline-flex;align-items:center;gap:8px;background:#fff;color:#0c1628!important;padding:12px 22px;border-radius:999px;font-weight:600;text-decoration:none}

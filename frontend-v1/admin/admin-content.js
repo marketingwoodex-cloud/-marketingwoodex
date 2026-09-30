@@ -74,6 +74,8 @@
   function metaRe(attr, key) { return new RegExp('(<meta\\s+' + attr + '="' + key.replace(/[:.]/g, "\\$&") + '"\\s+content=")[^"]*(")', "i"); }
   function setMeta(h, attr, key, val) { return metaRe(attr, key).test(h) ? h.replace(metaRe(attr, key), function (m, a, b) { return a + esc(val) + b; }) : h; }
   function absUrl(u) { return !u ? "" : /^https?:/.test(u) ? u : SITE + u; }
+  /** FAQ block text: pairs separated by a blank line; first line = question ("Q:" optional), rest = answer. */
+  function parseFaq(t) { return String(t || "").split(/\n\s*\n/).map(function (c) { var l = c.trim().split("\n"); return { q: (l.shift() || "").replace(/^Q[:.]\s*/i, "").trim(), a: l.join(" ").replace(/^A[:.]\s*/i, "").trim() }; }).filter(function (f) { return f.q && f.a; }); }
   function groupBlocks(blocks, rv, listCls) {
     var out = "", open = false;
     function close() { if (open) { out += "</div>"; open = false; } }
@@ -83,6 +85,11 @@
       else if (b.t === "p") { if (!String(b.text || "").trim()) return; ensure(); out += "<p>" + inl(b.text) + "</p>"; }
       else if (b.t === "list") { var it = (b.items || []).filter(function (x) { return String(x).trim(); }); if (!it.length) return; ensure(); out += "<ul" + (listCls ? ' class="' + listCls + '"' : "") + ">" + it.map(function (x) { return "<li>" + inl(x) + "</li>"; }).join("") + "</ul>"; }
       else if (b.t === "quote") { if (!b.text) return; ensure(); out += "<blockquote>" + inl(b.text) + "</blockquote>"; }
+      else if (b.t === "ba") { if (!b.before || !b.after) return; close(); out += '<figure class="wx-ba" ' + rv + '=""><div class="wx-ba-w"><img src="' + esc(b.after) + '" alt="' + esc((b.caption || "Project") + " after") + '" width="1920" height="1280" loading="lazy" decoding="async"><img class="wx-ba-b" src="' + esc(b.before) + '" alt="' + esc((b.caption || "Project") + " before") + '" width="1920" height="1280" loading="lazy" decoding="async"><span class="wx-ba-l b">Before</span><span class="wx-ba-l a">After</span><input class="wx-ba-r" type="range" min="0" max="100" value="50" aria-label="Drag to compare before and after"></div>' + (b.caption ? "<figcaption>" + esc(b.caption) + "</figcaption>" : "") + "</figure>"; }
+      else if (b.t === "gallery") { var gi = (b.imgs || []).filter(function (x) { return x.src; }); if (!gi.length) return; close(); out += '<div ' + rv + '=""><div class="wx-gal">' + gi.map(function (x, k) { return '<img src="' + esc(x.src) + '" alt="' + esc(x.alt || (b.caption || "Project photo") + " " + (k + 1)) + '" width="1200" height="900" loading="lazy" decoding="async">'; }).join("") + "</div>" + (b.caption ? '<p class="wx-gal-c">' + esc(b.caption) + "</p>" : "") + "</div>"; }
+      else if (b.t === "table") { var rows = String(b.text || "").split("\n").map(function (l) { return l.trim(); }).filter(function (l) { return l && !/^[|\s:-]+$/.test(l); }).map(function (l) { return l.replace(/^\||\|$/g, "").split("|").map(function (c) { return c.trim(); }); }); if (rows.length < 2) return; ensure(); out += '<div class="wx-tbl"><table><thead><tr>' + rows[0].map(function (c) { return "<th>" + inl(c) + "</th>"; }).join("") + "</tr></thead><tbody>" + rows.slice(1).map(function (r) { return "<tr>" + r.map(function (c) { return "<td>" + inl(c) + "</td>"; }).join("") + "</tr>"; }).join("") + "</tbody></table></div>"; }
+      else if (b.t === "faq") { var qa = parseFaq(b.text); if (!qa.length) return; ensure(); out += '<div class="wx-faq">' + qa.map(function (f) { return "<details><summary>" + esc(f.q) + "</summary><p>" + inl(f.a) + "</p></details>"; }).join("") + "</div>"; }
+      else if (b.t === "cta") { if (!b.title && !b.text) return; ensure(); out += '<aside class="wx-cta"><h3>' + esc(b.title || "") + "</h3>" + (b.text ? "<p>" + inl(b.text) + "</p>" : "") + '<a href="' + esc(b.href || "/contact/") + '">' + esc(b.label || "Book a free consultation") + " →</a></aside>"; }
       else if (b.t === "img") { if (!b.src) return; close(); out += '<figure class="in-image" ' + rv + '=""><img src="' + esc(b.src) + '" alt="' + esc(b.alt || "") + '" width="1920" height="1280" loading="lazy" decoding="async">' + (b.caption ? "<figcaption>" + esc(b.caption) + "</figcaption>" : "") + "</figure>"; }
     });
     close(); return out;
@@ -249,6 +256,41 @@
   }
 
   // ------------------------------------------------------------------ page editor (post / study)
+
+  // ------------------------------------------------------------------ Phase 14: article templates + AI SEO writer
+  var H = function (t) { return { t: "h", text: t }; }, P = function (hint) { return { t: "p", text: "", hint: hint }; }, L = function () { return { t: "list", items: [] }; };
+  var TPL = {
+    cost: { name: "Cost guide", icon: "calculator", cat: "Cost guide", kicker: "Cost guide", desc: "Prices, what affects them, a cost table and FAQs.", title: "How much does [X] cost in Pakistan? (2026 guide)",
+      blocks: function () { return [H("The quick answer"), P("Give the price range in PKR in 2–3 sentences."), { t: "table", text: "Scope | Budget | Mid-range | Premium\n | | | " }, H("What affects the cost"), L(), H("Cost by size"), { t: "table", text: "Size | Approx. cost\n | " }, H("How to save without cutting quality"), L(), H("An example budget"), P("Walk through one real-looking example."), { t: "cta", title: "Get an exact quote for your space", text: "Book a free site visit in Lahore and get a detailed quotation.", label: "Book a site visit", href: "/contact/" }, H("Frequently asked questions"), { t: "faq", text: "" }]; } },
+    howto: { name: "How-to guide", icon: "list-checks", cat: "Guide", kicker: "Step-by-step guide", desc: "Numbered steps, what you need, common mistakes.", title: "How to [do X]: a step-by-step guide",
+      blocks: function () { return [P("Intro: who this is for and what they will get."), H("Before you start"), L(), H("Step 1: "), P(""), H("Step 2: "), P(""), H("Step 3: "), P(""), H("Step 4: "), P(""), H("Common mistakes to avoid"), L(), { t: "cta", title: "Want experts to handle it?", text: "Our team designs and builds it for you, start to finish.", label: "Talk to our team", href: "/contact/" }, H("Frequently asked questions"), { t: "faq", text: "" }]; } },
+    story: { name: "Project story", icon: "images", cat: "Project story", kicker: "Project story", desc: "Brief, before/after slider, design moves, gallery, result.", title: "[Project name]: from [before] to [after]",
+      blocks: function () { return [H("The brief"), P("Who the client is, the space, what they wanted."), { t: "ba", before: "", after: "", caption: "" }, H("The challenges"), P(""), H("Our design moves"), L(), { t: "gallery", imgs: [], caption: "" }, H("Materials and finishes"), { t: "table", text: "Area | Material | Finish\n | | " }, { t: "quote", text: "" }, H("The result"), P(""), { t: "cta", title: "Planning something similar?", text: "See what we can do for your home or office.", label: "Start your project", href: "/contact/" }]; } },
+    ideas: { name: "Ideas & trends list", icon: "lightbulb", cat: "Ideas", kicker: "Design ideas", desc: "Numbered ideas with photos and tips.", title: "[N] [topic] ideas for Pakistani homes in 2026",
+      blocks: function () { return [P("Intro: why these ideas matter now."), H("1. "), P(""), H("2. "), P(""), H("3. "), P(""), H("4. "), P(""), H("5. "), P(""), { t: "gallery", imgs: [], caption: "" }, H("How to choose the right idea for your space"), P(""), { t: "cta", title: "Need help choosing?", text: "Get a 3D view of your space before you build.", label: "Book a consultation", href: "/contact/" }, H("Frequently asked questions"), { t: "faq", text: "" }]; } },
+    compare: { name: "Comparison (A vs B)", icon: "scale", cat: "Comparison", kicker: "Comparison", desc: "Quick verdict, side-by-side table, pros and cons.", title: "[A] vs [B]: which is better for your home?",
+      blocks: function () { return [H("The quick verdict"), P("Answer the question in 2–3 sentences."), { t: "table", text: "Feature | A | B\nCost | | \nDurability | | \nLooks | | \nMaintenance | | " }, H("A: pros and cons"), L(), H("B: pros and cons"), L(), H("Cost comparison in Pakistan"), { t: "table", text: "Item | A | B\n | | " }, H("Which one is right for you?"), P(""), { t: "cta", title: "Still not sure?", text: "Our designers will recommend the best option for your budget.", label: "Ask a designer", href: "/contact/" }, H("Frequently asked questions"), { t: "faq", text: "" }]; } }
+  };
+  function tplStructure(k) { return TPL[k].blocks().map(function (b) { return b.t === "h" ? "H2: " + (b.text || "(heading)") : b.t === "p" ? "paragraph" + (b.hint ? " (" + b.hint + ")" : "") : b.t === "table" ? "table (header: " + b.text.split("\n")[0] + ")" : b.t; }).join("\n"); }
+  function applyAi(d, it, j) {
+    if (j.title) it.title = j.title; if (j.dek) d.dek = j.dek; if (j.kicker) d.kicker = j.kicker;
+    if (Array.isArray(j.blocks)) d.blocks = j.blocks.map(function (b) {
+      var t = b.t || b.type;
+      if (t === "list") return { t: "list", items: (b.items || []).map(String) };
+      if (t === "table") return { t: "table", text: Array.isArray(b.rows) ? b.rows.map(function (r) { return [].concat(r).join(" | "); }).join("\n") : String(b.text || "") };
+      if (t === "faq") return { t: "faq", text: Array.isArray(b.items) ? b.items.map(function (f) { return f.q + "\n" + f.a; }).join("\n\n") : String(b.text || "") };
+      if (t === "cta") return { t: "cta", title: b.title || "", text: b.text || "", label: b.label || "Book a free consultation", href: b.href || "/contact/" };
+      if (t === "ba") return { t: "ba", before: "", after: "", caption: b.caption || b.text || "" };
+      if (t === "gallery") return { t: "gallery", imgs: [], caption: b.caption || b.text || "" };
+      if (t === "img") return { t: "img", src: "", alt: b.alt || "", caption: b.caption || "" };
+      return { t: t === "h" || t === "quote" ? t : "p", text: String(b.text || "") };
+    });
+    if (Array.isArray(j.summary)) d.summary = j.summary.map(String);
+    if (Array.isArray(j.faqs)) d.faqs = j.faqs.filter(function (f) { return f && f.q; });
+    if (j.category) { var m = (d.meta || []).find(function (x) { return x.k === "Category"; }); if (m) m.v = j.category; }
+    if (j.readMin) { var r = (d.meta || []).find(function (x) { return x.k === "Read time"; }); if (r) r.v = j.readMin + " min read"; }
+    it.seo = Object.assign({}, it.seo, { title: j.seoTitle || it.seo.title || "", desc: j.seoDesc || it.seo.desc || "", kw: j.kw || it.seo.kw || "" });
+  }
   function newData(type) {
     return type === "post"
       ? { kicker: "", dek: "", hero: {}, meta: [{ k: "Category", v: "" }, { k: "Read time", v: "5 min read" }, { k: "Studio", v: "Woodex Studio" }], blocks: [{ t: "h", text: "" }, { t: "p", text: "" }], summary: [], faqs: [], quote: "", related: [], card: {} }
@@ -268,12 +310,17 @@
       function mark() { dirty = true; var b = $("#ce-dirty"); if (b) b.hidden = false; }
       function kv(list, cls, k1, k2) { return (list || []).map(function (m, i) { return '<div class="kvr ' + cls + '" data-i="' + i + '"><input data-k="k" value="' + esc(m.k) + '" placeholder="' + k1 + '"><input data-k="v" value="' + esc(m.v) + '" placeholder="' + k2 + '"><button type="button" class="btn sm ghost" data-del>' + ic("x") + "</button></div>"; }).join(""); }
       function blk(b, i) {
-        var tools = '<div class="bk-tools"><span class="bk-type">' + ({ h: "Heading", p: "Paragraph", list: "List", img: "Image", quote: "Quote" }[b.t]) + '</span><button type="button" class="btn sm ghost" data-up title="Move up">' + ic("arrow-up") + '</button><button type="button" class="btn sm ghost" data-dn title="Move down">' + ic("arrow-down") + '</button><button type="button" class="btn sm ghost" data-rm title="Remove">' + ic("x") + "</button></div>";
+        var tools = '<div class="bk-tools"><span class="bk-type">' + ({ h: "Heading", p: "Paragraph", list: "List", img: "Image", quote: "Quote", table: "Table", faq: "FAQ", cta: "Call to action", ba: "Before / after", gallery: "Gallery" }[b.t]) + '</span><button type="button" class="btn sm ghost" data-up title="Move up">' + ic("arrow-up") + '</button><button type="button" class="btn sm ghost" data-dn title="Move down">' + ic("arrow-down") + '</button><button type="button" class="btn sm ghost" data-rm title="Remove">' + ic("x") + "</button></div>";
         var body;
         if (b.t === "h") body = '<input class="bk-h" data-f="text" value="' + esc(b.text) + '" placeholder="Section heading">';
-        else if (b.t === "p") body = '<textarea data-f="text" rows="3" placeholder="Paragraph. Use **bold**, *italic*, [link](/contact/)">' + esc(b.text) + "</textarea>" + (aiReady ? '<button type="button" class="btn sm ai bk-ai" data-improve>' + ic("sparkles") + "Improve</button>" : "");
+        else if (b.t === "p") body = '<textarea data-f="text" rows="3" placeholder="' + esc(b.hint || "Paragraph. Use **bold**, *italic*, [link](/contact/)") + '">' + esc(b.text) + "</textarea>" + (aiReady ? '<button type="button" class="btn sm ai bk-ai" data-improve>' + ic("sparkles") + "Improve</button>" : "");
         else if (b.t === "list") body = '<textarea data-f="items" rows="4" placeholder="One point per line. **Label:** text">' + esc((b.items || []).join("\n")) + "</textarea>";
         else if (b.t === "quote") body = '<textarea data-f="text" rows="2" placeholder="Quote">' + esc(b.text) + "</textarea>";
+        else if (b.t === "table") body = '<textarea data-f="text" rows="5" style="font-family:monospace;font-size:13px" placeholder="Item | Budget | Premium&#10;Kitchen | Rs 8 lakh | Rs 20 lakh&#10;(first line = header, use | between columns)">' + esc(b.text) + "</textarea>";
+        else if (b.t === "faq") body = '<textarea data-f="text" rows="6" placeholder="Question one?&#10;Answer in 1–3 sentences.&#10;&#10;Question two?&#10;Answer…">' + esc(b.text) + "</textarea>";
+        else if (b.t === "cta") body = '<input data-f="title" value="' + esc(b.title) + '" placeholder="Heading, e.g. Planning a renovation?"><textarea data-f="text" rows="2" placeholder="One line of text" style="margin-top:6px">' + esc(b.text) + '</textarea><div class="g2" style="margin-top:6px"><input data-f="label" value="' + esc(b.label) + '" placeholder="Button text (Book a free consultation)"><input data-f="href" value="' + esc(b.href) + '" placeholder="/contact/"></div>';
+        else if (b.t === "ba") body = '<div class="g2">' + ["before", "after"].map(function (k) { return '<div><small class="muted">' + (k === "before" ? "Before" : "After") + '</small><div class="imf-p" style="height:110px;background-image:url(\'' + esc(b[k] || "") + '\')" data-pickb="' + k + '">' + (b[k] ? "" : ic("image")) + "</div></div>"; }).join("") + '</div><input data-f="caption" value="' + esc(b.caption) + '" placeholder="Caption (also used as alt text)" style="margin-top:6px">';
+        else if (b.t === "gallery") body = '<div class="bk-gal" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:6px">' + (b.imgs || []).map(function (x, k) { return '<div style="position:relative"><div class="imf-p" style="height:70px;background-image:url(\'' + esc(x.src) + '\')"></div><button type="button" class="btn sm ghost" data-gx="' + k + '" style="position:absolute;top:2px;right:2px;padding:2px 5px" title="Remove">×</button></div>'; }).join("") + '<button type="button" class="btn sm" data-pickb="gal" style="height:70px">' + ic("plus") + 'Photo</button></div><input data-f="caption" value="' + esc(b.caption) + '" placeholder="Caption (also used as alt text)" style="margin-top:6px">';
         else body = '<div class="bk-img"><div class="imf-p" style="background-image:url(\'' + esc(b.src || "") + '\')" data-pickb>' + (b.src ? "" : ic("image")) + '</div><div class="bk-img-f"><input data-f="alt" value="' + esc(b.alt) + '" placeholder="Alt text (describe the photo)">' + (aiReady ? '<button type="button" class="btn sm ai" data-alt>' + ic("sparkles") + "Alt</button>" : "") + '<input data-f="caption" value="' + esc(b.caption) + '" placeholder="Caption (optional)"><button type="button" class="btn sm" data-pickb>' + (b.src ? "Change image" : "Choose image") + "</button></div></div>";
         return '<div class="bk bk-' + b.t + '" data-i="' + i + '">' + tools + body + "</div>";
       }
@@ -289,7 +336,7 @@
           imgField("ce-hero", (d.hero || {}).src, "Hero image") +
           '<h4 class="sub-h">Details strip</h4><div id="ce-meta">' + kv(d.meta, "meta", "Label", "Value") + '</div><button type="button" class="btn sm" id="ce-meta-add">' + ic("plus") + "Add detail</button></div>" +
           (type === "study" ? '<div class="card card-b"><h4 class="sub-h" style="margin-top:0">Facts box <small>(sidebar)</small></h4><label>Box title<input id="ce-ft" value="' + esc(d.factsTitle || "Study facts") + '"></label><div id="ce-facts">' + kv(d.facts, "fact", "Label", "Text") + '</div><button type="button" class="btn sm" id="ce-fact-add">' + ic("plus") + 'Add fact</button><label style="margin-top:12px">Note under the facts<input id="ce-fn" value="' + esc(d.factsNote) + '" placeholder="Illustrative design study. Not built work, not a client project."></label></div>' : "") +
-          '<div class="card"><div class="card-h"><h3>Content</h3>' + (aiReady && type === "post" ? aiBtn("ce-ai-draft", "Draft article with AI") : "") + '</div><div class="card-b"><div id="ce-blocks" class="bks">' + d.blocks.map(blk).join("") + '</div><div class="bk-add"><span class="muted">Add:</span>' + [["h", "Heading"], ["p", "Paragraph"], ["list", "List"], ["img", "Image"], ["quote", "Quote"]].map(function (x) { return '<button type="button" class="btn sm" data-add="' + x[0] + '">' + ic("plus") + x[1] + "</button>"; }).join("") + "</div></div></div>" +
+          '<div class="card"><div class="card-h"><h3>Content</h3>' + (type === "post" ? '<div class="toolbar"><button type="button" class="btn sm" id="ce-tpl">' + ic("layout-template") + "Templates</button>" + (aiReady ? aiBtn("ce-ai-writer", "AI SEO writer") + aiBtn("ce-ai-draft", "Quick draft") : '<button type="button" class="btn sm" id="ce-ai-writer" title="Add an AI key in AI settings">' + ic("sparkles") + "AI SEO writer</button>") + "</div>" : "") + '</div><div class="card-b"><div id="ce-blocks" class="bks">' + d.blocks.map(blk).join("") + '</div><div class="bk-add"><span class="muted">Add:</span>' + [["h", "Heading"], ["p", "Paragraph"], ["list", "List"], ["img", "Image"], ["quote", "Quote"], ["table", "Table"], ["faq", "FAQ"], ["cta", "Call to action"], ["ba", "Before / after"], ["gallery", "Gallery"]].map(function (x) { return '<button type="button" class="btn sm" data-add="' + x[0] + '">' + ic("plus") + x[1] + "</button>"; }).join("") + "</div></div></div>" +
           (type === "post" ? '<div class="card card-b"><h4 class="sub-h" style="margin-top:0">The short version <small>(takeaway bullets, optional)</small></h4><textarea id="ce-sum" rows="3" placeholder="One point per line. **Label:** text">' + esc((d.summary || []).join("\n")) + "</textarea></div>" +
             '<div class="card"><div class="card-h"><h3>FAQs</h3><div class="toolbar">' + (faqGroups.length ? '<select id="ce-fg" class="sm-in"><option value="">Insert FAQ group…</option>' + faqGroups.map(function (g) { return '<option value="' + g.id + '">' + esc(g.title) + " (" + ((g.data || {}).items || []).length + ")</option>"; }).join("") + "</select>" : "") + (aiReady ? aiBtn("ce-ai-faq", "Suggest FAQs") : "") + '</div></div><div class="card-b"><div id="ce-faqs">' + faqRows(d.faqs) + '</div><button type="button" class="btn sm" id="ce-faq-add">' + ic("plus") + "Add question</button></div></div>" : "") +
           '<div class="card card-b"><label>Pull quote <small>(big quote band, optional)</small><input id="ce-quote" value="' + esc(d.quote) + '"></label><label>Call-to-action heading <small>(leave empty to keep the default)</small><input id="ce-cta" value="' + esc(d.ctaTitle || "") + '"></label>' +
@@ -317,7 +364,11 @@
           var o = d.blocks[+b.dataset.i] || {}, x = { t: o.t };
           if (o.t === "list") x.items = $("[data-f=items]", b).value.split("\n").map(function (s) { return s.trim(); }).filter(Boolean);
           else if (o.t === "img") { x.src = o.src || ""; x.alt = $("[data-f=alt]", b).value.trim(); x.caption = $("[data-f=caption]", b).value.trim(); }
+          else if (o.t === "ba") { x.before = o.before || ""; x.after = o.after || ""; x.caption = $("[data-f=caption]", b).value.trim(); }
+          else if (o.t === "gallery") { x.imgs = (o.imgs || []).slice(); x.caption = $("[data-f=caption]", b).value.trim(); }
+          else if (o.t === "cta") { ["title", "text", "label", "href"].forEach(function (k) { x[k] = $("[data-f=" + k + "]", b).value.trim(); }); }
           else x.text = $("[data-f=text]", b).value.trim();
+          if (o.hint) x.hint = o.hint;
           return x;
         });
         if (type === "post") { d.summary = $("#ce-sum").value.split("\n").map(function (s) { return s.trim(); }).filter(Boolean); d.faqs = $$("#ce-faqs .fq").map(function (r) { return { q: $("[data-k=q]", r).value.trim(), a: $("[data-k=a]", r).value.trim() }; }).filter(function (f) { return f.q || f.a; }); }
@@ -347,15 +398,57 @@
           if (e.target.closest("[data-up]") && i > 0) { d.blocks.splice(i - 1, 0, d.blocks.splice(i, 1)[0]); redrawBlocks(); mark(); }
           else if (e.target.closest("[data-dn]") && i < d.blocks.length - 1) { d.blocks.splice(i + 1, 0, d.blocks.splice(i, 1)[0]); redrawBlocks(); mark(); }
           else if (e.target.closest("[data-rm]")) { d.blocks.splice(i, 1); redrawBlocks(); mark(); }
-          else if (e.target.closest("[data-pickb]")) pickImage(function (u) { collect(); d.blocks[i].src = u; redrawBlocks(); mark(); });
+          else if (e.target.closest("[data-gx]")) { d.blocks[i].imgs.splice(+e.target.closest("[data-gx]").dataset.gx, 1); redrawBlocks(); mark(); }
+          else if (e.target.closest("[data-pickb]")) { var pk = e.target.closest("[data-pickb]").dataset.pickb; pickImage(function (u) { collect(); var B = d.blocks[i]; if (pk === "gal") (B.imgs = B.imgs || []).push({ src: u, alt: "" }); else if (pk === "before" || pk === "after") B[pk] = u; else B.src = u; redrawBlocks(); mark(); }); }
           else if (e.target.closest("[data-improve]")) { var btn = e.target.closest("button"), ta = $("[data-f=text]", b); if (!ta.value.trim()) return; busy(btn, true); ai("improve", { text: ta.value }).then(function (tx) { ta.value = tx.trim(); mark(); }).catch(function () {}).then(function () { busy(btn, false); }); }
           else if (e.target.closest("[data-alt]")) { var bt = e.target.closest("button"); busy(bt, true); ai("alt", { file: d.blocks[i].src, context: $("#ce-title").value + ". " + ($("[data-f=caption]", b).value || "") }).then(function (tx) { $("[data-f=alt]", b).value = tx.trim().replace(/^"|"$/g, ""); mark(); }).catch(function () {}).then(function () { busy(bt, false); }); }
         };
-        $$("[data-add]", R).forEach(function (bt) { bt.onclick = function () { collect(); var k = bt.dataset.add; d.blocks.push(k === "list" ? { t: k, items: [] } : k === "img" ? { t: k, src: "", alt: "", caption: "" } : { t: k, text: "" }); redrawBlocks(); mark(); var last = $("#ce-blocks .bk:last-child input,#ce-blocks .bk:last-child textarea"); if (last) last.focus(); if (k === "img") pickImage(function (u) { collect(); d.blocks[d.blocks.length - 1].src = u; redrawBlocks(); }); }; });
+        $$("[data-add]", R).forEach(function (bt) { bt.onclick = function () { collect(); var k = bt.dataset.add; d.blocks.push(k === "list" ? { t: k, items: [] } : k === "img" ? { t: k, src: "", alt: "", caption: "" } : k === "gallery" ? { t: k, imgs: [], caption: "" } : k === "ba" ? { t: k, before: "", after: "", caption: "" } : k === "cta" ? { t: k, title: "", text: "", label: "", href: "/contact/" } : { t: k, text: "" }); redrawBlocks(); mark(); var last = $("#ce-blocks .bk:last-child input,#ce-blocks .bk:last-child textarea"); if (last) last.focus(); if (k === "img") pickImage(function (u) { collect(); d.blocks[d.blocks.length - 1].src = u; redrawBlocks(); }); }; });
         if ($("#ce-faq-add")) $("#ce-faq-add").onclick = function () { collect(); d.faqs.push({ q: "", a: "" }); $("#ce-faqs").innerHTML = faqRows(d.faqs); W.fillIcons($("#ce-faqs")); };
         if ($("#ce-fg")) $("#ce-fg").onchange = function () { var g = faqGroups.find(function (x) { return x.id === +this.value; }, this); if (!g) return; collect(); d.faqs = d.faqs.concat(((g.data || {}).items || []).map(function (f) { return { q: f.q, a: f.a }; })); $("#ce-faqs").innerHTML = faqRows(d.faqs); W.fillIcons($("#ce-faqs")); this.value = ""; mark(); };
         // AI
         function bodyText() { collect(); return d.blocks.map(function (b) { return b.t === "list" ? (b.items || []).join("\n") : b.text || ""; }).join("\n\n"); }
+        function tplPick(first) {
+          modal("<h3>" + (first ? "Start a new article" : "Article templates") + '</h3><p class="muted">' + (first ? "Pick a template to start from, or begin with a blank page." : "Applying a template <b>replaces</b> the current content.") + '</p><div class="tp-g" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px">' +
+            Object.keys(TPL).map(function (k) { return '<button type="button" class="card card-b" data-tp="' + k + '" style="text-align:left;cursor:pointer;border:1px solid var(--line,#e5e7eb)"><b>' + ic(TPL[k].icon) + " " + esc(TPL[k].name) + '</b><p class="muted" style="margin:6px 0 0;font-size:12.5px">' + esc(TPL[k].desc) + "</p></button>"; }).join("") +
+            '</div><div class="modal-actions">' + (first ? '<button class="btn" id="tp-blank">Blank article</button>' : '<button class="btn" id="tp-blank">Cancel</button>') + (aiReady ? '<button class="btn pri" id="tp-ai">' + ic("sparkles") + "Let AI write it</button>" : "") + "</div>", "wide");
+          W.fillIcons($(".modal") || document.body);
+          $("#tp-blank").onclick = closeModal; if ($("#tp-ai")) $("#tp-ai").onclick = function () { closeModal(); writer(); };
+          $$("[data-tp]").forEach(function (b) { b.onclick = function () { var k = b.dataset.tp, T2 = TPL[k]; collect(); d.blocks = T2.blocks(); if (!it.title) it.title = ""; if (!d.kicker) d.kicker = T2.kicker; var m = (d.meta || []).find(function (x) { return x.k === "Category"; }); if (m && !m.v) m.v = T2.cat; d.tpl = k; closeModal(); draw(); mark(); if (!it.title) { $("#ce-title").placeholder = T2.title; $("#ce-title").focus(); } toast(T2.name + " template added"); }; });
+        }
+        function writer() {
+          collect();
+          modal('<h3>AI SEO writer</h3><p class="muted">Writes a full article in English, then checks it with the SEO analyser and rewrites weak parts until the score is 70+ (up to 2 fixes). It <b>replaces</b> the current content; add photos and review before publishing.</p>' +
+            '<label>Topic or title<input id="aw-t" value="' + esc(it.title) + '" placeholder="e.g. Kitchen renovation cost in Lahore"></label><label>Focus keyphrase<input id="aw-k" value="' + esc((it.seo || {}).kw || "") + '" placeholder="e.g. kitchen renovation cost Lahore"></label>' +
+            '<div class="g2"><label>Template<select id="aw-tp">' + Object.keys(TPL).map(function (k) { return '<option value="' + k + '"' + (d.tpl === k ? " selected" : "") + ">" + esc(TPL[k].name) + "</option>"; }).join("") + '</select></label><label>Length<select id="aw-w"><option value="900">Short (~900 words)</option><option value="1400" selected>Standard (~1,400 words)</option><option value="2000">Long (~2,000 words)</option></select></label></div>' +
+            '<label>Notes for the writer <small>(facts, prices, projects, points to include)</small><textarea id="aw-n" rows="4" placeholder="e.g. PKR 2,500–6,000 per sq ft, we give 3D views first, 10-year warranty on cabinets"></textarea></label>' +
+            '<div id="aw-log" class="muted" style="font-size:13px;min-height:20px"></div><div class="modal-actions"><button class="btn" id="aw-x">Cancel</button><button class="btn pri" id="aw-go">' + ic("sparkles") + "Write article</button></div>", "wide");
+          W.fillIcons($(".modal") || document.body); $("#aw-x").onclick = closeModal;
+          $("#aw-go").onclick = function () {
+            var b = this, kw = $("#aw-k").value.trim(), topic = $("#aw-t").value.trim(), tp = $("#aw-tp").value, words = $("#aw-w").value, notes = $("#aw-n").value;
+            if (!topic || !kw) return toast("Add a topic and a focus keyphrase", true);
+            var log = function (m) { $("#aw-log").innerHTML = m; }, url = "/" + t.folder + "/" + (it.slug || "new-article") + "/", round = 0;
+            busy(b, true); log("✍️ Writing the article… (about 30–60 seconds)");
+            ai("article", { title: topic, kw: kw, structure: tplStructure(tp), words: words, notes: notes }).then(function step(tx) {
+              var j = aiJson(tx); d.tpl = tp; applyAi(d, it, j); if (!it.seo.kw) it.seo.kw = kw;
+              if (!it.rel && !it.slug) it.slug = String(it.title).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 60);
+              draw(); url = "/" + t.folder + "/" + (it.slug || "new-article") + "/";
+              return build().then(function (h) {
+                var r = WXSEO.analyze(h, { kw: kw, url: url }), bad = r.seo.checks.concat(r.read.checks).filter(function (c) { return c.status !== "good"; });
+                log("📊 Round " + (round + 1) + ": SEO <b>" + r.seo.score + "</b> · Readability <b>" + r.read.score + "</b>");
+                if ((r.seo.score >= 70 && r.read.score >= 60) || round >= 2) return r;
+                round++; log($("#aw-log").innerHTML + "<br>🔧 Fixing " + bad.length + " issue(s)…");
+                return ai("fix", { kw: kw, issues: bad.map(function (c) { return "- " + c.text; }).join("\n"), article: JSON.stringify({ title: it.title, dek: d.dek, seoTitle: it.seo.title, seoDesc: it.seo.desc, blocks: d.blocks.map(function (x) { var y = Object.assign({}, x); delete y.hint; return y; }), summary: d.summary, faqs: d.faqs }) }).then(step);
+              });
+            }).then(function (r) {
+              busy(b, false); if (!r || !r.seo) return; mark(); closeModal(); draw(); toast("Article written · SEO " + r.seo.score + " · Readability " + r.read.score + ". Add photos, review, then publish.");
+              setTimeout(function () { if ($("#ce-seo-an")) $("#ce-seo-an").click(); }, 300);
+            }).catch(function (e) { busy(b, false); log('<span class="bad">The AI reply could not be read. Try again.</span>'); });
+          };
+        }
+        if ($("#ce-tpl")) $("#ce-tpl").onclick = function () { tplPick(false); };
+        if ($("#ce-ai-writer")) $("#ce-ai-writer").onclick = function () { if (!aiReady) return toast("Add an AI key first (AI settings)", true); writer(); };
+        if (type === "post" && !it.id && !d.tpl && !d._asked) { d._asked = true; setTimeout(function () { tplPick(true); }, 50); }
         if ($("#ce-ai-draft")) $("#ce-ai-draft").onclick = function () {
           var btn = this; collect(); if (!it.title) return toast("Write a title first", true);
           modal('<h3>Draft article with AI</h3><p class="muted">The AI writes sections, takeaways, FAQs and a pull quote from your title and notes. It <b>replaces</b> the current content; review every line before publishing.</p><label>Notes for the writer <small>(facts, prices, points to include)</small><textarea id="ai-n" rows="5" placeholder="e.g. mention 3D before build, PKR ranges per sq ft, Lahore climate"></textarea></label><div class="modal-actions"><button class="btn" id="ai-x">Cancel</button><button class="btn pri" id="ai-go">' + ic("sparkles") + "Write draft</button></div>");
