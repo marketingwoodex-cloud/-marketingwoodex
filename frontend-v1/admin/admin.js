@@ -43,53 +43,69 @@
   function actText(a) { var m = ACT[a.action] || ["activity", a.action]; return { icon: m[0], text: m[1] }; }
 
   // ---------------------------------------------------------------- navigation
+  /* P16: TailAdmin-style grouped menu. ["Heading"] · [view, label, icon, roles] · { g: label, icon, id, items: [...] } (dropdown) */
   var NAV = [
     ["Menu"],
     ["dashboard", "Dashboard", "layout-dashboard"],
-    ["pages", "Pages", "file-text", "owner,admin,editor"],
-    ["builder", "Page builder", "square-pen", "owner,admin,editor"],
-    ["library", "Section library", "blocks", "owner,admin,editor"],
-    ["Content"],
-    ["blog", "Blog & insights", "book-open", "owner,admin,editor"],
-    ["portfolio", "Portfolio", "image", "owner,admin,editor"],
-    ["testimonials", "Testimonials", "message-square", "owner,admin,editor"],
-    ["team", "Team", "users", "owner,admin,editor"],
-    ["services", "Service pages", "layers", "owner,admin,editor"],
-    ["cities", "City pages", "map-pin", "owner,admin,editor"],
-    ["faqs", "FAQ groups", "help-circle", "owner,admin,editor"],
-    ["Business"],
+    ["Sales"],
     ["enquiries", "Enquiries & leads", "inbox", "owner,admin,sales"],
-    ["chat", "Live chat", "message-circle", "owner,admin,sales"],
-    ["train", "Train AI", "sparkles", "owner,admin"],
-    ["updates", "Client updates", "send", "owner,admin"],
     ["pipeline", "Pipeline", "kanban", "owner,admin,sales"],
     ["clients", "Clients", "contact", "owner,admin,sales"],
-    ["offers", "WhatsApp offers", "send", "owner,admin,sales"],
-    ["quotes", "Quotations", "file-text", "owner,admin,sales"],
-    ["templates", "Templates", "layers", "owner,admin,sales"],
-    ["invoices", "Invoices", "receipt", "owner,admin,sales"],
+    { g: "Quotes & invoices", icon: "file-text", id: "money", items: [
+      ["quotes", "Quotations", "file-text", "owner,admin,sales"],
+      ["invoices", "Invoices", "receipt", "owner,admin,sales"],
+      ["templates", "Quote templates", "layers", "owner,admin,sales"]] },
     ["projects", "Projects", "briefcase"],
-    ["Site"],
-    ["business", "Business info", "building", "owner,admin"],
-    ["global", "Header & footer", "panel-left", "owner,admin"],
-    ["redirects", "Redirects", "refresh-cw", "owner,admin"],
+    ["offers", "WhatsApp offers", "send", "owner,admin,sales"],
+    ["Support"],
+    ["chat", "Inbox (chat & WhatsApp)", "message-circle", "owner,admin,sales"],
+    ["updates", "Client updates", "send", "owner,admin"],
+    ["train", "Train AI", "sparkles", "owner,admin"],
+    ["Website"],
+    { g: "Pages & builder", icon: "square-pen", id: "site", items: [
+      ["pages", "All pages", "file-text", "owner,admin,editor"],
+      ["builder", "Page builder", "square-pen", "owner,admin,editor"],
+      ["library", "Section library", "blocks", "owner,admin,editor"],
+      ["global", "Header & footer", "panel-left", "owner,admin"],
+      ["redirects", "Redirects", "refresh-cw", "owner,admin"]] },
+    { g: "Content", icon: "book-open", id: "content", items: [
+      ["blog", "Blog & insights", "book-open", "owner,admin,editor"],
+      ["portfolio", "Portfolio", "image", "owner,admin,editor"],
+      ["services", "Service pages", "layers", "owner,admin,editor"],
+      ["cities", "City pages", "map-pin", "owner,admin,editor"],
+      ["faqs", "FAQ groups", "help-circle", "owner,admin,editor"],
+      ["testimonials", "Testimonials", "message-square", "owner,admin,editor"],
+      ["team", "Team (on website)", "users", "owner,admin,editor"]] },
     ["media", "Media library", "image", "owner,admin,editor"],
+    ["Marketing"],
     ["seo", "SEO", "search", "owner,admin,editor"],
-    ["health", "Site health", "heart-pulse", "owner,admin,editor"],
     ["speed", "Speed", "gauge", "owner,admin,editor"],
-    ["backups", "Backups", "hard-drive", "owner,admin"],
-    ["Team"],
-    ["users", "Team & roles", "users", "owner,admin"],
-    ["activity", "Activity log", "activity", "owner,admin"],
-    ["security", "My security", "shield"],
-    ["settings", "Settings & APIs", "settings", "owner,admin"],
-    ["system", "System check", "activity", "owner,admin"]
+    ["health", "Site health", "heart-pulse", "owner,admin,editor"],
+    ["Settings"],
+    { g: "Settings", icon: "settings", id: "settings", items: [
+      ["settings", "Integrations & APIs", "settings", "owner,admin"],
+      ["business", "Business info", "building", "owner,admin"],
+      ["users", "Users & roles", "users", "owner,admin"],
+      ["activity", "Activity log", "activity", "owner,admin"],
+      ["backups", "Backups", "hard-drive", "owner,admin"],
+      ["system", "System check", "activity", "owner,admin"]] },
+    ["security", "My security", "shield"]
   ];
+  var navOpen = (function () { try { return JSON.parse(localStorage.getItem("wxNavOpen") || "{}"); } catch (e) { return {}; } })();
+  function navLink(n, sub) { return '<a class="nav-a' + (sub ? " sub" : "") + (n[4] ? " soon" : "") + '" href="#/' + n[0] + '" data-v="' + n[0] + '" title="' + n[1] + '">' + ic(n[2]) + "<span>" + n[1] + "</span>" + (n[4] ? '<span class="pill">' + n[4] + "</span>" : "") + "</a>"; }
   function renderNav() {
-    $("#nav").innerHTML = NAV.filter(function (n) { return n.length === 1 || !n[3] || can(n[3]); }).map(function (n) {
-      if (n.length === 1) return '<div class="nav-h">' + n[0] + "</div>";
-      return '<a class="nav-a' + (n[4] ? " soon" : "") + '" href="#/' + n[0] + '" data-v="' + n[0] + '">' + ic(n[2]) + "<span>" + n[1] + "</span>" + (n[4] ? '<span class="pill">' + n[4] + "</span>" : "") + "</a>";
-    }).join("");
+    var ok = function (n) { return !n[3] || can(n[3]); }, out = [], pendingH = null;
+    NAV.forEach(function (n) {
+      if (Array.isArray(n) && n.length === 1) { pendingH = n[0]; return; }
+      var html;
+      if (n.g) { var its = n.items.filter(ok); if (!its.length) return;
+        html = '<div class="nav-g' + (navOpen[n.id] ? " open" : "") + '" data-g="' + n.id + '"><button type="button" class="nav-a nav-gb" title="' + n.g + '">' + ic(n.icon) + "<span>" + n.g + '</span><span class="nav-car">' + ic("chevron-down") + '</span></button><div class="nav-sub">' + its.map(function (x) { return navLink(x, true); }).join("") + "</div></div>";
+      } else { if (!ok(n)) return; html = navLink(n); }
+      if (pendingH) { out.push('<div class="nav-h">' + pendingH + "</div>"); pendingH = null; }
+      out.push(html);
+    });
+    $("#nav").innerHTML = out.join("");
+    $$(".nav-gb").forEach(function (b) { b.onclick = function () { var g = b.parentNode; if ($("#app").classList.contains("mini")) { $("#app").classList.remove("mini"); g.classList.add("open"); } else g.classList.toggle("open"); navOpen[g.dataset.g] = g.classList.contains("open"); try { localStorage.setItem("wxNavOpen", JSON.stringify(navOpen)); } catch (e) {} }; });
     $$("[data-roles]").forEach(function (a) { a.hidden = !can(a.dataset.roles); });
   }
 
@@ -150,6 +166,21 @@
   $("#logout").onclick = function () { api("logout").then(function () { signedOut(); }); };
 
   // ---------------------------------------------------------------- chrome
+  // P16: Ctrl+K / Cmd+K quick search across every menu item
+  function navFlat() { var r = []; NAV.forEach(function (n) { if (n.g) n.items.forEach(function (x) { r.push([x, n.g]); }); else if (n.length > 1) r.push([n, ""]); }); return r.filter(function (x) { return !x[0][3] || can(x[0][3]); }); }
+  function palette() {
+    if (!S.user) return; var all = navFlat(), idx = 0;
+    modal('<input id="pk-q" placeholder="Search screens… (e.g. invoice, speed, whatsapp)" autocomplete="off" style="font-size:16px"><div id="pk-l" class="pk-l"></div><p class="muted" style="font-size:12px;margin:8px 0 0">↑ ↓ to move · Enter to open · Esc to close</p>');
+    function draw() { var q = $("#pk-q").value.toLowerCase(), m = all.filter(function (x) { return (x[0][1] + " " + x[1] + " " + x[0][0]).toLowerCase().indexOf(q) > -1; }).slice(0, 12); idx = Math.min(idx, Math.max(0, m.length - 1));
+      $("#pk-l").innerHTML = m.map(function (x, i) { return '<a href="#/' + x[0][0] + '" class="pk-i' + (i === idx ? " on" : "") + '">' + ic(x[0][2]) + "<span>" + x[0][1] + "</span>" + (x[1] ? '<small class="muted">' + x[1] + "</small>" : "") + "</a>"; }).join("") || '<p class="muted" style="padding:10px">No match</p>';
+      $$("#pk-l a").forEach(function (a) { a.onclick = closeModal; }); }
+    $("#pk-q").oninput = function () { idx = 0; draw(); };
+    $("#pk-q").onkeydown = function (e) { var n = $$("#pk-l a").length; if (e.key === "ArrowDown") { idx = (idx + 1) % n; draw(); e.preventDefault(); } else if (e.key === "ArrowUp") { idx = (idx - 1 + n) % n; draw(); e.preventDefault(); } else if (e.key === "Enter") { var a = $$("#pk-l a")[idx]; if (a) { location.hash = a.getAttribute("href"); closeModal(); } } };
+    draw(); $("#pk-q").focus();
+  }
+  document.addEventListener("keydown", function (e) { if ((e.ctrlKey || e.metaKey) && (e.key === "k" || e.key === "K")) { e.preventDefault(); palette(); } });
+  window.WXA_palette = palette;
+  if ($("#pk-btn")) $("#pk-btn").onclick = palette;
   $("#menu-btn").onclick = function () { innerWidth <= 1024 ? $("#app").classList.toggle("open") : $("#app").classList.toggle("mini"); };
   $("#side-x").onclick = $("#side-shade").onclick = function () { $("#app").classList.remove("open"); };
   $("#dark-btn").onclick = function () { var d = document.documentElement.classList.toggle("dark"); localStorage.setItem("wxaTheme", d ? "dark" : "light"); if (S.view === "dashboard") route(); };
@@ -170,7 +201,7 @@
     if (!def && v !== "profile") v = "dashboard", def = NAV[1];
     if (def && def[3] && !can(def[3])) { v = "dashboard"; toast("You do not have access to that section", true); }
     S.view = v; S.charts.forEach(function (c) { c.destroy(); }); S.charts = [];
-    var nv = { quote: "quotes", template: "templates", invoice: "invoices", post: "blog", study: "portfolio", fields: "services", citydraft: "cities" }[v] || v; $$(".nav-a").forEach(function (a) { a.classList.toggle("on", a.dataset.v === nv); });
+    var nv = { quote: "quotes", template: "templates", invoice: "invoices", post: "blog", study: "portfolio", fields: "services", citydraft: "cities" }[v] || v; $$(".nav-a").forEach(function (a) { a.classList.toggle("on", a.dataset.v === nv); }); $$(".nav-g").forEach(function (g) { var has = !!g.querySelector('.nav-a[data-v="' + nv + '"]'); g.classList.toggle("has-on", has); if (has) g.classList.add("open"); });
     $("#app").classList.remove("open");
     var view = $("#view"); view.className = "content"; $("#app").classList.toggle("mini", v === "builder" && innerWidth > 1024 ? true : $("#app").classList.contains("mini") && S.lastView !== "builder");
     S.lastView = v;

@@ -30,7 +30,7 @@ Work only in `frontend-v1/`. Every phase: QA on preview → FULL zip in `deploy/
 - [ ] QA script: every admin route, zero JS errors / failed APIs / stuck loaders → full zip
 
 ## Phase 3 — Advanced UI/UX + features
-**Sidebar (TailAdmin style)** — headings + dropdowns, collapse to icons, Ctrl+K search, dark mode
+**Sidebar (TailAdmin style)** ✅ done — headings + dropdowns, collapse to icons, Ctrl+K search, dark mode
 - MENU: Dashboard
 - SALES: Enquiries/Pipeline · Clients · Quotations · Invoices · Projects
 - SUPPORT: Inbox (Chat + WhatsApp) · Updates to clients
