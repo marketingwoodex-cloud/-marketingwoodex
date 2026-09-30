@@ -170,6 +170,7 @@
         '<aside class="qe-side"><div class="card"><div class="card-b"><h3 class="side-h">Summary</h3><div id="qe-sum"></div>' +
           "<div class='g2' style='margin-top:12px'><label>Discount (Rs)<input type='number' min='0' data-q='discount' value='" + (q.discount || "") + "'></label><label>Tax %<input type='number' min='0' max='50' step='0.5' data-q='taxPct' value='" + (q.taxPct || "") + "'></label></div>" +
           '<div class="qe-total"><span>Total</span><b id="qe-tot"></b></div><small class="muted" id="qe-words"></small></div></div>' +
+          "<div class='card'><div class='card-b'><h3 class='side-h'>PDF design</h3><div class='qd-pick'>" + [["classic", "Classic", "#0a0f1e", "#b8924c"], ["minimal", "Minimal", "#ffffff", "#111827"], ["premium", "Premium", "#2b2118", "#b8956a"]].map(function (d) { return "<label class='qd" + ((q.design || "classic") === d[0] ? " on" : "") + "'><input type='radio' name='qd' data-q='design' value='" + d[0] + "'" + ((q.design || "classic") === d[0] ? " checked" : "") + "><i style='background:" + d[2] + ";border-color:" + d[3] + "'><em style='background:" + d[3] + "'></em></i>" + d[1] + "</label>"; }).join("") + "</div><small class='muted'>Header and footer repeat on every page. Long tables flow onto extra pages.</small></div></div>" +
           "<div class='card'><div class='card-b'><h3 class='side-h'>Terms & conditions</h3><textarea data-q='terms' rows='6'>" + esc(q.terms || "") + "</textarea><h3 class='side-h' style='margin-top:12px'>Internal notes <small class='muted'>(not printed)</small></h3><textarea data-q='notes' rows='3'>" + esc(q.notes || "") + "</textarea></div></div>" +
           "<div class='card'><div class='card-b'><h3 class='side-h'>History</h3><div class='hist'>" + q.history.slice().reverse().map(function (h) { return "<div><small>" + esc(h.user) + " · " + dshort(h.t) + "</small>" + esc(h.text) + "</div>"; }).join("") + "</div></div></div></aside></div>";
       W.fillIcons(el);
@@ -182,9 +183,9 @@
       };
       sectionEditor($("#qe-secs"), q.sections, ro, markDirty); summary();
       $$("[data-c]", el).forEach(function (i) { i.oninput = function () { q.client[i.dataset.c] = i.value; markDirty(); }; });
-      $$("[data-q]", el).forEach(function (i) { i.oninput = i.onchange = function () { q[i.dataset.q] = i.value; markDirty(); }; });
+      $$("[data-q]", el).forEach(function (i) { i.oninput = i.onchange = function () { if (i.type === "radio" && !i.checked) return; q[i.dataset.q] = i.value; markDirty(); if (i.name === "qd") $$(".qd", el).forEach(function (l) { l.classList.toggle("on", l.contains(i)); }); }; });
       var save = function () {
-        return api("quote_save", { id: q.id, client: q.client, client_id: q.client_id, project: q.project, site: q.site, kind: q.kind, date: q.date, valid_days: q.valid_days, intro: q.intro, sections: cleanForSave(q.sections), discount: q.discount, taxPct: q.taxPct, terms: q.terms, notes: q.notes })
+        return api("quote_save", { id: q.id, client: q.client, client_id: q.client_id, project: q.project, site: q.site, kind: q.kind, date: q.date, valid_days: q.valid_days, intro: q.intro, sections: cleanForSave(q.sections), discount: q.discount, taxPct: q.taxPct, terms: q.terms, notes: q.notes, design: q.design || "classic" })
           .then(function (x) { if (!x.ok) { toast(x.error, true); return false; } dirty = false; if ($("#qe-save")) { $("#qe-save").disabled = true; $("#qe-save").textContent = "Saved"; } toast("Saved ✓"); return true; });
       };
       var ensureSaved = function () { return dirty ? save() : Promise.resolve(true); };
@@ -197,12 +198,40 @@
       $("#qe-pdf").onclick = function () { ensureSaved().then(function (ok) { if (!ok) return; api("quote_get", { id: q.id }).then(function (x) { WXPrint.preview(WXPrint.quote(x.quote, x.company), x.quote.label + " · " + x.quote.client.name); }); }); };
       $("#qe-send").onclick = function () {
         ensureSaved().then(function (ok) {
-          if (!ok) return; var first = String(q.client.name).split(" ")[0];
-          var msg = "Dear " + first + ",\n\nThank you for choosing Woodex Interior. Please find attached our quotation " + q.label + (q.project ? " for " + q.project : "") + ".\n\nTotal: " + $("#qe-tot").textContent + "\nValid for " + (q.valid_days || co.validDays) + " days.\n\nPlease let us know if you would like any changes.\n\nRegards,\n" + (S.user.name || "") + "\nWoodex Interior · " + (co.phones || "").split("·")[0].trim();
-          modal("<h2>Send " + esc(q.label) + "</h2><ol class='steps'><li><b>Download the PDF</b>: Preview → Print / Save PDF.</li><li><b>Send it</b> with the message below; attach the PDF in WhatsApp or email.</li><li><b>Mark as sent</b> so the enquiry moves to “Quote sent”.</li></ol><textarea id='sd-m' rows='9'>" + esc(msg) + "</textarea><div class='row' style='display:flex;gap:8px;flex-wrap:wrap;margin-top:12px'><button class='btn' id='sd-pdf'>" + ic("file-text") + "Preview / PDF</button>" + (q.client.phone ? "<a class='btn wa' id='sd-wa' target='_blank' rel='noopener'>" + ic("message-circle") + "Open WhatsApp</a>" : "") + (q.client.email ? "<a class='btn' id='sd-em'>" + ic("mail") + "Open email</a>" : "") + "</div><div class='modal-actions'><button class='btn' id='sd-x'>Close</button>" + (q.status === "draft" ? "<button class='btn pri' id='sd-sent'>Mark as sent</button>" : "") + "</div>");
-          var upd = function () { var m = $("#sd-m").value; if ($("#sd-wa")) $("#sd-wa").href = "https://wa.me/" + waNum(q.client.phone) + "?text=" + encodeURIComponent(m); if ($("#sd-em")) $("#sd-em").href = "mailto:" + q.client.email + "?subject=" + encodeURIComponent("Quotation " + q.label + " · Woodex Interior") + "&body=" + encodeURIComponent(m); };
-          $("#sd-m").oninput = upd; upd(); $("#sd-x").onclick = closeModal; $("#sd-pdf").onclick = function () { $("#qe-pdf").click(); };
-          if ($("#sd-sent")) $("#sd-sent").onclick = function () { api("quote_status", { id: q.id, status: "sent" }).then(function (x) { if (!x.ok) return toast(x.error, true); closeModal(); toast("Marked as sent ✓"); W.route(); }); };
+          if (!ok) return;
+          api("quote_link", { id: q.id }).then(function (lk) {
+            if (!lk.ok) return toast(lk.error, true);
+            var link = /^https?:/.test(lk.link) && lk.link.indexOf("://" + location.host) > 0 ? lk.link : location.origin + lk.link.replace(/^https?:\/\/[^/]+/, "");
+            var first = String(q.client.name).split(" ")[0], tot = $("#qe-tot").textContent.replace(/^\s*Rs\.?\s*/i, ""), sig = "\n\nRegards,\n" + (S.user.name || "") + "\nWoodex Interior · " + (co.phones || "").split("·")[0].trim();
+            var emMsg = "Dear " + first + ",\n\nThank you for choosing Woodex Interior. Please find attached our quotation " + q.label + (q.project ? " for " + q.project : "") + ".\n\nTotal: Rs " + tot + "\nValid for " + (q.valid_days || co.validDays) + " days.\n\nYou can also view it online: " + link + "\n\nPlease let us know if you would like any changes." + sig;
+            var waMsg = "Assalam-o-Alaikum " + first + ",\n\nThank you for choosing Woodex Interior. Here is your quotation " + q.label + (q.project ? " for " + q.project : "") + " (Rs " + tot + ", valid " + (q.valid_days || co.validDays) + " days):\n" + link + "\n\nYou can view and download the PDF from the link. Let us know if you would like any changes." + sig;
+            modal("<h2>Send " + esc(q.label) + "</h2><div class='tabs' id='sd-tabs'><button class='on' data-t='em'>" + ic("mail") + " Email</button><button data-t='wa'>" + ic("message-circle") + " WhatsApp</button></div>" +
+              "<div id='sd-em-p'><div class='g2'><label>To<input id='sd-to' type='email' value='" + esc(q.client.email || "") + "' placeholder='client@email.com'></label><label>Subject<input id='sd-sub' value='" + esc("Quotation " + q.label + " · Woodex Interior") + "'></label></div><label>Message<textarea id='sd-em' rows='9'>" + esc(emMsg) + "</textarea></label><label class='check'><input type='checkbox' id='sd-att' checked> Attach the PDF (" + esc(((WXPrint.THEMES[q.design] || WXPrint.THEMES.classic).label)) + " design)</label></div>" +
+              "<div id='sd-wa-p' hidden><label>Client WhatsApp number<input id='sd-ph' value='" + esc(q.client.phone || "") + "' placeholder='03xx xxxxxxx'></label><label>Message<textarea id='sd-wa' rows='9'>" + esc(waMsg) + "</textarea></label><p class='muted' style='font-size:12px'>WhatsApp opens with this message. The client taps the link to view and download the PDF (no sign-in needed).</p></div>" +
+              "<p class='err' id='sd-err'></p><div class='modal-actions' style='flex-wrap:wrap'><button class='btn' id='sd-cp'>" + ic("copy") + "Copy link</button><button class='btn' id='sd-dl'>" + ic("download") + "Download PDF</button><span style='flex:1'></span><button class='btn' id='sd-x'>Close</button><button class='btn pri' id='sd-go'>" + ic("send") + "Send email</button></div>");
+            var tab = "em";
+            $("#sd-tabs").onclick = function (e) { var b = e.target.closest("button"); if (!b) return; tab = b.dataset.t; $$("#sd-tabs button").forEach(function (x) { x.classList.toggle("on", x === b); }); $("#sd-em-p").hidden = tab !== "em"; $("#sd-wa-p").hidden = tab !== "wa"; $("#sd-go").innerHTML = ic("send") + (tab === "em" ? "Send email" : "Open WhatsApp"); W.fillIcons($("#sd-go")); $("#sd-err").textContent = ""; };
+            $("#sd-x").onclick = closeModal;
+            $("#sd-cp").onclick = function () { (navigator.clipboard ? navigator.clipboard.writeText(link) : Promise.reject()).then(function () { toast("Link copied"); }, function () { prompt("Copy the link:", link); }); };
+            var pdfOf = function () { return api("quote_get", { id: q.id }).then(function (x) { return WXPrint.quotePdf(x.quote, x.company); }); };
+            $("#sd-dl").onclick = function () { var b = this; b.disabled = true; pdfOf().then(function (r) { WXPrint.download(r.blob, r.name); b.disabled = false; }, function (e) { b.disabled = false; toast(e.message || "PDF failed", true); }); };
+            var after = function (x, txt) { if (!x.ok) { $("#sd-err").textContent = x.error; return false; } closeModal(); toast(txt); W.route(); return true; };
+            $("#sd-go").onclick = function () {
+              var b = this; $("#sd-err").textContent = "";
+              if (tab === "wa") {
+                var ph = waNum($("#sd-ph").value); if (!ph) return ($("#sd-err").textContent = "Enter the client's WhatsApp number");
+                window.open("https://wa.me/" + ph + "?text=" + encodeURIComponent($("#sd-wa").value), "_blank", "noopener");
+                api("quote_send", { id: q.id, channel: "whatsapp", to: $("#sd-ph").value }).then(function (x) { after(x, "Shared on WhatsApp ✓" + (q.status === "draft" ? " · marked as sent" : "")); });
+                return;
+              }
+              var to = $("#sd-to").value.trim(); if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(to)) return ($("#sd-err").textContent = "Enter a valid email address");
+              b.disabled = true; b.textContent = $("#sd-att").checked ? "Making PDF…" : "Sending…";
+              ($("#sd-att").checked ? pdfOf() : Promise.resolve(null)).then(function (pdf) {
+                b.textContent = "Sending…";
+                return api("quote_send", { id: q.id, channel: "email", to: to, subject: $("#sd-sub").value, message: $("#sd-em").value, pdf: pdf ? pdf.base64 : "", pdfName: pdf ? pdf.name : "" });
+              }).then(function (x) { if (!after(x, "Email sent ✓" + (q.status === "draft" ? " · marked as sent" : ""))) { b.disabled = false; b.innerHTML = ic("send") + "Send email"; W.fillIcons(b); } }, function (e) { b.disabled = false; b.innerHTML = ic("send") + "Send email"; W.fillIcons(b); $("#sd-err").textContent = e.message || "Could not make the PDF"; });
+            };
+          });
         });
       };
       var toInvoice = function () {

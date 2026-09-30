@@ -429,6 +429,8 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
   }
   const ensureA5 = (db) => { ensureCrm(db); ["tpls", "quotes", "invoices", "projects"].forEach((k) => { db[k] = db[k] || []; }); ["seqT", "seqQ", "seqI", "seqP", "seqPay"].forEach((k) => { db[k] = db[k] || 0; }); };
   const clientOf = (inp) => ({ name: clip(inp.name, 120), phone: clip(inp.phone, 40), email: clip(inp.email, 190), address: clip(inp.address, 300), company: clip(inp.company, 120) });
+  const qViewTok = (q) => hmac("qv|" + q.id + "|" + q.no).slice(0, 32);
+  const qViewUrl = (q, host) => (host ? "https://" + String(host).replace(/[^a-z0-9.\-:]/gi, "") : "") + "/api/quote-view.php?id=" + q.id + "&t=" + qViewTok(q);
   const qLabel = (q) => q.no + (q.version > 1 ? " · V" + q.version : "") + (q.option ? " · " + q.option : "");
   const invPub = (i) => { const paid = i.payments.reduce((a, p) => a + p.amount, 0); return { ...i, paid, balance: Math.max(0, i.total - paid), payStatus: paid <= 0 ? "unpaid" : paid >= i.total ? "paid" : "partial", overdue: paid < i.total && i.due_date && i.due_date < now().slice(0, 10) }; };
   function a5(action, inp, need, db, ip) {
@@ -477,7 +479,7 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
         }
         const c = companyCfg();
         Object.assign(q, { client: clientOf(inp.client || {}), client_id: +inp.client_id || q.client_id || null, project: clip(inp.project, 160), site: clip(inp.site, 200), kind: clip(inp.kind, 20) || q.kind || "other", date: /^\d{4}-\d{2}-\d{2}$/.test(inp.date || "") ? inp.date : q.date || now().slice(0, 10),
-          valid_days: Math.max(1, Math.round(num(inp.valid_days) || c.validDays)), sections: cleanSections(inp.sections), discount: num(inp.discount), taxPct: num(inp.taxPct), terms: clip(inp.terms, 3000), notes: clip(inp.notes, 2000), intro: clip(inp.intro, 1500), updated_at: now() });
+          valid_days: Math.max(1, Math.round(num(inp.valid_days) || c.validDays)), sections: cleanSections(inp.sections), discount: num(inp.discount), taxPct: num(inp.taxPct), terms: clip(inp.terms, 3000), notes: clip(inp.notes, 2000), intro: clip(inp.intro, 1500), design: ["classic", "minimal", "premium"].includes(inp.design) ? inp.design : q.design || "classic", updated_at: now() });
         if (!q.client.name) throw new Fail("Client name is required");
         totals(q); log(db, u, inp.id ? "quote.update" : "quote.create", qLabel(q) + " " + q.client.name, ip);
         return done({ ok: true, quote: { ...q, label: qLabel(q) } });
@@ -492,6 +494,25 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
         else if (mode === "version") { q.version = Math.max(...fam.filter((x) => x.option === src.option).map((x) => x.version)) + 1; }
         else { const n = fam.reduce((m, x) => Math.max(m, +(String(x.option).match(/\d+/) || [1])[0]), 1); q.option = "Option " + (n + 1); q.version = 1; fam.forEach((x) => { if (!x.option) x.option = "Option 1"; }); }
         db.quotes.push(q); log(db, u, "quote." + mode, qLabel(q), ip); return done({ ok: true, quote: { ...q, label: qLabel(q) } });
+      }
+      case "quote_link": { need(SALES); const q = findQ(inp.id); return { ok: true, link: qViewUrl(q, inp._host) }; }
+      case "quote_send": {
+        const u = need(SALES), q = findQ(inp.id), ch = String(inp.channel || ""), to = String(inp.to || "").trim(), link = qViewUrl(q, inp._host);
+        if (["superseded", "rejected"].includes(q.status)) throw new Fail("This quotation is " + q.status);
+        let what;
+        if (ch === "email") {
+          if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(to)) throw new Fail("Enter a valid email address");
+          const pdf = String(inp.pdf || ""), bin = pdf ? Buffer.from(pdf, "base64") : null;
+          if (bin && bin.slice(0, 4).toString() !== "%PDF") throw new Fail("The PDF file is not valid");
+          // preview: no real SMTP, the email is written to _private/outbox/ instead
+          const ob = path.join(PRIV, "outbox"); fs.mkdirSync(ob, { recursive: true }); const stem = path.join(ob, Date.now() + "-" + q.no);
+          fs.writeFileSync(stem + ".txt", "To: " + to + "\nSubject: " + clip(inp.subject, 200) + "\n\n" + clip(inp.message, 5000) + "\n\nView online: " + link); if (bin) fs.writeFileSync(stem + ".pdf", bin);
+          what = "Emailed to " + to + (bin ? " (PDF attached)" : "");
+        } else if (ch === "whatsapp") what = "Shared on WhatsApp" + (to ? " with " + clip(to, 40) : "");
+        else throw new Fail("Choose email or WhatsApp");
+        q.history.push({ t: now(), user: u.name, text: what }); q.last_sent = { t: now(), channel: ch, to: clip(to, 190) };
+        if (q.status === "draft") { q.status = "sent"; q.sent_at = now(); q.history.push({ t: now(), user: u.name, text: "Status: draft → sent" }); }
+        log(db, u, "quote.send", qLabel(q) + " · " + ch, ip); return done({ ok: true, quote: { ...q, label: qLabel(q) }, link });
       }
       case "quote_status": {
         const u = need(SALES), q = findQ(inp.id), to = String(inp.status || "");
@@ -1176,6 +1197,21 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
         return run("cms_save", { type: "post", title, slug, status: "draft", data: { excerpt: clip(a.excerpt, 300), blocks: blocks.slice(0, 120), aiAgent: T.name }, seo: { description: clip(a.excerpt, 160) } }, (r) => ({ ok: true, id: r.item && r.item.id, slug, status: "draft", message: "Draft saved. Open Admin → Insights to add a hero image, review and publish." }));
       }
     }
+  };
+  /** Client quotation view (mirror of api/quote-view.php) → {status, html} */
+  adminApi.quoteView = function (id, t) {
+    const db = load(), q = db && (db.quotes || []).find((x) => x.id === +id);
+    const e = (m) => ({ status: 404, html: '<!doctype html><meta charset="utf-8"><body style="font-family:system-ui;display:grid;place-items:center;min-height:90vh"><h1 style="font-size:22px">' + m + "</h1>" });
+    if (!q || !/^[a-f0-9]{32}$/.test(String(t)) || qViewTok(q) !== t) return e("This quotation link is not valid.");
+    if (q.status === "superseded") return e("This quotation has been replaced by a newer version.");
+    if (!q.viewed_at || Date.parse(q.viewed_at.replace(" ", "T")) < Date.now() - 432e5) { q.viewed_at = now(); q.views = (q.views || 0) + 1; q.history.push({ t: now(), user: "Client", text: "Viewed online" }); save(db); }
+    const c = companyCfg(), { history, notes, created_by, lead_id, client_id, last_sent, ...pq } = q; pq.label = qLabel(q);
+    const J = (o) => JSON.stringify(o).replace(/</g, "\\u003c");
+    const html = fs.readFileSync(path.join(ROOT, "api", "quote-view.php"), "utf8").split("?>").slice(1).join("?>")
+      .replace(/<\?= htmlspecialchars\(\$title\) \?>/, "Quotation " + qLabel(q)).replace(/<\?= htmlspecialchars\(q_label\(\$x\)\) \?>/, qLabel(q))
+      .replace(/<\?= htmlspecialchars\(\(string\)\$x\['client'\]\['name'\]\) \?>/, q.client.name.replace(/</g, "&lt;")).replace(/<\?= number_format\(\(float\)\$x\['total'\]\) \?>/, Math.round(q.total).toLocaleString("en-US"))
+      .replace(/<\?php if \(\$wa\): \?>[\s\S]*?<\?php endif; \?>/, "").replace("<?= json_encode($q, $J) ?>", J(pq)).replace("<?= json_encode($c, $J) ?>", J(c));
+    return { status: 200, html };
   };
   adminApi.forms = formsApi; adminApi.backupFile = backupFile; adminApi.rawAction = rawAction;
   adminApi.publicGuard = function (rel) {

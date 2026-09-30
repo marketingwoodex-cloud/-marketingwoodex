@@ -316,6 +316,7 @@ http.createServer(async (req, res) => {
       return res.end(JSON.stringify(out));
     }
 
+    if (p === "/api/quote-view.php") { const r = adminApi.quoteView(url.searchParams.get("id"), url.searchParams.get("t") || ""); res.writeHead(r.status, { "Content-Type": "text/html; charset=utf-8", "X-Robots-Tag": "noindex" }); return res.end(r.html); }
     if (p === "/api/mcp.php") {
       const cors = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Methods": "POST, OPTIONS", "Access-Control-Allow-Headers": "Authorization, Content-Type, Accept, Mcp-Session-Id, MCP-Protocol-Version" };
       if (req.method === "OPTIONS") { res.writeHead(204, cors); return res.end(); }

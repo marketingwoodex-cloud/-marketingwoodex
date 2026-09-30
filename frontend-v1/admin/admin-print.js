@@ -180,7 +180,7 @@
           var logo = new Image(); logo.crossOrigin = "anonymous";
           var go = function () {
             var hex = function (h) { h = h.replace("#", ""); return [parseInt(h.substr(0, 2), 16), parseInt(h.substr(2, 2), 16), parseInt(h.substr(4, 2), 16)]; };
-            w.html2pdf().set({ margin: [30, 0, 16, 0], filename: name, image: { type: "jpeg", quality: 0.93 }, html2canvas: { scale: 2, useCORS: true, backgroundColor: "#ffffff" }, jsPDF: { unit: "mm", format: "a4", orientation: "portrait" }, pagebreak: { mode: ["css", "legacy"], avoid: ["tr", ".keep", ".tot", ".sec-h"] } })
+            w.html2pdf().set(w.JSON.parse(JSON.stringify({ margin: [30, 0, 16, 0], filename: name, image: { type: "jpeg", quality: 0.93 }, html2canvas: { scale: 2, useCORS: true, backgroundColor: "#ffffff" }, jsPDF: { unit: "mm", format: "a4", orientation: "portrait" }, pagebreak: { mode: ["css", "legacy"], avoid: ["tr", ".keep", ".tot", ".sec-h"] } }))) // options built in the iframe realm (html2pdf checks instanceof Array)
               .from(d.querySelector(".doc")).toPdf().get("pdf").then(function (pdf) {
                 var n = pdf.internal.getNumberOfPages(), W = 210, ink = hex(t.ink), acc = hex(t.acc);
                 for (var i = 1; i <= n; i++) {
