@@ -231,7 +231,7 @@ function media_actions(string $action, array $in): bool {
         case 'health_settings':
             need($OA); $h = jread(HEALTH_FILE); if (is_string($in['psiKey'] ?? null) && $in['psiKey'] !== '') $h['psiKey'] = substr(trim($in['psiKey']), 0, 100); if (!empty($in['clearKey'])) unset($h['psiKey']);
             if (preg_match('~^https://[a-z0-9.-]+$~i', (string)($in['site'] ?? ''))) $h['site'] = $in['site']; jwrite(HEALTH_FILE, $h); out(['ok' => true, 'psiKeySet' => !empty($h['psiKey']), 'site' => $h['site'] ?? SITE_URL_DEF]);
-        case 'speed_get': need($ED); $h = jread(HEALTH_FILE); out(['ok' => true, 'psi' => (object)($h['psi'] ?? []), 'psiKeySet' => !empty($h['psiKey']), 'site' => $h['site'] ?? SITE_URL_DEF]);
+        case 'health_speed': need($ED); $h = jread(HEALTH_FILE); out(['ok' => true, 'psi' => (object)($h['psi'] ?? []), 'psiKeySet' => !empty($h['psiKey']), 'site' => $h['site'] ?? SITE_URL_DEF]);
         case 'health_psi':
             need($ED); $h = jread(HEALTH_FILE); $rel = (string)($in['rel'] ?? 'index.html'); if (!preg_match('~^[a-z0-9][a-z0-9/_\-.]*\.html$~i', $rel) || strpos($rel, '..') !== false) fail('Invalid page');
             $strategy = ($in['strategy'] ?? '') === 'desktop' ? 'desktop' : 'mobile'; $url = ($h['site'] ?? SITE_URL_DEF) . '/' . preg_replace('~index\.html$~', '', $rel);

@@ -1,6 +1,6 @@
 /* Woodex Admin v2 — P15 Speed dashboard.
    Runs Google PageSpeed (mobile + desktop) for any page, shows scores, Core Web Vitals,
-   top 5 suggestions and history. Uses health_psi / speed_get / health_settings (media-lib.php). */
+   top 5 suggestions and history. Uses health_psi / health_speed / health_settings (media-lib.php). */
 (function () {
   "use strict";
   var W = window.WXA, api = W.api, bapi = W.bapi, esc = W.esc, ic = W.ic, $ = W.$, toast = W.toast, head = W.head;
@@ -33,7 +33,7 @@
   var CSS = ".sp-top{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:end;margin-bottom:20px}.sp-top label{margin:0}" +
     ".sp-2{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px}@media(max-width:900px){.sp-2{grid-template-columns:1fr}.sp-top{grid-template-columns:1fr}}" +
     ".sp-rings{display:flex;gap:14px;flex-wrap:wrap;margin:6px 0 16px}.sp-ring{text-align:center;font-size:12px;color:var(--mut)}.sp-ring svg{display:block;margin:0 auto 4px}" +
-    ".sp-m{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:14px}.sp-m div{background:var(--bg);border-radius:10px;padding:8px 10px}.sp-m small{display:block;color:var(--mut);font-size:11px}.sp-m b{font-size:15px}" +
+    ".sp-m{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:14px}.sp-m div{background:var(--bg);border-radius:10px;padding:8px 10px}.sp-m small{display:block;color:var(--mut);font-size:11px}.sp-m b{font-size:15px}@media(max-width:600px){.sp-m{grid-template-columns:repeat(3,1fr)}}.card h3 i[data-i] svg{width:18px;height:18px;vertical-align:-3px}" +
     ".sp-tip{border-top:1px solid var(--line);padding:9px 0}.sp-tip b{font-size:13px}.sp-tip p{margin:2px 0 0;font-size:12.5px;color:var(--mut)}.sp-tip em{font-style:normal;font-size:12px;color:var(--warn,#b7791f);margin-left:6px}" +
     ".sp-okc{color:#0a8f4d}.sp-warn{color:#c27c0e}.sp-bad{color:#d63b3b}.sp-hist{display:flex;gap:3px;align-items:flex-end;height:26px}.sp-hist i{display:block;width:7px;border-radius:2px;background:var(--line)}" +
     ".sp-hist i.g{background:#23b26d}.sp-hist i.o{background:#e6a23c}.sp-hist i.r{background:#e05656}.sp-prog{font-size:13px;margin-left:10px}.sp-empty{padding:30px 0;text-align:center;color:var(--mut)}";
@@ -59,7 +59,7 @@
     el.innerHTML = head("Speed", "Speed", '<span class="sp-prog muted" id="sp-prog"></span><button class="btn" id="sp-stop" hidden>Stop</button><button class="btn pri" id="sp-all">' + ic("zap") + "Test key pages</button>") + '<div id="sp-b"><p class="muted">Loading…</p></div>';
     W.fillIcons(el);
 
-    Promise.all([api("speed_get"), bapi("pages").catch(function () { return {}; })]).then(function (rs) {
+    Promise.all([api("health_speed"), bapi("pages").catch(function () { return {}; })]).then(function (rs) {
       if (!rs[0].ok) return toast(rs[0].error, true);
       D = rs[0];
       if (rs[1] && rs[1].ok && rs[1].pages) {
@@ -71,7 +71,7 @@
     function last(rel, s) { var l = D.psi[rel + "|" + s]; return l && l[0]; }
 
     function card(rel, s) {
-      var list = D.psi[rel + "|" + s] || [], r = list[0], t = s === "mobile" ? "📱 Mobile" : "🖥 Desktop";
+      var list = D.psi[rel + "|" + s] || [], r = list[0], t = s === "mobile" ? ic("smartphone") + " Mobile" : ic("monitor") + " Desktop";
       if (!r) return '<div class="card card-b"><h3>' + t + '</h3><div class="sp-empty">Not tested yet.<br>Press <b>Test this page</b>.</div></div>';
       var tips = (r.tips || []);
       return '<div class="card card-b"><div style="display:flex;justify-content:space-between;align-items:center"><h3 style="margin:0">' + t + '</h3><small class="muted">' + esc((r.at || "").slice(0, 16)) + "</small></div>" +
@@ -92,7 +92,7 @@
       $("#sp-b").innerHTML = noKey +
         '<div class="sp-top"><label>Page<select id="sp-page">' + pages.map(function (p) { return '<option value="' + esc(p) + '"' + (p === sel ? " selected" : "") + ">" + esc(url(p)) + "</option>"; }).join("") + '</select></label><div style="display:flex;gap:8px"><a class="btn" id="sp-view" target="_blank" href="' + esc((D.site || "") + url(sel)) + '">Open page</a><button class="btn pri" id="sp-one">' + ic("zap") + "Test this page</button></div></div>" +
         '<div class="sp-2">' + card(sel, "mobile") + card(sel, "desktop") + "</div>" +
-        '<div class="card"><div class="card-h"><h3>Key pages</h3><small class="muted">Goal: Speed 90+ on mobile · tests run on ' + esc(D.site || "") + '</small></div><div class="tbl-wrap"><table class="tbl"><thead><tr><th>Page</th><th>📱 Speed</th><th>Trend</th><th>🖥 Speed</th><th>A11y</th><th>SEO</th><th>Tested</th><th></th></tr></thead><tbody>' + rows + "</tbody></table></div></div>";
+        '<div class="card"><div class="card-h"><h3>Key pages</h3><small class="muted">Goal: Speed 90+ on mobile · tests run on ' + esc(D.site || "") + '</small></div><div class="tbl-wrap"><table class="tbl"><thead><tr><th>Page</th><th>Mobile</th><th>Trend</th><th>Desktop</th><th>A11y</th><th>SEO</th><th>Tested</th><th></th></tr></thead><tbody>' + rows + "</tbody></table></div></div>";
       W.fillIcons($("#sp-b"));
       $("#sp-page").onchange = function () { sel = this.value; draw(); };
       $("#sp-one").onclick = function () { run([sel]); };

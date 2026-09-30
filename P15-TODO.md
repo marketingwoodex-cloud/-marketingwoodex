@@ -29,12 +29,12 @@ Legend: [x] done · [~] in progress · [ ] pending
 - [x] D2. Fix any page under 90 (mobile)
 - [x] D3. Desktop check (expected 95+)
 
-## E. Admin Speed dashboard
-- [~] E1. New admin page "Speed": choose page → run Google PageSpeed (mobile + desktop)
-- [ ] E2. Show scores, FCP / LCP / TBT / CLS and top 5 suggestions
-- [ ] E3. Save history per page (reuse `health_psi` from Site health), optional PSI API key in settings
-- [ ] E4. "Test all key pages" button + table
-- [ ] E5. PHP lint + Node mirror + browser test
+## E. Admin Speed dashboard (done — Admin → Speed)
+- [x] E1. New admin page "Speed": choose page → run Google PageSpeed (mobile + desktop)
+- [x] E2. Show scores, FCP / LCP / TBT / CLS and top 5 suggestions
+- [x] E3. Save history per page (reuse `health_psi` from Site health), optional PSI API key in settings
+- [x] E4. "Test all key pages" button + table
+- [x] E5. PHP lint + Node mirror + browser test
 
 ## F. Ship
 - [ ] F1. Restore test side-effect files (`.htaccess`, `renovation/index.html`, `sitemap.xml`)
