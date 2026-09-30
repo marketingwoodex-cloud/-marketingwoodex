@@ -82,14 +82,15 @@
     add(R, "repeat", rep ? "ok" : "good", rep ? rep + " time(s) three sentences in a row start with the same word." : "Sentence openings are varied.");
     function score(list) { var p = { good: 1, ok: 0.5, bad: 0 }, t = list.reduce(function (a, c) { return a + p[c.status]; }, 0); return list.length ? Math.round(t / list.length * 100) : 0; }
     var order = { bad: 0, ok: 1, good: 2 }; function sort(l) { return l.sort(function (a, b) { return order[a.status] - order[b.status]; }); }
-    return { seo: { score: score(S), checks: sort(S) }, read: { score: score(R), checks: sort(R) }, info: { title: i.title, desc: i.desc, h1: i.h1[0] || "", words: i.words, schema: i.schema, og: i.og, canonical: i.canonical, noindex: /noindex/i.test(i.robots) } };
+    var ss = score(S); if (!kw) ss = Math.min(ss, 60);
+    return { seo: { score: ss, checks: sort(S) }, read: { score: score(R), checks: sort(R) }, info: { title: i.title, desc: i.desc, h1: i.h1[0] || "", words: i.words, schema: i.schema, og: i.og, canonical: i.canonical, noindex: /noindex/i.test(i.robots) } };
   }
   function color(s) { return s >= 70 ? "good" : s >= 40 ? "ok" : "bad"; }
   /** Renders a Google-style result preview + both check lists into el. */
   function render(el, r, o) {
     o = o || {}; var esc = function (s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); };
     var li = function (c) { return '<li class="sx-' + c.status + '"><i></i>' + esc(c.text) + "</li>"; };
-    el.innerHTML = '<div class="sx-g"><div class="sx-u">woodex.com.pk' + esc((o.url || "/").replace(/\/$/, "").replace(/\//g, " › ")) + '</div><div class="sx-t">' + esc(r.info.title.length > 62 ? r.info.title.slice(0, 60) + "…" : r.info.title || "(no title)") + '</div><div class="sx-d">' + esc(r.info.desc.length > 162 ? r.info.desc.slice(0, 158) + "…" : r.info.desc || "Google will pick text from the page. Write a meta description.") + "</div></div>" +
+    el.innerHTML = (o.noPreview ? '' : '<div class="sx-g"><div class="sx-u">woodex.com.pk' + esc((o.url || "/").replace(/\/$/, "").replace(/\//g, " › ")) + '</div><div class="sx-t">' + esc(r.info.title.length > 62 ? r.info.title.slice(0, 60) + "…" : r.info.title || "(no title)") + '</div><div class="sx-d">' + esc(r.info.desc.length > 162 ? r.info.desc.slice(0, 158) + "…" : r.info.desc || "Google will pick text from the page. Write a meta description.") + "</div></div>") +
       '<div class="sx-h"><span class="sx-b sx-' + color(r.seo.score) + '">SEO ' + r.seo.score + '</span><span class="sx-b sx-' + color(r.read.score) + '">Readability ' + r.read.score + "</span></div>" +
       "<details open><summary>SEO analysis</summary><ul class='sx-l'>" + r.seo.checks.map(li).join("") + "</ul></details><details><summary>Readability</summary><ul class='sx-l'>" + r.read.checks.map(li).join("") + "</ul></details>";
   }

@@ -136,7 +136,7 @@ function content_actions(string $action, array $in): bool {
             }
             if (!$it) { $it = ['id' => ++$c['seq'], 'type' => $type, 'status' => 'draft', 'created_at' => cms_now(), 'created_by' => $u['name'], 'rel' => null]; }
             $seo = is_array($in['seo'] ?? null) ? $in['seo'] : [];
-            $it = array_merge($it, ['title' => $title, 'slug' => $slug, 'data' => $data, 'seo' => ['title' => clip($seo['title'] ?? '', 90), 'desc' => clip($seo['desc'] ?? '', 200), 'og' => clip($seo['og'] ?? '', 300)], 'order' => (int)($in['order'] ?? 0), 'updated_at' => cms_now(), 'updated_by' => $u['name']]);
+            $it = array_merge($it, ['title' => $title, 'slug' => $slug, 'data' => $data, 'seo' => ['title' => clip($seo['title'] ?? '', 90), 'desc' => clip($seo['desc'] ?? '', 200), 'og' => clip($seo['og'] ?? '', 300), 'kw' => clip($seo['kw'] ?? '', 120), 'related' => array_values(array_slice(array_map(fn($x) => clip($x, 120), array_filter((array)($seo['related'] ?? []), 'is_string')), 0, 4))], 'order' => (int)($in['order'] ?? 0), 'updated_at' => cms_now(), 'updated_by' => $u['name']]);
             if ($claim !== '' && isset(CMS_PAGES[$type]) && $claim === CMS_PAGES[$type] . '/' . $slug . '/index.html') { $it['rel'] = $claim; $it['status'] = 'published'; $it['imported'] = true; }
             $st = (string)($in['status'] ?? '');
             if ($st === 'draft' && $it['status'] === 'scheduled') { $it['status'] = 'draft'; unset($it['pending']); }

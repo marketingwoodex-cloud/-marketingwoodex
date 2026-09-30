@@ -1462,7 +1462,17 @@
 
   // ---- left panel toggle (D3)
   $("#panel-btn").onclick = function () { $("#app").classList.toggle("no-left"); this.classList.toggle("is-on", $("#app").classList.contains("no-left")); };
-  $$(".rl").forEach(function (b) { b.addEventListener("click", function () { $("#app").classList.remove("no-left"); $("#panel-btn").classList.remove("is-on"); if (b.dataset.left === "pages") renderPages(); if (b.dataset.left === "seo") runAudit(); }); });
+  $$(".rl").forEach(function (b) { b.addEventListener("click", function () { $("#app").classList.remove("no-left"); $("#panel-btn").classList.remove("is-on"); if (b.dataset.left === "pages") renderPages(); if (b.dataset.left === "seo") { runAudit(); seoAnalyse(); } }); });
+  function seoAnalyse() {
+    if (!S.doc || !window.WXSEO) return; var k = "wxSeoKw:" + S.path, kw = $("#seo-kw");
+    if (kw.dataset.p !== S.path) { kw.dataset.p = S.path; kw.value = localStorage.getItem(k) || ""; }
+    var p = S.pages.find(function (x) { return x.path === S.path; }) || {}, r = WXSEO.analyze(serialise(), { kw: kw.value, url: p.url || "/" });
+    WXSEO.render($("#seo-an"), r, { url: p.url || "/", noPreview: true }); $("#seo-mgr").href = "/admin/#/seo/" + encodeURIComponent(S.path);
+  }
+  $("#seo-kw").addEventListener("input", function () { try { localStorage.setItem("wxSeoKw:" + S.path, this.value); } catch (e) {} seoAnalyse(); });
+  $("#seo-an-run").onclick = seoAnalyse;
+  (function () { var t; ["#seo-title", "#seo-desc"].forEach(function (s) { $(s).addEventListener("input", function () { clearTimeout(t); t = setTimeout(seoAnalyse, 400); }); }); })();
+  // });
 
   // ---- pages tree (D4)
   function renderPages() {

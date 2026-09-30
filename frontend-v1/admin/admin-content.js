@@ -301,6 +301,7 @@
           '<button class="btn blk" id="ce-save">' + ic("save") + (live ? "Save without publishing" : "Save draft") + "</button>" + (it.status === "scheduled" ? '<button class="btn blk ghost" id="ce-unsch">Cancel schedule</button>' : "") +
           (it.id && !live ? '<button class="btn blk ghost danger" id="ce-del">Delete draft</button>' : "") + "</div>" +
           '<div class="card card-b"><div class="side-hr"><h4 class="side-h">Search & sharing</h4>' + (aiReady ? aiBtn("ce-ai-seo", "Write") : "") + '</div><label>SEO title <small id="ce-stc"></small><input id="ce-st" value="' + esc(seo.title) + '" placeholder="Title | Woodex Interior"></label><label>Meta description <small id="ce-sdc"></small><textarea id="ce-sd" rows="3">' + esc(seo.desc) + "</textarea></label>" + imgField("ce-og", seo.og, "Share image (defaults to hero)") +
+            '<label>Focus keyphrase<input id="ce-kw" value="' + esc(seo.kw || "") + '" placeholder="e.g. interior design cost Pakistan"></label><button type="button" class="btn sm" id="ce-seo-an">' + ic("search") + 'SEO check</button><div id="ce-seo-r" style="margin-top:10px"></div>' +
           '<div class="serp"><span id="sp-u"></span><b id="sp-t"></b><p id="sp-d"></p></div></div>' +
           '<div class="card card-b"><div class="side-hr"><h4 class="side-h">Listing card</h4>' + (aiReady ? aiBtn("ce-ai-card", "Write") : "") + "</div>" + imgField("ce-card", (d.card || {}).src, "Card image (defaults to hero)") + '<label>Card text<textarea id="ce-ct" rows="2">' + esc((d.card || {}).text) + '</textarea></label><label>Card label <small>(e.g. "5 min read", "Study · 2026")</small><input id="ce-cl" value="' + esc((d.card || {}).tag) + '"></label></div>' +
           "</div></div></div>";
@@ -323,7 +324,7 @@
         d.quote = $("#ce-quote").value.trim(); d.ctaTitle = $("#ce-cta").value.trim();
         d.related = $$(".rel-l input:checked").map(function (c) { return c.value; }).slice(0, 3);
         d.card = { src: imgVal("ce-card"), text: $("#ce-ct").value.trim(), tag: $("#ce-cl").value.trim(), alt: (d.card || {}).alt || "" };
-        it.seo = { title: $("#ce-st").value.trim(), desc: $("#ce-sd").value.trim(), og: imgVal("ce-og") };
+        it.seo = { title: $("#ce-st").value.trim(), desc: $("#ce-sd").value.trim(), og: imgVal("ce-og"), kw: ($("#ce-kw") || { value: "" }).value.trim(), related: (it.seo || {}).related || [] };
       }
       function redrawBlocks() { $("#ce-blocks").innerHTML = d.blocks.map(blk).join(""); W.fillIcons($("#ce-blocks")); }
       function serp() {
@@ -373,6 +374,7 @@
         if ($("#ce-ai-card")) $("#ce-ai-card").onclick = function () { var b = this; busy(b, true); ai("excerpt", { title: $("#ce-title").value, text: $("#ce-dek").value + "\n" + bodyText() }).then(function (tx) { $("#ce-ct").value = tx.trim(); mark(); }).catch(function () {}).then(function () { busy(b, false); }); };
         if ($("#ce-ai-faq")) $("#ce-ai-faq").onclick = function () { var b = this; busy(b, true); ai("faqs", { title: $("#ce-title").value, text: bodyText() }).then(function (tx) { var j = aiJson(tx); collect(); d.faqs = d.faqs.concat(j.filter(function (f) { return f.q; })); $("#ce-faqs").innerHTML = faqRows(d.faqs); W.fillIcons($("#ce-faqs")); mark(); }).catch(function () {}).then(function () { busy(b, false); }); };
         // actions
+        if ($("#ce-seo-an")) $("#ce-seo-an").onclick = seoCheck;
         $("#ce-prev").onclick = function () { collect(); build().then(function (h) { preview(h); }).catch(function (e) { toast(e.message, true); }); };
         $("#ce-save").onclick = function () { save({}).then(function (ok) { if (ok) toast("Saved"); }); };
         $("#ce-pub").onclick = function () { publish(this); };
@@ -406,6 +408,11 @@
         return bapi("load", { path: rel }).then(function (r) { if (!r.ok) throw new Error("Template page could not be loaded: " + (r.error || rel)); return r; });
       }
       function build() { return shellHtml().then(function (r) { return renderPage(type, it, r.html, others); }); }
+      function seoCheck() {
+        if (!window.WXSEO || !$("#ce-seo-r")) return; collect(); var url = "/" + t.folder + "/" + (it.slug || "new") + "/";
+        build().then(function (h) { var r = WXSEO.analyze(h, { kw: it.seo.kw, url: url }); WXSEO.render($("#ce-seo-r"), r, { url: url }); });
+      }
+
       function publish(btn) {
         collect(); if (!check()) return;
         if (it.rel && it.imported && !it.republished && !confirm("This rebuilds the live page from the form fields. Did you check Preview?")) return;

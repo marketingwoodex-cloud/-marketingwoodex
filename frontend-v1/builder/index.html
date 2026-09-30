@@ -148,6 +148,9 @@
       <label>Page title <small id="seo-title-n"></small><input type="text" id="seo-title" maxlength="120"></label>
       <label>Meta description <small id="seo-desc-n"></small><textarea id="seo-desc" rows="5" maxlength="300"></textarea></label>
       <div class="serp"><div class="serp-url" id="serp-url"></div><div class="serp-t" id="serp-t"></div><div class="serp-d" id="serp-d"></div></div>
+      <label style="margin-top:10px">Focus keyphrase<input type="text" id="seo-kw" placeholder="e.g. office renovation Lahore"></label>
+      <div class="row" style="gap:6px;margin:4px 0 8px"><button class="btn btn-sm" id="seo-an-run">Analyse</button><a class="btn btn-sm" id="seo-mgr" target="_blank">Open in SEO manager ↗</a></div>
+      <div id="seo-an" style="font-size:13px"></div>
       <h3 class="lib-h">Page check <button class="btn btn-sm" id="audit-run">Run check</button></h3>
       <div id="audit" class="audit"><p class="hint">Checks SEO and accessibility: alt text, headings, links, sizes.</p></div>
     </section>
@@ -228,6 +231,7 @@
 <script src="blocks.js"></script>
 <script src="templates-v26.js"></script>
 <script src="wx-css.js"></script>
+<script src="../admin/seo-analyzer.js"></script>
 <script src="builder.js"></script>
 </body>
 </html>
