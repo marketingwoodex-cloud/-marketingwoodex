@@ -19,6 +19,23 @@
   var company = null; var getCompany = function () { return company ? Promise.resolve(company) : api("company_get").then(function (r) { if (r.ok) company = r.company; return company || {}; }); };
 
   // =========================================================== SECTION EDITOR (quotations + templates)
+  // Phase 6 — decoration item library picker: type "paint", "wood", "glass"… and tick lines to add
+  function decorPick(hint, done) {
+    var D = window.WX_DECOR || {}, cats = Object.keys(D);
+    modal("<h2>Decoration items</h2><p class='muted' style='margin:-8px 0 12px'>Type a work type, e.g. <b>paint</b>, <b>wood</b>, <b>glass</b>, <b>ceiling</b>, <b>flooring</b>. Tick the lines you want; enter quantities and rates on the quotation.</p><input id='dp-q' placeholder='paint, wood, glass…' autocomplete='off'><div id='dp-l' style='max-height:52vh;overflow:auto;margin-top:10px'></div><div class='modal-actions'><button class='btn' id='dp-x'>Cancel</button><button class='btn pri' id='dp-go'>Add selected</button></div>");
+    var q = $("#dp-q"), draw = function () {
+      var v = q.value.trim().toLowerCase(), hits = cats.filter(function (c) { return !v || c.toLowerCase().indexOf(v) >= 0 || D[c].some(function (i) { return i[0].toLowerCase().indexOf(v) >= 0; }); });
+      $("#dp-l").innerHTML = hits.map(function (c) { var catHit = !v || c.toLowerCase().indexOf(v) >= 0; return "<div style='margin-bottom:12px'><label class='check' style='font-weight:700'><input type='checkbox' data-all='" + esc(c) + "'> " + esc(c) + "</label>" + D[c].map(function (i, k) { var show = catHit || i[0].toLowerCase().indexOf(v) >= 0; return show ? "<label class='check' style='margin:4px 0 4px 24px;font-weight:400'><input type='checkbox' data-c='" + esc(c) + "' data-k='" + k + "'" + (v && !catHit ? " checked" : "") + "> " + esc(i[0]) + " <small class='muted'>(" + esc(UL[i[1]] || i[1]) + ")</small></label>" : ""; }).join("") + "</div>"; }).join("") || "<p class='muted'>Nothing found. Try paint, wood, glass, tiles, electrical…</p>";
+      $$("[data-all]").forEach(function (a) { a.onchange = function () { $$("[data-c]").forEach(function (x) { if (x.dataset.c === a.dataset.all) x.checked = a.checked; }); }; });
+    };
+    q.oninput = draw; q.value = (cats.find(function (c) { return hint && c.toLowerCase().split(/[ &]/)[0] && String(hint).toLowerCase().indexOf(c.toLowerCase().split(/[ &]/)[0]) >= 0; }) || "").split(/[ &]/)[0].toLowerCase(); draw(); q.focus();
+    $("#dp-x").onclick = closeModal;
+    $("#dp-go").onclick = function () {
+      var picked = $$("[data-c]").filter(function (x) { return x.checked; }); if (!picked.length) return toast("Tick at least one line", true);
+      var cat = picked[0].dataset.c; closeModal();
+      done(cat, picked.map(function (x) { var i = D[x.dataset.c][+x.dataset.k]; return { desc: i[0], qty: "", unit: i[1], rate: "" }; }));
+    };
+  }
   function sectionEditor(box, sections, ro, onChange) {
     var calc = function () { sections.forEach(function (s) { s.subtotal = 0; s.items.forEach(function (it) { it.amount = Math.round((+it.qty || 0) * (+it.rate || 0) * 100) / 100; s.subtotal += it.amount; }); }); };
     var draw = function () {
@@ -31,7 +48,7 @@
             return '<tr data-ii="' + ii + '"><td class="muted">' + (ii + 1) + '</td><td><textarea rows="1" data-i="desc"' + (ro ? " disabled" : "") + ' placeholder="Describe the work">' + esc(it.desc) + '</textarea></td><td><input type="number" step="any" min="0" class="r" data-i="qty" value="' + (it.qty === "" ? "" : +it.qty) + '"' + (ro ? " disabled" : "") + '></td>' +
               '<td><select data-i="unit"' + (ro ? " disabled" : "") + ">" + UNITS.map(function (u) { return '<option value="' + u + '"' + (u === it.unit ? " selected" : "") + ">" + (UL[u] || u) + "</option>"; }).join("") + '</select></td><td><input type="number" step="any" min="0" class="r" data-i="rate" value="' + (it.rate === "" ? "" : +it.rate) + '"' + (ro ? " disabled" : "") + '></td><td class="r amt">' + (it.amount ? Math.round(it.amount).toLocaleString("en-US") : "-") + "</td>" + (ro ? "" : '<td><button class="btn sm ghost" data-rm title="Remove line">✕</button></td>') + "</tr>";
           }).join("") + "</tbody></table></div>" +
-          (ro ? (s.note ? '<p class="hint" style="margin:10px 16px">' + esc(s.note) + "</p>" : "") : '<div class="sec-ft"><button class="btn sm" data-add>' + ic("plus") + 'Add line</button><input data-f="note" value="' + esc(s.note || "") + '" placeholder="Section note shown under the table (optional)"></div>') + "</div>";
+          (ro ? (s.note ? '<p class="hint" style="margin:10px 16px">' + esc(s.note) + "</p>" : "") : '<div class="sec-ft"><button class="btn sm" data-add>' + ic("plus") + 'Add line</button><button class="btn sm" data-decor title="Type paint, wood, glass…">' + ic("sparkles") + 'Decoration items</button><input data-f="note" value="' + esc(s.note || "") + '" placeholder="Section note shown under the table (optional)"></div>') + "</div>";
       }).join("") + (ro ? "" : '<div class="sec-add"><button class="btn" id="se-add">' + ic("plus") + 'Add section</button><button class="btn" id="se-lib">' + ic("layers") + "Add section from a template</button></div>");
       W.fillIcons(box); $$("textarea", box).forEach(grow);
     };
@@ -49,6 +66,7 @@
     box.onclick = function (e) {
       var b = e.target.closest("button"); if (!b) return;
       if (b.id === "se-add") { sections.push({ name: "", note: "", items: [{ desc: "", qty: 1, unit: "sft", rate: "" }] }); draw(); onChange(); var n = $$(".sec-name", box); n[n.length - 1].focus(); return; }
+      if (b.hasAttribute("data-decor")) { var dsi = +b.closest(".sec").dataset.si; return decorPick(sections[dsi].name, function (cat, items) { var sc = sections[dsi]; if (!String(sc.name || "").trim()) sc.name = cat; sc.items = sc.items.filter(function (it) { return String(it.desc || "").trim() || it.rate; }).concat(items); draw(); onChange(); }); }
       if (b.id === "se-lib") return pickSection(function (s) { sections.push(JSON.parse(JSON.stringify(s))); draw(); onChange(); });
       var sec = b.closest(".sec"); if (!sec) return; var si = +sec.dataset.si;
       if (b.hasAttribute("data-add")) { sections[si].items.push({ desc: "", qty: 1, unit: (sections[si].items.slice(-1)[0] || {}).unit || "sft", rate: "" }); draw(); onChange(); var ts = $$('.sec[data-si="' + si + '"] textarea', box); ts[ts.length - 1].focus(); return; }
@@ -358,7 +376,7 @@
       var refresh = function (x) { if (!x.ok) { toast(x.error, true); return; } var k = data.projects.findIndex(function (y) { return y.id === id; }); x.project.paid = data.projects[k].paid; data.projects[k] = Object.assign(data.projects[k], x.project); draw(); detail(id); };
       $("#pd-x").onclick = close; if ($("#pd-inv")) $("#pd-inv").onclick = close;
       $$("[data-st]").forEach(function (b) { b.onclick = function () { api("proj_save", { id: id, stage: b.dataset.st }).then(refresh); }; });
-      $("#pd-add").onclick = function () { var t = $("#pd-note").value.trim(); if (t) api("proj_update", { id: id, text: t }).then(refresh); };
+      $("#pd-add").onclick = function () { var t = ($("#pd-note").dataset.full || $("#pd-note").value).trim(); $("#pd-note").dataset.full = ""; if (t) api("proj_update", { id: id, text: t }).then(refresh); };
       $("#pd-note").onkeydown = function (e) { if (e.key === "Enter") $("#pd-add").click(); };
       $$("[data-rp]").forEach(function (b) { b.onclick = function () { if (confirm("Delete this photo?")) api("proj_photo_delete", { id: id, url: b.dataset.rp }).then(refresh); }; });
       $("#pd-up").onchange = function () {

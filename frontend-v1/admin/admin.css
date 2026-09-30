@@ -384,3 +384,4 @@ small.bad{color:var(--bad)}small.warnc{color:var(--warn)}
 .tf-steps{padding-left:20px;margin:8px 0;font-size:14px}
 .tf-in{font-size:24px;letter-spacing:.3em;text-align:center;width:100%}
 @media (max-width:900px){.st-grid{grid-template-columns:1fr}}
+.ld-notes .note{white-space:pre-line}
