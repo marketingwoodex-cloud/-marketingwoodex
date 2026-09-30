@@ -9,7 +9,7 @@ if (!defined('PRIVATE_DIR')) { http_response_code(404); exit; }
 
 const CRM_FILE   = PRIVATE_DIR . '/crm.json';
 const CRM_STAGES = ['new', 'contacted', 'visit', 'quote', 'won', 'lost'];
-const CRM_SOURCES = ['contact' => 'Contact form', 'estimator' => 'Cost estimator', 'brief' => '3D brief', 'fitout-hub' => 'Fit-out quote', 'office-fitout' => 'Office fit-out quote', 'whatsapp' => 'WhatsApp widget', 'manual' => 'Added by team', 'import' => 'CSV import'];
+const CRM_SOURCES = ['contact' => 'Contact form', 'estimator' => 'Cost estimator', 'brief' => '3D brief', 'fitout-hub' => 'Fit-out quote', 'office-fitout' => 'Office fit-out quote', 'whatsapp' => 'WhatsApp widget', 'chat' => 'Live chat', 'manual' => 'Added by team', 'import' => 'CSV import'];
 const CRM_SECRETS = ['smtpPass', 'waToken', 'tsSecret'];
 
 function crm_migrate(): void {

@@ -207,6 +207,7 @@ require __DIR__ . '/content-lib.php';
 require __DIR__ . '/media-lib.php';
 require __DIR__ . '/security-lib.php';
 require __DIR__ . '/phase8-lib.php';
+require __DIR__ . '/chat-lib.php';
 if (defined('WX_LIB_ONLY')) return; // api/mcp.php reuses the helpers and actions
 
 // ---------- request ----------
@@ -246,6 +247,25 @@ switch ($action) {
         $u = q('SELECT * FROM wx_users WHERE email=?', [strtolower(trim((string)($in['email'] ?? '')))])->fetch();
         if (!$u || !$u['active'] || !password_verify((string)($in['password'] ?? ''), $u['pass_hash'])) { throttle(true); usleep(400000); fail('Wrong email or password', 401); }
         sec_login_after_password($u);
+
+    case 'pw_forgot': // always answers the same (no hint whether the email exists)
+        throttle(); $email = strtolower(trim((string)($in['email'] ?? ''))); $msg = 'If that email belongs to an Admin user, a reset link has been sent. Check your inbox (and spam).';
+        $u = filter_var($email, FILTER_VALIDATE_EMAIL) ? q('SELECT * FROM wx_users WHERE email=? AND active=1', [$email])->fetch() : null;
+        if (!$u) { throttle(true); usleep(300000); out(['ok' => true, 'message' => $msg]); }
+        $c = crm_cfg(); if ($c['smtpHost'] === '') out(['ok' => true, 'message' => $msg, 'hint' => 'Email is not set up on this site yet, so no link can be sent. Ask the owner to reset your password in Team & roles.']);
+        $exp = time() + 3600; $tok = $u['id'] . '.' . $exp . '.' . hash_hmac('sha256', 'pwr|' . $u['id'] . '|' . $exp . '|' . $u['pw_ver'] . '|' . $u['pass_hash'], bsecret());
+        $h = preg_replace('~[^a-z0-9.\-:]~i', '', (string)($_SERVER['HTTP_HOST'] ?? 'woodex.com.pk'));
+        $e = smtp_send($c, [$u['email']], 'Reset your Woodex Admin password', "Hello {$u['name']},\n\nSomeone (hopefully you) asked to reset your Woodex Admin password.\n\nOpen this link within 1 hour to choose a new password:\nhttps://$h/admin/#reset=$tok\n\nIf you did not ask for this, ignore this email. Your password stays the same.\n\nRequest from IP " . ip());
+        if ($e !== '') error_log('pw_forgot: ' . $e); log_act($u, 'password.reset_request'); out(['ok' => true, 'message' => $msg]);
+
+    case 'pw_reset':
+        throttle();
+        if (!preg_match('~^(\d+)\.(\d{10})\.([a-f0-9]{64})$~', (string)($in['token'] ?? ''), $m) || (int)$m[2] < time()) fail('This reset link has expired. Ask for a new one.', 401);
+        $u = q('SELECT * FROM wx_users WHERE id=? AND active=1', [(int)$m[1]])->fetch();
+        if (!$u || !hash_equals(hash_hmac('sha256', 'pwr|' . $u['id'] . '|' . $m[2] . '|' . $u['pw_ver'] . '|' . $u['pass_hash'], bsecret()), $m[3])) { throttle(true); fail('This reset link is not valid or was already used. Ask for a new one.', 401); }
+        $pw = (string)($in['password'] ?? ''); valid_pw($pw);
+        q('UPDATE wx_users SET pass_hash=?, pw_ver=pw_ver+1 WHERE id=?', [password_hash($pw, PASSWORD_DEFAULT), $u['id']]);
+        log_act($u, 'password.reset'); out(['ok' => true, 'message' => 'Password changed. Sign in with your new password.']);
 
     case 'me':
         $u = need(); out(['ok' => true, 'user' => pub($u), 'builderToken' => in_array($u['role'], ['owner', 'admin', 'editor'], true) ? builder_token((int)$u['id']) : null]);
@@ -445,6 +465,6 @@ switch ($action) {
         if (!$dry && $total) log_act($u, 'global.replace', '"' . mb_substr($find, 0, 60) . '" → "' . mb_substr($rep, 0, 60) . '" (' . count($res) . ' pages)');
         out(['ok' => true, 'pages' => $res, 'total' => $total, 'dry' => $dry]);
 
-    default: if (!crm_actions($action, $in) && !sales_actions($action, $in) && !content_actions($action, $in) && !media_actions($action, $in) && !security_actions($action, $in) && !p8_actions($action, $in)) fail('Unknown action', 404);
+    default: if (!crm_actions($action, $in) && !sales_actions($action, $in) && !content_actions($action, $in) && !media_actions($action, $in) && !security_actions($action, $in) && !p8_actions($action, $in) && !chat_actions($action, $in)) fail('Unknown action', 404);
 }
 } catch (PDOException $e) { error_log('admin.php: ' . $e->getMessage()); fail('Database error', 500); }

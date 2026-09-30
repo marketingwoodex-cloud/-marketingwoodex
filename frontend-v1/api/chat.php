@@ -1,0 +1,69 @@
+<?php
+/**
+ * Live chat — visitor endpoint (Phase 10). POST JSON {action: cfg|send|poll, chat_id, token, text, page, name}
+ * The visitor keeps {chat_id, token} in localStorage; only the SHA-256 of the token is stored.
+ */
+declare(strict_types=1);
+define('WX_LIB_ONLY', true);
+require __DIR__ . '/admin.php';
+
+$in = json_decode((string)file_get_contents('php://input'), true) ?: [];
+$act = (string)($in['action'] ?? 'cfg');
+if (!is_file(DB_FILE)) out(['ok' => true, 'on' => false]);
+$cfg = chat_cfg();
+try {
+chat_migrate();
+if ($act === 'cfg') out(['ok' => true, 'on' => (bool)$cfg['on'], 'greeting' => $cfg['greeting'], 'hours' => $cfg['hours'], 'open' => chat_open_now(), 'ai' => (bool)$cfg['ai']]);
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') fail('POST required', 405);
+if (!$cfg['on']) fail('Chat is offline', 403);
+
+function vchat(array $in): array {
+    $id = (int)($in['chat_id'] ?? 0); $t = (string)($in['token'] ?? '');
+    if (!$id || !preg_match('~^[a-f0-9]{40}$~', $t)) fail('Chat not found', 404);
+    $c = q('SELECT * FROM wx_chats WHERE id=?', [$id])->fetch();
+    if (!$c || !hash_equals($c['token'], hash('sha256', $t))) fail('Chat not found', 404);
+    return $c;
+}
+function vpub(array $c, int $since): array { return ['ok' => true, 'chat_id' => (int)$c['id'], 'mode' => $c['mode'], 'agent' => (string)$c['agent_name'], 'status' => $c['status'], 'messages' => chat_msgs((int)$c['id'], $since)]; }
+function vlimit(int $max, int $win): void { // per-IP message limit (wx_throttle, key "c|ip")
+    $k = 'c|' . substr(ip(), 0, 60); $r = q('SELECT n,t FROM wx_throttle WHERE ip=?', [$k])->fetch();
+    $n = ($r && time() - (int)$r['t'] < $win) ? (int)$r['n'] + 1 : 1; if ($n > $max) fail('You are sending messages too fast. Please wait a few minutes.', 429);
+    q('REPLACE INTO wx_throttle (ip,n,t) VALUES (?,?,?)', [$k, $n, $n === 1 ? time() : (int)$r['t']]);
+}
+
+switch ($act) {
+    case 'poll':
+        $c = vchat($in); out(vpub($c, (int)($in['since'] ?? 0)));
+    case 'send':
+        $text = trim(mb_substr((string)($in['text'] ?? ''), 0, 2000)); if ($text === '') fail('Write a message');
+        if (clip($in['_hp'] ?? '') !== '') out(['ok' => true, 'messages' => []]);
+        vlimit(40, 900); $token = null; $new = false;
+        if (!empty($in['chat_id'])) $c = vchat($in);
+        else {
+            $token = bin2hex(random_bytes(20)); $page = mb_substr(preg_replace('~[^\w/\-.?=&%]~u', '', (string)($in['page'] ?? '/')), 0, 200) ?: '/';
+            q('INSERT INTO wx_chats (token,created_at,updated_at,page,ip,name) VALUES (?,?,?,?,?,?)', [hash('sha256', $token), now(), now(), $page, ip(), clip($in['name'] ?? '', 120) ?: null]);
+            $c = q('SELECT * FROM wx_chats WHERE id=?', [(int)db()->lastInsertId()])->fetch(); $new = true;
+            chat_add((int)$c['id'], 'ai', 'Woodex assistant', $cfg['greeting']);
+        }
+        if ($c['status'] === 'closed') { q("UPDATE wx_chats SET status='open' WHERE id=?", [$c['id']]); $c['status'] = 'open'; }
+        $since = (int)($in['since'] ?? 0);
+        chat_add((int)$c['id'], 'visitor', (string)$c['name'], $text);
+        $c = chat_capture(q('SELECT * FROM wx_chats WHERE id=?', [$c['id']])->fetch(), $text);
+        if (!(int)$c['alerted']) { q('UPDATE wx_chats SET alerted=1 WHERE id=?', [$c['id']]); try { chat_email_alert($c, $text); } catch (Throwable $e) { error_log('chat alert: ' . $e->getMessage()); } }
+        if ($c['mode'] === 'ai') {
+            $cnt = (int)q("SELECT COUNT(*) FROM wx_chat_msgs WHERE chat_id=? AND who='ai'", [$c['id']])->fetchColumn();
+            $r = $cnt < 40 ? chat_ai_reply($c) : '';
+            if ($r !== '') {
+                $human = strpos($r, '[HUMAN]') !== false; $r = trim(str_replace('[HUMAN]', '', $r));
+                chat_add((int)$c['id'], 'ai', 'Woodex assistant', $r);
+                if ($human) q('UPDATE wx_chats SET needs=1 WHERE id=?', [$c['id']]);
+            } elseif (!(int)q("SELECT COUNT(*) FROM wx_chat_msgs WHERE chat_id=? AND who='sys'", [$c['id']])->fetchColumn()) {
+                chat_add((int)$c['id'], 'sys', '', chat_open_now() ? 'Thanks! A team member will reply here in a few minutes. You can also leave your phone number and we will call you.' : 'Thanks for your message! We are away right now (' . $cfg['hours'] . '). Leave your name and phone number and we will call you back first thing.');
+                q('UPDATE wx_chats SET needs=1 WHERE id=?', [$c['id']]);
+            }
+        }
+        $c = q('SELECT * FROM wx_chats WHERE id=?', [$c['id']])->fetch();
+        out(vpub($c, $new ? 0 : $since) + ($token ? ['token' => $token] : []));
+}
+fail('Unknown action', 404);
+} catch (Throwable $e) { error_log('chat: ' . $e->getMessage()); fail('Chat is not available right now', 500); }
