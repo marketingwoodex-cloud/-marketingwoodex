@@ -71,6 +71,7 @@
     ["media", "Media library", "image", "owner,admin,editor"],
     ["seo", "SEO", "search", "owner,admin,editor"],
     ["health", "Site health", "heart-pulse", "owner,admin,editor"],
+    ["speed", "Speed", "gauge", "owner,admin,editor"],
     ["backups", "Backups", "hard-drive", "owner,admin"],
     ["Team"],
     ["users", "Team & roles", "users", "owner,admin"],

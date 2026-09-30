@@ -231,6 +231,7 @@ function media_actions(string $action, array $in): bool {
         case 'health_settings':
             need($OA); $h = jread(HEALTH_FILE); if (is_string($in['psiKey'] ?? null) && $in['psiKey'] !== '') $h['psiKey'] = substr(trim($in['psiKey']), 0, 100); if (!empty($in['clearKey'])) unset($h['psiKey']);
             if (preg_match('~^https://[a-z0-9.-]+$~i', (string)($in['site'] ?? ''))) $h['site'] = $in['site']; jwrite(HEALTH_FILE, $h); out(['ok' => true, 'psiKeySet' => !empty($h['psiKey']), 'site' => $h['site'] ?? SITE_URL_DEF]);
+        case 'speed_get': need($ED); $h = jread(HEALTH_FILE); out(['ok' => true, 'psi' => (object)($h['psi'] ?? []), 'psiKeySet' => !empty($h['psiKey']), 'site' => $h['site'] ?? SITE_URL_DEF]);
         case 'health_psi':
             need($ED); $h = jread(HEALTH_FILE); $rel = (string)($in['rel'] ?? 'index.html'); if (!preg_match('~^[a-z0-9][a-z0-9/_\-.]*\.html$~i', $rel) || strpos($rel, '..') !== false) fail('Invalid page');
             $strategy = ($in['strategy'] ?? '') === 'desktop' ? 'desktop' : 'mobile'; $url = ($h['site'] ?? SITE_URL_DEF) . '/' . preg_replace('~index\.html$~', '', $rel);
@@ -239,7 +240,7 @@ function media_actions(string $action, array $in): bool {
             $raw = curl_exec($ch); $code = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE); curl_close($ch); $j = json_decode((string)$raw, true);
             if ($code !== 200 || !isset($j['lighthouseResult'])) fail('PageSpeed: ' . substr((string)($j['error']['message'] ?? 'request failed'), 0, 200));
             $cat = $j['lighthouseResult']['categories']; $au = $j['lighthouseResult']['audits']; $sc = fn($k) => isset($cat[$k]['score']) ? (int)round($cat[$k]['score'] * 100) : null;
-            $res = ['at' => a7_now(), 'strategy' => $strategy, 'perf' => $sc('performance'), 'a11y' => $sc('accessibility'), 'bp' => $sc('best-practices'), 'seo' => $sc('seo'), 'lcp' => $au['largest-contentful-paint']['displayValue'] ?? null, 'cls' => $au['cumulative-layout-shift']['displayValue'] ?? null, 'tbt' => $au['total-blocking-time']['displayValue'] ?? null];
+            $res = ['at' => a7_now(), 'strategy' => $strategy, 'perf' => $sc('performance'), 'a11y' => $sc('accessibility'), 'bp' => $sc('best-practices'), 'seo' => $sc('seo'), 'lcp' => $au['largest-contentful-paint']['displayValue'] ?? null, 'cls' => $au['cumulative-layout-shift']['displayValue'] ?? null, 'tbt' => $au['total-blocking-time']['displayValue'] ?? null, 'fcp' => $au['first-contentful-paint']['displayValue'] ?? null, 'si' => $au['speed-index']['displayValue'] ?? null, 'tips' => psi_tips($au)];
             $h = jread(HEALTH_FILE); $k = $rel . '|' . $strategy; $h['psi'][$k] = array_slice(array_merge([$res], $h['psi'][$k] ?? []), 0, 10); jwrite(HEALTH_FILE, $h); out(['ok' => true, 'result' => $res]);
     }
     return false;
@@ -251,4 +252,18 @@ function media_download(): void {
         $f = SBK_DIR . '/' . $name; header('Content-Type: application/zip'); header('Content-Disposition: attachment; filename="woodex-' . $name . '"'); header('Content-Length: ' . filesize($f)); header('Cache-Control: no-store'); readfile($f); exit;
     }
     http_response_code(404); exit('Not found');
+}
+
+/* P15: top 5 PageSpeed suggestions (failed audits with the biggest estimated saving). */
+function psi_tips(array $au): array {
+    $t = [];
+    foreach ($au as $id => $a) {
+        if (!isset($a['score']) || $a['score'] === null || $a['score'] >= 0.9) continue;
+        $ms = (float)($a['details']['overallSavingsMs'] ?? 0); $ms = max($ms, (float)($a['metricSavings']['LCP'] ?? 0), (float)($a['metricSavings']['FCP'] ?? 0));
+        $kb = (float)($a['details']['overallSavingsBytes'] ?? 0) / 1024;
+        if ($ms <= 0 && $kb <= 0 && ($a['scoreDisplayMode'] ?? '') !== 'metricSavings') continue;
+        $t[] = ['id' => $id, 'title' => substr(strip_tags((string)($a['title'] ?? $id)), 0, 120), 'value' => substr((string)($a['displayValue'] ?? ''), 0, 60), 'ms' => (int)round($ms), 'kb' => (int)round($kb)];
+    }
+    usort($t, fn($x, $y) => ($y['ms'] <=> $x['ms']) ?: ($y['kb'] <=> $x['kb']));
+    return array_slice($t, 0, 5);
 }

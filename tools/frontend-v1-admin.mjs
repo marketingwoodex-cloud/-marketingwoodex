@@ -857,18 +857,41 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
       case "health_get": { need(ED); const h = jr(HEALTH, {}); return { ok: true, scan: h.scan || null, psi: h.psi || {}, psiKeySet: !!h.psiKey, site: h.site || SITE_URL, lastCron: h.lastCron || null }; }
       case "health_scan": { const u = need(ED), h = jr(HEALTH, {}); h.scan = healthScan(); jw(HEALTH, h); log(db, u, "health.scan", h.scan.score + "/100", ip); save(db); return { ok: true, scan: h.scan }; }
       case "health_settings": { need(OA); const h = jr(HEALTH, {}); if (typeof inp.psiKey === "string" && inp.psiKey !== "") h.psiKey = inp.psiKey.trim().slice(0, 100); if (inp.clearKey) delete h.psiKey; if (/^https:\/\/[a-z0-9.-]+$/i.test(inp.site || "")) h.site = inp.site; jw(HEALTH, h); return { ok: true, psiKeySet: !!h.psiKey, site: h.site || SITE_URL }; }
+      case "speed_get": { need(ED); const h = jr(HEALTH, {}); return { ok: true, psi: h.psi || {}, psiKeySet: !!h.psiKey, site: h.site || SITE_URL }; }
       case "health_psi": {
         need(ED); const h = jr(HEALTH, {}), rel = String(inp.rel || "index.html"); if (!/^[a-z0-9][a-z0-9/_\-.]*\.html$/i.test(rel) || rel.includes("..")) throw new Fail("Invalid page");
         const strategy = inp.strategy === "desktop" ? "desktop" : "mobile", url = (h.site || SITE_URL) + "/" + rel.replace(/index\.html$/, "");
         const q = new URLSearchParams({ url, strategy }); ["performance", "accessibility", "best-practices", "seo"].forEach((c) => q.append("category", c)); if (h.psiKey) q.set("key", h.psiKey);
-        const r = await fetch("https://www.googleapis.com/pagespeedonline/v5/runPagespeed?" + q, { signal: AbortSignal.timeout(90000) }).catch((e) => ({ ok: false, statusText: e.message }));
+        const r = process.env.PSI_FAKE ? psiFake(strategy) : await fetch("https://www.googleapis.com/pagespeedonline/v5/runPagespeed?" + q, { signal: AbortSignal.timeout(90000) }).catch((e) => ({ ok: false, statusText: e.message }));
         if (!r.ok) { let msg = r.statusText || "request failed"; try { msg = (await r.json()).error.message; } catch {} throw new Fail("PageSpeed: " + String(msg).slice(0, 200)); }
         const j = await r.json(), cat = j.lighthouseResult.categories, au = j.lighthouseResult.audits, sc = (k) => (cat[k] ? Math.round(cat[k].score * 100) : null);
-        const res = { at: now(), strategy, perf: sc("performance"), a11y: sc("accessibility"), bp: sc("best-practices"), seo: sc("seo"), lcp: au["largest-contentful-paint"] && au["largest-contentful-paint"].displayValue, cls: au["cumulative-layout-shift"] && au["cumulative-layout-shift"].displayValue, tbt: au["total-blocking-time"] && au["total-blocking-time"].displayValue };
+        const res = { at: now(), strategy, perf: sc("performance"), a11y: sc("accessibility"), bp: sc("best-practices"), seo: sc("seo"), lcp: au["largest-contentful-paint"] && au["largest-contentful-paint"].displayValue, cls: au["cumulative-layout-shift"] && au["cumulative-layout-shift"].displayValue, tbt: au["total-blocking-time"] && au["total-blocking-time"].displayValue, fcp: au["first-contentful-paint"] && au["first-contentful-paint"].displayValue, si: au["speed-index"] && au["speed-index"].displayValue, tips: psiTips(au) };
         const h2 = jr(HEALTH, {}); h2.psi = h2.psi || {}; const k = rel + "|" + strategy; h2.psi[k] = [res, ...(h2.psi[k] || [])].slice(0, 10); jw(HEALTH, h2); return { ok: true, result: res };
       }
     }
     return null;
+  }
+  /* P15: top 5 suggestions (mirrors psi_tips in media-lib.php) */
+  function psiTips(au) {
+    const t = [];
+    for (const [id, a] of Object.entries(au)) {
+      if (a.score == null || a.score >= 0.9) continue;
+      const ms = Math.max(+(a.details && a.details.overallSavingsMs) || 0, +(a.metricSavings && a.metricSavings.LCP) || 0, +(a.metricSavings && a.metricSavings.FCP) || 0);
+      const kb = (+(a.details && a.details.overallSavingsBytes) || 0) / 1024;
+      if (ms <= 0 && kb <= 0 && a.scoreDisplayMode !== "metricSavings") continue;
+      t.push({ id, title: String(a.title || id).replace(/<[^>]+>/g, "").slice(0, 120), value: String(a.displayValue || "").slice(0, 60), ms: Math.round(ms), kb: Math.round(kb) });
+    }
+    return t.sort((x, y) => y.ms - x.ms || y.kb - x.kb).slice(0, 5);
+  }
+  /* Test mode: PSI_FAKE=1 returns a realistic fake PageSpeed answer (no Google call). */
+  function psiFake(strategy) {
+    const d = strategy === "desktop", rnd = (a, b) => a + Math.floor(Math.random() * (b - a));
+    const j = { lighthouseResult: { categories: { performance: { score: (d ? rnd(95, 100) : rnd(86, 97)) / 100 }, accessibility: { score: rnd(96, 101) / 100 }, "best-practices": { score: 1 }, seo: { score: 1 } },
+      audits: { "largest-contentful-paint": { displayValue: (d ? 0.8 : 2.6) + " s" }, "cumulative-layout-shift": { displayValue: "0.01" }, "total-blocking-time": { displayValue: "20 ms" }, "first-contentful-paint": { displayValue: (d ? 0.5 : 1.8) + " s" }, "speed-index": { displayValue: (d ? 0.9 : 3.1) + " s" },
+        "render-blocking-insight": { title: "Render blocking requests", score: 0.5, displayValue: "Est savings of 300 ms", scoreDisplayMode: "metricSavings", metricSavings: { FCP: 300, LCP: 300 } },
+        "image-delivery-insight": { title: "Improve image delivery", score: 0.5, displayValue: "Est savings of 42 KiB", scoreDisplayMode: "metricSavings", metricSavings: { LCP: 150 }, details: { overallSavingsBytes: 43000 } },
+        "unused-css-rules": { title: "Reduce unused CSS", score: 0.5, displayValue: "Est savings of 60 KiB", details: { overallSavingsMs: 120, overallSavingsBytes: 61000 } } } } };
+    return Promise.resolve({ ok: true, json: async () => j });
   }
   // raw file download for backups (called by the preview server before JSON handling)
   /* Phase 7 — raw: backup_up (tar.gz body), db_dl (JSON download), db_up (JSON body). Mirrors api/media-lib.php media_raw(). */
