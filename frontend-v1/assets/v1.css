@@ -422,3 +422,51 @@ h1{letter-spacing:-.04em!important;word-spacing:.04em}h2{letter-spacing:-.03em!i
   a[class*="btn"],button[class*="btn"]{white-space:normal}
   .header-cta-label{display:none!important}
 }
+
+/* P15 a11y: colour contrast fixes (tools/phplint/p15-contrast.mjs) */
+section.as-section.as-soft.wx-cream .as-scope-item > b,
+section.bs-section.bs-related .bs-related-link > small,
+section.cf-section.cf-related .cf-related-link > small,
+body .fo-scope-item > b,
+section.fo-section.fo-soft.wx-cream .fo-value > b,
+body .fo-related-link > small,
+body .ci-related-link > small,
+body .rv-service > b,
+section.rv-section.rv-soft .rv-related-link > small,
+section.cw-section.cw-related .cw-related-link > small,
+.est-card > div.est-step,
+.est-fin > span.est-rate,
+section.gy-section.gy-related .gy-related-link > small,
+section.hc-section.hc-related .hc-related-link > small,
+section.ht-section.ht-related .ht-related-link > small,
+a.id-service .id-service-foot > span.id-service-number,
+body .hr-related-link > small,
+section.kd-section.kd-related .kd-related-link > small,
+section.fitout-section.wx-cream .fitout-scope-controls > span.fitout-scope-status,
+.oi-zone > small,
+section.oi-section.oi-related .oi-related-link > small,
+section.bd-section.bd-related .bd-related-link > small,
+div.dr-scope-scroll .dr-scope-item > span,
+section.dr-section.dr-related .dr-related-link > small,
+div.lr-scope-scroll .lr-scope-item > span,
+body .lr-related-link > small,
+section.rs-section.rs-related .rs-related-link > small,
+section.rt-section.rt-related .rt-related-link > small,
+section.mm-section.mm-related .mm-related-link > small,
+section.sr-section.sr-related .sr-related-link > small,
+section.sp-section.sp-related .sp-related-link > small{color:#5c5c5c!important}
+section.arch-section.arch-dark .arch-step > p,
+section.ci-section.ci-process .ci-process-head > p.ci-copy,
+section.rv-section.rv-dark .rv-process-head > p.rv-copy,
+section.ch-hero p.ch-kicker,
+section.hub-hero .hub-hero-copy > p.hub-tag,
+section.hub-section.hub-stats .hub-stats-copy > p.hub-tag,
+section.id-hero .id-hero-copy > p.id-label,
+section.id-section.id-dark p.id-label,
+section.id-section.id-dark .id-process-sticky > p.id-label,
+section.id-section.id-dark .id-faq-side > p.id-label,
+section.kd-section.kd-process p.kd-label,
+section.reno-hero .reno-hero-copy > p.reno-label,
+section.lr-section.lr-process p.lr-label{color:rgba(255,255,255,.78)!important}
+.wx-sr{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+.footer-word[data-word]:before{content:attr(data-word)}

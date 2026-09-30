@@ -17,15 +17,15 @@ Legend: [x] done · [~] in progress · [ ] pending
 - [x] Home slider dots + arrows fit
 - [x] Text min 12px, tap targets min 32px
 
-## C. Accessibility 84–88 → 90+
-- [~] C1. List the failing checks per page (Lighthouse a11y audit on key templates)
-- [ ] C2. Colour contrast fixes (small grey text on cream / navy)
-- [ ] C3. Links/buttons without names (icon buttons, slider arrows/dots, WhatsApp button)
-- [ ] C4. Heading order + image alt gaps
-- [ ] C5. Re-score: Home, Renovation, Insights, Kitchen, Contact, a city page, a blog post
+## C. Accessibility 84–88 → 97–100 (done)
+- [x] C1. List the failing checks per page (Lighthouse a11y audit on key templates)
+- [x] C2. Colour contrast fixes (small grey text on cream / navy)
+- [x] C3. Links/buttons without names (icon buttons, slider arrows/dots, WhatsApp button)
+- [x] C4. Heading order + image alt gaps
+- [x] C5. Re-score: Home, Renovation, Insights, Kitchen, Contact, a city page, a blog post
 
 ## D. Final speed pass
-- [ ] D1. Lighthouse on one page of every template (service, city, house-size, blog, estimator)
+- [~] D1. Lighthouse on one page of every template (service, city, house-size, blog, estimator)
 - [ ] D2. Fix any page under 90 (mobile)
 - [ ] D3. Desktop check (expected 95+)
 

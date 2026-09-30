@@ -281,6 +281,9 @@
       menuLabel.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
       doc.body.classList.toggle('menu-open', open);
     });
+    menuLabel.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); menuCb.checked = !menuCb.checked; menuCb.dispatchEvent(new Event('change')); }
+    });
     Array.prototype.forEach.call(doc.querySelectorAll('#mobile-menu a'), function (a) {
       a.addEventListener('click', function () {
         menuCb.checked = false;
