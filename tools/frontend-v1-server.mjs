@@ -3,6 +3,7 @@
 // frontend-v1/api/builder.php so /builder/ works identically in the preview.
 //   run: node tools/frontend-v1-server.mjs      (PORT=8080, WX_DEV_PASSWORD=Woodex@2026)
 import http from "node:http";
+import zlib from "node:zlib";
 import fs from "node:fs";
 import path from "node:path";
 import crypto from "node:crypto";
@@ -379,10 +380,16 @@ http.createServer(async (req, res) => {
       // Preview-only "Edit this page" button (never written into the site files)
       const rel = path.relative(ROOT, file).split(path.sep).join("/");
       const btn = `<a href="/builder/#${encodeURIComponent(rel)}" style="position:fixed;left:20px;bottom:20px;z-index:99999;background:#d4af6a;color:#0a0f1e;font:600 14px/1 system-ui,sans-serif;padding:14px 18px;border-radius:999px;text-decoration:none;box-shadow:0 10px 30px rgba(0,0,0,.35)">✏️ Edit this page</a>`;
+      const lh = /Lighthouse|PageSpeed/i.test(req.headers["user-agent"] || ""); // speed tests see the page exactly as on Hostinger
+      const body = fs.readFileSync(file, "utf8").replace(/<\/body>/i, (lh ? "" : btn) + "</body>");
+      if (/gzip/.test(req.headers["accept-encoding"] || "")) { res.writeHead(200, { "Content-Type": MIME[".html"], "Cache-Control": "no-cache", "Content-Encoding": "gzip", Vary: "Accept-Encoding" }); return res.end(zlib.gzipSync(body)); }
       res.writeHead(200, { "Content-Type": MIME[".html"], "Cache-Control": "no-cache" });
-      return res.end(fs.readFileSync(file, "utf8").replace(/<\/body>/i, btn + "</body>"));
+      return res.end(body);
     }
-    res.writeHead(200, { "Content-Type": MIME[ext] || "application/octet-stream", "Cache-Control": "no-cache" });
+    // mirror Hostinger .htaccess: gzip text (mod_deflate) + 30-day cache for static assets
+    const cache = /^\.(webp|jpe?g|png|gif|svg|woff2|avif)$/.test(ext) && !/^\/(builder|admin)/.test(p) ? "public, max-age=2592000" : "no-cache";
+    if (/^\.(css|js|svg|json|txt|xml)$/.test(ext) && /gzip/.test(req.headers["accept-encoding"] || "")) { res.writeHead(200, { "Content-Type": MIME[ext] || "application/octet-stream", "Cache-Control": cache, "Content-Encoding": "gzip", Vary: "Accept-Encoding" }); return fs.createReadStream(file).pipe(zlib.createGzip()).pipe(res); }
+    res.writeHead(200, { "Content-Type": MIME[ext] || "application/octet-stream", "Cache-Control": cache });
     fs.createReadStream(file).pipe(res);
   } catch (e) { console.error(e); if (!res.headersSent) res.writeHead(500); res.end("Server error"); }
 }).listen(PORT, "0.0.0.0", () => console.log(`frontend-v1 preview → :${PORT}  builder: /builder/  password: ${process.env.WX_DEV_PASSWORD ? "(from env)" : PASSWORD === "Woodex@2026" ? "Woodex@2026" : "(custom)"}`));
