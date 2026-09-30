@@ -67,6 +67,23 @@
       <p class="err" id="s-err"></p>
       <button class="btn pri block" id="s-btn">Install &amp; create owner</button>
     </form>
+    <form id="db-form" hidden>
+      <h1>Reconnect the database</h1><p class="muted">The admin can’t reach its database (for example after a new Hostinger database or password). Enter the details from <b>hPanel → Websites → Dashboard → Databases Management</b>. Existing data is kept.</p>
+      <fieldset><legend>Database</legend>
+        <div class="g2"><label>Host<input id="d-host" value="localhost"></label><label>Database name<input id="d-name" placeholder="u128159657_woodex" required></label></div>
+        <div class="g2"><label>Database user<input id="d-user" placeholder="u128159657_woodex" required></label><label>Database password<input type="password" id="d-dpass"></label></div>
+      </fieldset>
+      <fieldset id="d-owner" hidden><legend>New owner account <small>(the database is empty)</small></legend>
+        <div class="g2"><label>Your name<input id="d-uname"></label><label>Email<input type="email" id="d-email"></label></div>
+        <label>Password <small>(8+ characters)</small><input type="password" id="d-pass" minlength="8"></label>
+      </fieldset>
+      <fieldset><legend>Security check</legend>
+        <label>Page-builder password<input type="password" id="d-bpass" required></label>
+        <p class="hint">Proves you own this site (same password you used at first setup).</p>
+      </fieldset>
+      <p class="err" id="d-err"></p>
+      <button class="btn pri block" id="d-btn">Test &amp; reconnect</button>
+    </form>
   </div>
 </div>
 

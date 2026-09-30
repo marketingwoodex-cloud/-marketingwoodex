@@ -90,7 +90,7 @@
   // ---------------------------------------------------------------- auth flow
   function showAuth(mode, st) {
     $("#app").hidden = true; $("#auth").hidden = false;
-    $("#login-form").hidden = mode !== "login"; $("#tfa-form").hidden = true; $("#setup-form").hidden = mode !== "setup";
+    $("#login-form").hidden = mode !== "login"; $("#tfa-form").hidden = true; $("#setup-form").hidden = mode !== "setup"; if ($("#db-form")) $("#db-form").hidden = mode !== "db";
     if (mode === "setup") { $("#s-db").hidden = st.driver !== "mysql"; $("#s-bp").hidden = !st.builderLocked; $("#s-uname").focus(); }
     else $("#l-email").focus();
   }
@@ -115,6 +115,16 @@
   }
   function signedOut(msg) { S.user = null; S.token = ""; sessionStorage.removeItem("wxaTok"); sessionStorage.removeItem("wxTok"); showAuth("login"); if (msg) $("#l-err").textContent = msg; }
 
+  /* P15: reconnect database form (shown when status.dbError) */
+  if ($("#db-form")) $("#db-form").onsubmit = function (e) {
+    e.preventDefault(); var b = $("#d-btn"); b.disabled = true; $("#d-err").textContent = "";
+    api("db_reconnect", { dbHost: $("#d-host").value, dbName: $("#d-name").value, dbUser: $("#d-user").value, dbPass: $("#d-dpass").value, builderPassword: $("#d-bpass").value, name: $("#d-uname").value, email: $("#d-email").value, password: $("#d-pass").value }).then(function (r) {
+      b.disabled = false;
+      if (!r.ok) { if (r.needsOwner) { $("#d-owner").hidden = false; $("#d-uname").focus(); } return ($("#d-err").textContent = r.error); }
+      toast(r.fresh ? "Connected — new owner account created. Please sign in." : "Database reconnected. Please sign in.");
+      showAuth("login");
+    });
+  };
   $("#login-form").onsubmit = function (e) {
     e.preventDefault(); var b = $("#l-btn"); b.disabled = true; $("#l-err").textContent = "";
     api("login", { email: $("#l-email").value, password: $("#l-pass").value }).then(function (r) { b.disabled = false; if (!r.ok) return ($("#l-err").textContent = r.error); $("#l-pass").value = "";
@@ -323,6 +333,7 @@
   api("status").then(function (st) {
     if (!st.ok) { showAuth("login"); return ($("#l-err").textContent = st.error || "Admin API is not reachable"); }
     if (st.needsSetup) return showAuth("setup", st);
+    if (st.dbError) { showAuth("db", st); return $("#d-name").focus(); }
     if (st.user) return api("me").then(function (r) { r.ok ? signedIn(r) : signedOut(); });
     showAuth("login");
   });

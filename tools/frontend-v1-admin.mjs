@@ -1153,7 +1153,9 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
     const done = (o) => { save(db); return o; };
     switch (action) {
       case "cron": { let backups = []; try { backups = backupAuto(); } catch (e) { console.error("backup", e.message); } return { ok: true, published: 0, backups }; }
-      case "status": { const u = current(db, req); return { ok: true, needsSetup: !db, driver: "json", builderLocked: true, user: u ? pub(u) : null }; }
+      /* P15 test mode: WX_DB_BROKEN=1 simulates a broken DB connection (mirrors db_reconnect in admin.php) */
+      case "db_reconnect": { if (!process.env.WX_DB_BROKEN) throw new Fail("The database connection already works. Please sign in normally.", 409); if (inp.builderPassword !== (process.env.WX_DEV_PASSWORD || "Woodex@2026")) throw new Fail("The builder password is wrong", 401); if (!inp.dbName || !inp.dbUser) throw new Fail("Enter the database name and user"); process.env.WX_DB_BROKEN = ""; return { ok: true, users: 1, fresh: false }; }
+      case "status": { if (process.env.WX_DB_BROKEN) return { ok: true, needsSetup: false, dbError: true, driver: "mysql", builderLocked: true, user: null }; const u = current(db, req); return { ok: true, needsSetup: !db, driver: "json", builderLocked: true, user: u ? pub(u) : null }; }
       case "setup": {
         if (db) throw new Fail("Already set up", 403);
         if (String(inp.builderPassword || "") !== builderPassword()) throw new Fail("The current builder password is wrong", 401);
