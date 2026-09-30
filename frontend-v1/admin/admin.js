@@ -58,7 +58,7 @@
     ["projects", "Projects", "briefcase"],
     ["offers", "WhatsApp offers", "send", "owner,admin,sales", null, "new"],
     ["Support"],
-    ["chat", "Inbox (chat & WhatsApp)", "message-circle", "owner,admin,sales"],
+    ["chat", "Inbox", "message-circle", "owner,admin,sales"],
     ["updates", "Client updates", "send", "owner,admin"],
     ["train", "Train AI", "sparkles", "owner,admin"],
     ["Website"],
