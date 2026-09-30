@@ -78,6 +78,7 @@ function ingest(): void {
 /** Token = uid.exp.sid.sig — the session id makes every sign-in listable and revocable (security-lib.php). */
 function token_for(array $u): string { $e = time() + 12 * 3600; $exp = (string)$e; $sid = sec_new_session($u, $e); $GLOBALS['WX_SID'] = $sid; return $u['id'] . '.' . $exp . '.' . $sid . '.' . hash_hmac('sha256', 'adm|' . $u['id'] . '|' . $exp . '|' . $u['pw_ver'] . '|' . $sid, bsecret()); }
 function current_user(): ?array {
+    if (isset($GLOBALS['WX_AS'])) return $GLOBALS['WX_AS']; // set by api/mcp.php after Bearer-token auth
     if (!preg_match('~^(\d+)\.(\d{10})\.([a-f0-9]{16})\.([a-f0-9]{64})$~', (string)($_SERVER['HTTP_X_WX_ADM'] ?? ''), $m) || (int)$m[2] < time()) return null;
     $u = q('SELECT * FROM wx_users WHERE id=? AND active=1', [(int)$m[1]])->fetch(); if (!$u) return null;
     if (!hash_equals(hash_hmac('sha256', 'adm|' . $u['id'] . '|' . $m[2] . '|' . $u['pw_ver'] . '|' . $m[3], bsecret()), $m[4])) return null;
@@ -205,6 +206,8 @@ require __DIR__ . '/sales-lib.php';
 require __DIR__ . '/content-lib.php';
 require __DIR__ . '/media-lib.php';
 require __DIR__ . '/security-lib.php';
+require __DIR__ . '/phase8-lib.php';
+if (defined('WX_LIB_ONLY')) return; // api/mcp.php reuses the helpers and actions
 
 // ---------- request ----------
 $in = json_decode((string)file_get_contents('php://input'), true) ?: [];
@@ -442,6 +445,6 @@ switch ($action) {
         if (!$dry && $total) log_act($u, 'global.replace', '"' . mb_substr($find, 0, 60) . '" → "' . mb_substr($rep, 0, 60) . '" (' . count($res) . ' pages)');
         out(['ok' => true, 'pages' => $res, 'total' => $total, 'dry' => $dry]);
 
-    default: if (!crm_actions($action, $in) && !sales_actions($action, $in) && !content_actions($action, $in) && !media_actions($action, $in) && !security_actions($action, $in)) fail('Unknown action', 404);
+    default: if (!crm_actions($action, $in) && !sales_actions($action, $in) && !content_actions($action, $in) && !media_actions($action, $in) && !security_actions($action, $in) && !p8_actions($action, $in)) fail('Unknown action', 404);
 }
 } catch (PDOException $e) { error_log('admin.php: ' . $e->getMessage()); fail('Database error', 500); }

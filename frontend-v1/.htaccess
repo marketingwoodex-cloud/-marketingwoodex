@@ -1,3 +1,6 @@
+<IfModule mod_setenvif.c>
+SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1
+</IfModule>
 # Woodex frontend-v1 — Hostinger (Apache/LiteSpeed)
 Options -Indexes
 ErrorDocument 404 /404.html
@@ -5,6 +8,9 @@ ErrorDocument 404 /404.html
 # Force HTTPS
 <IfModule mod_rewrite.c>
 RewriteEngine On
+# Pass the Bearer token to PHP (AI Agent / MCP endpoint)
+RewriteCond %{HTTP:Authorization} .
+RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
 RewriteCond %{HTTPS} !=on
 RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 # Block private data and dotfiles
