@@ -59,3 +59,19 @@ Work only in `frontend-v1/`. Every phase: QA on preview → FULL zip in `deploy/
 
 ## Delivery
 Full zip per phase. Upload → Extract → Overwrite → Ctrl+F5 → System check.
+
+---
+## Phase 3 — Build plan (approved designs: deploy/p16/mockup-*.png, wireframe-sidebar-modules.png)
+Decisions: navy sidebar + gold · hover-expand icon rail + pin · split login · Plus Jakarta Sans · role-based dashboard ·
+UI libraries converted to Woodex blocks (no Tailwind) · ~40 new blocks · ONE final full zip after full QA · full audit (admin + API + public pages).
+
+- [ ] 3.1 Sidebar: navy, hover-expand rail, pin, flyouts in mini mode, live count badges (leads, inbox), user card
+- [ ] 3.2 Dashboard: action chips · 4 KPI cards (trend vs last period) · Statistics chart (Overview/Sales/Revenue, 7/28/90) · monthly target meter (PKR, editable) · pipeline funnel · recent enquiries · today's follow-ups · Google/website strip · activity · role-based
+- [ ] 3.3 Login: split screen (photo + tagline | grouped card: Google, email/password, remember me, forgot, 2-step note)
+- [ ] 3.4 Page pattern on list screens: breadcrumb, title + gold primary button, filter bar, mini KPI cards, table, empty state, error + retry (Leads, Clients, Quotes, Invoices, Projects)
+- [ ] 3.5 Integrations card grid + API keys table (masked, toggle, test, MCP tokens)
+- [ ] 3.6 Inbox redesign (contacts | thread | lead panel)
+- [ ] 3.7 Users: All users · Profile · Activity feed
+- [ ] 3.8 Page builder: ~40 new blocks from Flowbite / Meraki UI designs (MIT) rebuilt in v1.css + Charts.css stats; new "UI kit" category
+- [ ] 3.9 Go-live audit: every admin route (click/forms/errors), every API action (PHP lint + mirror tests), every public page (links, mobile, Lighthouse key pages), fix all
+- [ ] 3.10 FINAL full zip `deploy/p16/woodex-live-p16-full.zip` + README + CHANGES
