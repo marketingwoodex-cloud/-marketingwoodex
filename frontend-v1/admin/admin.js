@@ -10,7 +10,7 @@
   // ---------------------------------------------------------------- helpers
   function ic(n) { var s = (window.WXA_ICONS || {})[n]; return '<i data-i="' + n + '">' + (s ? '<svg viewBox="0 0 24 24" aria-hidden="true">' + s + "</svg>" : "") + "</i>"; }
   function fillIcons(root) { $$("i[data-i]", root).forEach(function (i) { if (!i.firstChild) { var s = (window.WXA_ICONS || {})[i.dataset.i]; if (s) i.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true">' + s + "</svg>"; } }); }
-  function toast(m, bad) { var t = $("#toast"); t.textContent = m; t.className = "toast on" + (bad ? " bad" : ""); clearTimeout(toast.t); toast.t = setTimeout(function () { t.className = "toast"; }, 3200); }
+  function toast(m, bad) { var t = $("#toast"); t.textContent = m; t.className = "toast on" + (bad ? " bad" : ""); clearTimeout(toast.t); toast.t = setTimeout(function () { t.className = "toast"; }, bad ? 8000 : 3200); }
   function api(action, data) {
     return fetch(API, { method: "POST", headers: { "Content-Type": "application/json", "X-WX-ADM": S.token }, body: JSON.stringify(Object.assign({ action: action }, data || {})) })
       .then(function (r) { return r.json().catch(function () { return { ok: false, error: "Server error (" + r.status + ")" }; }).then(function (j) { if (r.status === 401 && S.user) signedOut("Your session expired. Please sign in again."); return j; }); })
