@@ -470,7 +470,7 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
   const qLabel = (q) => q.no + (q.version > 1 ? " · V" + q.version : "") + (q.option ? " · " + q.option : "");
   const invPub = (i) => { const paid = i.payments.reduce((a, p) => a + p.amount, 0); return { ...i, paid, balance: Math.max(0, i.total - paid), payStatus: paid <= 0 ? "unpaid" : paid >= i.total ? "paid" : "partial", overdue: paid < i.total && i.due_date && i.due_date < now().slice(0, 10) }; };
   function a5(action, inp, need, db, ip) {
-    if (!/^(tpl_|quote_|quotes_|inv_|invs_|pay_|proj_|projs_|company_)/.test(action)) return null;
+    if (!/^(dash_|tpl_|quote_|quotes_|inv_|invs_|pay_|proj_|projs_|company_)/.test(action)) return null;
     ensureA5(db); const done = (o) => { save(db); return o; };
     const SALES = ["owner", "admin", "sales"], ALL = ["owner", "admin", "sales", "editor"];
     const findQ = (id) => { const q = db.quotes.find((x) => x.id === +id); if (!q) throw new Fail("Quotation not found", 404); return q; };
@@ -503,6 +503,30 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
       }
       case "tpl_delete": { const u = need(["owner", "admin"]), t = db.tpls.find((x) => x.id === +inp.id); if (!t) throw new Fail("Template not found", 404); db.tpls = db.tpls.filter((x) => x !== t); log(db, u, "template.delete", t.name, ip); return done({ ok: true }); }
       // ---------- quotations
+      case "dash_target_save": { const u = need(["owner", "admin"]); db.dashTarget = Math.max(0, Math.round(+inp.target || 0)); return done({ ok: true, target: db.dashTarget }); }
+      case "dash_data": {
+        const u = need(ALL); const days = [7, 28, 90].includes(+inp.days) ? +inp.days : 28; const ymd = (t) => new Date(t).toISOString().slice(0, 10);
+        const today = ymd(Date.now()), start = ymd(Date.now() - (days - 1) * 864e5), pStart = ymd(Date.now() - (2 * days - 1) * 864e5);
+        const axis = []; for (let i = days - 1; i >= 0; i--) axis.push(ymd(Date.now() - i * 864e5));
+        const o = { ok: true, days, role: u.role, crm: null, axis, visitors: axis.map(() => null) };
+        if (!SALES.includes(u.role)) return o;
+        const idx = Object.fromEntries(axis.map((d, i) => [d, i])), Z = () => axis.map(() => 0);
+        const S = { leads: Z(), sent: Z(), won: Z(), invoiced: Z(), paid: Z() }; const inP = (d) => d >= pStart && d < start;
+        let lN = 0, lP = 0, sN = 0, sP = 0, wN = 0, oq = 0, oqv = 0, pN = 0, pP = 0, unpaid = 0, mp = 0; const m0 = today.slice(0, 8) + "01"; const overdue = [];
+        const funnel = { new: 0, contacted: 0, visit: 0, quoted: 0, won: 0, lost: 0 }; let pipe = 0; const src = {};
+        for (const l of db.leads) { const d = String(l.created_at).slice(0, 10); if (d in idx) { lN++; S.leads[idx[d]]++; src[l.source] = (src[l.source] || 0) + 1; } else if (inP(d)) lP++; funnel[l.stage] = (funnel[l.stage] || 0) + 1; if (!["won", "lost"].includes(l.stage)) pipe += +l.value || 0; }
+        for (const q of db.quotes) { const s = String(q.sent_at || "").slice(0, 10), a = String(q.approved_at || "").slice(0, 10); if (s in idx) { sN++; S.sent[idx[s]]++; } else if (s && inP(s)) sP++; if (a in idx) { wN++; S.won[idx[a]]++; } if (q.status === "sent") { oq++; oqv += +q.total || 0; } }
+        for (const i of db.invoices) { const paid = (i.payments || []).reduce((m, p) => m + (+p.amount || 0), 0), bal = Math.max(0, i.total - paid); if (i.issue_date in idx) S.invoiced[idx[i.issue_date]] += i.total;
+          for (const p of i.payments || []) { if (p.date in idx) { pN += +p.amount; S.paid[idx[p.date]] += +p.amount; } else if (inP(p.date)) pP += +p.amount; if (p.date >= m0) mp += +p.amount; }
+          unpaid += bal; if (bal > 0 && i.due_date && i.due_date < today) overdue.push({ id: i.id, no: i.no, client: i.client?.name || "", balance: bal, due: i.due_date }); }
+        const leads = db.leads.slice().sort((a, b) => b.id - a.id);
+        const follow = leads.filter((l) => l.followup && l.followup <= today && !["won", "lost"].includes(l.stage)).slice(0, 8).map((l) => ({ id: l.id, name: l.name, service: l.service || "", stage: l.stage, followup: l.followup, late: l.followup < today }));
+        o.crm = { kpi: { leads: [lN, lP], pipeline: pipe, quotesSent: [sN, sP], openQuotes: [oq, oqv], paid: [pN, pP], unpaid, won: wN }, series: S, funnel,
+          recent: leads.slice(0, 6).map((l) => ({ id: l.id, name: l.name, service: l.service || "", stage: l.stage, source: l.source, created_at: l.created_at, read: !!l.is_read })),
+          followups: follow, overdue: overdue.slice(0, 6), overdueN: overdue.length, sources: Object.entries(src).sort((a, b) => b[1] - a[1]).map(([name, n]) => ({ name, n })),
+          chips: { new: db.leads.filter((l) => !l.is_read).length, overdue: overdue.length, follow: follow.length }, target: { target: db.dashTarget || 0, month: mp, monthLabel: new Date().toLocaleString("en", { month: "long", year: "numeric" }) } };
+        return o;
+      }
       case "quotes_list": { need(SALES); return { ok: true, quotes: db.quotes.slice().reverse().map(({ sections, ...q }) => ({ ...q, label: qLabel(q), sectionCount: sections.length })) }; }
       case "quote_get": { need(SALES); const q = findQ(inp.id); return { ok: true, quote: { ...q, label: qLabel(q) }, family: db.quotes.filter((x) => x.no === q.no).map((x) => ({ id: x.id, label: qLabel(x), status: x.status, total: x.total, version: x.version, option: x.option })), company: companyCfg(), invoice: db.invoices.find((i) => i.quote_id === q.id) ? invPub(db.invoices.find((i) => i.quote_id === q.id)) : null }; }
       case "quote_save": {
