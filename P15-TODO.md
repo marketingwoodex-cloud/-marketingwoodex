@@ -36,8 +36,8 @@ Legend: [x] done · [~] in progress · [ ] pending
 - [x] E4. "Test all key pages" button + table
 - [x] E5. PHP lint + Node mirror + browser test
 
-## F. Ship
-- [ ] F1. Restore test side-effect files (`.htaccess`, `renovation/index.html`, `sitemap.xml`)
-- [ ] F2. Build `deploy/woodex-live-p15.zip` (base `3342b99`) incl. new images
-- [ ] F3. Update `LIVE-AUDIT-AND-MASTER-PLAN.md` (P15 done) + commit + push
-- [ ] F4. Upload steps for Hostinger + run PageSpeed on the live site from the Speed page
+## F. Ship (done)
+- [x] F1. Restore test side-effect files (`.htaccess`, `renovation/index.html`, `sitemap.xml`)
+- [x] F2. Build `deploy/p15/woodex-live-p15-full.zip` (full site, user choice) + Reconnect-database screen
+- [x] F3. Update `LIVE-AUDIT-AND-MASTER-PLAN.md` (P15 done) + commit + push
+- [x] F4. Upload steps for Hostinger + run PageSpeed on the live site from the Speed page

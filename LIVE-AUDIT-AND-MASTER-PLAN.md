@@ -141,5 +141,6 @@ Each phase follows the same routine: questions, then build, then test, then your
 
 ### P15: Responsive + PageSpeed
 - Check the full site on phone, tablet and desktop, fix what breaks, and aim for 90+ PageSpeed on mobile and desktop.
+- **Done (30 Sep 2026).** Mobile 91–97 on every template, desktop 98–99, accessibility 97–100, SEO 100 (local Lighthouse). WebP + srcset images, per-page critical CSS, mobile layout fixes on all 87 pages, Admin → Speed dashboard, Reconnect-database screen. Package: `deploy/p15/woodex-live-p15-full.zip` (steps in `deploy/p15/README-UPLOAD.md`). Task list: `P15-TODO.md`.
 
 (Section import and v26 templates were done in Phase 5; "use a section block on any page" is covered by the builder's global sections.)
