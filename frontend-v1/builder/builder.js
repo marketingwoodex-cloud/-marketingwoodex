@@ -1277,17 +1277,19 @@
     toast("Exported as JSON ✓ — import it in the builder or Admin → Section library");
   }
   window.__wx5 = { exportJson: exportJson };
+  function wide(mb, w) { [mb, mb.parentElement].forEach(function (n) { if (n && n.id !== "modal") { n.style.width = w; n.style.maxWidth = w ? "none" : ""; n.style.boxSizing = w ? "border-box" : ""; } }); }
+  new MutationObserver(function () { if ($("#modal").hidden) wide($("#modal-body"), ""); }).observe($("#modal"), { attributes: true, attributeFilter: ["hidden"] });
   function templatesGallery() {
     var T = window.WX_TEMPLATES || [], cats = ["All"].concat(T.map(function (t) { return t.cat; }).filter(function (c, i, a) { return a.indexOf(c) === i; })), cur = "All", q = "";
     modal("<h2 style='margin-bottom:6px'>v26 templates <small class='hint'>(" + T.length + ")</small></h2><div style='display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:12px'><input type='search' id='tg-q' placeholder='Search…' style='max-width:200px'>" +
-      cats.map(function (c) { return "<button class='btn btn-sm' data-tc='" + esc(c) + "'>" + esc(c) + "</button>"; }).join("") + "</div><div id='tg-grid' style='display:grid;grid-template-columns:repeat(3,1fr);gap:14px;max-height:68vh;overflow:auto;padding-right:6px'></div>");
-    var mb = $("#modal-body"); mb.style.width = "min(1100px,94vw)"; mb.style.maxWidth = "none";
+      cats.map(function (c) { return "<button class='btn btn-sm' data-tc='" + esc(c) + "'>" + esc(c) + "</button>"; }).join("") + "</div><div id='tg-grid' style='display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px;max-height:68vh;overflow:auto;padding-right:6px'></div>");
+    var mb = $("#modal-body"); wide(mb, "min(1100px,94vw)");
     var draw = function () {
       $$("[data-tc]").forEach(function (b) { b.classList.toggle("btn-pri", b.dataset.tc === cur); });
       $("#tg-grid").innerHTML = T.filter(function (t) { return (cur === "All" || t.cat === cur) && (!q || (t.name + " " + t.cat).toLowerCase().indexOf(q) >= 0); }).map(function (t) {
         return "<button data-tid='" + t.id + "' style='text-align:left;background:#fff;border:1px solid #e4e7ec;border-radius:12px;padding:8px;cursor:pointer'>" + thumb(t.html) + "<div style='display:flex;justify-content:space-between;gap:6px;margin-top:8px;font:600 13px system-ui'><span>" + esc(t.name) + "</span><small class='hint'>" + esc(t.cat) + "</small></div></button>";
       }).join("") || "<p class='hint'>No templates match.</p>";
-      $$("[data-tid]").forEach(function (b) { b.onclick = function () { var t = T.find(function (x) { return x.id === b.dataset.tid; }); closeModal(); mb.style.width = mb.style.maxWidth = ""; insertSection(t.html, S.sel); toast("“" + t.name + "” added — click any text to edit"); }; });
+      $$("[data-tid]").forEach(function (b) { b.onclick = function () { var t = T.find(function (x) { return x.id === b.dataset.tid; }); closeModal(); wide(mb, ""); insertSection(t.html, S.sel); toast("“" + t.name + "” added — click any text to edit"); }; });
     };
     $$("[data-tc]").forEach(function (b) { b.onclick = function () { cur = b.dataset.tc; draw(); }; });
     $("#tg-q").oninput = function () { q = this.value.trim().toLowerCase(); draw(); };
@@ -1299,7 +1301,7 @@
 
   $("#import-sec").onclick = function () {
     modal("<h2>Import sections</h2><p class='hint'>Choose a Woodex <b>.json</b> export (from the builder or Admin → Section library) or an <b>.html</b> file — or paste below. Scripts and unsafe code are removed automatically, and you’ll see a preview first.</p><input type='file' id='imp-f' accept='.json,.html,.htm,.txt'><textarea id='imp-t' rows='7' placeholder='Paste JSON or HTML…' style='width:100%;margin-top:10px;font:12px ui-monospace,monospace;border:1px solid #d0d5dd;border-radius:8px;padding:8px'></textarea><div class='row' style='margin-top:10px'><button class='btn btn-pri' id='imp-chk'>Check &amp; preview</button></div><div id='imp-prev'></div>");
-    var mb = $("#modal-body"); mb.style.width = "min(900px,94vw)"; mb.style.maxWidth = "none";
+    var mb = $("#modal-body"); wide(mb, "min(900px,94vw)");
     $("#imp-f").onchange = function () { var f = this.files[0]; if (f) f.text().then(function (t) { $("#imp-t").value = t; $("#imp-chk").click(); }); };
     $("#imp-chk").onclick = function () {
       var txt = $("#imp-t").value.trim(), list = [], removed = 0; if (!txt) return;
@@ -1317,8 +1319,8 @@
         list.map(function (b, i) { return "<label style='display:block;border:1px solid #e4e7ec;border-radius:10px;padding:8px;cursor:pointer'>" + thumb(b.html, 150) + "<span style='display:flex;gap:6px;align-items:center;margin-top:6px;font:600 13px system-ui'><input type='checkbox' data-ii='" + i + "' checked>" + esc(b.name) + " <small class='hint'>" + esc(b.cat) + "</small></span></label>"; }).join("") +
         "</div><div class='row' style='margin-top:12px;gap:8px'><button class='btn btn-pri' id='imp-go'>Insert into page</button><button class='btn' id='imp-lib'>Save to My sections</button></div>";
       var picked = function () { return list.filter(function (b, i) { var c = $("[data-ii='" + i + "']"); return c && c.checked; }); };
-      $("#imp-go").onclick = function () { var p = picked(), after = S.sel; if (!p.length) return; closeModal(); mb.style.width = mb.style.maxWidth = ""; p.forEach(function (b) { insertSection(b.html, after); }); toast(p.length + " section(s) inserted ✓"); };
-      $("#imp-lib").onclick = function () { var p = picked(); if (!p.length) return; api("blocks_import", { blocks: p }).then(function (r) { if (!r.ok) return toast(r.error, true); closeModal(); mb.style.width = mb.style.maxWidth = ""; renderMine(); toast(p.length + " saved to My sections ✓"); }); };
+      $("#imp-go").onclick = function () { var p = picked(), after = S.sel; if (!p.length) return; closeModal(); wide(mb, ""); p.forEach(function (b) { insertSection(b.html, after); }); toast(p.length + " section(s) inserted ✓"); };
+      $("#imp-lib").onclick = function () { var p = picked(); if (!p.length) return; api("blocks_import", { blocks: p }).then(function (r) { if (!r.ok) return toast(r.error, true); closeModal(); wide(mb, ""); renderMine(); toast(p.length + " saved to My sections ✓"); }); };
     };
   };
 
