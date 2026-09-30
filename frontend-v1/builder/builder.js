@@ -1677,3 +1677,18 @@
   };
 
 })();
+
+/* Phase 4 — open the Admin "Header & footer" editor (header, mega menu, footer; all pages) in a panel */
+(function () {
+  var b = document.getElementById("hf-btn"); if (!b) return;
+  b.addEventListener("click", function () {
+    var ov = document.createElement("div");
+    ov.style.cssText = "position:fixed;inset:0;z-index:99999;background:rgba(12,22,40,.55);display:flex;flex-direction:column;padding:18px";
+    ov.innerHTML = '<div style="display:flex;align-items:center;gap:10px;background:#0c1628;color:#fff;padding:10px 14px;border-radius:12px 12px 0 0;font:600 14px system-ui">Header, mega menu &amp; footer — changes apply to every page after Publish<span style="flex:1"></span><a href="/admin/#/global" target="_blank" style="color:#c9a97a">Open in new tab ↗</a><button type="button" style="background:#fff;border:0;border-radius:8px;padding:6px 12px;cursor:pointer;font-weight:600">Close</button></div><iframe src="/admin/#/global" style="flex:1;border:0;background:#fff;border-radius:0 0 12px 12px"></iframe>';
+    ov.querySelector("button").onclick = function () {
+      ov.remove();
+      if (confirm("Reload this page in the builder to see the latest header & footer?\n(Save your page first if you have unsaved changes.)")) location.reload();
+    };
+    document.body.appendChild(ov);
+  });
+})();

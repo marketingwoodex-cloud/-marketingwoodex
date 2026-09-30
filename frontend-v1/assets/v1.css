@@ -357,3 +357,8 @@ h1{letter-spacing:-.04em!important;word-spacing:.04em}h2{letter-spacing:-.03em!i
 .footer-word{color:rgba(184,149,106,.10)!important;border-top-color:rgba(184,149,106,.25)!important}
 /* Alternating white / cream: applied by site.js only to sections that are really white */
 .wx-cream{background-color:var(--cream)!important}
+
+/* Phase 4 — mega menu column count set by the Header & footer editor (2–5 columns) */
+.mega-menu[data-cols="2"]{grid-template-columns:repeat(2,minmax(0,1fr)) minmax(250px,1.4fr)}
+.mega-menu[data-cols="3"]{grid-template-columns:repeat(3,minmax(0,1fr)) minmax(250px,1.4fr)}
+.mega-menu[data-cols="5"]{grid-template-columns:repeat(5,minmax(0,1fr)) minmax(230px,1.2fr)}

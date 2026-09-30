@@ -114,6 +114,7 @@ function site_stats(): array {
 const BACKUP_DIR = PRIVATE_DIR . '/backups';
 const PAGES_META = PRIVATE_DIR . '/pages.json';     // {rel: {status}}
 const REDIRECTS  = PRIVATE_DIR . '/redirects.json'; // [{from,to}]
+const CHROME     = PRIVATE_DIR . '/chrome.json';    // header/footer editor versions [{t,by,note,data}] (max 10)
 const RESERVED   = '~^(_private|builder|admin|api|assets)/~';
 
 function rel_ok(string $rel): string {
@@ -388,6 +389,43 @@ switch ($action) {
             if ($h !== $o) { backup_page($rel); file_put_contents($abs, $h, LOCK_EX); $n++; }
         }
         log_act($u, 'global.menu', $n . ' pages'); out(['ok' => true, 'changed' => $n]);
+
+    // ---------------- Phase 4: header brand + button text + footer, versions
+    case 'chrome_versions':
+        need(['owner', 'admin']); out(['ok' => true, 'versions' => jread(CHROME)]);
+
+    case 'chrome_save':
+        $u = need(['owner', 'admin']); $data = $in['data'] ?? null;
+        if (!is_array($data)) fail('Nothing to save');
+        $js = json_encode($data); if (strlen($js) > 200000) fail('Too large');
+        $v = jread(CHROME); array_unshift($v, ['t' => time(), 'by' => $u['name'] ?? $u['email'] ?? '', 'note' => mb_substr((string)($in['note'] ?? ''), 0, 120), 'data' => $data]);
+        jwrite(CHROME, array_slice($v, 0, 10)); out(['ok' => true, 'versions' => array_slice($v, 0, 10)]);
+
+    case 'global_chrome':
+        $u = need(['owner', 'admin']);
+        $brand = (string)($in['brand'] ?? ''); $cta = trim((string)($in['cta_label'] ?? '')); $foot = (string)($in['footer'] ?? ''); $introAll = !empty($in['intro_all']);
+        foreach ([$brand, $foot, $cta] as $x) if (preg_match('~<script|\son[a-z]+\s*=|javascript:~i', $x)) fail('Scripts are not allowed');
+        if ($brand !== '' && !preg_match('~^<a class="brand"[^>]*>.*</a>$~s', $brand)) fail('Invalid logo HTML');
+        if ($foot !== '' && !preg_match('~^<footer class="footer">.*</footer>$~s', $foot)) fail('Invalid footer HTML');
+        if (mb_strlen($cta) > 40) fail('Button text is too long');
+        $n = 0;
+        foreach (all_pages() as $rel) {
+            if ($rel === '404.html') continue;
+            $abs = ROOT_DIR . '/' . $rel; $o = (string)file_get_contents($abs); $h = $o; $url = url_of($rel);
+            if ($brand !== '') { $b = $url === '/' ? preg_replace('~^<a class="brand"~', '<a class="brand" aria-current="page"', $brand, 1) : $brand; $h = preg_replace_callback('~<a class="brand"[^>]*>.*?</a>~s', fn() => $b, $h, 1); }
+            if ($cta !== '') $h = preg_replace_callback('~(<a class="header-cta"[^>]*>\s*<span class="header-cta-label">).*?(</span>)~s', fn($m) => $m[1] . htmlspecialchars($cta, ENT_QUOTES) . $m[2], $h, 1);
+            if ($foot !== '' && preg_match('~<footer class="footer">.*?</footer>~s', $h, $old)) {
+                $f = $foot;
+                foreach (['footer-process', 'footer-services', 'footer-faq'] as $id)   // this page's own section links
+                    if (preg_match('~<a id="' . $id . '" href="([^"]*)"~', $old[0], $m)) $f = preg_replace('~(<a id="' . $id . '" href=")[^"]*"~', '${1}' . $m[1] . '"', $f, 1);
+                if (!$introAll && preg_match('~<div class="footer-intro">.*?</a></div>~s', $old[0], $intro)) $f = preg_replace_callback('~<div class="footer-intro">.*?</a></div>~s', fn() => $intro[0], $f, 1);
+                // fix "/#page-contact" (sent visitors to the home page) → "#page-contact" when that section is on this page
+                $f = preg_replace_callback('~(id="footer-cta" href=")/#([a-z0-9-]+)"~', fn($m) => strpos($h, 'id="' . $m[2] . '"') !== false ? $m[1] . '#' . $m[2] . '"' : $m[0], $f);
+                $h = preg_replace_callback('~<footer class="footer">.*?</footer>~s', fn() => $f, $h, 1);
+            }
+            if ($h !== $o) { backup_page($rel); file_put_contents($abs, $h, LOCK_EX); $n++; }
+        }
+        log_act($u, 'global.chrome', $n . ' pages'); out(['ok' => true, 'changed' => $n]);
 
     case 'global_replace':
         $u = need(['owner', 'admin']); $find = (string)($in['find'] ?? ''); $rep = (string)($in['replace'] ?? ''); $dry = !empty($in['dry']);

@@ -83,7 +83,7 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
     try { fs.mkdirSync(PRIV, { recursive: true }); fs.appendFileSync(path.join(PRIV, "outbox.jsonl"), JSON.stringify({ t: now(), channel: "email", to: u.email, subject: "New sign-in to Woodex Admin", text }) + "\n"); } catch {}
   }
   // =================================================================== A2 — pages, SEO, status, redirects, global parts
-  const BACKUPS = path.join(PRIV, "backups"), PMETA = path.join(PRIV, "pages.json"), REDIR = path.join(PRIV, "redirects.json");
+  const BACKUPS = path.join(PRIV, "backups"), PMETA = path.join(PRIV, "pages.json"), REDIR = path.join(PRIV, "redirects.json"), CHROME = path.join(PRIV, "chrome.json");
   const RESERVED = /^(_private|builder|admin|api|assets)\//;
   const jr = (f, d) => { try { return JSON.parse(fs.readFileSync(f, "utf8")); } catch { return d; } };
   const jw = (f, d) => fs.writeFileSync(f, JSON.stringify(d, null, 1));
@@ -219,6 +219,39 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
           if (h !== o) { backupPage(rel); fs.writeFileSync(abs, h); n++; }
         }
         log(db, u, "global.menu", n + " pages", ip); return done({ ok: true, changed: n });
+      }
+      case "chrome_versions": { need(["owner", "admin"]); return done({ ok: true, versions: jr(CHROME, []) }); }
+      case "chrome_save": {
+        const u = need(["owner", "admin"]), data = inp.data;
+        if (!data || typeof data !== "object") throw new Fail("Nothing to save");
+        if (JSON.stringify(data).length > 200000) throw new Fail("Too large");
+        const v = jr(CHROME, []); v.unshift({ t: Math.floor(Date.now() / 1000), by: u.name || u.email || "", note: String(inp.note || "").slice(0, 120), data });
+        jw(CHROME, v.slice(0, 10)); return done({ ok: true, versions: v.slice(0, 10) });
+      }
+      case "global_chrome": {
+        const u = need(["owner", "admin"]), brand = String(inp.brand || ""), cta = String(inp.cta_label || "").trim(), foot = String(inp.footer || ""), introAll = !!inp.intro_all;
+        if (unsafe(brand) || unsafe(foot) || unsafe(cta)) throw new Fail("Scripts are not allowed");
+        if (brand && !/^<a class="brand"[^>]*>[\s\S]*<\/a>$/.test(brand)) throw new Fail("Invalid logo HTML");
+        if (foot && !/^<footer class="footer">[\s\S]*<\/footer>$/.test(foot)) throw new Fail("Invalid footer HTML");
+        if (cta.length > 40) throw new Fail("Button text is too long");
+        const escH = (x) => x.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+        let n = 0;
+        for (const rel of allPages()) {
+          if (rel === "404.html") continue;
+          const abs = path.join(ROOT, rel), o = fs.readFileSync(abs, "utf8"), url = urlOf(rel); let h = o;
+          if (brand) { const b = url === "/" ? brand.replace(/^<a class="brand"/, '<a class="brand" aria-current="page"') : brand; h = h.replace(/<a class="brand"[^>]*>[\s\S]*?<\/a>/, () => b); }
+          if (cta) h = h.replace(/(<a class="header-cta"[^>]*>\s*<span class="header-cta-label">)[\s\S]*?(<\/span>)/, (m, a, c) => a + escH(cta) + c);
+          const old = foot && /<footer class="footer">[\s\S]*?<\/footer>/.exec(h);
+          if (old) {
+            let f = foot;
+            for (const id of ["footer-process", "footer-services", "footer-faq"]) { const m = new RegExp('<a id="' + id + '" href="([^"]*)"').exec(old[0]); if (m) f = f.replace(new RegExp('(<a id="' + id + '" href=")[^"]*"'), (x, a) => a + m[1] + '"'); }
+            if (!introAll) { const it = /<div class="footer-intro">[\s\S]*?<\/a><\/div>/.exec(old[0]); if (it) f = f.replace(/<div class="footer-intro">[\s\S]*?<\/a><\/div>/, () => it[0]); }
+            f = f.replace(/(id="footer-cta" href=")\/#([a-z0-9-]+)"/g, (m, a, id) => (h.includes('id="' + id + '"') ? a + "#" + id + '"' : m));
+            h = h.replace(/<footer class="footer">[\s\S]*?<\/footer>/, () => f);
+          }
+          if (h !== o) { backupPage(rel); fs.writeFileSync(abs, h); n++; }
+        }
+        log(db, u, "global.chrome", n + " pages", ip); return done({ ok: true, changed: n });
       }
       case "global_replace": {
         const u = need(["owner", "admin"]), find = String(inp.find || ""), rep = String(inp.replace || ""), dry = !!inp.dry;
