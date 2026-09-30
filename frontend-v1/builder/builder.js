@@ -257,6 +257,8 @@
   function cleanNode(root) {
     $$("[data-wx-ed]", root).forEach(function (n) { n.remove(); });
     $$("[contenteditable],[spellcheck]", root).forEach(function (n) { n.removeAttribute("contenteditable"); n.removeAttribute("spellcheck"); });
+    // P15: keep async-CSS links as preload (browser flips rel to stylesheet at runtime)
+    $$('link[onload][rel="stylesheet"]', root).forEach(function (n) { n.setAttribute("rel", "preload"); });
   }
   function serialise() {
     finishEdit(); renderCSS();
