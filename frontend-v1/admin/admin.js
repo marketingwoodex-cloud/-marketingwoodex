@@ -208,8 +208,10 @@
     if (!S.user) return;
     var parts = (location.hash.replace(/^#\/?/, "") || "dashboard").split("/"), v = parts[0];
     var SUB = { quote: "quotes", template: "templates", invoice: "invoices", post: "blog", study: "portfolio", fields: "services", citydraft: "cities" };
-    var def = NAV.find(function (n) { return n[0] === (SUB[v] || v); });
-    if (!def && v !== "profile") v = "dashboard", def = NAV[1];
+    var FLAT = []; NAV.forEach(function (n) { if (n.g) FLAT.push.apply(FLAT, n.items); else if (Array.isArray(n)) FLAT.push(n); });
+    var find = function (k) { return FLAT.find(function (n) { return n[0] === k; }); };
+    var def = find(SUB[v] || v);
+    if (!def && v !== "profile") v = "dashboard", def = find("dashboard");
     if (def && def[3] && !can(def[3])) { v = "dashboard"; toast("You do not have access to that section", true); }
     S.view = v; S.charts.forEach(function (c) { c.destroy(); }); S.charts = [];
     var nv = { quote: "quotes", template: "templates", invoice: "invoices", post: "blog", study: "portfolio", fields: "services", citydraft: "cities" }[v] || v; $$(".nav-a").forEach(function (a) { a.classList.toggle("on", a.dataset.v === nv); }); $$(".nav-g").forEach(function (g) { var has = !!g.querySelector('.nav-a[data-v="' + nv + '"]'); g.classList.toggle("has-on", has); if (has) g.classList.add("open"); });
