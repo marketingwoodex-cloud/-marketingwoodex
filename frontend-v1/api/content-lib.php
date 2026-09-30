@@ -13,11 +13,19 @@ const CMS_TYPES  = ['post', 'study', 'testimonial', 'member', 'faq', 'city'];
 const BIZ_DEF = ['email' => 'info@woodex.com.pk', 'phone1' => '+92 322 4000768', 'phone2' => '+92 321 4686884', 'wa' => '+92 322 4000768', 'addr1' => 'M-71, Zainab Tower', 'addr2' => 'Model Town Link Road', 'city' => 'Lahore', 'country' => 'Pakistan', 'days' => 'Mon–Sat', 'open' => '09:30', 'close' => '18:30'];
 const BIZ_ASSETS = ['assets/site.js', 'assets/js/whatsapp-widget.js'];
 const CMS_PAGES  = ['post' => 'insights', 'study' => 'projects'];
-const AI_SECRETS = ['anthropicKey', 'openaiKey', 'openrouterKey'];
-const AI_DEF = ['provider' => 'anthropic', 'anthropicKey' => '', 'anthropicModel' => 'claude-sonnet-4-5', 'openaiKey' => '', 'openaiModel' => 'gpt-4o-mini', 'openrouterKey' => '', 'openrouterModel' => 'nousresearch/hermes-3-llama-3.1-405b',
+const AI_SECRETS = ['anthropicKey', 'openaiKey', 'openrouterKey', 'customKey'];
+const AI_DEF = ['customKey' => '', 'customModel' => '', 'customUrl' => '', 'provider' => 'anthropic', 'anthropicKey' => '', 'anthropicModel' => 'claude-sonnet-4-5', 'openaiKey' => '', 'openaiModel' => 'gpt-4o-mini', 'openrouterKey' => '', 'openrouterModel' => 'nousresearch/hermes-3-llama-3.1-405b',
     'voice' => 'Calm, plain, confident British English. Short sentences. No hype, no exclamation marks. Woodex Interior is a design, fit-out and renovation studio in Lahore, Pakistan.'];
 
-function cms_load(): array { $c = jread(CMS_FILE); $c['items'] = $c['items'] ?? []; $c['seq'] = (int)($c['seq'] ?? 0); $c['ai'] = array_merge(AI_DEF, $c['ai'] ?? []); return $c; }
+function cms_load(): array { $c = jread(CMS_FILE); $c['items'] = $c['items'] ?? []; $c['seq'] = (int)($c['seq'] ?? 0); $c['ai'] = array_merge(AI_DEF, $c['ai'] ?? []);
+    // local / self-hosted endpoints often need no key: treat a set URL as "ready"
+    if ($c['ai']['provider'] === 'custom' && $c['ai']['customUrl'] !== '' && $c['ai']['customKey'] === '') $c['ai']['customKey'] = 'none';
+    return $c; }
+/** OpenAI-compatible chat URL for openai / openrouter / custom (9router, OmniRoute, LM Studio, Ollama…) */
+function ai_chat_url(array $a): string {
+    if ($a['provider'] === 'custom') { $b = rtrim((string)$a['customUrl'], '/'); return preg_match('~/chat/completions$~', $b) ? $b : $b . '/chat/completions'; }
+    return $a['provider'] === 'openai' ? 'https://api.openai.com/v1/chat/completions' : 'https://openrouter.ai/api/v1/chat/completions';
+}
 function cms_save_file(array $c): void { jwrite(CMS_FILE, $c); }
 function ai_pub(array $a): array { foreach (AI_SECRETS as $k) { $a[$k . 'Set'] = $a[$k] !== ''; $a[$k] = ''; } return $a; }
 function cms_rel_ok($rel, string $type): bool { return is_string($rel) && isset(CMS_PAGES[$type]) && (bool)preg_match('~^' . CMS_PAGES[$type] . '/[a-z0-9][a-z0-9-]{0,59}/index\.html$~', $rel); }
@@ -52,10 +60,10 @@ function cms_tick(): int {
 }
 function ai_call(array $a, string $system, string $user): string {
     $p = $a['provider']; $key = $a[$p . 'Key'] ?? ''; $model = $a[$p . 'Model'] ?? '';
-    if ($key === '') fail('Add an API key for ' . (['anthropic' => 'Claude', 'openai' => 'OpenAI', 'openrouter' => 'OpenRouter'][$p] ?? $p) . ' in Content → AI settings');
+    if ($key === '') fail('Add an API key for ' . (['anthropic' => 'Claude', 'openai' => 'OpenAI', 'openrouter' => 'OpenRouter', 'custom' => 'Custom / local endpoint'][$p] ?? $p) . ' in Content → AI settings');
     if (!function_exists('curl_init')) fail('The server has no cURL extension', 500);
     if ($p === 'anthropic') { $url = 'https://api.anthropic.com/v1/messages'; $h = ['x-api-key: ' . $key, 'anthropic-version: 2023-06-01', 'content-type: application/json']; $body = ['model' => $model, 'max_tokens' => 6000, 'system' => $system, 'messages' => [['role' => 'user', 'content' => $user]]]; }
-    else { $url = $p === 'openai' ? 'https://api.openai.com/v1/chat/completions' : 'https://openrouter.ai/api/v1/chat/completions'; $h = ['authorization: Bearer ' . $key, 'content-type: application/json', 'HTTP-Referer: https://woodex.com.pk', 'X-Title: Woodex Admin']; $body = ['model' => $model, 'max_tokens' => 6000, 'messages' => [['role' => 'system', 'content' => $system], ['role' => 'user', 'content' => $user]]]; }
+    else { $url = ai_chat_url($a); $h = ['authorization: Bearer ' . $key, 'content-type: application/json', 'HTTP-Referer: https://woodex.com.pk', 'X-Title: Woodex Admin']; $body = ['model' => $model, 'max_tokens' => 6000, 'messages' => [['role' => 'system', 'content' => $system], ['role' => 'user', 'content' => $user]]]; }
     $ch = curl_init($url); curl_setopt_array($ch, [CURLOPT_CAINFO => __DIR__ . '/cacert.pem', CURLOPT_POST => true, CURLOPT_HTTPHEADER => $h, CURLOPT_POSTFIELDS => json_encode($body), CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 60]);
     $raw = curl_exec($ch); $code = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE); $err = curl_error($ch); curl_close($ch);
     if ($raw === false) fail('AI request failed: ' . mb_substr($err, 0, 200), 502);
@@ -180,11 +188,32 @@ function content_actions(string $action, array $in): bool {
         case 'cms_ai_save':
             $u = need($OA); $s = is_array($in['ai'] ?? null) ? $in['ai'] : [];
             foreach (array_keys(AI_DEF) as $k) { if (!array_key_exists($k, $s)) continue; if (in_array($k, AI_SECRETS, true) && $s[$k] === '' && empty($s[$k . 'Clear'])) continue; $c['ai'][$k] = clip($s[$k], $k === 'voice' ? 800 : 300); }
-            if (!in_array($c['ai']['provider'], ['anthropic', 'openai', 'openrouter'], true)) $c['ai']['provider'] = 'anthropic';
+            if (!in_array($c['ai']['provider'], ['anthropic', 'openai', 'openrouter', 'custom'], true)) $c['ai']['provider'] = 'anthropic';
+            if ($c['ai']['customUrl'] !== '' && !preg_match('~^https?://[^\s]+$~i', $c['ai']['customUrl'])) fail('The custom endpoint must start with https:// (or http://)');
             cms_save_file($c); log_act($u, 'settings.ai', $c['ai']['provider']); out(['ok' => true, 'ai' => ai_pub($c['ai'])]);
         case 'ai_run':
             $u = need($ED); $prompt = ai_prompt((string)($in['task'] ?? ''), is_array($in['input'] ?? null) ? $in['input'] : []); if ($prompt === null) fail('Unknown AI task');
             $text = ai_call($c['ai'], 'You write website copy for Woodex Interior. ' . $c['ai']['voice'], $prompt); log_act($u, 'ai.' . $in['task']); out(['ok' => true, 'text' => $text]);
+        /* P16: list models straight from the provider API (uses the typed key, or the saved one) */
+        case 'cms_ai_models':
+            need($OA); $p = (string)($in['provider'] ?? $c['ai']['provider']); if (!in_array($p, ['anthropic', 'openai', 'openrouter', 'custom'], true)) fail('Unknown provider');
+            $key = trim((string)($in['key'] ?? '')); if ($key === '') $key = (string)($c['ai'][$p . 'Key'] ?? ''); if ($key === 'none') $key = '';
+            $base = rtrim(trim((string)($in['url'] ?? '')) ?: (string)$c['ai']['customUrl'], '/'); $base = preg_replace('~/chat/completions$~', '', $base);
+            if ($p === 'custom' && !preg_match('~^https?://~i', $base)) fail('Enter the endpoint URL first (e.g. https://your-tunnel.example.com/v1)');
+            if ($key === '' && $p !== 'custom' && $p !== 'openrouter') fail('Enter the API key first');
+            $url = ['anthropic' => 'https://api.anthropic.com/v1/models?limit=100', 'openai' => 'https://api.openai.com/v1/models', 'openrouter' => 'https://openrouter.ai/api/v1/models', 'custom' => $base . '/models'][$p];
+            $h = $p === 'anthropic' ? ['x-api-key: ' . $key, 'anthropic-version: 2023-06-01'] : ($key !== '' ? ['authorization: Bearer ' . $key] : []);
+            $ch = curl_init($url); curl_setopt_array($ch, [CURLOPT_CAINFO => __DIR__ . '/cacert.pem', CURLOPT_HTTPHEADER => $h, CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 20, CURLOPT_CONNECTTIMEOUT => 8]);
+            $raw = curl_exec($ch); $code = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE); $err = curl_error($ch); curl_close($ch);
+            if ($raw === false) fail('Could not reach the provider: ' . mb_substr($err, 0, 200), 502);
+            $j = json_decode((string)$raw, true) ?: []; if ($code >= 400) fail('Provider said: ' . mb_substr((string)($j['error']['message'] ?? ('HTTP ' . $code)), 0, 200), 502);
+            $ids = []; foreach (($j['data'] ?? $j['models'] ?? []) as $m) { $id = (string)($m['id'] ?? $m['name'] ?? ''); if ($id === '') continue;
+                if ($p === 'openai' && !preg_match('~^(gpt|o\d|chatgpt)~', $id)) continue; if (preg_match('~(embed|whisper|tts|dall-e|image|audio|realtime|moderation|transcribe|search)~i', $id)) continue; $ids[] = $id; }
+            $ids = array_values(array_unique($ids)); if (!$ids) fail('No chat models returned by this provider');
+            $pref = ['anthropic' => ['claude-sonnet-4', 'claude-3-7-sonnet', 'claude-3-5-sonnet'], 'openai' => ['gpt-4.1-mini', 'gpt-4o-mini', 'gpt-4o'], 'openrouter' => ['anthropic/claude-sonnet-4', 'openai/gpt-4o-mini'], 'custom' => []][$p];
+            $best = $ids[0]; foreach ($pref as $want) { foreach ($ids as $id) if (str_starts_with($id, $want)) { $best = $id; break 2; } }
+            if ($p !== 'anthropic') sort($ids);
+            out(['ok' => true, 'models' => array_slice($ids, 0, 400), 'recommended' => $best]);
         case 'ai_test': need($OA); $t = ai_call($c['ai'], 'Reply with one word.', 'Say OK.'); out(['ok' => true, 'text' => mb_substr($t, 0, 60)]);
     }
     return false;

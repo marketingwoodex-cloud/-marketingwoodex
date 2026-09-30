@@ -654,13 +654,29 @@
   function aiSettings() {
     api("cms_ai_get").then(function (r) {
       if (!r.ok) return toast(r.error, true); var a = r.ai;
-      var P = [["anthropic", "Claude (Anthropic)", "console.anthropic.com"], ["openai", "OpenAI (GPT / Codex)", "platform.openai.com"], ["openrouter", "OpenRouter (Hermes and others)", "openrouter.ai/keys"]];
+      var P = [["anthropic", "Claude (Anthropic)", "console.anthropic.com"], ["openai", "OpenAI (GPT / Codex)", "platform.openai.com"], ["openrouter", "OpenRouter (Hermes and others)", "openrouter.ai/keys"], ["custom", "Custom / local (9router, OmniRoute, LM Studio…)", "your endpoint (optional)"]];
       modal('<h3>AI writing help</h3><p class="muted">Choose one provider and paste its API key. Keys are stored on the server and never shown again.</p><div class="seg blk" id="ai-p">' + P.map(function (p) { return '<button type="button" data-p="' + p[0] + '"' + (a.provider === p[0] ? ' class="on"' : "") + ">" + p[1].split(" (")[0] + "</button>"; }).join("") + "</div>" +
-        P.map(function (p) { return '<div class="ai-pp" data-pp="' + p[0] + '"' + (a.provider === p[0] ? "" : " hidden") + '><label>' + p[1] + ' API key <small>' + (a[p[0] + "KeySet"] ? "✓ saved. Leave empty to keep" : "get one at " + p[2]) + '</small><input type="password" id="ai-k-' + p[0] + '" autocomplete="off" placeholder="' + (a[p[0] + "KeySet"] ? "••••••••" : "Paste key") + '"></label><label>Model<input id="ai-m-' + p[0] + '" value="' + esc(a[p[0] + "Model"]) + '"></label></div>'; }).join("") +
+        P.map(function (p) { return '<div class="ai-pp" data-pp="' + p[0] + '"' + (a.provider === p[0] ? "" : " hidden") + '><label>' + p[1] + ' API key <small>' + (a[p[0] + "KeySet"] ? "✓ saved. Leave empty to keep" : "get one at " + p[2]) + '</small><input type="password" id="ai-k-' + p[0] + '" autocomplete="off" placeholder="' + (a[p[0] + "KeySet"] ? "••••••••" : "Paste key") + '"></label>' +
+          (p[0] === "custom" ? '<label>Endpoint URL <small>OpenAI-compatible, must be reachable from the internet (e.g. Cloudflare Tunnel) — localhost won’t work from Hostinger</small><input id="ai-u" value="' + esc(a.customUrl || "") + '" placeholder="https://ai.your-tunnel.com/v1"></label>' : "") +
+          '<label>Model <small class="ai-ms" data-ms="' + p[0] + '"></small><div style="display:flex;gap:6px"><input id="ai-m-' + p[0] + '" list="ai-dl-' + p[0] + '" value="' + esc(a[p[0] + "Model"]) + '" placeholder="Click “Load models”" style="flex:1"><button type="button" class="btn" data-lm="' + p[0] + '">' + ic("refresh-cw") + ' Load models</button></div><datalist id="ai-dl-' + p[0] + '"></datalist></label></div>'; }).join("") +
         '<label>House style <small>(sent with every request)</small><textarea id="ai-v" rows="3">' + esc(a.voice) + '</textarea></label><p class="err" id="ai-err"></p><div class="modal-actions"><button class="btn" id="ai-t">Test</button><span style="flex:1"></span><button class="btn" id="ai-x">Cancel</button><button class="btn pri" id="ai-s">Save</button></div>');
       var prov = a.provider;
-      $$("#ai-p [data-p]").forEach(function (b) { b.onclick = function () { prov = b.dataset.p; $$("#ai-p [data-p]").forEach(function (x) { x.classList.toggle("on", x === b); }); $$(".ai-pp").forEach(function (x) { x.hidden = x.dataset.pp !== prov; }); }; });
-      function body() { var s = { provider: prov, voice: $("#ai-v").value }; P.forEach(function (p) { s[p[0] + "Key"] = $("#ai-k-" + p[0]).value.trim(); s[p[0] + "Model"] = $("#ai-m-" + p[0]).value.trim(); }); return s; }
+      $$("#ai-p [data-p]").forEach(function (b) { b.onclick = function () { prov = b.dataset.p; $$("#ai-p [data-p]").forEach(function (x) { x.classList.toggle("on", x === b); }); $$(".ai-pp").forEach(function (x) { x.hidden = x.dataset.pp !== prov; }); if (a[prov + "KeySet"] && !$("#ai-dl-" + prov).children.length) loadModels(prov, true); }; });
+      // P16: fetch the model list from the provider and pick the recommended one automatically
+      function loadModels(pv, auto) {
+        var st = $('[data-ms="' + pv + '"]'), inp = $("#ai-m-" + pv); st.textContent = "loading…";
+        api("cms_ai_models", { provider: pv, key: $("#ai-k-" + pv).value.trim(), url: pv === "custom" ? $("#ai-u").value.trim() : "" }).then(function (m) {
+          if (!m.ok) { st.textContent = ""; if (!auto) $("#ai-err").textContent = m.error; return; }
+          $("#ai-err").textContent = "";
+          $("#ai-dl-" + pv).innerHTML = m.models.map(function (x) { return '<option value="' + esc(x) + '">'; }).join("");
+          if (!inp.value || m.models.indexOf(inp.value) < 0) inp.value = m.recommended;
+          st.textContent = "· " + m.models.length + " available" + (inp.value === m.recommended ? " · recommended selected" : "");
+        });
+      }
+      $$("[data-lm]").forEach(function (b) { b.onclick = function () { loadModels(b.dataset.lm, false); }; });
+      $$(".ai-pp input[type=password]").forEach(function (k) { k.addEventListener("change", function () { if (k.value.trim()) loadModels(k.id.replace("ai-k-", ""), true); }); });
+      if (a[prov + "KeySet"]) loadModels(prov, true);
+      function body() { var s = { provider: prov, voice: $("#ai-v").value, customUrl: $("#ai-u").value.trim() }; P.forEach(function (p) { s[p[0] + "Key"] = $("#ai-k-" + p[0]).value.trim(); s[p[0] + "Model"] = $("#ai-m-" + p[0]).value.trim(); }); return s; }
       $("#ai-x").onclick = closeModal;
       $("#ai-s").onclick = function () { api("cms_ai_save", { ai: body() }).then(function (r2) { if (!r2.ok) { $("#ai-err").textContent = r2.error; return; } aiReady = !!r2.ai[r2.ai.provider + "KeySet"]; closeModal(); toast("AI settings saved"); W.route && W.route(); }); };
       $("#ai-t").onclick = function () { var b = this; busy(b, true); api("cms_ai_save", { ai: body() }).then(function () { return api("ai_test"); }).then(function (r2) { busy(b, false); $("#ai-err").textContent = r2.ok ? "" : r2.error; if (r2.ok) toast("Connected: " + r2.text); }); };

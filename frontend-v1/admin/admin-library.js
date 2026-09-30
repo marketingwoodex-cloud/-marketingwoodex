@@ -34,7 +34,7 @@
     var blocks = [], usage = {};
     var load = function () {
       return Promise.all([bapi("blocks_list"), bapi("blocks_usage")]).then(function (r) {
-        if (!r[0].ok) return toast(r[0].error || "Could not load the library", true);
+        if (!r[0].ok) { $("#lb-grid").innerHTML = '<div class="empty"><b style="color:#d92d20">' + esc(r[0].error || "Could not load the library") + '</b><p><button class="btn" id="lb-retry">Retry</button> <a class="btn" href="#/system">System check</a></p></div>'; $("#lb-retry").onclick = load; return; }
         blocks = r[0].blocks || []; usage = (r[1] && r[1].usage) || {}; draw();
       });
     };

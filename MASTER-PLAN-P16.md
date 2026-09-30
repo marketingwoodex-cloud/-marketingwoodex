@@ -20,8 +20,8 @@ Work only in `frontend-v1/`. Every phase: QA on preview → FULL zip in `deploy/
 - [x] 4  FAQ groups: explain purpose on screen + sample groups (Renovation, Pricing, Cities) + where each shows on site
 - [x] 5  Page builder: runtime page view, new page create + save, Layers, Theme panel; **50 v26 templates in Sections tab**
 - [ ] 6  Dashboard: live CRM, quotation, invoice data (not only website) — done in Phase 3 dashboard
-- [ ] 7  Section library: loads, v26 templates (50), save own sections
-- [ ] 8  Blog: AI writer works (SSL fixed); **AI model auto-list from provider API**; empty-state help
+- [x] 7  Section library: loads, v26 templates (50), save own sections
+- [x] 8  Blog: AI writer works (SSL fixed); **AI model auto-list from provider API**; empty-state help
 - [ ] 9  Integrations: reorganised (see Phase 3); WhatsApp change/reconnect number + discount offers to leads
 - [ ] 10 Google (free): Sign-in with Google + Analytics 4 + Search Console data on dashboard
 - [ ] 11 Speed test works (PageSpeed via SSL fix; key optional; clear error)
@@ -49,7 +49,7 @@ Work only in `frontend-v1/`. Every phase: QA on preview → FULL zip in `deploy/
 **Integrations (card grid)** — logo, status, Connect / Settings / Disconnect, Test button
 - [ ] Google, WhatsApp Cloud API, AI providers, Email (SMTP), Turnstile, PageSpeed, Maps
 - [ ] API keys table: masked, enable toggle, Test, Edit, Regenerate (MCP tokens)
-- [ ] **Local AI endpoint** (9router / OmniRoute): OpenAI-compatible base URL (public tunnel URL) + key; auto model list
+- [x] **Local AI endpoint** (9router / OmniRoute): OpenAI-compatible base URL (public tunnel URL) + key; auto model list
 
 **Inbox (Flowbite chat style)** — contacts left · thread middle · lead/CRM panel right; website chat + WhatsApp; AI/team takeover; send quote/offer
 

@@ -591,8 +591,8 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
   const CMS = path.join(PRIV, "content.json");
   const CTYPES = ["post", "study", "testimonial", "member", "faq", "city"];
   const PAGE_TYPES = { post: "insights", study: "projects" };
-  const AI_DEF = { provider: "anthropic", anthropicKey: "", anthropicModel: "claude-sonnet-4-5", openaiKey: "", openaiModel: "gpt-4o-mini", openrouterKey: "", openrouterModel: "nousresearch/hermes-3-llama-3.1-405b", voice: "Calm, plain, confident British English. Short sentences. No hype, no exclamation marks. Woodex Interior is a design, fit-out and renovation studio in Lahore, Pakistan." };
-  const AI_SECRETS = ["anthropicKey", "openaiKey", "openrouterKey"];
+  const AI_DEF = { customKey: "", customModel: "", customUrl: "", provider: "anthropic", anthropicKey: "", anthropicModel: "claude-sonnet-4-5", openaiKey: "", openaiModel: "gpt-4o-mini", openrouterKey: "", openrouterModel: "nousresearch/hermes-3-llama-3.1-405b", voice: "Calm, plain, confident British English. Short sentences. No hype, no exclamation marks. Woodex Interior is a design, fit-out and renovation studio in Lahore, Pakistan." };
+  const AI_SECRETS = ["anthropicKey", "openaiKey", "openrouterKey", "customKey"];
   const cmsLoad = () => { const c = jr(CMS, {}); c.items = c.items || []; c.seq = c.seq || 0; c.ai = Object.assign({}, AI_DEF, c.ai || {}); return c; };
   const aiPub = (a) => { const o = { ...a }; AI_SECRETS.forEach((k) => { o[k + "Set"] = !!a[k]; o[k] = ""; }); return o; };
   const cmsBackup = (rel) => { const abs = path.join(ROOT, rel); if (!fs.existsSync(abs)) return; const d = path.join(PRIV, "backups", rel.replace(/[^a-z0-9]+/gi, "_")); fs.mkdirSync(d, { recursive: true }); const t = new Date(), p = (n, l = 2) => String(n).padStart(l, "0"); fs.copyFileSync(abs, path.join(d, `${t.getFullYear()}${p(t.getMonth() + 1)}${p(t.getDate())}-${p(t.getHours())}${p(t.getMinutes())}${p(t.getSeconds())}-${p(t.getMilliseconds(), 3)}.html`)); };
@@ -617,11 +617,11 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
   }
   async function aiCall(a, system, user) {
     const p = a.provider, key = a[p + "Key"], model = a[p + "Model"];
-    if (!key) throw new Fail("Add an API key for " + ({ anthropic: "Claude", openai: "OpenAI", openrouter: "OpenRouter" }[p] || p) + " in Content → AI settings");
+    if (!key && !(p === "custom" && a.customUrl)) throw new Fail("Add an API key for " + ({ anthropic: "Claude", openai: "OpenAI", openrouter: "OpenRouter" }[p] || p) + " in Content → AI settings");
     let r, j;
     try {
       if (p === "anthropic") { r = await fetch("https://api.anthropic.com/v1/messages", { method: "POST", headers: { "x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json" }, body: JSON.stringify({ model, max_tokens: 6000, system, messages: [{ role: "user", content: user }] }), signal: AbortSignal.timeout(60000) }); j = await r.json(); if (!r.ok) throw new Error(j.error && j.error.message || r.status); return (j.content || []).map((x) => x.text || "").join(""); }
-      const url = p === "openai" ? "https://api.openai.com/v1/chat/completions" : "https://openrouter.ai/api/v1/chat/completions";
+      const url = p === "custom" ? String(a.customUrl).replace(/\/+$/, "").replace(/\/chat\/completions$/, "") + "/chat/completions" : p === "openai" ? "https://api.openai.com/v1/chat/completions" : "https://openrouter.ai/api/v1/chat/completions";
       r = await fetch(url, { method: "POST", headers: { authorization: "Bearer " + key, "content-type": "application/json", "HTTP-Referer": "https://woodex.com.pk", "X-Title": "Woodex Admin" }, body: JSON.stringify({ model, max_tokens: 6000, messages: [{ role: "system", content: system }, { role: "user", content: user }] }), signal: AbortSignal.timeout(60000) });
       j = await r.json(); if (!r.ok) throw new Error(j.error && j.error.message || r.status); return j.choices[0].message.content || "";
     } catch (e) { throw new Fail("AI request failed: " + String(e.message || e).slice(0, 200), 502); }
@@ -704,7 +704,7 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
       case "cms_ai_save": {
         const u = need(OA), s = inp.ai || {};
         for (const k of Object.keys(AI_DEF)) { if (!(k in s)) continue; if (AI_SECRETS.includes(k) && s[k] === "" && !s[k + "Clear"]) continue; c.ai[k] = clip(s[k], k === "voice" ? 800 : 300); }
-        if (!["anthropic", "openai", "openrouter"].includes(c.ai.provider)) c.ai.provider = "anthropic";
+        if (!["anthropic", "openai", "openrouter", "custom"].includes(c.ai.provider)) c.ai.provider = "anthropic";
         log(db, u, "settings.ai", c.ai.provider, ip); return done({ ok: true, ai: aiPub(c.ai) });
       }
       case "ai_run": {
@@ -712,6 +712,18 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
         const text = await aiCall(c.ai, "You write website copy for Woodex Interior. " + c.ai.voice, AI_TASKS[task](inp.input || {}));
         log(db, u, "ai." + task, "", ip); save(db); return { ok: true, text };
       }
+      case "cms_ai_models": { need(OA); const p = inp.provider || c.ai.provider; let key = String(inp.key || "").trim() || c.ai[p + "Key"] || ""; if (key === "none") key = "";
+        const base = (String(inp.url || "").trim() || c.ai.customUrl || "").replace(/\/+$/, "").replace(/\/chat\/completions$/, "");
+        if (p === "custom" && !/^https?:\/\//i.test(base)) throw new Fail("Enter the endpoint URL first (e.g. https://your-tunnel.example.com/v1)");
+        if (!key && p !== "custom" && p !== "openrouter") throw new Fail("Enter the API key first");
+        const url = { anthropic: "https://api.anthropic.com/v1/models?limit=100", openai: "https://api.openai.com/v1/models", openrouter: "https://openrouter.ai/api/v1/models", custom: base + "/models" }[p];
+        const h = p === "anthropic" ? { "x-api-key": key, "anthropic-version": "2023-06-01" } : key ? { authorization: "Bearer " + key } : {};
+        let j; try { const r = await fetch(url, { headers: h, signal: AbortSignal.timeout(15000) }); j = await r.json().catch(() => ({})); if (!r.ok) throw new Fail("Provider said: " + (j.error?.message || "HTTP " + r.status), 502); } catch (e) { if (e instanceof Fail) throw e; throw new Fail("Could not reach the provider: " + (e.cause?.code || e.message), 502); }
+        const ids = [...new Set((j.data || j.models || []).map(m => String(m.id || m.name || "")).filter(id => id && !(p === "openai" && !/^(gpt|o\d|chatgpt)/.test(id)) && !/(embed|whisper|tts|dall-e|image|audio|realtime|moderation|transcribe|search)/i.test(id)))];
+        if (!ids.length) throw new Fail("No chat models returned by this provider");
+        const pref = { anthropic: ["claude-sonnet-4", "claude-3-7-sonnet"], openai: ["gpt-4.1-mini", "gpt-4o-mini"], openrouter: ["anthropic/claude-sonnet-4", "openai/gpt-4o-mini"], custom: [] }[p] || [];
+        let best = ids[0]; outer: for (const w of pref) for (const id of ids) if (id.startsWith(w)) { best = id; break outer; }
+        if (p !== "anthropic") ids.sort(); return { ok: true, models: ids.slice(0, 400), recommended: best }; }
       case "ai_test": { need(OA); const t = await aiCall(c.ai, "Reply with one word.", "Say OK."); return { ok: true, text: t.slice(0, 60) }; }
     }
     return null;
