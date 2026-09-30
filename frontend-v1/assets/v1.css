@@ -402,3 +402,23 @@ h1{letter-spacing:-.04em!important;word-spacing:.04em}h2{letter-spacing:-.03em!i
 .t6-form{display:grid;gap:12px}.t6-form input,.t6-form textarea,.t6-form select{width:100%;padding:14px 16px;border:1px solid rgba(12,22,40,.15);border-radius:12px;font:inherit;background:#fff}
 @media (max-width:900px){.t6-g.g3,.t6-g.g4,.t6-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.t6-g.g2,.t6-split{grid-template-columns:1fr}.t6-masonry{columns:2}.t6-hero{min-height:72vh}}
 @media (max-width:560px){.t6-g.g3,.t6-g.g4{grid-template-columns:1fr}.t6-masonry{columns:1}.t6-steps>div{grid-template-columns:50px 1fr}}
+
+/* P15 mobile fixes (all pages) */
+@media (max-width:520px){
+  a[class*="btn"],button[class*="btn"]{white-space:nowrap}
+  *:has(> a[class*="btn"] + a[class*="btn"]){flex-direction:column!important;align-items:stretch!important;grid-template-columns:1fr!important}
+  *:has(> a[class*="btn"] + a[class*="btn"]) > a[class*="btn"]{flex:0 0 auto!important;width:100%;justify-content:center;max-width:100%}
+  main small{font-size:12px!important}
+  .hm-slider-controls{gap:12px!important}
+  .hm-slider-dots{gap:4px!important;min-width:0}
+  .hm-slider-dot{width:28px!important;min-width:28px!important}
+  .hm-slider-controls > :last-child{flex-shrink:0}
+  main [class*="grid"] > *{min-width:0}
+  a[class*="btn"]{max-width:100%}
+  [class*="crumbs"] a,[class*="crumbs"] span,.eyebrow,.trust span,[class*="hero-trust"] span,.id-soon,.hm-hero-meta span,.ct-map-card span,.arch-hero-note span,.arch-elevation-price span{font-size:12px!important}
+  .fitout-scope-dot{min-width:32px;min-height:32px}
+}
+@media (max-width:374px){
+  a[class*="btn"],button[class*="btn"]{white-space:normal}
+  .header-cta-label{display:none!important}
+}
