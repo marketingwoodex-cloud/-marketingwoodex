@@ -1,8 +1,13 @@
-# P16 step 1 — upload
-1. Hostinger → File Manager → `public_html` → Upload `woodex-live-p16-step1.zip`.
+# P16 Phase 2 — full zip (all 13 bug fixes)
+1. Hostinger → File Manager → `public_html` → Upload `woodex-live-p16-phase2-full.zip`.
 2. Right-click → Extract → tick **Overwrite** → Extract. Delete the zip.
-3. Open `/admin/`, press **Ctrl+F5**, sign out and sign in again.
-4. Menu → **System check**. Every item should be ✓. Send a screenshot of any ✗.
+3. Open `/admin/` → **Ctrl+F5** → sign out and sign in again.
+4. Sidebar → **System check** → every item ✓ (send a screenshot of any ✗).
 
-Fixes: page-builder "Not signed in" (header/footer, section library, service pages, city copy, blog import),
-SSL error 20 (AI, PageSpeed, Google, WhatsApp) via bundled `api/cacert.pem`, and clear error messages instead of endless "Loading…".
+## Then set up (optional, all free)
+- **AI**: Blog → AI settings → pick provider → paste key → *Load models* (picks the best one) → Test → Save.
+  Local AI (9router/OmniRoute): choose *Custom / local*, paste your public tunnel URL ending in `/v1`.
+- **Google Analytics + Search Console**: Settings → Integrations → Google card → follow the 5 steps → upload key file → Test.
+- **WhatsApp**: Settings → Integrations → WhatsApp → Phone number ID + token → Verify & connect.
+  Offers: Sidebar → WhatsApp offers.
+- **Speed test** quota errors: add your free PageSpeed key (Settings → Integrations).
