@@ -572,3 +572,11 @@ table.tbl.lp tbody tr:has(td.empty):hover{background:transparent}
 .ib-search svg,.ib-search .ic{width:16px!important;height:16px!important;position:absolute;left:11px;top:50%;transform:translateY(-50%);pointer-events:none}
 .ib-search>:not(input){position:absolute!important;left:11px!important;top:11px!important;width:16px!important;height:16px!important;transform:none!important;display:block;line-height:0;color:var(--txt2);z-index:1}.ib-search>:not(input) svg{position:static!important;transform:none!important;width:16px!important;height:16px!important}
 .ib-search input{padding-left:36px!important}
+/* ===== P16 3.7 users ===== */
+.us-tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin:-6px 0 22px;overflow-x:auto}
+.us-tabs a{display:inline-flex;align-items:center;gap:7px;padding:10px 14px;color:var(--txt2);text-decoration:none;font-size:14px;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap}
+.us-tabs a svg{width:16px;height:16px}.us-tabs a:hover{color:var(--txt)}.us-tabs a.on{color:var(--txt);font-weight:600;border-bottom-color:#b8956a}
+.us-kpis{margin-bottom:18px}
+.us-bar{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:14px 16px;border-bottom:1px solid var(--line)}.us-bar input{max-width:320px;margin:0;height:38px}
+@media(max-width:720px){.us-bar input{max-width:none;flex:1 1 100%}.us-bar .seg{overflow-x:auto;max-width:100%}}
+#u-rows td:last-child{white-space:nowrap}#u-rows td:last-child .btn{vertical-align:middle}
