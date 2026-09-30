@@ -418,3 +418,39 @@ small.bad{color:var(--bad)}small.warnc{color:var(--warn)}
 .pk-btn{display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 12px;border:1px solid var(--line2);border-radius:10px;background:var(--card);color:var(--mut);cursor:pointer;min-width:240px}
 .pk-btn kbd{margin-left:auto;font:500 11px system-ui;border:1px solid var(--line2);border-radius:6px;padding:2px 6px}
 @media(max-width:760px){.pk-btn{min-width:0}.pk-btn span,.pk-btn kbd{display:none}}
+
+/* ===== P16 3.1 navy sidebar + gold, hover-expand rail ===== */
+.side{background:#0c1628;border-right:0;color:#c9d1dc}
+.side .brand b{color:#fff}.side .brand small{color:var(--gold)}
+.side .logo{background:var(--gold);color:#0c1628}
+.side .side-x{color:#c9d1dc}
+.side .nav-h{color:#6b7a90}
+.side .nav-a{color:#c3cbd6}
+.side .nav-a i,.side .nav-a svg{color:#8b98ab}
+.side .nav-a:hover{background:rgba(255,255,255,.06);color:#fff}
+.side .nav-a.on{background:rgba(184,149,106,.18);color:#f1e2cc}
+.side .nav-a.on i,.side .nav-a.on svg{color:var(--gold)!important}
+.side .nav-g.has-on>.nav-gb{color:#fff}.side .nav-g.has-on>.nav-gb svg{color:var(--gold)}
+.side .nav-sub{border-left-color:rgba(255,255,255,.1)}
+.side .nav-car{color:#6b7a90}
+.side .side-foot{border-top-color:rgba(255,255,255,.08)}
+.side .side-foot a{color:#8b98ab}.side .side-foot a:hover{color:#fff}
+.side ::-webkit-scrollbar{width:6px}.side ::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:6px}
+.nav-bdg{margin-left:auto;min-width:20px;height:20px;padding:0 6px;border-radius:10px;background:var(--gold);color:#0c1628;font:700 11px/20px system-ui;text-align:center}
+.nav-new{margin-left:auto;padding:1px 8px;border-radius:10px;border:1px solid rgba(184,149,106,.6);color:var(--gold);font:600 10.5px/16px system-ui}
+.nav-pin{background:none;border:0;color:#8b98ab;cursor:pointer;padding:6px;border-radius:8px}.nav-pin:hover{color:#fff;background:rgba(255,255,255,.06)}
+@media(min-width:1025px){
+  .app.mini .side{transition:width .2s ease}
+  #app.mini .side:hover{width:var(--side);box-shadow:8px 0 30px rgba(12,22,40,.35)}
+  #app.mini .side:hover .side-top{padding:0 24px;justify-content:space-between}
+  #app.mini .side:hover .side-top .brand>div{display:block}
+  #app.mini .side:hover #nav{padding:8px 16px 16px}
+  #app.mini .side:hover .nav-a{justify-content:flex-start;padding:10px 12px}
+  #app.mini .side:hover .nav-a>span,#app.mini .side:hover .nav-bdg,#app.mini .side:hover .nav-new{display:inline-block}
+  #app.mini .side:hover .nav-a>span:not(.nav-bdg):not(.nav-new):not(.nav-car){display:inline}
+  #app.mini .side:hover .nav-car{display:inline-flex!important}
+  #app.mini .side:hover .nav-g.open .nav-sub{display:block!important}
+  #app.mini .side:hover .nav-h{font-size:11.5px;margin:20px 12px 6px;text-align:left}#app.mini .side:hover .nav-h::after{content:none}
+  #app.mini .side:hover .side-foot a{justify-content:flex-start}#app.mini .side:hover .side-foot span{display:inline}
+  .app.mini .nav-bdg,.app.mini .nav-new{display:none}
+}

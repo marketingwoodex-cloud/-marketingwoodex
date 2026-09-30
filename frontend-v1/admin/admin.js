@@ -56,7 +56,7 @@
       ["invoices", "Invoices", "receipt", "owner,admin,sales"],
       ["templates", "Quote templates", "layers", "owner,admin,sales"]] },
     ["projects", "Projects", "briefcase"],
-    ["offers", "WhatsApp offers", "send", "owner,admin,sales"],
+    ["offers", "WhatsApp offers", "send", "owner,admin,sales", null, "new"],
     ["Support"],
     ["chat", "Inbox (chat & WhatsApp)", "message-circle", "owner,admin,sales"],
     ["updates", "Client updates", "send", "owner,admin"],
@@ -92,7 +92,17 @@
     ["security", "My security", "shield"]
   ];
   var navOpen = (function () { try { return JSON.parse(localStorage.getItem("wxNavOpen") || "{}"); } catch (e) { return {}; } })();
-  function navLink(n, sub) { return '<a class="nav-a' + (sub ? " sub" : "") + (n[4] ? " soon" : "") + '" href="#/' + n[0] + '" data-v="' + n[0] + '" title="' + n[1] + '">' + ic(n[2]) + "<span>" + n[1] + "</span>" + (n[4] ? '<span class="pill">' + n[4] + "</span>" : "") + "</a>"; }
+  function navLink(n, sub) { return '<a class="nav-a' + (sub ? " sub" : "") + (n[4] ? " soon" : "") + '" href="#/' + n[0] + '" data-v="' + n[0] + '" title="' + n[1] + '">' + ic(n[2]) + "<span>" + n[1] + "</span>" + (n[4] ? '<span class="pill">' + n[4] + "</span>" : "") + (n[5] === "new" ? '<span class="nav-new">NEW</span>' : "") + '<span class="nav-bdg" data-bdg="' + n[0] + '" hidden></span></a>'; }
+  // P16: live count badges (new leads, chats needing a reply)
+  function navBadges() {
+    if (!S.user) return;
+    var set = function (v, n) { var b = document.querySelector('[data-bdg="' + v + '"]'); if (b) { b.hidden = !n; b.textContent = n > 99 ? "99+" : n; } };
+    if (can("owner,admin,sales")) {
+      api("leads_count").then(function (r) { if (r && r.ok) set("enquiries", r.unread); });
+      api("chat_list", { status: "open" }).then(function (r) { if (r && r.ok) set("chat", (r.chats || []).filter(function (c) { return c.unread || c.needs; }).length); });
+    }
+  }
+  setInterval(function () { if (!document.hidden) navBadges(); }, 60000);
   function renderNav() {
     var ok = function (n) { return !n[3] || can(n[3]); }, out = [], pendingH = null;
     NAV.forEach(function (n) {
@@ -105,6 +115,7 @@
       out.push(html);
     });
     $("#nav").innerHTML = out.join("");
+    setTimeout(navBadges, 400);
     $$(".nav-gb").forEach(function (b) { b.onclick = function () { var g = b.parentNode; if ($("#app").classList.contains("mini")) { $("#app").classList.remove("mini"); g.classList.add("open"); } else g.classList.toggle("open"); navOpen[g.dataset.g] = g.classList.contains("open"); try { localStorage.setItem("wxNavOpen", JSON.stringify(navOpen)); } catch (e) {} }; });
     $$("[data-roles]").forEach(function (a) { a.hidden = !can(a.dataset.roles); });
   }
