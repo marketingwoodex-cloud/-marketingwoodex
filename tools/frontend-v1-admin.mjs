@@ -342,7 +342,7 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
   const leadFind = (db, id) => { const l = db.leads.find((x) => x.id === +id); if (!l) throw new Fail("Enquiry not found", 404); return l; };
   const SALES = ["owner", "admin", "sales"];
   async function a4(action, inp, need, db, ip) {
-    if (!/^(leads?_|clients?_|crm_)/.test(action)) return null;
+    if (!/^(leads?_|clients?_|crm_|gdata_)/.test(action)) return null;
     ensureCrm(db); const done = (o) => { save(db); return o; };
     switch (action) {
       case "leads_list": { need(SALES); return { ok: true, leads: db.leads.slice().reverse().map((l) => leadPub(l, db)), stages: STAGES, sources: SOURCES, team: db.users.filter((u) => u.active && SALES.includes(u.role)).map((u) => ({ id: u.id, name: u.name })) }; }
