@@ -81,7 +81,8 @@
     ["users", "Team & roles", "users", "owner,admin"],
     ["activity", "Activity log", "activity", "owner,admin"],
     ["security", "My security", "shield"],
-    ["settings", "Settings & APIs", "settings", "owner,admin"]
+    ["settings", "Settings & APIs", "settings", "owner,admin"],
+    ["system", "System check", "activity", "owner,admin"]
   ];
   function renderNav() {
     $("#nav").innerHTML = NAV.filter(function (n) { return n.length === 1 || !n[3] || can(n[3]); }).map(function (n) {

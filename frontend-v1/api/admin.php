@@ -229,6 +229,27 @@ switch ($action) {
             if (!$dbOk) out(['ok' => true, 'needsSetup' => false, 'dbError' => true, 'driver' => 'mysql', 'builderLocked' => !empty(jread(BCONFIG)['password_hash']), 'user' => null]); }
         out(['ok' => true, 'needsSetup' => !$set, 'driver' => 'mysql', 'builderLocked' => !empty(jread(BCONFIG)['password_hash']), 'user' => $set && ($u = current_user()) ? pub($u) : null]);
 
+    /* P16: System check — diagnoses live-server problems (owner/admin only) */
+    case 'sys_check':
+        need(['owner', 'admin']);
+        $chk = [];
+        $add = function (string $g, string $n, bool $ok, string $d = '', string $fix = '') use (&$chk) { $chk[] = ['group' => $g, 'name' => $n, 'ok' => $ok, 'detail' => $d, 'fix' => $fix]; };
+        $add('Server', 'PHP version', version_compare(PHP_VERSION, '8.0', '>='), PHP_VERSION, 'Hostinger → Advanced → PHP Configuration → choose PHP 8.2+');
+        foreach (['curl', 'openssl', 'pdo_mysql', 'mbstring', 'zip', 'json'] as $x) $add('Server', 'Extension ' . $x, extension_loaded($x), extension_loaded($x) ? 'loaded' : 'missing', 'Enable "' . $x . '" in Hostinger → PHP Configuration → PHP extensions');
+        try { $v = db()->query('SELECT VERSION()')->fetchColumn(); $add('Database', 'MySQL connection', true, 'MySQL ' . $v); } catch (Throwable $e) { $add('Database', 'MySQL connection', false, substr($e->getMessage(), 0, 160), 'Use "Reconnect database" on the sign-in screen'); }
+        $pd = dirname(DB_FILE); $w = is_writable($pd);
+        $add('Files', '_private folder writable', $w, $pd, 'File Manager → _private → Permissions 755');
+        $add('Files', 'Builder config (secret)', !empty(jread(BCONFIG)['secret']), !empty(jread(BCONFIG)['secret']) ? 'present' : 'missing', 'Sign out and in again — it is created automatically');
+        $ca = __DIR__ . '/cacert.pem'; $add('Files', 'SSL certificate bundle', is_file($ca), is_file($ca) ? round(filesize($ca) / 1024) . ' KB' : 'api/cacert.pem missing', 'Re-upload the full zip');
+        $add('Sign-in', 'Admin token received', !empty($_SERVER['HTTP_X_WX_ADM']), !empty($_SERVER['HTTP_X_WX_ADM']) ? 'header X-WX-ADM OK' : 'header stripped by server', 'Add the header pass-through lines in .htaccess (included in the zip)');
+        foreach (['Google' => 'https://www.googleapis.com/', 'OpenAI' => 'https://api.openai.com/v1/models', 'WhatsApp (Meta)' => 'https://graph.facebook.com/', 'PageSpeed' => 'https://pagespeedonline.googleapis.com/'] as $n => $url) {
+            if (!function_exists('curl_init')) { $add('Outgoing HTTPS', $n, false, 'cURL missing'); continue; }
+            $ch = curl_init($url); curl_setopt_array($ch, [CURLOPT_CAINFO => $ca, CURLOPT_NOBODY => true, CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 8, CURLOPT_CONNECTTIMEOUT => 5]);
+            curl_exec($ch); $err = curl_error($ch); $code = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE); curl_close($ch);
+            $add('Outgoing HTTPS', $n, $err === '' && $code > 0, $err !== '' ? $err : 'HTTP ' . $code . ' (connection OK)', 'Contact Hostinger support: outgoing HTTPS blocked / SSL error');
+        }
+        out(['ok' => true, 'checks' => $chk, 'version' => 'P16', 'time' => date('c'), 'server' => (string)($_SERVER['SERVER_SOFTWARE'] ?? '')]);
+
     /* P15: reconnect the database (new Hostinger DB/user/password). Proof of ownership = builder password.
        Only allowed while the saved connection is broken. Keeps existing tables; creates missing ones. */
     case 'db_reconnect':
