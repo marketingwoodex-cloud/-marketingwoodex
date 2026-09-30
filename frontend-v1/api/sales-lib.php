@@ -83,6 +83,9 @@ function doc_totals(array $d): array {
 }
 function q_label(array $x): string { return $x['no'] . ((int)$x['version'] > 1 ? ' · V' . $x['version'] : '') . ($x['option'] ? ' · ' . $x['option'] : ''); }
 function q_pub(array $x): array { $x['label'] = q_label($x); return $x; }
+/** Secure client link: /api/quote-view.php?id=..&t=.. (no sign-in; the token is an HMAC of id + number). */
+function q_view_token(array $x): string { return substr(hash_hmac('sha256', 'qv|' . $x['id'] . '|' . $x['no'], bsecret()), 0, 32); }
+function q_view_url(array $x): string { $h = preg_replace('~[^a-z0-9.\-:]~i', '', (string)($_SERVER['HTTP_HOST'] ?? 'woodex.com.pk')); return 'https://' . $h . '/api/quote-view.php?id=' . $x['id'] . '&t=' . q_view_token($x); }
 function inv_pub(array $i): array {
     $paid = (int)array_sum(array_column($i['payments'], 'amount'));
     $i['paid'] = $paid; $i['balance'] = max(0, $i['total'] - $paid); $i['payStatus'] = $paid <= 0 ? 'unpaid' : ($paid >= $i['total'] ? 'paid' : 'partial');
@@ -158,7 +161,7 @@ function sales_actions(string $action, array $in): bool {
             $x = array_merge($x, ['client' => $client, 'client_id' => (int)($in['client_id'] ?? 0) ?: ($x['client_id'] ?? null), 'project' => clip($in['project'] ?? '', 160), 'site' => clip($in['site'] ?? '', 200),
                 'kind' => clip($in['kind'] ?? '', 20) ?: ($x['kind'] ?? 'other'), 'date' => ymd($in['date'] ?? '') ?: ($x['date'] ?? date('Y-m-d')), 'valid_days' => max(1, (int)round(numv($in['valid_days'] ?? 0)) ?: (int)$c['validDays']),
                 'sections' => clean_sections($in['sections'] ?? []), 'discount' => numv($in['discount'] ?? 0), 'taxPct' => numv($in['taxPct'] ?? 0), 'terms' => clip($in['terms'] ?? '', 3000),
-                'notes' => clip($in['notes'] ?? '', 2000), 'intro' => clip($in['intro'] ?? '', 1500), 'updated_at' => now()]);
+                'notes' => clip($in['notes'] ?? '', 2000), 'intro' => clip($in['intro'] ?? '', 1500), 'design' => in_array($in['design'] ?? '', ['classic', 'minimal', 'premium'], true) ? $in['design'] : ($x['design'] ?? 'classic'), 'updated_at' => now()]);
             if ($new && !empty($in['lead_id']) && q('SELECT id FROM wx_leads WHERE id=?', [(int)$in['lead_id']])->fetch()) { $x['lead_id'] = (int)$in['lead_id']; lead_stage($x['lead_id'], ['new', 'contacted', 'visit'], 'quote', $u, $x['no']); }
             $x = quote_put(doc_totals($x)); log_act($u, $new ? 'quote.create' : 'quote.update', q_label($x) . ' ' . $client['name']);
             out(['ok' => true, 'quote' => q_pub($x)]);
@@ -192,6 +195,28 @@ function sales_actions(string $action, array $in): bool {
                 if ($to === 'sent') lead_stage((int)$x['lead_id'], ['new', 'contacted', 'visit'], 'quote', $u, q_label($x) . ' sent');
             }
             log_act($u, 'quote.' . $to, q_label($x)); out(['ok' => true, 'quote' => q_pub($x)]);
+        case 'quote_link':
+            need($SALES); $x = doc_get('wx_quotes', $in['id'] ?? 0, 'Quotation'); out(['ok' => true, 'link' => q_view_url($x)]);
+        case 'quote_send': // channel: email (PDF attached) | whatsapp (the browser opens wa.me). Marks a draft as sent.
+            $u = need($SALES); $x = doc_get('wx_quotes', $in['id'] ?? 0, 'Quotation'); $ch = (string)($in['channel'] ?? '');
+            if (in_array($x['status'], ['superseded', 'rejected'], true)) fail('This quotation is ' . $x['status']);
+            $link = q_view_url($x); $to = trim((string)($in['to'] ?? ''));
+            if ($ch === 'email') {
+                if (!filter_var($to, FILTER_VALIDATE_EMAIL)) fail('Enter a valid email address');
+                $c = crm_cfg(); if ($c['smtpHost'] === '') fail('Email is not set up. Add SMTP details in Settings → Integrations.');
+                $att = []; $pdf = (string)($in['pdf'] ?? '');
+                if ($pdf !== '') { $bin = base64_decode($pdf, true); if ($bin === false || strncmp($bin, '%PDF', 4) !== 0 || strlen($bin) > 12 * 1024 * 1024) fail('The PDF file is not valid'); $att[] = ['name' => clip($in['pdfName'] ?? 'quotation.pdf', 120), 'type' => 'application/pdf', 'data' => $bin]; }
+                $msg = clip($in['message'] ?? '', 5000); if (strpos($msg, $link) === false) $msg .= "\n\nView online: " . $link;
+                $e = smtp_send($c, [$to], clip($in['subject'] ?? '', 200) ?: 'Quotation ' . q_label($x) . ' from ' . company_cfg()['name'], $msg, $att);
+                if ($e !== '') fail('Email was not sent: ' . $e);
+                $what = 'Emailed to ' . $to . ($att ? ' (PDF attached)' : '');
+            } elseif ($ch === 'whatsapp') { $what = 'Shared on WhatsApp' . ($to !== '' ? ' with ' . clip($to, 40) : ''); }
+            else fail('Choose email or WhatsApp');
+            $x['history'][] = hist($u, $what); $x['last_sent'] = ['t' => now(), 'channel' => $ch, 'to' => clip($to, 190)];
+            $was = $x['status']; if ($was === 'draft') { $x['status'] = 'sent'; $x['sent_at'] = now(); $x['history'][] = hist($u, 'Status: draft → sent'); }
+            $x = quote_put($x);
+            if ($was === 'draft' && !empty($x['lead_id'])) lead_stage((int)$x['lead_id'], ['new', 'contacted', 'visit'], 'quote', $u, q_label($x) . ' sent');
+            log_act($u, 'quote.send', q_label($x) . ' · ' . $ch); out(['ok' => true, 'quote' => q_pub($x), 'link' => $link]);
         case 'quote_delete':
             $u = need($OA); $x = doc_get('wx_quotes', $in['id'] ?? 0, 'Quotation');
             if (!in_array($x['status'], ['draft', 'rejected', 'superseded'], true)) fail('Only draft, rejected or superseded quotations can be deleted');

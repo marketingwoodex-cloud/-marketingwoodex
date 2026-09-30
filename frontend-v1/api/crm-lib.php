@@ -39,7 +39,8 @@ function lead_text(array $l): string {
 }
 
 /** Minimal SMTP client (SSL on 465 or STARTTLS on 587) — Hostinger mailboxes. Returns '' on success or an error. */
-function smtp_send(array $c, array $to, string $subject, string $text): string {
+/** $att: [['name' => 'x.pdf', 'type' => 'application/pdf', 'data' => <binary>], ...] (optional) */
+function smtp_send(array $c, array $to, string $subject, string $text, array $att = []): string {
     $host = $c['smtpHost']; $port = (int)$c['smtpPort'] ?: 465; if (!$host || !$c['smtpUser']) return 'SMTP host and user are required';
     $fp = @stream_socket_client(($port === 465 ? 'ssl://' : 'tcp://') . $host . ':' . $port, $en, $es, 10);
     if (!$fp) return "Could not connect to $host:$port ($es)";
@@ -55,8 +56,14 @@ function smtp_send(array $c, array $to, string $subject, string $text): string {
         foreach ($to as $t) $cmd('RCPT TO:<' . $t . '>', '25');
         $cmd('DATA', '354');
         $hdr = 'From: ' . ($c['smtpFrom'] ?: $from) . "\r\nTo: " . implode(', ', $to) . "\r\nSubject: =?UTF-8?B?" . base64_encode($subject) . "?=\r\nDate: " . date('r') .
-            "\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: base64\r\n\r\n";
-        $cmd($hdr . chunk_split(base64_encode($text)) . "\r\n.", '250'); $cmd('QUIT', '221');
+            "\r\nMIME-Version: 1.0\r\n";
+        if ($att) {
+            $bd = 'wx' . bin2hex(random_bytes(12)); $msg = $hdr . "Content-Type: multipart/mixed; boundary=\"$bd\"\r\n\r\n--$bd\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: base64\r\n\r\n" . chunk_split(base64_encode($text));
+            foreach ($att as $a) { $n = preg_replace('~[^\w.\- ]~', '', (string)$a['name']) ?: 'file'; $msg .= "--$bd\r\nContent-Type: " . ($a['type'] ?? 'application/octet-stream') . "; name=\"$n\"\r\nContent-Disposition: attachment; filename=\"$n\"\r\nContent-Transfer-Encoding: base64\r\n\r\n" . chunk_split(base64_encode((string)$a['data'])); }
+            $msg .= "--$bd--\r\n";
+            $cmd(preg_replace('~^\.~m', '..', $msg) . "\r\n.", '250');
+        } else $cmd($hdr . "Content-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: base64\r\n\r\n" . chunk_split(base64_encode($text)) . "\r\n.", '250');
+        $cmd('QUIT', '221');
     } catch (Throwable $e) { fclose($fp); return 'SMTP: ' . $e->getMessage(); }
     fclose($fp); return '';
 }
