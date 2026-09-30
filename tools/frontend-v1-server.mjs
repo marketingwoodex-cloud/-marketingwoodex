@@ -108,7 +108,7 @@ function parseMultipart(buf, ctype) {
 
 
 // ---------------------------------------------------------------- A3: global sections
-const BLOCK_CATS = ["Hero", "Services", "Features", "Projects", "Testimonials", "CTA", "FAQ", "Contact", "Content", "Footer", "Custom"];
+const BLOCK_CATS = ["Hero", "Services", "Features", "Projects", "Testimonials", "CTA", "FAQ", "Contact", "Content", "Process", "Stats", "Pricing", "Team", "Gallery", "Footer", "Custom"];
 /** outer range of every element carrying data-wx-global="id" (balanced by tag name) */
 function globalRanges(h, id) {
   const out = [], re = new RegExp('<([a-z][a-z0-9-]*)\\b[^>]*\\bdata-wx-global="' + id.replace(/[^a-f0-9]/g, "") + '"[^>]*>', "gi"); let m;

@@ -1183,7 +1183,7 @@
   $$("#ctx button").forEach(function (b) {
     b.onclick = function () {
       $("#ctx").hidden = true; var c = b.dataset.c;
-      if (c === "copy") copyEl(); else if (c === "paste") pasteEl(); else if (c === "export") exportEl(); else tool(c);
+      if (c === "copy") copyEl(); else if (c === "paste") pasteEl(); else if (c === "export") exportEl(); else if (c === "exportjson") exportJson(); else tool(c);
     };
   });
 
@@ -1234,7 +1234,7 @@
     });
   }
   function blockHtml(b) { return b.global ? b.html.trim().replace(/^<([a-z][a-z0-9-]*)/i, '<$1 data-wx-global="' + b.id + '"') : b.html; }
-  var BLOCK_CATS = ["Hero", "Services", "Features", "Projects", "Testimonials", "CTA", "FAQ", "Contact", "Content", "Footer", "Custom"];
+  var BLOCK_CATS = ["Hero", "Services", "Features", "Projects", "Testimonials", "CTA", "FAQ", "Contact", "Content", "Process", "Stats", "Pricing", "Team", "Gallery", "Footer", "Custom"];
   function saveBlock() {
     if (!S.sel) return; var el = S.sel, sec = isSection(el);
     modal("<h2>Save to section library</h2><label class='fld'>Name<input id='sb-n' value='" + esc((el.getAttribute("data-wx-label") || label(el)).slice(0, 60)) + "'></label>" +
@@ -1254,15 +1254,71 @@
   }
   function download(name, text, type) { var a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([text], { type: type || "text/html" })); a.download = name; document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 500); }
   function exportEl() { if (!S.sel) return; download((S.sel.getAttribute("data-wx-label") || S.sel.classList[0] || "section").replace(/[^\w-]+/g, "-") + ".html", packStyles(S.sel) + cleanOuter(S.sel)); }
+  // ---- Phase 5: v26 templates gallery, JSON export, safer multi-section import with preview
+  var CSS_LINKS = '<link rel="stylesheet" href="/assets/site.css"><link rel="stylesheet" href="/assets/v1.css"><link rel="stylesheet" href="/assets/theme.css"><style>html,body{margin:0;overflow:hidden;pointer-events:none}.t6-hero{min-height:720px}</style>';
+  function thumb(html, h) {
+    var doc = "<!doctype html><html><head><meta charset='utf-8'>" + CSS_LINKS + "</head><body><main>" + html + "</main></body></html>";
+    return "<div style='position:relative;width:100%;height:" + (h || 190) + "px;overflow:hidden;border-radius:8px;background:#f4efe7'><iframe loading='lazy' tabindex='-1' aria-hidden='true' srcdoc=\"" + doc.replace(/&/g, "&amp;").replace(/"/g, "&quot;") + "\" style='position:absolute;top:0;left:0;width:1280px;height:" + Math.round((h || 190) * 4) + "px;border:0;transform:scale(.25);transform-origin:0 0'></iframe></div>";
+  }
+  function sanitize(html) {
+    var t = document.createElement("template"); t.innerHTML = html; var removed = 0;
+    t.content.querySelectorAll("script,object,embed,base,meta,link,iframe[srcdoc],style[data-danger]").forEach(function (n) { n.remove(); removed++; });
+    t.content.querySelectorAll("*").forEach(function (n) {
+      Array.prototype.slice.call(n.attributes).forEach(function (a) {
+        if (/^on/i.test(a.name) || (/^(href|src|action|formaction|xlink:href)$/i.test(a.name) && /^\s*(javascript|vbscript|data:text)/i.test(a.value))) { n.removeAttribute(a.name); removed++; }
+      });
+    });
+    var main = t.content.querySelector("main"); return { html: (main ? main.innerHTML : t.innerHTML).trim(), removed: removed };
+  }
+  function guessCat(html) { return /<h1[\s>]/i.test(html) || /hero/i.test(html.slice(0, 300)) ? "Hero" : /<details/i.test(html) ? "FAQ" : /<form/i.test(html) ? "Contact" : "Custom"; }
+  function exportJson() {
+    if (!S.sel) return; var el = S.sel, html = packStyles(el) + cleanOuter(el), name = (el.getAttribute("data-wx-label") || label(el) || "section").slice(0, 60);
+    download(name.replace(/[^\w-]+/g, "-").toLowerCase() + ".json", JSON.stringify({ woodexLibrary: 1, exported: new Date().toISOString(), blocks: [{ name: name, kind: isSection(el) ? "section" : "element", cat: guessCat(html), tags: [], html: html }] }, null, 1), "application/json");
+    toast("Exported as JSON ✓ — import it in the builder or Admin → Section library");
+  }
+  window.__wx5 = { exportJson: exportJson };
+  function templatesGallery() {
+    var T = window.WX_TEMPLATES || [], cats = ["All"].concat(T.map(function (t) { return t.cat; }).filter(function (c, i, a) { return a.indexOf(c) === i; })), cur = "All", q = "";
+    modal("<h2 style='margin-bottom:6px'>v26 templates <small class='hint'>(" + T.length + ")</small></h2><div style='display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:12px'><input type='search' id='tg-q' placeholder='Search…' style='max-width:200px'>" +
+      cats.map(function (c) { return "<button class='btn btn-sm' data-tc='" + esc(c) + "'>" + esc(c) + "</button>"; }).join("") + "</div><div id='tg-grid' style='display:grid;grid-template-columns:repeat(3,1fr);gap:14px;max-height:68vh;overflow:auto;padding-right:6px'></div>");
+    var mb = $("#modal-body"); mb.style.width = "min(1100px,94vw)"; mb.style.maxWidth = "none";
+    var draw = function () {
+      $$("[data-tc]").forEach(function (b) { b.classList.toggle("btn-pri", b.dataset.tc === cur); });
+      $("#tg-grid").innerHTML = T.filter(function (t) { return (cur === "All" || t.cat === cur) && (!q || (t.name + " " + t.cat).toLowerCase().indexOf(q) >= 0); }).map(function (t) {
+        return "<button data-tid='" + t.id + "' style='text-align:left;background:#fff;border:1px solid #e4e7ec;border-radius:12px;padding:8px;cursor:pointer'>" + thumb(t.html) + "<div style='display:flex;justify-content:space-between;gap:6px;margin-top:8px;font:600 13px system-ui'><span>" + esc(t.name) + "</span><small class='hint'>" + esc(t.cat) + "</small></div></button>";
+      }).join("") || "<p class='hint'>No templates match.</p>";
+      $$("[data-tid]").forEach(function (b) { b.onclick = function () { var t = T.find(function (x) { return x.id === b.dataset.tid; }); closeModal(); mb.style.width = mb.style.maxWidth = ""; insertSection(t.html, S.sel); toast("“" + t.name + "” added — click any text to edit"); }; });
+    };
+    $$("[data-tc]").forEach(function (b) { b.onclick = function () { cur = b.dataset.tc; draw(); }; });
+    $("#tg-q").oninput = function () { q = this.value.trim().toLowerCase(); draw(); };
+    draw();
+  }
+  window.__wx5.templates = templatesGallery;
+  var tgBtn = document.createElement("button"); tgBtn.className = "btn btn-pri"; tgBtn.style.cssText = "width:100%;margin:0 0 10px"; tgBtn.textContent = "✨ Browse 50 v26 templates";
+  tgBtn.onclick = function () { if (S.doc) templatesGallery(); }; var ls = $("#lib-sections"); if (ls) ls.parentNode.insertBefore(tgBtn, ls.previousElementSibling || ls);
+
   $("#import-sec").onclick = function () {
-    modal("<h2>Import a section</h2><p class='hint'>Paste section HTML (for example one you exported) or choose a .html file.</p><input type='file' id='imp-f' accept='.html,.htm,.txt'><textarea id='imp-t' rows='10' style='width:100%;margin-top:10px;font:12px ui-monospace,monospace;border:1px solid #d0d5dd;border-radius:8px;padding:8px'></textarea><div class='row' style='margin-top:10px'><button class='btn btn-pri' id='imp-go'>Insert on page</button></div>");
-    $("#imp-f").onchange = function () { var f = this.files[0]; if (f) f.text().then(function (t) { $("#imp-t").value = t; }); };
-    $("#imp-go").onclick = function () {
-      var html = $("#imp-t").value.trim(); if (!html) return;
-      var t = document.createElement("template"); t.innerHTML = html;
-      if (t.content.querySelector("script,object,embed,base,meta")) return toast("Scripts/embeds are not allowed", true);
-      var inner = t.content.querySelector("main"); if (inner) html = inner.innerHTML;
-      closeModal(); insertSection(html, S.sel);
+    modal("<h2>Import sections</h2><p class='hint'>Choose a Woodex <b>.json</b> export (from the builder or Admin → Section library) or an <b>.html</b> file — or paste below. Scripts and unsafe code are removed automatically, and you’ll see a preview first.</p><input type='file' id='imp-f' accept='.json,.html,.htm,.txt'><textarea id='imp-t' rows='7' placeholder='Paste JSON or HTML…' style='width:100%;margin-top:10px;font:12px ui-monospace,monospace;border:1px solid #d0d5dd;border-radius:8px;padding:8px'></textarea><div class='row' style='margin-top:10px'><button class='btn btn-pri' id='imp-chk'>Check &amp; preview</button></div><div id='imp-prev'></div>");
+    var mb = $("#modal-body"); mb.style.width = "min(900px,94vw)"; mb.style.maxWidth = "none";
+    $("#imp-f").onchange = function () { var f = this.files[0]; if (f) f.text().then(function (t) { $("#imp-t").value = t; $("#imp-chk").click(); }); };
+    $("#imp-chk").onclick = function () {
+      var txt = $("#imp-t").value.trim(), list = [], removed = 0; if (!txt) return;
+      if (/^[\[{]/.test(txt)) {
+        var j; try { j = JSON.parse(txt); } catch (e) { return toast("That JSON file could not be read", true); }
+        (Array.isArray(j) ? j : j.blocks || j.sections || []).forEach(function (b) { if (b && b.html) { var c = sanitize(String(b.html)); removed += c.removed; if (c.html) list.push({ name: String(b.name || "Imported section").slice(0, 60), cat: b.cat || guessCat(c.html), kind: b.kind || "section", tags: b.tags || [], html: c.html }); } });
+      } else {
+        var c = sanitize(txt), t = document.createElement("template"); removed = c.removed; t.innerHTML = c.html;
+        var kids = Array.prototype.filter.call(t.content.children, function (n) { return !/^(STYLE)$/.test(n.tagName); }), styles = Array.prototype.filter.call(t.content.children, function (n) { return n.tagName === "STYLE"; }).map(function (n) { return n.outerHTML; }).join("");
+        if (kids.length > 1 && kids.every(function (n) { return /^(SECTION|DIV|HEADER|ARTICLE|ASIDE|FOOTER)$/.test(n.tagName); })) kids.forEach(function (n, i) { list.push({ name: "Imported section " + (i + 1), cat: guessCat(n.outerHTML), kind: "section", html: (i === 0 ? styles : "") + n.outerHTML }); });
+        else if (c.html) list.push({ name: "Imported section", cat: guessCat(c.html), kind: "section", html: c.html });
+      }
+      if (!list.length) return toast("No sections found", true);
+      $("#imp-prev").innerHTML = "<p class='hint' style='margin-top:14px'>" + list.length + " section(s) found" + (removed ? " · <b>" + removed + " unsafe item(s) removed</b>" : "") + ". Untick any you don’t want.</p><div style='display:grid;grid-template-columns:repeat(2,1fr);gap:12px;max-height:46vh;overflow:auto'>" +
+        list.map(function (b, i) { return "<label style='display:block;border:1px solid #e4e7ec;border-radius:10px;padding:8px;cursor:pointer'>" + thumb(b.html, 150) + "<span style='display:flex;gap:6px;align-items:center;margin-top:6px;font:600 13px system-ui'><input type='checkbox' data-ii='" + i + "' checked>" + esc(b.name) + " <small class='hint'>" + esc(b.cat) + "</small></span></label>"; }).join("") +
+        "</div><div class='row' style='margin-top:12px;gap:8px'><button class='btn btn-pri' id='imp-go'>Insert into page</button><button class='btn' id='imp-lib'>Save to My sections</button></div>";
+      var picked = function () { return list.filter(function (b, i) { var c = $("[data-ii='" + i + "']"); return c && c.checked; }); };
+      $("#imp-go").onclick = function () { var p = picked(), after = S.sel; if (!p.length) return; closeModal(); mb.style.width = mb.style.maxWidth = ""; p.forEach(function (b) { insertSection(b.html, after); }); toast(p.length + " section(s) inserted ✓"); };
+      $("#imp-lib").onclick = function () { var p = picked(); if (!p.length) return; api("blocks_import", { blocks: p }).then(function (r) { if (!r.ok) return toast(r.error, true); closeModal(); mb.style.width = mb.style.maxWidth = ""; renderMine(); toast(p.length + " saved to My sections ✓"); }); };
     };
   };
 

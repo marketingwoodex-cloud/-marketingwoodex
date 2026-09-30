@@ -96,7 +96,7 @@ function backup_name(): string { $t = microtime(true); return date('Ymd-His', (i
 function backup_dir_for(string $rel): string { return BACKUP_DIR . '/' . preg_replace('~[^a-z0-9]+~i', '_', trim($rel, '/')); }
 
 // ---------- A3: section library + global sections ----------
-const BLOCK_CATS = ['Hero', 'Services', 'Features', 'Projects', 'Testimonials', 'CTA', 'FAQ', 'Contact', 'Content', 'Footer', 'Custom'];
+const BLOCK_CATS = ['Hero', 'Services', 'Features', 'Projects', 'Testimonials', 'CTA', 'FAQ', 'Contact', 'Content', 'Process', 'Stats', 'Pricing', 'Team', 'Gallery', 'Footer', 'Custom'];
 function clean_block(array $b, ?array $old): array {
     $name = mb_substr(trim((string)($b['name'] ?? ($old['name'] ?? ''))), 0, 60); $html = (string)($b['html'] ?? ($old['html'] ?? ''));
     if ($name === '' || $html === '' || strlen($html) > 200 * 1024) fail('Block needs a name and HTML (max 200 KB)');

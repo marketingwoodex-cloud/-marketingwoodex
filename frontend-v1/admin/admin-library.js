@@ -168,4 +168,42 @@
       };
     });
   };
+
+  // =========================================================== Phase 5: v26 templates + safe import with preview
+  var CSSL = '<link rel="stylesheet" href="/assets/site.css"><link rel="stylesheet" href="/assets/v1.css"><link rel="stylesheet" href="/assets/theme.css"><style>html,body{margin:0;overflow:hidden;pointer-events:none}.t6-hero{min-height:720px}</style>';
+  function thumb(html, h) { h = h || 170; var d = "<!doctype html><html><head><meta charset='utf-8'>" + CSSL + "</head><body><main>" + html + "</main></body></html>"; return "<div style='position:relative;height:" + h + "px;overflow:hidden;border-radius:10px;background:#f4efe7'><iframe loading='lazy' tabindex='-1' srcdoc=\"" + d.replace(/&/g, "&amp;").replace(/"/g, "&quot;") + "\" style='position:absolute;inset:0 auto auto 0;width:1280px;height:" + h * 4 + "px;border:0;transform:scale(.25);transform-origin:0 0'></iframe></div>"; }
+  function clean(html) { var t = document.createElement("template"), n = 0; t.innerHTML = html; t.content.querySelectorAll("script,object,embed,base,meta,link,iframe[srcdoc]").forEach(function (x) { x.remove(); n++; }); t.content.querySelectorAll("*").forEach(function (x) { Array.prototype.slice.call(x.attributes).forEach(function (a) { if (/^on/i.test(a.name) || (/^(href|src|action|formaction)$/i.test(a.name) && /^\s*(javascript|vbscript|data:text)/i.test(a.value))) { x.removeAttribute(a.name); n++; } }); }); return { html: t.innerHTML.trim(), n: n }; }
+  function loadTemplates() { return window.WX_TEMPLATES ? Promise.resolve(window.WX_TEMPLATES) : new Promise(function (ok, no) { var sc = document.createElement("script"); sc.src = "/builder/templates-v26.js"; sc.onload = function () { ok(window.WX_TEMPLATES || []); }; sc.onerror = no; document.head.appendChild(sc); }); }
+  function gallery(el) {
+    loadTemplates().then(function (T) {
+      var cats = ["All"].concat(T.map(function (t) { return t.cat; }).filter(function (c, i, a) { return a.indexOf(c) === i; })), cur = "All";
+      modal("<div class='card-h'><h3>v26 templates (" + T.length + ")</h3></div><div style='padding:0 20px 20px'><div class='toolbar' style='flex-wrap:wrap;margin-bottom:12px'>" + cats.map(function (c) { return "<button class='btn sm' data-tc='" + esc(c) + "'>" + esc(c) + "</button>"; }).join("") + "</div><div id='tg-g' style='display:grid;grid-template-columns:repeat(3,1fr);gap:14px;max-height:66vh;overflow:auto'></div></div>");
+      $("#modal-card").style.maxWidth = "1100px";
+      var draw = function () {
+        $$("[data-tc]").forEach(function (b) { b.classList.toggle("pri", b.dataset.tc === cur); });
+        $("#tg-g").innerHTML = T.filter(function (t) { return cur === "All" || t.cat === cur; }).map(function (t) { return "<div style='border:1px solid var(--line);border-radius:12px;padding:8px'>" + thumb(t.html) + "<div style='display:flex;align-items:center;gap:6px;margin-top:8px'><b style='font-size:13px;flex:1'>" + esc(t.name) + "</b><button class='btn sm' data-ta='" + t.id + "'>Add to library</button></div></div>"; }).join("");
+        $$("[data-ta]").forEach(function (b) { b.onclick = function () { var t = T.find(function (x) { return x.id === b.dataset.ta; }); b.disabled = true; bapi("blocks_save", { name: t.name, cat: t.cat, tags: "v26", kind: "section", html: t.html }).then(function (r) { if (!r.ok) { b.disabled = false; return toast(r.error, true); } b.textContent = "Added ✓"; }); }; });
+      };
+      $$("[data-tc]").forEach(function (b) { b.onclick = function () { cur = b.dataset.tc; draw(); }; });
+      draw();
+      var obs = new MutationObserver(function () { if ($("#modal").hidden) { obs.disconnect(); $("#modal-card").style.maxWidth = ""; W.VIEWS.library(el); } }); obs.observe($("#modal"), { attributes: true });
+    }).catch(function () { toast("Could not load templates", true); });
+  }
+  function importPreview(el, txt) {
+    var j; try { j = JSON.parse(txt); } catch (e) { return toast("That file is not a Woodex library file", true); }
+    var n = 0, list = (Array.isArray(j) ? j : j.blocks || j.sections || []).filter(function (b) { return b && b.html; }).map(function (b) { var c = clean(String(b.html)); n += c.n; return { name: String(b.name || "Imported").slice(0, 60), kind: b.kind || "section", cat: b.cat || "Custom", tags: b.tags || [], global: !!b.global, html: c.html }; }).filter(function (b) { return b.html; });
+    if (!list.length) return toast("No sections found in the file", true);
+    modal("<div class='card-h'><h3>Import " + list.length + " section(s)</h3></div><div style='padding:0 20px 20px'><p class='muted'>" + (n ? "<b>" + n + " unsafe item(s) were removed.</b> " : "") + "Untick any you don’t want.</p><div style='display:grid;grid-template-columns:repeat(3,1fr);gap:12px;max-height:56vh;overflow:auto'>" +
+      list.map(function (b, i) { return "<label style='border:1px solid var(--line);border-radius:12px;padding:8px;display:block'>" + thumb(b.html, 140) + "<span style='display:flex;gap:6px;margin-top:6px;font-size:13px'><input type='checkbox' data-ii='" + i + "' checked style='width:auto;margin:0'><b>" + esc(b.name) + "</b> <small class='muted'>" + esc(b.cat) + "</small></span></label>"; }).join("") +
+      "</div><div class='toolbar' style='margin-top:14px'><button class='btn pri' id='ip-go'>Import selected</button></div></div>");
+    $("#modal-card").style.maxWidth = "1000px";
+    $("#ip-go").onclick = function () { var p = list.filter(function (b, i) { return $("[data-ii='" + i + "']").checked; }); if (!p.length) return; bapi("blocks_import", { blocks: p }).then(function (x) { if (!x.ok) return toast(x.error, true); closeModal(); $("#modal-card").style.maxWidth = ""; toast(p.length + " section(s) imported ✓"); W.VIEWS.library(el); }); };
+  }
+  var baseLib = W.VIEWS.library;
+  W.VIEWS.library = function (el) {
+    baseLib(el);
+    var imp = $("#lb-imp"); if (!imp) return;
+    var g = document.createElement("button"); g.className = "btn"; g.innerHTML = ic("blocks") + "v26 templates"; imp.parentNode.insertBefore(g, imp); g.onclick = function () { gallery(el); };
+    $("#lb-file").accept = ".json"; $("#lb-file").onchange = function () { var f = this.files[0]; this.value = ""; if (f) f.text().then(function (t) { importPreview(el, t); }); };
+  };
 })();
