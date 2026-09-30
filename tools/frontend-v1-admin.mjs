@@ -277,6 +277,7 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
   const STAGES = ["new", "contacted", "visit", "quote", "won", "lost"];
   const SOURCES = { contact: "Contact form", estimator: "Cost estimator", brief: "3D brief", "fitout-hub": "Fit-out quote", "office-fitout": "Office fit-out quote", whatsapp: "WhatsApp widget", chat: "Live chat", manual: "Added by team", import: "CSV import" };
   const CRM = path.join(PRIV, "crm.json"), OUTBOX = path.join(PRIV, "outbox.jsonl");
+  const OFFERS = path.join(PRIV, "offers.json");
   const crmCfg = () => Object.assign({ emailOn: false, emailTo: "", smtpHost: "", smtpPort: 465, smtpUser: "", smtpPass: "", smtpFrom: "", waOn: false, waToken: "", waPhoneId: "", waTo: "", waTemplate: "", waLang: "en", tsSite: "", tsSecret: "" }, jr(CRM, {}));
   const SECRETS = ["smtpPass", "waToken", "tsSecret"];
   const cfgPub = (c) => { const o = { ...c }; SECRETS.forEach((k) => { o[k + "Set"] = !!c[k]; o[k] = ""; }); return o; };
@@ -386,6 +387,27 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
         log(db, u, inp.id ? "client.update" : "client.create", c.name, ip); return done({ ok: true, client: c });
       }
       case "client_delete": { const u = need(["owner", "admin"]), c = db.clients.find((x) => x.id === +inp.id); if (!c) throw new Fail("Client not found", 404); db.clients = db.clients.filter((x) => x !== c); db.leads.forEach((l) => { if (l.client_id === c.id) l.client_id = null; }); log(db, u, "client.delete", c.name, ip); return done({ ok: true }); }
+      case "crm_wa_status": { need(["owner", "admin"]); const c = crmCfg(); if (!c.waToken || !c.waPhoneId) return { ok: true, connected: false };
+        return { ok: true, connected: true, info: { ok: true, number: "+92 300 1234567 (preview)", name: "Woodex Interior", quality: "GREEN" } }; }
+      case "crm_wa_connect": { const u = need(["owner", "admin"]); const c = crmCfg(); const tok = String(inp.token || "").trim() || c.waToken, pid = String(inp.phoneId || "").replace(/\D/g, "");
+        if (!tok || !pid) throw new Fail("Enter the access token and the Phone number ID"); if (tok === "bad") throw new Fail("Meta did not accept this: Invalid OAuth access token");
+        c.waToken = tok; c.waPhoneId = pid; jw(CRM, c); log(db, u, "settings.wa", pid, ip); return done({ ok: true, info: { ok: true, number: "+92 300 1234567 (preview)", name: "Woodex Interior" } }); }
+      case "crm_wa_disconnect": { const u = need(["owner", "admin"]); const c = crmCfg(); c.waToken = ""; c.waPhoneId = ""; c.waOn = false; jw(CRM, c); return done({ ok: true }); }
+      case "crm_offers": { need(SALES); const c = crmCfg(); return { ok: true, offers: jr(OFFERS, {}).offers || [], waConnected: !!(c.waToken && c.waPhoneId) }; }
+      case "crm_offer_save": { const u = need(["owner", "admin"]); const d = jr(OFFERS, {}); const list = d.offers || []; const id = String(inp.id || "") || crypto.randomBytes(4).toString("hex");
+        const o = { id, title: clip(inp.title, 80), code: String(inp.code || "").replace(/[^A-Za-z0-9-]/g, "").toUpperCase(), percent: Math.max(0, Math.min(90, +inp.percent || 0)), expires: /^\d{4}-\d{2}-\d{2}$/.test(inp.expires || "") ? inp.expires : "", msg: clip(inp.msg, 1000), sent: 0 };
+        if (!o.title || !o.msg) throw new Fail("Enter a title and the message"); const i = list.findIndex(x => x.id === id); if (i >= 0) { o.sent = list[i].sent || 0; list[i] = o; } else list.push(o);
+        d.offers = list; jw(OFFERS, d); return done({ ok: true, offers: list }); }
+      case "crm_offer_delete": { need(["owner", "admin"]); const d = jr(OFFERS, {}); d.offers = (d.offers || []).filter(x => x.id !== String(inp.id || "")); jw(OFFERS, d); return done({ ok: true, offers: d.offers }); }
+      case "crm_offer_send": { const u = need(SALES); const d = jr(OFFERS, {}); const off = (d.offers || []).find(x => x.id === String(inp.id || "")); if (!off) throw new Fail("Offer not found", 404);
+        if (off.expires && off.expires < new Date().toISOString().slice(0, 10)) throw new Fail("This offer has expired — change the date first");
+        const ids = (inp.leads || []).slice(0, 50).map(Number); if (!ids.length) throw new Fail("Choose at least one lead"); const c = crmCfg(); let sent = 0; const results = [];
+        for (const id of ids) { const l = (db.leads || []).find(x => x.id === id); if (!l) continue; const first = String(l.name || "").trim().split(" ")[0] || "there";
+          const txt = off.msg.replace(/\{name\}/g, first).replace(/\{code\}/g, off.code).replace(/\{percent\}/g, off.percent).replace(/\{expires\}/g, off.expires);
+          const link = l.phone ? "https://wa.me/" + String(l.phone).replace(/\D/g, "") + "?text=" + encodeURIComponent(txt) : "";
+          const err = !l.phone ? "no phone number" : !(c.waToken && c.waPhoneId) ? "WhatsApp is not connected (Settings → Integrations)" : "";
+          if (!err) { sent++; l.notes.push({ t: now(), user: u.name, text: "Offer sent on WhatsApp: " + off.title }); } results.push({ id, name: l.name, ok: !err, error: err, link }); }
+        off.sent = (off.sent || 0) + sent; jw(OFFERS, d); return done({ ok: true, sent, results }); }
       case "crm_settings": { need(["owner", "admin"]); return { ok: true, settings: cfgPub(crmCfg()) }; }
       case "crm_settings_save": {
         const u = need(["owner", "admin"]), c = crmCfg(), s = inp.settings || {};

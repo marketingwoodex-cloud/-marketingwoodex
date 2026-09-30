@@ -8,6 +8,7 @@ declare(strict_types=1);
 if (!defined('PRIVATE_DIR')) { http_response_code(404); exit; }
 
 const CRM_FILE   = PRIVATE_DIR . '/crm.json';
+const OFFERS_FILE = PRIVATE_DIR . '/offers.json';
 const CRM_STAGES = ['new', 'contacted', 'visit', 'quote', 'won', 'lost'];
 const CRM_SOURCES = ['contact' => 'Contact form', 'estimator' => 'Cost estimator', 'brief' => '3D brief', 'fitout-hub' => 'Fit-out quote', 'office-fitout' => 'Office fit-out quote', 'whatsapp' => 'WhatsApp', 'chat' => 'Live chat', 'manual' => 'Added by team', 'import' => 'CSV import'];
 const CRM_SECRETS = ['smtpPass', 'waToken', 'tsSecret'];
@@ -78,6 +79,21 @@ function wa_text(string $to, string $text): string {
     if ($r === false) return 'failed: ' . $err;
     if ($code >= 300) { $j = json_decode((string)$r, true); return 'failed: ' . ($j['error']['message'] ?? "HTTP $code"); }
     return '';
+}
+/** P16: check a Cloud API number with Meta (also used to verify a new/changed number). */
+function wa_phone_info(string $tok, string $pid): array {
+    if (!function_exists('curl_init')) return ['ok' => false, 'error' => 'cURL missing'];
+    $ch = curl_init('https://graph.facebook.com/v21.0/' . rawurlencode($pid) . '?fields=display_phone_number,verified_name,quality_rating,code_verification_status');
+    curl_setopt_array($ch, [CURLOPT_CAINFO => __DIR__ . '/cacert.pem', CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 10, CURLOPT_HTTPHEADER => ['Authorization: Bearer ' . $tok]]);
+    $r = curl_exec($ch); $code = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE); $err = curl_error($ch); curl_close($ch);
+    if ($r === false) return ['ok' => false, 'error' => $err];
+    $j = json_decode((string)$r, true) ?: []; if ($code >= 300) return ['ok' => false, 'error' => (string)($j['error']['message'] ?? "HTTP $code")];
+    return ['ok' => true, 'number' => (string)($j['display_phone_number'] ?? ''), 'name' => (string)($j['verified_name'] ?? ''), 'quality' => (string)($j['quality_rating'] ?? ''), 'verified' => (string)($j['code_verification_status'] ?? '')];
+}
+/** P16: fill an offer message: {name} {code} {percent} {expires} */
+function offer_text(array $o, array $l): string {
+    $first = trim(explode(' ', trim((string)$l['name']))[0] ?? '');
+    return strtr($o['msg'], ['{name}' => $first ?: 'there', '{code}' => $o['code'], '{percent}' => (string)$o['percent'], '{expires}' => $o['expires'] ? date('j M Y', strtotime($o['expires'])) : '']);
 }
 function wa_send(array $c, string $to, array $l, string $text): string {
     $to = preg_replace('~\D~', '', $to);
@@ -193,6 +209,42 @@ function crm_actions(string $action, array $in): bool {
                 $c[$k] = is_bool($old) ? !empty($s[$k]) : ($k === 'smtpPort' ? ((int)$s[$k] ?: 465) : clip($s[$k], 600)); }
             foreach (array_filter(preg_split('~[\s,]+~', $c['emailTo'])) as $e) if (!filter_var($e, FILTER_VALIDATE_EMAIL)) fail('Check the alert email address(es)');
             jwrite(CRM_FILE, $c); log_act($u, 'settings.crm'); out(['ok' => true, 'settings' => crm_cfg_pub($c)]);
+        /* ---------- P16: WhatsApp connection (connect / change number / disconnect) ---------- */
+        case 'crm_wa_status':
+            need(['owner', 'admin']); $c = crm_cfg(); if (!$c['waToken'] || !$c['waPhoneId']) out(['ok' => true, 'connected' => false]);
+            $i = wa_phone_info($c['waToken'], $c['waPhoneId']); out(['ok' => true, 'connected' => $i['ok'], 'info' => $i, 'alerts' => (bool)$c['waOn'], 'alertTo' => $c['waTo']]);
+        case 'crm_wa_connect':
+            $u = need(['owner', 'admin']); $c = crm_cfg(); $tok = trim((string)($in['token'] ?? '')) ?: $c['waToken']; $pid = preg_replace('~\D~', '', (string)($in['phoneId'] ?? ''));
+            if ($tok === '' || $pid === '') fail('Enter the access token and the Phone number ID');
+            $i = wa_phone_info($tok, $pid); if (!$i['ok']) fail('Meta did not accept this: ' . $i['error']);
+            $c['waToken'] = $tok; $c['waPhoneId'] = $pid; jwrite(CRM_FILE, $c); log_act($u, 'settings.wa', $i['number']); out(['ok' => true, 'info' => $i]);
+        case 'crm_wa_disconnect':
+            $u = need(['owner', 'admin']); $c = crm_cfg(); $c['waToken'] = ''; $c['waPhoneId'] = ''; $c['waOn'] = false; jwrite(CRM_FILE, $c); log_act($u, 'settings.wa', 'disconnected'); out(['ok' => true]);
+        /* ---------- P16: discount offers sent to leads ---------- */
+        case 'crm_offers':
+            need($SALES); out(['ok' => true, 'offers' => jread(OFFERS_FILE)['offers'] ?? [], 'waConnected' => crm_cfg()['waToken'] !== '' && crm_cfg()['waPhoneId'] !== '']);
+        case 'crm_offer_save':
+            $u = need(['owner', 'admin']); $d = jread(OFFERS_FILE); $list = $d['offers'] ?? []; $id = (string)($in['id'] ?? '') ?: bin2hex(random_bytes(4));
+            $o = ['id' => $id, 'title' => clip($in['title'] ?? '', 80), 'code' => strtoupper(preg_replace('~[^A-Za-z0-9-]~', '', (string)($in['code'] ?? ''))), 'percent' => max(0, min(90, (int)($in['percent'] ?? 0))),
+                  'expires' => preg_match('~^\d{4}-\d{2}-\d{2}$~', (string)($in['expires'] ?? '')) ? $in['expires'] : '', 'msg' => clip($in['msg'] ?? '', 1000), 'sent' => 0];
+            if ($o['title'] === '' || $o['msg'] === '') fail('Enter a title and the message');
+            $found = false; foreach ($list as &$x) if ($x['id'] === $id) { $o['sent'] = (int)($x['sent'] ?? 0); $x = $o; $found = true; } unset($x); if (!$found) $list[] = $o;
+            $d['offers'] = $list; jwrite(OFFERS_FILE, $d); log_act($u, 'offer.save', $o['title']); out(['ok' => true, 'offers' => $list]);
+        case 'crm_offer_delete':
+            $u = need(['owner', 'admin']); $d = jread(OFFERS_FILE); $d['offers'] = array_values(array_filter($d['offers'] ?? [], fn($x) => $x['id'] !== (string)($in['id'] ?? ''))); jwrite(OFFERS_FILE, $d); out(['ok' => true, 'offers' => $d['offers']]);
+        case 'crm_offer_send':
+            $u = need($SALES); $d = jread(OFFERS_FILE); $off = null; foreach (($d['offers'] ?? []) as $x) if ($x['id'] === (string)($in['id'] ?? '')) $off = $x; if (!$off) fail('Offer not found', 404);
+            if ($off['expires'] && $off['expires'] < date('Y-m-d')) fail('This offer has expired — change the date first');
+            $ids = array_slice(array_map('intval', (array)($in['leads'] ?? [])), 0, 50); if (!$ids) fail('Choose at least one lead');
+            $res = []; $sent = 0;
+            foreach ($ids as $lid) { try { $l = lead_get($lid); } catch (Throwable $e) { continue; }
+                $txt = offer_text($off, $l); $link = 'https://wa.me/' . preg_replace('~\D~', '', (string)$l['phone']) . '?text=' . rawurlencode($txt);
+                $err = $l['phone'] ? wa_text((string)$l['phone'], $txt) : 'no phone number';
+                if ($err === '') { $sent++; lead_note_add($lid, $u['name'], 'Offer sent on WhatsApp: ' . $off['title'] . ($off['code'] ? ' (' . $off['code'] . ')' : '')); }
+                $res[] = ['id' => $lid, 'name' => $l['name'], 'ok' => $err === '', 'error' => $err, 'link' => $l['phone'] ? $link : ''];
+            }
+            foreach ($d['offers'] as &$x) if ($x['id'] === $off['id']) $x['sent'] = (int)($x['sent'] ?? 0) + $sent; unset($x); jwrite(OFFERS_FILE, $d);
+            log_act($u, 'offer.send', $off['title'] . ' → ' . $sent); out(['ok' => true, 'sent' => $sent, 'results' => $res]);
         case 'crm_test':
             need(['owner', 'admin']); $ch = ($in['channel'] ?? '') === 'whatsapp' ? 'whatsapp' : 'email'; $c = crm_cfg();
             if ($ch === 'email' && !$c['emailTo']) fail('Add an alert email address first');

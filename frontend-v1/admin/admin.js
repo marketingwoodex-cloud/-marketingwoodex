@@ -64,6 +64,7 @@
     ["updates", "Client updates", "send", "owner,admin"],
     ["pipeline", "Pipeline", "kanban", "owner,admin,sales"],
     ["clients", "Clients", "contact", "owner,admin,sales"],
+    ["offers", "WhatsApp offers", "send", "owner,admin,sales"],
     ["quotes", "Quotations", "file-text", "owner,admin,sales"],
     ["templates", "Templates", "layers", "owner,admin,sales"],
     ["invoices", "Invoices", "receipt", "owner,admin,sales"],
