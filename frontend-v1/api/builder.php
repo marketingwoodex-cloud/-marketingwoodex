@@ -47,30 +47,44 @@ function make_token(): string { $exp = (string)(time() + 12 * 3600); return $exp
 function admin_installed(): bool { return is_file(PRIVATE_DIR . '/db.json'); }
 function logged_in(): bool {
     static $ok = null; if ($ok !== null) return $ok;
+    $why = function (string $r) { $GLOBALS['WX_AUTH_WHY'] = $r; return false; };
     $t = (string)($_SERVER['HTTP_X_WX_CSRF'] ?? '');
-    if (empty(config()['password_hash'])) return $ok = false;
+    $adm = (string)($_SERVER['HTTP_X_WX_ADM'] ?? '');
     if (!admin_installed()) { // legacy "exp.hmac" (builder password) — only before admin setup
+        if (empty(config()['password_hash'])) return $ok = $why('no builder password set');
         return $ok = (bool)preg_match('~^(\d{10})\.([a-f0-9]{64})$~', $t, $m) && (int)$m[1] >= time() && hash_equals(hash_hmac('sha256', 'wx|' . $m[1], secret()), $m[2]);
     }
-    // "exp.uid.sid.hmac" from Woodex Admin — bound to a live admin session, active user with a builder role
-    if (!preg_match('~^(\d{10})\.(\d+)\.([a-f0-9]{16})\.([a-f0-9]{64})$~', $t, $m) || (int)$m[1] < time()) return $ok = false;
-    if (!hash_equals(hash_hmac('sha256', 'wx|' . $m[1] . '|' . $m[2] . '|' . $m[3], secret()), $m[4])) return $ok = false;
     $sec = json_decode((string)@file_get_contents(PRIVATE_DIR . '/security.json'), true) ?: [];
-    $live = false; foreach ($sec[$m[2]]['sessions'] ?? [] as $s) if (($s['sid'] ?? '') === $m[3] && (int)($s['exp'] ?? 0) > time()) $live = true;
-    if (!$live) return $ok = false;
+    $live = function (string $uid, string $sid) use ($sec): bool { foreach ($sec[$uid]['sessions'] ?? [] as $s) if (($s['sid'] ?? '') === $sid && (int)($s['exp'] ?? 0) > time()) return true; return false; };
+    $uid = 0; $pwv = null;
+    // 1) builder token "exp.uid.sid.hmac" issued by Woodex Admin
+    if (preg_match('~^(\d{10})\.(\d+)\.([a-f0-9]{16})\.([a-f0-9]{64})$~', $t, $m)) {
+        if ((int)$m[1] < time()) $why('builder token expired');
+        elseif (!hash_equals(hash_hmac('sha256', 'wx|' . $m[1] . '|' . $m[2] . '|' . $m[3], secret()), $m[4])) $why('builder token signature mismatch (secret changed?)');
+        elseif (!$live($m[2], $m[3])) $why('admin session not found in security.json');
+        else $uid = (int)$m[2];
+    } elseif ($t !== '') $why('builder token has the wrong format'); else $why('no builder token sent');
+    // 2) fallback: the normal admin session token "uid.exp.sid.hmac" (P16)
+    if (!$uid && preg_match('~^(\d+)\.(\d{10})\.([a-f0-9]{16})\.([a-f0-9]{64})$~', $adm, $m) && (int)$m[2] >= time() && $live($m[1], $m[3])) { $uid = (int)$m[1]; $pwv = [$m[2], $m[3], $m[4]]; }
+    if (!$uid) return $ok = false;
     try {
         $c = json_decode((string)file_get_contents(PRIVATE_DIR . '/db.json'), true) ?: [];
-        $pdo = new PDO('mysql:host=' . ($c['host'] ?: 'localhost') . ';dbname=' . $c['name'] . ';charset=utf8mb4', $c['user'], $c['pass'], [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
-        $st = $pdo->prepare('SELECT role, active FROM wx_users WHERE id=?'); $st->execute([(int)$m[2]]); $u = $st->fetch(PDO::FETCH_ASSOC);
-    } catch (Throwable $e) { error_log('builder auth: ' . $e->getMessage()); return $ok = false; }
-    return $ok = ($u && (int)$u['active'] === 1 && in_array($u['role'], ['owner', 'admin', 'editor'], true));
+        $pdo = new PDO('mysql:host=' . (($c['host'] ?? '') ?: 'localhost') . ';dbname=' . ($c['name'] ?? '') . ';charset=utf8mb4', (string)($c['user'] ?? ''), (string)($c['pass'] ?? ''), [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
+        $st = $pdo->prepare('SELECT id, role, active, pw_ver FROM wx_users WHERE id=?'); $st->execute([$uid]); $u = $st->fetch(PDO::FETCH_ASSOC);
+    } catch (Throwable $e) { error_log('builder auth: ' . $e->getMessage()); return $ok = $why('database error: ' . substr($e->getMessage(), 0, 120)); }
+    if (!$u) return $ok = $why('user not found');
+    if ($pwv && !hash_equals(hash_hmac('sha256', 'adm|' . $u['id'] . '|' . $pwv[0] . '|' . $u['pw_ver'] . '|' . $pwv[1], secret()), $pwv[2])) return $ok = $why('admin token signature mismatch');
+    if ((int)$u['active'] !== 1) return $ok = $why('user is disabled');
+    if (!in_array($u['role'], ['owner', 'admin', 'editor'], true)) return $ok = $why('role ' . $u['role'] . ' cannot edit pages');
+    $GLOBALS['WX_AUTH_UID'] = (int)$u['id']; unset($GLOBALS['WX_AUTH_WHY']);
+    return $ok = true;
 }
-function token_uid(): ?int { return preg_match('~^\d{10}\.(\d+)\.~', (string)($_SERVER['HTTP_X_WX_CSRF'] ?? ''), $m) ? (int)$m[1] : null; }
+function token_uid(): ?int { if (!empty($GLOBALS['WX_AUTH_UID'])) return (int)$GLOBALS['WX_AUTH_UID']; return preg_match('~^\d{10}\.(\d+)\.~', (string)($_SERVER['HTTP_X_WX_CSRF'] ?? ''), $m) ? (int)$m[1] : null; }
 /** activity line for Woodex Admin (ingested into MySQL by admin.php) */
 function act(string $a, string $target = ''): void {
     @file_put_contents(PRIVATE_DIR . '/activity.jsonl', json_encode(['t' => time(), 'uid' => token_uid(), 'action' => $a, 'target' => $target, 'ip' => substr((string)($_SERVER['REMOTE_ADDR'] ?? ''), 0, 64)], JSON_UNESCAPED_SLASHES) . "\n", FILE_APPEND | LOCK_EX);
 }
-function require_auth(): void { if (!logged_in()) fail('Not signed in', 401); }
+function require_auth(): void { if (!logged_in()) fail('Not signed in to the page builder' . (!empty($GLOBALS['WX_AUTH_WHY']) ? ' (' . $GLOBALS['WX_AUTH_WHY'] . ')' : ''), 401); }
 function throttle(bool $failed = false): void {
     $f = PRIVATE_DIR . '/login-attempts.json'; $ip = $_SERVER['REMOTE_ADDR'] ?? 'x';
     $d = is_file($f) ? (json_decode((string)@file_get_contents($f), true) ?: []) : [];
@@ -147,7 +161,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST' && $action !== 'status') fail('POST re
 
 switch ($action) {
     case 'status':
-        out(['ok' => true, 'loggedIn' => logged_in(), 'needsSetup' => !admin_installed() && empty(config()['password_hash']), 'adminOnly' => admin_installed()]);
+        out(['ok' => true, 'loggedIn' => logged_in(), 'why' => $GLOBALS['WX_AUTH_WHY'] ?? null, 'needsSetup' => !admin_installed() && empty(config()['password_hash']), 'adminOnly' => admin_installed()]);
 
     case 'setup': // first run only: choose the admin password
         if (admin_installed() || !empty(config()['password_hash'])) fail('Already set up', 403);
@@ -250,7 +264,7 @@ switch ($action) {
         $host = strtolower($p['host'] ?? '');
         if (($p['scheme'] ?? '') !== 'https' || $host === '' || filter_var($host, FILTER_VALIDATE_IP) || preg_match('~^(localhost|.*\.local|.*\.internal)$~', $host)) fail('Only public https image links are allowed');
         $ip = gethostbyname($host); if (!filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) fail('Only public https image links are allowed');
-        $ctx = stream_context_create(['http' => ['timeout' => 20, 'follow_location' => 1, 'max_redirects' => 3, 'user_agent' => 'WoodexBuilder/1.0'], 'ssl' => ['verify_peer' => true]]);
+        $ctx = stream_context_create(['ssl' => ['cafile' => __DIR__ . '/cacert.pem', 'verify_peer' => true], 'http' => ['timeout' => 20, 'follow_location' => 1, 'max_redirects' => 3, 'user_agent' => 'WoodexBuilder/1.0'], 'ssl' => ['verify_peer' => true]]);
         $data = @file_get_contents($u, false, $ctx, 0, MAX_UPLOAD + 1);
         if ($data === false || $data === '') fail('Could not download that image');
         if (strlen($data) > MAX_UPLOAD) fail('Image is larger than 8 MB');

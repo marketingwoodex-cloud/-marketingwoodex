@@ -44,7 +44,7 @@
   function busy(btn, on) { if (!btn) return; btn.disabled = on; btn.classList.toggle("loading", on); }
   function uploadFile(file) {
     var fd = new FormData(); fd.append("action", "upload"); fd.append("file", file);
-    return fetch("/api/builder.php", { method: "POST", headers: { "X-WX-CSRF": S.btoken || "" }, body: fd }).then(function (r) { return r.json(); });
+    return fetch("/api/builder.php", { method: "POST", headers: { "X-WX-CSRF": S.btoken || "", "X-WX-ADM": S.token || "" }, body: fd }).then(function (r) { return r.json(); });
   }
   /** Image picker: media library grid + upload. cb(url) */
   function pickImage(cb) {

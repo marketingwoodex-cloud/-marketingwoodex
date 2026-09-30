@@ -12,7 +12,7 @@ function g_client_id(): string { return trim((string)(jread(GOOGLE_FILE)['client
 function g_verify(string $cred): array {
     $cid = g_client_id(); if ($cid === '') fail('Google sign-in is not set up yet');
     if (!preg_match('~^[\w-]+\.[\w-]+\.[\w-]+$~', $cred)) fail('Invalid Google response');
-    $ctx = stream_context_create(['http' => ['timeout' => 10, 'ignore_errors' => true]]);
+    $ctx = stream_context_create(['ssl' => ['cafile' => __DIR__ . '/cacert.pem', 'verify_peer' => true], 'http' => ['timeout' => 10, 'ignore_errors' => true]]);
     $r = @file_get_contents('https://oauth2.googleapis.com/tokeninfo?id_token=' . urlencode($cred), false, $ctx);
     $t = $r ? (json_decode($r, true) ?: []) : [];
     if (empty($t['sub']) || ($t['aud'] ?? '') !== $cid || !in_array($t['iss'] ?? '', ['accounts.google.com', 'https://accounts.google.com'], true) || (int)($t['exp'] ?? 0) < time()) fail('Google sign-in could not be verified', 401);

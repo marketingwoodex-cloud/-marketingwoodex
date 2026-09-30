@@ -72,7 +72,7 @@ function wa_text(string $to, string $text): string {
     $c = crm_cfg(); if (!$c['waToken'] || !$c['waPhoneId']) return 'WhatsApp is not connected (Settings → Integrations)';
     if (!function_exists('curl_init')) return 'cURL missing';
     $ch = curl_init('https://graph.facebook.com/v21.0/' . rawurlencode($c['waPhoneId']) . '/messages');
-    curl_setopt_array($ch, [CURLOPT_POST => true, CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 10, CURLOPT_HTTPHEADER => ['Authorization: Bearer ' . $c['waToken'], 'Content-Type: application/json'],
+    curl_setopt_array($ch, [CURLOPT_CAINFO => __DIR__ . '/cacert.pem', CURLOPT_POST => true, CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 10, CURLOPT_HTTPHEADER => ['Authorization: Bearer ' . $c['waToken'], 'Content-Type: application/json'],
         CURLOPT_POSTFIELDS => json_encode(['messaging_product' => 'whatsapp', 'to' => preg_replace('~\D~', '', $to), 'type' => 'text', 'text' => ['body' => mb_substr($text, 0, 4000)]])]);
     $r = curl_exec($ch); $code = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE); $err = curl_error($ch); curl_close($ch);
     if ($r === false) return 'failed: ' . $err;
@@ -86,7 +86,7 @@ function wa_send(array $c, string $to, array $l, string $text): string {
             'components' => [['type' => 'body', 'parameters' => [['type' => 'text', 'text' => '#' . $l['id'] . ' ' . $l['name']], ['type' => 'text', 'text' => $l['phone']], ['type' => 'text', 'text' => (CRM_SOURCES[$l['source']] ?? $l['source']) . ($l['service'] ? ' · ' . $l['service'] : '')]]]]]]
         : ['messaging_product' => 'whatsapp', 'to' => $to, 'type' => 'text', 'text' => ['body' => mb_substr($text, 0, 4000)]];
     $ch = curl_init('https://graph.facebook.com/v21.0/' . rawurlencode($c['waPhoneId']) . '/messages');
-    curl_setopt_array($ch, [CURLOPT_POST => true, CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 8, CURLOPT_HTTPHEADER => ['Authorization: Bearer ' . $c['waToken'], 'Content-Type: application/json'], CURLOPT_POSTFIELDS => json_encode($body)]);
+    curl_setopt_array($ch, [CURLOPT_CAINFO => __DIR__ . '/cacert.pem', CURLOPT_POST => true, CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 8, CURLOPT_HTTPHEADER => ['Authorization: Bearer ' . $c['waToken'], 'Content-Type: application/json'], CURLOPT_POSTFIELDS => json_encode($body)]);
     $r = curl_exec($ch); $code = curl_getinfo($ch, CURLINFO_HTTP_CODE); $err = curl_error($ch); curl_close($ch);
     if ($r === false) return 'failed: ' . $err;
     if ($code >= 300) { $j = json_decode((string)$r, true); return 'failed: ' . ($j['error']['message'] ?? "HTTP $code"); }

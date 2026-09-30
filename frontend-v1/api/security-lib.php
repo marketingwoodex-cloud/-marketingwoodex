@@ -138,7 +138,7 @@ function security_actions(string $action, array $in): bool {
             out(['ok' => true] + set_load());
         case 'set_ts_test':
             need($OA); $c = crm_cfg(); if ($c['tsSite'] === '' || $c['tsSecret'] === '') fail('Add both Turnstile keys first');
-            $ch = curl_init('https://challenges.cloudflare.com/turnstile/v0/siteverify'); curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER => true, CURLOPT_POST => true, CURLOPT_POSTFIELDS => http_build_query(['secret' => $c['tsSecret'], 'response' => 'wx-test']), CURLOPT_TIMEOUT => 8]);
+            $ch = curl_init('https://challenges.cloudflare.com/turnstile/v0/siteverify'); curl_setopt_array($ch, [CURLOPT_CAINFO => __DIR__ . '/cacert.pem', CURLOPT_RETURNTRANSFER => true, CURLOPT_POST => true, CURLOPT_POSTFIELDS => http_build_query(['secret' => $c['tsSecret'], 'response' => 'wx-test']), CURLOPT_TIMEOUT => 8]);
             $raw = curl_exec($ch); $err = curl_error($ch); curl_close($ch); if ($raw === false) fail('Could not reach Cloudflare: ' . $err);
             $j = json_decode((string)$raw, true) ?: []; if (in_array('invalid-input-secret', $j['error-codes'] ?? [], true)) fail('Cloudflare says the secret key is wrong');
             out(['ok' => true, 'result' => 'Secret key accepted by Cloudflare']);

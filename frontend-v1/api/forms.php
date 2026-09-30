@@ -60,7 +60,7 @@ try {
     if ($cfg['tsSecret'] !== '' && ($in['form'] ?? '') !== 'whatsapp') { // the WhatsApp widget has no Turnstile box (honeypot + rate limit still apply)
         $tok = clip($in['cf-turnstile-response'] ?? ($in['turnstile'] ?? ''), 2048); if ($tok === '') fail('Please complete the spam check');
         $ch = curl_init('https://challenges.cloudflare.com/turnstile/v0/siteverify');
-        curl_setopt_array($ch, [CURLOPT_POST => true, CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 6, CURLOPT_POSTFIELDS => http_build_query(['secret' => $cfg['tsSecret'], 'response' => $tok, 'remoteip' => ip()])]);
+        curl_setopt_array($ch, [CURLOPT_CAINFO => __DIR__ . '/cacert.pem', CURLOPT_POST => true, CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 6, CURLOPT_POSTFIELDS => http_build_query(['secret' => $cfg['tsSecret'], 'response' => $tok, 'remoteip' => ip()])]);
         $r = curl_exec($ch); curl_close($ch);
         if ($r !== false) { $j = json_decode((string)$r, true); if (empty($j['success'])) fail('Spam check failed — please try again'); } // Cloudflare unreachable: accept rather than lose the lead
     }

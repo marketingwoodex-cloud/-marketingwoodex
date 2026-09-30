@@ -236,7 +236,7 @@ function media_actions(string $action, array $in): bool {
             need($ED); $h = jread(HEALTH_FILE); $rel = (string)($in['rel'] ?? 'index.html'); if (!preg_match('~^[a-z0-9][a-z0-9/_\-.]*\.html$~i', $rel) || strpos($rel, '..') !== false) fail('Invalid page');
             $strategy = ($in['strategy'] ?? '') === 'desktop' ? 'desktop' : 'mobile'; $url = ($h['site'] ?? SITE_URL_DEF) . '/' . preg_replace('~index\.html$~', '', $rel);
             $qs = http_build_query(['url' => $url, 'strategy' => $strategy] + (!empty($h['psiKey']) ? ['key' => $h['psiKey']] : [])) . '&category=performance&category=accessibility&category=best-practices&category=seo';
-            @set_time_limit(120); $ch = curl_init('https://www.googleapis.com/pagespeedonline/v5/runPagespeed?' . $qs); curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 100]);
+            @set_time_limit(120); $ch = curl_init('https://www.googleapis.com/pagespeedonline/v5/runPagespeed?' . $qs); curl_setopt_array($ch, [CURLOPT_CAINFO => __DIR__ . '/cacert.pem', CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 100]);
             $raw = curl_exec($ch); $code = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE); curl_close($ch); $j = json_decode((string)$raw, true);
             if ($code !== 200 || !isset($j['lighthouseResult'])) fail('PageSpeed: ' . substr((string)($j['error']['message'] ?? 'request failed'), 0, 200));
             $cat = $j['lighthouseResult']['categories']; $au = $j['lighthouseResult']['audits']; $sc = fn($k) => isset($cat[$k]['score']) ? (int)round($cat[$k]['score'] * 100) : null;

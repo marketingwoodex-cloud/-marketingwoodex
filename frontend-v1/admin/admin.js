@@ -17,7 +17,11 @@
       .catch(function () { return { ok: false, error: "Network error — check your connection" }; });
   }
   function bapi(action, data) {
-    return fetch(BAPI, { method: "POST", headers: { "Content-Type": "application/json", "X-WX-CSRF": S.btoken || "" }, body: JSON.stringify(Object.assign({ action: action }, data || {})) }).then(function (r) { return r.json(); }).catch(function () { return { ok: false }; });
+    return fetch(BAPI, { method: "POST", headers: { "Content-Type": "application/json", "X-WX-CSRF": S.btoken || "", "X-WX-ADM": S.token || "" }, body: JSON.stringify(Object.assign({ action: action }, data || {})) })
+      .then(function (r) { return r.json().catch(function () { return { ok: false, error: "Page-builder API error (" + r.status + ")" }; }).then(function (j) {
+        if (!j.ok && r.status === 401 && !bapi.warned) { bapi.warned = 1; toast((j.error || "Page builder: not signed in") + " — see Settings → System check", true); setTimeout(function () { bapi.warned = 0; }, 15000); }
+        return j; }); })
+      .catch(function () { return { ok: false, error: "Network error — check your connection" }; });
   }
   function modal(html, cls) { $("#modal-card").innerHTML = html; $("#modal-card").className = cls ? "modal-card " + cls : $("#modal-card").className.replace(/ wide/g, ""); fillIcons($("#modal-card")); $("#modal").hidden = false; var f = $("#modal-card input,#modal-card select"); if (f) f.focus(); }
   function closeModal() { $("#modal").hidden = true; }

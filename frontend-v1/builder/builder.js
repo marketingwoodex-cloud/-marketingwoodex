@@ -14,7 +14,7 @@
 
   // =================================================================== API / AUTH
   function api(action, data, file) {
-    var o = { method: "POST", headers: { "X-WX-CSRF": S.csrf || "" } };
+    var o = { method: "POST", headers: { "X-WX-CSRF": S.csrf || "", "X-WX-ADM": sessionStorage.getItem("wxaTok") || "" } };
     if (file) { var fd = new FormData(); fd.append("action", action); fd.append("file", file); o.body = fd; }
     else { o.headers["Content-Type"] = "application/json"; o.body = JSON.stringify(Object.assign({ action: action }, data || {})); }
     return fetch(API, o).then(function (r) {

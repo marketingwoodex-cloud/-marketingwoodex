@@ -61,7 +61,7 @@ function notify_client(string $event, array $d, bool $force = false): array {
 function notify_wa_tpl(array $crm, string $to, string $tpl, string $lang, array $params): string {
     if (!function_exists('curl_init')) return 'cURL missing';
     $ch = curl_init('https://graph.facebook.com/v21.0/' . rawurlencode($crm['waPhoneId']) . '/messages');
-    curl_setopt_array($ch, [CURLOPT_POST => true, CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 10, CURLOPT_HTTPHEADER => ['Authorization: Bearer ' . $crm['waToken'], 'Content-Type: application/json'],
+    curl_setopt_array($ch, [CURLOPT_CAINFO => __DIR__ . '/cacert.pem', CURLOPT_POST => true, CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 10, CURLOPT_HTTPHEADER => ['Authorization: Bearer ' . $crm['waToken'], 'Content-Type: application/json'],
         CURLOPT_POSTFIELDS => json_encode(['messaging_product' => 'whatsapp', 'to' => $to, 'type' => 'template', 'template' => ['name' => $tpl, 'language' => ['code' => $lang ?: 'en'],
             'components' => [['type' => 'body', 'parameters' => array_map(fn($p) => ['type' => 'text', 'text' => (string)$p], $params)]]]])]);
     $r = curl_exec($ch); $code = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE); $err = curl_error($ch); curl_close($ch);
