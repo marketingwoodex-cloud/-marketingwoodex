@@ -310,7 +310,7 @@
     el.innerHTML = head(def[1]) + '<div class="card soon-box"><div class="kpi-ic">' + ic(s[0]) + "</div><h2>" + esc(def[1]) + ' <span class="badge gold">Phase ' + def[4] + "</span></h2><p>" + esc(s[1]) + '</p><a class="btn" href="#/dashboard">Back to dashboard</a></div>';
   };
 
-  window.WXA = { S: S, api: api, bapi: bapi, modal: modal, closeModal: closeModal, toast: toast, esc: esc, ic: ic, fillIcons: fillIcons, ago: ago, head: head, can: can, VIEWS: VIEWS, $: $, $$: $$, route: function () { route(); } };
+  window.WXA = { S: S, signedIn: signedIn, api: api, bapi: bapi, modal: modal, closeModal: closeModal, toast: toast, esc: esc, ic: ic, fillIcons: fillIcons, ago: ago, head: head, can: can, VIEWS: VIEWS, $: $, $$: $$, route: function () { route(); } };
   Object.assign(ACT, { "page.meta": ["file-text", "updated SEO/settings of"], "page.delete": ["x", "deleted page"], "redirects.save": ["refresh-cw", "saved redirects"], "global.menu": ["panel-left", "updated the site menu on"], "global.replace": ["refresh-cw", "replaced in header/footer"], "global.chrome": ["panel-left", "published header & footer on"] });
 
   // ---------------------------------------------------------------- boot
