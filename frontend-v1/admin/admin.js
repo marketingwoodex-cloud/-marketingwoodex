@@ -11,12 +11,20 @@
   function ic(n) { var s = (window.WXA_ICONS || {})[n]; return '<i data-i="' + n + '">' + (s ? '<svg viewBox="0 0 24 24" aria-hidden="true">' + s + "</svg>" : "") + "</i>"; }
   function fillIcons(root) { $$("i[data-i]", root).forEach(function (i) { if (!i.firstChild) { var s = (window.WXA_ICONS || {})[i.dataset.i]; if (s) i.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true">' + s + "</svg>"; } }); }
   function toast(m, bad) { var t = $("#toast"); t.textContent = m; t.className = "toast on" + (bad ? " bad" : ""); clearTimeout(toast.t); toast.t = setTimeout(function () { t.className = "toast"; }, bad ? 8000 : 3200); }
-  function api(action, data) {
+  // P16 3.9: a late reply to a read-only request for a screen the user already left is dropped, so it can't write into a
+  // screen that no longer exists ("Cannot set properties of null"). Saves/sends/deletes and background polls always complete.
+  var WRITE = /^(save|delete|del|remove|send|set|add|update|upload|publish|login|logout|clear|import|restore|create|approve|convert|pay|payment|reset|test|run|reply|take|close|assign|move|merge|mark|read|toggle|revoke|rotate|connect|disconnect|generate|ai|write|apply|fix|seed|plan|invite|verify|poll|count|badges?|status|notif|cron|2fa|sync|push|new|duplicate|copy|bulk|rename|archive|lock|unlock|sign|share|email|wa|meta)$/i;
+  function isWrite(a) { var g = String(a).toLowerCase().split(/[_\-]/); if (/^(get|list|load|view|info|stats|data|all|one|search|history|preview|page|pages)$/.test(g[g.length - 1])) return false; return g.some(function (x) { return WRITE.test(x); }); }
+  function scr() { return (location.hash.replace(/^#\/?/, "").split(/[\/?]/)[0]) || "dashboard"; }
+  function fresh(action, p) { var h = scr(); if (isWrite(action)) return p; return p.then(function (j) { return scr() !== h ? new Promise(function () {}) : j; }); }
+  function api(action, data) { return fresh(action, api0(action, data)); }
+  function api0(action, data) {
     return fetch(API, { method: "POST", headers: { "Content-Type": "application/json", "X-WX-ADM": S.token }, body: JSON.stringify(Object.assign({ action: action }, data || {})) })
       .then(function (r) { return r.json().catch(function () { return { ok: false, error: "Server error (" + r.status + ")" }; }).then(function (j) { if (r.status === 401 && S.user) signedOut("Your session expired. Please sign in again."); return j; }); })
       .catch(function () { return { ok: false, error: "Network error — check your connection" }; });
   }
-  function bapi(action, data) {
+  function bapi(action, data) { return fresh(action, bapi0(action, data)); }
+  function bapi0(action, data) {
     return fetch(BAPI, { method: "POST", headers: { "Content-Type": "application/json", "X-WX-CSRF": S.btoken || "", "X-WX-ADM": S.token || "" }, body: JSON.stringify(Object.assign({ action: action }, data || {})) })
       .then(function (r) { return r.json().catch(function () { return { ok: false, error: "Page-builder API error (" + r.status + ")" }; }).then(function (j) {
         if (!j.ok && r.status === 401 && !bapi.warned) { bapi.warned = 1; toast((j.error || "Page builder: not signed in") + " — see Settings → System check", true); setTimeout(function () { bapi.warned = 0; }, 15000); }
