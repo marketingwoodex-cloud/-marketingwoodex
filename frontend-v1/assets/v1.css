@@ -308,8 +308,8 @@ body main>.wx-fx>:not(.wx-bgv):not(.wx-ovl):not(.wx-sep){position:relative;z-ind
 .wx-countdown b{display:block;font-size:2rem;line-height:1}.wx-countdown small{opacity:.7;font-size:.75rem;text-transform:uppercase;letter-spacing:.1em}
 .wx-social{display:flex;gap:10px}.wx-social a{display:grid;place-items:center;width:44px;height:44px;border-radius:50%;background:var(--wx-surface);color:var(--wx-navy)}
 .wx-social a:hover{background:var(--wx-navy);color:#fff}.wx-social .wx-icon{width:20px;height:20px}
-.wx-wa{position:fixed;right:20px;bottom:20px;z-index:60;display:flex;align-items:center;gap:8px;padding:12px 18px;border-radius:999px;background:#25d366;color:#fff!important;font-weight:600;box-shadow:0 10px 30px rgba(0,0,0,.2);text-decoration:none}
-.wx-wa .wx-icon{width:22px;height:22px}
+a.wx-wa{position:fixed;right:20px;bottom:20px;z-index:60;display:flex;align-items:center;gap:8px;padding:12px 18px;border-radius:999px;background:#25d366;color:#fff!important;font-weight:600;box-shadow:0 10px 30px rgba(0,0,0,.2);text-decoration:none}
+a.wx-wa .wx-icon{width:22px;height:22px}
 .wx-bars{display:flex;align-items:flex-end;gap:14px;height:220px;padding-top:24px;border-bottom:1px solid var(--wx-line)}
 .wx-bars>div{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;gap:6px;font-size:.85rem}
 .wx-bars b{display:block;width:100%;max-width:64px;background:var(--wx-navy);border-radius:8px 8px 0 0;height:var(--v,50%)}

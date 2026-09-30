@@ -2216,3 +2216,21 @@ html:not(.js) .ih-faq-a,html:not(.js) .in-faq-a,html:not(.js) .ph-faq-a,html:not
   #commercial-interior-page .ci-hero-grid,#commercial-interior-page .ci-services-head,#commercial-interior-page .ci-process-head,
   #commercial-interior-page .ci-pricing-grid,#commercial-interior-page .ci-faq-grid,#commercial-interior-page .ci-contact-grid{grid-template-columns:1fr;gap:36px}
 }
+
+/* ===== Phase 1 bug fixes (live review 30 Sep 2026) ===== */
+/* B1 contact map: card inside map (top-left), fallback background if embed is blocked */
+#contact-page .ct-map{background:#e9e7e2 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Cpath d='M0 20h40M20 0v40' stroke='%23d6d3cc' stroke-width='1'/%3E%3C/svg%3E")}
+#contact-page .ct-map-card{top:24px;bottom:auto}
+@media(max-width:600px){#contact-page .ct-map-card{top:14px;bottom:auto}}
+/* B3 contact cards: even 4-col grid, all light, hover = lift only, sized headings */
+#contact-page .ct-cards{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:16px;border:0!important;border-radius:0;overflow:visible;transform:none!important}
+#contact-page .ct-cards .ct-card,#contact-page .ct-cards .ct-card:nth-child(2){min-height:210px;padding:26px 24px;background:#fff!important;color:var(--ct-navy)!important;border:1px solid var(--ct-line)!important;border-radius:4px 16px 16px 16px;transform:none;transition:transform .3s ease,box-shadow .3s ease,border-color .3s ease}
+#contact-page .ct-cards .ct-card:hover{transform:translateY(-4px);box-shadow:0 18px 40px rgba(10,15,30,.10);border-color:rgba(10,15,30,.28)!important}
+#contact-page .ct-cards .ct-card h2{font-size:1.2rem!important;line-height:1.25!important;letter-spacing:-.01em;margin:0 0 8px!important;font-weight:600}
+#contact-page .ct-cards .ct-icon{margin-bottom:56px}
+#contact-page .ct-cards .ct-card p{font-size:.84rem;opacity:.75}
+@media(max-width:1000px){#contact-page .ct-cards{grid-template-columns:1fr 1fr!important}}
+@media(max-width:600px){#contact-page .ct-cards{grid-template-columns:1fr!important}#contact-page .ct-cards .ct-card{min-height:150px}}
+/* B4 service-menu scroll boxes: hide native scrollbar, soft fade at the edges */
+.reno-menu-list,#architecture-page .arch-plot-list,#architecture-page .arch-process-list,.id-services-viewport,#kitchen-page .kd-scope-scroll,#living-room-page .lr-scope-scroll,#dining-room-page .dr-scope-scroll,#home-office-page .ho-scope-scroll,#kids-room-page .kr-scope-scroll,#basement-page .bs-scope-scroll,.ch-ledger,#office-interior-page .oi-scope-scroll,#home-refurbishment-page .hr-scope-scroll{scrollbar-width:none!important;-ms-overflow-style:none;-webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 28px,#000 calc(100% - 56px),transparent 100%);mask-image:linear-gradient(to bottom,transparent 0,#000 28px,#000 calc(100% - 56px),transparent 100%)}
+.reno-menu-list::-webkit-scrollbar,#architecture-page .arch-plot-list::-webkit-scrollbar,#architecture-page .arch-process-list::-webkit-scrollbar,.id-services-viewport::-webkit-scrollbar,#kitchen-page .kd-scope-scroll::-webkit-scrollbar,#living-room-page .lr-scope-scroll::-webkit-scrollbar,#dining-room-page .dr-scope-scroll::-webkit-scrollbar,#home-office-page .ho-scope-scroll::-webkit-scrollbar,#kids-room-page .kr-scope-scroll::-webkit-scrollbar,#basement-page .bs-scope-scroll::-webkit-scrollbar,.ch-ledger::-webkit-scrollbar,#office-interior-page .oi-scope-scroll::-webkit-scrollbar,#home-refurbishment-page .hr-scope-scroll::-webkit-scrollbar{display:none}

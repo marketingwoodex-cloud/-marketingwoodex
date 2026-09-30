@@ -29,8 +29,8 @@
 
     var css = [
       ".wx-wa{position:fixed;right:18px;bottom:18px;z-index:9990;font-family:inherit}",
-      ".wx-wa-btn{width:58px;height:58px;border-radius:50%;border:0;background:#0a0f1e;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 24px rgba(10,15,30,.35)}",
-      ".wx-wa-btn svg{width:30px;height:30px;fill:#fff}",
+      ".wx-wa-btn{width:58px;height:58px;padding:0!important;min-width:0!important;border-radius:50%;border:0;background:#25d366;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 26px rgba(37,211,102,.38)}",
+      ".wx-wa-btn svg{flex:none;width:30px!important;height:30px!important;fill:#fff!important;display:block}",
       ".wx-wa-btn:hover{transform:scale(1.05)}",
       ".wx-wa-panel{position:fixed;right:18px;bottom:88px;z-index:9990;width:320px;max-width:calc(100vw - 36px);background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 12px 40px rgba(10,15,30,.25);display:none}",
       ".wx-wa-panel.open{display:block}",
