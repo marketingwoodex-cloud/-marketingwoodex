@@ -95,7 +95,7 @@
         var L = $("#lc-list"); if (!L) return; if (!r.ok) { L.innerHTML = '<div class="lc-empty">' + esc(r.error) + "</div>"; return; }
         if (r.cfg && !r.cfg.on && !$("#lc-off")) L.insertAdjacentHTML("beforebegin", '<div id="lc-off" class="banner" style="margin:8px;font-size:12.5px">Live chat is turned off on the website.' + (admin ? " Turn it on in Chat settings." : "") + "</div>");
         L.innerHTML = r.chats.length ? r.chats.map(function (c) {
-          return '<a class="lc-it' + (c.id === cur ? " on" : "") + '" href="#/chat/' + c.id + '"><div class="r1"><b>' + esc(c.name || "Visitor #" + c.id) + (c.needs ? '<span class="lc-tag nd">needs you</span>' : c.mode === "ai" ? '<span class="lc-tag ai">AI</span>' : '<span class="lc-tag hu">' + esc(c.agent || "Team") + "</span>") + "</b>" + (c.unread ? '<span class="u">' + c.unread + "</span>" : "<em>" + esc(ago(c.updated_at)) + "</em>") + "</div><small>" + esc(c.last || "") + "</small></a>";
+          return '<a class="lc-it' + (c.id === cur ? " on" : "") + '" href="#/chat/' + c.id + '"><div class="r1"><b>' + (c.channel === "wa" ? '<span class="lc-tag" style="background:#25d366;color:#fff">WA</span> ' : "") + esc(c.name || "Visitor #" + c.id) + (c.needs ? '<span class="lc-tag nd">needs you</span>' : c.mode === "ai" ? '<span class="lc-tag ai">AI</span>' : '<span class="lc-tag hu">' + esc(c.agent || "Team") + "</span>") + "</b>" + (c.unread ? '<span class="u">' + c.unread + "</span>" : "<em>" + esc(ago(c.updated_at)) + "</em>") + "</div><small>" + esc(c.last || "") + "</small></a>";
         }).join("") : '<div class="lc-empty">' + (tab === "open" ? "No open chats." : "No closed chats.") + "</div>";
       });
     }

@@ -56,6 +56,7 @@
     ["Business"],
     ["enquiries", "Enquiries & leads", "inbox", "owner,admin,sales"],
     ["chat", "Live chat", "message-circle", "owner,admin,sales"],
+    ["train", "Train AI", "sparkles", "owner,admin"],
     ["pipeline", "Pipeline", "kanban", "owner,admin,sales"],
     ["clients", "Clients", "contact", "owner,admin,sales"],
     ["quotes", "Quotations", "file-text", "owner,admin,sales"],
