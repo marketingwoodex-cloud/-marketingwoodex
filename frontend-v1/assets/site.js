@@ -150,6 +150,13 @@
     ['mouseenter', 'focusin', 'touchstart'].forEach(function (ev) { section.addEventListener(ev, function () { hold = true; }, { passive: true }); });
     ['mouseleave', 'focusout', 'touchend'].forEach(function (ev) { section.addEventListener(ev, function () { hold = false; }, { passive: true }); });
     if ('IntersectionObserver' in window) new IntersectionObserver(function (es) { inView = es[0].isIntersecting; }, { threshold: 0.35 }).observe(track.parentElement);
+    /* Swipe on touch screens */
+    var sx = null;
+    section.addEventListener('touchstart', function (e) { sx = e.touches[0].clientX; }, { passive: true });
+    section.addEventListener('touchend', function (e) {
+      if (sx === null) return; var dx = e.changedTouches[0].clientX - sx; sx = null;
+      if (Math.abs(dx) > 45) { at += dx < 0 ? 1 : -1; update(false); kick(); }
+    }, { passive: true });
     kick();
     window.addEventListener('resize', function () { update(true); });
     update(true);
