@@ -63,6 +63,16 @@
       ".wx-wa-send{width:100%;border:0!important;border-radius:999px!important;background:#25d366!important;color:#fff!important;font-weight:700;font-size:15px;padding:12px!important;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}",
       ".wx-wa-send svg{width:18px;height:18px;fill:#fff}",
       ".wx-wa-hp{position:absolute!important;left:-9999px!important;width:1px;height:1px;opacity:0}",
+      ".wx-back{background:none!important;border:0!important;color:#fff!important;font-size:28px;line-height:1;padding:0 4px 0 0!important;min-width:0!important;cursor:pointer}",
+      ".wx-opt{display:flex!important;align-items:center;gap:12px;width:100%;text-align:left;background:#fff!important;border:1px solid #d5dbe0!important;border-radius:12px!important;padding:12px!important;margin:0 0 8px;cursor:pointer;color:#0c1628!important;font:inherit}",
+      ".wx-opt:hover{border-color:#075e54!important}.wx-opt .ic{width:40px;height:40px;border-radius:50%;background:#25d366;display:flex;align-items:center;justify-content:center;flex:none;font-size:19px}.wx-opt .ic.ch{background:#0c1628}.wx-opt .ic svg{width:22px;height:22px;fill:#fff}",
+      ".wx-opt b{display:block;font-size:14.5px}.wx-opt small{display:block;font-size:12px;color:#667781;margin-top:2px}",
+      ".v-chat{display:flex;flex-direction:column;background:#efeae2}.v-chat[hidden]{display:none}.wx-ch-list{height:340px;max-height:calc(100vh - 260px);overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:6px}",
+      ".wx-m{max-width:84%;padding:8px 11px;border-radius:10px;font-size:14px;line-height:1.45;white-space:pre-wrap;word-wrap:break-word;box-shadow:0 1px 1px rgba(0,0,0,.08)}",
+      ".wx-m.them{background:#fff;align-self:flex-start;border-top-left-radius:2px}.wx-m.me{background:#d9fdd3;align-self:flex-end;border-top-right-radius:2px}.wx-m small{display:block;font-size:10.5px;color:#667781;margin-bottom:2px;font-weight:600}",
+      ".wx-m.sys{align-self:center;background:#fff7d6;font-size:12.5px;box-shadow:none;text-align:center}.wx-typing{align-self:flex-start;background:#fff;border-radius:10px;padding:9px 12px;font-size:13px;color:#667781}",
+      ".wx-ch-form{display:flex;gap:8px;padding:8px 10px;background:#f0f2f5;align-items:flex-end;margin:0}.wx-ch-form textarea{flex:1;border:0;border-radius:20px;padding:10px 14px;font:inherit;font-size:14px;resize:none;max-height:110px;outline:none;background:#fff;color:#0c1628}",
+      ".wx-ch-form button{width:42px;height:42px;border-radius:50%!important;border:0!important;background:#075e54!important;display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none;padding:0!important;min-width:0!important}.wx-ch-form button svg{width:18px;height:18px;fill:#fff}",
       ".wx-wa-foot{padding:8px 14px 12px;background:#efeae2;font-size:11px;color:#667781;text-align:center}"
     ].join("\n");
     document.head.appendChild(el("style", null, css));
@@ -71,19 +81,23 @@
     var sendGlyph = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 20l18-8L3 4v6l12 2-12 2v6z"/></svg>';
 
     var wrap = el("div", "wx-wa"), btn = el("button", "wx-wa-btn", waGlyph + '<span class="wx-wa-dot" aria-hidden="true"></span>');
-    btn.type = "button"; btn.setAttribute("aria-label", "Chat with Woodex on WhatsApp"); btn.setAttribute("aria-expanded", "false"); wrap.appendChild(btn);
+    btn.type = "button"; btn.setAttribute("aria-label", "Chat with Woodex"); btn.setAttribute("aria-expanded", "false"); wrap.appendChild(btn);
 
     var panel = el("div", "wx-wa-panel"); panel.setAttribute("role", "dialog"); panel.setAttribute("aria-label", "WhatsApp chat with Woodex");
     panel.innerHTML =
-      '<div class="wx-wa-head"><span class="wx-wa-av">W</span><div><div class="t">Woodex Interior</div><div class="s"><i></i>' + (open ? "Online · usually replies in minutes" : "Away · we reply from 9:30 am (Mon–Sat)") + '</div></div><button type="button" class="wx-wa-x" aria-label="Close chat">&times;</button></div>' +
-      '<div class="wx-wa-body"><div class="wx-wa-msg">' + esc(greet) + '</div>' +
+      '<div class="wx-wa-head"><button type="button" class="wx-back" aria-label="Back" hidden>&#8249;</button><span class="wx-wa-av">W</span><div><div class="t">Woodex Interior</div><div class="s"><i></i>' + (open ? "Online · usually replies in minutes" : "Away · we reply from 9:30 am (Mon–Sat)") + '</div></div><button type="button" class="wx-wa-x" aria-label="Close chat">&times;</button></div>' +
+      '<div class="v-home"><div class="wx-wa-body"><div class="wx-wa-msg">Hi! 👋 How would you like to talk to us?</div>' +
+      '<button type="button" class="wx-opt" data-go="chat"><span class="ic ch">💬</span><span><b>Chat now</b><small>Instant answers here on the website</small></span></button>' +
+      '<button type="button" class="wx-opt" data-go="wa"><span class="ic">' + waGlyph + '</span><span><b>WhatsApp</b><small>Continue in the WhatsApp app</small></span></button></div></div>' +
+      '<div class="v-chat" hidden><div class="wx-ch-list" aria-live="polite"></div><form class="wx-ch-form"><input class="wx-wa-hp" name="hp" tabindex="-1" autocomplete="off" aria-hidden="true"><textarea rows="1" maxlength="2000" placeholder="Type your message…" aria-label="Message"></textarea><button type="submit" aria-label="Send">' + sendGlyph + '</button></form></div>' +
+      '<div class="v-wa" hidden><div class="wx-wa-body"><div class="wx-wa-msg">' + esc(greet) + '</div>' +
       '<span class="wx-wa-lbl">Service</span><div class="wx-wa-chips" data-g="svc">' + SERVICES.map(function (s) { return '<button type="button" class="wx-wa-chip' + (s[0] === pageSvc ? " on" : "") + '" data-v="' + esc(s[0]) + '">' + esc(s[0]) + "</button>"; }).join("") + "</div>" +
       '<span class="wx-wa-lbl">I would like to</span><div class="wx-wa-chips" data-g="int">' + INTENTS.map(function (x, i) { return '<button type="button" class="wx-wa-chip' + (i === 0 ? " on" : "") + '" data-v="' + i + '">' + esc(x[0]) + "</button>"; }).join("") + "</div>" +
       '<div class="wx-wa-two"><input class="wx-wa-in" id="wx-wa-n" placeholder="Your name" autocomplete="name" maxlength="120" aria-label="Your name"><input class="wx-wa-in" id="wx-wa-p" type="tel" placeholder="Phone (optional)" autocomplete="tel" maxlength="40" aria-label="Phone"></div>' +
       '<textarea class="wx-wa-in" id="wx-wa-m" rows="2" placeholder="Area, city, budget or anything else (optional)" maxlength="1000" aria-label="Message"></textarea>' +
       '<input class="wx-wa-hp" id="wx-wa-hp" tabindex="-1" autocomplete="off" aria-hidden="true">' +
       '<button type="button" class="wx-wa-send">' + sendGlyph + "Continue on WhatsApp</button></div>" +
-      '<div class="wx-wa-foot">Opens WhatsApp with your message ready. Adding your phone lets us call you back.</div>';
+      '<div class="wx-wa-foot">Opens WhatsApp with your message ready. Adding your phone lets us call you back.</div></div>';
     document.body.appendChild(panel); document.body.appendChild(wrap);
 
     var $ = function (s) { return panel.querySelector(s); };
@@ -104,11 +118,56 @@
       if (window.gtag) try { window.gtag("event", "whatsapp_click", { service: svc || "none" }); } catch (e) {}
       if (window.fbq) try { window.fbq("track", "Contact"); } catch (e) {}
     }
+    // ---------- views + live chat
+    var CH = { on: false, id: 0, tok: "", last: 0, timer: null, busy: false }, view = "home";
+    try { var sv = JSON.parse(localStorage.getItem("wxChat") || "null"); if (sv && sv.id && sv.tok) { CH.id = sv.id; CH.tok = sv.tok; } } catch (e) {}
+    function show(v) {
+      view = v; ["home", "chat", "wa"].forEach(function (k) { panel.querySelector(".v-" + k).hidden = k !== v; });
+      $(".wx-back").hidden = v === "home" || !CH.on;
+      if (v === "chat") { if (!CH.last && CH.id) poll(); else if (!CH.id) draw([{ who: "ai", name: "Woodex assistant", text: CH.greet }], true); setTimeout(function () { $(".wx-ch-form textarea").focus(); }, 60); startPoll(); }
+      if (v === "wa") setTimeout(function () { $("#wx-wa-n").focus(); }, 50);
+    }
+    function chatApi(body) { return fetch("/api/chat.php", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }).then(function (r) { return r.json(); }); }
+    function draw(msgs, reset) {
+      var L = $(".wx-ch-list"); if (reset) L.innerHTML = "";
+      var ty = L.querySelector(".wx-typing"); if (ty) ty.remove();
+      msgs.forEach(function (m) {
+        if (m.id && m.id <= CH.last) return; if (m.id) CH.last = m.id;
+        var d = el("div", "wx-m " + (m.who === "visitor" ? "me" : m.who === "sys" ? "sys" : "them"));
+        d.innerHTML = (m.who === "agent" ? "<small>" + esc(m.name || "Woodex team") + "</small>" : "") + esc(m.text); L.appendChild(d);
+      });
+      L.scrollTop = L.scrollHeight;
+    }
+    function poll() { if (!CH.id || CH.busy) return; chatApi({ action: "poll", chat_id: CH.id, token: CH.tok, since: CH.last }).then(function (r) { if (r.ok) { if (r.messages.length) { var fresh = r.messages.filter(function (m) { return m.id > CH.last && m.who !== "visitor"; }).length; draw(r.messages, !CH.last); if (fresh && (!panel.classList.contains("open") || view !== "chat")) dotOn(); } } else if (r.error === "Chat not found") { CH.id = 0; CH.tok = ""; CH.last = 0; localStorage.removeItem("wxChat"); } }).catch(function () {}); }
+    function startPoll() { clearInterval(CH.timer); if (!CH.id) return; CH.timer = setInterval(poll, panel.classList.contains("open") && view === "chat" ? 3000 : 15000); }
+    function dotOn() { if (!btn.querySelector(".wx-wa-dot")) btn.insertAdjacentHTML("beforeend", '<span class="wx-wa-dot" aria-hidden="true"></span>'); }
+    panel.querySelector(".v-home").addEventListener("click", function (e) { var b = e.target.closest("[data-go]"); if (b) show(b.dataset.go); });
+    $(".wx-back").addEventListener("click", function () { show("home"); startPoll(); });
+    var ta = $(".wx-ch-form textarea");
+    ta.addEventListener("input", function () { ta.style.height = "auto"; ta.style.height = Math.min(110, ta.scrollHeight) + "px"; });
+    ta.addEventListener("keydown", function (e) { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); $(".wx-ch-form").requestSubmit ? $(".wx-ch-form").requestSubmit() : $(".wx-ch-form button").click(); } });
+    $(".wx-ch-form").addEventListener("submit", function (e) {
+      e.preventDefault(); var t = ta.value.trim(); if (!t || CH.busy) return; ta.value = ""; ta.style.height = "auto";
+      var L = $(".wx-ch-list"), mine = el("div", "wx-m me"); mine.textContent = t; L.appendChild(mine); L.insertAdjacentHTML("beforeend", '<div class="wx-typing">typing…</div>'); L.scrollTop = L.scrollHeight;
+      CH.busy = true;
+      chatApi({ action: "send", chat_id: CH.id || 0, token: CH.tok, text: t, page: location.pathname, since: CH.last, _hp: $(".wx-ch-form [name=hp]").value }).then(function (r) {
+        CH.busy = false; mine.remove();
+        if (!r.ok) { var ty = L.querySelector(".wx-typing"); if (ty) ty.remove(); var er = el("div", "wx-m sys"); er.textContent = r.error || "Could not send. Please try WhatsApp."; L.appendChild(er); return; }
+        if (r.token) { CH.id = r.chat_id; CH.tok = r.token; CH.last = 0; localStorage.setItem("wxChat", JSON.stringify({ id: CH.id, tok: CH.tok })); L.innerHTML = ""; }
+        draw(r.messages); startPoll();
+        if (window.gtag && r.token) try { window.gtag("event", "chat_start"); } catch (x) {}
+      }).catch(function () { CH.busy = false; var ty = L.querySelector(".wx-typing"); if (ty) ty.textContent = "Connection problem. Please try again."; });
+    });
+    chatApi({ action: "cfg" }).then(function (r) {
+      if (!r || !r.ok || !r.on) { show("wa"); return; }
+      CH.on = true; CH.greet = r.greeting; show(CH.id ? "chat" : "home"); if (CH.id) { poll(); startPoll(); }
+    }).catch(function () { show("wa"); });
     function toggle(force) {
       var o = typeof force === "boolean" ? force : !panel.classList.contains("open");
       panel.classList.toggle("open", o); btn.setAttribute("aria-expanded", String(o));
       var dot = btn.querySelector(".wx-wa-dot"); if (dot) dot.remove();
-      if (o) setTimeout(function () { $("#wx-wa-n").focus(); }, 50);
+      if (o && view === "wa") setTimeout(function () { $("#wx-wa-n").focus(); }, 50);
+      if (o && view === "chat") { poll(); setTimeout(function () { ta.focus(); }, 60); } startPoll();
     }
     btn.addEventListener("click", function () { toggle(); });
     $(".wx-wa-x").addEventListener("click", function () { toggle(false); });

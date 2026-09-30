@@ -275,7 +275,7 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
 
   // =================================================================== A4 — forms, leads, pipeline, clients, alerts
   const STAGES = ["new", "contacted", "visit", "quote", "won", "lost"];
-  const SOURCES = { contact: "Contact form", estimator: "Cost estimator", brief: "3D brief", "fitout-hub": "Fit-out quote", "office-fitout": "Office fit-out quote", whatsapp: "WhatsApp widget", manual: "Added by team", import: "CSV import" };
+  const SOURCES = { contact: "Contact form", estimator: "Cost estimator", brief: "3D brief", "fitout-hub": "Fit-out quote", "office-fitout": "Office fit-out quote", whatsapp: "WhatsApp widget", chat: "Live chat", manual: "Added by team", import: "CSV import" };
   const CRM = path.join(PRIV, "crm.json"), OUTBOX = path.join(PRIV, "outbox.jsonl");
   const crmCfg = () => Object.assign({ emailOn: false, emailTo: "", smtpHost: "", smtpPort: 465, smtpUser: "", smtpPass: "", smtpFrom: "", waOn: false, waToken: "", waPhoneId: "", waTo: "", waTemplate: "", waLang: "en", tsSite: "", tsSecret: "" }, jr(CRM, {}));
   const SECRETS = ["smtpPass", "waToken", "tsSecret"];
@@ -963,6 +963,66 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
     }
     return null;
   }
+  // ---- Phase 10: live chat + notifications (mirror of api/chat-lib.php; AI replies need the PHP server)
+  const CHATF = path.join(PRIV, "chat.json");
+  const CHAT_DEF = { on: true, ai: true, emailAlert: true, autoLead: true, greeting: "Assalam-o-Alaikum! 👋 I am the Woodex assistant. Ask me anything about interior design, renovation, fit-out or prices. A team member can join any time.", hours: "Mon–Sat, 9:30 am – 6:30 pm", knowledge: "Woodex Interior is an interior design and build company in Lahore, Pakistan." };
+  const chatCfg = () => Object.assign({}, CHAT_DEF, jr(CHATF, {}));
+  const ensureChat = (db) => { db.chats = db.chats || []; db.chatMsgs = db.chatMsgs || []; db.seqCh = db.seqCh || 0; db.seqCm = db.seqCm || 0; };
+  const chatOpenNow = () => { const d = new Date(Date.now() + 5 * 36e5), w = d.getUTCDay(), m = d.getUTCHours() * 60 + d.getUTCMinutes(); return w !== 0 && m >= 570 && m < 1110; };
+  const chatAdd = (db, c, who, name, text) => { const m = { id: ++db.seqCm, chat_id: c.id, t: now(), who, name: String(name || "").slice(0, 120), text: String(text).slice(0, 4000) }; db.chatMsgs.push(m); c.updated_at = now(); c.last_text = ((who === "visitor" ? "" : who === "agent" ? "You: " : "AI: ") + text).slice(0, 250); if (who === "visitor") c.unread = (c.unread || 0) + 1; return m.id; };
+  const chatMsgs = (db, cid, since = 0) => db.chatMsgs.filter((m) => m.chat_id === cid && m.id > since).map(({ chat_id, ...m }) => m);
+  const chatPub = (c) => ({ id: c.id, created_at: c.created_at, updated_at: c.updated_at, name: c.name || "", phone: c.phone || "", email: c.email || "", page: c.page || "", status: c.status, mode: c.mode, agent: c.agent_name || "", unread: c.unread || 0, needs: !!c.needs, last: c.last_text || "", lead_id: c.lead_id || null });
+  const chatMakeLead = (db, c) => { ensureCrm(db); const l = { id: ++db.seqL, created_at: now(), source: "chat", page: c.page, name: c.name || "Chat visitor #" + c.id, phone: c.phone || "", email: c.email || "", service: "", message: chatMsgs(db, c.id).filter((m) => m.who === "visitor").map((m) => "• " + m.text).join("\n").slice(0, 3900), fields: { chat: c.id }, stage: "new", read: false, notes: [], tags: [], value: 0, assigned_to: null, client_id: null, followup: "" }; db.leads.push(l); c.lead_id = l.id; };
+  const chatCapture = (db, c, text) => {
+    let m; if (!c.phone && (m = /(?:\+?92|0)\s?3\d{2}[\s-]?\d{7}|\+?\d[\d\s-]{8,14}\d/.exec(text))) c.phone = m[0].replace(/[^\d+]/g, "");
+    if (!c.email && (m = /[\w.+-]+@[\w-]+\.[\w.]{2,}/.exec(text))) c.email = m[0].toLowerCase();
+    if (!c.name && (m = /\b(?:my name is|this is|i am|i'm|name:)\s+([a-z][a-z]+(?:\s[a-z][a-z]+)?)/i.exec(text)) && !/^(looking|interested|from|here|planning|a|an|the)\b/i.test(m[1])) c.name = m[1].toLowerCase().replace(/\b\w/g, (x) => x.toUpperCase());
+    if (!c.lead_id && (c.phone || c.email) && chatCfg().autoLead) chatMakeLead(db, c);
+  };
+  /** public visitor endpoint (api/chat.php) */
+  const chatPublic = function (req, inp) {
+    const cfg = chatCfg(), act = String(inp.action || "cfg"), db = load(), ip = req.socket.remoteAddress || "";
+    if (!db) return { ok: true, on: false };
+    ensureChat(db);
+    if (act === "cfg") return { ok: true, on: !!cfg.on, greeting: cfg.greeting, hours: cfg.hours, open: chatOpenNow(), ai: !!cfg.ai };
+    if (!cfg.on) throw new Fail("Chat is offline", 403);
+    const vchat = () => { const c = db.chats.find((x) => x.id === +inp.chat_id); if (!c || !/^[a-f0-9]{40}$/.test(String(inp.token || "")) || c.token !== sha(inp.token)) throw new Fail("Chat not found", 404); return c; };
+    const vpub = (c, since) => ({ ok: true, chat_id: c.id, mode: c.mode, agent: c.agent_name || "", status: c.status, messages: chatMsgs(db, c.id, since) });
+    if (act === "poll") return vpub(vchat(), +inp.since || 0);
+    if (act !== "send") throw new Fail("Unknown action", 404);
+    const text = String(inp.text || "").trim().slice(0, 2000); if (!text) throw new Fail("Write a message");
+    if (clip(inp._hp)) return { ok: true, messages: [] };
+    const t = tries.get("c" + ip) || { n: 0, t: Date.now() }; if (Date.now() - t.t > 900000) { t.n = 0; t.t = Date.now(); } if (++t.n > 40) throw new Fail("You are sending messages too fast. Please wait a few minutes.", 429); tries.set("c" + ip, t);
+    let c, token = null, isNew = false;
+    if (+inp.chat_id) c = vchat();
+    else { token = crypto.randomBytes(20).toString("hex"); c = { id: ++db.seqCh, token: sha(token), created_at: now(), updated_at: now(), page: String(inp.page || "/").replace(/[^\w/\-.?=&%]/g, "").slice(0, 200) || "/", ip, name: clip(inp.name, 120) || "", status: "open", mode: "ai", unread: 0, needs: 0 }; db.chats.push(c); isNew = true; chatAdd(db, c, "ai", "Woodex assistant", cfg.greeting); }
+    c.status = "open"; chatAdd(db, c, "visitor", c.name, text); chatCapture(db, c, text); c.alerted = 1;
+    if (c.mode === "ai" && !db.chatMsgs.some((m) => m.chat_id === c.id && m.who === "sys")) { chatAdd(db, c, "sys", "", chatOpenNow() ? "Thanks! A team member will reply here in a few minutes. You can also leave your phone number and we will call you." : "Thanks for your message! We are away right now (" + cfg.hours + "). Leave your name and phone number and we will call you back first thing."); c.needs = 1; }
+    save(db); return { ...vpub(c, isNew ? 0 : +inp.since || 0), ...(token ? { token } : {}) };
+  };
+  async function p10(action, inp, need, db, ip, req) {
+    if (!/^(chat_|notif_)/.test(action)) return null;
+    ensureChat(db); ensureCrm(db); const SALES = ["owner", "admin", "sales"], done = (o) => { save(db); return o; };
+    const get = (id) => { const c = db.chats.find((x) => x.id === +id); if (!c) throw new Fail("Chat not found", 404); return c; };
+    switch (action) {
+      case "chat_list": { need(SALES); const st = inp.status === "closed" ? "closed" : "open"; return { ok: true, chats: db.chats.filter((c) => c.status === st).sort((a, b) => (b.needs || 0) - (a.needs || 0) || String(b.updated_at).localeCompare(a.updated_at)).map(chatPub), cfg: { ai: chatCfg().ai, on: chatCfg().on } }; }
+      case "chat_get": { need(SALES); const c = get(inp.id); c.unread = 0; c.needs = 0; return done({ ok: true, chat: chatPub(c), messages: chatMsgs(db, c.id, +inp.since || 0) }); }
+      case "chat_reply": { const u = need(SALES), c = get(inp.id), t = String(inp.text || "").trim(); if (!t) throw new Fail("Write a message"); if (c.mode === "ai") chatAdd(db, c, "sys", "", u.name + " joined the chat"); const id = chatAdd(db, c, "agent", u.name, t); Object.assign(c, { mode: "human", agent_name: u.name, status: "open", unread: 0, needs: 0 }); return done({ ok: true, id, chat: chatPub(c) }); }
+      case "chat_mode": { const u = need(SALES), c = get(inp.id), m = inp.mode === "ai" ? "ai" : "human"; c.mode = m; c.agent_name = m === "human" ? u.name : null; chatAdd(db, c, "sys", "", m === "human" ? u.name + " joined the chat" : "The assistant is back in this chat"); return done({ ok: true, chat: chatPub(c) }); }
+      case "chat_close": { const u = need(SALES), c = get(inp.id); c.status = inp.reopen ? "open" : "closed"; c.unread = 0; c.needs = 0; log(db, u, inp.reopen ? "chat.reopen" : "chat.close", "#" + c.id, ip); return done({ ok: true, chat: chatPub(c) }); }
+      case "chat_lead": { const u = need(SALES), c = get(inp.id); for (const k of ["name", "phone", "email"]) if (String(inp[k] || "").trim()) c[k] = clip(inp[k], 190); if (!c.lead_id) chatMakeLead(db, c); log(db, u, "chat.lead", "#" + c.id, ip); return done({ ok: true, chat: chatPub(c) }); }
+      case "chat_cfg_get": { need(["owner", "admin"]); return { ok: true, cfg: chatCfg(), aiReady: false }; }
+      case "chat_cfg_save": { const u = need(["owner", "admin"]), sv = inp.cfg || {}, c = chatCfg(); for (const k of ["on", "ai", "emailAlert", "autoLead"]) if (k in sv) c[k] = !!sv[k]; for (const [k, n] of [["greeting", 500], ["hours", 80], ["knowledge", 12000]]) if (k in sv) c[k] = String(sv[k]).trim().slice(0, n); jw(CHATF, c); log(db, u, "chat.settings", "", ip); return done({ ok: true, cfg: c }); }
+      case "notif_poll": {
+        const u = need(), sales = SALES.includes(u.role); let items = [];
+        const lu = sales ? db.leads.filter((l) => !l.read).length : 0, open = db.chats.filter((c) => c.status === "open" && (c.unread || c.needs)), cu = sales ? open.length : 0;
+        if (sales) { items = open.map((c) => ({ kind: "chat", id: c.id, t: c.updated_at, title: (c.needs ? "Needs a person · " : "Live chat · ") + (c.name || "Visitor #" + c.id), text: c.last_text || "", href: "#/chat/" + c.id })).concat(db.leads.filter((l) => !l.read).slice(-8).reverse().map((l) => ({ kind: "lead", id: l.id, t: l.created_at, title: "New enquiry · " + l.name, text: (SOURCES[l.source] || l.source) + (l.service ? " · " + l.service : ""), href: "#/leads" }))).sort((a, b) => String(b.t).localeCompare(a.t)); }
+        const lastV = db.chatMsgs.filter((m) => m.who === "visitor").reduce((a, m) => Math.max(a, m.id), 0);
+        return { ok: true, leads: lu, chats: cu, total: lu + cu, items: items.slice(0, 12), stamp: String(sales ? (db.seqL || 0) * 100000 + lastV : 0) };
+      }
+    }
+    return null;
+  }
   async function a8(action, inp, need, db, ip) {
     if (!/^set_/.test(action)) return null;
     const OA = ["owner", "admin"];
@@ -1069,6 +1129,18 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
         log(db, u, "session.revoke", inp.others ? "all other devices" : "one device", ip); return done({ ok: true });
       }
       case "sec_alerts": { const u = need(); u.alerts = !!inp.on; return done({ ok: true, alerts: u.alerts }); }
+      case "pw_forgot": { // preview: no SMTP, so the reset link is written to _private/outbox/
+        const email = String(inp.email || "").trim().toLowerCase(), msg = "If that email belongs to an Admin user, a reset link has been sent. Check your inbox (and spam).", u = db && db.users.find((x) => x.email === email && x.active);
+        if (!u) return { ok: true, message: msg };
+        const exp = Math.floor(Date.now() / 1000) + 3600, tok = u.id + "." + exp + "." + hmac("pwr|" + u.id + "|" + exp + "|" + u.pw_ver + "|" + u.pass_hash);
+        const ob = path.join(PRIV, "outbox"); fs.mkdirSync(ob, { recursive: true }); fs.writeFileSync(path.join(ob, Date.now() + "-reset.txt"), "To: " + u.email + "\n/admin/#reset=" + tok);
+        log(db, u, "password.reset_request", "", ip); return done({ ok: true, message: msg });
+      }
+      case "pw_reset": {
+        const m = /^(\d+)\.(\d{10})\.([a-f0-9]{64})$/.exec(String(inp.token || "")); if (!m || +m[2] < Date.now() / 1000) throw new Fail("This reset link has expired. Ask for a new one.", 401);
+        const u = db && db.users.find((x) => x.id === +m[1] && x.active); if (!u || hmac("pwr|" + u.id + "|" + m[2] + "|" + u.pw_ver + "|" + u.pass_hash) !== m[3]) throw new Fail("This reset link is not valid or was already used. Ask for a new one.", 401);
+        validPw(inp.password); u.pass_hash = hash(inp.password); u.pw_ver++; u.sessions = []; log(db, u, "password.reset", "", ip); return done({ ok: true, message: "Password changed. Sign in with your new password." });
+      }
       case "me": { const u = need(); return { ok: true, user: pub(u), builderToken: canBuild(u) ? builderToken(u.id, u._sid) : null }; }
       case "logout": { const u = current(db, req); if (u) { u.sessions = (u.sessions || []).filter((x) => x.sid !== u._sid); log(db, u, "logout", "", ip); save(db); } return { ok: true }; }
       case "profile": { const u = need(); const n = String(inp.name || "").trim(); if (!n) throw new Fail("Name is required"); u.name = n.slice(0, 120); log(db, u, "profile.update", "", ip); return done({ ok: true, user: pub(u) }); }
@@ -1111,7 +1183,7 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
         return done({ ok: true, rows: all.slice((page - 1) * per, page * per).map(({ user_name, action, target, ip, created_at }) => ({ user_name, action, target, ip, created_at })), total: all.length, per, page });
       }
       default: {
-        const r = (await a2(action, inp, need, db, ip)) || (await a4(action, inp, need, db, ip)) || a5(action, inp, need, db, ip) || (await a6(action, inp, need, db, ip)) || (await a7(action, inp, need, db, ip)) || (await a8(action, inp, need, db, ip)) || (await p8(action, inp, need, db, ip, req)); if (r) return r;
+        const r = (await a2(action, inp, need, db, ip)) || (await a4(action, inp, need, db, ip)) || a5(action, inp, need, db, ip) || (await a6(action, inp, need, db, ip)) || (await a7(action, inp, need, db, ip)) || (await a8(action, inp, need, db, ip)) || (await p8(action, inp, need, db, ip, req)) || (await p10(action, inp, need, db, ip, req)); if (r) return r;
         throw new Fail("Unknown action", 404);
       }
     }
@@ -1213,6 +1285,7 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
       .replace(/<\?php if \(\$wa\): \?>[\s\S]*?<\?php endif; \?>/, "").replace("<?= json_encode($q, $J) ?>", J(pq)).replace("<?= json_encode($c, $J) ?>", J(c));
     return { status: 200, html };
   };
+  adminApi.chat = chatPublic;
   adminApi.forms = formsApi; adminApi.backupFile = backupFile; adminApi.rawAction = rawAction;
   adminApi.publicGuard = function (rel) {
     // preview-only: mimic the managed .htaccess rules (redirects, drafts 404)

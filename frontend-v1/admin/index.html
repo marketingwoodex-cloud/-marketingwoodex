@@ -22,7 +22,24 @@
       <label>Password<input type="password" id="l-pass" autocomplete="current-password" required></label>
       <p class="err" id="l-err"></p>
       <button class="btn pri block" id="l-btn">Sign in</button>
+      <p style="text-align:center;margin:10px 0 0;font-size:13px"><a href="#" id="l-forgot">Forgot password?</a></p>
       <div id="g-login" hidden><div class="g-or"><span>or</span></div><div id="g-btn"></div><p class="muted" style="font-size:12px;text-align:center;margin:6px 0 0">Only for existing Admin users.</p></div>
+    </form>
+
+    <form id="fp-form" hidden>
+      <h1>Forgot password</h1><p class="muted">Enter your Admin email. We will email you a link to choose a new password.</p>
+      <label>Email<input type="email" id="fp-email" autocomplete="username" required></label>
+      <p class="err" id="fp-err"></p><p class="muted" id="fp-ok" style="font-size:13px"></p>
+      <button class="btn pri block" id="fp-btn">Send reset link</button>
+      <p style="text-align:center;margin:10px 0 0;font-size:13px"><a href="#" class="fp-back">Back to sign in</a></p>
+    </form>
+    <form id="rp-form" hidden>
+      <h1>Choose a new password</h1><p class="muted">At least 8 characters. You will be signed out of other devices.</p>
+      <label>New password<input type="password" id="rp-pass" autocomplete="new-password" minlength="8" required></label>
+      <label>Repeat new password<input type="password" id="rp-pass2" autocomplete="new-password" minlength="8" required></label>
+      <p class="err" id="rp-err"></p>
+      <button class="btn pri block" id="rp-btn">Save new password</button>
+      <p style="text-align:center;margin:10px 0 0;font-size:13px"><a href="#" class="fp-back">Back to sign in</a></p>
     </form>
 
     <form id="tfa-form" hidden>
@@ -68,6 +85,7 @@
       <button class="icon-btn" id="menu-btn" aria-label="Toggle menu"><i data-i="panel-left"></i></button>
       <div class="top-search"><i data-i="search"></i><input id="gsearch" placeholder="Search pages…  ( / )" list="gsearch-list" autocomplete="off"><datalist id="gsearch-list"></datalist></div>
       <div class="top-r">
+        <div class="dd" id="nt-dd"><button class="icon-btn" id="nt-btn" aria-label="Notifications"><i data-i="bell"></i><span class="nt-n" id="nt-n" hidden>0</span></button><div class="dd-menu nt-menu" id="nt-menu" hidden></div></div>
         <button class="icon-btn" id="dark-btn" aria-label="Dark mode"><i data-i="moon" class="i-moon"></i><i data-i="sun" class="i-sun"></i></button>
         <div class="dd" id="user-dd">
           <button class="user-btn" id="user-btn"><span class="av" id="u-av">?</span><span class="u-txt"><b id="u-name">…</b><small id="u-role"></small></span><i data-i="chevron-down"></i></button>
@@ -107,5 +125,6 @@
 <script src="vendor/qrcode.js" defer></script>
 <script src="admin-settings.js" defer></script>
 <script src="admin-p8.js" defer></script>
+<script src="admin-chat.js" defer></script>
 </body>
 </html>

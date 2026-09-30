@@ -327,6 +327,11 @@ http.createServer(async (req, res) => {
       res.writeHead(r.status, { ...cors, ...(r.headers || {}), "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" });
       return res.end(r.body ? JSON.stringify(r.body) : "");
     }
+    if (p === "/api/chat.php") {
+      const chunks = []; for await (const c of req) chunks.push(c);
+      let status = 200, out; try { let inp = {}; try { inp = JSON.parse(Buffer.concat(chunks).toString() || "{}"); } catch {} out = adminApi.chat(req, inp); } catch (e) { status = e.code || 500; out = { ok: false, error: e.code ? e.message : "Server error" }; if (!e.code) console.error(e); }
+      res.writeHead(status, { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" }); return res.end(JSON.stringify(out));
+    }
     if (p === "/api/forms.php") {
       const chunks = []; for await (const c of req) chunks.push(c);
       let status = 200, out;
