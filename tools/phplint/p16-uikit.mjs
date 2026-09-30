@@ -6,7 +6,7 @@ fs.writeFileSync(R + "/_uk-preview.html", '<!doctype html><html lang="en"><head>
 const b = await puppeteer.launch({ executablePath: process.cwd() + "/al/chromium", headless: "shell", args: ["--no-sandbox"] });
 const a = await b.newPage(); const errs = []; a.on("pageerror", e => errs.push(e.message));
 for (const [w, tag] of [[1366, "d"], [390, "m"]]) {
-  await a.setViewport({ width: w, height: 900 }); await a.goto("http://localhost:8080/_uk-preview.html", { waitUntil: "networkidle0" });
+  await a.setViewport({ width: w, height: 900 }); await a.goto("http://localhost:8080/_uk-preview.html", { waitUntil: "networkidle0" }); await a.evaluate(async () => { document.querySelectorAll("img[loading=lazy]").forEach(i => i.loading = "eager"); await Promise.all([...document.images].map(i => i.complete ? 0 : new Promise(r => { i.onload = i.onerror = r; }))); });
   const over = await a.evaluate(() => [...document.querySelectorAll("[data-id]")].filter(d => d.scrollWidth > document.documentElement.clientWidth + 2 || [...d.querySelectorAll("*")].some(x => x.getBoundingClientRect().right > document.documentElement.clientWidth + 2 && !x.closest(".uk-scroll"))).map(d => d.dataset.id));
   console.log(tag, "overflow:", over.join(",") || "none");
   const ids = await a.evaluate(() => [...document.querySelectorAll("[data-id]")].map(d => d.dataset.id));

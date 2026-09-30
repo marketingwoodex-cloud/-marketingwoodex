@@ -72,6 +72,6 @@ UI libraries converted to Woodex blocks (no Tailwind) · ~40 new blocks · ONE f
 - [x] 3.5 Integrations card grid + API keys table (masked, toggle, test, MCP tokens)
 - [x] 3.6 Inbox redesign (contacts | thread | lead panel)
 - [x] 3.7 Users: All users · Profile · Activity feed
-- [ ] 3.8 Page builder: ~40 new blocks from Flowbite / Meraki UI designs (MIT) rebuilt in v1.css + Charts.css stats; new "UI kit" category
+- [x] 3.8 Page builder: ~40 new blocks from Flowbite / Meraki UI designs (MIT) rebuilt in v1.css + Charts.css stats; new "UI kit" category
 - [ ] 3.9 Go-live audit: every admin route (click/forms/errors), every API action (PHP lint + mirror tests), every public page (links, mobile, Lighthouse key pages), fix all
 - [ ] 3.10 FINAL full zip `deploy/p16/woodex-live-p16-full.zip` + README + CHANGES

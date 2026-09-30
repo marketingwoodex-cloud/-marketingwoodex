@@ -1291,7 +1291,7 @@
   new MutationObserver(function () { if ($("#modal").hidden) wide($("#modal-body"), ""); }).observe($("#modal"), { attributes: true, attributeFilter: ["hidden"] });
   function templatesGallery() {
     var T = window.WX_TEMPLATES || [], cats = ["All"].concat(T.map(function (t) { return t.cat; }).filter(function (c, i, a) { return a.indexOf(c) === i; })), cur = "All", q = "";
-    modal("<h2 style='margin-bottom:6px'>v26 templates <small class='hint'>(" + T.length + ")</small></h2><div style='display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:12px'><input type='search' id='tg-q' placeholder='Search…' style='max-width:200px'>" +
+    modal("<h2 style='margin-bottom:6px'>Templates · v26 + UI kit <small class='hint'>(" + T.length + ")</small></h2><div style='display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:12px'><input type='search' id='tg-q' placeholder='Search…' style='max-width:200px'>" +
       cats.map(function (c) { return "<button class='btn btn-sm' data-tc='" + esc(c) + "'>" + esc(c) + "</button>"; }).join("") + "</div><div id='tg-grid' style='display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px;max-height:68vh;overflow:auto;padding-right:6px'></div>");
     var mb = $("#modal-body"); wide(mb, "min(1100px,94vw)");
     var draw = function () {
@@ -1306,7 +1306,7 @@
     draw();
   }
   window.__wx5.templates = templatesGallery;
-  var tgBtn = document.createElement("button"); tgBtn.className = "btn btn-pri"; tgBtn.style.cssText = "width:100%;margin:0 0 10px"; tgBtn.textContent = "✨ Browse 50 v26 templates";
+  var tgBtn = document.createElement("button"); tgBtn.className = "btn btn-pri"; tgBtn.style.cssText = "width:100%;margin:0 0 10px"; tgBtn.textContent = "✨ Browse " + ((window.WX_TEMPLATES || []).length || 50) + " templates (v26 + UI kit)";
   tgBtn.onclick = function () { if (S.doc) templatesGallery(); }; var ls = $("#lib-sections"); if (ls) ls.parentNode.insertBefore(tgBtn, ls.previousElementSibling || ls);
 
   $("#import-sec").onclick = function () {

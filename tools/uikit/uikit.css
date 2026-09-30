@@ -57,7 +57,7 @@
 .uk-tbl thead th{background:var(--navy,#0c1628);color:#fff;font-weight:600}.uk-tbl tbody tr:nth-child(even){background:#faf7f2}.uk-tbl td.y{color:#12a150;font-weight:700}.uk-tbl td.n{color:#b0a89c}
 .uk-scroll{overflow-x:auto;border-radius:14px;border:1px solid #e9e2d6}
 /* testimonials, team */
-.uk-q{font-size:clamp(20px,2.4vw,30px);line-height:1.4;font-weight:500;max-width:880px;margin:0 auto 26px;text-align:center}
+.uk .uk-q{font-size:clamp(20px,2.4vw,30px);line-height:1.4;font-weight:500;max-width:880px;margin:0 auto 26px;text-align:center}
 .uk-who{display:flex;align-items:center;gap:12px}.uk-c .uk-who{justify-content:center}.uk-av{width:48px;height:48px;border-radius:50%;object-fit:cover;background:#e3d9c8;display:grid;place-items:center;font-weight:700;color:#6b5234;flex:0 0 auto}
 .uk-who b{display:block}.uk-who small{color:var(--muted,#6a6560)}.uk.navy .uk-who small{color:#aab4c6}
 .uk-stars{color:var(--wood,#b8956a);letter-spacing:2px;font-size:17px;margin-bottom:10px}
@@ -107,3 +107,4 @@
   .uk-hbar li{grid-template-columns:96px 1fr 40px}.uk-form .row{grid-template-columns:1fr}.uk-inl{flex-direction:column}.uk-col{height:200px}.uk-stepper li{font-size:12px}}
 @media(max-width:460px){.uk-g4,.uk-steps,.uk-bento{grid-template-columns:1fr}.uk-bento .big,.uk-bento .wide{grid-column:auto;grid-row:auto}}
 @media(prefers-reduced-motion:reduce){.uk-card,.uk-b{transition:none}}
+a.uk-img{display:block}.uk .uk-form{max-width:none;width:100%;margin:0}.uk-form label small{font-weight:400;color:var(--muted,#6a6560)}

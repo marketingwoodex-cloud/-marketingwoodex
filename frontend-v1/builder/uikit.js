@@ -135,10 +135,10 @@
 },
 {
 "id": "uk-testi-logos",
-"name": "Testimonials · client logos + rating",
+"name": "Testimonials · sectors + rating",
 "cat": "UI kit · Testimonials",
 "icon": "◇",
-"html": "<section class=\"uk \"><div class=\"wrap\"><div class=\"uk-c\"><p class=\"uk-k\">Trusted by</p><div class=\"uk-logos\" style=\"margin-top:8px\"><span>Telenor</span><span>Jazz</span><span>Systems Ltd</span><span>Arbisoft</span><span>Packages</span></div><p class=\"mut\" style=\"margin-top:28px\">★ 4.9 average from 180+ Google reviews</p></div></div></section>"
+"html": "<section class=\"uk \"><div class=\"wrap\"><div class=\"uk-c\"><p class=\"uk-k\">Sectors we work in</p><div class=\"uk-logos\" style=\"margin-top:8px\"><span>Homes</span><span>Offices</span><span>Restaurants</span><span>Clinics</span><span>Retail</span></div><p class=\"mut\" style=\"margin-top:28px\">★ 4.9 average from 180+ Google reviews</p></div></div></section>"
 },
 {
 "id": "uk-team-grid",
@@ -271,7 +271,7 @@
 "name": "Rating · review summary",
 "cat": "UI kit · Components",
 "icon": "★",
-"html": "<section class=\"uk \"><div class=\"wrap\"><div class=\"uk-split\"><div class=\"uk-c\"><b style=\"font-size:64px;letter-spacing:-.03em\">4.9</b><div class=\"uk-stars\" style=\"font-size:22px\">★★★★★</div><p class=\"mut\">Based on 180+ Google reviews</p></div><div class=\"uk-prog\"><div><span>5 stars<b>91%</b></span><i style=\"--v:91%\"></i></div><div><span>4 stars<b>7%</b></span><i style=\"--v:7%\"></i></div><div><span>3 stars<b>1%</b></span><i style=\"--v:1%\"></i></div><div><span>2 stars<b>1%</b></span><i style=\"--v:1%\"></i></div><div><span>1 stars<b>0%</b></span><i style=\"--v:0%\"></i></div></div></div></div></section>"
+"html": "<section class=\"uk \"><div class=\"wrap\"><div class=\"uk-split\"><div class=\"uk-c\"><b style=\"font-size:64px;letter-spacing:-.03em\">4.9</b><div class=\"uk-stars\" style=\"font-size:22px\">★★★★★</div><p class=\"mut\">Based on 180+ Google reviews</p></div><div class=\"uk-prog\"><div><span>5 stars<b>91%</b></span><i style=\"--v:91%\"></i></div><div><span>4 stars<b>7%</b></span><i style=\"--v:7%\"></i></div><div><span>3 stars<b>1%</b></span><i style=\"--v:1%\"></i></div><div><span>2 stars<b>1%</b></span><i style=\"--v:1%\"></i></div><div><span>1 star<b>0%</b></span><i style=\"--v:0%\"></i></div></div></div></div></section>"
 },
 {
 "id": "uk-table",
