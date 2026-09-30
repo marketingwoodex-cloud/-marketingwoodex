@@ -73,8 +73,8 @@
         api("clients_list").then(function (r) {
           var have = {}; (r.clients || []).forEach(function (c) { if (c.phone) have[normPhone(c.phone)] = 1; });
           var list = rows.slice(1).map(function (r) { var o = {}; Object.keys(map).forEach(function (k) { o[k] = String(r[map[k]] || "").trim(); }); return o; }).filter(function (o) { return o.name; });
-          var dup = list.filter(function (o) { return o.phone && have[normPhone(o.phone)]; }), fresh = list.filter(function (o) { return !(o.phone && have[normPhone(o.phone)]); });
-          modal("<h2>Import clients</h2><p>Found <b>" + list.length + "</b> clients in the file. <b>" + fresh.length + "</b> are new" + (dup.length ? " · " + dup.length + " already exist (same phone) and will be skipped" : "") + ".</p><p class='muted'>Columns found: " + Object.keys(map).join(", ") + "</p>" +
+          var dup = [], fresh = []; list.forEach(function (o) { var k = o.phone ? normPhone(o.phone) : ""; if (k && have[k]) dup.push(o); else { if (k) have[k] = 1; fresh.push(o); } });
+          modal("<h2>Import clients</h2><p>Found <b>" + list.length + "</b> clients in the file. <b>" + fresh.length + "</b> are new" + (dup.length ? " · " + dup.length + " have a phone number that already exists (or repeats in the file) and will be skipped" : "") + ".</p><p class='muted'>Columns found: " + Object.keys(map).join(", ") + "</p>" +
             "<div class='tbl-wrap' style='max-height:40vh;overflow:auto'><table class='tbl'><thead><tr><th>Name</th><th>Phone</th><th>City</th><th>Company</th></tr></thead><tbody>" + fresh.slice(0, 50).map(function (o) { return "<tr><td>" + esc(o.name) + "</td><td>" + esc(o.phone || "") + "</td><td>" + esc(o.city || "") + "</td><td>" + esc(o.company || "") + "</td></tr>"; }).join("") + "</tbody></table></div>" + (fresh.length > 50 ? "<p class='hint'>…and " + (fresh.length - 50) + " more</p>" : "") +
             "<div class='modal-actions'><button class='btn' id='ci-x'>Cancel</button><button class='btn pri' id='ci-go'" + (fresh.length ? "" : " disabled") + ">Import " + fresh.length + " clients</button></div>");
           $("#ci-x").onclick = closeModal;
