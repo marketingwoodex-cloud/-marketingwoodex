@@ -27,12 +27,12 @@ function extract() { // runs in page
     try { return !!document.querySelector(s); } catch { return true; }
   });
   const walk = (rules) => {
-    let css = "";
+    let css = "", h1w = "";
     for (const r of rules) {
       if (r instanceof CSSStyleRule) { if (used(r.selectorText)) css += r.cssText; }
       else if (r instanceof CSSMediaRule) { const i = walk(r.cssRules); if (i) css += `@media ${r.conditionText}{${i}}`; }
       else if (r instanceof CSSSupportsRule) { const i = walk(r.cssRules); if (i) css += `@supports ${r.conditionText}{${i}}`; }
-      else if (r instanceof CSSFontFaceRule) { if (!/dm-sans/.test(r.cssText) && /-(400|600|700)\.woff2/.test(r.cssText)) css += r.cssText; }
+      else if (r instanceof CSSFontFaceRule) { if (!/dm-sans/.test(r.cssText) && /-(400|500|600|700)\.woff2/.test(r.cssText)) css += r.cssText; }
       else if (r instanceof CSSKeyframesRule) css += r.cssText;
       else if (r.cssRules) { const i = walk(r.cssRules); if (i) css += r.cssText.split("{")[0] + "{" + i + "}"; }
     }
@@ -42,7 +42,9 @@ function extract() { // runs in page
   return want.map((h) => { const s = [...document.styleSheets].find((x) => x.href && new URL(x.href).pathname === h); return s ? walk(s.cssRules) : ""; }).join("");
 }
 
-function rewrite(html, crit) {
+function rewrite(html, crit, h1w) {
+  html = html.replace(/<link rel="preload" href="[^"]+" as="font" type="font\/woff2" crossorigin data-wx-h1font \/>\n?/g, "");
+  if (h1w && h1w !== "400") html = html.replace(/(<link rel="preload" href="\/assets\/fonts\/[^"]+" as="font"[^>]*>)/, `$1\n<link rel="preload" href="/assets/fonts/plus-jakarta-sans-${h1w}.woff2" as="font" type="font/woff2" crossorigin data-wx-h1font />`);
   html = html.replace(/<style id="wx-crit">[\s\S]*?<\/style>\n?/, "");
   html = html.replace(/<noscript><link rel="stylesheet" href="([^"]+)"( \/)?><\/noscript>\n?/g, "");
   html = html.replace(/<link rel="preload" href="([^"]+)" as="style" onload="[^"]*"( \/)?>/g, '<link rel="stylesheet" href="$1" />');
@@ -65,15 +67,16 @@ for (const u of list) {
   const src = rewrite(fs.readFileSync(file, "utf8"), "").replace(/<style id="wx-crit"><\/style>\n/, "");
   const undo = src.replace(/<link rel="preload" href="([^"]+)" as="style" onload="[^"]*" \/><noscript>.*?<\/noscript>/g, '<link rel="stylesheet" href="$1" />');
   fs.writeFileSync(file, undo);
-  let css = "";
+  let css = "", h1w = "";
   for (const vp of [{ width: 412, height: 900 }, { width: 1366, height: 900 }]) {
     await page.setViewport(vp);
     await page.goto(BASE + u, { waitUntil: "load", timeout: 60000 });
     await new Promise((r) => setTimeout(r, 300));
     const c = await page.evaluate(extract);
     if (c.length > css.length) css = c;
+    h1w = h1w || await page.evaluate(() => { const h = document.querySelector("h1"); if (!h) return ""; const w = getComputedStyle(h).fontWeight; return ["500","600","700"].includes(w) ? w : ""; });
   }
-  fs.writeFileSync(file, rewrite(undo, css));
+  fs.writeFileSync(file, rewrite(undo, css, h1w));
   total += css.length;
   console.log(u, Math.round(css.length / 1024) + "KB");
 }

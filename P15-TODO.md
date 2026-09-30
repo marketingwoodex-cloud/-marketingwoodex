@@ -24,13 +24,13 @@ Legend: [x] done · [~] in progress · [ ] pending
 - [x] C4. Heading order + image alt gaps
 - [x] C5. Re-score: Home, Renovation, Insights, Kitchen, Contact, a city page, a blog post
 
-## D. Final speed pass
-- [~] D1. Lighthouse on one page of every template (service, city, house-size, blog, estimator)
-- [ ] D2. Fix any page under 90 (mobile)
-- [ ] D3. Desktop check (expected 95+)
+## D. Final speed pass (done — mobile 91–97 all templates, desktop 98–99, a11y 97–100)
+- [x] D1. Lighthouse on one page of every template (service, city, house-size, blog, estimator)
+- [x] D2. Fix any page under 90 (mobile)
+- [x] D3. Desktop check (expected 95+)
 
 ## E. Admin Speed dashboard
-- [ ] E1. New admin page "Speed": choose page → run Google PageSpeed (mobile + desktop)
+- [~] E1. New admin page "Speed": choose page → run Google PageSpeed (mobile + desktop)
 - [ ] E2. Show scores, FCP / LCP / TBT / CLS and top 5 suggestions
 - [ ] E3. Save history per page (reuse `health_psi` from Site health), optional PSI API key in settings
 - [ ] E4. "Test all key pages" button + table
