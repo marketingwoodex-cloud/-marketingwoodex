@@ -523,3 +523,17 @@ table.tbl.lp td.empty:before{content:"";display:block;width:44px;height:44px;mar
 table.tbl.lp tbody tr:has(td.empty):hover{background:transparent}
 @media(max-width:720px){#view .grid.kpis{grid-template-columns:1fr 1fr!important;gap:10px}#view .grid.kpis .card.kpi{padding:14px}#view .grid.kpis .kpi-ic{display:none}#view .grid.kpis .kpi-row b{font-size:20px}#view .grid.kpis .kpi-row{flex-wrap:wrap;gap:4px}#view .ph .toolbar .btn{padding:8px 10px;font-size:13px}}
 @media(max-width:720px){#view .card-b select,#view .toolbar select{flex:1 1 45%}}
+/* ===== P16 3.5 integrations grid ===== */
+#ig .ig-head{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-bottom:14px}#ig .ig-head h3{margin:0;font-size:18px}#ig .ig-head p{margin:2px 0 0;font-size:13px}
+.ig-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px}
+.ig-tile{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:4px;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;cursor:pointer;font:inherit;color:inherit;transition:border-color .2s,box-shadow .2s,transform .2s}
+.ig-tile:hover,.ig-tile.sel{border-color:#b8956a;box-shadow:0 8px 24px rgba(12,22,40,.07);transform:translateY(-1px)}
+.ig-ic{display:grid;place-items:center;width:42px;height:42px;border-radius:11px;background:color-mix(in srgb,var(--c) 12%,transparent);color:var(--c);margin-bottom:8px}.ig-ic svg{width:21px;height:21px}
+.ig-cat{position:absolute;top:18px;right:18px;font-size:11px;color:var(--txt2);background:var(--bg,#f5f5f7);border-radius:999px;padding:3px 9px}
+.ig-tile b{font-size:15px;color:var(--txt)}.ig-tile small{color:var(--txt2);font-size:12.5px;line-height:1.45;min-height:36px}
+.ig-st{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--txt2);margin-top:8px}.ig-st i{width:8px;height:8px;border-radius:50%;background:#d0d5dd}.ig-st.on{color:#027a48}.ig-st.on i{background:#12b76a;box-shadow:0 0 0 3px rgba(18,183,106,.15)}
+.ig-go{position:absolute;right:18px;bottom:18px;font-size:12.5px;font-weight:600;color:#8a6a43}
+.ig-back{display:flex;align-items:center;gap:12px;margin:22px 0 12px}
+.st-grid.ig-one{display:block}.st-grid.ig-one>.st-card{display:none}.st-grid.ig-one>.st-card.ig-show{display:block;max-width:760px}
+@media(max-width:520px){.ig-grid{grid-template-columns:1fr}.ig-tile small{min-height:0}}
+.ig-ic svg{fill:none!important;stroke:currentColor;stroke-width:2}
