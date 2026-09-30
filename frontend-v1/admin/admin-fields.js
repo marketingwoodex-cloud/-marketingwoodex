@@ -182,6 +182,7 @@
   W.VIEWS.services = function (el) {
     el.innerHTML = head("Service & site pages", "Service pages", "") + '<div class="card"><div class="card-h"><h3>Pages</h3><input id="sv-q" class="sm-in" placeholder="Search…"></div><div class="tbl-wrap"><table class="tbl"><thead><tr><th>Page</th><th>Address</th><th>Type</th><th></th></tr></thead><tbody id="sv-rows"><tr><td colspan="4" class="muted">Loading…</td></tr></tbody></table></div></div>';
     Promise.all([bapi("pages"), kinds()]).then(function (rs) {
+      if (!rs[0].ok) { $("#sv-rows").innerHTML = '<tr><td colspan="4"><b style="color:#d92d20">Could not load pages:</b> ' + esc(rs[0].error || "no answer") + ' <button class="btn sm" id="sv-retry">Retry</button> <a href="#/system">System check</a></td></tr>'; $("#sv-retry").onclick = function () { W.VIEWS.services(el); }; return; }
       var pages = (rs[0].pages || []).filter(function (p) { var k = rs[1][p.path]; return k !== "city" && !/^(insights|projects)\//.test(p.path) && p.path !== "404.html"; });
       function draw() {
         var q = $("#sv-q").value.toLowerCase();
@@ -214,6 +215,7 @@
       kindsCache = null;
       Promise.all([bapi("pages"), kinds(), api("cms_list", { type: "city" })]).then(function (rs) {
         aiReady = rs[2].aiReady;
+        if (!rs[0].ok) { $("#ct-rows").innerHTML = '<tr><td colspan="4"><b style="color:#d92d20">Could not load city pages:</b> ' + esc(rs[0].error || "no answer") + ' <button class="btn sm" id="ct-retry">Retry</button> <a href="#/system">System check</a></td></tr>'; $("#ct-retry").onclick = function () { W.VIEWS.cities ? W.VIEWS.cities(el) : location.reload(); }; return; }
         live = (rs[0].pages || []).filter(function (p) { return rs[1][p.path] === "city"; }).map(function (p) { return { name: cityName(p), slug: p.path.split("/")[0], path: p.path, url: p.url }; });
         drafts = (rs[2].items || []).filter(function (x) { return !x.rel; });
         $("#ct-rows").innerHTML = drafts.map(function (d) { return '<tr class="click" data-d="' + d.id + '"><td><b>' + esc(d.title) + '</b></td><td><span class="badge warn">Draft</span></td><td class="muted">/' + esc(d.slug) + '/</td><td class="r"><span class="btn sm">Review</span></td></tr>'; }).join("") +
@@ -223,9 +225,10 @@
     }
     load();
     $("#ct-rows").onclick = function (e) { var tr = e.target.closest("tr"); if (!tr) return; if (tr.dataset.d) location.hash = "#/citydraft/" + tr.dataset.d; else if (tr.dataset.p) location.hash = "#/fields/" + encodeURIComponent(tr.dataset.p); };
-    function srcOptions() { var def = live.find(function (c) { return c.slug !== "lahore"; }) || live[0] || {}; return live.map(function (c) { return '<option value="' + esc(c.slug) + '"' + (c.slug === def.slug ? " selected" : "") + ">" + esc(c.name) + "</option>"; }).join(""); }
+    function srcOptions() { if (!live.length) return '<option value="">No city pages loaded — press Retry on the list or check System check</option>'; var def = live.find(function (c) { return c.slug !== "lahore"; }) || live[0] || {}; return live.map(function (c) { return '<option value="' + esc(c.slug) + '"' + (c.slug === def.slug ? " selected" : "") + ">" + esc(c.name) + "</option>"; }).join(""); }
     function create(name, from, useAi, progress) {
       var to = { name: titleCase(name), slug: slugify(name) }, src = live.find(function (c) { return c.slug === from; });
+      if (!src) return Promise.reject(new Error("Choose a city to copy from (the list is empty — see System check)"));
       if (!to.slug) return Promise.reject(new Error("Enter a city name"));
       if (live.some(function (c) { return c.slug === to.slug; })) return Promise.reject(new Error(to.name + " already has a page"));
       return bapi("load", { path: src.path }).then(function (r) {

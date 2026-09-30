@@ -240,7 +240,7 @@
     };
 
     bapi("load", { path: "index.html" }).then(function (r) {
-      if (!r.ok) return (body.innerHTML = '<div class="empty">' + A(r.error || "Could not load") + "</div>");
+      if (!r.ok) { body.innerHTML = '<div class="empty"><b style="color:#d92d20">' + A(r.error || "Could not load") + '</b><p><button class="btn" id="gl-retry">Retry</button> <a class="btn" href="#/system">Open System check</a></p></div>'; body.querySelector("#gl-retry").onclick = function () { W.VIEWS.global(el); }; return; }
       D = parse(r.html); if (!D) return (body.innerHTML = '<div class="empty">This site’s header/footer structure was not found.</div>');
       orig = JSON.stringify(D);
       var start = location.hash.split("/")[2]; if (/^(header|mega|footer|versions)$/.test(start || "")) return setTab(start);
