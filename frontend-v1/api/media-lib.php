@@ -44,7 +44,7 @@ function a7_now(): string { return gmdate('Y-m-d H:i:s'); }
 
 // ---------------------------------------------------------------- backups
 function a7_bk_list(): array {
-    $out = []; foreach (glob(SBK_DIR . '/*.zip') ?: [] as $f) { $n = basename($f); if (!preg_match('~^(daily|weekly|full|safety)-\d{8}-\d{6}\.zip$~', $n)) continue; $out[] = ['name' => $n, 'kind' => explode('-', $n)[0], 'size' => filesize($f), 'at' => gmdate('Y-m-d H:i:s', filemtime($f))]; }
+    $out = []; foreach (glob(SBK_DIR . '/*.zip') ?: [] as $f) { $n = basename($f); if (!preg_match('~^(daily|weekly|full|safety|upload)-\d{8}-\d{6}\.zip$~', $n)) continue; $out[] = ['name' => $n, 'kind' => explode('-', $n)[0], 'size' => filesize($f), 'at' => gmdate('Y-m-d H:i:s', filemtime($f))]; }
     usort($out, fn($a, $b) => strcmp($b['name'], $a['name'])); return $out;
 }
 function a7_backup(string $kind, ?array $u = null): array {
@@ -60,11 +60,9 @@ function a7_backup(string $kind, ?array $u = null): array {
     foreach (scandir(PRIVATE_DIR) ?: [] as $f) if ($f[0] !== '.' && !preg_match('~^(backups|site-backups|media-trash|trash)$~', $f)) $add('_private/' . $f);
     if ($kind !== 'daily') foreach (IMG_DIRS as $d) $add($d);
     // MySQL dump (all wx_ tables) as JSON
-    $dump = [];
-    foreach (q("SHOW TABLES LIKE 'wx\\_%'")->fetchAll(PDO::FETCH_NUM) as $t) { $dump[$t[0]] = q('SELECT * FROM `' . $t[0] . '`')->fetchAll(); }
-    $z->addFromString('db-dump.json', json_encode($dump, JSON_UNESCAPED_UNICODE));
+    $z->addFromString('db-dump.json', json_encode(a7_db_dump(), JSON_UNESCAPED_UNICODE));
     $z->close();
-    foreach (['daily' => 7, 'weekly' => 4, 'full' => 10, 'safety' => 3] as $k => $keep) { $fs = glob(SBK_DIR . '/' . $k . '-*.zip') ?: []; sort($fs); while (count($fs) > $keep) @unlink(array_shift($fs)); }
+    foreach (['daily' => 7, 'weekly' => 4, 'full' => 10, 'safety' => 3, 'upload' => 5] as $k => $keep) { $fs = glob(SBK_DIR . '/' . $k . '-*.zip') ?: []; sort($fs); while (count($fs) > $keep) @unlink(array_shift($fs)); }
     return ['name' => $name, 'size' => filesize(SBK_DIR . '/' . $name), 'by' => $u['name'] ?? 'cron'];
 }
 function a7_backup_auto(): array {
@@ -72,26 +70,54 @@ function a7_backup_auto(): array {
     $made = []; if ($age('daily') > 20) $made[] = a7_backup('daily')['name']; if ($age('weekly') > 24 * 6.5) $made[] = a7_backup('weekly')['name'];
     $h = jread(HEALTH_FILE); $h['lastCron'] = a7_now(); jwrite(HEALTH_FILE, $h); return $made;
 }
+function a7_db_dump(): array { $d = []; foreach (q("SHOW TABLES LIKE 'wx\\_%'")->fetchAll(PDO::FETCH_NUM) as $t) $d[$t[0]] = q('SELECT * FROM `' . $t[0] . '`')->fetchAll(); return $d; }
+function a7_db_restore(array $dump): int {
+    $have = array_map(fn($r) => $r[0], q("SHOW TABLES LIKE 'wx\\_%'")->fetchAll(PDO::FETCH_NUM)); $n = 0;
+    $pdo = db(); $pdo->beginTransaction();
+    try {
+        foreach ($dump as $table => $rows) {
+            if (!is_string($table) || !preg_match('~^wx_[a-z0-9_]+$~', $table) || $table === 'wx_throttle' || !in_array($table, $have, true) || !is_array($rows)) continue;
+            $pdo->exec('DELETE FROM `' . $table . '`');
+            foreach ($rows as $row) { if (!is_array($row) || !$row) continue; $cols = array_keys($row); foreach ($cols as $c) if (!preg_match('~^[a-z0-9_]+$~i', (string)$c)) continue 2; $pdo->prepare('INSERT INTO `' . $table . '` (`' . implode('`,`', $cols) . '`) VALUES (' . implode(',', array_fill(0, count($cols), '?')) . ')')->execute(array_values($row)); $n++; }
+        }
+        $pdo->commit();
+    } catch (Throwable $e) { $pdo->rollBack(); throw $e; }
+    return $n;
+}
+/** Phase 7 — raw uploads / downloads: backup_up (zip body), db_dl (JSON download), db_up (JSON body). Owner/Admin only. */
+function media_raw(string $action): void {
+    $u = current_user(); if (!$u || !in_array($u['role'], ['owner', 'admin'], true)) fail('You do not have permission for this', 403);
+    if ($action === 'db_dl') { $j = json_encode(['woodexDb' => 1, 'exported' => a7_now(), 'tables' => a7_db_dump()], JSON_UNESCAPED_UNICODE); log_act($u, 'db.export', strlen($j) . ' bytes'); header('Content-Type: application/json'); header('Content-Disposition: attachment; filename="woodex-database-' . gmdate('Ymd-His') . '.json"'); header('Cache-Control: no-store'); echo $j; exit; }
+    @set_time_limit(300); $raw = (string)file_get_contents('php://input'); if ($raw === '') fail('The file was empty or too large for the server upload limit');
+    if ($action === 'backup_up') {
+        if (!class_exists('ZipArchive')) fail('The ZipArchive PHP extension is not enabled on this hosting');
+        if (substr($raw, 0, 2) !== 'PK') fail('That is not a .zip backup file');
+        if (!is_dir(SBK_DIR)) mkdir(SBK_DIR, 0750, true);
+        $name = 'upload-' . gmdate('Ymd-His') . '.zip'; $f = SBK_DIR . '/' . $name; file_put_contents($f, $raw, LOCK_EX);
+        $z = new ZipArchive(); $ok = $z->open($f) === true; $valid = false;
+        if ($ok) { for ($i = 0; $i < $z->numFiles; $i++) { $n = $z->getNameIndex($i); if (strpos($n, '..') !== false || $n[0] === '/') { $valid = false; break; } if ($n === 'db-dump.json' || $n === 'index.html') $valid = true; } $z->close(); }
+        if (!$ok || !$valid) { @unlink($f); fail('This zip is not a Woodex backup (it must contain index.html or db-dump.json)'); }
+        foreach (['upload' => 5] as $k => $keep) { $fs = glob(SBK_DIR . '/' . $k . '-*.zip') ?: []; sort($fs); while (count($fs) > $keep) @unlink(array_shift($fs)); }
+        log_act($u, 'backup.upload', $name); out(['ok' => true, 'name' => $name, 'size' => strlen($raw)]);
+    }
+    if ($action === 'db_up') {
+        $j = json_decode($raw, true); $tables = is_array($j) ? ($j['tables'] ?? $j) : null;
+        if (!is_array($tables) || !array_filter(array_keys($tables), fn($k) => is_string($k) && str_starts_with($k, 'wx_'))) fail('This is not a Woodex database file');
+        $s = a7_backup('safety', $u); $n = a7_db_restore($tables);
+        log_act($u, 'db.import', $n . ' rows (safety copy ' . $s['name'] . ')'); out(['ok' => true, 'rows' => $n, 'safety' => $s['name']]);
+    }
+    fail('Unknown action');
+}
 function a7_restore(string $file): void {
     @set_time_limit(300); $z = new ZipArchive(); if ($z->open($file) !== true) fail('Could not open the backup');
     $root = realpath(ROOT_DIR);
     for ($i = 0; $i < $z->numFiles; $i++) {
         $n = $z->getNameIndex($i); if ($n === 'db-dump.json' || substr($n, -1) === '/') continue;
-        if (strpos($n, '..') !== false || $n[0] === '/' || preg_match('~^(api|admin|builder)/~', $n)) continue; // never overwrite code
+        if (strpos($n, '..') !== false || $n[0] === '/' || preg_match('~^(api|admin|builder)/~', $n) || preg_match('~(\.(php\d?|phtml|phar|pht|cgi|pl|py|sh|exe)$|(^|/)\.user\.ini$)~i', $n)) continue; // never write code (uploaded backups can't plant scripts)
         $dst = $root . '/' . $n; if (!is_dir(dirname($dst))) mkdir(dirname($dst), 0755, true); file_put_contents($dst, $z->getFromIndex($i), LOCK_EX);
     }
     $dump = json_decode((string)$z->getFromName('db-dump.json'), true); $z->close();
-    if (is_array($dump)) {
-        $pdo = db(); $pdo->beginTransaction();
-        try {
-            foreach ($dump as $table => $rows) {
-                if (!preg_match('~^wx_[a-z0-9_]+$~', $table) || $table === 'wx_throttle') continue;
-                $pdo->exec('DELETE FROM `' . $table . '`');
-                foreach ($rows as $row) { $cols = array_keys($row); $pdo->prepare('INSERT INTO `' . $table . '` (`' . implode('`,`', $cols) . '`) VALUES (' . implode(',', array_fill(0, count($cols), '?')) . ')')->execute(array_values($row)); }
-            }
-            $pdo->commit();
-        } catch (Throwable $e) { $pdo->rollBack(); throw $e; }
-    }
+    if (is_array($dump)) a7_db_restore($dump);
 }
 
 // ---------------------------------------------------------------- health

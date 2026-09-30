@@ -212,6 +212,7 @@ $action = (string)($in['action'] ?? ($_GET['action'] ?? 'status'));
 if ($_SERVER['REQUEST_METHOD'] !== 'POST' && $action !== 'status' && $action !== 'cron' && $action !== 'backup_dl') fail('POST required', 405);
 if ($action === 'cron') { $n = 0; $bk = []; try { $n = cms_tick(); } catch (Throwable $e) { error_log('cron: ' . $e->getMessage()); } try { $bk = a7_backup_auto(); } catch (Throwable $e) { error_log('backup: ' . $e->getMessage()); } out(['ok' => true, 'published' => $n, 'backups' => $bk]); }
 if ($action === 'backup_dl') media_download();
+if (in_array($action, ['backup_up', 'db_dl', 'db_up'], true)) media_raw($action);
 
 try {
 if ($action !== "setup" && $action !== "status") { try { cms_tick(); } catch (Throwable $e) { error_log("cms_tick: " . $e->getMessage()); } }

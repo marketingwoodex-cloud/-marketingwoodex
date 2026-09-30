@@ -718,7 +718,7 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
     for (const k of Object.keys(keep)) { const fsx = fs.readdirSync(SBK).filter((f) => f.startsWith(k + "-")).sort(); while (fsx.length > keep[k]) fs.unlinkSync(path.join(SBK, fsx.shift())); }
     return { name, size: fs.statSync(path.join(SBK, name)).size, by: u ? u.name : "cron" };
   }
-  const bkList = () => (fs.existsSync(SBK) ? fs.readdirSync(SBK).filter((f) => /^(daily|weekly|full|safety)-\d{8}-\d{6}\.(tar\.gz|zip)$/.test(f)).sort().reverse().map((f) => { const s = fs.statSync(path.join(SBK, f)); return { name: f, kind: f.split("-")[0], size: s.size, at: s.mtime.toISOString().slice(0, 19).replace("T", " ") }; }) : []);
+  const bkList = () => (fs.existsSync(SBK) ? fs.readdirSync(SBK).filter((f) => /^(daily|weekly|full|safety|upload)-\d{8}-\d{6}\.(tar\.gz|zip)$/.test(f)).sort().reverse().map((f) => { const s = fs.statSync(path.join(SBK, f)); return { name: f, kind: f.split("-")[0], size: s.size, at: s.mtime.toISOString().slice(0, 19).replace("T", " ") }; }) : []);
   function backupAuto() {
     const l = bkList(), age = (k) => { const b = l.find((x) => x.kind === k); return b ? (Date.now() - fs.statSync(path.join(SBK, b.name)).mtimeMs) / 36e5 : 1e9; };
     const made = []; if (age("daily") > 20) made.push(backupOne("daily").name); if (age("weekly") > 24 * 6.5) made.push(backupOne("weekly").name);
@@ -843,6 +843,27 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
     return null;
   }
   // raw file download for backups (called by the preview server before JSON handling)
+  /* Phase 7 — raw: backup_up (tar.gz body), db_dl (JSON download), db_up (JSON body). Mirrors api/media-lib.php media_raw(). */
+  function rawAction(req, action, body) {
+    const db = load(); const u = db && current(db, req);
+    const J = (st, o) => ({ status: st, type: "application/json; charset=utf-8", body: JSON.stringify(o) });
+    if (!u || !["owner", "admin"].includes(u.role)) return J(403, { ok: false, error: "You do not have permission for this" });
+    const stamp = new Date().toISOString().replace(/[-:]/g, "").replace("T", "-").slice(0, 15);
+    if (action === "db_dl") return { status: 200, type: "application/json", name: "woodex-database-" + stamp + ".json", body: JSON.stringify({ woodexDb: 1, exported: new Date().toISOString(), tables: db }) };
+    if (!body || !body.length) return J(400, { ok: false, error: "The file was empty" });
+    if (action === "backup_up") {
+      if (!(body[0] === 0x1f && body[1] === 0x8b) && !(body[0] === 0x50 && body[1] === 0x4b)) return J(400, { ok: false, error: "That is not a backup file" });
+      fs.mkdirSync(SBK, { recursive: true }); const name = "upload-" + stamp + (body[0] === 0x1f ? ".tar.gz" : ".zip"); fs.writeFileSync(path.join(SBK, name), body);
+      log(db, u, "backup.upload", name, ""); save(db); return J(200, { ok: true, name, size: body.length });
+    }
+    if (action === "db_up") {
+      let j; try { j = JSON.parse(body.toString()); } catch { return J(400, { ok: false, error: "This is not a Woodex database file" }); }
+      const t = j && (j.tables || j); if (!t || !Array.isArray(t.users) || !t.users.length) return J(400, { ok: false, error: "This is not a Woodex database file" });
+      const safety = backupOne("safety", u); save(t); const d2 = load(); log(d2, u, "db.import", "database (safety copy " + safety.name + ")", ""); save(d2);
+      return J(200, { ok: true, rows: Object.keys(t).length, safety: safety.name });
+    }
+    return J(400, { ok: false, error: "Unknown action" });
+  }
   function backupFile(req, name) { const db = load(); const u = db && current(db, req); if (!u || !["owner", "admin"].includes(u.role)) return null; const b = bkList().find((x) => x.name === name); return b ? path.join(SBK, b.name) : null; }
 
 
@@ -1015,7 +1036,7 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
     const db = load(), u = db && db.users.find((x) => x.id === +m[2]);
     return !!(u && u.active && canBuild(u) && (u.sessions || []).some((x) => x.sid === m[3] && x.exp > Date.now() / 1000));
   };
-  adminApi.forms = formsApi; adminApi.backupFile = backupFile;
+  adminApi.forms = formsApi; adminApi.backupFile = backupFile; adminApi.rawAction = rawAction;
   adminApi.publicGuard = function (rel) {
     // preview-only: mimic the managed .htaccess rules (redirects, drafts 404)
     const url = "/" + rel.replace(/index\.html$/, ""), r = jr(REDIR, []).find((x) => x.from === url || x.from === url + "/");

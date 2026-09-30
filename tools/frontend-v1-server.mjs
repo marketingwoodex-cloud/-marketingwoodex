@@ -325,6 +325,12 @@ http.createServer(async (req, res) => {
       return res.end(JSON.stringify(out));
     }
 
+    if (p === "/api/admin.php" && ["backup_up", "db_dl", "db_up"].includes(url.searchParams.get("action"))) {
+      const chunks = []; for await (const c of req) chunks.push(c);
+      const r = adminApi.rawAction(req, url.searchParams.get("action"), Buffer.concat(chunks));
+      res.writeHead(r.status, Object.assign({ "Content-Type": r.type, "Cache-Control": "no-store" }, r.name ? { "Content-Disposition": 'attachment; filename="' + r.name + '"' } : {}));
+      return res.end(r.body);
+    }
     if (p === "/api/admin.php" && url.searchParams.get("action") === "backup_dl") {
       const f = adminApi.backupFile(req, String(url.searchParams.get("name") || ""));
       if (!f) { res.writeHead(403); return res.end("Forbidden"); }
