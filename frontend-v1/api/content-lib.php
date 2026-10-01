@@ -102,7 +102,7 @@ function content_actions(string $action, array $in): bool {
             need($ED); $kinds = [];
             $it = new RecursiveIteratorIterator(new RecursiveCallbackFilterIterator(new RecursiveDirectoryIterator(ROOT_DIR, FilesystemIterator::SKIP_DOTS), function ($f) { return !($f->isDir() && dirname($f->getPathname()) === ROOT_DIR && preg_match('~^(_private|builder|admin|api|assets|node_modules)$~', $f->getFilename())); }));
             foreach ($it as $f) { if (substr($f->getFilename(), -5) !== '.html') continue; $rel = str_replace('\\', '/', substr($f->getPathname(), strlen(ROOT_DIR) + 1)); if (!cms_safe_rel($rel)) continue;
-                $h = (string)file_get_contents($f->getPathname(), false, null, 0, 12000); $kinds[$rel] = preg_match('~<body[^>]*data-page="([^"]*)"~i', $h, $m) ? $m[1] : ''; }
+                $h = (string)file_get_contents($f->getPathname(), false, null, 0, 400000); $kinds[$rel] = preg_match('~<body[^>]*data-page="([^"]*)"~i', $h, $m) ? $m[1] : ''; }
             out(['ok' => true, 'kinds' => $kinds]);
         case 'cms_sitemap_add':
             need($ED); $rel = (string)($in['rel'] ?? ''); if (!cms_safe_rel($rel) || !is_file(ROOT_DIR . '/' . $rel)) fail('Page not found'); sitemap_add($rel); out(['ok' => true]);

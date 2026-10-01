@@ -189,7 +189,7 @@ function publish_rules(): void {
     $x = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n";
     foreach (all_pages() as $rel) {
         if ($rel === '404.html' || in_array($meta[$rel]['status'] ?? 'published', ['draft', 'hidden'], true)) continue;
-        $head = (string)file_get_contents(ROOT_DIR . '/' . $rel, false, null, 0, 6000);
+        $head = (string)file_get_contents(ROOT_DIR . '/' . $rel, false, null, 0, 400000);
         if (($m = find_meta($head, 'name', 'robots')) && stripos(tag_attr($m, 'content'), 'noindex') !== false) continue;
         $x .= '  <url><loc>' . $base . url_of($rel) . '</loc><lastmod>' . date('Y-m-d', filemtime(ROOT_DIR . '/' . $rel)) . "</lastmod></url>\n";
     }
