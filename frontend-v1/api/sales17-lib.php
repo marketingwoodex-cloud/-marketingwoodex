@@ -78,6 +78,10 @@ function s17_client_status(array $invs, array $projs, array $leads): string {
 const S17_IMODES = ['' => 'Standard', 'after_delivery' => 'Payment after delivery'];
 /** Next number in a series: WF- (furniture, own counter from 10050) or the main WI- series shared with quotations. */
 function s17_inv_no(string $line): string {
+    for ($k = 0; $k < 500; $k++) { $no = s17_inv_no1($line); if (!q('SELECT 1 FROM wx_invoices WHERE no=?', [$no])->fetchColumn() && !q('SELECT 1 FROM wx_quotes WHERE data LIKE ?', ['%"no":"' . $no . '"%'])->fetchColumn()) return $no; }
+    fail('Could not find a free invoice number; set the next number in Company settings');
+}
+function s17_inv_no1(string $line): string {
     if ($line !== 'furniture') return next_no();
     $fh = fopen(COMPANY_FILE . '.lock', 'c'); flock($fh, LOCK_EX);
     $c = jread(COMPANY_FILE); $n = max(10050, (int)($c['wfNext'] ?? 10050)); $c['wfNext'] = $n + 1; jwrite(COMPANY_FILE, $c);

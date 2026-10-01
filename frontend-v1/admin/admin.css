@@ -676,3 +676,4 @@ table.tbl.lp tbody tr:has(td.empty):hover{background:transparent}
 #it-st small{opacity:.7;margin-left:3px}
 @media(max-width:1100px){.it-months{grid-template-columns:repeat(7,1fr)}.it-tot{grid-template-columns:repeat(2,1fr)}.it-t{border-bottom:1px solid var(--line)}}
 @media(max-width:600px){.it-months{grid-template-columns:repeat(4,1fr)}}
+@media(max-width:600px){.it-months{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:4px}.it-mo{flex:0 0 70px;scroll-snap-align:start}.it-mo.all{flex-basis:96px}}
