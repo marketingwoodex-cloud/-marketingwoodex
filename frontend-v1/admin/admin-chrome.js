@@ -34,8 +34,8 @@
     if (d("hBg")) c.push(H + " .mega-menu,html body:not(#x) .mobile-panel{background:" + rgba(G.hBg, Math.max(92, G.hAlpha)) + "}");
     if (d("hText")) c.push(H + " .mega-menu a,html body:not(#x) .mobile-panel a{color:" + G.hText + "}" + H + " .mega-number{color:" + rgba(G.hText, 55) + "}");
     if (d("hText")) c.push(H + " .desktop-nav>a," + H + " .nav-services-trigger," + H + " .brand-wordmark," + H + " .brand-wordmark small{color:" + G.hText + "}" + H + " .menu-toggle span,"+ H + " .menu-toggle span:before," + H + " .menu-toggle span:after{background:" + G.hText + "}" + H + " .brand-divider{background:" + rgba(G.hText, 30) + "}");
-    if (G.ctaStyle === "outline") c.push(H + " .header-cta{background:transparent;color:" + G.hAccent + ";border:1.5px solid " + G.hAccent + "}");
-    else if (d("hAccent") || d("hAccentText")) c.push(H + " .header-cta{background:" + G.hAccent + ";border-color:" + G.hAccent + ";color:" + G.hAccentText + "}");
+    if (G.ctaStyle === "outline") c.push(H + " .header-cta,html body:not(#x) #header-cta{background:transparent!important;color:" + G.hAccent + "!important;border:1.5px solid " + G.hAccent + "!important}");
+    else if (d("hAccent") || d("hAccentText")) c.push(H + " .header-cta,html body:not(#x) #header-cta{background:" + G.hAccent + "!important;border-color:" + G.hAccent + "!important;color:" + G.hAccentText + "!important}");
     if (!G.ctaShow) c.push(H + " .header-cta{display:none}");
     if (G.logoTone === "light") c.push(H + " .brand-mark{filter:brightness(0) invert(1)}");
     if (!G.word) c.push(H + " .brand-divider," + H + " .brand-wordmark{display:none}");
