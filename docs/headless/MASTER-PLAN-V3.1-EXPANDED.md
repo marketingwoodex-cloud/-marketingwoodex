@@ -51,6 +51,25 @@ public_html → ~/current/public ← one-time setup (rm -rf public_html; ln -s �
 **Free CI note:** GitHub Actions free minutes are enough for this size; check current quota for private repos in Phase 0.
 **Phase 0 exit gate:** push to `develop` → staging updates itself; a deliberately broken migration triggers automatic rollback; production dispatch works with a no-op release.
 
+### 2.1 Hostinger decision ladder (decided 2026-10-02 after reviewing the "`.htaccess` into `public_html`" guides)
+Test the options **in this order in Phase 0** (half a day); take the first one that works on your plan.
+
+| Step | Method | Use when | Verdict |
+|---|---|---|---|
+| **1** | **Actions → release folders → symlink `public_html → current/public`** (§2) | SSH is on and symlinks are allowed | **Target setup.** App, `.env`, `vendor` are outside the web root. Fast rollback |
+| **2** | Actions → app outside `public_html`; **copy `public/` into `public_html`** and edit its `index.php` paths (`../current/...`) | SSH on, symlink to `public_html` blocked | Safe fallback. Deploy script does the copy. Slightly slower, no atomic switch |
+| **3** | Move to **Hostinger VPS** (KVM 2, about $15/mo; SSH port 22, real web root, queue workers) | Shared plan has no SSH or blocks both of the above | Needed anyway when real clients arrive |
+| **4** | `.htaccess` rewrite (`RewriteRule ^(.*)$ public/$1 [L]`) with the whole app in `public_html` | **Only for a throw-away demo** | **Not for production** |
+
+**Why not the `.htaccess` method (guide 1 and 2):**
+- It works, but security depends on **one file**. If a deploy replaces it or the rewrite engine is off, `storage/logs`, `composer.json`, `config/*` and `.env` can be downloaded.
+- Hostinger's Git deploy **replaces files in the deploy directory and runs no build** ([docs](https://docs.hostinger.com/websites/git)). So `vendor/` and `public/build/` would have to be committed to git or built by hand on the server.
+- "Run `composer install` on the server" is fragile on shared hosting (memory/time limits, PHP version mismatch). Our CI builds `vendor/` and the Vite assets once, with PHP 8.3, and ships the result.
+- Manual zip upload has no tests, no rollback and no history.
+
+**What the guides got right (already in the plan):** Node is not needed on the server (we build in GitHub Actions) · no daemons: **cron every minute runs `schedule:run`** and `queue:work --stop-when-empty` (DB queue) · root/sudo is not available · local and server **PHP version must match (8.3)**.
+**If the `.htaccess` fallback is ever used for a demo:** also add `Options -Indexes` and deny rules for dotfiles, `.env`, `*.log`, `composer.*`; keep `storage/` and `vendor/` unreachable; test `/.env`, `/storage/logs/laravel.log`, `/composer.json` all return 403/404 **after every deploy** (CI smoke test).
+
 ---
 
 ## 3. Multi-frontend API contract
