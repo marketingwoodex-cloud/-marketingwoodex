@@ -5,7 +5,7 @@ grep -q "md-stats" admin/admin.css || cat >> admin/admin.css <<'E'
 .md-stats{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-bottom:14px}
 .md-stat{display:flex;gap:12px;align-items:center;padding:14px 16px;text-align:left;cursor:pointer;font:inherit;color:inherit;border:1px solid var(--line);transition:border-color .15s,box-shadow .15s}
 .md-stat:disabled{cursor:default}.md-stat:not(:disabled):hover{border-color:#b8956a}.md-stat.on{border-color:#b8956a;box-shadow:0 0 0 3px rgba(184,149,106,.18)}
-.md-stat svg{width:38px;height:38px;padding:9px;border-radius:10px;background:rgba(184,149,106,.14);color:#8a6a43;flex:none}
+.md-stat>i{display:grid;place-items:center;width:40px;height:40px;border-radius:10px;background:rgba(184,149,106,.14);color:#8a6a43;flex:none}.md-stat>i svg{width:20px;height:20px}
 .md-stat span{display:flex;flex-direction:column;min-width:0}.md-stat small{color:var(--muted,#667085);font-size:12px}.md-stat b{font-size:20px;line-height:1.2}.md-stat em{font-style:normal;font-size:11.5px;color:var(--muted,#667085);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .md-tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.md-tools select{width:auto}.md-view button{padding:6px 9px}.md-view svg{width:16px;height:16px}
 .md-list{padding:0;overflow:auto}.md-tbl td{vertical-align:middle}.md-tbl tr.md-card{cursor:pointer}.md-tbl tr.sel{background:rgba(184,149,106,.1)}

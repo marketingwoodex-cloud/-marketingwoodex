@@ -90,7 +90,6 @@
     $("#md-bmv").onclick = function () {
       var urls = Object.keys(st.sel); modal('<h3>Move ' + urls.length + ' image(s)</h3><p class="muted">Only <b>unused uploads</b> can be moved, so no page ever shows a broken image. Images used on pages stay where they are.</p><label>Folder<select id="mv-to"><option value="">Uploads (main)</option>' + st.folders.map(function (k) { return '<option value="' + esc(k) + '">' + esc(k) + "</option>"; }).join("") + '</select></label><div class="modal-actions"><button class="btn" data-x>Cancel</button><button class="btn pri" id="mv-go">Move</button></div>');
       $("[data-x]").onclick = closeModal;
-      if ($("#dt-crop")) $("#dt-crop").onclick = function () { cropper(f); };
       $("#mv-go").onclick = function () { api("media_move", { urls: urls, folder: $("#mv-to").value }).then(function (r) { if (!r.ok) return toast(r.error, true); st.sel = {}; closeModal(); toast(r.moved.length + " moved" + (r.blocked.length ? ", " + r.blocked.length + " kept (in use or site design)" : ""), !!r.blocked.length); load(); }); };
     };
     $("#md-g").onclick = function (e) {
@@ -163,6 +162,7 @@
         '<div class="modal-actions">' + (isOA() ? '<button type="button" class="btn ghost danger" id="dt-del">' + ic("trash") + "Trash</button>" : "") + (isOA() && f.size > 150 * 1024 && !svg ? '<button type="button" class="btn" id="dt-opt">' + ic("zap") + "Optimise</button>" : "") + '<button type="button" class="btn" data-x>Close</button>' + (svg || /\.gif$/.test(f.name) ? "" : '<button type="button" class="btn" id="dt-crop">' + ic("layout") + 'Crop / resize</button><button type="button" class="btn pri" id="dt-save">Save alt text</button>') + "</div></div></div>", "wide");
       W.fillIcons(document.querySelector("#modal-card"));
       $("[data-x]").onclick = closeModal;
+      if ($("#dt-crop")) $("#dt-crop").onclick = function () { cropper(f); };
       var img = $("#dt-img"); img.onload = function () { $("#dt-dim").textContent = img.naturalWidth + " × " + img.naturalHeight + " px · " + kb(f.size) + " · " + f.folder + " · " + f.mtime.slice(0, 10); };
       $("#dt-copy").onclick = function () { navigator.clipboard && navigator.clipboard.writeText(location.origin + f.url); toast("Copied"); };
       api("cms_list", { type: "faq" }).then(function (r) { if (r.aiReady && $("#dt-ai")) $("#dt-ai").hidden = false; });

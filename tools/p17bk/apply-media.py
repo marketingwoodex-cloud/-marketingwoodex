@@ -67,8 +67,12 @@ ed(J, '''    $("#md-flt").onchange = function () { st.filter = this.value; draw(
 # crop / resize button in detail
 ed(J, ''''<button type="button" class="btn" data-x>Close</button>' + (svg ? "" : '<button type="button" class="btn pri" id="dt-save">Save alt text</button>')''',
 ''''<button type="button" class="btn" data-x>Close</button>' + (svg || /\\.gif$/.test(f.name) ? "" : '<button type="button" class="btn" id="dt-crop">' + ic("layout") + 'Crop / resize</button><button type="button" class="btn pri" id="dt-save">Save alt text</button>')''')
-ed(J, '''      $("[data-x]").onclick = closeModal;
-''', '''      $("[data-x]").onclick = closeModal;
+ed(J, '''        "</div></div></div>", "wide");
+      W.fillIcons(document.querySelector("#modal-card"));
+      $("[data-x]").onclick = closeModal;
+''', '''        "</div></div></div>", "wide");
+      W.fillIcons(document.querySelector("#modal-card"));
+      $("[data-x]").onclick = closeModal;
       if ($("#dt-crop")) $("#dt-crop").onclick = function () { cropper(f); };
 ''')
 # cropper implementation before detail()
