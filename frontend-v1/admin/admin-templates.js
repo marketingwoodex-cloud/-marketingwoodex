@@ -16,7 +16,7 @@
   W.tplReady = function (force) {
     if (cache && !force) return Promise.resolve(cache);
     if (wait && !force) return wait;
-    wait = Promise.all([api("cms_tpl_list", {}), api("cms_list", { type: "faq" })]).then(function (rs) { cache = (rs[0] && rs[0].ok && rs[0].tpls) || []; FAQG = {}; ((rs[1] && rs[1].items) || []).forEach(function (g) { FAQG[g.id] = g; }); wait = null; return cache; }, function () { cache = []; wait = null; return cache; });
+    wait = Promise.all([api("cms_tpl_list", {}), api("cms_list", { type: "faq" })]).then(function (rs) { wait = null; if (!(rs[0] && rs[0].ok)) return []; /* not signed in yet: don't cache */ cache = rs[0].tpls || []; FAQG = {}; ((rs[1] && rs[1].items) || []).forEach(function (g) { FAQG[g.id] = g; }); wait = null; return cache; }, function () { wait = null; return []; });
     return wait;
   };
   var FAQG = {};
@@ -33,7 +33,6 @@
     var L = (cache || []).filter(function (t) { return t.type === type; }), def = L.filter(function (t) { return t.default; })[0];
     return '<option value="">' + (def ? "Default — " + A(def.name) : "Default layout") + "</option>" + L.map(function (t) { return '<option value="' + t.id + '"' + (+cur === t.id ? " selected" : "") + ">" + A(t.name) + "</option>"; }).join("");
   };
-  W.tplReady();
 
   // ------------------------------------------------------------------ helpers
   var cityName = function (title, slug) { var m = /in ([^|<]+?)\s*(\||$)/.exec(title || ""); return m ? m[1].trim() : slug.replace(/-/g, " ").replace(/\b\w/g, function (c) { return c.toUpperCase(); }); };

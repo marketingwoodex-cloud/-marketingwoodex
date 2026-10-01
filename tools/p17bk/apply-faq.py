@@ -3,7 +3,7 @@ import os
 os.chdir(os.path.join(os.path.dirname(__file__), '../..', 'frontend-v1/admin'))
 def ed(p, a, b):
     s = open(p).read()
-    if b in s: return
+    if b in s or (a.startswith('    wait = Promise.all') and 'FAQG = {}' in s) or (a.startswith('    wait = api("cms_tpl_list"') and 'FAQG = {}' in s): return
     assert a in s, (p, a[:70]); open(p, 'w').write(s.replace(a, b, 1))
 C = 'admin-content.js'; T = 'admin-templates.js'
 # 1) groups cache loaded together with templates
