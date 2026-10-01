@@ -79,6 +79,7 @@
       ["redirects", "Redirects", "refresh-cw", "owner,admin"]] },
     { g: "Content", icon: "book-open", id: "content", items: [
       ["blog", "Blog & insights", "book-open", "owner,admin,editor"],
+      ["pagetpl", "Page templates", "layers", "owner,admin,editor", null, "new"],
       ["portfolio", "Portfolio", "image", "owner,admin,editor"],
       ["services", "Service pages", "layers", "owner,admin,editor"],
       ["cities", "City pages", "map-pin", "owner,admin,editor"],

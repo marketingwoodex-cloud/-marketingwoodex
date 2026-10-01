@@ -352,6 +352,7 @@
           '<div class="card card-b"><label>Title<input id="ce-title" value="' + esc(it.title) + '" placeholder="' + (type === "post" ? "What interior design costs in Pakistan" : "A house around a courtyard") + '"></label>' +
           '<div class="g2"><label>Kicker <small>(small line above the title)</small><input id="ce-kicker" value="' + esc(d.kicker) + '"></label><label>Page address<div class="pre-in"><span>/' + t.folder + '/</span><input id="ce-slug" value="' + esc(it.slug) + '"' + (live ? " disabled" : "") + "></div></label></div>" +
           '<label>Standfirst <small>(one sentence under the title)</small><textarea id="ce-dek" rows="2">' + esc(d.dek) + "</textarea></label>" +
+          '<label>Template <small>(layout &amp; sections — manage in Content → Templates)</small><select id="ce-tpl" data-cur="' + esc(d.tpl || "") + '">' + (W.tplOptions ? W.tplOptions(type, d.tpl) : '<option value="">Default layout</option>') + "</select></label>" +
           imgField("ce-hero", (d.hero || {}).src, "Hero image") +
           '<h4 class="sub-h">Details strip</h4><div id="ce-meta">' + kv(d.meta, "meta", "Label", "Value") + '</div><button type="button" class="btn sm" id="ce-meta-add">' + ic("plus") + "Add detail</button></div>" +
           (type === "study" ? '<div class="card card-b"><h4 class="sub-h" style="margin-top:0">Facts box <small>(sidebar)</small></h4><label>Box title<input id="ce-ft" value="' + esc(d.factsTitle || "Study facts") + '"></label><div id="ce-facts">' + kv(d.facts, "fact", "Label", "Text") + '</div><button type="button" class="btn sm" id="ce-fact-add">' + ic("plus") + 'Add fact</button><label style="margin-top:12px">Note under the facts<input id="ce-fn" value="' + esc(d.factsNote) + '" placeholder="Illustrative design study. Not built work, not a client project."></label></div>' : "") +
@@ -376,6 +377,7 @@
       function faqRows(f) { return (f || []).map(function (x, i) { return '<div class="fq" data-i="' + i + '"><input data-k="q" value="' + esc(x.q) + '" placeholder="Question"><textarea data-k="a" rows="2" placeholder="Answer">' + esc(x.a) + '</textarea><button type="button" class="btn sm ghost" data-del>' + ic("x") + "</button></div>"; }).join(""); }
       function collect() {
         it.title = $("#ce-title").value.trim(); if (!it.rel) it.slug = $("#ce-slug").value.trim();
+        if ($("#ce-tpl")) { var tv = +$("#ce-tpl").value || 0; if (tv) d.tpl = tv; else delete d.tpl; }
         d.kicker = $("#ce-kicker").value.trim(); d.dek = $("#ce-dek").value.trim(); d.hero = { src: imgVal("ce-hero") };
         d.meta = $$("#ce-meta .kvr").map(function (r) { return { k: $("[data-k=k]", r).value.trim(), v: $("[data-k=v]", r).value.trim() }; });
         if (type === "study") { d.factsTitle = $("#ce-ft").value.trim(); d.factsNote = $("#ce-fn").value.trim(); d.facts = $$("#ce-facts .kvr").map(function (r) { return { k: $("[data-k=k]", r).value.trim(), v: $("[data-k=v]", r).value.trim() }; }); }
@@ -517,7 +519,7 @@
       }
       function shellHtml() {
         var rel = it.rel || (others.find(function (o) { return o.rel; }) || {}).rel || t.shell;
-        return bapi("load", { path: rel }).then(function (r) { if (!r.ok) throw new Error("Template page could not be loaded: " + (r.error || rel)); return r; });
+        return (W.tplReady ? W.tplReady() : Promise.resolve()).then(function () { return bapi("load", { path: rel }); }).then(function (r) { if (!r.ok) throw new Error("Template page could not be loaded: " + (r.error || rel)); return r; });
       }
       function build() { return shellHtml().then(function (r) { return renderPage(type, it, r.html, others); }); }
       function seoCheck() {
