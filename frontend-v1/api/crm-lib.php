@@ -10,7 +10,8 @@ if (!defined('PRIVATE_DIR')) { http_response_code(404); exit; }
 const CRM_FILE   = PRIVATE_DIR . '/crm.json';
 const OFFERS_FILE = PRIVATE_DIR . '/offers.json';
 const CRM_STAGES = ['new', 'contacted', 'visit', 'quote', 'hold', 'won', 'lost'];
-const CRM_SOURCES = ['contact' => 'Contact form', 'estimator' => 'Cost estimator', 'brief' => '3D brief', 'fitout-hub' => 'Fit-out quote', 'office-fitout' => 'Office fit-out quote', 'whatsapp' => 'WhatsApp', 'chat' => 'Live chat', 'manual' => 'Added by team', 'import' => 'CSV import'];
+const CRM_TEAM_SRC = ['manual', 'client', 'referral', 'walkin', 'phone', 'facebook', 'instagram', 'google', 'tiktok', 'portal', 'architect', 'builder', 'event', 'outreach', 'other'];
+const CRM_SOURCES = ['contact' => 'Contact form', 'estimator' => 'Cost estimator', 'brief' => '3D brief', 'fitout-hub' => 'Fit-out quote', 'office-fitout' => 'Office fit-out quote', 'whatsapp' => 'WhatsApp', 'chat' => 'Live chat', 'client' => 'Existing client (repeat)', 'referral' => 'Referral / word of mouth', 'walkin' => 'Walk-in / office visit', 'phone' => 'Phone call', 'facebook' => 'Facebook', 'instagram' => 'Instagram', 'google' => 'Google search / Maps', 'tiktok' => 'TikTok / YouTube', 'portal' => 'Zameen / OLX / portals', 'architect' => 'Architect / consultant', 'builder' => 'Builder / developer', 'event' => 'Exhibition / event', 'outreach' => 'Cold call / outreach', 'other' => 'Other', 'manual' => 'Added by team', 'import' => 'CSV import'];
 const CRM_SECRETS = ['smtpPass', 'waToken', 'tsSecret'];
 
 function crm_migrate(): void {
@@ -144,7 +145,7 @@ function crm_actions(string $action, array $in): bool {
             $rows = q('SELECT l.*, u.name assigned_name FROM wx_leads l LEFT JOIN wx_users u ON u.id=l.assigned_to ORDER BY l.id DESC LIMIT 5000')->fetchAll();
             $leads = array_map(function ($r) use ($notes) { $r['assigned_name'] = (string)($r['assigned_name'] ?? ''); return lead_row($r, $notes[(int)$r['id']] ?? []); }, $rows);
             $team = array_map(fn($u) => ['id' => (int)$u['id'], 'name' => $u['name']], q("SELECT id,name FROM wx_users WHERE active=1 AND role IN ('owner','admin','sales') ORDER BY name")->fetchAll());
-            out(['ok' => true, 'leads' => $leads, 'stages' => CRM_STAGES, 'sources' => CRM_SOURCES, 'team' => $team]);
+            out(['ok' => true, 'leads' => $leads, 'stages' => CRM_STAGES, 'sources' => CRM_SOURCES, 'teamSources' => CRM_TEAM_SRC, 'team' => $team]);
         case 'leads_count':
             need(); out(['ok' => true, 'unread' => (int)q('SELECT COUNT(*) FROM wx_leads WHERE is_read=0')->fetchColumn()]);
         case 'lead_save':
@@ -157,6 +158,7 @@ function crm_actions(string $action, array $in): bool {
             if (array_key_exists('followup', $in)) { $f = clip($in['followup'], 10); if ($f !== '' && !preg_match('~^\d{4}-\d{2}-\d{2}$~', $f)) fail('Follow-up must be a date'); $set[] = 'followup=?'; $p[] = $f ?: null; }
             if (array_key_exists('value', $in)) { $set[] = 'value=?'; $p[] = max(0, (int)round((float)$in['value'])); }
             if (array_key_exists('tags', $in)) { $t = is_array($in['tags']) ? $in['tags'] : explode(',', (string)$in['tags']); $t = array_slice(array_values(array_filter(array_map(fn($x) => mb_strtolower(clip($x, 30)), $t))), 0, 10); $set[] = 'tags=?'; $p[] = implode(',', $t); }
+            if (array_key_exists('source', $in) && in_array($in['source'], CRM_TEAM_SRC, true) && (in_array($l['source'], CRM_TEAM_SRC, true) || $l['source'] === 'import')) { $set[] = 'source=?'; $p[] = $in['source']; }
             if (array_key_exists('read', $in)) { $set[] = 'is_read=?'; $p[] = !empty($in['read']) ? 1 : 0; }
             if ($set) { $p[] = $id; q('UPDATE wx_leads SET ' . implode(',', $set) . ' WHERE id=?', $p); }
             s17_lead_extra($id, $in);

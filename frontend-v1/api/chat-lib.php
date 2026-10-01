@@ -8,10 +8,10 @@ const CHAT_FILE = PRIVATE_DIR . '/chat.json';
 const CHAT_DEF = [
     'on' => true, 'ai' => true, 'emailAlert' => true, 'autoLead' => true,
     'greeting' => 'Assalam-o-Alaikum! 👋 I am the Woodex assistant. Ask me anything about interior design, renovation, fit-out or prices. A team member can join any time.',
-    'hours' => 'Mon–Sat, 9:30 am – 6:30 pm',
+    'hours' => 'Mon–Sat, 10:00 am – 7:30 pm',
     // Phase 11 — training (shared by website chat + WhatsApp agent)
     'tone' => 'friendly', 'toneNote' => '', 'qa' => [], 'avoid' => "Competitor comparisons\nPolitics or religion\nLegal or medical advice\nExact final prices before a site visit", 'prices' => '',
-    'openFrom' => '09:30', 'openTo' => '18:30', 'days' => [1, 2, 3, 4, 5, 6],
+    'openFrom' => '10:00', 'openTo' => '19:30', 'days' => [1, 2, 3, 4, 5, 6],
     'afterHours' => 'Thanks for your message! We are away right now. Leave your name and phone number and we will call you back first thing.',
     'waAgent' => false, 'waVerify' => '', 'waSecret' => '', 'waGreeting' => 'Assalam-o-Alaikum! Thank you for contacting Woodex Interior. How can we help you today?',
     'knowledge' => "Woodex Interior is an interior design and build company in Lahore, Pakistan (since 2011).\nServices: interior design (homes, offices, retail, restaurants), renovation, office fit-out, turnkey design-build, architecture and house design (5 marla to 2 kanal), 3D visualization, custom furniture.\nProcess: free consultation → site visit and measurements → design and 3D views → quotation → execution → handover.\nWe work across Lahore and also take projects in Islamabad, Karachi and other cities.\nPrices depend on area, finishes and scope; a site visit gives an exact quotation. The online cost estimator is at /cost-estimator/ (if available).\nFor a quote or site visit ask for the client's name, phone number, area/location and what they need.",

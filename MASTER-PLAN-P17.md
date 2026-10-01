@@ -161,3 +161,9 @@ S1+S2 → review → S3+S4 → review → S5+S6 (+ your templates) → review �
 2. Your **project types** list and **lead sources** if different from: kitchen, wardrobe, full home, office, retail, restaurant, clinic, renovation, architecture, 3D.
 3. Booking: working days and hours, visit length, and which areas you visit.
 4. Old sheets: no need to send them. You'll import them yourself on the new **Import** screen (preview before saving).
+
+## Decisions received 1 Oct (bookings, project types, lead sources)
+- **Business / booking hours:** Mon–Sat, 10:00 am – 7:30 pm (Sunday closed). Site visits / meetings booked in 60-min slots inside these hours; last slot 6:30 pm. Applied to the website footer, contact page, Google schema (`Mo-Sa 10:00-19:30`), WhatsApp widget, AI chat office hours.
+- **Project types:** taken from the website's service pages (33 types: residential rooms, house design by size, commercial, fit-out, renovation, architecture, 3D, furniture supply, other).
+- **Lead sources (recommended):** Existing client · Referral · Walk-in · Phone call · Facebook · Instagram · Google · TikTok/YouTube · Zameen/OLX · Architect/consultant · Builder/developer · Exhibition/event · Cold call/outreach · Other — plus the automatic website sources (contact form, estimator, 3D brief, fit-out quotes, WhatsApp, live chat).
+- **Signatories:** Imtiaz Ahmad (Director, default) · Nabeel Afzal (Marketing Manager). **Banks:** Bank Alfalah – WOODEX INTERIOR (WI docs) · Meezan – WOODEX FURNITURE (WF docs) · JazzCash / Easypaisa +92 321 3656096.

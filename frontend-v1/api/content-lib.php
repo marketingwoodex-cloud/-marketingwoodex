@@ -10,7 +10,7 @@ if (!defined('PRIVATE_DIR')) { http_response_code(404); exit; }
 
 const CMS_FILE   = PRIVATE_DIR . '/content.json';
 const CMS_TYPES  = ['post', 'study', 'testimonial', 'member', 'faq', 'city'];
-const BIZ_DEF = ['email' => 'info@woodex.com.pk', 'phone1' => '+92 322 4000768', 'phone2' => '+92 321 4686884', 'wa' => '+92 322 4000768', 'addr1' => 'M-71, Zainab Tower', 'addr2' => 'Model Town Link Road', 'city' => 'Lahore', 'country' => 'Pakistan', 'days' => 'Mon–Sat', 'open' => '09:30', 'close' => '18:30'];
+const BIZ_DEF = ['email' => 'info@woodex.com.pk', 'phone1' => '+92 322 4000768', 'phone2' => '+92 321 4686884', 'wa' => '+92 322 4000768', 'addr1' => 'M-71, Zainab Tower', 'addr2' => 'Model Town Link Road', 'city' => 'Lahore', 'country' => 'Pakistan', 'days' => 'Mon–Sat', 'open' => '10:00', 'close' => '19:30'];
 const BIZ_ASSETS = ['assets/site.js', 'assets/js/whatsapp-widget.js'];
 const CMS_PAGES  = ['post' => 'insights', 'study' => 'projects'];
 const AI_SECRETS = ['anthropicKey', 'openaiKey', 'openrouterKey', 'customKey'];

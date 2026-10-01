@@ -25,8 +25,8 @@
   function el(tag, cls, html) { var d = document.createElement(tag); if (cls) d.className = cls; if (html != null) d.innerHTML = html; return d; }
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
   function post(body) { try { return fetch("/api/forms.php", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body), keepalive: true }).catch(function () {}); } catch (e) { return null; } }
-  // Office hours: Mon–Sat 9:30–18:30 Pakistan time (UTC+5, no DST)
-  function officeOpen() { var d = new Date(Date.now() + 5 * 36e5), day = d.getUTCDay(), m = d.getUTCHours() * 60 + d.getUTCMinutes(); return day !== 0 && m >= 570 && m < 1110; }
+  // Office hours: Mon–Sat 10:00–19:30 Pakistan time (UTC+5, no DST)
+  function officeOpen() { var d = new Date(Date.now() + 5 * 36e5), day = d.getUTCDay(), m = d.getUTCHours() * 60 + d.getUTCMinutes(); return day !== 0 && m >= 600 && m < 1170; }
 
   function init() {
     var cfg = window.WOODEX_CONFIG || {};
@@ -85,7 +85,7 @@
 
     var panel = el("div", "wx-wa-panel"); panel.setAttribute("role", "dialog"); panel.setAttribute("aria-label", "WhatsApp chat with Woodex");
     panel.innerHTML =
-      '<div class="wx-wa-head"><button type="button" class="wx-back" aria-label="Back" hidden>&#8249;</button><span class="wx-wa-av">W</span><div><div class="t">Woodex Interior</div><div class="s"><i></i>' + (open ? "Online · usually replies in minutes" : "Away · we reply from 9:30 am (Mon–Sat)") + '</div></div><button type="button" class="wx-wa-x" aria-label="Close chat">&times;</button></div>' +
+      '<div class="wx-wa-head"><button type="button" class="wx-back" aria-label="Back" hidden>&#8249;</button><span class="wx-wa-av">W</span><div><div class="t">Woodex Interior</div><div class="s"><i></i>' + (open ? "Online · usually replies in minutes" : "Away · we reply from 10:00 am (Mon–Sat)") + '</div></div><button type="button" class="wx-wa-x" aria-label="Close chat">&times;</button></div>' +
       '<div class="v-home"><div class="wx-wa-body"><div class="wx-wa-msg">Hi! 👋 How would you like to talk to us?</div>' +
       '<button type="button" class="wx-opt" data-go="chat"><span class="ic ch">💬</span><span><b>Chat now</b><small>Instant answers here on the website</small></span></button>' +
       '<button type="button" class="wx-opt" data-go="wa"><span class="ic">' + waGlyph + '</span><span><b>WhatsApp</b><small>Continue in the WhatsApp app</small></span></button></div></div>' +

@@ -23,8 +23,9 @@
   var dueToday = function (l) { return open(l) && l.next_at && l.next_at.slice(0, 10) === today() && !overdue(l); };
   var mlabel = function (m) { var d = new Date(m + "-01T00:00"); return d.toLocaleDateString("en-GB", { month: "long", year: "numeric" }); };
   function meta() { return M ? Promise.resolve(M) : api("s17_meta").then(function (r) { if (r.ok) M = r; return M || { lines: {}, leadTypes: {}, quoteStatus: {}, nextTypes: {}, clientTypes: {}, projectTypes: [] }; }); }
-  function loadLeads() { return api("leads_list").then(function (r) { if (!r.ok) { toast(r.error, true); return false; } C.leads = r.leads; C.team = r.team; C.sources = r.sources; return true; }); }
+  function loadLeads() { return api("leads_list").then(function (r) { if (!r.ok) { toast(r.error, true); return false; } C.leads = r.leads; C.team = r.team; C.sources = r.sources; C.ts = r.teamSources || []; return true; }); }
   var opts = function (o, cur, blank) { var h = blank != null ? "<option value=''>" + blank + "</option>" : ""; Object.keys(o).forEach(function (k) { if (k === "" && blank != null) return; h += "<option value='" + esc(k) + "'" + (String(cur || "") === k ? " selected" : "") + ">" + esc(o[k]) + "</option>"; }); return h; };
+  var srcSel = function (id, cur) { var auto = cur && C.ts.indexOf(cur) < 0 && cur !== "import"; return "<label>Came from<select id='" + id + "'" + (auto ? " disabled title='Set automatically by the website'" : "") + ">" + (auto ? "<option>" + esc(C.sources[cur] || cur) + "</option>" : C.ts.map(function (k) { return "<option value='" + k + "'" + ((cur || "manual") === k ? " selected" : "") + ">" + esc(k === "manual" ? "— not set —" : C.sources[k] || k) + "</option>"; }).join("")) + "</select></label>"; };
   var lineTag = function (k) { return k ? "<span class='s17-line s17-l-" + esc(k) + "'>" + esc((M && M.lines[k]) || k) + "</span>" : ""; };
 
   // ================================================================ ENQUIRIES TRACKER
@@ -132,7 +133,7 @@
           "<div class='s17-quick'><small class='muted'>Quick:</small>" + [["Tomorrow 11am", 1, 11], ["In 3 days", 3, 11], ["Next week", 7, 11]].map(function (q) { return "<button class='btn sm ghost' data-d='" + q[1] + "' data-h='" + q[2] + "'>" + q[0] + "</button>"; }).join("") + "<button class='btn sm ghost' data-d='x'>Clear</button></div>" +
           "<div class='modal-actions'><button class='btn pri' id='dr-log'>" + ic("check") + "Save activity</button></div></div>" +
         "<div class='s17-pane' data-p='det' hidden><div class='s17-g2'>" + inp("dr-co", "Company", l.company) + inp("dr-n", "Contact name", l.name) + inp("dr-ds", "Designation", l.designation) + inp("dr-p", "Phone", l.phone) + inp("dr-e", "Email", l.email, "email") + inp("dr-lo", "Location", l.location) +
-          sel("dr-li", "Business line", opts(M.lines, l.line, "—")) + sel("dr-lt", "Lead source", opts(M.leadTypes, l.lead_type || "new")) +
+          sel("dr-li", "Business line", opts(M.lines, l.line, "—")) + sel("dr-lt", "Lead source", opts(M.leadTypes, l.lead_type || "new")) + srcSel("dr-src", l.source) +
           "<label>Project type<input id='dr-pt' list='dr-ptl' value='" + esc(l.project_type || l.service || "") + "'><datalist id='dr-ptl'>" + M.projectTypes.map(function (p) { return "<option>" + esc(p) + "</option>"; }).join("") + "</datalist></label>" +
           inp("dr-ar", "Area (sq ft)", l.area) + inp("dr-bu", "Budget", l.budget) + inp("dr-v", "Deal value (Rs)", l.value || "", "number") +
           sel("dr-qs", "Quotation", opts(M.quoteStatus, l.quote_status, "—")) + sel("dr-pr", "Priority", opts({ low: "Low", normal: "Normal", high: "High" }, l.priority || "normal")) +
@@ -153,7 +154,7 @@
       $("#dr-st").onchange = function () { $("#dr-lrw").hidden = this.value !== "lost"; };
       $("#dr-log").onclick = function () { api("lead_activity", { id: id, kind: kind, text: $("#dr-txt").value, outcome: $("#dr-out").value, stage: $("#dr-st2").value, next_at: $("#dr-nx").value, next_type: $("#dr-nt").value }).then(function (r) { done(r, "Activity saved ✓"); }); };
       $("#dr-sv").onclick = function () {
-        api("lead_save", { id: id, company: $("#dr-co").value, name: $("#dr-n").value, designation: $("#dr-ds").value, phone: $("#dr-p").value, email: $("#dr-e").value, location: $("#dr-lo").value, line: $("#dr-li").value, lead_type: $("#dr-lt").value,
+        api("lead_save", { id: id, source: $("#dr-src").disabled ? undefined : $("#dr-src").value, company: $("#dr-co").value, name: $("#dr-n").value, designation: $("#dr-ds").value, phone: $("#dr-p").value, email: $("#dr-e").value, location: $("#dr-lo").value, line: $("#dr-li").value, lead_type: $("#dr-lt").value,
           project_type: $("#dr-pt").value, area: $("#dr-ar").value, budget: $("#dr-bu").value, value: $("#dr-v").value, quote_status: $("#dr-qs").value, priority: $("#dr-pr").value, assigned_to: $("#dr-as").value, stage: $("#dr-st").value, lost_reason: $("#dr-lr").value }).then(function (r) { done(r, "Saved ✓"); });
       };
       if ($("#dr-cv")) $("#dr-cv").onclick = function () { if (!confirm("Create a client record for " + (l.company || l.name) + " and mark this enquiry as won?")) return; api("lead_convert", { id: id }).then(function (r) { if (!r.ok) return err(r.error); closeDrawer(); location.hash = "#/clients/" + r.client_id; }); };
@@ -166,12 +167,12 @@
 
   function addLead(after) {
     W.modal("<h2>Add lead</h2><div class='s17-g2'><label>Company<input id='al-co'></label><label>Contact name *<input id='al-n'></label><label>Phone<input id='al-p'></label><label>Location<input id='al-lo'></label>" +
-      "<label>Business line<select id='al-li'>" + opts(M.lines, "", "—") + "</select></label><label>Lead source<select id='al-lt'>" + opts(M.leadTypes, "new") + "</select></label>" +
+      "<label>Business line<select id='al-li'>" + opts(M.lines, "", "—") + "</select></label><label>Lead source<select id='al-lt'>" + opts(M.leadTypes, "new") + "</select></label>" + srcSel("al-src", "manual") +
       "<label>Assigned to<select id='al-as'><option value=''>Nobody</option>" + C.team.map(function (u) { return "<option value='" + u.id + "'" + (S.user && u.id === S.user.id ? " selected" : "") + ">" + esc(u.name) + "</option>"; }).join("") + "</select></label>" +
       "<label>First follow-up<input id='al-nx' type='datetime-local'></label></div><label>Note<textarea id='al-m' rows='2'></textarea></label><p class='err' id='al-err'></p><div class='modal-actions'><button class='btn' onclick='WXA.closeModal()'>Cancel</button><button class='btn pri' id='al-go'>Add lead</button></div>");
     $("#al-go").onclick = function () {
       var name = $("#al-n").value.trim() || $("#al-co").value.trim();
-      api("lead_save", { name: name, company: $("#al-n").value.trim() ? $("#al-co").value : "", phone: $("#al-p").value, location: $("#al-lo").value, line: $("#al-li").value, lead_type: $("#al-lt").value, assigned_to: $("#al-as").value, next_at: $("#al-nx").value, next_type: "call", message: $("#al-m").value })
+      api("lead_save", { name: name, source: $("#al-src").value, company: $("#al-n").value.trim() ? $("#al-co").value : "", phone: $("#al-p").value, location: $("#al-lo").value, line: $("#al-li").value, lead_type: $("#al-lt").value, assigned_to: $("#al-as").value, next_at: $("#al-nx").value, next_type: "call", message: $("#al-m").value })
         .then(function (r) { if (!r.ok) { $("#al-err").textContent = r.error; return; } W.closeModal(); toast("Lead added ✓"); after(); });
     };
   }

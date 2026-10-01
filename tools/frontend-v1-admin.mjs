@@ -313,7 +313,8 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
 
   // =================================================================== A4 — forms, leads, pipeline, clients, alerts
   const STAGES = ["new", "contacted", "visit", "quote", "hold", "won", "lost"];
-  const SOURCES = { contact: "Contact form", estimator: "Cost estimator", brief: "3D brief", "fitout-hub": "Fit-out quote", "office-fitout": "Office fit-out quote", whatsapp: "WhatsApp widget", chat: "Live chat", manual: "Added by team", import: "CSV import" };
+  const TEAM_SRC = ["manual", "client", "referral", "walkin", "phone", "facebook", "instagram", "google", "tiktok", "portal", "architect", "builder", "event", "outreach", "other"];
+  const SOURCES = { contact: "Contact form", estimator: "Cost estimator", brief: "3D brief", "fitout-hub": "Fit-out quote", "office-fitout": "Office fit-out quote", whatsapp: "WhatsApp widget", chat: "Live chat", client: "Existing client (repeat)", referral: "Referral / word of mouth", walkin: "Walk-in / office visit", phone: "Phone call", facebook: "Facebook", instagram: "Instagram", google: "Google search / Maps", tiktok: "TikTok / YouTube", portal: "Zameen / OLX / portals", architect: "Architect / consultant", builder: "Builder / developer", event: "Exhibition / event", outreach: "Cold call / outreach", other: "Other", manual: "Added by team", import: "CSV import" };
   const CRM = path.join(PRIV, "crm.json"), OUTBOX = path.join(PRIV, "outbox.jsonl");
   const OFFERS = path.join(PRIV, "offers.json");
   const GSA = path.join(PRIV, "google-sa.json");
@@ -383,7 +384,7 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
     if (!/^(leads?_|clients?_|crm_|gdata_)/.test(action)) return null;
     ensureCrm(db); const done = (o) => { save(db); return o; };
     switch (action) {
-      case "leads_list": { need(SALES); return { ok: true, leads: db.leads.slice().reverse().map((l) => leadPub(l, db)), stages: STAGES, sources: SOURCES, team: db.users.filter((u) => u.active && SALES.includes(u.role)).map((u) => ({ id: u.id, name: u.name })) }; }
+      case "leads_list": { need(SALES); return { ok: true, leads: db.leads.slice().reverse().map((l) => leadPub(l, db)), stages: STAGES, sources: SOURCES, teamSources: TEAM_SRC, team: db.users.filter((u) => u.active && SALES.includes(u.role)).map((u) => ({ id: u.id, name: u.name })) }; }
       case "leads_count": { need(); return { ok: true, unread: db.leads.filter((l) => !l.read).length }; }
       case "lead_save": {
         const u = need(SALES); let l;
@@ -396,7 +397,7 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
         if ("followup" in inp) { const f = clip(inp.followup, 10); if (f && !/^\d{4}-\d{2}-\d{2}$/.test(f)) throw new Fail("Follow-up must be a date"); l.followup = f; }
         if ("value" in inp) l.value = Math.max(0, Math.round(+inp.value || 0));
         if ("tags" in inp) l.tags = (Array.isArray(inp.tags) ? inp.tags : String(inp.tags).split(",")).map((t) => clip(t, 30).toLowerCase()).filter(Boolean).slice(0, 10);
-        if ("read" in inp) l.read = !!inp.read;
+        if ("source" in inp && TEAM_SRC.includes(inp.source) && (TEAM_SRC.includes(l.source) || l.source === "import")) l.source = inp.source; if ("read" in inp) l.read = !!inp.read;
         s17LeadExtra(l, inp, db);
         if (before !== l.stage) l.notes.push({ t: now(), user: u.name, text: `Stage: ${before} → ${l.stage}`, sys: true });
         log(db, u, inp.id ? "lead.update" : "lead.create", `#${l.id} ${l.name}${before !== l.stage ? " → " + l.stage : ""}`, ip);
@@ -517,7 +518,7 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
   const S17 = { lines: { furniture: "Furniture", interior: "Interior", project: "Project" }, leadTypes: { new: "New lead", returning: "Returning client", referral: "Referral" },
     quoteStatus: { "": "—", pending: "Pending", proposal: "Proposal / Quotation", done: "Done" }, nextTypes: { call: "Call", whatsapp: "WhatsApp", visit: "Site visit", meeting: "Meeting", email: "Email" },
     clientTypes: { individual: "Individual", company: "Company", developer: "Developer / builder", architect: "Architect / consultant" },
-    projectTypes: ["Kitchen", "Wardrobe", "Full home", "Office", "Retail / showroom", "Restaurant / café", "Clinic / pharmacy", "Renovation", "Architecture", "3D design", "Furniture supply", "Other"] };
+    projectTypes: ["Kitchen design", "Wardrobe & storage", "Bedroom design", "Living room design", "Dining room design", "Kids room design", "Home office design", "Basement design", "Complete home redesign / refurbishment", "House design (5 / 10 marla, 1 / 2 kanal)", "Farmhouse design", "Front elevation design", "Office interior design", "Office fit-out", "Co-working space", "Retail / showroom design", "Shopping mall design", "Restaurant / café interior", "Hotel interior design", "Healthcare / clinic design", "Pharmacy fit-out", "Gym design", "Spa / beauty salon design", "Educational building design", "Commercial fit-out", "Residential renovation", "Commercial / office renovation", "Restaurant / showroom renovation", "Architecture & master planning", "Turnkey design-build", "3D visualisation", "Furniture supply", "Other"] };
   const s17dt = (v) => { v = String(v || "").trim(); if (!v) return ""; const t = new Date(v.replace(" ", "T")); if (isNaN(t)) throw new Fail(`Check the date / time "${v.slice(0, 30)}"`); const p = (n) => String(n).padStart(2, "0"); return `${t.getFullYear()}-${p(t.getMonth() + 1)}-${p(t.getDate())} ${p(t.getHours())}:${p(t.getMinutes())}:00`; };
   const s17dig = (p) => { let d = String(p || "").replace(/\D/g, ""); if (d.length === 11 && d[0] === "0") d = "92" + d.slice(1); else if (d.length === 10 && d[0] === "3") d = "92" + d; return d; };
   function s17LeadExtra(l, inp, db) {
@@ -942,7 +943,7 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
     city: (i) => `You are localising a Woodex city landing page from ${i.source} to ${i.city}, Pakistan. The studio is based in Lahore and serves ${i.city} with site visits.\nRewrite each string for ${i.city}: mention real ${i.city} areas/neighbourhoods where natural, keep facts honest (the studio and showroom are in Lahore, not in ${i.city}), keep roughly the same length, keep **bold** markers and [link](url) markup unchanged.\nReturn ONLY a JSON array of exactly ${(i.texts || []).length} strings in the same order.\n\n${JSON.stringify((i.texts || []).slice(0, 120)).slice(0, 14000)}`,
     faqs: (i) => `Write 4 FAQs a Pakistani client would ask about: ${i.title}.\nContext: ${String(i.text || "").slice(0, 3000)}\nReturn ONLY JSON: [{"q":"...","a":"1-3 sentences"}]`,
   };
-  const BIZ_DEF = { email: "info@woodex.com.pk", phone1: "+92 322 4000768", phone2: "+92 321 4686884", wa: "+92 322 4000768", addr1: "M-71, Zainab Tower", addr2: "Model Town Link Road", city: "Lahore", country: "Pakistan", days: "Mon–Sat", open: "09:30", close: "18:30" };
+  const BIZ_DEF = { email: "info@woodex.com.pk", phone1: "+92 322 4000768", phone2: "+92 321 4686884", wa: "+92 322 4000768", addr1: "M-71, Zainab Tower", addr2: "Model Town Link Road", city: "Lahore", country: "Pakistan", days: "Mon–Sat", open: "10:00", close: "19:30" };
   const BIZ_ASSETS = ["assets/site.js", "assets/js/whatsapp-widget.js"];
   const safeRel = (r) => typeof r === "string" && /^[a-z0-9][a-z0-9/_\-.]*\.html$/i.test(r) && !r.includes("..") && !/^(_private|builder|admin|api|assets)\//.test(r);
   const cityRelOk = (r) => typeof r === "string" && /^[a-z0-9][a-z0-9-]{0,59}\/index\.html$/.test(r) && !/^(builder|admin|api|assets|insights|projects)\//.test(r);
@@ -1307,11 +1308,11 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
   }
   // ---- Phase 10: live chat + notifications (mirror of api/chat-lib.php; AI replies need the PHP server)
   const CHATF = path.join(PRIV, "chat.json");
-  const CHAT_DEF = { on: true, ai: true, emailAlert: true, autoLead: true, greeting: "Assalam-o-Alaikum! 👋 I am the Woodex assistant. Ask me anything about interior design, renovation, fit-out or prices. A team member can join any time.", hours: "Mon–Sat, 9:30 am – 6:30 pm", knowledge: "Woodex Interior is an interior design and build company in Lahore, Pakistan.", tone: "friendly", toneNote: "", qa: [], avoid: "Competitor comparisons\nPolitics or religion", prices: "", openFrom: "09:30", openTo: "18:30", days: [1, 2, 3, 4, 5, 6], afterHours: "Thanks for your message! We are away right now.", waAgent: false, waVerify: "", waSecret: "", waGreeting: "Assalam-o-Alaikum! Thank you for contacting Woodex Interior." };
+  const CHAT_DEF = { on: true, ai: true, emailAlert: true, autoLead: true, greeting: "Assalam-o-Alaikum! 👋 I am the Woodex assistant. Ask me anything about interior design, renovation, fit-out or prices. A team member can join any time.", hours: "Mon–Sat, 10:00 am – 7:30 pm", knowledge: "Woodex Interior is an interior design and build company in Lahore, Pakistan.", tone: "friendly", toneNote: "", qa: [], avoid: "Competitor comparisons\nPolitics or religion", prices: "", openFrom: "10:00", openTo: "19:30", days: [1, 2, 3, 4, 5, 6], afterHours: "Thanks for your message! We are away right now.", waAgent: false, waVerify: "", waSecret: "", waGreeting: "Assalam-o-Alaikum! Thank you for contacting Woodex Interior." };
   const require_rand = () => Array.from({ length: 24 }, () => "0123456789abcdef"[Math.floor(Math.random() * 16)]).join("");
   const chatCfg = () => Object.assign({}, CHAT_DEF, jr(CHATF, {}));
   const ensureChat = (db) => { db.chats = db.chats || []; db.chatMsgs = db.chatMsgs || []; db.seqCh = db.seqCh || 0; db.seqCm = db.seqCm || 0; };
-  const chatOpenNow = () => { const d = new Date(Date.now() + 5 * 36e5), w = d.getUTCDay(), m = d.getUTCHours() * 60 + d.getUTCMinutes(); return w !== 0 && m >= 570 && m < 1110; };
+  const chatOpenNow = () => { const d = new Date(Date.now() + 5 * 36e5), w = d.getUTCDay(), m = d.getUTCHours() * 60 + d.getUTCMinutes(); return w !== 0 && m >= 600 && m < 1170; };
   const chatAdd = (db, c, who, name, text) => { const m = { id: ++db.seqCm, chat_id: c.id, t: now(), who, name: String(name || "").slice(0, 120), text: String(text).slice(0, 4000) }; db.chatMsgs.push(m); c.updated_at = now(); c.last_text = ((who === "visitor" ? "" : who === "agent" ? "You: " : "AI: ") + text).slice(0, 250); if (who === "visitor") c.unread = (c.unread || 0) + 1; return m.id; };
   const chatMsgs = (db, cid, since = 0) => db.chatMsgs.filter((m) => m.chat_id === cid && m.id > since).map(({ chat_id, ...m }) => m);
   const chatPub = (c) => ({ channel: c.channel || "web", id: c.id, created_at: c.created_at, updated_at: c.updated_at, name: c.name || "", phone: c.phone || "", email: c.email || "", page: c.page || "", status: c.status, mode: c.mode, agent: c.agent_name || "", unread: c.unread || 0, needs: !!c.needs, last: c.last_text || "", lead_id: c.lead_id || null });
