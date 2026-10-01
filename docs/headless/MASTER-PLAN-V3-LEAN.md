@@ -5,6 +5,8 @@
 rules in `MASTER-PLAN-HEADLESS.md` (v1) still apply unless this file says otherwise.
 **Your instructions applied:** Laravel · free TailAdmin from GitHub · Supabase free · Vercel free · less time/effort · reuse free templates/packages instead of building.
 
+> **UPDATE 2026-10-02 (latest):** see [`MASTER-PLAN-V3.1-EXPANDED.md`](MASTER-PLAN-V3.1-EXPANDED.md) — adds the GitHub→Hostinger pipeline, public/secret API keys and `/delivery` endpoints, widget registry, hardened theme tokens, versioned mega-menus and the starter engine. Roadmap is now ≈ 71 days.
+
 ---
 
 ## 1. Decisions (final unless you object)
