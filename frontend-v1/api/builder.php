@@ -278,6 +278,21 @@ switch ($action) {
         act('import_url', '/assets/uploads/' . $name);
         out(['ok' => true, 'url' => '/assets/uploads/' . $name, 'width' => $info[0], 'height' => $info[1]]);
 
+    case 'fetch_page': // P17 C1: pick sections from another site's page (public https HTML only)
+        require_auth();
+        $u = (string)($in['url'] ?? ''); $p = parse_url($u); $host = strtolower($p['host'] ?? '');
+        if (($p['scheme'] ?? '') !== 'https' || $host === '' || filter_var($host, FILTER_VALIDATE_IP) || preg_match('~^(localhost|.*\.local|.*\.internal)$~', $host)) fail('Paste a public https:// page link');
+        $ip = gethostbyname($host); if (!filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) fail('Paste a public https:// page link');
+        $ctx = stream_context_create(['ssl' => ['cafile' => __DIR__ . '/cacert.pem', 'verify_peer' => true], 'http' => ['timeout' => 20, 'follow_location' => 0, 'user_agent' => 'Mozilla/5.0 (WoodexBuilder section picker)', 'header' => "Accept: text/html\r\n"]]);
+        $html = @file_get_contents($u, false, $ctx, 0, 3 * 1024 * 1024 + 1);
+        $code = 0; foreach ($http_response_header ?? [] as $h) if (preg_match('~^HTTP/\S+\s+(\d{3})~', $h, $m)) $code = (int)$m[1];
+        if ($code >= 300 && $code < 400) fail('That link redirects; open it in your browser and paste the final address');
+        if ($html === false || $html === '') fail('Could not open that page');
+        if (strlen($html) > 3 * 1024 * 1024) fail('That page is larger than 3 MB');
+        if (!preg_match('~<(html|body|section|div)[\s>]~i', $html)) fail('That link is not an HTML page');
+        act('fetch_page', $host);
+        out(['ok' => true, 'html' => $html, 'url' => $u]);
+
     case 'upload':
         require_auth();
         $f = $_FILES['file'] ?? null;

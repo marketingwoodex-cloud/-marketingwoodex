@@ -199,6 +199,14 @@ async function api(req, body) {
       if (used.length && !inp.force) return { ok: false, error: "Image is used on: " + used.join(", "), used, status: 409 };
       const abs = path.join(UPLOADS, path.basename(url)); if (fs.existsSync(abs)) fs.unlinkSync(abs); return { ok: true };
     }
+    case "fetch_page": {
+      need(); let u; try { u = new URL(String(inp.url || "")); } catch { throw new Fail("Paste a public https:// page link"); }
+      if (u.protocol !== "https:" || /^(localhost|.*\.local|.*\.internal|\d+\.\d+\.\d+\.\d+|\[.*\])$/i.test(u.hostname)) throw new Fail("Paste a public https:// page link");
+      let r; try { r = await fetch(u, { redirect: "manual", headers: { "user-agent": "Mozilla/5.0 (WoodexBuilder section picker)", accept: "text/html" }, signal: AbortSignal.timeout(20000) }); } catch { throw new Fail("Could not open that page"); }
+      if (r.status >= 300 && r.status < 400) throw new Fail("That link redirects; open it in your browser and paste the final address");
+      const html = await r.text(); if (html.length > 3 * 1024 * 1024) throw new Fail("That page is larger than 3 MB"); if (!/<(html|body|section|div)[\s>]/i.test(html)) throw new Fail("That link is not an HTML page");
+      return { ok: true, html, url: u.href };
+    }
     case "import_url": {
       need(); let u; try { u = new URL(String(inp.url || "")); } catch { throw new Fail("Invalid URL"); }
       if (u.protocol !== "https:" || /^(localhost|127\.|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|0\.|\[|169\.254\.)/.test(u.hostname) || /^\d+\.\d+\.\d+\.\d+$/.test(u.hostname)) throw new Fail("Only public https image links are allowed");

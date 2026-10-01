@@ -1231,7 +1231,7 @@
       if (!r.ok) return; var box = $("#lib-mine");
       if (!r.blocks.length) { box.innerHTML = "<p class='hint'>Save any section or element with 💾 in the toolbar.</p>"; return; }
       var cats = {}; r.blocks.forEach(function (b) { (cats[b.cat || "Custom"] = cats[b.cat || "Custom"] || []).push(b); });
-      box.innerHTML = Object.keys(cats).sort().map(function (c) { return '<div class="lib-cat">' + esc(c) + "</div>" + cats[c].map(function (b) { return '<button draggable="true" data-id="' + b.id + '"' + (b.global ? ' title="Global section: stays in sync on every page"' : "") + "><span>" + (b.global ? "🔗" : b.kind === "section" ? "▤" : "✚") + "</span>" + esc(b.name) + (b.global ? ' <small style="color:#b8924c">global</small>' : "") + '<i class="del" data-del="' + b.id + '" title="Delete">✕ delete</i></button>'; }).join(""); }).join("");
+      box.innerHTML = Object.keys(cats).sort().map(function (c) { return '<div class="lib-cat">' + esc(c) + "</div>" + cats[c].map(function (b) { return '<button draggable="true" data-cat="' + esc(b.cat || "Custom") + '" data-tags="' + esc((b.tags || []).join(" ")) + '" data-id="' + b.id + '"' + (b.global ? ' title="Global section: stays in sync on every page"' : "") + "><span>" + (b.global ? "🔗" : b.kind === "section" ? "▤" : "✚") + "</span>" + esc(b.name) + (b.global ? ' <small style="color:#b8924c">global</small>' : "") + '<i class="del" data-del="' + b.id + '" title="Delete">✕ delete</i></button>'; }).join(""); }).join("");
       $$("button", box).forEach(function (btn) {
         var b = r.blocks.find(function (x) { return x.id === btn.dataset.id; });
         btn.onclick = function (e) {
@@ -1241,6 +1241,7 @@
         btn.ondragstart = function (e) { S.drag = { kind: b.kind, html: blockHtml(b) }; e.dataTransfer.setData("text/plain", "wx-block"); };
         btn.ondragend = function () { S.drag = null; hideDrop(); };
       });
+      if (window.__wx17mine) window.__wx17mine(r.blocks);
     });
   }
   function blockHtml(b) { return b.global ? b.html.trim().replace(/^<([a-z][a-z0-9-]*)/i, '<$1 data-wx-global="' + b.id + '"') : b.html; }
@@ -1306,6 +1307,8 @@
     draw();
   }
   window.__wx5.templates = templatesGallery;
+  // P17 C1/C2 hooks for builder-p17.js
+  Object.assign(window.__wx5, { S: S, api: api, modal: modal, closeModal: closeModal, toast: toast, esc: esc, thumb: thumb, sanitize: sanitize, guessCat: guessCat, wide: wide, insertSection: insertSection, insertElement: insertElement, renderMine: renderMine, cats: BLOCK_CATS, download: download });
   var tgBtn = document.createElement("button"); tgBtn.className = "btn btn-pri"; tgBtn.style.cssText = "width:100%;margin:0 0 10px"; tgBtn.textContent = "✨ Browse " + ((window.WX_TEMPLATES || []).length || 50) + " templates (v26 + UI kit)";
   tgBtn.onclick = function () { if (S.doc) templatesGallery(); }; var ls = $("#lib-sections"); if (ls) ls.parentNode.insertBefore(tgBtn, ls.previousElementSibling || ls);
 
