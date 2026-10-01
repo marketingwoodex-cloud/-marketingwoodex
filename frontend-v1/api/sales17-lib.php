@@ -108,8 +108,23 @@ function s17_inv_client(array $in): array {
     return [$cid, $cl];
 }
 
+function s17_proj_row(array $p, array $inv, array $names, string $today): array {
+    $ms = $p['milestones'] ?? []; $mine = array_values(array_filter($inv, fn($i) => (int)($i['project_id'] ?? 0) === (int)$p['id'] || (!empty($p['invoice_id']) && (int)$i['id'] === (int)$p['invoice_id'])));
+    $byId = []; foreach ($mine as $i) $byId[(int)$i['id']] = $i;
+    $invoiced = (int)array_sum(array_column($mine, 'total')); $rec = (int)array_sum(array_column($mine, 'paid')); $value = (int)($p['value'] ?? 0);
+    $si = array_search($p['stage'], SALES_PSTAGES, true); $done = in_array($p['stage'], ['handover', 'completed'], true);
+    $last = end($p['updates']) ?: null;
+    return ['id' => (int)$p['id'], 'name' => $p['name'], 'client_id' => $p['client_id'] ?? null, 'client_name' => $p['client_name'] ?? '', 'no' => $p['no'] ?? '', 'site' => $p['site'] ?? '', 'line' => $p['line'] ?? '', 'ptype' => $p['ptype'] ?? '', 'area' => (int)($p['area'] ?? 0),
+        'stage' => $p['stage'], 'progress' => $si === false ? 0 : (int)round($si / (count(SALES_PSTAGES) - 1) * 100), 'start' => $p['start'] ?? '', 'target' => $p['target'] ?? '', 'late' => !$done && !empty($p['target']) && $p['target'] < $today,
+        'value' => $value, 'invoiced' => $invoiced, 'received' => $rec, 'balance' => max(0, $invoiced - $rec), 'unbilled' => max(0, $value - $invoiced),
+        'manager' => $p['manager'] ?? null, 'manager_name' => !empty($p['manager']) ? ($names[(int)$p['manager']] ?? '') : '', 'team' => $p['team'] ?? [], 'team_names' => array_values(array_filter(array_map(fn($t) => $names[(int)$t] ?? '', $p['team'] ?? []))),
+        'photos' => count($p['photos'] ?? []), 'cover' => ($p['photos'] ?? []) ? end($p['photos'])['url'] : '', 'last' => $last ? ['t' => $last['t'] ?? '', 'text' => $last['text'] ?? ''] : null, 'quote_id' => $p['quote_id'] ?? null, 'invoice_id' => $p['invoice_id'] ?? null,
+        'milestones' => array_map(function ($m) use ($byId, $value) { $i = $m['inv_id'] ? ($byId[(int)$m['inv_id']] ?? null) : null; return $m + ['amount' => (int)round($value * $m['pct'] / 100), 'inv_no' => $i['no'] ?? '', 'paid' => $i['paid'] ?? 0, 'status' => !$m['inv_id'] ? 'unbilled' : (!$i ? 'missing' : ($i['balance'] <= 0 ? 'paid' : ($i['paid'] > 0 ? 'partial' : 'billed')))]; }, $ms),
+        'invoices' => array_map(fn($i) => ['id' => (int)$i['id'], 'no' => $i['no'], 'total' => $i['total'], 'paid' => $i['paid'], 'balance' => $i['balance']], $mine)];
+}
+
 function sales17_actions(string $action, array $in): bool {
-    if (!in_array($action, ['lead_activity', 'leads_followups', 'leads_stats', 'leads_import2', 'clients_master', 'client_360', 'clients_merge', 's17_meta', 'inv_new', 'inv_track', 'invs_tracker', 'invs_import'], true)) return false;
+    if (!in_array($action, ['lead_activity', 'leads_followups', 'leads_stats', 'leads_import2', 'clients_master', 'client_360', 'clients_merge', 's17_meta', 'projs_table', 'proj_meta', 'proj_milestones', 'proj_bill', 'inv_new', 'inv_track', 'invs_tracker', 'invs_import'], true)) return false;
     s17_migrate(); $SALES = ['owner', 'admin', 'sales'];
     switch ($action) {
         case 's17_meta':
@@ -265,6 +280,50 @@ function sales17_actions(string $action, array $in): bool {
                 doc_put('wx_invoices', $i, ['no' => $no, 'quote_id' => null]); $n++;
             }
             log_act($u, 'invoice.import', $n . ' rows'); out(['ok' => true, 'imported' => $n, 'skipped' => $skip]);
+
+        // ---------- S5 projects table + milestone billing
+        case 'projs_table':
+            need(['owner', 'admin', 'sales', 'editor']); sales_migrate(); $today = date('Y-m-d');
+            $inv = array_map('inv_pub', doc_all('wx_invoices')); $names = []; foreach (q('SELECT id,name FROM wx_users')->fetchAll() as $r) $names[(int)$r['id']] = $r['name'];
+            $rows = []; $k = ['active' => 0, 'value' => 0, 'invoiced' => 0, 'received' => 0, 'balance' => 0, 'late' => 0];
+            foreach (doc_all('wx_projects') as $p) $rows[] = s17_proj_row($p, $inv, $names, $today);
+            foreach ($rows as $r) { if ($r['stage'] !== 'completed') { $k['active']++; $k['value'] += $r['value']; $k['late'] += $r['late'] ? 1 : 0; } $k['invoiced'] += $r['invoiced']; $k['received'] += $r['received']; $k['balance'] += $r['balance']; }
+            usort($rows, fn($a, $b) => $b['id'] <=> $a['id']);
+            $team = array_map(fn($r) => ['id' => (int)$r['id'], 'name' => $r['name']], q('SELECT id,name FROM wx_users WHERE active=1 ORDER BY name')->fetchAll());
+            out(['ok' => true, 'projects' => $rows, 'kpi' => $k, 'stages' => SALES_PSTAGES, 'team' => $team, 'lines' => S17_LINES, 'types' => S17_PTYPES]);
+        case 'proj_meta':
+            $u = need($SALES); $p = doc_get('wx_projects', $in['id'] ?? 0, 'Project');
+            if (array_key_exists('line', $in)) $p['line'] = isset(S17_LINES[$in['line']]) ? $in['line'] : '';
+            if (array_key_exists('ptype', $in)) $p['ptype'] = clip($in['ptype'], 60);
+            if (array_key_exists('area', $in)) $p['area'] = max(0, (int)round(numv($in['area'])));
+            if (array_key_exists('team', $in)) $p['team'] = array_values(array_unique(array_filter(array_map('intval', is_array($in['team']) ? $in['team'] : []))));
+            if (array_key_exists('client_id', $in)) { $cid = (int)$in['client_id']; if ($cid) { $c = q('SELECT id,name,company FROM wx_clients WHERE id=?', [$cid])->fetch(); if (!$c) fail('Client not found', 404); $p['client_id'] = $cid; $p['client_name'] = $c['company'] ?: $c['name']; } }
+            $p = doc_put('wx_projects', $p); log_act($u, 'project.update', $p['name']); out(['ok' => true, 'project' => $p]);
+        case 'proj_milestones':
+            $u = need($SALES); $p = doc_get('wx_projects', $in['id'] ?? 0, 'Project'); $old = $p['milestones'] ?? []; $new = []; $sum = 0;
+            foreach (array_slice(is_array($in['plan'] ?? null) ? $in['plan'] : [], 0, 12) as $j => $m) { $pct = round(numv($m['pct'] ?? 0), 2); if ($pct <= 0) continue; $sum += $pct;
+                $new[] = ['label' => clip($m['label'] ?? '', 80) ?: 'Milestone ' . ($j + 1), 'pct' => $pct, 'inv_id' => $old[$j]['inv_id'] ?? null]; }
+            foreach ($old as $j => $m) if (!empty($m['inv_id']) && (($new[$j]['inv_id'] ?? null) !== $m['inv_id'] || (float)$new[$j]['pct'] !== (float)$m['pct'])) fail('Milestone ' . ($j + 1) . ' is already billed; it cannot be changed');
+            if ($new && abs($sum - 100) > 0.01) fail('Milestones must add up to 100% (now ' . $sum . '%)');
+            $p['milestones'] = $new; $p = doc_put('wx_projects', $p); log_act($u, 'project.milestones', $p['name']); out(['ok' => true, 'project' => $p]);
+        case 'proj_bill':
+            $u = need($SALES); sales_migrate(); $p = doc_get('wx_projects', $in['id'] ?? 0, 'Project'); $j = (int)($in['k'] ?? -1); $m = $p['milestones'][$j] ?? null;
+            if (!$m) fail('Milestone not found', 404); if (!empty($m['inv_id'])) fail('This milestone is already billed');
+            if ((int)($p['value'] ?? 0) <= 0) fail('Set the contract value first');
+            $base = $p['no'] ?? ''; $full = !empty($p['invoice_id']) ? q('SELECT id,data FROM wx_invoices WHERE id=?', [$p['invoice_id']])->fetch() : null;
+            if ($full) { $fd = json_decode($full['data'], true) ?: []; if (!empty($fd['payments'])) fail('The full contract invoice already has payments, so milestone billing cannot replace it');
+                if (empty($in['replace'])) fail('REPLACE'); q('DELETE FROM wx_invoices WHERE id=?', [$full['id']]); $p['updates'][] = hist($u, 'Full invoice ' . ($fd['no'] ?? '') . ' replaced by milestone invoices') + ['sys' => true]; $p['invoice_id'] = null; }
+            $line = $p['line'] ?? '' ?: 'project'; if ($base === '') { $base = s17_inv_no($line); $p['no'] = $base; }
+            $no = $base . '-' . ($j + 1); if (q('SELECT 1 FROM wx_invoices WHERE no=?', [$no])->fetchColumn()) fail('Invoice ' . $no . ' already exists');
+            $amt = (int)round($p['value'] * $m['pct'] / 100); $cid = (int)($p['client_id'] ?? 0);
+            [$cid, $cl] = s17_inv_client($cid ? ['client_id' => $cid] : ['client' => ['company' => $p['client_name'] ?: $p['name']]]);
+            $secs = [['name' => 'Milestone billing', 'note' => '', 'items' => [['desc' => 'Milestone ' . ($j + 1) . ': ' . $m['label'] . ' — ' . $m['pct'] . '% of contract value Rs ' . number_format($p['value']) . ($base ? ' (' . $base . ')' : ''), 'qty' => 1, 'unit' => 'job', 'rate' => $amt, 'amount' => $amt]]]];
+            $i = doc_totals(['sections' => $secs, 'discount' => 0, 'taxPct' => 0]);
+            $i += ['no' => $no, 'quote_id' => null, 'quote_label' => $base, 'client' => $cl, 'client_id' => $cid, 'project' => $p['name'], 'project_id' => (int)$p['id'], 'site' => $p['site'] ?? '', 'issue_date' => date('Y-m-d'), 'due_date' => date('Y-m-d', strtotime('+7 days')),
+                'terms' => '', 'notes' => '', 'schedule' => '', 'payments' => [], 'seqPay' => 0, 'created_by' => $u['name'], 'created_at' => now(), 'po' => '', 'delivery_date' => '', 'delivered' => '', 'line' => $line, 'mode' => '', 'track_note' => 'Milestone ' . ($j + 1) . ' · ' . $m['label']];
+            $i = doc_put('wx_invoices', $i, ['no' => $no, 'quote_id' => null]);
+            $p['milestones'][$j]['inv_id'] = (int)$i['id']; $p['client_id'] = $cid; $p['updates'][] = hist($u, 'Invoice ' . $no . ' raised: ' . $m['label'] . ' (' . $m['pct'] . '%) Rs ' . number_format($amt)) + ['sys' => true];
+            $p = doc_put('wx_projects', $p); log_act($u, 'invoice.create', $no . ' milestone'); out(['ok' => true, 'invoice' => s17_inv_row($i), 'project' => $p]);
 
         case 'clients_merge': // keep one record, move everything from the duplicate onto it
             $u = need(['owner', 'admin']); $keep = (int)($in['keep'] ?? 0); $drop = (int)($in['merge'] ?? 0);

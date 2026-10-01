@@ -398,6 +398,100 @@
     });
   }
 
+  // ================================================================ S5 PROJECTS TABLE (+ milestone billing). Board view stays at #/projects/board.
+  OLD.projects = W.VIEWS.projects;
+  var PST = { planning: "Planning", design: "Design", procurement: "Procurement", execution: "Execution", finishing: "Finishing", handover: "Handover", completed: "Completed" };
+  var MSB = { unbilled: ["Not billed", ""], billed: ["Billed", "warn"], partial: ["Part paid", "gold"], paid: ["Paid", "ok"], missing: ["Invoice deleted", "bad"] };
+  var MPRE = [["50/50", [["Advance", 50], ["On handover", 50]]], ["50/30/20", [["Advance with work order", 50], ["On completion of wood work", 30], ["On handover", 20]]], ["40/30/20/10", [["Advance", 40], ["Civil & ceiling done", 30], ["Wood work done", 20], ["Handover", 10]]]];
+  W.VIEWS.projects = function (el, parts) {
+    if (parts && parts[0] === "board") return OLD.projects(el, []);
+    var st = S.s17p || (S.s17p = { f: "active", line: "", q: "" }), D = null, sales = can("owner,admin,sales");
+    el.innerHTML = head("Projects", "Projects", '<a class="btn" href="#/projects/board">' + ic("layers") + "Board &amp; photos</a>" + (sales ? '<button class="btn pri" id="pt-new">' + ic("plus") + "New project</button>" : "")) +
+      '<div class="it-tot pt-k" id="pt-k"></div><div class="card"><div class="s17-filters"><input type="search" id="pt-q" placeholder="Search project, client, site, number…"><div class="seg" id="pt-f"></div><div class="seg" id="pt-l"></div></div>' +
+      '<div class="tbl-wrap"><table class="tbl s17-tbl"><thead><tr><th>Project</th><th>Type</th><th>Stage</th><th>Handover</th><th class="r">Contract</th><th class="r">Invoiced</th><th class="r">Received</th><th class="r">Balance</th><th>Team</th></tr></thead><tbody id="pt-rows"><tr><td colspan="9" class="empty">Loading…</td></tr></tbody></table></div></div>';
+    function draw() {
+      var k = D.kpi, rc = k.invoiced ? Math.round(100 * k.received / k.invoiced) : 0;
+      $("#pt-k").innerHTML = "<div class='it-t'><small>Active projects</small><b>" + k.active + "</b></div><div class='it-t'><small>Contract value (active)</small><b>" + lakh(k.value) + "</b></div><div class='it-t'><small>Invoiced</small><b>" + lakh(k.invoiced) + "</b></div>" +
+        "<div class='it-t ok'><small>Received</small><b>" + lakh(k.received) + "</b><i class='s17-bar2'><i style='width:" + rc + "%'></i></i></div><div class='it-t" + (k.balance ? " bad" : "") + "'><small>Balance due</small><b>" + lakh(k.balance) + "</b></div><div class='it-t" + (k.late ? " bad" : "") + "'><small>Late handovers</small><b>" + k.late + "</b></div>";
+      var P = D.projects, n = function (f) { return P.filter(F[f]).length; };
+      $("#pt-f").innerHTML = [["active", "Active"], ["late", "Late"], ["due", "Balance due"], ["completed", "Completed"], ["all", "All"]].map(function (x) { return "<button data-f='" + x[0] + "' class='" + (st.f === x[0] ? "on" : "") + "'>" + x[1] + " <small>" + n(x[0]) + "</small></button>"; }).join("");
+      $("#pt-l").innerHTML = [["", "All lines"]].concat(Object.keys(D.lines).map(function (k) { return [k, D.lines[k]]; })).map(function (x) { return "<button data-l='" + x[0] + "' class='" + (st.line === x[0] ? "on" : "") + "'>" + x[1] + "</button>"; }).join("");
+      $$("#pt-f button").forEach(function (b) { b.onclick = function () { st.f = b.dataset.f; draw(); }; });
+      $$("#pt-l button").forEach(function (b) { b.onclick = function () { st.line = b.dataset.l; draw(); }; });
+      rows();
+    }
+    var F = { active: function (p) { return p.stage !== "completed"; }, late: function (p) { return p.late; }, due: function (p) { return p.balance > 0; }, completed: function (p) { return p.stage === "completed"; }, all: function () { return true; } };
+    function rows() {
+      var q = st.q.toLowerCase(), L = D.projects.filter(function (p) { return F[st.f](p) && (!st.line || p.line === st.line) && (!q || [p.name, p.client_name, p.site, p.no, p.ptype].join(" ").toLowerCase().indexOf(q) >= 0); });
+      $("#pt-rows").innerHTML = L.length ? L.map(function (p) { var bp = p.value ? Math.min(100, Math.round(100 * p.invoiced / p.value)) : 0, rp = p.value ? Math.min(100, Math.round(100 * p.received / p.value)) : 0;
+        return "<tr data-id='" + p.id + "' class='" + (p.late ? "s17-od" : "") + "'><td><b>" + esc(p.name) + "</b><small class='muted d'>" + esc(p.client_name || "—") + (p.no ? " · " + esc(p.no) : "") + (p.site ? " · " + esc(p.site) : "") + "</small></td>" +
+          "<td>" + lineTag(p.line) + (p.ptype ? "<small class='muted d'>" + esc(p.ptype) + (p.area ? " · " + num(p.area) + " sft" : "") + "</small>" : "") + "</td>" +
+          "<td class='nw'><span class='badge" + (p.stage === "completed" ? " ok" : p.stage === "handover" ? " gold" : "") + "'>" + PST[p.stage] + "</span><i class='pt-prog'><i style='width:" + p.progress + "%'></i></i></td>" +
+          "<td class='nw" + (p.late ? " s17-red" : "") + "'>" + (p.target ? (p.late ? "⚠ " : "") + dd(p.target) : "<span class='muted'>—</span>") + "</td>" +
+          "<td class='r nw'><b>" + num(p.value) + "</b></td><td class='r nw'>" + (p.invoiced ? num(p.invoiced) : "—") + "<i class='pt-money' title='" + bp + "% billed · " + rp + "% received'><i style='width:" + bp + "%'></i><u style='width:" + rp + "%'></u></i></td>" +
+          "<td class='r nw'>" + (p.received ? num(p.received) : "—") + "</td><td class='r nw" + (p.balance ? " s17-red" : "") + "'>" + (p.balance ? num(p.balance) : "—") + "</td>" +
+          "<td>" + (p.team_names.concat(p.manager_name && p.team_names.indexOf(p.manager_name) < 0 ? [p.manager_name] : []).map(function (t) { return "<span class='pt-av' title='" + esc(t) + "'>" + esc(t.charAt(0)) + "</span>"; }).join("") || "<span class='muted'>—</span>") + "</td></tr>"; }).join("")
+        : "<tr><td colspan='9' class='empty'>No projects here. A project opens automatically when a quotation is approved, or click “New project”.</td></tr>";
+      $$("#pt-rows tr[data-id]").forEach(function (tr) { tr.onclick = function () { detail(+tr.dataset.id); }; });
+    }
+    function load(then) { return api("projs_table").then(function (r) { if (!r.ok) return toast(r.error, true); D = r; if ($("#pt-rows")) draw(); if (then) then(); }); }
+    function detail(id) {
+      var p = D.projects.find(function (x) { return x.id === id; }); if (!p) return;
+      var plan = p.milestones.map(function (m) { return { label: m.label, pct: m.pct, inv_id: m.inv_id }; });
+      var tm = D.team.map(function (t) { return "<label class='pt-chk'><input type='checkbox' value='" + t.id + "'" + (p.team.indexOf(t.id) >= 0 ? " checked" : "") + (sales ? "" : " disabled") + "> " + esc(t.name) + "</label>"; }).join("");
+      W.modal("<div class='pt-dh'><div><h2>" + esc(p.name) + "</h2><p class='muted'>" + esc(p.client_name || "No client") + (p.no ? " · " + esc(p.no) : "") + (p.site ? " · " + esc(p.site) : "") + "</p></div>" + (p.quote_id ? "<a class='btn sm' href='#/quote/" + p.quote_id + "'>" + ic("file-text") + "Quotation</a>" : "") + "</div>" +
+        "<div class='pt-steps'>" + D.stages.map(function (s, i) { var cur = D.stages.indexOf(p.stage); return "<button data-st='" + s + "' class='" + (i < cur ? "done" : i === cur ? "on" : "") + "'" + (sales ? "" : " disabled") + "><i>" + (i < cur ? "✓" : i + 1) + "</i>" + PST[s] + "</button>"; }).join("") + "</div>" +
+        "<div class='pt-money2'><div><small>Contract</small><b>Rs " + num(p.value) + "</b></div><div><small>Invoiced</small><b>Rs " + num(p.invoiced) + "</b></div><div class='ok'><small>Received</small><b>Rs " + num(p.received) + "</b></div><div class='" + (p.balance ? "bad" : "") + "'><small>Balance due</small><b>Rs " + num(p.balance) + "</b></div><div><small>Not billed yet</small><b>Rs " + num(p.unbilled) + "</b></div></div>" +
+        "<div class='pt-cols'><div><h3 class='side-h'>Milestone billing</h3><p class='muted sm'>Bill the contract in parts. Each milestone becomes its own invoice (" + esc(p.no || "WI-…") + "-1, -2 …) that shows in Invoice tracking.</p>" +
+        "<div class='pt-pre'>" + MPRE.map(function (x, i) { return "<button class='btn sm ghost' data-pre='" + i + "'>" + x[0] + "</button>"; }).join("") + "</div><div id='pt-ms'></div>" +
+        "<div class='pt-msf'><button class='btn sm' id='pt-add'>+ Milestone</button><span id='pt-sum' class='muted sm'></span><span style='flex:1'></span><button class='btn sm pri' id='pt-msave'>Save plan</button></div>" +
+        (p.invoices.length ? "<h3 class='side-h' style='margin-top:18px'>Invoices</h3><table class='tbl'><tbody>" + p.invoices.map(function (i) { return "<tr><td><a href='#/invoice/" + i.id + "'><b>" + esc(i.no) + "</b></a></td><td class='r'>" + num(i.total) + "</td><td class='r'>" + num(i.paid) + "</td><td class='r " + (i.balance ? "s17-red" : "") + "'>" + (i.balance ? num(i.balance) : "Paid ✓") + "</td><td class='r'>" + (i.balance && sales ? "<button class='btn sm' data-pay='" + i.id + "'>+ Rs</button>" : "") + "</td></tr>"; }).join("") + "</tbody></table>" : "") + "</div>" +
+        "<div><h3 class='side-h'>Details</h3><div class='s17-g2'><label>Business line<select id='pd-line'>" + opts(D.lines, p.line, "—") + "</select></label><label>Project type<select id='pd-type'><option value=''>—</option>" + D.types.map(function (t) { return "<option" + (t === p.ptype ? " selected" : "") + ">" + esc(t) + "</option>"; }).join("") + "</select></label>" +
+        "<label>Contract value (Rs)<input id='pd-val' type='number' value='" + p.value + "'></label><label>Covered area (sft)<input id='pd-area' type='number' value='" + (p.area || "") + "'></label><label>Start<input id='pd-s' type='date' value='" + esc(p.start) + "'></label><label>Handover target<input id='pd-t' type='date' value='" + esc(p.target) + "'></label>" +
+        "<label class='full'>Project manager<select id='pd-m'><option value=''>—</option>" + D.team.map(function (t) { return "<option value='" + t.id + "'" + (+p.manager === t.id ? " selected" : "") + ">" + esc(t.name) + "</option>"; }).join("") + "</select></label></div><div class='pt-team'><small class='muted'>Team</small>" + tm + "</div>" +
+        (p.last ? "<p class='pt-last'><small class='muted'>Last update · " + ago(p.last.t) + "</small>" + esc(p.last.text) + "</p>" : "") + "<a class='btn sm ghost' href='#/projects/board'>" + ic("image") + "Photos &amp; client updates (" + p.photos + ")</a></div></div>" +
+        "<p class='err' id='pd-e'></p><div class='modal-actions'><button class='btn' onclick='WXA.closeModal()'>Close</button>" + (sales ? "<button class='btn pri' id='pd-go'>Save details</button>" : "") + "</div>");
+      $("#modal-card").classList.add("wide"); W.fillIcons($("#modal-card"));
+      if (!sales) $$("#modal-card input,#modal-card select,#pt-add,#pt-msave,.pt-pre button").forEach(function (x) { x.disabled = true; });
+      function ms() {
+        var sum = 0; $("#pt-ms").innerHTML = plan.length ? plan.map(function (m, j) { var o = p.milestones[j], billed = !!m.inv_id; sum += +m.pct || 0; var s = o && o.inv_id === m.inv_id ? MSB[o.status] : MSB.unbilled;
+          return "<div class='pt-m" + (billed ? " billed" : "") + "'><b>" + (j + 1) + "</b><input data-j='" + j + "' data-k='label' value='" + esc(m.label) + "'" + (billed ? " disabled" : "") + "><span class='pt-pct'><input data-j='" + j + "' data-k='pct' type='number' value='" + m.pct + "'" + (billed ? " disabled" : "") + ">%</span><span class='r nw'>Rs " + num(p.value * (+m.pct || 0) / 100) + "</span>" +
+            (billed ? "<span class='badge " + s[1] + "'>" + (o && o.inv_no ? esc(o.inv_no) + " · " : "") + s[0] + "</span>" : "<span class='pt-ma'>" + (o && !o.inv_id && sales ? "<button class='btn sm' data-bill='" + j + "'>Raise invoice</button>" : "") + "<button class='icon-btn' data-del='" + j + "' title='Remove'>✕</button></span>") + "</div>"; }).join("") : "<p class='empty sm'>No milestones. Pick a plan above (e.g. 50/30/20) or add your own.</p>";
+        $("#pt-sum").innerHTML = plan.length ? "Total <b class='" + (Math.abs(sum - 100) > .01 ? "s17-red" : "") + "'>" + sum + "%</b>" : "";
+        $$("#pt-ms input").forEach(function (i) { i.oninput = function () { plan[+i.dataset.j][i.dataset.k] = i.dataset.k === "pct" ? +i.value : i.value; if (i.dataset.k === "pct") { var s = plan.reduce(function (a, m) { return a + (+m.pct || 0); }, 0); $("#pt-sum").innerHTML = "Total <b class='" + (Math.abs(s - 100) > .01 ? "s17-red" : "") + "'>" + s + "%</b> · unsaved"; i.closest(".pt-m").querySelector(".r").textContent = "Rs " + num(p.value * (+i.value || 0) / 100); $$("[data-bill]").forEach(function (b) { b.disabled = true; b.title = "Save the plan first"; }); } }; });
+        $$("#pt-ms [data-del]").forEach(function (b) { b.onclick = function () { plan.splice(+b.dataset.del, 1); ms(); $$("[data-bill]").forEach(function (b) { b.disabled = true; }); }; });
+        $$("#pt-ms [data-bill]").forEach(function (b) { b.onclick = function () { bill(+b.dataset.bill, false); }; });
+      }
+      function bill(j, replace) {
+        api("proj_bill", { id: p.id, k: j, replace: replace }).then(function (r) {
+          if (!r.ok && r.error === "REPLACE") { if (confirm("This project already has one full invoice (" + p.invoices.map(function (i) { return i.no; }).join(", ") + ") with no payments.\n\nReplace it with milestone invoices? The full invoice will be removed.")) bill(j, true); return; }
+          if (!r.ok) return ($("#pd-e").textContent = r.error);
+          toast("Invoice " + r.invoice.no + " raised · Rs " + num(r.invoice.total) + " ✓"); load(function () { detail(p.id); });
+        });
+      }
+      ms();
+      $$(".pt-pre [data-pre]").forEach(function (b) { b.onclick = function () { if (plan.some(function (m) { return m.inv_id; })) return toast("Some milestones are already billed", true); plan = MPRE[+b.dataset.pre][1].map(function (x) { return { label: x[0], pct: x[1], inv_id: null }; }); ms(); $$("[data-bill]").forEach(function (b) { b.disabled = true; b.title = "Save the plan first"; }); }; });
+      $("#pt-add").onclick = function () { var used = plan.reduce(function (a, m) { return a + (+m.pct || 0); }, 0); plan.push({ label: "Milestone " + (plan.length + 1), pct: Math.max(0, 100 - used), inv_id: null }); ms(); };
+      $("#pt-msave").onclick = function () { api("proj_milestones", { id: p.id, plan: plan }).then(function (r) { if (!r.ok) return ($("#pd-e").textContent = r.error); toast("Milestone plan saved ✓"); load(function () { detail(p.id); }); }); };
+      $$(".pt-steps [data-st]").forEach(function (b) { b.onclick = function () { if (b.dataset.st === p.stage) return; api("proj_save", { id: p.id, stage: b.dataset.st }).then(function (r) { if (!r.ok) return ($("#pd-e").textContent = r.error); toast("Stage: " + PST[b.dataset.st] + " ✓"); load(function () { detail(p.id); }); }); }; });
+      $$("#modal-card [data-pay]").forEach(function (b) { b.onclick = function () { var i = p.invoices.find(function (x) { return x.id === +b.dataset.pay; }); payForm({ id: i.id, no: i.no, balance: i.balance, company: p.client_name }, function () { load(); }); }; });
+      if ($("#pd-go")) $("#pd-go").onclick = function () {
+        var team = $$(".pt-team input:checked").map(function (x) { return +x.value; });
+        api("proj_save", { id: p.id, value: $("#pd-val").value, start: $("#pd-s").value, target: $("#pd-t").value, manager: $("#pd-m").value }).then(function (r) { if (!r.ok) throw r.error;
+          return api("proj_meta", { id: p.id, line: $("#pd-line").value, ptype: $("#pd-type").value, area: $("#pd-area").value, team: team }); })
+          .then(function (r) { if (!r.ok) throw r.error; toast("Project saved ✓"); load(function () { detail(p.id); }); }).catch(function (e) { $("#pd-e").textContent = typeof e === "string" ? e : "Could not save"; });
+      };
+    }
+    $("#pt-q").oninput = function () { st.q = this.value; if (D) rows(); };
+    if ($("#pt-new")) $("#pt-new").onclick = function () {
+      W.modal("<h2>New project</h2><p class='muted'>Usually a project opens by itself when a quotation is approved. Use this for work without a quotation.</p><div class='s17-g2'><label class='full'>Project name<input id='np-n' placeholder='e.g. Haier head office – 3rd floor'></label><label>Client / company<input id='np-c' list='np-cl'></label><label>Site<input id='np-s'></label>" +
+        "<label>Business line<select id='np-l'>" + opts(D.lines, "project") + "</select></label><label>Project type<select id='np-t'><option value=''>—</option>" + D.types.map(function (t) { return "<option>" + esc(t) + "</option>"; }).join("") + "</select></label><label>Contract value (Rs)<input id='np-v' type='number'></label><label>Handover target<input id='np-d' type='date'></label></div><p class='err' id='np-e'></p><div class='modal-actions'><button class='btn' onclick='WXA.closeModal()'>Cancel</button><button class='btn pri' id='np-go'>Create project</button></div>");
+      $("#np-go").onclick = function () { var id; api("proj_save", { name: $("#np-n").value, client_name: $("#np-c").value, site: $("#np-s").value, value: $("#np-v").value, target: $("#np-d").value }).then(function (r) { if (!r.ok) throw r.error; id = r.project.id;
+        return api("proj_meta", { id: id, line: $("#np-l").value, ptype: $("#np-t").value }); }).then(function (r) { if (!r.ok) throw r.error; W.closeModal(); toast("Project created ✓"); st.f = "active"; load(function () { detail(id); }); }).catch(function (e) { $("#np-e").textContent = typeof e === "string" ? e : "Could not save"; }); };
+    };
+    meta().then(function () { load(); });
+  };
+
   // ================================================================ S4 QUOTATION EDITOR: layout, type presets, live preview, template import/export
   var PRESET = {
     fitout: { layout: "project", secs: ["Civil work", "Flooring", "Ceiling", "Paint", "Wood work", "Glass work", "Electrical", "HVAC", "Plumbing"], scope: "" },

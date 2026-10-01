@@ -817,6 +817,50 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
       }
       case "pay_delete": { const u = need(["owner", "admin"]), i = findI(inp.id), p = i.payments.find((x) => x.id === +inp.pay_id); if (!p) throw new Fail("Payment not found", 404); i.payments = i.payments.filter((x) => x !== p); log(db, u, "payment.delete", `${i.no} ${p.rcpt}`, ip); return done({ ok: true, invoice: invPub(i) }); }
       // ---------- projects
+      case "projs_table": {
+        need(ALL); const today = now().slice(0, 10), inv = db.invoices.map(invPub), nm = (id) => (db.users.find((x) => x.id === +id) || {}).name || "";
+        const rows = db.projects.map((p) => {
+          const mine = inv.filter((i) => +i.project_id === p.id || (p.invoice_id && i.id === p.invoice_id)), byId = Object.fromEntries(mine.map((i) => [i.id, i]));
+          const invoiced = Math.round(mine.reduce((a, i) => a + i.total, 0)), rec = Math.round(mine.reduce((a, i) => a + i.paid, 0)), value = +p.value || 0, si = PSTAGES.indexOf(p.stage), dn = ["handover", "completed"].includes(p.stage), last = p.updates[p.updates.length - 1];
+          return { id: p.id, name: p.name, client_id: p.client_id || null, client_name: p.client_name || "", no: p.no || "", site: p.site || "", line: p.line || "", ptype: p.ptype || "", area: +p.area || 0, stage: p.stage, progress: si < 0 ? 0 : Math.round(si / (PSTAGES.length - 1) * 100),
+            start: p.start || "", target: p.target || "", late: !dn && !!p.target && p.target < today, value, invoiced, received: rec, balance: Math.max(0, invoiced - rec), unbilled: Math.max(0, value - invoiced),
+            manager: p.manager || null, manager_name: p.manager ? nm(p.manager) : "", team: p.team || [], team_names: (p.team || []).map(nm).filter(Boolean), photos: (p.photos || []).length, cover: (p.photos || []).length ? p.photos[p.photos.length - 1].url : "",
+            last: last ? { t: last.t, text: last.text } : null, quote_id: p.quote_id || null, invoice_id: p.invoice_id || null,
+            milestones: (p.milestones || []).map((m) => { const i = m.inv_id ? byId[m.inv_id] : null; return { ...m, amount: Math.round(value * m.pct / 100), inv_no: i ? i.no : "", paid: i ? i.paid : 0, status: !m.inv_id ? "unbilled" : !i ? "missing" : i.balance <= 0 ? "paid" : i.paid > 0 ? "partial" : "billed" }; }),
+            invoices: mine.map((i) => ({ id: i.id, no: i.no, total: i.total, paid: i.paid, balance: i.balance })) };
+        }).sort((a, b) => b.id - a.id);
+        const k = { active: 0, value: 0, invoiced: 0, received: 0, balance: 0, late: 0 };
+        rows.forEach((r) => { if (r.stage !== "completed") { k.active++; k.value += r.value; k.late += r.late ? 1 : 0; } k.invoiced += r.invoiced; k.received += r.received; k.balance += r.balance; });
+        return { ok: true, projects: rows, kpi: k, stages: PSTAGES, team: db.users.filter((u) => u.active).map((u) => ({ id: u.id, name: u.name })), lines: S17.lines, types: S17.projectTypes };
+      }
+      case "proj_meta": {
+        const u = need(SALES), p = findP(inp.id);
+        if ("line" in inp) p.line = S17.lines[inp.line] ? inp.line : ""; if ("ptype" in inp) p.ptype = clip(inp.ptype, 60); if ("area" in inp) p.area = Math.max(0, Math.round(num(inp.area)));
+        if ("team" in inp) p.team = [...new Set((Array.isArray(inp.team) ? inp.team : []).map(Number).filter(Boolean))];
+        if (inp.client_id) { const c = db.clients.find((x) => x.id === +inp.client_id); if (!c) throw new Fail("Client not found", 404); p.client_id = c.id; p.client_name = c.company || c.name; }
+        log(db, u, "project.update", p.name, ip); return done({ ok: true, project: p });
+      }
+      case "proj_milestones": {
+        const u = need(SALES), p = findP(inp.id), old = p.milestones || [], nw = []; let sum = 0;
+        (Array.isArray(inp.plan) ? inp.plan : []).slice(0, 12).forEach((m, j) => { const pct = Math.round(num(m.pct) * 100) / 100; if (pct <= 0) return; sum += pct; nw.push({ label: clip(m.label, 80) || "Milestone " + (j + 1), pct, inv_id: (old[j] || {}).inv_id || null }); });
+        old.forEach((m, j) => { if (m.inv_id && (!nw[j] || nw[j].inv_id !== m.inv_id || nw[j].pct !== m.pct)) throw new Fail("Milestone " + (j + 1) + " is already billed; it cannot be changed"); });
+        if (nw.length && Math.abs(sum - 100) > 0.01) throw new Fail("Milestones must add up to 100% (now " + sum + "%)");
+        p.milestones = nw; log(db, u, "project.milestones", p.name, ip); return done({ ok: true, project: p });
+      }
+      case "proj_bill": {
+        const u = need(SALES), p = findP(inp.id), j = +inp.k, m = (p.milestones || [])[j];
+        if (!m) throw new Fail("Milestone not found", 404); if (m.inv_id) throw new Fail("This milestone is already billed"); if (!(+p.value > 0)) throw new Fail("Set the contract value first");
+        const full = p.invoice_id && db.invoices.find((x) => x.id === p.invoice_id);
+        if (full) { if (full.payments.length) throw new Fail("The full contract invoice already has payments, so milestone billing cannot replace it"); if (!inp.replace) throw new Fail("REPLACE");
+          db.invoices = db.invoices.filter((x) => x !== full); p.updates.push({ t: now(), user: u.name, text: "Full invoice " + full.no + " replaced by milestone invoices", sys: true }); p.invoice_id = null; }
+        const line = p.line || "project"; if (!p.no) p.no = s17InvNo(line, db); const no = p.no + "-" + (j + 1); if (db.invoices.some((x) => x.no === no)) throw new Fail("Invoice " + no + " already exists");
+        const amt = Math.round(p.value * m.pct / 100), [cid, cl] = s17InvClient(db, p.client_id ? { client_id: p.client_id } : { client: { company: p.client_name || p.name } });
+        const i = totals({ sections: [{ name: "Milestone billing", note: "", items: [{ desc: "Milestone " + (j + 1) + ": " + m.label + " — " + m.pct + "% of contract value Rs " + p.value.toLocaleString("en-US") + " (" + p.no + ")", qty: 1, unit: "job", rate: amt, amount: amt }] }], discount: 0, taxPct: 0 });
+        const d7 = new Date(Date.now() + 7 * 864e5).toISOString().slice(0, 10);
+        Object.assign(i, { id: ++db.seqI, no, quote_id: null, quote_label: p.no, client: cl, client_id: cid, project: p.name, project_id: p.id, site: p.site || "", issue_date: now().slice(0, 10), due_date: d7, terms: "", notes: "", schedule: "", payments: [], seqPay: 0, created_by: u.name, created_at: now(), po: "", delivery_date: "", delivered: "", line, mode: "", track_note: "Milestone " + (j + 1) + " · " + m.label });
+        db.invoices.push(i); m.inv_id = i.id; p.client_id = cid; p.updates.push({ t: now(), user: u.name, text: "Invoice " + no + " raised: " + m.label + " (" + m.pct + "%) Rs " + amt.toLocaleString("en-US"), sys: true });
+        log(db, u, "invoice.create", no + " milestone", ip); return done({ ok: true, invoice: s17InvRow(i), project: p });
+      }
       case "projs_list": { need(ALL); return { ok: true, projects: db.projects.slice().reverse().map((p) => { const i = p.invoice_id && db.invoices.find((x) => x.id === p.invoice_id); return { ...p, paid: i ? invPub(i).paid : 0, manager_name: p.manager ? ((db.users.find((u) => u.id === p.manager) || {}).name || "") : "" }; }), stages: PSTAGES, team: db.users.filter((u) => u.active).map((u) => ({ id: u.id, name: u.name })) }; }
       case "proj_save": {
         const u = need(["owner", "admin", "sales"]); let p = inp.id ? findP(inp.id) : null;
