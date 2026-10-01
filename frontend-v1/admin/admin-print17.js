@@ -61,7 +61,7 @@
       "h3{font-size:8.6pt;letter-spacing:.16em;text-transform:uppercase;color:var(--g2);margin:6mm 0 2.4mm;break-after:avoid}" +
       ".terms{margin:0;padding-left:4.5mm;color:#374151;font-size:8.6pt}.terms li{margin-bottom:1.1mm;break-inside:avoid}" +
       ".scope{columns:2;column-gap:8mm;margin:0;padding-left:4.5mm;font-size:8.8pt}.scope li{margin-bottom:1.2mm;break-inside:avoid}" +
-      ".bank{display:grid;grid-template-columns:auto 1fr auto 1fr;gap:.8mm 4mm;font-size:8.6pt;border:1px solid var(--line);border-radius:2mm;padding:3mm 4mm}.bank small{color:var(--mut)}" +
+      ".banks{display:grid;grid-template-columns:repeat(auto-fit,minmax(60mm,1fr));gap:3mm}.bank1{display:grid;grid-template-columns:auto 1fr;gap:.6mm 3mm;font-size:8.4pt;border:1px solid var(--line);border-radius:2mm;padding:3mm 4mm;align-content:start}.bank1 .bn{grid-column:1/-1;font-size:9pt;margin-bottom:.8mm}.bank1 small{color:var(--mut)}.bank1 span{font-weight:600;word-break:break-all}" + ".bank{display:grid;grid-template-columns:auto 1fr auto 1fr;gap:.8mm 4mm;font-size:8.6pt;border:1px solid var(--line);border-radius:2mm;padding:3mm 4mm}.bank small{color:var(--mut)}" +
       ".sign{display:grid;grid-template-columns:1fr 1fr;gap:16mm;margin-top:14mm;break-inside:avoid}.sign div{border-top:1px solid var(--ink);padding-top:1.8mm;font-size:8.4pt;font-weight:700}.sign small{display:block;font-weight:400;color:var(--mut);font-size:7.6pt}" +
       ".sign.three{grid-template-columns:repeat(3,1fr);gap:10mm}" +
       ".xf{border-top:1px solid var(--line);padding-top:2mm;font-size:7pt;color:var(--mut);display:flex;justify-content:space-between;gap:6mm;background:#fff}.xf b{color:var(--g2);font-weight:600}" +
@@ -96,9 +96,21 @@
       (d.tax ? "<div><span>Tax (" + (+d.taxPct || 0) + "%)</span><span>" + money(d.tax) + "</span></div>" : "") + '<div class="g"><span>' + (label || "TOTAL (Rs)") + "</span><span>" + money(d.total) + "</span></div></div></div>";
   }
   function termsBlock(t, c) { var l = lines(t || c.payTerms); return l.length ? '<div class="keep"><h3>Terms &amp; conditions</h3><ol class="terms">' + l.map(function (x) { return "<li>" + esc(x) + "</li>"; }).join("") + "</ol></div>" : ""; }
-  function bankBlock(c) {
-    if (!c.bankName && !c.bankAccount && !c.bankIban) return "";
-    return '<div class="keep"><h3>Bank details</h3><div class="bank">' + [["Bank", c.bankName], ["Account title", c.bankTitle], ["Account no.", c.bankAccount], ["IBAN", c.bankIban]].filter(function (r) { return r[1]; }).map(function (r) { return "<small>" + r[0] + "</small><b>" + esc(r[1]) + "</b>"; }).join("") + "</div></div>";
+  // banks for this document: "furniture" docs (WF- / furniture type) → banks marked furniture; others → interior; "all" banks always
+  function banksFor(c, line) {
+    var L = (c.banks || []).filter(function (b) { return b.use === "all" || b.use === line; });
+    if (!L.length && (c.banks || []).length) L = c.banks.slice(0, 1);
+    if (!L.length && (c.bankAccount || c.bankIban)) L = [{ bank: c.bankName, title: c.bankTitle, account: c.bankAccount, iban: c.bankIban }];
+    return L;
+  }
+  P.banksFor = banksFor;
+  P.docLine = function (d) { return d.line === "furniture" || d.qtype === "furniture" || /^WF/i.test(d.no || "") ? "furniture" : "interior"; };
+  function bankBlock(c, line) {
+    var L = banksFor(c, line || "interior"), W = (c.wallets || []).filter(function (w) { return w.number; });
+    if (!L.length && !W.length) return "";
+    return '<div class="keep"><h3>Payment details</h3><div class="banks">' + L.map(function (b) {
+      return '<div class="bank1"><b class="bn">' + esc(b.bank || "Bank") + "</b>" + [["Account title", b.title], ["Account no.", b.account], ["IBAN", b.iban], ["Branch", b.branch ? b.branch + (b.code ? " (" + b.code + ")" : "") : ""]].filter(function (r) { return r[1]; }).map(function (r) { return "<small>" + r[0] + "</small><span>" + esc(r[1]) + "</span>"; }).join("") + "</div>"; }).join("") +
+      (W.length ? '<div class="bank1 wal"><b class="bn">Mobile wallets</b>' + W.map(function (w) { return "<small>" + esc(w.name) + "</small><span>" + esc(w.number) + "</span>"; }).join("") + "</div>" : "") + "</div></div>";
   }
   function signBlock(left, right, mid) {
     var cell = function (x) { return "<div>" + esc(x[0]) + "<small>" + esc(x[1] || "") + "</small>" + (x[2] ? "<small>" + esc(x[2]) + "</small>" : "") + "</div>"; };
@@ -113,7 +125,7 @@
         : '<tr><td class="sr">' + esc(x.code) + "</td><td>" + esc(it.desc) + '</td><td class="r n">' + qtyf(it.qty) + '</td><td class="c">' + (UNIT[it.unit] || esc(it.unit)) + '</td><td class="r n">' + amt(it.rate) + '</td><td class="r n">' + amt(it.amount) + "</td></tr>";
     }).join("");
   }
-  var signer = function (q, c) { return [q.sign_name || c.signName || "Prepared by", q.sign_title || c.signTitle || "For " + (c.name || "Woodex Interior")]; };
+  var signer = function (q, c) { var d = (c.signers || [])[0] || {}; return [q.sign_name || c.signName || d.name || "Prepared by", q.sign_title || c.signTitle || d.title || "For " + (c.name || "Woodex Interior")]; };
 
   // ------------------------------------------------------------- SINGLE-PAGE QUOTATION
   function single(q, c, pdf) {
@@ -125,7 +137,7 @@
       (q.intro ? '<p class="intro">' + esc(q.intro) + "</p>" : "") + scopeBlock(q) +
       '<table class="t"><thead><tr><th>Sr</th><th>Description</th><th class="r">Qty</th><th class="c">Unit</th><th class="r">Rate (Rs)</th><th class="r">Amount (Rs)</th></tr></thead><tbody>' +
       secs.map(function (s) { var si = q.sections.indexOf(s); return '<tr class="sec"><td class="sr">' + two(si + 1) + '</td><td colspan="4">' + esc(s.name) + '</td><td class="r n">' + amt(s.subtotal) + "</td></tr>" + itemRows(s, si, "single") + (s.note ? '<tr class="sp"><td></td><td class="d" colspan="5">Note: ' + esc(s.note) + "</td></tr>" : ""); }).join("") +
-      "</tbody></table>" + totals(q) + termsBlock(q.terms, c) + bankBlock(c) +
+      "</tbody></table>" + totals(q) + termsBlock(q.terms, c) + bankBlock(c, P.docLine(q)) +
       signBlock([signer(q, c)[0], signer(q, c)[1]], ["Accepted by client", q.client.company || q.client.name, "Signature · date · stamp"]);
     return wrap("Quotation " + label + " - " + q.client.name, body, c, label, pdf);
   }
@@ -151,20 +163,21 @@
           '<table class="t"><thead><tr><th>Item #</th><th>Description</th><th class="c">Unit</th><th class="r">No\'s / qty</th><th class="r">Rate (Rs)</th><th class="r">Amount (Rs)</th></tr></thead><tbody>' + itemRows(s, si, "trade") +
           '<tr class="ss"><td></td><td colspan="4">Total · ' + esc(s.name) + '</td><td class="r n">' + money(s.subtotal) + "</td></tr></tbody></table>" + (s.note ? '<div class="note">' + esc(s.note) + "</div>" : "");
       }).join("") +
-      '<div class="brk"></div>' + termsBlock(q.terms, c) + bankBlock(c) + signBlock([signer(q, c)[0], signer(q, c)[1]], ["Accepted by client", q.client.company || q.client.name, "Signature · date · stamp"]);
+      '<div class="brk"></div>' + termsBlock(q.terms, c) + bankBlock(c, P.docLine(q)) + signBlock([signer(q, c)[0], signer(q, c)[1]], ["Accepted by client", q.client.company || q.client.name, "Signature · date · stamp"]);
     return wrap("Quotation " + label + " - " + q.client.name, body, c, label, pdf);
   }
 
+  function legacy(c, d) { var b = banksFor(c, P.docLine(d))[0], s = (c.signers || [])[0] || {}; c = Object.assign({}, c); if (b) { c.bankName = b.bank; c.bankTitle = b.title; c.bankAccount = b.account; c.bankIban = b.iban; } c.signName = c.signName || s.name || ""; return c; }
   P.quote = function (q, c, opts) {
     opts = opts || {};
     if (q.layout === "single") return single(q, c, !!opts.pdf);
     if (q.layout === "project") return project(q, c, !!opts.pdf);
-    return OLDQ(q, c, opts);
+    return OLDQ(q, legacy(c, q), opts);
   };
 
   // ------------------------------------------------------------- INVOICE (new design, all invoices)
   P.invoice = function (inv, c, opts) {
-    opts = opts || {}; if (opts.classic) return OLDI(inv, c);
+    opts = opts || {}; if (opts.classic) return OLDI(inv, legacy(c, inv));
     var st = inv.payStatus === "paid" ? '<span class="stamp paid">Paid</span>' : inv.payStatus === "partial" ? '<span class="stamp part">Part paid</span>' : '<span class="stamp due">' + (inv.mode === "after_delivery" ? "Due on delivery" : "Unpaid") + "</span>";
     var meta = [["Invoice no.", inv.no], ["Date", dlong(inv.issue_date)]].concat(inv.due_date ? [["Due date", dlong(inv.due_date)]] : []).concat(inv.po ? [["PO #", inv.po]] : []);
     var secs = (inv.sections || []).filter(function (s) { return s.items.length; });
@@ -175,8 +188,8 @@
       "</tbody></table>" + totals(inv, "INVOICE TOTAL (Rs)") +
       '<div class="keep"><h3>Payments received &nbsp;' + st + "</h3>" + (inv.payments.length ? '<table class="t"><thead><tr><th>Receipt</th><th>Date</th><th>Method</th><th>Reference</th><th class="r">Amount (Rs)</th></tr></thead><tbody>' + inv.payments.map(function (p) { return "<tr><td>" + esc(p.rcpt) + "</td><td>" + dlong(p.date) + "</td><td>" + esc(p.method) + "</td><td>" + esc(p.ref || "") + '</td><td class="r n">' + money(p.amount) + "</td></tr>"; }).join("") + "</tbody></table>" : '<p class="intro">No payments received yet.</p>') +
       '<div class="foot2" style="margin-top:2mm"><div></div><div class="tot"><div><span>Received</span><span>' + money(inv.paid) + '</span></div><div class="g"><span>BALANCE DUE (Rs)</span><span>' + money(inv.balance) + "</span></div></div></div></div>" +
-      termsBlock(inv.terms, c) + bankBlock(c) + (inv.notes ? "<h3>Notes</h3><p class='intro'>" + esc(inv.notes) + "</p>" : "") +
-      signBlock([c.signName || "Prepared by", c.signTitle || "For " + c.name], ["Received by", inv.client.company || inv.client.name, "Signature · date · stamp"]);
+      termsBlock(inv.terms, c) + bankBlock(c, P.docLine(inv)) + (inv.notes ? "<h3>Notes</h3><p class='intro'>" + esc(inv.notes) + "</p>" : "") +
+      signBlock([inv.sign_name || c.signName || ((c.signers || [])[0] || {}).name || "Prepared by", inv.sign_title || c.signTitle || ((c.signers || [])[0] || {}).title || "For " + c.name], ["Received by", inv.client.company || inv.client.name, "Signature · date · stamp"]);
     return wrap("Invoice " + inv.no + " - " + inv.client.name, body, c, "Invoice " + inv.no, false);
   };
   P.layouts = { single: "Single page", project: "Project (summary + trades)", classic: "Classic BOQ" };

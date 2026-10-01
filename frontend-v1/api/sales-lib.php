@@ -48,7 +48,11 @@ function quote_put(array $x): array { return doc_put('wx_quotes', $x, ['no' => $
 // ---------------------------------------------------------------- business helpers
 function company_cfg(): array {
     return array_merge(['name' => 'Woodex Interior', 'tagline' => 'Design · Build · Furniture', 'address' => 'M-71, Zainab Tower, Model Town Link Road, Lahore', 'phones' => '+92 322 4000768 · +92 321 4686884',
-        'email' => 'info@woodex.com.pk', 'web' => 'woodex.com.pk', 'ntn' => '', 'bankName' => '', 'bankTitle' => '', 'bankAccount' => '', 'bankIban' => '', 'signName' => '', 'signTitle' => 'For Woodex Interior', 'payTerms' => '', 'prefix' => 'WI-', 'nextNo' => 10100,
+        'email' => 'info@woodex.com.pk', 'web' => 'woodex.com.pk', 'ntn' => '', 'bankName' => '', 'bankTitle' => '', 'bankAccount' => '', 'bankIban' => '', 'signName' => 'Imtiaz Ahmad', 'signTitle' => 'Director',
+        'signers' => [['name' => 'Imtiaz Ahmad', 'title' => 'Director'], ['name' => 'Nabeel Afzal', 'title' => 'Marketing Manager']],
+        'banks' => [['bank' => 'Bank Alfalah', 'title' => 'WOODEX INTERIOR', 'account' => '02931007869105', 'iban' => 'PK06ALFH0293001007869105', 'branch' => 'Link Rd Model Town Br: Lahore', 'code' => '0293', 'use' => 'interior'],
+                    ['bank' => 'Meezan Bank', 'title' => 'WOODEX FURNITURE', 'account' => '02810111519091', 'iban' => 'PK43MEZN0002810111519091', 'branch' => 'Model Town Link Road, Lahore', 'code' => '', 'use' => 'furniture']],
+        'wallets' => [['name' => 'JazzCash', 'number' => '+92 321 3656096'], ['name' => 'Easypaisa', 'number' => '+92 321 3656096']], 'payTerms' => '', 'prefix' => 'WI-', 'nextNo' => 10100,
         'validDays' => 15, 'consultant' => 'Woodex Interior'], jread(COMPANY_FILE));
 }
 /** Reserve the next document number atomically (file lock). */
@@ -112,6 +116,12 @@ function sales_stats(): array {
 }
 
 // ---------------------------------------------------------------- actions
+function co_list(string $k, $rows): array { // banks / wallets / signers lists from Settings
+    $f = ['banks' => ['bank', 'title', 'account', 'iban', 'branch', 'code', 'use'], 'wallets' => ['name', 'number'], 'signers' => ['name', 'title']][$k] ?? null; if (!$f || !is_array($rows)) return [];
+    $o = []; foreach (array_slice($rows, 0, 8) as $r) { if (!is_array($r)) continue; $x = []; foreach ($f as $n) $x[$n] = clip($r[$n] ?? '', 120);
+        if ($k === 'banks') $x['use'] = in_array($x['use'], ['all', 'interior', 'furniture'], true) ? $x['use'] : 'all'; if (implode('', $x) !== '' && ($x[$f[0]] !== '' || $x[$f[1]] !== '')) $o[] = $x; }
+    return $o;
+}
 function sales_actions(string $action, array $in): bool {
     if (!preg_match('~^(tpl_|quotes?_|invs?_|pay_|projs?_|company_)~', $action)) return false;
     sales_migrate(); crm_migrate();
@@ -121,7 +131,7 @@ function sales_actions(string $action, array $in): bool {
         case 'company_get': need($ALL); out(['ok' => true, 'company' => company_cfg(), 'units' => SALES_UNITS]);
         case 'company_save':
             $u = need($OA); $c = company_cfg(); $s = is_array($in['company'] ?? null) ? $in['company'] : [];
-            foreach ($c as $k => $v) if (array_key_exists($k, $s)) $c[$k] = in_array($k, ['nextNo', 'validDays'], true) ? max(1, (int)round(numv($s[$k]))) : clip($s[$k], $k === 'payTerms' ? 2000 : 300);
+            foreach ($c as $k => $v) if (array_key_exists($k, $s)) $c[$k] = is_array($v) ? co_list($k, $s[$k]) : in_array($k, ['nextNo', 'validDays'], true) ? max(1, (int)round(numv($s[$k]))) : clip($s[$k], $k === 'payTerms' ? 2000 : 300);
             $used = 0; foreach (q('SELECT DISTINCT no FROM wx_quotes')->fetchAll(PDO::FETCH_COLUMN) as $no) $used = max($used, (int)preg_replace('~\D~', '', $no));
             if ($c['nextNo'] <= $used) fail('Next number must be higher than ' . $used . ' (already used)');
             jwrite(COMPANY_FILE, $c); log_act($u, 'settings.company'); out(['ok' => true, 'company' => $c]);

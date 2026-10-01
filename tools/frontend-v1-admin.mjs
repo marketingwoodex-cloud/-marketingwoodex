@@ -484,7 +484,11 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
   const QSTATUS = ["draft", "sent", "approved", "rejected", "superseded", "invoiced"];
   const PSTAGES = ["planning", "design", "procurement", "execution", "finishing", "handover", "completed"];
   const COMPANY = path.join(PRIV, "company.json");
-  const companyCfg = () => Object.assign({ name: "Woodex Interior", tagline: "Design · Build · Furniture", address: "M-71, Zainab Tower, Model Town Link Road, Lahore", phones: "+92 322 4000768 · +92 321 4686884", email: "info@woodex.com.pk", web: "woodex.com.pk", ntn: "", bankName: "", bankTitle: "", bankAccount: "", bankIban: "", signName: "", signTitle: "For Woodex Interior", payTerms: "", prefix: "WI-", nextNo: 10100, validDays: 15, consultant: "Woodex Interior" }, jr(COMPANY, {}));
+  const coList = (k, rows) => { const f = { banks: ["bank", "title", "account", "iban", "branch", "code", "use"], wallets: ["name", "number"], signers: ["name", "title"] }[k]; if (!f || !Array.isArray(rows)) return [];
+    return rows.slice(0, 8).filter((r) => r && typeof r === "object").map((r) => { const x = {}; f.forEach((n) => { x[n] = clip(r[n], 120); }); if (k === "banks") x.use = ["all", "interior", "furniture"].includes(x.use) ? x.use : "all"; return x; }).filter((x) => x[f[0]] || x[f[1]]); };
+  const companyCfg = () => Object.assign({ name: "Woodex Interior", tagline: "Design · Build · Furniture", address: "M-71, Zainab Tower, Model Town Link Road, Lahore", phones: "+92 322 4000768 · +92 321 4686884", email: "info@woodex.com.pk", web: "woodex.com.pk", ntn: "", bankName: "", bankTitle: "", bankAccount: "", bankIban: "", signName: "Imtiaz Ahmad", signTitle: "Director", signers: [{ name: "Imtiaz Ahmad", title: "Director" }, { name: "Nabeel Afzal", title: "Marketing Manager" }],
+    banks: [{ bank: "Bank Alfalah", title: "WOODEX INTERIOR", account: "02931007869105", iban: "PK06ALFH0293001007869105", branch: "Link Rd Model Town Br: Lahore", code: "0293", use: "interior" }, { bank: "Meezan Bank", title: "WOODEX FURNITURE", account: "02810111519091", iban: "PK43MEZN0002810111519091", branch: "Model Town Link Road, Lahore", code: "", use: "furniture" }],
+    wallets: [{ name: "JazzCash", number: "+92 321 3656096" }, { name: "Easypaisa", number: "+92 321 3656096" }], payTerms: "", prefix: "WI-", nextNo: 10100, validDays: 15, consultant: "Woodex Interior" }, jr(COMPANY, {}));
   const num = (v) => { const n = Number(v); return Number.isFinite(n) && n >= 0 ? n : 0; };
   const r2 = (n) => Math.round(n * 100) / 100;
   function cleanSections(sections) {
@@ -678,7 +682,7 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
       case "company_get": need(ALL); return { ok: true, company: companyCfg(), units: UNITS };
       case "company_save": {
         const u = need(["owner", "admin"]), c = companyCfg(), s = inp.company || {};
-        for (const k of Object.keys(c)) if (k in s) c[k] = ["nextNo", "validDays"].includes(k) ? Math.max(1, Math.round(num(s[k]))) : clip(s[k], k === "payTerms" ? 2000 : 300);
+        for (const k of Object.keys(c)) if (k in s) c[k] = Array.isArray(c[k]) ? coList(k, s[k]) : ["nextNo", "validDays"].includes(k) ? Math.max(1, Math.round(num(s[k]))) : clip(s[k], k === "payTerms" ? 2000 : 300);
         const used = db.quotes.reduce((m, q) => Math.max(m, +String(q.no).replace(/\D/g, "") || 0), 0);
         if (c.nextNo <= used) throw new Fail("Next number must be higher than " + used + " (already used)");
         jw(COMPANY, c); log(db, u, "settings.company", "", ip); return done({ ok: true, company: c });

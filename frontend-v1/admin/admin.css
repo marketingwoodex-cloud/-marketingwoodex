@@ -705,3 +705,6 @@ table.tbl.lp tbody tr:has(td.empty):hover{background:transparent}
 @media(max-width:900px){.pt-cols{grid-template-columns:1fr}.pt-money2{grid-template-columns:repeat(2,1fr)}.pt-m{grid-template-columns:20px 1fr 70px;}.pt-m>.r,.pt-m>.badge,.pt-m>.pt-ma{grid-column:2/-1}}
 .it-tot.pt-k{grid-template-columns:repeat(6,1fr)}@media(max-width:1100px){.it-tot.pt-k{grid-template-columns:repeat(3,1fr)}}@media(max-width:600px){.it-tot.pt-k{grid-template-columns:repeat(2,1fr)}}
 .pt-m{grid-template-columns:20px 1fr 92px 104px auto}.pt-pct input{width:70px!important;padding:0 6px!important}
+.co-list{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}.co-row{display:grid;gap:6px 10px;align-items:end;border:1px solid var(--line);border-radius:10px;padding:10px 12px;position:relative}.co-row label{margin:0!important;font-size:12px}.co-row input,.co-row select{margin:2px 0 0!important;height:36px!important}
+.co-banks{grid-template-columns:repeat(3,1fr);padding-right:46px}.co-banks .icon-btn{position:absolute;top:8px;right:8px}.co-wallets,.co-signers{grid-template-columns:1fr 1fr 36px}
+@media(max-width:700px){.co-banks{grid-template-columns:1fr 1fr}.co-banks .icon-btn{position:absolute;top:6px;right:6px}}

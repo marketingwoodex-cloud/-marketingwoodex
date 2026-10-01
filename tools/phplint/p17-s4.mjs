@@ -3,7 +3,11 @@ const B = "http://127.0.0.1:8080/api/admin.php"; let T = "";
 const call = async (action, o = {}) => (await fetch(B, { method: "POST", headers: { "content-type": "application/json", ...(T ? { "X-WX-ADM": T } : {}) }, body: JSON.stringify({ action, ...o }) })).json();
 const ok = (c, m) => { console.log((c ? "PASS " : "FAIL ") + m); if (!c) process.exitCode = 1; };
 T = (await call("login", { email: "o@woodex.pk", password: "Woodex@2026x" })).token;
-await call("company_save", { company: { signName: "Abdullah Khan", signTitle: "Project Manager, Woodex Interior", payTerms: "50% advance with work order\n40% on completion of wood work\n10% on handover", bankName: "Meezan Bank", bankTitle: "Woodex Interior", bankIban: "PK00 MEZN 0000 0000 0000 0000" } });
+const co = (await call("company_get")).company;
+ok(co.banks.length === 2 && co.banks[0].iban === "PK06ALFH0293001007869105" && co.wallets.length === 2 && co.signers[0].name === "Imtiaz Ahmad", "default banks / wallets / signers");
+await call("company_save", { company: { payTerms: "50% advance with work order\n40% on completion of wood work\n10% on handover", signers: [...co.signers, { name: "  ", title: "" }], banks: [...co.banks, { bank: "Test", use: "hack" }] } });
+const co2 = (await call("company_get")).company; ok(co2.signers.length === 2 && co2.banks.length === 3 && co2.banks[2].use === "all", "lists cleaned on save (blank signer dropped, bad 'use' → all)");
+await call("company_save", { company: { banks: co.banks } });
 const it = (desc, qty, unit, rate, extra = {}) => ({ desc, qty, unit, rate, ...extra });
 const sections = [
   { name: "Civil work", area: 2200, items: [it("Brick masonry partition walls 4.5\" thick with cement sand mortar 1:4", 1100, "sft", 420), it("Cement plaster 1:4, 1/2\" thick on new walls", 2200, "sft", 100)] },

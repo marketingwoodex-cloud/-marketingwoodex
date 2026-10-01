@@ -507,12 +507,15 @@
       "<div class='ql-pick'>" + [["single", "Single page", "One table, grey section rows"], ["project", "Project", "Summary page + one page per trade"], ["classic", "Classic", "Summary + detailed BOQ"]].map(function (x) { return "<label class='ql" + (q.layout === x[0] ? " on" : "") + "'><input type='radio' name='ql' value='" + x[0] + "'" + (q.layout === x[0] ? " checked" : "") + "><b>" + x[1] + "</b><small>" + x[2] + "</small></label>"; }).join("") + "</div>" +
       "<label>Quotation type<select id='q17-t'>" + Object.keys(QTL).map(function (k) { return "<option value='" + k + "'" + ((q.qtype || "") === k ? " selected" : "") + ">" + QTL[k] + "</option>"; }).join("") + "</select></label>" +
       "<label>Scope of work <small class='muted'>(one point per line, printed as a list)</small><textarea id='q17-sc' rows='4'>" + esc(q.scope || "") + "</textarea></label>" +
-      "<div class='g2' style='gap:0 10px'><label>Signed by<input id='q17-sn' value='" + esc(q.sign_name || "") + "' placeholder='" + esc(co.signName || "Your name") + "'></label><label>Title<input id='q17-st' value='" + esc(q.sign_title || "") + "' placeholder='" + esc(co.signTitle || "For Woodex Interior") + "'></label></div>" +
+      "<label>Signed by<select id='q17-sg'>" + (co.signers || []).map(function (x, i) { return "<option value='" + i + "'" + ((q.sign_name || (i === 0 ? x.name : "")) === x.name ? " selected" : "") + ">" + esc(x.name + (x.title ? " — " + x.title : "")) + "</option>"; }).join("") + "<option value='c'" + (q.sign_name && !(co.signers || []).some(function (x) { return x.name === q.sign_name; }) ? " selected" : "") + ">Someone else…</option></select></label>" +
+      "<div class='g2' id='q17-sgc' style='gap:0 10px'><label>Name<input id='q17-sn' value='" + esc(q.sign_name || "") + "' placeholder='" + esc(co.signName || "Your name") + "'></label><label>Title<input id='q17-st' value='" + esc(q.sign_title || "") + "' placeholder='" + esc(co.signTitle || "For Woodex Interior") + "'></label></div>" +
       "<div class='q17-io'><button class='btn sm' id='q17-ex'>" + ic("download") + "Export template</button><button class='btn sm' id='q17-im'>" + ic("upload") + "Import template</button></div></div>";
     side.insertBefore(card, side.firstChild); W.fillIcons(card);
     if (E.ro) $$("input,select,textarea,button", card).forEach(function (x) { if (x.id !== "q17-ex") x.disabled = true; });
     $$("input[name=ql]", card).forEach(function (r) { r.onchange = function () { q.layout = r.value; $$(".ql", card).forEach(function (l) { l.classList.toggle("on", l.contains(r)); }); E.dirty(); live(); }; });
     $("#q17-sc").oninput = function () { q.scope = this.value; E.dirty(); };
+    var sgc = function () { $("#q17-sgc").hidden = $("#q17-sg").value !== "c" && (co.signers || []).length > 0; }; sgc();
+    $("#q17-sg").onchange = function () { var x = (co.signers || [])[+this.value]; if (x) { q.sign_name = x.name; q.sign_title = x.title; } else { q.sign_name = $("#q17-sn").value; q.sign_title = $("#q17-st").value; } sgc(); E.dirty(); live(); };
     $("#q17-sn").oninput = function () { q.sign_name = this.value; E.dirty(); }; $("#q17-st").oninput = function () { q.sign_title = this.value; E.dirty(); };
     $("#q17-t").onchange = function () {
       var t = this.value, p = PRESET[t]; q.qtype = t; E.dirty(); if (!p) return;
