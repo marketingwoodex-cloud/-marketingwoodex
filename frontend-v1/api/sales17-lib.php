@@ -1,0 +1,190 @@
+<?php
+/**
+ * P17 S1+S2 — client master database + leads with follow-ups (extends crm-lib.php; nothing is rewritten).
+ * Adds columns only (safe migration). Hooks: s17_lead_extra() from lead_save, s17_client_extra() from client_save.
+ * Actions: lead_activity, leads_followups, leads_stats, leads_import2, clients_master, client_360, clients_merge.
+ */
+declare(strict_types=1);
+
+const S17_LINES   = ['furniture' => 'Furniture', 'interior' => 'Interior', 'project' => 'Project'];
+const S17_LTYPES  = ['new' => 'New lead', 'returning' => 'Returning client', 'referral' => 'Referral'];
+const S17_QSTAT   = ['' => '—', 'pending' => 'Pending', 'proposal' => 'Proposal / Quotation', 'done' => 'Done'];
+const S17_NEXT    = ['call' => 'Call', 'whatsapp' => 'WhatsApp', 'visit' => 'Site visit', 'meeting' => 'Meeting', 'email' => 'Email'];
+const S17_KINDS   = ['call', 'whatsapp', 'visit', 'meeting', 'email', 'note'];
+const S17_PRIO    = ['low', 'normal', 'high'];
+const S17_CTYPES  = ['individual' => 'Individual', 'company' => 'Company', 'developer' => 'Developer / builder', 'architect' => 'Architect / consultant'];
+const S17_PTYPES  = ['Kitchen', 'Wardrobe', 'Full home', 'Office', 'Retail / showroom', 'Restaurant / café', 'Clinic / pharmacy', 'Renovation', 'Architecture', '3D design', 'Furniture supply', 'Other'];
+const S17_LEAD_COLS = ['company' => 'VARCHAR(120) NULL', 'designation' => 'VARCHAR(80) NULL', 'location' => 'VARCHAR(160) NULL', 'line' => 'VARCHAR(20) NULL',
+    'lead_type' => 'VARCHAR(20) NULL', 'project_type' => 'VARCHAR(60) NULL', 'budget' => 'VARCHAR(60) NULL', 'area' => 'VARCHAR(30) NULL', 'priority' => 'VARCHAR(10) NULL',
+    'quote_status' => 'VARCHAR(20) NULL', 'last_contact' => 'DATETIME NULL', 'next_at' => 'DATETIME NULL', 'next_type' => 'VARCHAR(20) NULL'];
+const S17_NOTE_COLS = ['kind' => 'VARCHAR(20) NULL', 'outcome' => 'VARCHAR(190) NULL'];
+const S17_CLIENT_COLS = ['type' => 'VARCHAR(20) NULL', 'source' => 'VARCHAR(40) NULL', 'tags' => 'VARCHAR(400) NULL', 'line' => 'VARCHAR(20) NULL', 'designation' => 'VARCHAR(80) NULL', 'updated_at' => 'DATETIME NULL'];
+
+/** Adds missing columns once (version flag in _private). */
+function s17_migrate(): void {
+    static $done = false; if ($done) return; $done = true;
+    $flag = PRIVATE_DIR . '/s17.json'; if ((jread($flag)['v'] ?? 0) >= 1) return;
+    crm_migrate();
+    foreach (['wx_leads' => S17_LEAD_COLS, 'wx_lead_notes' => S17_NOTE_COLS, 'wx_clients' => S17_CLIENT_COLS] as $t => $cols) {
+        $have = array_map(fn($r) => strtolower((string)($r['Field'] ?? $r['field'] ?? '')), q("SHOW COLUMNS FROM $t")->fetchAll());
+        foreach ($cols as $c => $def) if (!in_array($c, $have, true)) q("ALTER TABLE $t ADD COLUMN $c $def");
+    }
+    try { q('CREATE INDEX wx_leads_next ON wx_leads (next_at)'); } catch (Throwable $e) { /* exists */ }
+    jwrite($flag, ['v' => 1, 't' => date('c')]);
+}
+function s17_dt($v): ?string { $v = trim((string)$v); if ($v === '') return null; $t = strtotime(str_replace('T', ' ', $v)); if (!$t) fail('Check the date / time "' . clip($v, 30) . '"'); return date('Y-m-d H:i:s', $t); }
+function s17_digits($p): string { $d = preg_replace('~\D~', '', (string)$p); if (strlen($d) === 11 && $d[0] === '0') $d = '92' . substr($d, 1); elseif (strlen($d) === 10 && $d[0] === '3') $d = '92' . $d; return $d; }
+
+/** Extra lead fields (called from lead_save after the base fields). */
+function s17_lead_extra(int $id, array $in): void {
+    s17_migrate(); $set = []; $p = [];
+    foreach (['company' => 120, 'designation' => 80, 'location' => 160, 'project_type' => 60, 'budget' => 60, 'area' => 30] as $k => $n) if (array_key_exists($k, $in)) { $set[] = "$k=?"; $p[] = clip($in[$k], $n); }
+    $enum = ['line' => array_keys(S17_LINES), 'lead_type' => array_keys(S17_LTYPES), 'quote_status' => array_keys(S17_QSTAT), 'next_type' => array_keys(S17_NEXT), 'priority' => S17_PRIO];
+    foreach ($enum as $k => $ok) if (array_key_exists($k, $in)) { $v = (string)$in[$k]; if ($v !== '' && !in_array($v, $ok, true)) fail('Unknown ' . str_replace('_', ' ', $k)); $set[] = "$k=?"; $p[] = $v ?: null; }
+    if (array_key_exists('next_at', $in)) { $d = s17_dt($in['next_at']); $set[] = 'next_at=?'; $p[] = $d; $set[] = 'followup=?'; $p[] = $d ? substr($d, 0, 10) : null; }
+    if (array_key_exists('last_contact', $in)) { $set[] = 'last_contact=?'; $p[] = s17_dt($in['last_contact']); }
+    if ($set) { $p[] = $id; q('UPDATE wx_leads SET ' . implode(',', $set) . ' WHERE id=?', $p); }
+}
+function s17_client_extra(int $id, array $in): void {
+    s17_migrate(); $set = ['updated_at=?']; $p = [now()];
+    foreach (['designation' => 80, 'source' => 40] as $k => $n) if (array_key_exists($k, $in)) { $set[] = "$k=?"; $p[] = clip($in[$k], $n); }
+    if (array_key_exists('type', $in)) { $v = (string)$in['type']; if ($v !== '' && !isset(S17_CTYPES[$v])) fail('Unknown client type'); $set[] = 'type=?'; $p[] = $v ?: null; }
+    if (array_key_exists('line', $in)) { $v = (string)$in['line']; if ($v !== '' && !isset(S17_LINES[$v])) fail('Unknown business line'); $set[] = 'line=?'; $p[] = $v ?: null; }
+    if (array_key_exists('tags', $in)) { $t = is_array($in['tags']) ? $in['tags'] : explode(',', (string)$in['tags']); $set[] = 'tags=?'; $p[] = implode(',', array_slice(array_values(array_filter(array_map(fn($x) => mb_strtolower(clip($x, 30)), $t))), 0, 12)); }
+    $p[] = $id; q('UPDATE wx_clients SET ' . implode(',', $set) . ' WHERE id=?', $p);
+}
+
+/** Sales documents for one client (by client_id, or phone match for older docs). */
+function s17_docs_for(array $c): array {
+    sales_migrate(); $d = s17_digits($c['phone'] ?? ''); $cid = (int)$c['id'];
+    $mine = function ($x) use ($cid, $d) { if ((int)($x['client_id'] ?? 0) === $cid) return true; $ph = s17_digits($x['client']['phone'] ?? ''); return $d !== '' && strlen($d) >= 10 && $ph === $d; };
+    $quotes = array_values(array_filter(doc_all('wx_quotes'), $mine));
+    $invs = array_map('inv_pub', array_values(array_filter(doc_all('wx_invoices'), $mine)));
+    $projs = array_values(array_filter(doc_all('wx_projects'), fn($x) => (int)($x['client_id'] ?? 0) === $cid));
+    return [$quotes, $invs, $projs];
+}
+function s17_client_status(array $invs, array $projs, array $leads): string {
+    $n = count($invs); $open = array_filter($projs, fn($p) => !in_array($p['stage'] ?? '', ['handover', 'done', 'closed'], true));
+    $bal = array_sum(array_column($invs, 'balance')); $won = count(array_filter($leads, fn($l) => $l['stage'] === 'won'));
+    if ($n >= 2 || $won >= 2) return 'returning';
+    if ($open || $bal > 0 || $n === 1 && strtotime((string)end($invs)['issue_date']) > strtotime('-90 days')) return 'active';
+    if ($n === 0 && $won === 0) return 'prospect';
+    return 'past';
+}
+
+function sales17_actions(string $action, array $in): bool {
+    if (!in_array($action, ['lead_activity', 'leads_followups', 'leads_stats', 'leads_import2', 'clients_master', 'client_360', 'clients_merge', 's17_meta'], true)) return false;
+    s17_migrate(); $SALES = ['owner', 'admin', 'sales'];
+    switch ($action) {
+        case 's17_meta':
+            need($SALES); out(['ok' => true, 'lines' => S17_LINES, 'leadTypes' => S17_LTYPES, 'quoteStatus' => S17_QSTAT, 'nextTypes' => S17_NEXT, 'clientTypes' => S17_CTYPES, 'projectTypes' => S17_PTYPES]);
+
+        case 'lead_activity': // log a call / WhatsApp / visit / meeting + set the next follow-up in one step
+            $u = need($SALES); $l = lead_get((int)($in['id'] ?? 0)); $k = (string)($in['kind'] ?? 'note'); if (!in_array($k, S17_KINDS, true)) fail('Unknown activity type');
+            $text = clip($in['text'] ?? '', 2000); $out = clip($in['outcome'] ?? '', 190);
+            if ($text === '' && $out === '') fail('Write what happened');
+            q('INSERT INTO wx_lead_notes (lead_id,t,user_name,text,sys,kind,outcome) VALUES (?,?,?,?,0,?,?)', [$l['id'], now(), $u['name'], $text ?: $out, $k, $out ?: null]);
+            $set = ['is_read=1']; $p = [];
+            if ($k !== 'note') { $set[] = 'last_contact=?'; $p[] = now(); if ($l['stage'] === 'new') { $set[] = "stage='contacted'"; lead_note_add($l['id'], $u['name'], 'Stage: new → contacted', true); } }
+            if (array_key_exists('next_at', $in)) { $d = s17_dt($in['next_at']); $set[] = 'next_at=?'; $p[] = $d; $set[] = 'followup=?'; $p[] = $d ? substr($d, 0, 10) : null;
+                $nt = (string)($in['next_type'] ?? 'call'); if (!isset(S17_NEXT[$nt])) $nt = 'call'; $set[] = 'next_type=?'; $p[] = $d ? $nt : null; }
+            if (!empty($in['stage']) && in_array($in['stage'], CRM_STAGES, true) && $in['stage'] !== $l['stage']) { $set[] = 'stage=?'; $p[] = $in['stage']; lead_note_add($l['id'], $u['name'], "Stage: {$l['stage']} → {$in['stage']}", true); }
+            $p[] = $l['id']; q('UPDATE wx_leads SET ' . implode(',', $set) . ' WHERE id=?', $p);
+            log_act($u, 'lead.activity', '#' . $l['id'] . ' ' . $k); out(['ok' => true, 'lead' => lead_get($l['id'])]);
+
+        case 'leads_followups':
+            need($SALES); $now = date('Y-m-d H:i:s'); $today = date('Y-m-d'); $wk = date('Y-m-d', strtotime('+7 days'));
+            $rows = q("SELECT l.id,l.name,l.company,l.phone,l.stage,l.next_at,l.next_type,l.line,u.name assigned_name FROM wx_leads l LEFT JOIN wx_users u ON u.id=l.assigned_to
+                WHERE l.next_at IS NOT NULL AND l.stage NOT IN ('won','lost') AND l.next_at < ? ORDER BY l.next_at", [$wk . ' 23:59:59'])->fetchAll();
+            $g = ['overdue' => [], 'today' => [], 'upcoming' => []];
+            foreach ($rows as $r) { $r['id'] = (int)$r['id']; $r['assigned_name'] = (string)($r['assigned_name'] ?? ''); $d = substr($r['next_at'], 0, 10);
+                $g[$r['next_at'] < $now && $d < $today ? 'overdue' : ($d === $today ? 'today' : ($r['next_at'] < $now ? 'overdue' : 'upcoming'))][] = $r; }
+            out(['ok' => true] + $g);
+
+        case 'leads_stats': // counters per month, like the "Lead Management" sheet
+            need($SALES); $m = preg_match('~^\d{4}-\d{2}$~', (string)($in['month'] ?? '')) ? $in['month'] : '';
+            $w = $m ? ' WHERE created_at >= ? AND created_at < ?' : ''; $p = $m ? [$m . '-01', date('Y-m-01', strtotime($m . '-01 +1 month'))] : [];
+            $k = ['total' => 0, 'new' => 0, 'client' => 0, 'meeting' => 0, 'proposal' => 0, 'hold' => 0, 'done' => 0, 'won' => 0, 'lost' => 0, 'value' => 0, 'wonValue' => 0];
+            foreach (q('SELECT stage,lead_type,client_id,quote_status,value FROM wx_leads' . $w, $p)->fetchAll() as $r) {
+                $k['total']++; $k['value'] += (int)$r['value'];
+                if ($r['lead_type'] === 'returning' || $r['client_id']) $k['client']++; else $k['new']++;
+                if ($r['stage'] === 'visit') $k['meeting']++; if ($r['stage'] === 'quote' || $r['quote_status'] === 'proposal') $k['proposal']++;
+                if ($r['stage'] === 'hold') $k['hold']++; if ($r['quote_status'] === 'done') $k['done']++;
+                if ($r['stage'] === 'won') { $k['won']++; $k['wonValue'] += (int)$r['value']; } if ($r['stage'] === 'lost') $k['lost']++;
+            }
+            $months = array_column(q("SELECT DISTINCT DATE_FORMAT(created_at,'%Y-%m') m FROM wx_leads ORDER BY m DESC LIMIT 36")->fetchAll(), 'm');
+            out(['ok' => true, 'month' => $m, 'stats' => $k, 'months' => $months]);
+
+        case 'leads_import2': // your Lead-Management sheet → leads (+ clients for "Client" rows)
+            $u = need(['owner', 'admin']); $n = 0; $skip = 0;
+            $team = []; foreach (q('SELECT id,name FROM wx_users')->fetchAll() as $t) $team[mb_strtolower(strtok((string)$t['name'], ' '))] = (int)$t['id'];
+            $known = []; foreach (q('SELECT phone,name FROM wx_leads')->fetchAll() as $r) $known[s17_digits($r['phone']) . '|' . mb_strtolower((string)$r['name'])] = 1;
+            foreach (array_slice((array)($in['rows'] ?? []), 0, 3000) as $r) {
+                if (!is_array($r)) continue; $name = clip($r['name'] ?? '', 120); $co = clip($r['company'] ?? '', 120);
+                if ($name === '' || preg_match('~^name$~i', $name)) $name = $co; if ($name === '' || preg_match('~^(company|name)$~i', $name)) { $skip++; continue; }
+                $key = s17_digits($r['phone'] ?? '') . '|' . mb_strtolower($name); if (isset($known[$key])) { $skip++; continue; } $known[$key] = 1;
+                $act = mb_strtolower(trim((string)($r['action'] ?? ''))); $stage = ['won' => 'won', 'hold' => 'hold', 'meeting' => 'visit', 'visit' => 'visit', 'close' => 'lost', 'closed' => 'lost', 'lost' => 'lost', 'done' => 'contacted', 'contacted' => 'contacted'][$act] ?? 'new';
+                $qs = mb_strtolower((string)($r['quotation'] ?? '')); $qs = str_contains($qs, 'done') ? 'done' : (preg_match('~propo|quot~', $qs) ? 'proposal' : (str_contains($qs, 'pend') ? 'pending' : null));
+                if ($qs === 'proposal' && $stage === 'new') $stage = 'quote';
+                $line = mb_strtolower((string)($r['line'] ?? '')); $line = isset(S17_LINES[$line]) ? $line : null;
+                $lt = preg_match('~client~i', (string)($r['source'] ?? '')) ? 'returning' : (preg_match('~refer~i', (string)($r['source'] ?? '')) ? 'referral' : 'new');
+                $as = $team[mb_strtolower(strtok(trim((string)($r['assigned'] ?? '')) ?: '-', ' '))] ?? null;
+                $date = function ($v) { $v = trim((string)$v); if ($v === '' || stripos($v, 'dd/') !== false) return null; if (preg_match('~^(\d{1,2})/(\d{1,2})/(\d{4})~', $v, $m)) return sprintf('%04d-%02d-%02d', $m[3], $m[2], $m[1]); $t = strtotime($v); return $t ? date('Y-m-d H:i:s', $t) : null; };
+                $ca = $date($r['date'] ?? '') ?: now(); $ca = strlen($ca) === 10 ? $ca . ' 10:00:00' : $ca; $meet = $date($r['meeting'] ?? ''); $last = $date($r['last_contact'] ?? '');
+                q('INSERT INTO wx_leads (created_at,source,name,phone,company,designation,location,line,lead_type,quote_status,stage,assigned_to,last_contact,next_at,next_type,followup,message,is_read) VALUES (?,\'import\',?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,1)',
+                    [$ca, $name, clip($r['phone'] ?? '', 40), $co === $name ? '' : $co, clip($r['designation'] ?? '', 80), clip($r['location'] ?? '', 160), $line, $lt, $qs, $stage, $as,
+                     $last ? (strlen($last) === 10 ? $last . ' 10:00:00' : $last) : null, $meet ? (strlen($meet) === 10 ? $meet . ' 11:00:00' : $meet) : null, $meet ? 'meeting' : null, $meet ? substr($meet, 0, 10) : null, clip($r['note'] ?? '', 2000)]);
+                $n++;
+            }
+            log_act($u, 'lead.import', $n . ' rows (sheet)'); out(['ok' => true, 'imported' => $n, 'skipped' => $skip]);
+
+        case 'clients_master': // client list with live totals from leads, quotes, invoices and projects
+            need($SALES); sales_migrate();
+            $leads = []; foreach (q('SELECT id,client_id,stage,value,created_at,last_contact FROM wx_leads WHERE client_id IS NOT NULL')->fetchAll() as $l) $leads[(int)$l['client_id']][] = $l;
+            $Q = doc_all('wx_quotes'); $I = array_map('inv_pub', doc_all('wx_invoices')); $P = doc_all('wx_projects');
+            $by = function (array $docs) { $o = []; foreach ($docs as $x) if ($c = (int)($x['client_id'] ?? 0)) $o[$c][] = $x; return $o; };
+            $q = $by($Q); $i = $by($I); $pj = $by($P);
+            $rows = array_map(function ($c) use ($leads, $q, $i, $pj) {
+                $id = (int)$c['id']; $ls = $leads[$id] ?? []; $iv = $i[$id] ?? []; $pp = $pj[$id] ?? []; $qq = $q[$id] ?? [];
+                $last = max(array_merge([(string)$c['created_at']], array_map(fn($l) => (string)($l['last_contact'] ?: $l['created_at']), $ls), array_map(fn($x) => (string)($x['issue_date'] ?? ''), $iv)));
+                return ['id' => $id, 'name' => $c['name'], 'company' => (string)$c['company'], 'phone' => (string)$c['phone'], 'email' => (string)$c['email'], 'city' => (string)$c['city'],
+                    'type' => (string)($c['type'] ?? ''), 'line' => (string)($c['line'] ?? ''), 'tags' => $c['tags'] ? explode(',', $c['tags']) : [], 'created_at' => $c['created_at'],
+                    'leads' => count($ls), 'quotes' => count($qq), 'openQuotes' => count(array_filter($qq, fn($x) => in_array($x['status'] ?? '', ['draft', 'sent'], true))),
+                    'invoices' => count($iv), 'lifetime' => (int)array_sum(array_column($iv, 'total')), 'paid' => (int)array_sum(array_column($iv, 'paid')), 'balance' => (int)array_sum(array_column($iv, 'balance')),
+                    'projects' => count($pp), 'last' => $last, 'status' => s17_client_status($iv, $pp, $ls)];
+            }, q('SELECT * FROM wx_clients ORDER BY id DESC')->fetchAll());
+            out(['ok' => true, 'clients' => $rows, 'types' => S17_CTYPES, 'lines' => S17_LINES]);
+
+        case 'client_360':
+            need($SALES); $c = q('SELECT * FROM wx_clients WHERE id=?', [(int)($in['id'] ?? 0)])->fetch(); if (!$c) fail('Client not found', 404);
+            $c['id'] = (int)$c['id']; foreach (['phone', 'email', 'company', 'city', 'address', 'notes', 'type', 'source', 'line', 'designation'] as $k) $c[$k] = (string)($c[$k] ?? ''); $c['tags'] = $c['tags'] ? explode(',', (string)$c['tags']) : [];
+            $leads = array_map(fn($r) => lead_get((int)$r['id']), q('SELECT id FROM wx_leads WHERE client_id=? ORDER BY id DESC', [$c['id']])->fetchAll());
+            [$quotes, $invs, $projs] = s17_docs_for($c);
+            $tl = [];
+            foreach ($leads as $l) { $tl[] = ['t' => $l['created_at'], 'k' => 'lead', 'title' => 'Enquiry #' . $l['id'] . ($l['service'] ? ' — ' . $l['service'] : ''), 'sub' => 'Stage: ' . $l['stage'], 'id' => $l['id']];
+                foreach ($l['notes'] as $n) if (empty($n['sys'])) $tl[] = ['t' => $n['t'], 'k' => 'note', 'title' => $n['text'], 'sub' => (string)$n['user'], 'id' => $l['id']]; }
+            foreach ($quotes as $x) $tl[] = ['t' => ($x['created_at'] ?? $x['date'] ?? ''), 'k' => 'quote', 'title' => 'Quotation ' . q_label($x) . ' — ' . ($x['status'] ?? ''), 'sub' => 'Rs ' . number_format((float)($x['total'] ?? 0)), 'id' => $x['id']];
+            foreach ($invs as $x) { $tl[] = ['t' => ($x['issue_date'] ?? '') . ' 09:00:00', 'k' => 'invoice', 'title' => 'Invoice ' . ($x['no'] ?? '') . ' — Rs ' . number_format((float)$x['total']), 'sub' => ucfirst($x['payStatus']) . ($x['balance'] ? ' · balance Rs ' . number_format($x['balance']) : ''), 'id' => $x['id']];
+                foreach ($x['payments'] as $py) $tl[] = ['t' => ($py['date'] ?? '') . ' 12:00:00', 'k' => 'payment', 'title' => 'Payment Rs ' . number_format((float)$py['amount']) . ' (' . ($py['method'] ?? '') . ')', 'sub' => 'Invoice ' . ($x['no'] ?? ''), 'id' => $x['id']]; }
+            foreach ($projs as $p) $tl[] = ['t' => (string)($p['created_at'] ?? $p['start'] ?? ''), 'k' => 'project', 'title' => 'Project ' . ($p['name'] ?? ''), 'sub' => 'Stage: ' . ($p['stage'] ?? ''), 'id' => $p['id']];
+            usort($tl, fn($a, $b) => strcmp((string)$b['t'], (string)$a['t']));
+            $next = null; foreach ($leads as $l) if (!empty($l['next_at']) && !in_array($l['stage'], ['won', 'lost'], true) && (!$next || $l['next_at'] < $next['at'])) $next = ['at' => $l['next_at'], 'type' => $l['next_type'], 'lead' => $l['id']];
+            $k = ['lifetime' => (int)array_sum(array_column($invs, 'total')), 'paid' => (int)array_sum(array_column($invs, 'paid')), 'balance' => (int)array_sum(array_column($invs, 'balance')),
+                  'quoted' => (int)array_sum(array_map(fn($x) => (float)($x['total'] ?? 0), $quotes)), 'projects' => count($projs), 'last' => $tl[0]['t'] ?? $c['created_at']];
+            out(['ok' => true, 'client' => $c, 'status' => s17_client_status($invs, $projs, $leads), 'kpis' => $k, 'next' => $next,
+                 'leads' => $leads, 'quotes' => array_map('q_pub', $quotes), 'invoices' => $invs, 'projects' => $projs, 'timeline' => array_slice($tl, 0, 300)]);
+
+        case 'clients_merge': // keep one record, move everything from the duplicate onto it
+            $u = need(['owner', 'admin']); $keep = (int)($in['keep'] ?? 0); $drop = (int)($in['merge'] ?? 0);
+            if (!$keep || !$drop || $keep === $drop) fail('Pick two different clients');
+            $a = q('SELECT * FROM wx_clients WHERE id=?', [$keep])->fetch(); $b = q('SELECT * FROM wx_clients WHERE id=?', [$drop])->fetch(); if (!$a || !$b) fail('Client not found', 404);
+            sales_migrate(); $pdo = db(); $pdo->beginTransaction();
+            q('UPDATE wx_leads SET client_id=? WHERE client_id=?', [$keep, $drop]);
+            foreach (['wx_quotes', 'wx_invoices', 'wx_projects'] as $t) foreach (q("SELECT id,data FROM $t")->fetchAll() as $r) { $d = json_decode($r['data'], true) ?: []; if ((int)($d['client_id'] ?? 0) === $drop) { $d['client_id'] = $keep; q("UPDATE $t SET data=? WHERE id=?", [json_encode($d, JSON_UNESCAPED_UNICODE), $r['id']]); } }
+            $fill = []; $p = []; foreach (['phone', 'email', 'company', 'city', 'address'] as $k) if (trim((string)$a[$k]) === '' && trim((string)$b[$k]) !== '') { $fill[] = "$k=?"; $p[] = $b[$k]; }
+            $notes = trim((string)$a['notes'] . "\n" . (string)$b['notes']); $fill[] = 'notes=?'; $p[] = $notes; $p[] = $keep; q('UPDATE wx_clients SET ' . implode(',', $fill) . ' WHERE id=?', $p);
+            q('DELETE FROM wx_clients WHERE id=?', [$drop]); $pdo->commit();
+            log_act($u, 'client.merge', $b['name'] . ' → ' . $a['name']); out(['ok' => true, 'id' => $keep]);
+    }
+    return false;
+}

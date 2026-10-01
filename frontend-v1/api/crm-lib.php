@@ -9,7 +9,7 @@ if (!defined('PRIVATE_DIR')) { http_response_code(404); exit; }
 
 const CRM_FILE   = PRIVATE_DIR . '/crm.json';
 const OFFERS_FILE = PRIVATE_DIR . '/offers.json';
-const CRM_STAGES = ['new', 'contacted', 'visit', 'quote', 'won', 'lost'];
+const CRM_STAGES = ['new', 'contacted', 'visit', 'quote', 'hold', 'won', 'lost'];
 const CRM_SOURCES = ['contact' => 'Contact form', 'estimator' => 'Cost estimator', 'brief' => '3D brief', 'fitout-hub' => 'Fit-out quote', 'office-fitout' => 'Office fit-out quote', 'whatsapp' => 'WhatsApp', 'chat' => 'Live chat', 'manual' => 'Added by team', 'import' => 'CSV import'];
 const CRM_SECRETS = ['smtpPass', 'waToken', 'tsSecret'];
 
@@ -123,8 +123,8 @@ function lead_row(array $r, ?array $notes = null): array {
     $r['id'] = (int)$r['id']; $r['value'] = (int)$r['value']; $r['assigned_to'] = $r['assigned_to'] !== null ? (int)$r['assigned_to'] : null;
     $r['client_id'] = $r['client_id'] !== null ? (int)$r['client_id'] : null; $r['read'] = (bool)$r['is_read']; unset($r['is_read'], $r['ip']);
     $r['fields'] = json_decode((string)$r['fields'], true) ?: []; $r['tags'] = $r['tags'] ? explode(',', $r['tags']) : []; $r['followup'] = (string)($r['followup'] ?? '');
-    foreach (['page', 'phone', 'email', 'service', 'message', 'lost_reason'] as $k) $r[$k] = (string)($r[$k] ?? '');
-    $r['notes'] = $notes ?? array_map(fn($n) => ['t' => $n['t'], 'user' => $n['user_name'], 'text' => $n['text'], 'sys' => (bool)$n['sys']], q('SELECT * FROM wx_lead_notes WHERE lead_id=? ORDER BY id', [$r['id']])->fetchAll());
+    foreach (['page', 'phone', 'email', 'service', 'message', 'lost_reason', 'company', 'designation', 'location', 'line', 'lead_type', 'project_type', 'budget', 'area', 'priority', 'quote_status', 'last_contact', 'next_at', 'next_type'] as $k) $r[$k] = (string)($r[$k] ?? '');
+    $r['notes'] = $notes ?? array_map(fn($n) => ['t' => $n['t'], 'user' => $n['user_name'], 'text' => $n['text'], 'sys' => (bool)$n['sys'], 'kind' => (string)($n['kind'] ?? ''), 'outcome' => (string)($n['outcome'] ?? '')], q('SELECT * FROM wx_lead_notes WHERE lead_id=? ORDER BY id', [$r['id']])->fetchAll());
     return $r;
 }
 function lead_get(int $id): array {
@@ -136,11 +136,11 @@ function lead_note_add(int $id, string $user, string $text, bool $sys = false): 
 /** Team-side actions (called from admin.php). Returns false if the action is not a CRM action. */
 function crm_actions(string $action, array $in): bool {
     if (!preg_match('~^(leads?_|clients?_|crm_)~', $action)) return false;
-    crm_migrate(); $SALES = ['owner', 'admin', 'sales'];
+    crm_migrate(); s17_migrate(); $SALES = ['owner', 'admin', 'sales'];
     switch ($action) {
         case 'leads_list':
             need($SALES);
-            $notes = []; foreach (q('SELECT * FROM wx_lead_notes ORDER BY id')->fetchAll() as $n) $notes[(int)$n['lead_id']][] = ['t' => $n['t'], 'user' => $n['user_name'], 'text' => $n['text'], 'sys' => (bool)$n['sys']];
+            $notes = []; foreach (q('SELECT * FROM wx_lead_notes ORDER BY id')->fetchAll() as $n) $notes[(int)$n['lead_id']][] = ['t' => $n['t'], 'user' => $n['user_name'], 'text' => $n['text'], 'sys' => (bool)$n['sys'], 'kind' => (string)($n['kind'] ?? ''), 'outcome' => (string)($n['outcome'] ?? '')];
             $rows = q('SELECT l.*, u.name assigned_name FROM wx_leads l LEFT JOIN wx_users u ON u.id=l.assigned_to ORDER BY l.id DESC LIMIT 5000')->fetchAll();
             $leads = array_map(function ($r) use ($notes) { $r['assigned_name'] = (string)($r['assigned_name'] ?? ''); return lead_row($r, $notes[(int)$r['id']] ?? []); }, $rows);
             $team = array_map(fn($u) => ['id' => (int)$u['id'], 'name' => $u['name']], q("SELECT id,name FROM wx_users WHERE active=1 AND role IN ('owner','admin','sales') ORDER BY name")->fetchAll());
@@ -159,6 +159,7 @@ function crm_actions(string $action, array $in): bool {
             if (array_key_exists('tags', $in)) { $t = is_array($in['tags']) ? $in['tags'] : explode(',', (string)$in['tags']); $t = array_slice(array_values(array_filter(array_map(fn($x) => mb_strtolower(clip($x, 30)), $t))), 0, 10); $set[] = 'tags=?'; $p[] = implode(',', $t); }
             if (array_key_exists('read', $in)) { $set[] = 'is_read=?'; $p[] = !empty($in['read']) ? 1 : 0; }
             if ($set) { $p[] = $id; q('UPDATE wx_leads SET ' . implode(',', $set) . ' WHERE id=?', $p); }
+            s17_lead_extra($id, $in);
             if (isset($in['stage']) && $in['stage'] !== $l['stage']) lead_note_add($id, $u['name'], "Stage: {$l['stage']} → {$in['stage']}", true);
             if (!(count($in) === 3 && isset($in['read']))) log_act($u, !empty($in['id']) ? 'lead.update' : 'lead.create', '#' . $id . ' ' . $l['name'] . (isset($in['stage']) && $in['stage'] !== $l['stage'] ? ' → ' . $in['stage'] : ''));
             out(['ok' => true, 'lead' => lead_get($id)]);
@@ -197,6 +198,7 @@ function crm_actions(string $action, array $in): bool {
             $v = [$name, clip($in['phone'] ?? '', 40), clip($in['email'] ?? '', 190), clip($in['company'] ?? '', 120), clip($in['city'] ?? '', 80), clip($in['address'] ?? '', 300), clip($in['notes'] ?? '', 4000)];
             if ($id) { if (!q('SELECT 1 FROM wx_clients WHERE id=?', [$id])->fetchColumn()) fail('Client not found', 404); q('UPDATE wx_clients SET name=?,phone=?,email=?,company=?,city=?,address=?,notes=? WHERE id=?', array_merge($v, [$id])); }
             else { q('INSERT INTO wx_clients (name,phone,email,company,city,address,notes,created_at) VALUES (?,?,?,?,?,?,?,?)', array_merge($v, [now()])); $id = (int)db()->lastInsertId(); }
+            s17_client_extra($id, $in);
             log_act($u, !empty($in['id']) ? 'client.update' : 'client.create', $name); out(['ok' => true, 'client' => q('SELECT * FROM wx_clients WHERE id=?', [$id])->fetch()]);
         case 'client_delete':
             $u = need(['owner', 'admin']); $c = q('SELECT * FROM wx_clients WHERE id=?', [(int)($in['id'] ?? 0)])->fetch(); if (!$c) fail('Client not found', 404);
