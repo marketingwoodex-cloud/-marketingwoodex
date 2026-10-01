@@ -568,12 +568,28 @@
     member: { view: "team", title: "Team", one: "team member", marker: "team", icon: "users" }
   };
   function stars(n) { n = Math.max(0, Math.min(5, +n || 5)); return '<div class="wx-stars" aria-label="' + n + ' out of 5">' + "★★★★★".slice(0, n) + '<span>' + "★★★★★".slice(n) + "</span></div>"; }
-  function sectionHtml(kind, items, set) {
+  /** P17 C8: 5 testimonial designs (CSS only, no JS) */
+  var TST_DESIGNS = [["cards", "Cards", "3 cards in a row (classic)"], ["spotlight", "Spotlight", "One big featured review + smaller ones"], ["slider", "Slider", "Swipe row of cards — good for many reviews"], ["wall", "Wall", "Masonry wall of short quotes"], ["band", "Navy band", "Dark band with big quote and average rating"]];
+  function tstHtml(items, set, design) {
+    var m = SEC.testimonial.marker, ds = design || set.design || "cards"; if (!TST_DESIGNS.some(function (x) { return x[0] === ds; })) ds = "cards";
+    var mx = +set.max || 0; if (mx > 0) items = items.slice(0, mx); if (!items.length) return "";
+    function ini(x) { return esc(String(x.title).split(/\s+/).map(function (w) { return w[0]; }).join("").slice(0, 2).toUpperCase()); }
+    function who(x, big) { var d = x.data || {}, sub = [d.role, [d.project, d.city].filter(Boolean).join(", ")].filter(Boolean).join(" · "); return "<figcaption>" + (d.photo ? '<img src="' + esc(d.photo) + '" alt="" width="' + (big ? 64 : 48) + '" height="' + (big ? 64 : 48) + '" loading="lazy" decoding="async">' : '<span class="wx-av">' + ini(x) + "</span>") + "<span><b>" + esc(x.title) + "</b>" + (sub ? "<small>" + esc(sub) + "</small>" : "") + "</span></figcaption>"; }
+    function card(x, cls) { var d = x.data || {}; return '    <figure class="wx-tst-card' + (cls ? " " + cls : "") + '">' + stars(d.rating) + "<blockquote>" + esc(d.text) + "</blockquote>" + who(x, cls === "is-big") + "</figure>\n"; }
+    var avg = items.reduce(function (a, x) { return a + (+(x.data || {}).rating || 5); }, 0) / items.length;
+    var headH = '  <div class="wx-sec-h"><p class="wx-kicker">' + esc(set.kicker || "Client words") + '</p><h2 id="wx-tst-title">' + esc(set.heading || "What our clients say") + "</h2>" + (ds === "band" || ds === "spotlight" ? '<p class="wx-tst-avg"><b>' + avg.toFixed(1) + '</b> ' + stars(Math.round(avg)) + " <span>from " + items.length + " client review" + (items.length > 1 ? "s" : "") + "</span></p>" : "") + "</div>\n", body;
+    if (ds === "spotlight") body = '  <div class="wx-tst-spot">\n' + card(items[0], "is-big") + (items.length > 1 ? '    <div class="wx-tst-side">\n' + items.slice(1, 4).map(function (x) { return card(x); }).join("") + "    </div>\n" : "") + "  </div>\n";
+    else if (ds === "slider") body = '  <div class="wx-tst-track" tabindex="0" aria-label="Client reviews, scroll sideways">\n' + items.map(function (x) { return card(x); }).join("") + "  </div>\n";
+    else if (ds === "wall") body = '  <div class="wx-tst-wall">\n' + items.map(function (x) { return card(x); }).join("") + "  </div>\n";
+    else if (ds === "band") body = '  <div class="wx-tst-band">\n' + card(items[0], "is-big") + (items.length > 1 ? '    <div class="wx-tst-row">\n' + items.slice(1, 4).map(function (x) { return card(x); }).join("") + "    </div>\n" : "") + "  </div>\n";
+    else body = '  <div class="wx-tst-grid">\n' + items.map(function (x) { return card(x); }).join("") + "  </div>\n";
+    return "<!--wx:" + m + '-->\n<section class="wx-tst wx-tst--' + ds + '" aria-labelledby="wx-tst-title"><div class="wrap">\n' + headH + body + "</div></section>\n<!--/wx:" + m + "-->";
+  }
+  W.TST_DESIGNS = TST_DESIGNS; W.tstHtml = tstHtml;
+  function sectionHtml(kind, items, set, design) {
     var m = SEC[kind].marker;
     if (!items.length) return "";
-    if (kind === "testimonial") return "<!--wx:" + m + '-->\n<section class="wx-tst" aria-labelledby="wx-tst-title"><div class="wrap">\n  <div class="wx-sec-h"><p class="wx-kicker">' + esc(set.kicker || "Client words") + '</p><h2 id="wx-tst-title">' + esc(set.heading || "What our clients say") + '</h2></div>\n  <div class="wx-tst-grid">\n' +
-      items.map(function (x) { var d = x.data || {}; return '    <figure class="wx-tst-card">' + stars(d.rating) + "<blockquote>" + esc(d.text) + "</blockquote><figcaption>" + (d.photo ? '<img src="' + esc(d.photo) + '" alt="" width="48" height="48" loading="lazy">' : '<span class="wx-av">' + esc(String(x.title).split(/\s+/).map(function (w) { return w[0]; }).join("").slice(0, 2).toUpperCase()) + "</span>") + "<span><b>" + esc(x.title) + "</b><small>" + esc([d.role, d.project].filter(Boolean).join(" · ")) + "</small></span></figcaption></figure>\n"; }).join("") +
-      "  </div>\n</div></section>\n<!--/wx:" + m + "-->";
+    if (kind === "testimonial") return tstHtml(items, set, design);
     return "<!--wx:" + m + '-->\n<section class="wx-team" aria-labelledby="wx-team-title"><div class="wrap">\n  <div class="wx-sec-h"><p class="wx-kicker">' + esc(set.kicker || "The studio") + '</p><h2 id="wx-team-title">' + esc(set.heading || "The people behind the work") + '</h2></div>\n  <div class="wx-team-grid">\n' +
       items.map(function (x) { var d = x.data || {}; return '    <article class="wx-team-card">' + (d.photo ? '<img src="' + esc(d.photo) + '" alt="' + esc(x.title) + '" width="600" height="720" loading="lazy" decoding="async">' : '<div class="wx-team-ph"></div>') + "<h3>" + esc(x.title) + "</h3><p class=\"wx-team-role\">" + esc(d.role) + "</p>" + (d.bio ? "<p>" + esc(d.bio) + "</p>" : "") + "</article>\n"; }).join("") +
       "  </div>\n</div></section>\n<!--/wx:" + m + "-->";
@@ -585,6 +601,17 @@
     var at = html.indexOf('<section class="wx-trust"'); if (at < 0) at = html.indexOf("</main>"); if (at < 0) return html;
     return html.slice(0, at) + block + "\n" + html.slice(at);
   }
+  function tstPick(set) {
+    return '<div class="tst-pick"><b>Design</b> <small class="muted">default for all pages; you can change it per page below</small><div class="tst-ds">' + TST_DESIGNS.map(function (x) { return '<label class="tst-d' + ((set.design || "cards") === x[0] ? " on" : "") + '"><input type="radio" name="pl-d" value="' + x[0] + '"' + ((set.design || "cards") === x[0] ? " checked" : "") + '><i class="tst-ic tst-ic-' + x[0] + '"><s></s><s></s><s></s></i><span>' + x[1] + "</span><small>" + x[2] + "</small></label>"; }).join("") + '</div><label class="tst-max">Show at most <input id="pl-m" type="number" min="0" max="30" value="' + (+set.max || 0) + '"> reviews <small class="muted">(0 = all live)</small></label><div class="tst-pv"><iframe id="pl-pv" title="Design preview"></iframe></div></div>';
+  }
+  function bindTstPick(items) {
+    var live = items.filter(function (x) { return x.status === "published"; });
+    function pv() { var d = ($("[name=pl-d]:checked") || {}).value || "cards"; $$(".tst-d").forEach(function (l) { l.classList.toggle("on", l.querySelector("input").checked); });
+      var f = $("#pl-pv"); if (!f) return; var h = tstHtml(live.length ? live : [{ title: "Sample Client", data: { rating: 5, text: "Add testimonials and mark them Live to see them here.", role: "Owner" } }], { kicker: $("#pl-k").value, heading: $("#pl-h").value, max: +$("#pl-m").value || 0 }, d);
+      f.srcdoc = '<!doctype html><html><head><base href="' + location.origin + '/"><link rel="stylesheet" href="/assets/site.css"><link rel="stylesheet" href="/assets/v1.css"><link rel="stylesheet" href="/assets/theme.css"><style>body{margin:0}</style></head><body>' + h + "</body></html>"; }
+    $$("[name=pl-d]").forEach(function (r) { r.onchange = pv; }); ["#pl-k", "#pl-h", "#pl-m"].forEach(function (q) { if ($(q)) $(q).addEventListener("input", pv); }); pv();
+    $("#modal-card").classList.add("wide");
+  }
   function sectionView(kind) {
     return function (el) {
       var k = SEC[kind], items = [], placements = {}, pages = [];
@@ -595,7 +622,7 @@
       function draw() {
         $("#sx-grid").innerHTML = items.map(function (x) {
           var d = x.data || {};
-          return '<div class="sx card" draggable="true" data-id="' + x.id + '"><div class="sx-top">' + (d.photo ? '<img src="' + esc(d.photo) + '" alt="">' : '<span class="wx-av">' + esc(String(x.title).slice(0, 1)) + "</span>") + "<div><b>" + esc(x.title) + "</b><small>" + esc([d.role, d.project].filter(Boolean).join(" · ")) + "</small></div>" + badge(x) + "</div>" +
+          return '<div class="sx card" draggable="true" data-id="' + x.id + '"><div class="sx-top">' + (d.photo ? '<img src="' + esc(d.photo) + '" alt="">' : '<span class="wx-av">' + esc(String(x.title).slice(0, 1)) + "</span>") + "<div><b>" + esc(x.title) + "</b><small>" + esc([d.role, d.project, d.city].filter(Boolean).join(" · ")) + "</small></div>" + badge(x) + "</div>" +
             (kind === "testimonial" ? '<p class="sx-q">' + stars(d.rating) + esc(d.text) + "</p>" : '<p class="sx-q">' + esc(d.bio || "") + "</p>") +
             '<div class="sx-ft"><label class="switch"><input type="checkbox" data-live' + (x.status === "published" ? " checked" : "") + '><span></span> Live</label><button class="btn sm" data-ed>Edit</button></div></div>';
         }).join("") || '<div class="card card-b empty">' + ic(k.icon) + "<p>No " + k.title.toLowerCase() + " yet.</p></div>";
@@ -615,7 +642,7 @@
       function edit(x) {
         var d = (x && x.data) || { rating: 5 };
         modal("<h3>" + (x ? "Edit " : "Add ") + k.one + '</h3><form id="sx-f"><div class="g2"><label>Name<input id="sx-n" value="' + esc(x ? x.title : "") + '" required></label><label>' + (kind === "testimonial" ? "Role / company" : "Role") + '<input id="sx-r" value="' + esc(d.role) + '"></label></div>' +
-          (kind === "testimonial" ? '<div class="g2"><label>Project <small>(optional)</small><input id="sx-p" value="' + esc(d.project) + '" placeholder="Office fit-out, Gulberg"></label><label>Rating<select id="sx-s">' + [5, 4, 3].map(function (n) { return "<option" + (+d.rating === n ? " selected" : "") + ">" + n + "</option>"; }).join("") + '</select></label></div><label>What they said<textarea id="sx-t" rows="4" required>' + esc(d.text) + "</textarea></label>" : '<label>Short bio <small>(optional)</small><textarea id="sx-t" rows="3">' + esc(d.bio) + "</textarea></label>") +
+          (kind === "testimonial" ? '<div class="g2"><label>Project <small>(optional)</small><input id="sx-p" value="' + esc(d.project) + '" placeholder="Office fit-out, Gulberg"></label><label>City <small>(optional)</small><input id="sx-c" value="' + esc(d.city) + '" placeholder="Lahore"></label></div><div class="g2"><label>Rating<select id="sx-s">' + [5, 4, 3].map(function (n) { return "<option" + (+d.rating === n ? " selected" : "") + ">" + n + "</option>"; }).join("") + '</select></label></div><label>What they said<textarea id="sx-t" rows="4" required>' + esc(d.text) + "</textarea></label>" : '<label>Short bio <small>(optional)</small><textarea id="sx-t" rows="3">' + esc(d.bio) + "</textarea></label>") +
           imgField("sx-ph", d.photo, "Photo " + (kind === "testimonial" ? "(optional)" : "")) +
           '<label class="check"><input type="checkbox" id="sx-live"' + (!x || x.status === "published" ? " checked" : "") + '> Live</label><p class="err" id="sx-err"></p><div class="modal-actions">' + (x ? '<button type="button" class="btn ghost danger" id="sx-del" style="margin-right:auto">Delete</button>' : "") + '<button type="button" class="btn" id="sx-x">Cancel</button><button class="btn pri">Save</button></div></form>');
         bindImg("sx-ph");
@@ -623,7 +650,7 @@
         if ($("#sx-del")) $("#sx-del").onclick = function () { if (!confirm("Delete " + x.title + "?")) return; api("cms_delete", { id: x.id }).then(function (r) { if (!r.ok) return toast(r.error, true); closeModal(); load(); toast("Deleted. Press Update website to apply."); }); };
         $("#sx-f").onsubmit = function (e) {
           e.preventDefault();
-          var data = kind === "testimonial" ? { role: $("#sx-r").value.trim(), project: $("#sx-p").value.trim(), rating: +$("#sx-s").value, text: $("#sx-t").value.trim(), photo: imgVal("sx-ph") } : { role: $("#sx-r").value.trim(), bio: $("#sx-t").value.trim(), photo: imgVal("sx-ph") };
+          var data = kind === "testimonial" ? { role: $("#sx-r").value.trim(), project: $("#sx-p").value.trim(), city: $("#sx-c").value.trim(), rating: +$("#sx-s").value, text: $("#sx-t").value.trim(), photo: imgVal("sx-ph") } : { role: $("#sx-r").value.trim(), bio: $("#sx-t").value.trim(), photo: imgVal("sx-ph") };
           api("cms_save", { id: x ? x.id : 0, type: kind, title: $("#sx-n").value.trim(), data: data, order: x ? x.order : items.length + 1, status: $("#sx-live").checked ? "published" : "draft" }).then(function (r) {
             if (!r.ok) { $("#sx-err").textContent = r.error; return; }
             if (!$("#sx-live").checked && r.item.status === "published") api("cms_status", { id: r.item.id, status: "draft" });
@@ -635,20 +662,20 @@
         bapi("pages").then(function (r) {
           pages = (r.pages || []).map(function (p) { return p.path || p; }).filter(function (p) { return !/^(insights|projects)\/[^/]+\//.test(p); }).sort();
           var cur = placements[kind] || [], set = placements[kind + "Set"] || {};
-          modal("<h3>" + k.title + ': pages & heading</h3><div class="g2"><label>Small label<input id="pl-k" value="' + esc(set.kicker || "") + '" placeholder="' + (kind === "testimonial" ? "Client words" : "The studio") + '"></label><label>Heading<input id="pl-h" value="' + esc(set.heading || "") + '" placeholder="' + (kind === "testimonial" ? "What our clients say" : "The people behind the work") + '"></label></div><label>Show on these pages <small>(placed above the “Why Woodex” strip)</small><input id="pl-q" placeholder="Filter pages…"></label><div class="pl-l">' +
-            pages.map(function (p) { return '<label class="check"><input type="checkbox" value="' + esc(p) + '"' + (cur.indexOf(p) > -1 ? " checked" : "") + "> /" + esc(p.replace(/index\.html$/, "")) + "</label>"; }).join("") + '</div><div class="modal-actions"><button class="btn" id="pl-x">Cancel</button><button class="btn pri" id="pl-go">Save & update website</button></div>');
-          $("#pl-x").onclick = closeModal;
+          modal("<h3>" + k.title + ': pages & heading</h3><div class="g2"><label>Small label<input id="pl-k" value="' + esc(set.kicker || "") + '" placeholder="' + (kind === "testimonial" ? "Client words" : "The studio") + '"></label><label>Heading<input id="pl-h" value="' + esc(set.heading || "") + '" placeholder="' + (kind === "testimonial" ? "What our clients say" : "The people behind the work") + '"></label></div>' + (kind === "testimonial" ? tstPick(set) : "") + '<label>Show on these pages <small>(placed above the “Why Woodex” strip)</small><input id="pl-q" placeholder="Filter pages…"></label><div class="pl-l">' +
+            pages.map(function (p) { return '<label class="check"><input type="checkbox" value="' + esc(p) + '"' + (cur.indexOf(p) > -1 ? " checked" : "") + "> /" + esc(p.replace(/index\.html$/, "")) + (kind === "testimonial" ? '<select class="pl-pd" data-p="' + esc(p) + '"><option value="">Default design</option>' + TST_DESIGNS.map(function (x) { return '<option value="' + x[0] + '"' + (((set.designs || {})[p]) === x[0] ? " selected" : "") + ">" + x[1] + "</option>"; }).join("") + "</select>" : "") + "</label>"; }).join("") + '</div><div class="modal-actions"><button class="btn" id="pl-x">Cancel</button><button class="btn pri" id="pl-go">Save & update website</button></div>');
+          $("#pl-x").onclick = closeModal; if (kind === "testimonial") bindTstPick(items);
           $("#pl-q").oninput = function () { var q = this.value.toLowerCase(); $$(".pl-l label").forEach(function (l) { l.hidden = l.textContent.toLowerCase().indexOf(q) < 0; }); };
           $("#pl-go").onclick = function () {
             var sel = $$(".pl-l input:checked").map(function (c) { return c.value; }), removed = cur.filter(function (p) { return sel.indexOf(p) < 0; });
-            placements[kind] = sel; placements[kind + "Set"] = { kicker: $("#pl-k").value.trim(), heading: $("#pl-h").value.trim() };
+            placements[kind] = sel; placements[kind + "Set"] = { kicker: $("#pl-k").value.trim(), heading: $("#pl-h").value.trim() }; if (kind === "testimonial") { var dz = {}; $$(".pl-pd").forEach(function (x) { if (x.value && sel.indexOf(x.dataset.p) > -1) dz[x.dataset.p] = x.value; }); Object.assign(placements[kind + "Set"], { design: ($("[name=pl-d]:checked") || {}).value || "cards", max: +$("#pl-m").value || 0, designs: dz }); }
             api("cms_placements_save", { placements: placements }).then(function (r2) { if (!r2.ok) return toast(r2.error, true); placements = r2.placements; closeModal(); push(removed); });
           };
         });
       };
       function push(removed) {
         var live = items.filter(function (x) { return x.status === "published"; }), block = sectionHtml(kind, live, placements[kind + "Set"] || {}), list = (placements[kind] || []).slice(), n = 0, fails = [];
-        var jobs = list.map(function (p) { return [p, block]; }).concat((removed || []).map(function (p) { return [p, ""]; }));
+        var tset = placements[kind + "Set"] || {}; var jobs = list.map(function (p) { return [p, kind === "testimonial" ? sectionHtml(kind, live, tset, (tset.designs || {})[p]) : block]; }).concat((removed || []).map(function (p) { return [p, ""]; }));
         if (!jobs.length) return toast("Choose pages first (Pages & heading)", true);
         toast("Updating " + jobs.length + " page(s)…");
         jobs.reduce(function (pr, j) {

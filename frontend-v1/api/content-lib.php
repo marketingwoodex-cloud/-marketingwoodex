@@ -214,6 +214,7 @@ function content_actions(string $action, array $in): bool {
             foreach (['testimonial', 'member'] as $k) {
                 $c['placements'][$k] = array_values(array_slice(array_filter(is_array($p[$k] ?? null) ? $p[$k] : [], 'cms_safe_rel'), 0, 80));
                 $s = is_array($p[$k . 'Set'] ?? null) ? $p[$k . 'Set'] : []; $c['placements'][$k . 'Set'] = ['kicker' => clip($s['kicker'] ?? '', 60), 'heading' => clip($s['heading'] ?? '', 120)];
+                if ($k === 'testimonial') { $D = ['cards', 'spotlight', 'slider', 'wall', 'band']; $c['placements'][$k . 'Set']['design'] = in_array($s['design'] ?? '', $D, true) ? $s['design'] : 'cards'; $c['placements'][$k . 'Set']['max'] = max(0, min(30, (int)($s['max'] ?? 0))); $dz = []; foreach ((array)($s['designs'] ?? []) as $pg => $dv) if (in_array($pg, $c['placements'][$k], true) && in_array($dv, $D, true)) $dz[$pg] = $dv; $c['placements'][$k . 'Set']['designs'] = (object)$dz; }
             }
             cms_save_file($c); log_act($u, 'content.placements'); out(['ok' => true, 'placements' => $c['placements']]);
         case 'cms_ai_get': need($OA); out(['ok' => true, 'ai' => ai_pub($c['ai'])]);
