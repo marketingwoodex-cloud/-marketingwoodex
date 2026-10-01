@@ -86,4 +86,5 @@
   <url><loc>https://woodex.com.pk/bahawalpur/</loc></url>
   <url><loc>https://woodex.com.pk/estimator/</loc></url>
   <url><loc>https://woodex.com.pk/privacy/</loc></url>
+  <url><loc>https://woodex.com.pk/book-a-visit/</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
 </urlset>
