@@ -33,6 +33,40 @@ Contact/Client (master) ──< Enquiry/Lead ──< Activity (calls, WA, notes,
 
 ---
 
+## Your real data → system design (from your sheets and templates, 1 Oct)
+**Decisions (questions skipped → recommended defaults, change any):**
+| # | Topic | Default |
+|---|---|---|
+| R1 | Brands / numbering | A **business line** on every lead / quote / invoice: **Furniture · Interior · Project** (from your sheet). Prefix per line: Furniture → **WF-**, Interior & Project → **WI-** (editable in settings). Old WF numbers kept on import. |
+| R2 | Quotation types | **3 types:** ① Single-page (your template) ② Project-based (summary + trade tabs) ③ Proposal (scope of work + summary). **Presets:** Fit-out · Renovation · Interior design = project-based with their own default trades. |
+| R3 | Billing big projects | **Milestones by %** (e.g. 50 / 30 / 20) → invoices WI-10100-1, -2, -3; **per-trade billing** optional per project |
+| R4 | Pipeline | Your words merged: **New lead → Contacted → Meeting / Visit → Proposal / Quotation → Hold → Won / Closed** (+ lost reason) |
+| R5 | Old sheets | **Import screen** in admin: upload your Lead-management and Invoice-tracking CSVs; columns auto-matched; preview → import |
+| R6 | Where | Keep current menu items; add a **Sales tracker** (sheet-style view) + **Client 360** page |
+
+**Leads (your "Lead Management" sheet) → fields:** date · company · name · contact · designation · location · **lead source** (Client / New lead / Referral / Website / WhatsApp…) · **business line** (Furniture / Interior / Project) · **assigned to** (Abdullah, Nabeel, Imtiaz, Amir… = team users) · **quotation status** (Pending / Proposal-Quotation / Done) · **last contact** · **action/stage** (Visit, Meeting, Hold, Won, Close, Done) · **meeting schedule** (date + time → calendar) · note.
+Top counters like your sheet: New lead · Client · Done · Proposal/Quotation · Hold · Won · Meeting, **per month** (month picker = your monthly tabs). Red row = overdue follow-up / closed.
+
+**Invoice tracking (your sheet) → fields:** date · **PO # (client purchase order)** · invoice # · company · total · received · balance (auto) · status (**Paid / Partial / After delivery / Unpaid / Overdue**, auto from payments) · **delivery date** (red when passed and unpaid) · note.
+Monthly bar: Total · Paid · Due · invoice count (Jan 2025 example: 3,143,000 · 2,345,000 · 798,000 · 13).
+
+**Quotation & invoice design (your single-page template, redesigned):**
+- Header: logo left · document no., address, phones, email, web right (per business line).
+- Boxes: **Prepared for** (client, company, contact) · **Project details** (project, site, location) · option & version (e.g. OPTION-1, V-1) · date.
+- Table: **Sr · Description · Qty · Unit · Rate · Amount**. Grey **section rows** ("01 Electrical and HVAC", "02 Glass and doors"), numbered items 1, 2, 3 below each; optional long spec paragraph per item.
+- Totals: subtotal, discount, tax %, **TOTAL (Rs)**, amount in words (Rupees … lakh … only).
+- Terms & conditions, bank details, **signature block (Consultant / Client, "Approved by")**, footer "Phone | Address | Website · Thank you for your business".
+- Fixes vs the sample: no "[cite: …]" text, no browser date/URL at the top, page numbers "Page 1 of N" on multi-page.
+
+**Project-based quotation (your "Interior Arch" 10-tab workbook):**
+- **Summary page:** Sr · Particulars (trade) · Total area · Per sft · Sub total · Amount (Rs) → e.g. Civil 682,000 · Flooring 1,618,875 · Ceiling 120,000 · Paint 132,125 · Wood 1,187,650 · Glass 416,650 · Curtain & blinds – · Electrical – · Plumbing – · **TOTAL 4,157,300**; approval block.
+- **One tab per trade** (Civil, Flooring, Ceiling, Paint, Wood, Glass, Curtain & blinds, Electrical, Plumbing + custom): Item # · Description · Unit · No's · Rate · Amount, with headings like **5.1 Media wall / 5.2 Bed wall / 5.3 Wardrobe**, a spec paragraph, and sub-items (5.1.1 Master bed-01, sft 143 × 1,200 = 171,000).
+- Trade totals flow to the summary automatically; empty trades show "–".
+- Prints as one PDF: summary first, then one page set per trade.
+- **Item library** (saved specs + rates per trade) to build quotes fast.
+
+**New table: Projects** (linked to client + won quotation): project name, site, business line, start / handover dates, stage, contract value, invoiced, received, balance, team, photos, client updates.
+
 ## Part S: Sales system (built first)
 
 **S1 Master client database**
@@ -123,7 +157,7 @@ Contact/Client (master) ──< Enquiry/Lead ──< Activity (calls, WA, notes,
 S1+S2 → review → S3+S4 → review → S5+S6 (+ your templates) → review → S7–S10 → review → C1–C3 → review → C4–C7 → review → C8–C9 → full audit (like 3.9) → **final zip** `deploy/p17/woodex-live-p17-full.zip` + README + CHANGES.
 
 ## What I need from you
-1. **Your quotation and invoice templates** (PDF / images / Word) for S5 and S6.
+1. ✅ Templates received (single-page + project-based). Optional: a sample **invoice** and your **bank details / terms** text.
 2. Your **project types** list and **lead sources** if different from: kitchen, wardrobe, full home, office, retail, restaurant, clinic, renovation, architecture, 3D.
 3. Booking: working days and hours, visit length, and which areas you visit.
-4. Old clients file (Excel / CSV) if you want them imported.
+4. Old sheets: no need to send them. You'll import them yourself on the new **Import** screen (preview before saving).
