@@ -1768,6 +1768,11 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
       site_stats: ["Dashboard numbers: pages, leads this month, unread leads, quotation and sales totals.", S(), true],
       monthly_report: ["Report for one month: leads by source and stage, won/lost, quotations and their value.", S({ month: st("YYYY-MM (default: current month)") }), true],
       whatsapp_stats: ["WhatsApp button clicks (today, 7 and 30 days), top pages and services, WhatsApp leads.", S(), true],
+      list_content: ["Lists articles (post), portfolio studies (study) or city pages (city) with id, title, address, status and template.", S({ type: st("post, study or city"), search: st("Matches the title or address") }, ["type"]), true],
+      get_content: ["Full fields of one article or portfolio study.", S({ id: it("Content id") }, ["id"]), true],
+      list_templates: ["Lists page templates (layout presets) for post, study or city.", S({ type: st("post, study or city") }), true],
+      save_content_draft: ["Creates a NEW article/portfolio draft, or updates an existing one (pass id). Never publishes.", S({ type: st("post or study"), id: it("Existing item id"), title: st("Title"), slug: st("Address"), kicker: st("Kicker"), dek: st("Standfirst"), body: st("Markdown body"), summary: { type: "array", items: { type: "string" } }, faqs: { type: "array", items: { type: "object" } }, meta: { type: "array", items: { type: "object" } }, quote: st("Pull quote"), template: it("Template id") }, ["type"]), false],
+      create_city_draft: ["Creates a DRAFT city page by copying a template city and swapping the name.", S({ city: st("City name"), source: st("City address to copy (default lahore)") }, ["city"]), false],
       create_blog_draft: ["Creates an Insights blog post as a DRAFT (not published). Body in simple markdown: \"## Heading\", \"- list item\", blank line between paragraphs.", S({ title: st("Post title"), slug: st("Page address (optional)"), excerpt: st("1–2 sentence summary"), body: st("Article body in simple markdown") }, ["title", "body"]), false],
     };
     switch (body.method) {
@@ -1803,6 +1808,35 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
         const ls = L.leads.filter((l) => String(l.created_at).slice(0, 7) === mo), cnt = (k) => ls.reduce((o, l) => ((o[l[k]] = (o[l[k]] || 0) + 1), o), {});
         const qs = Q.quotes.filter((x) => String(x.created_at || "").slice(0, 7) === mo), ap = Q.quotes.filter((x) => String(x.approved_at || "").slice(0, 7) === mo), val = (xs) => xs.reduce((s, x) => s + (+x.total || 0), 0);
         logCall(tool, true); return rpc(text({ month: mo, leads: ls.length, leadsBySource: cnt("source"), leadsByStage: cnt("stage"), quotationsCreated: qs.length, quotationsValue: val(qs), quotationsApproved: ap.length, approvedValue: val(ap), currency: "PKR" }));
+      }
+      case "list_content": case "get_content": case "list_templates": case "save_content_draft": case "create_city_draft": {
+        const C = jr(CMS, {}), items = C.items || [], ty = String(a.type || "");
+        const md = (src) => { const b = []; for (const chunk of String(src).replace(/\r/g, "").trim().split(/\n{2,}/)) { for (const ln of chunk.split("\n").map((x) => x.trim()).filter(Boolean)) { let m; if ((m = /^#{1,4}\s+(.+)$/.exec(ln))) b.push({ t: "h", text: m[1] }); else if ((m = /^[-*•]\s+(.+)$/.exec(ln))) { const l = b[b.length - 1]; if (l && l.t === "list") l.items.push(m[1]); else b.push({ t: "list", items: [m[1]] }); } else { const l = b[b.length - 1]; if (l && l.t === "p" && !l.end) l.text += " " + ln; else b.push({ t: "p", text: ln }); } } const l = b[b.length - 1]; if (l) l.end = true; } return b.map(({ end, ...x }) => x).slice(0, 120); };
+        if (tool === "list_content") { if (!["post", "study", "city"].includes(ty)) return rpc(text("type must be post, study or city", true)); const q = String(a.search || "").toLowerCase(); const rows = items.filter((x) => x.type === ty && (!q || (x.title + " " + x.slug).toLowerCase().includes(q))).map((x) => ({ id: x.id, title: x.title, slug: x.slug, status: x.status, live: !!x.rel, template: +(x.data && x.data.tpl) || 0 }));
+          if (ty === "city") for (const d of fs.readdirSync(ROOT)) { const f = path.join(ROOT, d, "index.html"); if (fs.existsSync(f) && /<body[^>]*data-page="city"/.test(fs.readFileSync(f, "utf8")) && (!q || d.includes(q))) rows.push({ slug: d, status: "published", live: true }); }
+          logCall(tool, true); return rpc(text({ count: rows.length, items: rows })); }
+        if (tool === "get_content") { const x = items.find((i) => i.id === +a.id && ["post", "study"].includes(i.type)); if (!x) return rpc(text("Article / study not found", true)); logCall(tool, true); return rpc(text(x)); }
+        if (tool === "list_templates") { const L = (C.tpls || []).filter((t) => !ty || t.type === ty); logCall(tool, true); return rpc(text({ count: L.length, templates: L })); }
+        if (tool === "save_content_draft") {
+          if (!["post", "study"].includes(ty)) return rpc(text("type must be post or study", true));
+          const old = a.id ? items.find((i) => i.id === +a.id && i.type === ty) : null; if (a.id && !old) return rpc(text("Item not found", true));
+          const title = String(a.title || (old && old.title) || "").trim(); if (!title) return rpc(text("title is required for a new item", true));
+          const d = { ...((old && old.data) || {}) }; for (const k of ["kicker", "dek", "quote"]) if (k in a) d[k] = clip(a[k], 600);
+          if (String(a.body || "").trim()) d.blocks = md(a.body); if (Array.isArray(a.summary)) d.summary = a.summary.map((x) => clip(x, 400)).slice(0, 12);
+          if (Array.isArray(a.faqs)) d.faqs = a.faqs.map((f) => ({ q: clip(f.q, 300), a: clip(f.a, 1500) })).filter((f) => f.q && f.a).slice(0, 15); if (Array.isArray(a.meta)) d.meta = a.meta.map((m) => ({ k: clip(m.k, 40), v: clip(m.v, 80) })).slice(0, 8);
+          if ("template" in a) { const tv = +a.template || 0; if (tv) { if (!(C.tpls || []).some((t) => t.id === tv && t.type === ty)) return rpc(text("Template not found for this type (see list_templates)", true)); d.tpl = tv; } else delete d.tpl; }
+          d.aiAgent = T.name; d.aiEdited = now();
+          let inp; if (old) inp = { id: old.id, type: ty, title, slug: old.slug, data: d, seo: old.seo || {} };
+          else { let slug = (String(a.slug || "").toLowerCase().trim() || title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")).replace(/[^a-z0-9-]/g, "").slice(0, 60) || ty + "-" + Date.now(); if (items.some((x) => x.type === ty && x.slug === slug)) slug = slug.slice(0, 50) + "-" + Math.random().toString(16).slice(2, 7); inp = { type: ty, title, slug, status: "draft", data: d, seo: { desc: clip(a.dek, 160) } }; }
+          return run("cms_save", inp, (r) => ({ ok: true, id: r.item && r.item.id, slug: r.item && r.item.slug, status: r.item && r.item.status, message: r.item && r.item.rel ? "Saved. The live page updates when the team presses Publish in Admin." : "Draft saved. The team reviews and publishes it in Admin." }));
+        }
+        const city = String(a.city || "").trim().replace(/\s+/g, " "), slug = city.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""); if (!slug) return rpc(text("city is required", true));
+        const src = String(a.source || "lahore").toLowerCase().replace(/[^a-z0-9-]/g, "") || "lahore", sf = path.join(ROOT, src, "index.html"); let html = fs.existsSync(sf) ? fs.readFileSync(sf, "utf8") : "";
+        if (!/<body[^>]*data-page="city"/.test(html)) return rpc(text("Source is not a city page", true));
+        const m = /<title>[^<]*?in ([^|<]+?)\s*(\||<\/title>)/.exec(html), sn = m ? m[1].trim() : src; const hs = html.indexOf("<head"), he = html.indexOf("</head>"), ms = html.indexOf("<main"), me = html.indexOf("</main>");
+        const sw = (s) => s.split("/" + src + "/").join("/" + slug + "/").replace(new RegExp("\\b" + sn.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\b", "g"), city);
+        html = html.slice(0, hs) + sw(html.slice(hs, he)) + html.slice(he, ms) + sw(html.slice(ms, me)) + html.slice(me);
+        return run("cms_save", { type: "city", title: city.replace(/\b\w/g, (c) => c.toUpperCase()), slug, data: { html, source: src, aiAgent: T.name } }, (r) => ({ ok: true, id: r.item && r.item.id, slug, status: "draft", message: "City draft saved. Review it in Admin → City pages, then publish." }));
       }
       case "create_blog_draft": {
         const title = String(a.title || "").trim(), bodyMd = String(a.body || ""); if (!title || !bodyMd.trim()) return rpc(text("Title and body are required", true));

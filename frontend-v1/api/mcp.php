@@ -69,6 +69,13 @@ $TOOLS = [
     'site_stats' => ['Dashboard numbers: pages, leads this month, unread leads, quotation and sales totals.', $S(''), true],
     'monthly_report' => ['Report for one month: leads by source and stage, won/lost, quotations and their value.', $S('', ['month' => $str('YYYY-MM (default: current month)')]), true],
     'whatsapp_stats' => ['WhatsApp button clicks (today, 7 and 30 days), top pages and services, WhatsApp leads.', $S(''), true],
+    'list_content' => ['Lists articles (post), portfolio studies (study) or city pages (city) with id, title, address, status and template.', $S('', ['type' => $str('post, study or city'), 'search' => $str('Matches the title or address')], ['type']), true],
+    'get_content' => ['Full fields of one article or portfolio study (text blocks, summary, FAQs, details, template).', $S('', ['id' => $int('Content id from list_content')], ['id']), true],
+    'list_templates' => ['Lists page templates (layout presets) for post, study or city. Use the id in save_content_draft.', $S('', ['type' => $str('post, study or city')]), true],
+    'save_content_draft' => ['Creates a NEW article/portfolio draft, or updates an existing one (pass id). Only fields you send are changed. Never publishes: a live page changes only when the team presses Publish. Body in simple markdown.', $S('', ['type' => $str('post or study'), 'id' => $int('Existing item id (omit to create)'), 'title' => $str('Title'), 'slug' => $str('Page address for a new item (optional)'), 'kicker' => $str('Small line above the title'), 'dek' => $str('One-sentence standfirst'), 'body' => $str('Main text in simple markdown (## headings, - lists)'),
+        'summary' => ['type' => 'array', 'items' => ['type' => 'string'], 'description' => 'Short-version bullet points'], 'faqs' => ['type' => 'array', 'items' => ['type' => 'object', 'properties' => ['q' => $str('Question'), 'a' => $str('Answer')]], 'description' => 'FAQs'],
+        'meta' => ['type' => 'array', 'items' => ['type' => 'object', 'properties' => ['k' => $str('Label'), 'v' => $str('Value')]], 'description' => 'Details strip, e.g. Location / Area / Year'], 'quote' => $str('Pull quote'), 'template' => $int('Template id from list_templates (0 = default)')], ['type']), false],
+    'create_city_draft' => ['Creates a DRAFT city page by copying a template city page and swapping the city name. The team reviews and publishes it in Admin → City pages.', $S('', ['city' => $str('City name, e.g. Sialkot'), 'source' => $str('Page address of the city to copy (default lahore)')], ['city']), false],
     'create_blog_draft' => ['Creates an Insights blog post as a DRAFT (not published). Body in simple markdown: "## Heading", "- list item", blank line between paragraphs.', $S('', ['title' => $str('Post title'), 'slug' => $str('Page address (optional, lowercase-with-dashes)'), 'excerpt' => $str('1–2 sentence summary'), 'body' => $str('Article body in simple markdown')], ['title', 'body']), false],
 ];
 
@@ -189,6 +196,46 @@ switch ($tool) {
         out(['ok' => true] + $rep); }, $tool, $pass);
     case 'whatsapp_stats':
         run_action('wa_stats', [], $tool, $pass);
+    case 'list_content':
+        $ty = (string)($a['type'] ?? ''); if (!in_array($ty, ['post', 'study', 'city'], true)) rpc_out($rid, mcp_text('type must be post, study or city', true));
+        $q = strtolower(trim((string)($a['search'] ?? ''))); $rows = [];
+        foreach (cms_load()['items'] as $x) if ($x['type'] === $ty && ($q === '' || str_contains(strtolower($x['title'] . ' ' . $x['slug']), $q))) $rows[] = ['id' => $x['id'], 'title' => $x['title'], 'slug' => $x['slug'], 'status' => $x['status'], 'live' => !empty($x['rel']), 'template' => (int)($x['data']['tpl'] ?? 0)];
+        if ($ty === 'city') foreach (glob(ROOT_DIR . '/*/index.html') as $f) { $h = (string)file_get_contents($f, false, null, 0, 400000); if (preg_match('~<body[^>]*data-page="city"~', $h) && ($q === '' || str_contains(basename(dirname($f)), $q))) $rows[] = ['slug' => basename(dirname($f)), 'status' => 'published', 'live' => true]; }
+        mcp_log_call($tool, true); rpc_out($rid, mcp_text(['count' => count($rows), 'items' => $rows]));
+    case 'get_content':
+        foreach (cms_load()['items'] as $x) if ((int)$x['id'] === (int)($a['id'] ?? 0) && in_array($x['type'], ['post', 'study'], true)) { unset($x['pending']); mcp_log_call($tool, true); rpc_out($rid, mcp_text($x)); }
+        rpc_out($rid, mcp_text('Article / study not found', true));
+    case 'list_templates':
+        $ty = (string)($a['type'] ?? ''); $L = array_values(array_filter(cms_load()['tpls'] ?? [], fn($t) => $ty === '' || $t['type'] === $ty));
+        mcp_log_call($tool, true); rpc_out($rid, mcp_text(['count' => count($L), 'templates' => array_map(fn($t) => array_intersect_key($t, array_flip(['id', 'type', 'name', 'desc', 'default', 'hero', 'toc', 'sections', 'order'])), $L)]));
+    case 'save_content_draft':
+        $ty = (string)($a['type'] ?? ''); if (!in_array($ty, ['post', 'study'], true)) rpc_out($rid, mcp_text('type must be post or study', true));
+        $c = cms_load(); $it = null; if (!empty($a['id'])) { foreach ($c['items'] as $x) if ((int)$x['id'] === (int)$a['id'] && $x['type'] === $ty) $it = $x; if (!$it) rpc_out($rid, mcp_text('Item not found', true)); }
+        $title = trim((string)($a['title'] ?? ($it['title'] ?? ''))); if ($title === '') rpc_out($rid, mcp_text('title is required for a new item', true));
+        $d = $it['data'] ?? []; foreach (['kicker' => 160, 'dek' => 400, 'quote' => 600] as $k => $n) if (array_key_exists($k, $a)) $d[$k] = clip($a[$k], $n);
+        if (isset($a['body']) && trim((string)$a['body']) !== '') $d['blocks'] = md_blocks((string)$a['body']);
+        if (isset($a['summary']) && is_array($a['summary'])) $d['summary'] = array_slice(array_map(fn($x) => clip($x, 400), $a['summary']), 0, 12);
+        if (isset($a['faqs']) && is_array($a['faqs'])) $d['faqs'] = array_slice(array_values(array_filter(array_map(fn($f) => ['q' => clip($f['q'] ?? '', 300), 'a' => clip($f['a'] ?? '', 1500)], $a['faqs']), fn($f) => $f['q'] !== '' && $f['a'] !== '')), 0, 15);
+        if (isset($a['meta']) && is_array($a['meta'])) $d['meta'] = array_slice(array_map(fn($m) => ['k' => clip($m['k'] ?? '', 40), 'v' => clip($m['v'] ?? '', 80)], $a['meta']), 0, 8);
+        if (array_key_exists('template', $a)) { $tv = (int)$a['template']; if ($tv) { $ok = false; foreach ($c['tpls'] ?? [] as $t) if ((int)$t['id'] === $tv && $t['type'] === $ty) $ok = true; if (!$ok) rpc_out($rid, mcp_text('Template not found for this type (see list_templates)', true)); $d['tpl'] = $tv; } else unset($d['tpl']); }
+        $d['aiAgent'] = $T['name']; $d['aiEdited'] = now();
+        if ($it) { $in = ['id' => $it['id'], 'type' => $ty, 'title' => $title, 'slug' => $it['slug'], 'data' => $d, 'seo' => $it['seo'] ?? []]; }
+        else {
+            $slug = strtolower(trim((string)($a['slug'] ?? ''))) ?: trim(preg_replace('~[^a-z0-9]+~', '-', strtolower($title)), '-'); $slug = substr(preg_replace('~[^a-z0-9-]~', '', $slug), 0, 60) ?: $ty . '-' . date('Ymd-His');
+            foreach ($c['items'] as $x) if ($x['type'] === $ty && $x['slug'] === $slug) $slug = substr($slug, 0, 50) . '-' . substr(bin2hex(random_bytes(3)), 0, 5);
+            $in = ['type' => $ty, 'title' => $title, 'slug' => $slug, 'status' => 'draft', 'data' => $d, 'seo' => ['desc' => clip($a['dek'] ?? '', 160)]];
+        }
+        run_action('cms_save', $in, $tool, fn($r) => ['ok' => true, 'id' => $r['item']['id'] ?? null, 'slug' => $r['item']['slug'] ?? '', 'status' => $r['item']['status'] ?? 'draft', 'message' => !empty($r['item']['rel']) ? 'Saved. The live page updates when the team presses Publish in Admin.' : 'Draft saved. The team reviews, adds images and publishes it in Admin.']);
+    case 'create_city_draft':
+        $city = trim(preg_replace('~\s+~', ' ', (string)($a['city'] ?? ''))); $slug = trim(preg_replace('~[^a-z0-9]+~', '-', strtolower($city)), '-');
+        if ($city === '' || $slug === '') rpc_out($rid, mcp_text('city is required', true));
+        $src = preg_replace('~[^a-z0-9-]~', '', strtolower((string)($a['source'] ?? 'lahore'))) ?: 'lahore'; $sf = ROOT_DIR . '/' . $src . '/index.html';
+        $html = is_file($sf) ? (string)file_get_contents($sf) : ''; if (!preg_match('~<body[^>]*data-page="city"~', $html)) rpc_out($rid, mcp_text('Source is not a city page', true));
+        $srcName = preg_match('~<title>[^<]*?in ([^|<]+?)\s*(\||</title>)~', $html, $m) ? trim($m[1]) : ucwords(str_replace('-', ' ', $src));
+        $hs = strpos($html, '<head'); $he = strpos($html, '</head>'); $ms = strpos($html, '<main'); $me = strpos($html, '</main>');
+        $sw = fn($s) => preg_replace('~\b' . preg_quote($srcName, '~') . '\b~', $city, str_replace('/' . $src . '/', '/' . $slug . '/', $s));
+        $html = substr($html, 0, $hs) . $sw(substr($html, $hs, $he - $hs)) . substr($html, $he, $ms - $he) . $sw(substr($html, $ms, $me - $ms)) . substr($html, $me);
+        run_action('cms_save', ['type' => 'city', 'title' => ucwords($city), 'slug' => $slug, 'data' => ['html' => $html, 'source' => $src, 'aiAgent' => $T['name']]], $tool, fn($r) => ['ok' => true, 'id' => $r['item']['id'] ?? null, 'slug' => $slug, 'status' => 'draft', 'message' => 'City draft saved. Review the local text in Admin → City pages, then publish.']);
     case 'create_blog_draft':
         $title = trim((string)($a['title'] ?? '')); $body = (string)($a['body'] ?? '');
         if ($title === '' || trim($body) === '') rpc_out($rid, mcp_text('Title and body are required', true));
