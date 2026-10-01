@@ -199,6 +199,16 @@ function media_actions(string $action, array $in): bool {
                 }
             }
             log_act($u, 'media.alt', $url); out(['ok' => true, 'pages' => $pages]);
+        case 'media_move':
+            $u = need($ED); $to = preg_replace('~[^a-z0-9-]~', '', (string)($in['folder'] ?? '')); $dir = ROOT_DIR . '/assets/uploads' . ($to ? '/' . $to : ''); if ($to && !is_dir($dir)) fail('Folder not found');
+            $urls = array_slice(array_values(array_filter(is_array($in['urls'] ?? null) ? $in['urls'] : [], 'a7_media_ok')), 0, 200); $corpus = a7_corpus(); $m = a7_media(); $moved = []; $blocked = [];
+            foreach ($urls as $url) {
+                $abs = ROOT_DIR . $url; if (!is_file($abs) || strpos($url, '/assets/uploads/') !== 0) { $blocked[] = $url; continue; }
+                $hit = false; foreach ($corpus as $t) if (strpos($t, ltrim($url, '/')) !== false) { $hit = true; break; } if ($hit) { $blocked[] = $url; continue; }
+                $nu = '/assets/uploads/' . ($to ? $to . '/' : '') . basename($abs); if ($nu === $url) continue; if (is_file(ROOT_DIR . $nu)) { $blocked[] = $url; continue; }
+                rename($abs, ROOT_DIR . $nu); if (isset($m['alt'][$url])) { $m['alt'][$nu] = $m['alt'][$url]; unset($m['alt'][$url]); } $moved[] = $nu;
+            }
+            jwrite(MEDIA_FILE, $m); log_act($u, 'media.move', count($moved) . ' → ' . ($to ?: 'uploads')); out(['ok' => true, 'moved' => $moved, 'blocked' => $blocked]);
         case 'media_trash':
             $u = need($OA); $m = a7_media(); $urls = array_slice(array_values(array_filter(is_array($in['urls'] ?? null) ? $in['urls'] : [], 'a7_media_ok')), 0, 200);
             $corpus = !empty($in['force']) ? [] : a7_corpus(); $moved = []; $blocked = []; if (!is_dir(MTRASH_DIR)) mkdir(MTRASH_DIR, 0750, true);

@@ -1274,6 +1274,14 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
         }
         log(db, u, "media.alt", url, ip); save(db); return { ok: true, pages };
       }
+      case "media_move": {
+        const u = need(ED), to = String(inp.folder || "").replace(/[^a-z0-9-]/g, ""), dir = path.join(ROOT, "assets/uploads", to); if (to && !fs.existsSync(dir)) throw new Fail("Folder not found");
+        const urls = (Array.isArray(inp.urls) ? inp.urls : []).filter(mediaRelOk).slice(0, 200), corpus = usageCorpus(), m = mediaLoad(), moved = [], blocked = [];
+        for (const url of urls) { const abs = path.join(ROOT, url); if (!fs.existsSync(abs) || !url.startsWith("/assets/uploads/") || corpus.some(([, t]) => t.includes(url.slice(1)))) { blocked.push(url); continue; }
+          const nu = "/assets/uploads/" + (to ? to + "/" : "") + path.basename(abs); if (nu === url) continue; if (fs.existsSync(path.join(ROOT, nu))) { blocked.push(url); continue; }
+          fs.renameSync(abs, path.join(ROOT, nu)); if (m.alt && m.alt[url]) { m.alt[nu] = m.alt[url]; delete m.alt[url]; } moved.push(nu); }
+        jw(MEDIA, m); log(db, u, "media.move", moved.length + " file(s)", ip); save(db); return { ok: true, moved, blocked };
+      }
       case "media_trash": {
         const u = need(OA), m = mediaLoad(), urls = (Array.isArray(inp.urls) ? inp.urls : []).filter(mediaRelOk).slice(0, 200), corpus = inp.force ? [] : usageCorpus(), moved = [], blocked = [];
         fs.mkdirSync(MTRASH, { recursive: true });

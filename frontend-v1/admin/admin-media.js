@@ -42,24 +42,33 @@
   W.VIEWS.media = function (el) {
     var st = { files: [], folders: [], trash: 0, folder: "all", filter: "all", q: "", sel: {} };
     el.innerHTML = head("Media library", "Media", (isOA() ? '<button class="btn" id="md-trash">' + ic("trash") + 'Trash <span id="md-tn"></span></button><button class="btn" id="md-opt">' + ic("zap") + "Optimise large images</button>" : "") + '<label class="btn pri">' + ic("upload") + 'Upload<input type="file" id="md-up" accept="image/*" multiple hidden></label>') +
-      '<div class="card md-top"><div class="md-folders" id="md-f"></div><div class="md-tools"><input id="md-q" placeholder="Search file name or alt text…"><select id="md-flt"><option value="all">All images</option><option value="unused">Not used anywhere</option><option value="big">Large (over 350 KB)</option><option value="noalt">No alt text</option></select></div></div>' +
+      '<div class="md-stats" id="md-st"></div><div class="card md-top"><div class="md-folders" id="md-f"></div><div class="md-tools"><input id="md-q" placeholder="Search file name or alt text…"><select id="md-flt"><option value="all">All images</option><option value="unused">Not used anywhere</option><option value="big">Large (over 350 KB)</option><option value="noalt">No alt text</option></select><select id="md-ty" title="File type"><option value="">All types</option><option value="webp">WebP</option><option value="jpg">JPG</option><option value="png">PNG</option><option value="svg">SVG</option><option value="gif">GIF</option></select><select id="md-so" title="Sort"><option value="new">Newest first</option><option value="old">Oldest first</option><option value="big">Largest first</option><option value="name">Name A–Z</option></select><div class="seg md-view" id="md-vw"><button data-v="grid" title="Grid">' + ic("layout-dashboard") + '</button><button data-v="list" title="List">' + ic("menu") + '</button></div></div></div>' +
       '<div class="md-drop" id="md-drop">' + ic("upload") + ' Drop images here to upload. They are resized to 2000px and converted to WebP automatically.</div><div id="md-prog"></div>' +
-      '<div class="md-bulk" id="md-bulk" hidden><b id="md-bn"></b><button class="btn sm" id="md-bclr">Clear</button>' + (isOA() ? '<button class="btn sm danger" id="md-bdel">' + ic("trash") + "Move to trash</button>" : "") + '</div><div class="md-grid" id="md-g"><p class="muted">Loading…</p></div>';
+      '<div class="md-bulk" id="md-bulk" hidden><b id="md-bn"></b><button class="btn sm" id="md-ball">Select all shown</button><button class="btn sm" id="md-bclr">Clear</button><button class="btn sm" id="md-bcp">' + ic("copy") + 'Copy URLs</button><button class="btn sm" id="md-bmv">' + ic("folder") + 'Move to folder</button>' + (isOA() ? '<button class="btn sm danger" id="md-bdel">' + ic("trash") + "Move to trash</button>" : "") + '</div><div class="md-grid" id="md-g"><p class="muted">Loading…</p></div>';
     W.fillIcons(el);
     function load() { return api("media_list").then(function (r) { if (!r.ok) return toast(r.error, true); st.files = r.files; st.folders = r.folders; st.trash = r.trash; draw(); }); }
+    function ext(n) { var e = (n.split(".").pop() || "").toLowerCase(); return e === "jpeg" ? "jpg" : e; }
+    try { st.view = localStorage.getItem("wx-md-view") || "grid"; } catch (e) { st.view = "grid"; } st.type = ""; st.sort = "new";
+    function stats() {
+      var F = st.files, tot = F.reduce(function (a, f) { return a + f.size; }, 0), un = F.filter(function (f) { return !f.used.length; }), na = F.filter(function (f) { return !f.alt && !/\.svg$/.test(f.name); }), bg = F.filter(function (f) { return f.size > BIG; });
+      $("#md-st").innerHTML = [["all", "image", "Images", F.length, ""], ["", "hard-drive", "Storage used", kb(tot), ""], ["unused", "triangle-alert", "Not used", un.length, kb(un.reduce(function (a, f) { return a + f.size; }, 0)) + " can be freed"], ["noalt", "eye", "Missing alt text", na.length, "hurts SEO & accessibility"], ["big", "zap", "Large files", bg.length, "over 350 KB"]].map(function (x) { return '<button class="card md-stat' + (x[0] && st.filter === x[0] ? " on" : "") + '"' + (x[0] ? ' data-f="' + x[0] + '"' : " disabled") + ">" + ic(x[1]) + "<span><small>" + x[2] + "</small><b>" + x[3] + "</b>" + (x[4] ? "<em>" + x[4] + "</em>" : "") + "</span></button>"; }).join("");
+      W.fillIcons($("#md-st"));
+    }
     function list() {
       var q = st.q.toLowerCase();
       return st.files.filter(function (f) {
         if (st.folder !== "all" && f.folder !== st.folder) return false;
         if (st.filter === "unused" && f.used.length) return false; if (st.filter === "big" && f.size <= BIG) return false; if (st.filter === "noalt" && (f.alt || /\.svg$/.test(f.name))) return false;
+        if (st.type && ext(f.name) !== st.type) return false;
         return !q || (f.name + " " + f.alt).toLowerCase().indexOf(q) > -1;
-      });
+      }).sort(function (a, b) { return st.sort === "old" ? (a.mtime < b.mtime ? -1 : 1) : st.sort === "big" ? b.size - a.size : st.sort === "name" ? a.name.localeCompare(b.name) : (a.mtime < b.mtime ? 1 : -1); });
     }
     function draw() {
       var cnt = function (k) { return st.files.filter(function (f) { return k === "all" || f.folder === k; }).length; };
       $("#md-f").innerHTML = ["all", "site", "uploads"].concat(st.folders).map(function (k) { return '<button class="' + (st.folder === k ? "on" : "") + '" data-k="' + esc(k) + '">' + ic(k === "all" ? "image" : "folder") + esc({ all: "All", site: "Site design", uploads: "Uploads" }[k] || k) + " <small>" + cnt(k) + "</small></button>"; }).join("") + '<button data-new>' + ic("plus") + "New folder</button>";
       if ($("#md-tn")) $("#md-tn").textContent = st.trash ? "(" + st.trash + ")" : "";
-      var L = list();
+      var L = list(); stats(); $$("#md-vw button").forEach(function (b) { b.classList.toggle("on", b.dataset.v === st.view); }); $("#md-g").className = st.view === "list" ? "md-list card" : "md-grid";
+      if (st.view === "list") { $("#md-g").innerHTML = L.length ? '<table class="tbl md-tbl"><thead><tr><th style="width:34px"></th><th>File</th><th>Folder</th><th>Type</th><th>Size</th><th>Used</th><th>Alt text</th><th>Added</th></tr></thead><tbody>' + L.map(function (f) { return '<tr class="md-card' + (st.sel[f.url] ? " sel" : "") + '" data-u="' + esc(f.url) + '"><td><input type="checkbox" class="md-chk"' + (st.sel[f.url] ? " checked" : "") + '></td><td><div class="md-lf"><img loading="lazy" src="' + esc(f.url) + '" alt=""><b title="' + esc(f.name) + '">' + esc(f.name) + "</b></div></td><td>" + esc(f.folder) + '</td><td><span class="badge">' + ext(f.name).toUpperCase() + '</span></td><td class="' + (f.size > BIG ? "warnc" : "") + '">' + kb(f.size) + "</td><td>" + (f.used.length ? f.used.length : '<span class="bad">unused</span>') + "</td><td>" + (f.alt ? '<span class="md-alt">' + esc(f.alt) + "</span>" : /\.svg$/.test(f.name) ? "–" : '<span class="warnc">missing</span>') + '</td><td class="muted">' + esc(f.mtime.slice(0, 10)) + "</td></tr>"; }).join("") + "</tbody></table>" : '<p class="muted" style="padding:16px">No images match.</p>'; W.fillIcons($("#md-f")); bulk(); return; }
       $("#md-g").innerHTML = L.length ? L.map(function (f) {
         return '<div class="md-card' + (st.sel[f.url] ? " sel" : "") + '" data-u="' + esc(f.url) + '"><input type="checkbox" class="md-chk"' + (st.sel[f.url] ? " checked" : "") + '><div class="md-th"><img loading="lazy" src="' + esc(f.url) + '" alt=""></div><div class="md-meta"><b title="' + esc(f.name) + '">' + esc(f.name) + '</b><span><span class="' + (f.size > BIG ? "warnc" : "") + '">' + kb(f.size) + "</span> · " + (f.used.length ? f.used.length + " use" + (f.used.length > 1 ? "s" : "") : '<span class="bad">unused</span>') + (f.alt || /\.svg$/.test(f.name) ? "" : ' · <span class="warnc">no alt</span>') + "</span></div></div>";
       }).join("") : '<p class="muted">No images match.</p>';
@@ -73,6 +82,17 @@
     };
     $("#md-q").oninput = function () { st.q = this.value; draw(); };
     $("#md-flt").onchange = function () { st.filter = this.value; draw(); };
+    $("#md-ty").onchange = function () { st.type = this.value; draw(); }; $("#md-so").onchange = function () { st.sort = this.value; draw(); };
+    $("#md-vw").onclick = function (e) { var b = e.target.closest("[data-v]"); if (!b) return; st.view = b.dataset.v; try { localStorage.setItem("wx-md-view", st.view); } catch (x) {} draw(); };
+    $("#md-st").onclick = function (e) { var b = e.target.closest("[data-f]"); if (!b) return; st.filter = st.filter === b.dataset.f && b.dataset.f !== "all" ? "all" : b.dataset.f; $("#md-flt").value = st.filter; draw(); };
+    $("#md-ball").onclick = function () { list().forEach(function (f) { st.sel[f.url] = 1; }); draw(); };
+    $("#md-bcp").onclick = function () { var t = Object.keys(st.sel).map(function (u) { return location.origin + u; }).join("\n"); (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(function () { toast(Object.keys(st.sel).length + " URL(s) copied"); }, function () { prompt("Copy these URLs", t); }); };
+    $("#md-bmv").onclick = function () {
+      var urls = Object.keys(st.sel); modal('<h3>Move ' + urls.length + ' image(s)</h3><p class="muted">Only <b>unused uploads</b> can be moved, so no page ever shows a broken image. Images used on pages stay where they are.</p><label>Folder<select id="mv-to"><option value="">Uploads (main)</option>' + st.folders.map(function (k) { return '<option value="' + esc(k) + '">' + esc(k) + "</option>"; }).join("") + '</select></label><div class="modal-actions"><button class="btn" data-x>Cancel</button><button class="btn pri" id="mv-go">Move</button></div>');
+      $("[data-x]").onclick = closeModal;
+      if ($("#dt-crop")) $("#dt-crop").onclick = function () { cropper(f); };
+      $("#mv-go").onclick = function () { api("media_move", { urls: urls, folder: $("#mv-to").value }).then(function (r) { if (!r.ok) return toast(r.error, true); st.sel = {}; closeModal(); toast(r.moved.length + " moved" + (r.blocked.length ? ", " + r.blocked.length + " kept (in use or site design)" : ""), !!r.blocked.length); load(); }); };
+    };
     $("#md-g").onclick = function (e) {
       var c = e.target.closest(".md-card"); if (!c) return; var u = c.dataset.u;
       if (e.target.classList.contains("md-chk")) { if (e.target.checked) st.sel[u] = 1; else delete st.sel[u]; c.classList.toggle("sel", e.target.checked); bulk(); return; }
@@ -105,13 +125,42 @@
     ["dragenter", "dragover"].forEach(function (t) { el.addEventListener(t, function (e) { e.preventDefault(); D.classList.add("on"); }); });
     el.addEventListener("dragleave", function (e) { if (!el.contains(e.relatedTarget)) D.classList.remove("on"); });
     el.addEventListener("drop", function (e) { e.preventDefault(); D.classList.remove("on"); upload(e.dataTransfer.files); });
+    /** P17 C9: crop / resize → saved as a NEW WebP copy (original untouched) */
+    function cropper(f) {
+      var R = [["free", "Free"], [16 / 9, "16:9"], [4 / 3, "4:3"], [1, "1:1"], [3 / 4, "3:4"], [1200 / 630, "Social 1200×630"]], ratio = "free";
+      modal('<h3>Crop &amp; resize</h3><p class="muted">Drag the box (or its corner) to choose the area. Saves a <b>new WebP copy</b>; the original stays as it is.</p><div class="seg" id="cr-r">' + R.map(function (x, i) { return '<button data-i="' + i + '"' + (i ? "" : ' class="on"') + ">" + x[1] + "</button>"; }).join("") + '</div><div class="cr-stage" id="cr-s"><img id="cr-img" src="' + esc(f.url) + "?v=" + Date.now() + '" alt=""><div class="cr-box" id="cr-b"><i class="cr-h"></i></div></div><div class="cr-row"><label>Output width <input id="cr-w" type="number" min="200" max="2400" step="10"> px</label><span class="muted" id="cr-info"></span><label>Quality <input id="cr-q" type="range" min="60" max="95" value="82"></label></div><div class="modal-actions"><button class="btn" data-x>Cancel</button><button class="btn pri" id="cr-go">' + ic("check") + "Save as new image</button></div>", "wide");
+      W.fillIcons($("#modal-card")); $("[data-x]").onclick = closeModal;
+      var img = $("#cr-img"), box = $("#cr-b"), S = $("#cr-s"), b = { x: 0.05, y: 0.05, w: 0.9, h: 0.9 }, nw = 0, nh = 0;
+      function info() { var cw = Math.round(b.w * nw), ch = Math.round(b.h * nh), ow = Math.min(+$("#cr-w").value || cw, cw); $("#cr-info").textContent = "Area " + cw + " × " + ch + " px → output " + ow + " × " + Math.round(ow * ch / cw) + " px"; }
+      function put() { box.style.left = b.x * 100 + "%"; box.style.top = b.y * 100 + "%"; box.style.width = b.w * 100 + "%"; box.style.height = b.h * 100 + "%"; info(); }
+      function fit() { if (ratio === "free") return put(); var r = ratio * nh / nw; b.w = Math.min(b.w, 1 - b.x); b.h = b.w / r; if (b.y + b.h > 1) { b.h = 1 - b.y; b.w = b.h * r; } if (b.w > 1) { b.w = 1; b.h = 1 / r; } put(); }
+      img.onload = function () { nw = img.naturalWidth; nh = img.naturalHeight; $("#cr-w").value = Math.min(nw, 2000); put(); };
+      $("#cr-w").oninput = info;
+      $("#cr-r").onclick = function (e) { var x = e.target.closest("[data-i]"); if (!x) return; $$("#cr-r button").forEach(function (y) { y.classList.toggle("on", y === x); }); ratio = R[+x.dataset.i][0]; b = { x: 0.05, y: 0.05, w: 0.9, h: 0.9 }; fit(); };
+      var drag = null;
+      box.onpointerdown = function (e) { e.preventDefault(); box.setPointerCapture(e.pointerId); drag = { mode: e.target.classList.contains("cr-h") ? "size" : "move", sx: e.clientX, sy: e.clientY, b: Object.assign({}, b) }; };
+      box.onpointermove = function (e) { if (!drag) return; var r = S.getBoundingClientRect(), dx = (e.clientX - drag.sx) / r.width, dy = (e.clientY - drag.sy) / r.height, o = drag.b;
+        if (drag.mode === "move") { b.x = Math.max(0, Math.min(1 - o.w, o.x + dx)); b.y = Math.max(0, Math.min(1 - o.h, o.y + dy)); }
+        else { b.w = Math.max(0.05, Math.min(1 - o.x, o.w + dx)); b.h = ratio === "free" ? Math.max(0.05, Math.min(1 - o.y, o.h + dy)) : b.w * nw / ratio / nh; if (b.y + b.h > 1) { b.h = 1 - b.y; if (ratio !== "free") b.w = b.h * ratio * nh / nw; } }
+        put(); };
+      box.onpointerup = function () { drag = null; };
+      $("#cr-go").onclick = function () {
+        var bt = this, cw = Math.round(b.w * nw), ch = Math.round(b.h * nh), ow = Math.max(50, Math.min(+$("#cr-w").value || cw, cw)), oh = Math.round(ow * ch / cw), c = document.createElement("canvas"); c.width = ow; c.height = oh;
+        var g = c.getContext("2d"); g.imageSmoothingQuality = "high"; g.drawImage(img, Math.round(b.x * nw), Math.round(b.y * nh), cw, ch, 0, 0, ow, oh);
+        bt.disabled = true; c.toBlob(function (blob) {
+          if (!blob) { bt.disabled = false; return toast("This browser could not create the image", true); }
+          blobToB64(blob).then(function (b64) { var fo = /^\/assets\/uploads\/([a-z0-9-]+)\//.exec(f.url); return api("media_upload", { data: b64, name: f.name.replace(/\.[a-z0-9]+$/i, "") + "-" + ow + "w.webp", folder: fo ? fo[1] : "", alt: f.alt || "" }); })
+            .then(function (r) { bt.disabled = false; if (!r.ok) return toast(r.error, true); closeModal(); toast("Saved new image " + ow + "×" + oh + " (" + kb(r.size) + ")"); load().then(function () { var nf = st.files.find(function (x) { return x.url === r.url; }); if (nf) detail(nf); }); });
+        }, "image/webp", +$("#cr-q").value / 100);
+      };
+    }
     // detail
     function detail(f) {
       var svg = /\.svg$/.test(f.name);
       modal('<div class="md-det"><div class="md-big"><img src="' + esc(f.url) + '?v=' + Date.now() + '" alt="" id="dt-img"></div><div><h3 style="word-break:break-all">' + esc(f.name) + '</h3><p class="muted" id="dt-dim">' + kb(f.size) + " · " + esc(f.folder) + " · " + esc(f.mtime.slice(0, 10)) + '</p><label>Address<div class="copy"><input readonly value="' + esc(f.url) + '"><button type="button" class="btn sm" id="dt-copy">Copy</button></div></label>' +
         (svg ? "" : '<label>Alt text <button type="button" class="btn sm ai" id="dt-ai" hidden>' + ic("sparkles") + 'Write</button><textarea id="dt-alt" rows="2" placeholder="Describe what the photo shows">' + esc(f.alt) + '</textarea></label><label class="check"><input type="checkbox" id="dt-apply" checked> Also add it to pages where this image has no alt text</label>') +
         '<h4 class="sub-h">Used on (' + f.used.length + ')</h4><ul class="md-used">' + (f.used.length ? f.used.slice(0, 30).map(function (r) { var page = /\.html$/.test(r); return "<li>" + (page ? '<a href="#/fields/' + encodeURIComponent(r) + '">/' + esc(r.replace(/index\.html$/, "")) + "</a>" : '<span class="muted">' + esc(r.replace(/^_private\/(.*)\.json$/, "stored content: $1")) + "</span>") + "</li>"; }).join("") : '<li class="muted">Not used anywhere. Safe to delete.</li>') + "</ul>" +
-        '<div class="modal-actions">' + (isOA() ? '<button type="button" class="btn ghost danger" id="dt-del">' + ic("trash") + "Trash</button>" : "") + (isOA() && f.size > 150 * 1024 && !svg ? '<button type="button" class="btn" id="dt-opt">' + ic("zap") + "Optimise</button>" : "") + '<button type="button" class="btn" data-x>Close</button>' + (svg ? "" : '<button type="button" class="btn pri" id="dt-save">Save alt text</button>') + "</div></div></div>", "wide");
+        '<div class="modal-actions">' + (isOA() ? '<button type="button" class="btn ghost danger" id="dt-del">' + ic("trash") + "Trash</button>" : "") + (isOA() && f.size > 150 * 1024 && !svg ? '<button type="button" class="btn" id="dt-opt">' + ic("zap") + "Optimise</button>" : "") + '<button type="button" class="btn" data-x>Close</button>' + (svg || /\.gif$/.test(f.name) ? "" : '<button type="button" class="btn" id="dt-crop">' + ic("layout") + 'Crop / resize</button><button type="button" class="btn pri" id="dt-save">Save alt text</button>') + "</div></div></div>", "wide");
       W.fillIcons(document.querySelector("#modal-card"));
       $("[data-x]").onclick = closeModal;
       var img = $("#dt-img"); img.onload = function () { $("#dt-dim").textContent = img.naturalWidth + " × " + img.naturalHeight + " px · " + kb(f.size) + " · " + f.folder + " · " + f.mtime.slice(0, 10); };
