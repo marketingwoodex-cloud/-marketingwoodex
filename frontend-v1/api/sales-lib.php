@@ -48,7 +48,7 @@ function quote_put(array $x): array { return doc_put('wx_quotes', $x, ['no' => $
 // ---------------------------------------------------------------- business helpers
 function company_cfg(): array {
     return array_merge(['name' => 'Woodex Interior', 'tagline' => 'Design · Build · Furniture', 'address' => 'M-71, Zainab Tower, Model Town Link Road, Lahore', 'phones' => '+92 322 4000768 · +92 321 4686884',
-        'email' => 'info@woodex.com.pk', 'web' => 'woodex.com.pk', 'ntn' => '', 'bankName' => '', 'bankTitle' => '', 'bankAccount' => '', 'bankIban' => '', 'prefix' => 'WI-', 'nextNo' => 10100,
+        'email' => 'info@woodex.com.pk', 'web' => 'woodex.com.pk', 'ntn' => '', 'bankName' => '', 'bankTitle' => '', 'bankAccount' => '', 'bankIban' => '', 'signName' => '', 'signTitle' => 'For Woodex Interior', 'payTerms' => '', 'prefix' => 'WI-', 'nextNo' => 10100,
         'validDays' => 15, 'consultant' => 'Woodex Interior'], jread(COMPANY_FILE));
 }
 /** Reserve the next document number atomically (file lock). */
@@ -68,9 +68,10 @@ function clean_sections($sections): array {
         foreach (array_slice(is_array($s['items'] ?? null) ? $s['items'] : [], 0, 300) as $it) {
             $desc = clip($it['desc'] ?? '', 600); if ($desc === '') continue;
             $qty = numv($it['qty'] ?? 0); $rate = numv($it['rate'] ?? 0); $unit = strtolower((string)($it['unit'] ?? ''));
-            $items[] = ['desc' => $desc, 'qty' => $qty, 'unit' => in_array($unit, SALES_UNITS, true) ? $unit : 'job', 'rate' => $rate, 'amount' => r2($qty * $rate)];
+            $kind = in_array($it['kind'] ?? '', ['head', 'spec'], true) ? $it['kind'] : '';
+            $items[] = ['desc' => $kind === 'spec' ? clip($it['desc'] ?? '', 2000) : $desc, 'qty' => $kind ? 0 : $qty, 'unit' => in_array($unit, SALES_UNITS, true) ? $unit : 'job', 'rate' => $kind ? 0 : $rate, 'amount' => $kind ? 0 : r2($qty * $rate), 'kind' => $kind, 'code' => clip($it['code'] ?? '', 12)];
         }
-        $out[] = ['name' => clip($s['name'] ?? '', 80) ?: 'Section', 'note' => clip($s['note'] ?? '', 600), 'items' => $items];
+        $out[] = ['name' => clip($s['name'] ?? '', 80) ?: 'Section', 'note' => clip($s['note'] ?? '', 600), 'area' => numv($s['area'] ?? 0), 'items' => $items];
     }
     return $out;
 }
@@ -120,7 +121,7 @@ function sales_actions(string $action, array $in): bool {
         case 'company_get': need($ALL); out(['ok' => true, 'company' => company_cfg(), 'units' => SALES_UNITS]);
         case 'company_save':
             $u = need($OA); $c = company_cfg(); $s = is_array($in['company'] ?? null) ? $in['company'] : [];
-            foreach ($c as $k => $v) if (array_key_exists($k, $s)) $c[$k] = in_array($k, ['nextNo', 'validDays'], true) ? max(1, (int)round(numv($s[$k]))) : clip($s[$k], 300);
+            foreach ($c as $k => $v) if (array_key_exists($k, $s)) $c[$k] = in_array($k, ['nextNo', 'validDays'], true) ? max(1, (int)round(numv($s[$k]))) : clip($s[$k], $k === 'payTerms' ? 2000 : 300);
             $used = 0; foreach (q('SELECT DISTINCT no FROM wx_quotes')->fetchAll(PDO::FETCH_COLUMN) as $no) $used = max($used, (int)preg_replace('~\D~', '', $no));
             if ($c['nextNo'] <= $used) fail('Next number must be higher than ' . $used . ' (already used)');
             jwrite(COMPANY_FILE, $c); log_act($u, 'settings.company'); out(['ok' => true, 'company' => $c]);
@@ -161,7 +162,9 @@ function sales_actions(string $action, array $in): bool {
             $x = array_merge($x, ['client' => $client, 'client_id' => (int)($in['client_id'] ?? 0) ?: ($x['client_id'] ?? null), 'project' => clip($in['project'] ?? '', 160), 'site' => clip($in['site'] ?? '', 200),
                 'kind' => clip($in['kind'] ?? '', 20) ?: ($x['kind'] ?? 'other'), 'date' => ymd($in['date'] ?? '') ?: ($x['date'] ?? date('Y-m-d')), 'valid_days' => max(1, (int)round(numv($in['valid_days'] ?? 0)) ?: (int)$c['validDays']),
                 'sections' => clean_sections($in['sections'] ?? []), 'discount' => numv($in['discount'] ?? 0), 'taxPct' => numv($in['taxPct'] ?? 0), 'terms' => clip($in['terms'] ?? '', 3000),
-                'notes' => clip($in['notes'] ?? '', 2000), 'intro' => clip($in['intro'] ?? '', 1500), 'design' => in_array($in['design'] ?? '', ['classic', 'minimal', 'premium'], true) ? $in['design'] : ($x['design'] ?? 'classic'), 'updated_at' => now()]);
+                'notes' => clip($in['notes'] ?? '', 2000), 'intro' => clip($in['intro'] ?? '', 1500), 'design' => in_array($in['design'] ?? '', ['classic', 'minimal', 'premium'], true) ? $in['design'] : ($x['design'] ?? 'classic'),
+                'layout' => in_array($in['layout'] ?? '', ['classic', 'single', 'project'], true) ? $in['layout'] : ($x['layout'] ?? 'classic'), 'qtype' => in_array($in['qtype'] ?? '', ['', 'fitout', 'renovation', 'interior', 'proposal', 'furniture'], true) ? ($in['qtype'] ?? '') : '',
+                'scope' => clip($in['scope'] ?? '', 6000), 'sign_name' => clip($in['sign_name'] ?? '', 80), 'sign_title' => clip($in['sign_title'] ?? '', 80), 'updated_at' => now()]);
             if ($new && !empty($in['lead_id']) && q('SELECT id FROM wx_leads WHERE id=?', [(int)$in['lead_id']])->fetch()) { $x['lead_id'] = (int)$in['lead_id']; lead_stage($x['lead_id'], ['new', 'contacted', 'visit'], 'quote', $u, $x['no']); }
             $x = quote_put(doc_totals($x)); log_act($u, $new ? 'quote.create' : 'quote.update', q_label($x) . ' ' . $client['name']);
             out(['ok' => true, 'quote' => q_pub($x)]);

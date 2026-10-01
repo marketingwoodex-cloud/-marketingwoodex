@@ -484,7 +484,7 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
   const QSTATUS = ["draft", "sent", "approved", "rejected", "superseded", "invoiced"];
   const PSTAGES = ["planning", "design", "procurement", "execution", "finishing", "handover", "completed"];
   const COMPANY = path.join(PRIV, "company.json");
-  const companyCfg = () => Object.assign({ name: "Woodex Interior", tagline: "Design · Build · Furniture", address: "M-71, Zainab Tower, Model Town Link Road, Lahore", phones: "+92 322 4000768 · +92 321 4686884", email: "info@woodex.com.pk", web: "woodex.com.pk", ntn: "", bankName: "", bankTitle: "", bankAccount: "", bankIban: "", prefix: "WI-", nextNo: 10100, validDays: 15, consultant: "Woodex Interior" }, jr(COMPANY, {}));
+  const companyCfg = () => Object.assign({ name: "Woodex Interior", tagline: "Design · Build · Furniture", address: "M-71, Zainab Tower, Model Town Link Road, Lahore", phones: "+92 322 4000768 · +92 321 4686884", email: "info@woodex.com.pk", web: "woodex.com.pk", ntn: "", bankName: "", bankTitle: "", bankAccount: "", bankIban: "", signName: "", signTitle: "For Woodex Interior", payTerms: "", prefix: "WI-", nextNo: 10100, validDays: 15, consultant: "Woodex Interior" }, jr(COMPANY, {}));
   const num = (v) => { const n = Number(v); return Number.isFinite(n) && n >= 0 ? n : 0; };
   const r2 = (n) => Math.round(n * 100) / 100;
   function cleanSections(sections) {
@@ -493,8 +493,9 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
       name: clip(s && s.name, 80) || "Section", note: clip(s && s.note, 600),
       items: (Array.isArray(s && s.items) ? s.items : []).slice(0, 300).map((it) => {
         const qty = num(it.qty), rate = num(it.rate), unit = UNITS.includes(String(it.unit || "").toLowerCase()) ? String(it.unit).toLowerCase() : "job";
-        return { desc: clip(it.desc, 600), qty, unit, rate, amount: r2(qty * rate) };
-      }).filter((it) => it.desc),
+        const kind = ["head", "spec"].includes(it.kind) ? it.kind : "";
+        return { desc: clip(it.desc, kind === "spec" ? 2000 : 600), qty: kind ? 0 : qty, unit, rate: kind ? 0 : rate, amount: kind ? 0 : r2(qty * rate), kind, code: clip(it.code, 12) };
+      }).filter((it) => it.desc), area: num(s && s.area),
     }));
   }
   function totals(doc) {
@@ -677,7 +678,7 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
       case "company_get": need(ALL); return { ok: true, company: companyCfg(), units: UNITS };
       case "company_save": {
         const u = need(["owner", "admin"]), c = companyCfg(), s = inp.company || {};
-        for (const k of Object.keys(c)) if (k in s) c[k] = ["nextNo", "validDays"].includes(k) ? Math.max(1, Math.round(num(s[k]))) : clip(s[k], 300);
+        for (const k of Object.keys(c)) if (k in s) c[k] = ["nextNo", "validDays"].includes(k) ? Math.max(1, Math.round(num(s[k]))) : clip(s[k], k === "payTerms" ? 2000 : 300);
         const used = db.quotes.reduce((m, q) => Math.max(m, +String(q.no).replace(/\D/g, "") || 0), 0);
         if (c.nextNo <= used) throw new Fail("Next number must be higher than " + used + " (already used)");
         jw(COMPANY, c); log(db, u, "settings.company", "", ip); return done({ ok: true, company: c });
@@ -735,7 +736,9 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
         }
         const c = companyCfg();
         Object.assign(q, { client: clientOf(inp.client || {}), client_id: +inp.client_id || q.client_id || null, project: clip(inp.project, 160), site: clip(inp.site, 200), kind: clip(inp.kind, 20) || q.kind || "other", date: /^\d{4}-\d{2}-\d{2}$/.test(inp.date || "") ? inp.date : q.date || now().slice(0, 10),
-          valid_days: Math.max(1, Math.round(num(inp.valid_days) || c.validDays)), sections: cleanSections(inp.sections), discount: num(inp.discount), taxPct: num(inp.taxPct), terms: clip(inp.terms, 3000), notes: clip(inp.notes, 2000), intro: clip(inp.intro, 1500), design: ["classic", "minimal", "premium"].includes(inp.design) ? inp.design : q.design || "classic", updated_at: now() });
+          valid_days: Math.max(1, Math.round(num(inp.valid_days) || c.validDays)), sections: cleanSections(inp.sections), discount: num(inp.discount), taxPct: num(inp.taxPct), terms: clip(inp.terms, 3000), notes: clip(inp.notes, 2000), intro: clip(inp.intro, 1500), design: ["classic", "minimal", "premium"].includes(inp.design) ? inp.design : q.design || "classic",
+          layout: ["classic", "single", "project"].includes(inp.layout) ? inp.layout : q.layout || "classic", qtype: ["", "fitout", "renovation", "interior", "proposal", "furniture"].includes(inp.qtype || "") ? inp.qtype || "" : "",
+          scope: clip(inp.scope, 6000), sign_name: clip(inp.sign_name, 80), sign_title: clip(inp.sign_title, 80), updated_at: now() });
         if (!q.client.name) throw new Fail("Client name is required");
         totals(q); log(db, u, inp.id ? "quote.update" : "quote.create", qLabel(q) + " " + q.client.name, ip);
         return done({ ok: true, quote: { ...q, label: qLabel(q) } });

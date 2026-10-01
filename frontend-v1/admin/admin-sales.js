@@ -37,18 +37,18 @@
     };
   }
   function sectionEditor(box, sections, ro, onChange) {
-    var calc = function () { sections.forEach(function (s) { s.subtotal = 0; s.items.forEach(function (it) { it.amount = Math.round((+it.qty || 0) * (+it.rate || 0) * 100) / 100; s.subtotal += it.amount; }); }); };
+    var calc = function () { sections.forEach(function (s) { s.subtotal = 0; s.items.forEach(function (it) { it.amount = it.kind ? 0 : Math.round((+it.qty || 0) * (+it.rate || 0) * 100) / 100; s.subtotal += it.amount; }); }); };
     var draw = function () {
       calc();
       box.innerHTML = sections.map(function (s, si) {
-        return '<div class="card sec" data-si="' + si + '"><div class="sec-hd"><span class="sec-n">' + String(si + 1).padStart(2, "0") + '</span><input class="sec-name" data-f="name" value="' + esc(s.name) + '"' + (ro ? " disabled" : "") + ' placeholder="Section name, e.g. Wood Work"><b class="sec-st">' + money(s.subtotal) + "</b>" +
+        return '<div class="card sec" data-si="' + si + '"><div class="sec-hd"><span class="sec-n">' + String(si + 1).padStart(2, "0") + '</span><input class="sec-name" data-f="name" value="' + esc(s.name) + '"' + (ro ? " disabled" : "") + ' placeholder="Section name, e.g. Wood Work"><label class="sec-area" title="Total area for the per-sft summary (project layout)"><small>Area sft</small><input type="number" min="0" step="any" data-f="area" value="' + (s.area || "") + '"' + (ro ? " disabled" : "") + '></label><b class="sec-st">' + money(s.subtotal) + "</b>" +
           (ro ? "" : '<div class="sec-tools"><button class="btn sm" data-a="up" title="Move up"' + (si ? "" : " disabled") + '>↑</button><button class="btn sm" data-a="down" title="Move down"' + (si < sections.length - 1 ? "" : " disabled") + '>↓</button><button class="btn sm" data-a="dup" title="Duplicate section">⧉</button><button class="btn sm danger" data-a="del" title="Remove section">✕</button></div>') + "</div>" +
           '<div class="tbl-wrap"><table class="tbl items"><thead><tr><th style="width:34px">#</th><th>Particulars</th><th style="width:96px" class="r">Qty / area</th><th style="width:92px">Unit</th><th style="width:110px" class="r">Rate</th><th style="width:120px" class="r">Amount</th>' + (ro ? "" : '<th style="width:34px"></th>') + "</tr></thead><tbody>" +
           s.items.map(function (it, ii) {
-            return '<tr data-ii="' + ii + '"><td class="muted">' + (ii + 1) + '</td><td><textarea rows="1" data-i="desc"' + (ro ? " disabled" : "") + ' placeholder="Describe the work">' + esc(it.desc) + '</textarea></td><td><input type="number" step="any" min="0" class="r" data-i="qty" value="' + (it.qty === "" ? "" : +it.qty) + '"' + (ro ? " disabled" : "") + '></td>' +
+            return '<tr data-ii="' + ii + '" class="' + (it.kind ? "k-" + it.kind : "") + '"><td class="muted it-k"><input class="it-code" data-i="code" value="' + esc(it.code || "") + '" placeholder="' + (ii + 1) + '"' + (ro ? " disabled" : "") + '><select data-i="kind" title="Row type"' + (ro ? " disabled" : "") + '><option value="">Item</option><option value="head"' + (it.kind === "head" ? " selected" : "") + '>Heading</option><option value="spec"' + (it.kind === "spec" ? " selected" : "") + '>Spec text</option></select></td><td><textarea rows="1" data-i="desc"' + (ro ? " disabled" : "") + ' placeholder="' + (it.kind === "head" ? "Heading, e.g. 5.1 Media wall" : it.kind === "spec" ? "Specification paragraph (no amount)" : "Describe the work") + '">' + esc(it.desc) + '</textarea></td><td><input type="number" step="any" min="0" class="r" data-i="qty" value="' + (it.qty === "" ? "" : +it.qty) + '"' + (ro ? " disabled" : "") + '></td>' +
               '<td><select data-i="unit"' + (ro ? " disabled" : "") + ">" + UNITS.map(function (u) { return '<option value="' + u + '"' + (u === it.unit ? " selected" : "") + ">" + (UL[u] || u) + "</option>"; }).join("") + '</select></td><td><input type="number" step="any" min="0" class="r" data-i="rate" value="' + (it.rate === "" ? "" : +it.rate) + '"' + (ro ? " disabled" : "") + '></td><td class="r amt">' + (it.amount ? Math.round(it.amount).toLocaleString("en-US") : "-") + "</td>" + (ro ? "" : '<td><button class="btn sm ghost" data-rm title="Remove line">✕</button></td>') + "</tr>";
           }).join("") + "</tbody></table></div>" +
-          (ro ? (s.note ? '<p class="hint" style="margin:10px 16px">' + esc(s.note) + "</p>" : "") : '<div class="sec-ft"><button class="btn sm" data-add>' + ic("plus") + 'Add line</button><button class="btn sm" data-decor title="Type paint, wood, glass…">' + ic("sparkles") + 'Decoration items</button><input data-f="note" value="' + esc(s.note || "") + '" placeholder="Section note shown under the table (optional)"></div>') + "</div>";
+          (ro ? (s.note ? '<p class="hint" style="margin:10px 16px">' + esc(s.note) + "</p>" : "") : '<div class="sec-ft"><button class="btn sm" data-add>' + ic("plus") + 'Add line</button><button class="btn sm" data-addk="head">+ Heading</button><button class="btn sm" data-addk="spec">+ Spec text</button><button class="btn sm" data-decor title="Type paint, wood, glass…">' + ic("sparkles") + 'Decoration items</button><input data-f="note" value="' + esc(s.note || "") + '" placeholder="Section note shown under the table (optional)"></div>') + "</div>";
       }).join("") + (ro ? "" : '<div class="sec-add"><button class="btn" id="se-add">' + ic("plus") + 'Add section</button><button class="btn" id="se-lib">' + ic("layers") + "Add section from a template</button></div>");
       W.fillIcons(box); $$("textarea", box).forEach(grow);
     };
@@ -58,10 +58,10 @@
       var sec = e.target.closest(".sec"); if (!sec) return; var si = +sec.dataset.si, s = sections[si];
       if (e.target.dataset.f) { s[e.target.dataset.f] = e.target.value; return onChange(); }
       var tr = e.target.closest("tr[data-ii]"); if (!tr) return; var it = s.items[+tr.dataset.ii], k = e.target.dataset.i;
-      it[k] = k === "qty" || k === "rate" ? (e.target.value === "" ? "" : +e.target.value) : e.target.value; if (k === "desc") grow(e.target);
+      if (k === "kind") return; it[k] = k === "qty" || k === "rate" ? (e.target.value === "" ? "" : +e.target.value) : e.target.value; if (k === "desc") grow(e.target);
       sumOnly(sec, si);
     };
-    box.onchange = function (e) { if (e.target.dataset.i === "unit") box.oninput(e); };
+    box.onchange = function (e) { if (e.target.dataset.i === "unit") box.oninput(e); if (e.target.dataset.i === "kind") { var sc = e.target.closest(".sec"); sections[+sc.dataset.si].items[+e.target.closest("tr").dataset.ii].kind = e.target.value; draw(); onChange(); } };
     box.onkeydown = function (e) { if (e.key === "Enter" && !e.shiftKey && e.target.dataset.i === "desc") { e.preventDefault(); var sec = e.target.closest(".sec"), si = +sec.dataset.si, ii = +e.target.closest("tr").dataset.ii; sections[si].items.splice(ii + 1, 0, { desc: "", qty: 1, unit: sections[si].items[ii].unit, rate: "" }); draw(); onChange(); var t = $$('.sec[data-si="' + si + '"] textarea', box)[ii + 1]; if (t) t.focus(); } };
     box.onclick = function (e) {
       var b = e.target.closest("button"); if (!b) return;
@@ -70,6 +70,7 @@
       if (b.id === "se-lib") return pickSection(function (s) { sections.push(JSON.parse(JSON.stringify(s))); draw(); onChange(); });
       var sec = b.closest(".sec"); if (!sec) return; var si = +sec.dataset.si;
       if (b.hasAttribute("data-add")) { sections[si].items.push({ desc: "", qty: 1, unit: (sections[si].items.slice(-1)[0] || {}).unit || "sft", rate: "" }); draw(); onChange(); var ts = $$('.sec[data-si="' + si + '"] textarea', box); ts[ts.length - 1].focus(); return; }
+      if (b.dataset.addk) { sections[si].items.push({ desc: "", qty: 0, unit: "job", rate: "", kind: b.dataset.addk, code: "" }); draw(); onChange(); var tk = $$('.sec[data-si="' + si + '"] textarea', box); tk[tk.length - 1].focus(); return; }
       if (b.hasAttribute("data-rm")) { sections[si].items.splice(+b.closest("tr").dataset.ii, 1); draw(); onChange(); return; }
       var a = b.dataset.a;
       if (a === "up" || a === "down") { var j = si + (a === "up" ? -1 : 1); sections.splice(j, 0, sections.splice(si, 1)[0]); }
@@ -88,7 +89,7 @@
       $("#ps-q").oninput = draw; $("#ps-x").onclick = closeModal; draw();
     });
   }
-  var cleanForSave = function (sections) { return sections.map(function (s) { return { name: s.name, note: s.note || "", items: s.items.filter(function (it) { return String(it.desc).trim(); }).map(function (it) { return { desc: it.desc, qty: +it.qty || 0, unit: it.unit, rate: +it.rate || 0 }; }) }; }); };
+  var cleanForSave = function (sections) { return sections.map(function (s) { return { name: s.name, note: s.note || "", area: +s.area || 0, items: s.items.filter(function (it) { return String(it.desc).trim(); }).map(function (it) { return { desc: it.desc, qty: +it.qty || 0, unit: it.unit, rate: +it.rate || 0, kind: it.kind || "", code: it.code || "" }; }) }; }); };
 
   // =========================================================== QUOTATIONS LIST
   W.VIEWS.quotes = function (el) {
@@ -182,10 +183,11 @@
         $("#qe-tot").textContent = money(tot); $("#qe-words").textContent = "Rupees " + WXPrint.words(tot) + " only";
       };
       sectionEditor($("#qe-secs"), q.sections, ro, markDirty); summary();
+      W.qeState = { q: q, co: co, ro: ro, dirty: markDirty, el: el, redraw: function () { sectionEditor($("#qe-secs"), q.sections, ro, markDirty); summary(); } }; if (W.onQuoteEditor) W.onQuoteEditor(W.qeState);
       $$("[data-c]", el).forEach(function (i) { i.oninput = function () { q.client[i.dataset.c] = i.value; markDirty(); }; });
       $$("[data-q]", el).forEach(function (i) { i.oninput = i.onchange = function () { if (i.type === "radio" && !i.checked) return; q[i.dataset.q] = i.value; markDirty(); if (i.name === "qd") $$(".qd", el).forEach(function (l) { l.classList.toggle("on", l.contains(i)); }); }; });
       var save = function () {
-        return api("quote_save", { id: q.id, client: q.client, client_id: q.client_id, project: q.project, site: q.site, kind: q.kind, date: q.date, valid_days: q.valid_days, intro: q.intro, sections: cleanForSave(q.sections), discount: q.discount, taxPct: q.taxPct, terms: q.terms, notes: q.notes, design: q.design || "classic" })
+        return api("quote_save", { id: q.id, client: q.client, client_id: q.client_id, project: q.project, site: q.site, kind: q.kind, date: q.date, valid_days: q.valid_days, intro: q.intro, sections: cleanForSave(q.sections), discount: q.discount, taxPct: q.taxPct, terms: q.terms, notes: q.notes, design: q.design || "classic", layout: q.layout || "classic", qtype: q.qtype || "", scope: q.scope || "", sign_name: q.sign_name || "", sign_title: q.sign_title || "" })
           .then(function (x) { if (!x.ok) { toast(x.error, true); return false; } dirty = false; if ($("#qe-save")) { $("#qe-save").disabled = true; $("#qe-save").textContent = "Saved"; } toast("Saved ✓"); return true; });
       };
       var ensureSaved = function () { return dirty ? save() : Promise.resolve(true); };
@@ -310,7 +312,7 @@
     api("company_get").then(function (r) {
       var c = r.company, f = function (k, l, ph, w) { return "<label" + (w ? " style='grid-column:1/-1'" : "") + ">" + l + "<input id='co-" + k + "' value='" + esc(c[k]) + "' placeholder='" + esc(ph || "") + "'></label>"; };
       modal("<h2>Company & numbering</h2><p class='muted' style='margin:-10px 0 14px'>Printed on every quotation, invoice and receipt.</p><div class='g2'>" + f("name", "Company name") + f("consultant", "Consultant (signature line)") + f("address", "Address", "", 1) + f("phones", "Phones") + f("email", "Email") + f("web", "Website") + f("ntn", "NTN (optional)") +
-        "</div><h3 class='side-h'>Bank details <small class='muted'>(printed on invoices and quotations)</small></h3><div class='g2'>" + f("bankTitle", "Account title", "Woodex Interior") + f("bankName", "Bank", "Meezan Bank, Model Town branch") + f("bankAccount", "Account no.") + f("bankIban", "IBAN", "PK00 XXXX 0000 0000 0000 0000") +
+        "</div><h3 class='side-h'>Bank details <small class='muted'>(printed on invoices and quotations)</small></h3><div class='g2'>" + f("bankTitle", "Account title", "Woodex Interior") + f("bankName", "Bank", "Meezan Bank, Model Town branch") + f("bankAccount", "Account no.") + f("bankIban", "IBAN", "PK00 XXXX 0000 0000 0000 0000") + "</div><h3 class='side-h'>Signature &amp; default terms <small class='muted'>(new quotation layouts and invoices)</small></h3><div class='g2'>" + f("signName", "Signed by (name)", "e.g. Abdullah Khan") + f("signTitle", "Title under the name", "For Woodex Interior") + "</div><label>Default payment terms <small class='muted'>(used when a quotation has no terms; one per line)</small><textarea id='co-payTerms' rows='4' placeholder='50% advance with work order&#10;40% on completion of wood work&#10;10% on handover'>" + esc(c.payTerms || "") + "</textarea></label><div>" +
         "</div><h3 class='side-h'>Numbering</h3><div class='g2'>" + f("prefix", "Prefix", "WI-") + "<label>Next number<input id='co-nextNo' type='number' value='" + c.nextNo + "'></label><label>Quotation valid for (days)<input id='co-validDays' type='number' value='" + c.validDays + "'></label><p class='hint' style='align-self:end'>Next quotation: <b id='co-prev'></b>. An approved quotation becomes an invoice with the same number.</p></div>" +
         "<p class='err' id='co-err'></p><div class='modal-actions'><button class='btn' id='co-x'>Cancel</button><button class='btn pri' id='co-go'>Save</button></div>");
       $("#modal-card").classList.add("wide");

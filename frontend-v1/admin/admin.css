@@ -677,3 +677,14 @@ table.tbl.lp tbody tr:has(td.empty):hover{background:transparent}
 @media(max-width:1100px){.it-months{grid-template-columns:repeat(7,1fr)}.it-tot{grid-template-columns:repeat(2,1fr)}.it-t{border-bottom:1px solid var(--line)}}
 @media(max-width:600px){.it-months{grid-template-columns:repeat(4,1fr)}}
 @media(max-width:600px){.it-months{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:4px}.it-mo{flex:0 0 70px;scroll-snap-align:start}.it-mo.all{flex-basis:96px}}
+/* P17 S4 quotation editor */
+.sec-area{display:flex;align-items:center;gap:4px;margin:0 6px 0 auto;font-size:11px;color:var(--mut)}.sec-area input{width:84px!important;height:32px!important;margin:0!important;padding:0 8px!important;text-align:right}
+.it-k{width:96px}.it-k .it-code{height:26px!important;padding:0 6px!important;font-size:12px!important;margin:0 0 3px!important}.it-k select{height:24px!important;padding:0 4px!important;font-size:11px!important;margin:0!important;color:var(--mut)}
+.tbl.items tr.k-head td{background:#faf6ef}.tbl.items tr.k-head textarea{font-weight:700}.tbl.items tr.k-spec textarea{font-style:italic;color:var(--txt2)}
+.tbl.items tr.k-head input[data-i=qty],.tbl.items tr.k-head input[data-i=rate],.tbl.items tr.k-spec input[data-i=qty],.tbl.items tr.k-spec input[data-i=rate],.tbl.items tr.k-head select[data-i=unit],.tbl.items tr.k-spec select[data-i=unit]{visibility:hidden}
+.ql-pick{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:12px}.ql{border:1px solid var(--line2);border-radius:10px;padding:8px;cursor:pointer;display:flex;flex-direction:column;gap:2px}.ql input{display:none}.ql b{font-size:13px}.ql small{font-size:11px;color:var(--mut);line-height:1.3}.ql.on{border-color:#b8956a;background:#fdf8f1;box-shadow:0 0 0 1px #b8956a}.dark .ql.on{background:rgba(184,149,106,.12)}
+.q17-io{display:flex;gap:6px;flex-wrap:wrap}
+.q17-split{padding-right:min(48vw,820px)!important}
+.q17-pv{position:fixed;top:var(--top);right:0;bottom:0;width:min(48vw,820px);background:#e7e5e0;border-left:1px solid var(--line);z-index:35;display:flex;flex-direction:column}.q17-pv iframe{flex:1;border:0;width:100%;background:#e7e5e0}
+.q17-pvh{display:flex;align-items:center;gap:10px;padding:8px 14px;background:var(--card);border-bottom:1px solid var(--line)}
+@media(max-width:1100px){.q17-split{padding-right:0!important}.q17-pv{width:100%;top:auto;height:70vh;box-shadow:0 -10px 30px rgba(0,0,0,.2)}}

@@ -397,4 +397,73 @@
           .then(function (r) { if (!r.ok) { $("#nf-e").textContent = r.error; return; } $("#modal-card").classList.remove("wide"); W.closeModal(); toast("Invoice " + r.invoice.no + " created ✓"); after(r.invoice); }); };
     });
   }
+
+  // ================================================================ S4 QUOTATION EDITOR: layout, type presets, live preview, template import/export
+  var PRESET = {
+    fitout: { layout: "project", secs: ["Civil work", "Flooring", "Ceiling", "Paint", "Wood work", "Glass work", "Electrical", "HVAC", "Plumbing"], scope: "" },
+    renovation: { layout: "single", secs: ["Demolition & civil", "Flooring", "Ceiling", "Paint", "Wood work", "Electrical", "Plumbing & sanitary"], scope: "" },
+    interior: { layout: "project", secs: ["Civil work", "Flooring", "Ceiling", "Paint", "Wood work", "Glass work", "Curtain & blinds", "Electrical", "Plumbing"], scope: "" },
+    proposal: { layout: "single", secs: ["Design & 3D visualisation", "Execution"], scope: "Site survey and measurements\nSpace planning and 2D layout\n3D visualisation (up to 2 revisions)\nMaterial and finish selection\nDetailed BOQ and working drawings\nExecution and site supervision\nHandover with snag list" },
+    furniture: { layout: "single", secs: ["Furniture supply"], scope: "" } };
+  var QTL = { "": "— choose —", fitout: "Fit-out", renovation: "Renovation", interior: "Interior design", proposal: "Proposal (scope of work)", furniture: "Furniture supply" };
+  W.onQuoteEditor = function (E) {
+    var q = E.q, co = E.co, el = E.el, side = $(".qe-side", el); if (!side || !window.WXPrint) return;
+    q.layout = q.layout || "classic";
+    var card = document.createElement("div"); card.className = "card"; card.innerHTML = "<div class='card-b'><h3 class='side-h'>Layout &amp; type</h3>" +
+      "<div class='ql-pick'>" + [["single", "Single page", "One table, grey section rows"], ["project", "Project", "Summary page + one page per trade"], ["classic", "Classic", "Summary + detailed BOQ"]].map(function (x) { return "<label class='ql" + (q.layout === x[0] ? " on" : "") + "'><input type='radio' name='ql' value='" + x[0] + "'" + (q.layout === x[0] ? " checked" : "") + "><b>" + x[1] + "</b><small>" + x[2] + "</small></label>"; }).join("") + "</div>" +
+      "<label>Quotation type<select id='q17-t'>" + Object.keys(QTL).map(function (k) { return "<option value='" + k + "'" + ((q.qtype || "") === k ? " selected" : "") + ">" + QTL[k] + "</option>"; }).join("") + "</select></label>" +
+      "<label>Scope of work <small class='muted'>(one point per line, printed as a list)</small><textarea id='q17-sc' rows='4'>" + esc(q.scope || "") + "</textarea></label>" +
+      "<div class='g2' style='gap:0 10px'><label>Signed by<input id='q17-sn' value='" + esc(q.sign_name || "") + "' placeholder='" + esc(co.signName || "Your name") + "'></label><label>Title<input id='q17-st' value='" + esc(q.sign_title || "") + "' placeholder='" + esc(co.signTitle || "For Woodex Interior") + "'></label></div>" +
+      "<div class='q17-io'><button class='btn sm' id='q17-ex'>" + ic("download") + "Export template</button><button class='btn sm' id='q17-im'>" + ic("upload") + "Import template</button></div></div>";
+    side.insertBefore(card, side.firstChild); W.fillIcons(card);
+    if (E.ro) $$("input,select,textarea,button", card).forEach(function (x) { if (x.id !== "q17-ex") x.disabled = true; });
+    $$("input[name=ql]", card).forEach(function (r) { r.onchange = function () { q.layout = r.value; $$(".ql", card).forEach(function (l) { l.classList.toggle("on", l.contains(r)); }); E.dirty(); live(); }; });
+    $("#q17-sc").oninput = function () { q.scope = this.value; E.dirty(); };
+    $("#q17-sn").oninput = function () { q.sign_name = this.value; E.dirty(); }; $("#q17-st").oninput = function () { q.sign_title = this.value; E.dirty(); };
+    $("#q17-t").onchange = function () {
+      var t = this.value, p = PRESET[t]; q.qtype = t; E.dirty(); if (!p) return;
+      var empty = !q.sections.some(function (s) { return s.items.some(function (it) { return String(it.desc || "").trim(); }); });
+      if (empty || confirm("Add the " + QTL[t] + " sections (" + p.secs.join(", ") + ")? Your current lines stay.")) {
+        if (empty) q.sections.length = 0;
+        p.secs.forEach(function (n) { if (!q.sections.some(function (s) { return String(s.name).toLowerCase() === n.toLowerCase(); })) q.sections.push({ name: n, note: "", area: 0, items: [{ desc: "", qty: 1, unit: n === "Execution" || n.indexOf("Design") === 0 ? "job" : "sft", rate: "" }] }); });
+        E.redraw();
+      }
+      q.layout = p.layout; $$("input[name=ql]", card).forEach(function (r) { r.checked = r.value === p.layout; r.closest(".ql").classList.toggle("on", r.checked); });
+      if (p.scope && !q.scope) { q.scope = p.scope; $("#q17-sc").value = p.scope; }
+      E.dirty(); live();
+    };
+    $("#q17-ex").onclick = function () {
+      var t = { woodexTemplate: 1, name: q.project || q.client.name || q.no, qtype: q.qtype || "", layout: q.layout, scope: q.scope || "", terms: q.terms || "", intro: q.intro || "",
+        sections: q.sections.map(function (s) { return { name: s.name, note: s.note || "", area: +s.area || 0, items: s.items.filter(function (it) { return String(it.desc || "").trim(); }).map(function (it) { return { desc: it.desc, qty: +it.qty || 0, unit: it.unit, rate: +it.rate || 0, kind: it.kind || "", code: it.code || "" }; }) }; }) };
+      var a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([JSON.stringify(t, null, 2)], { type: "application/json" })); a.download = "woodex-template-" + String(t.name).replace(/\W+/g, "-").toLowerCase() + ".json"; a.click();
+    };
+    $("#q17-im").onclick = function () {
+      var fi = document.createElement("input"); fi.type = "file"; fi.accept = ".json,application/json";
+      fi.onchange = function () { var f = fi.files[0]; if (!f) return; f.text().then(function (txt) { var t; try { t = JSON.parse(txt); } catch (e) { return toast("That is not a template file", true); }
+        if (!t || !Array.isArray(t.sections)) return toast("That is not a Woodex template", true);
+        var replace = !q.sections.some(function (s) { return s.items.some(function (it) { return String(it.desc || "").trim(); }); }) || confirm("Replace the current sections with “" + (t.name || "template") + "”? (Cancel = add them at the end)");
+        if (replace) q.sections.length = 0;
+        t.sections.forEach(function (s) { q.sections.push({ name: String(s.name || "Section"), note: String(s.note || ""), area: +s.area || 0, items: (s.items || []).map(function (it) { return { desc: String(it.desc || ""), qty: +it.qty || 0, unit: it.unit || "job", rate: +it.rate || 0, kind: it.kind || "", code: it.code || "" }; }) }); });
+        if (t.layout) q.layout = t.layout; if (t.qtype != null) q.qtype = t.qtype; if (t.scope && !q.scope) q.scope = t.scope; if (t.terms && !q.terms) q.terms = t.terms;
+        E.redraw(); E.dirty(); toast("Template imported ✓ — check and save"); W.route();
+      }); };
+      fi.click();
+    };
+    // live preview panel
+    var tb = $(".toolbar", el), pv = null, timer = null;
+    var btn = document.createElement("button"); btn.className = "btn"; btn.id = "q17-live"; btn.innerHTML = ic("eye") + "Live preview"; tb.insertBefore(btn, tb.firstChild); W.fillIcons(btn);
+    function docOf() {
+      var sub = 0; q.sections.forEach(function (s) { s.subtotal = 0; s.items.forEach(function (it) { it.amount = it.kind ? 0 : Math.round((+it.qty || 0) * (+it.rate || 0) * 100) / 100; s.subtotal += it.amount; }); sub += s.subtotal; });
+      var d = JSON.parse(JSON.stringify(q)); d.sections.forEach(function (s) { s.items = s.items.filter(function (it) { return String(it.desc || "").trim(); }).map(function (it) { it.qty = +it.qty || 0; it.rate = +it.rate || 0; return it; }); });
+      d.subtotal = Math.round(sub); d.discount = Math.min(Math.round(+q.discount || 0), d.subtotal); d.taxPct = +q.taxPct || 0; d.tax = Math.round((d.subtotal - d.discount) * d.taxPct / 100); d.total = d.subtotal - d.discount + d.tax; return d;
+    }
+    function live() { if (!pv) return; clearTimeout(timer); timer = setTimeout(function () { var f = $("iframe", pv), y = f.contentWindow ? f.contentWindow.scrollY : 0; f.onload = function () { try { f.contentWindow.scrollTo(0, y); } catch (e) {} }; f.srcdoc = WXPrint.quote(docOf(), co); }, 350); }
+    btn.onclick = function () {
+      if (pv) { pv.remove(); pv = null; el.classList.remove("q17-split"); btn.classList.remove("pri"); return; }
+      pv = document.createElement("aside"); pv.className = "q17-pv"; pv.innerHTML = "<div class='q17-pvh'><b>Live preview</b><small class='muted'>" + esc((WXPrint.layouts || {})[q.layout] || "") + "</small><span style='flex:1'></span><button class='icon-btn' title='Close'>✕</button></div><iframe title='Quotation preview'></iframe>";
+      el.appendChild(pv); el.classList.add("q17-split"); btn.classList.add("pri"); pv.querySelector("button").onclick = btn.onclick; live(); timer && clearTimeout(timer); $("iframe", pv).srcdoc = WXPrint.quote(docOf(), co);
+    };
+    ["input", "change"].forEach(function (ev) { el.addEventListener(ev, function (e) { if (pv && !pv.contains(e.target)) { live(); var s = $(".q17-pvh small", pv); if (s) s.textContent = (WXPrint.layouts || {})[q.layout] || ""; } }); });
+    el.addEventListener("click", function (e) { if (pv && e.target.closest(".sec button, #se-add")) setTimeout(live, 50); });
+  };
 })();

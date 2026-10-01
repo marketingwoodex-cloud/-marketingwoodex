@@ -48,6 +48,7 @@ iframe{display:block;width:100%;border:0;height:calc(100vh - 56px)}
 <?php if ($wa): ?><a class="wa" target="_blank" rel="noopener" href="https://wa.me/<?= $wa ?>?text=<?= rawurlencode('Hi Woodex, about quotation ' . q_label($x) . ':') ?>">WhatsApp us</a><?php endif; ?></div>
 <iframe id="f" title="Quotation"></iframe>
 <script src="/admin/admin-print.js"></script>
+<script src="/admin/admin-print17.js"></script>
 <script>
 (function () {
   var q = <?= json_encode($q, $J) ?>, c = <?= json_encode($c, $J) ?>, f = document.getElementById("f");
