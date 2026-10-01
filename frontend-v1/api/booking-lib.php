@@ -66,8 +66,8 @@ function bk_free(array $c, string $d, int $dur, int $skip = 0, bool $team = fals
     return $out;
 }
 function bk_pub_cfg(array $c): array {
-    $days = []; $t = bk_now()->setTime(0, 0);
-    for ($i = 0; $i <= (int)$c['ahead']; $i++) { $d = $t->modify("+$i days")->format('Y-m-d'); $days[$d] = bk_day_closed($c, $d) === '' ? 1 : 0; }
+    $days = []; $t = bk_now()->setTime(0, 0); $min = 480; foreach ($c['types'] as $x) if (!empty($x['on'])) $min = min($min, (int)$x['dur']);
+    for ($i = 0; $i <= (int)$c['ahead']; $i++) { $d = $t->modify("+$i days")->format('Y-m-d'); $days[$d] = bk_day_closed($c, $d) === '' && bk_free($c, $d, $min) ? 1 : 0; } // 0 = closed or fully booked
     return ['ok' => true, 'on' => (bool)$c['on'], 'types' => array_values(array_map(fn($x) => ['k' => $x['k'], 'label' => $x['label'], 'dur' => (int)$x['dur'], 'hint' => $x['hint'] ?? ''], array_filter($c['types'], fn($x) => !empty($x['on'])))),
         'areas' => array_values($c['areas']), 'days' => $days, 'today' => $t->format('Y-m-d')];
 }

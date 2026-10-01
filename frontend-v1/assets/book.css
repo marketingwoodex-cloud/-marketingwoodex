@@ -56,3 +56,4 @@
 .bk-small{font-size:.9rem;color:rgba(255,255,255,.7);margin:16px 0 0}.bk-aside a{color:#d8b98a}
 @media(max-width:900px){.bk-sec>.bk-wrapx{grid-template-columns:1fr}.bk-aside{position:static}.bk-hero{padding:110px 0 40px}}
 @media(max-width:560px){.bkw-body{padding:22px 18px}.bkw-g2{grid-template-columns:1fr}.bkw-steps li{font-size:0;gap:0}.bkw-steps li span{font-size:.8rem}.bkw-date{flex-basis:64px}.bkw-arr{display:none}.bkw .bkw-next{min-width:0;flex:1}}
+.bk-hero .crumbs{position:static;transform:none;width:auto;padding:0;left:auto;top:auto}

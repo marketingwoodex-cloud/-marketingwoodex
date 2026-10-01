@@ -34,7 +34,7 @@
   const bkHits = new Map();
   async function bkPublic(req, inp) {
     const c = bkCfg(), db = load(); if (!db) throw new Fail("Booking is not available right now. Please WhatsApp us.", 503); ensureCrm(db); db.bookings = db.bookings || []; db.seqB = db.seqB || 0;
-    if (inp.action === "book_cfg") { const days = {}, t0 = Date.parse(ymd(pkNow()) + "T00:00:00Z"); for (let i = 0; i <= c.ahead; i++) { const d = ymd(new Date(t0 + i * 864e5)); days[d] = bkClosed(c, d) ? 0 : 1; }
+    if (inp.action === "book_cfg") { const days = {}, t0 = Date.parse(ymd(pkNow()) + "T00:00:00Z"); for (let i = 0; i <= c.ahead; i++) { const d = ymd(new Date(t0 + i * 864e5)); days[d] = !bkClosed(c, d) && bkFree(db, c, d, Math.min(...c.types.filter((t) => t.on).map((t) => t.dur), 480)).length ? 1 : 0; }
       return { ok: true, on: !!c.on, types: c.types.filter((t) => t.on).map((t) => ({ k: t.k, label: t.label, dur: t.dur, hint: t.hint || "" })), areas: c.areas, days, today: ymd(pkNow()) }; }
     if (!c.on) throw new Fail("Online booking is closed right now. Please WhatsApp us.", 503);
     if (inp.action === "book_slots") { const t = bkType(c, String(inp.type || "visit")); if (!t || !t.on) throw new Fail("Choose what you want to book"); return { ok: true, slots: bkFree(db, c, String(inp.date || ""), t.dur) }; }
