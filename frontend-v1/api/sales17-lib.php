@@ -73,8 +73,39 @@ function s17_client_status(array $invs, array $projs, array $leads): string {
     return 'past';
 }
 
+
+// ---------------------------------------------------------------- S3 invoice tracker helpers
+const S17_IMODES = ['' => 'Standard', 'after_delivery' => 'Payment after delivery'];
+/** Next number in a series: WF- (furniture, own counter from 10050) or the main WI- series shared with quotations. */
+function s17_inv_no(string $line): string {
+    if ($line !== 'furniture') return next_no();
+    $fh = fopen(COMPANY_FILE . '.lock', 'c'); flock($fh, LOCK_EX);
+    $c = jread(COMPANY_FILE); $n = max(10050, (int)($c['wfNext'] ?? 10050)); $c['wfNext'] = $n + 1; jwrite(COMPANY_FILE, $c);
+    flock($fh, LOCK_UN); fclose($fh); return ($c['wfPrefix'] ?? 'WF-') . $n;
+}
+/** Tracker view of an invoice: status Paid / Partial / After delivery / Unpaid + late delivery. */
+function s17_inv_row(array $i): array {
+    $i = inv_pub($i); $t = date('Y-m-d');
+    $i['track'] = $i['total'] > 0 && $i['balance'] <= 0 ? 'paid' : (($i['mode'] ?? '') === 'after_delivery' && empty($i['delivered']) ? 'after_delivery' : ($i['paid'] > 0 ? 'partial' : 'unpaid'));
+    $i['late'] = !empty($i['delivery_date']) && empty($i['delivered']) && $i['delivery_date'] < $t;
+    foreach (['po', 'delivery_date', 'line', 'mode', 'track_note'] as $k) $i[$k] = (string)($i[$k] ?? '');
+    $i['delivered'] = (string)($i['delivered'] ?? ''); $i['company'] = (string)($i['client']['company'] ?? '') ?: (string)($i['client']['name'] ?? '');
+    unset($i['sections']); return $i;
+}
+function s17_inv_client(array $in): array {
+    $cid = (int)($in['client_id'] ?? 0); $cl = ['name' => clip($in['client']['name'] ?? '', 120), 'company' => clip($in['client']['company'] ?? '', 120), 'phone' => clip($in['client']['phone'] ?? '', 40), 'email' => clip($in['client']['email'] ?? '', 190), 'address' => clip($in['client']['address'] ?? '', 300)];
+    if ($cid) { $c = q('SELECT * FROM wx_clients WHERE id=?', [$cid])->fetch(); if (!$c) fail('Client not found', 404); foreach ($cl as $k => $v) if ($v === '') $cl[$k] = (string)($c[$k] ?? ''); }
+    if ($cl['name'] === '') $cl['name'] = $cl['company']; if ($cl['name'] === '') fail('Pick a client or type the company name');
+    if (!$cid) { // find by phone / company, else create
+        $d = s17_digits($cl['phone']);
+        foreach (q('SELECT id,phone,company,name FROM wx_clients')->fetchAll() as $c) if (($d !== '' && strlen($d) >= 10 && s17_digits($c['phone']) === $d) || ($cl['company'] !== '' && mb_strtolower((string)$c['company']) === mb_strtolower($cl['company']))) { $cid = (int)$c['id']; break; }
+        if (!$cid) { q("INSERT INTO wx_clients (name,phone,email,company,city,address,notes,created_at) VALUES (?,?,?,?,'Lahore',?,'',?)", [$cl['name'], $cl['phone'], $cl['email'], $cl['company'], $cl['address'], now()]); $cid = (int)db()->lastInsertId(); }
+    }
+    return [$cid, $cl];
+}
+
 function sales17_actions(string $action, array $in): bool {
-    if (!in_array($action, ['lead_activity', 'leads_followups', 'leads_stats', 'leads_import2', 'clients_master', 'client_360', 'clients_merge', 's17_meta'], true)) return false;
+    if (!in_array($action, ['lead_activity', 'leads_followups', 'leads_stats', 'leads_import2', 'clients_master', 'client_360', 'clients_merge', 's17_meta', 'inv_new', 'inv_track', 'invs_tracker', 'invs_import'], true)) return false;
     s17_migrate(); $SALES = ['owner', 'admin', 'sales'];
     switch ($action) {
         case 's17_meta':
@@ -174,6 +205,62 @@ function sales17_actions(string $action, array $in): bool {
                   'quoted' => (int)array_sum(array_map(fn($x) => (float)($x['total'] ?? 0), $quotes)), 'projects' => count($projs), 'last' => $tl[0]['t'] ?? $c['created_at']];
             out(['ok' => true, 'client' => $c, 'status' => s17_client_status($invs, $projs, $leads), 'kpis' => $k, 'next' => $next,
                  'leads' => $leads, 'quotes' => array_map('q_pub', $quotes), 'invoices' => $invs, 'projects' => $projs, 'timeline' => array_slice($tl, 0, 300)]);
+
+
+        case 'inv_new': // standalone invoice (no quotation needed): items optional, or one total line
+            $u = need($SALES); sales_migrate(); [$cid, $cl] = s17_inv_client($in);
+            $line = isset(S17_LINES[$in['line'] ?? '']) ? $in['line'] : 'interior';
+            $secs = clean_sections($in['sections'] ?? []);
+            if (!$secs || !array_sum(array_map(fn($x) => count($x['items']), $secs))) { $amt = numv($in['total'] ?? 0); if ($amt <= 0) fail('Enter the invoice amount or add items');
+                $secs = [['name' => 'Supply & services', 'note' => '', 'items' => [['desc' => clip($in['desc'] ?? '', 600) ?: (clip($in['project'] ?? '', 160) ?: 'As per work order'), 'qty' => 1, 'unit' => 'job', 'rate' => $amt, 'amount' => $amt]]]]; }
+            $no = trim((string)($in['no'] ?? '')) !== '' ? clip($in['no'], 30) : s17_inv_no($line);
+            if (q('SELECT 1 FROM wx_invoices WHERE no=?', [$no])->fetchColumn()) fail('Invoice ' . $no . ' already exists');
+            $i = doc_totals(['sections' => $secs, 'discount' => $in['discount'] ?? 0, 'taxPct' => $in['taxPct'] ?? 0]);
+            $i += ['no' => $no, 'quote_id' => null, 'quote_label' => '', 'client' => $cl, 'client_id' => $cid, 'project' => clip($in['project'] ?? '', 160), 'site' => clip($in['site'] ?? '', 200),
+                'issue_date' => ymd($in['issue_date'] ?? '') ?: date('Y-m-d'), 'due_date' => ymd($in['due_date'] ?? ''), 'terms' => clip($in['terms'] ?? '', 3000), 'notes' => '', 'schedule' => clip($in['schedule'] ?? '', 600),
+                'payments' => [], 'seqPay' => 0, 'created_by' => $u['name'], 'created_at' => now(), 'po' => clip($in['po'] ?? '', 60), 'delivery_date' => ymd($in['delivery_date'] ?? ''), 'delivered' => '',
+                'line' => $line, 'mode' => ($in['mode'] ?? '') === 'after_delivery' ? 'after_delivery' : '', 'track_note' => clip($in['track_note'] ?? '', 500)];
+            $i = doc_put('wx_invoices', $i, ['no' => $no, 'quote_id' => null]);
+            log_act($u, 'invoice.create', $no . ' ' . $cl['name'] . ' (standalone)'); out(['ok' => true, 'invoice' => s17_inv_row($i)]);
+
+        case 'inv_track': // tracker fields on any invoice
+            $u = need($SALES); sales_migrate(); $i = doc_get('wx_invoices', $in['id'] ?? 0, 'Invoice');
+            foreach (['po' => 60, 'track_note' => 500] as $k => $n) if (array_key_exists($k, $in)) $i[$k] = clip($in[$k], $n);
+            if (array_key_exists('delivery_date', $in)) $i['delivery_date'] = ymd($in['delivery_date']);
+            if (array_key_exists('line', $in)) $i['line'] = isset(S17_LINES[$in['line']]) ? $in['line'] : '';
+            if (array_key_exists('mode', $in)) $i['mode'] = $in['mode'] === 'after_delivery' ? 'after_delivery' : '';
+            if (array_key_exists('delivered', $in)) $i['delivered'] = $in['delivered'] ? (ymd($in['delivered']) ?: date('Y-m-d')) : '';
+            $i = doc_put('wx_invoices', $i); log_act($u, 'invoice.track', $i['no']); out(['ok' => true, 'invoice' => s17_inv_row($i)]);
+
+        case 'invs_tracker': // rows for a year + monthly totals bar
+            need($SALES); sales_migrate(); $y = preg_match('~^\d{4}$~', (string)($in['year'] ?? '')) ? (string)$in['year'] : date('Y');
+            $all = array_map('s17_inv_row', doc_all('wx_invoices', 'id DESC'));
+            $years = array_values(array_unique(array_merge([date('Y')], array_map(fn($i) => substr((string)$i['issue_date'], 0, 4), $all)))); rsort($years);
+            $rows = array_values(array_filter($all, fn($i) => substr((string)$i['issue_date'], 0, 4) === $y));
+            $months = []; for ($m = 1; $m <= 12; $m++) $months[sprintf('%s-%02d', $y, $m)] = ['count' => 0, 'total' => 0, 'received' => 0, 'balance' => 0];
+            foreach ($rows as $i) { $k = substr($i['issue_date'], 0, 7); if (!isset($months[$k])) continue; $months[$k]['count']++; $months[$k]['total'] += $i['total']; $months[$k]['received'] += $i['paid']; $months[$k]['balance'] += $i['balance']; }
+            $late = array_values(array_filter($all, fn($i) => $i['late']));
+            out(['ok' => true, 'year' => $y, 'years' => $years, 'rows' => $rows, 'months' => $months, 'lateAll' => count($late), 'outstandingAll' => (int)array_sum(array_column($all, 'balance'))]);
+
+        case 'invs_import': // your invoice-tracking sheet → invoices (+ one payment for "Received")
+            $u = need(['owner', 'admin']); sales_migrate(); $n = 0; $skip = 0;
+            $have = array_flip(array_column(q('SELECT no FROM wx_invoices')->fetchAll(), 'no'));
+            $dt = function ($v) { $v = trim((string)$v); if (preg_match('~^(\d{1,2})[/.-](\d{1,2})[/.-](\d{2,4})~', $v, $m)) return sprintf('%04d-%02d-%02d', strlen($m[3]) === 2 ? 2000 + (int)$m[3] : $m[3], $m[2], $m[1]); $t = $v !== '' ? strtotime($v) : 0; return $t ? date('Y-m-d', $t) : ''; };
+            $num = fn($v) => (int)round((float)preg_replace('~[^\d.]~', '', (string)$v));
+            foreach (array_slice((array)($in['rows'] ?? []), 0, 3000) as $r) {
+                if (!is_array($r)) continue; $no = clip($r['no'] ?? '', 30); $co = clip($r['company'] ?? '', 120); $tot = $num($r['total'] ?? 0);
+                if ($no === '' || $co === '' || $tot <= 0 || preg_match('~^(invoice|inv)~i', $no) && !preg_match('~\d~', $no)) { $skip++; continue; }
+                if (isset($have[$no])) { $skip++; continue; } $have[$no] = 1;
+                [$cid, $cl] = s17_inv_client(['client' => ['company' => $co, 'name' => $co]]);
+                $date = $dt($r['date'] ?? '') ?: date('Y-m-d'); $rec = min($tot, $num($r['received'] ?? 0)); $stt = mb_strtolower((string)($r['status'] ?? ''));
+                $i = doc_totals(['sections' => [['name' => 'Supply & services', 'note' => '', 'items' => [['desc' => clip($r['note'] ?? '', 600) ?: 'As per PO ' . clip($r['po'] ?? '', 60), 'qty' => 1, 'unit' => 'job', 'rate' => $tot, 'amount' => $tot]]]], 'discount' => 0, 'taxPct' => 0]);
+                $i += ['no' => $no, 'quote_id' => null, 'quote_label' => '', 'client' => $cl, 'client_id' => $cid, 'project' => '', 'site' => '', 'issue_date' => $date, 'due_date' => '', 'terms' => '', 'notes' => '', 'schedule' => '',
+                    'payments' => [], 'seqPay' => 0, 'created_by' => $u['name'], 'created_at' => now(), 'po' => clip($r['po'] ?? '', 60), 'delivery_date' => $dt($r['delivery'] ?? ''), 'delivered' => str_contains($stt, 'paid') && !str_contains($stt, 'part') ? $date : '',
+                    'line' => stripos($no, 'WF') === 0 ? 'furniture' : 'interior', 'mode' => str_contains($stt, 'after') ? 'after_delivery' : '', 'track_note' => clip($r['note'] ?? '', 500)];
+                if ($rec > 0) { $i['seqPay'] = 1; $i['payments'][] = ['id' => 1, 'rcpt' => $no . '-R1', 'date' => $date, 'amount' => $rec, 'method' => 'bank', 'ref' => '', 'note' => 'Imported from sheet', 'by' => $u['name'], 't' => now()]; }
+                doc_put('wx_invoices', $i, ['no' => $no, 'quote_id' => null]); $n++;
+            }
+            log_act($u, 'invoice.import', $n . ' rows'); out(['ok' => true, 'imported' => $n, 'skipped' => $skip]);
 
         case 'clients_merge': // keep one record, move everything from the duplicate onto it
             $u = need(['owner', 'admin']); $keep = (int)($in['keep'] ?? 0); $drop = (int)($in['merge'] ?? 0);

@@ -533,8 +533,19 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
     if (iv.length >= 2 || won >= 2) return "returning"; if (open.length || bal > 0 || (iv.length === 1 && new Date(iv[0].issue_date) > Date.now() - 90 * 864e5)) return "active"; if (!iv.length && !won) return "prospect"; return "past"; };
   function s17Docs(db, c) { const d = s17dig(c.phone), mine = (x) => +x.client_id === c.id || (d.length >= 10 && s17dig((x.client || {}).phone) === d);
     return [(db.quotes || []).filter(mine), (db.invoices || []).filter(mine).map(invPub), (db.projects || []).filter((p) => +p.client_id === c.id)]; }
+  const s17InvNo = (line) => { if (line !== "furniture") { const c = companyCfg(), no = c.prefix + c.nextNo; c.nextNo++; jw(COMPANY, c); return no; } const c = jr(COMPANY, {}), n = Math.max(10050, +c.wfNext || 10050); c.wfNext = n + 1; jw(COMPANY, c); return (c.wfPrefix || "WF-") + n; };
+  const s17InvRow = (x) => { const i = invPub(x), t = now().slice(0, 10); const r = { ...i, track: i.total > 0 && i.balance <= 0 ? "paid" : i.mode === "after_delivery" && !i.delivered ? "after_delivery" : i.paid > 0 ? "partial" : "unpaid", late: !!(i.delivery_date && !i.delivered && i.delivery_date < t) };
+    ["po", "delivery_date", "line", "mode", "track_note", "delivered"].forEach((k) => { r[k] = String(r[k] || ""); }); r.company = (i.client && (i.client.company || i.client.name)) || ""; delete r.sections; return r; };
+  function s17InvClient(db, inp) {
+    let cid = +inp.client_id || 0; const ic = inp.client || {}, cl = { name: clip(ic.name, 120), company: clip(ic.company, 120), phone: clip(ic.phone, 40), email: clip(ic.email, 190), address: clip(ic.address, 300) };
+    if (cid) { const c = db.clients.find((x) => x.id === cid); if (!c) throw new Fail("Client not found", 404); for (const k in cl) if (!cl[k]) cl[k] = c[k] || ""; }
+    if (!cl.name) cl.name = cl.company; if (!cl.name) throw new Fail("Pick a client or type the company name");
+    if (!cid) { const d = s17dig(cl.phone); const c = db.clients.find((x) => (d.length >= 10 && s17dig(x.phone) === d) || (cl.company && String(x.company || "").toLowerCase() === cl.company.toLowerCase()));
+      if (c) cid = c.id; else { const n = { id: ++db.seqC, name: cl.name, phone: cl.phone, email: cl.email, company: cl.company, city: "Lahore", address: cl.address, notes: "", created_at: now() }; db.clients.push(n); cid = n.id; } }
+    return [cid, cl];
+  }
   async function a17(action, inp, need, db, ip) {
-    if (!["lead_activity", "leads_followups", "leads_stats", "leads_import2", "clients_master", "client_360", "clients_merge", "s17_meta"].includes(action)) return null;
+    if (!["lead_activity", "leads_followups", "leads_stats", "leads_import2", "clients_master", "client_360", "clients_merge", "s17_meta", "inv_new", "inv_track", "invs_tracker", "invs_import"].includes(action)) return null;
     ensureCrm(db); const done = (o) => { save(db); return o; };
     switch (action) {
       case "s17_meta": need(SALES); return { ok: true, ...S17 };
@@ -602,6 +613,46 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
         const sum = (a, k) => a.reduce((s, x) => s + (+x[k] || 0), 0);
         return { ok: true, client: c, status: s17Status(invs, projs, leads), next, kpis: { lifetime: sum(invs, "total"), paid: sum(invs, "paid"), balance: sum(invs, "balance"), quoted: sum(quotes, "total"), projects: projs.length, last: (tl[0] || {}).t || c.created_at },
           leads, quotes: quotes.map((x) => ({ ...x, label: x.no + (x.version > 1 ? " · V" + x.version : "") + (x.option ? " · " + x.option : "") })), invoices: invs, projects: projs, timeline: tl.slice(0, 300) };
+      }
+      case "inv_new": {
+        const u = need(SALES); ensureA5(db); const [cid, cl] = s17InvClient(db, inp); const line = S17.lines[inp.line] ? inp.line : "interior";
+        let secs = cleanSections(inp.sections); if (!secs.some((x) => x.items.length)) { const amt = num(inp.total); if (amt <= 0) throw new Fail("Enter the invoice amount or add items"); secs = [{ name: "Supply & services", note: "", items: [{ desc: clip(inp.desc, 600) || clip(inp.project, 160) || "As per work order", qty: 1, unit: "job", rate: amt, amount: amt }] }]; }
+        const no = String(inp.no || "").trim() ? clip(inp.no, 30) : s17InvNo(line); if (db.invoices.some((x) => x.no === no)) throw new Fail("Invoice " + no + " already exists");
+        const i = totals({ sections: secs, discount: inp.discount || 0, taxPct: inp.taxPct || 0 });
+        Object.assign(i, { id: ++db.seqI, no, quote_id: null, quote_label: "", client: cl, client_id: cid, project: clip(inp.project, 160), site: clip(inp.site, 200), issue_date: /^\d{4}-\d{2}-\d{2}$/.test(inp.issue_date || "") ? inp.issue_date : now().slice(0, 10), due_date: /^\d{4}-\d{2}-\d{2}$/.test(inp.due_date || "") ? inp.due_date : "",
+          terms: clip(inp.terms, 3000), notes: "", schedule: clip(inp.schedule, 600), payments: [], seqPay: 0, created_by: u.name, created_at: now(), po: clip(inp.po, 60), delivery_date: /^\d{4}-\d{2}-\d{2}$/.test(inp.delivery_date || "") ? inp.delivery_date : "", delivered: "", line, mode: inp.mode === "after_delivery" ? "after_delivery" : "", track_note: clip(inp.track_note, 500) });
+        db.invoices.push(i); log(db, u, "invoice.create", no + " " + cl.name + " (standalone)", ip); return done({ ok: true, invoice: s17InvRow(i) });
+      }
+      case "inv_track": {
+        const u = need(SALES); ensureA5(db); const i = db.invoices.find((x) => x.id === +inp.id); if (!i) throw new Fail("Invoice not found", 404);
+        if ("po" in inp) i.po = clip(inp.po, 60); if ("track_note" in inp) i.track_note = clip(inp.track_note, 500);
+        if ("delivery_date" in inp) i.delivery_date = /^\d{4}-\d{2}-\d{2}$/.test(inp.delivery_date || "") ? inp.delivery_date : "";
+        if ("line" in inp) i.line = S17.lines[inp.line] ? inp.line : ""; if ("mode" in inp) i.mode = inp.mode === "after_delivery" ? "after_delivery" : "";
+        if ("delivered" in inp) i.delivered = inp.delivered ? (/^\d{4}-\d{2}-\d{2}$/.test(String(inp.delivered)) ? inp.delivered : now().slice(0, 10)) : "";
+        log(db, u, "invoice.track", i.no, ip); return done({ ok: true, invoice: s17InvRow(i) });
+      }
+      case "invs_tracker": {
+        need(SALES); ensureA5(db); const y = /^\d{4}$/.test(String(inp.year || "")) ? String(inp.year) : now().slice(0, 4);
+        const all = db.invoices.slice().reverse().map(s17InvRow), years = [...new Set([now().slice(0, 4), ...all.map((i) => String(i.issue_date).slice(0, 4))])].sort().reverse();
+        const rows = all.filter((i) => String(i.issue_date).slice(0, 4) === y), months = {};
+        for (let m = 1; m <= 12; m++) months[`${y}-${String(m).padStart(2, "0")}`] = { count: 0, total: 0, received: 0, balance: 0 };
+        rows.forEach((i) => { const k = months[i.issue_date.slice(0, 7)]; if (!k) return; k.count++; k.total += i.total; k.received += i.paid; k.balance += i.balance; });
+        return { ok: true, year: y, years, rows, months, lateAll: all.filter((i) => i.late).length, outstandingAll: all.reduce((a, i) => a + i.balance, 0) };
+      }
+      case "invs_import": {
+        const u = need(["owner", "admin"]); ensureA5(db); let n = 0, skip = 0; const have = new Set(db.invoices.map((i) => i.no));
+        const dt = (v) => { v = String(v || "").trim(); const m = v.match(/^(\d{1,2})[/.-](\d{1,2})[/.-](\d{2,4})/); if (m) return `${m[3].length === 2 ? 2000 + +m[3] : m[3]}-${m[2].padStart(2, "0")}-${m[1].padStart(2, "0")}`; const t = v ? new Date(v) : null; return t && !isNaN(t) ? t.toISOString().slice(0, 10) : ""; };
+        const nm = (v) => Math.round(parseFloat(String(v || "").replace(/[^\d.]/g, "")) || 0);
+        for (const r of (Array.isArray(inp.rows) ? inp.rows : []).slice(0, 3000)) {
+          if (!r || typeof r !== "object") continue; const no = clip(r.no, 30), co = clip(r.company, 120), tot = nm(r.total);
+          if (!no || !co || tot <= 0 || (/^(invoice|inv)/i.test(no) && !/\d/.test(no)) || have.has(no)) { skip++; continue; } have.add(no);
+          const [cid, cl] = s17InvClient(db, { client: { company: co, name: co } }); const date = dt(r.date) || now().slice(0, 10), rec = Math.min(tot, nm(r.received)), stt = String(r.status || "").toLowerCase();
+          const i = totals({ sections: [{ name: "Supply & services", note: "", items: [{ desc: clip(r.note, 600) || "As per PO " + clip(r.po, 60), qty: 1, unit: "job", rate: tot, amount: tot }] }], discount: 0, taxPct: 0 });
+          Object.assign(i, { id: ++db.seqI, no, quote_id: null, quote_label: "", client: cl, client_id: cid, project: "", site: "", issue_date: date, due_date: "", terms: "", notes: "", schedule: "", payments: [], seqPay: 0, created_by: u.name, created_at: now(),
+            po: clip(r.po, 60), delivery_date: dt(r.delivery), delivered: stt.includes("paid") && !stt.includes("part") ? date : "", line: /^WF/i.test(no) ? "furniture" : "interior", mode: stt.includes("after") ? "after_delivery" : "", track_note: clip(r.note, 500) });
+          if (rec > 0) { i.seqPay = 1; i.payments.push({ id: 1, rcpt: no + "-R1", date, amount: rec, method: "bank", ref: "", note: "Imported from sheet", by: u.name, t: now() }); }
+          db.invoices.push(i); n++; }
+        log(db, u, "invoice.import", n + " rows", ip); return done({ ok: true, imported: n, skipped: skip });
       }
       case "clients_merge": {
         const u = need(["owner", "admin"]), keep = +inp.keep, drop = +inp.merge; if (!keep || !drop || keep === drop) throw new Fail("Pick two different clients");

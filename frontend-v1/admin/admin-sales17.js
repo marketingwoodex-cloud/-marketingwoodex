@@ -287,4 +287,114 @@
       $("#c3-lead").onclick = function () { api("lead_save", { name: c.name, company: c.company, phone: c.phone, email: c.email, location: c.city, line: c.line, lead_type: "returning", client_id: c.id }).then(function (x) { if (!x.ok) return toast(x.error, true); toast("Enquiry #" + x.lead.id + " added ✓"); loadLeads().then(function () { drawer(x.lead.id, reload); }); }); };
     });
   }
+
+  // ================================================================ S3 INVOICE TRACKER
+  OLD.invoices = W.VIEWS.invoices;
+  var TRK = { paid: ["Paid", "ok"], partial: ["Partial", "warn"], after_delivery: ["After delivery", "info"], unpaid: ["Unpaid", "bad"] };
+  var trk = function (s) { var x = TRK[s] || [s, ""]; return "<span class='badge " + x[1] + "'>" + x[0] + "</span>"; };
+  var num = function (n) { return Math.round(+n || 0).toLocaleString("en-PK"); };
+  var lakh = function (n) { n = +n || 0; return n >= 1e7 ? (n / 1e7).toFixed(2).replace(/\.?0+$/, "") + " Cr" : n >= 1e5 ? (n / 1e5).toFixed(2).replace(/\.?0+$/, "") + " L" : num(n); };
+  /** Generic CSV → mapped rows modal (used by invoice import). */
+  function csvMapper(title, help, FL, GS, onRows) {
+    var fi = document.createElement("input"); fi.type = "file"; fi.accept = ".csv,.tsv,.txt";
+    fi.onchange = function () { var f = fi.files[0]; if (!f) return; f.text().then(function (t) {
+      var rows = parseCsv(t); if (rows.length < 2) return toast("That file has no rows", true);
+      var hi = 0; for (var i = 0; i < Math.min(rows.length, 8); i++) if (rows[i].filter(function (c) { return FL.some(function (fd) { return GS[fd[0]].test(c.trim().toLowerCase()); }); }).length >= 3) { hi = i; break; }
+      var hdr = rows[hi].map(function (h) { return h.trim(); }), data = rows.slice(hi + 1), map = {};
+      FL.forEach(function (fd) { var used = Object.keys(map).map(function (k) { return map[k]; }); map[fd[0]] = hdr.findIndex(function (h, x) { return used.indexOf(x) < 0 && GS[fd[0]].test(h.toLowerCase()); }); });
+      var build = function () { return data.map(function (r) { var o = {}; FL.forEach(function (fd) { var j = map[fd[0]]; o[fd[0]] = j >= 0 ? String(r[j] || "").trim() : ""; }); return o; }); };
+      var pv = function () { var L = build(); $("#cm-pv").innerHTML = "<p class='muted sm'>" + L.length + " rows found. First 5:</p><div class='tbl-wrap'><table class='tbl sm'><thead><tr>" + FL.map(function (fd) { return "<th>" + fd[1].split(" (")[0] + "</th>"; }).join("") + "</tr></thead><tbody>" + L.slice(0, 5).map(function (o) { return "<tr>" + FL.map(function (fd) { return "<td>" + esc(o[fd[0]]) + "</td>"; }).join("") + "</tr>"; }).join("") + "</tbody></table></div>"; };
+      W.modal("<h2>" + title + "</h2><p class='muted'>" + help + "</p><div class='s17-map'>" + FL.map(function (fd) { return "<label>" + fd[1] + "<select data-f='" + fd[0] + "'><option value='-1'>— skip —</option>" + hdr.map(function (h, j) { return "<option value='" + j + "'" + (map[fd[0]] === j ? " selected" : "") + ">" + esc(h || "Column " + (j + 1)) + "</option>"; }).join("") + "</select></label>"; }).join("") + "</div><div id='cm-pv'></div><p class='err' id='cm-err'></p><div class='modal-actions'><button class='btn' onclick='WXA.closeModal()'>Cancel</button><button class='btn pri' id='cm-go'>Import</button></div>");
+      $("#modal-card").classList.add("wide"); pv();
+      $$(".s17-map select").forEach(function (s) { s.onchange = function () { map[s.dataset.f] = +s.value; pv(); }; });
+      $("#cm-go").onclick = function () { var b = this; b.disabled = true; onRows(build(), function (e) { if (e) { $("#cm-err").textContent = e; b.disabled = false; } else { $("#modal-card").classList.remove("wide"); W.closeModal(); } }); };
+    }); };
+    fi.click();
+  }
+  W.VIEWS.invoices = function (el, parts) {
+    if (parts && parts[0] === "classic") return OLD.invoices(el, []);
+    var st = S.s17i || (S.s17i = { year: today().slice(0, 4), month: today().slice(0, 7), track: "", line: "", q: "" }), D = null;
+    var admin = can("owner,admin");
+    el.innerHTML = head("Invoice tracking", "Invoices", '<a class="btn" href="#/invoices/classic">' + ic("layers") + "Classic list</a>" + (admin ? '<button class="btn" id="it-imp">' + ic("upload") + "Import sheet</button>" : "") + '<button class="btn" id="it-exp">' + ic("download") + 'Export</button><button class="btn pri" id="it-new">' + ic("plus") + "New invoice</button>") +
+      '<div class="s17-bar"><div class="s17-month"><select id="it-y"></select></div><div class="seg" id="it-lines"></div></div>' +
+      '<div class="it-months" id="it-m"></div><div class="it-tot" id="it-tot"></div>' +
+      '<div class="card"><div class="s17-filters"><input type="search" id="it-q" placeholder="Search invoice, PO, company…"><div class="seg" id="it-st"></div></div>' +
+      '<div class="tbl-wrap"><table class="tbl s17-tbl"><thead><tr><th>Date</th><th>PO #</th><th>Invoice</th><th>Company</th><th class="r">Total</th><th class="r">Received</th><th class="r">Balance</th><th>Status</th><th>Delivery</th><th>Note</th><th></th></tr></thead><tbody id="it-rows"><tr><td colspan="11" class="empty">Loading…</td></tr></tbody></table></div></div>';
+    var MN = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    var base = function () { return D.rows.filter(function (i) { return (!st.month || i.issue_date.slice(0, 7) === st.month) && (!st.line || i.line === st.line); }); };
+    function draw() {
+      $("#it-y").innerHTML = D.years.map(function (y) { return "<option" + (y === st.year ? " selected" : "") + ">" + y + "</option>"; }).join("");
+      $("#it-lines").innerHTML = [["", "All"], ["interior", "Interior (WI)"], ["furniture", "Furniture (WF)"]].map(function (x) { return "<button data-l='" + x[0] + "' class='" + (st.line === x[0] ? "on" : "") + "'>" + x[1] + "</button>"; }).join("");
+      var ym = D.months, mx = Math.max.apply(null, Object.keys(ym).map(function (k) { return ym[k].total; }).concat([1]));
+      var yt = Object.keys(ym).reduce(function (a, k) { a.c += ym[k].count; a.t += ym[k].total; a.r += ym[k].received; return a; }, { c: 0, t: 0, r: 0 });
+      $("#it-m").innerHTML = "<button class='it-mo all" + (!st.month ? " on" : "") + "' data-m=''><small>Whole " + D.year + "</small><b>" + lakh(yt.t) + "</b><span>" + yt.c + " inv</span></button>" + Object.keys(ym).map(function (k, i) { var m = ym[k], fut = k > today().slice(0, 7);
+        return "<button class='it-mo" + (st.month === k ? " on" : "") + (fut ? " fut" : "") + "' data-m='" + k + "'><small>" + MN[i] + "</small><b>" + (m.count ? lakh(m.total) : "—") + "</b><i class='it-bar'><em style='height:" + Math.round(100 * m.total / mx) + "%'><u style='height:" + (m.total ? Math.round(100 * m.received / m.total) : 0) + "%'></u></em></i><span>" + (m.count ? m.count + " inv" : "") + "</span></button>"; }).join("");
+      var L = base(), s = function (k) { return L.reduce(function (a, i) { return a + i[k]; }, 0); }, tot = s("total"), rec = s("paid"), late = L.filter(function (i) { return i.late; }).length;
+      $("#it-tot").innerHTML = "<div class='it-t'><small>" + (st.month ? mlabel(st.month) : "Year " + D.year) + "</small><b>" + L.length + " invoices</b></div><div class='it-t'><small>Total</small><b>" + num(tot) + "</b></div><div class='it-t ok'><small>Received</small><b>" + num(rec) + "</b><i class='s17-bar2'><i style='width:" + (tot ? Math.round(100 * rec / tot) : 0) + "%'></i></i></div><div class='it-t bad'><small>Balance</small><b>" + num(tot - rec) + "</b></div>" +
+        "<div class='it-t" + (late ? " bad" : "") + "'><small>Late deliveries</small><b>" + late + "</b><span class='muted sm'>" + D.lateAll + " in all years</span></div>";
+      var cnt = function (k) { return L.filter(function (i) { return k === "late" ? i.late : i.track === k; }).length; };
+      $("#it-st").innerHTML = [["", "All", L.length], ["paid", "Paid", cnt("paid")], ["partial", "Partial", cnt("partial")], ["after_delivery", "After delivery", cnt("after_delivery")], ["unpaid", "Unpaid", cnt("unpaid")], ["late", "Late delivery", cnt("late")]].map(function (x) { return "<button data-t='" + x[0] + "' class='" + (st.track === x[0] ? "on" : "") + "'>" + x[1] + " <small>" + x[2] + "</small></button>"; }).join("");
+      rows(L);
+      $$("#it-m [data-m]").forEach(function (b) { b.onclick = function () { st.month = b.dataset.m; draw(); }; });
+      $$("#it-lines button").forEach(function (b) { b.onclick = function () { st.line = b.dataset.l; draw(); }; });
+      $$("#it-st button").forEach(function (b) { b.onclick = function () { st.track = b.dataset.t; draw(); }; });
+    }
+    function rows(L) {
+      var q = st.q.toLowerCase(); L = L.filter(function (i) { return (!st.track || (st.track === "late" ? i.late : i.track === st.track)) && (!q || [i.no, i.po, i.company, i.client.name, i.track_note, i.project].join(" ").toLowerCase().indexOf(q) >= 0); });
+      $("#it-rows").innerHTML = L.length ? L.map(function (i) { var pc = i.total ? Math.round(100 * i.paid / i.total) : 0;
+        return "<tr data-id='" + i.id + "' class='" + (i.late ? "s17-od" : "") + "'><td class='nw'>" + dd(i.issue_date) + "</td><td>" + esc(i.po || "—") + "</td><td class='nw'><b>" + esc(i.no) + "</b>" + (i.quote_id ? "<small class='muted d'>from quotation</small>" : "") + "</td>" +
+          "<td><b>" + esc(i.company) + "</b>" + (i.project ? "<small class='muted d'>" + esc(i.project) + "</small>" : "") + "</td><td class='r nw'>" + num(i.total) + "</td><td class='r nw'>" + num(i.paid) + "<i class='it-pc'><i style='width:" + pc + "%'></i></i></td>" +
+          "<td class='r nw" + (i.balance ? " s17-red" : "") + "'>" + (i.balance ? num(i.balance) : "—") + "</td><td>" + trk(i.track) + "</td>" +
+          "<td class='nw" + (i.late ? " s17-red" : "") + "'>" + (i.delivered ? "<span class='it-dl'>✓ " + dd(i.delivered) + "</span>" : i.delivery_date ? (i.late ? "⚠ " : "") + dd(i.delivery_date) : "<span class='muted'>—</span>") + "</td>" +
+          "<td class='it-note'>" + esc(i.track_note || "") + "</td><td class='nw r' data-stop>" + (i.balance ? "<button class='btn sm' data-pay='" + i.id + "' title='Record payment'>+ Rs</button> " : "") + (!i.delivered ? "<button class='btn sm ghost' data-dl='" + i.id + "' title='Mark delivered'>✓</button> " : "") + "<button class='btn sm ghost' data-ed='" + i.id + "' title='Edit tracking'>" + ic("edit") + "</button></td></tr>"; }).join("")
+        : "<tr><td colspan='11' class='empty'>No invoices here. Create one or import your sheet.</td></tr>";
+      W.fillIcons($("#it-rows"));
+      $$("#it-rows tr[data-id]").forEach(function (tr) { tr.onclick = function (e) { if (e.target.closest("[data-stop]")) return; location.hash = "#/invoice/" + tr.dataset.id; }; });
+      var find = function (id) { return D.rows.find(function (x) { return x.id === +id; }); };
+      $$("#it-rows [data-pay]").forEach(function (b) { b.onclick = function () { payForm(find(b.dataset.pay), load); }; });
+      $$("#it-rows [data-dl]").forEach(function (b) { b.onclick = function () { api("inv_track", { id: +b.dataset.dl, delivered: today() }).then(function (r) { if (!r.ok) return toast(r.error, true); toast("Marked delivered ✓"); load(); }); }; });
+      $$("#it-rows [data-ed]").forEach(function (b) { b.onclick = function () { trackForm(find(b.dataset.ed), load); }; });
+    }
+    function load() { return api("invs_tracker", { year: st.year }).then(function (r) { if (!r.ok) return toast(r.error, true); D = r; if (st.month && st.month.slice(0, 4) !== r.year) st.month = ""; if ($("#it-rows")) draw(); }); }
+    $("#it-y").onchange = function () { st.year = this.value; st.month = ""; load(); };
+    $("#it-q").oninput = function () { st.q = this.value; rows(base()); };
+    $("#it-new").onclick = function () { invForm(function (inv) { st.year = inv.issue_date.slice(0, 4); st.month = inv.issue_date.slice(0, 7); load(); }); };
+    $("#it-exp").onclick = function () { var L = base(); var rws = [["Date", "PO#", "Invoice", "Company", "Total", "Received", "Balance", "Status", "Delivery date", "Delivered", "Note"].join(",")].concat(L.map(function (i) { return [i.issue_date, i.po, i.no, i.company, i.total, i.paid, i.balance, TRK[i.track][0], i.delivery_date, i.delivered, i.track_note].map(cell).join(","); }));
+      var a = document.createElement("a"); a.href = URL.createObjectURL(new Blob(["\ufeff" + rws.join("\n")], { type: "text/csv" })); a.download = "woodex-invoices-" + (st.month || st.year) + ".csv"; a.click(); };
+    if ($("#it-imp")) $("#it-imp").onclick = function () {
+      csvMapper("Import invoice sheet", "Export your Invoice Tracking sheet as <b>CSV</b> (one month or the whole year), then check the columns. Existing invoice numbers are skipped; “Received” is saved as a payment.",
+        [["date", "Date"], ["po", "PO #"], ["no", "Invoice #"], ["company", "Company"], ["total", "Total amount"], ["received", "Received"], ["status", "Status"], ["delivery", "Delivery date"], ["note", "Note"]],
+        { date: /^date/, po: /^po|p\.o|order/, no: /invoice|inv\b|inv ?#|bill/, company: /compan|client|customer|name/, total: /total|amount/, received: /receiv|paid/, status: /status/, delivery: /deliver/, note: /note|remark/ },
+        function (L, done) { api("invs_import", { rows: L }).then(function (r) { if (!r.ok) return done(r.error); done(); toast(r.imported + " invoices imported" + (r.skipped ? " · " + r.skipped + " skipped" : "") + " ✓"); st.month = ""; load(); }); });
+    };
+    meta().then(load);
+  };
+  function payForm(i, after) {
+    W.modal("<h2>Record payment · " + esc(i.no) + "</h2><p class='muted'>" + esc(i.company) + " · balance <b>Rs " + num(i.balance) + "</b></p><div class='s17-g2'><label>Amount (Rs)<input id='py-a' type='number' value='" + i.balance + "'></label><label>Date<input id='py-d' type='date' value='" + today() + "'></label>" +
+      "<label>Method<select id='py-m'><option value='bank'>Bank transfer</option><option value='cash'>Cash</option><option value='cheque'>Cheque</option><option value='online'>Online</option></select></label><label>Reference<input id='py-r' placeholder='Cheque / TID'></label></div><p class='err' id='py-e'></p><div class='modal-actions'><button class='btn' onclick='WXA.closeModal()'>Cancel</button><button class='btn pri' id='py-go'>Save payment</button></div>");
+    $("#py-go").onclick = function () { api("pay_add", { id: i.id, amount: $("#py-a").value, date: $("#py-d").value, method: $("#py-m").value, ref: $("#py-r").value }).then(function (r) { if (!r.ok) { $("#py-e").textContent = r.error; return; } W.closeModal(); toast("Payment saved · receipt " + r.payment.rcpt + " ✓"); after(); }); };
+  }
+  function trackForm(i, after) {
+    W.modal("<h2>Tracking · " + esc(i.no) + "</h2><div class='s17-g2'><label>PO #<input id='tf-po' value='" + esc(i.po) + "'></label><label>Business line<select id='tf-l'>" + opts(M.lines, i.line, "—") + "</select></label><label>Delivery date<input id='tf-dd' type='date' value='" + esc(i.delivery_date) + "'></label><label>Delivered on<input id='tf-dl' type='date' value='" + esc(i.delivered) + "'></label>" +
+      "<label>Payment terms<select id='tf-m'><option value=''>Standard</option><option value='after_delivery'" + (i.mode === "after_delivery" ? " selected" : "") + ">Payment after delivery</option></select></label></div><label>Note<textarea id='tf-n' rows='2'>" + esc(i.track_note) + "</textarea></label><p class='err' id='tf-e'></p><div class='modal-actions'><a class='btn' href='#/invoice/" + i.id + "' onclick='WXA.closeModal()'>Open invoice</a><button class='btn pri' id='tf-go'>Save</button></div>");
+    $("#tf-go").onclick = function () { api("inv_track", { id: i.id, po: $("#tf-po").value, line: $("#tf-l").value, delivery_date: $("#tf-dd").value, delivered: $("#tf-dl").value, mode: $("#tf-m").value, track_note: $("#tf-n").value }).then(function (r) { if (!r.ok) { $("#tf-e").textContent = r.error; return; } W.closeModal(); toast("Saved ✓"); after(); }); };
+  }
+  function invForm(after) {
+    api("clients_master").then(function (cr) {
+      var cs = (cr.clients || []);
+      W.modal("<h2>New invoice</h2><p class='muted'>For a direct sale or PO without a quotation. (Approved quotations still convert in one click from the quotation page.)</p>" +
+        "<label>Client<input id='nf-c' list='nf-cl' placeholder='Type to search clients, or a new company name'><datalist id='nf-cl'>" + cs.map(function (c) { return "<option value='" + esc((c.company || c.name) + (c.phone ? " · " + c.phone : "")) + "'>"; }).join("") + "</datalist></label>" +
+        "<div class='s17-g2' id='nf-newc' hidden><label>Contact name<input id='nf-cn'></label><label>Phone<input id='nf-cp'></label></div>" +
+        "<div class='s17-g2'><label>Business line<select id='nf-l'><option value='interior'>Interior → WI- number</option><option value='furniture'>Furniture → WF- number</option><option value='project'>Project → WI- number</option></select></label><label>PO #<input id='nf-po'></label>" +
+        "<label>Invoice date<input id='nf-d' type='date' value='" + today() + "'></label><label>Delivery date<input id='nf-dd' type='date'></label><label>Amount (Rs) *<input id='nf-a' type='number' min='0'></label>" +
+        "<label>Payment terms<select id='nf-m'><option value=''>Standard</option><option value='after_delivery'>Payment after delivery</option></select></label></div>" +
+        "<label>Description<input id='nf-ds' placeholder='e.g. 40 workstations as per PO'></label><label>Note (tracker)<input id='nf-n'></label><p class='err' id='nf-e'></p><div class='modal-actions'><button class='btn' onclick='WXA.closeModal()'>Cancel</button><button class='btn pri' id='nf-go'>Create invoice</button></div>");
+      $("#modal-card").classList.add("wide");
+      var pick = function () { var v = $("#nf-c").value; return cs.find(function (c) { return (c.company || c.name) + (c.phone ? " · " + c.phone : "") === v; }); };
+      $("#nf-c").oninput = function () { $("#nf-newc").hidden = !this.value.trim() || !!pick(); };
+      $("#nf-go").onclick = function () { var c = pick(), v = $("#nf-c").value.trim();
+        api("inv_new", { client_id: c ? c.id : 0, client: c ? {} : { company: v, name: $("#nf-cn").value || v, phone: $("#nf-cp").value }, line: $("#nf-l").value, po: $("#nf-po").value, issue_date: $("#nf-d").value, delivery_date: $("#nf-dd").value, total: $("#nf-a").value, mode: $("#nf-m").value, desc: $("#nf-ds").value, track_note: $("#nf-n").value })
+          .then(function (r) { if (!r.ok) { $("#nf-e").textContent = r.error; return; } $("#modal-card").classList.remove("wide"); W.closeModal(); toast("Invoice " + r.invoice.no + " created ✓"); after(r.invoice); }); };
+    });
+  }
 })();
