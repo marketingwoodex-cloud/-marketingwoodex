@@ -17,7 +17,7 @@
   var UNIT = { sft: "sft", rft: "rft", sqmt: "sq m", nos: "nos", each: "each", set: "set", point: "point", job: "job", lumpsum: "L/S" };
   var QT = { fitout: "Fit-out", renovation: "Renovation", interior: "Interior design", proposal: "Proposal", furniture: "Furniture supply" };
   var two = function (n) { return String(n).padStart(2, "0"); };
-  var lines = function (t) { return String(t || "").split("\n").map(function (x) { return x.replace(/^\s*[-•*\d.)]+\s*/, "").trim(); }).filter(Boolean); };
+  var lines = function (t) { return String(t || "").split("\n").map(function (x) { return x.replace(/^\s*(?:[-•*]|\d{1,2}[.)])\s+/, "").trim(); }).filter(Boolean); };
 
   /** Auto numbering: headings → 5.1, 5.2; items under a heading → 5.1.1; items before any heading → 5.1, 5.2 */
   function numbered(s, si) {

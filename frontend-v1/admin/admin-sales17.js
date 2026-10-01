@@ -457,11 +457,12 @@
       var d = JSON.parse(JSON.stringify(q)); d.sections.forEach(function (s) { s.items = s.items.filter(function (it) { return String(it.desc || "").trim(); }).map(function (it) { it.qty = +it.qty || 0; it.rate = +it.rate || 0; return it; }); });
       d.subtotal = Math.round(sub); d.discount = Math.min(Math.round(+q.discount || 0), d.subtotal); d.taxPct = +q.taxPct || 0; d.tax = Math.round((d.subtotal - d.discount) * d.taxPct / 100); d.total = d.subtotal - d.discount + d.tax; return d;
     }
-    function live() { if (!pv) return; clearTimeout(timer); timer = setTimeout(function () { var f = $("iframe", pv), y = f.contentWindow ? f.contentWindow.scrollY : 0; f.onload = function () { try { f.contentWindow.scrollTo(0, y); } catch (e) {} }; f.srcdoc = WXPrint.quote(docOf(), co); }, 350); }
+    function live() { if (!pv) return; clearTimeout(timer); timer = setTimeout(function () { var f = $("iframe", pv), y = f.contentWindow ? f.contentWindow.scrollY : 0; f.onload = function () { try { f.contentWindow.scrollTo(0, y); } catch (e) {} }; f.srcdoc = fit(WXPrint.quote(docOf(), co)); }, 350); }
+    function fit(h) { var w = pv ? pv.clientWidth : 800, z = Math.min(1, (w - 16) / 860); return h.replace('</head>', '<style>@media screen{html{zoom:' + z.toFixed(3) + '}}</style></head>'); }
     btn.onclick = function () {
       if (pv) { pv.remove(); pv = null; el.classList.remove("q17-split"); btn.classList.remove("pri"); return; }
       pv = document.createElement("aside"); pv.className = "q17-pv"; pv.innerHTML = "<div class='q17-pvh'><b>Live preview</b><small class='muted'>" + esc((WXPrint.layouts || {})[q.layout] || "") + "</small><span style='flex:1'></span><button class='icon-btn' title='Close'>✕</button></div><iframe title='Quotation preview'></iframe>";
-      el.appendChild(pv); el.classList.add("q17-split"); btn.classList.add("pri"); pv.querySelector("button").onclick = btn.onclick; live(); timer && clearTimeout(timer); $("iframe", pv).srcdoc = WXPrint.quote(docOf(), co);
+      el.appendChild(pv); el.classList.add("q17-split"); btn.classList.add("pri"); pv.querySelector("button").onclick = btn.onclick; live(); timer && clearTimeout(timer); $("iframe", pv).srcdoc = fit(WXPrint.quote(docOf(), co));
     };
     ["input", "change"].forEach(function (ev) { el.addEventListener(ev, function (e) { if (pv && !pv.contains(e.target)) { live(); var s = $(".q17-pvh small", pv); if (s) s.textContent = (WXPrint.layouts || {})[q.layout] || ""; } }); });
     el.addEventListener("click", function (e) { if (pv && e.target.closest(".sec button, #se-add")) setTimeout(live, 50); });
