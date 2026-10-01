@@ -273,6 +273,12 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
         if (brand && !/^<a class="brand"[^>]*>[\s\S]*<\/a>$/.test(brand)) throw new Fail("Invalid logo HTML");
         if (foot && !/^<footer class="footer">[\s\S]*<\/footer>$/.test(foot)) throw new Fail("Invalid footer HTML");
         if (cta.length > 40) throw new Fail("Button text is too long");
+        const design = !!inp.design, style = String(inp.style || ""), phone = String(inp.phone || "");
+        if (design) {
+          if (style.length > 20000) throw new Fail("Design is too large");
+          if (style && (!/^<style id="wx-chrome-style" data-cfg="[^"<>]*">[^<]*<\/style>$/.test(style) || /@import|expression\s*\(|javascript:|url\s*\(/i.test(style))) throw new Fail("Invalid design");
+          if (phone && (!/^<a class="wx-hphone" href="tel:[0-9+]{4,20}">[\s\S]*<\/a>$/.test(phone) || unsafe(phone))) throw new Fail("Invalid phone");
+        }
         const escH = (x) => x.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
         let n = 0;
         for (const rel of allPages()) {
@@ -287,6 +293,12 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
             if (!introAll) { const it = /<div class="footer-intro">[\s\S]*?<\/a><\/div>/.exec(old[0]); if (it) f = f.replace(/<div class="footer-intro">[\s\S]*?<\/a><\/div>/, () => it[0]); }
             f = f.replace(/(id="footer-cta" href=")\/#([a-z0-9-]+)"/g, (m, a, id) => (h.includes('id="' + id + '"') ? a + "#" + id + '"' : m));
             h = h.replace(/<footer class="footer">[\s\S]*?<\/footer>/, () => f);
+          }
+          if (design) {
+            h = h.replace(/\s*<style id="wx-chrome-style"[^>]*>[\s\S]*?<\/style>/g, "");
+            if (style) h = h.replace(/<\/head>/i, () => style + "\n</head>");
+            h = h.replace(/<a class="wx-hphone"[^>]*>[\s\S]*?<\/a>/g, "");
+            if (phone) h = h.replace(/<a class="header-cta"/, (m) => phone + m);
           }
           if (h !== o) { backupPage(rel); fs.writeFileSync(abs, h); n++; }
         }

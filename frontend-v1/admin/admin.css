@@ -708,3 +708,14 @@ table.tbl.lp tbody tr:has(td.empty):hover{background:transparent}
 .co-list{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}.co-row{display:grid;gap:6px 10px;align-items:end;border:1px solid var(--line);border-radius:10px;padding:10px 12px;position:relative}.co-row label{margin:0!important;font-size:12px}.co-row input,.co-row select{margin:2px 0 0!important;height:36px!important}
 .co-banks{grid-template-columns:repeat(3,1fr);padding-right:46px}.co-banks .icon-btn{position:absolute;top:8px;right:8px}.co-wallets,.co-signers{grid-template-columns:1fr 1fr 36px}
 @media(max-width:700px){.co-banks{grid-template-columns:1fr 1fr}.co-banks .icon-btn{position:absolute;top:6px;right:6px}}
+/* P17 C3 — header & footer design tab */
+.c3-presets{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px}
+.c3-pre{display:flex;flex-direction:column;gap:4px;padding:8px;border:1px solid var(--line);border-radius:10px;background:var(--card,#fff);cursor:pointer;text-align:left;font:600 12px inherit}
+.c3-pre:hover{border-color:#b8956a;box-shadow:0 4px 14px rgba(12,22,40,.08)}
+.c3-pre i{display:flex;align-items:center;justify-content:flex-end;height:18px;border-radius:6px;border:1px solid rgba(12,22,40,.12);padding:0 4px}
+.c3-pre i+i{height:26px}
+.c3-pre em{width:22px;height:8px;border-radius:9px}
+.c3-cols{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px}
+.c3-col{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px;color:var(--muted,#667085)}
+.c3-col input[type=color]{width:100%;height:38px;padding:2px;border:1px solid var(--line);border-radius:8px;cursor:pointer;margin:0}
+@media(max-width:700px){.c3-cols{grid-template-columns:repeat(2,1fr)}}

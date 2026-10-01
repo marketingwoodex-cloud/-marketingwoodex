@@ -471,6 +471,13 @@ switch ($action) {
         if ($brand !== '' && !preg_match('~^<a class="brand"[^>]*>.*</a>$~s', $brand)) fail('Invalid logo HTML');
         if ($foot !== '' && !preg_match('~^<footer class="footer">.*</footer>$~s', $foot)) fail('Invalid footer HTML');
         if (mb_strlen($cta) > 40) fail('Button text is too long');
+        // P17 C3: design style block + header phone (only when the Design tab sent them)
+        $design = !empty($in['design']); $style = (string)($in['style'] ?? ''); $phone = (string)($in['phone'] ?? '');
+        if ($design) {
+            if (strlen($style) > 20000) fail('Design is too large');
+            if ($style !== '' && (!preg_match('~^<style id="wx-chrome-style" data-cfg="[^"<>]*">[^<]*</style>$~s', $style) || preg_match('~@import|expression\s*\(|javascript:|url\s*\(~i', $style))) fail('Invalid design');
+            if ($phone !== '' && (!preg_match('~^<a class="wx-hphone" href="tel:[0-9+]{4,20}">.*</a>$~s', $phone) || preg_match('~<script|\son[a-z]+\s*=|javascript:~i', $phone))) fail('Invalid phone');
+        }
         $n = 0;
         foreach (all_pages() as $rel) {
             if ($rel === '404.html') continue;
@@ -485,6 +492,12 @@ switch ($action) {
                 // fix "/#page-contact" (sent visitors to the home page) → "#page-contact" when that section is on this page
                 $f = preg_replace_callback('~(id="footer-cta" href=")/#([a-z0-9-]+)"~', fn($m) => strpos($h, 'id="' . $m[2] . '"') !== false ? $m[1] . '#' . $m[2] . '"' : $m[0], $f);
                 $h = preg_replace_callback('~<footer class="footer">.*?</footer>~s', fn() => $f, $h, 1);
+            }
+            if ($design) {
+                $h = preg_replace('~\s*<style id="wx-chrome-style"[^>]*>.*?</style>~s', '', $h);
+                if ($style !== '') $h = preg_replace('~</head>~i', $style . "\n</head>", $h, 1);
+                $h = preg_replace('~<a class="wx-hphone"[^>]*>.*?</a>~s', '', $h);
+                if ($phone !== '') $h = preg_replace_callback('~<a class="header-cta"~', fn($m) => $phone . $m[0], $h, 1);
             }
             if ($h !== $o) { backup_page($rel); file_put_contents($abs, $h, LOCK_EX); $n++; }
         }
