@@ -66,12 +66,12 @@
         '<div class="qe-side"><div class="card card-b"><h4 class="side-h">Preview</h4><div class="st-prev"><div class="st-tab"><img id="pv-fav" src="' + esc(g.favicon) + '" alt=""><span id="pv-name">' + esc(g.siteName) + '</span></div><div class="st-hdr"><img id="pv-logo" src="' + esc(g.logo) + '" alt=""></div><div class="st-share"><div id="pv-share" style="background-image:url(\'' + esc(g.share) + '\')"></div><small>WOODEX.COM.PK</small><b id="pv-name2">' + esc(g.siteName) + "</b></div></div></div>" +
         '<div class="card card-b"><p class="muted" style="margin:0;font-size:13px">Contact details (phones, email, address, hours) are managed in <a href="#/business">Business info</a>.</p></div></div></div>';
       function cur() { return { siteName: $("#gn-name").value.trim(), logo: $("#gn-logo input").value, favicon: $("#gn-fav input").value, share: $("#gn-share input").value }; }
-      function pv() { var c = cur(); $("#pv-fav").src = c.favicon; $("#pv-logo").src = c.logo; $("#pv-share").style.backgroundImage = "url('" + c.share + "')"; $("#pv-name").textContent = $("#pv-name2").textContent = c.siteName; }
+      function pv() { if (!$("#gn-name")) return; var c = cur(); $("#pv-fav").src = c.favicon; $("#pv-logo").src = c.logo; $("#pv-share").style.backgroundImage = "url('" + c.share + "')"; $("#pv-name").textContent = $("#pv-name2").textContent = c.siteName; }
       $("#gn-name").oninput = pv;
       $$(".st-img", B).forEach(function (box) { $("[data-pick]", box).onclick = function () { W.pickImage(function (u) { $("input", box).value = u; $(".imf-p", box).style.backgroundImage = "url('" + u + "')"; pv(); }); }; });
       function logoSize(u) { return new Promise(function (res) { var i = new Image(); i.onload = function () { res(i.naturalHeight ? [Math.round(72 * i.naturalWidth / i.naturalHeight), 72] : null); }; i.onerror = function () { res(null); }; i.src = u; }); }
       function run(write) {
-        var n = cur(), o = D.generalApplied, R = $("#gn-res"); $("#gn-err").textContent = "";
+        if (!$("#gn-name")) return Promise.resolve(); var n = cur(), o = D.generalApplied, R = $("#gn-res"); $("#gn-err").textContent = "";
         return api("set_general_save", { general: n }).then(function (sv) {
           if (!sv.ok) { $("#gn-err").textContent = sv.error; return; }
           R.hidden = false; R.innerHTML = '<div class="card-b"><b>' + (write ? "Updating" : "Checking") + ' pages…</b> <span id="gn-pn"></span></div>';

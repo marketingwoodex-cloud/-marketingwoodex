@@ -74,7 +74,7 @@
       else if (tb) { var b = document.querySelector('#st-tabs [data-t="' + tb.dataset.tab + '"]'); if (b) b.click(); } };
     if (mcp === null && W.can && W.can("owner,admin")) { mcp = []; api("mcp_tokens").then(function (r) { if (r.ok) { mcp = r.tokens; keysTable(cards()); } }); }
   }
-  function boot() { var v = document.getElementById("view"); if (!v) return setTimeout(boot, 200);
+  function boot() { var v0 = document.getElementById("view"); if (!v0 || !v0.parentNode) return setTimeout(boot, 200); var v = v0.parentNode; /* stable parent: #view is replaced on every screen change */
     new MutationObserver(function () { var g = document.querySelector("#view .st-grid:not([data-ig])"); if (g && document.getElementById("in-mail")) { open = null; mcp = null; enhance(g); } }).observe(v, { childList: true, subtree: true }); }
   boot();
 })();

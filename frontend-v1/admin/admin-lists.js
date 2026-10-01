@@ -27,11 +27,11 @@
     try { [].forEach.call(document.querySelectorAll("#view table.tbl"), function (t) { t.classList.add("lp"); label(t); page(t); }); } finally { setTimeout(function () { busy = false; }, 0); }
   }
   var tmr; function soon() { clearTimeout(tmr); tmr = setTimeout(run, 60); }
-  function boot() { var v = document.getElementById("view"); if (!v) return setTimeout(boot, 200);
+  function boot() { var v0 = document.getElementById("view"); if (!v0 || !v0.parentNode) return setTimeout(boot, 200); var v = v0.parentNode; /* stable parent: #view is replaced on every screen change */
     new MutationObserver(function (m) { if (!busy && m.some(function (x) { return x.type === "childList"; })) soon(); }).observe(v, { childList: true, subtree: true });
     // a new search/filter resets to page 1
-    v.addEventListener("input", function (e) { if (e.target.matches("input[type=search], input[placeholder^='Search'], select")) [].forEach.call(v.querySelectorAll("table.tbl"), function (t) { t.dataset.pg = 1; }); }, true);
-    v.addEventListener("change", function (e) { if (e.target.matches("select")) [].forEach.call(v.querySelectorAll("table.tbl"), function (t) { t.dataset.pg = 1; }); }, true);
+    v.addEventListener("input", function (e) { if (e.target.matches("input[type=search], input[placeholder^='Search'], select")) [].forEach.call(document.querySelectorAll("#view table.tbl"), function (t) { t.dataset.pg = 1; }); }, true);
+    v.addEventListener("change", function (e) { if (e.target.matches("select")) [].forEach.call(document.querySelectorAll("#view table.tbl"), function (t) { t.dataset.pg = 1; }); }, true);
     run(); }
   boot();
 })();

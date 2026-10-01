@@ -226,7 +226,7 @@
     S.view = v; S.charts.forEach(function (c) { c.destroy(); }); S.charts = [];
     var nv = { quote: "quotes", template: "templates", invoice: "invoices", post: "blog", study: "portfolio", fields: "services", citydraft: "cities" }[v] || v; $$(".nav-a").forEach(function (a) { a.classList.toggle("on", a.dataset.v === nv); }); $$(".nav-g").forEach(function (g) { var has = !!g.querySelector('.nav-a[data-v="' + nv + '"]'); g.classList.toggle("has-on", has); if (has) g.classList.add("open"); });
     $("#app").classList.remove("open");
-    var view = $("#view"); view.className = "content"; $("#app").classList.toggle("mini", v === "builder" && innerWidth > 1024 ? true : $("#app").classList.contains("mini") && S.lastView !== "builder");
+    var old = $("#view"), view = old.cloneNode(false); old.parentNode.replaceChild(view, old); view.className = "content"; /* fresh element: listeners from the previous screen can never fire here */ $("#app").classList.toggle("mini", v === "builder" && innerWidth > 1024 ? true : $("#app").classList.contains("mini") && S.lastView !== "builder");
     S.lastView = v;
     (VIEWS[v] || VIEWS.soon)(view, parts.slice(1), def);
     fillIcons(view); window.scrollTo(0, 0);

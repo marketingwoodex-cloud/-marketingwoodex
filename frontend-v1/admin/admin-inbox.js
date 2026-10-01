@@ -58,7 +58,7 @@
     lc.classList.add("ib"); var ta = lc.querySelector("#lc-in textarea"); if (ta) ta.placeholder = "Type a reply… (Enter to send)"; list(lc); side(lc); quick(lc);
   }
   var t; function soon() { clearTimeout(t); t = setTimeout(run, 50); }
-  function boot() { var v = document.getElementById("view"); if (!v) return setTimeout(boot, 200);
+  function boot() { var v0 = document.getElementById("view"); if (!v0 || !v0.parentNode) return setTimeout(boot, 200); var v = v0.parentNode; /* stable parent: #view is replaced on every screen change */
     new MutationObserver(function (m) { if (m.some(function (x) { return !(x.target.id === "ib-side" || x.target.closest && x.target.closest("#ib-side,#ib-tools,#ib-quick")); })) soon(); }).observe(v, { childList: true, subtree: true });
     // shorter menu label
     var fix = function () { [].forEach.call(document.querySelectorAll('.nav-a[data-v="chat"] .nav-t, .nav-a[data-v="chat"] span:not(.nav-bdg):not([data-bdg])'), function (s) { if (/Inbox \(chat/.test(s.textContent)) s.textContent = "Inbox"; }); };
