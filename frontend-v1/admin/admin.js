@@ -58,6 +58,7 @@
     ["Sales"],
     ["enquiries", "Enquiries & leads", "inbox", "owner,admin,sales"],
     ["pipeline", "Pipeline", "kanban", "owner,admin,sales"],
+    ["bookings", "Bookings", "clock", "owner,admin,sales", null, "new"],
     ["clients", "Clients", "contact", "owner,admin,sales"],
     { g: "Quotes & invoices", icon: "file-text", id: "money", items: [
       ["quotes", "Quotations", "file-text", "owner,admin,sales"],
