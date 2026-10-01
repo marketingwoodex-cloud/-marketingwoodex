@@ -16,9 +16,13 @@
   W.tplReady = function (force) {
     if (cache && !force) return Promise.resolve(cache);
     if (wait && !force) return wait;
-    wait = api("cms_tpl_list", {}).then(function (r) { cache = (r && r.ok && r.tpls) || []; wait = null; return cache; }, function () { cache = []; wait = null; return cache; });
+    wait = Promise.all([api("cms_tpl_list", {}), api("cms_list", { type: "faq" })]).then(function (rs) { cache = (rs[0] && rs[0].ok && rs[0].tpls) || []; FAQG = {}; ((rs[1] && rs[1].items) || []).forEach(function (g) { FAQG[g.id] = g; }); wait = null; return cache; }, function () { cache = []; wait = null; return cache; });
     return wait;
   };
+  var FAQG = {};
+  /** P17 C7: questions of a linked FAQ group (null when the group is gone) */
+  W.faqGroup = function (id) { return FAQG[+id] || null; };
+  W.faqItems = function (id) { var g = FAQG[+id]; return g ? ((g.data || {}).items || []).filter(function (f) { return f.q && f.a; }).map(function (f) { return { q: f.q, a: f.a }; }) : null; };
   var override = null; // used by the live preview
   W.tplFor = function (type, it) {
     if (override && override.type === type) return override;

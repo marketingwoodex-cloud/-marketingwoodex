@@ -795,3 +795,6 @@ table.tbl.lp tbody tr:has(td.empty):hover{background:transparent}
 .tp-ar{display:grid!important;grid-template-columns:auto 1fr auto auto;gap:10px;align-items:center;padding:8px 12px;border-bottom:1px solid var(--line);margin:0!important}.tp-ar small{display:block}.tp-ar input{margin:0}
 .tp-prog{margin-top:10px;padding:10px 12px;border-radius:8px;background:rgba(184,149,106,.12);font-size:13px}
 @media(max-width:1000px){.tp-ed{grid-template-columns:1fr}.tp-fbox{height:50vh}}
+/* P17 C7 linked FAQ groups */
+.fg-used{margin-top:10px;padding-top:10px;border-top:1px dashed var(--line);font-size:13px;display:flex;gap:6px;align-items:flex-start;flex-wrap:wrap}.fg-used svg{width:15px;height:15px;color:#b8956a;flex:none;margin-top:2px}.fg-used a{color:#8a6a43}
+.fg-linked{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border:1px solid rgba(184,149,106,.45);background:rgba(184,149,106,.08);border-radius:10px;margin-bottom:10px}.fg-linked>div{flex:1}.fg-linked small{display:block;color:var(--muted,#667085)}.fg-linked ol{margin:8px 0 0;padding-left:18px;font-size:13px}.fg-linked svg{width:18px;height:18px;color:#b8956a;flex:none}
