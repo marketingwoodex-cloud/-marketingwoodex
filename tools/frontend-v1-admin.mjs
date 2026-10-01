@@ -397,7 +397,7 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
         if ("value" in inp) l.value = Math.max(0, Math.round(+inp.value || 0));
         if ("tags" in inp) l.tags = (Array.isArray(inp.tags) ? inp.tags : String(inp.tags).split(",")).map((t) => clip(t, 30).toLowerCase()).filter(Boolean).slice(0, 10);
         if ("read" in inp) l.read = !!inp.read;
-        s17LeadExtra(l, inp);
+        s17LeadExtra(l, inp, db);
         if (before !== l.stage) l.notes.push({ t: now(), user: u.name, text: `Stage: ${before} → ${l.stage}`, sys: true });
         log(db, u, inp.id ? "lead.update" : "lead.create", `#${l.id} ${l.name}${before !== l.stage ? " → " + l.stage : ""}`, ip);
         return done({ ok: true, lead: leadPub(l, db) });
@@ -515,12 +515,13 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
     projectTypes: ["Kitchen", "Wardrobe", "Full home", "Office", "Retail / showroom", "Restaurant / café", "Clinic / pharmacy", "Renovation", "Architecture", "3D design", "Furniture supply", "Other"] };
   const s17dt = (v) => { v = String(v || "").trim(); if (!v) return ""; const t = new Date(v.replace(" ", "T")); if (isNaN(t)) throw new Fail(`Check the date / time "${v.slice(0, 30)}"`); const p = (n) => String(n).padStart(2, "0"); return `${t.getFullYear()}-${p(t.getMonth() + 1)}-${p(t.getDate())} ${p(t.getHours())}:${p(t.getMinutes())}:00`; };
   const s17dig = (p) => { let d = String(p || "").replace(/\D/g, ""); if (d.length === 11 && d[0] === "0") d = "92" + d.slice(1); else if (d.length === 10 && d[0] === "3") d = "92" + d; return d; };
-  function s17LeadExtra(l, inp) {
+  function s17LeadExtra(l, inp, db) {
     for (const [k, n] of Object.entries({ company: 120, designation: 80, location: 160, project_type: 60, budget: 60, area: 30 })) if (k in inp) l[k] = clip(inp[k], n);
     const en = { line: Object.keys(S17.lines), lead_type: Object.keys(S17.leadTypes), quote_status: Object.keys(S17.quoteStatus), next_type: Object.keys(S17.nextTypes), priority: ["low", "normal", "high"] };
     for (const [k, ok] of Object.entries(en)) if (k in inp) { const v = String(inp[k] || ""); if (v && !ok.includes(v)) throw new Fail("Unknown " + k.replace("_", " ")); l[k] = v; }
     if ("next_at" in inp) { l.next_at = s17dt(inp.next_at); l.followup = l.next_at.slice(0, 10); }
     if ("last_contact" in inp) l.last_contact = s17dt(inp.last_contact);
+    if (inp.client_id) { if (!db.clients.some((c) => c.id === +inp.client_id)) throw new Fail("Client not found", 404); l.client_id = +inp.client_id; }
   }
   function s17ClientExtra(c, inp) {
     c.updated_at = now(); for (const k of ["designation", "source"]) if (k in inp) c[k] = clip(inp[k], 80);

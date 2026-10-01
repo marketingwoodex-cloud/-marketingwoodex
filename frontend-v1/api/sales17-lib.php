@@ -43,6 +43,7 @@ function s17_lead_extra(int $id, array $in): void {
     foreach ($enum as $k => $ok) if (array_key_exists($k, $in)) { $v = (string)$in[$k]; if ($v !== '' && !in_array($v, $ok, true)) fail('Unknown ' . str_replace('_', ' ', $k)); $set[] = "$k=?"; $p[] = $v ?: null; }
     if (array_key_exists('next_at', $in)) { $d = s17_dt($in['next_at']); $set[] = 'next_at=?'; $p[] = $d; $set[] = 'followup=?'; $p[] = $d ? substr($d, 0, 10) : null; }
     if (array_key_exists('last_contact', $in)) { $set[] = 'last_contact=?'; $p[] = s17_dt($in['last_contact']); }
+    if (!empty($in['client_id'])) { $c = (int)$in['client_id']; if (!q('SELECT 1 FROM wx_clients WHERE id=?', [$c])->fetchColumn()) fail('Client not found', 404); $set[] = 'client_id=?'; $p[] = $c; }
     if ($set) { $p[] = $id; q('UPDATE wx_leads SET ' . implode(',', $set) . ' WHERE id=?', $p); }
 }
 function s17_client_extra(int $id, array $in): void {
