@@ -1,5 +1,8 @@
 # WOODEX AGENCY PLATFORM — Master Plan v2 (Agency Edition)
 
+> **Superseded as the plan to follow by [`MASTER-PLAN.md`](MASTER-PLAN.md) (v4.0, 2026-10-02).** This file is a detail annex.
+
+
 **Version:** 2.0 · **Date:** 2026-10-02 · **Status:** for approval
 **Relationship to v1:** `MASTER-PLAN-HEADLESS.md` (v1.0, 2026-10-01) stays valid for the API contract, data model, page-document model,
 security and module list. **This document overrides v1 wherever the two disagree** (see §3 "Decisions changed").

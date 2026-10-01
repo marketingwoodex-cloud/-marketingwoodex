@@ -3,7 +3,9 @@
 **Version:** 3.1 · **Date:** 2026-10-02 · **Status:** for approval
 **Builds on:** `MASTER-PLAN-V3-LEAN.md` (stack: Laravel 12 + free TailAdmin Laravel + Supabase Free Postgres + R2; Vercel internal-only).
 **Input merged:** your "Expanded Architecture Blueprint". Everything in it is kept in intent; §1 lists what I **changed and why**, so nothing broken gets built.
-**Companion file:** `docs/headless/templates/deploy-hostinger.yml` (corrected workflow, a template — not active, untested until Phase 0).
+**Companion file:** `docs/headless/bootstrap/deploy-hostinger.yml` (corrected workflow, a template — not active, untested until Phase 0).
+
+> **SUPERSEDED as the plan to follow by [`MASTER-PLAN.md`](MASTER-PLAN.md) (v4.0).** This file remains the detail annex for API/widgets/tokens/menus/starters. Corrections made later: fast path is 39 days (not 33); the deploy kit now lives in `bootstrap/` and targets a **new repo** with Laravel at the root (no `platform/` folder).
 
 ---
 
@@ -227,7 +229,7 @@ GitHub (develop/tags) ─Actions─▶ Hostinger releases/ + current symlink ─
 | 6 Go-live | — | 6 | 6 |
 | **Total** | **+10 net** | 61 | **≈ 71 days** (est. ±30 %) |
 Pro-forma at the PRD's own ≈ $143/day ≈ **$10.2k** (not a quote). One developer ≈ 14–15 weeks → **go-live ≈ late January–February 2027** if Phase 0 starts mid-October; two developers from Phase 3 ≈ 10–11 weeks.
-**Fast path (≈ 33 d):** Phases 0 → 1 → 3 = multi-site builder with widgets, tokens, menus, starters, deploy pipeline.
+**Fast path (≈ 39 d; 8 + 9 + 22):** Phases 0 → 1 → 3 = multi-site builder with widgets, tokens, menus, starters, deploy pipeline.
 **Cost impact on monthly infra:** none (Actions free minutes assumed; staging uses the 2nd free Supabase project).
 
 ---

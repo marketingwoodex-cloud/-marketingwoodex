@@ -1,5 +1,8 @@
 # WOODEX AGENCY PLATFORM — Master Plan v3 "Lean / Free-first"
 
+> **Superseded as the plan to follow by [`MASTER-PLAN.md`](MASTER-PLAN.md) (v4.0, 2026-10-02).** This file is a detail annex. Note: the "MySQL on Hostinger" fallback in §1.1/L9 is **withdrawn** (use a VPS with local Postgres instead).
+
+
 **Version:** 3.0 · **Date:** 2026-10-02 · **Status:** for approval
 **Supersedes for stack & scope:** `MASTER-PLAN-AGENCY-V2.md` and the amendments in `PRD-V3-REVIEW.md`. The API contract, data model, page-document model, RBAC and security
 rules in `MASTER-PLAN-HEADLESS.md` (v1) still apply unless this file says otherwise.

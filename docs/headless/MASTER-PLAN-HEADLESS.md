@@ -1,5 +1,7 @@
 # WOODEX PLATFORM — Headless Master Plan (multi-tenant · multi-dashboard · page builder · any frontend)
 
+> **Superseded as the plan to follow by [`docs/headless/MASTER-PLAN.md`](MASTER-PLAN.md) (v4.0, 2026-10-02).** This file is a detail annex (API conventions, page model, DB design, roles, modules). Not to be confused with the older root-level `MASTER-PLAN.md` named below.
+
 **Version:** 1.0 · **Date:** 2026-10-01 · **Status:** for approval (phase gates in §14)
 **Scope:** backend + database + API contract only. **No frontend is built in this plan.**
 **Supersedes:** `MASTER-PLAN.md`, `BACKEND-MASTER-PLAN.md`, `WOODEX-ADMIN-V2-MASTER-PLAN.md`, `MASTER-PLAN-P16/P17.md`

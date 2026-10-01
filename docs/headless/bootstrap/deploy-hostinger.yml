@@ -1,0 +1,128 @@
+# TEMPLATE (not active, not yet tested on a real server).
+# Copy to  .github/workflows/deploy.yml  in the NEW repo (woodex-platform; Laravel is at the repo root).
+# Also copy  bootstrap/release.sh  to  deploy/release.sh  in that repo.
+#
+# GitHub Environments (Settings > Environments): "staging" and "production"
+#   Secrets  : SSH_KEY  SSH_HOST  SSH_PORT(65002)  SSH_USER  SSH_KNOWN_HOSTS  PHP_BIN
+#   Variables: APP_DIR (e.g. /home/u123456789/apps/staging)   HEALTH_URL (e.g. https://staging.woodex.com.pk/up)
+# NOT in GitHub: DB / R2 / PSP / APP_KEY. They live only in  $APP_DIR/shared/.env  on the server.
+
+name: CI and Deploy
+
+on:
+  pull_request:
+  push:
+    branches: [develop]            # develop -> staging, automatic
+  workflow_dispatch:               # production is manual only
+    inputs:
+      target:
+        type: choice
+        options: [staging, production]
+        default: staging
+      ref:
+        description: 'Tag or SHA to deploy (production: use a tag)'
+        required: true
+        default: develop
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-${{ inputs.target || 'staging' }}
+  cancel-in-progress: false
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:                    # RLS / tenant-isolation tests need real Postgres
+        image: postgres:16
+        env: { POSTGRES_USER: app, POSTGRES_PASSWORD: app, POSTGRES_DB: app_test }
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U app" --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DB_CONNECTION: pgsql
+      DB_HOST: 127.0.0.1
+      DB_PORT: 5432
+      DB_DATABASE: app_test
+      DB_USERNAME: app
+      DB_PASSWORD: app
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: "${{ inputs.ref || github.sha }}" }
+      - uses: shivammathur/setup-php@v2
+        with: { php-version: '8.3', extensions: 'pdo_pgsql, mbstring, intl, gd, zip, bcmath', coverage: none }
+      - uses: actions/setup-node@v4
+        with: { node-version: '22', cache: npm }
+      - run: composer install --no-interaction --prefer-dist
+      - run: cp .env.example .env && php artisan key:generate
+      - run: php artisan migrate --force
+      - run: ./vendor/bin/pest --ci          # includes the cross-tenant attack matrix
+      - run: npm ci && npm run build
+
+  build:
+    needs: test
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    outputs:
+      id: ${{ steps.meta.outputs.id }}
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: "${{ inputs.ref || github.sha }}" }
+      - id: meta
+        run: echo "id=$(git rev-parse --short=12 HEAD)" >> "$GITHUB_OUTPUT"
+      - uses: shivammathur/setup-php@v2
+        with: { php-version: '8.3', extensions: 'pdo_pgsql, mbstring, intl, gd, zip, bcmath', coverage: none }
+      - uses: actions/setup-node@v4
+        with: { node-version: '22', cache: npm }
+      - run: composer install --no-dev --prefer-dist --no-interaction --optimize-autoloader
+      - run: npm ci && npm run build
+      - name: Package (no node_modules, tests, .env, .git)
+        run: |
+          tar --exclude=./node_modules --exclude=./tests --exclude=./.git --exclude=./.github \
+              --exclude=./.env --exclude='./storage/logs/*' \
+              -czf "$RUNNER_TEMP/release-${{ steps.meta.outputs.id }}.tgz" .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release
+          path: ${{ runner.temp }}/release-${{ steps.meta.outputs.id }}.tgz
+          retention-days: 14
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.target || 'staging' }}
+    env:
+      ID: ${{ needs.build.outputs.id }}
+      APP_DIR: ${{ vars.APP_DIR }}
+      SSH_PORT: ${{ secrets.SSH_PORT }}
+      TARGET: ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}
+    steps:
+      - uses: actions/checkout@v4          # only to get deploy/release.sh
+        with: { ref: "${{ inputs.ref || github.sha }}", sparse-checkout: deploy }
+      - uses: actions/download-artifact@v4
+        with: { name: release }
+      - name: SSH setup (pinned host key)
+        env:
+          SSH_KEY: ${{ secrets.SSH_KEY }}
+          KNOWN: ${{ secrets.SSH_KNOWN_HOSTS }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy_key && chmod 600 ~/.ssh/deploy_key
+          printf '%s\n' "$KNOWN" > ~/.ssh/known_hosts
+      - name: Upload
+        run: |
+          SSH="ssh -i $HOME/.ssh/deploy_key -p $SSH_PORT"
+          $SSH "$TARGET" "mkdir -p '$APP_DIR/incoming'"
+          scp -i ~/.ssh/deploy_key -P "$SSH_PORT" "release-$ID.tgz" deploy/release.sh "$TARGET:$APP_DIR/incoming/"
+      - name: Activate (backup, migrate, cache, swap, health-check, auto-rollback)
+        env:
+          PHP_BIN: ${{ secrets.PHP_BIN }}
+          HEALTH_URL: ${{ vars.HEALTH_URL }}
+        run: |
+          ssh -i ~/.ssh/deploy_key -p "$SSH_PORT" "$TARGET" \
+            "APP_DIR='$APP_DIR' PHP_BIN='$PHP_BIN' HEALTH_URL='$HEALTH_URL' bash '$APP_DIR/incoming/release.sh' '$ID'"
+      - name: Cleanup
+        if: always()
+        run: rm -f ~/.ssh/deploy_key
