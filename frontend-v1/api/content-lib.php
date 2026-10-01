@@ -92,12 +92,44 @@ function cms_safe_rel($r): bool { return is_string($r) && preg_match('~^[a-z0-9]
 
 function cms_city_rel_ok($r): bool { return is_string($r) && preg_match('~^[a-z0-9][a-z0-9-]{0,59}/index\.html$~', $r) && !preg_match('~^(builder|admin|api|assets|insights|projects)/~', $r); }
 function cms_file_backup(string $rel): void { $d = PRIVATE_DIR . '/backups/' . preg_replace('~[^a-z0-9]+~i', '_', trim($rel, '/')); if (!is_dir($d)) @mkdir($d, 0750, true); @copy(ROOT_DIR . '/' . $rel, $d . '/' . gmdate('Ymd-His') . '-' . substr(basename($rel), -12)); }
+/** P17 templates (article / portfolio / city): validated template record. */
+const CMS_TPL_SEC = ['body', 'summary', 'faqs', 'quote', 'related'];
+function cms_tpl_clean(array $t): array {
+    $type = (string)($t['type'] ?? ''); if (!in_array($type, ['post', 'study', 'city'], true)) fail('Unknown template type');
+    $name = clip($t['name'] ?? '', 60); if ($name === '') fail('Give the template a name');
+    $o = ['type' => $type, 'name' => $name, 'desc' => clip($t['desc'] ?? '', 200), 'default' => !empty($t['default'])];
+    if ($type === 'city') {
+        $o['source'] = preg_match('~^[a-z0-9-]{1,60}$~', (string)($t['source'] ?? '')) ? $t['source'] : '';
+        $o['order'] = []; foreach (array_slice((array)($t['order'] ?? []), 0, 30) as $x) if (is_array($x) && preg_match('~^[a-z0-9_-]{1,60}$~i', (string)($x['id'] ?? ''))) $o['order'][] = ['id' => $x['id'], 'on' => !empty($x['on']), 'label' => clip($x['label'] ?? '', 60)];
+        if (!$o['order']) fail('Pick the sections for this city template');
+    } else {
+        $o['hero'] = in_array($t['hero'] ?? '', ['image', 'navy', 'media'], true) ? $t['hero'] : 'image';
+        foreach (['toc' => false, 'meta' => true, 'facts' => true] as $k => $def) $o[$k] = array_key_exists($k, $t) ? !empty($t[$k]) : $def;
+        $seen = []; $o['sections'] = [];
+        foreach ((array)($t['sections'] ?? []) as $x) { $k = (string)($x['k'] ?? ''); if (in_array($k, CMS_TPL_SEC, true) && !isset($seen[$k])) { $seen[$k] = 1; $o['sections'][] = ['k' => $k, 'on' => !empty($x['on'])]; } }
+        foreach (CMS_TPL_SEC as $k) if (!isset($seen[$k])) $o['sections'][] = ['k' => $k, 'on' => true];
+    }
+    return $o;
+}
 function content_actions(string $action, array $in): bool {
     if (!preg_match('~^(cms_|ai_)~', $action)) return false;
     $ED = ['owner', 'admin', 'editor']; $OA = ['owner', 'admin'];
     $c = cms_load();
     $idx = function ($id) use (&$c): int { foreach ($c['items'] as $k => $x) if ((int)$x['id'] === (int)$id) return $k; fail('Item not found', 404); return -1; };
     switch ($action) {
+        case 'cms_tpl_list': need($ED); out(['ok' => true, 'tpls' => array_values($c['tpls'] ?? [])]);
+        case 'cms_tpl_save':
+            $u = need($ED); $o = cms_tpl_clean((array)($in['tpl'] ?? [])); $L = array_values($c['tpls'] ?? []); $id = (int)($in['tpl']['id'] ?? 0); $k = -1;
+            foreach ($L as $j => $x) if ((int)$x['id'] === $id) $k = $j;
+            if ($k < 0 && count($L) >= 60) fail('Too many templates');
+            $o['id'] = $k >= 0 ? $id : (int)($c['tplSeq'] = (int)($c['tplSeq'] ?? 0) + 1); $o['updated_at'] = cms_now(); $o['by'] = $u['name'] ?? '';
+            if ($o['default']) foreach ($L as $j => $x) if ($x['type'] === $o['type']) $L[$j]['default'] = false;
+            if ($k >= 0) $L[$k] = $o; else $L[] = $o;
+            $c['tpls'] = $L; cms_save_file($c); log_act($u, 'template.save', $o['type'] . ': ' . $o['name']); out(['ok' => true, 'tpl' => $o, 'tpls' => $L]);
+        case 'cms_tpl_delete':
+            $u = need($ED); $id = (int)($in['id'] ?? 0); $L = array_values(array_filter($c['tpls'] ?? [], fn($x) => (int)$x['id'] !== $id));
+            foreach ($c['items'] as $j => $x) if ((int)($x['data']['tpl'] ?? 0) === $id) unset($c['items'][$j]['data']['tpl']);
+            $c['tpls'] = $L; cms_save_file($c); log_act($u, 'template.delete', '#' . $id); out(['ok' => true, 'tpls' => $L]);
         case 'cms_page_kinds':
             need($ED); $kinds = [];
             $it = new RecursiveIteratorIterator(new RecursiveCallbackFilterIterator(new RecursiveDirectoryIterator(ROOT_DIR, FilesystemIterator::SKIP_DOTS), function ($f) { return !($f->isDir() && dirname($f->getPathname()) === ROOT_DIR && preg_match('~^(_private|builder|admin|api|assets|node_modules)$~', $f->getFilename())); }));

@@ -2360,3 +2360,10 @@ html:not(.js) .ih-faq-a,html:not(.js) .in-faq-a,html:not(.js) .ph-faq-a,html:not
 .wx-faq summary{cursor:pointer;font-weight:600;list-style:none;display:flex;justify-content:space-between;gap:12px}.wx-faq summary::after{content:"+";color:#b8956a;font-size:20px;line-height:1}.wx-faq details[open] summary::after{content:"–"}.wx-faq details p{margin:10px 0 0}
 .wx-cta{margin:40px 0;padding:32px;border-radius:16px;background:#0c1628;color:#fff}.wx-cta h3{color:#fff;margin:0 0 8px}.wx-cta p{color:rgba(255,255,255,.8);margin:0 0 18px}
 .wx-cta a{display:inline-flex;align-items:center;gap:8px;background:#fff;color:#0c1628!important;padding:12px 22px;border-radius:999px;font-weight:600;text-decoration:none}
+/* P17 templates: table of contents + hero variants */
+.dx-toc{border:1px solid rgba(12,22,40,.1);border-radius:16px;padding:18px 22px;margin:0 0 32px;background:#fbf9f5}
+.dx-toc p{margin:0 0 8px;font-size:.78rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#8a6a43}
+.dx-toc ol{margin:0;padding-left:20px;display:grid;gap:6px}.dx-toc a{color:#0c1628;text-decoration:none}.dx-toc a:hover{color:#8a6a43;text-decoration:underline}
+.dx-main h2[id]{scroll-margin-top:110px}
+.dx-hero--media{padding-bottom:150px}
+.dx-hero--media+.dx-wrap .dx-hero-media img{display:block;width:100%;height:auto;aspect-ratio:16/8;object-fit:cover}

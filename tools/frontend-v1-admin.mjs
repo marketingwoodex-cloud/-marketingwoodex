@@ -1067,6 +1067,20 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
     const c = cmsLoad(), done = (o) => { jw(CMS, c); save(db); return o; };
     const find = (id) => { const it = c.items.find((x) => x.id === +id); if (!it) throw new Fail("Item not found", 404); return it; };
     switch (action) {
+      case "cms_tpl_list": { need(ED); return { ok: true, tpls: c.tpls || [] }; }
+      case "cms_tpl_save": {
+        const u = need(ED), t = inp.tpl || {}, type = String(t.type || ""); if (!["post", "study", "city"].includes(type)) throw new Fail("Unknown template type");
+        const name = clip(t.name, 60); if (!name) throw new Fail("Give the template a name");
+        const o = { type, name, desc: clip(t.desc, 200), default: !!t.default };
+        if (type === "city") { o.source = /^[a-z0-9-]{1,60}$/.test(t.source || "") ? t.source : ""; o.order = (t.order || []).slice(0, 30).filter((x) => x && /^[a-z0-9_-]{1,60}$/i.test(x.id || "")).map((x) => ({ id: x.id, on: !!x.on, label: clip(x.label, 60) })); if (!o.order.length) throw new Fail("Pick the sections for this city template"); }
+        else { const SEC = ["body", "summary", "faqs", "quote", "related"]; o.hero = ["image", "navy", "media"].includes(t.hero) ? t.hero : "image"; o.toc = !!t.toc; o.meta = "meta" in t ? !!t.meta : true; o.facts = "facts" in t ? !!t.facts : true;
+          const seen = new Set(); o.sections = []; for (const x of t.sections || []) if (SEC.includes(x.k) && !seen.has(x.k)) { seen.add(x.k); o.sections.push({ k: x.k, on: !!x.on }); } for (const k of SEC) if (!seen.has(k)) o.sections.push({ k, on: true }); }
+        const L = c.tpls = c.tpls || []; const k = L.findIndex((x) => x.id === +t.id); if (k < 0 && L.length >= 60) throw new Fail("Too many templates");
+        o.id = k >= 0 ? +t.id : (c.tplSeq = (c.tplSeq || 0) + 1); o.updated_at = now(); o.by = u.name;
+        if (o.default) L.forEach((x) => { if (x.type === type) x.default = false; });
+        if (k >= 0) L[k] = o; else L.push(o); log(db, u, "template.save", type + ": " + name, ip); return done({ ok: true, tpl: o, tpls: L });
+      }
+      case "cms_tpl_delete": { const u = need(ED), id = +inp.id; c.tpls = (c.tpls || []).filter((x) => x.id !== id); (c.items || []).forEach((x) => { if (x.data && +x.data.tpl === id) delete x.data.tpl; }); log(db, u, "template.delete", "#" + id, ip); return done({ ok: true, tpls: c.tpls }); }
       case "cms_page_kinds": { need(ED); const out = {}; const walk = (d) => { for (const f of fs.readdirSync(d, { withFileTypes: true })) { const a = path.join(d, f.name); if (f.isDirectory()) { if (!/^(_private|builder|admin|api|assets|node_modules)$/.test(f.name) || d !== ROOT) walk(a); } else if (f.name.endsWith(".html")) { const rel = path.relative(ROOT, a).split(path.sep).join("/"); if (!safeRel(rel)) continue; const m = /<body[^>]*data-page="([^"]*)"/i.exec(fs.readFileSync(a, "utf8").slice(0, 400000)); out[rel] = m ? m[1] : ""; } } }; walk(ROOT); return { ok: true, kinds: out }; }
       case "cms_sitemap_add": { need(ED); const rel = String(inp.rel || ""); if (!safeRel(rel) || !fs.existsSync(path.join(ROOT, rel))) throw new Fail("Page not found"); sitemapAdd(rel); return { ok: true }; }
       case "cms_biz_get": { need(ED); return { ok: true, biz: Object.assign({}, BIZ_DEF, c.biz || {}), applied: Object.assign({}, BIZ_DEF, c.bizApplied || {}) }; }
