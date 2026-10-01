@@ -48,6 +48,12 @@ if (($in['action'] ?? '') === 'wa_click') {
     file_put_contents($f, json_encode($st), LOCK_EX); flock($fp, LOCK_UN); out(['ok' => true]);
 }
 
+// P17 booking (site visit / meeting / online call)
+if (in_array((string)($in['action'] ?? ''), ['book_cfg', 'book_slots', 'book_create'], true)) {
+    require __DIR__ . '/booking-lib.php';
+    try { booking_public($in); } catch (PDOException $e) { error_log('booking: ' . $e->getMessage()); fail('Could not save your booking. Please WhatsApp us.', 500); }
+}
+
 try {
     if (clip($in['_hp'] ?? '') !== '' || clip($in['company_hp'] ?? '') !== '') out(['ok' => true, 'id' => 0]); // bot: pretend success
     crm_migrate();

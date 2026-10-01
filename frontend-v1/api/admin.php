@@ -210,6 +210,7 @@ require __DIR__ . '/security-lib.php';
 require __DIR__ . '/phase8-lib.php';
 require __DIR__ . '/chat-lib.php';
 require __DIR__ . '/notify-lib.php';
+require __DIR__ . '/booking-lib.php';
 require __DIR__ . '/seo-lib.php';
 require __DIR__ . '/google-data-lib.php';
 require __DIR__ . '/dash-lib.php';
@@ -220,7 +221,7 @@ if (defined('WX_LIB_ONLY')) return; // api/mcp.php reuses the helpers and action
 $in = json_decode((string)file_get_contents('php://input'), true) ?: [];
 $action = (string)($in['action'] ?? ($_GET['action'] ?? 'status'));
 if ($_SERVER['REQUEST_METHOD'] !== 'POST' && $action !== 'status' && $action !== 'cron' && $action !== 'backup_dl') fail('POST required', 405);
-if ($action === 'cron') { $n = 0; $bk = []; try { $n = cms_tick(); } catch (Throwable $e) { error_log('cron: ' . $e->getMessage()); } try { $bk = a7_backup_auto(); } catch (Throwable $e) { error_log('backup: ' . $e->getMessage()); } out(['ok' => true, 'published' => $n, 'backups' => $bk]); }
+if ($action === 'cron') { $n = 0; $bk = []; try { $n = cms_tick(); } catch (Throwable $e) { error_log('cron: ' . $e->getMessage()); } try { $bk = a7_backup_auto(); } catch (Throwable $e) { error_log('backup: ' . $e->getMessage()); } $rm = 0; try { $rm = bk_remind(); } catch (Throwable $e) { error_log('booking remind: ' . $e->getMessage()); } out(['ok' => true, 'published' => $n, 'backups' => $bk, 'reminders' => $rm]); }
 if ($action === 'backup_dl') media_download();
 if (in_array($action, ['backup_up', 'db_dl', 'db_up'], true)) media_raw($action);
 
@@ -517,6 +518,6 @@ switch ($action) {
         if (!$dry && $total) log_act($u, 'global.replace', '"' . mb_substr($find, 0, 60) . '" → "' . mb_substr($rep, 0, 60) . '" (' . count($res) . ' pages)');
         out(['ok' => true, 'pages' => $res, 'total' => $total, 'dry' => $dry]);
 
-    default: if (!sales17_actions($action, $in) && !crm_actions($action, $in) && !sales_actions($action, $in) && !content_actions($action, $in) && !media_actions($action, $in) && !security_actions($action, $in) && !gdata_actions($action, $in) && !dash_actions($action, $in) && !p8_actions($action, $in) && !chat_actions($action, $in) && !notify_actions($action, $in) && !seo_actions($action, $in) && !redirects_actions($action, $in)) fail('Unknown action', 404);
+    default: if (!sales17_actions($action, $in) && !booking_actions($action, $in) && !crm_actions($action, $in) && !sales_actions($action, $in) && !content_actions($action, $in) && !media_actions($action, $in) && !security_actions($action, $in) && !gdata_actions($action, $in) && !dash_actions($action, $in) && !p8_actions($action, $in) && !chat_actions($action, $in) && !notify_actions($action, $in) && !seo_actions($action, $in) && !redirects_actions($action, $in)) fail('Unknown action', 404);
 }
 } catch (PDOException $e) { error_log('admin.php: ' . $e->getMessage()); fail('Database error', 500); }

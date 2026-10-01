@@ -5,7 +5,7 @@
  * Settings: _private/notify.json. Log: wx_notify_log. Admin actions: notify_*.
  */
 const NOTIFY_FILE = PRIVATE_DIR . '/notify.json';
-const NOTIFY_EVENTS = ['lead' => 'Enquiry received', 'quote' => 'Quotation sent', 'started' => 'Work started', 'handover' => 'Handover'];
+const NOTIFY_EVENTS = ['lead' => 'Enquiry received', 'quote' => 'Quotation sent', 'started' => 'Work started', 'handover' => 'Handover', 'booking' => 'Booking confirmed', 'remind' => 'Booking reminder (day before)'];
 const NOTIFY_DEF = [
     'email' => true, 'wa' => true,
     'ev' => [
@@ -17,6 +17,10 @@ const NOTIFY_DEF = [
             "Dear {name},\nGood news! Work has started on {project}. Our project team will keep you updated at every step.\n\nمحترم {name}، خوشخبری! {project} پر کام شروع ہو گیا ہے۔ ہماری ٹیم آپ کو ہر مرحلے سے آگاہ رکھے گی۔\n\n{company} · {phone}"],
         'handover' => ['on' => true, 'subject' => 'Your project {project} is ready', 'tpl' => '', 'text' =>
             "Dear {name},\n{project} is complete and ready for handover. Thank you for choosing {company}! We would love your feedback.\n\nمحترم {name}، {project} مکمل ہو گیا ہے اور حوالگی کے لیے تیار ہے۔ {company} کا انتخاب کرنے کا شکریہ!\n\n{company} · {phone}"],
+        'booking' => ['on' => true, 'subject' => 'Confirmed: {ref}', 'tpl' => '', 'text' =>
+            "Dear {name},\nYour {ref} is confirmed. Place: {project}.\nNeed to change it? Just reply to this message.\n\nمحترم {name}، آپ کی ملاقات ({ref}) کنفرم ہو گئی ہے۔ جگہ: {project}۔ تبدیلی کے لیے اسی پیغام کا جواب دیں۔\n\n{company} · {phone}"],
+        'remind' => ['on' => true, 'subject' => 'Reminder: {ref}', 'tpl' => '', 'text' =>
+            "Dear {name},\nA friendly reminder of your {ref} tomorrow. Place: {project}.\nSee you then!\n\nمحترم {name}، یاد دہانی: کل آپ کی ملاقات ({ref}) ہے۔ جگہ: {project}۔\n\n{company} · {phone}"],
     ],
     'waLang' => 'en',
 ];
