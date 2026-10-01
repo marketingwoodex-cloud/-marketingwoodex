@@ -8,6 +8,8 @@ as the architecture authority. Their *business decisions* are kept (see §16); t
 
 > **UPDATE 2026-10-02:** decisions D-1…D-10 in [`MASTER-PLAN-AGENCY-V2.md`](MASTER-PLAN-AGENCY-V2.md) override this document where they conflict (hosting → VPS, framework → Laravel, two-level agency→site tenancy, R2 media, payments approach, Phase 0 spikes first). Everything else here still applies.
 
+> **UPDATE 2026-10-02 (later):** stack and scope are now governed by [`MASTER-PLAN-V3-LEAN.md`](MASTER-PLAN-V3-LEAN.md) (Laravel + free TailAdmin Laravel + Supabase Free + R2; Vercel for internal use only). Where v1/v2 disagree, v3 wins.
+
 ---
 
 ## 1. Goal in one paragraph
