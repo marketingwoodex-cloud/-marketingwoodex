@@ -3,7 +3,7 @@
   var W = window.WXA; if (!W) return;
   var api = W.api, esc = W.esc, ic = W.ic, $ = W.$, $$ = W.$$, toast = W.toast;
   var DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-  var TONES = { friendly: "Friendly", professional: "Professional", sales: "Sales-focused", simple: "Very simple" };
+  var TONES = { designer: "Professional designer (recommended)", friendly: "Friendly", professional: "Professional", sales: "Sales-focused", simple: "Very simple" };
   var css = document.createElement("style");
   css.textContent = ".tr{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:18px;align-items:start}@media(max-width:1100px){.tr{grid-template-columns:1fr}}" +
     ".tr-tabs{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:14px}.tr-tabs button{border:1px solid var(--line,#e5e7eb);background:var(--card,#fff);color:inherit;border-radius:999px;padding:7px 14px;font:inherit;font-size:13px;cursor:pointer}.tr-tabs button.on{background:#0c1628;color:#fff;border-color:#0c1628}" +
@@ -31,6 +31,7 @@
         // 1 qa
         '<div class="tr-p"><p class="muted" style="margin-top:0">Add common questions with your exact answer. The AI uses these first.</p><div id="t-qa"></div><button class="btn sm" id="t-qa-add">' + ic("plus") + "Add Q&amp;A</button></div>" +
         // 2 prices
+        '<label class="check" style="margin-bottom:10px"><input type="checkbox" id="t-np"' + (c.noPrices !== false ? " checked" : "") + '> <b>Never quote prices</b> — the AI offers a site visit or a detailed quotation instead (rates below are ignored while this is on)</label>' +
         '<div class="tr-p"><label>Starting rates the AI may share <small class="muted">(one per line; it always adds "final quote after site visit")</small><textarea id="t-pr" rows="10" placeholder="Interior design (home): from Rs 150 per sq ft&#10;Office fit-out: from Rs 2,500 per sq ft&#10;3D views: from Rs 25,000 per room">' + esc(c.prices || "") + '</textarea></label><p class="muted" style="font-size:12.5px">Leave empty and the AI will never quote numbers.</p></div>' +
         // 3 avoid
         '<div class="tr-p"><label>Topics the AI must not answer <small class="muted">(one per line; it hands these to the team)</small><textarea id="t-av" rows="8">' + esc(c.avoid || "") + "</textarea></label></div>" +
@@ -66,7 +67,7 @@
       $("#t-qa-add").onclick = function () { qa.push({ q: "", a: "" }); drawQa(); var r = $$(".tr-qa .q", el); r[r.length - 1].focus(); };
       $("#tr-save").onclick = function () {
         var b = this; b.disabled = true;
-        api("chat_cfg_save", { cfg: { tone: $("#t-tone").value, toneNote: $("#t-tn").value, knowledge: $("#t-k").value, qa: qa, prices: $("#t-pr").value, avoid: $("#t-av").value,
+        api("chat_cfg_save", { cfg: { noPrices: $("#t-np").checked, tone: $("#t-tone").value, toneNote: $("#t-tn").value, knowledge: $("#t-k").value, qa: qa, prices: $("#t-pr").value, avoid: $("#t-av").value,
           days: $$(".t-d:checked", el).map(function (x) { return +x.value; }), openFrom: $("#t-of").value, openTo: $("#t-ot").value, hours: $("#t-h").value, afterHours: $("#t-ah").value,
           waAgent: $("#t-wa").checked, waGreeting: $("#t-wg").value, waSecret: $("#t-ws").value } })
           .then(function (x) { b.disabled = false; if (!x.ok) return toast(x.error, true); toast("Training saved ✓"); if (!c.waVerify && x.cfg.waVerify) W.VIEWS.train(el); c = x.cfg; });

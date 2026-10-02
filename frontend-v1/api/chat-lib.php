@@ -7,22 +7,30 @@
 const CHAT_FILE = PRIVATE_DIR . '/chat.json';
 const CHAT_DEF = [
     'on' => true, 'ai' => true, 'emailAlert' => true, 'autoLead' => true,
-    'greeting' => 'Assalam-o-Alaikum! 👋 I am the Woodex assistant. Ask me anything about interior design, renovation, fit-out or prices. A team member can join any time.',
+    'greeting' => 'Assalam-o-Alaikum, welcome to Woodex Interior. I can help with interior design, renovation, office fit-out and custom furniture. How may I assist you today? Our team is available Mon–Sat, 10:00 am – 7:30 pm.', 'noPrices' => true,
     'hours' => 'Mon–Sat, 10:00 am – 7:30 pm',
     // Phase 11 — training (shared by website chat + WhatsApp agent)
-    'tone' => 'friendly', 'toneNote' => '', 'qa' => [], 'avoid' => "Competitor comparisons\nPolitics or religion\nLegal or medical advice\nExact final prices before a site visit", 'prices' => '',
+    'tone' => 'designer', 'toneNote' => '', 'qa' => [], 'avoid' => "Competitor comparisons\nPolitics or religion\nLegal or medical advice\nExact final prices before a site visit", 'prices' => '',
     'openFrom' => '10:00', 'openTo' => '19:30', 'days' => [1, 2, 3, 4, 5, 6],
     'afterHours' => 'Thanks for your message! We are away right now. Leave your name and phone number and we will call you back first thing.',
     'waAgent' => false, 'waVerify' => '', 'waSecret' => '', 'waGreeting' => 'Assalam-o-Alaikum! Thank you for contacting Woodex Interior. How can we help you today?',
     'knowledge' => "Woodex Interior is an interior design and build company in Lahore, Pakistan (since 2011).\nServices: interior design (homes, offices, retail, restaurants), renovation, office fit-out, turnkey design-build, architecture and house design (5 marla to 2 kanal), 3D visualization, custom furniture.\nProcess: free consultation → site visit and measurements → design and 3D views → quotation → execution → handover.\nWe work across Lahore and also take projects in Islamabad, Karachi and other cities.\nPrices depend on area, finishes and scope; a site visit gives an exact quotation. The online cost estimator is at /cost-estimator/ (if available).\nFor a quote or site visit ask for the client's name, phone number, area/location and what they need.",
 ];
-function chat_cfg(): array { return array_merge(CHAT_DEF, jread(CHAT_FILE)); }
+const CHAT_OLD_GREETING = 'Assalam-o-Alaikum! 👋 I am the Woodex assistant. Ask me anything about interior design, renovation, fit-out or prices. A team member can join any time.';
+function chat_cfg(): array {
+    $s = jread(CHAT_FILE); $c = array_merge(CHAT_DEF, $s);
+    if (!array_key_exists('noPrices', $s)) { // P18 E: one-time upgrade of settings saved before the designer tone existed
+        if (($s['tone'] ?? 'friendly') === 'friendly') $c['tone'] = 'designer';
+        if (($s['greeting'] ?? CHAT_OLD_GREETING) === CHAT_OLD_GREETING) $c['greeting'] = CHAT_DEF['greeting'];
+    }
+    return $c;
+}
 function chat_open_now(): bool {
     $c = chat_cfg(); $d = new DateTime('now', new DateTimeZone('Asia/Karachi')); $w = (int)$d->format('w'); $m = (int)$d->format('G') * 60 + (int)$d->format('i');
     $hm = fn($t) => preg_match('~^(\d{1,2}):(\d{2})$~', (string)$t, $x) ? (int)$x[1] * 60 + (int)$x[2] : 0;
     return in_array($w, array_map('intval', (array)$c['days']), true) && $m >= $hm($c['openFrom']) && $m < $hm($c['openTo']);
 }
-const CHAT_TONES = ['friendly' => 'warm, friendly and helpful', 'professional' => 'polite, professional and concise', 'sales' => 'enthusiastic and persuasive, gently guiding towards booking a site visit', 'simple' => 'very simple words, short sentences, easy for anyone'];
+const CHAT_TONES = ['designer' => 'a calm, professional interior designer: knowledgeable, precise and courteous. Not over-friendly: no slang, no exclamation marks, no emojis, no flattery', 'friendly' => 'warm, friendly and helpful', 'professional' => 'polite, professional and concise', 'sales' => 'enthusiastic and persuasive, gently guiding towards booking a site visit', 'simple' => 'very simple words, short sentences, easy for anyone'];
 
 function chat_migrate(): void {
     static $done = false; if ($done) return; $done = true; $e = ' ENGINE=InnoDB DEFAULT CHARSET=utf8mb4';
@@ -108,10 +116,11 @@ function chat_ai_system(array $c): string {
         "Always reply in the same language and script the customer uses (English, Urdu script, or Roman Urdu). Keep answers short: 1–4 sentences, plain text, no markdown." . ($wa ? ' This is WhatsApp: you may use *bold* sparingly and 1 emoji at most.' : '') . "\n" .
         "Goal: help, then collect the customer's name, " . ($wa ? '' : 'phone number, ') . "location/area and what they need so the team can call or book a site visit. Ask for one detail at a time, naturally.\n" .
         "When a Q&A answer below matches the question, use it (you may rephrase). Never invent prices, discounts, timelines or promises that are not written below; say the team will confirm after a site visit. Currency is PKR.\n" .
+        (!empty($cfg['noPrices']) ? "PRICES: never quote any price, rate, per-square-foot cost, budget, range or estimate — not even approximately, even if asked repeatedly. Explain that cost depends on scope, size, materials and site condition, and offer a free site visit or a detailed itemised quotation (the online cost estimator is at /estimator/).\n" : '') .
         ($avoid ? "Do NOT discuss these topics; politely say the team will help with that and move on: " . implode('; ', $avoid) . "\n" : '') .
         "If the customer asks for a human, is upset, wants to finalise a deal, or asks something you cannot answer, say a team member will reply shortly and add the tag [HUMAN] at the very end.\n" .
         "Office hours: {$cfg['hours']}. It is currently " . (chat_open_now() ? 'within' : 'outside') . " office hours.\nContact: {$co['phones']} · {$co['email']} · {$co['address']}\n\nKNOWLEDGE:\n" . $cfg['knowledge'] .
-        ($cfg['prices'] !== '' ? "\n\nPRICE GUIDANCE (starting rates only; always add that the final quote comes after a site visit):\n" . $cfg['prices'] : '') .
+        ($cfg['prices'] !== '' && empty($cfg['noPrices']) ? "\n\nPRICE GUIDANCE (starting rates only; always add that the final quote comes after a site visit):\n" . $cfg['prices'] : '') .
         ($faq ? "\n\nQ&A:\n" . mb_substr(implode("\n\n", $faq), 0, 9000) : '') .
         ($wa ? "\n\nChannel: WhatsApp (their number is already known)." : "\n\nVisitor is on page: " . ($c['page'] ?? '/')) . (!empty($c['name']) ? "\nCustomer name: " . $c['name'] : '') . (!empty($c['phone']) && !$wa ? "\nPhone already given: yes" : '');
 }
@@ -183,6 +192,7 @@ function chat_actions(string $action, array $in): bool {
             foreach (['on', 'ai', 'emailAlert', 'autoLead', 'waAgent'] as $k) if (array_key_exists($k, $s)) $c[$k] = !empty($s[$k]);
             foreach (['greeting' => 500, 'hours' => 80, 'knowledge' => 12000, 'toneNote' => 400, 'avoid' => 2000, 'prices' => 4000, 'afterHours' => 500, 'waGreeting' => 500, 'waVerify' => 80, 'waSecret' => 120] as $k => $n) if (array_key_exists($k, $s)) $c[$k] = mb_substr(trim((string)$s[$k]), 0, $n);
             if (isset($s['tone']) && isset(CHAT_TONES[$s['tone']])) $c['tone'] = $s['tone'];
+            if (array_key_exists('noPrices', $s)) $c['noPrices'] = !empty($s['noPrices']);
             foreach (['openFrom', 'openTo'] as $k) if (isset($s[$k]) && preg_match('~^\d{2}:\d{2}$~', (string)$s[$k])) $c[$k] = $s[$k];
             if (isset($s['days']) && is_array($s['days'])) $c['days'] = array_values(array_unique(array_filter(array_map('intval', $s['days']), fn($d) => $d >= 0 && $d <= 6)));
             if (isset($s['qa']) && is_array($s['qa'])) { $c['qa'] = []; foreach (array_slice($s['qa'], 0, 150) as $x) { $qq = mb_substr(trim((string)($x['q'] ?? '')), 0, 300); $aa = mb_substr(trim((string)($x['a'] ?? '')), 0, 1500); if ($qq !== '' && $aa !== '') $c['qa'][] = ['q' => $qq, 'a' => $aa]; } }

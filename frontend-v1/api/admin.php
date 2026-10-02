@@ -215,6 +215,7 @@ require __DIR__ . '/seo-lib.php';
 require __DIR__ . '/google-data-lib.php';
 require __DIR__ . '/dash-lib.php';
 require __DIR__ . '/redirects-lib.php';
+require __DIR__ . '/p18e-lib.php';
 if (defined('WX_LIB_ONLY')) return; // api/mcp.php reuses the helpers and actions
 
 // ---------- request ----------
@@ -518,6 +519,6 @@ switch ($action) {
         if (!$dry && $total) log_act($u, 'global.replace', '"' . mb_substr($find, 0, 60) . '" → "' . mb_substr($rep, 0, 60) . '" (' . count($res) . ' pages)');
         out(['ok' => true, 'pages' => $res, 'total' => $total, 'dry' => $dry]);
 
-    default: if (!sales17_actions($action, $in) && !booking_actions($action, $in) && !crm_actions($action, $in) && !sales_actions($action, $in) && !content_actions($action, $in) && !media_actions($action, $in) && !security_actions($action, $in) && !gdata_actions($action, $in) && !dash_actions($action, $in) && !p8_actions($action, $in) && !chat_actions($action, $in) && !notify_actions($action, $in) && !seo_actions($action, $in) && !redirects_actions($action, $in)) fail('Unknown action', 404);
+    default: if (!sales17_actions($action, $in) && !booking_actions($action, $in) && !crm_actions($action, $in) && !sales_actions($action, $in) && !content_actions($action, $in) && !media_actions($action, $in) && !security_actions($action, $in) && !gdata_actions($action, $in) && !dash_actions($action, $in) && !p8_actions($action, $in) && !chat_actions($action, $in) && !notify_actions($action, $in) && !seo_actions($action, $in) && !redirects_actions($action, $in) && !p18e_actions($action, $in)) fail('Unknown action', 404);
 }
 } catch (PDOException $e) { error_log('admin.php: ' . $e->getMessage()); fail('Database error', 500); }

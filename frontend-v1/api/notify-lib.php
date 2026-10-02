@@ -43,7 +43,7 @@ function notify_client(string $event, array $d, bool $force = false): array {
         notify_migrate(); $c = notify_cfg(); $ev = $c['ev'][$event] ?? null; if (!$ev || (!$ev['on'] && !$force)) return ['skipped' => 'off'];
         $co = function_exists('company_cfg') ? company_cfg() : ['name' => 'Woodex Interior', 'phones' => '+92 322 4000768']; $v = ['name' => trim((string)($d['name'] ?? '')) ?: 'Customer', 'company' => $co['name'], 'phone' => trim(preg_split('~[,·]~u', (string)$co['phones'])[0] ?? ''),
             'ref' => (string)($d['ref'] ?? ''), 'project' => (string)($d['project'] ?? '') ?: 'your project', 'link' => (string)($d['link'] ?? '')];
-        $text = trim(preg_replace("~[^\n]*\{link\}[^\n]*\n?~u", $v['link'] === '' ? '' : '$0', $ev['text'])); $text = notify_fill($text, $v);
+        $text = trim(preg_replace("~[^\n]*\{link\}[^\n]*\n?~u", $v['link'] === '' ? '' : '$0', trim((string)($d['tpl'] ?? '')) !== '' ? (string)$d['tpl'] : $ev['text'])); // P18 E: per-form reply text $text = notify_fill($text, $v);
         $crm = crm_cfg();
         $wa = notify_pk((string)($d['phone'] ?? ''));
         if ($c['wa'] && $wa !== '') {

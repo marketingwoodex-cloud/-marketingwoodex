@@ -620,6 +620,52 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
     db.bookings.push(b); save(db); sendAlerts({ ...l, service: t.label + " — " + when }).catch(() => {});
     return { ok: true, id: b.id, when, type: t.label };
   }
+  /* P18 E mirror: estimator rate book + forms settings (mirrors api/p18e-lib.php) */
+  const FORMS_WEB = { contact: "Contact form", estimator: "Cost estimator", brief: "3D brief", "fitout-hub": "Fit-out quote", "office-fitout": "Office fit-out quote", whatsapp: "WhatsApp widget" };
+  const FORM_DEF = { alertTo: "", waAlert: true, reply: true, replyText: "" }, FORMSF = path.join(PRIV, "forms.json");
+  const formsCfg = () => { const f = (jr(FORMSF, {}).forms) || {}; return Object.fromEntries(Object.keys(FORMS_WEB).map((k) => [k, { ...FORM_DEF, ...(f[k] || {}) }])); };
+  function estClean(r) {
+    if (!r || !Array.isArray(r.services) || !Array.isArray(r.finishes)) throw new Fail("Rate book is incomplete");
+    const int = (v) => Math.max(0, Math.min(1e8, Math.round(+v || 0))), keys = new Set(), sv = [];
+    for (const x of r.services.slice(0, 20)) {
+      const label = clip(x.label, 60); if (!label) throw new Fail("Every service needs a name");
+      const key = (String(x.key || label).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")).slice(0, 40); if (!key || keys.has(key)) throw new Fail("Two services have the same name: " + label); keys.add(key);
+      const rt = { essential: int((x.rates || {}).essential), standard: int((x.rates || {}).standard), premium: int((x.rates || {}).premium) };
+      if (!rt.essential || rt.essential > rt.standard || rt.standard > rt.premium) throw new Fail(label + ": rates must be above 0 and go up Essential ≤ Standard ≤ Premium");
+      const unit = x.unit === "views" ? "views" : "sqft"; sv.push({ key, label, hint: clip(x.hint, 140), unit, unitLabel: clip(x.unitLabel, 40) || (unit === "views" ? "Number of views" : "Area (sq ft)"), rates: rt });
+    }
+    if (!sv.length) throw new Fail("Add at least one service");
+    const by = Object.fromEntries(r.finishes.filter(Boolean).map((f) => [f.key, f]));
+    const fin = [["essential", "Essential"], ["standard", "Standard"], ["premium", "Premium"]].map(([k, d]) => ({ key: k, label: clip((by[k] || {}).label, 30) || d, hint: clip((by[k] || {}).hint, 100) }));
+    const cat = (Array.isArray(r.catalog) ? r.catalog : []).slice(0, 500).filter((c) => c && clip(c.desc, 300)).map((c) => ({ cat: clip(c.cat, 60), desc: clip(c.desc, 300), unit: clip(c.unit, 20) || "job", rate: int(c.rate) }));
+    const terms = (Array.isArray(r.terms) ? r.terms : []).slice(0, 20).filter((t) => typeof t === "string" && t.trim()).map((t) => clip(t, 300));
+    return { services: sv, finishes: fin, catalog: cat, terms };
+  }
+  async function p18e(action, inp, need, db, ip) {
+    if (!/^(est_|forms_)/.test(action)) return null;
+    const OA = ["owner", "admin"];
+    if (action === "est_save") {
+      const u = need(OA), r = estClean(inp.rates), rel = "assets/js/estimator-rates.js";
+      cmsBackup(rel); fs.writeFileSync(path.join(ROOT, rel), "/* Woodex estimator rate book (PKR). Edited in Admin → Content → Estimator (" + now().slice(0, 16) + ").\n   The /estimator/ page and the quotation builder both read from here. */\nwindow.WX_RATES = " + JSON.stringify(r, null, 2) + ";\n");
+      const v = now().replace(/\D/g, "").slice(2, 12);
+      for (const p of htmlPages()) { const abs = path.join(ROOT, p), h = fs.readFileSync(abs, "utf8"); if (!h.includes("estimator-rates.js")) continue; const n = h.replace(/\/assets\/js\/estimator-rates\.js(\?v=\w+)?/g, "/assets/js/estimator-rates.js?v=" + v); if (n !== h) fs.writeFileSync(abs, n); }
+      log(db, u, "estimator.save", r.services.length + " services", ip); save(db); return { ok: true, rates: r };
+    }
+    if (action === "forms_get") {
+      need(OA); ensureCrm(db); const cfg = formsCfg(), pages = {}, since = new Date(Date.now() - 30 * 864e5).toISOString().slice(0, 19).replace("T", " ");
+      for (const rel of htmlPages()) { const h = fs.readFileSync(path.join(ROOT, rel), "utf8"); for (const id of Object.keys(FORMS_WEB)) { const q = id.replace(/[-]/g, "\\-"); if (new RegExp(`WXForms\\.send\\(\\s*["']${q}["']|data-form="${q}"|name="form"\\s+value="${q}"|form:\\s*["']${q}["']`).test(h)) (pages[id] = pages[id] || []).push("/" + rel.replace(/index\.html$/, "")); } }
+      const forms = Object.entries(FORMS_WEB).map(([id, label]) => { const L = db.leads.filter((l) => l.source === id), fields = ["name", "phone", "email", "service", "message"]; L.slice(-40).forEach((l) => Object.keys(l.fields || {}).forEach((k) => { if (!fields.includes(k) && fields.length < 20) fields.push(k); }));
+        return { id, label, total: L.length, month: L.filter((l) => l.created_at >= since).length, last: L.length ? L[L.length - 1].created_at : null, pages: [...new Set(pages[id] || [])].slice(0, 40), fields, cfg: cfg[id] }; });
+      const c = crmCfg(); return { ok: true, forms, defaults: { emailTo: c.emailTo, emailOn: !!c.emailOn, waOn: !!c.waOn, waReady: !!(c.waToken && c.waPhoneId) } };
+    }
+    if (action === "forms_save") {
+      const u = need(OA), all = jr(FORMSF, {}); all.forms = all.forms || {};
+      for (const [id, f] of Object.entries(inp.forms || {})) { if (!FORMS_WEB[id] || !f) continue; const em = String(f.alertTo || "").split(/[\s,;]+/).filter(Boolean); for (const e of em) if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e)) throw new Fail(FORMS_WEB[id] + ': "' + e + '" is not a valid email');
+        all.forms[id] = { alertTo: em.slice(0, 5).join(", "), waAlert: !!f.waAlert, reply: !!f.reply, replyText: clip(f.replyText, 1000) }; }
+      jw(FORMSF, all); log(db, u, "forms.save", Object.keys(inp.forms || {}).join(","), ip); save(db); return { ok: true, forms: formsCfg() };
+    }
+    return null;
+  }
   async function pbk(action, inp, need, db, ip) {
     if (!["bk_list", "bk_save", "bk_status", "bk_cfg", "bk_cfg_save", "bk_slots", "bk_remind"].includes(action)) return null;
     ensureCrm(db); db.bookings = db.bookings || []; db.seqB = db.seqB || 0; const c = bkCfg(), done = (o) => { save(db); return o; }, today = ymd(pkNow());
@@ -1471,7 +1517,7 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
   }
   // ---- Phase 10: live chat + notifications (mirror of api/chat-lib.php; AI replies need the PHP server)
   const CHATF = path.join(PRIV, "chat.json");
-  const CHAT_DEF = { on: true, ai: true, emailAlert: true, autoLead: true, greeting: "Assalam-o-Alaikum! 👋 I am the Woodex assistant. Ask me anything about interior design, renovation, fit-out or prices. A team member can join any time.", hours: "Mon–Sat, 10:00 am – 7:30 pm", knowledge: "Woodex Interior is an interior design and build company in Lahore, Pakistan.", tone: "friendly", toneNote: "", qa: [], avoid: "Competitor comparisons\nPolitics or religion", prices: "", openFrom: "10:00", openTo: "19:30", days: [1, 2, 3, 4, 5, 6], afterHours: "Thanks for your message! We are away right now.", waAgent: false, waVerify: "", waSecret: "", waGreeting: "Assalam-o-Alaikum! Thank you for contacting Woodex Interior." };
+  const CHAT_DEF = { on: true, ai: true, emailAlert: true, autoLead: true, greeting: "Assalam-o-Alaikum, welcome to Woodex Interior. I can help with interior design, renovation, office fit-out and custom furniture. How may I assist you today? Our team is available Mon–Sat, 10:00 am – 7:30 pm.", noPrices: true, hours: "Mon–Sat, 10:00 am – 7:30 pm", knowledge: "Woodex Interior is an interior design and build company in Lahore, Pakistan.", tone: "designer", toneNote: "", qa: [], avoid: "Competitor comparisons\nPolitics or religion", prices: "", openFrom: "10:00", openTo: "19:30", days: [1, 2, 3, 4, 5, 6], afterHours: "Thanks for your message! We are away right now.", waAgent: false, waVerify: "", waSecret: "", waGreeting: "Assalam-o-Alaikum! Thank you for contacting Woodex Interior." };
   const require_rand = () => Array.from({ length: 24 }, () => "0123456789abcdef"[Math.floor(Math.random() * 16)]).join("");
   const chatCfg = () => Object.assign({}, CHAT_DEF, jr(CHATF, {}));
   const ensureChat = (db) => { db.chats = db.chats || []; db.chatMsgs = db.chatMsgs || []; db.seqCh = db.seqCh || 0; db.seqCm = db.seqCm || 0; };
@@ -1600,7 +1646,7 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
       case "chat_lead": { const u = need(SALES), c = get(inp.id); for (const k of ["name", "phone", "email"]) if (String(inp[k] || "").trim()) c[k] = clip(inp[k], 190); if (!c.lead_id) chatMakeLead(db, c); log(db, u, "chat.lead", "#" + c.id, ip); return done({ ok: true, chat: chatPub(c) }); }
       case "chat_test": { need(["owner", "admin"]); return { ok: false, error: "Add an AI key first (Blog & insights → AI settings)" }; }
       case "chat_cfg_get": { need(["owner", "admin"]); return { ok: true, cfg: chatCfg(), aiReady: false }; }
-      case "chat_cfg_save": { const u = need(["owner", "admin"]), sv = inp.cfg || {}, c = chatCfg(); for (const k of ["on", "ai", "emailAlert", "autoLead"]) if (k in sv) c[k] = !!sv[k]; for (const [k, n] of [["greeting", 500], ["hours", 80], ["knowledge", 12000], ["toneNote", 400], ["avoid", 2000], ["prices", 4000], ["afterHours", 500], ["waGreeting", 500], ["waSecret", 120], ["openFrom", 5], ["openTo", 5], ["tone", 20]]) if (k in sv) c[k] = String(sv[k]).trim().slice(0, n); if ("waAgent" in sv) c.waAgent = !!sv.waAgent; if (Array.isArray(sv.days)) c.days = sv.days.map(Number); if (Array.isArray(sv.qa)) c.qa = sv.qa.filter((x) => x && x.q && x.a).map((x) => ({ q: String(x.q).slice(0, 300), a: String(x.a).slice(0, 1500) })); if (!c.waVerify) c.waVerify = require_rand(); jw(CHATF, c); log(db, u, "chat.settings", "", ip); return done({ ok: true, cfg: c }); }
+      case "chat_cfg_save": { const u = need(["owner", "admin"]), sv = inp.cfg || {}, c = chatCfg(); for (const k of ["on", "ai", "emailAlert", "autoLead", "noPrices"]) if (k in sv) c[k] = !!sv[k]; for (const [k, n] of [["greeting", 500], ["hours", 80], ["knowledge", 12000], ["toneNote", 400], ["avoid", 2000], ["prices", 4000], ["afterHours", 500], ["waGreeting", 500], ["waSecret", 120], ["openFrom", 5], ["openTo", 5], ["tone", 20]]) if (k in sv) c[k] = String(sv[k]).trim().slice(0, n); if ("waAgent" in sv) c.waAgent = !!sv.waAgent; if (Array.isArray(sv.days)) c.days = sv.days.map(Number); if (Array.isArray(sv.qa)) c.qa = sv.qa.filter((x) => x && x.q && x.a).map((x) => ({ q: String(x.q).slice(0, 300), a: String(x.a).slice(0, 1500) })); if (!c.waVerify) c.waVerify = require_rand(); jw(CHATF, c); log(db, u, "chat.settings", "", ip); return done({ ok: true, cfg: c }); }
       case "notif_poll": {
         const u = need(), sales = SALES.includes(u.role); let items = [];
         const lu = sales ? db.leads.filter((l) => !l.read).length : 0, open = db.chats.filter((c) => c.status === "open" && (c.unread || c.needs)), cu = sales ? open.length : 0;
@@ -1786,7 +1832,7 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
         return done({ ok: true, rows: all.slice((page - 1) * per, page * per).map(({ user_name, action, target, ip, created_at }) => ({ user_name, action, target, ip, created_at })), total: all.length, per, page });
       }
       default: {
-        const r = (await pbk(action, inp, need, db, ip)) || (await a2(action, inp, need, db, ip)) || (await a17(action, inp, need, db, ip)) || (await a4(action, inp, need, db, ip)) || a5(action, inp, need, db, ip) || (await a6(action, inp, need, db, ip)) || (await a7(action, inp, need, db, ip)) || (await a8(action, inp, need, db, ip)) || (await p8(action, inp, need, db, ip, req)) || (await p10(action, inp, need, db, ip, req)) || (await p12(action, inp, need, db, ip)) || (await p13(action, inp, need, db, ip)); if (r) return r;
+        const r = (await p18e(action, inp, need, db, ip)) || (await pbk(action, inp, need, db, ip)) || (await a2(action, inp, need, db, ip)) || (await a17(action, inp, need, db, ip)) || (await a4(action, inp, need, db, ip)) || a5(action, inp, need, db, ip) || (await a6(action, inp, need, db, ip)) || (await a7(action, inp, need, db, ip)) || (await a8(action, inp, need, db, ip)) || (await p8(action, inp, need, db, ip, req)) || (await p10(action, inp, need, db, ip, req)) || (await p12(action, inp, need, db, ip)) || (await p13(action, inp, need, db, ip)); if (r) return r;
         throw new Fail("Unknown action", 404);
       }
     }
