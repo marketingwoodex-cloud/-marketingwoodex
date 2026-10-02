@@ -5,7 +5,10 @@ Source: owner review, 2 Oct 2026, with 12 reference images. The questions were s
 | # | Module | Status |
 |---|---|---|
 | A | Quotations, invoices and PDF | ✅ **Built** (`a1229f9`) |
-| B | Header/footer builder and mega-menu fix | Next |
+| A2 | Login button fix + design system (buttons, forms, tables: sort, Show N entries) | ✅ **Built** |
+| A3 | Billing pages: Invoices list (status tabs + totals cards), Single invoice view, Create invoice form, **Transactions** + single receipt (ref TailAdmin) | Next |
+| A4 | Profile and account: avatar, details, socials, address, password, 2-step, sessions, notifications (refs 3 and 5) | |
+| B | Header/footer builder and mega-menu fix | |
 | C | Media library 2 | |
 | D | Live chat, dashboard chat pop-up and alerts | |
 | E | Content: estimator and forms tabs, AI agent tone | |
@@ -24,6 +27,13 @@ Source: owner review, 2 Oct 2026, with 12 reference images. The questions were s
   - Quotation email default: woodexinterior.pk@gmail.com. If an older email was saved before, check **Settings → Quotation**.
 - **No browser header** ("10/2/26 … Page 3 of 3"): print margins are set to zero, and our own spacing repeats on every page.
 - **Download PDF** button: a real file named by serial number, e.g. `WI-10101-V2-Quotation.pdf`, `WI-10101-Option-2-Quotation.pdf`, `WF-10050-Invoice.pdf`. Print → Save as PDF suggests the same name.
+
+## A2. Design system ✅
+- Login: the Sign in button was navy on the dark background, so it was nearly invisible. Now it is **gold with navy text** in dark mode, with a focus ring.
+- Buttons: 40px, semibold, soft shadow, gold focus ring; primary navy (gold in dark mode); ghost and solid-danger variants.
+- Tables: grey uppercase headers, row hover, **click a header to sort** (numbers, money and dates sort correctly; sort is kept when the list refreshes), and **Show 10/25/50/100 entries**, remembered per screen.
+- Forms, cards and badges unified.
+- Chat widget redesign (ref 3, Messages-style): moved into module D.
 
 ## B. Header/footer builder + mega menu
 - Fix: mega-menu text is white on a white background, and there was no way to change it. Add mega-menu colour controls (background, text, hover, columns).
