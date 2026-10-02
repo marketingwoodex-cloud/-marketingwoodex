@@ -1476,7 +1476,20 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
   const chatCfg = () => Object.assign({}, CHAT_DEF, jr(CHATF, {}));
   const ensureChat = (db) => { db.chats = db.chats || []; db.chatMsgs = db.chatMsgs || []; db.seqCh = db.seqCh || 0; db.seqCm = db.seqCm || 0; };
   const chatOpenNow = () => { const d = new Date(Date.now() + 5 * 36e5), w = d.getUTCDay(), m = d.getUTCHours() * 60 + d.getUTCMinutes(); return w !== 0 && m >= 600 && m < 1170; };
-  const chatAdd = (db, c, who, name, text) => { const m = { id: ++db.seqCm, chat_id: c.id, t: now(), who, name: String(name || "").slice(0, 120), text: String(text).slice(0, 4000) }; db.chatMsgs.push(m); c.updated_at = now(); c.last_text = ((who === "visitor" ? "" : who === "agent" ? "You: " : "AI: ") + text).slice(0, 250); if (who === "visitor") c.unread = (c.unread || 0) + 1; return m.id; };
+  const chatAdd = (db, c, who, name, text, att = null) => { const m = { id: ++db.seqCm, chat_id: c.id, t: now(), who, name: String(name || "").slice(0, 120), text: String(text).slice(0, 4000), att }; db.chatMsgs.push(m); c.updated_at = now(); c.last_text = ((who === "visitor" ? "" : who === "agent" ? "You: " : "AI: ") + text).slice(0, 250); if (who === "visitor") c.unread = (c.unread || 0) + 1; return m.id; };
+  /* P18 D: attachments + typing (mirrors chat-lib.php chat_save_att) */
+  const chatSniff = (b) => { const h = (n) => b.slice(0, n).toString("latin1"); if (b[0] === 0xff && b[1] === 0xd8) return ["jpg", "img"]; if (b[0] === 0x89 && h(4).slice(1) === "PNG") return ["png", "img"]; if (h(4) === "RIFF" && b.slice(8, 12).toString() === "WEBP") return ["webp", "img"]; if (h(4) === "GIF8") return ["gif", "img"]; if (h(5) === "%PDF-") return ["pdf", "file"]; if (b[0] === 0x1a && b[1] === 0x45 && b[2] === 0xdf && b[3] === 0xa3) return ["webm", "voice"]; if (h(4) === "OggS") return ["ogg", "voice"]; if (b.slice(4, 8).toString() === "ftyp") return ["m4a", "voice"]; return null; };
+  const chatSaveAtt = (b64, name, voice) => {
+    const d = Buffer.from(String(b64 || ""), "base64"); if (!d.length) throw new Fail("The file is empty"); if (d.length > 8 * 1024 * 1024) throw new Fail("Files must be 8 MB or smaller");
+    const t = chatSniff(d); if (!t) throw new Fail("Only photos (JPG, PNG, WebP, GIF), PDF files and voice notes can be sent");
+    if (t[1] === "voice" && !voice) throw new Fail("Only photos and PDF files can be attached"); if (voice && t[1] !== "voice") throw new Fail("Voice note format not recognised");
+    const dir = "/assets/uploads/chat/" + new Date().toISOString().slice(0, 7).replace("-", ""); fs.mkdirSync(path.join(ROOT, dir), { recursive: true });
+    const f = dir + "/" + crypto.randomBytes(12).toString("hex") + "." + t[0]; fs.writeFileSync(path.join(ROOT, f), d);
+    const n = String(name || "").replace(/[^\w .()-]+/gu, "").trim() || (t[1] === "voice" ? "Voice note" : "file." + t[0]);
+    return { u: f, n: n.slice(0, 80), k: t[1], s: d.length };
+  };
+  const chatAttText = (a) => a.k === "voice" ? "🎤 Voice note" : a.k === "img" ? "📷 Photo" : "📎 " + a.n;
+  const recent = (t) => !!t && Date.now() - t < 6000;
   const chatMsgs = (db, cid, since = 0) => db.chatMsgs.filter((m) => m.chat_id === cid && m.id > since).map(({ chat_id, ...m }) => m);
   const chatPub = (c) => ({ channel: c.channel || "web", id: c.id, created_at: c.created_at, updated_at: c.updated_at, name: c.name || "", phone: c.phone || "", email: c.email || "", page: c.page || "", status: c.status, mode: c.mode, agent: c.agent_name || "", unread: c.unread || 0, needs: !!c.needs, last: c.last_text || "", lead_id: c.lead_id || null });
   const chatMakeLead = (db, c) => { ensureCrm(db); const l = { id: ++db.seqL, created_at: now(), source: "chat", page: c.page, name: c.name || "Chat visitor #" + c.id, phone: c.phone || "", email: c.email || "", service: "", message: chatMsgs(db, c.id).filter((m) => m.who === "visitor").map((m) => "• " + m.text).join("\n").slice(0, 3900), fields: { chat: c.id }, stage: "new", read: false, notes: [], tags: [], value: 0, assigned_to: null, client_id: null, followup: "" }; db.leads.push(l); c.lead_id = l.id; };
@@ -1494,8 +1507,10 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
     if (act === "cfg") return { ok: true, on: !!cfg.on, greeting: cfg.greeting, hours: cfg.hours, open: chatOpenNow(), ai: !!cfg.ai };
     if (!cfg.on) throw new Fail("Chat is offline", 403);
     const vchat = () => { const c = db.chats.find((x) => x.id === +inp.chat_id); if (!c || !/^[a-f0-9]{40}$/.test(String(inp.token || "")) || c.token !== sha(inp.token)) throw new Fail("Chat not found", 404); return c; };
-    const vpub = (c, since) => ({ ok: true, chat_id: c.id, mode: c.mode, agent: c.agent_name || "", status: c.status, messages: chatMsgs(db, c.id, since) });
+    const vpub = (c, since) => ({ ok: true, chat_id: c.id, mode: c.mode, agent: c.agent_name || "", status: c.status, messages: chatMsgs(db, c.id, since), typing: recent(c.atype) });
     if (act === "poll") return vpub(vchat(), +inp.since || 0);
+    if (act === "typing") { const c = vchat(); c.vtype = Date.now(); save(db); return { ok: true }; }
+    if (act === "file") { const c = vchat(), att = chatSaveAtt(inp.data, inp.name, !!inp.voice); c.status = "open"; chatAdd(db, c, "visitor", c.name, chatAttText(att), att); c.needs = 1; c.vtype = 0; save(db); return vpub(c, +inp.since || 0); }
     if (act !== "send") throw new Fail("Unknown action", 404);
     const text = String(inp.text || "").trim().slice(0, 2000); if (!text) throw new Fail("Write a message");
     if (clip(inp._hp)) return { ok: true, messages: [] };
@@ -1576,7 +1591,9 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
     const get = (id) => { const c = db.chats.find((x) => x.id === +id); if (!c) throw new Fail("Chat not found", 404); return c; };
     switch (action) {
       case "chat_list": { need(SALES); const st = inp.status === "closed" ? "closed" : "open"; return { ok: true, chats: db.chats.filter((c) => c.status === st).sort((a, b) => (b.needs || 0) - (a.needs || 0) || String(b.updated_at).localeCompare(a.updated_at)).map(chatPub), cfg: { ai: chatCfg().ai, on: chatCfg().on } }; }
-      case "chat_get": { need(SALES); const c = get(inp.id); c.unread = 0; c.needs = 0; return done({ ok: true, chat: chatPub(c), messages: chatMsgs(db, c.id, +inp.since || 0) }); }
+      case "chat_get": { need(SALES); const c = get(inp.id); c.unread = 0; c.needs = 0; return done({ ok: true, chat: chatPub(c), messages: chatMsgs(db, c.id, +inp.since || 0), typing: recent(c.vtype) }); }
+      case "chat_typing": { need(SALES); const c = db.chats.find((x) => x.id === +inp.id); if (c) c.atype = Date.now(); return done({ ok: true }); }
+      case "chat_file": { const u = need(SALES), c = get(inp.id); if (c.channel === "wa") throw new Fail("Attachments work in website chats. For WhatsApp chats, send files from the WhatsApp app."); const att = chatSaveAtt(inp.data, inp.name, !!inp.voice); if (c.mode === "ai") chatAdd(db, c, "sys", "", u.name + " joined the chat"); const cap = String(inp.text || "").trim().slice(0, 500); const id = chatAdd(db, c, "agent", u.name, cap || chatAttText(att), att); Object.assign(c, { mode: "human", agent_name: u.name, status: "open", unread: 0, needs: 0, atype: 0 }); log(db, u, "chat.file", "#" + c.id + " " + att.k, ip); return done({ ok: true, id, chat: chatPub(c) }); }
       case "chat_reply": { const u = need(SALES), c = get(inp.id), t = String(inp.text || "").trim(); if (!t) throw new Fail("Write a message"); if (c.mode === "ai") chatAdd(db, c, "sys", "", u.name + " joined the chat"); const id = chatAdd(db, c, "agent", u.name, t); Object.assign(c, { mode: "human", agent_name: u.name, status: "open", unread: 0, needs: 0 }); return done({ ok: true, id, chat: chatPub(c) }); }
       case "chat_mode": { const u = need(SALES), c = get(inp.id), m = inp.mode === "ai" ? "ai" : "human"; c.mode = m; c.agent_name = m === "human" ? u.name : null; chatAdd(db, c, "sys", "", m === "human" ? u.name + " joined the chat" : "The assistant is back in this chat"); return done({ ok: true, chat: chatPub(c) }); }
       case "chat_close": { const u = need(SALES), c = get(inp.id); c.status = inp.reopen ? "open" : "closed"; c.unread = 0; c.needs = 0; log(db, u, inp.reopen ? "chat.reopen" : "chat.close", "#" + c.id, ip); return done({ ok: true, chat: chatPub(c) }); }

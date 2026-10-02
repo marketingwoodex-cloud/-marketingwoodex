@@ -73,6 +73,8 @@
       ".wx-m.sys{align-self:center;background:#fff7d6;font-size:12.5px;box-shadow:none;text-align:center}.wx-typing{align-self:flex-start;background:#fff;border-radius:10px;padding:9px 12px;font-size:13px;color:#667781}",
       ".wx-ch-form{display:flex;gap:8px;padding:8px 10px;background:#f0f2f5;align-items:flex-end;margin:0}.wx-ch-form textarea{flex:1;border:0;border-radius:20px;padding:10px 14px;font:inherit;font-size:14px;resize:none;max-height:110px;outline:none;background:#fff;color:#0c1628}",
       ".wx-ch-form button{width:42px;height:42px;border-radius:50%!important;border:0!important;background:#075e54!important;display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none;padding:0!important;min-width:0!important}.wx-ch-form button svg{width:18px;height:18px;fill:#fff}",
+      ".wx-ch-form button.wx-ch-x{width:36px;height:42px;background:transparent!important;border-radius:10px!important}.wx-ch-form button.wx-ch-x svg{fill:none;stroke:#54656f;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;width:21px;height:21px}.wx-ch-form button.wx-ch-x.rec{background:#e11d48!important;width:auto;padding:0 10px!important;color:#fff;font:600 12px/1 inherit}.wx-ch-form button.wx-ch-x.rec svg{display:none}",
+      ".wx-m img{display:block;max-width:200px;max-height:200px;border-radius:8px;margin-top:2px}.wx-m audio{display:block;width:210px;max-width:100%;height:36px}.wx-m a.wx-f{color:inherit;font-weight:600}.wx-ch-ty{font-size:12px;color:#667781;font-style:italic;padding:2px 12px;min-height:18px;background:#efeae2}",
       ".wx-wa-foot{padding:8px 14px 12px;background:#efeae2;font-size:11px;color:#667781;text-align:center}"
     ].join("\n");
     document.head.appendChild(el("style", null, css));
@@ -89,7 +91,7 @@
       '<div class="v-home"><div class="wx-wa-body"><div class="wx-wa-msg">Hi! 👋 How would you like to talk to us?</div>' +
       '<button type="button" class="wx-opt" data-go="chat"><span class="ic ch">💬</span><span><b>Chat now</b><small>Instant answers here on the website</small></span></button>' +
       '<button type="button" class="wx-opt" data-go="wa"><span class="ic">' + waGlyph + '</span><span><b>WhatsApp</b><small>Continue in the WhatsApp app</small></span></button></div></div>' +
-      '<div class="v-chat" hidden><div class="wx-ch-list" aria-live="polite"></div><form class="wx-ch-form"><input class="wx-wa-hp" name="hp" tabindex="-1" autocomplete="off" aria-hidden="true"><textarea rows="1" maxlength="2000" placeholder="Type your message…" aria-label="Message"></textarea><button type="submit" aria-label="Send">' + sendGlyph + '</button></form></div>' +
+      '<div class="v-chat" hidden><div class="wx-ch-list" aria-live="polite"></div><div class="wx-ch-ty" aria-live="polite"></div><form class="wx-ch-form"><input class="wx-wa-hp" name="hp" tabindex="-1" autocomplete="off" aria-hidden="true"><button type="button" class="wx-ch-x" data-x="file" aria-label="Send a photo or PDF" title="Send a photo or PDF"><svg viewBox="0 0 24 24"><path d="m16 6-8.414 8.586a2 2 0 0 0 2.829 2.829l8.414-8.586a4 4 0 1 0-5.657-5.657l-8.379 8.551a6 6 0 1 0 8.485 8.485l8.379-8.551"/></svg></button><input type="file" class="wx-ch-fi" accept="image/jpeg,image/png,image/webp,application/pdf" hidden><textarea rows="1" maxlength="2000" placeholder="Type your message…" aria-label="Message"></textarea><button type="button" class="wx-ch-x" data-x="rec" aria-label="Record a voice note" title="Record a voice note"><svg viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><path d="M12 19v3"/></svg></button><button type="submit" aria-label="Send">' + sendGlyph + '</button></form></div>' +
       '<div class="v-wa" hidden><div class="wx-wa-body"><div class="wx-wa-msg">' + esc(greet) + '</div>' +
       '<span class="wx-wa-lbl">Service</span><div class="wx-wa-chips" data-g="svc">' + SERVICES.map(function (s) { return '<button type="button" class="wx-wa-chip' + (s[0] === pageSvc ? " on" : "") + '" data-v="' + esc(s[0]) + '">' + esc(s[0]) + "</button>"; }).join("") + "</div>" +
       '<span class="wx-wa-lbl">I would like to</span><div class="wx-wa-chips" data-g="int">' + INTENTS.map(function (x, i) { return '<button type="button" class="wx-wa-chip' + (i === 0 ? " on" : "") + '" data-v="' + i + '">' + esc(x[0]) + "</button>"; }).join("") + "</div>" +
@@ -134,11 +136,13 @@
       msgs.forEach(function (m) {
         if (m.id && m.id <= CH.last) return; if (m.id) CH.last = m.id;
         var d = el("div", "wx-m " + (m.who === "visitor" ? "me" : m.who === "sys" ? "sys" : "them"));
-        d.innerHTML = (m.who === "agent" ? "<small>" + esc(m.name || "Woodex team") + "</small>" : "") + esc(m.text); L.appendChild(d);
+        var a = m.att && /^\/assets\/uploads\/chat\//.test(m.att.u) ? m.att : null, au = a ? esc(a.u) : "";
+        var at = a ? (a.k === "img" ? '<a href="' + au + '" target="_blank" rel="noopener"><img src="' + au + '" alt="Photo"></a>' : a.k === "voice" ? '<audio controls preload="metadata" src="' + au + '"></audio>' : '<a class="wx-f" href="' + au + '" target="_blank" rel="noopener">📄 ' + esc(a.n || "File") + "</a>") : "";
+        d.innerHTML = (m.who === "agent" ? "<small>" + esc(m.name || "Woodex team") + "</small>" : "") + (a && /^(🎤 Voice note|📷 Photo|📎 .*)$/.test(m.text) ? "" : esc(m.text)) + at; L.appendChild(d);
       });
       L.scrollTop = L.scrollHeight;
     }
-    function poll() { if (!CH.id || CH.busy) return; chatApi({ action: "poll", chat_id: CH.id, token: CH.tok, since: CH.last }).then(function (r) { if (r.ok) { if (r.messages.length) { var fresh = r.messages.filter(function (m) { return m.id > CH.last && m.who !== "visitor"; }).length; draw(r.messages, !CH.last); if (fresh && (!panel.classList.contains("open") || view !== "chat")) dotOn(); } } else if (r.error === "Chat not found") { CH.id = 0; CH.tok = ""; CH.last = 0; localStorage.removeItem("wxChat"); } }).catch(function () {}); }
+    function poll() { if (!CH.id || CH.busy) return; chatApi({ action: "poll", chat_id: CH.id, token: CH.tok, since: CH.last }).then(function (r) { if (r.ok) { var tyEl = $(".wx-ch-ty"); if (tyEl) tyEl.textContent = r.typing ? "Woodex team is typing…" : ""; if (r.messages.length) { var fresh = r.messages.filter(function (m) { return m.id > CH.last && m.who !== "visitor"; }).length; draw(r.messages, !CH.last); if (fresh && (!panel.classList.contains("open") || view !== "chat")) dotOn(); } } else if (r.error === "Chat not found") { CH.id = 0; CH.tok = ""; CH.last = 0; localStorage.removeItem("wxChat"); } }).catch(function () {}); }
     function startPoll() { clearInterval(CH.timer); if (!CH.id) return; CH.timer = setInterval(poll, panel.classList.contains("open") && view === "chat" ? 3000 : 15000); }
     function dotOn() { if (!btn.querySelector(".wx-wa-dot")) btn.insertAdjacentHTML("beforeend", '<span class="wx-wa-dot" aria-hidden="true"></span>'); }
     panel.querySelector(".v-home").addEventListener("click", function (e) { var b = e.target.closest("[data-go]"); if (b) show(b.dataset.go); });
@@ -146,6 +150,35 @@
     var ta = $(".wx-ch-form textarea");
     ta.addEventListener("input", function () { ta.style.height = "auto"; ta.style.height = Math.min(110, ta.scrollHeight) + "px"; });
     ta.addEventListener("keydown", function (e) { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); $(".wx-ch-form").requestSubmit ? $(".wx-ch-form").requestSubmit() : $(".wx-ch-form button").click(); } });
+    // P18 D: typing status + photo / PDF / voice note (after the first message, when the chat exists)
+    var lastTy = 0; ta.addEventListener("input", function () { if (CH.id && Date.now() - lastTy > 3000) { lastTy = Date.now(); chatApi({ action: "typing", chat_id: CH.id, token: CH.tok }).catch(function () {}); } });
+    function sys(t) { var L = $(".wx-ch-list"), d = el("div", "wx-m sys"); d.textContent = t; L.appendChild(d); L.scrollTop = L.scrollHeight; }
+    function sendFile(blob, name, voice) {
+      if (!CH.id) return sys("Please type a short message first, then you can send photos or voice notes.");
+      if (blob.size > 8 * 1024 * 1024) return sys("Files must be 8 MB or smaller.");
+      var L = $(".wx-ch-list"), w = el("div", "wx-m me"); w.textContent = voice ? "Sending voice note…" : "Sending " + name + "…"; L.appendChild(w); L.scrollTop = L.scrollHeight;
+      var fr = new FileReader(); fr.onload = function () {
+        chatApi({ action: "file", chat_id: CH.id, token: CH.tok, data: String(fr.result).split(",")[1], name: name, voice: voice ? 1 : 0, since: CH.last }).then(function (r) { w.remove(); if (!r.ok) return sys(r.error || "Could not send the file."); draw(r.messages); startPoll(); }).catch(function () { w.remove(); sys("Connection problem. Please try again."); });
+      }; fr.readAsDataURL(blob);
+    }
+    var fi = $(".wx-ch-fi"), rec = null;
+    fi.addEventListener("change", function () { var f = fi.files[0]; fi.value = ""; if (f) sendFile(f, f.name, false); });
+    $(".wx-ch-form").addEventListener("click", function (e) {
+      var b = e.target.closest(".wx-ch-x"); if (!b) return; e.preventDefault();
+      if (b.dataset.x === "file") return fi.click();
+      if (rec) return rec.stop();
+      if (!CH.id) return sys("Please type a short message first, then you can send photos or voice notes.");
+      if (!navigator.mediaDevices || !window.MediaRecorder) return sys("Voice notes are not supported in this browser.");
+      navigator.mediaDevices.getUserMedia({ audio: true }).then(function (st) {
+        var ty = ["audio/webm;codecs=opus", "audio/webm", "audio/ogg;codecs=opus", "audio/mp4"].filter(function (x) { return MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(x); })[0] || "";
+        var mr = new MediaRecorder(st, ty ? { mimeType: ty } : {}), parts = [], t0 = Date.now(), tk; rec = mr; b.classList.add("rec");
+        var lab = function () { var s = Math.round((Date.now() - t0) / 1000); b.lastChild.nodeType === 3 ? (b.lastChild.textContent = "● " + s + "s Stop") : b.appendChild(document.createTextNode("● " + s + "s Stop")); if (s >= 120) mr.stop(); }; lab(); tk = setInterval(lab, 500);
+        mr.ondataavailable = function (ev) { if (ev.data && ev.data.size) parts.push(ev.data); };
+        mr.onstop = function () { clearInterval(tk); rec = null; st.getTracks().forEach(function (x) { x.stop(); }); b.classList.remove("rec"); if (b.lastChild.nodeType === 3) b.removeChild(b.lastChild);
+          var bl = new Blob(parts, { type: (mr.mimeType || "audio/webm").split(";")[0] }); if (Date.now() - t0 < 700 || !bl.size) return; sendFile(bl, "Voice note", true); };
+        mr.start(250);
+      }).catch(function () { sys("Microphone permission was blocked."); });
+    });
     $(".wx-ch-form").addEventListener("submit", function (e) {
       e.preventDefault(); var t = ta.value.trim(); if (!t || CH.busy) return; ta.value = ""; ta.style.height = "auto";
       var L = $(".wx-ch-list"), mine = el("div", "wx-m me"); mine.textContent = t; L.appendChild(mine); L.insertAdjacentHTML("beforeend", '<div class="wx-typing">typing…</div>'); L.scrollTop = L.scrollHeight;

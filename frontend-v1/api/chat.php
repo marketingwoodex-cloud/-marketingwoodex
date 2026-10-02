@@ -24,7 +24,7 @@ function vchat(array $in): array {
     if (!$c || !hash_equals($c['token'], hash('sha256', $t))) fail('Chat not found', 404);
     return $c;
 }
-function vpub(array $c, int $since): array { return ['ok' => true, 'chat_id' => (int)$c['id'], 'mode' => $c['mode'], 'agent' => (string)$c['agent_name'], 'status' => $c['status'], 'messages' => chat_msgs((int)$c['id'], $since)]; }
+function vpub(array $c, int $since): array { return ['ok' => true, 'chat_id' => (int)$c['id'], 'mode' => $c['mode'], 'agent' => (string)$c['agent_name'], 'status' => $c['status'], 'messages' => chat_msgs((int)$c['id'], $since), 'typing' => chat_recent($c['atype'] ?? null)]; }
 function vlimit(int $max, int $win): void { // per-IP message limit (wx_throttle, key "c|ip")
     $k = 'c|' . substr(ip(), 0, 60); $r = q('SELECT n,t FROM wx_throttle WHERE ip=?', [$k])->fetch();
     $n = ($r && time() - (int)$r['t'] < $win) ? (int)$r['n'] + 1 : 1; if ($n > $max) fail('You are sending messages too fast. Please wait a few minutes.', 429);
@@ -34,6 +34,15 @@ function vlimit(int $max, int $win): void { // per-IP message limit (wx_throttle
 switch ($act) {
     case 'poll':
         $c = vchat($in); out(vpub($c, (int)($in['since'] ?? 0)));
+    case 'typing': // P18 D
+        $c = vchat($in); q('UPDATE wx_chats SET vtype=? WHERE id=?', [now(), $c['id']]); out(['ok' => true]);
+    case 'file': // P18 D: photo / PDF / voice note from the visitor (chat must already exist)
+        $c = vchat($in); vlimit(40, 900);
+        $att = chat_save_att((string)($in['data'] ?? ''), (string)($in['name'] ?? ''), !empty($in['voice']));
+        if ($c['status'] === 'closed') q("UPDATE wx_chats SET status='open' WHERE id=?", [$c['id']]);
+        chat_add((int)$c['id'], 'visitor', (string)$c['name'], chat_att_text($att), $att);
+        q('UPDATE wx_chats SET needs=1, vtype=NULL WHERE id=?', [$c['id']]);
+        $c = q('SELECT * FROM wx_chats WHERE id=?', [$c['id']])->fetch(); out(vpub($c, (int)($in['since'] ?? 0)));
     case 'send':
         $text = trim(mb_substr((string)($in['text'] ?? ''), 0, 2000)); if ($text === '') fail('Write a message');
         if (clip($in['_hp'] ?? '') !== '') out(['ok' => true, 'messages' => []]);

@@ -31,13 +31,15 @@ function chat_migrate(): void {
         needs TINYINT NOT NULL DEFAULT 0, last_text VARCHAR(255) NULL, lead_id INT NULL, alerted TINYINT NOT NULL DEFAULT 0, INDEX(updated_at))' . $e);
     try { q("ALTER TABLE wx_chats ADD COLUMN channel VARCHAR(8) NOT NULL DEFAULT 'web'"); } catch (Throwable $x) { /* already there */ }
     q('CREATE TABLE IF NOT EXISTS wx_chat_msgs (id INT AUTO_INCREMENT PRIMARY KEY, chat_id INT NOT NULL, t DATETIME NOT NULL, who VARCHAR(8) NOT NULL, name VARCHAR(120) NULL, text TEXT NOT NULL, INDEX(chat_id, id))' . $e);
+    // P18 D: attachments (JSON {u,n,k,s}) + typing status
+    foreach (["ALTER TABLE wx_chat_msgs ADD COLUMN att TEXT NULL", "ALTER TABLE wx_chats ADD COLUMN vtype DATETIME NULL", "ALTER TABLE wx_chats ADD COLUMN atype DATETIME NULL"] as $sql) { try { q($sql); } catch (Throwable $x) { /* already there */ } }
 }
 function chat_get(int $id): array { $c = q('SELECT * FROM wx_chats WHERE id=?', [$id])->fetch(); if (!$c) fail('Chat not found', 404); return $c; }
 function chat_msgs(int $cid, int $since = 0): array {
-    return array_map(fn($m) => ['id' => (int)$m['id'], 't' => $m['t'], 'who' => $m['who'], 'name' => (string)$m['name'], 'text' => $m['text']], q('SELECT * FROM wx_chat_msgs WHERE chat_id=? AND id>? ORDER BY id LIMIT 300', [$cid, $since])->fetchAll());
+    return array_map(fn($m) => ['id' => (int)$m['id'], 't' => $m['t'], 'who' => $m['who'], 'name' => (string)$m['name'], 'text' => $m['text'], 'att' => !empty($m['att']) ? json_decode((string)$m['att'], true) : null], q('SELECT * FROM wx_chat_msgs WHERE chat_id=? AND id>? ORDER BY id LIMIT 300', [$cid, $since])->fetchAll());
 }
-function chat_add(int $cid, string $who, string $name, string $text): int {
-    q('INSERT INTO wx_chat_msgs (chat_id,t,who,name,text) VALUES (?,?,?,?,?)', [$cid, now(), $who, mb_substr($name, 0, 120), mb_substr($text, 0, 4000)]); $mid = (int)db()->lastInsertId();
+function chat_add(int $cid, string $who, string $name, string $text, ?array $att = null): int {
+    q('INSERT INTO wx_chat_msgs (chat_id,t,who,name,text,att) VALUES (?,?,?,?,?,?)', [$cid, now(), $who, mb_substr($name, 0, 120), mb_substr($text, 0, 4000), $att ? json_encode($att, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) : null]); $mid = (int)db()->lastInsertId();
     q('UPDATE wx_chats SET updated_at=?, last_text=?' . ($who === 'visitor' ? ', unread=unread+1' : '') . ' WHERE id=?', [now(), mb_substr(($who === 'visitor' ? '' : ($who === 'agent' ? 'You: ' : 'AI: ')) . $text, 0, 250), $cid]);
     return $mid;
 }
@@ -45,6 +47,28 @@ function chat_pub(array $c): array {
     return ['id' => (int)$c['id'], 'created_at' => $c['created_at'], 'updated_at' => $c['updated_at'], 'name' => (string)$c['name'], 'phone' => (string)$c['phone'], 'email' => (string)$c['email'], 'page' => (string)$c['page'],
         'status' => $c['status'], 'mode' => $c['mode'], 'agent' => (string)$c['agent_name'], 'unread' => (int)$c['unread'], 'needs' => (bool)$c['needs'], 'last' => (string)$c['last_text'], 'lead_id' => $c['lead_id'] !== null ? (int)$c['lead_id'] : null, 'channel' => (string)($c['channel'] ?? 'web')];
 }
+
+/** P18 D: store a chat attachment (image / PDF / voice note). Random file name in /assets/uploads/chat/YYYYMM/. Returns att array. */
+const CHAT_ATT_MAX = 8 * 1024 * 1024;
+function chat_sniff_att(string $b): ?array {
+    if (substr($b, 0, 3) === "\xFF\xD8\xFF") return ['jpg', 'img']; if (substr($b, 0, 8) === "\x89PNG\r\n\x1A\n") return ['png', 'img'];
+    if (substr($b, 0, 4) === 'RIFF' && substr($b, 8, 4) === 'WEBP') return ['webp', 'img']; if (substr($b, 0, 4) === 'GIF8') return ['gif', 'img'];
+    if (substr($b, 0, 5) === '%PDF-') return ['pdf', 'file'];
+    if (substr($b, 0, 4) === "\x1A\x45\xDF\xA3") return ['webm', 'voice']; if (substr($b, 0, 4) === 'OggS') return ['ogg', 'voice'];
+    if (substr($b, 4, 4) === 'ftyp') return ['m4a', 'voice'];
+    return null;
+}
+function chat_save_att(string $b64, string $name, bool $voice): array {
+    $d = base64_decode($b64, true); if ($d === false || $d === '') fail('The file is empty'); if (strlen($d) > CHAT_ATT_MAX) fail('Files must be 8 MB or smaller');
+    $t = chat_sniff_att($d); if (!$t) fail('Only photos (JPG, PNG, WebP, GIF), PDF files and voice notes can be sent');
+    if ($t[1] === 'voice' && !$voice) fail('Only photos and PDF files can be attached'); if ($voice && $t[1] !== 'voice') fail('Voice note format not recognised');
+    $dir = '/assets/uploads/chat/' . gmdate('Ym'); if (!is_dir(ROOT_DIR . $dir)) mkdir(ROOT_DIR . $dir, 0755, true);
+    $f = $dir . '/' . bin2hex(random_bytes(12)) . '.' . $t[0]; file_put_contents(ROOT_DIR . $f, $d, LOCK_EX);
+    $n = trim(preg_replace('~[^\w .()-]+~u', '', $name)) ?: ($t[1] === 'voice' ? 'Voice note' : 'file.' . $t[0]);
+    return ['u' => $f, 'n' => mb_substr($n, 0, 80), 'k' => $t[1], 's' => strlen($d)];
+}
+function chat_att_text(array $a): string { return $a['k'] === 'voice' ? '🎤 Voice note' : ($a['k'] === 'img' ? '📷 Photo' : '📎 ' . $a['n']); }
+function chat_recent(?string $t): bool { return $t && strtotime($t) >= time() - 6; }
 
 /** Pull name / phone / email out of a visitor message; save as a lead once a phone or email is known. */
 function chat_capture(array $c, string $text): array {
@@ -122,7 +146,16 @@ function chat_actions(string $action, array $in): bool {
         case 'chat_get':
             need($SALES); $c = chat_get((int)($in['id'] ?? 0)); $since = (int)($in['since'] ?? 0);
             if ((int)$c['unread'] || (int)$c['needs']) q('UPDATE wx_chats SET unread=0, needs=0 WHERE id=?', [$c['id']]);
-            out(['ok' => true, 'chat' => chat_pub($c), 'messages' => chat_msgs((int)$c['id'], $since)]);
+            out(['ok' => true, 'chat' => chat_pub($c), 'messages' => chat_msgs((int)$c['id'], $since), 'typing' => chat_recent($c['vtype'] ?? null)]);
+        case 'chat_typing':
+            need($SALES); q('UPDATE wx_chats SET atype=? WHERE id=?', [now(), (int)($in['id'] ?? 0)]); out(['ok' => true]);
+        case 'chat_file':
+            $u = need($SALES); $c = chat_get((int)($in['id'] ?? 0)); if (($c['channel'] ?? 'web') === 'wa') fail('Attachments work in website chats. For WhatsApp chats, send files from the WhatsApp app.');
+            $att = chat_save_att((string)($in['data'] ?? ''), (string)($in['name'] ?? ''), !empty($in['voice']));
+            if ($c['mode'] === 'ai') chat_add((int)$c['id'], 'sys', '', $u['name'] . ' joined the chat');
+            $cap = trim(mb_substr((string)($in['text'] ?? ''), 0, 500));
+            $mid = chat_add((int)$c['id'], 'agent', $u['name'], $cap !== '' ? $cap : chat_att_text($att), $att); q("UPDATE wx_chats SET mode='human', agent_name=?, status='open', unread=0, needs=0, atype=NULL WHERE id=?", [$u['name'], $c['id']]);
+            log_act($u, 'chat.file', '#' . $c['id'] . ' ' . $att['k']); out(['ok' => true, 'id' => $mid, 'chat' => chat_pub(chat_get((int)$c['id']))]);
         case 'chat_reply':
             $u = need($SALES); $c = chat_get((int)($in['id'] ?? 0)); $t = trim((string)($in['text'] ?? '')); if ($t === '') fail('Write a message');
             if ($c['mode'] === 'ai') chat_add((int)$c['id'], 'sys', '', $u['name'] . ' joined the chat');

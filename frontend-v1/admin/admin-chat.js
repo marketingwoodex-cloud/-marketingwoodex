@@ -34,6 +34,7 @@
   }
   function pref(k, d) { var v = localStorage.getItem("wxNt_" + k); return v === null ? d : v === "1"; }
   function drawBell(r) {
+    if (W.chatX) W.chatX.headerBtn(r);
     var n = $("#nt-n"); if (!n) return; N.total = r.total; n.hidden = !r.total; n.textContent = r.total > 99 ? "99+" : r.total;
     document.title = (r.total ? "(" + r.total + ") " : "") + N.baseTitle.replace(/^\(\d+\+?\)\s*/, "");
     var a = $('.nav-a[data-v="chat"]'); if (a) { var b = a.querySelector(".pill"); if (!r.chats) { if (b) b.remove(); } else { if (!b) { b = document.createElement("span"); b.className = "pill"; b.style.cssText = "background:#e11d48;color:#fff"; a.appendChild(b); } b.textContent = r.chats; } }
@@ -53,7 +54,7 @@
     if (!S.user || !S.token) return;
     api("notif_poll").then(function (r) {
       if (!r || !r.ok) return; drawBell(r);
-      if (N.stamp !== null && r.stamp !== N.stamp && +r.stamp > +N.stamp && r.total) { notify(r); if (location.hash.indexOf("#/chat") === 0 && W._chatRefresh) W._chatRefresh(); }
+      if (N.stamp !== null && r.stamp !== N.stamp && +r.stamp > +N.stamp && r.total) { notify(r); if (W.chatX) W.chatX.onNotify(r); if (location.hash.indexOf("#/chat") === 0 && W._chatRefresh) W._chatRefresh(); }
       N.stamp = r.stamp;
     });
   }
@@ -61,9 +62,11 @@
     var perm = "Notification" in window ? Notification.permission : "unsupported";
     W.modal("<h3>Alert settings</h3><p class='muted' style='font-size:13px'>Alerts for new live chats and new enquiries while Woodex Admin is open (also in a background tab). Email alerts for new chats use the email set in Settings → Integrations.</p>" +
       "<label class='check'><input type='checkbox' id='ns-sound'" + (pref("sound", true) ? " checked" : "") + "> Play a sound</label>" +
+      "<label class='check'><input type='checkbox' id='ns-pop'" + (pref("popup", true) ? " checked" : "") + "> Pop up the chat window when a client writes</label>" +
       "<label class='check'><input type='checkbox' id='ns-push'" + (pref("push", true) ? " checked" : "") + "> Browser / phone notifications when Admin is in the background</label>" +
       "<p style='font-size:13px'>Browser permission: <b>" + ({ granted: "allowed ✓", denied: "blocked (allow it in the browser's site settings)", default: "not asked yet", unsupported: "not supported in this browser" })[perm] + "</b></p>" +
       "<div class='modal-actions'><button class='btn' id='ns-test'>" + ic("bell") + "Test</button>" + (perm === "default" ? "<button class='btn' id='ns-ask'>Allow notifications</button>" : "") + "<button class='btn pri' id='ns-ok'>Done</button></div>");
+    $("#ns-pop").onchange = function () { localStorage.setItem("wxNt_popup", this.checked ? "1" : "0"); };
     $("#ns-sound").onchange = function () { localStorage.setItem("wxNt_sound", this.checked ? "1" : "0"); };
     $("#ns-push").onchange = function () { localStorage.setItem("wxNt_push", this.checked ? "1" : "0"); if (this.checked && "Notification" in window && Notification.permission === "default") Notification.requestPermission(); };
     if ($("#ns-ask")) $("#ns-ask").onclick = function () { Notification.requestPermission().then(function () { settingsModal(); }); };
@@ -102,7 +105,7 @@
     function open(id) {
       cur = id; last = 0; chat = null; $(".lc", el).classList.toggle("has", !!id); if (!id) return;
       $$(".lc-it", el).forEach(function (a) { a.classList.toggle("on", a.getAttribute("href") === "#/chat/" + id); });
-      $("#lc-r").innerHTML = '<div class="lc-top" id="lc-top"></div><div class="lc-info" id="lc-info"></div><div class="lc-msgs" id="lc-msgs"></div><form class="lc-in" id="lc-in"><textarea placeholder="Type a reply… (Enter to send, Shift+Enter for a new line)" rows="1"></textarea><button class="btn pri">' + ic("send") + "Send</button></form>";
+      $("#lc-r").innerHTML = '<div class="lc-top" id="lc-top"></div><div class="lc-info" id="lc-info"></div><div class="lc-msgs" id="lc-msgs"></div><div class="cx-typing" id="lc-ty"></div><form class="lc-in" id="lc-in"><textarea placeholder="Type a reply… (Enter to send, Shift+Enter for a new line)" rows="1"></textarea><button class="btn pri">' + ic("send") + "Send</button></form>";
       W.fillIcons($("#lc-r"));
       var ta = $("#lc-in textarea");
       ta.addEventListener("keydown", function (e) { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); $("#lc-in").requestSubmit(); } });
@@ -110,6 +113,7 @@
         e.preventDefault(); var t = ta.value.trim(); if (!t) return; ta.value = ""; ta.disabled = true;
         api("chat_reply", { id: cur, text: t }).then(function (r) { ta.disabled = false; ta.focus(); if (!r.ok) { ta.value = t; return toast(r.error, true); } load(); list(); });
       };
+      if (W.chatX) W.chatX.composer($("#lc-in"), function () { return cur; }, function () { load(); list(); });
       load(true);
     }
     function top() {
@@ -138,8 +142,9 @@
         var changed = !chat || chat.mode !== r.chat.mode || chat.status !== r.chat.status || chat.phone !== r.chat.phone || chat.lead_id !== r.chat.lead_id || chat.name !== r.chat.name;
         chat = r.chat; if (changed) top();
         var M = $("#lc-msgs"), atEnd = M.scrollHeight - M.scrollTop - M.clientHeight < 60;
-        r.messages.forEach(function (m) { if (m.id <= last) return; last = m.id; var d = document.createElement("div"); d.className = "lm " + ({ visitor: "v", ai: "a", agent: "g", sys: "s" })[m.who]; d.innerHTML = (m.who !== "sys" ? "<small>" + esc(m.who === "visitor" ? (chat.name || "Visitor") : m.who === "ai" ? "AI assistant" : m.name) + " · " + esc(String(m.t).slice(11, 16)) + "</small>" : "") + esc(m.text); M.appendChild(d); });
+        r.messages.forEach(function (m) { if (m.id <= last) return; last = m.id; var d = document.createElement("div"); d.className = "lm " + ({ visitor: "v", ai: "a", agent: "g", sys: "s" })[m.who]; d.innerHTML = (m.who !== "sys" ? "<small>" + esc(m.who === "visitor" ? (chat.name || "Visitor") : m.who === "ai" ? "AI assistant" : m.name) + " · " + esc(String(m.t).slice(11, 16)) + "</small>" : "") + (W.chatX ? W.chatX.body(m) : esc(m.text)); M.appendChild(d); });
         if (first || atEnd) M.scrollTop = M.scrollHeight;
+        if ($("#lc-ty")) $("#lc-ty").textContent = r.typing ? (chat.name || "Visitor") + " is typing…" : "";
         if (first) { list(); setTimeout(pollN, 300); }
       });
     }

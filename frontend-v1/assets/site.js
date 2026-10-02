@@ -300,7 +300,7 @@
 (function () {
   if (location.pathname.indexOf("/admin") === 0) return;
   var s = document.createElement("script");
-  s.src = "/assets/js/whatsapp-widget.js";
+  s.src = "/assets/js/whatsapp-widget.js?v=p18d";
   s.defer = true;
   document.head.appendChild(s);
 })();
