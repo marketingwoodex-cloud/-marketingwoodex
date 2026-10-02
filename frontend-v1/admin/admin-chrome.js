@@ -16,7 +16,8 @@
   // ------------------------------------------------------------------ P17 C3: design (colours, layout presets, logo size, phone, behaviour)
   var DDEF = { hStyle: "pill", hBg: "#ffffff", hAlpha: 76, hText: "#0c1628", hAccent: "#0c1628", hAccentText: "#ffffff", ctaStyle: "solid", ctaShow: true,
     hHeight: 68, logo: 42, logoTone: "dark", word: true, behave: "hide", menuAlign: "center", phone: "", phoneShow: false,
-    fBg: "#0c1628", fText: "#ffffff", fHead: "#ffffff", fLink: "#b8956a", fLine: false, fPad: "normal", fWord: true };
+    fBg: "#0c1628", fText: "#ffffff", fHead: "#ffffff", fLink: "#b8956a", fLine: false, fPad: "normal", fWord: true,
+    mStyle: "auto", mBg: "#ffffff", mText: "#0c1628", mAccent: "#b8956a" }; /* P18 B: mega menu colours */
   var DPRESETS = {
     "Woodex glass (current)": {},
     "Navy bar": { hStyle: "bar", hBg: "#0c1628", hAlpha: 100, hText: "#ffffff", hAccent: "#b8956a", hAccentText: "#0c1628", logoTone: "light", behave: "sticky", hHeight: 72 },
@@ -24,15 +25,32 @@
     "Minimal white": { hStyle: "bar", hBg: "#ffffff", hAlpha: 100, ctaStyle: "outline", behave: "sticky", menuAlign: "right", fBg: "#ffffff", fText: "#0c1628", fHead: "#0c1628", fLink: "#b8956a", fLine: true, fPad: "compact", fWord: false },
     "Luxury dark + gold": { hStyle: "pill", hBg: "#0c1628", hAlpha: 88, hText: "#ffffff", hAccent: "#b8956a", hAccentText: "#0c1628", logoTone: "light", fBg: "#0a1120", fLink: "#d8b98a", fLine: true }
   };
-  var dfix = function (G) { var o = {}; for (var k in DDEF) o[k] = G && G[k] != null && typeof G[k] === typeof DDEF[k] ? G[k] : DDEF[k]; o.hAlpha = Math.max(30, Math.min(100, +o.hAlpha || 76)); o.hHeight = Math.max(52, Math.min(96, +o.hHeight || 68)); o.logo = Math.max(24, Math.min(90, +o.logo || 42)); ["hBg", "hText", "hAccent", "hAccentText", "fBg", "fText", "fHead", "fLink"].forEach(function (k) { if (!/^#[0-9a-f]{6}$/i.test(o[k])) o[k] = DDEF[k]; }); o.phone = String(o.phone).replace(/[^\d+ ()-]/g, "").slice(0, 24); return o; };
+  var dfix = function (G) { var o = {}; for (var k in DDEF) o[k] = G && G[k] != null && typeof G[k] === typeof DDEF[k] ? G[k] : DDEF[k]; o.hAlpha = Math.max(30, Math.min(100, +o.hAlpha || 76)); o.hHeight = Math.max(52, Math.min(96, +o.hHeight || 68)); o.logo = Math.max(24, Math.min(90, +o.logo || 42)); ["hBg", "hText", "hAccent", "hAccentText", "fBg", "fText", "fHead", "fLink", "mBg", "mText", "mAccent"].forEach(function (k) { if (!/^#[0-9a-f]{6}$/i.test(o[k])) o[k] = DDEF[k]; }); o.phone = String(o.phone).replace(/[^\d+ ()-]/g, "").slice(0, 24); return o; };
   var rgba = function (hex, a) { var n = parseInt(hex.slice(1), 16); return "rgba(" + (n >> 16) + "," + (n >> 8 & 255) + "," + (n & 255) + "," + (a / 100) + ")"; };
+  var lumOf = function (hex) { var n = parseInt(hex.slice(1), 16), f = function (v) { v /= 255; return v <= .03928 ? v / 12.92 : Math.pow((v + .055) / 1.055, 2.4); }; return .2126 * f(n >> 16) + .7152 * f(n >> 8 & 255) + .0722 * f(n & 255); };
+  var contrast = function (a, b) { var x = lumOf(a), y = lumOf(b); return (Math.max(x, y) + .05) / (Math.min(x, y) + .05); };
+  var autoText = function (bg) { return contrast("#0c1628", bg) >= contrast("#ffffff", bg) ? "#0c1628" : "#ffffff"; };
+  /** mega panel colours: auto = follow header background (if changed) with auto text; light/dark presets; custom = owner's choice */
+  function megaColors(G) {
+    var st = G.mStyle || "auto", bg, text, a = G.hAlpha;
+    if (st === "light") { bg = "#ffffff"; text = "#0c1628"; a = 100; }
+    else if (st === "dark") { bg = "#0c1628"; text = "#ffffff"; a = 100; }
+    else if (st === "custom") { bg = G.mBg; text = G.mText; a = 100; }
+    else { bg = G.hBg !== DDEF.hBg ? G.hBg : "#ffffff"; text = autoText(bg); a = Math.max(92, G.hAlpha); }
+    var custom = st !== "auto" || G.hBg !== DDEF.hBg || G.hText !== DDEF.hText || G.mAccent !== DDEF.mAccent;
+    return { bg: bg, text: text, accent: G.mAccent, bgCss: rgba(bg, a), custom: custom, ratio: contrast(text, bg) };
+  }
   function designCss(G) {
     G = dfix(G); var d = function (k) { return G[k] !== DDEF[k]; }, H = "html body:not(#x) .site-header", c = [], dk = [];
     if (G.hStyle === "bar") c.push(H + "{top:0;width:100%;border-radius:0;border-width:0 0 1px;box-shadow:0 6px 24px rgba(12,22,40,.08)}" + H + ".mega-active{border-radius:0}");
     if (G.hStyle === "solid" || G.hAlpha >= 100) c.push(H + "{-webkit-backdrop-filter:none;backdrop-filter:none}");
     if (d("hBg") || d("hAlpha") || G.hStyle !== "pill") c.push(H + "," + H + ".mega-active{background:" + rgba(G.hBg, G.hStyle === "solid" ? 100 : G.hAlpha) + "}");
-    if (d("hBg")) c.push(H + " .mega-menu,html body:not(#x) .mobile-panel{background:" + rgba(G.hBg, Math.max(92, G.hAlpha)) + "}");
-    if (d("hText")) c.push(H + " .mega-menu a,html body:not(#x) .mobile-panel a{color:" + G.hText + "}" + H + " .mega-number{color:" + rgba(G.hText, 55) + "}");
+    // P18 B: mega menu + mobile panel get their own colours; text always readable on its background
+    var MC = megaColors(G);
+    if (MC.custom) c.push(H + " .mega-menu{background:" + MC.bgCss + ";color:" + MC.text + "}" + H + " .mega-column a," + H + " .mega-column .mega-title," + H + " .mega-column p{color:" + MC.text + "}" +
+      H + " .mega-column a:hover," + H + " .mega-column .mega-title:hover{color:" + MC.accent + "}" + H + " .mega-number{color:" + MC.accent + "!important}" + H + " .mega-column{border-color:" + rgba(MC.text, 14) + "}" + H + " .mega-menu{border-color:" + rgba(MC.text, 14) + "}");
+    if (d("hBg") || d("hText")) { var mb = d("hBg") ? G.hBg : "#ffffff", mt = contrast(G.hText, mb) >= 3 ? G.hText : autoText(mb);
+      c.push("html body:not(#x) .mobile-panel{background:" + rgba(mb, Math.max(94, G.hAlpha)) + "}html body:not(#x) .mobile-panel a:not(.mobile-primary){color:" + mt + "}"); }
     if (d("hText")) c.push(H + " .desktop-nav>a," + H + " .nav-services-trigger," + H + " .brand-wordmark," + H + " .brand-wordmark small{color:" + G.hText + "}" + H + " .menu-toggle span,"+ H + " .menu-toggle span:before," + H + " .menu-toggle span:after{background:" + G.hText + "}" + H + " .brand-divider{background:" + rgba(G.hText, 30) + "}");
     if (G.ctaStyle === "outline") c.push(H + " .header-cta,html body:not(#x) #header-cta{background:transparent!important;color:" + G.hAccent + "!important;border:1.5px solid " + G.hAccent + "!important}");
     else if (d("hAccent") || d("hAccentText")) c.push(H + " .header-cta,html body:not(#x) #header-cta{background:" + G.hAccent + "!important;border-color:" + G.hAccent + "!important;color:" + G.hAccentText + "!important}");
@@ -58,7 +76,7 @@
   }
   var designTag = function (G) { var css = designCss(G); return css ? '<style id="wx-chrome-style" data-cfg="' + A(JSON.stringify(dfix(G))) + '">' + css + "</style>" : ""; };
   var phoneHtml = function (G) { G = dfix(G); return G.phoneShow && G.phone ? '<a class="wx-hphone" href="tel:' + A(G.phone.replace(/[^\d+]/g, "")) + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></svg>' + A(G.phone) + "</a>" : ""; };
-  W.__wxChrome = { designCss: designCss, dfix: dfix, presets: DPRESETS };
+  W.__wxChrome = { designCss: designCss, dfix: dfix, presets: DPRESETS, megaColors: megaColors, contrast: contrast };
 
   // ------------------------------------------------------------------ parse home page → editable data
   function parse(html) {
@@ -240,6 +258,11 @@
           g2(fld("Menu position", sel("menuAlign", [["center", "Centre"], ["left", "Next to logo"], ["right", "Next to button"]])), fld("Height (desktop)", rng("hHeight", 52, 96, "px"))) +
           g2(fld("Logo size", rng("logo", 24, 90, "px")), fld("Logo colour", sel("logoTone", [["dark", "Dark (for light header)"], ["light", "White (for dark header)"]]))) + chk("word", "Show “WOODEX INTERIOR” text next to logo"));
         h += card("Header colours", "<div class='c3-cols'>" + col("hBg", "Background") + col("hText", "Menu text") + col("hAccent", "Button") + col("hAccentText", "Button text") + "</div>" + (G.hStyle !== "solid" ? fld("Background opacity (glass)", rng("hAlpha", 30, 100, "%")) : ""));
+        var MC0 = megaColors(G);
+        h += card("Mega menu (Services drop-down)", g2(fld("Panel style", sel("mStyle", [["auto", "Auto — match header, readable text"], ["light", "Light panel"], ["dark", "Dark navy panel"], ["custom", "Custom colours"]])), "") +
+          "<div class='c3-cols'>" + (G.mStyle === "custom" ? col("mBg", "Background") + col("mText", "Text") : "") + col("mAccent", "Numbers & hover") + "</div>" +
+          "<div class='c3-mega' style='background:" + MC0.bg + ";color:" + MC0.text + "'><b style='color:" + MC0.accent + "'>01</b> Interior design <span>· Fit-out · Renovation</span></div>" +
+          "<small class='" + (MC0.ratio < 4.5 ? "err" : "muted") + "' id='hf-mratio'>Text contrast " + MC0.ratio.toFixed(1) + ":1 " + (MC0.ratio < 4.5 ? "— hard to read, choose a darker text or lighter background" : "✓ readable") + "</small>");
         h += card("Button & phone", g2(fld("Button style", sel("ctaStyle", [["solid", "Solid"], ["outline", "Outline"]])), fld("Phone number", inp("design.phone", G.phone, "+92 322 4000768"))) + chk("ctaShow", "Show the header button") + "<br>" + chk("phoneShow", "Show phone number in header <span class='muted'>(desktop only)</span>"));
         h += card("Footer colours", "<div class='c3-cols'>" + col("fBg", "Background") + col("fText", "Text") + col("fHead", "Headings") + col("fLink", "Accent / hover") + "</div>" +
           g2(fld("Spacing", sel("fPad", [["compact", "Compact"], ["normal", "Normal"], ["spacious", "Spacious"]])), "<div style='padding-top:18px'>" + chk("fLine", "Accent line on top") + "<br>" + chk("fWord", "Show big word") + "</div>"));
@@ -254,8 +277,8 @@
     // ---- state editing
     var get = function (p) { return p.split(".").reduce(function (o, k) { return o[k]; }, D); };
     var parent = function (p) { var a = p.split("."), k = +a.pop(); return { arr: get(a.join(".")), k: k }; };
-    body.addEventListener("input", function (e) { var p = e.target.dataset.p; if (p && D) { var a = p.split("."), k = a.pop(), v = e.target.value; if (a[0] === "design" && typeof DDEF[k] === "number") { v = +v; var o = body.querySelector("[data-out='" + k + "']"); if (o) o.textContent = v + (k === "hAlpha" ? "%" : "px"); } get(a.join("."))[k] = v; paint(); if (k === "hStyle" && e.target.tagName === "SELECT") draw(); } });
-    body.addEventListener("change", function (e) { var p = e.target.dataset.pc; if (p && D) { var a = p.split("."), k = a.pop(); get(a.join("."))[k] = e.target.checked; paint(); } if (e.target.dataset.p && /\.(logo|img)$/.test(e.target.dataset.p)) draw(); });
+    body.addEventListener("input", function (e) { var p = e.target.dataset.p; if (p && D) { var a = p.split("."), k = a.pop(), v = e.target.value; if (a[0] === "design" && typeof DDEF[k] === "number") { v = +v; var o = body.querySelector("[data-out='" + k + "']"); if (o) o.textContent = v + (k === "hAlpha" ? "%" : "px"); } get(a.join("."))[k] = v; paint(); if ((k === "hStyle" || k === "mStyle") && e.target.tagName === "SELECT") draw(); } });
+    body.addEventListener("change", function (e) { var p = e.target.dataset.pc; if (p && D) { var a = p.split("."), k = a.pop(); get(a.join("."))[k] = e.target.checked; paint(); } if (e.target.dataset.p && /\.(logo|img)$/.test(e.target.dataset.p)) draw(); if (e.target.dataset.p && /^design\.(mBg|mText|mAccent|hBg|hText)$/.test(e.target.dataset.p)) { var sy = window.scrollY; draw(); window.scrollTo(0, sy); } });
     body.addEventListener("click", function (e) {
       var b = e.target.closest("button"); if (!b || !D) return;
       if (b.dataset.reset) { D.design = dfix({}); draw(); toast("Design reset to default — Publish to apply"); return; }

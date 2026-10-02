@@ -881,3 +881,6 @@ label{font-weight:500;color:var(--txt2)}
 .badge.tx-bank{background:#eff8ff;color:#175cd3}.badge.tx-cash{background:#ecfdf3;color:#067647}.badge.tx-cheque{background:#fffaeb;color:#b54708}.badge.tx-online{background:#f4f3ff;color:#5925dc}
 #tx-rows tr[data-i]{cursor:pointer}
 @media(max-width:900px){.ci-grid,.ci-new,.ci-foot{grid-template-columns:1fr}.tx-cards{grid-template-columns:1fr 1fr}}
+
+/* P18 B mega preview chip */
+.c3-mega{margin:10px 0 6px;padding:14px 16px;border-radius:12px;border:1px solid var(--line);font-weight:600;font-size:14px}.c3-mega span{opacity:.75;font-weight:500}
