@@ -889,3 +889,6 @@ label{font-weight:500;color:var(--txt2)}
 #hf-body .hf-grip:hover{color:#b8956a}
 #hf-body .hf-drag{opacity:.45}
 #hf-body .hf-over{outline:2px dashed #b8956a;outline-offset:3px;border-radius:8px}
+/* P18 C: responsive badge */
+.md-rs{display:inline-block;padding:0 5px;border-radius:4px;background:#e8f5ee;color:#1f7a4d;font-weight:700;font-size:10px;letter-spacing:.04em}
+.md-rsline{margin:8px 0 0;font-size:13px}

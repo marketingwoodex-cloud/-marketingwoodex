@@ -38,11 +38,28 @@
     }).catch(function () { return null; });
   }
 
+  /** P18 C: responsive copies 480/960/1600 px WebP (only sizes smaller than the original) → server saves name.w480.webp etc. and adds srcset on pages */
+  var RSW = [480, 960, 1600], RASTER = /\.(jpe?g|png|webp)$/i;
+  function makeSizes(url) {
+    return fetch(url + "?v=" + Date.now()).then(function (r) { return r.blob(); }).then(createImageBitmap).then(function (bmp) {
+      var ws = RSW.filter(function (w) { return w < bmp.width; }), files = {};
+      return ws.reduce(function (pr, w) { return pr.then(function () { return encode(bmp, w, Math.round(bmp.height * w / bmp.width), "image/webp", 0.8).then(function (b) { if (!b || b.type !== "image/webp") throw new Error("This browser cannot make WebP"); return blobToB64(b); }).then(function (d) { files[w] = d; }); }); }, Promise.resolve())
+        .then(function () { return api("media_sizes", { url: url, ow: bmp.width, files: files }); });
+    });
+  }
+  /** P18 C: replace picture — any JPG/PNG/WebP is converted to the current file's format, so the address and every page stay the same */
+  function convertTo(file, url) {
+    var ext = url.split(".").pop().toLowerCase(), type = { jpg: "image/jpeg", jpeg: "image/jpeg", webp: "image/webp", png: "image/png" }[ext];
+    if (!type) return Promise.reject(new Error("This file type cannot be replaced"));
+    return createImageBitmap(file).then(function (bmp) { var d = fit(bmp.width, bmp.height); return encode(bmp, d[0], d[1], type, 0.85).then(function (b) { if (!b || b.type !== type) throw new Error("This browser could not convert the image"); return { blob: b, w: d[0], h: d[1] }; }); });
+  }
+  W.mediaSizes = makeSizes;
+
   // ------------------------------------------------------------------ media library
   W.VIEWS.media = function (el) {
     var st = { files: [], folders: [], trash: 0, folder: "all", filter: "all", q: "", sel: {} };
-    el.innerHTML = head("Media library", "Media", (isOA() ? '<button class="btn" id="md-trash">' + ic("trash") + 'Trash <span id="md-tn"></span></button><button class="btn" id="md-opt">' + ic("zap") + "Optimise large images</button>" : "") + '<label class="btn pri">' + ic("upload") + 'Upload<input type="file" id="md-up" accept="image/*" multiple hidden></label>') +
-      '<div class="md-stats" id="md-st"></div><div class="card md-top"><div class="md-folders" id="md-f"></div><div class="md-tools"><input id="md-q" placeholder="Search file name or alt text…"><select id="md-flt"><option value="all">All images</option><option value="unused">Not used anywhere</option><option value="big">Large (over 350 KB)</option><option value="noalt">No alt text</option></select><select id="md-ty" title="File type"><option value="">All types</option><option value="webp">WebP</option><option value="jpg">JPG</option><option value="png">PNG</option><option value="svg">SVG</option><option value="gif">GIF</option></select><select id="md-so" title="Sort"><option value="new">Newest first</option><option value="old">Oldest first</option><option value="big">Largest first</option><option value="name">Name A–Z</option></select><div class="seg md-view" id="md-vw"><button data-v="grid" title="Grid">' + ic("layout-dashboard") + '</button><button data-v="list" title="List">' + ic("menu") + '</button></div></div></div>' +
+    el.innerHTML = head("Media library", "Media", (isOA() ? '<button class="btn" id="md-trash">' + ic("trash") + 'Trash <span id="md-tn"></span></button><button class="btn" id="md-opt">' + ic("zap") + "Optimise large images</button><button class=\"btn\" id=\"md-rsall\" title=\"Make 480/960/1600 px WebP copies so phones load small images\">" + ic("smartphone") + "Make responsive</button>" : "") + '<label class="btn pri">' + ic("upload") + 'Upload<input type="file" id="md-up" accept="image/*" multiple hidden></label>') +
+      '<div class="md-stats" id="md-st"></div><div class="card md-top"><div class="md-folders" id="md-f"></div><div class="md-tools"><input id="md-q" placeholder="Search file name or alt text…"><select id="md-flt"><option value="all">All images</option><option value="unused">Not used anywhere</option><option value="big">Large (over 350 KB)</option><option value="noalt">No alt text</option><option value="nors">Not responsive yet</option></select><select id="md-ty" title="File type"><option value="">All types</option><option value="webp">WebP</option><option value="jpg">JPG</option><option value="png">PNG</option><option value="svg">SVG</option><option value="gif">GIF</option></select><select id="md-so" title="Sort"><option value="new">Newest first</option><option value="old">Oldest first</option><option value="big">Largest first</option><option value="name">Name A–Z</option></select><div class="seg md-view" id="md-vw"><button data-v="grid" title="Grid">' + ic("layout-dashboard") + '</button><button data-v="list" title="List">' + ic("menu") + '</button></div></div></div>' +
       '<div class="md-drop" id="md-drop">' + ic("upload") + ' Drop images here to upload. They are resized to 2000px and converted to WebP automatically.</div><div id="md-prog"></div>' +
       '<div class="md-bulk" id="md-bulk" hidden><b id="md-bn"></b><button class="btn sm" id="md-ball">Select all shown</button><button class="btn sm" id="md-bclr">Clear</button><button class="btn sm" id="md-bcp">' + ic("copy") + 'Copy URLs</button><button class="btn sm" id="md-bmv">' + ic("folder") + 'Move to folder</button>' + (isOA() ? '<button class="btn sm danger" id="md-bdel">' + ic("trash") + "Move to trash</button>" : "") + '</div><div class="md-grid" id="md-g"><p class="muted">Loading…</p></div>';
     W.fillIcons(el);
@@ -58,7 +75,7 @@
       var q = st.q.toLowerCase();
       return st.files.filter(function (f) {
         if (st.folder !== "all" && f.folder !== st.folder) return false;
-        if (st.filter === "unused" && f.used.length) return false; if (st.filter === "big" && f.size <= BIG) return false; if (st.filter === "noalt" && (f.alt || /\.svg$/.test(f.name))) return false;
+        if (st.filter === "unused" && f.used.length) return false; if (st.filter === "big" && f.size <= BIG) return false; if (st.filter === "noalt" && (f.alt || /\.svg$/.test(f.name))) return false; if (st.filter === "nors" && (!RASTER.test(f.name) || (f.sizes || []).length)) return false;
         if (st.type && ext(f.name) !== st.type) return false;
         return !q || (f.name + " " + f.alt).toLowerCase().indexOf(q) > -1;
       }).sort(function (a, b) { return st.sort === "old" ? (a.mtime < b.mtime ? -1 : 1) : st.sort === "big" ? b.size - a.size : st.sort === "name" ? a.name.localeCompare(b.name) : (a.mtime < b.mtime ? 1 : -1); });
@@ -70,7 +87,7 @@
       var L = list(); stats(); $$("#md-vw button").forEach(function (b) { b.classList.toggle("on", b.dataset.v === st.view); }); $("#md-g").className = st.view === "list" ? "md-list card" : "md-grid";
       if (st.view === "list") { $("#md-g").innerHTML = L.length ? '<table class="tbl md-tbl"><thead><tr><th style="width:34px"></th><th>File</th><th>Folder</th><th>Type</th><th>Size</th><th>Used</th><th>Alt text</th><th>Added</th></tr></thead><tbody>' + L.map(function (f) { return '<tr class="md-card' + (st.sel[f.url] ? " sel" : "") + '" data-u="' + esc(f.url) + '"><td><input type="checkbox" class="md-chk"' + (st.sel[f.url] ? " checked" : "") + '></td><td><div class="md-lf"><img loading="lazy" src="' + esc(f.url) + '" alt=""><b title="' + esc(f.name) + '">' + esc(f.name) + "</b></div></td><td>" + esc(f.folder) + '</td><td><span class="badge">' + ext(f.name).toUpperCase() + '</span></td><td class="' + (f.size > BIG ? "warnc" : "") + '">' + kb(f.size) + "</td><td>" + (f.used.length ? f.used.length : '<span class="bad">unused</span>') + "</td><td>" + (f.alt ? '<span class="md-alt">' + esc(f.alt) + "</span>" : /\.svg$/.test(f.name) ? "–" : '<span class="warnc">missing</span>') + '</td><td class="muted">' + esc(f.mtime.slice(0, 10)) + "</td></tr>"; }).join("") + "</tbody></table>" : '<p class="muted" style="padding:16px">No images match.</p>'; W.fillIcons($("#md-f")); bulk(); return; }
       $("#md-g").innerHTML = L.length ? L.map(function (f) {
-        return '<div class="md-card' + (st.sel[f.url] ? " sel" : "") + '" data-u="' + esc(f.url) + '"><input type="checkbox" class="md-chk"' + (st.sel[f.url] ? " checked" : "") + '><div class="md-th"><img loading="lazy" src="' + esc(f.url) + '" alt=""></div><div class="md-meta"><b title="' + esc(f.name) + '">' + esc(f.name) + '</b><span><span class="' + (f.size > BIG ? "warnc" : "") + '">' + kb(f.size) + "</span> · " + (f.used.length ? f.used.length + " use" + (f.used.length > 1 ? "s" : "") : '<span class="bad">unused</span>') + (f.alt || /\.svg$/.test(f.name) ? "" : ' · <span class="warnc">no alt</span>') + "</span></div></div>";
+        return '<div class="md-card' + (st.sel[f.url] ? " sel" : "") + '" data-u="' + esc(f.url) + '"><input type="checkbox" class="md-chk"' + (st.sel[f.url] ? " checked" : "") + '><div class="md-th"><img loading="lazy" src="' + esc(f.url) + '" alt=""></div><div class="md-meta"><b title="' + esc(f.name) + '">' + esc(f.name) + '</b><span><span class="' + (f.size > BIG ? "warnc" : "") + '">' + kb(f.size) + "</span> · " + (f.used.length ? f.used.length + " use" + (f.used.length > 1 ? "s" : "") : '<span class="bad">unused</span>') + (f.alt || /\.svg$/.test(f.name) ? "" : ' · <span class="warnc">no alt</span>') + ((f.sizes || []).length ? ' · <span class="md-rs" title="Responsive sizes: ' + f.sizes.join(", ") + ' px">RS</span>' : "") + "</span></div></div>";
       }).join("") : '<p class="muted">No images match.</p>';
       W.fillIcons($("#md-f")); bulk();
     }
@@ -115,7 +132,7 @@
         return pr.then(function () {
           var row = $('[data-i="' + i + '"]', P), set = function (t, c) { row.className = c || ""; $("small", row).textContent = t; };
           set("optimising…", "run");
-          return optimiseUpload(f).then(function (o) { return blobToB64(o.blob).then(function (b64) { return api("media_upload", { data: b64, name: o.name || f.name, folder: folder }); }).then(function (r) { if (!r.ok) throw new Error(r.error); set("uploaded · " + o.note, "ok"); }); }).catch(function (e) { set(e.message || "failed", "bad"); });
+          return optimiseUpload(f).then(function (o) { return blobToB64(o.blob).then(function (b64) { return api("media_upload", { data: b64, name: o.name || f.name, folder: folder }); }).then(function (r) { if (!r.ok) throw new Error(r.error); if (!RASTER.test(r.url)) return set("uploaded · " + o.note, "ok"); set("making responsive sizes…", "run"); return makeSizes(r.url).then(function (x) { set("uploaded · " + o.note + (x && x.ok && x.sizes.length ? " · " + x.sizes.length + " responsive sizes" : ""), "ok"); }, function () { set("uploaded · " + o.note, "ok"); }); }); }).catch(function (e) { set(e.message || "failed", "bad"); });
         });
       }, Promise.resolve()).then(function () { toast("Upload finished"); load(); setTimeout(function () { P.innerHTML = ""; }, 6000); });
     }
@@ -158,11 +175,23 @@
       var svg = /\.svg$/.test(f.name);
       modal('<div class="md-det"><div class="md-big"><img src="' + esc(f.url) + '?v=' + Date.now() + '" alt="" id="dt-img"></div><div><h3 style="word-break:break-all">' + esc(f.name) + '</h3><p class="muted" id="dt-dim">' + kb(f.size) + " · " + esc(f.folder) + " · " + esc(f.mtime.slice(0, 10)) + '</p><label>Address<div class="copy"><input readonly value="' + esc(f.url) + '"><button type="button" class="btn sm" id="dt-copy">Copy</button></div></label>' +
         (svg ? "" : '<label>Alt text <button type="button" class="btn sm ai" id="dt-ai" hidden>' + ic("sparkles") + 'Write</button><textarea id="dt-alt" rows="2" placeholder="Describe what the photo shows">' + esc(f.alt) + '</textarea></label><label class="check"><input type="checkbox" id="dt-apply" checked> Also add it to pages where this image has no alt text</label>') +
+        (RASTER.test(f.name) ? '<p class="md-rsline" id="dt-rs">' + ((f.sizes || []).length ? "✓ Responsive sizes: <b>" + f.sizes.join(" · ") + " px</b> WebP" : '<span class="warnc">No responsive sizes yet</span>') + "</p>" : "") +
         '<h4 class="sub-h">Used on (' + f.used.length + ')</h4><ul class="md-used">' + (f.used.length ? f.used.slice(0, 30).map(function (r) { var page = /\.html$/.test(r); return "<li>" + (page ? '<a href="#/fields/' + encodeURIComponent(r) + '">/' + esc(r.replace(/index\.html$/, "")) + "</a>" : '<span class="muted">' + esc(r.replace(/^_private\/(.*)\.json$/, "stored content: $1")) + "</span>") + "</li>"; }).join("") : '<li class="muted">Not used anywhere. Safe to delete.</li>') + "</ul>" +
-        '<div class="modal-actions">' + (isOA() ? '<button type="button" class="btn ghost danger" id="dt-del">' + ic("trash") + "Trash</button>" : "") + (isOA() && f.size > 150 * 1024 && !svg ? '<button type="button" class="btn" id="dt-opt">' + ic("zap") + "Optimise</button>" : "") + '<button type="button" class="btn" data-x>Close</button>' + (svg || /\.gif$/.test(f.name) ? "" : '<button type="button" class="btn" id="dt-crop">' + ic("layout") + 'Crop / resize</button><button type="button" class="btn pri" id="dt-save">Save alt text</button>') + "</div></div></div>", "wide");
+        '<div class="modal-actions">' + (isOA() ? '<button type="button" class="btn ghost danger" id="dt-del">' + ic("trash") + "Trash</button>" : "") + (RASTER.test(f.name) ? '<button type="button" class="btn" id="dt-mkrs">' + ic("smartphone") + ((f.sizes || []).length ? "Remake sizes" : "Make responsive") + "</button>" : "") + (isOA() && RASTER.test(f.name) ? '<button type="button" class="btn" id="dt-rep">' + ic("refresh-cw") + "Replace picture</button>" : "") + (isOA() && f.size > 150 * 1024 && !svg ? '<button type="button" class="btn" id="dt-opt">' + ic("zap") + "Optimise</button>" : "") + '<button type="button" class="btn" data-x>Close</button>' + (svg || /\.gif$/.test(f.name) ? "" : '<button type="button" class="btn" id="dt-crop">' + ic("layout") + 'Crop / resize</button><button type="button" class="btn pri" id="dt-save">Save alt text</button>') + "</div></div></div>", "wide");
       W.fillIcons(document.querySelector("#modal-card"));
       $("[data-x]").onclick = closeModal;
       if ($("#dt-crop")) $("#dt-crop").onclick = function () { cropper(f); };
+      var reopen = function (msg) { toast(msg); load().then(function () { var nf = st.files.find(function (x) { return x.url === f.url; }); if (nf) detail(nf); }); };
+      if ($("#dt-mkrs")) $("#dt-mkrs").onclick = function () { var b = this; b.disabled = true; b.textContent = "Working…"; makeSizes(f.url).then(function (r) { if (!r.ok) throw new Error(r.error); reopen(r.sizes.length ? "Made " + r.sizes.length + " sizes" + (r.pages ? " · srcset added on " + r.pages + " page(s)" : "") : "Image is already small — no extra sizes needed"); }).catch(function (e) { b.disabled = false; toast(e.message, true); }); };
+      if ($("#dt-rep")) $("#dt-rep").onclick = function () {
+        var fi = document.createElement("input"); fi.type = "file"; fi.accept = "image/jpeg,image/png,image/webp";
+        fi.onchange = function () { var file = fi.files[0]; if (!file) return; var b = $("#dt-rep"); b.disabled = true; b.textContent = "Uploading…";
+          convertTo(file, f.url).then(function (o) { return blobToB64(o.blob).then(function (d) { return api("media_replace", { url: f.url, data: d }); }); })
+            .then(function (r) { if (!r.ok) throw new Error(r.error); return (f.sizes || []).length || f.used.length ? makeSizes(f.url) : null; })
+            .then(function () { reopen("Picture replaced — " + (f.used.length ? f.used.length + " place(s) now show the new image" : "same address kept") + ". Old file is in Trash."); })
+            .catch(function (e) { b.disabled = false; b.textContent = "Replace picture"; toast(e.message, true); }); };
+        fi.click();
+      };
       var img = $("#dt-img"); img.onload = function () { $("#dt-dim").textContent = img.naturalWidth + " × " + img.naturalHeight + " px · " + kb(f.size) + " · " + f.folder + " · " + f.mtime.slice(0, 10); };
       $("#dt-copy").onclick = function () { navigator.clipboard && navigator.clipboard.writeText(location.origin + f.url); toast("Copied"); };
       api("cms_list", { type: "faq" }).then(function (r) { if (r.aiReady && $("#dt-ai")) $("#dt-ai").hidden = false; });
@@ -183,6 +212,16 @@
       $("#op-go").onclick = function () {
         var b = this; b.disabled = true;
         big.reduce(function (pr, f, i) { var o = res[i]; if (!o) return pr; return pr.then(function () { var row = $('[data-i="' + i + '"]'); row.className = "run"; return blobToB64(o.blob).then(function (d) { return api("media_replace", { url: f.url, data: d }); }).then(function (r) { row.className = r.ok ? "ok" : "bad"; if (!r.ok) $("small", row).textContent = r.error; }); }); }, Promise.resolve()).then(function () { toast("Images optimised"); $("#op-sum").innerHTML += " Done."; });
+      };
+    };
+    if ($("#md-rsall")) $("#md-rsall").onclick = function () {
+      var L = st.files.filter(function (f) { return RASTER.test(f.name) && !(f.sizes || []).length && f.used.length; });
+      modal('<h3>Make images responsive</h3><p class="muted">For each image used on the site, WebP copies at 480, 960 and 1600 px are made (only sizes smaller than the original). Pages get <code>srcset</code>, so phones download the small copy. Originals are kept.</p><div id="rs-l" class="bk-prog">' + (L.length ? L.map(function (f, i) { return '<div data-i="' + i + '"><span class="dot"></span>' + esc(f.name) + ' <small class="muted">waiting</small></div>'; }).join("") : '<div class="empty">All used images already have responsive sizes ✓</div>') + '</div><p id="rs-sum"></p><div class="modal-actions"><button class="btn" data-x>Close</button>' + (L.length ? '<button class="btn pri" id="rs-go">Start (' + L.length + ")</button>" : "") + "</div>");
+      $("[data-x]").onclick = function () { closeModal(); load(); };
+      if ($("#rs-go")) $("#rs-go").onclick = function () { var b = this, ok = 0, pg = 0; b.disabled = true;
+        L.reduce(function (pr, f, i) { return pr.then(function () { var row = $('#rs-l [data-i="' + i + '"]'), sm = $("small", row); row.className = "run"; sm.textContent = "working…";
+          return makeSizes(f.url).then(function (r) { if (!r.ok) throw new Error(r.error); ok++; pg += r.pages; row.className = "ok"; sm.textContent = r.sizes.length ? r.sizes.join(" · ") + " px" : "small already"; }).catch(function (e) { row.className = "bad"; sm.textContent = e.message || "failed"; }); }); }, Promise.resolve())
+          .then(function () { $("#rs-sum").innerHTML = "<b>" + ok + " of " + L.length + "</b> images done · " + pg + " page update(s)."; b.textContent = "Done"; });
       };
     };
     if ($("#md-trash")) $("#md-trash").onclick = function () {

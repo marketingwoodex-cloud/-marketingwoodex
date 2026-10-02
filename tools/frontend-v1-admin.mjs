@@ -1230,19 +1230,45 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
     return { score, pages: pages.length, at: now(), issues, counts: ["seo", "alt", "link", "image"].reduce((o, k) => (o[k] = issues.filter((i) => i.type === k).length, o), {}) };
   }
 
+  /* P18 C: responsive sizes (mirrors api/media-lib.php rs_*) */
+  const RS_W = [480, 960, 1600], rsVar = (url, w) => url.replace(/\.[a-z0-9]+$/i, "") + ".w" + w + ".webp";
+  const rsHave = (url) => RS_W.filter((w) => fs.existsSync(path.join(ROOT, rsVar(url, w))));
+  const rsStem = (url) => url.replace(/\.[a-z0-9]+$/i, ""), rsLegacy = (url) => RS_W.filter((w) => fs.existsSync(path.join(ROOT, rsStem(url) + "-" + w + ".webp")));
+  const rsIsLegacyCopy = (abs) => { const m = /^(.*)-(480|960|1600)\.webp$/.exec(abs); return !!m && ["webp", "jpg", "jpeg", "png"].some((e) => fs.existsSync(m[1] + "." + e)); };
+  function rsApply(url, ow) {
+    const have = rsHave(url), set = have.map((w) => rsVar(url, w) + " " + w + "w"); if (set.length && ow > have[have.length - 1]) set.push(url + " " + ow + "w");
+    const attr = set.length ? ` srcset="${set.join(", ")}" sizes="(max-width: 640px) 100vw, (max-width: 1200px) 80vw, 1200px" data-wx-rs` : ""; let pages = 0;
+    for (const rel of htmlPages()) {
+      const abs = path.join(ROOT, rel), h = fs.readFileSync(abs, "utf8"); if (!h.includes(url)) continue;
+      const n = h.replace(/<img\b[^>]*>/gi, (t) => { if (!t.includes('src="' + url + '"') && !t.includes('src="' + SITE_URL + url + '"')) return t; const sm = /\ssrcset="([^"]*)"/i.exec(t); if (sm && !t.includes("data-wx-rs") && !sm[1].includes(rsStem(url) + "-")) return t;
+        t = t.replace(/\ssrcset="[^"]*"/i, "").replace(/\ssizes="[^"]*"/i, "").replace(/\sdata-wx-rs(="")?/, ""); return attr ? t.replace(/^<img/i, "<img" + attr) : t; });
+      if (n !== h) { cmsBackup(rel); fs.writeFileSync(abs, n); pages++; }
+    }
+    return pages;
+  }
+
   async function a7(action, inp, need, db, ip) {
     if (!/^(media_|backup_|health_)/.test(action)) return null;
     const ED = ["owner", "admin", "editor"], OA = ["owner", "admin"];
     switch (action) {
       case "media_list": {
         need(ED); const m = mediaLoad(), corpus = usageCorpus(), files = [];
-        for (const d of IMG_DIRS) for (const a of walkFiles(path.join(ROOT, d), (n) => IMG_RE.test(n))) {
+        for (const d of IMG_DIRS) for (const a of walkFiles(path.join(ROOT, d), (n) => IMG_RE.test(n) && !/\.w(480|960|1600)\.webp$/.test(n))) {
+          if (rsIsLegacyCopy(a)) continue;
           const url = "/" + relOf(a), s = fs.statSync(a), base = url.slice(1), name = path.basename(a);
           const used = corpus.filter(([, t]) => t.includes(base) || (name.length > 10 && t.includes(name))).map(([r]) => r);
-          files.push({ url, name, folder: d === "assets/img" ? "site" : (path.relative(path.join(ROOT, d), path.dirname(a)).split(path.sep).join("/") || "uploads"), size: s.size, mtime: s.mtime.toISOString().slice(0, 19).replace("T", " "), alt: m.alt[url] || "", used });
+          files.push({ url, name, folder: d === "assets/img" ? "site" : (path.relative(path.join(ROOT, d), path.dirname(a)).split(path.sep).join("/") || "uploads"), size: s.size, mtime: s.mtime.toISOString().slice(0, 19).replace("T", " "), alt: m.alt[url] || "", used, sizes: rsHave(url).length ? rsHave(url) : rsLegacy(url) });
         }
         const folders = fs.existsSync(path.join(ROOT, "assets/uploads")) ? fs.readdirSync(path.join(ROOT, "assets/uploads"), { withFileTypes: true }).filter((f) => f.isDirectory()).map((f) => f.name) : [];
         return { ok: true, files: files.sort((a, b) => b.mtime.localeCompare(a.mtime)), folders, trash: m.trash.length };
+      }
+      case "media_sizes": {
+        const u = need(ED), url = String(inp.url || ""); if (!mediaRelOk(url) || !/\.(jpe?g|png|webp)$/i.test(url) || /\.w\d+\.webp$/.test(url)) throw new Fail("Invalid image");
+        if (!fs.existsSync(path.join(ROOT, url))) throw new Fail("Image not found", 404); const ow = Math.max(1, +inp.ow || 0), files = inp.files && typeof inp.files === "object" ? inp.files : {};
+        for (const w of RS_W) { const f = path.join(ROOT, rsVar(url, w)); if (fs.existsSync(f)) fs.unlinkSync(f); }
+        const made = [];
+        for (const w of RS_W) { if (files[w] == null || w >= ow) continue; const d = Buffer.from(String(files[w]), "base64"); if (!d.length || d.length > 3 * 1024 * 1024 || sniff(d) !== "webp") throw new Fail(`Size ${w}px is not a valid WebP image`); fs.writeFileSync(path.join(ROOT, rsVar(url, w)), d); made.push(w); }
+        const pages = rsApply(url, ow); log(db, u, "media.sizes", url + " " + made.join("/"), ip); save(db); return { ok: true, sizes: made, pages };
       }
       case "media_folder": { need(ED); const n = String(inp.name || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40); if (!n) throw new Fail("Folder name: letters and numbers"); fs.mkdirSync(path.join(ROOT, "assets/uploads", n), { recursive: true }); return { ok: true, name: n }; }
       case "media_upload": case "media_replace": {
@@ -1289,7 +1315,7 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
         for (const url of urls) {
           const abs = path.join(ROOT, url); if (!fs.existsSync(abs)) continue;
           if (corpus.some(([, t]) => t.includes(url.slice(1)))) { blocked.push(url); continue; }
-          const tf = Date.now() + "-" + crypto.randomBytes(2).toString("hex") + "-" + path.basename(abs); m.trash.push({ id: ++m.seq, url, file: tf, size: fs.statSync(abs).size, at: now(), by: u.name, why: "deleted" }); fs.renameSync(abs, path.join(MTRASH, tf)); moved.push(url);
+          const tf = Date.now() + "-" + crypto.randomBytes(2).toString("hex") + "-" + path.basename(abs); m.trash.push({ id: ++m.seq, url, file: tf, size: fs.statSync(abs).size, at: now(), by: u.name, why: "deleted" }); fs.renameSync(abs, path.join(MTRASH, tf)); moved.push(url); for (const w of RS_W) { const vf = path.join(ROOT, rsVar(url, w)); if (fs.existsSync(vf)) fs.unlinkSync(vf); } if (inp.force) rsApply(url, 0);
         }
         jw(MEDIA, m); log(db, u, "media.trash", moved.length + " file(s)", ip); save(db); return { ok: true, moved, blocked };
       }

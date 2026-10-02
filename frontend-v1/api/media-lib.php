@@ -152,6 +152,32 @@ function a7_health_scan(): array {
 }
 
 // ---------------------------------------------------------------- actions
+/* P18 C: responsive sizes — name.w480.webp / .w960 / .w1600 next to the original, plus srcset on every page using it */
+const RS_W = [480, 960, 1600];
+function rs_variant(string $url, int $w): string { return preg_replace('~\.[a-z0-9]+$~i', '', $url) . '.w' . $w . '.webp'; }
+function rs_have(string $url): array { $o = []; foreach (RS_W as $w) if (is_file(ROOT_DIR . rs_variant($url, $w))) $o[] = $w; return $o; }
+/* older P15 copies: name-480.webp / name-960.webp (+ hand-written srcset on pages) */
+function rs_legacy(string $url): array { $o = []; $st = preg_replace('~\.[a-z0-9]+$~i', '', $url); foreach (RS_W as $w) if (is_file(ROOT_DIR . $st . '-' . $w . '.webp')) $o[] = $w; return $o; }
+function rs_is_legacy_copy(string $abs): bool { if (!preg_match('~^(.*)-(480|960|1600)\.webp$~', $abs, $m)) return false; foreach (['webp', 'jpg', 'jpeg', 'png'] as $e) if (is_file($m[1] . '.' . $e)) return true; return false; }
+function rs_apply(string $url, int $ow): int {
+    $have = rs_have($url); $set = [];
+    foreach ($have as $w) $set[] = rs_variant($url, $w) . ' ' . $w . 'w';
+    if ($set && $ow > end($have)) $set[] = $url . ' ' . $ow . 'w';
+    $attr = $set ? ' srcset="' . implode(', ', $set) . '" sizes="(max-width: 640px) 100vw, (max-width: 1200px) 80vw, 1200px" data-wx-rs' : '';
+    $pages = 0;
+    foreach (a7_pages() as $rel) {
+        $abs = ROOT_DIR . '/' . $rel; $h = (string)file_get_contents($abs); if (strpos($h, $url) === false) continue;
+        $n = preg_replace_callback('~<img\b[^>]*>~i', function ($m) use ($url, $attr) {
+            $t = $m[0]; if (strpos($t, 'src="' . $url . '"') === false && strpos($t, 'src="' . SITE_URL_DEF . $url . '"') === false) return $t;
+            if (preg_match('~\ssrcset="([^"]*)"~i', $t, $sm) && strpos($t, 'data-wx-rs') === false && !preg_match('~' . preg_quote(preg_replace('~\.[a-z0-9]+$~i', '', $url), '~') . '-\d+\.webp~', $sm[1])) return $t; // hand-made srcset (not the old P15 copies): leave alone
+            $t = preg_replace(['~\ssrcset="[^"]*"~i', '~\ssizes="[^"]*"~i', '~\sdata-wx-rs(="")?~'], '', $t);
+            return $attr === '' ? $t : preg_replace('~^<img~i', '<img' . $attr, $t, 1);
+        }, $h);
+        if ($n !== $h) { cms_file_backup($rel); file_put_contents($abs, $n, LOCK_EX); $pages++; }
+    }
+    return $pages;
+}
+
 function media_actions(string $action, array $in): bool {
     if (!preg_match('~^(media_|backup_|health_)~', $action)) return false;
     $ED = ['owner', 'admin', 'editor']; $OA = ['owner', 'admin'];
@@ -159,14 +185,22 @@ function media_actions(string $action, array $in): bool {
         case 'media_list':
             need($ED); $m = a7_media(); $corpus = a7_corpus(); $files = [];
             foreach (IMG_DIRS as $d) foreach (a7_walk(ROOT_DIR . '/' . $d, '~\.(webp|jpe?g|png|gif|svg|avif)$~i') as $a) {
+                if (preg_match('~\.w(480|960|1600)\.webp$~', $a) || rs_is_legacy_copy($a)) continue; // responsive copies are shown on their original
                 $url = '/' . a7_rel($a); $base = ltrim($url, '/'); $name = basename($a); $used = [];
                 foreach ($corpus as $r => $t) if (strpos($t, $base) !== false || (strlen($name) > 10 && strpos($t, $name) !== false)) $used[] = $r;
                 $sub = trim(str_replace('\\', '/', substr(dirname($a), strlen(ROOT_DIR . '/' . $d))), '/');
-                $files[] = ['url' => $url, 'name' => $name, 'folder' => $d === 'assets/img' ? 'site' : ($sub ?: 'uploads'), 'size' => filesize($a), 'mtime' => gmdate('Y-m-d H:i:s', filemtime($a)), 'alt' => $m['alt'][$url] ?? '', 'used' => $used];
+                $files[] = ['url' => $url, 'name' => $name, 'folder' => $d === 'assets/img' ? 'site' : ($sub ?: 'uploads'), 'size' => filesize($a), 'mtime' => gmdate('Y-m-d H:i:s', filemtime($a)), 'alt' => $m['alt'][$url] ?? '', 'used' => $used, 'sizes' => rs_have($url) ?: rs_legacy($url)];
             }
             usort($files, fn($a, $b) => strcmp($b['mtime'], $a['mtime']));
             $folders = []; foreach (glob(ROOT_DIR . '/assets/uploads/*', GLOB_ONLYDIR) ?: [] as $f) $folders[] = basename($f);
             out(['ok' => true, 'files' => $files, 'folders' => $folders, 'trash' => count($m['trash'])]);
+        case 'media_sizes':
+            $u = need($ED); $url = (string)($in['url'] ?? ''); if (!a7_media_ok($url) || !preg_match('~\.(jpe?g|png|webp)$~i', $url) || preg_match('~\.w\d+\.webp$~', $url)) fail('Invalid image');
+            if (!is_file(ROOT_DIR . $url)) fail('Image not found', 404); $ow = max(1, (int)($in['ow'] ?? 0)); $files = is_array($in['files'] ?? null) ? $in['files'] : [];
+            foreach (RS_W as $w) { $f = ROOT_DIR . rs_variant($url, $w); if (is_file($f)) @unlink($f); }
+            $made = [];
+            foreach (RS_W as $w) { if (!isset($files[(string)$w]) || $w >= $ow) continue; $d = base64_decode((string)$files[(string)$w], true); if ($d === false || $d === '' || strlen($d) > 3 * 1024 * 1024 || a7_sniff($d) !== 'webp') fail("Size {$w}px is not a valid WebP image"); file_put_contents(ROOT_DIR . rs_variant($url, $w), $d, LOCK_EX); $made[] = $w; }
+            $pages = rs_apply($url, $ow); log_act($u, 'media.sizes', $url . ' ' . implode('/', $made)); out(['ok' => true, 'sizes' => $made, 'pages' => $pages]);
         case 'media_folder':
             need($ED); $n = trim(preg_replace('~[^a-z0-9]+~', '-', strtolower((string)($in['name'] ?? ''))), '-'); $n = substr($n, 0, 40); if ($n === '') fail('Folder name: letters and numbers');
             if (!is_dir(ROOT_DIR . '/assets/uploads/' . $n)) mkdir(ROOT_DIR . '/assets/uploads/' . $n, 0755, true); out(['ok' => true, 'name' => $n]);
@@ -215,7 +249,7 @@ function media_actions(string $action, array $in): bool {
             foreach ($urls as $url) {
                 $abs = ROOT_DIR . $url; if (!is_file($abs)) continue; $hit = false; foreach ($corpus as $t) if (strpos($t, ltrim($url, '/')) !== false) { $hit = true; break; }
                 if ($hit) { $blocked[] = $url; continue; }
-                $tf = time() . '-' . bin2hex(random_bytes(2)) . '-' . basename($abs); $m['trash'][] = ['id' => ++$m['seq'], 'url' => $url, 'file' => $tf, 'size' => filesize($abs), 'at' => a7_now(), 'by' => $u['name'], 'why' => 'deleted']; rename($abs, MTRASH_DIR . '/' . $tf); $moved[] = $url;
+                $tf = time() . '-' . bin2hex(random_bytes(2)) . '-' . basename($abs); $m['trash'][] = ['id' => ++$m['seq'], 'url' => $url, 'file' => $tf, 'size' => filesize($abs), 'at' => a7_now(), 'by' => $u['name'], 'why' => 'deleted']; rename($abs, MTRASH_DIR . '/' . $tf); $moved[] = $url; foreach (RS_W as $w) { $vf = ROOT_DIR . rs_variant($url, $w); if (is_file($vf)) @unlink($vf); } if (!empty($in['force'])) rs_apply($url, 0);
             }
             jwrite(MEDIA_FILE, $m); log_act($u, 'media.trash', count($moved) . ' file(s)'); out(['ok' => true, 'moved' => $moved, 'blocked' => $blocked]);
         case 'media_trash_list': need($OA); out(['ok' => true, 'trash' => array_reverse(a7_media()['trash'])]);
