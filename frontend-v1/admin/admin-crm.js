@@ -218,7 +218,7 @@
       var sec = function (k, ph) { return "<input type='password' id='cs-" + k + "' autocomplete='new-password' placeholder='" + (s[k + "Set"] ? "•••••••• saved (leave empty to keep)" : ph) + "'>"; };
       modal("<h2>Alerts & spam protection</h2><div class='cs'>" +
         "<section><h3>" + ic("mail") + "Email alerts</h3><label class='check'><input type='checkbox' id='cs-emailOn'" + (s.emailOn ? " checked" : "") + "> Email the team for every new enquiry</label>" +
-        "<label>Send to <small>(comma separated)</small><input id='cs-emailTo' value='" + esc(s.emailTo) + "' placeholder='info@woodex.com.pk, sales@woodex.com.pk'></label>" +
+        "<label>Send to <small>(comma separated)</small><input id='cs-emailTo' value='" + esc(s.emailTo) + "' placeholder='woodexinterior.pk@gmail.com, sales@woodex.com.pk'></label>" +
         "<div class='g2'><label>SMTP host<input id='cs-smtpHost' value='" + esc(s.smtpHost) + "' placeholder='smtp.hostinger.com'></label><label>Port<input id='cs-smtpPort' type='number' value='" + esc(s.smtpPort) + "'></label></div>" +
         "<div class='g2'><label>SMTP user<input id='cs-smtpUser' value='" + esc(s.smtpUser) + "' placeholder='alerts@woodex.com.pk'></label><label>SMTP password" + sec("smtpPass", "Mailbox password") + "</label></div>" +
         "<label>From address<input id='cs-smtpFrom' value='" + esc(s.smtpFrom) + "' placeholder='Woodex Website <alerts@woodex.com.pk>'></label><button class='btn sm' data-test='email'>Send test email</button></section>" +
