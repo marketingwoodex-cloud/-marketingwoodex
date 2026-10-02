@@ -884,3 +884,8 @@ label{font-weight:500;color:var(--txt2)}
 
 /* P18 B mega preview chip */
 .c3-mega{margin:10px 0 6px;padding:14px 16px;border-radius:12px;border:1px solid var(--line);font-weight:600;font-size:14px}.c3-mega span{opacity:.75;font-weight:500}
+/* P18 B2: header/footer drag reorder */
+#hf-body .hf-grip{cursor:grab;color:#94a3b8;font-weight:700;letter-spacing:-2px;padding:0 6px;user-select:none;font-size:15px;line-height:1}
+#hf-body .hf-grip:hover{color:#b8956a}
+#hf-body .hf-drag{opacity:.45}
+#hf-body .hf-over{outline:2px dashed #b8956a;outline-offset:3px;border-radius:8px}

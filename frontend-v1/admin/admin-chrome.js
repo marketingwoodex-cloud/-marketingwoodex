@@ -166,7 +166,7 @@
   W.VIEWS.global = function (el) {
     el.innerHTML = head("Header & footer", "Header & footer") +
       '<div class="toolbar" style="margin-bottom:18px;flex-wrap:wrap"><button class="btn pri" data-gt="header">Header</button><button class="btn" data-gt="mega">Mega menu</button><button class="btn" data-gt="footer">Footer</button><button class="btn" data-gt="design">' + ic("layers") + 'Design</button><button class="btn" data-gt="versions">' + ic("history") + 'Versions</button><button class="btn" data-gt="replace">Find & replace</button>' +
-      '<span style="margin-left:auto;display:flex;gap:8px"><button class="btn" id="hf-export" title="Download header & footer as a file">' + ic("download") + 'Export</button><button class="btn" id="hf-import" title="Load a header & footer file">' + ic("upload") + 'Import</button><button class="btn" id="hf-discard">Discard changes</button><button class="btn pri" id="hf-publish">' + ic("upload") + 'Publish to all pages</button></span></div>' +
+      '<span style="margin-left:auto;display:flex;gap:8px"><button class="btn" id="hf-export" title="Download header & footer as a file">' + ic("download") + 'Export</button><button class="btn" id="hf-import" title="Load a header & footer file">' + ic("upload") + 'Import</button><span class="badge gold" id="hf-dirty" hidden>Unpublished changes</span><button class="btn" id="hf-undo" title="Undo (Ctrl+Z)" disabled>↶ Undo</button><button class="btn" id="hf-discard">Discard changes</button><button class="btn pri" id="hf-publish">' + ic("upload") + 'Publish to all pages</button></span></div>' +
       '<div id="hf-wrap" style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:20px;align-items:start"><div id="hf-body" style="min-width:0"><div class="empty">Loading…</div></div>' +
       '<div class="card" id="hf-prev" style="position:sticky;top:12px"><div class="card-h"><h3>Live preview</h3><span class="toolbar"><button class="btn sm pri" data-dev="d">Desktop</button><button class="btn sm" data-dev="m">Mobile</button><button class="btn sm" id="hf-mega">Show mega menu</button><button class="btn sm" id="hf-foot">Jump to footer</button></span></div>' +
       '<div class="card-b" style="padding:10px;background:var(--bg)"><div id="hf-frame-box" style="overflow:hidden;border-radius:10px;height:640px;position:relative"><iframe id="hf-frame" src="/" title="Preview" style="border:0;background:#fff;transform-origin:0 0"></iframe></div><p class="muted" style="margin:8px 0 0;font-size:12px">Preview only — nothing is live until you press <b>Publish</b>.</p></div></div></div>';
@@ -183,7 +183,7 @@
     var fdoc = function () { try { return frame.contentDocument; } catch (e) { return null; } };
     var swap = function (d, sel, html) { var n = d.querySelector(sel); if (!n) return; var t = d.createElement("div"); t.innerHTML = html; if (t.firstElementChild) n.replaceWith(t.firstElementChild); };
     var timer = 0;
-    var paint = function () {
+    var paint = function () { if (typeof mark === "function") setTimeout(mark, 0);
       clearTimeout(timer); timer = setTimeout(function () {
         var d = fdoc(); if (!d || !D || !d.querySelector("footer.footer")) return;
         var h = build(D), mOpen = !!d.querySelector(".mega-menu.open");
@@ -205,7 +205,8 @@
     var inp = function (p, v, ph, extra) { return "<input data-p='" + p + "' value='" + A(v) + "' placeholder='" + A(ph || "") + "' " + (extra || "") + " style='margin:0'>"; };
     var area = function (p, v, rows) { return "<textarea data-p='" + p + "' rows='" + (rows || 3) + "' style='margin:0'>" + A(v) + "</textarea>"; };
     var fld = function (label, html) { return "<label style='display:block;margin-bottom:10px'><small class='muted'>" + label + "</small>" + html + "</label>"; };
-    var ctl = function (p) { return "<span style='display:flex;gap:4px'><button class='btn sm' data-mv='" + p + "|-1' title='Move up'>↑</button><button class='btn sm' data-mv='" + p + "|1' title='Move down'>↓</button><button class='btn sm danger' data-rm='" + p + "' title='Remove'>✕</button></span>"; };
+    var grip = "<span class='hf-grip' title='Drag to reorder'>⋮⋮</span>";
+    var ctl = function (p) { return "<span style='display:flex;gap:4px;align-items:center'>" + grip + "<button class='btn sm' data-mv='" + p + "|-1' title='Move up'>↑</button><button class='btn sm' data-mv='" + p + "|1' title='Move down'>↓</button><button class='btn sm danger' data-rm='" + p + "' title='Remove'>✕</button></span>"; };
     var row = function (p, o, extra) { return "<div style='display:grid;grid-template-columns:1fr 1fr auto;gap:6px;align-items:center;margin-bottom:6px'>" + inp(p + ".label", o.label, "Label") + inp(p + ".href", o.href, "/page/", "list='hf-pages'") + "<span style='display:flex;gap:4px;align-items:center'>" + (extra || "") + ctl(p) + "</span></div>"; };
     var card = function (title, inner, btn) { return '<div class="card" style="margin-bottom:16px"><div class="card-h"><h3>' + title + "</h3>" + (btn || "") + '</div><div class="card-b">' + inner + "</div></div>"; };
     var addBtn = function (id, label) { return "<button class='btn sm' data-add='" + id + "'>" + ic("plus") + (label || "Link") + "</button>"; };
@@ -220,7 +221,7 @@
         h += card("Logo", fld("Logo image", imgPick("header.logo", D.header.logo)) + "<div style='display:grid;grid-template-columns:1fr 1fr;gap:8px'>" + fld("Name", inp("header.word", D.header.word)) + fld("Small text", inp("header.small", D.header.small)) + "</div>");
         h += card("Header button", fld("Button text (each page keeps its own button link)", inp("header.cta", D.header.cta, "Get a quote", "maxlength='40'")));
         h += card("Menu links", D.menu.items.map(function (it, i) {
-          if (it.type === "mega") return "<div style='display:grid;grid-template-columns:auto 1fr auto;gap:6px;align-items:center;margin-bottom:6px'><span class='badge gold'>Mega menu</span>" + inp("menu.items." + i + ".label", it.label, "Services") + "<span style='display:flex;gap:4px'><button class='btn sm' data-mv='menu.items." + i + "|-1'>↑</button><button class='btn sm' data-mv='menu.items." + i + "|1'>↓</button><button class='btn sm' data-go='mega'>Edit</button></span></div>";
+          if (it.type === "mega") return "<div style='display:grid;grid-template-columns:auto 1fr auto;gap:6px;align-items:center;margin-bottom:6px'><span class='badge gold'>Mega menu</span>" + inp("menu.items." + i + ".label", it.label, "Services") + "<span style='display:flex;gap:4px;align-items:center'>" + grip + "<button class='btn sm' data-mv='menu.items." + i + "|-1'>↑</button><button class='btn sm' data-mv='menu.items." + i + "|1'>↓</button><button class='btn sm' data-go='mega'>Edit</button></span></div>";
           return row("menu.items." + i, it);
         }).join(""), addBtn("menu.items"));
         h += card("Mobile menu", D.menu.mobile.map(function (l, i) { return row("menu.mobile." + i, l, "<label class='check' style='margin:0 4px 0 0;font-size:12px' title='Show as the gold button (keeps each page’s own link)'><input type='checkbox' data-pc='menu.mobile." + i + ".primary'" + (l.primary ? " checked" : "") + ">Button</label>"); }).join(""), addBtn("menu.mobile"));
@@ -231,7 +232,7 @@
           h += D.mega.cols.map(function (c, ci) {
             var b = "mega.cols." + ci;
             return card("Column " + (ci + 1), "<div style='display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px'>" + inp(b + ".title", c.title, "Heading") + inp(b + ".href", c.href, "/page/", "list='hf-pages'") + "</div>" + c.links.map(function (l, li) { return row(b + ".links." + li, l); }).join("") + addBtn(b + ".links"),
-              "<span style='display:flex;gap:4px'><button class='btn sm' data-mv='mega.cols." + ci + "|-1'>←</button><button class='btn sm' data-mv='mega.cols." + ci + "|1'>→</button>" + (D.mega.cols.length > 2 ? "<button class='btn sm danger' data-rm='mega.cols." + ci + "'>Remove column</button>" : "") + "</span>");
+              "<span style='display:flex;gap:4px;align-items:center'>" + grip + "<button class='btn sm' data-mv='mega.cols." + ci + "|-1'>←</button><button class='btn sm' data-mv='mega.cols." + ci + "|1'>→</button>" + (D.mega.cols.length > 2 ? "<button class='btn sm danger' data-rm='mega.cols." + ci + "'>Remove column</button>" : "") + "</span>");
           }).join("");
           if (D.mega.cols.length < 5) h += "<button class='btn' data-add='mega.cols' style='margin-bottom:16px'>" + ic("plus") + "Add column</button>";
           h += card("Feature card", "<div style='display:grid;grid-template-columns:1fr 1fr;gap:8px'>" + fld("Top link text", inp("mega.studio.label", D.mega.studio.label)) + fld("Top link address", inp("mega.studio.href", D.mega.studio.href, "", "list='hf-pages'")) + "</div>" +
@@ -242,7 +243,9 @@
         var F = D.footer;
         h += card("Intro", fld("Heading (new line = line break)", area("footer.heading", F.heading, 2)) + fld("Text", area("footer.copy", F.copy, 2)) + "<div style='display:grid;grid-template-columns:1fr 1fr;gap:8px'>" + fld("Button text", inp("footer.ctaLabel", F.ctaLabel)) + fld("Button link", inp("footer.ctaHref", F.ctaHref, "", "list='hf-pages'")) + "</div>" +
           "<label class='check'><input type='checkbox' data-pc='footer.introAll'" + (F.introAll ? " checked" : "") + "> Use this intro on <b>all</b> pages <span class='muted'>(off = service pages keep their own heading &amp; button)</span></label>");
-        h += F.cols.map(function (c, ci) { var b = "footer.cols." + ci; return card("Column " + (ci + 1), fld("Title", inp(b + ".title", c.title)) + c.links.map(function (l, li) { return row(b + ".links." + li, l, l.id ? "<span class='badge' title='Points to a section on each page'>auto</span>" : ""); }).join("") + addBtn(b + ".links")); }).join("");
+        h += F.cols.map(function (c, ci) { var b = "footer.cols." + ci; return card("Column " + (ci + 1), fld("Title", inp(b + ".title", c.title)) + c.links.map(function (l, li) { return row(b + ".links." + li, l, l.id ? "<span class='badge' title='Points to a section on each page'>auto</span>" : ""); }).join("") + addBtn(b + ".links"),
+          "<span style='display:flex;gap:4px;align-items:center'>" + grip + "<button class='btn sm' data-mv='" + b + "|-1' title='Move left'>←</button><button class='btn sm' data-mv='" + b + "|1' title='Move right'>→</button>" + (F.cols.length > 1 ? "<button class='btn sm danger' data-rm='" + b + "'>Remove column</button>" : "") + "</span>"); }).join("");
+        if (F.cols.length < 4) h += "<button class='btn' data-add='footer.cols' style='margin-bottom:16px'>" + ic("plus") + "Add footer column</button>";
         var C = F.contact;
         h += card("Contact", fld("Title", inp("footer.contact.title", C.title)) + "<div style='display:grid;grid-template-columns:1fr 1fr;gap:8px'>" + fld("Email", inp("footer.contact.email", C.email)) + fld("WhatsApp link", inp("footer.contact.waHref", C.waHref, "https://wa.me/92…")) + "</div>" +
           fld("WhatsApp text", inp("footer.contact.waLabel", C.waLabel)) + fld("Phone numbers (one per line)", area("footer.contact.tels", C.tels, 2)) + fld("Address (one line each)", area("footer.contact.address", C.address, 3)) + fld("Hours", inp("footer.contact.hours", C.hours)));
@@ -271,7 +274,30 @@
         h += '<div class="card"><div class="card-h"><h3>Published versions</h3><small class="muted">last 10</small></div><div class="card-b" id="hf-vers"><div class="empty">Loading…</div></div></div>';
         body.innerHTML = h; loadVersions(); return;
       }
-      body.innerHTML = h; W.fillIcons && W.fillIcons(body); paint();
+      body.innerHTML = h; W.fillIcons && W.fillIcons(body); paint(); dnd();
+    };
+
+    // ---- P18 B2: undo history, unpublished badge, drag to reorder
+    var hist = [], snap = function () { if (!D) return; var s1 = JSON.stringify(D); if (hist[hist.length - 1] !== s1) { hist.push(s1); if (hist.length > 60) hist.shift(); } mark(); };
+    var mark = function () { var u = $("#hf-undo"), b2 = $("#hf-dirty"); if (u) u.disabled = !hist.length; if (b2) b2.hidden = !D || JSON.stringify(D) === orig; };
+    var undo = function () { if (!hist.length) return; D = JSON.parse(hist.pop()); var sy = window.scrollY; draw(); window.scrollTo(0, sy); mark(); toast("Undone"); };
+    $("#hf-undo").onclick = undo;
+    document.addEventListener("keydown", function (e) { if (!document.body.contains(body)) return; if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key.toLowerCase() === "z" && !/INPUT|TEXTAREA/.test((e.target || {}).tagName || "")) { e.preventDefault(); undo(); } });
+    body.addEventListener("focusin", function (e) { if (e.target.dataset && (e.target.dataset.p || e.target.dataset.pc)) snap(); });
+    var drag = null;
+    var dnd = function () {
+      $$("#hf-body .hf-grip").forEach(function (g) {
+        var mv = g.parentNode.querySelector("[data-mv]"); if (!mv) return;
+        var p = mv.dataset.mv.split("|")[0], it = g.closest(".card-h") ? g.closest(".card") : g.closest("div[style*='grid']"); if (!it) return;
+        it.dataset.dp = p;
+        g.addEventListener("mousedown", function () { it.draggable = true; });
+        it.addEventListener("dragstart", function (e) { if (e.target !== it) return; drag = p; it.classList.add("hf-drag"); e.dataTransfer.effectAllowed = "move"; try { e.dataTransfer.setData("text/plain", p); } catch (x) {} });
+        it.addEventListener("dragend", function () { it.draggable = false; it.classList.remove("hf-drag"); $$("#hf-body .hf-over").forEach(function (x) { x.classList.remove("hf-over"); }); drag = null; });
+        var same = function () { return drag && drag !== p && drag.replace(/\.\d+$/, "") === p.replace(/\.\d+$/, ""); };
+        it.addEventListener("dragover", function (e) { if (!same()) return; e.preventDefault(); e.stopPropagation(); it.classList.add("hf-over"); });
+        it.addEventListener("dragleave", function () { it.classList.remove("hf-over"); });
+        it.addEventListener("drop", function (e) { if (!same()) return; e.preventDefault(); e.stopPropagation(); var a1 = parent(drag), to = +p.split(".").pop(); snap(); a1.arr.splice(to, 0, a1.arr.splice(a1.k, 1)[0]); drag = null; var sy = window.scrollY; draw(); window.scrollTo(0, sy); });
+      });
     };
 
     // ---- state editing
@@ -281,6 +307,7 @@
     body.addEventListener("change", function (e) { var p = e.target.dataset.pc; if (p && D) { var a = p.split("."), k = a.pop(); get(a.join("."))[k] = e.target.checked; paint(); } if (e.target.dataset.p && /\.(logo|img)$/.test(e.target.dataset.p)) draw(); if (e.target.dataset.p && /^design\.(mBg|mText|mAccent|hBg|hText)$/.test(e.target.dataset.p)) { var sy = window.scrollY; draw(); window.scrollTo(0, sy); } });
     body.addEventListener("click", function (e) {
       var b = e.target.closest("button"); if (!b || !D) return;
+      if (b.dataset.reset || b.dataset.preset || b.dataset.mv || b.dataset.rm || b.dataset.add) snap();
       if (b.dataset.reset) { D.design = dfix({}); draw(); toast("Design reset to default — Publish to apply"); return; }
       if (b.dataset.preset) { D.design = dfix(Object.assign({}, DDEF, { phone: (D.design || {}).phone || "", phoneShow: !!(D.design || {}).phoneShow }, DPRESETS[b.dataset.preset] || {})); draw(); toast("Preset applied — check the preview, then Publish"); return; }
       if (b.dataset.mv) { var q = b.dataset.mv.split("|"), o = parent(q[0]), to = o.k + +q[1]; if (to < 0 || to >= o.arr.length) return; o.arr.splice(to, 0, o.arr.splice(o.k, 1)[0]); draw(); }
@@ -289,6 +316,7 @@
       else if (b.dataset.add) {
         var t = get(b.dataset.add);
         if (b.dataset.add === "mega.cols") { if (t.length < 5) t.push({ title: "New column", href: "/", route: "", links: [{ label: "New link", href: "/" }] }); }
+        else if (b.dataset.add === "footer.cols") { if (t.length < 4) t.push({ title: "New column", links: [{ label: "New link", href: "/" }] }); }
         else if (b.dataset.add === "menu.items") t.push({ type: "link", label: "New link", href: "/" });
         else if (b.dataset.add === "menu.mobile") t.splice(Math.max(0, t.length - 1), 0, { label: "New link", href: "/" });
         else t.push({ label: "New link", href: "/" });
