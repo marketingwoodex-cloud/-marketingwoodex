@@ -1308,7 +1308,7 @@
   }
   window.__wx5.templates = templatesGallery;
   // P17 C1/C2 hooks for builder-p17.js
-  Object.assign(window.__wx5, { S: S, api: api, modal: modal, closeModal: closeModal, toast: toast, esc: esc, thumb: thumb, sanitize: sanitize, guessCat: guessCat, wide: wide, insertSection: insertSection, insertElement: insertElement, renderMine: renderMine, cats: BLOCK_CATS, download: download });
+  Object.assign(window.__wx5, { S: S, api: api, modal: modal, closeModal: closeModal, toast: toast, esc: esc, thumb: thumb, sanitize: sanitize, guessCat: guessCat, wide: wide, insertSection: insertSection, insertElement: insertElement, renderMine: renderMine, cats: BLOCK_CATS, download: download, setImg: setImg, packStyles: packStyles, cleanOuter: cleanOuter, changed: changed, afterInsert: afterInsert, build: build, media: function (cb) { mediaPicker(cb); } });
   var tgBtn = document.createElement("button"); tgBtn.className = "btn btn-pri"; tgBtn.style.cssText = "width:100%;margin:0 0 10px"; tgBtn.textContent = "✨ Browse " + ((window.WX_TEMPLATES || []).length || 50) + " templates (v26 + UI kit)";
   tgBtn.onclick = function () { if (S.doc) templatesGallery(); }; var ls = $("#lib-sections"); if (ls) ls.parentNode.insertBefore(tgBtn, ls.previousElementSibling || ls);
 
