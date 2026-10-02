@@ -28,6 +28,11 @@ if ($cfg['waSecret'] !== '') {
 $j = json_decode($raw, true) ?: [];
 http_response_code(200); header('Content-Type: application/json'); echo '{"ok":true}';
 if (function_exists('fastcgi_finish_request')) fastcgi_finish_request(); // answer Meta fast, then work
+// P18 G: delivery / read receipts, replies to campaigns, STOP opt-outs (works even when the AI agent is off)
+$wagStop = [];
+try { $wagStop = wag_webhook($j); } catch (Throwable $e) { error_log('wa automation: ' . $e->getMessage()); }
+foreach ($wagStop as $p) { try { wa_text('+' . $p, 'You will not receive offers from Woodex Interior on WhatsApp any more. Reply START to subscribe again. For your project, just message us here.'); } catch (Throwable $e) {} }
+if ($wagStop) foreach (($j['entry'] ?? []) as $k1 => $en) foreach (($en['changes'] ?? []) as $k2 => $chg) foreach (($chg['value']['messages'] ?? []) as $k3 => $m) if (in_array(wag_phone((string)($m['from'] ?? '')), $wagStop, true)) unset($j['entry'][$k1]['changes'][$k2]['value']['messages'][$k3]);
 if (!$cfg['waAgent']) exit;
 
 try {

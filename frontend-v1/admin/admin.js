@@ -67,6 +67,7 @@
       ["templates", "Quote templates", "layers", "owner,admin,sales"]] },
     ["projects", "Projects", "briefcase"],
     ["offers", "WhatsApp offers", "send", "owner,admin,sales", null, "new"],
+    ["wauto", "WhatsApp automation", "zap", "owner,admin,sales", null, "new"],
     ["Support"],
     ["chat", "Inbox", "message-circle", "owner,admin,sales"],
     ["updates", "Client updates", "send", "owner,admin"],

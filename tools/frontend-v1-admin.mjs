@@ -620,6 +620,130 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
     db.bookings.push(b); save(db); sendAlerts({ ...l, service: t.label + " — " + when }).catch(() => {});
     return { ok: true, id: b.id, when, type: t.label };
   }
+  /* P18 G mirror: WhatsApp automation (mirrors api/p18g-lib.php). The preview has no real WhatsApp number, so sends are SIMULATED (fake message ids). */
+  const WAGF = path.join(PRIV, "wa-auto.json");
+  const WAG_FLOWS = { welcome: "New enquiry → welcome", quote: "Quote sent → follow-up", invoice: "Invoice due → reminder", booking: "Site visit → reminder the day before" };
+  const WAG_VARS = { "{name}": "First name", "{fullname}": "Full name", "{company}": "Company", "{city}": "City", "{ref}": "Quote / invoice no.", "{amount}": "Amount (Rs)", "{date}": "Date", "{time}": "Time", "{link}": "Link" };
+  const WAG_STOP = /^\s*(stop|unsubscribe|band karo|بند|ruk jao|no more)\s*[.!]*\s*$/iu;
+  const dts = (ms) => new Date(ms).toISOString().slice(0, 19).replace("T", " ");
+  function wagLoad() {
+    const d = jr(WAGF, {}); d.cfg = { dailyCap: 250, perTick: 25, cronKey: "", quietFrom: "21:00", quietTo: "09:00", ...(d.cfg || {}) }; if (!d.cfg.cronKey) d.cfg.cronKey = crypto.randomBytes(12).toString("hex");
+    const fl = d.flows || {}; for (const k of Object.keys(WAG_FLOWS)) fl[k] = { on: false, tpl: "", params: [], days: k === "quote" ? 2 : 1, sent: 0, failed: 0, ...(fl[k] || {}) }; d.flows = fl;
+    for (const k of ["tpls", "segs", "camps"]) d[k] = d[k] || []; for (const k of ["optout", "day", "flowlog", "mid"]) d[k] = d[k] || {}; return d;
+  }
+  const wagSave = (d) => jw(WAGF, d);
+  const wagPhone = (p) => { let d = String(p || "").replace(/\D/g, ""); if (d.length === 11 && d[0] === "0") d = "92" + d.slice(1); if (d.length === 10 && d[0] === "3") d = "92" + d; return d.length >= 10 ? d : ""; };
+  const wagId = () => crypto.randomBytes(5).toString("hex");
+  function wagContacts(db) {
+    ensureCrm(db); const o = new Map();
+    for (const r of db.leads) { const p = wagPhone(r.phone); if (!p) continue; const prev = o.get(p);
+      o.set(p, { p, n: r.name, co: r.company || "", city: r.location || "", line: r.line || "", stage: r.stage, tags: r.tags || [], last: r.last_contact || r.created_at, created: r.created_at, lid: r.id, cid: r.client_id ?? (prev ? prev.cid : null), kind: "lead" }); }
+    for (const r of db.clients) { const p = wagPhone(r.phone); if (!p) continue; const x = o.get(p);
+      if (x) { x.kind = "client"; x.cid = r.id; if (!x.city) x.city = r.city || ""; continue; }
+      o.set(p, { p, n: r.name, co: r.company || "", city: r.city || "", line: "", stage: "won", tags: [], last: r.created_at, created: r.created_at, lid: null, cid: r.id, kind: "client" }); }
+    return [...o.values()];
+  }
+  const wagFilter = (f = {}) => ({ who: ["leads", "clients"].includes(f.who) ? f.who : "all", line: clip(f.line, 30), stages: (Array.isArray(f.stages) ? f.stages : []).filter((x) => ["new", "contacted", "visit", "quote", "won", "lost"].includes(x)), city: clip(f.city, 80), tag: clip(f.tag, 40), quiet: Math.max(0, Math.min(3650, parseInt(f.quiet) || 0)), recent: Math.max(0, Math.min(3650, parseInt(f.recent) || 0)) });
+  function wagMatch(c, f) {
+    if (f.who === "leads" && c.kind !== "lead") return false; if (f.who === "clients" && c.kind !== "client") return false;
+    if (f.line && c.line.toLowerCase() !== f.line.toLowerCase()) return false; if (f.stages.length && !f.stages.includes(c.stage)) return false;
+    if (f.city && !c.city.toLowerCase().includes(f.city.toLowerCase())) return false; if (f.tag && !c.tags.map((t) => String(t).trim().toLowerCase()).includes(f.tag.toLowerCase())) return false;
+    if (f.quiet && c.last > dts(Date.now() - f.quiet * 864e5)) return false; if (f.recent && c.created < dts(Date.now() - f.recent * 864e5)) return false; return true;
+  }
+  const wagAudience = (db, f, d) => { const m = wagContacts(db).filter((c) => wagMatch(c, f)); return [m.filter((c) => !d.optout[c.p]), m.filter((c) => d.optout[c.p]).length]; };
+  function wagFill(params, v) { const first = String(v.n || "").trim().split(" ")[0]; const map = { "{name}": first || "there", "{fullname}": v.n || "", "{company}": v.co || "", "{city}": v.city || "", "{ref}": v.ref || "", "{amount}": v.amount != null ? Number(v.amount).toLocaleString("en-US") : "", "{date}": v.date || "", "{time}": v.time || "", "{link}": v.link || "" };
+    return params.map((p) => (String(p).replace(/\{[a-z]+\}/g, (m) => (m in map ? map[m] : m)).trim() || "-").slice(0, 900)); }
+  const wagTpl = (d, id) => d.tpls.find((t) => t.id === id) || null;
+  const wagSend = (to, t, vals) => (/^(\d)\1+$/.test(to.slice(-7)) ? { ok: false, error: "(preview) invalid number" } : { ok: true, id: "wamid.SIM" + wagId() });
+  const wagLeft = (d) => Math.max(0, d.cfg.dailyCap - (d.day[now().slice(0, 10)] || 0));
+  function wagStats(c) { const s = { total: c.rcp.length, queued: 0, sent: 0, delivered: 0, read: 0, replied: 0, failed: 0, skipped: 0 }, rank = { sent: 1, delivered: 2, read: 3, replied: 4 };
+    for (const r of c.rcp) { if (rank[r.s]) { for (const [k, n] of Object.entries(rank)) if (n <= rank[r.s]) s[k]++; } else if (r.s in s) s[r.s]++; } return s; }
+  const wagPub = (c, full) => { const o = { ...c, stats: wagStats(c) }; if (!full) delete o.rcp; else o.rcp = c.rcp.slice(0, 500); return o; };
+  function wagFlowDue(db, d) {
+    const jobs = [], F = d.flows, log = d.flowlog;
+    if (F.welcome.on && F.welcome.tpl) for (const l of db.leads) { if (l.created_at < dts(Date.now() - 2 * 864e5)) continue; const k = "welcome:" + l.id, p = wagPhone(l.phone); if (!p || log[k]) continue; jobs.push(["welcome", k, { p, n: l.name, co: l.company || "", city: l.location || "", lid: l.id }]); }
+    if (F.quote.on && F.quote.tpl) { const days = Math.max(1, F.quote.days), cut = dts(Date.now() - days * 864e5), old = dts(Date.now() - (days + 7) * 864e5);
+      for (const x of db.quotes || []) { if (x.status !== "sent" || !x.sent_at || x.sent_at > cut || x.sent_at < old) continue; const k = "quote:" + x.id, p = wagPhone((x.client || {}).phone); if (!p || log[k]) continue; jobs.push(["quote", k, { p, n: (x.client || {}).name || "", co: (x.client || {}).company || "", ref: x.no || "", amount: x.total || 0, lid: x.lead_id }]); } }
+    if (F.invoice.on && F.invoice.tpl) { const due = dts(Date.now() + Math.max(0, F.invoice.days) * 864e5).slice(0, 10);
+      for (const i0 of db.invoices || []) { const i = invPub({ payments: [], ...i0 }); if (i.due_date !== due || i.balance <= 0) continue; const k = "invoice:" + i.id + ":" + due, p = wagPhone((i.client || {}).phone); if (!p || log[k]) continue; jobs.push(["invoice", k, { p, n: (i.client || {}).name || "", co: (i.client || {}).company || "", ref: i.no || "", amount: i.balance, date: due }]); } }
+    if (F.booking.on && F.booking.tpl) { const tm = dts(Date.now() + 864e5).slice(0, 10);
+      for (const b of db.bookings || []) { if (b.d !== tm || b.status !== "confirmed") continue; const k = "booking:" + b.id + ":" + b.d, p = wagPhone(b.phone); if (!p || log[k]) continue; const h = +b.tm.slice(0, 2); jobs.push(["booking", k, { p, n: b.name, date: b.d, time: ((h % 12) || 12) + ":" + b.tm.slice(3) + (h < 12 ? " am" : " pm"), lid: b.lead_id }]); } }
+    return jobs;
+  }
+  function wagTick(db) {
+    const d = wagLoad(), sum = { flows: 0, camp: 0, failed: 0 }; let budget = Math.min(d.cfg.perTick, wagLeft(d));
+    const send = (p, t, v) => { const r = wagSend(p, t, v); budget--; if (r.ok) { const k = now().slice(0, 10); d.day[k] = (d.day[k] || 0) + 1; } return r; };
+    for (const [fk, key, v] of wagFlowDue(db, d)) { if (budget <= 0) break; const f = d.flows[fk], t = wagTpl(d, f.tpl); if (!t) continue; if (d.optout[v.p]) { d.flowlog[key] = now(); continue; }
+      const r = send(v.p, t, wagFill(f.params, v)); d.flowlog[key] = now(); if (r.ok) { f.sent++; sum.flows++; d.mid[r.id] = ["f", fk, now()]; } else { f.failed++; sum.failed++; f.lastError = r.error; } }
+    outer: for (const c of d.camps) {
+      if (c.status === "scheduled" && c.when <= now()) c.status = "sending"; if (c.status !== "sending") continue;
+      const t = wagTpl(d, c.tpl); if (!t) { c.status = "failed"; c.error = "Template was deleted"; continue; }
+      for (let i = 0; i < c.rcp.length; i++) { const r = c.rcp[i]; if (r.s !== "queued") continue; if (budget <= 0) break outer;
+        if (d.optout[r.p]) { r.s = "skipped"; r.e = "opted out"; continue; }
+        const x = send(r.p, t, wagFill(c.params, r)); r.t = now(); if (x.ok) { r.s = "sent"; r.w = x.id; d.mid[x.id] = ["c", c.id, i]; sum.camp++; } else { r.s = "failed"; r.e = x.error; sum.failed++; } }
+      if (c.status === "sending" && !c.rcp.some((r) => r.s === "queued")) { c.status = "done"; c.done_at = now(); }
+    }
+    d.lastTick = now(); wagSave(d); return { ...sum, left: wagLeft(d) };
+  }
+  function wagWebhook(j) { // same logic as PHP wag_webhook — used by the preview's wag_sim action
+    const d = wagLoad(), rank = { queued: 0, sent: 1, delivered: 2, read: 3, replied: 4 }, stopped = [];
+    for (const en of j.entry || []) for (const chg of en.changes || []) { const v = chg.value || {};
+      for (const s of v.statuses || []) { const m = d.mid[s.id]; if (!m || m[0] !== "c") continue; const c = d.camps.find((x) => x.id === m[1]); const r = c && c.rcp[m[2]]; if (!r) continue;
+        if (s.status === "failed") { if ((rank[r.s] || 0) <= 1) { r.s = "failed"; r.e = "not delivered"; } } else if ((rank[s.status] || 0) > (rank[r.s] || 0)) r.s = s.status; }
+      for (const m of v.messages || []) { const p = wagPhone(m.from); if (!p) continue; const txt = (m.text || {}).body || "";
+        if (WAG_STOP.test(txt)) { d.optout[p] = d.optout[p] || now(); stopped.push(p); continue; }
+        if (/^\s*(start|subscribe)\s*$/i.test(txt)) delete d.optout[p];
+        const since = dts(Date.now() - 14 * 864e5);
+        for (const c of [...d.camps].reverse()) { let hit = false; for (const r of c.rcp) if (r.p === p && ["sent", "delivered", "read"].includes(r.s) && (r.t || "") >= since) { r.s = "replied"; hit = true; } if (hit) break; } } }
+    wagSave(d); return stopped;
+  }
+  async function p18g(action, inp, need, db, ip) {
+    if (!/^wag_/.test(action)) return null;
+    const OA = ["owner", "admin"], SL = ["owner", "admin", "sales"];
+    switch (action) {
+      case "wag_get": { const u = need(SL), d = wagLoad(); wagSave(d); const all = wagContacts(db), vals = (k) => [...new Set(all.map((c) => String(c[k] || "").trim()).filter(Boolean))], tags = new Set(); all.forEach((c) => c.tags.forEach((t) => String(t).trim() && tags.add(String(t).trim())));
+        const oa = OA.includes(u.role); return { ok: true, cfg: oa ? d.cfg : { ...d.cfg, cronKey: undefined }, cronUrl: oa ? "/api/wa-cron.php?key=" + d.cfg.cronKey : "", flows: d.flows, flowNames: WAG_FLOWS, tpls: d.tpls, segs: d.segs, camps: [...d.camps].reverse().map((c) => wagPub(c)), vars: WAG_VARS,
+          optout: Object.keys(d.optout).length, today: d.day[now().slice(0, 10)] || 0, left: wagLeft(d), lastTick: d.lastTick || null, connected: true, preview: true, opts: { lines: vals("line"), cities: vals("city").slice(0, 80), tags: [...tags].slice(0, 80) }, contacts: all.length }; }
+      case "wag_audience": { need(SL); const d = wagLoad(), [L, opt] = wagAudience(db, wagFilter(inp.filter), d); return { ok: true, count: L.length, optedOut: opt, sample: L.slice(0, 25).map((c) => ({ name: c.n, phone: "+" + c.p, city: c.city, stage: c.stage, kind: c.kind, line: c.line })) }; }
+      case "wag_seg_save": { const u = need(SL), d = wagLoad(), name = clip(inp.name, 60); if (!name) throw new Fail("Give the segment a name"); const s = { id: clip(inp.id, 20) || wagId(), name, filter: wagFilter(inp.filter), updated: now() };
+        const i = d.segs.findIndex((x) => x.id === s.id); if (i >= 0) d.segs[i] = s; else { if (d.segs.length >= 50) throw new Fail("Up to 50 segments"); d.segs.push(s); } wagSave(d); log(db, u, "wa.segment", name, ip); save(db); return { ok: true, seg: s }; }
+      case "wag_seg_delete": { need(SL); const d = wagLoad(); d.segs = d.segs.filter((x) => x.id !== inp.id); wagSave(d); return { ok: true }; }
+      case "wag_tpl_save": { const u = need(OA), d = wagLoad(), name = clip(inp.name, 120).toLowerCase(); if (!/^[a-z0-9_]{1,120}$/.test(name)) throw new Fail("Template name must match the name in Meta exactly: lowercase letters, numbers and _ only");
+        const body = clip(inp.body, 1024); if (!body) throw new Fail("Paste the template text from Meta so you can preview it"); const n = Math.max(0, ...[...body.matchAll(/\{\{(\d+)\}\}/g)].map((m) => +m[1]));
+        const params = (Array.isArray(inp.params) ? inp.params : []).slice(0, n).map((p) => clip(p, 200)); while (params.length < n) params.push("{name}");
+        const t = { id: clip(inp.id, 20) || wagId(), name, lang: clip(inp.lang, 10) || "en", label: clip(inp.label, 60) || name, body, params, cat: ["marketing", "utility"].includes(inp.cat) ? inp.cat : "marketing" };
+        const i = d.tpls.findIndex((x) => x.id === t.id); if (i >= 0) d.tpls[i] = t; else d.tpls.push(t); wagSave(d); log(db, u, "wa.template", name, ip); save(db); return { ok: true, tpl: t }; }
+      case "wag_tpl_delete": { need(OA); const d = wagLoad(); for (const [k, f] of Object.entries(d.flows)) if (f.on && f.tpl === inp.id) throw new Fail("This template is used by the auto flow “" + WAG_FLOWS[k] + "”. Turn it off first.");
+        if (d.camps.some((c) => c.tpl === inp.id && ["scheduled", "sending", "paused"].includes(c.status))) throw new Fail("A campaign that is still sending uses this template"); d.tpls = d.tpls.filter((x) => x.id !== inp.id); wagSave(d); return { ok: true }; }
+      case "wag_camp_save": { const u = need(SL), d = wagLoad(), name = clip(inp.name, 80); if (!name) throw new Fail("Give the campaign a name"); const t = wagTpl(d, inp.tpl); if (!t) throw new Fail("Choose a template");
+        const f = wagFilter(inp.filter), [L] = wagAudience(db, f, d); if (!L.length) throw new Fail("No one matches this audience"); if (L.length > 5000) throw new Fail("Audience is over 5,000 people — narrow it down");
+        let when = now(); if (inp.when) { const ms = Date.parse(String(inp.when).replace(" ", "T")); if (isNaN(ms)) throw new Fail("Invalid schedule time"); when = String(inp.when).replace("T", " ").slice(0, 16) + ":00"; }
+        const params = (Array.isArray(inp.params) ? inp.params : t.params).slice(0, t.params.length).map((p) => clip(p, 200)); while (params.length < t.params.length) params.push(t.params[params.length]);
+        const c = { id: wagId(), name, tpl: t.id, tplName: t.label, params, filter: f, seg: clip(inp.seg, 20), when, status: inp.draft ? "draft" : when > now() ? "scheduled" : "sending", created_at: now(), created_by: u.name, rcp: L.map((x) => ({ p: x.p, n: x.n, co: x.co, city: x.city, lid: x.lid, s: "queued" })) };
+        d.camps.push(c); wagSave(d); log(db, u, "wa.campaign", name + " → " + L.length, ip); save(db); const tick = c.status === "sending" ? wagTick(db) : null; return { ok: true, camp: wagPub(wagLoad().camps.find((x) => x.id === c.id)), tick }; }
+      case "wag_camp_get": { need(SL); const c = wagLoad().camps.find((x) => x.id === inp.id); if (!c) throw new Fail("Campaign not found", 404); return { ok: true, camp: wagPub(c, true) }; }
+      case "wag_camp_action": { const u = need(SL), d = wagLoad(), i = d.camps.findIndex((x) => x.id === inp.id), c = d.camps[i], dd = inp.do; if (!c) throw new Fail("Campaign not found", 404);
+        if (dd === "cancel" && ["draft", "scheduled", "sending", "paused"].includes(c.status)) { c.status = "cancelled"; c.rcp.forEach((r) => { if (r.s === "queued") r.s = "skipped"; }); }
+        else if (dd === "pause" && ["sending", "scheduled"].includes(c.status)) c.status = "paused";
+        else if ((dd === "resume" || dd === "start") && ["paused", "draft"].includes(c.status)) { c.status = "sending"; delete c.error; }
+        else if (dd === "retry") { c.rcp.forEach((r) => { if (r.s === "failed") { r.s = "queued"; delete r.e; } }); if (["done", "paused"].includes(c.status)) c.status = "sending"; }
+        else if (dd === "delete" && !["sending", "scheduled"].includes(c.status)) d.camps.splice(i, 1);
+        else throw new Fail("That action is not possible now");
+        wagSave(d); log(db, u, "wa.campaign." + dd, inp.id, ip); save(db); if (["resume", "start", "retry"].includes(dd)) wagTick(db); return { ok: true }; }
+      case "wag_flows_save": { const u = need(OA), d = wagLoad();
+        for (const [k, f] of Object.entries(inp.flows || {})) { if (!WAG_FLOWS[k] || !f) continue; const t = wagTpl(d, f.tpl); if (f.on && !t) throw new Fail(WAG_FLOWS[k] + ": choose a template");
+          const pr = t ? (Array.isArray(f.params) ? f.params : t.params).slice(0, t.params.length).map((p) => clip(p, 200)) : []; while (t && pr.length < t.params.length) pr.push("{name}");
+          d.flows[k] = { ...d.flows[k], on: !!f.on, tpl: t ? t.id : "", days: Math.max(0, Math.min(30, parseInt(f.days ?? d.flows[k].days) || 0)), params: pr }; }
+        if (inp.cfg) { const cf = inp.cfg; d.cfg.dailyCap = Math.max(1, Math.min(100000, parseInt(cf.dailyCap) || 250)); d.cfg.perTick = Math.max(1, Math.min(200, parseInt(cf.perTick) || 25)); for (const k of ["quietFrom", "quietTo"]) d.cfg[k] = /^\d\d:\d\d$/.test(cf[k] || "") ? cf[k] : ""; }
+        wagSave(d); log(db, u, "wa.flows", "", ip); save(db); return { ok: true, flows: d.flows, cfg: d.cfg }; }
+      case "wag_optout": { need(SL); const d = wagLoad(), p = wagPhone(inp.phone); if (!p) throw new Fail("Enter a valid phone number"); if (inp.remove) delete d.optout[p]; else d.optout[p] = now(); wagSave(d); return { ok: true, optout: Object.keys(d.optout).length }; }
+      case "wag_optout_list": { need(SL); const d = wagLoad(); return { ok: true, list: Object.entries(d.optout).sort((a, b) => (a[1] < b[1] ? 1 : -1)).map(([p, t]) => ({ phone: "+" + p, t })) }; }
+      case "wag_tick": { need(SL); return { ok: true, ...wagTick(db) }; }
+      case "wag_test": { need(OA); const d = wagLoad(), t = wagTpl(d, inp.tpl); if (!t) throw new Fail("Choose a template"); if (!wagPhone(inp.phone)) throw new Fail("Enter your WhatsApp number"); return { ok: true, preview: true }; }
+      case "wag_sim": { need(OA); return { ok: true, stopped: wagWebhook(inp.payload || {}) }; } // preview only: feed a fake Meta webhook payload
+    }
+    return null;
+  }
   /* P18 E mirror: estimator rate book + forms settings (mirrors api/p18e-lib.php) */
   const FORMS_WEB = { contact: "Contact form", estimator: "Cost estimator", brief: "3D brief", "fitout-hub": "Fit-out quote", "office-fitout": "Office fit-out quote", whatsapp: "WhatsApp widget" };
   const FORM_DEF = { alertTo: "", waAlert: true, reply: true, replyText: "" }, FORMSF = path.join(PRIV, "forms.json");
@@ -1832,7 +1956,7 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
         return done({ ok: true, rows: all.slice((page - 1) * per, page * per).map(({ user_name, action, target, ip, created_at }) => ({ user_name, action, target, ip, created_at })), total: all.length, per, page });
       }
       default: {
-        const r = (await p18e(action, inp, need, db, ip)) || (await pbk(action, inp, need, db, ip)) || (await a2(action, inp, need, db, ip)) || (await a17(action, inp, need, db, ip)) || (await a4(action, inp, need, db, ip)) || a5(action, inp, need, db, ip) || (await a6(action, inp, need, db, ip)) || (await a7(action, inp, need, db, ip)) || (await a8(action, inp, need, db, ip)) || (await p8(action, inp, need, db, ip, req)) || (await p10(action, inp, need, db, ip, req)) || (await p12(action, inp, need, db, ip)) || (await p13(action, inp, need, db, ip)); if (r) return r;
+        const r = (await p18g(action, inp, need, db, ip)) || (await p18e(action, inp, need, db, ip)) || (await pbk(action, inp, need, db, ip)) || (await a2(action, inp, need, db, ip)) || (await a17(action, inp, need, db, ip)) || (await a4(action, inp, need, db, ip)) || a5(action, inp, need, db, ip) || (await a6(action, inp, need, db, ip)) || (await a7(action, inp, need, db, ip)) || (await a8(action, inp, need, db, ip)) || (await p8(action, inp, need, db, ip, req)) || (await p10(action, inp, need, db, ip, req)) || (await p12(action, inp, need, db, ip)) || (await p13(action, inp, need, db, ip)); if (r) return r;
         throw new Fail("Unknown action", 404);
       }
     }
