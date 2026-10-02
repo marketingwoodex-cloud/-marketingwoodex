@@ -14,13 +14,15 @@
 | Role permissions: owner/admin actions called as a **Sales** user | ✅ all refused (the only allowed `sec_*` actions affect the user's own account, by design) |
 | Static check: every PHP action runs a permission check before writing data | ✅ yes (`db_reconnect` is protected by the builder password and only works while the DB is broken) |
 | Dashboard numbers vs. raw data (leads, pipeline, funnel, open quotes, sent, unpaid, charts, follow-ups) | ✅ 9 / 9 match |
-| Sales system tests (lead tracker, import, quotes, invoices, projects, banks) | ✅ all pass (p17-s* suites) |
+| Sales system tests (lead tracker, import, quotes, invoices, projects, banks) | ✅ 54 / 54 (p17-s12, s3, s4, s5) |
 | Content, templates and AI agent (MCP) tests | ✅ all pass |
 | Browser tests (header/footer, sections, booking, FAQ groups, testimonials, media, leak test) | ✅ all pass (incl. new leak test 3/3) |
 | Every admin screen (37), plus the older P16 suites (users, lists, inbox, integrations, redirects, UI kit, builder) | ✅ clean after the fixes below |
 | Landing pages: 87 pages at mobile (390 px) and desktop (1366 px) | ✅ 0 issues (overflow, broken images, JS errors) |
 | Sitemap (87 URLs = 87 pages) / internal links / SEO tags | ✅ checked in the P17 final audit |
 | Speed (Lighthouse, mobile) | 90+ target from P15/P16 is kept (no heavy code added to public pages) |
+| Logic edge cases (`qa-edge.mjs`): amount in words (lakh/crore, e.g. 4,157,300 = "Forty One Lakh Fifty Seven Thousand Three Hundred"), back-to-back bookings, overlaps, cancelled slot freed, bad time, unique WI/WF numbers, balance = total − paid | ✅ 20 / 20 |
+| Already covered by suites: import dedupe (leads + invoices), milestones must total 100%, billed milestone locked, double booking blocked | ✅ |
 
 **Overall: ready to go live**, once the zip is uploaded (see section 4).
 
@@ -34,7 +36,7 @@
 | 2 | Medium | Templates and FAQ groups were loaded on the login screen and the empty result was kept after sign-in. Linked FAQs could publish empty until a reload. | Fixed in the final audit (`e6ab179`). |
 | 3 | Low | Settings → General could throw an error if a delayed preview update ran after you switched tabs. | Guards added. |
 
-The test scripts are saved in `tools/phplint/` (`qa-api-sweep`, `qa-php-guards`, `qa-dash`, `qa-leak`) so this QA can be re-run any time.
+The test scripts are saved in `tools/phplint/` (`qa-api-sweep`, `qa-php-guards`, `qa-dash`, `qa-leak`, `qa-edge`) so this QA can be re-run any time.
 
 ---
 
