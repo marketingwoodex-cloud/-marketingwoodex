@@ -12,7 +12,7 @@
   function sortable(tbl) {
     var ths = tbl.querySelectorAll("thead th"), tb = tbl.tBodies[0]; if (!tb || !ths.length) return;
     var plain = [].every.call(tb.rows, function (r) { return r.querySelector(".empty") || (r.cells.length === ths.length && !r.querySelector("[colspan]")); });
-    if (!plain || tb.rows.length < 3) return;
+    if (!plain || tb.rows.length < 3 || tb.querySelector("input,select,textarea")) return; /* editable tables are never sorted */
     [].forEach.call(ths, function (th, i) {
       if (th.dataset.srt || !th.textContent.trim() || th.querySelector("input")) return; th.dataset.srt = "1"; th.classList.add("srt"); th.title = "Sort";
       th.addEventListener("click", function () { var k = key() + "|" + i, cur = SORT[key()]; SORT[key()] = { i: i, d: cur && cur.i === i && cur.d === 1 ? -1 : 1 }; apply(tbl); tbl.dataset.pg = 1; run(); });

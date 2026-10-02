@@ -63,6 +63,7 @@
     { g: "Quotes & invoices", icon: "file-text", id: "money", items: [
       ["quotes", "Quotations", "file-text", "owner,admin,sales"],
       ["invoices", "Invoices", "receipt", "owner,admin,sales"],
+      ["transactions", "Transactions", "receipt", "owner,admin,sales", null, "new"],
       ["templates", "Quote templates", "layers", "owner,admin,sales"]] },
     ["projects", "Projects", "briefcase"],
     ["offers", "WhatsApp offers", "send", "owner,admin,sales", null, "new"],
