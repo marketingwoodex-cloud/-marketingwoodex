@@ -206,10 +206,23 @@ function chat_actions(string $action, array $in): bool {
                     $items[] = ['kind' => 'chat', 'id' => (int)$r['id'], 't' => $r['updated_at'], 'title' => ($r['needs'] ? 'Needs a person · ' : 'Live chat · ') . ($r['name'] ?: 'Visitor #' . $r['id']), 'text' => (string)$r['last_text'], 'href' => '#/chat/' . $r['id']];
                 foreach (q('SELECT id,name,source,service,created_at FROM wx_leads WHERE is_read=0 ORDER BY id DESC LIMIT 8')->fetchAll() as $r)
                     $items[] = ['kind' => 'lead', 'id' => (int)$r['id'], 't' => $r['created_at'], 'title' => 'New enquiry · ' . $r['name'], 'text' => (CRM_SOURCES[$r['source']] ?? $r['source']) . ($r['service'] ? ' · ' . $r['service'] : ''), 'href' => '#/leads'];
+                // P18 D3: one feed — visits to confirm, payments (48 h), overdue invoices
+                $bkMax = 0; $payN = 0;
+                try { $bkMax = (int)q('SELECT COALESCE(MAX(id),0) FROM wx_bookings')->fetchColumn();
+                    foreach (q("SELECT id,name,d,tm,type,created_at FROM wx_bookings WHERE status='pending' AND d>=? ORDER BY d,tm LIMIT 5", [date('Y-m-d')])->fetchAll() as $r)
+                        $items[] = ['kind' => 'booking', 'id' => (int)$r['id'], 't' => $r['created_at'], 'title' => 'Visit to confirm · ' . $r['name'], 'text' => date('D j M', strtotime($r['d'])) . ' · ' . $r['tm'], 'href' => '#/bookings'];
+                } catch (Throwable $e) { /* bookings not set up */ }
+                try { $od = []; $cut = date('Y-m-d H:i:s', time() - 172800);
+                    foreach (doc_all('wx_invoices') as $iv) { $iv = inv_pub($iv);
+                        foreach ($iv['payments'] as $pm) { $payN++; if ((string)($pm['t'] ?? '') >= $cut) $items[] = ['kind' => 'payment', 'id' => (int)$iv['id'] * 1000 + (int)$pm['id'], 't' => (string)$pm['t'], 'title' => 'Payment received · Rs ' . number_format((int)$pm['amount']), 'text' => $iv['no'] . ' · ' . (string)($iv['client']['name'] ?? ''), 'href' => '#/invoice/' . $iv['id']]; }
+                        if ($iv['overdue']) $od[] = $iv['no'] . ' (' . (string)($iv['client']['name'] ?? '') . ')'; }
+                    if ($od) $items[] = ['kind' => 'overdue', 'id' => 0, 't' => date('Y-m-d') . ' 00:00:00', 'title' => count($od) . ' overdue invoice' . (count($od) > 1 ? 's' : ''), 'text' => implode(', ', array_slice($od, 0, 3)), 'href' => '#/invoices'];
+                } catch (Throwable $e) { /* sales not set up */ }
                 usort($items, fn($a, $b) => strcmp($b['t'], $a['t']));
             }
             $stamp = $sales ? (string)q('SELECT GREATEST(COALESCE((SELECT MAX(id) FROM wx_leads),0)*100000, 0) + COALESCE((SELECT MAX(id) FROM wx_chat_msgs WHERE who=\'visitor\'),0)')->fetchColumn() : '0';
-            out(['ok' => true, 'leads' => $lu, 'chats' => $cu, 'total' => $lu + $cu, 'items' => array_slice($items, 0, 12), 'stamp' => $stamp]);
+            if ($sales) $stamp .= '.' . ($bkMax ?? 0) . '.' . ($payN ?? 0);
+            out(['ok' => true, 'leads' => $lu, 'chats' => $cu, 'total' => $lu + $cu, 'items' => array_slice($items, 0, 20), 'stamp' => $stamp]);
     }
     return false;
 }

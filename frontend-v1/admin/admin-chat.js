@@ -9,6 +9,8 @@
   var css = document.createElement("style");
   css.textContent =
     "#nt-btn{position:relative}.nt-n{position:absolute;top:2px;right:2px;min-width:17px;height:17px;border-radius:9px;background:#e11d48;color:#fff;font-size:10.5px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 4px}" +
+    ".nt-f{display:flex;gap:4px;padding:8px 10px;border-bottom:1px solid var(--line,#e5e7eb);overflow-x:auto}.nt-f button{border:1px solid var(--line,#e5e7eb);background:none;border-radius:999px;padding:4px 10px;font:600 12px/1.2 inherit;color:var(--mut);cursor:pointer;white-space:nowrap}.nt-f button.on{background:#0c1628;color:#fff;border-color:#0c1628}.nt-f i{font-style:normal;opacity:.7}" +
+    ".nt-i.booking .ic{background:#e0f2fe;color:#0369a1}.nt-i.payment .ic{background:#dcfce7;color:#166534}.nt-i.overdue .ic{background:#fee2e2;color:#b91c1c}" +
     ".nt-menu{width:340px;right:0;left:auto;max-height:70vh;overflow:auto;padding:0!important}.nt-h{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-bottom:1px solid var(--line,#e5e7eb)}.nt-h b{font-size:14px}" +
     ".nt-i{display:flex!important;gap:10px;padding:10px 14px!important;border-bottom:1px solid var(--line,#e5e7eb);text-decoration:none;color:inherit;align-items:flex-start;white-space:normal!important}.nt-i:hover{background:var(--bg)}.nt-i .ic{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;flex:none;background:#dcfce7;color:#166534}.nt-i.lead .ic{background:#fef3c7;color:#92400e}" +
     ".nt-i b{display:block;font-size:13px}.nt-i small{display:block;color:var(--mut);font-size:12px;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}.nt-i em{font-style:normal;font-size:11px;color:var(--mut)}.nt-e{padding:22px 14px;text-align:center;color:var(--mut);font-size:13px}" +
@@ -39,13 +41,19 @@
     document.title = (r.total ? "(" + r.total + ") " : "") + N.baseTitle.replace(/^\(\d+\+?\)\s*/, "");
     var a = $('.nav-a[data-v="chat"]'); if (a) { var b = a.querySelector(".pill"); if (!r.chats) { if (b) b.remove(); } else { if (!b) { b = document.createElement("span"); b.className = "pill"; b.style.cssText = "background:#e11d48;color:#fff"; a.appendChild(b); } b.textContent = r.chats; } }
     var m = $("#nt-menu");
+    var KI = { chat: "message-circle", lead: "inbox", booking: "clock", payment: "receipt", overdue: "triangle-alert" }, F = N.f || "all", grp = function (k) { return k === "payment" || k === "overdue" ? "money" : k; };
+    var its = r.items.filter(function (x) { return F === "all" || grp(x.kind) === F; });
     m.innerHTML = '<div class="nt-h"><b>Notifications</b><span><button class="btn sm" id="nt-set" title="Alert settings">' + ic("settings") + "</button></span></div>" +
-      (r.items.length ? r.items.map(function (x) { return '<a class="nt-i ' + x.kind + '" href="' + esc(x.href) + '"><span class="ic">' + ic(x.kind === "chat" ? "message-circle" : "inbox") + "</span><span><b>" + esc(x.title) + "</b><small>" + esc(x.text) + "</small><em>" + esc(ago(x.t)) + "</em></span></a>"; }).join("") : '<div class="nt-e">' + ic("circle-check") + "<br>You are all caught up.</div>");
+      '<div class="nt-f">' + [["all", "All"], ["chat", "Chats"], ["lead", "Leads"], ["booking", "Visits"], ["money", "Money"]].map(function (t) { var n = t[0] === "all" ? r.items.length : r.items.filter(function (x) { return grp(x.kind) === t[0]; }).length; return '<button type="button" data-f="' + t[0] + '" class="' + (F === t[0] ? "on" : "") + '">' + t[1] + (n ? " <i>" + n + "</i>" : "") + "</button>"; }).join("") + "</div>" +
+      (its.length ? its.map(function (x) { return '<a class="nt-i ' + x.kind + '" href="' + esc(x.href) + '"><span class="ic">' + ic(KI[x.kind] || "bell") + "</span><span><b>" + esc(x.title) + "</b><small>" + esc(x.text) + "</small><em>" + esc(ago(x.t)) + "</em></span></a>"; }).join("") : '<div class="nt-e">' + ic("circle-check") + "<br>You are all caught up.</div>");
     W.fillIcons(m);
+    m.querySelector(".nt-f").onclick = function (e) { var b = e.target.closest("[data-f]"); if (!b) return; e.stopPropagation(); N.f = b.dataset.f; drawBell(N.last); };
+    N.last = r;
     $("#nt-set").onclick = function (e) { e.stopPropagation(); m.hidden = true; settingsModal(); };
   }
   function notify(r) {
-    if (pref("sound", true)) beep();
+    var k0 = (r.items[0] || {}).kind || "lead"; if (k0 === "overdue") k0 = "payment";
+    if (pref("sound", true) && pref("snd_" + k0, true)) beep();
     if (pref("push", true) && "Notification" in window && Notification.permission === "granted" && document.hidden) {
       var it = r.items[0]; try { var n = new Notification(it ? it.title : "Woodex Admin", { body: it ? it.text : "You have " + r.total + " new notifications", icon: "/assets/img/img-f941b08b9510.png", tag: "wx-" + (it ? it.kind + it.id : "n") }); n.onclick = function () { window.focus(); if (it) location.hash = it.href; n.close(); }; } catch (e) {}
     }
@@ -54,7 +62,7 @@
     if (!S.user || !S.token) return;
     api("notif_poll").then(function (r) {
       if (!r || !r.ok) return; drawBell(r);
-      if (N.stamp !== null && r.stamp !== N.stamp && +r.stamp > +N.stamp && r.total) { notify(r); if (W.chatX) W.chatX.onNotify(r); if (location.hash.indexOf("#/chat") === 0 && W._chatRefresh) W._chatRefresh(); }
+      if (N.stamp !== null && r.stamp !== N.stamp && r.items.length) { notify(r); if (W.chatX) W.chatX.onNotify(r); if (location.hash.indexOf("#/chat") === 0 && W._chatRefresh) W._chatRefresh(); }
       N.stamp = r.stamp;
     });
   }
@@ -62,10 +70,12 @@
     var perm = "Notification" in window ? Notification.permission : "unsupported";
     W.modal("<h3>Alert settings</h3><p class='muted' style='font-size:13px'>Alerts for new live chats and new enquiries while Woodex Admin is open (also in a background tab). Email alerts for new chats use the email set in Settings → Integrations.</p>" +
       "<label class='check'><input type='checkbox' id='ns-sound'" + (pref("sound", true) ? " checked" : "") + "> Play a sound</label>" +
+      "<p class='muted' style='margin:6px 0 2px'>Sound for:</p><div style='display:flex;gap:12px;flex-wrap:wrap;margin-bottom:8px'>" + [["chat", "Chats"], ["lead", "New leads"], ["booking", "Visit bookings"], ["payment", "Payments"]].map(function (t) { return "<label class='check' style='margin:0'><input type='checkbox' data-snd='" + t[0] + "'" + (pref("snd_" + t[0], true) ? " checked" : "") + "> " + t[1] + "</label>"; }).join("") + "</div>" +
       "<label class='check'><input type='checkbox' id='ns-pop'" + (pref("popup", true) ? " checked" : "") + "> Pop up the chat window when a client writes</label>" +
       "<label class='check'><input type='checkbox' id='ns-push'" + (pref("push", true) ? " checked" : "") + "> Browser / phone notifications when Admin is in the background</label>" +
       "<p style='font-size:13px'>Browser permission: <b>" + ({ granted: "allowed ✓", denied: "blocked (allow it in the browser's site settings)", default: "not asked yet", unsupported: "not supported in this browser" })[perm] + "</b></p>" +
       "<div class='modal-actions'><button class='btn' id='ns-test'>" + ic("bell") + "Test</button>" + (perm === "default" ? "<button class='btn' id='ns-ask'>Allow notifications</button>" : "") + "<button class='btn pri' id='ns-ok'>Done</button></div>");
+    Array.prototype.forEach.call(document.querySelectorAll("[data-snd]"), function (x) { x.onchange = function () { localStorage.setItem("wxNt_snd_" + x.dataset.snd, x.checked ? "1" : "0"); }; });
     $("#ns-pop").onchange = function () { localStorage.setItem("wxNt_popup", this.checked ? "1" : "0"); };
     $("#ns-sound").onchange = function () { localStorage.setItem("wxNt_sound", this.checked ? "1" : "0"); };
     $("#ns-push").onchange = function () { localStorage.setItem("wxNt_push", this.checked ? "1" : "0"); if (this.checked && "Notification" in window && Notification.permission === "default") Notification.requestPermission(); };

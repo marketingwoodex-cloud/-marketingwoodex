@@ -1606,7 +1606,16 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
         const lu = sales ? db.leads.filter((l) => !l.read).length : 0, open = db.chats.filter((c) => c.status === "open" && (c.unread || c.needs)), cu = sales ? open.length : 0;
         if (sales) { items = open.map((c) => ({ kind: "chat", id: c.id, t: c.updated_at, title: (c.needs ? "Needs a person · " : "Live chat · ") + (c.name || "Visitor #" + c.id), text: c.last_text || "", href: "#/chat/" + c.id })).concat(db.leads.filter((l) => !l.read).slice(-8).reverse().map((l) => ({ kind: "lead", id: l.id, t: l.created_at, title: "New enquiry · " + l.name, text: (SOURCES[l.source] || l.source) + (l.service ? " · " + l.service : ""), href: "#/leads" }))).sort((a, b) => String(b.t).localeCompare(a.t)); }
         const lastV = db.chatMsgs.filter((m) => m.who === "visitor").reduce((a, m) => Math.max(a, m.id), 0);
-        return { ok: true, leads: lu, chats: cu, total: lu + cu, items: items.slice(0, 12), stamp: String(sales ? (db.seqL || 0) * 100000 + lastV : 0) };
+        let bkMax = 0, payN = 0;
+        if (sales) { // P18 D3
+          const today = new Date(Date.now() + 5 * 36e5).toISOString().slice(0, 10), cut = new Date(Date.now() - 172800000 + 5 * 36e5).toISOString().slice(0, 19).replace("T", " ");
+          bkMax = (db.bookings || []).reduce((a, x) => Math.max(a, x.id), 0);
+          (db.bookings || []).filter((x) => x.status === "pending" && x.d >= today).sort((x, y) => (x.d + x.tm).localeCompare(y.d + y.tm)).slice(0, 5).forEach((x) => items.push({ kind: "booking", id: x.id, t: x.created_at, title: "Visit to confirm · " + x.name, text: x.d + " · " + x.tm, href: "#/bookings" }));
+          const od = []; for (const iv0 of db.invoices || []) { const iv = invPub(iv0); for (const pm of iv.payments || []) { payN++; if (String(pm.t || "") >= cut) items.push({ kind: "payment", id: iv.id * 1000 + pm.id, t: pm.t, title: "Payment received · Rs " + Number(pm.amount).toLocaleString("en-US"), text: iv.no + " · " + ((iv.client || {}).name || ""), href: "#/invoice/" + iv.id }); } if (iv.overdue) od.push(iv.no + " (" + ((iv.client || {}).name || "") + ")"); }
+          if (od.length) items.push({ kind: "overdue", id: 0, t: today + " 00:00:00", title: od.length + " overdue invoice" + (od.length > 1 ? "s" : ""), text: od.slice(0, 3).join(", "), href: "#/invoices" });
+          items.sort((a, b) => String(b.t).localeCompare(a.t));
+        }
+        return { ok: true, leads: lu, chats: cu, total: lu + cu, items: items.slice(0, 20), stamp: String(sales ? (db.seqL || 0) * 100000 + lastV : 0) + (sales ? "." + bkMax + "." + payN : "") };
       }
     }
     return null;
