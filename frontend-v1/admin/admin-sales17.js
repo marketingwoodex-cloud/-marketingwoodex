@@ -553,7 +553,7 @@
     function docOf() {
       var sub = 0; q.sections.forEach(function (s) { s.subtotal = 0; s.items.forEach(function (it) { it.amount = it.kind ? 0 : Math.round((+it.qty || 0) * (+it.rate || 0) * 100) / 100; s.subtotal += it.amount; }); sub += s.subtotal; });
       var d = JSON.parse(JSON.stringify(q)); d.sections.forEach(function (s) { s.items = s.items.filter(function (it) { return String(it.desc || "").trim(); }).map(function (it) { it.qty = +it.qty || 0; it.rate = +it.rate || 0; return it; }); });
-      d.subtotal = Math.round(sub); d.discount = Math.min(Math.round(+q.discount || 0), d.subtotal); d.taxPct = +q.taxPct || 0; d.tax = Math.round((d.subtotal - d.discount) * d.taxPct / 100); d.total = d.subtotal - d.discount + d.tax; return d;
+      d.subtotal = Math.round(sub); d.discount = Math.min(Math.round(+q.discount || 0), d.subtotal); d.taxPct = +q.taxPct || 0; d.rent = Math.max(0, Math.round(+q.rent || 0)); d.tax = Math.round((d.subtotal - d.discount + d.rent) * d.taxPct / 100); d.total = d.subtotal - d.discount + d.rent + d.tax; d.advance = Math.min(Math.max(0, Math.round(+q.advance || 0)), d.total); return d; /*P18*/
     }
     function live() { if (!pv) return; clearTimeout(timer); timer = setTimeout(function () { var f = $("iframe", pv), y = f.contentWindow ? f.contentWindow.scrollY : 0; f.onload = function () { try { f.contentWindow.scrollTo(0, y); } catch (e) {} }; f.srcdoc = fit(WXPrint.quote(docOf(), co)); }, 350); }
     function fit(h) { var w = pv ? pv.clientWidth : 800, z = Math.min(1, (w - 16) / 860); return h.replace('</head>', '<style>@media screen{html{zoom:' + z.toFixed(3) + '}}</style></head>'); }

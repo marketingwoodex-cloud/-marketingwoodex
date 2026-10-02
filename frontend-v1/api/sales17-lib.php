@@ -234,7 +234,7 @@ function sales17_actions(string $action, array $in): bool {
                 $secs = [['name' => 'Supply & services', 'note' => '', 'items' => [['desc' => clip($in['desc'] ?? '', 600) ?: (clip($in['project'] ?? '', 160) ?: 'As per work order'), 'qty' => 1, 'unit' => 'job', 'rate' => $amt, 'amount' => $amt]]]]; }
             $no = trim((string)($in['no'] ?? '')) !== '' ? clip($in['no'], 30) : s17_inv_no($line);
             if (q('SELECT 1 FROM wx_invoices WHERE no=?', [$no])->fetchColumn()) fail('Invoice ' . $no . ' already exists');
-            $i = doc_totals(['sections' => $secs, 'discount' => $in['discount'] ?? 0, 'taxPct' => $in['taxPct'] ?? 0]);
+            $i = doc_totals(['sections' => $secs, 'discount' => $in['discount'] ?? 0, 'rent' => $in['rent'] ?? 0, 'taxPct' => $in['taxPct'] ?? 0]);
             $i += ['no' => $no, 'quote_id' => null, 'quote_label' => '', 'client' => $cl, 'client_id' => $cid, 'project' => clip($in['project'] ?? '', 160), 'site' => clip($in['site'] ?? '', 200),
                 'issue_date' => ymd($in['issue_date'] ?? '') ?: date('Y-m-d'), 'due_date' => ymd($in['due_date'] ?? ''), 'terms' => clip($in['terms'] ?? '', 3000), 'notes' => '', 'schedule' => clip($in['schedule'] ?? '', 600),
                 'payments' => [], 'seqPay' => 0, 'created_by' => $u['name'], 'created_at' => now(), 'po' => clip($in['po'] ?? '', 60), 'delivery_date' => ymd($in['delivery_date'] ?? ''), 'delivered' => '',

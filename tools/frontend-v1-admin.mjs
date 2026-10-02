@@ -500,7 +500,7 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
   const COMPANY = path.join(PRIV, "company.json");
   const coList = (k, rows) => { const f = { banks: ["bank", "title", "account", "iban", "branch", "code", "use"], wallets: ["name", "number"], signers: ["name", "title"] }[k]; if (!f || !Array.isArray(rows)) return [];
     return rows.slice(0, 8).filter((r) => r && typeof r === "object").map((r) => { const x = {}; f.forEach((n) => { x[n] = clip(r[n], 120); }); if (k === "banks") x.use = ["all", "interior", "furniture"].includes(x.use) ? x.use : "all"; return x; }).filter((x) => x[f[0]] || x[f[1]]); };
-  const companyCfg = () => Object.assign({ name: "Woodex Interior", tagline: "Design · Build · Furniture", address: "M-71, Zainab Tower, Model Town Link Road, Lahore", phones: "+92 322 4000768 · +92 321 4686884", email: "info@woodex.com.pk", web: "woodex.com.pk", ntn: "", bankName: "", bankTitle: "", bankAccount: "", bankIban: "", signName: "Imtiaz Ahmad", signTitle: "Director", signers: [{ name: "Imtiaz Ahmad", title: "Director" }, { name: "Nabeel Afzal", title: "Marketing Manager" }],
+  const companyCfg = () => Object.assign({ name: "Woodex Interior", tagline: "Design · Build · Furniture", address: "M-71, Zainab Tower, Model Town Link Road, Lahore", phones: "+92 322 4000768 · +92 321 4686884", email: "woodexinterior.pk@gmail.com", web: "woodex.com.pk", ntn: "", bankName: "", bankTitle: "", bankAccount: "", bankIban: "", signName: "Imtiaz Ahmad", signTitle: "Director", signers: [{ name: "Imtiaz Ahmad", title: "Director" }, { name: "Nabeel Afzal", title: "Marketing Manager" }],
     banks: [{ bank: "Bank Alfalah", title: "WOODEX INTERIOR", account: "02931007869105", iban: "PK06ALFH0293001007869105", branch: "Link Rd Model Town Br: Lahore", code: "0293", use: "interior" }, { bank: "Meezan Bank", title: "WOODEX FURNITURE", account: "02810111519091", iban: "PK43MEZN0002810111519091", branch: "Model Town Link Road, Lahore", code: "", use: "furniture" }],
     wallets: [{ name: "JazzCash", number: "+92 321 3656096" }, { name: "Easypaisa", number: "+92 321 3656096" }], payTerms: "", prefix: "WI-", nextNo: 10100, validDays: 15, consultant: "Woodex Interior" }, jr(COMPANY, {}));
   const num = (v) => { const n = Number(v); return Number.isFinite(n) && n >= 0 ? n : 0; };
@@ -519,8 +519,9 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
   function totals(doc) {
     let sub = 0; doc.sections.forEach((s) => { s.subtotal = r2(s.items.reduce((a, it) => a + it.amount, 0)); sub += s.subtotal; });
     doc.subtotal = Math.round(sub); doc.discount = Math.min(Math.round(num(doc.discount)), doc.subtotal); doc.taxPct = Math.min(num(doc.taxPct), 50);
-    doc.tax = Math.round((doc.subtotal - doc.discount) * doc.taxPct / 100); doc.total = doc.subtotal - doc.discount + doc.tax; return doc;
+    doc.rent = Math.max(0, Math.round(num(doc.rent))); /*P18rent*/ doc.tax = Math.round((doc.subtotal - doc.discount + doc.rent) * doc.taxPct / 100); doc.total = doc.subtotal - doc.discount + doc.rent + doc.tax; doc.advance = Math.min(Math.max(0, Math.round(num(doc.advance))), doc.total); return doc;
   }
+  const p18Blocks = (b) => { const ok = ["summary", "scope", "items", "totals", "terms", "bank", "sign"], o = []; (Array.isArray(b) ? b : []).forEach((k) => { k = String(k); const n = k.replace(/^-+/, ""); if (ok.includes(n) && !o.some((x) => x.replace(/^-+/, "") === n)) o.push(k); }); return o; };
   const ensureA5 = (db) => { ensureCrm(db); ["tpls", "quotes", "invoices", "projects"].forEach((k) => { db[k] = db[k] || []; }); ["seqT", "seqQ", "seqI", "seqP", "seqPay"].forEach((k) => { db[k] = db[k] || 0; }); };
   const clientOf = (inp) => ({ name: clip(inp.name, 120), phone: clip(inp.phone, 40), email: clip(inp.email, 190), address: clip(inp.address, 300), company: clip(inp.company, 120) });
   const qViewTok = (q) => hmac("qv|" + q.id + "|" + q.no).slice(0, 32);
@@ -739,7 +740,7 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
         const u = need(SALES); ensureA5(db); const [cid, cl] = s17InvClient(db, inp); const line = S17.lines[inp.line] ? inp.line : "interior";
         let secs = cleanSections(inp.sections); if (!secs.some((x) => x.items.length)) { const amt = num(inp.total); if (amt <= 0) throw new Fail("Enter the invoice amount or add items"); secs = [{ name: "Supply & services", note: "", items: [{ desc: clip(inp.desc, 600) || clip(inp.project, 160) || "As per work order", qty: 1, unit: "job", rate: amt, amount: amt }] }]; }
         const no = String(inp.no || "").trim() ? clip(inp.no, 30) : s17InvNo(line, db); if (db.invoices.some((x) => x.no === no)) throw new Fail("Invoice " + no + " already exists");
-        const i = totals({ sections: secs, discount: inp.discount || 0, taxPct: inp.taxPct || 0 });
+        const i = totals({ sections: secs, discount: inp.discount || 0, rent: inp.rent || 0, taxPct: inp.taxPct || 0 });
         Object.assign(i, { id: ++db.seqI, no, quote_id: null, quote_label: "", client: cl, client_id: cid, project: clip(inp.project, 160), site: clip(inp.site, 200), issue_date: /^\d{4}-\d{2}-\d{2}$/.test(inp.issue_date || "") ? inp.issue_date : now().slice(0, 10), due_date: /^\d{4}-\d{2}-\d{2}$/.test(inp.due_date || "") ? inp.due_date : "",
           terms: clip(inp.terms, 3000), notes: "", schedule: clip(inp.schedule, 600), payments: [], seqPay: 0, created_by: u.name, created_at: now(), po: clip(inp.po, 60), delivery_date: /^\d{4}-\d{2}-\d{2}$/.test(inp.delivery_date || "") ? inp.delivery_date : "", delivered: "", line, mode: inp.mode === "after_delivery" ? "after_delivery" : "", track_note: clip(inp.track_note, 500) });
         db.invoices.push(i); log(db, u, "invoice.create", no + " " + cl.name + " (standalone)", ip); return done({ ok: true, invoice: s17InvRow(i) });
@@ -857,7 +858,7 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
         Object.assign(q, { client: clientOf(inp.client || {}), client_id: +inp.client_id || q.client_id || null, project: clip(inp.project, 160), site: clip(inp.site, 200), kind: clip(inp.kind, 20) || q.kind || "other", date: /^\d{4}-\d{2}-\d{2}$/.test(inp.date || "") ? inp.date : q.date || now().slice(0, 10),
           valid_days: Math.max(1, Math.round(num(inp.valid_days) || c.validDays)), sections: cleanSections(inp.sections), discount: num(inp.discount), taxPct: num(inp.taxPct), terms: clip(inp.terms, 3000), notes: clip(inp.notes, 2000), intro: clip(inp.intro, 1500), design: ["classic", "minimal", "premium"].includes(inp.design) ? inp.design : q.design || "classic",
           layout: ["classic", "single", "project"].includes(inp.layout) ? inp.layout : q.layout || "classic", qtype: ["", "fitout", "renovation", "interior", "proposal", "furniture"].includes(inp.qtype || "") ? inp.qtype || "" : "",
-          scope: clip(inp.scope, 6000), sign_name: clip(inp.sign_name, 80), sign_title: clip(inp.sign_title, 80), updated_at: now() });
+          scope: clip(inp.scope, 6000), sign_name: clip(inp.sign_name, 80), sign_title: clip(inp.sign_title, 80), rent: num(inp.rent), advance: num(inp.advance), blocks: p18Blocks(inp.blocks), updated_at: now() });
         if (!q.client.name) throw new Fail("Client name is required");
         totals(q); log(db, u, inp.id ? "quote.update" : "quote.create", qLabel(q) + " " + q.client.name, ip);
         return done({ ok: true, quote: { ...q, label: qLabel(q) } });
@@ -913,7 +914,7 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
         if (!clientId || !db.clients.some((c) => c.id === clientId)) { const d = q.client.phone.replace(/\D/g, ""); let c = db.clients.find((x) => (d && x.phone.replace(/\D/g, "") === d) || (q.client.email && x.email === q.client.email));
           if (!c) { c = { id: ++db.seqC, name: q.client.name, phone: q.client.phone, email: q.client.email, company: q.client.company || "", city: "Lahore", address: q.client.address, notes: "", created_at: now() }; db.clients.push(c); } clientId = c.id; q.client_id = c.id; }
         const due = new Date(Date.now() + 7 * 864e5).toISOString().slice(0, 10);
-        const i = { id: ++db.seqI, no: q.no, quote_id: q.id, quote_label: qLabel(q), client: { ...q.client }, client_id: clientId, project: q.project, site: q.site, sections: JSON.parse(JSON.stringify(q.sections)), subtotal: q.subtotal, discount: q.discount, taxPct: q.taxPct, tax: q.tax, total: q.total, issue_date: now().slice(0, 10), due_date: due, terms: q.terms, notes: "", schedule: clip(inp.schedule, 600) || (/75%/.test(q.terms) ? "75% advance with work order, 25% on approval" : "50% advance with work order, balance on completion"), payments: [], created_by: u.name, created_at: now() };
+        const i = { id: ++db.seqI, no: q.no, quote_id: q.id, quote_label: qLabel(q), client: { ...q.client }, client_id: clientId, project: q.project, site: q.site, sections: JSON.parse(JSON.stringify(q.sections)), subtotal: q.subtotal, discount: q.discount, rent: q.rent || 0, taxPct: q.taxPct, tax: q.tax, total: q.total, issue_date: now().slice(0, 10), due_date: due, terms: q.terms, notes: "", schedule: clip(inp.schedule, 600) || (/75%/.test(q.terms) ? "75% advance with work order, 25% on approval" : "50% advance with work order, balance on completion"), payments: [], created_by: u.name, created_at: now() };
         db.invoices.push(i); q.status = "invoiced"; q.history.push({ t: now(), user: u.name, text: "Converted to invoice " + i.no });
         if (inp.project !== false) { db.projects.push({ id: ++db.seqP, name: q.project || q.client.name, client_id: clientId, client_name: q.client.name, quote_id: q.id, invoice_id: i.id, no: q.no, site: q.site, stage: "planning", start: now().slice(0, 10), target: "", value: q.total, manager: null, updates: [{ t: now(), user: u.name, text: "Project opened from " + qLabel(q) }], photos: [], created_at: now() }); }
         log(db, u, "invoice.create", i.no + " " + i.client.name, ip); return done({ ok: true, invoice: invPub(i) });
@@ -925,7 +926,7 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
         const u = need(SALES), i = findI(inp.id);
         if ("due_date" in inp) i.due_date = /^\d{4}-\d{2}-\d{2}$/.test(inp.due_date) ? inp.due_date : "";
         if ("issue_date" in inp && /^\d{4}-\d{2}-\d{2}$/.test(inp.issue_date)) i.issue_date = inp.issue_date;
-        ["notes", "schedule", "terms"].forEach((k) => { if (k in inp) i[k] = clip(inp[k], 3000); });
+        ["notes", "schedule", "terms"].forEach((k) => { if (k in inp) i[k] = clip(inp[k], 3000); }); if ("blocks" in inp) i.blocks = p18Blocks(inp.blocks); /*P18inv*/
         log(db, u, "invoice.update", i.no, ip); return done({ ok: true, invoice: invPub(i) });
       }
       case "pay_add": {

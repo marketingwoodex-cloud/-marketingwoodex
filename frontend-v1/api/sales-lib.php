@@ -48,7 +48,7 @@ function quote_put(array $x): array { return doc_put('wx_quotes', $x, ['no' => $
 // ---------------------------------------------------------------- business helpers
 function company_cfg(): array {
     return array_merge(['name' => 'Woodex Interior', 'tagline' => 'Design · Build · Furniture', 'address' => 'M-71, Zainab Tower, Model Town Link Road, Lahore', 'phones' => '+92 322 4000768 · +92 321 4686884',
-        'email' => 'info@woodex.com.pk', 'web' => 'woodex.com.pk', 'ntn' => '', 'bankName' => '', 'bankTitle' => '', 'bankAccount' => '', 'bankIban' => '', 'signName' => 'Imtiaz Ahmad', 'signTitle' => 'Director',
+        'email' => 'woodexinterior.pk@gmail.com', 'web' => 'woodex.com.pk', 'ntn' => '', 'bankName' => '', 'bankTitle' => '', 'bankAccount' => '', 'bankIban' => '', 'signName' => 'Imtiaz Ahmad', 'signTitle' => 'Director',
         'signers' => [['name' => 'Imtiaz Ahmad', 'title' => 'Director'], ['name' => 'Nabeel Afzal', 'title' => 'Marketing Manager']],
         'banks' => [['bank' => 'Bank Alfalah', 'title' => 'WOODEX INTERIOR', 'account' => '02931007869105', 'iban' => 'PK06ALFH0293001007869105', 'branch' => 'Link Rd Model Town Br: Lahore', 'code' => '0293', 'use' => 'interior'],
                     ['bank' => 'Meezan Bank', 'title' => 'WOODEX FURNITURE', 'account' => '02810111519091', 'iban' => 'PK43MEZN0002810111519091', 'branch' => 'Model Town Link Road, Lahore', 'code' => '', 'use' => 'furniture']],
@@ -83,9 +83,12 @@ function doc_totals(array $d): array {
     $sub = 0.0;
     foreach ($d['sections'] as &$s) { $s['subtotal'] = r2(array_sum(array_column($s['items'], 'amount'))); $sub += $s['subtotal']; } unset($s);
     $d['subtotal'] = (int)round($sub); $d['discount'] = (int)min(round(numv($d['discount'] ?? 0)), $d['subtotal']); $d['taxPct'] = min(numv($d['taxPct'] ?? 0), 50);
-    $d['tax'] = (int)round(($d['subtotal'] - $d['discount']) * $d['taxPct'] / 100); $d['total'] = $d['subtotal'] - $d['discount'] + $d['tax'];
+    $d['rent'] = max(0, (int)round(numv($d['rent'] ?? 0))); /*P18rent*/
+    $d['tax'] = (int)round(($d['subtotal'] - $d['discount'] + $d['rent']) * $d['taxPct'] / 100); $d['total'] = $d['subtotal'] - $d['discount'] + $d['rent'] + $d['tax'];
+    $d['advance'] = min(max(0, (int)round(numv($d['advance'] ?? 0))), $d['total']);
     return $d;
 }
+function p18_blocks($b): array { $ok = ['summary', 'scope', 'items', 'totals', 'terms', 'bank', 'sign']; $o = []; foreach ((is_array($b) ? $b : []) as $k) { $k = (string)$k; $n = ltrim($k, '-'); if (in_array($n, $ok, true) && !in_array($n, array_map(fn($x) => ltrim($x, '-'), $o), true)) $o[] = $k; } return $o; }
 function q_label(array $x): string { return $x['no'] . ((int)$x['version'] > 1 ? ' · V' . $x['version'] : '') . ($x['option'] ? ' · ' . $x['option'] : ''); }
 function q_pub(array $x): array { $x['label'] = q_label($x); return $x; }
 /** Secure client link: /api/quote-view.php?id=..&t=.. (no sign-in; the token is an HMAC of id + number). */
@@ -174,7 +177,7 @@ function sales_actions(string $action, array $in): bool {
                 'sections' => clean_sections($in['sections'] ?? []), 'discount' => numv($in['discount'] ?? 0), 'taxPct' => numv($in['taxPct'] ?? 0), 'terms' => clip($in['terms'] ?? '', 3000),
                 'notes' => clip($in['notes'] ?? '', 2000), 'intro' => clip($in['intro'] ?? '', 1500), 'design' => in_array($in['design'] ?? '', ['classic', 'minimal', 'premium'], true) ? $in['design'] : ($x['design'] ?? 'classic'),
                 'layout' => in_array($in['layout'] ?? '', ['classic', 'single', 'project'], true) ? $in['layout'] : ($x['layout'] ?? 'classic'), 'qtype' => in_array($in['qtype'] ?? '', ['', 'fitout', 'renovation', 'interior', 'proposal', 'furniture'], true) ? ($in['qtype'] ?? '') : '',
-                'scope' => clip($in['scope'] ?? '', 6000), 'sign_name' => clip($in['sign_name'] ?? '', 80), 'sign_title' => clip($in['sign_title'] ?? '', 80), 'updated_at' => now()]);
+                'scope' => clip($in['scope'] ?? '', 6000), 'sign_name' => clip($in['sign_name'] ?? '', 80), 'sign_title' => clip($in['sign_title'] ?? '', 80), 'rent' => numv($in['rent'] ?? 0), 'advance' => numv($in['advance'] ?? 0), 'blocks' => p18_blocks($in['blocks'] ?? []), 'updated_at' => now()]);
             if ($new && !empty($in['lead_id']) && q('SELECT id FROM wx_leads WHERE id=?', [(int)$in['lead_id']])->fetch()) { $x['lead_id'] = (int)$in['lead_id']; lead_stage($x['lead_id'], ['new', 'contacted', 'visit'], 'quote', $u, $x['no']); }
             $x = quote_put(doc_totals($x)); log_act($u, $new ? 'quote.create' : 'quote.update', q_label($x) . ' ' . $client['name']);
             out(['ok' => true, 'quote' => q_pub($x)]);
@@ -248,7 +251,7 @@ function sales_actions(string $action, array $in): bool {
             }
             $sched = clip($in['schedule'] ?? '', 600) ?: (strpos($x['terms'], '75%') !== false ? '75% advance with work order, 25% on approval' : '50% advance with work order, balance on completion');
             $i = ['no' => $x['no'], 'quote_id' => $x['id'], 'quote_label' => q_label($x), 'client' => $x['client'], 'client_id' => $cid, 'project' => $x['project'], 'site' => $x['site'], 'sections' => $x['sections'],
-                'subtotal' => $x['subtotal'], 'discount' => $x['discount'], 'taxPct' => $x['taxPct'], 'tax' => $x['tax'], 'total' => $x['total'], 'issue_date' => date('Y-m-d'), 'due_date' => date('Y-m-d', time() + 7 * 86400),
+                'subtotal' => $x['subtotal'], 'discount' => $x['discount'], 'rent' => (int)($x['rent'] ?? 0), 'taxPct' => $x['taxPct'], 'tax' => $x['tax'], 'total' => $x['total'], 'issue_date' => date('Y-m-d'), 'due_date' => date('Y-m-d', time() + 7 * 86400),
                 'terms' => $x['terms'], 'notes' => '', 'schedule' => $sched, 'payments' => [], 'seqPay' => 0, 'created_by' => $u['name'], 'created_at' => now()];
             $i = doc_put('wx_invoices', $i, ['no' => $i['no'], 'quote_id' => $x['id']]);
             $x['status'] = 'invoiced'; $x['history'][] = hist($u, 'Converted to invoice ' . $i['no']); quote_put($x);
@@ -264,6 +267,7 @@ function sales_actions(string $action, array $in): bool {
             if (array_key_exists('due_date', $in)) $i['due_date'] = ymd($in['due_date']);
             if (ymd($in['issue_date'] ?? '')) $i['issue_date'] = $in['issue_date'];
             foreach (['notes', 'schedule', 'terms'] as $k) if (array_key_exists($k, $in)) $i[$k] = clip($in[$k], 3000);
+            if (array_key_exists('blocks', $in)) $i['blocks'] = p18_blocks($in['blocks']); /*P18inv*/
             $i = doc_put('wx_invoices', $i); log_act($u, 'invoice.update', $i['no']); out(['ok' => true, 'invoice' => inv_pub($i)]);
         case 'pay_add':
             $u = need($SALES); $amount = (int)round(numv($in['amount'] ?? 0)); if (!$amount) fail('Enter the amount received');
