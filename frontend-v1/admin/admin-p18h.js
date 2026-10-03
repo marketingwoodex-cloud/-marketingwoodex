@@ -39,7 +39,7 @@
           r.pages.map(function (p) { var n = NM[p.path] || [p.path, ""]; return '<div class="mt-pg"><div class="fr"><iframe loading="lazy" tabindex="-1" src="' + p.url + '"></iframe></div><div class="b"><b>' + esc(n[0]) + '<br><small class="muted" style="font-weight:400">' + esc(n[1]) + '</small></b><a class="btn sm" href="' + p.url + '" target="_blank" rel="noopener">View</a><a class="btn sm pri" href="#/builder/' + encodeURIComponent(p.path) + '" data-ed="' + esc(p.path) + '">Edit</a></div></div>'; }).join("") + "</div>";
         W.fillIcons($("#mt"));
         var mode = r.mode;
-        var set = function (on, extra) { api("mt_set", Object.assign({ on: on, mode: mode }, extra || {})).then(function (x) { if (!x.ok) { toast(x.error, true); return load(); } staffCookie(x.token); toast(x.on ? "Maintenance mode is ON — visitors see the " + (x.mode === "soon" ? "Coming soon" : "maintenance") + " page" : "Website is live again ✓"); load(); }); };
+        var set = function (on, extra) { api("mt_set", Object.assign({ on: on, mode: mode }, extra || {})).then(function (x) { if (!x.ok) { toast(x.error, true); return load(); } staffCookie(x.token); maintBadge(x.on); toast(x.on ? "Maintenance mode is ON — visitors see the " + (x.mode === "soon" ? "Coming soon" : "maintenance") + " page" : "Website is live again ✓"); load(); }); };
         $("#mt-on").onchange = function () { if (this.checked && !confirm("Turn on " + (mode === "soon" ? "coming-soon" : "maintenance") + " mode? Visitors will not see the website until you turn it off.")) { this.checked = false; return; } set(this.checked); };
         $$("#mt-mode button").forEach(function (b) { b.onclick = function () { mode = b.dataset.m; $$("#mt-mode button").forEach(function (x) { x.classList.toggle("on", x === b); }); set(r.on); }; });
         $("#mt-tok").onclick = function () { if (confirm("Reset staff access? Other browsers will need to open Admin again to see the site during maintenance.")) set(r.on, { newToken: true }); };
@@ -151,4 +151,7 @@
     $("#db-bk").onclick = function () { var b = this; b.disabled = true; api("backup_run", { kind: "full" }).then(function (r) { b.disabled = false; if (!r.ok) return toast(r.error, true); toast("Backup made: " + r.backup.name + " ✓"); backups(); }); };
     tables(); backups();
   };
+  // re-render if the shell routed to one of these screens before this file loaded
+  var h = (location.hash.split("/")[1] || "").split("?")[0];
+  if (/^(maintenance|files|database)$/.test(h) && W.route) setTimeout(function () { if (document.querySelector("#view .soon-box")) W.route(); }, 0);
 })();
