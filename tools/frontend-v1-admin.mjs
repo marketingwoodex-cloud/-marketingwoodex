@@ -635,6 +635,47 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
   const DB_SECRET = /(pass|hash|token|secret|otp|reset|key)/i;
   const dbxTables = (db) => Object.keys(db).filter((k) => Array.isArray(db[k]) && db[k].length && typeof db[k][0] === "object").map((k) => "wx_" + k);
   const dbxMask = (k, v) => (v == null ? null : DB_SECRET.test(k) ? "••••••" : typeof v === "object" ? JSON.stringify(v) : v);
+  /* P18 J — My account (mirror of api/p18j-lib.php) */
+  const PROF = path.join(PRIV, "profiles.json"), PROF_KEYS = { phone: 30, whatsapp: 30, title: 80, city: 60, bio: 400 };
+  const profGet = (id) => Object.assign({ phone: "", whatsapp: "", title: "", city: "", bio: "", avatar: "" }, jr(PROF, {})[String(id)] || {});
+  const profPut = (id, p) => { const a = jr(PROF, {}); a[String(id)] = p; jw(PROF, a); };
+  async function p18j(action, inp, need, db, ip) {
+    if (!/^me_/.test(action)) return null;
+    const u = need(), id = u.id, p = profGet(id);
+    switch (action) {
+      case "me_get": {
+        const m0 = now().slice(0, 7) + "-01 00:00:00", st = { leads: 0, quotes: 0, invoices: 0, messages: 0, pages: 0 };
+        const mine = db.activity.filter((x) => x.user_id === id);
+        mine.filter((x) => x.created_at >= m0).forEach((x) => { const a = x.action;
+          if (/^(lead|crm)\./.test(a)) st.leads++; else if (/^quote/.test(a)) st.quotes++; else if (/^(invoice|inv|payment)/.test(a)) st.invoices++; else if (/^(chat|wa|inbox|notify)/.test(a)) st.messages++; else if (/^(page|content|builder|global|seo)/.test(a)) st.pages++; });
+        const act = mine.slice(-12).reverse().map((x) => ({ action: x.action, target: x.target, created_at: x.created_at }));
+        const logins = mine.filter((x) => x.action === "login").reverse(), last = logins[1] ? { created_at: logins[1].created_at, ip: logins[1].ip } : null;
+        const sess = (u.sessions || []).filter((x) => x.exp > Date.now() / 1000).length;
+        return { ok: true, user: { id, name: u.name, email: u.email, role: u.role, created_at: u.created_at || null }, profile: p, stats: st, activity: act, security: { totp: !!u.totp_on, sessions: Math.max(1, sess), lastLogin: last } };
+      }
+      case "me_save": {
+        const name = String(inp.name == null ? u.name : inp.name).trim(); if (!name) throw new Fail("Name is required"); if (/[<>]/.test(name)) throw new Fail("Name cannot contain < or >");
+        for (const [k, max] of Object.entries(PROF_KEYS)) if (k in inp) p[k] = String(inp[k] || "").replace(/<[^>]*>/g, "").trim().slice(0, max);
+        for (const k of ["phone", "whatsapp"]) if (p[k] && !/^[+0-9 ()-]{7,30}$/.test(p[k])) throw new Fail((k === "phone" ? "Phone" : "WhatsApp") + " number: digits, spaces and + only");
+        u.name = name.slice(0, 120); profPut(id, p); log(db, u, "profile.update", "", ip); save(db); return { ok: true, user: pub(u), profile: p };
+      }
+      case "me_avatar": {
+        const dir = path.join(ROOT, "assets/uploads/avatars"), old = p.avatar || "";
+        if (inp.remove) p.avatar = "";
+        else {
+          const m = /^data:image\/(jpeg|png|webp);base64,/.exec(String(inp.data || "")); if (!m) throw new Fail("Choose a JPG, PNG or WebP photo");
+          const bin = Buffer.from(String(inp.data).slice(String(inp.data).indexOf(",") + 1), "base64"); if (!bin.length || bin.length > 2 * 1048576) throw new Fail("Photo must be under 2 MB");
+          const sig = bin.slice(0, 12).toString("hex"); if (!(/^ffd8ff/.test(sig) || /^89504e47/.test(sig) || (/^52494646/.test(sig) && bin.slice(8, 12).toString() === "WEBP"))) throw new Fail("That file is not a valid image");
+          fs.mkdirSync(dir, { recursive: true }); const fn = "u" + id + "-" + crypto.randomBytes(4).toString("hex") + "." + (m[1] === "jpeg" ? "jpg" : m[1]);
+          fs.writeFileSync(path.join(dir, fn), bin); p.avatar = "/assets/uploads/avatars/" + fn;
+        }
+        if (new RegExp("^/assets/uploads/avatars/u" + id + "-[0-9a-f]{8}\\.(jpg|png|webp)$").test(old)) { try { fs.unlinkSync(path.join(ROOT, old)); } catch (e) {} }
+        profPut(id, p); log(db, u, "profile.avatar", "", ip); save(db); return { ok: true, profile: p };
+      }
+      case "me_avatars": { const a = jr(PROF, {}), o = {}; for (const k in a) if (a[k].avatar) o[k] = a[k].avatar; return { ok: true, avatars: o }; }
+    }
+    return null;
+  }
   async function p18h(action, inp, need, db, ip) {
     if (!/^(mt_|fm_|dbx_)/.test(action)) return null;
     const OA = ["owner", "admin"], ED = ["owner", "admin", "editor"], ST = ["owner", "admin", "editor", "sales"];
@@ -2035,7 +2076,7 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
         return done({ ok: true, rows: all.slice((page - 1) * per, page * per).map(({ user_name, action, target, ip, created_at }) => ({ user_name, action, target, ip, created_at })), total: all.length, per, page });
       }
       default: {
-        const r = (await p18h(action, inp, need, db, ip)) || (await p18g(action, inp, need, db, ip)) || (await p18e(action, inp, need, db, ip)) || (await pbk(action, inp, need, db, ip)) || (await a2(action, inp, need, db, ip)) || (await a17(action, inp, need, db, ip)) || (await a4(action, inp, need, db, ip)) || a5(action, inp, need, db, ip) || (await a6(action, inp, need, db, ip)) || (await a7(action, inp, need, db, ip)) || (await a8(action, inp, need, db, ip)) || (await p8(action, inp, need, db, ip, req)) || (await p10(action, inp, need, db, ip, req)) || (await p12(action, inp, need, db, ip)) || (await p13(action, inp, need, db, ip)); if (r) return r;
+        const r = (await p18j(action, inp, need, db, ip)) || (await p18h(action, inp, need, db, ip)) || (await p18g(action, inp, need, db, ip)) || (await p18e(action, inp, need, db, ip)) || (await pbk(action, inp, need, db, ip)) || (await a2(action, inp, need, db, ip)) || (await a17(action, inp, need, db, ip)) || (await a4(action, inp, need, db, ip)) || a5(action, inp, need, db, ip) || (await a6(action, inp, need, db, ip)) || (await a7(action, inp, need, db, ip)) || (await a8(action, inp, need, db, ip)) || (await p8(action, inp, need, db, ip, req)) || (await p10(action, inp, need, db, ip, req)) || (await p12(action, inp, need, db, ip)) || (await p13(action, inp, need, db, ip)); if (r) return r;
         throw new Fail("Unknown action", 404);
       }
     }
