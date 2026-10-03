@@ -33,6 +33,8 @@ AddOutputFilterByType DEFLATE text/html text/css text/javascript application/jav
 </IfModule>
 
 # BEGIN WOODEX-ADMIN (managed by /admin — do not edit by hand)
+ErrorDocument 500 /500.html
+ErrorDocument 503 /503.html
 <IfModule mod_rewrite.c>
 RewriteEngine On
 # one official address: no www

@@ -374,7 +374,8 @@ http.createServer(async (req, res) => {
 
     if (!/^\/(admin|builder|api|assets)\//.test(p)) {
       const rel = (p.endsWith("/") ? p + "index.html" : /\.[a-z0-9]+$/i.test(p) ? p : p + "/index.html").replace(/^\/+/, "");
-      const g = adminApi.publicGuard(rel);
+      const g = adminApi.publicGuard(rel, req);
+      if (g && g.maint) { res.writeHead(503, { "Content-Type": MIME[".html"], "Retry-After": "3600" }); return fs.createReadStream(path.join(ROOT, g.maint)).pipe(res); }
       if (g && g.redirect) { res.writeHead(g.code || 301, { Location: g.redirect }); return res.end(); }
       if (g && g.gone) { res.writeHead(410, { "Content-Type": "text/plain" }); return res.end("410 Gone"); }
       if (g && g.notFound) { res.writeHead(404, { "Content-Type": MIME[".html"] }); return fs.createReadStream(path.join(ROOT, "404.html")).pipe(res); }

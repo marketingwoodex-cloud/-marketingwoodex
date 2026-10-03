@@ -176,7 +176,8 @@ function page_info(string $rel, array $meta): array {
 /** Rebuild the managed .htaccess block and sitemap.xml from pages.json + redirects.json */
 function publish_rules(): void {
     $meta = jread(PAGES_META); $red = jread(REDIRECTS);
-    $lines = ['# BEGIN WOODEX-ADMIN (managed by /admin — do not edit by hand)', '<IfModule mod_rewrite.c>', 'RewriteEngine On'];
+    [$sysPre, $sysRw] = function_exists('sys_ht_lines') ? sys_ht_lines() : [[], []]; // P18 H: error pages + maintenance switch
+    $lines = array_merge(['# BEGIN WOODEX-ADMIN (managed by /admin — do not edit by hand)'], $sysPre, ['<IfModule mod_rewrite.c>', 'RewriteEngine On'], $sysRw);
     foreach (rd_lines() as $l) $lines[] = $l; // P16 3.8b: www, spam 410, 301/302/410 exact+prefix
     foreach ($meta as $rel => $m) if (($m['status'] ?? '') === 'draft') $lines[] = 'RewriteRule ^' . preg_quote(preg_replace('~index\.html$~', '', $rel), '') . '(index\.html)?$ - [R=404,L]';
     $lines[] = '</IfModule>'; $lines[] = '# END WOODEX-ADMIN';
@@ -217,6 +218,7 @@ require __DIR__ . '/dash-lib.php';
 require __DIR__ . '/redirects-lib.php';
 require __DIR__ . '/p18e-lib.php';
 require __DIR__ . '/p18g-lib.php';
+require __DIR__ . '/p18h-lib.php';
 if (defined('WX_LIB_ONLY')) return; // api/mcp.php reuses the helpers and actions
 
 // ---------- request ----------
@@ -418,7 +420,7 @@ switch ($action) {
 
     case 'page_delete':
         $u = need(['owner', 'admin']); $rel = rel_ok((string)($in['path'] ?? '')); $to = trim((string)($in['redirectTo'] ?? ''));
-        if ($rel === 'index.html' || $rel === '404.html') fail('This page cannot be deleted');
+        if ($rel === 'index.html' || in_array($rel, ['404.html', '500.html', '503.html', 'coming-soon.html'], true)) fail('This page cannot be deleted');
         if (!preg_match('~^/[a-z0-9/_\-.]*$~i', $to)) fail('Choose a page to redirect visitors to');
         $trash = PRIVATE_DIR . '/trash'; if (!is_dir($trash)) mkdir($trash, 0755, true);
         rename(ROOT_DIR . '/' . $rel, $trash . '/' . date('Ymd-His') . '-' . preg_replace('~[^a-z0-9]+~i', '_', $rel));
@@ -520,6 +522,6 @@ switch ($action) {
         if (!$dry && $total) log_act($u, 'global.replace', '"' . mb_substr($find, 0, 60) . '" → "' . mb_substr($rep, 0, 60) . '" (' . count($res) . ' pages)');
         out(['ok' => true, 'pages' => $res, 'total' => $total, 'dry' => $dry]);
 
-    default: if (!sales17_actions($action, $in) && !booking_actions($action, $in) && !crm_actions($action, $in) && !sales_actions($action, $in) && !content_actions($action, $in) && !media_actions($action, $in) && !security_actions($action, $in) && !gdata_actions($action, $in) && !dash_actions($action, $in) && !p8_actions($action, $in) && !chat_actions($action, $in) && !notify_actions($action, $in) && !seo_actions($action, $in) && !redirects_actions($action, $in) && !p18e_actions($action, $in) && !p18g_actions($action, $in)) fail('Unknown action', 404);
+    default: if (!sales17_actions($action, $in) && !booking_actions($action, $in) && !crm_actions($action, $in) && !sales_actions($action, $in) && !content_actions($action, $in) && !media_actions($action, $in) && !security_actions($action, $in) && !gdata_actions($action, $in) && !dash_actions($action, $in) && !p8_actions($action, $in) && !chat_actions($action, $in) && !notify_actions($action, $in) && !seo_actions($action, $in) && !redirects_actions($action, $in) && !p18e_actions($action, $in) && !p18g_actions($action, $in) && !p18h_actions($action, $in)) fail('Unknown action', 404);
 }
 } catch (PDOException $e) { error_log('admin.php: ' . $e->getMessage()); fail('Database error', 500); }

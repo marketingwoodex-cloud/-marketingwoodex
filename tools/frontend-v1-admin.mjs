@@ -170,7 +170,7 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
     const e = d[pth] || { n: 0 }; e.n++; e.last = new Date().toISOString(); ref = String(ref || "").replace(/[\s"<>]/g, "").slice(0, 200); if (ref && !/localhost|e2b\.app/.test(ref)) e.ref = ref; d[pth] = e; jw(RD_404, d); };
   function publishRules() {
     const meta = jr(PMETA, {}), red = jr(REDIR, []), q = (s) => s.replace(/[.*+?^${}()|[\]\\\/-]/g, "\\$&");
-    const lines = ["# BEGIN WOODEX-ADMIN (managed by /admin — do not edit by hand)", "<IfModule mod_rewrite.c>", "RewriteEngine On"];
+    const [sysPre, sysRw] = sysHtLines(); const lines = ["# BEGIN WOODEX-ADMIN (managed by /admin — do not edit by hand)", ...sysPre, "<IfModule mod_rewrite.c>", "RewriteEngine On", ...sysRw];
     rdLines(q).forEach((l) => lines.push(l)); // P16 3.8b
     Object.keys(meta).forEach((rel) => { if (meta[rel].status === "draft") lines.push("RewriteRule ^" + q(rel.replace(/index\.html$/, "")) + "(index\\.html)?$ - [R=404,L]"); });
     lines.push("</IfModule>", "# END WOODEX-ADMIN");
@@ -619,6 +619,74 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
     const b = { id: ++db.seqB, created_at: now(), lead_id: l.id, name, phone, email, type: t.k, city, address, d, tm, dur: t.dur, status: "pending", staff_id: 0, note, src: "web", reminded: 0 };
     db.bookings.push(b); save(db); sendAlerts({ ...l, service: t.label + " — " + when }).catch(() => {});
     return { ok: true, id: b.id, when, type: t.label };
+  }
+  /* P18 H mirror: maintenance switch, file manager (/assets), database browser (mirrors api/p18h-lib.php). Preview "tables" = arrays in admin-db.json. */
+  const SYSF = path.join(PRIV, "system.json"), SYS_PAGES = ["404.html", "500.html", "503.html", "coming-soon.html"], FM_RO = ["assets/js", "assets/css", "assets/fonts", "assets/vendor"], FM_TRASH = path.join(PRIV, "trash");
+  const FM_EXT = ["jpg", "jpeg", "png", "webp", "gif", "svg", "avif", "ico", "pdf", "mp4", "webm", "mp3", "woff2", "woff", "txt", "csv", "json", "zip", "docx", "xlsx", "pptx"];
+  function sysCfg() { const d = jr(SYSF, {}); const m = { on: false, mode: "maintenance", token: "", since: null, by: "", ...(d.maint || {}) }; if (!m.token) { m.token = crypto.randomBytes(16).toString("hex"); d.maint = m; jw(SYSF, d); } return m; }
+  function sysHtLines() { const m = sysCfg(), pre = ["ErrorDocument 500 /500.html", "ErrorDocument 503 " + (m.mode === "soon" ? "/coming-soon.html" : "/503.html")], rw = [];
+    if (m.on) rw.push("# maintenance mode (Admin → System → Maintenance): visitors get 503, staff with the wx_mt cookie see the site", "RewriteCond %{REQUEST_URI} !^/(admin|api|builder|assets)(/|$)", "RewriteCond %{REQUEST_URI} !^/(500|503|404|coming-soon)\\.html$", "RewriteCond %{REQUEST_URI} !^/(robots\\.txt|favicon\\.ico|sitemap\\.xml)$", "RewriteCond %{HTTP_COOKIE} !(^|;\\s*)wx_mt=" + m.token, "RewriteRule ^ - [R=503,L]");
+    return [pre, rw]; }
+  function fmPath(rel, must = true) { rel = String(rel || "").replace(/\\/g, "/").replace(/^\/+|\/+$/g, "") || "assets";
+    if (!/^assets(\/|$)/.test(rel) || /(^|\/)\.\.?(\/|$)/.test(rel) || /(^|\/)\./.test(rel)) throw new Fail("Outside the allowed folder"); const abs = path.join(ROOT, rel); if (must && !fs.existsSync(abs)) throw new Fail("Not found", 404); return [rel, abs]; }
+  const fmRo = (rel) => rel === "assets" || FM_RO.some((r) => rel === r || rel.startsWith(r + "/"));
+  const fmName = (n) => String(n || "").trim().toLowerCase().replace(/[^a-z0-9._-]+/g, "-").replace(/-+/g, "-").replace(/^[-.]+|[-.]+$/g, "");
+  const fmUsed = (url) => { const h = []; for (const rel of allPages()) { if (h.length >= 8) break; if (fs.readFileSync(path.join(ROOT, rel), "utf8").includes(url)) h.push(urlOf(rel)); } return h; };
+  const DB_SECRET = /(pass|hash|token|secret|otp|reset|key)/i;
+  const dbxTables = (db) => Object.keys(db).filter((k) => Array.isArray(db[k]) && db[k].length && typeof db[k][0] === "object").map((k) => "wx_" + k);
+  const dbxMask = (k, v) => (v == null ? null : DB_SECRET.test(k) ? "••••••" : typeof v === "object" ? JSON.stringify(v) : v);
+  async function p18h(action, inp, need, db, ip) {
+    if (!/^(mt_|fm_|dbx_)/.test(action)) return null;
+    const OA = ["owner", "admin"], ED = ["owner", "admin", "editor"], ST = ["owner", "admin", "editor", "sales"];
+    switch (action) {
+      case "mt_get": { need(); const m = sysCfg(); return { ok: true, on: m.on, mode: m.mode, since: m.since, by: m.by, token: m.token, pages: SYS_PAGES.map((p) => ({ path: p, url: "/" + p, exists: fs.existsSync(path.join(ROOT, p)) })) }; }
+      case "mt_set": { const u = need(OA), d = jr(SYSF, {}), m = sysCfg(), was = m.on; m.on = !!inp.on; m.mode = (inp.mode || m.mode) === "soon" ? "soon" : "maintenance";
+        if (m.on) { m.since = was && m.since ? m.since : now(); m.by = u.name; } else m.since = null; if (inp.newToken) m.token = crypto.randomBytes(16).toString("hex");
+        d.maint = m; jw(SYSF, d); publishRules(); log(db, u, "maintenance." + (m.on ? "on" : "off"), m.mode, ip); save(db); return { ok: true, on: m.on, mode: m.mode, since: m.since, token: m.token }; }
+      case "fm_list": { need(ST); const [rel, abs] = fmPath(inp.dir || "assets"); if (!fs.statSync(abs).isDirectory()) throw new Fail("Not a folder");
+        const items = fs.readdirSync(abs).filter((n) => n[0] !== ".").map((n) => { const a = path.join(abs, n), st = fs.statSync(a), d = st.isDirectory(); return { name: n, path: rel + "/" + n, dir: d, size: d ? null : st.size, mtime: dts(st.mtimeMs).slice(0, 16), count: d ? fs.readdirSync(a).length : null, ro: fmRo(rel + "/" + n) }; })
+          .sort((x, y) => (y.dir - x.dir) || x.name.toLowerCase().localeCompare(y.name.toLowerCase()));
+        const trash = fs.existsSync(FM_TRASH) ? fs.readdirSync(FM_TRASH).filter((f) => f.endsWith(".json")).length : 0; return { ok: true, dir: rel, ro: fmRo(rel), items, trash, maxUpload: "25M" }; }
+      case "fm_upload": { const u = need(ED), [rel, abs] = fmPath(inp.dir); if (fmRo(rel)) throw new Fail("This folder is read-only. Upload into assets/uploads or assets/img.");
+        const raw = Buffer.from(String(inp.data || "").replace(/^data:[^,]*,/, ""), "base64"); if (!raw.length) throw new Fail("Upload failed (empty file)"); if (raw.length > 25 * 1048576) throw new Fail("Files up to 25 MB");
+        const name = fmName(inp.name), ext = path.extname(name).slice(1).toLowerCase(); if (!FM_EXT.includes(ext)) throw new Fail("This file type is not allowed (." + ext + ")");
+        if (ext === "svg" && /<script|on[a-z]+\s*=|javascript:/i.test(raw.toString())) throw new Fail("This SVG contains scripts and was blocked");
+        const base = name.slice(0, -(ext.length + 1)); let dst = path.join(abs, name), i = 2; while (fs.existsSync(dst)) dst = path.join(abs, base + "-" + i++ + "." + ext);
+        fs.writeFileSync(dst, raw); log(db, u, "file.upload", rel + "/" + path.basename(dst), ip); save(db); return { ok: true, path: rel + "/" + path.basename(dst) }; }
+      case "fm_mkdir": { const u = need(ED), [rel, abs] = fmPath(inp.dir); if (fmRo(rel)) throw new Fail("This folder is read-only"); const n = fmName(inp.name); if (!n || n.includes(".")) throw new Fail("Use letters, numbers and - only");
+        if (fs.existsSync(path.join(abs, n))) throw new Fail("Already exists"); fs.mkdirSync(path.join(abs, n)); log(db, u, "file.mkdir", rel + "/" + n, ip); save(db); return { ok: true }; }
+      case "fm_rename": { const u = need(ED), [rel, abs] = fmPath(inp.path); if (fmRo(rel)) throw new Fail("This item is read-only"); let n = fmName(inp.name); if (!n) throw new Fail("Enter a name");
+        const isF = fs.statSync(abs).isFile(); if (isF) { const old = path.extname(abs).toLowerCase(); if (path.extname(n).toLowerCase() !== old) n = n.replace(/\.[^.]*$/, "") + old; }
+        const dst = path.join(path.dirname(abs), n); if (fs.existsSync(dst)) throw new Fail("A file with that name already exists");
+        const used = isF ? fmUsed("/" + rel) : []; if (used.length && !inp.force) return { ok: false, used, error: "This file is used on " + used.length + " page(s). Renaming will break it there." };
+        fs.renameSync(abs, dst); log(db, u, "file.rename", rel + " → " + n, ip); save(db); return { ok: true, path: path.posix.dirname(rel) + "/" + n }; }
+      case "fm_delete": { const u = need(ED), [rel, abs] = fmPath(inp.path); if (fmRo(rel)) throw new Fail("This item is read-only"); const st = fs.statSync(abs);
+        if (st.isDirectory()) { if (fs.readdirSync(abs).length) throw new Fail("The folder is not empty"); fs.rmdirSync(abs); return { ok: true }; }
+        const used = fmUsed("/" + rel); if (used.length && !inp.force) return { ok: false, used, error: "This file is used on " + used.length + " page(s)." };
+        fs.mkdirSync(FM_TRASH, { recursive: true }); const id = now().replace(/\D/g, "").slice(0, 8) + "-" + now().replace(/\D/g, "").slice(8, 14) + "-" + crypto.randomBytes(3).toString("hex");
+        fs.renameSync(abs, path.join(FM_TRASH, id + ".bin")); jw(path.join(FM_TRASH, id + ".json"), { path: rel, size: st.size, t: now(), by: u.name }); log(db, u, "file.delete", rel, ip); save(db); return { ok: true, trash: id }; }
+      case "fm_trash": { need(ST); const L = fs.existsSync(FM_TRASH) ? fs.readdirSync(FM_TRASH).filter((f) => f.endsWith(".json")).map((f) => ({ id: f.slice(0, -5), ...jr(path.join(FM_TRASH, f), {}) })) : []; return { ok: true, items: L.sort((a, b) => (a.t < b.t ? 1 : -1)) }; }
+      case "fm_restore": { const u = need(ED), id = String(inp.id || "").replace(/[^0-9a-f-]/g, ""), j = path.join(FM_TRASH, id + ".json"); if (!fs.existsSync(j)) throw new Fail("Not in the trash", 404);
+        const m = jr(j, {}), [, abs] = fmPath(m.path, false); if (fs.existsSync(abs)) throw new Fail("A file with the same name exists again at " + m.path);
+        fs.mkdirSync(path.dirname(abs), { recursive: true }); fs.renameSync(path.join(FM_TRASH, id + ".bin"), abs); fs.unlinkSync(j); log(db, u, "file.restore", m.path, ip); save(db); return { ok: true, path: m.path }; }
+      case "fm_zip": { need(ST); const [rel, abs] = fmPath(inp.dir); const tmp = path.join(PRIV, "fmz-" + crypto.randomBytes(4).toString("hex") + ".zip");
+        execFileSync("zip", ["-qr", tmp, "."], { cwd: abs }); const b = fs.readFileSync(tmp); fs.unlinkSync(tmp); return { ok: true, name: path.basename(rel) + ".zip", zip64: b.toString("base64") }; }
+      case "dbx_tables": { need(OA); return { ok: true, tables: dbxTables(db).map((t) => ({ name: t, rows: db[t.slice(3)].length, size: JSON.stringify(db[t.slice(3)]).length, updated: null })) }; }
+      case "dbx_browse": { need(OA); const t = String(inp.table || ""); if (!dbxTables(db).includes(t)) throw new Fail("Unknown table"); const L = db[t.slice(3)], keys = [...new Set(L.slice(0, 50).flatMap((r) => Object.keys(r)))];
+        const q = String(inp.q || "").trim().toLowerCase(); let rows = q ? L.filter((r) => keys.some((k) => !DB_SECRET.test(k) && r[k] != null && String(typeof r[k] === "object" ? JSON.stringify(r[k]) : r[k]).toLowerCase().includes(q))) : L.slice();
+        rows = rows.slice().reverse(); const per = 50, page = Math.max(1, parseInt(inp.page) || 1), total = rows.length;
+        const out = rows.slice((page - 1) * per, page * per).map((r) => Object.fromEntries(keys.map((k) => { let v = dbxMask(k, r[k]); if (typeof v === "string" && v.length > 240) v = v.slice(0, 240) + "…"; return [k, v ?? null]; })));
+        return { ok: true, table: t, cols: keys.map((k) => ({ name: k, type: typeof (L[0] || {})[k] })), rows: out, total, page, pages: Math.max(1, Math.ceil(total / per)) }; }
+      case "dbx_row": { need(OA); const t = String(inp.table || ""); if (!dbxTables(db).includes(t)) throw new Fail("Unknown table"); const r = db[t.slice(3)].find((x) => +x.id === +inp.id); if (!r) throw new Fail("Row not found", 404); return { ok: true, row: Object.fromEntries(Object.entries(r).map(([k, v]) => [k, dbxMask(k, v)])) }; }
+      case "dbx_export": { const u = need(OA), fmt = inp.fmt === "sql" ? "sql" : "csv", tabs = inp.table === "*" ? dbxTables(db) : [String(inp.table || "")]; if (!tabs.every((t) => dbxTables(db).includes(t))) throw new Fail("Unknown table");
+        const cell = (v) => (v == null ? "" : typeof v === "object" ? JSON.stringify(v) : String(v)); let content;
+        if (fmt === "csv") { const L = db[tabs[0].slice(3)], keys = [...new Set(L.flatMap((r) => Object.keys(r)))], esc2 = (s) => (/[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s);
+          content = "\uFEFF" + [keys.join(",")].concat(L.map((r) => keys.map((k) => esc2(cell(dbxMask(k, r[k])))).join(","))).join("\n") + "\n"; }
+        else { content = "-- Woodex database export " + now() + " (preview: JSON tables as rows)\nSET NAMES utf8mb4;\n"; for (const t of tabs) { const L = db[t.slice(3)], keys = [...new Set(L.flatMap((r) => Object.keys(r)))];
+          content += "\nDROP TABLE IF EXISTS `" + t + "`;\n-- columns: " + keys.join(", ") + "\n"; for (const r of L) content += "INSERT INTO `" + t + "` VALUES (" + keys.map((k) => (r[k] == null ? "NULL" : "'" + cell(r[k]).replace(/\\/g, "\\\\").replace(/'/g, "\\'") + "'")).join(",") + ");\n"; } }
+        log(db, u, "db.export." + fmt, tabs.join(","), ip); save(db); return { ok: true, name: (tabs.length > 1 ? "woodex-db-" + now().replace(/\D/g, "").slice(0, 14) : tabs[0]) + "." + fmt, mime: fmt === "csv" ? "text/csv" : "application/sql", content, note: fmt === "sql" ? "Contains password hashes and secrets — keep it private." : "Secrets are masked." }; }
+    }
+    return null;
   }
   /* P18 G mirror: WhatsApp automation (mirrors api/p18g-lib.php). The preview has no real WhatsApp number, so sends are SIMULATED (fake message ids). */
   const WAGF = path.join(PRIV, "wa-auto.json");
@@ -1956,7 +2024,7 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
         return done({ ok: true, rows: all.slice((page - 1) * per, page * per).map(({ user_name, action, target, ip, created_at }) => ({ user_name, action, target, ip, created_at })), total: all.length, per, page });
       }
       default: {
-        const r = (await p18g(action, inp, need, db, ip)) || (await p18e(action, inp, need, db, ip)) || (await pbk(action, inp, need, db, ip)) || (await a2(action, inp, need, db, ip)) || (await a17(action, inp, need, db, ip)) || (await a4(action, inp, need, db, ip)) || a5(action, inp, need, db, ip) || (await a6(action, inp, need, db, ip)) || (await a7(action, inp, need, db, ip)) || (await a8(action, inp, need, db, ip)) || (await p8(action, inp, need, db, ip, req)) || (await p10(action, inp, need, db, ip, req)) || (await p12(action, inp, need, db, ip)) || (await p13(action, inp, need, db, ip)); if (r) return r;
+        const r = (await p18h(action, inp, need, db, ip)) || (await p18g(action, inp, need, db, ip)) || (await p18e(action, inp, need, db, ip)) || (await pbk(action, inp, need, db, ip)) || (await a2(action, inp, need, db, ip)) || (await a17(action, inp, need, db, ip)) || (await a4(action, inp, need, db, ip)) || a5(action, inp, need, db, ip) || (await a6(action, inp, need, db, ip)) || (await a7(action, inp, need, db, ip)) || (await a8(action, inp, need, db, ip)) || (await p8(action, inp, need, db, ip, req)) || (await p10(action, inp, need, db, ip, req)) || (await p12(action, inp, need, db, ip)) || (await p13(action, inp, need, db, ip)); if (r) return r;
         throw new Fail("Unknown action", 404);
       }
     }
@@ -2095,7 +2163,9 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
   adminApi.chat = chatPublic;
   adminApi.r404 = (body, ipAddr) => { try { const b = JSON.parse(body || "{}"); rd404Log(b.p, b.r, ipAddr); } catch {} };
   adminApi.forms = formsApi; adminApi.backupFile = backupFile; adminApi.rawAction = rawAction;
-  adminApi.publicGuard = function (rel) {
+  adminApi.publicGuard = function (rel, req) {
+    const mt = sysCfg(); // P18 H: maintenance mode (preview mimics the .htaccess 503 rule)
+    if (mt.on && !/^(500|503|404|coming-soon)\.html$|^(robots\.txt|favicon\.ico|sitemap\.xml)$/.test(rel) && !new RegExp("(^|;\\s*)wx_mt=" + mt.token).test((req && req.headers.cookie) || "")) return { maint: mt.mode === "soon" ? "coming-soon.html" : "503.html" };
     // preview-only: mimic the managed .htaccess rules (redirects, drafts 404)
     const url = "/" + rel.replace(/index\.html$/, ""), u2 = (url.endsWith("/") ? url : url + "/").toLowerCase(), c = rdCfg();
     if (c.spam && /(casino|gokkasten|gokautomat|blackjack|roulette|free-spins|itm-[0-9]{4,})/i.test(url)) return { gone: true };

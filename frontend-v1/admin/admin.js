@@ -102,6 +102,9 @@
       ["users", "Users & roles", "users", "owner,admin"],
       ["activity", "Activity log", "activity", "owner,admin"],
       ["backups", "Backups", "hard-drive", "owner,admin"],
+      ["maintenance", "Maintenance & error pages", "shield", "owner,admin", null, "new"],
+      ["files", "File manager", "folder", "owner,admin,editor", null, "new"],
+      ["database", "Database", "database", "owner,admin", null, "new"],
       ["system", "System check", "activity", "owner,admin"]] },
     ["security", "My security", "shield"]
   ];
