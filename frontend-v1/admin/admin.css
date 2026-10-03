@@ -919,3 +919,14 @@ label{font-weight:500;color:var(--txt2)}
 .auth .btn.pri.block.busy{position:relative;color:transparent!important}.auth .btn.pri.block.busy:after{content:"";position:absolute;width:18px;height:18px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 .sched input{min-width:0;flex:1 1 auto}.sched .btn{flex:none;padding:0 12px}
+/* P18 K: chat page polish */
+.nav-a:has([data-bdg]) .pill{display:none!important} /* old P10 counters duplicated the menu badges */
+.lc.ib .lc-in .btn{background:var(--card);border-color:var(--line2);color:var(--txt2);box-shadow:none}
+.lc.ib .lc-in .btn:hover{background:var(--bg);color:var(--txt)}
+.lc.ib .lc-in .btn.pri{background:#0c1628;border-color:#0c1628;color:#fff}.lc.ib .lc-in .btn.pri:hover{background:#1a2a47}
+.lc.ib .lc-in .cx-tools .btn{width:40px;height:40px;padding:0;border-radius:10px}
+.lc.ib .lc-in{align-items:flex-end;gap:8px;padding:12px 14px;background:var(--card)}
+.lc.ib .lc-top{flex-wrap:nowrap;gap:8px}.lc.ib .lc-top>div:not(.sp){min-width:0}.lc.ib .lc-top h3,.lc.ib .lc-top small{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lc.ib .lc-top .btn{white-space:nowrap;flex:none}
+.lc.ib .lc-msgs{background:#f8f6f2;background-image:radial-gradient(rgba(184,149,106,.10) 1px,transparent 1px);background-size:18px 18px}html.dark .lc.ib .lc-msgs{background:#0f1420}
+.lc.ib .lm{box-shadow:0 1px 2px rgba(16,24,40,.06)}
