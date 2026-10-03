@@ -1260,6 +1260,8 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
   const cmsRelOk = (rel, type) => new RegExp("^" + PAGE_TYPES[type] + "/[a-z0-9][a-z0-9-]{0,59}/index\\.html$").test(rel);
   const htmlOk = (h) => typeof h === "string" && h.length < 3 * 1024 * 1024 && /<html/i.test(h) && /<\/html>/i.test(h) && !/<[^>]+\s(contenteditable|data-wx-ed)[\s=>]/i.test(h);
   const sitemapAdd = (rel) => { const f = path.join(ROOT, "sitemap.xml"); if (!fs.existsSync(f)) return; const loc = "https://woodex.com.pk/" + rel.replace(/index\.html$/, ""); let x = fs.readFileSync(f, "utf8"); if (x.includes("<loc>" + loc + "</loc>") || !x.includes("</urlset>")) return; fs.writeFileSync(f, x.replace("</urlset>", "  <url><loc>" + loc + "</loc></url>\n</urlset>")); };
+  const sitemapDel = (rel) => { const f = path.join(ROOT, "sitemap.xml"); if (!fs.existsSync(f)) return; const loc = "https://woodex.com.pk/" + rel.replace(/index\.html$/, ""); const x = fs.readFileSync(f, "utf8"), y = x.replace(new RegExp("[ \\t]*<url><loc>" + loc.replace(/[.*+?^${}()|[\]\\/]/g, "\\$&") + "</loc>[\\s\\S]*?</url>\\n?"), ""); if (y !== x) fs.writeFileSync(f, y); };
+  const sitemapSync = (rel, it) => (((it.data || {}).visibility === "unlisted") ? sitemapDel(rel) : sitemapAdd(rel));
   /** Publish scheduled items whose time has come. Runs on every admin request (and can be hit by cron). */
   function cmsTick(db) {
     const c = cmsLoad(), t = now(); let n = 0;
@@ -1270,7 +1272,7 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
         const abs = path.join(ROOT, rel); cmsBackup(rel); fs.mkdirSync(path.dirname(abs), { recursive: true }); fs.writeFileSync(abs, html);
         const li = path.join(ROOT, PAGE_TYPES[it.type], "index.html"), href = "/" + rel.replace(/index\.html$/, "");
         if (card && fs.existsSync(li)) { let L = fs.readFileSync(li, "utf8"); if (!L.includes('href="' + href + '"')) { const m = L.match(/<div class="hx-cards">/); if (m) { cmsBackup(PAGE_TYPES[it.type] + "/index.html"); L = L.replace(m[0], m[0] + "\n" + card); fs.writeFileSync(li, L); } } }
-        it.rel = rel; delete it.pending; sitemapAdd(rel);
+        it.rel = rel; delete it.pending; sitemapSync(rel, it);
       }
       it.status = "published"; it.published_at = t; n++; if (db) log(db, null, "content.autopublish", it.title);
     }
@@ -1367,7 +1369,7 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
       case "cms_published": { // called by the browser after it wrote the page with the builder API
         const u = need(ED), it = find(inp.id); if (!PAGE_TYPES[it.type] && it.type !== "city") throw new Fail("Not a page item");
         const rel = String(inp.rel || ""); if (!(it.type === "city" ? cityRelOk(rel) : cmsRelOk(rel, it.type)) || !fs.existsSync(path.join(ROOT, rel))) throw new Fail("Page was not written");
-        it.rel = rel; it.status = "published"; it.published_at = it.published_at || now(); delete it.pending; it.publishAt = null; if (it.type === "city") it.data = { source: (it.data || {}).source || "" }; sitemapAdd(rel);
+        it.rel = rel; it.status = "published"; it.published_at = it.published_at || now(); delete it.pending; it.publishAt = null; if (it.type === "city") it.data = { source: (it.data || {}).source || "" }; sitemapSync(rel, it);
         log(db, u, "content.publish", it.title, ip); return done({ ok: true, item: it });
       }
       case "cms_status": { const u = need(ED), it = find(inp.id); if (PAGE_TYPES[it.type]) throw new Fail("Use Publish for pages"); it.status = inp.status === "published" ? "published" : "draft"; log(db, u, "content." + it.status, it.title, ip); return done({ ok: true, item: it }); }
@@ -1649,7 +1651,7 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
   const GFILE = path.join(PRIV, "google.json"), MFILE = path.join(PRIV, "mcp.json");
   const gCid = () => String(jr(GFILE, {}).clientId || "").trim();
   const mLoad = () => { const m = jr(MFILE, {}); m.tokens = m.tokens || []; m.log = m.log || []; return m; };
-  const mPub = (t) => ({ id: t.id, name: t.name, user: t.user_name || "", hint: t.hint, created_at: t.created_at, last_used: t.last_used || null, uses: t.uses || 0 });
+  const mPub = (t) => ({ id: t.id, name: t.name, user: t.user_name || "", hint: t.hint, created_at: t.created_at, last_used: t.last_used || null, uses: t.uses || 0, off: !!t.off });
   async function gVerify(cred) {
     const cid = gCid(); if (!cid) throw new Fail("Google sign-in is not set up yet");
     if (!/^[\w-]+\.[\w-]+\.[\w-]+$/.test(String(cred || ""))) throw new Fail("Invalid Google response");
@@ -1695,6 +1697,15 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
         const u = need(OA), m = mLoad(), n = m.tokens.length; m.tokens = m.tokens.filter((t) => t.id !== String(inp.id || ""));
         if (m.tokens.length === n) throw new Fail("Token not found", 404);
         jw(MFILE, m); log(db, u, "mcp.token_revoke", String(inp.id), ip); return done({ ok: true, tokens: m.tokens.slice().reverse().map(mPub) });
+      }
+      case "mcp_token_toggle": {
+        const u = need(OA), m = mLoad(), t = m.tokens.find((x) => x.id === String(inp.id || "")); if (!t) throw new Fail("Token not found", 404);
+        t.off = !inp.on; jw(MFILE, m); log(db, u, inp.on ? "mcp.token_on" : "mcp.token_off", t.id, ip); return done({ ok: true, tokens: m.tokens.slice().reverse().map(mPub) });
+      }
+      case "mcp_token_regen": {
+        const u = need(OA), m = mLoad(), t = m.tokens.find((x) => x.id === String(inp.id || "")); if (!t) throw new Fail("Token not found", 404);
+        const raw = "wxmcp_" + crypto.randomBytes(24).toString("hex"); t.hash = sha(raw); t.hint = raw.slice(-4); t.regen_at = now();
+        jw(MFILE, m); log(db, u, "mcp.token_regen", t.id, ip); return done({ ok: true, token: raw, tokens: m.tokens.slice().reverse().map(mPub) });
       }
       case "mcp_log": { need(OA); return { ok: true, log: mLoad().log.slice(-100).reverse() }; }
       case "wa_stats": {
@@ -2047,6 +2058,7 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
     const m0 = /^Bearer\s+(\S+)$/i.exec(String(req.headers.authorization || "").trim()), raw = m0 ? m0[1] : new URL(req.url, "http://x").searchParams.get("key") || "";
     const M = mLoad(), T = raw && M.tokens.find((t) => t.hash === sha(raw));
     if (!T) return rpc(null, { code: -32001, message: "Missing or invalid token. Create one in Woodex Admin → Settings → AI Agent." }, 401, H);
+    if (T.off) return rpc(null, { code: -32001, message: "This token is switched off. Turn it on in Woodex Admin → Settings → Integrations → API keys." }, 401, H);
     const db0 = load(), user = db0 && db0.users.find((x) => x.id === T.user_id && x.active);
     if (!user) return rpc(null, { code: -32001, message: "The Admin user of this token is inactive" }, 401, H);
     if (!body || Array.isArray(body) || body.jsonrpc !== "2.0" || !body.method) return rpc(null, { code: Array.isArray(body) ? -32600 : -32700, message: Array.isArray(body) ? "Batch requests are not supported" : "Invalid JSON-RPC request" }, 400);

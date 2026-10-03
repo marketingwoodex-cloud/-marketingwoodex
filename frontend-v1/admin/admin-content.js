@@ -152,7 +152,7 @@
     try { var arr = JSON.parse(m[1]); arr = Array.isArray(arr) ? arr : [arr]; biz = arr.find(function (x) { return x["@type"] === "LocalBusiness"; }); } catch (e) {}
     var d = it.data || {}, t = T[type], out = [];
     if (biz) out.push(biz);
-    out.push({ "@context": "https://schema.org", "@type": type === "post" ? "Article" : "CreativeWork", headline: it.title, description: desc, url: url, image: absUrl((d.hero || {}).src || (it.seo || {}).og), author: { "@type": "Organization", name: "Woodex Interior" }, publisher: { "@type": "Organization", name: "Woodex Interior", url: SITE }, datePublished: String(it.published_at || new Date().toISOString()).slice(0, 10), dateModified: new Date().toISOString().slice(0, 10) });
+    out.push({ "@context": "https://schema.org", "@type": type === "post" ? "Article" : "CreativeWork", headline: it.title, description: desc, url: url, image: absUrl((d.hero || {}).src || (it.seo || {}).og), author: { "@type": "Organization", name: "Woodex Interior" }, publisher: { "@type": "Organization", name: "Woodex Interior", url: SITE }, articleSection: d.category || undefined, keywords: (d.tags || []).join(", ") || undefined, datePublished: String(it.published_at || new Date().toISOString()).slice(0, 10), dateModified: new Date().toISOString().slice(0, 10) });
     out.push({ "@context": "https://schema.org", "@type": "BreadcrumbList", itemListElement: [{ "@type": "ListItem", position: 1, name: "Home", item: SITE + "/" }, { "@type": "ListItem", position: 2, name: type === "post" ? "Insights" : "Projects", item: SITE + "/" + t.folder + "/" }, { "@type": "ListItem", position: 3, name: it.title, item: url }] });
     var fq = (d.faqs || []).filter(function (f) { return f.q && f.a; });
     if (fq.length) out.push({ "@context": "https://schema.org", "@type": "FAQPage", mainEntity: fq.map(function (f) { return { "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: plain(f.a) } }; }) });
@@ -174,11 +174,12 @@
     if (og) { h = setMeta(h, "property", "og:image", og); h = setMeta(h, "name", "twitter:image", og); }
     h = setMeta(h, "property", "og:image:alt", it.title); h = setMeta(h, "name", "twitter:title", title); h = setMeta(h, "name", "twitter:description", desc);
     h = h.replace(/(<script type="application\/ld\+json">\s*)[\s\S]*?(\s*<\/script>)/, function (m, a, b) { return a + ldJson(shell, type, it, url, desc) + b; });
+    h = h.replace(/\n?[ \t]*<meta name="robots"[^>]*>/i, ""); if (d.visibility === "unlisted") h = h.replace(/<\/title>/i, '</title>\n  <meta name="robots" content="noindex, follow">');
     return h;
   }
   function listCard(type, it) {
     var t = T[type], d = it.data || {}, c = d.card || {};
-    return '          <a class="hx-card" href="/' + t.folder + "/" + esc(it.slug) + '/" ' + t.listRv + '="">\n            <figure><img src="' + esc(c.src || (d.hero || {}).src || "") + '" alt="' + esc(c.alt || it.title) + '" width="1920" height="1280" loading="lazy" decoding="async"><span class="hx-date">' + esc(c.tag || (type === "post" ? metaVal(d, "Read time") : "Study")) + "</span></figure>\n            <h3>" + esc(it.title) + "</h3><p>" + esc(c.text || d.dek || "") + '</p><span class="hx-more">' + t.more + "</span>\n          </a>";
+    return '          <a class="hx-card" href="/' + t.folder + "/" + esc(it.slug) + '/" ' + t.listRv + '="">\n            <figure><img src="' + esc(c.src || (d.hero || {}).src || "") + '" alt="' + esc(c.alt || it.title) + '" width="1920" height="1280" loading="lazy" decoding="async"><span class="hx-date">' + esc(c.tag || d.category || (type === "post" ? metaVal(d, "Read time") : "Study")) + "</span></figure>\n            <h3>" + esc(it.title) + "</h3><p>" + esc(c.text || d.dek || "") + '</p><span class="hx-more">' + t.more + "</span>\n          </a>";
   }
   function updateListing(type, it) {
     var rel = T[type].folder + "/index.html";
@@ -186,7 +187,8 @@
       if (!r.ok) return;
       var h = r.html, href = 'href="/' + T[type].folder + "/" + it.slug + '/"', card = listCard(type, it);
       var re = new RegExp('[ \\t]*<a class="hx-card" ' + href.replace(/[.*+?^${}()|[\]\\/]/g, "\\$&") + "[\\s\\S]*?<\\/a>");
-      if (re.test(h)) h = h.replace(re, card); else if (h.indexOf('<div class="hx-cards">') > -1) h = h.replace('<div class="hx-cards">', '<div class="hx-cards">\n' + card); else return;
+      if ((it.data || {}).visibility === "unlisted") { if (!re.test(h)) return; h = h.replace(re, "").replace(/\n\s*\n(\s*<a class="hx-card")/, "\n$1"); }
+      else if (re.test(h)) h = h.replace(re, card); else if (h.indexOf('<div class="hx-cards">') > -1) h = h.replace('<div class="hx-cards">', '<div class="hx-cards">\n' + card); else return;
       if (h !== r.html) return bapi("save", { path: rel, html: h, mtime: r.mtime });
     });
   }
@@ -344,6 +346,66 @@
         else body = '<div class="bk-img"><div class="imf-p" style="background-image:url(\'' + esc(b.src || "") + '\')" data-pickb>' + (b.src ? "" : ic("image")) + '</div><div class="bk-img-f"><input data-f="alt" value="' + esc(b.alt) + '" placeholder="Alt text (describe the photo)">' + (aiReady ? '<button type="button" class="btn sm ai" data-alt>' + ic("sparkles") + "Alt</button>" : "") + '<input data-f="caption" value="' + esc(b.caption) + '" placeholder="Caption (optional)"><button type="button" class="btn sm" data-pickb>' + (b.src ? "Change image" : "Choose image") + "</button></div></div>";
         return '<div class="bk bk-' + b.t + '" data-i="' + i + '">' + tools + body + "</div>";
       }
+      // ---- P18 I: editor toolbar + Status / Visibility / Category / Tags side cards
+      var CATS = ["Cost guides", "Design ideas", "Renovation", "Office fit-out", "Kitchens & wardrobes", "Materials", "Project stories"], lastF = null, lastMin = 0;
+      function edToolbar() {
+        var f = [["b", "<b>B</b>", "Bold (Ctrl+B)"], ["i", "<i>I</i>", "Italic (Ctrl+I)"], ["link", ic("link") , "Link (Ctrl+K)"]];
+        var n = [["h", "H2", "Insert heading"], ["p", "¶", "Insert paragraph"], ["list", "• List", "Insert list"], ["quote", "❝ Quote", "Insert quote"], ["img", ic("image") + "Image", "Insert image"], ["table", "▦ Table", "Insert table"]];
+        return '<div class="ce-tb" id="ce-tb">' + f.map(function (x) { return '<button type="button" data-fmt="' + x[0] + '" title="' + x[2] + '">' + x[1] + "</button>"; }).join("") + '<span class="ce-tb-sep"></span>' +
+          n.map(function (x) { return '<button type="button" data-ins="' + x[0] + '" title="' + x[2] + ' after the current block">' + x[1] + "</button>"; }).join("") + '<span class="ce-tb-wc" id="ce-tb-wc"></span></div>';
+      }
+      function sideCards() {
+        var cats = CATS.slice(); others.concat([it]).forEach(function (o) { var c = ((o.data || {}).category || "").trim(); if (c && cats.indexOf(c) < 0) cats.push(c); });
+        if (d.category == null) d.category = metaVal(d, "Category") || "";
+        var cats2 = d.category && cats.indexOf(d.category) < 0 ? cats.push(d.category) : 0;
+        var vis = d.visibility === "unlisted" ? "unlisted" : "public";
+        return '<div class="card card-b"><h4 class="side-h">Status &amp; visibility</h4><dl class="ce-dl"><dt>Status</dt><dd>' + badge(it) + '</dd><dt>Words</dt><dd id="ce-wc">0</dd><dt>Reading time</dt><dd id="ce-rt">–</dd>' + (it.updated_at ? "<dt>Last saved</dt><dd>" + esc(String(it.updated_at).slice(0, 16)) + "</dd>" : "") + "</dl>" +
+          '<div class="ce-vis">' + [["public", "Public", "On the Insights page and in Google"], ["unlisted", "Unlisted", "Only people with the link. Hidden from Insights, the sitemap and Google"]].map(function (v) { return '<label class="ce-vo' + (vis === v[0] ? " on" : "") + '"><input type="radio" name="ce-vis" value="' + v[0] + '"' + (vis === v[0] ? " checked" : "") + "><span><b>" + v[1] + "</b><small>" + v[2] + "</small></span></label>"; }).join("") + "</div></div>" +
+          '<div class="card card-b"><h4 class="side-h">Category</h4><select id="ce-cat"><option value="">No category</option>' + cats.map(function (c) { return '<option' + (d.category === c ? " selected" : "") + ">" + esc(c) + "</option>"; }).join("") + '<option value="__new">+ New category…</option></select><small class="muted">Shown on the blog card (unless you set a card label below).</small></div>' +
+          '<div class="card card-b"><h4 class="side-h">Tags</h4><div class="ce-tags" id="ce-tags"></div><small class="muted">Up to 8. Press Enter or comma to add.</small></div>';
+      }
+      function drawTags() { var b = $("#ce-tags"); if (!b) return; b.innerHTML = (d.tags || []).map(function (t, i) { return '<span class="ce-chip">' + esc(t) + '<button type="button" data-tx="' + i + '" aria-label="Remove">×</button></span>'; }).join("") + ((d.tags || []).length < 8 ? '<input id="ce-tag-in" placeholder="' + ((d.tags || []).length ? "Add…" : "e.g. modern, Lahore, small spaces") + '">' : ""); }
+      function wordCount() {
+        var txt = [$("#ce-dek") && $("#ce-dek").value].concat($$("#ce-blocks textarea, #ce-blocks input[data-f]").map(function (x) { return x.value; })).concat([$("#ce-sum") && $("#ce-sum").value]).join(" ");
+        var n = (txt.replace(/[*_#>\[\]()|]/g, " ").match(/[\w\u0600-\u06FF'’-]+/g) || []).length, m = Math.max(1, Math.round(n / 200));
+        if ($("#ce-wc")) { $("#ce-wc").textContent = n.toLocaleString(); $("#ce-rt").textContent = m + " min"; }
+        lastMin = m;
+        if ($("#ce-tb-wc")) $("#ce-tb-wc").textContent = n.toLocaleString() + " words · " + m + " min read";
+      }
+      function wrapSel(el, a, b, ph) {
+        var s0 = el.selectionStart, s1 = el.selectionEnd, v = el.value, sel = v.slice(s0, s1) || ph;
+        el.value = v.slice(0, s0) + a + sel + b + v.slice(s1); el.focus(); el.setSelectionRange(s0 + a.length, s0 + a.length + sel.length); el.dispatchEvent(new Event("input", { bubbles: true }));
+      }
+      function fmt(k) {
+        var el = lastF && document.body.contains(lastF) ? lastF : null; if (!el) return toast("Click inside a paragraph first", true);
+        if (k === "b") wrapSel(el, "**", "**", "bold text"); else if (k === "i") wrapSel(el, "*", "*", "italic text");
+        else { var u = prompt("Link address (e.g. /contact/ or https://…)", "/contact/"); if (u) wrapSel(el, "[", "](" + u.trim() + ")", "link text"); }
+      }
+      function insBlock(k) {
+        collect(); var cur = lastF && lastF.closest && lastF.closest("#ce-blocks .bk"), at = cur ? +cur.dataset.i + 1 : d.blocks.length;
+        var nb = k === "list" ? { t: k, items: [] } : k === "img" ? { t: k, src: "", alt: "", caption: "" } : { t: k, text: "" };
+        d.blocks.splice(at, 0, nb); redrawBlocks(); mark(); wordCount();
+        var nel = $('#ce-blocks .bk[data-i="' + at + '"]'); if (nel) { nel.scrollIntoView({ block: "center", behavior: "smooth" }); var f = $("textarea,input", nel); if (f) f.focus(); nel.classList.add("bk-new"); setTimeout(function () { nel.classList.remove("bk-new"); }, 1200); }
+      }
+      function bindP18i(R) {
+        R.addEventListener("focusin", function (e) { if (e.target.matches("#ce-blocks textarea, #ce-blocks input[data-f], #ce-sum, #ce-dek, #ce-faqs textarea")) lastF = e.target; });
+        R.addEventListener("keydown", function (e) { if (!(e.ctrlKey || e.metaKey) || !e.target.matches("textarea, #ce-blocks input[data-f]")) return; var k = { b: "b", i: "i", k: "link" }[e.key.toLowerCase()]; if (!k) return; e.preventDefault(); lastF = e.target; fmt(k); });
+        $("#ce-tb").addEventListener("mousedown", function (e) { if (e.target.closest("button")) e.preventDefault(); }); // keep the text selection
+        $("#ce-tb").onclick = function (e) { var b = e.target.closest("button"); if (!b) return; if (b.dataset.fmt) fmt(b.dataset.fmt); else if (b.dataset.ins) insBlock(b.dataset.ins); };
+        R.addEventListener("input", wordCount); wordCount();
+        if (type !== "post") return;
+        drawTags();
+        R.addEventListener("change", function (e) { if (e.target.name !== "ce-vis") return; $$(".ce-vo", R).forEach(function (l) { l.classList.toggle("on", l.querySelector("input").checked); }); mark(); });
+        $("#ce-cat").onchange = function () { if (this.value !== "__new") return mark(); var n = (prompt("New category name") || "").trim().slice(0, 40); if (!n) { this.value = d.category || ""; return; } var o = document.createElement("option"); o.textContent = n; this.insertBefore(o, this.lastElementChild); this.value = n; mark(); };
+        var tb = $("#ce-tags");
+        tb.onclick = function (e) { var x = e.target.closest("[data-tx]"); if (x) { d.tags.splice(+x.dataset.tx, 1); drawTags(); mark(); var i = $("#ce-tag-in"); if (i) i.focus(); } else if ($("#ce-tag-in")) $("#ce-tag-in").focus(); };
+        tb.addEventListener("keydown", function (e) {
+          var i = e.target; if (i.id !== "ce-tag-in") return;
+          if ((e.key === "Enter" || e.key === ",") && i.value.trim()) { e.preventDefault(); var v = i.value.replace(/,/g, "").trim().toLowerCase().slice(0, 30); d.tags = d.tags || []; if (v && d.tags.indexOf(v) < 0 && d.tags.length < 8) d.tags.push(v); drawTags(); mark(); var n = $("#ce-tag-in"); if (n) n.focus(); }
+          else if (e.key === "Backspace" && !i.value && (d.tags || []).length) { d.tags.pop(); drawTags(); mark(); var m = $("#ce-tag-in"); if (m) m.focus(); }
+          else if (e.key === "Enter") e.preventDefault();
+        });
+      }
       function draw() {
         d = it.data;
         var live = !!it.rel, seo = it.seo;
@@ -357,7 +419,7 @@
           imgField("ce-hero", (d.hero || {}).src, "Hero image") +
           '<h4 class="sub-h">Details strip</h4><div id="ce-meta">' + kv(d.meta, "meta", "Label", "Value") + '</div><button type="button" class="btn sm" id="ce-meta-add">' + ic("plus") + "Add detail</button></div>" +
           (type === "study" ? '<div class="card card-b"><h4 class="sub-h" style="margin-top:0">Facts box <small>(sidebar)</small></h4><label>Box title<input id="ce-ft" value="' + esc(d.factsTitle || "Study facts") + '"></label><div id="ce-facts">' + kv(d.facts, "fact", "Label", "Text") + '</div><button type="button" class="btn sm" id="ce-fact-add">' + ic("plus") + 'Add fact</button><label style="margin-top:12px">Note under the facts<input id="ce-fn" value="' + esc(d.factsNote) + '" placeholder="Illustrative design study. Not built work, not a client project."></label></div>' : "") +
-          '<div class="card"><div class="card-h"><h3>Content</h3>' + (type === "post" ? '<div class="toolbar"><button type="button" class="btn sm" id="ce-tpl">' + ic("blocks") + "Templates</button>" + (aiReady ? aiBtn("ce-ai-writer", "AI SEO writer") + aiBtn("ce-ai-draft", "Quick draft") : '<button type="button" class="btn sm" id="ce-ai-writer" title="Add an AI key in AI settings">' + ic("sparkles") + "AI SEO writer</button>") + "</div>" : "") + '</div><div class="card-b"><div id="ce-blocks" class="bks">' + d.blocks.map(blk).join("") + '</div><div class="bk-add"><span class="muted">Add:</span>' + [["h", "Heading"], ["p", "Paragraph"], ["list", "List"], ["img", "Image"], ["quote", "Quote"], ["table", "Table"], ["faq", "FAQ"], ["cta", "Call to action"], ["ba", "Before / after"], ["gallery", "Gallery"]].map(function (x) { return '<button type="button" class="btn sm" data-add="' + x[0] + '">' + ic("plus") + x[1] + "</button>"; }).join("") + "</div></div></div>" +
+          '<div class="card"><div class="card-h"><h3>Content</h3>' + (type === "post" ? '<div class="toolbar"><button type="button" class="btn sm" id="ce-tpl">' + ic("blocks") + "Templates</button>" + (aiReady ? aiBtn("ce-ai-writer", "AI SEO writer") + aiBtn("ce-ai-draft", "Quick draft") : '<button type="button" class="btn sm" id="ce-ai-writer" title="Add an AI key in AI settings">' + ic("sparkles") + "AI SEO writer</button>") + "</div>" : "") + '</div><div class="card-b">' + edToolbar() + '<div id="ce-blocks" class="bks">' + d.blocks.map(blk).join("") + '</div><div class="bk-add"><span class="muted">Add:</span>' + [["h", "Heading"], ["p", "Paragraph"], ["list", "List"], ["img", "Image"], ["quote", "Quote"], ["table", "Table"], ["faq", "FAQ"], ["cta", "Call to action"], ["ba", "Before / after"], ["gallery", "Gallery"]].map(function (x) { return '<button type="button" class="btn sm" data-add="' + x[0] + '">' + ic("plus") + x[1] + "</button>"; }).join("") + "</div></div></div>" +
           (type === "post" ? '<div class="card card-b"><h4 class="sub-h" style="margin-top:0">The short version <small>(takeaway bullets, optional)</small></h4><textarea id="ce-sum" rows="3" placeholder="One point per line. **Label:** text">' + esc((d.summary || []).join("\n")) + "</textarea></div>" +
             '<div class="card"><div class="card-h"><h3>FAQs</h3><div class="toolbar">' + (faqGroups.length ? '<select id="ce-fg" class="sm-in"><option value="">Use FAQ group…</option><optgroup label="Link (stays in sync)">' + faqGroups.map(function (g) { return '<option value="L' + g.id + '">' + esc(g.title) + " (" + ((g.data || {}).items || []).length + ")</option>"; }).join("") + '</optgroup><optgroup label="Copy questions (edit here)">' + faqGroups.map(function (g) { return '<option value="' + g.id + '">' + esc(g.title) + "</option>"; }).join("") + "</optgroup></select>" : "") + (aiReady ? aiBtn("ce-ai-faq", "Suggest FAQs") : "") + '</div></div><div class="card-b"><div id="ce-fg-link"></div><div id="ce-faqs">' + faqRows(d.faqs) + '</div><button type="button" class="btn sm" id="ce-faq-add">' + ic("plus") + "Add question</button></div></div>" : "") +
           '<div class="card card-b"><label>Pull quote <small>(big quote band, optional)</small><input id="ce-quote" value="' + esc(d.quote) + '"></label><label>Call-to-action heading <small>(leave empty to keep the default)</small><input id="ce-cta" value="' + esc(d.ctaTitle || "") + '"></label>' +
@@ -368,6 +430,7 @@
           (live ? "" : '<div class="sched"><input type="datetime-local" id="ce-at" value="' + esc(utcToLocal(it.publishAt)) + '"><button class="btn" id="ce-sch">' + ic("clock") + "Schedule</button></div>") +
           '<button class="btn blk" id="ce-save">' + ic("save") + (live ? "Save without publishing" : "Save draft") + "</button>" + (it.status === "scheduled" ? '<button class="btn blk ghost" id="ce-unsch">Cancel schedule</button>' : "") +
           (it.id && !live ? '<button class="btn blk ghost danger" id="ce-del">Delete draft</button>' : "") + "</div>" +
+          (type === "post" ? sideCards() : "") +
           '<div class="card card-b"><div class="side-hr"><h4 class="side-h">Search & sharing</h4>' + (aiReady ? aiBtn("ce-ai-seo", "Write") : "") + '</div><label>SEO title <small id="ce-stc"></small><input id="ce-st" value="' + esc(seo.title) + '" placeholder="Title | Woodex Interior"></label><label>Meta description <small id="ce-sdc"></small><textarea id="ce-sd" rows="3">' + esc(seo.desc) + "</textarea></label>" + imgField("ce-og", seo.og, "Share image (defaults to hero)") +
             '<label>Focus keyphrase<input id="ce-kw" value="' + esc(seo.kw || "") + '" placeholder="e.g. interior design cost Pakistan"></label><button type="button" class="btn sm" id="ce-seo-an">' + ic("search") + 'SEO check</button><div id="ce-seo-r" style="margin-top:10px"></div>' +
           '<div class="serp"><span id="sp-u"></span><b id="sp-t"></b><p id="sp-d"></p></div></div>' +
@@ -397,6 +460,8 @@
         d.quote = $("#ce-quote").value.trim(); d.ctaTitle = $("#ce-cta").value.trim();
         d.related = $$(".rel-l input:checked").map(function (c) { return c.value; }).slice(0, 3);
         d.card = { src: imgVal("ce-card"), text: $("#ce-ct").value.trim(), tag: $("#ce-cl").value.trim(), alt: (d.card || {}).alt || "" };
+        if (type === "post" && $("#ce-cat")) { d.visibility = ($("[name=ce-vis]:checked") || {}).value === "unlisted" ? "unlisted" : "public"; var cv = $("#ce-cat").value; d.category = cv === "__new" ? "" : cv; var ti = $("#ce-tag-in"); if (ti && ti.value.trim()) { var tv = ti.value.trim().toLowerCase().slice(0, 30); d.tags = d.tags || []; if (d.tags.indexOf(tv) < 0 && d.tags.length < 8) d.tags.push(tv); ti.value = ""; } d.tags = (d.tags || []).slice(0, 8); 
+          (d.meta || []).forEach(function (m) { var k = String(m.k).toLowerCase(); if (k === "category" && d.category) m.v = d.category; if (k === "read time" && lastMin) m.v = lastMin + " min read"; }); }
         it.seo = { title: $("#ce-st").value.trim(), desc: $("#ce-sd").value.trim(), og: imgVal("ce-og"), kw: ($("#ce-kw") || { value: "" }).value.trim(), related: (it.seo || {}).related || [] };
       }
       function redrawBlocks() { $("#ce-blocks").innerHTML = d.blocks.map(blk).join(""); W.fillIcons($("#ce-blocks")); }
@@ -406,7 +471,7 @@
         var a = ti.length, b = de.length; $("#ce-stc").textContent = a + "/60"; $("#ce-stc").className = a > 60 ? "bad" : ""; $("#ce-sdc").textContent = b + "/158"; $("#ce-sdc").className = b > 158 || (b && b < 110) ? "warnc" : "";
       }
       function bind() {
-        serp(); var R = $("#ce");
+        serp(); var R = $("#ce"); bindP18i(R);
         R.addEventListener("input", function () { mark(); serp(); });
         $("#ce-title").addEventListener("input", function () { if (!it.rel && !it.id && !it._slugTouched) $("#ce-slug").value = slugify(this.value); serp(); });
         $("#ce-slug").addEventListener("input", function () { it._slugTouched = true; this.value = this.value.toLowerCase().replace(/[^a-z0-9-]/g, "-"); });
@@ -504,7 +569,7 @@
         if ($("#ce-sch")) $("#ce-sch").onclick = function () {
           var v = $("#ce-at").value; if (!v) return toast("Pick a date and time", true); var at = localToUtc(v); if (new Date(v) < new Date()) return toast("Pick a time in the future", true);
           collect(); if (!check()) return;
-          build().then(function (h) { return save({ status: "scheduled", publishAt: at, pending: { rel: t.folder + "/" + it.slug + "/index.html", html: h, card: listCard(type, it) } }); }).then(function (ok) { if (ok) { toast("Scheduled for " + fmtLocal(at)); draw(); } }).catch(function (e) { toast(e.message, true); });
+          build().then(function (h) { return save({ status: "scheduled", publishAt: at, pending: { rel: t.folder + "/" + it.slug + "/index.html", html: h, card: (it.data || {}).visibility === "unlisted" ? "" : listCard(type, it) } }); }).then(function (ok) { if (ok) { toast("Scheduled for " + fmtLocal(at)); draw(); } }).catch(function (e) { toast(e.message, true); });
         };
         if ($("#ce-unsch")) $("#ce-unsch").onclick = function () { save({ status: "draft" }).then(function (ok) { if (ok) { toast("Schedule cancelled"); draw(); } }); };
         if ($("#ce-del")) $("#ce-del").onclick = function () { if (!confirm("Delete this draft?")) return; api("cms_delete", { id: it.id }).then(function (r) { if (!r.ok) return toast(r.error, true); dirty = false; toast("Deleted"); location.hash = "#/" + t.list; }); };

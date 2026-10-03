@@ -892,3 +892,30 @@ label{font-weight:500;color:var(--txt2)}
 /* P18 C: responsive badge */
 .md-rs{display:inline-block;padding:0 5px;border-radius:4px;background:#e8f5ee;color:#1f7a4d;font-weight:700;font-size:10px;letter-spacing:.04em}
 .md-rsline{margin:8px 0 0;font-size:13px}
+/* P18 I: blog editor toolbar + side cards */
+.ce-tb{position:sticky;top:calc(var(--top) + 8px);z-index:6;display:flex;align-items:center;gap:2px;flex-wrap:wrap;padding:6px;margin:-4px 0 14px;background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:var(--sh-2)}
+.ce-tb button{height:32px;min-width:34px;padding:0 10px;border:0;border-radius:8px;background:transparent;color:var(--txt2);font:inherit;font-size:13.5px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:5px}
+.ce-tb button:hover{background:var(--bg);color:var(--txt)}.ce-tb button i[data-i],.ce-tb button svg{width:16px;height:16px}
+.ce-tb-sep{width:1px;height:20px;background:var(--line);margin:0 6px}.ce-tb-wc{margin-left:auto;padding:0 8px;font-size:12.5px;color:var(--mut);white-space:nowrap}
+.bk.bk-new{animation:bkNew 1.2s ease}@keyframes bkNew{0%{box-shadow:0 0 0 3px rgba(184,149,106,.6)}100%{box-shadow:0 0 0 0 rgba(184,149,106,0)}}
+.ce-dl{display:grid;grid-template-columns:auto 1fr;gap:8px 12px;margin:0 0 14px;font-size:13.5px}.ce-dl dt{color:var(--mut)}.ce-dl dd{margin:0;text-align:right;font-weight:600}
+.ce-vis{display:grid;gap:8px}.ce-vo{display:flex!important;gap:10px;align-items:flex-start;padding:10px 12px;border:1px solid var(--line);border-radius:10px;cursor:pointer;margin:0!important;transition:border-color .15s,background .15s}
+.ce-vo input{margin:3px 0 0;accent-color:#0c1628;box-shadow:none!important}.ce-vo span{display:grid;gap:2px}.ce-vo b{font-size:13.5px;color:var(--txt)}.ce-vo small{font-size:12px;color:var(--mut);font-weight:400;line-height:1.4}
+.ce-vo.on{border-color:#b8956a;background:#fbf6ef}html.dark .ce-vo.on{background:#2a2418}
+#ce-cat{margin:0 0 6px}
+.ce-tags{display:flex;flex-wrap:wrap;gap:6px;align-items:center;min-height:44px;padding:6px 8px;border:1px solid var(--line2);border-radius:10px;background:var(--card);cursor:text;margin-bottom:6px}
+.ce-tags:focus-within{border-color:#b8956a;box-shadow:0 0 0 4px rgba(184,149,106,.18)}
+.ce-chip{display:inline-flex;align-items:center;gap:4px;height:28px;padding:0 4px 0 10px;border-radius:99px;background:#f4efe7;color:#5b4326;font-size:12.5px;font-weight:600}html.dark .ce-chip{background:#2a2418;color:#e6cfa5}
+.ce-chip button{border:0;background:transparent;color:inherit;width:20px;height:20px;border-radius:50%;cursor:pointer;font-size:15px;line-height:1;opacity:.6}.ce-chip button:hover{opacity:1;background:rgba(0,0,0,.08)}
+#ce-tag-in{flex:1;min-width:90px;border:0!important;box-shadow:none!important;height:30px!important;padding:0 4px!important;margin:0!important;background:transparent;outline:0}
+/* P18 I: API keys table — token switch / regenerate / show once */
+#ig-keys tr.ig-off td{color:var(--mut)}#ig-keys tr.ig-off b{text-decoration:line-through;text-decoration-color:rgba(0,0,0,.25)}
+.ig-hint{font-size:11.5px;color:var(--mut);background:var(--bg);padding:1px 6px;border-radius:5px}
+.ig-once{display:flex;gap:8px;align-items:stretch}.ig-once code{flex:1;display:flex;align-items:center;padding:10px 12px;border:1px dashed #b8956a;border-radius:10px;background:#fffdf9;font-size:13px;word-break:break-all}html.dark .ig-once code{background:transparent}
+/* P18 I: login polish */
+.auth-card form input:not([type=checkbox]):not([type=radio]){height:46px;border-radius:10px}
+.auth-card .err:empty{display:none}.auth-card .err{margin:4px 0 0;padding:10px 12px;border-radius:10px;background:#fef3f2;color:#b42318;font-size:13.5px}
+.auth .btn.pri.block{margin-top:18px}
+.auth .btn.pri.block.busy{position:relative;color:transparent!important}.auth .btn.pri.block.busy:after{content:"";position:absolute;width:18px;height:18px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.sched input{min-width:0;flex:1 1 auto}.sched .btn{flex:none;padding:0 12px}

@@ -56,7 +56,7 @@
     el.innerHTML = head("Settings & APIs", "Settings", "") + '<div class="tabs" id="st-tabs">' + [["general", "General"], ["integrations", "Integrations"], ["system", "System"]].map(function (t) { return '<button data-t="' + t[0] + '" class="' + (tab === t[0] ? "on" : "") + '">' + t[1] + "</button>"; }).join("") + '</div><div id="st-b"><p class="muted">Loading…</p></div>';
     $("#st-tabs").onclick = function (e) { var b = e.target.closest("button"); if (!b) return; tab = b.dataset.t; $$("#st-tabs button").forEach(function (x) { x.classList.toggle("on", x === b); }); draw(); };
     function load() { return api("set_get").then(function (r) { if (!r.ok) { $("#st-b").innerHTML = '<div class="card card-b">' + esc(r.error) + "</div>"; return; } D = r; draw(); }); }
-    function draw() { var B = $("#st-b"); if (tab === "general") general(B); else if (tab === "integrations") integrations(B); else system(B); W.fillIcons(B); }
+    function draw() { if (!D) return; var B = $("#st-b"); if (tab === "general") general(B); else if (tab === "integrations") integrations(B); else system(B); W.fillIcons(B); }
     function imgField(id, label, val, hint) { return '<div class="imf st-img" id="' + id + '"><div class="imf-p" style="background-image:url(\'' + esc(val) + '\')"></div><div><b>' + label + '</b><p class="muted" style="margin:2px 0 6px;font-size:12px">' + hint + '</p><button type="button" class="btn sm" data-pick>Change</button></div><input type="hidden" value="' + esc(val) + '"></div>'; }
     function general(B) {
       var g = D.general;

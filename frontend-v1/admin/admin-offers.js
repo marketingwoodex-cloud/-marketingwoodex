@@ -95,6 +95,7 @@
         '<ol style="font-size:13px;padding-left:18px"><li>developers.facebook.com → your app → <b>WhatsApp → API Setup</b>.</li><li>To change the number: <b>Add phone number</b>, verify it by SMS, then copy its <b>Phone number ID</b>.</li><li>Create a <b>permanent token</b> (Business settings → System users → Generate token, permission <i>whatsapp_business_messaging</i>).</li></ol>' +
         '<label>Phone number ID<input id="wa-pid" placeholder="e.g. 123456789012345"></label><label>Access token <small>' + (r.connected ? "leave empty to keep the current one" : "") + '</small><input id="wa-tok" type="password" autocomplete="off"></label>' +
         '<div class="toolbar"><button class="btn pri" id="wa-go">Verify &amp; connect</button>' + (r.connected ? '<button class="btn" id="wa-off">Disconnect</button>' : "") + '<a class="btn" href="#/offers">Discount offers</a></div><p class="st-res" id="wa-res"></p></details>';
+      if (!document.body.contains(box)) return; // screen changed while loading
       $("#wa-go").onclick = function () {
         var b = this; b.disabled = true; $("#wa-res").textContent = "Checking with Meta…";
         api("crm_wa_connect", { phoneId: $("#wa-pid").value, token: $("#wa-tok").value }).then(function (x) { b.disabled = false; if (!x.ok) { $("#wa-res").textContent = x.error; return; } toast("WhatsApp connected: " + x.info.number); waCard(box); });

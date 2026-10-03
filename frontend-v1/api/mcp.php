@@ -38,6 +38,7 @@ $tok = null; $M = mcp_load();
 if ($raw !== '') { $h = hash('sha256', $raw); foreach ($M['tokens'] as $i => $t) if (hash_equals($t['hash'], $h)) { $tok = $i; break; } }
 if ($tok === null) { header('WWW-Authenticate: Bearer realm="woodex-mcp"'); rpc_out($rid, null, ['code' => -32001, 'message' => 'Missing or invalid token. Create one in Woodex Admin → Settings → AI Agent.'], 401); }
 $T = $M['tokens'][$tok];
+if (!empty($T['off'])) { header('WWW-Authenticate: Bearer realm="woodex-mcp"'); rpc_out($rid, null, ['code' => -32001, 'message' => 'This token is switched off. Turn it on in Woodex Admin → Settings → Integrations → API keys.'], 401); }
 $user = q('SELECT * FROM wx_users WHERE id=? AND active=1', [(int)$T['user_id']])->fetch();
 if (!$user) rpc_out($rid, null, ['code' => -32001, 'message' => 'The Admin user of this token is inactive'], 401);
 $GLOBALS['WX_AS'] = $user;

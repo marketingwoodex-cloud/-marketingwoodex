@@ -21,7 +21,7 @@ function g_verify(string $cred): array {
 }
 
 function mcp_load(): array { $m = jread(MCP_FILE); $m['tokens'] = $m['tokens'] ?? []; $m['log'] = $m['log'] ?? []; return $m; }
-function mcp_pub(array $t): array { return ['id' => $t['id'], 'name' => $t['name'], 'user' => $t['user_name'] ?? '', 'hint' => $t['hint'], 'created_at' => $t['created_at'], 'last_used' => $t['last_used'] ?? null, 'uses' => (int)($t['uses'] ?? 0)]; }
+function mcp_pub(array $t): array { return ['id' => $t['id'], 'name' => $t['name'], 'user' => $t['user_name'] ?? '', 'hint' => $t['hint'], 'created_at' => $t['created_at'], 'last_used' => $t['last_used'] ?? null, 'uses' => (int)($t['uses'] ?? 0), 'off' => !empty($t['off'])]; }
 
 function p8_actions(string $action, array $in): bool {
     if (!preg_match('~^(google_|mcp_|wa_stats$)~', $action)) return false;
@@ -67,6 +67,16 @@ function p8_actions(string $action, array $in): bool {
             $u = need($OA); $m = mcp_load(); $id = (string)($in['id'] ?? ''); $n = count($m['tokens']);
             $m['tokens'] = array_values(array_filter($m['tokens'], fn($t) => $t['id'] !== $id)); if (count($m['tokens']) === $n) fail('Token not found', 404);
             jwrite(MCP_FILE, $m); log_act($u, 'mcp.token_revoke', $id); out(['ok' => true, 'tokens' => array_map('mcp_pub', array_reverse($m['tokens']))]);
+        case 'mcp_token_toggle': // P18 I: switch a token off/on without deleting it
+            $u = need($OA); $m = mcp_load(); $id = (string)($in['id'] ?? ''); $f = false;
+            foreach ($m['tokens'] as &$t) if ($t['id'] === $id) { $t['off'] = empty($in['on']); $f = true; } unset($t);
+            if (!$f) fail('Token not found', 404);
+            jwrite(MCP_FILE, $m); log_act($u, empty($in['on']) ? 'mcp.token_off' : 'mcp.token_on', $id); out(['ok' => true, 'tokens' => array_map('mcp_pub', array_reverse($m['tokens']))]);
+        case 'mcp_token_regen': // P18 I: new secret, same name and settings; the old secret stops working at once
+            $u = need($OA); $m = mcp_load(); $id = (string)($in['id'] ?? ''); $raw = null;
+            foreach ($m['tokens'] as &$t) if ($t['id'] === $id) { $raw = 'wxmcp_' . bin2hex(random_bytes(24)); $t['hash'] = hash('sha256', $raw); $t['hint'] = substr($raw, -4); $t['regen_at'] = now(); } unset($t);
+            if (!$raw) fail('Token not found', 404);
+            jwrite(MCP_FILE, $m); log_act($u, 'mcp.token_regen', $id); out(['ok' => true, 'token' => $raw, 'tokens' => array_map('mcp_pub', array_reverse($m['tokens']))]);
         case 'mcp_log':
             need($OA); out(['ok' => true, 'log' => array_reverse(array_slice(mcp_load()['log'], -100))]);
 

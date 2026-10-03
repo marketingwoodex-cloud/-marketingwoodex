@@ -37,6 +37,13 @@ function sitemap_add(string $rel): void {
     if (strpos($x, '<loc>' . $loc . '</loc>') !== false || strpos($x, '</urlset>') === false) return;
     file_put_contents($f, str_replace('</urlset>', '  <url><loc>' . htmlspecialchars($loc, ENT_XML1) . "</loc></url>\n</urlset>", $x), LOCK_EX);
 }
+/** P18 I: unlisted posts stay reachable by link but are kept out of the sitemap. */
+function sitemap_del(string $rel): void {
+    $f = ROOT_DIR . '/sitemap.xml'; if (!is_file($f)) return;
+    $loc = 'https://woodex.com.pk/' . preg_replace('~index\.html$~', '', $rel); $x = (string)file_get_contents($f);
+    $y = preg_replace('~[ \t]*<url><loc>' . preg_quote(htmlspecialchars($loc, ENT_XML1), '~') . '</loc>.*?</url>\n?~s', '', $x); if ($y !== $x && $y !== null) file_put_contents($f, $y, LOCK_EX);
+}
+function sitemap_sync(string $rel, array $it): void { if ((($it['data'] ?? [])['visibility'] ?? '') === 'unlisted') sitemap_del($rel); else sitemap_add($rel); }
 /** Publish scheduled items whose time has come. Called on every admin request; can also be hit by a cron job. */
 function cms_tick(): int {
     if (!is_file(CMS_FILE)) return 0;
@@ -51,7 +58,7 @@ function cms_tick(): int {
             file_put_contents($abs, $p['html'], LOCK_EX);
             $listRel = CMS_PAGES[$it['type']] . '/index.html'; $li = ROOT_DIR . '/' . $listRel; $href = '/' . preg_replace('~index\.html$~', '', $p['rel']);
             if (!empty($p['card']) && is_file($li)) { $L = (string)file_get_contents($li); if (strpos($L, 'href="' . $href . '"') === false && strpos($L, '<div class="hx-cards">') !== false) { backup_page($listRel); file_put_contents($li, preg_replace('~<div class="hx-cards">~', "<div class=\"hx-cards\">\n" . str_replace(['\\', '$'], ['\\\\', '\\$'], $p['card']), $L, 1), LOCK_EX); } }
-            $it['rel'] = $p['rel']; unset($it['pending']); sitemap_add($p['rel']);
+            $it['rel'] = $p['rel']; unset($it['pending']); sitemap_sync($p['rel'], $it);
         }
         $it['status'] = 'published'; $it['published_at'] = $t; $n++; log_act(null, 'content.autopublish', $it['title']);
     } unset($it);
@@ -196,7 +203,7 @@ function content_actions(string $action, array $in): bool {
             $u = need($ED); $k = $idx($in['id'] ?? 0); $it = $c['items'][$k]; if (!isset(CMS_PAGES[$it['type']]) && $it['type'] !== 'city') fail('Not a page item');
             $rel = (string)($in['rel'] ?? ''); if (!($it['type'] === 'city' ? cms_city_rel_ok($rel) : cms_rel_ok($rel, $it['type'])) || !is_file(ROOT_DIR . '/' . $rel)) fail('Page was not written');
             $it['rel'] = $rel; $it['status'] = 'published'; $it['published_at'] = $it['published_at'] ?? cms_now(); unset($it['pending']); $it['publishAt'] = null; if ($it['type'] === 'city') $it['data'] = ['source' => (string)($it['data']['source'] ?? '')];
-            $c['items'][$k] = $it; cms_save_file($c); sitemap_add($rel); log_act($u, 'content.publish', $it['title']); out(['ok' => true, 'item' => $it]);
+            $c['items'][$k] = $it; cms_save_file($c); sitemap_sync($rel, $it); log_act($u, 'content.publish', $it['title']); out(['ok' => true, 'item' => $it]);
         case 'cms_status':
             $u = need($ED); $k = $idx($in['id'] ?? 0); if (isset(CMS_PAGES[$c['items'][$k]['type']])) fail('Use Publish for pages');
             $c['items'][$k]['status'] = ($in['status'] ?? '') === 'published' ? 'published' : 'draft'; cms_save_file($c); log_act($u, 'content.' . $c['items'][$k]['status'], $c['items'][$k]['title']);
