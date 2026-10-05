@@ -25,7 +25,7 @@ UPLOAD (Hostinger hPanel -> File Manager)
 FIRST TIME ONLY (new server)
 - Open https://woodex.com.pk/admin/ and complete Setup: enter the database name, user and password.
   The password is saved to public_html/_private/db.json (web access blocked). It is NOT in this package.
-- _private/db.example.json shows the format, with placeholders only.
+- config.example.php and _private/db.example.json show the format (placeholders only).
 
 AFTER UPLOAD (checks)
 - Admin -> Settings -> System check: everything green.
