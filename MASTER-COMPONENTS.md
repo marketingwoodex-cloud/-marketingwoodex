@@ -14,7 +14,7 @@ Live demo: `frontend-v1/admin/master-components.html` (open `/admin/master-compo
 | Radius | 12px cards, 10px controls | |
 | Dark mode | `html[data-theme=dark]` | Toggle at the top right |
 
-## Component list (40)
+## Component list (38)
 | Group | Components | Class / hook |
 |---|---|---|
 | **Base** | Colors | `--navy` … |
