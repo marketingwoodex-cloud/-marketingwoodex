@@ -246,6 +246,10 @@
     el.innerHTML = head("Backups", "Backups", '<button class="btn" id="bk-d">' + ic("database") + 'Quick backup (pages + data)</button><button class="btn pri" id="bk-f">' + ic("hard-drive") + "Full backup now</button>") +
       '<div class="tabs" id="bk-tabs"><button class="on" data-t="site">Site backups</button><button data-t="page">Page history</button></div><div id="bk-body"><p class="muted">Loading…</p></div>';
     W.fillIcons(el);
+    if (!(W.S && W.S.user && W.S.user.role === "owner")) { // security audit: backups contain secrets — Owner only
+      ["#bk-d", "#bk-f"].forEach(function (q) { var b = el.querySelector(q); if (b) b.hidden = true; });
+      var nt = document.createElement("p"); nt.className = "muted"; nt.style.margin = "0 0 12px"; nt.textContent = "Site backups (create, download, upload, restore) are Owner-only. Page history below still works."; el.querySelector("#bk-tabs").before(nt);
+    }
     var tab = "site";
     $("#bk-tabs").onclick = function (e) { var b = e.target.closest("button"); if (!b) return; tab = b.dataset.t; $$("#bk-tabs button").forEach(function (x) { x.classList.toggle("on", x === b); }); draw(); };
     function run(kind, b) { b.disabled = true; var t = b.innerHTML; b.textContent = "Backing up…"; api("backup_run", { kind: kind }).then(function (r) { b.disabled = false; b.innerHTML = t; if (!r.ok) return toast(r.error, true); toast("Backup created (" + kb(r.backup.size) + ")"); tab = "site"; draw(); }); }

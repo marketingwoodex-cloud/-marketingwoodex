@@ -19,12 +19,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 }
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') { http_response_code(405); exit; }
 
-// 2) Signature check (X-Hub-Signature-256) when the App secret is saved
+// 2) Signature check (X-Hub-Signature-256) — required (security audit F-02: fail closed).
+//    Save the Meta App secret in Admin → Live chat → Train AI → WhatsApp, otherwise all events are refused.
 $raw = (string)file_get_contents('php://input');
-if ($cfg['waSecret'] !== '') {
-    $sig = (string)($_SERVER['HTTP_X_HUB_SIGNATURE_256'] ?? '');
-    if (!hash_equals('sha256=' . hash_hmac('sha256', $raw, $cfg['waSecret']), $sig)) { http_response_code(401); exit('bad signature'); }
-}
+if ($cfg['waSecret'] === '') { error_log('whatsapp.php: App secret not set - webhook refused'); http_response_code(503); exit('app secret not configured'); }
+$sig = (string)($_SERVER['HTTP_X_HUB_SIGNATURE_256'] ?? '');
+if (!hash_equals('sha256=' . hash_hmac('sha256', $raw, $cfg['waSecret']), $sig)) { http_response_code(401); exit('bad signature'); }
 $j = json_decode($raw, true) ?: [];
 http_response_code(200); header('Content-Type: application/json'); echo '{"ok":true}';
 if (function_exists('fastcgi_finish_request')) fastcgi_finish_request(); // answer Meta fast, then work

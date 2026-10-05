@@ -1,4 +1,6 @@
 # Woodex P19 — Security Audit Report
+> **Update:** all findings are fixed in the new `woodex-live-p19-full.zip`. See `REMEDIATION.md`.
+
 Method: Cloudflare `security-audit-skill`, **quick profile**, source review only (no PHP runtime, nothing run against the live site). One agent played every role, so findings were **not independently verified**. Treat severities as the reviewer's best estimate.
 
 ## Summary

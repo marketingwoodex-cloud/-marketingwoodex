@@ -71,12 +71,24 @@ function a7_backup_auto(): array {
     $h = jread(HEALTH_FILE); $h['lastCron'] = a7_now(); jwrite(HEALTH_FILE, $h); return $made;
 }
 function a7_db_dump(): array { $d = []; foreach (q("SHOW TABLES LIKE 'wx\\_%'")->fetchAll(PDO::FETCH_NUM) as $t) $d[$t[0]] = q('SELECT * FROM `' . $t[0] . '`')->fetchAll(); return $d; }
+/** Tables never overwritten by a restore (security audit F-04): logins/roles stay as they are now. */
+const A7_DB_KEEP = ['wx_throttle', 'wx_users'];
+/** Files never written by a restore (security audit F-03): secrets, sessions, dot-files like .htaccess. */
+function a7_restore_blocked(string $n): bool {
+    if (strpos($n, '..') !== false || $n === '' || $n[0] === '/' || strpos($n, "\\") !== false || strpos($n, "\0") !== false) return true;
+    if (preg_match('~^(api|admin|builder|tools|deploy)/~', $n)) return true;
+    if (preg_match('~(^|/)\.~', $n)) return true; // .htaccess, .user.ini, any dot-file
+    if (preg_match('~\.(php\d?|phtml|phar|pht|cgi|pl|py|sh|exe|htaccess|ini)$~i', $n)) return true;
+    if (preg_match('~^_private/(config|security|db|mcp|google|google-sa|login-attempts)\.json$~', $n)) return true;
+    if (preg_match('~^_private/.*/~', $n)) return true; // no sub-folders (backups, trash)
+    return false;
+}
 function a7_db_restore(array $dump): int {
     $have = array_map(fn($r) => $r[0], q("SHOW TABLES LIKE 'wx\\_%'")->fetchAll(PDO::FETCH_NUM)); $n = 0;
     $pdo = db(); $pdo->beginTransaction();
     try {
         foreach ($dump as $table => $rows) {
-            if (!is_string($table) || !preg_match('~^wx_[a-z0-9_]+$~', $table) || $table === 'wx_throttle' || !in_array($table, $have, true) || !is_array($rows)) continue;
+            if (!is_string($table) || !preg_match('~^wx_[a-z0-9_]+$~', $table) || in_array($table, A7_DB_KEEP, true) || !in_array($table, $have, true) || !is_array($rows)) continue;
             $pdo->exec('DELETE FROM `' . $table . '`');
             foreach ($rows as $row) { if (!is_array($row) || !$row) continue; $cols = array_keys($row); foreach ($cols as $c) if (!preg_match('~^[a-z0-9_]+$~i', (string)$c)) continue 2; $pdo->prepare('INSERT INTO `' . $table . '` (`' . implode('`,`', $cols) . '`) VALUES (' . implode(',', array_fill(0, count($cols), '?')) . ')')->execute(array_values($row)); $n++; }
         }
@@ -84,9 +96,9 @@ function a7_db_restore(array $dump): int {
     } catch (Throwable $e) { $pdo->rollBack(); throw $e; }
     return $n;
 }
-/** Phase 7 — raw uploads / downloads: backup_up (zip body), db_dl (JSON download), db_up (JSON body). Owner/Admin only. */
+/** Phase 7 — raw uploads / downloads: backup_up (zip body), db_dl (JSON download), db_up (JSON body). Owner only (security audit F-03/F-04: backups hold secrets + user table). */
 function media_raw(string $action): void {
-    $u = current_user(); if (!$u || !in_array($u['role'], ['owner', 'admin'], true)) fail('You do not have permission for this', 403);
+    $u = current_user(); if (!$u || $u['role'] !== 'owner') fail('Only the owner can download, upload or restore backups', 403);
     if ($action === 'db_dl') { $j = json_encode(['woodexDb' => 1, 'exported' => a7_now(), 'tables' => a7_db_dump()], JSON_UNESCAPED_UNICODE); log_act($u, 'db.export', strlen($j) . ' bytes'); header('Content-Type: application/json'); header('Content-Disposition: attachment; filename="woodex-database-' . gmdate('Ymd-His') . '.json"'); header('Cache-Control: no-store'); echo $j; exit; }
     @set_time_limit(300); $raw = (string)file_get_contents('php://input'); if ($raw === '') fail('The file was empty or too large for the server upload limit');
     if ($action === 'backup_up') {
@@ -113,7 +125,7 @@ function a7_restore(string $file): void {
     $root = realpath(ROOT_DIR);
     for ($i = 0; $i < $z->numFiles; $i++) {
         $n = $z->getNameIndex($i); if ($n === 'db-dump.json' || substr($n, -1) === '/') continue;
-        if (strpos($n, '..') !== false || $n[0] === '/' || preg_match('~^(api|admin|builder)/~', $n) || preg_match('~(\.(php\d?|phtml|phar|pht|cgi|pl|py|sh|exe)$|(^|/)\.user\.ini$)~i', $n)) continue; // never write code (uploaded backups can't plant scripts)
+        if (a7_restore_blocked($n)) continue; // never write code, secrets or server config
         $dst = $root . '/' . $n; if (!is_dir(dirname($dst))) mkdir(dirname($dst), 0755, true); file_put_contents($dst, $z->getFromIndex($i), LOCK_EX);
     }
     $dump = json_decode((string)$z->getFromName('db-dump.json'), true); $z->close();
@@ -275,12 +287,12 @@ function media_actions(string $action, array $in): bool {
             }
             jwrite(MEDIA_FILE, $m); log_act($u, $action === 'media_restore' ? 'media.restore' : 'media.purge', $n . ' file(s)'); out(['ok' => true, 'n' => $n]);
         case 'backup_list': need($OA); $h = jread(HEALTH_FILE); out(['ok' => true, 'backups' => a7_bk_list(), 'lastCron' => $h['lastCron'] ?? null, 'format' => 'zip']);
-        case 'backup_run': $u = need($OA); $b = a7_backup(($in['kind'] ?? '') === 'daily' ? 'daily' : 'full', $u); log_act($u, 'backup.create', $b['name']); out(['ok' => true, 'backup' => $b]);
+        case 'backup_run': $u = need(['owner']); $b = a7_backup(($in['kind'] ?? '') === 'daily' ? 'daily' : 'full', $u); log_act($u, 'backup.create', $b['name']); out(['ok' => true, 'backup' => $b]);
         case 'backup_delete':
-            $u = need($OA); foreach (a7_bk_list() as $b) if ($b['name'] === ($in['name'] ?? '')) { unlink(SBK_DIR . '/' . $b['name']); log_act($u, 'backup.delete', $b['name']); out(['ok' => true]); }
+            $u = need(['owner']); foreach (a7_bk_list() as $b) if ($b['name'] === ($in['name'] ?? '')) { unlink(SBK_DIR . '/' . $b['name']); log_act($u, 'backup.delete', $b['name']); out(['ok' => true]); }
             fail('Backup not found', 404);
         case 'backup_restore':
-            $u = need($OA); foreach (a7_bk_list() as $b) if ($b['name'] === ($in['name'] ?? '')) { $s = a7_backup('safety', $u); a7_restore(SBK_DIR . '/' . $b['name']); log_act($u, 'backup.restore', $b['name'] . ' (safety copy ' . $s['name'] . ')'); out(['ok' => true, 'safety' => $s['name']]); }
+            $u = need(['owner']); foreach (a7_bk_list() as $b) if ($b['name'] === ($in['name'] ?? '')) { $s = a7_backup('safety', $u); a7_restore(SBK_DIR . '/' . $b['name']); log_act($u, 'backup.restore', $b['name'] . ' (safety copy ' . $s['name'] . ')'); out(['ok' => true, 'safety' => $s['name']]); }
             fail('Backup not found', 404);
         case 'health_get': need($ED); $h = jread(HEALTH_FILE); out(['ok' => true, 'scan' => $h['scan'] ?? null, 'psi' => (object)($h['psi'] ?? []), 'psiKeySet' => !empty($h['psiKey']), 'site' => $h['site'] ?? SITE_URL_DEF, 'lastCron' => $h['lastCron'] ?? null]);
         case 'health_scan': $u = need($ED); @set_time_limit(180); @ini_set('memory_limit', '256M'); $h = jread(HEALTH_FILE); try { $h['scan'] = a7_health_scan(); } catch (Throwable $e) { error_log('health_scan: ' . $e->getMessage()); fail('Health check stopped: ' . mb_substr($e->getMessage(), 0, 200), 500); } jwrite(HEALTH_FILE, $h); log_act($u, 'health.scan', $h['scan']['score'] . '/100'); out(['ok' => true, 'scan' => $h['scan']]);
@@ -305,7 +317,7 @@ function media_actions(string $action, array $in): bool {
 }
 /** Raw download of a backup file: GET/POST admin.php?action=backup_dl&name=… with the X-WX-ADM header. */
 function media_download(): void {
-    $u = current_user(); if (!$u || !in_array($u['role'], ['owner', 'admin'], true)) { http_response_code(403); exit('Forbidden'); }
+    $u = current_user(); if (!$u || $u['role'] !== 'owner') { http_response_code(403); exit('Only the owner can download backups'); }
     $name = (string)($_GET['name'] ?? ''); foreach (a7_bk_list() as $b) if ($b['name'] === $name) {
         $f = SBK_DIR . '/' . $name; header('Content-Type: application/zip'); header('Content-Disposition: attachment; filename="woodex-' . $name . '"'); header('Content-Length: ' . filesize($f)); header('Cache-Control: no-store'); readfile($f); exit;
     }

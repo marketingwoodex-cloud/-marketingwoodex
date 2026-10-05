@@ -76,8 +76,25 @@ function logged_in(): bool {
     if ($pwv && !hash_equals(hash_hmac('sha256', 'adm|' . $u['id'] . '|' . $pwv[0] . '|' . $u['pw_ver'] . '|' . $pwv[1], secret()), $pwv[2])) return $ok = $why('admin token signature mismatch');
     if ((int)$u['active'] !== 1) return $ok = $why('user is disabled');
     if (!in_array($u['role'], ['owner', 'admin', 'editor'], true)) return $ok = $why('role ' . $u['role'] . ' cannot edit pages');
-    $GLOBALS['WX_AUTH_UID'] = (int)$u['id']; unset($GLOBALS['WX_AUTH_WHY']);
+    $GLOBALS['WX_AUTH_UID'] = (int)$u['id']; $GLOBALS['WX_AUTH_ROLE'] = (string)$u['role']; unset($GLOBALS['WX_AUTH_WHY']);
     return $ok = true;
+}
+/** Security audit F-05: only the Owner may ADD script code to pages (scripts run inside admin previews).
+ *  Everyone else may keep the scripts a page already has, but not add new ones. */
+function code_tokens(string $html): array {
+    $t = [];
+    preg_match_all('~<script\b[^>]*>.*?</script\s*>~is', $html, $m); foreach ($m[0] as $x) if (!preg_match('~^<script\b[^>]*type\s*=\s*["\']?application/ld\+json~i', $x)) $t[] = preg_replace('~\s+~', ' ', $x);
+    preg_match_all('~<script\b(?![^>]*>.*?</script)~is', $html, $m2); if (count($m2[0]) > 0) $t[] = '<script-unclosed>';
+    preg_match_all('~\son[a-z]+\s*=\s*("[^"]*"|\'[^\']*\'|[^\s>]+)~i', $html, $m); foreach ($m[0] as $x) $t[] = trim(preg_replace('~\s+~', ' ', $x));
+    preg_match_all('~(?:href|src|action|formaction|data|xlink:href)\s*=\s*["\']?\s*(?:javascript|vbscript|data\s*:\s*text/html)[^"\'>]*~i', $html, $m); foreach ($m[0] as $x) $t[] = $x;
+    preg_match_all('~<(iframe|object|embed|base|frame|frameset)\b[^>]*>|<meta\b[^>]*http-equiv[^>]*>~i', $html, $m); foreach ($m[0] as $x) $t[] = preg_replace('~\s+~', ' ', $x);
+    return array_values(array_unique($t));
+}
+function code_guard(string $html, string $base): void {
+    if (($GLOBALS['WX_AUTH_ROLE'] ?? '') === 'owner' || !admin_installed()) return;
+    $new = array_diff(code_tokens($html), code_tokens($base));
+    if ($new) { $site = []; foreach (list_pages() as $p) $site = array_merge($site, code_tokens((string)@file_get_contents(ROOT_DIR . '/' . $p['path']))); $new = array_diff($new, $site); } // scripts already used elsewhere on the site are allowed
+    if ($new) { act('blocked_script', mb_substr(implode(' ', $new), 0, 200)); fail('Only the owner can add scripts, embeds or on…= event code to pages. Remove: ' . mb_substr(reset($new), 0, 80)); }
 }
 function token_uid(): ?int { if (!empty($GLOBALS['WX_AUTH_UID'])) return (int)$GLOBALS['WX_AUTH_UID']; return preg_match('~^\d{10}\.(\d+)\.~', (string)($_SERVER['HTTP_X_WX_CSRF'] ?? ''), $m) ? (int)$m[1] : null; }
 /** activity line for Woodex Admin (ingested into MySQL by admin.php) */
@@ -205,6 +222,7 @@ switch ($action) {
         $html = (string)($in['html'] ?? '');
         if (strlen($html) > MAX_HTML || stripos($html, '<html') === false || stripos($html, '</html>') === false) fail('Invalid page HTML');
         if (preg_match('~<[^>]+\s(contenteditable|data-wx-ed)[\s=>]~i', $html)) fail('Editor markup detected — save aborted to protect the page');
+        code_guard($html, (string)file_get_contents($abs));
         if (!empty($in['mtime']) && (int)$in['mtime'] < filemtime($abs) && empty($in['force'])) fail('This page was changed elsewhere since you opened it. Reload, or save again to overwrite.', 409);
         $bd = backup_dir_for($rel); if (!is_dir($bd)) mkdir($bd, 0755, true);
         copy($abs, $bd . '/' . backup_name());
@@ -260,12 +278,20 @@ switch ($action) {
 
     case 'import_url':
         require_auth();
-        $u = (string)($in['url'] ?? ''); $p = parse_url($u);
-        $host = strtolower($p['host'] ?? '');
-        if (($p['scheme'] ?? '') !== 'https' || $host === '' || filter_var($host, FILTER_VALIDATE_IP) || preg_match('~^(localhost|.*\.local|.*\.internal)$~', $host)) fail('Only public https image links are allowed');
-        $ip = gethostbyname($host); if (!filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) fail('Only public https image links are allowed');
-        $ctx = stream_context_create(['ssl' => ['cafile' => __DIR__ . '/cacert.pem', 'verify_peer' => true], 'http' => ['timeout' => 20, 'follow_location' => 1, 'max_redirects' => 3, 'user_agent' => 'WoodexBuilder/1.0'], 'ssl' => ['verify_peer' => true]]);
-        $data = @file_get_contents($u, false, $ctx, 0, MAX_UPLOAD + 1);
+        // Security audit F-06: follow redirects by hand and re-check every hop (no internal addresses)
+        $u = (string)($in['url'] ?? ''); $data = false;
+        for ($hop = 0; $hop <= 3; $hop++) {
+            $p = parse_url($u); $host = strtolower($p['host'] ?? '');
+            if (($p['scheme'] ?? '') !== 'https' || $host === '' || isset($p['user']) || (isset($p['port']) && (int)$p['port'] !== 443) || filter_var(trim($host, '[]'), FILTER_VALIDATE_IP) || preg_match('~^(localhost|.*\.local|.*\.internal|.*\.localhost)$~', $host)) fail('Only public https image links are allowed');
+            $ips = @gethostbynamel($host) ?: []; if (!$ips) fail('Could not find that website');
+            foreach ($ips as $ip) if (!filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) fail('Only public https image links are allowed');
+            $ctx = stream_context_create(['ssl' => ['cafile' => __DIR__ . '/cacert.pem', 'verify_peer' => true, 'verify_peer_name' => true], 'http' => ['timeout' => 20, 'follow_location' => 0, 'max_redirects' => 1, 'ignore_errors' => true, 'user_agent' => 'WoodexBuilder/1.0']]);
+            $http_response_header = []; $data = @file_get_contents($u, false, $ctx, 0, MAX_UPLOAD + 1);
+            $code = 0; $loc = ''; foreach ((array)$http_response_header as $hl) { if (preg_match('~^HTTP/\S+\s+(\d{3})~', $hl, $mm)) $code = (int)$mm[1]; elseif (preg_match('~^Location:\s*(\S+)~i', $hl, $mm)) $loc = $mm[1]; }
+            if ($code >= 300 && $code < 400 && $loc !== '') { if (!preg_match('~^https?://~i', $loc)) $loc = 'https://' . $host . '/' . ltrim($loc, '/'); $u = $loc; $data = false; continue; }
+            if ($code !== 200) $data = false;
+            break;
+        }
         if ($data === false || $data === '') fail('Could not download that image');
         if (strlen($data) > MAX_UPLOAD) fail('Image is larger than 8 MB');
         $info = @getimagesizefromstring($data);
@@ -352,6 +378,7 @@ switch ($action) {
         if (strlen($html) > MAX_HTML || stripos($html, '<html') === false || stripos($html, '</html>') === false) fail('Invalid page HTML');
         if (preg_match('~<[^>]+\s(contenteditable|data-wx-ed)[\s=>]~i', $html)) fail('Editor markup detected');
         $abs = ROOT_DIR . '/' . $rel; if (file_exists($abs)) fail('A page already exists at that address');
+        code_guard($html, '');
         if (!is_dir(dirname($abs))) mkdir(dirname($abs), 0755, true);
         if (file_put_contents($abs, $html, LOCK_EX) === false) fail('Could not write the file (check permissions)', 500);
         act('page_new', $rel);

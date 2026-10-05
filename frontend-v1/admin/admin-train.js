@@ -48,7 +48,7 @@
         "<li>Go to <b>WhatsApp → Configuration → Webhook → Edit</b> and paste:<div class='tr-code' style='margin:6px 0'><span>" + esc(hook) + "</span><button class='btn sm' data-cp='" + esc(hook) + "'>Copy</button></div>Verify token:<div class='tr-code' style='margin:6px 0'><span>" + esc(c.waVerify || "(save once to create)") + "</span>" + (c.waVerify ? "<button class='btn sm' data-cp='" + esc(c.waVerify) + "'>Copy</button>" : "") + "</div></li>" +
         "<li>Click <b>Verify and save</b>, then under Webhook fields <b>Subscribe</b> to <b>messages</b>.</li>" +
         "<li>Copy the <b>App secret</b> (App settings → Basic) here for security:</li></ol>" +
-        '<label>App secret<input id="t-ws" type="password" autocomplete="off" value="' + esc(c.waSecret || "") + '" placeholder="Recommended"></label>' +
+        '<label>App secret<input id="t-ws" type="password" autocomplete="off" value="' + esc(c.waSecret || "") + '" placeholder="Required — webhook refused without it"></label>' +
         '<p class="muted" style="font-size:12.5px">WhatsApp chats appear in Live chat with a green WA tag. Reply there to take over. WhatsApp only allows free replies within 24 hours of the customer\'s last message.</p></div>' +
         "</div>" +
         // test box

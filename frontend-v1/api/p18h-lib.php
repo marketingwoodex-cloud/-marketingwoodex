@@ -154,7 +154,7 @@ function p18h_actions(string $action, array $in): bool {
             need($OA); $t = dbx_table((string)($in['table'] ?? '')); $r = q('SELECT * FROM `' . $t . '` WHERE id=?', [(int)($in['id'] ?? 0)])->fetch(); if (!$r) fail('Row not found', 404);
             $o = []; foreach ($r as $k => $v) $o[$k] = dbx_mask($k, $v); out(['ok' => true, 'row' => $o]);
         case 'dbx_export':
-            $u = need($OA); $fmt = ($in['fmt'] ?? 'csv') === 'sql' ? 'sql' : 'csv'; $tabs = ($in['table'] ?? '') === '*' ? dbx_tables() : [dbx_table((string)($in['table'] ?? ''))];
+            $u = need($OA); $fmt = ($in['fmt'] ?? 'csv') === 'sql' ? 'sql' : 'csv'; if ($fmt === 'sql' && $u['role'] !== 'owner') fail('Only the owner can download the full SQL export (it contains password hashes)', 403); $tabs = ($in['table'] ?? '') === '*' ? dbx_tables() : [dbx_table((string)($in['table'] ?? ''))];
             @set_time_limit(300); $outS = '';
             if ($fmt === 'csv') { $t = $tabs[0]; $fh = fopen('php://temp', 'w+'); $first = true; foreach (q('SELECT * FROM `' . $t . '`')->fetchAll() as $r) { $m = []; foreach ($r as $k => $v) $m[$k] = dbx_mask($k, $v); if ($first) { fputcsv($fh, array_keys($m)); $first = false; } fputcsv($fh, array_values($m)); } rewind($fh); $outS = "\xEF\xBB\xBF" . stream_get_contents($fh); }
             else {

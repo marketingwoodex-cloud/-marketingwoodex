@@ -54,6 +54,15 @@ if (in_array((string)($in['action'] ?? ''), ['book_cfg', 'book_slots', 'book_cre
     try { booking_public($in); } catch (PDOException $e) { error_log('booking: ' . $e->getMessage()); fail('Could not save your booking. Please WhatsApp us.', 500); }
 }
 
+/** Security audit F-01: auto-reply at most once per phone/email per 24 h and 60 per day site-wide (stops the form being used as a spam relay). */
+function forms_reply_ok(string $phone, string $email): bool {
+    $now = time(); $keys = ['ar:' . substr(sha1(preg_replace('~\D~', '', $phone)), 0, 20)]; if ($email !== '') $keys[] = 'ar:' . substr(sha1(strtolower($email)), 0, 20);
+    foreach ($keys as $k) { $r = q('SELECT t FROM wx_throttle WHERE ip=?', [$k])->fetch(); if ($r && $now - (int)$r['t'] < 86400) return false; }
+    $dk = 'ar-day:' . gmdate('Ymd'); $d = q('SELECT n FROM wx_throttle WHERE ip=?', [$dk])->fetch(); if ($d && (int)$d['n'] >= 60) return false;
+    if ($d) q('UPDATE wx_throttle SET n=n+1 WHERE ip=?', [$dk]); else q('REPLACE INTO wx_throttle (ip,n,t) VALUES (?,1,?)', [$dk, $now]);
+    foreach ($keys as $k) q('REPLACE INTO wx_throttle (ip,n,t) VALUES (?,1,?)', [$k, $now]);
+    return true;
+}
 try {
     if (clip($in['_hp'] ?? '') !== '' || clip($in['company_hp'] ?? '') !== '') out(['ok' => true, 'id' => 0]); // bot: pretend success
     crm_migrate();
@@ -87,6 +96,6 @@ try {
     ignore_user_abort(true);
     $fc = array_merge(['alertTo' => '', 'waTo' => '', 'waAlert' => true, 'reply' => true, 'replyText' => ''], (array)((jread(PRIVATE_DIR . '/forms.json')['forms'] ?? [])[$source] ?? [])); // P18 E
     try { send_alerts($lead, '', $fc); } catch (Throwable $e) { error_log('forms.php alerts: ' . $e->getMessage()); }
-    if ($fc['reply'] && is_file(__DIR__ . '/notify-lib.php')) { require_once __DIR__ . '/notify-lib.php'; notify_client('lead', ['name' => $name, 'phone' => $phone, 'email' => $email, 'ref' => 'Enquiry #' . $id, 'project' => $lead['service'], 'tpl' => (string)$fc['replyText']]); }
+    if ($fc['reply'] && $form !== 'whatsapp' && forms_reply_ok($phone, $email) && is_file(__DIR__ . '/notify-lib.php')) { require_once __DIR__ . '/notify-lib.php'; notify_client('lead', ['name' => $name, 'phone' => $phone, 'email' => $email, 'ref' => 'Enquiry #' . $id, 'project' => $lead['service'], 'tpl' => (string)$fc['replyText']]); }
     exit;
 } catch (PDOException $e) { error_log('forms.php: ' . $e->getMessage()); fail('Could not save your enquiry. Please WhatsApp us.', 500); }

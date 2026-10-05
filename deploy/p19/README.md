@@ -25,3 +25,9 @@
 - Services: New / Duplicate / From template.
 - Forms: default email on page, WhatsApp number per form.
 - Estimator templates · page template library.
+
+## Security update (5 Oct 2026)
+This zip includes all fixes from the security audit (`security-audit/REMEDIATION.md`). After deploying:
+1. Admin → Live chat → Train AI → WhatsApp: paste the Meta **App secret** (now required; without it WhatsApp messages are refused).
+2. Backups and the SQL database export are now **Owner-only**.
+3. Only the Owner can add new scripts or embeds to pages; Editors get a clear message.

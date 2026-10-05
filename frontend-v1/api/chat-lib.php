@@ -142,6 +142,9 @@ function chat_turns(int $cid): array {
 }
 function chat_ai_reply(array $c): string {
     $cfg = chat_cfg(); if (!$cfg['ai'] || $c['mode'] !== 'ai') return '';
+    // Security audit NV-1: site-wide cap of 400 AI answers per day (protects the AI bill); after that the Q&A rule answers + team take over
+    try { $dk = 'ai-day:' . gmdate('Ymd'); $d = q('SELECT n FROM wx_throttle WHERE ip=?', [$dk])->fetch(); if ($d && (int)$d['n'] >= 400) return '';
+        if ($d) q('UPDATE wx_throttle SET n=n+1 WHERE ip=?', [$dk]); else q('REPLACE INTO wx_throttle (ip,n,t) VALUES (?,1,?)', [$dk, time()]); } catch (Throwable $e) {}
     return chat_ai_call(chat_ai_system($c), chat_turns((int)$c['id']));
 }
 
