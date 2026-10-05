@@ -516,7 +516,7 @@
       "<div class='q17-io'><button class='btn sm' id='q17-ex'>" + ic("download") + "Export template</button><button class='btn sm' id='q17-im'>" + ic("upload") + "Import template</button></div></div>";
     side.insertBefore(card, side.firstChild); W.fillIcons(card);
     if (E.ro) $$("input,select,textarea,button", card).forEach(function (x) { if (x.id !== "q17-ex") x.disabled = true; });
-    $$("input[name=ql]", card).forEach(function (r) { r.onchange = function () { q.layout = r.value; $$(".ql", card).forEach(function (l) { l.classList.toggle("on", l.contains(r)); }); E.dirty(); live(); }; });
+    $$("input[name=ql]", card).forEach(function (r) { r.onchange = function () { q.layout = r.value; $$(".ql", card).forEach(function (l) { l.classList.toggle("on", l.contains(r)); }); if (window.__wxBlk) window.__wxBlk.set(q.layout); E.dirty(); live(); }; });
     $("#q17-sc").oninput = function () { q.scope = this.value; E.dirty(); };
     var sgc = function () { $("#q17-sgc").hidden = $("#q17-sg").value !== "c" && (co.signers || []).length > 0; }; sgc();
     $("#q17-sg").onchange = function () { var x = (co.signers || [])[+this.value]; if (x) { q.sign_name = x.name; q.sign_title = x.title; } else { q.sign_name = $("#q17-sn").value; q.sign_title = $("#q17-st").value; } sgc(); E.dirty(); live(); };

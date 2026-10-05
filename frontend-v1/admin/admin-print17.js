@@ -141,6 +141,7 @@
   P.BLOCKS = BLK;
   P.blockDefaults = function (layout, kind) {
     if (kind === "invoice") return ["items", "totals", "terms", "bank", "sign"];
+    if (layout === "classic" || !layout) return ["scope", "summary", "totals", "items", "terms", "bank", "sign"]; /*P19 F2*/
     return layout === "project" ? ["scope", "summary", "totals", "items", "terms", "bank", "sign"] : ["scope", "-summary", "items", "totals", "terms", "bank", "sign"];
   };
   /** saved order (e.g. ["items","-bank"]) merged with defaults: unknown dropped, missing appended. "-" = hidden */
@@ -177,7 +178,7 @@
     };
     var body = header(c, "QUOTATION", meta, q.qtype ? [QT[q.qtype]] : []) + pdfBand("QUOTATION", meta) +
       boxes(q.client, "Project details", [["Project", q.project || "—"], ["Site", q.site], ["Type", QT[q.qtype] || ""], ["Area", area ? money(area) + " sft" : ""]]) +
-      (q.intro ? '<p class="intro">' + esc(q.intro) + "</p>" : "") + assemble(P.blockOrder(q.blocks, "single"), map);
+      (q.intro ? '<p class="intro">' + esc(q.intro) + "</p>" : "") + assemble(P.blockOrder(q.blocks, classic ? "classic" : "single"), map);
     return wrap("Quotation " + label + " - " + q.client.name, body, c, label, pdf);
   }
   function scopeBlock(q) { var l = lines(q.scope); return l.length ? '<div class="keep"><h3>Scope of work</h3><ul class="scope">' + l.map(function (x) { return "<li>" + esc(x) + "</li>"; }).join("") + "</ul></div>" : ""; }

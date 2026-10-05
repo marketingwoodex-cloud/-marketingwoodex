@@ -185,9 +185,10 @@
         $("#qe-tot").textContent = money(tot); $("#qe-words").textContent = "Rupees " + WXPrint.words(adv ? tot - adv : tot) + " only"; var bl = $("#qe-bal"); if (bl) { bl.hidden = !adv; bl.querySelector("b").textContent = money(tot - adv); }
       };
       sectionEditor($("#qe-secs"), q.sections, ro, markDirty); summary();
-      var blk = WXPrint.blocksUI ? WXPrint.blocksUI($("#qe-blocks"), q.blocks, q.layout === "project" ? "project" : "single", "quote", function (o) { q.blocks = o; markDirty(); }, ro) : null;
+      var blk = WXPrint.blocksUI ? WXPrint.blocksUI($("#qe-blocks"), q.blocks, q.layout || "classic", "quote", function (o) { q.blocks = o; markDirty(); }, ro) : null;
       var blkNote = function () { var n = $("#qe-blk-note"); if (n) n.textContent = ""; };
       var lastLay = q.layout; blkNote(); ["change", "click"].forEach(function (ev) { el.addEventListener(ev, function () { setTimeout(function () { if (q.layout !== lastLay) { lastLay = q.layout; blkNote(); } }, 40); }); });
+      window.__wxBlk = blk; /*P19 F2: layout switch refreshes the block list*/
       if ($("#qe-blk-reset")) $("#qe-blk-reset").onclick = function () { if (blk && !ro) blk.reset(); };
       W.qeState = { q: q, co: co, ro: ro, dirty: markDirty, el: el, redraw: function () { sectionEditor($("#qe-secs"), q.sections, ro, markDirty); summary(); } }; if (W.onQuoteEditor) W.onQuoteEditor(W.qeState);
       $$("[data-c]", el).forEach(function (i) { i.oninput = function () { q.client[i.dataset.c] = i.value; markDirty(); }; });
