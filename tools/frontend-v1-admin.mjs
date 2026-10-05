@@ -908,6 +908,12 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
       for (const p of htmlPages()) { const abs = path.join(ROOT, p), h = fs.readFileSync(abs, "utf8"); if (!h.includes("estimator-rates.js")) continue; const n = h.replace(/\/assets\/js\/estimator-rates\.js(\?v=\w+)?/g, "/assets/js/estimator-rates.js?v=" + v); if (n !== h) fs.writeFileSync(abs, n); }
       log(db, u, "estimator.save", r.services.length + " services", ip); save(db); return { ok: true, rates: r };
     }
+    if (action === "est_tpls") { need(OA); return { ok: true, templates: jr(path.join(PRIV, "est-templates.json"), {}).list || [] }; }
+    if (action === "est_tpl_save") {
+      const u = need(OA), F = path.join(PRIV, "est-templates.json"); let L = jr(F, {}).list || []; const name = clip(inp.name, 60);
+      if (inp.delete) L = L.filter((t) => t.name !== name); else { if (!name) throw new Fail("Give the template a name"); const r = estClean(inp.rates); L = [{ name, at: now(), by: u.name, rates: r }, ...L.filter((t) => t.name !== name)].slice(0, 20); }
+      jw(F, { list: L }); log(db, u, "estimator.template", name, ip); save(db); return { ok: true, templates: L };
+    }
     if (action === "forms_get") {
       need(OA); ensureCrm(db); const cfg = formsCfg(), pages = {}, since = new Date(Date.now() - 30 * 864e5).toISOString().slice(0, 19).replace("T", " ");
       for (const rel of htmlPages()) { const h = fs.readFileSync(path.join(ROOT, rel), "utf8"); for (const id of Object.keys(FORMS_WEB)) { const q = id.replace(/[-]/g, "\\-"); if (new RegExp(`WXForms\\.send\\(\\s*["']${q}["']|data-form="${q}"|name="form"\\s+value="${q}"|form:\\s*["']${q}["']`).test(h)) (pages[id] = pages[id] || []).push("/" + rel.replace(/index\.html$/, "")); } }

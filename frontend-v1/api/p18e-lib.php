@@ -50,6 +50,13 @@ function p18e_actions(string $action, array $in): bool {
         case 'est_save':
             $u = need($OA); $r = est_clean($in['rates'] ?? null); est_write($r); log_act($u, 'estimator.save', count($r['services']) . ' services');
             out(['ok' => true, 'rates' => $r]);
+        case 'est_tpls': // P19 F8: saved rate books (templates)
+            need($OA); out(['ok' => true, 'templates' => jread(PRIVATE_DIR . '/est-templates.json')['list'] ?? []]);
+        case 'est_tpl_save':
+            $u = need($OA); $L = jread(PRIVATE_DIR . '/est-templates.json')['list'] ?? []; $name = clip($in['name'] ?? '', 60);
+            if (!empty($in['delete'])) { $L = array_values(array_filter($L, fn($t) => $t['name'] !== $name)); }
+            else { if ($name === '') fail('Give the template a name'); $r = est_clean($in['rates'] ?? null); $L = array_values(array_filter($L, fn($t) => $t['name'] !== $name)); array_unshift($L, ['name' => $name, 'at' => now(), 'by' => $u['name'] ?? '', 'rates' => $r]); $L = array_slice($L, 0, 20); }
+            jwrite(PRIVATE_DIR . '/est-templates.json', ['list' => $L]); log_act($u, 'estimator.template', $name); out(['ok' => true, 'templates' => $L]);
         case 'forms_get':
             need($OA); crm_migrate(); $cfg = forms_cfg(); $pages = []; $since = date('Y-m-d H:i:s', time() - 30 * 86400);
             foreach (a7_pages() as $rel) { $h = (string)file_get_contents(ROOT_DIR . '/' . $rel);

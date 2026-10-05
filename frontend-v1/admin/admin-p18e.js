@@ -11,6 +11,7 @@
     ".es-svc{border:1px solid var(--line,#e5e7eb);border-radius:12px;padding:12px;margin-bottom:10px;background:var(--card,#fff)}.es-svc .r{display:grid;grid-template-columns:1.2fr 1.6fr .8fr 1fr;gap:8px}.es-svc .r2{display:grid;grid-template-columns:repeat(3,1fr) auto;gap:8px;margin-top:8px;align-items:end}" +
     ".es-svc small{display:block;font-size:11.5px;color:var(--mut);margin-bottom:2px}.es-svc input,.es-svc select{margin:0}.es-svc .bad{border-color:#e11d48}" +
     ".es-prev{position:sticky;top:12px}.es-out{background:#0c1628;color:#fff;border-radius:14px;padding:18px;margin-top:12px}.es-out small{opacity:.7;display:block;font-size:12px}.es-out b{font-size:22px;display:block;margin:2px 0 10px}.es-out .row{display:flex;gap:16px}.es-out .row>div{flex:1}" +
+    ".es-tp{display:grid;gap:14px}.es-tp-r>b{display:block;font-size:13px;margin-bottom:6px}.es-chips{display:flex;flex-wrap:wrap;gap:6px}.es-sv{display:inline-flex;gap:2px}.es-inl{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:6px}.es-inl input{margin:0;max-width:280px}" +
     ".es-f{font-family:ui-monospace,Menlo,monospace;font-size:12.5px;background:var(--bg,#f6f6f7);border-radius:10px;padding:10px 12px;line-height:1.6}" +
     ".fm-card{border:1px solid var(--line,#e5e7eb);border-radius:14px;background:var(--card,#fff);margin-bottom:14px;overflow:hidden}.fm-h{display:flex;gap:12px;align-items:center;padding:14px 16px;border-bottom:1px solid var(--line,#e5e7eb)}.fm-h h3{margin:0;font-size:15px}.fm-h .sp{flex:1}" +
     ".fm-stat{font-size:12.5px;color:var(--mut)}.fm-stat b{color:var(--txt,#111);font-size:15px}.fm-b{display:grid;grid-template-columns:1fr 1fr;gap:18px;padding:14px 16px}@media(max-width:900px){.fm-b{grid-template-columns:1fr}}" +
@@ -21,10 +22,28 @@
   var fmt = function (n) { n = Math.round(n); if (n >= 10000000) return "Rs " + (n / 10000000).toFixed(n % 10000000 ? 1 : 0).replace(/\.0$/, "") + " crore"; if (n >= 100000) return "Rs " + (n / 100000).toFixed(n % 100000 ? 1 : 0).replace(/\.0$/, "") + " lac"; return "Rs " + n.toLocaleString("en-PK"); };
 
   // ================================================================ Estimator
+  /* P19 F8: ready-made service templates (starting figures, PKR, Lahore 2026 — review before publishing) */
+  var EST_LIB = [
+    ["Kitchen", "Cabinets, counter, hardware and fitting", "sqft", "Kitchen area (sq ft)", 3500, 5500, 9000],
+    ["Wardrobes & storage", "Built-in wardrobes, per sq ft of front", "sqft", "Wardrobe front (sq ft)", 2200, 3500, 5500],
+    ["Bedroom interior", "Bed wall, wardrobe, ceiling and lighting", "sqft", "Room area (sq ft)", 1800, 3000, 5000],
+    ["Living & lounge", "TV wall, ceiling, lighting, loose furniture", "sqft", "Area (sq ft)", 2000, 3200, 5200],
+    ["Complete home interior", "All rooms, turnkey", "sqft", "Covered area (sq ft)", 2400, 3800, 6200],
+    ["Restaurant / café fit-out", "Kitchen-ready shell to opening day", "sqft", "Area (sq ft)", 3500, 5500, 8500],
+    ["Salon / clinic fit-out", "Stations, plumbing, lighting, branding", "sqft", "Area (sq ft)", 3000, 4800, 7500],
+    ["Retail shop fit-out", "Display, lighting, signage, flooring", "sqft", "Area (sq ft)", 2600, 4200, 6800],
+    ["Front elevation", "Facade design and execution", "sqft", "Facade area (sq ft)", 900, 1600, 2800],
+    ["Grey structure", "Construction up to grey structure", "sqft", "Covered area (sq ft)", 2600, 3000, 3600],
+    ["House construction (complete)", "Grey structure + finishing", "sqft", "Covered area (sq ft)", 5200, 6800, 9500],
+    ["False ceiling", "Gypsum / board ceiling with cove", "sqft", "Ceiling area (sq ft)", 180, 280, 450],
+    ["Flooring", "Tiles, wood or marble, laid", "sqft", "Floor area (sq ft)", 350, 700, 1400],
+    ["3D renders", "Photo-real 3D views", "views", "Number of views", 8000, 15000, 25000]
+  ];
   W.VIEWS.estimator = function (el) {
     el.innerHTML = W.head("Estimator", "Content", '<a class="btn" href="/estimator/" target="_blank" rel="noopener">' + ic("external-link") + 'Open estimator page</a><button class="btn pri" id="es-save">' + ic("save") + "Save &amp; publish</button>") + '<div class="empty">Loading the rate book…</div>';
     W.fillIcons(el);
-    var R = null, orig = "", pv = { s: 0, f: "standard", q: 1000 };
+    var R = null, orig = "", pv = { s: 0, f: "standard", q: 1000 }, TP = null;
+    api("est_tpls").then(function (r) { TP = r.ok ? r.templates : []; if (R && el.querySelector(".es-grid")) { collect(); draw(); } });
     var s0 = document.createElement("script"); s0.src = "/assets/js/estimator-rates.js?v=" + Date.now();
     s0.onload = function () { R = JSON.parse(JSON.stringify(window.WX_RATES || { services: [], finishes: [] })); R.catalog = R.catalog || []; R.terms = R.terms || []; orig = JSON.stringify(R); draw(); };
     s0.onerror = function () { el.querySelector(".empty").textContent = "Could not load /assets/js/estimator-rates.js"; };
@@ -32,7 +51,11 @@
     function draw() {
       var box = el.querySelector(".empty") || el.querySelector(".es-grid"); var g = document.createElement("div"); g.className = "es-grid";
       var fin = function (k) { return R.finishes.filter(function (f) { return f.key === k; })[0] || { key: k, label: k, hint: "" }; };
-      g.innerHTML = '<div><div class="card" style="margin-bottom:16px"><div class="card-h"><h3>Services &amp; rates (PKR)</h3><button class="btn sm" id="es-add">' + ic("plus") + "Service</button></div><div class=\"card-b\" id=\"es-svcs\">" +
+      g.innerHTML = '<div><div class="card" style="margin-bottom:16px"><div class="card-h"><h3>' + ic("layers") + ' Templates</h3><small class="muted">nothing goes live until you press Save &amp; publish</small></div><div class="card-b es-tp">' +
+        '<div class="es-tp-r"><b>1. Add a ready-made service</b><div class="es-chips">' + EST_LIB.map(function (t, i) { var have = R.services.some(function (s) { return s.label.toLowerCase() === t[0].toLowerCase(); }); return '<button class="btn sm' + (have ? " ghost" : "") + '" data-lib="' + i + '"' + (have ? " disabled title=\"Already in the list\"" : "") + ">" + (have ? "✓ " : "+ ") + esc(t[0]) + "</button>"; }).join("") + "</div></div>" +
+        '<div class="es-tp-r"><b>2. Saved rate books</b><div class="es-chips" id="es-saved">' + (TP === null ? '<span class="muted">Loading…</span>' : TP.length ? TP.map(function (t) { return '<span class="es-sv"><button class="btn sm" data-tap="' + esc(t.name) + '" title="Saved ' + esc(String(t.at).slice(0, 16)) + '">' + esc(t.name) + " · " + t.rates.services.length + '</button><button class="btn sm ghost" data-tdel="' + esc(t.name) + '" title="Delete">✕</button></span>'; }).join("") : '<span class="muted">None yet. Save the current rates as e.g. “2026 standard” before big changes.</span>') + '</div><div class="es-inl"><input id="es-tn" placeholder="Template name, e.g. 2026 standard"><button class="btn sm" id="es-tsave">' + ic("save") + "Save current as template</button></div></div>" +
+        '<div class="es-tp-r"><b>3. Adjust all rates</b><div class="es-inl"><input id="es-pct" type="number" step="1" value="8" style="max-width:90px"> %<button class="btn sm" id="es-padj">Apply to every service</button><small class="muted">e.g. 8 for yearly increase, −5 for a promotion. Rounded to 10.</small></div></div></div></div>' +
+        '<div class="card" style="margin-bottom:16px"><div class="card-h"><h3>Services &amp; rates (PKR)</h3><button class="btn sm" id="es-add">' + ic("plus") + "Service</button></div><div class=\"card-b\" id=\"es-svcs\">" +
         R.services.map(function (s, i) {
           return '<div class="es-svc" data-i="' + i + '"><div class="r"><label><small>Service name</small><input data-k="label" value="' + esc(s.label) + '"></label><label><small>Short description</small><input data-k="hint" value="' + esc(s.hint || "") + '"></label>' +
             '<label><small>Priced per</small><select data-k="unit"><option value="sqft"' + (s.unit !== "views" ? " selected" : "") + '>sq ft</option><option value="views"' + (s.unit === "views" ? " selected" : "") + '>view (3D)</option></select></label><label><small>Quantity label</small><input data-k="unitLabel" value="' + esc(s.unitLabel || "") + '"></label></div>' +
@@ -66,6 +89,11 @@
     el.addEventListener("change", function (e) { var t = e.target; if (t.id === "pv-s") pv.s = +t.value; if (t.id === "pv-f") pv.f = t.value; if (t.dataset.k === "unit") { var s = R.services[+t.closest(".es-svc").dataset.i]; if (!s.unitLabel || /^(Area \(sq ft\)|Number of views)$/.test(s.unitLabel)) s.unitLabel = t.value === "views" ? "Number of views" : "Area (sq ft)"; draw(); return; } prev(); });
     el.addEventListener("click", function (e) {
       var b = e.target.closest("button"); if (!b || !R) return;
+      if (b.dataset.lib) { var t = EST_LIB[+b.dataset.lib]; collect(); R.services.push({ key: "", label: t[0], hint: t[1], unit: t[2], unitLabel: t[3], rates: { essential: t[4], standard: t[5], premium: t[6] } }); pv.s = R.services.length - 1; draw(); toast(t[0] + " added. Check the rates, then Save & publish"); return; }
+      if (b.id === "es-tsave") { var nm = $("#es-tn").value.trim(); if (!nm) return toast("Type a template name first", true); api("est_tpl_save", { name: nm, rates: collect() }).then(function (r) { if (!r.ok) return toast(r.error, true); TP = r.templates; collect(); draw(); toast("Template “" + nm + "” saved ✓"); }); return; }
+      if (b.dataset.tap) { var tp = (TP || []).filter(function (x) { return x.name === b.dataset.tap; })[0]; if (!tp || !confirm("Replace the rates on screen with “" + tp.name + "”? (Not live until you press Save & publish)")) return; R = JSON.parse(JSON.stringify(tp.rates)); R.catalog = R.catalog || []; R.terms = R.terms || []; pv.s = 0; draw(); toast("“" + tp.name + "” loaded. Press Save & publish to make it live"); return; }
+      if (b.dataset.tdel) { if (!confirm("Delete template “" + b.dataset.tdel + "”?")) return; api("est_tpl_save", { name: b.dataset.tdel, delete: 1 }).then(function (r) { if (r.ok) { TP = r.templates; collect(); draw(); } }); return; }
+      if (b.id === "es-padj") { var pc = +$("#es-pct").value || 0; if (!pc) return; collect(); R.services.forEach(function (s) { ["essential", "standard", "premium"].forEach(function (k) { s.rates[k] = Math.max(10, Math.round(s.rates[k] * (1 + pc / 100) / 10) * 10); }); }); draw(); toast("All rates " + (pc > 0 ? "+" : "") + pc + "%. Press Save & publish to make it live"); return; }
       if (b.id === "es-add") { collect(); R.services.push({ key: "", label: "New service", hint: "", unit: "sqft", unitLabel: "Area (sq ft)", rates: { essential: 1000, standard: 1500, premium: 2500 } }); pv.s = R.services.length - 1; draw(); setTimeout(function () { var x = $$(".es-svc", el).pop(); x.scrollIntoView({ block: "center" }); x.querySelector("input").select(); }, 30); }
       else if (b.dataset.rm) { if (R.services.length < 2) return toast("Keep at least one service", true); if (!confirm("Remove “" + R.services[+b.dataset.rm].label + "” from the estimator?")) return; collect(); R.services.splice(+b.dataset.rm, 1); pv.s = 0; draw(); }
       else if (b.dataset.mv) { var q = b.dataset.mv.split("|"), i = +q[0], to = i + +q[1]; if (to < 0 || to >= R.services.length) return; collect(); R.services.splice(to, 0, R.services.splice(i, 1)[0]); draw(); }

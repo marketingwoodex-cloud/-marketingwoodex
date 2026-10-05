@@ -76,7 +76,7 @@
   // ------------------------------------------------------------------ view
   W.VIEWS.pagetpl = function (el, parts) {
     var tab = (parts && TYPES[parts[0]]) ? parts[0] : (W.S.tplTab || "post"), L = [], items = [];
-    el.innerHTML = head("Page templates", "Templates", '<button class="btn" id="tp-imp">' + ic("upload") + 'Import</button><button class="btn pri" id="tp-new">' + ic("plus") + "New template</button>") +
+    el.innerHTML = head("Page templates", "Templates", '<button class="btn" id="tp-lib">' + ic("blocks") + 'Template library</button><button class="btn" id="tp-imp">' + ic("upload") + 'Import</button><button class="btn pri" id="tp-new">' + ic("plus") + "New template</button>") +
       '<div class="banner">' + ic("info") + "<span>A template controls the <b>layout</b> — hero style, which sections show and their order. Your text and photos stay as they are. Apply a template to new <b>and</b> existing pages; each page is previewed and backed up first.</span></div>" +
       '<div class="seg" id="tp-tabs" style="margin:6px 0 16px">' + Object.keys(TYPES).map(function (k) { return '<button data-t="' + k + '">' + TYPES[k][1] + "</button>"; }).join("") + "</div><div id=\"tp-list\"><div class='empty'>Loading…</div></div>";
     W.fillIcons && W.fillIcons(el);
@@ -258,6 +258,26 @@
       f.click();
     };
     $("#tp-new").onclick = function () { editor(null); };
+    /* P19 F9: template library — ready-made layouts, add with one click */
+    var LIB = {
+      post: [["Long guide", "Big photo, contents list, every section. For 1,500+ word guides.", "image", true, ["summary", "body", "faqs", "quote", "related"], []],
+        ["Cost guide", "Navy title, contents, summary first, FAQs. For “price of…” articles.", "navy", true, ["summary", "body", "faqs", "related"], ["quote"]],
+        ["Quick tip", "Navy title, text and related only. Short posts, fastest load.", "navy", false, ["body", "related"], ["summary", "faqs", "quote"]],
+        ["Photo story", "Title on navy with a wide photo below; quote highlighted.", "media", false, ["body", "quote", "related"], ["summary", "faqs"]],
+        ["News & updates", "Simple navy band, text and related posts.", "navy", false, ["body", "related"], ["summary", "faqs", "quote"]]],
+      study: [["Full case study", "Big photo, project facts, summary, story, FAQs, quote.", "image", false, ["summary", "body", "quote", "faqs", "related"], []],
+        ["Photo showcase", "Photo-led: wide image under the title, story and client quote.", "media", false, ["body", "quote", "related"], ["summary", "faqs"]],
+        ["Before & after", "Summary of the change, story with images, client quote.", "image", false, ["summary", "body", "quote", "related"], ["faqs"]],
+        ["Commercial project", "Clean navy title, facts, summary, scope, FAQs for B2B clients.", "navy", false, ["summary", "body", "faqs", "related"], ["quote"]]]
+    };
+    $("#tp-lib").onclick = function () {
+      if (tab === "city") return toast("City templates are built from a real city page: use “Create starter templates” or New template", true);
+      var have = L.map(function (t) { return t.name.toLowerCase(); });
+      W.modal("<h3>Template library: " + TYPES[tab][1] + "</h3><p class='muted'>Ready-made layouts. Adding one doesn’t change any page until you press <b>Apply to pages</b>.</p><div class='tp-lib'>" + LIB[tab].map(function (x, i) { var on = have.indexOf(x[0].toLowerCase()) > -1; return "<div class='tp-li'><div class='tp-thumb tp-" + x[2] + "'>" + thumb({ hero: x[2], toc: x[3], sections: x[4].map(function (k) { return { k: k, on: true }; }) }) + "</div><div><b>" + A(x[0]) + "</b><p class='muted'>" + A(x[1]) + "</p></div><button class='btn sm" + (on ? "" : " pri") + "' data-li='" + i + "'" + (on ? " disabled" : "") + ">" + (on ? "✓ Added" : "Add") + "</button></div>"; }).join("") + "</div><div class='modal-actions'><button class='btn' id='tl-x'>Close</button></div>");
+      $("#tl-x").onclick = W.closeModal;
+      $$("[data-li]").forEach(function (b) { b.onclick = function () { var x = LIB[tab][+b.dataset.li]; b.disabled = true;
+        api("cms_tpl_save", { tpl: { type: tab, name: x[0], desc: x[1], hero: x[2], toc: x[3], sections: x[4].map(function (k) { return { k: k, on: true }; }).concat(x[5].map(function (k) { return { k: k, on: false }; })) } }).then(function (r) { if (!r.ok) { b.disabled = false; return toast(r.error, true); } b.textContent = "✓ Added"; b.classList.remove("pri"); toast(x[0] + " added"); load(); }); }; });
+    };
     el.addEventListener("click", function (e) {
       var b = e.target.closest("button"); if (!b) return;
       if (b.dataset.t) { tab = b.dataset.t; load(); return; }
