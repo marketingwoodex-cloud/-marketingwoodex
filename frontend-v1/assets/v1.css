@@ -491,3 +491,10 @@ section.lr-section.lr-process p.lr-label{color:rgba(255,255,255,.78)!important}
 .wx-tst-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--s-3)}.wx-tst-row .wx-tst-card{background:#152033;border-color:rgba(255,255,255,.08)}.wx-tst-row blockquote,.wx-tst-row b{color:#fff}.wx-tst-row figcaption{border-color:rgba(255,255,255,.1)}
 @media(max-width:1000px){.wx-tst-spot{grid-template-columns:1fr}.wx-tst-row{grid-template-columns:1fr 1fr}.wx-tst-track{grid-auto-columns:minmax(280px,46%)}}
 @media(max-width:640px){.wx-tst-row{grid-template-columns:1fr}.wx-tst-track{grid-auto-columns:86%}}
+
+/* P19 F3: team extras */
+.wx-team-card.is-featured h3{font-size:1.25rem}.wx-team-yr{margin:4px 0 0!important;font-size:.85rem!important;color:var(--wx-wood,#b8956a)!important;font-weight:600}.wx-team-links{display:flex;flex-wrap:wrap;gap:10px;margin:10px 0 0!important}.wx-team-links a{font-size:.85rem;color:var(--wx-ink,#0c1628);text-decoration:underline;text-underline-offset:3px}
+@media (min-width:900px){.wx-team-grid:has(.is-featured) .is-featured:first-child{grid-column:span 2}.wx-team-grid:has(.is-featured) .is-featured:first-child img{aspect-ratio:10/6}}
+
+/* P19 F5: FAQ groups on pages */
+.wx-faqs{padding-block:var(--wx-section)}.wx-faqs .wx-kicker{margin:0;font-size:.8rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--wx-muted)}.wx-faq-list{max-width:860px;display:grid;gap:10px}.wx-faq-list details{background:#fff;border:1px solid rgba(12,22,40,.1);border-radius:14px;padding:16px 20px}.wx-faq-list summary{cursor:pointer;font-weight:600;list-style:none;display:flex;justify-content:space-between;gap:12px}.wx-faq-list summary::-webkit-details-marker{display:none}.wx-faq-list summary::after{content:'+';color:var(--wx-wood,#b8956a);font-size:1.3rem;line-height:1}.wx-faq-list details[open] summary::after{content:'–'}.wx-faq-list p{margin:10px 0 0;color:var(--wx-muted);line-height:1.65}
