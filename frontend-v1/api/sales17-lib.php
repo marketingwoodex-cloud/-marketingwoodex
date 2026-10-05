@@ -192,7 +192,7 @@ function sales17_actions(string $action, array $in): bool {
             log_act($u, 'lead.import', $n . ' rows (sheet)'); out(['ok' => true, 'imported' => $n, 'skipped' => $skip]);
 
         case 'clients_master': // client list with live totals from leads, quotes, invoices and projects
-            need($SALES); sales_migrate();
+            need($SALES); sales_migrate(); if (function_exists('p19c_link')) p19c_link(true);
             $leads = []; foreach (q('SELECT id,client_id,stage,value,created_at,last_contact FROM wx_leads WHERE client_id IS NOT NULL')->fetchAll() as $l) $leads[(int)$l['client_id']][] = $l;
             $Q = doc_all('wx_quotes'); $I = array_map('inv_pub', doc_all('wx_invoices')); $P = doc_all('wx_projects');
             $by = function (array $docs) { $o = []; foreach ($docs as $x) if ($c = (int)($x['client_id'] ?? 0)) $o[$c][] = $x; return $o; };

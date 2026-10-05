@@ -639,6 +639,28 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
   const PROF = path.join(PRIV, "profiles.json"), PROF_KEYS = { phone: 30, whatsapp: 30, title: 80, city: 60, bio: 400 };
   const profGet = (id) => Object.assign({ phone: "", whatsapp: "", title: "", city: "", bio: "", avatar: "" }, jr(PROF, {})[String(id)] || {});
   const profPut = (id, p) => { const a = jr(PROF, {}); a[String(id)] = p; jw(PROF, a); };
+  // P19 C: one central client record (mirror of api/p19c-lib.php)
+  const p19key = (p) => { const d = String(p || "").replace(/\D/g, ""); return d.length >= 10 ? d.slice(-10) : ""; };
+  let p19t = 0;
+  function p19link(db, throttle) {
+    const n = { leads: 0, quotes: 0, invoices: 0, projects: 0 }; if (throttle && Date.now() - p19t < 60000) return n; p19t = Date.now();
+    const ph = {}, em = {}; for (const c of db.clients || []) { const k = p19key(c.phone); if (k && !ph[k]) ph[k] = c.id; const e = String(c.email || "").trim().toLowerCase(); if (e && !em[e]) em[e] = c.id; }
+    const m = (p, e) => ph[p19key(p)] || em[String(e || "").trim().toLowerCase()] || 0;
+    for (const l of db.leads || []) if (!l.client_id) { const c = m(l.phone, l.email); if (c) { l.client_id = c; n.leads++; } }
+    for (const [k, list] of [["quotes", db.quotes], ["invoices", db.invoices], ["projects", db.projects]]) for (const d of list || []) if (!d.client_id) { const c = m((d.client || {}).phone, (d.client || {}).email); if (c) { d.client_id = c; n[k]++; } }
+    return n;
+  }
+  async function p19c(action, inp, need, db, ip) {
+    if (!["client_comms", "clients_link"].includes(action)) return null;
+    const u = need(["owner", "admin", "sales"]);
+    if (action === "clients_link") { const n = p19link(db, false); save(db); return { ok: true, linked: n }; }
+    const c = (db.clients || []).find((x) => x.id === +inp.id); if (!c) throw new Fail("Client not found", 404);
+    const k = p19key(c.phone), e = String(c.email || "").toLowerCase(), lids = (db.leads || []).filter((l) => l.client_id === c.id).map((l) => l.id);
+    const chats = (db.chats || []).filter((r) => (k && p19key(r.phone) === k) || (e && String(r.email || "").toLowerCase() === e) || (r.lead_id && lids.includes(r.lead_id)))
+      .sort((a, b) => String(b.updated_at).localeCompare(String(a.updated_at))).slice(0, 30)
+      .map((r) => { const ms = (db.chatMsgs || []).filter((x) => x.chat_id === r.id); return { id: r.id, channel: r.channel || "web", status: r.status, mode: r.mode, started: r.created_at, updated: r.updated_at, count: ms.length, last: ms.slice(-6).map(({ t, who, name, text }) => ({ t, who, name, text })) }; });
+    return { ok: true, chats };
+  }
   async function p18j(action, inp, need, db, ip) {
     if (!/^me_/.test(action)) return null;
     const u = need(), id = u.id, p = profGet(id);
@@ -993,7 +1015,7 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
         log(db, u, "lead.import", n + " rows (sheet)", ip); return done({ ok: true, imported: n, skipped: skip });
       }
       case "clients_master": {
-        need(SALES); const I = (db.invoices || []).map(invPub);
+        need(SALES); if (p19link(db, true).leads) save(db); const I = (db.invoices || []).map(invPub);
         return { ok: true, types: S17.clientTypes, lines: S17.lines, clients: db.clients.slice().reverse().map((c) => {
           const ls = db.leads.filter((l) => l.client_id === c.id), iv = I.filter((i) => +i.client_id === c.id), pp = (db.projects || []).filter((p) => +p.client_id === c.id), qq = (db.quotes || []).filter((q) => +q.client_id === c.id);
           const last = [c.created_at, ...ls.map((l) => l.last_contact || l.created_at), ...iv.map((i) => i.issue_date || ""), ...qq.map((q) => q.updated_at || q.date || "")].sort().pop();
@@ -2106,7 +2128,7 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
         return done({ ok: true, rows: all.slice((page - 1) * per, page * per).map(({ user_name, action, target, ip, created_at }) => ({ user_name, action, target, ip, created_at })), total: all.length, per, page });
       }
       default: {
-        const r = (await p18j(action, inp, need, db, ip)) || (await p18h(action, inp, need, db, ip)) || (await p18g(action, inp, need, db, ip)) || (await p18e(action, inp, need, db, ip)) || (await pbk(action, inp, need, db, ip)) || (await a2(action, inp, need, db, ip)) || (await a17(action, inp, need, db, ip)) || (await a4(action, inp, need, db, ip)) || a5(action, inp, need, db, ip) || (await a6(action, inp, need, db, ip)) || (await a7(action, inp, need, db, ip)) || (await a8(action, inp, need, db, ip)) || (await p8(action, inp, need, db, ip, req)) || (await p10(action, inp, need, db, ip, req)) || (await p12(action, inp, need, db, ip)) || (await p13(action, inp, need, db, ip)); if (r) return r;
+        const r = (await p19c(action, inp, need, db, ip)) || (await p18j(action, inp, need, db, ip)) || (await p18h(action, inp, need, db, ip)) || (await p18g(action, inp, need, db, ip)) || (await p18e(action, inp, need, db, ip)) || (await pbk(action, inp, need, db, ip)) || (await a2(action, inp, need, db, ip)) || (await a17(action, inp, need, db, ip)) || (await a4(action, inp, need, db, ip)) || a5(action, inp, need, db, ip) || (await a6(action, inp, need, db, ip)) || (await a7(action, inp, need, db, ip)) || (await a8(action, inp, need, db, ip)) || (await p8(action, inp, need, db, ip, req)) || (await p10(action, inp, need, db, ip, req)) || (await p12(action, inp, need, db, ip)) || (await p13(action, inp, need, db, ip)); if (r) return r;
         throw new Fail("Unknown action", 404);
       }
     }
