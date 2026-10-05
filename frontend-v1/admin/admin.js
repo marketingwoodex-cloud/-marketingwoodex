@@ -33,6 +33,20 @@
   }
   function modal(html, cls) { $("#modal-card").innerHTML = html; $("#modal-card").className = cls ? "modal-card " + cls : $("#modal-card").className.replace(/ wide/g, ""); fillIcons($("#modal-card")); $("#modal").hidden = false; var f = $("#modal-card input,#modal-card select"); if (f) f.focus(); }
   function closeModal() { $("#modal").hidden = true; }
+  // P19 B4: auto-saved form drafts (kept in this browser until the form is submitted or cleared)
+  function formDraft(key, sel) {
+    var K = "wx_draft_" + key, f = [].slice.call(document.querySelectorAll(sel)).filter(function (x) { return x.id; }), d = {};
+    try { d = JSON.parse(localStorage.getItem(K) || "{}"); } catch (e) {}
+    var any = false; f.forEach(function (x) { if (d[x.id] != null && d[x.id] !== "") { x.value = d[x.id]; any = true; } });
+    var bar = document.createElement("p"); bar.className = "muted"; bar.style.cssText = "margin:-6px 0 12px;font-size:12.5px";
+    bar.innerHTML = "Draft restored · <a href='#' style='color:inherit;text-decoration:underline'>Clear</a>";
+    var h = document.querySelector("#modal-card h2"); if (any && h) h.after(bar);
+    function save() { var o = {}; f.forEach(function (x) { o[x.id] = x.value; }); try { localStorage.setItem(K, JSON.stringify(o)); } catch (e) {} }
+    f.forEach(function (x) { x.addEventListener("input", save); x.addEventListener("change", save); });
+    var api = { clear: function () { try { localStorage.removeItem(K); } catch (e) {} } };
+    bar.querySelector("a").onclick = function (e) { e.preventDefault(); api.clear(); f.forEach(function (x) { if (x.tagName !== "SELECT") x.value = ""; }); bar.remove(); };
+    return api;
+  }
   $("#modal").addEventListener("mousedown", function (e) { if (e.target.id === "modal") closeModal(); });
   document.addEventListener("keydown", function (e) { if (e.key === "Escape") closeModal(); if (e.key === "/" && !/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName) && !$("#app").hidden) { e.preventDefault(); $("#gsearch").focus(); } });
   function initials(n) { return String(n || "?").split(/\s+/).map(function (w) { return w[0]; }).join("").slice(0, 2).toUpperCase(); }
@@ -224,6 +238,7 @@
   function route() {
     if (!S.user) return;
     var parts = (location.hash.replace(/^#\/?/, "") || "dashboard").split("/"), v = parts[0];
+    var ALIAS = { leads: "enquiries", posts: "blog", lead: "enquiries" }; /*P19: old links*/ if (ALIAS[v]) { v = parts[0] = ALIAS[v]; history.replaceState(null, "", "#/" + parts.join("/")); }
     var SUB = { quote: "quotes", template: "templates", invoice: "invoices", post: "blog", study: "portfolio", fields: "services", citydraft: "cities" };
     var FLAT = []; NAV.forEach(function (n) { if (n.g) FLAT.push.apply(FLAT, n.items); else if (Array.isArray(n)) FLAT.push(n); });
     var find = function (k) { return FLAT.find(function (n) { return n[0] === k; }); };
@@ -395,7 +410,7 @@
   /* Screens from separate files (defer scripts) may not exist yet when the first screen is drawn after a refresh:
      redraw once everything has loaded, if a placeholder was shown for a screen that now exists. */
   window.addEventListener("load", function () { setTimeout(function () { if (S.user && document.querySelector("#view .soon-box")) { var v = (location.hash.replace(/^#\/?/, "").split("/")[0] || "dashboard"); if (VIEWS[v] && VIEWS[v] !== VIEWS.soon) route(); } }, 0); });
-  window.WXA = { S: S, signedIn: signedIn, showAuth: showAuth, api: api, bapi: bapi, modal: modal, closeModal: closeModal, toast: toast, esc: esc, ic: ic, fillIcons: fillIcons, ago: ago, head: head, can: can, VIEWS: VIEWS, $: $, $$: $$, route: function () { route(); } };
+  window.WXA = { formDraft: formDraft, S: S, signedIn: signedIn, showAuth: showAuth, api: api, bapi: bapi, modal: modal, closeModal: closeModal, toast: toast, esc: esc, ic: ic, fillIcons: fillIcons, ago: ago, head: head, can: can, VIEWS: VIEWS, $: $, $$: $$, route: function () { route(); } };
   Object.assign(ACT, { "page.meta": ["file-text", "updated SEO/settings of"], "page.delete": ["x", "deleted page"], "redirects.save": ["refresh-cw", "saved redirects"], "global.menu": ["panel-left", "updated the site menu on"], "global.replace": ["refresh-cw", "replaced in header/footer"], "global.chrome": ["panel-left", "published header & footer on"] });
 
   // ---------------------------------------------------------------- boot

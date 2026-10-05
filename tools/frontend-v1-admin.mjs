@@ -954,7 +954,7 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
       case "s17_meta": need(SALES); return { ok: true, ...S17 };
       case "lead_activity": {
         const u = need(SALES), l = leadFind(db, inp.id), k = String(inp.kind || "note"); if (!["call", "whatsapp", "visit", "meeting", "email", "note"].includes(k)) throw new Fail("Unknown activity type");
-        const text = clip(inp.text, 2000), out = clip(inp.outcome, 190); if (!text && !out) throw new Fail("Write what happened");
+        let text = clip(inp.text, 2000); const out = clip(inp.outcome, 190); if (!text && !out) { const chg = !!inp.next_at || (inp.stage && inp.stage !== l.stage); if (!chg && inp.kind === "note") throw new Fail("Add a short note, pick an outcome, or set a follow-up"); text = ((inp.kind && inp.kind !== "note") ? inp.kind[0].toUpperCase() + inp.kind.slice(1) : "Update") + " logged" + (inp.next_at ? " · next follow-up set" : ""); }
         l.notes.push({ t: now(), user: u.name, text: text || out, kind: k, outcome: out }); l.read = true;
         if (k !== "note") { l.last_contact = now(); if (l.stage === "new") { l.notes.push({ t: now(), user: u.name, text: "Stage: new → contacted", sys: true }); l.stage = "contacted"; } }
         if ("next_at" in inp) { l.next_at = s17dt(inp.next_at); l.followup = l.next_at.slice(0, 10); l.next_type = l.next_at ? (S17.nextTypes[inp.next_type] ? inp.next_type : "call") : ""; }
@@ -996,7 +996,7 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
         need(SALES); const I = (db.invoices || []).map(invPub);
         return { ok: true, types: S17.clientTypes, lines: S17.lines, clients: db.clients.slice().reverse().map((c) => {
           const ls = db.leads.filter((l) => l.client_id === c.id), iv = I.filter((i) => +i.client_id === c.id), pp = (db.projects || []).filter((p) => +p.client_id === c.id), qq = (db.quotes || []).filter((q) => +q.client_id === c.id);
-          const last = [c.created_at, ...ls.map((l) => l.last_contact || l.created_at), ...iv.map((i) => i.issue_date || "")].sort().pop();
+          const last = [c.created_at, ...ls.map((l) => l.last_contact || l.created_at), ...iv.map((i) => i.issue_date || ""), ...qq.map((q) => q.updated_at || q.date || "")].sort().pop();
           return { id: c.id, name: c.name, company: c.company || "", phone: c.phone || "", email: c.email || "", city: c.city || "", type: c.type || "", line: c.line || "", tags: c.tags || [], created_at: c.created_at,
             leads: ls.length, quotes: qq.length, openQuotes: qq.filter((q) => ["draft", "sent"].includes(q.status)).length, invoices: iv.length, lifetime: iv.reduce((a, i) => a + i.total, 0), paid: iv.reduce((a, i) => a + i.paid, 0),
             balance: iv.reduce((a, i) => a + i.balance, 0), projects: pp.length, last, status: s17Status(iv, pp, ls) }; }) };
@@ -1523,10 +1523,17 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
     const attr = set.length ? ` srcset="${set.join(", ")}" sizes="(max-width: 640px) 100vw, (max-width: 1200px) 80vw, 1200px" data-wx-rs` : ""; let pages = 0;
     for (const rel of htmlPages()) {
       const abs = path.join(ROOT, rel), h = fs.readFileSync(abs, "utf8"); if (!h.includes(url)) continue;
-      const n = h.replace(/<img\b[^>]*>/gi, (t) => { if (!t.includes('src="' + url + '"') && !t.includes('src="' + SITE_URL + url + '"')) return t; const sm = /\ssrcset="([^"]*)"/i.exec(t); if (sm && !t.includes("data-wx-rs") && !sm[1].includes(rsStem(url) + "-")) return t;
+      const n = h.replace(/<img\b[^>]*>/gi, (t) => { const esc = (x) => x.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); if (!new RegExp('\\ssrc="(' + esc(SITE_URL) + ')?' + esc(url) + '(\\?v=\\d+)?"').test(t)) return t; const sm = /\ssrcset="([^"]*)"/i.exec(t); if (sm && !t.includes("data-wx-rs") && !sm[1].includes(rsStem(url) + "-")) return t;
         t = t.replace(/\ssrcset="[^"]*"/i, "").replace(/\ssizes="[^"]*"/i, "").replace(/\sdata-wx-rs(="")?/, ""); return attr ? t.replace(/^<img/i, "<img" + attr) : t; });
       if (n !== h) { cmsBackup(rel); fs.writeFileSync(abs, n); pages++; }
     }
+    return pages;
+  }
+
+  function mediaBust(url) { // P19 B7
+    for (const w of rsHave(url)) { try { fs.unlinkSync(path.join(ROOT, rsVar(url, w))); } catch {} }
+    rsApply(url, 0); const v = Math.floor(Date.now() / 1000), re = new RegExp(url.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "(\\?v=\\d+)?(?=[\"'\\s),])", "g"); let pages = 0;
+    for (const rel of htmlPages()) { const abs = path.join(ROOT, rel), h = fs.readFileSync(abs, "utf8"); if (!h.includes(url)) continue; const n = h.replace(re, url + "?v=" + v); if (n !== h) { fs.writeFileSync(abs, n); pages++; } }
     return pages;
   }
 
@@ -1562,7 +1569,7 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
           const cur = path.extname(abs).slice(1).toLowerCase().replace("jpeg", "jpg"); if (cur !== ext) throw new Fail("The new file must be the same format (" + cur + ")");
           const m = mediaLoad(); fs.mkdirSync(MTRASH, { recursive: true }); const tf = Date.now() + "-" + path.basename(abs); fs.copyFileSync(abs, path.join(MTRASH, tf));
           m.trash.push({ id: ++m.seq, url, file: tf, size: fs.statSync(abs).size, at: now(), by: u.name, why: "replaced" }); jw(MEDIA, m);
-          const before = fs.statSync(abs).size; fs.writeFileSync(abs, data); log(db, u, "media.optimise", url, ip); save(db); return { ok: true, url, before, after: data.length };
+          const before = fs.statSync(abs).size; fs.writeFileSync(abs, data); const pages = mediaBust(url); log(db, u, "media.optimise", url, ip); save(db); return { ok: true, url, pages, before, after: data.length };
         }
         const folder = String(inp.folder || "").replace(/[^a-z0-9-]/g, ""), dir = path.join(ROOT, "assets/uploads", folder); if (folder && !fs.existsSync(dir)) throw new Fail("Folder not found");
         fs.mkdirSync(dir, { recursive: true });

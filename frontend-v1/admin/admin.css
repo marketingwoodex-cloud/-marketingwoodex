@@ -933,3 +933,5 @@ label{font-weight:500;color:var(--txt2)}
 
 /* P19 B2: no floating "Live chat" bubble in admin; open chats from the top-bar chat icon (shows unread count) */
 #cx-bub{display:none!important}
+/* P19 B5: off blocks — dim the name only, keep the controls clear */
+.blk-ui li.off{opacity:1;background:#f9fafb}.blk-ui li.off .blk-n{color:#98a2b3}.blk-ui li.off .blk-n:after{content:" · hidden";font-size:11px;font-weight:600;color:#b42318;text-decoration:none;display:inline-block;margin-left:4px}

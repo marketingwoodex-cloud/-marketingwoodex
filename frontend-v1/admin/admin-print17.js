@@ -158,7 +158,7 @@
   }
 
   // ------------------------------------------------------------- SINGLE-PAGE QUOTATION
-  function single(q, c, pdf) {
+  function single(q, c, pdf, classic) { /*P19 B5: classic BOQ shares the block system*/
     var label = P.label(q), valid = addDays(q.date, q.valid_days || c.validDays || 15), secs = q.sections.filter(function (s) { return s.items.length; });
     var meta = [["Quotation no.", label], ["Date", dlong(q.date)], ["Valid until", dlong(valid)]];
     var area = q.sections.reduce(function (a, s) { return a + (+s.area || 0); }, 0);
@@ -166,6 +166,7 @@
       scope: function () { return scopeBlock(q); },
       summary: function () { return summaryTable(q); },
       items: function () {
+        if (classic) return secs.length ? '<div class="keep"><h3>Detailed bill of quantities</h3></div>' + secs.map(function (s) { var si = q.sections.indexOf(s); return '<div class="keep"><h3 style="margin-top:3mm">' + two(si + 1) + " · " + esc(s.name) + '</h3><table class="t"><thead><tr><th>Sr</th><th>Particulars</th><th class="r">Qty / area</th><th class="c">Unit</th><th class="r">Rate (Rs)</th><th class="r">Amount (Rs)</th></tr></thead><tbody>' + itemRows(s, si, "single") + '<tr class="ss"><td></td><td colspan="4">Total · ' + esc(s.name) + '</td><td class="r n">' + amt(s.subtotal) + "</td></tr></tbody></table></div>"; }).join("") : "";
         return '<table class="t"><thead><tr><th>Sr</th><th>Description</th><th class="r">Qty</th><th class="c">Unit</th><th class="r">Rate (Rs)</th><th class="r">Amount (Rs)</th></tr></thead><tbody>' +
           secs.map(function (s) { var si = q.sections.indexOf(s); return '<tr class="sec"><td class="sr">' + two(si + 1) + '</td><td colspan="4">' + esc(s.name) + '</td><td class="r n">' + amt(s.subtotal) + "</td></tr>" + itemRows(s, si, "single") + (s.note ? '<tr class="sp"><td></td><td class="d" colspan="5">Note: ' + esc(s.note) + "</td></tr>" : ""); }).join("") + "</tbody></table>";
       },
@@ -214,7 +215,8 @@
     opts = opts || {};
     if (q.layout === "single") return single(q, c, !!opts.pdf);
     if (q.layout === "project") return project(q, c, !!opts.pdf);
-    return OLDQ(q, legacy(c, q), opts);
+    if (opts.legacy) return OLDQ(q, legacy(c, q), opts);
+    return single(q, c, !!opts.pdf, true);
   };
 
   // ------------------------------------------------------------- INVOICE (new design, all invoices)

@@ -14,7 +14,7 @@
   var ymd = function (d) { return d.getFullYear() + "-" + two(d.getMonth() + 1) + "-" + two(d.getDate()); };
   var today = function () { return ymd(new Date()); };
   var nowS = function () { var d = new Date(); return ymd(d) + " " + two(d.getHours()) + ":" + two(d.getMinutes()) + ":00"; };
-  var dd = function (d, time) { if (!d) return "—"; var x = new Date(String(d).replace(" ", "T")); if (isNaN(x)) return esc(d); return x.toLocaleDateString("en-GB", { day: "2-digit", month: "short" }) + (time && String(d).length > 10 ? " · " + x.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }) : ""); };
+  var dd = function (d, time) { if (!d) return "—"; var x = new Date(String(d).replace(" ", "T")); if (isNaN(x)) return esc(d); return x.toLocaleDateString("en-GB", x.getFullYear() === new Date().getFullYear() ? { day: "2-digit", month: "short" } : { day: "2-digit", month: "short", year: "numeric" }) + (time && String(d).length > 10 ? " · " + x.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }) : ""); };
   var ago = function (d) { if (!d) return "—"; var s = (Date.now() - new Date(String(d).replace(" ", "T"))) / 864e5; if (isNaN(s)) return "—"; return s < 1 ? "today" : s < 2 ? "yesterday" : Math.floor(s) + " days ago"; };
   var badge = function (st) { var s = STAGE[st] || [st, ""]; return '<span class="badge ' + s[1] + '">' + s[0] + "</span>"; };
   var waNum = function (p) { var d = String(p || "").replace(/\D/g, ""); if (/^0\d{9,10}$/.test(d)) d = "92" + d.slice(1); else if (/^3\d{9}$/.test(d)) d = "92" + d; return d; };
@@ -170,10 +170,12 @@
       "<label>Business line<select id='al-li'>" + opts(M.lines, "", "—") + "</select></label><label>Lead source<select id='al-lt'>" + opts(M.leadTypes, "new") + "</select></label>" + srcSel("al-src", "manual") +
       "<label>Assigned to<select id='al-as'><option value=''>Nobody</option>" + C.team.map(function (u) { return "<option value='" + u.id + "'" + (S.user && u.id === S.user.id ? " selected" : "") + ">" + esc(u.name) + "</option>"; }).join("") + "</select></label>" +
       "<label>First follow-up<input id='al-nx' type='datetime-local'></label></div><label>Note<textarea id='al-m' rows='2'></textarea></label><p class='err' id='al-err'></p><div class='modal-actions'><button class='btn' onclick='WXA.closeModal()'>Cancel</button><button class='btn pri' id='al-go'>Add lead</button></div>");
+    var dk = W.formDraft("lead", "#modal-card [id^='al-']");
     $("#al-go").onclick = function () {
       var name = $("#al-n").value.trim() || $("#al-co").value.trim();
+      if (!name) { $("#al-err").textContent = "Enter a contact name or company."; $("#al-n").focus(); return; }
       api("lead_save", { name: name, source: $("#al-src").value, company: $("#al-n").value.trim() ? $("#al-co").value : "", phone: $("#al-p").value, location: $("#al-lo").value, line: $("#al-li").value, lead_type: $("#al-lt").value, assigned_to: $("#al-as").value, next_at: $("#al-nx").value, next_type: "call", message: $("#al-m").value })
-        .then(function (r) { if (!r.ok) { $("#al-err").textContent = r.error; return; } W.closeModal(); toast("Lead added ✓"); after(); });
+        .then(function (r) { if (!r.ok) { $("#al-err").textContent = r.error; return; } dk.clear(); W.closeModal(); toast("Lead added ✓"); after(); }).catch(function () { $("#al-err").textContent = "Could not reach the server — your draft is kept, try again."; });
     };
   }
 
@@ -563,6 +565,6 @@
       el.appendChild(pv); el.classList.add("q17-split"); btn.classList.add("pri"); pv.querySelector("button").onclick = btn.onclick; live(); timer && clearTimeout(timer); $("iframe", pv).srcdoc = fit(WXPrint.quote(docOf(), co));
     };
     ["input", "change"].forEach(function (ev) { el.addEventListener(ev, function (e) { if (pv && !pv.contains(e.target)) { live(); var s = $(".q17-pvh small", pv); if (s) s.textContent = (WXPrint.layouts || {})[q.layout] || ""; } }); });
-    el.addEventListener("click", function (e) { if (pv && e.target.closest(".sec button, #se-add")) setTimeout(live, 50); });
+    el.addEventListener("click", function (e) { if (pv && e.target.closest(".sec button, #se-add, #qe-blocks button")) setTimeout(live, 50); });
   };
 })();

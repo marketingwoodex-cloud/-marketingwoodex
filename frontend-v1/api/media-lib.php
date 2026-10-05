@@ -168,12 +168,24 @@ function rs_apply(string $url, int $ow): int {
     foreach (a7_pages() as $rel) {
         $abs = ROOT_DIR . '/' . $rel; $h = (string)file_get_contents($abs); if (strpos($h, $url) === false) continue;
         $n = preg_replace_callback('~<img\b[^>]*>~i', function ($m) use ($url, $attr) {
-            $t = $m[0]; if (strpos($t, 'src="' . $url . '"') === false && strpos($t, 'src="' . SITE_URL_DEF . $url . '"') === false) return $t;
+            $t = $m[0]; if (!preg_match('~\ssrc="(' . preg_quote(SITE_URL_DEF, '~') . ')?' . preg_quote($url, '~') . '(\?v=\d+)?"~', $t)) return $t;
             if (preg_match('~\ssrcset="([^"]*)"~i', $t, $sm) && strpos($t, 'data-wx-rs') === false && !preg_match('~' . preg_quote(preg_replace('~\.[a-z0-9]+$~i', '', $url), '~') . '-\d+\.webp~', $sm[1])) return $t; // hand-made srcset (not the old P15 copies): leave alone
             $t = preg_replace(['~\ssrcset="[^"]*"~i', '~\ssizes="[^"]*"~i', '~\sdata-wx-rs(="")?~'], '', $t);
             return $attr === '' ? $t : preg_replace('~^<img~i', '<img' . $attr, $t, 1);
         }, $h);
         if ($n !== $h) { cms_file_backup($rel); file_put_contents($abs, $n, LOCK_EX); $pages++; }
+    }
+    return $pages;
+}
+
+// P19 B7: after a replace, drop stale size copies and stamp ?v= on every use so browsers/CDN load the new picture
+function media_bust(string $url): int {
+    foreach (rs_have($url) as $w) @unlink(ROOT_DIR . rs_variant($url, $w));
+    rs_apply($url, 0); $v = time(); $pages = 0;
+    foreach (a7_pages() as $rel) {
+        $abs = ROOT_DIR . '/' . $rel; $h = (string)file_get_contents($abs); if (strpos($h, $url) === false) continue;
+        $n = preg_replace('~' . preg_quote($url, '~') . '(\?v=\d+)?(?=["\'\s),])~', $url . '?v=' . $v, $h);
+        if ($n !== $h) { file_put_contents($abs, $n, LOCK_EX); $pages++; }
     }
     return $pages;
 }
@@ -213,7 +225,7 @@ function media_actions(string $action, array $in): bool {
                 $cur = str_replace('jpeg', 'jpg', strtolower(pathinfo($abs, PATHINFO_EXTENSION))); if ($cur !== $ext) fail("The new file must be the same format ($cur)");
                 $m = a7_media(); if (!is_dir(MTRASH_DIR)) mkdir(MTRASH_DIR, 0750, true); $tf = time() . '-' . basename($abs); copy($abs, MTRASH_DIR . '/' . $tf);
                 $before = filesize($abs); $m['trash'][] = ['id' => ++$m['seq'], 'url' => $url, 'file' => $tf, 'size' => $before, 'at' => a7_now(), 'by' => $u['name'], 'why' => 'replaced']; jwrite(MEDIA_FILE, $m);
-                file_put_contents($abs, $data, LOCK_EX); log_act($u, 'media.optimise', $url); out(['ok' => true, 'url' => $url, 'before' => $before, 'after' => strlen($data)]);
+                file_put_contents($abs, $data, LOCK_EX); $bp = media_bust($url); log_act($u, 'media.optimise', $url); out(['ok' => true, 'pages' => $bp, 'url' => $url, 'before' => $before, 'after' => strlen($data)]);
             }
             $folder = preg_replace('~[^a-z0-9-]~', '', (string)($in['folder'] ?? '')); $dir = ROOT_DIR . '/assets/uploads' . ($folder ? '/' . $folder : ''); if ($folder && !is_dir($dir)) fail('Folder not found');
             if (!is_dir($dir)) mkdir($dir, 0755, true);

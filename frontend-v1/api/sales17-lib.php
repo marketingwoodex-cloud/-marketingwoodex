@@ -133,7 +133,9 @@ function sales17_actions(string $action, array $in): bool {
         case 'lead_activity': // log a call / WhatsApp / visit / meeting + set the next follow-up in one step
             $u = need($SALES); $l = lead_get((int)($in['id'] ?? 0)); $k = (string)($in['kind'] ?? 'note'); if (!in_array($k, S17_KINDS, true)) fail('Unknown activity type');
             $text = clip($in['text'] ?? '', 2000); $out = clip($in['outcome'] ?? '', 190);
-            if ($text === '' && $out === '') fail('Write what happened');
+            if ($text === '' && $out === '') { $chg = (!empty($in['stage']) && $in['stage'] !== $l['stage']) || !empty($in['next_at']);
+                if (!$chg && $k === 'note') fail('Add a short note, pick an outcome, or set a follow-up');
+                $text = ucfirst($k === 'note' ? 'update' : $k) . ' logged' . (!empty($in['next_at']) ? ' · next follow-up set' : ''); }
             q('INSERT INTO wx_lead_notes (lead_id,t,user_name,text,sys,kind,outcome) VALUES (?,?,?,?,0,?,?)', [$l['id'], now(), $u['name'], $text ?: $out, $k, $out ?: null]);
             $set = ['is_read=1']; $p = [];
             if ($k !== 'note') { $set[] = 'last_contact=?'; $p[] = now(); if ($l['stage'] === 'new') { $set[] = "stage='contacted'"; lead_note_add($l['id'], $u['name'], 'Stage: new → contacted', true); } }
@@ -197,7 +199,7 @@ function sales17_actions(string $action, array $in): bool {
             $q = $by($Q); $i = $by($I); $pj = $by($P);
             $rows = array_map(function ($c) use ($leads, $q, $i, $pj) {
                 $id = (int)$c['id']; $ls = $leads[$id] ?? []; $iv = $i[$id] ?? []; $pp = $pj[$id] ?? []; $qq = $q[$id] ?? [];
-                $last = max(array_merge([(string)$c['created_at']], array_map(fn($l) => (string)($l['last_contact'] ?: $l['created_at']), $ls), array_map(fn($x) => (string)($x['issue_date'] ?? ''), $iv)));
+                $last = max(array_merge([(string)$c['created_at']], array_map(fn($l) => (string)($l['last_contact'] ?: $l['created_at']), $ls), array_map(fn($x) => (string)($x['issue_date'] ?? ''), $iv), array_map(fn($x) => (string)($x['updated_at'] ?? $x['date'] ?? ''), $qq)));
                 return ['id' => $id, 'name' => $c['name'], 'company' => (string)$c['company'], 'phone' => (string)$c['phone'], 'email' => (string)$c['email'], 'city' => (string)$c['city'],
                     'type' => (string)($c['type'] ?? ''), 'line' => (string)($c['line'] ?? ''), 'tags' => $c['tags'] ? explode(',', $c['tags']) : [], 'created_at' => $c['created_at'],
                     'leads' => count($ls), 'quotes' => count($qq), 'openQuotes' => count(array_filter($qq, fn($x) => in_array($x['status'] ?? '', ['draft', 'sent'], true))),

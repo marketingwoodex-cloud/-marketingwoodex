@@ -186,7 +186,7 @@
       };
       sectionEditor($("#qe-secs"), q.sections, ro, markDirty); summary();
       var blk = WXPrint.blocksUI ? WXPrint.blocksUI($("#qe-blocks"), q.blocks, q.layout === "project" ? "project" : "single", "quote", function (o) { q.blocks = o; markDirty(); }, ro) : null;
-      var blkNote = function () { var n = $("#qe-blk-note"); if (n) n.textContent = (q.layout === "single" || q.layout === "project") ? "" : "Blocks apply to the Single page and Project layouts."; if (blk) blk.set(q.layout === "project" ? "project" : "single"); };
+      var blkNote = function () { var n = $("#qe-blk-note"); if (n) n.textContent = ""; };
       var lastLay = q.layout; blkNote(); ["change", "click"].forEach(function (ev) { el.addEventListener(ev, function () { setTimeout(function () { if (q.layout !== lastLay) { lastLay = q.layout; blkNote(); } }, 40); }); });
       if ($("#qe-blk-reset")) $("#qe-blk-reset").onclick = function () { if (blk && !ro) blk.reset(); };
       W.qeState = { q: q, co: co, ro: ro, dirty: markDirty, el: el, redraw: function () { sectionEditor($("#qe-secs"), q.sections, ro, markDirty); summary(); } }; if (W.onQuoteEditor) W.onQuoteEditor(W.qeState);

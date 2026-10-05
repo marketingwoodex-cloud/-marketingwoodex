@@ -63,7 +63,8 @@
   function addLead(after) {
     modal("<h2>Add enquiry</h2><p class='muted' style='margin:-10px 0 14px'>For phone calls, walk-ins and referrals.</p><div class='g2'><label>Name<input id='al-n' required></label><label>Phone<input id='al-p'></label></div><div class='g2'><label>Email<input id='al-e' type='email'></label><label>Service<input id='al-s' placeholder='Kitchen, office fit-out…'></label></div><label>Notes / message<textarea id='al-m' rows='3'></textarea></label><p class='err' id='al-err'></p><div class='modal-actions'><button class='btn' id='al-x'>Cancel</button><button class='btn pri' id='al-go'>Add enquiry</button></div>");
     $("#al-x").onclick = closeModal;
-    $("#al-go").onclick = function () { api("lead_save", { name: $("#al-n").value, phone: $("#al-p").value, email: $("#al-e").value, service: $("#al-s").value, message: $("#al-m").value }).then(function (r) { if (!r.ok) return ($("#al-err").textContent = r.error); closeModal(); toast("Enquiry added ✓"); after(); }); };
+    var dk = window.WXA.formDraft("enq", "#modal-card [id^='al-']");
+    $("#al-go").onclick = function () { api("lead_save", { name: $("#al-n").value, phone: $("#al-p").value, email: $("#al-e").value, service: $("#al-s").value, message: $("#al-m").value }).then(function (r) { if (!r.ok) return ($("#al-err").textContent = r.error); dk.clear(); closeModal(); toast("Enquiry added ✓"); after(); }); };
   }
 
   // ---------------- CSV
