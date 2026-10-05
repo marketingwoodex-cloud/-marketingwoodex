@@ -112,6 +112,7 @@ function wa_send(array $c, string $to, array $l, string $text): string {
 function send_alerts(array $l, string $only = '', array $over = []): array {
     $c = crm_cfg(); $res = []; $text = lead_text($l);
     if (!empty($over['alertTo'])) $c['emailTo'] = (string)$over['alertTo']; // P18 E: per-form recipients
+    if (!empty($over['waTo'])) $c['waTo'] = (string)$over['waTo']; // P19 F7: per-form WhatsApp numbers
     if (array_key_exists('waAlert', $over) && !$over['waAlert'] && !$only) $c['waOn'] = false;
     if (($only ? $only === 'email' : $c['emailOn']) && $c['emailTo']) {
         $to = array_values(array_filter(preg_split('~[\s,]+~', $c['emailTo'])));

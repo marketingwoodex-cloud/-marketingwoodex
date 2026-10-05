@@ -85,7 +85,7 @@ try {
     echo json_encode(['ok' => true, 'id' => $id]);
     if (function_exists('fastcgi_finish_request')) fastcgi_finish_request(); else { @ob_end_flush(); @flush(); }
     ignore_user_abort(true);
-    $fc = array_merge(['alertTo' => '', 'waAlert' => true, 'reply' => true, 'replyText' => ''], (array)((jread(PRIVATE_DIR . '/forms.json')['forms'] ?? [])[$source] ?? [])); // P18 E
+    $fc = array_merge(['alertTo' => '', 'waTo' => '', 'waAlert' => true, 'reply' => true, 'replyText' => ''], (array)((jread(PRIVATE_DIR . '/forms.json')['forms'] ?? [])[$source] ?? [])); // P18 E
     try { send_alerts($lead, '', $fc); } catch (Throwable $e) { error_log('forms.php alerts: ' . $e->getMessage()); }
     if ($fc['reply'] && is_file(__DIR__ . '/notify-lib.php')) { require_once __DIR__ . '/notify-lib.php'; notify_client('lead', ['name' => $name, 'phone' => $phone, 'email' => $email, 'ref' => 'Enquiry #' . $id, 'project' => $lead['service'], 'tpl' => (string)$fc['replyText']]); }
     exit;

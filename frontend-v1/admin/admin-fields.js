@@ -180,17 +180,20 @@
 
   // ------------------------------------------------------------------ service pages list
   W.VIEWS.services = function (el) {
-    el.innerHTML = head("Service & site pages", "Service pages", "") + '<div class="card"><div class="card-h"><h3>Pages</h3><input id="sv-q" class="sm-in" placeholder="Search…"></div><div class="tbl-wrap"><table class="tbl"><thead><tr><th>Page</th><th>Address</th><th>Type</th><th></th></tr></thead><tbody id="sv-rows"><tr><td colspan="4" class="muted">Loading…</td></tr></tbody></table></div></div>';
+    el.innerHTML = head("Service & site pages", "Service pages", '<a class="btn" href="#/pagetpl">' + ic("blocks") + 'From a template</a><button class="btn pri" id="sv-new">' + ic("plus") + 'New service page</button>') + '<div class="p19-how"><b>Add a service page</b><ol><li><b>New service page</b>: copy the layout of an existing service page (or start blank), then give it a title and address.</li><li><b>Duplicate</b> on any row: same thing, starting from that page.</li><li>It opens in the builder as a <b>draft</b>. Edit, then publish from Pages.</li></ol></div>'  + '<div class="card"><div class="card-h"><h3>Pages</h3><input id="sv-q" class="sm-in" placeholder="Search…"></div><div class="tbl-wrap"><table class="tbl"><thead><tr><th>Page</th><th>Address</th><th>Type</th><th></th></tr></thead><tbody id="sv-rows"><tr><td colspan="4" class="muted">Loading…</td></tr></tbody></table></div></div>';
     Promise.all([bapi("pages"), kinds()]).then(function (rs) {
       if (!rs[0].ok) { $("#sv-rows").innerHTML = '<tr><td colspan="4"><b style="color:#d92d20">Could not load pages:</b> ' + esc(rs[0].error || "no answer") + ' <button class="btn sm" id="sv-retry">Retry</button> <a href="#/system">System check</a></td></tr>'; $("#sv-retry").onclick = function () { W.VIEWS.services(el); }; return; }
       var pages = (rs[0].pages || []).filter(function (p) { var k = rs[1][p.path]; return k !== "city" && !/^(insights|projects)\//.test(p.path) && p.path !== "404.html"; });
       function draw() {
         var q = $("#sv-q").value.toLowerCase();
-        $("#sv-rows").innerHTML = pages.filter(function (p) { return !q || (p.title + p.url).toLowerCase().indexOf(q) > -1; }).map(function (p) { return '<tr class="click" data-p="' + esc(p.path) + '"><td><b>' + esc(p.title.replace(/\s*\|\s*Woodex.*$/, "")) + '</b></td><td class="muted">' + esc(p.url) + '</td><td><span class="badge">' + esc(rs[1][p.path] || "page") + '</span></td><td class="r"><span class="btn sm">' + ic("edit") + "Edit content</span></td></tr>"; }).join("");
+        $("#sv-rows").innerHTML = pages.filter(function (p) { return !q || (p.title + p.url).toLowerCase().indexOf(q) > -1; }).map(function (p) { return '<tr class="click" data-p="' + esc(p.path) + '"><td><b>' + esc(p.title.replace(/\s*\|\s*Woodex.*$/, "")) + '</b></td><td class="muted">' + esc(p.url) + '</td><td><span class="badge">' + esc(rs[1][p.path] || "page") + '</span></td><td class="r"><span class="btn sm ghost" data-dup>' + ic("copy") + 'Duplicate</span> <span class="btn sm">' + ic("edit") + "Edit content</span></td></tr>"; }).join("");
         W.fillIcons($("#sv-rows"));
       }
       draw(); $("#sv-q").oninput = draw;
-      $("#sv-rows").onclick = function (e) { var tr = e.target.closest("tr[data-p]"); if (tr) location.hash = "#/fields/" + encodeURIComponent(tr.dataset.p); };
+      S.plist = S.plist && S.plist.length ? S.plist : rs[0].pages || [];
+      var svc = function () { return pages.find(function (p) { return rs[1][p.path] === "service"; }) || null; };
+      $("#sv-new").onclick = function () { if (W.newPage) W.newPage(svc()); };
+      $("#sv-rows").onclick = function (e) { var tr = e.target.closest("tr[data-p]"); if (tr && e.target.closest("[data-dup]")) { var pg = pages.find(function (p) { return p.path === tr.dataset.p; }); if (W.newPage) W.newPage(pg); return; } if (tr) location.hash = "#/fields/" + encodeURIComponent(tr.dataset.p); };
     });
   };
 

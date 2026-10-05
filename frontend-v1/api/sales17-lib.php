@@ -172,6 +172,7 @@ function sales17_actions(string $action, array $in): bool {
             $u = need(['owner', 'admin']); $n = 0; $skip = 0;
             $team = []; foreach (q('SELECT id,name FROM wx_users')->fetchAll() as $t) $team[mb_strtolower(strtok((string)$t['name'], ' '))] = (int)$t['id'];
             $known = []; foreach (q('SELECT phone,name FROM wx_leads')->fetchAll() as $r) $known[s17_digits($r['phone']) . '|' . mb_strtolower((string)$r['name'])] = 1;
+            $mkc = !array_key_exists('clients', $in) || !empty($in['clients']); $cix = $mkc && function_exists('p19c_index') ? p19c_index() : [[], []]; $cn = 0; $cl = 0; // P19: also fill the central client database
             foreach (array_slice((array)($in['rows'] ?? []), 0, 3000) as $r) {
                 if (!is_array($r)) continue; $name = clip($r['name'] ?? '', 120); $co = clip($r['company'] ?? '', 120);
                 if ($name === '' || preg_match('~^name$~i', $name)) $name = $co; if ($name === '' || preg_match('~^(company|name)$~i', $name)) { $skip++; continue; }
@@ -188,8 +189,15 @@ function sales17_actions(string $action, array $in): bool {
                     [$ca, $name, clip($r['phone'] ?? '', 40), $co === $name ? '' : $co, clip($r['designation'] ?? '', 80), clip($r['location'] ?? '', 160), $line, $lt, $qs, $stage, $as,
                      $last ? (strlen($last) === 10 ? $last . ' 10:00:00' : $last) : null, $meet ? (strlen($meet) === 10 ? $meet . ' 11:00:00' : $meet) : null, $meet ? 'meeting' : null, $meet ? substr($meet, 0, 10) : null, clip($r['note'] ?? '', 2000)]);
                 $n++;
+                if ($mkc && function_exists('p19c_key') && ($pk = p19c_key($r['phone'] ?? '')) !== '') {
+                    $lid = (int)db()->lastInsertId(); $cid = p19c_match($cix, $r['phone'] ?? '', '');
+                    if (!$cid) { q('INSERT INTO wx_clients (name,phone,email,company,city,address,notes,created_at) VALUES (?,?,?,?,?,?,?,?)', [$name, clip($r['phone'] ?? '', 40), '', $co === $name ? '' : $co, clip($r['location'] ?? '', 80), '', '', $ca]); $cid = (int)db()->lastInsertId(); $cix[0][$pk] = $cid; $cn++;
+                        try { s17_client_extra($cid, ['type' => $co !== '' && $co !== $name ? 'company' : 'individual', 'source' => 'import', 'line' => $line, 'designation' => clip($r['designation'] ?? '', 80)]); } catch (Throwable $e) {} }
+                    else $cl++;
+                    q('UPDATE wx_leads SET client_id=? WHERE id=?', [$cid, $lid]);
+                }
             }
-            log_act($u, 'lead.import', $n . ' rows (sheet)'); out(['ok' => true, 'imported' => $n, 'skipped' => $skip]);
+            log_act($u, 'lead.import', $n . ' rows (sheet), ' . $cn . ' new clients'); out(['ok' => true, 'imported' => $n, 'skipped' => $skip, 'clientsNew' => $cn, 'clientsLinked' => $cl]);
 
         case 'clients_master': // client list with live totals from leads, quotes, invoices and projects
             need($SALES); sales_migrate(); if (function_exists('p19c_link')) p19c_link(true);

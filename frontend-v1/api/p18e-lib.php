@@ -7,7 +7,7 @@
 const EST_FILE = 'assets/js/estimator-rates.js';
 const FORMS_FILE = PRIVATE_DIR . '/forms.json';
 const FORMS_WEB = ['contact' => 'Contact form', 'estimator' => 'Cost estimator', 'brief' => '3D brief', 'fitout-hub' => 'Fit-out quote', 'office-fitout' => 'Office fit-out quote', 'whatsapp' => 'WhatsApp widget'];
-const FORM_DEF = ['alertTo' => '', 'waAlert' => true, 'reply' => true, 'replyText' => ''];
+const FORM_DEF = ['alertTo' => '', 'waTo' => '', 'waAlert' => true, 'reply' => true, 'replyText' => ''];
 
 function forms_cfg(): array { $f = jread(FORMS_FILE)['forms'] ?? []; $o = []; foreach (FORMS_WEB as $k => $l) $o[$k] = array_merge(FORM_DEF, is_array($f[$k] ?? null) ? $f[$k] : []); return $o; }
 function form_cfg(string $id): array { return forms_cfg()[$id] ?? FORM_DEF; }
@@ -63,14 +63,21 @@ function p18e_actions(string $action, array $in): bool {
                 $last = q('SELECT created_at FROM wx_leads WHERE source=? ORDER BY id DESC LIMIT 1', [$id])->fetchColumn();
                 $out[] = ['id' => $id, 'label' => $label, 'total' => $tot, 'month' => $m, 'last' => $last ?: null, 'pages' => array_slice(array_values(array_unique($pages[$id] ?? [])), 0, 40), 'fields' => $fields, 'cfg' => $cfg[$id]];
             }
-            $c = crm_cfg(); out(['ok' => true, 'forms' => $out, 'defaults' => ['emailTo' => $c['emailTo'], 'emailOn' => (bool)$c['emailOn'], 'waOn' => (bool)$c['waOn'], 'waReady' => $c['waToken'] !== '' && $c['waPhoneId'] !== '']]);
+            $c = crm_cfg(); out(['ok' => true, 'forms' => $out, 'defaults' => ['emailTo' => $c['emailTo'], 'emailOn' => (bool)$c['emailOn'], 'waTo' => $c['waTo'], 'smtpReady' => $c['smtpHost'] !== '' && $c['smtpUser'] !== '', 'waOn' => (bool)$c['waOn'], 'waReady' => $c['waToken'] !== '' && $c['waPhoneId'] !== '']]);
         case 'forms_save':
             $u = need($OA); $all = jread(FORMS_FILE); $all['forms'] = $all['forms'] ?? [];
             foreach ((array)($in['forms'] ?? []) as $id => $f) {
                 if (!isset(FORMS_WEB[$id]) || !is_array($f)) continue;
                 $em = array_values(array_filter(preg_split('~[\s,;]+~', (string)($f['alertTo'] ?? ''))));
                 foreach ($em as $e) if (!filter_var($e, FILTER_VALIDATE_EMAIL)) fail(FORMS_WEB[$id] . ': "' . $e . '" is not a valid email');
-                $all['forms'][$id] = ['alertTo' => implode(', ', array_slice($em, 0, 5)), 'waAlert' => !empty($f['waAlert']), 'reply' => !empty($f['reply']), 'replyText' => clip($f['replyText'] ?? '', 1000)];
+                $wa = array_values(array_filter(array_map(fn($x) => preg_replace('~\D~', '', $x), preg_split('~[,;\n]+~', (string)($f['waTo'] ?? '')))));
+                foreach ($wa as $w) if (strlen($w) < 10 || strlen($w) > 15) fail(FORMS_WEB[$id] . ': WhatsApp number "' . $w . '" should be 10-15 digits with country code, e.g. 923224000768');
+                $all['forms'][$id] = ['alertTo' => implode(', ', array_slice($em, 0, 5)), 'waTo' => implode(', ', array_slice($wa, 0, 5)), 'waAlert' => !empty($f['waAlert']), 'reply' => !empty($f['reply']), 'replyText' => clip($f['replyText'] ?? '', 1000)];
+            }
+            if (is_array($in['defaults'] ?? null)) { // P19 F7: default alert email set from the Forms page
+                $de = array_values(array_filter(preg_split('~[\s,;]+~', (string)($in['defaults']['emailTo'] ?? ''))));
+                foreach ($de as $e) if (!filter_var($e, FILTER_VALIDATE_EMAIL)) fail('Default alert email: "' . $e . '" is not a valid email');
+                $cc = jread(CRM_FILE); $cc['emailTo'] = implode(', ', array_slice($de, 0, 5)); $cc['emailOn'] = !empty($in['defaults']['emailOn']) && $de; jwrite(CRM_FILE, $cc);
             }
             jwrite(FORMS_FILE, $all); log_act($u, 'forms.save', implode(',', array_keys((array)($in['forms'] ?? []))));
             out(['ok' => true, 'forms' => forms_cfg()]);

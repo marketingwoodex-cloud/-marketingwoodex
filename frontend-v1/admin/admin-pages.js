@@ -281,7 +281,7 @@
   }
 
   // ---------------- find & replace (header / mobile menu / footer only)
-  W.replaceTool = replaceTool;
+  W.replaceTool = replaceTool; W.newPage = newPage; /*P19 F6*/
   function replaceTool(box) {
     box.innerHTML = '<div class="card"><div class="card-b"><p class="muted" style="margin-top:0">Change text, a phone number, an email, a link or the logo file in the header, mobile menu and footer of <b>every page</b>, without touching page content. Preview first, then apply. Each changed page is backed up.</p>' +
       '<div class="g2"><label>Find<input id="fr-f" placeholder="e.g. 0322 4000768 or /assets/img/old-logo.png"></label><label>Replace with<input id="fr-r" placeholder="new text"></label></div>' +

@@ -879,7 +879,7 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
   }
   /* P18 E mirror: estimator rate book + forms settings (mirrors api/p18e-lib.php) */
   const FORMS_WEB = { contact: "Contact form", estimator: "Cost estimator", brief: "3D brief", "fitout-hub": "Fit-out quote", "office-fitout": "Office fit-out quote", whatsapp: "WhatsApp widget" };
-  const FORM_DEF = { alertTo: "", waAlert: true, reply: true, replyText: "" }, FORMSF = path.join(PRIV, "forms.json");
+  const FORM_DEF = { alertTo: "", waTo: "", waAlert: true, reply: true, replyText: "" }, FORMSF = path.join(PRIV, "forms.json");
   const formsCfg = () => { const f = (jr(FORMSF, {}).forms) || {}; return Object.fromEntries(Object.keys(FORMS_WEB).map((k) => [k, { ...FORM_DEF, ...(f[k] || {}) }])); };
   function estClean(r) {
     if (!r || !Array.isArray(r.services) || !Array.isArray(r.finishes)) throw new Fail("Rate book is incomplete");
@@ -913,12 +913,14 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
       for (const rel of htmlPages()) { const h = fs.readFileSync(path.join(ROOT, rel), "utf8"); for (const id of Object.keys(FORMS_WEB)) { const q = id.replace(/[-]/g, "\\-"); if (new RegExp(`WXForms\\.send\\(\\s*["']${q}["']|data-form="${q}"|name="form"\\s+value="${q}"|form:\\s*["']${q}["']`).test(h)) (pages[id] = pages[id] || []).push("/" + rel.replace(/index\.html$/, "")); } }
       const forms = Object.entries(FORMS_WEB).map(([id, label]) => { const L = db.leads.filter((l) => l.source === id), fields = ["name", "phone", "email", "service", "message"]; L.slice(-40).forEach((l) => Object.keys(l.fields || {}).forEach((k) => { if (!fields.includes(k) && fields.length < 20) fields.push(k); }));
         return { id, label, total: L.length, month: L.filter((l) => l.created_at >= since).length, last: L.length ? L[L.length - 1].created_at : null, pages: [...new Set(pages[id] || [])].slice(0, 40), fields, cfg: cfg[id] }; });
-      const c = crmCfg(); return { ok: true, forms, defaults: { emailTo: c.emailTo, emailOn: !!c.emailOn, waOn: !!c.waOn, waReady: !!(c.waToken && c.waPhoneId) } };
+      const c = crmCfg(); return { ok: true, forms, defaults: { emailTo: c.emailTo, emailOn: !!c.emailOn, waTo: c.waTo, smtpReady: !!(c.smtpHost && c.smtpUser), waOn: !!c.waOn, waReady: !!(c.waToken && c.waPhoneId) } };
     }
     if (action === "forms_save") {
       const u = need(OA), all = jr(FORMSF, {}); all.forms = all.forms || {};
       for (const [id, f] of Object.entries(inp.forms || {})) { if (!FORMS_WEB[id] || !f) continue; const em = String(f.alertTo || "").split(/[\s,;]+/).filter(Boolean); for (const e of em) if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e)) throw new Fail(FORMS_WEB[id] + ': "' + e + '" is not a valid email');
-        all.forms[id] = { alertTo: em.slice(0, 5).join(", "), waAlert: !!f.waAlert, reply: !!f.reply, replyText: clip(f.replyText, 1000) }; }
+        const wa = String(f.waTo || "").split(/[,;\n]+/).map((x) => x.replace(/\D/g, "")).filter(Boolean); for (const w of wa) if (w.length < 10 || w.length > 15) throw new Fail(FORMS_WEB[id] + ': WhatsApp number "' + w + '" should be 10-15 digits with country code, e.g. 923224000768');
+        all.forms[id] = { alertTo: em.slice(0, 5).join(", "), waTo: wa.slice(0, 5).join(", "), waAlert: !!f.waAlert, reply: !!f.reply, replyText: clip(f.replyText, 1000) }; }
+      if (inp.defaults && typeof inp.defaults === "object") { const de = String(inp.defaults.emailTo || "").split(/[\s,;]+/).filter(Boolean); for (const e of de) if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e)) throw new Fail('Default alert email: "' + e + '" is not a valid email'); const cc = jr(CRM, {}); cc.emailTo = de.slice(0, 5).join(", "); cc.emailOn = !!inp.defaults.emailOn && de.length > 0; jw(CRM, cc); }
       jw(FORMSF, all); log(db, u, "forms.save", Object.keys(inp.forms || {}).join(","), ip); save(db); return { ok: true, forms: formsCfg() };
     }
     return null;
@@ -1000,6 +1002,7 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
       case "leads_import2": {
         const u = need(["owner", "admin"]); let n = 0, skip = 0; const team = {}; db.users.forEach((t) => (team[String(t.name).split(" ")[0].toLowerCase()] = t.id));
         const known = new Set(db.leads.map((l) => s17dig(l.phone) + "|" + String(l.name).toLowerCase()));
+        const mkc = inp.clients !== false, k10 = (p) => { const d = String(p || "").replace(/\D/g, ""); return d.length >= 10 ? d.slice(-10) : ""; }, cix = {}; let cn = 0, cl = 0; db.clients.forEach((c) => { const k = k10(c.phone); if (k && !cix[k]) cix[k] = c.id; });
         const dt = (v) => { v = String(v || "").trim(); if (!v || /dd\//i.test(v)) return ""; const m = v.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/); if (m) return `${m[3]}-${m[2].padStart(2, "0")}-${m[1].padStart(2, "0")}`; const t = new Date(v); return isNaN(t) ? "" : t.toISOString().slice(0, 19).replace("T", " "); };
         for (const r of (Array.isArray(inp.rows) ? inp.rows : []).slice(0, 3000)) {
           if (!r || typeof r !== "object") continue; const co = clip(r.company, 120); let name = clip(r.name, 120); if (!name || /^name$/i.test(name)) name = co; if (!name || /^(company|name)$/i.test(name)) { skip++; continue; }
@@ -1011,8 +1014,9 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
           db.leads.push({ id: ++db.seqL, created_at: full(ca, "10:00:00") || now(), source: "import", page: "", name, phone: clip(r.phone, 40), email: "", service: "", message: clip(r.note, 2000), fields: {}, stage,
             assigned_to: team[String(r.assigned || "-").trim().split(" ")[0].toLowerCase()] || null, followup: meet.slice(0, 10), value: 0, lost_reason: "", client_id: null, tags: [], notes: [], read: true,
             company: co === name ? "" : co, designation: clip(r.designation, 80), location: clip(r.location, 160), line, lead_type: lt, quote_status: qs, last_contact: full(last, "10:00:00"), next_at: full(meet, "11:00:00"), next_type: meet ? "meeting" : "" });
+          const pk = mkc ? k10(r.phone) : ""; if (pk) { let cid = cix[pk]; if (!cid) { cid = ++db.seqC; db.clients.push({ id: cid, name, phone: clip(r.phone, 40), email: "", company: co === name ? "" : co, city: clip(r.location, 80), address: "", notes: "", created_at: full(ca, "10:00:00") || now(), type: co && co !== name ? "company" : "individual", source: "import", line, designation: clip(r.designation, 80) }); cix[pk] = cid; cn++; } else cl++; db.leads[db.leads.length - 1].client_id = cid; }
           n++; }
-        log(db, u, "lead.import", n + " rows (sheet)", ip); return done({ ok: true, imported: n, skipped: skip });
+        log(db, u, "lead.import", n + " rows (sheet), " + cn + " new clients", ip); return done({ ok: true, imported: n, skipped: skip, clientsNew: cn, clientsLinked: cl });
       }
       case "clients_master": {
         need(SALES); if (p19link(db, true).leads) save(db); const I = (db.invoices || []).map(invPub);
