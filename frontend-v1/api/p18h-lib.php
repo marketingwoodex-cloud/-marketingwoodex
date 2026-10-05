@@ -14,17 +14,21 @@ const FM_TRASH = PRIVATE_DIR . '/trash';
 const FM_EXT = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'svg', 'avif', 'ico', 'pdf', 'mp4', 'webm', 'mp3', 'woff2', 'woff', 'txt', 'csv', 'json', 'zip', 'docx', 'xlsx', 'pptx'];
 
 function sys_cfg(): array {
-    $d = jread(SYS_FILE); $m = array_merge(['on' => false, 'mode' => 'maintenance', 'token' => '', 'since' => null, 'by' => ''], $d['maint'] ?? []);
+    $d = jread(SYS_FILE); $m = array_merge(['on' => false, 'mode' => 'maintenance', 'token' => '', 'since' => null, 'by' => '', 'until' => '', 'title' => '', 'text' => ''], $d['maint'] ?? []);
     if ($m['token'] === '') { $m['token'] = bin2hex(random_bytes(16)); $d['maint'] = $m; jwrite(SYS_FILE, $d); }
     return $m;
 }
 /** Lines for the managed .htaccess block (called by publish_rules). [before IfModule, inside rewrite] */
 function sys_ht_lines(): array {
-    $m = sys_cfg(); $page = $m['mode'] === 'soon' ? '/coming-soon.html' : '/503.html';
+    $m = sys_cfg(); $page = '/coming-soon.html'; // P19 B3: one designed page for both modes (wording follows the mode via launch.json)
     $pre = ['ErrorDocument 500 /500.html', 'ErrorDocument 503 ' . $page];
+    if ($m['on']) { $pre[] = '<IfModule LiteSpeed>'; $pre[] = 'CacheDisable public /'; $pre[] = '</IfModule>'; $pre[] = '<IfModule mod_headers.c>'; $pre[] = 'Header always set Cache-Control "no-store" "expr=%{REQUEST_STATUS} == 503"'; $pre[] = 'Header always set Retry-After "3600" "expr=%{REQUEST_STATUS} == 503"'; $pre[] = '</IfModule>'; }
     $rw = [];
     if ($m['on']) {
         $rw[] = '# maintenance mode (Admin → System → Maintenance): visitors get 503, staff with the wx_mt cookie see the site';
+        $rw[] = '# ?asvisitor=1 lets signed-in staff see exactly what visitors see';
+        $rw[] = 'RewriteCond %{QUERY_STRING} (^|&)asvisitor=1';
+        $rw[] = 'RewriteRule ^ - [R=503,L]';
         $rw[] = 'RewriteCond %{REQUEST_URI} !^/(admin|api|builder|assets)(/|$)';
         $rw[] = 'RewriteCond %{REQUEST_URI} !^/(500|503|404|coming-soon)\.html$';
         $rw[] = 'RewriteCond %{REQUEST_URI} !^/(robots\.txt|favicon\.ico|sitemap\.xml)$';
@@ -62,13 +66,17 @@ function p18h_actions(string $action, array $in): bool {
         // ---------- maintenance
         case 'mt_get':
             $u = need(); $m = sys_cfg();
-            out(['ok' => true, 'on' => $m['on'], 'mode' => $m['mode'], 'since' => $m['since'], 'by' => $m['by'], 'token' => $m['token'], 'pages' => array_map(fn($p) => ['path' => $p, 'url' => '/' . $p, 'exists' => is_file(ROOT_DIR . '/' . $p)], SYS_PAGES)]);
+            out(['ok' => true, 'on' => $m['on'], 'mode' => $m['mode'], 'since' => $m['since'], 'by' => $m['by'], 'token' => $m['token'], 'until' => $m['until'], 'title' => $m['title'], 'text' => $m['text'], 'pages' => array_map(fn($p) => ['path' => $p, 'url' => '/' . $p, 'exists' => is_file(ROOT_DIR . '/' . $p)], SYS_PAGES)]);
         case 'mt_set':
             $u = need($OA); $d = jread(SYS_FILE); $m = sys_cfg();
             $m['on'] = !empty($in['on']); $m['mode'] = ($in['mode'] ?? $m['mode']) === 'soon' ? 'soon' : 'maintenance';
             if ($m['on']) { $m['since'] = $m['since'] && !empty($d['maint']['on']) ? $m['since'] : now(); $m['by'] = $u['name']; } else { $m['since'] = null; }
             if (!empty($in['newToken'])) $m['token'] = bin2hex(random_bytes(16));
+            if (array_key_exists('until', $in)) $m['until'] = preg_match('~^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}~', (string)$in['until']) ? substr(str_replace('T', ' ', (string)$in['until']), 0, 16) : '';
+            foreach (['title' => 120, 'text' => 400] as $k => $n) if (array_key_exists($k, $in)) $m[$k] = mb_substr(trim(strip_tags((string)$in[$k])), 0, $n);
             $d = jread(SYS_FILE); $d['maint'] = $m; jwrite(SYS_FILE, $d); publish_rules();
+            @mkdir(ROOT_DIR . '/assets/data', 0755, true); // P19 B3: public, non-secret settings for coming-soon.html (never the bypass token)
+            @file_put_contents(ROOT_DIR . '/assets/data/launch.json', json_encode(['mode' => $m['mode'], 'until' => $m['until'], 'title' => $m['title'], 'text' => $m['text']], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
             log_act($u, 'maintenance.' . ($m['on'] ? 'on' : 'off'), $m['mode']); out(['ok' => true, 'on' => $m['on'], 'mode' => $m['mode'], 'since' => $m['since'], 'token' => $m['token']]);
 
         // ---------- file manager

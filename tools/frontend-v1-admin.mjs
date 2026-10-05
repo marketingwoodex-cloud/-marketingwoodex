@@ -680,9 +680,11 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
     if (!/^(mt_|fm_|dbx_)/.test(action)) return null;
     const OA = ["owner", "admin"], ED = ["owner", "admin", "editor"], ST = ["owner", "admin", "editor", "sales"];
     switch (action) {
-      case "mt_get": { need(); const m = sysCfg(); return { ok: true, on: m.on, mode: m.mode, since: m.since, by: m.by, token: m.token, pages: SYS_PAGES.map((p) => ({ path: p, url: "/" + p, exists: fs.existsSync(path.join(ROOT, p)) })) }; }
+      case "mt_get": { need(); const m = sysCfg(); return { ok: true, on: m.on, mode: m.mode, since: m.since, by: m.by, token: m.token, until: m.until || "", title: m.title || "", text: m.text || "", pages: SYS_PAGES.map((p) => ({ path: p, url: "/" + p, exists: fs.existsSync(path.join(ROOT, p)) })) }; }
       case "mt_set": { const u = need(OA), d = jr(SYSF, {}), m = sysCfg(), was = m.on; m.on = !!inp.on; m.mode = (inp.mode || m.mode) === "soon" ? "soon" : "maintenance";
         if (m.on) { m.since = was && m.since ? m.since : now(); m.by = u.name; } else m.since = null; if (inp.newToken) m.token = crypto.randomBytes(16).toString("hex");
+        if ("until" in inp) m.until = /^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}/.test(String(inp.until)) ? String(inp.until).replace("T", " ").slice(0, 16) : ""; for (const [k, n] of [["title", 120], ["text", 400]]) if (k in inp) m[k] = String(inp[k] || "").replace(/<[^>]*>/g, "").trim().slice(0, n);
+        fs.mkdirSync(path.join(ROOT, "assets/data"), { recursive: true }); fs.writeFileSync(path.join(ROOT, "assets/data/launch.json"), JSON.stringify({ mode: m.mode, until: m.until || "", title: m.title || "", text: m.text || "" }));
         d.maint = m; jw(SYSF, d); publishRules(); log(db, u, "maintenance." + (m.on ? "on" : "off"), m.mode, ip); save(db); return { ok: true, on: m.on, mode: m.mode, since: m.since, token: m.token }; }
       case "fm_list": { need(ST); const [rel, abs] = fmPath(inp.dir || "assets"); if (!fs.statSync(abs).isDirectory()) throw new Fail("Not a folder");
         const items = fs.readdirSync(abs).filter((n) => n[0] !== ".").map((n) => { const a = path.join(abs, n), st = fs.statSync(a), d = st.isDirectory(); return { name: n, path: rel + "/" + n, dir: d, size: d ? null : st.size, mtime: dts(st.mtimeMs).slice(0, 16), count: d ? fs.readdirSync(a).length : null, ro: fmRo(rel + "/" + n) }; })
@@ -1809,8 +1811,29 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
     if (+inp.chat_id) c = vchat();
     else { token = crypto.randomBytes(20).toString("hex"); c = { id: ++db.seqCh, token: sha(token), created_at: now(), updated_at: now(), page: String(inp.page || "/").replace(/[^\w/\-.?=&%]/g, "").slice(0, 200) || "/", ip, name: clip(inp.name, 120) || "", status: "open", mode: "ai", unread: 0, needs: 0 }; db.chats.push(c); isNew = true; chatAdd(db, c, "ai", "Woodex assistant", cfg.greeting); }
     c.status = "open"; chatAdd(db, c, "visitor", c.name, text); chatCapture(db, c, text); c.alerted = 1;
-    if (c.mode === "ai" && !db.chatMsgs.some((m) => m.chat_id === c.id && m.who === "sys")) { chatAdd(db, c, "sys", "", chatOpenNow() ? "Thanks! A team member will reply here in a few minutes. You can also leave your phone number and we will call you." : "Thanks for your message! We are away right now (" + cfg.hours + "). Leave your name and phone number and we will call you back first thing."); c.needs = 1; }
+    const rr = c.mode === "ai" ? chatRule(cfg, text) : "";
+    if (rr) { const hu = rr.includes("[HUMAN]"); chatAdd(db, c, "ai", "Woodex assistant", rr.replace("[HUMAN]", "").trim()); if (hu) c.needs = 1; }
+    else if (c.mode === "ai" && !db.chatMsgs.some((m) => m.chat_id === c.id && m.who === "sys")) { chatAdd(db, c, "sys", "", chatOpenNow() ? "Thanks! A team member will reply here in a few minutes. You can also leave your phone number and we will call you." : "Thanks for your message! We are away right now (" + cfg.hours + "). Leave your name and phone number and we will call you back first thing."); c.needs = 1; }
     save(db); return { ...vpub(c, isNew ? 0 : +inp.since || 0), ...(token ? { token } : {}) };
+  };
+  // P19 B1 mirror of chat_rule_reply()
+  const chatRule = (cfg, text) => {
+    const co = companyCfg(), t = String(text).toLowerCase().trim(), STOP = ["the","and","you","your","for","are","can","what","how","does","with","have","this","that","from","kya","hai","aap","mein","please"];
+    const words = (s) => String(s).toLowerCase().split(/[^\p{L}\p{N}]+/u).filter((w) => w.length > 2 && !STOP.includes(w));
+    const tw = words(t); let best = "", score = 0;
+    for (const x of cfg.qa || []) { if (!x.q || !x.a) continue; const qw = words(x.q); if (!qw.length) continue; const hit = qw.filter((w) => tw.includes(w)).length, sc = hit / qw.length; if ((hit >= 2 || (hit >= 1 && qw.length <= 2)) && sc > score) { score = sc; best = x.a; } }
+    if (score >= 0.5) return best;
+    const has = (re) => new RegExp(re, "iu").test(t);
+    if (/(\+?92|0)3\d{2}-?\d{7}/.test(t.replace(/\s+/g, ""))) return "Thank you, we have your number. A designer from our team will call you " + (chatOpenNow() ? "shortly" : "during office hours (" + cfg.hours + ")") + ". Could you also share your area and what you need (home, office, renovation or furniture)?";
+    if (has("\\b(price|cost|rate|rates|budget|kitna|kitne|qeemat|charges|per sq|sqft|square f)")) return "Cost depends on the scope, size, materials and site condition, so we prepare an itemised quotation after a free site visit. You can also try our online cost estimator at /estimator/. May I have your phone number so a designer can call you?";
+    if (has("\\b(time|timing|hours|open|close|closed|office hours|kab)")) return "Our office hours are " + cfg.hours + ". You can leave a message here any time and the team will get back to you.";
+    if (has("\\b(where|address|location|office|map|visit you|kahan)")) return "Our office: " + co.address + ". Please call " + co.phones + " before visiting so a designer is available.";
+    if (has("\\b(phone|number|call|contact|whatsapp|email|rabta)")) return "You can reach us at " + co.phones + " or " + co.email + ". Or leave your number here and we will call you.";
+    if (has("\\b(human|agent|person|team|representative|banda|insaan)")) return "Sure, a team member will reply here shortly. [HUMAN]";
+    if (has("\\b(service|services|kitchen|bedroom|office|renovat|furniture|design|interior|fit-?out|ceiling|wardrobe|3d)")) return "Yes, we handle interior design, renovation, office fit-out and custom furniture, from 3D design to handover. Please share your area, the space type and approximate size, and your phone number so a designer can guide you.";
+    if (has("^(hi|hello|hey|salam|assalam|aoa|asalam)")) return "Wa alaikum assalam, welcome to Woodex Interior. How can we help you today: home interior, office, renovation or furniture?";
+    if (has("\\b(thank|thanks|shukria|ok|okay)\\b")) return "You are welcome. Is there anything else I can help you with?";
+    return "";
   };
   // ---- Phase 12 mirror: client updates (preview writes to _private/outbox/*-update.txt; PHP sends real WhatsApp/email)
   const NTF = path.join(PRIV, "notify.json"), NT_EV = { lead: "Enquiry received", quote: "Quotation sent", started: "Work started", handover: "Handover", booking: "Booking confirmed", remind: "Booking reminder (day before)" };
@@ -2218,7 +2241,7 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
   adminApi.forms = formsApi; adminApi.backupFile = backupFile; adminApi.rawAction = rawAction;
   adminApi.publicGuard = function (rel, req) {
     const mt = sysCfg(); // P18 H: maintenance mode (preview mimics the .htaccess 503 rule)
-    if (mt.on && !/^(500|503|404|coming-soon)\.html$|^(robots\.txt|favicon\.ico|sitemap\.xml)$/.test(rel) && !new RegExp("(^|;\\s*)wx_mt=" + mt.token).test((req && req.headers.cookie) || "")) return { maint: mt.mode === "soon" ? "coming-soon.html" : "503.html" };
+    if (mt.on && (/[?&]asvisitor=1/.test((req && req.url) || "") || (!/^(500|503|404|coming-soon)\.html$|^(robots\.txt|favicon\.ico|sitemap\.xml)$/.test(rel) && !new RegExp("(^|;\\s*)wx_mt=" + mt.token).test((req && req.headers.cookie) || "")))) return { maint: "coming-soon.html" }; // P19 B3
     // preview-only: mimic the managed .htaccess rules (redirects, drafts 404)
     const url = "/" + rel.replace(/index\.html$/, ""), u2 = (url.endsWith("/") ? url : url + "/").toLowerCase(), c = rdCfg();
     if (c.spam && /(casino|gokkasten|gokautomat|blackjack|roulette|free-spins|itm-[0-9]{4,})/i.test(url)) return { gone: true };

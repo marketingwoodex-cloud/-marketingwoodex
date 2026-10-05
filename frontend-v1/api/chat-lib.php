@@ -145,6 +145,29 @@ function chat_ai_reply(array $c): string {
     return chat_ai_call(chat_ai_system($c), chat_turns((int)$c['id']));
 }
 
+/** P19 B1: answer without AI (no key, AI off, or AI down) from Train-AI Q&A, FAQs and business info. '' = nothing matched. */
+function chat_rule_reply(array $c, string $text): string {
+    $cfg = chat_cfg(); $co = company_cfg(); $t = mb_strtolower(trim($text));
+    $words = fn(string $s) => array_values(array_filter(preg_split('~[^\p{L}\p{N}]+~u', mb_strtolower($s)), fn($w) => mb_strlen($w) > 2 && !in_array($w, ['the','and','you','your','for','are','can','what','how','does','with','have','this','that','from','kya','hai','aap','mein','please'], true)));
+    $tw = $words($t); $best = ''; $score = 0;
+    $qa = (array)$cfg['qa'];
+    foreach (cms_load()['items'] as $it) if ($it['type'] === 'faq' && ($it['status'] ?? '') === 'published') foreach (($it['data']['items'] ?? []) as $f) if (!empty($f['q'])) $qa[] = ['q' => $f['q'], 'a' => strip_tags((string)($f['a'] ?? ''))];
+    foreach ($qa as $x) { if (empty($x['q']) || empty($x['a'])) continue; $qw = $words($x['q']); if (!$qw) continue; $hit = count(array_intersect($qw, $tw)); $s = $hit / count($qw); if ($hit >= 2 && $s > $score || $hit >= 1 && count($qw) <= 2 && $s > $score) { $score = $s; $best = (string)$x['a']; } }
+    if ($score >= 0.5) return $best;
+    $has = fn(string $re) => preg_match('~' . $re . '~iu', $t);
+    $phone = preg_match('~(\+?92|0)3\d{2}[\s-]?\d{7}~', preg_replace('~\s+~', '', $t));
+    if ($phone) return 'Thank you, we have your number. A designer from our team will call you ' . (chat_open_now() ? 'shortly' : 'during office hours (' . $cfg['hours'] . ')') . '. Could you also share your area and what you need (home, office, renovation or furniture)?';
+    if ($has('\b(price|cost|rate|rates|budget|kitna|kitne|qeemat|charges|per sq|sqft|square f)')) return 'Cost depends on the scope, size, materials and site condition, so we prepare an itemised quotation after a free site visit. You can also try our online cost estimator at /estimator/. May I have your phone number so a designer can call you?';
+    if ($has('\b(time|timing|hours|open|close|closed|office hours|kab)')) return 'Our office hours are ' . $cfg['hours'] . '. You can leave a message here any time and the team will get back to you.';
+    if ($has('\b(where|address|location|office|map|visit you|kahan)')) return 'Our office: ' . $co['address'] . '. Please call ' . $co['phones'] . ' before visiting so a designer is available.';
+    if ($has('\b(phone|number|call|contact|whatsapp|email|rabta)')) return 'You can reach us at ' . $co['phones'] . ' or ' . $co['email'] . '. Or leave your number here and we will call you.';
+    if ($has('\b(human|agent|person|team|representative|banda|insaan)')) return 'Sure, a team member will reply here shortly. [HUMAN]';
+    if ($has('\b(service|services|kitchen|bedroom|office|renovat|furniture|design|interior|fit-?out|ceiling|wardrobe|3d)')) return 'Yes, we handle interior design, renovation, office fit-out and custom furniture, from 3D design to handover. Please share your area, the space type and approximate size, and your phone number so a designer can guide you.';
+    if ($has('^(hi|hello|hey|salam|assalam|aoa|a\.o\.a|asalam)')) return 'Wa alaikum assalam, welcome to Woodex Interior. How can we help you today: home interior, office, renovation or furniture?';
+    if ($has('\b(thank|thanks|shukria|ok|okay)\b')) return 'You are welcome. Is there anything else I can help you with?';
+    return '';
+}
+
 function chat_actions(string $action, array $in): bool {
     if (!preg_match('~^(chat_|notif_)~', $action)) return false;
     chat_migrate(); $SALES = ['owner', 'admin', 'sales'];

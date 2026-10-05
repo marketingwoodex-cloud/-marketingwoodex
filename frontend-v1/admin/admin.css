@@ -930,3 +930,6 @@ label{font-weight:500;color:var(--txt2)}
 .lc.ib .lc-top .btn{white-space:nowrap;flex:none}
 .lc.ib .lc-msgs{background:#f8f6f2;background-image:radial-gradient(rgba(184,149,106,.10) 1px,transparent 1px);background-size:18px 18px}html.dark .lc.ib .lc-msgs{background:#0f1420}
 .lc.ib .lm{box-shadow:0 1px 2px rgba(16,24,40,.06)}
+
+/* P19 B2: no floating "Live chat" bubble in admin; open chats from the top-bar chat icon (shows unread count) */
+#cx-bub{display:none!important}
