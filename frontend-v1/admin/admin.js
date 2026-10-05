@@ -80,8 +80,8 @@
       ["transactions", "Transactions", "receipt", "owner,admin,sales", null, "new"],
       ["templates", "Quote templates", "layers", "owner,admin,sales"]] },
     ["projects", "Projects", "briefcase"],
-    ["offers", "WhatsApp offers", "send", "owner,admin,sales", null, "new"],
-    ["wauto", "WhatsApp automation", "zap", "owner,admin,sales", null, "new"],
+    ["offers", "WhatsApp", "send", "owner,admin,sales"],
+    ["wauto", "WhatsApp automation", "zap", "owner,admin,sales", null, "hide"],
     ["Support"],
     ["chat", "Inbox", "message-circle", "owner,admin,sales"],
     ["updates", "Client updates", "send", "owner,admin"],
@@ -110,16 +110,15 @@
     ["speed", "Speed", "gauge", "owner,admin,editor"],
     ["health", "Site health", "heart-pulse", "owner,admin,editor"],
     ["Settings"],
-    { g: "Settings", icon: "settings", id: "settings", items: [
-      ["settings", "Integrations & APIs", "settings", "owner,admin"],
-      ["business", "Business info", "building", "owner,admin"],
-      ["users", "Users & roles", "users", "owner,admin"],
-      ["activity", "Activity log", "activity", "owner,admin"],
-      ["backups", "Backups", "hard-drive", "owner,admin"],
-      ["maintenance", "Maintenance & error pages", "shield", "owner,admin", null, "new"],
-      ["files", "File manager", "folder", "owner,admin,editor", null, "new"],
-      ["database", "Database", "database", "owner,admin", null, "new"],
-      ["system", "System check", "activity", "owner,admin"]] },
+    ["settings", "Settings", "settings", "owner,admin"],
+    ["business", "Business info", "building", "owner,admin", null, "hide"],
+    ["users", "Users & roles", "users", "owner,admin", null, "hide"],
+    ["activity", "Activity log", "activity", "owner,admin", null, "hide"],
+    ["backups", "Backups", "hard-drive", "owner,admin", null, "hide"],
+    ["maintenance", "Maintenance & error pages", "shield", "owner,admin", null, "hide"],
+    ["files", "File manager", "folder", "owner,admin,editor", null, "hide"],
+    ["database", "Database", "database", "owner,admin", null, "hide"],
+    ["system", "System check", "activity", "owner,admin", null, "hide"],
     ["security", "My security", "shield"]
   ];
   var navOpen = (function () { try { return JSON.parse(localStorage.getItem("wxNavOpen") || "{}"); } catch (e) { return {}; } })();
@@ -135,7 +134,7 @@
   }
   setInterval(function () { if (!document.hidden) navBadges(); }, 60000);
   function renderNav() {
-    var ok = function (n) { return !n[3] || can(n[3]); }, out = [], pendingH = null;
+    var ok = function (n) { return n[5] !== "hide" && (!n[3] || can(n[3])); }, out = [], pendingH = null; /*P19 D: hidden = reachable via hub tabs only*/
     NAV.forEach(function (n) {
       if (Array.isArray(n) && n.length === 1) { pendingH = n[0]; return; }
       var html;
@@ -251,8 +250,26 @@
     var old = $("#view"), view = old.cloneNode(false); old.parentNode.replaceChild(view, old); view.className = "content"; /* fresh element: listeners from the previous screen can never fire here */ $("#app").classList.toggle("mini", v === "builder" && innerWidth > 1024 ? true : $("#app").classList.contains("mini") && S.lastView !== "builder");
     S.lastView = v;
     (VIEWS[v] || VIEWS.soon)(view, parts.slice(1), def);
-    fillIcons(view); window.scrollTo(0, 0);
+    hubBar(view, v);     fillIcons(view); window.scrollTo(0, 0);
     document.title = (def ? def[1] : "My profile") + " · Woodex Admin";
+  }
+  // P19 D: hubs — one sidebar item, related screens as tabs on top
+  var HUBS = [
+    { id: "settings", items: [["settings", "General & APIs"], ["business", "Business info"], ["users", "Users & roles"], ["security", "Security"], ["backups", "Backups"], ["maintenance", "Maintenance"], ["files", "Files"], ["database", "Database"], ["activity", "Activity log"], ["system", "System check"]] },
+    { id: "offers", items: [["offers", "Offers & broadcasts"], ["wauto", "Automation & templates"]] }
+  ];
+  function hubOf(v) { for (var i = 0; i < HUBS.length; i++) for (var j = 0; j < HUBS[i].items.length; j++) if (HUBS[i].items[j][0] === v) return HUBS[i]; return null; }
+  function hubBar(view, v) {
+    var h = hubOf(v); if (!h) return;
+    if (h.id === "settings" && v === "security" && !can("owner,admin")) return;
+    var FL = []; NAV.forEach(function (n) { if (n.g) FL.push.apply(FL, n.items); else if (Array.isArray(n)) FL.push(n); });
+    var allowed = h.items.filter(function (x) { var d = FL.find(function (n) { return n[0] === x[0]; }); return d && (!d[3] || can(d[3])); });
+    var bar = document.createElement("nav"); bar.className = "hub-bar"; bar.setAttribute("aria-label", "Section");
+    bar.innerHTML = allowed.map(function (x) { return '<a href="#/' + x[0] + '"' + (x[0] === v ? ' class="on" aria-current="page"' : "") + ">" + x[1] + "</a>"; }).join("");
+    view.insertBefore(bar, view.firstChild);
+    if (window.MutationObserver) { var mo = new MutationObserver(function () { if (!view.isConnected) return mo.disconnect(); if (!bar.isConnected) view.insertBefore(bar, view.firstChild); }); mo.observe(view, { childList: true }); }
+    $$(".nav-a").forEach(function (a) { if (a.dataset.v === h.id) a.classList.add("on"); });
+    var on = bar.querySelector(".on"); if (on) setTimeout(function () { on.scrollIntoView({ block: "nearest", inline: "center" }); }, 0);
   }
   function head(title, crumb, right) { return '<div class="ph"><div><h1>' + esc(title) + '</h1><div class="crumb"><a href="#/dashboard">Home</a> / ' + esc(crumb || title) + "</div></div>" + (right ? '<div class="toolbar">' + right + "</div>" : "") + "</div>"; }
 
