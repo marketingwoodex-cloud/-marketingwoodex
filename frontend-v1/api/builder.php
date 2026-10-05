@@ -85,8 +85,13 @@ function code_tokens(string $html): array {
     $t = [];
     preg_match_all('~<script\b[^>]*>.*?</script\s*>~is', $html, $m); foreach ($m[0] as $x) if (!preg_match('~^<script\b[^>]*type\s*=\s*["\']?application/ld\+json~i', $x)) $t[] = preg_replace('~\s+~', ' ', $x);
     preg_match_all('~<script\b(?![^>]*>.*?</script)~is', $html, $m2); if (count($m2[0]) > 0) $t[] = '<script-unclosed>';
-    preg_match_all('~\son[a-z]+\s*=\s*("[^"]*"|\'[^\']*\'|[^\s>]+)~i', $html, $m); foreach ($m[0] as $x) $t[] = trim(preg_replace('~\s+~', ' ', $x));
-    preg_match_all('~(?:href|src|action|formaction|data|xlink:href)\s*=\s*["\']?\s*(?:javascript|vbscript|data\s*:\s*text/html)[^"\'>]*~i', $html, $m); foreach ($m[0] as $x) $t[] = $x;
+    $dec = function (string $v): string { $v = preg_replace_callback('~&#(?:x0*([0-9a-f]+)|0*([0-9]+));?~i', fn($e) => (string)mb_chr($e[1] !== '' ? (int)hexdec($e[1]) : (int)$e[2]), $v); return strtolower(preg_replace('~[\x00-\x20]+~', '', html_entity_decode(html_entity_decode($v, ENT_QUOTES | ENT_HTML5), ENT_QUOTES | ENT_HTML5))); };
+    preg_match_all('~<[a-z][^>]*>~is', preg_replace('~<!--.*?-->~s', '', $html), $tags); // only look INSIDE tags (no false alarms on page text)
+    foreach ($tags[0] as $tag) {
+        preg_match_all('~[\s/"\']on[a-z]+\s*=\s*("[^"]*"|\'[^\']*\'|[^\s>]+)~i', $tag, $m); foreach ($m[0] as $x) $t[] = trim(preg_replace('~\s+~', ' ', $x));
+        preg_match_all('~[\s/"\'](?:href|src|action|formaction|data|xlink:href|srcdoc|poster|background|cite|ping)\s*=\s*("[^"]*"|\'[^\']*\'|[^\s>]+)~i', $tag, $m);
+        foreach ($m[1] as $k => $v) { $d = $dec(trim($v, '"\'')); if (preg_match('~^(javascript|vbscript|data:text/html|data:image/svg)~', $d) || preg_match('~<script|on[a-z]+=~', $d)) $t[] = trim($m[0][$k]); }
+    }
     preg_match_all('~<(iframe|object|embed|base|frame|frameset)\b[^>]*>|<meta\b[^>]*http-equiv[^>]*>~i', $html, $m); foreach ($m[0] as $x) $t[] = preg_replace('~\s+~', ' ', $x);
     return array_values(array_unique($t));
 }
