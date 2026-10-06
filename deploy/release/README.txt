@@ -27,6 +27,11 @@ FIRST TIME ONLY (new server)
   The password is saved to public_html/_private/db.json (web access blocked). It is NOT in this package.
 - config.example.php and _private/db.example.json show the format (placeholders only).
 
+IF YOU SEE "Server error (500)"
+- Open https://woodex.com.pk/wx-check.php : it shows the PHP version, database connection and the real error.
+- Most common fix: hPanel -> Advanced -> PHP Configuration -> PHP 8.2 (the admin needs PHP 8.0+).
+- No SQL import is needed: Admin Setup creates all tables. Delete wx-check.php when done (button on the page).
+
 AFTER UPLOAD (checks)
 - Admin -> Settings -> System check: everything green.
 - Admin -> Live chat -> Train AI -> WhatsApp: paste the Meta App secret (required).

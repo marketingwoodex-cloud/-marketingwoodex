@@ -20,7 +20,7 @@
   function api(action, data) { return fresh(action, api0(action, data)); }
   function api0(action, data) {
     return fetch(API, { method: "POST", headers: { "Content-Type": "application/json", "X-WX-ADM": S.token }, body: JSON.stringify(Object.assign({ action: action }, data || {})) })
-      .then(function (r) { return r.json().catch(function () { return { ok: false, error: "Server error (" + r.status + ")" }; }).then(function (j) { if (r.status === 401 && S.user) signedOut("Your session expired. Please sign in again."); return j; }); })
+      .then(function (r) { return r.json().catch(function () { return { ok: false, error: "Server error (" + r.status + "). Open /wx-check.php to see why." }; }).then(function (j) { if (r.status === 401 && S.user) signedOut("Your session expired. Please sign in again."); return j; }); })
       .catch(function () { return { ok: false, error: "Network error — check your connection" }; });
   }
   function bapi(action, data) { return fresh(action, bapi0(action, data)); }
