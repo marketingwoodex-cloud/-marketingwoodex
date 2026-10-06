@@ -41,56 +41,56 @@
 
     var css = [
       ".wx-wa{position:fixed;right:18px;bottom:18px;z-index:9990;font-family:inherit}",
-      ".wx-wa-btn{width:58px;height:58px;padding:0!important;min-width:0!important;border-radius:50%;border:0;background:#25d366;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 26px rgba(37,211,102,.38);position:relative}",
-      ".wx-wa-btn svg{flex:none;width:30px!important;height:30px!important;fill:#fff!important;display:block}",
+      ".wx-wa-btn{width:58px;height:58px;padding:0!important;min-width:0!important;border-radius:50%;border:0;background:#0c1628;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 10px 28px rgba(12,22,40,.38),0 0 0 4px rgba(184,149,106,.22);position:relative;transition:transform .2s}",
+      ".wx-wa-btn>svg{flex:none;width:27px!important;height:27px!important;fill:none!important;stroke:#fff;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;display:block}.wx-wa-badge{position:absolute;right:-3px;bottom:-3px;width:22px;height:22px;border-radius:50%;background:#25d366;border:2px solid #fff;display:flex;align-items:center;justify-content:center}.wx-wa-badge svg{width:13px;height:13px;fill:#fff}",
       ".wx-wa-btn:hover{transform:scale(1.05)}.wx-wa-dot{position:absolute;top:3px;right:3px;width:12px;height:12px;border-radius:50%;background:#b8956a;border:2px solid #fff}",
       ".wx-wa-panel{position:fixed;right:18px;bottom:88px;width:340px;max-width:calc(100vw - 24px);max-height:calc(100vh - 110px);overflow:auto;background:#fff;border-radius:16px;box-shadow:0 20px 60px rgba(12,22,40,.25);z-index:9991;display:none;font-family:inherit;color:#0c1628}",
       ".wx-wa-panel.open{display:block;animation:wxwa .22s ease}@keyframes wxwa{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}",
-      ".wx-wa-head{background:#075e54;color:#fff;padding:14px 16px;display:flex;align-items:center;gap:10px}",
-      ".wx-wa-av{width:38px;height:38px;border-radius:50%;background:#fff;color:#0c1628;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;flex:none}",
+      ".wx-wa-head{background:linear-gradient(135deg,#0c1628,#1a2840);border-bottom:2px solid #b8956a;color:#fff;padding:14px 16px;display:flex;align-items:center;gap:10px}",
+      ".wx-wa-av{width:38px;height:38px;border-radius:50%;background:#b8956a;color:#0c1628;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;flex:none}",
       ".wx-wa-head .t{font-weight:700;font-size:15px;line-height:1.2}.wx-wa-head .s{font-size:12px;opacity:.85;display:flex;align-items:center;gap:6px}",
       ".wx-wa-head .s i{width:8px;height:8px;border-radius:50%;background:" + (open ? "#4ade80" : "#fbbf24") + ";display:inline-block}",
       ".wx-wa-x{margin-left:auto;background:none!important;border:0!important;color:#fff!important;font-size:22px;cursor:pointer;line-height:1;padding:0 4px!important;min-width:0!important}",
-      ".wx-wa-body{padding:14px;background:#efeae2}",
+      ".wx-wa-body{padding:14px;background:#f6f1e9}",
       ".wx-wa-msg{background:#fff;border-radius:0 10px 10px 10px;padding:10px 12px;font-size:14px;line-height:1.5;box-shadow:0 1px 1px rgba(0,0,0,.08);margin-bottom:12px}",
       ".wx-wa-lbl{display:block;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#54656f;margin:0 0 6px}",
       ".wx-wa-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}",
-      ".wx-wa-chip{border:1px solid #c9d1d6!important;background:#fff!important;color:#0c1628!important;border-radius:999px!important;padding:6px 11px!important;font-size:12.5px!important;cursor:pointer;min-width:0!important;line-height:1.3!important}",
-      ".wx-wa-chip.on{background:#075e54!important;border-color:#075e54!important;color:#fff!important}",
+      ".wx-wa-chip{border:1px solid #ddd3c4!important;background:#fff!important;color:#0c1628!important;border-radius:999px!important;padding:6px 11px!important;font-size:12.5px!important;cursor:pointer;min-width:0!important;line-height:1.3!important}",
+      ".wx-wa-chip.on{background:#0c1628!important;border-color:#0c1628!important;color:#fff!important}",
       ".wx-wa-in{width:100%;box-sizing:border-box;border:1px solid #d5dbe0;border-radius:10px;padding:9px 12px;font:inherit;font-size:14px;outline:none;background:#fff;color:#0c1628;margin:0 0 8px}",
-      ".wx-wa-in:focus{border-color:#075e54}.wx-wa-two{display:grid;grid-template-columns:1fr 1fr;gap:8px}",
+      ".wx-wa-in:focus{border-color:#b8956a;box-shadow:0 0 0 3px rgba(184,149,106,.18)}.wx-wa-two{display:grid;grid-template-columns:1fr 1fr;gap:8px}",
       "textarea.wx-wa-in{resize:vertical;min-height:64px}",
-      ".wx-wa-send{width:100%;border:0!important;border-radius:999px!important;background:#25d366!important;color:#fff!important;font-weight:700;font-size:15px;padding:12px!important;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}",
-      ".wx-wa-send svg{width:18px;height:18px;fill:#fff}",
+      ".wx-wa-send{width:100%;border:0!important;border-radius:999px!important;background:#0c1628!important;color:#fff!important;font-weight:700;font-size:15px;padding:12px!important;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}",
+      ".wx-wa-send svg{width:18px;height:18px;fill:#25d366}.wx-wa-send:hover{background:#1a2840!important}",
       ".wx-wa-hp{position:absolute!important;left:-9999px!important;width:1px;height:1px;opacity:0}",
       ".wx-back{background:none!important;border:0!important;color:#fff!important;font-size:28px;line-height:1;padding:0 4px 0 0!important;min-width:0!important;cursor:pointer}",
-      ".wx-opt{display:flex!important;align-items:center;gap:12px;width:100%;text-align:left;background:#fff!important;border:1px solid #d5dbe0!important;border-radius:12px!important;padding:12px!important;margin:0 0 8px;cursor:pointer;color:#0c1628!important;font:inherit}",
-      ".wx-opt:hover{border-color:#075e54!important}.wx-opt .ic{width:40px;height:40px;border-radius:50%;background:#25d366;display:flex;align-items:center;justify-content:center;flex:none;font-size:19px}.wx-opt .ic.ch{background:#0c1628}.wx-opt .ic svg{width:22px;height:22px;fill:#fff}",
+      ".wx-opt{display:flex!important;align-items:center;gap:12px;width:100%;text-align:left;background:#fff!important;border:1px solid #e3d9ca!important;border-radius:14px!important;padding:12px!important;margin:0 0 8px;cursor:pointer;color:#0c1628!important;font:inherit}",
+      ".wx-opt:hover{border-color:#b8956a!important;transform:translateY(-1px)}.wx-opt .ic{width:40px;height:40px;border-radius:50%;background:#25d366;display:flex;align-items:center;justify-content:center;flex:none;font-size:19px}.wx-opt .ic.ch{background:#0c1628;color:#fff}.wx-opt .ic.ch svg{fill:none;stroke:#fff;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.wx-opt .ic svg{width:22px;height:22px;fill:#fff}",
       ".wx-opt b{display:block;font-size:14.5px}.wx-opt small{display:block;font-size:12px;color:#667781;margin-top:2px}",
-      ".v-chat{display:flex;flex-direction:column;background:#efeae2}.v-chat[hidden]{display:none}.wx-ch-list{height:340px;max-height:calc(100vh - 260px);overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:6px}",
+      ".v-chat{display:flex;flex-direction:column;background:#f6f1e9}.v-chat[hidden]{display:none}.wx-ch-list{height:340px;max-height:calc(100vh - 260px);overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:6px}",
       ".wx-m{max-width:84%;padding:8px 11px;border-radius:10px;font-size:14px;line-height:1.45;white-space:pre-wrap;word-wrap:break-word;box-shadow:0 1px 1px rgba(0,0,0,.08)}",
-      ".wx-m.them{background:#fff;align-self:flex-start;border-top-left-radius:2px}.wx-m.me{background:#d9fdd3;align-self:flex-end;border-top-right-radius:2px}.wx-m small{display:block;font-size:10.5px;color:#667781;margin-bottom:2px;font-weight:600}",
+      ".wx-m.them{background:#fff;align-self:flex-start;border-top-left-radius:2px}.wx-m.me{background:#efe3cf;align-self:flex-end;border-top-right-radius:2px}.wx-m small{display:block;font-size:10.5px;color:#667781;margin-bottom:2px;font-weight:600}",
       ".wx-m.sys{align-self:center;background:#fff7d6;font-size:12.5px;box-shadow:none;text-align:center}.wx-typing{align-self:flex-start;background:#fff;border-radius:10px;padding:9px 12px;font-size:13px;color:#667781}",
       ".wx-ch-form{display:flex;gap:8px;padding:8px 10px;background:#f0f2f5;align-items:flex-end;margin:0}.wx-ch-form textarea{flex:1;border:0;border-radius:20px;padding:10px 14px;font:inherit;font-size:14px;resize:none;max-height:110px;outline:none;background:#fff;color:#0c1628}",
-      ".wx-ch-form button{width:42px;height:42px;border-radius:50%!important;border:0!important;background:#075e54!important;display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none;padding:0!important;min-width:0!important}.wx-ch-form button svg{width:18px;height:18px;fill:#fff}",
+      ".wx-ch-form button{width:42px;height:42px;border-radius:50%!important;border:0!important;background:#0c1628!important;display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none;padding:0!important;min-width:0!important}.wx-ch-form button svg{width:18px;height:18px;fill:#fff}",
       ".wx-ch-form button.wx-ch-x{width:36px;height:42px;background:transparent!important;border-radius:10px!important}.wx-ch-form button.wx-ch-x svg{fill:none;stroke:#54656f;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;width:21px;height:21px}.wx-ch-form button.wx-ch-x.rec{background:#e11d48!important;width:auto;padding:0 10px!important;color:#fff;font:600 12px/1 inherit}.wx-ch-form button.wx-ch-x.rec svg{display:none}",
-      ".wx-m img{display:block;max-width:200px;max-height:200px;border-radius:8px;margin-top:2px}.wx-m audio{display:block;width:210px;max-width:100%;height:36px}.wx-m a.wx-f{color:inherit;font-weight:600}.wx-ch-ty{font-size:12px;color:#667781;font-style:italic;padding:2px 12px;min-height:18px;background:#efeae2}",
-      ".wx-wa-foot{padding:8px 14px 12px;background:#efeae2;font-size:11px;color:#667781;text-align:center}"
+      ".wx-m img{display:block;max-width:200px;max-height:200px;border-radius:8px;margin-top:2px}.wx-m audio{display:block;width:210px;max-width:100%;height:36px}.wx-m a.wx-f{color:inherit;font-weight:600}.wx-ch-ty{font-size:12px;color:#667781;font-style:italic;padding:2px 12px;min-height:18px;background:#f6f1e9}",
+      ".wx-wa-foot{padding:8px 14px 12px;background:#f6f1e9;font-size:11px;color:#667781;text-align:center}"
     ].join("\n");
     document.head.appendChild(el("style", null, css));
 
     var waGlyph = '<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 3C9.4 3 4 8.4 4 15c0 2.4.7 4.6 2 6.5L4 29l7.7-2c1.8 1 3.9 1.6 6.1 1.6h.2c6.6 0 12-5.4 12-12S22.6 3 16 3zm0 21.8c-1.9 0-3.7-.5-5.3-1.5l-.4-.2-4.6 1.2 1.2-4.4-.3-.4c-1-1.6-1.6-3.5-1.6-5.5 0-5.5 4.5-10 10-10s10 4.5 10 10-4.5 10.8-9 10.8zm5.5-7.5c-.3-.2-1.8-.9-2-1-.3-.1-.5-.2-.7.2-.2.3-.8 1-.9 1.2-.2.2-.3.2-.6.1-.3-.2-1.3-.5-2.4-1.5-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.5.1-.6l.4-.5c.2-.2.2-.3.3-.5.1-.2 0-.4 0-.5l-.9-2.2c-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.2.2 2.1 3.2 5.1 4.5.7.3 1.3.5 1.7.6.7.2 1.4.2 1.9.1.6-.1 1.8-.7 2-1.4.3-.7.3-1.3.2-1.4-.1-.2-.3-.3-.6-.4z"/></svg>';
     var sendGlyph = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 20l18-8L3 4v6l12 2-12 2v6z"/></svg>';
 
-    var wrap = el("div", "wx-wa"), btn = el("button", "wx-wa-btn", waGlyph + '<span class="wx-wa-dot" aria-hidden="true"></span>');
+    var wrap = el("div", "wx-wa"), btn = el("button", "wx-wa-btn", '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-4.9A8 8 0 1 1 21 12Z"/><path d="M8.5 11h.01M12 11h.01M15.5 11h.01"/></svg><span class="wx-wa-badge" aria-hidden="true">' + waGlyph + '</span>');
     btn.type = "button"; btn.setAttribute("aria-label", "Chat with Woodex"); btn.setAttribute("aria-expanded", "false"); wrap.appendChild(btn);
 
-    var panel = el("div", "wx-wa-panel"); panel.setAttribute("role", "dialog"); panel.setAttribute("aria-label", "WhatsApp chat with Woodex");
+    var panel = el("div", "wx-wa-panel"); panel.setAttribute("role", "dialog"); panel.setAttribute("aria-label", "Chat with Woodex");
     panel.innerHTML =
       '<div class="wx-wa-head"><button type="button" class="wx-back" aria-label="Back" hidden>&#8249;</button><span class="wx-wa-av">W</span><div><div class="t">Woodex Interior</div><div class="s"><i></i>' + (open ? "Online · usually replies in minutes" : "Away · we reply from 10:00 am (Mon–Sat)") + '</div></div><button type="button" class="wx-wa-x" aria-label="Close chat">&times;</button></div>' +
-      '<div class="v-home"><div class="wx-wa-body"><div class="wx-wa-msg">Hi! 👋 How would you like to talk to us?</div>' +
-      '<button type="button" class="wx-opt" data-go="chat"><span class="ic ch">💬</span><span><b>Chat now</b><small>Instant answers here on the website</small></span></button>' +
-      '<button type="button" class="wx-opt" data-go="wa"><span class="ic">' + waGlyph + '</span><span><b>WhatsApp</b><small>Continue in the WhatsApp app</small></span></button></div></div>' +
+      '<div class="v-home"><div class="wx-wa-body"><div class="wx-wa-msg">Assalam-o-Alaikum! How would you like to talk to us?</div>' +
+      '<button type="button" class="wx-opt" data-go="chat"><span class="ic ch"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-4.9A8 8 0 1 1 21 12Z"/><path d="M8.5 11h.01M12 11h.01M15.5 11h.01"/></svg></span><span><b>Live chat with a designer</b><small>Instant answers here · our team can join</small></span></button>' +
+      '<button type="button" class="wx-opt" data-go="wa"><span class="ic">' + waGlyph + '</span><span><b>WhatsApp</b><small>Message us on +92 322 4000768</small></span></button></div></div>' +
       '<div class="v-chat" hidden><div class="wx-ch-list" aria-live="polite"></div><div class="wx-ch-ty" aria-live="polite"></div><form class="wx-ch-form"><input class="wx-wa-hp" name="hp" tabindex="-1" autocomplete="off" aria-hidden="true"><button type="button" class="wx-ch-x" data-x="file" aria-label="Send a photo or PDF" title="Send a photo or PDF"><svg viewBox="0 0 24 24"><path d="m16 6-8.414 8.586a2 2 0 0 0 2.829 2.829l8.414-8.586a4 4 0 1 0-5.657-5.657l-8.379 8.551a6 6 0 1 0 8.485 8.485l8.379-8.551"/></svg></button><input type="file" class="wx-ch-fi" accept="image/jpeg,image/png,image/webp,application/pdf" hidden><textarea rows="1" maxlength="2000" placeholder="Type your message…" aria-label="Message"></textarea><button type="button" class="wx-ch-x" data-x="rec" aria-label="Record a voice note" title="Record a voice note"><svg viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><path d="M12 19v3"/></svg></button><button type="submit" aria-label="Send">' + sendGlyph + '</button></form></div>' +
       '<div class="v-wa" hidden><div class="wx-wa-body"><div class="wx-wa-msg">' + esc(greet) + '</div>' +
       '<span class="wx-wa-lbl">Service</span><div class="wx-wa-chips" data-g="svc">' + SERVICES.map(function (s) { return '<button type="button" class="wx-wa-chip' + (s[0] === pageSvc ? " on" : "") + '" data-v="' + esc(s[0]) + '">' + esc(s[0]) + "</button>"; }).join("") + "</div>" +
@@ -121,11 +121,11 @@
       if (window.fbq) try { window.fbq("track", "Contact"); } catch (e) {}
     }
     // ---------- views + live chat
-    var CH = { on: false, id: 0, tok: "", last: 0, timer: null, busy: false }, view = "home";
+    var CH = { greet: "Assalam-o-Alaikum, welcome to Woodex Interior. How may we help with your space today?", on: false, id: 0, tok: "", last: 0, timer: null, busy: false }, view = "home";
     try { var sv = JSON.parse(localStorage.getItem("wxChat") || "null"); if (sv && sv.id && sv.tok) { CH.id = sv.id; CH.tok = sv.tok; } } catch (e) {}
     function show(v) {
       view = v; ["home", "chat", "wa"].forEach(function (k) { panel.querySelector(".v-" + k).hidden = k !== v; });
-      $(".wx-back").hidden = v === "home" || !CH.on;
+      $(".wx-back").hidden = v === "home";
       if (v === "chat") { if (!CH.last && CH.id) poll(); else if (!CH.id) draw([{ who: "ai", name: "Woodex assistant", text: CH.greet }], true); setTimeout(function () { $(".wx-ch-form textarea").focus(); }, 60); startPoll(); }
       if (v === "wa") setTimeout(function () { $("#wx-wa-n").focus(); }, 50);
     }
@@ -185,16 +185,15 @@
       CH.busy = true;
       chatApi({ action: "send", chat_id: CH.id || 0, token: CH.tok, text: t, page: location.pathname, since: CH.last, _hp: $(".wx-ch-form [name=hp]").value }).then(function (r) {
         CH.busy = false; mine.remove();
-        if (!r.ok) { var ty = L.querySelector(".wx-typing"); if (ty) ty.remove(); var er = el("div", "wx-m sys"); er.textContent = r.error || "Could not send. Please try WhatsApp."; L.appendChild(er); return; }
+        if (!r.ok) { var ty = L.querySelector(".wx-typing"); if (ty) ty.remove(); var er = el("div", "wx-m sys"); er.innerHTML = esc(CH.on ? (r.error || "Could not send.") : "Our live team is away right now.") + ' <a href="https://wa.me/' + number + '?text=' + encodeURIComponent(t) + '" target="_blank" rel="noopener" style="font-weight:700;color:#0c1628">Continue on WhatsApp →</a>'; L.appendChild(er); return; }
         if (r.token) { CH.id = r.chat_id; CH.tok = r.token; CH.last = 0; localStorage.setItem("wxChat", JSON.stringify({ id: CH.id, tok: CH.tok })); L.innerHTML = ""; }
         draw(r.messages); startPoll();
         if (window.gtag && r.token) try { window.gtag("event", "chat_start"); } catch (x) {}
       }).catch(function () { CH.busy = false; var ty = L.querySelector(".wx-typing"); if (ty) ty.textContent = "Connection problem. Please try again."; });
     });
     chatApi({ action: "cfg" }).then(function (r) {
-      if (!r || !r.ok || !r.on) { show("wa"); return; }
-      CH.on = true; CH.greet = r.greeting; show(CH.id ? "chat" : "home"); if (CH.id) { poll(); startPoll(); }
-    }).catch(function () { show("wa"); });
+      CH.on = !!(r && r.ok && r.on); CH.greet = (r && r.greeting) || CH.greet; show(CH.on && CH.id ? "chat" : "home"); if (CH.on && CH.id) { poll(); startPoll(); }
+    }).catch(function () { show("home"); });
     function toggle(force) {
       var o = typeof force === "boolean" ? force : !panel.classList.contains("open");
       panel.classList.toggle("open", o); btn.setAttribute("aria-expanded", String(o));

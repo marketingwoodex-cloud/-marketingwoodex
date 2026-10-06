@@ -2410,3 +2410,74 @@ html:not(.js) .ih-faq-a,html:not(.js) .in-faq-a,html:not(.js) .ph-faq-a,html:not
 #home-page .hm-projects .wx-filter-grid .hm-project:hover:before,#home-page .hm-projects .wx-filter-grid .hm-project:focus-visible:before{opacity:1;transform:none}
 @media(hover:none){#home-page .hm-projects .wx-filter-grid .hm-project:before{opacity:1;transform:none}}
 #home-page .hm-projects .hm-btn{background:#0c1628;color:#fff;border-color:#0c1628}
+
+/* P20: FAQ polish */
+#home-page .hm-faq{background:#f4efe7}
+#home-page .hm-faq-grid{gap:72px;align-items:start}
+#home-page .hm-faq-side h2{margin:14px 0 26px;max-width:15ch;line-height:1.08}
+#home-page .hm-faq-media{margin-top:36px;border-radius:18px;overflow:hidden;box-shadow:0 18px 40px -20px rgba(12,22,40,.35)}
+#home-page .hm-faq-list{display:grid;gap:12px}
+#home-page .hm-faq-item{background:#fff;border:1px solid rgba(12,22,40,.08);border-radius:16px;padding:0 24px;transition:border-color .25s,box-shadow .25s}
+#home-page .hm-faq-item:hover{border-color:rgba(184,149,106,.6)}
+#home-page .hm-faq-item:has([aria-expanded="true"]){border-color:#b8956a;box-shadow:0 14px 30px -18px rgba(12,22,40,.3)}
+#home-page .hm-faq-q{padding:22px 0!important;gap:18px;font-size:1.05rem;font-weight:600;line-height:1.4;text-align:left}
+#home-page .hm-faq-q .plus{flex:none;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:#f4efe7;color:#0c1628;font-size:18px;transition:transform .3s,background .3s,color .3s}
+#home-page .hm-faq-q[aria-expanded="true"] .plus{transform:rotate(45deg);background:#0c1628;color:#fff}
+#home-page .hm-faq-a p{margin:0;padding:0 50px 22px 0;color:#5b6472;line-height:1.7}
+@media(max-width:900px){#home-page .hm-faq-grid{gap:36px}#home-page .hm-faq-item{padding:0 18px}#home-page .hm-faq-a p{padding-right:0}}
+
+/* P20: Reviews */
+#home-page .hm-reviews{background:#fff}
+#home-page .hm-rv-head{text-align:center;margin-bottom:44px}
+#home-page .hm-rv-head h2{margin:10px 0 0}
+#home-page .hm-rv-grid{display:grid;grid-template-columns:240px 1fr;gap:32px;align-items:center}
+#home-page .hm-rv-score{text-align:center;display:grid;justify-items:center;gap:6px}
+#home-page .hm-rv-score strong{font-size:1.35rem;letter-spacing:.08em;text-transform:uppercase;color:#0c1628}
+#home-page .hm-rv-score p{margin:0;color:#5b6472;font-size:.95rem}
+#home-page .hm-rv-score .hm-btn{margin-top:14px;background:#0c1628;color:#fff;border-color:#0c1628}
+#home-page .st{color:#f5b400;letter-spacing:2px;font-size:1rem;display:flex;align-items:center;gap:6px}
+#home-page .st.big{font-size:1.8rem;letter-spacing:3px}
+#home-page .st.big span{background:linear-gradient(90deg,#f5b400 50%,#d6d6d6 50%);-webkit-background-clip:text;background-clip:text;color:transparent}
+#home-page .st i{font-style:normal;width:16px;height:16px;border-radius:50%;background:#4285f4;color:#fff;font-size:10px;display:grid;place-items:center;letter-spacing:0}
+#home-page .g{width:22px;height:22px;flex:none}#home-page .g.big{width:auto;height:34px}
+#home-page .hm-rv-track{display:grid;grid-auto-flow:column;grid-auto-columns:calc((100% - 32px)/3);gap:16px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;padding:4px 2px 10px}
+#home-page .hm-rv-track::-webkit-scrollbar{display:none}
+#home-page .hm-rv-card{scroll-snap-align:start;background:#f7f3ec;border:1px solid rgba(12,22,40,.06);border-radius:18px;padding:22px;display:flex;flex-direction:column;gap:12px;transition:transform .35s,box-shadow .35s}
+#home-page .hm-rv-card:hover{transform:translateY(-4px);box-shadow:0 18px 36px -20px rgba(12,22,40,.35)}
+#home-page .hm-rv-card header{display:flex;align-items:center;gap:12px}
+#home-page .hm-rv-card header div{flex:1;display:grid}
+#home-page .hm-rv-card .av{width:42px;height:42px;border-radius:50%;background:#0c1628;color:#d9bf98;display:grid;place-items:center;font-weight:700}
+#home-page .hm-rv-card strong{font-size:.98rem;color:#0c1628}#home-page .hm-rv-card small{color:#7a8290;font-size:.8rem}
+#home-page .hm-rv-card p{margin:0;flex:1;color:#2b3442;line-height:1.65;font-size:.95rem}
+#home-page .hm-rv-card a{font-size:.85rem;color:#8a6a43;font-weight:600;text-decoration:none}
+@media(max-width:900px){#home-page .hm-rv-grid{grid-template-columns:1fr}#home-page .hm-rv-track{grid-auto-columns:82%}}
+
+/* P20: Clients */
+#home-page .hm-clients{background:#f4efe7;padding-top:72px;padding-bottom:84px}
+#home-page .hm-logo-grid{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(6,1fr);gap:16px}
+#home-page .hm-logo-grid li{background:#fff;border-radius:16px;aspect-ratio:1/1;display:grid;place-items:center;padding:20px;border:1px solid rgba(12,22,40,.06);transition:transform .35s,box-shadow .35s}
+#home-page .hm-logo-grid img{width:100%;height:auto;max-height:90px;object-fit:contain;filter:grayscale(1);opacity:.75;transition:filter .35s,opacity .35s}
+#home-page .hm-logo-grid li:hover{transform:translateY(-4px);box-shadow:0 18px 36px -20px rgba(12,22,40,.3)}
+#home-page .hm-logo-grid li:hover img{filter:none;opacity:1}
+@media(hover:none){#home-page .hm-logo-grid img{filter:none;opacity:1}}
+@media(max-width:900px){#home-page .hm-logo-grid{grid-template-columns:repeat(3,1fr)}}
+
+/* P20: Begin with the brief, simple band */
+#home-page .hm-closing-v2{background:#0c1628;padding:72px 0}
+#home-page .hm-cta{display:flex;align-items:center;justify-content:space-between;gap:32px;flex-wrap:wrap}
+#home-page .hm-cta h2{margin:8px 0 8px;color:#fff;font-size:clamp(1.8rem,3.2vw,2.6rem)}
+#home-page .hm-cta p{margin:0;color:rgba(255,255,255,.68)}
+#home-page .hm-cta .hm-kicker{color:#d9bf98}
+#home-page .hm-cta-actions{display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+#home-page .hm-cta-wa{color:#fff;font-weight:600;text-decoration:none;border-bottom:1px solid rgba(255,255,255,.35);padding-bottom:2px}
+#home-page .hm-cta-wa:hover{border-color:#b8956a;color:#d9bf98}
+#home-page .hm-faq,#home-page .hm-faq h2{color:#0c1628}
+#home-page .hm-faq .hm-kicker{color:#8a6a43}
+#home-page .hm-faq-q,#home-page .hm-faq-q span{color:#0c1628!important}
+#home-page .hm-faq .hm-btn{color:#0c1628;border-color:rgba(12,22,40,.3)}
+#home-page .hm-faq-item:has([aria-expanded="true"]){background:#fff}
+#home-page .hm-rv-head h2{margin-left:auto;margin-right:auto;max-width:none;text-align:center}
+#home-page .hm-closing-v2{padding:64px 0!important;min-height:0!important}
+#home-page .hm-closing-v2 .hm-wrap,#home-page .hm-cta,#home-page .hm-cta>div{text-align:left;min-height:0}
+#home-page .hm-cta h2{max-width:none}
+#home-page .hm-faq-a,#home-page .hm-faq-a p{color:#5b6472!important}
