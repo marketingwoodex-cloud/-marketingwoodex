@@ -134,7 +134,7 @@ function sales_actions(string $action, array $in): bool {
         case 'company_get': need($ALL); out(['ok' => true, 'company' => company_cfg(), 'units' => SALES_UNITS]);
         case 'company_save':
             $u = need($OA); $c = company_cfg(); $s = is_array($in['company'] ?? null) ? $in['company'] : [];
-            foreach ($c as $k => $v) if (array_key_exists($k, $s)) $c[$k] = is_array($v) ? co_list($k, $s[$k]) : in_array($k, ['nextNo', 'validDays'], true) ? max(1, (int)round(numv($s[$k]))) : clip($s[$k], $k === 'payTerms' ? 2000 : 300);
+            foreach ($c as $k => $v) if (array_key_exists($k, $s)) $c[$k] = is_array($v) ? co_list($k, $s[$k]) : (in_array($k, ['nextNo', 'validDays'], true) ? max(1, (int)round(numv($s[$k]))) : clip($s[$k], $k === 'payTerms' ? 2000 : 300));
             $used = 0; foreach (q('SELECT DISTINCT no FROM wx_quotes')->fetchAll(PDO::FETCH_COLUMN) as $no) $used = max($used, (int)preg_replace('~\D~', '', $no));
             if ($c['nextNo'] <= $used) fail('Next number must be higher than ' . $used . ' (already used)');
             jwrite(COMPANY_FILE, $c); log_act($u, 'settings.company'); out(['ok' => true, 'company' => $c]);
