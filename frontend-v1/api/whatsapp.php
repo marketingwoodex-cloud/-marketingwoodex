@@ -51,13 +51,13 @@ function wa_incoming(array $m, string $pname, array $cfg): void {
     if ($mid === '' || $from === '') return;
     try { q('INSERT INTO wx_wa_seen (mid,t) VALUES (?,?)', [mb_substr($mid, 0, 190), now()]); } catch (Throwable $e) { return; } // Meta retries: handle once
     $type = (string)($m['type'] ?? 'text');
-    $text = match ($type) {
-        'text' => (string)($m['text']['body'] ?? ''),
-        'button' => (string)($m['button']['text'] ?? ''),
-        'interactive' => (string)($m['interactive']['button_reply']['title'] ?? $m['interactive']['list_reply']['title'] ?? ''),
-        'location' => 'Location: ' . ($m['location']['name'] ?? '') . ' ' . ($m['location']['latitude'] ?? '') . ',' . ($m['location']['longitude'] ?? ''),
-        default => '[' . $type . ' received: open WhatsApp to view]',
-    };
+    switch ($type) { // (switch, not match: also runs on PHP 7.4)
+        case 'text': $text = (string)($m['text']['body'] ?? ''); break;
+        case 'button': $text = (string)($m['button']['text'] ?? ''); break;
+        case 'interactive': $text = (string)($m['interactive']['button_reply']['title'] ?? $m['interactive']['list_reply']['title'] ?? ''); break;
+        case 'location': $text = 'Location: ' . ($m['location']['name'] ?? '') . ' ' . ($m['location']['latitude'] ?? '') . ',' . ($m['location']['longitude'] ?? ''); break;
+        default: $text = '[' . $type . ' received: open WhatsApp to view]';
+    }
     $text = trim($text); if ($text === '') return;
     $phone = '+' . $from;
     $c = q("SELECT * FROM wx_chats WHERE channel='wa' AND phone=? ORDER BY id DESC LIMIT 1", [$phone])->fetch();

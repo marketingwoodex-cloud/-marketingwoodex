@@ -10,6 +10,11 @@
  * - Theme save -> /assets/theme.css (whitelisted CSS variables only)
  */
 declare(strict_types=1);
+// PHP 7.4 compatibility (Hostinger may still run 7.4): PHP 8 string helpers
+if (!function_exists('str_starts_with')) { function str_starts_with(string $h, string $n): bool { return $n === '' || strncmp($h, $n, strlen($n)) === 0; } }
+if (!function_exists('str_ends_with')) { function str_ends_with(string $h, string $n): bool { return $n === '' || substr($h, -strlen($n)) === $n; } }
+if (!function_exists('str_contains')) { function str_contains(string $h, string $n): bool { return $n === '' || strpos($h, $n) !== false; } }
+
 ini_set('display_errors', '0');
 error_reporting(E_ALL);
 
