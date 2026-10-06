@@ -12,7 +12,7 @@ function dash_actions(string $action, array $in): bool {
             $u = need(['owner', 'admin']); $t = (int)round(max(0, (float)($in['target'] ?? 0)));
             jwrite(DASH_FILE, ['target' => $t]); log_act($u, 'settings.target', (string)$t); out(['ok' => true, 'target' => $t]);
         case 'dash_data':
-            $u = need(); $days = in_array((int)($in['days'] ?? 28), [7, 28, 90], true) ? (int)$in['days'] : 28;
+            $u = need(); $days = in_array((int)($in['days'] ?? 28), [7, 28, 90], true) ? (int)($in['days'] ?? 28) : 28;
             $crm = in_array($u['role'], ['owner', 'admin', 'sales'], true); $money = $crm;
             $today = date('Y-m-d'); $start = date('Y-m-d', strtotime("-" . ($days - 1) . " days")); $pStart = date('Y-m-d', strtotime("-" . (2 * $days - 1) . " days"));
             $out = ['ok' => true, 'days' => $days, 'role' => $u['role'], 'crm' => null];

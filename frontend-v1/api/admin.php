@@ -82,10 +82,15 @@ function ingest(): void {
 // ---------- auth ----------
 /** Token = uid.exp.sid.sig — the session id makes every sign-in listable and revocable (security-lib.php). */
 function token_for(array $u): string { $e = time() + 12 * 3600; $exp = (string)$e; $sid = sec_new_session($u, $e); $GLOBALS['WX_SID'] = $sid; return $u['id'] . '.' . $exp . '.' . $sid . '.' . hash_hmac('sha256', 'adm|' . $u['id'] . '|' . $exp . '|' . $u['pw_ver'] . '|' . $sid, bsecret()); }
+/** P20 demo accounts (@demo.woodex.pk) stop working after the date in _private/demo.json. */
+function demo_expired(string $email): bool {
+    if (substr(strtolower($email), -15) !== '@demo.woodex.pk') return false;
+    $d = jread(PRIVATE_DIR . '/demo.json'); return empty($d['until']) || (int)$d['until'] < time();
+}
 function current_user(): ?array {
     if (isset($GLOBALS['WX_AS'])) return $GLOBALS['WX_AS']; // set by api/mcp.php after Bearer-token auth
     if (!preg_match('~^(\d+)\.(\d{10})\.([a-f0-9]{16})\.([a-f0-9]{64})$~', (string)($_SERVER['HTTP_X_WX_ADM'] ?? ''), $m) || (int)$m[2] < time()) return null;
-    $u = q('SELECT * FROM wx_users WHERE id=? AND active=1', [(int)$m[1]])->fetch(); if (!$u) return null;
+    $u = q('SELECT * FROM wx_users WHERE id=? AND active=1', [(int)$m[1]])->fetch(); if (!$u || demo_expired((string)$u['email'])) return null;
     if (!hash_equals(hash_hmac('sha256', 'adm|' . $u['id'] . '|' . $m[2] . '|' . $u['pw_ver'] . '|' . $m[3], bsecret()), $m[4])) return null;
     if (!sec_session_ok((int)$u['id'], $m[3])) return null; // signed out remotely
     $GLOBALS['WX_SID'] = $m[3]; return $u;
@@ -309,6 +314,7 @@ switch ($action) {
         throttle();
         $u = q('SELECT * FROM wx_users WHERE email=?', [strtolower(trim((string)($in['email'] ?? '')))])->fetch();
         if (!$u || !$u['active'] || !password_verify((string)($in['password'] ?? ''), $u['pass_hash'])) { throttle(true); usleep(400000); fail('Wrong email or password', 401); }
+        if (demo_expired((string)$u['email'])) fail('This demo account has expired. Ask the owner for a real login.', 403);
         sec_login_after_password($u);
 
     case 'pw_forgot': // always answers the same (no hint whether the email exists)
