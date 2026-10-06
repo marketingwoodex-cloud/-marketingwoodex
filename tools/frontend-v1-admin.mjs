@@ -650,6 +650,16 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
     for (const [k, list] of [["quotes", db.quotes], ["invoices", db.invoices], ["projects", db.projects]]) for (const d of list || []) if (!d.client_id) { const c = m((d.client || {}).phone, (d.client || {}).email); if (c) { d.client_id = c; n[k]++; } }
     return n;
   }
+  // P20: client logos (mirror of api/logos-lib.php)
+  async function logos(action, inp, need) {
+    if (!["logos_get", "logos_save"].includes(action)) return null;
+    need(["owner", "admin", "editor"]); const F = path.join(ROOT, "assets/data/clients.json");
+    const clean = (d) => ({ title: String(d.title || "Our clients").slice(0, 80), kicker: String(d.kicker ?? "Trusted by").slice(0, 60), mode: d.mode === "slider" ? "slider" : "grid",
+      speed: Math.max(10, Math.min(90, +d.speed || 30)), grey: !!d.grey, show: d.show !== false,
+      items: (d.items || []).slice(0, 40).filter((i) => /^\/assets\/(uploads|img)\/[\w./-]+\.(webp|png|jpe?g|gif|svg)$/i.test(i.logo || "") && !String(i.logo).includes("..")).map((i) => ({ name: String(i.name || "").slice(0, 80), logo: i.logo, url: /^https?:\/\//i.test(i.url || "") ? String(i.url).slice(0, 300) : "" })) });
+    if (action === "logos_get") { let d = {}; try { d = JSON.parse(fs.readFileSync(F, "utf8")); } catch (e) {} return { ok: true, data: clean(d) }; }
+    const d = clean(inp.data || {}); fs.mkdirSync(path.dirname(F), { recursive: true }); fs.writeFileSync(F, JSON.stringify(d, null, 2)); return { ok: true, data: d };
+  }
   async function p19c(action, inp, need, db, ip) {
     if (!["client_comms", "clients_link"].includes(action)) return null;
     const u = need(["owner", "admin", "sales"]);
@@ -2138,7 +2148,7 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
         return done({ ok: true, rows: all.slice((page - 1) * per, page * per).map(({ user_name, action, target, ip, created_at }) => ({ user_name, action, target, ip, created_at })), total: all.length, per, page });
       }
       default: {
-        const r = (await p19c(action, inp, need, db, ip)) || (await p18j(action, inp, need, db, ip)) || (await p18h(action, inp, need, db, ip)) || (await p18g(action, inp, need, db, ip)) || (await p18e(action, inp, need, db, ip)) || (await pbk(action, inp, need, db, ip)) || (await a2(action, inp, need, db, ip)) || (await a17(action, inp, need, db, ip)) || (await a4(action, inp, need, db, ip)) || a5(action, inp, need, db, ip) || (await a6(action, inp, need, db, ip)) || (await a7(action, inp, need, db, ip)) || (await a8(action, inp, need, db, ip)) || (await p8(action, inp, need, db, ip, req)) || (await p10(action, inp, need, db, ip, req)) || (await p12(action, inp, need, db, ip)) || (await p13(action, inp, need, db, ip)); if (r) return r;
+        const r = (await logos(action, inp, need)) || (await p19c(action, inp, need, db, ip)) || (await p18j(action, inp, need, db, ip)) || (await p18h(action, inp, need, db, ip)) || (await p18g(action, inp, need, db, ip)) || (await p18e(action, inp, need, db, ip)) || (await pbk(action, inp, need, db, ip)) || (await a2(action, inp, need, db, ip)) || (await a17(action, inp, need, db, ip)) || (await a4(action, inp, need, db, ip)) || a5(action, inp, need, db, ip) || (await a6(action, inp, need, db, ip)) || (await a7(action, inp, need, db, ip)) || (await a8(action, inp, need, db, ip)) || (await p8(action, inp, need, db, ip, req)) || (await p10(action, inp, need, db, ip, req)) || (await p12(action, inp, need, db, ip)) || (await p13(action, inp, need, db, ip)); if (r) return r;
         throw new Fail("Unknown action", 404);
       }
     }

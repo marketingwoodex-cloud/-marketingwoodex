@@ -396,3 +396,21 @@
   function init() { document.querySelectorAll(".wx-ba-r").forEach(function (r) { var w = r.parentNode; var f = function () { w.style.setProperty("--p", r.value + "%"); }; r.addEventListener("input", f); f(); }); }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init); else init();
 })();
+
+/* P20: home "Our clients" logos from /assets/data/clients.json (managed in Admin → Content → Client logos) */
+(function () {
+  var sec = document.getElementById("home-clients"); if (!sec || !window.fetch) return;
+  fetch("/assets/data/clients.json?v=" + Math.floor(Date.now() / 60000), { cache: "no-store" }).then(function (r) { return r.ok ? r.json() : null; }).then(function (d) {
+    if (!d || !d.items) return;
+    if (d.show === false || !d.items.length) { sec.hidden = true; return; }
+    var e = function (s) { return String(s || "").replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); };
+    var k = sec.querySelector(".hm-kicker"), h = sec.querySelector("h2"); if (k) k.textContent = d.kicker || ""; if (h) h.textContent = d.title || "Our clients";
+    var li = d.items.map(function (it) { var img = '<img src="' + e(it.logo) + '" alt="' + e(it.name) + '" width="320" height="160" loading="lazy">'; return "<li>" + (it.url ? '<a href="' + e(it.url) + '" target="_blank" rel="noopener" aria-label="' + e(it.name) + '">' + img + "</a>" : img) + "</li>"; }).join("");
+    var ul = sec.querySelector(".hm-logo-grid"); if (!ul) return;
+    sec.classList.toggle("lg-color", !d.grey);
+    if (d.mode === "slider") {
+      var box = document.createElement("div"); box.className = "hm-logo-slider"; box.innerHTML = '<ul class="hm-logo-run" style="animation-duration:' + (+d.speed || 30) + 's">' + li + li.replace(/<li>/g, '<li aria-hidden="true">') + "</ul>";
+      ul.replaceWith(box);
+    } else ul.innerHTML = li;
+  }).catch(function () {});
+})();

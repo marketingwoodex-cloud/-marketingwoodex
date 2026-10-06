@@ -103,6 +103,7 @@
       ["cities", "City pages", "map-pin", "owner,admin,editor"],
       ["faqs", "FAQ groups", "help-circle", "owner,admin,editor"],
       ["testimonials", "Testimonials", "message-square", "owner,admin,editor"],
+      ["logos", "Client logos", "image", "owner,admin,editor", null, "new"],
       ["team", "Team (on website)", "users", "owner,admin,editor"]] },
     ["media", "Media library", "image", "owner,admin,editor"],
     ["Marketing"],
