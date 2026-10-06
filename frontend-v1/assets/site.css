@@ -2367,3 +2367,24 @@ html:not(.js) .ih-faq-a,html:not(.js) .in-faq-a,html:not(.js) .ph-faq-a,html:not
 .dx-main h2[id]{scroll-margin-top:110px}
 .dx-hero--media{padding-bottom:150px}
 .dx-hero--media+.dx-wrap .dx-hero-media img{display:block;width:100%;height:auto;aspect-ratio:16/8;object-fit:cover}
+
+/* P20: services ticker (right side, bottom-to-top) + moving rule highlight */
+#home-page .hm-svc-rule{position:relative;overflow:hidden}
+#home-page .hm-svc-rule i{position:absolute;top:0;left:0;height:1px;width:17%;background:#fff;animation:hmRule 9s var(--ease,ease) infinite alternate}
+@keyframes hmRule{from{left:0}to{left:83%}}
+#home-page .hm-svc-cols{align-items:stretch}
+#home-page .hm-svc-ticker{display:flex;flex-direction:column;gap:22px;padding-top:0;min-height:0}
+#home-page .hm-tk-view{position:relative;flex:1;min-height:420px;max-height:580px;overflow:hidden;
+  -webkit-mask-image:linear-gradient(180deg,transparent 0,#000 18%,#000 78%,transparent 100%);mask-image:linear-gradient(180deg,transparent 0,#000 18%,#000 78%,transparent 100%)}
+#home-page .hm-tk-track{list-style:none;margin:0;padding:0;animation:hmTk 36s linear infinite}
+#home-page .hm-tk-view:hover .hm-tk-track{animation-play-state:paused}
+@keyframes hmTk{from{transform:translateY(0)}to{transform:translateY(-100%)}}
+#home-page .hm-tk-item{padding:28px 0;border-bottom:1px solid rgba(255,255,255,.18)}
+#home-page .hm-tk-head{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+#home-page .hm-tk-head svg{width:30px;height:30px;flex:none;fill:none;stroke:#fff;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+#home-page .hm-tk-head strong{font-size:1.35rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#fff}
+#home-page .hm-tk-head small{margin-left:auto;font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.5)}
+#home-page .hm-tk-item p{margin:0;max-width:52ch;font-size:.95rem;line-height:1.7;color:rgba(255,255,255,.66)}
+#home-page .hm-svc-ticker .hm-btn{align-self:flex-start}
+@media(max-width:1000px){#home-page .hm-tk-view{min-height:360px;max-height:400px}}
+@media(prefers-reduced-motion:reduce){#home-page .hm-tk-track{animation:none}#home-page .hm-tk-track[aria-hidden]{display:none}#home-page .hm-tk-view{overflow:auto;-webkit-mask-image:none;mask-image:none}#home-page .hm-svc-rule i{animation:none}}
