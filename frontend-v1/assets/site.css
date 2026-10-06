@@ -2388,3 +2388,25 @@ html:not(.js) .ih-faq-a,html:not(.js) .in-faq-a,html:not(.js) .ph-faq-a,html:not
 #home-page .hm-svc-ticker .hm-btn{align-self:flex-start}
 @media(max-width:1000px){#home-page .hm-tk-view{min-height:360px;max-height:400px}}
 @media(prefers-reduced-motion:reduce){#home-page .hm-tk-track{animation:none}#home-page .hm-tk-track[aria-hidden]{display:none}#home-page .hm-tk-view{overflow:auto;-webkit-mask-image:none;mask-image:none}#home-page .hm-svc-rule i{animation:none}}
+
+/* P20: Selected studies, white polished section */
+#home-page .hm-projects{background:#fff;color:#0c1628}
+#home-page .hm-projects .hm-section-head h2{color:#0c1628}
+#home-page .hm-projects .hm-kicker{color:#8a6a43}
+#home-page .hm-projects .hm-section-head p:last-child{color:#5b6472}
+#home-page .hm-about{background:#f4efe7}
+#home-page .hm-projects .wx-filter{gap:10px;margin:0 0 32px}
+#home-page .hm-projects .wx-filter button{opacity:1;background:#fff;color:#0c1628;border:1px solid rgba(12,22,40,.16);padding:10px 20px;font-weight:600;transition:background .25s,color .25s,border-color .25s,transform .25s}
+#home-page .hm-projects .wx-filter button:hover{border-color:#0c1628;transform:translateY(-1px)}
+#home-page .hm-projects .wx-filter button[aria-selected="true"]{background:#0c1628;border-color:#0c1628;color:#fff}
+#home-page .hm-projects .wx-filter-grid{gap:20px!important}
+#home-page .hm-projects .wx-filter-grid .hm-project{border-radius:18px;background:#e9e3d9;box-shadow:0 1px 2px rgba(12,22,40,.06),0 12px 30px -12px rgba(12,22,40,.22);transition:transform .5s cubic-bezier(.22,1,.36,1),box-shadow .5s,opacity .25s}
+#home-page .hm-projects .wx-filter-grid .hm-project:hover{transform:translateY(-6px);box-shadow:0 2px 4px rgba(12,22,40,.08),0 26px 50px -18px rgba(12,22,40,.38)}
+#home-page .hm-projects .wx-filter-grid .hm-project:after{background:linear-gradient(to top,rgba(12,22,40,.88) 0,rgba(12,22,40,.35) 38%,rgba(12,22,40,0) 62%)}
+#home-page .hm-projects .wx-filter-grid figcaption{left:20px;right:64px;bottom:20px}
+#home-page .hm-projects .wx-filter-grid figcaption small{color:#d9bf98;font-weight:600}
+#home-page .hm-projects .wx-filter-grid figcaption strong{font-size:1.1rem;color:#fff}
+#home-page .hm-projects .wx-filter-grid .hm-project:before{content:"\2197";position:absolute;z-index:3;right:18px;bottom:20px;width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:#fff;color:#0c1628;font-size:15px;opacity:0;transform:translateY(8px) scale(.9);transition:opacity .35s,transform .35s cubic-bezier(.22,1,.36,1)}
+#home-page .hm-projects .wx-filter-grid .hm-project:hover:before,#home-page .hm-projects .wx-filter-grid .hm-project:focus-visible:before{opacity:1;transform:none}
+@media(hover:none){#home-page .hm-projects .wx-filter-grid .hm-project:before{opacity:1;transform:none}}
+#home-page .hm-projects .hm-btn{background:#0c1628;color:#fff;border-color:#0c1628}
