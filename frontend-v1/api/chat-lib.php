@@ -7,7 +7,7 @@
 const CHAT_FILE = PRIVATE_DIR . '/chat.json';
 const CHAT_DEF = [
     'on' => true, 'ai' => true, 'emailAlert' => true, 'autoLead' => true,
-    'greeting' => 'Assalam-o-Alaikum, welcome to Woodex Interior. I can help with interior design, renovation, office fit-out and custom furniture. How may I assist you today? Our team is available Mon–Sat, 10:00 am – 7:30 pm.', 'noPrices' => true,
+    'greeting' => 'Assalam-o-Alaikum and welcome to Woodex Interior. Thank you for connecting with us. Tell us a little about your space (home, office or shop, and the city), and share your WhatsApp number. A designer from our team will join you shortly.', 'noPrices' => true,
     'hours' => 'Mon–Sat, 10:00 am – 7:30 pm',
     // Phase 11 — training (shared by website chat + WhatsApp agent)
     'tone' => 'designer', 'toneNote' => '', 'qa' => [], 'avoid' => "Competitor comparisons\nPolitics or religion\nLegal or medical advice\nExact final prices before a site visit", 'prices' => '',
@@ -19,6 +19,7 @@ const CHAT_DEF = [
 const CHAT_OLD_GREETING = 'Assalam-o-Alaikum! 👋 I am the Woodex assistant. Ask me anything about interior design, renovation, fit-out or prices. A team member can join any time.';
 function chat_cfg(): array {
     $s = jread(CHAT_FILE); $c = array_merge(CHAT_DEF, $s);
+    if (($s['greeting'] ?? '') === 'Assalam-o-Alaikum, welcome to Woodex Interior. I can help with interior design, renovation, office fit-out and custom furniture. How may I assist you today? Our team is available Mon–Sat, 10:00 am – 7:30 pm.') $c['greeting'] = CHAT_DEF['greeting']; // P20: upgrade the untouched P18 greeting
     if (!array_key_exists('noPrices', $s)) { // P18 E: one-time upgrade of settings saved before the designer tone existed
         if (($s['tone'] ?? 'friendly') === 'friendly') $c['tone'] = 'designer';
         if (($s['greeting'] ?? CHAT_OLD_GREETING) === CHAT_OLD_GREETING) $c['greeting'] = CHAT_DEF['greeting'];
@@ -114,7 +115,7 @@ function chat_ai_system(array $c): string {
     $avoid = array_filter(array_map('trim', preg_split('~\n~', (string)$cfg['avoid'])));
     return "You are the " . ($wa ? 'WhatsApp' : 'live-chat') . " assistant of {$co['name']} (Lahore, Pakistan). Tone: " . (CHAT_TONES[$cfg['tone']] ?? CHAT_TONES['friendly']) . '.' . ($cfg['toneNote'] ? ' ' . $cfg['toneNote'] : '') . "\n" .
         "Always reply in the same language and script the customer uses (English, Urdu script, or Roman Urdu). Keep answers short: 1–4 sentences, plain text, no markdown." . ($wa ? ' This is WhatsApp: you may use *bold* sparingly and 1 emoji at most.' : '') . "\n" .
-        "Goal: help, then collect the customer's name, " . ($wa ? '' : 'phone number, ') . "location/area and what they need so the team can call or book a site visit. Ask for one detail at a time, naturally.\n" .
+        "Goal: help, then collect the customer's name, " . ($wa ? '' : 'WhatsApp number (if they have not shared it, ask for it in your first reply and say a Woodex designer will join them shortly), ') . "location/area and what they need so the team can call or book a site visit. Ask for one detail at a time, naturally.\n" .
         "When a Q&A answer below matches the question, use it (you may rephrase). Never invent prices, discounts, timelines or promises that are not written below; say the team will confirm after a site visit. Currency is PKR.\n" .
         (!empty($cfg['noPrices']) ? "PRICES: never quote any price, rate, per-square-foot cost, budget, range or estimate — not even approximately, even if asked repeatedly. Explain that cost depends on scope, size, materials and site condition, and offer a free site visit or a detailed itemised quotation (the online cost estimator is at /estimator/).\n" : '') .
         ($avoid ? "Do NOT discuss these topics; politely say the team will help with that and move on: " . implode('; ', $avoid) . "\n" : '') .
@@ -130,7 +131,7 @@ function chat_ai_call(string $sys, array $turns): string {
     while ($turns && $turns[0]['role'] !== 'user') array_shift($turns); if (!$turns) return '';
     if ($p === 'anthropic') { $url = 'https://api.anthropic.com/v1/messages'; $h = ['x-api-key: ' . $key, 'anthropic-version: 2023-06-01', 'content-type: application/json']; $body = ['model' => $model, 'max_tokens' => 400, 'system' => $sys, 'messages' => $turns]; }
     else { $url = ai_chat_url($a); $h = ['authorization: Bearer ' . $key, 'content-type: application/json', 'HTTP-Referer: https://woodex.com.pk', 'X-Title: Woodex Chat']; $body = ['model' => $model, 'max_tokens' => 400, 'messages' => array_merge([['role' => 'system', 'content' => $sys]], $turns)]; }
-    $ch = curl_init($url); curl_setopt_array($ch, [CURLOPT_CAINFO => __DIR__ . '/cacert.pem', CURLOPT_POST => true, CURLOPT_HTTPHEADER => $h, CURLOPT_POSTFIELDS => json_encode($body), CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 25]);
+    $ch = curl_init($url); curl_setopt_array($ch, [CURLOPT_CAINFO => __DIR__ . '/cacert.pem', CURLOPT_POST => true, CURLOPT_HTTPHEADER => $h, CURLOPT_POSTFIELDS => json_encode($body), CURLOPT_RETURNTRANSFER => true, CURLOPT_CONNECTTIMEOUT => 5, CURLOPT_TIMEOUT => 14]);
     $raw = curl_exec($ch); $code = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE); curl_close($ch);
     if ($raw === false || $code >= 400) { error_log('chat ai: HTTP ' . $code); return ''; }
     $j = json_decode((string)$raw, true) ?: [];

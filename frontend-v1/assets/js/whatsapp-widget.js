@@ -121,7 +121,7 @@
       if (window.fbq) try { window.fbq("track", "Contact"); } catch (e) {}
     }
     // ---------- views + live chat
-    var CH = { greet: "Assalam-o-Alaikum, welcome to Woodex Interior. How may we help with your space today?", on: false, id: 0, tok: "", last: 0, timer: null, busy: false }, view = "home";
+    var CH = { greet: "Assalam-o-Alaikum and welcome to Woodex Interior. Thank you for connecting with us. Tell us a little about your space, and share your WhatsApp number. A designer from our team will join you shortly.", on: false, id: 0, tok: "", last: 0, timer: null, busy: false }, view = "home";
     try { var sv = JSON.parse(localStorage.getItem("wxChat") || "null"); if (sv && sv.id && sv.tok) { CH.id = sv.id; CH.tok = sv.tok; } } catch (e) {}
     function show(v) {
       view = v; ["home", "chat", "wa"].forEach(function (k) { panel.querySelector(".v-" + k).hidden = k !== v; });
@@ -152,6 +152,18 @@
     ta.addEventListener("keydown", function (e) { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); $(".wx-ch-form").requestSubmit ? $(".wx-ch-form").requestSubmit() : $(".wx-ch-form button").click(); } });
     // P18 D: typing status + photo / PDF / voice note (after the first message, when the chat exists)
     var lastTy = 0; ta.addEventListener("input", function () { if (CH.id && Date.now() - lastTy > 3000) { lastTy = Date.now(); chatApi({ action: "typing", chat_id: CH.id, token: CH.tok }).catch(function () {}); } });
+    // P20: offline / error fallback, so the visitor always gets a helpful answer and the lead is saved
+    var FB = { asked: false, saved: false };
+    function fallback(t) {
+      var L = $(".wx-ch-list"), ty = L.querySelector(".wx-typing"); if (ty) ty.remove();
+      var me = el("div", "wx-m me"); me.textContent = t; L.appendChild(me);
+      var ph = (t.replace(/[\s-]/g, "").match(/(\+?92|0)3\d{9}/) || [])[0], reply;
+      if (ph && !FB.saved) { FB.saved = true; post({ form: "whatsapp", name: "Website chat visitor", phone: ph, service: "Live chat", message: "Live chat (offline): " + t, page: location.pathname });
+        reply = "Thank you! We have your number " + ph + ". A Woodex designer will message you on WhatsApp " + (open ? "shortly" : "from 10:00 am (Mon–Sat)") + ". Anything you would like us to know about your space?"; }
+      else if (FB.saved) reply = "Noted, thank you. Our team will continue with you on WhatsApp soon.";
+      else { reply = FB.asked ? "To connect you with a designer, please type your WhatsApp number (for example 0300 1234567)." : "Thank you for your message! Please share your WhatsApp number and a Woodex designer will join you shortly."; FB.asked = true; }
+      var d = el("div", "wx-m them"); d.innerHTML = "<small>Woodex assistant</small>" + esc(reply); L.appendChild(d); L.scrollTop = L.scrollHeight;
+    }
     function sys(t) { var L = $(".wx-ch-list"), d = el("div", "wx-m sys"); d.textContent = t; L.appendChild(d); L.scrollTop = L.scrollHeight; }
     function sendFile(blob, name, voice) {
       if (!CH.id) return sys("Please type a short message first, then you can send photos or voice notes.");
@@ -185,11 +197,13 @@
       CH.busy = true;
       chatApi({ action: "send", chat_id: CH.id || 0, token: CH.tok, text: t, page: location.pathname, since: CH.last, _hp: $(".wx-ch-form [name=hp]").value }).then(function (r) {
         CH.busy = false; mine.remove();
+        if (r && r.ok && !r.messages) return fallback(t);
+        if (!r.ok && !CH.on) return fallback(t);
         if (!r.ok) { var ty = L.querySelector(".wx-typing"); if (ty) ty.remove(); var er = el("div", "wx-m sys"); er.innerHTML = esc(CH.on ? (r.error || "Could not send.") : "Our live team is away right now.") + ' <a href="https://wa.me/' + number + '?text=' + encodeURIComponent(t) + '" target="_blank" rel="noopener" style="font-weight:700;color:#0c1628">Continue on WhatsApp →</a>'; L.appendChild(er); return; }
         if (r.token) { CH.id = r.chat_id; CH.tok = r.token; CH.last = 0; localStorage.setItem("wxChat", JSON.stringify({ id: CH.id, tok: CH.tok })); L.innerHTML = ""; }
         draw(r.messages); startPoll();
         if (window.gtag && r.token) try { window.gtag("event", "chat_start"); } catch (x) {}
-      }).catch(function () { CH.busy = false; var ty = L.querySelector(".wx-typing"); if (ty) ty.textContent = "Connection problem. Please try again."; });
+      }).catch(function () { CH.busy = false; mine.remove(); fallback(t); });
     });
     chatApi({ action: "cfg" }).then(function (r) {
       CH.on = !!(r && r.ok && r.on); CH.greet = (r && r.greeting) || CH.greet; show(CH.on && CH.id ? "chat" : "home"); if (CH.on && CH.id) { poll(); startPoll(); }

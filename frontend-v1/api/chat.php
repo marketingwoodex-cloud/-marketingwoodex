@@ -11,6 +11,7 @@ $in = json_decode((string)file_get_contents('php://input'), true) ?: [];
 $act = (string)($in['action'] ?? 'cfg');
 if (!is_file(DB_FILE)) out(['ok' => true, 'on' => false]);
 $cfg = chat_cfg();
+@set_time_limit(60);
 try {
 chat_migrate();
 if ($act === 'cfg') out(['ok' => true, 'on' => (bool)$cfg['on'], 'greeting' => $cfg['greeting'], 'hours' => $cfg['hours'], 'open' => chat_open_now(), 'ai' => (bool)$cfg['ai']]);
