@@ -1,0 +1,32 @@
+-- Woodex: import in phpMyAdmin (database u128159657_woodex -> Import). Creates tables + 1 owner login.
+-- Login: admin@woodex.com.pk / Woodex@2026Temp  (change it after first login: My security)
+SET NAMES utf8mb4;
+SET NAMES utf8mb4;
+
+CREATE TABLE IF NOT EXISTS wx_users (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(120) NOT NULL, email VARCHAR(190) NOT NULL UNIQUE,
+        role VARCHAR(20) NOT NULL DEFAULT 'editor', pass_hash VARCHAR(255) NOT NULL, active TINYINT(1) NOT NULL DEFAULT 1, pw_ver INT NOT NULL DEFAULT 1,
+        created_at DATETIME NOT NULL, last_login DATETIME NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS wx_activity (id INT AUTO_INCREMENT PRIMARY KEY, user_id INT NULL, user_name VARCHAR(120) NULL, action VARCHAR(60) NOT NULL,
+        target VARCHAR(255) NULL, ip VARCHAR(64) NULL, created_at DATETIME NOT NULL, INDEX(created_at)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS wx_settings (k VARCHAR(80) PRIMARY KEY, v TEXT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS wx_throttle (ip VARCHAR(64) PRIMARY KEY, n INT NOT NULL, t INT NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS wx_leads (id INT AUTO_INCREMENT PRIMARY KEY, created_at DATETIME NOT NULL, source VARCHAR(30) NOT NULL, page VARCHAR(200) NULL,
+        name VARCHAR(120) NOT NULL, phone VARCHAR(40) NULL, email VARCHAR(190) NULL, service VARCHAR(190) NULL, message TEXT NULL, fields TEXT NULL,
+        stage VARCHAR(20) NOT NULL DEFAULT 'new', assigned_to INT NULL, followup DATE NULL, value BIGINT NOT NULL DEFAULT 0, lost_reason VARCHAR(190) NULL,
+        client_id INT NULL, tags VARCHAR(400) NULL, is_read TINYINT(1) NOT NULL DEFAULT 0, ip VARCHAR(64) NULL,
+        INDEX(stage), INDEX(created_at), INDEX(client_id)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS wx_lead_notes (id INT AUTO_INCREMENT PRIMARY KEY, lead_id INT NOT NULL, t DATETIME NOT NULL, user_name VARCHAR(120) NULL,
+        text TEXT NOT NULL, sys TINYINT(1) NOT NULL DEFAULT 0, INDEX(lead_id)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS wx_clients (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(120) NOT NULL, phone VARCHAR(40) NULL, email VARCHAR(190) NULL,
+        company VARCHAR(120) NULL, city VARCHAR(80) NULL, address VARCHAR(300) NULL, notes TEXT NULL, created_at DATETIME NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS wx_notify_log (id INT AUTO_INCREMENT PRIMARY KEY, t DATETIME NOT NULL, event VARCHAR(12) NOT NULL, ref VARCHAR(120) NULL, name VARCHAR(160) NULL, channel VARCHAR(8) NOT NULL, dest VARCHAR(190) NOT NULL, result VARCHAR(255) NOT NULL, INDEX(t)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS wx_wa_seen (mid VARCHAR(190) PRIMARY KEY, t DATETIME NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+INSERT INTO wx_users (name,email,role,pass_hash,active,pw_ver,created_at) VALUES ('Woodex Owner','admin@woodex.com.pk','owner','$2y$10$K47zElAfdLph3XjekS/V/O4JGZRNJyJ3TWRfwQbovCL2jU5Nj8Zm6',1,1,NOW()) ON DUPLICATE KEY UPDATE pass_hash=VALUES(pass_hash), role='owner', active=1, pw_ver=pw_ver+1;
