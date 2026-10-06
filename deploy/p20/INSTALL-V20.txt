@@ -1,0 +1,17 @@
+WOODEX V20: ONE ZIP INSTALL ON HOSTINGER
+=========================================
+1. hPanel -> Websites -> woodex.com.pk -> Advanced -> PHP Configuration -> PHP 8.2 -> Save.
+2. hPanel -> File Manager -> public_html.
+   Upload woodex-v20-master.zip -> right-click -> Extract -> folder name EMPTY -> tick Overwrite.
+   (Files must land directly in public_html: index.html, admin/, api/, _database/ ...)
+3. Open https://woodex.com.pk/wx-install.php
+   Name and user are already filled. Type your DATABASE password (hPanel -> Databases) -> Install.
+   This creates _private/db.json + all 16 tables + the login.
+4. Open https://woodex.com.pk/admin/  -> Ctrl+F5 -> sign in:
+      Email: admin      Password: admin
+5. After testing: My security -> change password. Delete wx-install.php, wx-demo.php,
+   wx-check.php and the uploaded zip in File Manager.
+
+Something wrong? Open https://woodex.com.pk/wx-check.php and send a screenshot.
+Alternative to step 3: phpMyAdmin -> u128159657_woodex -> Import -> _database/woodex-v20.sql,
+then rename _private/db.example.json to db.json and put your password in "pass".
