@@ -414,3 +414,32 @@
     } else ul.innerHTML = li;
   }).catch(function () {});
 })();
+
+/* P20: 3D Studio capability list (auto-advance, hover/click) + reveal for trust block + about counters */
+(function () {
+  var sec = document.querySelector("#why.wx-cap");
+  if (sec) {
+    var rows = sec.querySelectorAll(".wx-cap-row"), imgs = sec.querySelectorAll(".wx-cap-img img"), ps = sec.querySelectorAll(".wx-cap-desc p"), cur = 0, t = null, inView = false;
+    var reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+    var go = function (i, user) {
+      cur = (i + rows.length) % rows.length;
+      [].forEach.call(rows, function (r, k) { r.classList.toggle("on", k === cur); r.classList.remove("run"); r.setAttribute("aria-selected", k === cur ? "true" : "false"); });
+      [].forEach.call(imgs, function (m, k) { m.classList.toggle("on", k === cur); });
+      [].forEach.call(ps, function (p, k) { p.classList.toggle("on", k === cur); });
+      clearTimeout(t); if (reduce || !inView) return;
+      void rows[cur].offsetWidth; rows[cur].classList.add("run");
+      t = setTimeout(function () { go(cur + 1); }, user ? 9000 : 5000);
+    };
+    [].forEach.call(rows, function (r, k) { r.addEventListener("click", function () { go(k, true); }); r.addEventListener("mouseenter", function () { if (matchMedia("(hover:hover)").matches) go(k, true); }); });
+    if ("IntersectionObserver" in window) new IntersectionObserver(function (es) { inView = es[0].isIntersecting; if (inView) go(cur); else clearTimeout(t); }, { threshold: .35 }).observe(sec);
+  }
+  var obs = "IntersectionObserver" in window ? new IntersectionObserver(function (es, o) { es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add("wx-in"); o.unobserve(e.target); } }); }, { threshold: .2 }) : null;
+  [].forEach.call(document.querySelectorAll(".wx-trust,#about-story"), function (el) { obs ? obs.observe(el) : el.classList.add("wx-in"); });
+  // count-up numbers in the about story stats
+  [].forEach.call(document.querySelectorAll("#about-story .ab-stat strong"), function (s) {
+    var m = /^(\d+)(\+?)$/.exec(s.textContent.trim()); if (!m || +m[1] > 3000 || +m[1] >= 1900) return;
+    var end = +m[1], plus = m[2]; s.textContent = "0" + plus;
+    var io = "IntersectionObserver" in window ? new IntersectionObserver(function (es, o) { if (!es[0].isIntersecting) return; o.disconnect(); var t0 = performance.now(); (function step(n) { var p = Math.min(1, (n - t0) / 1400), v = Math.round(end * (1 - Math.pow(1 - p, 3))); s.textContent = v + plus; if (p < 1) requestAnimationFrame(step); })(t0); }) : null;
+    io ? io.observe(s) : (s.textContent = end + plus);
+  });
+})();

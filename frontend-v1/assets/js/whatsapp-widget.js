@@ -46,21 +46,21 @@
       ".wx-wa-btn:hover{transform:scale(1.05)}.wx-wa-dot{position:absolute;top:3px;right:3px;width:12px;height:12px;border-radius:50%;background:#b8956a;border:2px solid #fff}",
       ".wx-wa-panel{position:fixed;right:18px;bottom:88px;width:340px;max-width:calc(100vw - 24px);max-height:calc(100vh - 110px);overflow:auto;background:#fff;border-radius:16px;box-shadow:0 20px 60px rgba(12,22,40,.25);z-index:9991;display:none;font-family:inherit;color:#0c1628}",
       ".wx-wa-panel.open{display:block;animation:wxwa .22s ease}@keyframes wxwa{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}",
-      ".wx-wa-head{background:linear-gradient(135deg,#0c1628,#1a2840);border-bottom:2px solid #b8956a;color:#fff;padding:14px 16px;display:flex;align-items:center;gap:10px}",
+      ".wx-wa-head{padding:14px 14px 14px 16px!important;background:linear-gradient(135deg,#0c1628,#1a2840);border-bottom:2px solid #b8956a;color:#fff;padding:14px 16px;display:flex;align-items:center;gap:10px}",
       ".wx-wa-av{width:38px;height:38px;border-radius:50%;background:#b8956a;color:#0c1628;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;flex:none}",
-      ".wx-wa-head .t{font-weight:700;font-size:15px;line-height:1.2}.wx-wa-head .s{font-size:12px;opacity:.85;display:flex;align-items:center;gap:6px}",
+      ".wx-wa-head .t{font-weight:700;font-size:15px;line-height:1.2}.wx-wa-head .s{font-size:12px;opacity:.85;display:flex;align-items:center;gap:6px;white-space:nowrap}.wx-wa-head>div{min-width:0}",
       ".wx-wa-head .s i{width:8px;height:8px;border-radius:50%;background:" + (open ? "#4ade80" : "#fbbf24") + ";display:inline-block}",
       ".wx-wa-x{margin-left:auto;background:none!important;border:0!important;color:#fff!important;font-size:22px;cursor:pointer;line-height:1;padding:0 4px!important;min-width:0!important}",
-      ".wx-wa-body{padding:14px;background:#f6f1e9}",
-      ".wx-wa-msg{background:#fff;border-radius:0 10px 10px 10px;padding:10px 12px;font-size:14px;line-height:1.5;box-shadow:0 1px 1px rgba(0,0,0,.08);margin-bottom:12px}",
-      ".wx-wa-lbl{display:block;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#54656f;margin:0 0 6px}",
-      ".wx-wa-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}",
-      ".wx-wa-chip{border:1px solid #ddd3c4!important;background:#fff!important;color:#0c1628!important;border-radius:999px!important;padding:6px 11px!important;font-size:12.5px!important;cursor:pointer;min-width:0!important;line-height:1.3!important}",
+      ".wx-wa-body{padding:16px 16px 6px;background:#f6f1e9}",
+      ".wx-wa-msg{background:#fff;border-radius:4px 14px 14px 14px;padding:12px 14px;font-size:14px;line-height:1.55;box-shadow:0 1px 2px rgba(12,22,40,.08);margin-bottom:16px}",
+      ".wx-wa-lbl{display:block;font-size:10.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:#8a6a43;margin:0 0 8px}",
+      ".wx-wa-chips{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:16px}",
+      ".wx-wa-chip{border:1px solid #ddd3c4!important;background:#fff!important;color:#0c1628!important;border-radius:999px!important;padding:7px 13px!important;font-size:12.5px!important;font-weight:500;cursor:pointer;min-width:0!important;line-height:1.3!important;transition:border-color .2s,background .2s}.wx-wa-chip:hover{border-color:#b8956a!important}",
       ".wx-wa-chip.on{background:#0c1628!important;border-color:#0c1628!important;color:#fff!important}",
-      ".wx-wa-in{width:100%;box-sizing:border-box;border:1px solid #d5dbe0;border-radius:10px;padding:9px 12px;font:inherit;font-size:14px;outline:none;background:#fff;color:#0c1628;margin:0 0 8px}",
-      ".wx-wa-in:focus{border-color:#b8956a;box-shadow:0 0 0 3px rgba(184,149,106,.18)}.wx-wa-two{display:grid;grid-template-columns:1fr 1fr;gap:8px}",
-      "textarea.wx-wa-in{resize:vertical;min-height:64px}",
-      ".wx-wa-send{width:100%;border:0!important;border-radius:999px!important;background:#0c1628!important;color:#fff!important;font-weight:700;font-size:15px;padding:12px!important;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}",
+      ".wx-wa-in{width:100%;box-sizing:border-box;border:1px solid #e3d9ca;border-radius:12px;padding:11px 13px;font:inherit;font-size:14px;outline:none;background:#fff;color:#0c1628;margin:0 0 10px;min-height:44px}",
+      ".wx-wa-in:focus{border-color:#b8956a;box-shadow:0 0 0 3px rgba(184,149,106,.18)}.wx-wa-two{display:grid;grid-template-columns:1fr 1fr;gap:10px}.wx-wa-two .wx-wa-in{min-width:0}",
+      "textarea.wx-wa-in{resize:none;min-height:72px;line-height:1.45}",
+      ".wx-wa-send{width:100%;border:0!important;border-radius:999px!important;background:#0c1628!important;color:#fff!important;font-weight:700;font-size:15px;padding:13px!important;margin-top:4px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 8px 18px -8px rgba(12,22,40,.5);transition:background .2s,transform .2s}.wx-wa-send:active{transform:scale(.98)}",
       ".wx-wa-send svg{width:18px;height:18px;fill:#25d366}.wx-wa-send:hover{background:#1a2840!important}",
       ".wx-wa-hp{position:absolute!important;left:-9999px!important;width:1px;height:1px;opacity:0}",
       ".wx-back{background:none!important;border:0!important;color:#fff!important;font-size:28px;line-height:1;padding:0 4px 0 0!important;min-width:0!important;cursor:pointer}",
@@ -75,7 +75,7 @@
       ".wx-ch-form button{width:42px;height:42px;border-radius:50%!important;border:0!important;background:#0c1628!important;display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none;padding:0!important;min-width:0!important}.wx-ch-form button svg{width:18px;height:18px;fill:#fff}",
       ".wx-ch-form button.wx-ch-x{width:36px;height:42px;background:transparent!important;border-radius:10px!important}.wx-ch-form button.wx-ch-x svg{fill:none;stroke:#54656f;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;width:21px;height:21px}.wx-ch-form button.wx-ch-x.rec{background:#e11d48!important;width:auto;padding:0 10px!important;color:#fff;font:600 12px/1 inherit}.wx-ch-form button.wx-ch-x.rec svg{display:none}",
       ".wx-m img{display:block;max-width:200px;max-height:200px;border-radius:8px;margin-top:2px}.wx-m audio{display:block;width:210px;max-width:100%;height:36px}.wx-m a.wx-f{color:inherit;font-weight:600}.wx-ch-ty{font-size:12px;color:#667781;font-style:italic;padding:2px 12px;min-height:18px;background:#f6f1e9}",
-      ".wx-wa-foot{padding:8px 14px 12px;background:#f6f1e9;font-size:11px;color:#667781;text-align:center}"
+      ".wx-wa-foot{padding:10px 18px 16px;line-height:1.5;background:#f6f1e9;font-size:11px;color:#667781;text-align:center}"
     ].join("\n");
     document.head.appendChild(el("style", null, css));
 
@@ -87,7 +87,7 @@
 
     var panel = el("div", "wx-wa-panel"); panel.setAttribute("role", "dialog"); panel.setAttribute("aria-label", "Chat with Woodex");
     panel.innerHTML =
-      '<div class="wx-wa-head"><button type="button" class="wx-back" aria-label="Back" hidden>&#8249;</button><span class="wx-wa-av">W</span><div><div class="t">Woodex Interior</div><div class="s"><i></i>' + (open ? "Online · usually replies in minutes" : "Away · we reply from 10:00 am (Mon–Sat)") + '</div></div><button type="button" class="wx-wa-x" aria-label="Close chat">&times;</button></div>' +
+      '<div class="wx-wa-head"><button type="button" class="wx-back" aria-label="Back" hidden>&#8249;</button><span class="wx-wa-av">W</span><div><div class="t">Woodex Interior</div><div class="s"><i></i>' + (open ? "Online · usually replies in minutes" : "Away · replies from 10 am, Mon–Sat") + '</div></div><button type="button" class="wx-wa-x" aria-label="Close chat">&times;</button></div>' +
       '<div class="v-home"><div class="wx-wa-body"><div class="wx-wa-msg">Assalam-o-Alaikum! How would you like to talk to us?</div>' +
       '<button type="button" class="wx-opt" data-go="chat"><span class="ic ch"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-4.9A8 8 0 1 1 21 12Z"/><path d="M8.5 11h.01M12 11h.01M15.5 11h.01"/></svg></span><span><b>Live chat with a designer</b><small>Instant answers here · our team can join</small></span></button>' +
       '<button type="button" class="wx-opt" data-go="wa"><span class="ic">' + waGlyph + '</span><span><b>WhatsApp</b><small>Message us on +92 322 4000768</small></span></button></div></div>' +
