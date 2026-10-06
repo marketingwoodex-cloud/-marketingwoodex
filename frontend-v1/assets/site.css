@@ -2481,3 +2481,21 @@ html:not(.js) .ih-faq-a,html:not(.js) .in-faq-a,html:not(.js) .ph-faq-a,html:not
 #home-page .hm-closing-v2 .hm-wrap,#home-page .hm-cta,#home-page .hm-cta>div{text-align:left;min-height:0}
 #home-page .hm-cta h2{max-width:none}
 #home-page .hm-faq-a,#home-page .hm-faq-a p{color:#5b6472!important}
+
+/* P20: home FAQ uses the Woodex Studio FAQ design + staggered animation */
+#home-page .hm-faq-v2 .section-head h2{color:#fff}
+#home-page .hm-faq-cta{display:inline-flex;align-items:center;gap:10px;margin-top:28px;color:#d9bf98;font-weight:600;text-decoration:none;border-bottom:1px solid rgba(217,191,152,.45);padding-bottom:3px;transition:gap .3s,color .3s}
+#home-page .hm-faq-cta:hover{gap:16px;color:#fff}
+#faq .faq-q{transition:color .3s,padding-left .35s cubic-bezier(.22,1,.36,1)}
+#faq .faq-q:hover{color:#d9bf98}
+#faq .faq-q .plus{transition:transform .4s cubic-bezier(.22,1,.36,1),background .3s,color .3s,border-color .3s}
+#faq .faq-q[aria-expanded="true"] .plus{transform:rotate(45deg)}
+#faq .faq-item{position:relative}
+#faq .faq-item:after{content:"";position:absolute;left:0;bottom:-1px;height:1px;width:0;background:#b8956a;transition:width .6s cubic-bezier(.22,1,.36,1)}
+#faq .faq-item:has(.faq-q[aria-expanded="true"]):after,#faq .faq-item:hover:after{width:100%}
+.anim-ready #faq .faq-wrap .faq-item{opacity:0;transform:translateY(22px);transition:opacity .6s ease,transform .7s cubic-bezier(.22,1,.36,1)}
+.anim-ready #faq .faq-wrap.seen .faq-item{opacity:1;transform:none}
+#faq .faq-wrap.seen .faq-item:nth-child(2){transition-delay:.07s}#faq .faq-wrap.seen .faq-item:nth-child(3){transition-delay:.14s}
+#faq .faq-wrap.seen .faq-item:nth-child(4){transition-delay:.21s}#faq .faq-wrap.seen .faq-item:nth-child(5){transition-delay:.28s}
+#faq .faq-wrap.seen .faq-item:nth-child(6){transition-delay:.35s}#faq .faq-wrap.seen .faq-item:nth-child(n+7){transition-delay:.42s}
+@media(prefers-reduced-motion:reduce){.anim-ready #faq .faq-wrap .faq-item{opacity:1;transform:none;transition:none}}
