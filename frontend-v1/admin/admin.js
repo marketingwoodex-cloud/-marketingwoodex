@@ -434,7 +434,7 @@
   fillIcons(document);
   api("status").then(function (st) {
     if (!st.ok) { showAuth("login"); return ($("#l-err").textContent = st.error || "Admin API is not reachable"); }
-    if (st.needsSetup) return showAuth("setup", st);
+    if (st.needsSetup || st.dbError) { location.replace("/wx-install.php"); return; }
     if (st.dbError) { showAuth("db", st); return $("#d-name").focus(); }
     if (st.user) return api("me").then(function (r) { r.ok ? signedIn(r) : signedOut(); });
     showAuth("login");

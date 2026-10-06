@@ -38,7 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$locked) {
             $done = true;
         } catch (Throwable $e) {
             $m = $e->getMessage();
-            $err = (stripos($m, 'Access denied') !== false) ? 'Database name, user or password is wrong. Check hPanel → Databases → MySQL (you can reset the password there).' : preg_replace('~\(using password: \w+\)~', '', $m);
+            $err = (stripos($m, 'Unknown database') !== false) ? 'This database does not exist. hPanel → Databases → create it: name woodex, user woodex, any password → then come back.' : ((stripos($m, 'Access denied') !== false) ? 'Database name, user or password is wrong. Check hPanel → Databases → MySQL (you can reset the password there).' : preg_replace('~\(using password: \w+\)~', '', $m));
         }
     }
 }
@@ -52,7 +52,7 @@ button,.btn{display:inline-block;font:inherit;font-weight:700;border:0;border-ra
 <?php if ($done): ?>
 <div class="ok"><b>Installed.</b><br><?php echo implode('<br>', array_map($h, $log)); ?></div>
 <p><b>Sign in:</b> email <code>admin</code> · password <code>admin</code></p>
-<a class="btn" href="/admin/">Open admin →</a>
+<a class="btn" href="/admin/">Open admin →</a><script>setTimeout(function(){location.href="/admin/"},4000)</script>
 <p class="m">Next: change the password in <b>My security</b>, then delete <code>wx-install.php</code> in File Manager.</p>
 <?php else: ?>
 <?php if ($err) echo '<div class="err">' . $h($err) . '</div>'; if ($locked) echo '<div class="err">Too many wrong tries. Wait 15 minutes.</div>'; ?>
