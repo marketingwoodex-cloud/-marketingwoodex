@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /builder/
+Disallow: /api/
+Disallow: /admin/
+
+Sitemap: https://woodex.com.pk/sitemap.xml
