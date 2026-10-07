@@ -3,7 +3,7 @@ window.WX_BLOCKS = [
   { id: "cta", name: "Call-to-action band", icon: "📣", html: `
 <section class="wx-cta"><div class="wrap wx-cta-inner">
   <div><h2>Ready to plan your space?</h2><p>Share your brief and we will confirm the right next step within one working day.</p></div>
-  <div class="wx-actions"><a class="btn wx-btn-light" href="/contact/">Start your project</a><a class="btn wx-btn-outline wx-btn-light" href="/estimator/">Get an estimate</a></div>
+  <div class="wx-actions"><a class="btn wx-btn-light" href="/contact/">Start your project</a></div>
 </div></section>` },
 
   { id: "split", name: "Text + image", icon: "🖼️", html: `

@@ -8,18 +8,19 @@ const CHAT_FILE = PRIVATE_DIR . '/chat.json';
 const CHAT_DEF = [
     'on' => true, 'ai' => true, 'emailAlert' => true, 'autoLead' => true,
     'greeting' => 'Assalam-o-Alaikum and welcome to Woodex Interior. Thank you for connecting with us. Tell us a little about your space (home, office or shop, and the city), and share your WhatsApp number. A designer from our team will join you shortly.', 'noPrices' => true,
-    'hours' => 'Mon–Sat, 10:00 am – 7:30 pm',
+    'hours' => 'Mon–Sat, 9:30 am – 6:30 pm',
     // Phase 11 — training (shared by website chat + WhatsApp agent)
     'tone' => 'designer', 'toneNote' => '', 'qa' => [], 'avoid' => "Competitor comparisons\nPolitics or religion\nLegal or medical advice\nExact final prices before a site visit", 'prices' => '',
-    'openFrom' => '10:00', 'openTo' => '19:30', 'days' => [1, 2, 3, 4, 5, 6],
+    'openFrom' => '09:30', 'openTo' => '18:30', 'days' => [1, 2, 3, 4, 5, 6],
     'afterHours' => 'Thanks for your message! We are away right now. Leave your name and phone number and we will call you back first thing.',
     'waAgent' => false, 'waVerify' => '', 'waSecret' => '', 'waGreeting' => 'Assalam-o-Alaikum! Thank you for contacting Woodex Interior. How can we help you today?',
-    'knowledge' => "Woodex Interior is an interior design and build company in Lahore, Pakistan (since 2011).\nServices: interior design (homes, offices, retail, restaurants), renovation, office fit-out, turnkey design-build, architecture and house design (5 marla to 2 kanal), 3D visualization, custom furniture.\nProcess: free consultation → site visit and measurements → design and 3D views → quotation → execution → handover.\nWe work across Lahore and also take projects in Islamabad, Karachi and other cities.\nPrices depend on area, finishes and scope; a site visit gives an exact quotation. The online cost estimator is at /cost-estimator/ (if available).\nFor a quote or site visit ask for the client's name, phone number, area/location and what they need.",
+    'knowledge' => "Woodex Interior is an interior design and build company in Lahore, Pakistan (since 2011).\nServices: interior design (homes, offices, retail, restaurants), renovation, office fit-out, turnkey design-build, architecture and house design (5 marla to 2 kanal), 3D visualization, custom furniture.\nContact: phone/WhatsApp +92 322 4000768, email info@woodex.com.pk, office M-71 Zainab Tower, Model Town Link Road, Lahore. Office hours Mon–Sat 9:30 am – 6:30 pm.\nProcess: free consultation → site visit and measurements → design and 3D views → quotation → execution → handover.\nWe work across Lahore and also take projects in Islamabad, Karachi and other cities.\nPrices depend on area, finishes and scope; a site visit gives an exact quotation. The online cost estimator is at /estimator/.\nFor a quote or site visit ask for the client's name, phone number, area/location and what they need.",
 ];
 const CHAT_OLD_GREETING = 'Assalam-o-Alaikum! 👋 I am the Woodex assistant. Ask me anything about interior design, renovation, fit-out or prices. A team member can join any time.';
 function chat_cfg(): array {
     $s = jread(CHAT_FILE); $c = array_merge(CHAT_DEF, $s);
     if (($s['greeting'] ?? '') === 'Assalam-o-Alaikum, welcome to Woodex Interior. I can help with interior design, renovation, office fit-out and custom furniture. How may I assist you today? Our team is available Mon–Sat, 10:00 am – 7:30 pm.') $c['greeting'] = CHAT_DEF['greeting']; // P20: upgrade the untouched P18 greeting
+    if (($s['hours'] ?? '') === 'Mon–Sat, 10:00 am – 7:30 pm') { $c['hours'] = CHAT_DEF['hours']; if (($s['openFrom'] ?? '10:00') === '10:00' && ($s['openTo'] ?? '19:30') === '19:30') { $c['openFrom'] = CHAT_DEF['openFrom']; $c['openTo'] = CHAT_DEF['openTo']; } } // P28: new office hours
     if (!array_key_exists('noPrices', $s)) { // P18 E: one-time upgrade of settings saved before the designer tone existed
         if (($s['tone'] ?? 'friendly') === 'friendly') $c['tone'] = 'designer';
         if (($s['greeting'] ?? CHAT_OLD_GREETING) === CHAT_OLD_GREETING) $c['greeting'] = CHAT_DEF['greeting'];
