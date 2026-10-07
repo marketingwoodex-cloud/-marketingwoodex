@@ -98,6 +98,7 @@
       ["offers", "Broadcasts & offers", "send", "g:broadcast"],
       ["wauto", "Automations", "zap", "g:broadcast"],
       ["settings/connections", "Connect WhatsApp", "zap", "g:settings"]] },
+    ["telegram", "Telegram", "send", "owner,admin,editor"],
     ["updates", "Client updates", "send", "g:updates"],
     ["train", "AI agent", "sparkles", "g:ai"],
     ["Website"],

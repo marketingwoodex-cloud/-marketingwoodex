@@ -26,7 +26,7 @@
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
   function post(body) { try { return fetch("/api/forms.php", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body), keepalive: true }).catch(function () {}); } catch (e) { return null; } }
   // Office hours: Mon–Sat 10:00–19:30 Pakistan time (UTC+5, no DST)
-  function officeOpen() { var d = new Date(Date.now() + 5 * 36e5), day = d.getUTCDay(), m = d.getUTCHours() * 60 + d.getUTCMinutes(); return day !== 0 && m >= 600 && m < 1170; }
+  function officeOpen() { var d = new Date(Date.now() + 5 * 36e5), day = d.getUTCDay(), m = d.getUTCHours() * 60 + d.getUTCMinutes(); return day !== 0 && m >= 570 && m < 1110; }
 
   function init() {
     var cfg = window.WOODEX_CONFIG || {};
@@ -75,6 +75,7 @@
       ".wx-ch-form button{width:42px;height:42px;border-radius:50%!important;border:0!important;background:#0c1628!important;display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none;padding:0!important;min-width:0!important}.wx-ch-form button svg{width:18px;height:18px;fill:#fff}",
       ".wx-ch-form button.wx-ch-x{width:36px;height:42px;background:transparent!important;border-radius:10px!important}.wx-ch-form button.wx-ch-x svg{fill:none;stroke:#54656f;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;width:21px;height:21px}.wx-ch-form button.wx-ch-x.rec{background:#e11d48!important;width:auto;padding:0 10px!important;color:#fff;font:600 12px/1 inherit}.wx-ch-form button.wx-ch-x.rec svg{display:none}",
       ".wx-m img{display:block;max-width:200px;max-height:200px;border-radius:8px;margin-top:2px}.wx-m audio{display:block;width:210px;max-width:100%;height:36px}.wx-m a.wx-f{color:inherit;font-weight:600}.wx-ch-ty{font-size:12px;color:#667781;font-style:italic;padding:2px 12px;min-height:18px;background:#f6f1e9}",
+      ".wx-opt .ic.tg{background:#229ED9}.wx-opt .ic.tg svg{width:20px;height:20px;fill:#fff}.wx-ch-q{display:flex;gap:6px;overflow-x:auto;padding:6px 10px 2px;background:#f6f1e9;scrollbar-width:none}.wx-ch-q::-webkit-scrollbar{display:none}.wx-ch-q button{flex:none;border:1px solid #d9c7ab!important;background:#fff!important;color:#0c1628!important;border-radius:999px!important;padding:6px 12px!important;font:600 12.5px/1.2 inherit;cursor:pointer;min-width:0!important}.wx-ch-q button:hover{border-color:#b8956a!important;background:#fbf6ee!important}.wx-ch-q .tg{background:#229ED9!important;border-color:#229ED9!important;color:#fff!important}",
       ".wx-wa-foot{padding:10px 18px 16px;line-height:1.5;background:#f6f1e9;font-size:11px;color:#667781;text-align:center}"
     ].join("\n");
     document.head.appendChild(el("style", null, css));
@@ -87,11 +88,12 @@
 
     var panel = el("div", "wx-wa-panel"); panel.setAttribute("role", "dialog"); panel.setAttribute("aria-label", "Chat with Woodex");
     panel.innerHTML =
-      '<div class="wx-wa-head"><button type="button" class="wx-back" aria-label="Back" hidden>&#8249;</button><span class="wx-wa-av">W</span><div><div class="t">Woodex Interior</div><div class="s"><i></i>' + (open ? "Design team online · replies in a few minutes" : "Away · replies from 10 am, Mon–Sat") + '</div></div><button type="button" class="wx-wa-x" aria-label="Close chat">&times;</button></div>' +
+      '<div class="wx-wa-head"><button type="button" class="wx-back" aria-label="Back" hidden>&#8249;</button><span class="wx-wa-av">W</span><div><div class="t">Woodex Interior</div><div class="s"><i></i>' + (open ? "Design team online · replies in a few minutes" : "Away · replies from 9:30 am, Mon–Sat") + '</div></div><button type="button" class="wx-wa-x" aria-label="Close chat">&times;</button></div>' +
       '<div class="v-home"><div class="wx-wa-body"><div class="wx-wa-msg">Assalam-o-Alaikum! How would you like to talk to us?</div>' +
       '<button type="button" class="wx-opt" data-go="chat"><span class="ic ch"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-4.9A8 8 0 1 1 21 12Z"/><path d="M8.5 11h.01M12 11h.01M15.5 11h.01"/></svg></span><span><b>Live chat with a designer</b><small>Instant answers here · our team can join</small></span></button>' +
-      '<button type="button" class="wx-opt" data-go="wa"><span class="ic">' + waGlyph + '</span><span><b>WhatsApp</b><small>Message us on +92 322 4000768</small></span></button></div></div>' +
-      '<div class="v-chat" hidden><div class="wx-ch-list" aria-live="polite"></div><div class="wx-ch-ty" aria-live="polite"></div><form class="wx-ch-form"><input class="wx-wa-hp" name="hp" tabindex="-1" autocomplete="off" aria-hidden="true"><button type="button" class="wx-ch-x" data-x="file" aria-label="Send a photo or PDF" title="Send a photo or PDF"><svg viewBox="0 0 24 24"><path d="m16 6-8.414 8.586a2 2 0 0 0 2.829 2.829l8.414-8.586a4 4 0 1 0-5.657-5.657l-8.379 8.551a6 6 0 1 0 8.485 8.485l8.379-8.551"/></svg></button><input type="file" class="wx-ch-fi" accept="image/jpeg,image/png,image/webp,application/pdf" hidden><textarea rows="1" maxlength="2000" placeholder="Type your message…" aria-label="Message"></textarea><button type="button" class="wx-ch-x" data-x="rec" aria-label="Record a voice note" title="Record a voice note"><svg viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><path d="M12 19v3"/></svg></button><button type="submit" aria-label="Send">' + sendGlyph + '</button></form></div>' +
+      '<button type="button" class="wx-opt" data-go="wa"><span class="ic">' + waGlyph + '</span><span><b>WhatsApp</b><small>Message us on +92 322 4000768</small></span></button>' +
+      '<button type="button" class="wx-opt" data-tg hidden><span class="ic tg"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21.9 4.3 18.7 19.4c-.2 1-.9 1.3-1.8.8l-4.9-3.6-2.4 2.3c-.3.3-.5.5-1 .5l.4-5 9.1-8.2c.4-.4-.1-.6-.6-.2L6.2 13.1 1.4 11.6c-1-.3-1-1 .2-1.5L20.6 2.8c.9-.3 1.6.2 1.3 1.5Z"/></svg></span><span><b>Telegram</b><small class="wx-tg-s">Chat with us on Telegram</small></span></button></div></div>' +
+      '<div class="v-chat" hidden><div class="wx-ch-list" aria-live="polite"></div><div class="wx-ch-ty" aria-live="polite"></div><div class="wx-ch-q" hidden></div><form class="wx-ch-form"><input class="wx-wa-hp" name="hp" tabindex="-1" autocomplete="off" aria-hidden="true"><button type="button" class="wx-ch-x" data-x="file" aria-label="Send a photo or PDF" title="Send a photo or PDF"><svg viewBox="0 0 24 24"><path d="m16 6-8.414 8.586a2 2 0 0 0 2.829 2.829l8.414-8.586a4 4 0 1 0-5.657-5.657l-8.379 8.551a6 6 0 1 0 8.485 8.485l8.379-8.551"/></svg></button><input type="file" class="wx-ch-fi" accept="image/jpeg,image/png,image/webp,application/pdf" hidden><textarea rows="1" maxlength="2000" placeholder="Type your message…" aria-label="Message"></textarea><button type="button" class="wx-ch-x" data-x="rec" aria-label="Record a voice note" title="Record a voice note"><svg viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><path d="M12 19v3"/></svg></button><button type="submit" aria-label="Send">' + sendGlyph + '</button></form></div>' +
       '<div class="v-wa" hidden><div class="wx-wa-body"><div class="wx-wa-msg">' + esc(greet) + '</div>' +
       '<span class="wx-wa-lbl">Service</span><div class="wx-wa-chips" data-g="svc">' + SERVICES.map(function (s) { return '<button type="button" class="wx-wa-chip' + (s[0] === pageSvc ? " on" : "") + '" data-v="' + esc(s[0]) + '">' + esc(s[0]) + "</button>"; }).join("") + "</div>" +
       '<span class="wx-wa-lbl">I would like to</span><div class="wx-wa-chips" data-g="int">' + INTENTS.map(function (x, i) { return '<button type="button" class="wx-wa-chip' + (i === 0 ? " on" : "") + '" data-v="' + i + '">' + esc(x[0]) + "</button>"; }).join("") + "</div>" +
@@ -205,7 +207,21 @@
         if (window.gtag && r.token) try { window.gtag("event", "chat_start"); } catch (x) {}
       }).catch(function () { CH.busy = false; mine.remove(); fallback(t); });
     });
+    function goTg() { // continue this chat on Telegram (same conversation) or just open the bot
+      var w = window.open("about:blank", "_blank");
+      var fin = function (u) { if (w) w.location = u; else location.href = u; };
+      if (!CH.id) return fin("https://t.me/" + CH.tg.bot);
+      chatApi({ action: "tglink", chat_id: CH.id, token: CH.tok }).then(function (r) { fin(r && r.ok ? r.link : "https://t.me/" + CH.tg.bot); }).catch(function () { fin("https://t.me/" + CH.tg.bot); });
+    }
+    function quick(r) {
+      var q = (r.quick || []).slice(0, 6), box = $(".wx-ch-q"); if (!box || (!q.length && !r.tg)) return;
+      box.innerHTML = q.map(function (x, i) { return '<button type="button" data-q="' + i + '">' + esc(x.label) + "</button>"; }).join("") + (r.tg ? '<button type="button" class="tg" data-qtg>Continue on Telegram</button>' : "");
+      box.hidden = false;
+      box.addEventListener("click", function (e) { var b = e.target.closest("button"); if (!b) return; if (b.hasAttribute("data-qtg")) return goTg(); var x = q[+b.dataset.q]; if (!x) return; ta.value = x.text || x.label; $(".wx-ch-form").requestSubmit ? $(".wx-ch-form").requestSubmit() : $(".wx-ch-form button[type=submit]").click(); });
+    }
     chatApi({ action: "cfg" }).then(function (r) {
+      if (r && r.ok && r.tg && r.tg.bot) { CH.tg = r.tg; var t = panel.querySelector("[data-tg]"); t.hidden = false; if (r.tg.waDown) panel.querySelector(".wx-tg-s").textContent = "WhatsApp is busy right now: reach us on Telegram"; t.addEventListener("click", goTg); }
+      if (r && r.ok && r.on) quick(r);
       CH.on = !!(r && r.ok && r.on); CH.greet = (r && r.greeting) || CH.greet; show(CH.on && CH.id ? "chat" : "home"); if (CH.on && CH.id) { poll(); startPoll(); }
     }).catch(function () { show("home"); });
     function toggle(force) {
