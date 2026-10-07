@@ -1993,7 +1993,7 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
     if (has("\\b(where|address|location|office|map|visit you|kahan)")) return "Our studio is at " + co.address + ". Do give us a call on " + co.phones + " before coming so a designer is free to sit with you, and bring any photos or plans you have.";
     if (has("\\b(phone|number|call|contact|whatsapp|email|rabta)")) return "Sure. You can call or WhatsApp us on " + co.phones + ", or email " + co.email + ". If it is easier, leave your number here and we will call you.";
     if (has("\\b(human|agent|person|team|representative|banda|insaan)")) return "Of course, I have asked a designer to join this chat. They will reply here shortly. [HUMAN]";
-    if (has("\\b(kitchen|wardrobe|bedroom|furniture)")) return "We design and build kitchens, wardrobes and furniture in our own workshop, so the finished piece matches the drawing exactly. If you can share the room size and a photo of the space, a designer can suggest a layout. Which city are you in?";
+    if (has("\\b(kitchen|wardrobe|bedroom|furniture)")) return "We design and build kitchens, wardrobes and furniture to the drawing, so the finished piece matches the drawing exactly. If you can share the room size and a photo of the space, a designer can suggest a layout. Which city are you in?";
     if (has("\\b(office|workplace|fit-?out|commercial|shop|retail|restaurant|cafe)")) return "That is the kind of project we do a lot of. For commercial spaces the layout and services matter more than finishes, so we always start with a site visit. How big is the space, and when would you like it ready?";
     if (has("\\b(renovat|remodel|repair|old house|refurb)")) return "Renovations go much smoother when the house is surveyed before any finishes are chosen, since wiring, plumbing and damp often decide the plan. Is it the whole house or a few rooms?";
     if (has("\\b(service|services|design|interior|ceiling|3d|architect)")) return "We handle the full journey, from design and 3D views to building and handover, all with one team. Tell me a little about your space, where it is and what you would like to change, and I can point you in the right direction.";
@@ -2065,7 +2065,7 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
     return null;
   }
   async function p10(action, inp, need, db, ip, req) {
-    if (!/^(chat_|notif_)/.test(action)) return null;
+    if (!/^(chat_|notif_|tg_)/.test(action)) return null;
     ensureChat(db); ensureCrm(db); const SALES = ["owner", "admin", "sales"], done = (o) => { save(db); return o; };
     const get = (id) => { const c = db.chats.find((x) => x.id === +id); if (!c) throw new Fail("Chat not found", 404); return c; };
     switch (action) {

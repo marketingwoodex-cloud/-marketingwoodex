@@ -257,3 +257,5 @@
     });
   };
 })();
+/* P39 Phase 4: composer layout (Reply/Note toggle above the input) */
+(function () { var s = document.createElement("style"); s.textContent = ".lc-in{flex-wrap:wrap}.lc-in .lc-mode{flex-direction:row;flex-basis:100%;order:-1}.lc-in textarea{flex:1 1 220px;min-width:180px}.lc-top select#lc-as{min-width:140px;width:auto}"; document.head.appendChild(s); })();
