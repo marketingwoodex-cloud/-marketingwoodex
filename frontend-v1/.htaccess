@@ -21,11 +21,17 @@ RewriteRule ^_private(/|$) - [F,L]
 RewriteRule (^|/)\.(?!well-known) - [F,L]
 </IfModule>
 
+# Block internal PHP libraries, logs and dev files from direct web access
+<FilesMatch "(-lib\.php|^router\.php|^error_log|\.log|\.sql|\.bak|\.md)$">
+Require all denied
+</FilesMatch>
+
 <IfModule mod_headers.c>
 Header always set X-Content-Type-Options "nosniff"
 Header always set X-Frame-Options "SAMEORIGIN"
 Header always set Referrer-Policy "strict-origin-when-cross-origin"
 Header always set Strict-Transport-Security "max-age=31536000"
+Header always set Permissions-Policy "camera=(), microphone=(), geolocation=()"
 <FilesMatch "\.(css|js|webp|jpg|jpeg|png|gif|svg|woff2)$">
 Header set Cache-Control "public, max-age=2592000"
 </FilesMatch>

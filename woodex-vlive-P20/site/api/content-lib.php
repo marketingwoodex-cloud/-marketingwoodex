@@ -10,7 +10,7 @@ if (!defined('PRIVATE_DIR')) { http_response_code(404); exit; }
 
 const CMS_FILE   = PRIVATE_DIR . '/content.json';
 const CMS_TYPES  = ['post', 'study', 'testimonial', 'member', 'faq', 'city'];
-const BIZ_DEF = ['email' => 'woodexinterior.pk@gmail.com', 'phone1' => '+92 322 4000768', 'phone2' => '+92 321 4686884', 'wa' => '+92 322 4000768', 'addr1' => 'M-71, Zainab Tower', 'addr2' => 'Model Town Link Road', 'city' => 'Lahore', 'country' => 'Pakistan', 'days' => 'Mon–Sat', 'open' => '10:00', 'close' => '19:30'];
+const BIZ_DEF = ['email' => 'info@woodex.com.pk', 'phone1' => '+92 322 4000768', 'phone2' => '+92 322 4000768', 'wa' => '+92 322 4000768', 'addr1' => 'M-71, Zainab Tower', 'addr2' => 'Model Town Link Road', 'city' => 'Lahore', 'country' => 'Pakistan', 'days' => 'Mon–Sat', 'open' => '10:00', 'close' => '19:30', 'facebook' => '', 'instagram' => '', 'linkedin' => '', 'youtube' => '', 'tiktok' => '', 'pinterest' => '', 'x' => ''];
 const BIZ_ASSETS = ['assets/site.js', 'assets/js/whatsapp-widget.js'];
 const CMS_PAGES  = ['post' => 'insights', 'study' => 'projects'];
 const AI_SECRETS = ['anthropicKey', 'openaiKey', 'openrouterKey', 'customKey'];
@@ -35,7 +35,7 @@ function sitemap_add(string $rel): void {
     $f = ROOT_DIR . '/sitemap.xml'; if (!is_file($f)) return;
     $loc = 'https://woodex.com.pk/' . preg_replace('~index\.html$~', '', $rel); $x = (string)file_get_contents($f);
     if (strpos($x, '<loc>' . $loc . '</loc>') !== false || strpos($x, '</urlset>') === false) return;
-    file_put_contents($f, str_replace('</urlset>', '  <url><loc>' . htmlspecialchars($loc, ENT_XML1) . "</loc></url>\n</urlset>", $x), LOCK_EX);
+    file_put_contents($f, str_replace('</urlset>', '  <url><loc>' . htmlspecialchars($loc, ENT_XML1) . '</loc><lastmod>' . date('Y-m-d') . "</lastmod></url>\n</urlset>", $x), LOCK_EX);
 }
 /** P18 I: unlisted posts stay reachable by link but are kept out of the sitemap. */
 function sitemap_del(string $rel): void {
@@ -145,12 +145,21 @@ function content_actions(string $action, array $in): bool {
             out(['ok' => true, 'kinds' => $kinds]);
         case 'cms_sitemap_add':
             need($ED); $rel = (string)($in['rel'] ?? ''); if (!cms_safe_rel($rel) || !is_file(ROOT_DIR . '/' . $rel)) fail('Page not found'); sitemap_add($rel); out(['ok' => true]);
+        case 'cms_announce_get':
+            need($ED); $f = ROOT_DIR . '/assets/announce.json'; out(['ok' => true, 'ann' => array_merge(['on' => false, 'text' => '', 'link' => '', 'linkText' => '', 'style' => 'navy'], is_file($f) ? (array)json_decode((string)file_get_contents($f), true) : [])]);
+        case 'cms_announce_save':
+            $u = need($OA); $a = is_array($in['ann'] ?? null) ? $in['ann'] : [];
+            $o = ['on' => !empty($a['on']), 'text' => clip($a['text'] ?? '', 160), 'link' => clip($a['link'] ?? '', 300), 'linkText' => clip($a['linkText'] ?? '', 40), 'style' => in_array($a['style'] ?? '', ['navy', 'wood', 'cream'], true) ? $a['style'] : 'navy', 'v' => time()];
+            if ($o['on'] && $o['text'] === '') fail('Write the announcement text');
+            if ($o['link'] !== '' && !preg_match('~^(/[^\s"<>]*|https://[^\s"<>]+|tel:\+?[0-9 ]+|mailto:[^\s"<>]+)$~', $o['link'])) fail('The link must start with /, https://, tel: or mailto:');
+            file_put_contents(ROOT_DIR . '/assets/announce.json', json_encode($o, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), LOCK_EX); log_act($u, 'announce.save', $o['on'] ? 'on' : 'off'); out(['ok' => true, 'ann' => $o]);
         case 'cms_biz_get': need($ED); out(['ok' => true, 'biz' => array_merge(BIZ_DEF, $c['biz'] ?? []), 'applied' => array_merge(BIZ_DEF, $c['bizApplied'] ?? [])]);
         case 'cms_biz_save':
             $u = need($OA); $b = is_array($in['biz'] ?? null) ? $in['biz'] : []; $o = [];
             foreach (BIZ_DEF as $key => $def) { $v = clip($b[$key] ?? '', 160); $o[$key] = $v !== '' ? $v : $def; }
             if (!preg_match('~^[^@\s]+@[^@\s]+\.[^@\s]+$~', $o['email'])) fail('Check the email address');
             foreach (['phone1', 'phone2', 'wa'] as $key) if (strlen(preg_replace('~\D~', '', $o[$key])) < 10) fail('Check the phone numbers (use +92 format)');
+            foreach (['facebook','instagram','linkedin','youtube','tiktok','pinterest','x'] as $key) if ($o[$key] !== '' && !preg_match('~^https://[^\s"<>]+$~', $o[$key])) fail('Social links must start with https://');
             if (!preg_match('~^\d{2}:\d{2}$~', $o['open']) || !preg_match('~^\d{2}:\d{2}$~', $o['close'])) fail('Check the opening hours');
             $c['biz'] = $o; if (!empty($in['applied'])) $c['bizApplied'] = $o; cms_save_file($c); log_act($u, !empty($in['applied']) ? 'business.apply' : 'business.save', '');
             out(['ok' => true, 'biz' => $o, 'applied' => array_merge(BIZ_DEF, $c['bizApplied'] ?? [])]);

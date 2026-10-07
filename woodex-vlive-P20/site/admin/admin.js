@@ -92,6 +92,7 @@
       ["builder", "Page builder", "square-pen", "owner,admin,editor"],
       ["library", "Section library", "blocks", "owner,admin,editor"],
       ["global", "Header & footer", "panel-left", "owner,admin"],
+      ["heroes", "Hero slides", "image", "owner,admin,editor"],
       ["redirects", "Redirects", "refresh-cw", "owner,admin"]] },
     { g: "Content", icon: "book-open", id: "content", items: [
       ["blog", "Blog & insights", "book-open", "owner,admin,editor"],
@@ -103,6 +104,7 @@
       ["cities", "City pages", "map-pin", "owner,admin,editor"],
       ["faqs", "FAQ groups", "help-circle", "owner,admin,editor"],
       ["testimonials", "Testimonials", "message-square", "owner,admin,editor"],
+      ["logos", "Client logos", "image", "owner,admin,editor", null, "new"],
       ["team", "Team (on website)", "users", "owner,admin,editor"]] },
     ["media", "Media library", "image", "owner,admin,editor"],
     ["Marketing"],
@@ -110,15 +112,17 @@
     ["speed", "Speed", "gauge", "owner,admin,editor"],
     ["health", "Site health", "heart-pulse", "owner,admin,editor"],
     ["Settings"],
-    ["settings", "Settings", "settings", "owner,admin"],
-    ["business", "Business info", "building", "owner,admin", null, "hide"],
-    ["users", "Users & roles", "users", "owner,admin", null, "hide"],
-    ["activity", "Activity log", "activity", "owner,admin", null, "hide"],
-    ["backups", "Backups", "hard-drive", "owner,admin", null, "hide"],
-    ["maintenance", "Maintenance & error pages", "shield", "owner,admin", null, "hide"],
-    ["files", "File manager", "folder", "owner,admin,editor", null, "hide"],
-    ["database", "Database", "database", "owner,admin", null, "hide"],
-    ["system", "System check", "activity", "owner,admin", null, "hide"],
+    { g: "Settings", icon: "settings", id: "settings", items: [
+      ["business", "Business info", "building", "owner,admin"],
+      ["theme", "Theme, colours & fonts", "sparkles", "owner,admin"],
+      ["settings", "Integrations & APIs", "zap", "owner,admin"],
+      ["users", "Users & roles", "users", "owner,admin"],
+      ["backups", "Backups", "hard-drive", "owner,admin"],
+      ["maintenance", "Maintenance & error pages", "shield", "owner,admin"],
+      ["files", "File manager", "folder", "owner,admin,editor"],
+      ["database", "Database", "database", "owner,admin"],
+      ["activity", "Activity log", "activity", "owner,admin"],
+      ["system", "System check", "activity", "owner,admin"]] },
     ["security", "My security", "shield"]
   ];
   var navOpen = (function () { try { return JSON.parse(localStorage.getItem("wxNavOpen") || "{}"); } catch (e) { return {}; } })();
@@ -255,7 +259,6 @@
   }
   // P19 D: hubs — one sidebar item, related screens as tabs on top
   var HUBS = [
-    { id: "settings", items: [["settings", "General & APIs"], ["business", "Business info"], ["users", "Users & roles"], ["security", "Security"], ["backups", "Backups"], ["maintenance", "Maintenance"], ["files", "Files"], ["database", "Database"], ["activity", "Activity log"], ["system", "System check"]] },
     { id: "offers", items: [["offers", "Offers & broadcasts"], ["wauto", "Automation & templates"]] }
   ];
   function hubOf(v) { for (var i = 0; i < HUBS.length; i++) for (var j = 0; j < HUBS[i].items.length; j++) if (HUBS[i].items[j][0] === v) return HUBS[i]; return null; }

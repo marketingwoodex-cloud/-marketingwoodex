@@ -96,7 +96,7 @@
 "name": "Chart · column (Charts.css style)",
 "cat": "UI kit · Stats & charts",
 "icon": "▮",
-"html": "<section class=\"uk cream\"><div class=\"wrap\"><div class=\"uk-split\"><div><div class=\"uk-head l\"><p class=\"uk-k\">Growth</p><h2>Projects delivered per year</h2><p class=\"mut\">A steady climb since we opened our own workshop.</p></div></div><figure style=\"margin:0\" role=\"img\" aria-label=\"Projects per year: 2021 17, 2022 27, 2023 38, 2024 48, 2025 62\"><ul class=\"uk-col\"><li><b>17</b><i style=\"--v:28%\"></i></li><li><b>27</b><i style=\"--v:45%\"></i></li><li><b>38</b><i style=\"--v:62%\"></i></li><li><b>48</b><i style=\"--v:78%\"></i></li><li><b>62</b><i style=\"--v:100%\"></i></li></ul><ul class=\"uk-col-l\"><li>2021</li><li>2022</li><li>2023</li><li>2024</li><li>2025</li></ul></figure></div></div></section>"
+"html": "<section class=\"uk cream\"><div class=\"wrap\"><div class=\"uk-split\"><div><div class=\"uk-head l\"><p class=\"uk-k\">Growth</p><h2>Projects delivered per year</h2><p class=\"mut\">A steady climb since we opened the drawing.</p></div></div><figure style=\"margin:0\" role=\"img\" aria-label=\"Projects per year: 2021 17, 2022 27, 2023 38, 2024 48, 2025 62\"><ul class=\"uk-col\"><li><b>17</b><i style=\"--v:28%\"></i></li><li><b>27</b><i style=\"--v:45%\"></i></li><li><b>38</b><i style=\"--v:62%\"></i></li><li><b>48</b><i style=\"--v:78%\"></i></li><li><b>62</b><i style=\"--v:100%\"></i></li></ul><ul class=\"uk-col-l\"><li>2021</li><li>2022</li><li>2023</li><li>2024</li><li>2025</li></ul></figure></div></div></section>"
 },
 {
 "id": "uk-chart-bar",
@@ -243,7 +243,7 @@
 "name": "Page header · breadcrumb",
 "cat": "UI kit · Components",
 "icon": "›",
-"html": "<section class=\"uk cream\"><div class=\"wrap\"><nav aria-label=\"Breadcrumb\"><ol class=\"uk-crumb\"><li><a href=\"/\">Home</a></li><li><a href=\"/services/\">Services</a></li><li aria-current=\"page\">Kitchens</li></ol></nav><h1>Kitchens made in our own workshop</h1><p class=\"mut\" style=\"max-width:640px\">Made-to-measure kitchens with soft-close fittings, installed by our team.</p></div></section>"
+"html": "<section class=\"uk cream\"><div class=\"wrap\"><nav aria-label=\"Breadcrumb\"><ol class=\"uk-crumb\"><li><a href=\"/\">Home</a></li><li><a href=\"/services/\">Services</a></li><li aria-current=\"page\">Kitchens</li></ol></nav><h1>Kitchens made to the drawing</h1><p class=\"mut\" style=\"max-width:640px\">Made-to-measure kitchens with soft-close fittings, installed by our team.</p></div></section>"
 },
 {
 "id": "uk-card-img",

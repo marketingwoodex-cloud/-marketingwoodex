@@ -83,7 +83,7 @@
     (blocks || []).forEach(function (b) {
       if (b.t === "h") { close(); ensure(); out += "<h2>" + esc(b.text) + "</h2>"; }
       else if (b.t === "p") { if (!String(b.text || "").trim()) return; ensure(); out += "<p>" + inl(b.text) + "</p>"; }
-      else if (b.t === "list") { var it = (b.items || []).filter(function (x) { return String(x).trim(); }); if (!it.length) return; ensure(); out += "<ul" + (listCls ? ' class="' + listCls + '"' : "") + ">" + it.map(function (x) { return "<li>" + inl(x) + "</li>"; }).join("") + "</ul>"; }
+      else if (b.t === "list") { var it = (b.items || []).filter(function (x) { return String(x).trim(); }); if (!it.length) return; ensure(); var lt = b.ol ? "ol" : "ul"; out += "<" + lt + (listCls && !b.ol ? ' class="' + listCls + '"' : "") + ">" + it.map(function (x) { return "<li>" + inl(x) + "</li>"; }).join("") + "</" + lt + ">"; }
       else if (b.t === "quote") { if (!b.text) return; ensure(); out += "<blockquote>" + inl(b.text) + "</blockquote>"; }
       else if (b.t === "ba") { if (!b.before || !b.after) return; close(); out += '<figure class="wx-ba" ' + rv + '=""><div class="wx-ba-w"><img src="' + esc(b.after) + '" alt="' + esc((b.caption || "Project") + " after") + '" width="1920" height="1280" loading="lazy" decoding="async"><img class="wx-ba-b" src="' + esc(b.before) + '" alt="' + esc((b.caption || "Project") + " before") + '" width="1920" height="1280" loading="lazy" decoding="async"><span class="wx-ba-l b">Before</span><span class="wx-ba-l a">After</span><input class="wx-ba-r" type="range" min="0" max="100" value="50" aria-label="Drag to compare before and after"></div>' + (b.caption ? "<figcaption>" + esc(b.caption) + "</figcaption>" : "") + "</figure>"; }
       else if (b.t === "gallery") { var gi = (b.imgs || []).filter(function (x) { return x.src; }); if (!gi.length) return; close(); out += '<div ' + rv + '=""><div class="wx-gal">' + gi.map(function (x, k) { return '<img src="' + esc(x.src) + '" alt="' + esc(x.alt || (b.caption || "Project photo") + " " + (k + 1)) + '" width="1200" height="900" loading="lazy" decoding="async">'; }).join("") + "</div>" + (b.caption ? '<p class="wx-gal-c">' + esc(b.caption) + "</p>" : "") + "</div>"; }
@@ -111,7 +111,7 @@
   }
   /* P17 templates: section order / on-off / hero style come from the item's template (W.tplFor); no template = original layout */
   var TPL_DEF = { hero: "image", toc: false, meta: true, facts: true, sections: [{ k: "body", on: true }, { k: "summary", on: true }, { k: "faqs", on: true }, { k: "quote", on: true }, { k: "related", on: true }] };
-  function tplOf(type, it) { var x = W.tplFor && W.tplFor(type, it); return x && x.sections ? x : TPL_DEF; }
+  function tplOf(type, it) { var x = W.tplFor && W.tplFor(type, it); return x && x.sections ? x : type === "post" ? Object.assign({}, TPL_DEF, { toc: true }) : TPL_DEF; }
   function tocIds(html, rv) {
     var toc = [], n = 0;
     html = html.replace(/<h2([^>]*)>([\s\S]*?)<\/h2>/g, function (m, a, t) { if (/\bid=/.test(a)) return m; var id = "s-" + (++n) + "-" + plain(t.replace(/<[^>]+>/g, "")).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40); toc.push([id, plain(t.replace(/<[^>]+>/g, ""))]); return "<h2" + a + ' id="' + id + '">' + t + "</h2>"; });
@@ -166,6 +166,7 @@
     var d = it.data || {}, seo = it.seo || {}, url = SITE + "/" + T[type].folder + "/" + it.slug + "/";
     var title = seo.title || it.title + " | Woodex Interior", desc = seo.desc || d.dek || "", og = absUrl(seo.og || (d.hero || {}).src || "");
     var cta = shell.slice(j);
+    if (type === "post") cta = cta.replace(/\n?<section class="wx-trust"[\s\S]*?<\/section>\n?/, "\n");
     if (d.ctaTitle) cta = cta.replace(/(<section class="[a-z]+-section" id="cta"[\s\S]*?<h2[^>]*>)[\s\S]*?(<\/h2>)/, function (m, a, b) { return a + esc(d.ctaTitle) + b; });
     var h = shell.slice(0, i + 24) + "\n" + mainHtml(type, it, others) + "\n    " + cta;
     h = h.replace(/<title>[\s\S]*?<\/title>/, "<title>" + esc(title) + "</title>");
@@ -208,7 +209,9 @@
         if (h2 && /short version/i.test(h2.textContent)) { data.summaryTitle = h2.textContent.trim(); $$("li", c).forEach(function (li) { data.summary.push(toMd(li)); }); return; }
         if (tg === "H2" || tg === "H3") data.blocks.push({ t: "h", text: c.textContent.trim() });
         else if (tg === "P") data.blocks.push({ t: "p", text: toMd(c) });
-        else if (tg === "UL" || tg === "OL") data.blocks.push({ t: "list", items: $$("li", c).map(toMd) });
+        else if (tg === "UL" || tg === "OL") data.blocks.push(tg === "OL" ? { t: "list", ol: true, items: $$("li", c).map(toMd) } : { t: "list", items: $$("li", c).map(toMd) });
+        else if (tg === "TABLE" || (tg === "DIV" && c.matches(".wx-tbl"))) { data.blocks.push({ t: "table", text: $$("tr", c).map(function (tr) { return "| " + $$("th,td", tr).map(function (x) { return x.textContent.replace(/\|/g, "/").trim(); }).join(" | ") + " |"; }).join("\n") }); }
+        else if (tg === "ASIDE" && c.matches(".wx-cta")) { var ca = q("a", c); data.blocks.push({ t: "cta", title: tx("h3", c), text: tx("p", c), href: ca ? ca.getAttribute("href") : "/contact/", label: ca ? ca.textContent.replace(/\s*→\s*$/, "").trim() : "" }); }
         else if (tg === "BLOCKQUOTE") data.blocks.push({ t: "quote", text: toMd(c) });
         else if (tg === "DIV" || tg === "SECTION" || tg === "ARTICLE") walk(c);
       });
@@ -298,7 +301,7 @@
     if (j.title) it.title = j.title; if (j.dek) d.dek = j.dek; if (j.kicker) d.kicker = j.kicker;
     if (Array.isArray(j.blocks)) d.blocks = j.blocks.map(function (b) {
       var t = b.t || b.type;
-      if (t === "list") return { t: "list", items: (b.items || []).map(String) };
+      if (t === "list") return b.ol ? { t: "list", ol: true, items: (b.items || []).map(String) } : { t: "list", items: (b.items || []).map(String) };
       if (t === "table") return { t: "table", text: Array.isArray(b.rows) ? b.rows.map(function (r) { return [].concat(r).join(" | "); }).join("\n") : String(b.text || "") };
       if (t === "faq") return { t: "faq", text: Array.isArray(b.items) ? b.items.map(function (f) { return f.q + "\n" + f.a; }).join("\n\n") : String(b.text || "") };
       if (t === "cta") return { t: "cta", title: b.title || "", text: b.text || "", label: b.label || "Book a free consultation", href: b.href || "/contact/" };
@@ -336,7 +339,7 @@
         var body;
         if (b.t === "h") body = '<input class="bk-h" data-f="text" value="' + esc(b.text) + '" placeholder="Section heading">';
         else if (b.t === "p") body = '<textarea data-f="text" rows="3" placeholder="' + esc(b.hint || "Paragraph. Use **bold**, *italic*, [link](/contact/)") + '">' + esc(b.text) + "</textarea>" + (aiReady ? '<button type="button" class="btn sm ai bk-ai" data-improve>' + ic("sparkles") + "Improve</button>" : "");
-        else if (b.t === "list") body = '<textarea data-f="items" rows="4" placeholder="One point per line. **Label:** text">' + esc((b.items || []).join("\n")) + "</textarea>";
+        else if (b.t === "list") body = '<textarea data-f="items" rows="4" placeholder="One point per line. **Label:** text">' + esc((b.items || []).join("\n")) + "</textarea>" + '<label class="check" style="margin-top:6px"><input type="checkbox" data-f="ol"' + (b.ol ? " checked" : "") + '> Numbered list (1, 2, 3)</label>';
         else if (b.t === "quote") body = '<textarea data-f="text" rows="2" placeholder="Quote">' + esc(b.text) + "</textarea>";
         else if (b.t === "table") body = '<textarea data-f="text" rows="5" style="font-family:monospace;font-size:13px" placeholder="Item | Budget | Premium&#10;Kitchen | Rs 8 lakh | Rs 20 lakh&#10;(first line = header, use | between columns)">' + esc(b.text) + "</textarea>";
         else if (b.t === "faq") body = '<textarea data-f="text" rows="6" placeholder="Question one?&#10;Answer in 1–3 sentences.&#10;&#10;Question two?&#10;Answer…">' + esc(b.text) + "</textarea>";
@@ -447,7 +450,7 @@
         if (type === "study") { d.factsTitle = $("#ce-ft").value.trim(); d.factsNote = $("#ce-fn").value.trim(); d.facts = $$("#ce-facts .kvr").map(function (r) { return { k: $("[data-k=k]", r).value.trim(), v: $("[data-k=v]", r).value.trim() }; }); }
         d.blocks = $$("#ce-blocks .bk").map(function (b) {
           var o = d.blocks[+b.dataset.i] || {}, x = { t: o.t };
-          if (o.t === "list") x.items = $("[data-f=items]", b).value.split("\n").map(function (s) { return s.trim(); }).filter(Boolean);
+          if (o.t === "list") x.items = $("[data-f=items]", b).value.split("\n").map(function (s) { return s.trim(); }).filter(Boolean); if (o.t === "list" && $("[data-f=ol]", b) && $("[data-f=ol]", b).checked) x.ol = true;
           else if (o.t === "img") { x.src = o.src || ""; x.alt = $("[data-f=alt]", b).value.trim(); x.caption = $("[data-f=caption]", b).value.trim(); }
           else if (o.t === "ba") { x.before = o.before || ""; x.after = o.after || ""; x.caption = $("[data-f=caption]", b).value.trim(); }
           else if (o.t === "gallery") { x.imgs = (o.imgs || []).slice(); x.caption = $("[data-f=caption]", b).value.trim(); }

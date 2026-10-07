@@ -310,6 +310,10 @@
     return P;
   }
   function applyPairs(s, P) { P.forEach(function (p) { s = s.split(p[0]).join(p[1]); }); return s; }
+  var SOC = [["facebook", "Facebook", "M14 8h3V4h-3a4 4 0 0 0-4 4v2H8v4h2v7h4v-7h3l1-4h-4V8z"], ["instagram", "Instagram", "M4 8a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v8a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4z M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7 M17 6.8v.01"], ["linkedin", "LinkedIn", "M4 9h4v11H4z M6 4a2 2 0 1 0 0 4 2 2 0 0 0 0-4 M10 9h4v2a4 4 0 0 1 7 3v6h-4v-6a2 2 0 0 0-3 0v6h-4z"], ["youtube", "YouTube", "M3 7a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3v10a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3z M10 9l5 3-5 3z"], ["tiktok", "TikTok", "M14 3v11a3.5 3.5 0 1 1-3.5-3.5 M14 3a5 5 0 0 0 5 5"], ["pinterest", "Pinterest", "M12 3a9 9 0 0 0-3.3 17.4 M12 7a5 5 0 0 1 2 9.6c-1.5.6-3-.3-3-1.6 M11 11l-3 10"], ["x", "X (Twitter)", "M4 4l16 16 M20 4L4 20"]];
+  function socChanged(o, n) { return SOC.some(function (k) { return (o[k[0]] || "") !== (n[k[0]] || ""); }); }
+  function socHtml(n) { return SOC.filter(function (k) { return n[k[0]]; }).map(function (k) { return '<a data-soc="' + k[0] + '" href="' + esc(n[k[0]]) + '" target="_blank" rel="noopener" aria-label="' + k[1] + '"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="' + k[2] + '"/></svg></a>'; }).join(""); }
+  function applySoc(h, n) { return h.replace(/(<div class="footer-social"[^>]*>)([\s\S]*?)(<\/div>)/, function (m, a, b, c) { return a + b.replace(/<a data-soc="[^"]*"[\s\S]*?<\/a>/g, "") + socHtml(n) + c; }); }
   W.VIEWS.business = function (el) {
     el.innerHTML = head("Business info", "Business info", "") + '<p class="muted">Loading…</p>';
     api("cms_biz_get").then(function (r) {
@@ -318,18 +322,23 @@
       var F = [["email", "Email"], ["phone1", "Main phone"], ["phone2", "Second phone"], ["wa", "WhatsApp number"], ["addr1", "Address line 1"], ["addr2", "Address line 2"], ["city", "City"], ["country", "Country"]];
       el.innerHTML = head("Business info", "Business info", "") +
         '<div class="banner">' + ic("info") + "<span>These details appear on almost every page (about 85 pages, 1,500+ places). Change them here and press <b>Update website</b>: every page, the WhatsApp button and the search-engine data are updated together.</span></div>" +
-        '<div class="qe"><div class="qe-main"><div class="card card-b"><form id="bz-f"><div class="g2">' + F.map(function (f) { return '<label>' + f[1] + '<input id="bz-' + f[0] + '" value="' + esc(b[f[0]]) + '"' + (admin ? "" : " disabled") + "></label>"; }).join("") + "</div>" +
+        '<div class="tabs" id="bz-tabs"><button class="on" data-t="contact">Contact & hours</button><button data-t="brand">Brand & logo</button><button data-t="social">Social profiles</button></div><div data-bzp="brand" hidden></div>' +
+        '<div class="qe" data-bzp="form"><div class="qe-main"><div class="card card-b"><form id="bz-f"><div data-bzp="social" hidden><h4 class="sub-h" style="margin-top:0">Social profiles</h4><p class="muted">Paste full links (https://…). Filled profiles show as icons in the footer of every page after <b>Update website</b>. Leave empty to hide.</p><div class="g2">' + SOC.map(function (k) { return '<label>' + k[1] + '<input id="bz-' + k[0] + '" type="url" placeholder="https://" value="' + esc(b[k[0]] || "") + '"' + (admin ? "" : " disabled") + "></label>"; }).join("") + '</div></div><div data-bzp="contact"><div class="g2">' + F.map(function (f) { return '<label>' + f[1] + '<input id="bz-' + f[0] + '" value="' + esc(b[f[0]]) + '"' + (admin ? "" : " disabled") + "></label>"; }).join("") + "</div>" +
         '<h4 class="sub-h">Opening hours</h4><div class="g3"><label>Days<select id="bz-days">' + ["Mon–Sat", "Mon–Fri", "Mon–Sun"].map(function (d) { return "<option" + (b.days === d ? " selected" : "") + ">" + d + "</option>"; }).join("") + '</select></label><label>Opens<input type="time" id="bz-open" value="' + esc(b.open) + '"></label><label>Closes<input type="time" id="bz-close" value="' + esc(b.close) + '"></label></div>' +
-        '<p class="err" id="bz-err"></p>' + (admin ? '<div class="modal-actions" style="justify-content:flex-start"><button type="button" class="btn" id="bz-chk">' + ic("search") + 'Check changes</button><button class="btn pri" id="bz-go">' + ic("send") + "Update website</button></div>" : "") + '</form></div><div class="card" id="bz-res" hidden></div></div>' +
+        '</div><p class="err" id="bz-err"></p>' + (admin ? '<div class="modal-actions" style="justify-content:flex-start"><button type="button" class="btn" id="bz-chk">' + ic("search") + 'Check changes</button><button class="btn pri" id="bz-go">' + ic("send") + "Update website</button></div>" : "") + '</form></div><div class="card" id="bz-res" hidden></div></div>' +
         '<div class="qe-side"><div class="card card-b"><h4 class="side-h">How it shows</h4><div class="bz-prev" id="bz-prev"></div></div></div></div>';
       W.fillIcons(el);
-      function cur() { var o = {}; F.forEach(function (f) { o[f[0]] = $("#bz-" + f[0]).value.trim(); }); o.days = $("#bz-days").value; o.open = $("#bz-open").value; o.close = $("#bz-close").value; return o; }
+      var brandDone = false;
+      $("#bz-tabs").onclick = function (e) { var t = e.target.closest("button"); if (!t) return; [].forEach.call(this.children, function (x) { x.classList.toggle("on", x === t); }); var k = t.getAttribute("data-t");
+        el.querySelector('[data-bzp="brand"]').hidden = k !== "brand"; el.querySelector('[data-bzp="form"]').hidden = k === "brand"; el.querySelector('[data-bzp="contact"]').hidden = k !== "contact"; el.querySelector('[data-bzp="social"]').hidden = k !== "social";
+        if (k === "brand" && !brandDone && W.VIEWS.settings) { brandDone = true; var d = el.querySelector('[data-bzp="brand"]'); W.VIEWS.settings(d, ["general"]); var hide = function () { var x = d.querySelector(".ph"); if (x) x.hidden = true; }; hide(); setTimeout(hide, 300); } };
+      function cur() { var o = {}; F.forEach(function (f) { o[f[0]] = $("#bz-" + f[0]).value.trim(); }); SOC.forEach(function (k) { o[k[0]] = $("#bz-" + k[0]).value.trim(); }); o.days = $("#bz-days").value; o.open = $("#bz-open").value; o.close = $("#bz-close").value; return o; }
       function prev() { var o = cur(); $("#bz-prev").innerHTML = "<address>" + esc(o.addr1) + "<br>" + esc(o.addr2) + "<br>" + esc(o.city) + ", " + esc(o.country) + "</address><p><a>" + esc(o.phone1) + "</a><br><a>" + esc(o.phone2) + "</a><br><a>" + esc(o.email) + "</a></p><p><b>" + esc(hoursVariants(o)[0]) + "</b> · Sunday closed</p><p class='muted'>WhatsApp: wa.me/" + esc(digits(o.wa)) + "</p>"; }
       prev(); el.addEventListener("input", prev); el.addEventListener("change", prev);
       if (!admin) return;
       function scan(write) {
-        var P = bizPairs(applied, cur()), res = $("#bz-res");
-        if (!P.length) { res.hidden = false; res.innerHTML = '<div class="card-b">Nothing to change: the website already uses these details.</div>'; return Promise.resolve(); }
+        var P = bizPairs(applied, cur()), S = socChanged(applied, cur()), NB = cur(), res = $("#bz-res");
+        if (!P.length && !S) { res.hidden = false; res.innerHTML = '<div class="card-b">Nothing to change: the website already uses these details.</div>'; return Promise.resolve(); }
         res.hidden = false; res.innerHTML = '<div class="card-b"><b>' + (write ? "Updating" : "Checking") + ' pages…</b> <span id="bz-pn">0</span></div>';
         return bapi("pages").then(function (pr) {
           var pages = pr.pages || [], hits = [], i = 0, fails = [];
@@ -337,8 +346,8 @@
             return p.then(function () {
               return bapi("load", { path: pg.path }).then(function (lr) {
                 $("#bz-pn").textContent = ++i + " / " + pages.length; if (!lr.ok) return;
-                var h = applyPairs(lr.html, P); if (h === lr.html) return;
-                var n = P.reduce(function (a, q) { return a + (lr.html.split(q[0]).length - 1); }, 0); hits.push([pg.url, n]);
+                var h = applyPairs(lr.html, P); if (S) h = applySoc(h, NB); if (h === lr.html) return;
+                var n = P.reduce(function (a, q) { return a + (lr.html.split(q[0]).length - 1); }, 0) || 1; hits.push([pg.url, n]);
                 if (write) return bapi("save", { path: pg.path, html: h, mtime: lr.mtime }).then(function (s) { if (!s.ok) fails.push(pg.url); });
               });
             });

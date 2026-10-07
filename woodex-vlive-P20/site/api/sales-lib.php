@@ -47,8 +47,8 @@ function quote_put(array $x): array { return doc_put('wx_quotes', $x, ['no' => $
 
 // ---------------------------------------------------------------- business helpers
 function company_cfg(): array {
-    return array_merge(['name' => 'Woodex Interior', 'tagline' => 'Design · Build · Furniture', 'address' => 'M-71, Zainab Tower, Model Town Link Road, Lahore', 'phones' => '+92 322 4000768 · +92 321 4686884',
-        'email' => 'woodexinterior.pk@gmail.com', 'web' => 'woodex.com.pk', 'ntn' => '', 'bankName' => '', 'bankTitle' => '', 'bankAccount' => '', 'bankIban' => '', 'signName' => 'Imtiaz Ahmad', 'signTitle' => 'Director',
+    return array_merge(['name' => 'Woodex Interior', 'tagline' => 'Design · Build · Furniture', 'address' => 'M-71, Zainab Tower, Model Town Link Road, Lahore', 'phones' => '+92 322 4000768',
+        'email' => 'info@woodex.com.pk', 'web' => 'woodex.com.pk', 'ntn' => '', 'bankName' => '', 'bankTitle' => '', 'bankAccount' => '', 'bankIban' => '', 'signName' => 'Imtiaz Ahmad', 'signTitle' => 'Director',
         'signers' => [['name' => 'Imtiaz Ahmad', 'title' => 'Director'], ['name' => 'Nabeel Afzal', 'title' => 'Marketing Manager']],
         'banks' => [['bank' => 'Bank Alfalah', 'title' => 'WOODEX INTERIOR', 'account' => '02931007869105', 'iban' => 'PK06ALFH0293001007869105', 'branch' => 'Link Rd Model Town Br: Lahore', 'code' => '0293', 'use' => 'interior'],
                     ['bank' => 'Meezan Bank', 'title' => 'WOODEX FURNITURE', 'account' => '02810111519091', 'iban' => 'PK43MEZN0002810111519091', 'branch' => 'Model Town Link Road, Lahore', 'code' => '', 'use' => 'furniture']],

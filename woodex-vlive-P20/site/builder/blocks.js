@@ -3,7 +3,7 @@ window.WX_BLOCKS = [
   { id: "cta", name: "Call-to-action band", icon: "📣", html: `
 <section class="wx-cta"><div class="wrap wx-cta-inner">
   <div><h2>Ready to plan your space?</h2><p>Share your brief and we will confirm the right next step within one working day.</p></div>
-  <div class="wx-actions"><a class="btn wx-btn-light" href="/contact/">Start your project</a><a class="btn wx-btn-outline wx-btn-light" href="/estimator/">Get an estimate</a></div>
+  <div class="wx-actions"><a class="btn wx-btn-light" href="/contact/">Start your project</a></div>
 </div></section>` },
 
   { id: "split", name: "Text + image", icon: "🖼️", html: `
@@ -17,7 +17,7 @@ window.WX_BLOCKS = [
 
   { id: "split-rev", name: "Image + text", icon: "🪞", html: `
 <section class="wx-split wx-reverse"><div class="wrap wx-split-grid">
-  <div class="wx-split-copy"><p class="wx-kicker">Craft</p><h2>Made in our own workshop</h2>
+  <div class="wx-split-copy"><p class="wx-kicker">Craft</p><h2>Joinery made to the drawing</h2>
     <p>Kitchens, wardrobes and joinery built to the same drawings the site team uses, so everything fits on the first install.</p>
     <div class="wx-actions"><a class="btn wx-btn-outline" href="/projects/">See projects</a></div></div>
   <figure class="wx-split-media"><img src="/assets/img/img-f655d51401e8.webp" alt="Describe this image" loading="lazy" width="1600" height="1200"></figure>
@@ -103,7 +103,7 @@ window.WX_BLOCKS = [
   <ul class="wx-trust-list">
     <li><strong>200+ completed spaces</strong><span>Homes, offices, retail and hospitality.</span></li>
     <li><strong>In-house 3D studio</strong><span>See the space before work begins.</span></li>
-    <li><strong>Own furniture workshop</strong><span>Joinery made to the drawing.</span></li>
+    <li><strong>Clear programme</strong><span>Quantities, phasing and handover dates agreed up front.</span></li>
     <li><strong>Clear programme</strong><span>Dates agreed up front.</span></li>
   </ul>
 </div></section>` }
@@ -146,3 +146,35 @@ window.WX_ELEMENTS = (window.WX_ELEMENTS || []).concat([
   { id: "social", name: "Social icons", icon: "@", cat: "Widgets", html: `<div class="wx-social"><a href="https://www.instagram.com/" aria-label="Instagram" target="_blank" rel="noopener" data-wx-icon="instagram"></a><a href="https://www.facebook.com/" aria-label="Facebook" target="_blank" rel="noopener" data-wx-icon="facebook"></a><a href="https://www.linkedin.com/" aria-label="LinkedIn" target="_blank" rel="noopener" data-wx-icon="linkedin"></a><a href="https://www.youtube.com/" aria-label="YouTube" target="_blank" rel="noopener" data-wx-icon="youtube"></a></div>` },
   { id: "whatsapp", name: "WhatsApp button", icon: "☏", cat: "Widgets", html: `<a class="wx-wa" href="https://wa.me/923000000000" target="_blank" rel="noopener" aria-label="Chat on WhatsApp" data-wx-icon="message-circle"><span>WhatsApp</span></a>` }
 ]);
+
+/* Phase 2 — 8 more sections (library = 50). Styles: v1.css "wb-" block. */
+window.WX_BLOCKS.push(
+  { id: "team", name: "Team members", icon: "👥", html: `
+<section class="wb-sec"><div class="wrap"><header class="wx-block-head"><p class="wx-kicker">Studio</p><h2>The people behind your project</h2></header>
+  <div class="wb-team"><article><img src="/assets/img/img-00e6912a64f2.webp" alt="Team member" loading="lazy"><h3>Name Surname</h3><p>Principal designer</p></article><article><img src="/assets/img/img-197da8ddab9b.webp" alt="Team member" loading="lazy"><h3>Name Surname</h3><p>Project manager</p></article><article><img src="/assets/img/img-1d6ad6c77d0f.webp" alt="Team member" loading="lazy"><h3>Name Surname</h3><p>Site engineer</p></article><article><img src="/assets/img/img-1f4b4ef86cb5.webp" alt="Team member" loading="lazy"><h3>Name Surname</h3><p>Joinery lead</p></article></div>
+</div></section>` },
+  { id: "pricing", name: "Packages / pricing", icon: "💼", html: `
+<section class="wb-sec wb-cream"><div class="wrap"><header class="wx-block-head"><p class="wx-kicker">Packages</p><h2>Choose the level of service</h2></header>
+  <div class="wb-price"><article><h3>Design only</h3><p class="wb-p">Concept, 3D views and drawings</p><ul><li>Space planning</li><li>3D visuals</li><li>Material board</li></ul><a class="btn wx-btn-outline" href="/contact/">Ask about this</a></article><article class="on"><span class="wb-tag">Most chosen</span><h3>Design &amp; build</h3><p class="wb-p">One team from sketch to handover</p><ul><li>Everything in Design</li><li>Fit-out &amp; joinery</li><li>Site management</li></ul><a class="btn wx-btn-dark" href="/contact/">Start your project</a></article><article><h3>Turnkey</h3><p class="wb-p">Ready to use, furniture included</p><ul><li>Everything in Design &amp; build</li><li>Furniture &amp; styling</li><li>Aftercare</li></ul><a class="btn wx-btn-outline" href="/contact/">Ask about this</a></article></div>
+</div></section>` },
+  { id: "timeline", name: "Timeline", icon: "🕒", html: `
+<section class="wb-sec"><div class="wrap"><header class="wx-block-head"><p class="wx-kicker">How it runs</p><h2>Project timeline</h2></header>
+  <ol class="wb-time"><li><b>Week 1</b><h3>Brief &amp; site visit</h3><p>We measure, listen and agree the scope.</p></li><li><b>Week 2–3</b><h3>Design</h3><p>Layouts, 3D views and a clear quotation.</p></li><li><b>Week 4–10</b><h3>Build</h3><p>Fit-out and workshop joinery in parallel.</p></li><li><b>Handover</b><h3>Ready to use</h3><p>Snag list closed and aftercare begins.</p></li></ol>
+</div></section>` },
+  { id: "compare", name: "Comparison table", icon: "⚖️", html: `
+<section class="wb-sec wb-cream"><div class="wrap"><header class="wx-block-head"><p class="wx-kicker">Why one team</p><h2>Woodex vs separate contractors</h2></header>
+  <div class="wb-cmp"><table class="wx-tbl"><thead><tr><th></th><th>Woodex</th><th>Separate contractors</th></tr></thead><tbody><tr><td>One point of contact</td><td>✓</td><td>—</td></tr><tr><td>Fixed, itemised quotation</td><td>✓</td><td>Varies</td></tr><tr><td>Own joinery workshop</td><td>✓</td><td>—</td></tr><tr><td>Single handover &amp; warranty</td><td>✓</td><td>—</td></tr></tbody></table></div>
+</div></section>` },
+  { id: "banner", name: "Image banner", icon: "🏞️", html: `
+<section class="wb-banner"><img src="/assets/img/img-27c481fa9a3d.webp" alt="" loading="lazy"><div class="wrap"><p class="wx-kicker">Featured</p><h2>Interiors that work as well as they look</h2><a class="btn wx-btn-light" href="/projects/">See projects</a></div></section>` },
+  { id: "contactstrip", name: "Contact strip", icon: "📞", html: `
+<section class="wb-sec wb-cream"><div class="wrap wb-cstrip"><div><h3>Call us</h3><p><a href="tel:+923224000768">+92 322 4000768</a></p></div><div><h3>Email</h3><p><a href="mailto:info@woodex.com.pk">info@woodex.com.pk</a></p></div><div><h3>Visit</h3><p>M-71, Zainab Tower, Model Town Link Road, Lahore</p></div><div><h3>Hours</h3><p>Mon–Sat · 9:30–6:30</p></div></div></section>` },
+  { id: "posts", name: "Article cards", icon: "📰", html: `
+<section class="wb-sec"><div class="wrap"><header class="wx-block-head"><p class="wx-kicker">Insights</p><h2>From the studio</h2></header>
+  <div class="wb-posts"><a href="/insights/"><img src="/assets/img/img-27ed3ac85189.webp" alt="" loading="lazy"><span>Planning</span><h3>Article title goes here</h3></a><a href="/insights/"><img src="/assets/img/img-00e6912a64f2.webp" alt="" loading="lazy"><span>Materials</span><h3>Article title goes here</h3></a><a href="/insights/"><img src="/assets/img/img-197da8ddab9b.webp" alt="" loading="lazy"><span>Fit-out</span><h3>Article title goes here</h3></a></div>
+</div></section>` },
+  { id: "materials", name: "Material swatches", icon: "🎨", html: `
+<section class="wb-sec wb-cream"><div class="wrap"><header class="wx-block-head"><p class="wx-kicker">Materials</p><h2>Finishes we work with</h2></header>
+  <div class="wb-sw"><figure><i style="background:#8b5a3c"></i><figcaption>Walnut veneer</figcaption></figure><figure><i style="background:#d8c3a5"></i><figcaption>Natural oak</figcaption></figure><figure><i style="background:#e9e4dc"></i><figcaption>Matt lacquer</figcaption></figure><figure><i style="background:#3b3b3b"></i><figcaption>Graphite</figcaption></figure><figure><i style="background:#c9b79c"></i><figcaption>Travertine</figcaption></figure><figure><i style="background:#b8956a"></i><figcaption>Brushed brass</figcaption></figure></div>
+</div></section>` }
+);

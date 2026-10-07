@@ -52,8 +52,8 @@
 
   // ------------------------------------------------------------------ settings view
   W.VIEWS.settings = function (el, parts) {
-    var tab = parts[0] || "general", D;
-    el.innerHTML = head("Settings & APIs", "Settings", "") + '<div class="tabs" id="st-tabs">' + [["general", "General"], ["integrations", "Integrations"], ["system", "System"]].map(function (t) { return '<button data-t="' + t[0] + '" class="' + (tab === t[0] ? "on" : "") + '">' + t[1] + "</button>"; }).join("") + '</div><div id="st-b"><p class="muted">Loading…</p></div>';
+    var tab = parts[0] || "integrations", D, solo = tab === "general";
+    el.innerHTML = head(solo ? "Brand & logo" : "Integrations & APIs", "Settings", "") + '<div class="tabs" id="st-tabs"' + (solo ? " hidden" : "") + '>' + [["integrations", "Integrations"], ["system", "System status"]].map(function (t) { return '<button data-t="' + t[0] + '" class="' + (tab === t[0] ? "on" : "") + '">' + t[1] + "</button>"; }).join("") + '</div><div id="st-b"><p class="muted">Loading…</p></div>';
     $("#st-tabs").onclick = function (e) { var b = e.target.closest("button"); if (!b) return; tab = b.dataset.t; $$("#st-tabs button").forEach(function (x) { x.classList.toggle("on", x === b); }); draw(); };
     function load() { return api("set_get").then(function (r) { if (!r.ok) { $("#st-b").innerHTML = '<div class="card card-b">' + esc(r.error) + "</div>"; return; } D = r; draw(); }); }
     function draw() { if (!D) return; var B = $("#st-b"); if (tab === "general") general(B); else if (tab === "integrations") integrations(B); else system(B); W.fillIcons(B); }
@@ -64,7 +64,7 @@
         imgField("gn-logo", "Logo", g.logo, "Header logo on every page. PNG/SVG with a transparent background.") + imgField("gn-fav", "Favicon", g.favicon, "Browser tab icon. Square SVG or PNG (at least 64px).") + "</div>" + imgField("gn-share", "Default share image", g.share, "Shown on WhatsApp/Facebook for pages without their own image. 1200×630 is ideal.") +
         '<p class="err" id="gn-err"></p><div class="modal-actions" style="justify-content:flex-start"><button type="button" class="btn" id="gn-chk">' + ic("search") + 'Check changes</button><button class="btn pri" id="gn-go">' + ic("send") + 'Update website</button></div></form></div><div class="card" id="gn-res" hidden></div></div>' +
         '<div class="qe-side"><div class="card card-b"><h4 class="side-h">Preview</h4><div class="st-prev"><div class="st-tab"><img id="pv-fav" src="' + esc(g.favicon) + '" alt=""><span id="pv-name">' + esc(g.siteName) + '</span></div><div class="st-hdr"><img id="pv-logo" src="' + esc(g.logo) + '" alt=""></div><div class="st-share"><div id="pv-share" style="background-image:url(\'' + esc(g.share) + '\')"></div><small>WOODEX.COM.PK</small><b id="pv-name2">' + esc(g.siteName) + "</b></div></div></div>" +
-        '<div class="card card-b"><p class="muted" style="margin:0;font-size:13px">Contact details (phones, email, address, hours) are managed in <a href="#/business">Business info</a>.</p></div></div></div>';
+        '<div class="card card-b"' + (solo ? " hidden" : "") + '><p class="muted" style="margin:0;font-size:13px">Contact details (phones, email, address, hours) are managed in <a href="#/business">Business info</a>.</p></div></div></div>';
       function cur() { return { siteName: $("#gn-name").value.trim(), logo: $("#gn-logo input").value, favicon: $("#gn-fav input").value, share: $("#gn-share input").value }; }
       function pv() { if (!$("#gn-name")) return; var c = cur(); $("#pv-fav").src = c.favicon; $("#pv-logo").src = c.logo; $("#pv-share").style.backgroundImage = "url('" + c.share + "')"; $("#pv-name").textContent = $("#pv-name2").textContent = c.siteName; }
       $("#gn-name").oninput = pv;

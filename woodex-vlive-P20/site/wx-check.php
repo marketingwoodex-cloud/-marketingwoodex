@@ -3,7 +3,7 @@
    Shows PHP version, extensions, database connection, tables, and the last PHP errors.
    It never shows passwords. Press "Delete this check file" when you are done.
    Written for old PHP too (works on PHP 5.6+), so it runs even when the admin crashes. */
-error_reporting(E_ALL); ini_set('display_errors', '1');
+error_reporting(E_ALL); ini_set('display_errors', '0');
 header('Content-Type: text/html; charset=utf-8'); header('X-Robots-Tag: noindex'); header('Cache-Control: no-store');
 $root = dirname(__FILE__); $priv = $root . '/_private';
 if (isset($_POST['del'])) { @unlink(__FILE__); echo '<p style="font:16px sans-serif;padding:30px">Deleted. You can close this page.</p>'; exit; }
@@ -34,7 +34,10 @@ if (is_array($db) && extension_loaded('pdo_mysql')) {
         row($rows, false, 'Database connection', htmlspecialchars(preg_replace('~\(using password: \w+\)~', '', $m)), $hint);
     }
 }
-// last PHP errors
+// last PHP errors: only shown after the database password is entered (or before install)
+$dbc = is_file($priv . '/db.json') ? json_decode((string)file_get_contents($priv . '/db.json'), true) : null;
+$canLogs = !$dbc || (isset($_POST['dbpass']) && isset($dbc['pass']) && hash_equals((string)$dbc['pass'], (string)$_POST['dbpass']));
+if (isset($_POST['dbpass']) && !$canLogs) usleep(800000);
 $logs = ''; foreach (array($root . '/error_log', $root . '/api/error_log', $root . '/admin/error_log', ini_get('error_log')) as $lf) {
     if ($lf && @is_file($lf) && @is_readable($lf)) { $l = @file($lf); if ($l) $logs .= "== " . str_replace($root, 'public_html', $lf) . "\n" . implode('', array_slice($l, -25)) . "\n"; } }
 $bad = count(array_filter($rows, function ($r) { return !$r[0]; }));
@@ -45,6 +48,6 @@ $bad = count(array_filter($rows, function ($r) { return !$r[0]; }));
 <table><tr><th>Check</th><th>Result</th><th>How to fix</th></tr>
 <?php foreach ($rows as $r) echo '<tr><td>' . $r[1] . '</td><td class="' . ($r[0] ? 'ok' : 'no') . '">' . ($r[0] ? '✓ ' : '✗ ') . $r[2] . '</td><td>' . ($r[0] ? '' : $r[3]) . '</td></tr>'; ?>
 </table>
-<h3>Last PHP errors</h3><pre><?php echo $logs !== '' ? htmlspecialchars($logs) : 'No error_log file found. (hPanel → Files → File Manager → public_html/error_log)'; ?></pre>
+<h3>Last PHP errors</h3><?php if (!$canLogs) { ?><form method="post" autocomplete="off"><p>Enter your database password to see the error log.</p><input type="password" name="dbpass" required> <button>Show errors</button></form><?php } else { ?><pre><?php echo $logs !== '' ? htmlspecialchars($logs) : 'No error_log file found. (hPanel → Files → File Manager → public_html/error_log)'; ?></pre><?php } ?>
 <form method="post" onsubmit="return confirm('Delete wx-check.php from the server?')"><button name="del" value="1">Delete this check file</button></form>
 </main></body></html>

@@ -7,18 +7,20 @@
 const CHAT_FILE = PRIVATE_DIR . '/chat.json';
 const CHAT_DEF = [
     'on' => true, 'ai' => true, 'emailAlert' => true, 'autoLead' => true,
-    'greeting' => 'Assalam-o-Alaikum, welcome to Woodex Interior. I can help with interior design, renovation, office fit-out and custom furniture. How may I assist you today? Our team is available Mon–Sat, 10:00 am – 7:30 pm.', 'noPrices' => true,
-    'hours' => 'Mon–Sat, 10:00 am – 7:30 pm',
+    'greeting' => 'Assalam-o-Alaikum and welcome to Woodex Interior. Thank you for connecting with us. Tell us a little about your space (home, office or shop, and the city), and share your WhatsApp number. A designer from our team will join you shortly.', 'noPrices' => true,
+    'hours' => 'Mon–Sat, 9:30 am – 6:30 pm',
     // Phase 11 — training (shared by website chat + WhatsApp agent)
     'tone' => 'designer', 'toneNote' => '', 'qa' => [], 'avoid' => "Competitor comparisons\nPolitics or religion\nLegal or medical advice\nExact final prices before a site visit", 'prices' => '',
-    'openFrom' => '10:00', 'openTo' => '19:30', 'days' => [1, 2, 3, 4, 5, 6],
+    'openFrom' => '09:30', 'openTo' => '18:30', 'days' => [1, 2, 3, 4, 5, 6],
     'afterHours' => 'Thanks for your message! We are away right now. Leave your name and phone number and we will call you back first thing.',
     'waAgent' => false, 'waVerify' => '', 'waSecret' => '', 'waGreeting' => 'Assalam-o-Alaikum! Thank you for contacting Woodex Interior. How can we help you today?',
-    'knowledge' => "Woodex Interior is an interior design and build company in Lahore, Pakistan (since 2011).\nServices: interior design (homes, offices, retail, restaurants), renovation, office fit-out, turnkey design-build, architecture and house design (5 marla to 2 kanal), 3D visualization, custom furniture.\nProcess: free consultation → site visit and measurements → design and 3D views → quotation → execution → handover.\nWe work across Lahore and also take projects in Islamabad, Karachi and other cities.\nPrices depend on area, finishes and scope; a site visit gives an exact quotation. The online cost estimator is at /cost-estimator/ (if available).\nFor a quote or site visit ask for the client's name, phone number, area/location and what they need.",
+    'knowledge' => "Woodex Interior is an interior design and build company in Lahore, Pakistan (since 2011).\nServices: interior design (homes, offices, retail, restaurants), renovation, office fit-out, turnkey design-build, architecture and house design (5 marla to 2 kanal), 3D visualization, custom furniture.\nContact: phone/WhatsApp +92 322 4000768, email info@woodex.com.pk, office M-71 Zainab Tower, Model Town Link Road, Lahore. Office hours Mon–Sat 9:30 am – 6:30 pm.\nProcess: free consultation → site visit and measurements → design and 3D views → quotation → execution → handover.\nWe work across Lahore and also take projects in Islamabad, Karachi and other cities.\nPrices depend on area, finishes and scope; a site visit gives an exact quotation. The online cost estimator is at /estimator/.\nFor a quote or site visit ask for the client's name, phone number, area/location and what they need.",
 ];
 const CHAT_OLD_GREETING = 'Assalam-o-Alaikum! 👋 I am the Woodex assistant. Ask me anything about interior design, renovation, fit-out or prices. A team member can join any time.';
 function chat_cfg(): array {
     $s = jread(CHAT_FILE); $c = array_merge(CHAT_DEF, $s);
+    if (($s['greeting'] ?? '') === 'Assalam-o-Alaikum, welcome to Woodex Interior. I can help with interior design, renovation, office fit-out and custom furniture. How may I assist you today? Our team is available Mon–Sat, 10:00 am – 7:30 pm.') $c['greeting'] = CHAT_DEF['greeting']; // P20: upgrade the untouched P18 greeting
+    if (($s['hours'] ?? '') === 'Mon–Sat, 10:00 am – 7:30 pm') { $c['hours'] = CHAT_DEF['hours']; if (($s['openFrom'] ?? '10:00') === '10:00' && ($s['openTo'] ?? '19:30') === '19:30') { $c['openFrom'] = CHAT_DEF['openFrom']; $c['openTo'] = CHAT_DEF['openTo']; } } // P28: new office hours
     if (!array_key_exists('noPrices', $s)) { // P18 E: one-time upgrade of settings saved before the designer tone existed
         if (($s['tone'] ?? 'friendly') === 'friendly') $c['tone'] = 'designer';
         if (($s['greeting'] ?? CHAT_OLD_GREETING) === CHAT_OLD_GREETING) $c['greeting'] = CHAT_DEF['greeting'];
@@ -105,6 +107,7 @@ function chat_email_alert(array $c, string $text): void {
     smtp_send($crm, $to, 'New live chat on the website', "A visitor started a live chat.\n\nPage: " . $c['page'] . "\nMessage: " . $text . "\n\nReply in Admin → Live chat: https://$h/admin/#/chat/" . $c['id']);
 }
 
+const CHAT_FACTS = "Woodex Interior is a Lahore design-and-build studio founded in 2016 by Imtiaz Ahmad, with 200+ completed spaces (homes, offices, retail, restaurants, healthcare). Services: interior design, office and commercial fit-out, turnkey design-build, renovation, architecture, 3D visualization (Woodex 3D Studio) and custom furniture and joinery (Woodex Furniture). Works across Lahore, Islamabad, Karachi and nationwide. Process: 1) brief call, 2) site visit or drawings review, 3) concept, 3D views and an itemised bill of quantities, 4) build with one team on site and a clear handover. 3D renders come in 4K with two revision rounds. Helpful things for a client to share: location, approximate size (marla, kanal or sq ft), photos or a short video of the site, plans if any, timeline and the style they like.";
 /** System prompt built from the training screen (shared by website chat, WhatsApp and the test box). */
 function chat_ai_system(array $c): string {
     $cfg = chat_cfg(); $co = company_cfg(); $faq = [];
@@ -113,16 +116,36 @@ function chat_ai_system(array $c): string {
     $wa = ($c['channel'] ?? 'web') === 'wa';
     $avoid = array_filter(array_map('trim', preg_split('~\n~', (string)$cfg['avoid'])));
     return "You are the " . ($wa ? 'WhatsApp' : 'live-chat') . " assistant of {$co['name']} (Lahore, Pakistan). Tone: " . (CHAT_TONES[$cfg['tone']] ?? CHAT_TONES['friendly']) . '.' . ($cfg['toneNote'] ? ' ' . $cfg['toneNote'] : '') . "\n" .
-        "Always reply in the same language and script the customer uses (English, Urdu script, or Roman Urdu). Keep answers short: 1–4 sentences, plain text, no markdown." . ($wa ? ' This is WhatsApp: you may use *bold* sparingly and 1 emoji at most.' : '') . "\n" .
-        "Goal: help, then collect the customer's name, " . ($wa ? '' : 'phone number, ') . "location/area and what they need so the team can call or book a site visit. Ask for one detail at a time, naturally.\n" .
+        "STYLE: write like an experienced Woodex interior designer chatting with a client, not like a bot. Be warm, calm and natural, using everyday words and contractions. First respond to exactly what the person said (mention their space, city or problem), add one genuinely useful insight or tip from real project experience (what affects the result, what to prepare, a common mistake to avoid), then ask ONE simple follow-up question. Vary your wording; never repeat the same sentence twice in a chat; do not greet again after the first message; no bullet lists, no headings, no 'As an AI'. Use the customer's name once you know it. If asked directly whether you are a person, say honestly you are the Woodex studio assistant and a designer can join any time.\n" .
+        "Always reply in the same language and script the customer uses (English, Urdu script, or Roman Urdu). Keep answers short: 2–4 sentences, plain text, no markdown." . ($wa ? ' This is WhatsApp: you may use *bold* sparingly and 1 emoji at most.' : '') . "\n" .
+        "Goal: help, then collect the customer's name, " . ($wa ? '' : 'WhatsApp number (if they have not shared it, ask for it in your first reply and say a Woodex designer will join them shortly), ') . "location/area and what they need so the team can call or book a site visit. Ask for one detail at a time, naturally.\n" .
         "When a Q&A answer below matches the question, use it (you may rephrase). Never invent prices, discounts, timelines or promises that are not written below; say the team will confirm after a site visit. Currency is PKR.\n" .
-        (!empty($cfg['noPrices']) ? "PRICES: never quote any price, rate, per-square-foot cost, budget, range or estimate — not even approximately, even if asked repeatedly. Explain that cost depends on scope, size, materials and site condition, and offer a free site visit or a detailed itemised quotation (the online cost estimator is at /estimator/).\n" : '') .
+        (!empty($cfg['noPrices']) ? "PRICES: never quote any price, rate, per-square-foot cost, budget, range or estimate — not even approximately, even if asked repeatedly. Explain that cost depends on scope, size, materials and site condition, and offer a free site visit or a detailed itemised quotation.\n" : '') .
         ($avoid ? "Do NOT discuss these topics; politely say the team will help with that and move on: " . implode('; ', $avoid) . "\n" : '') .
+        "LEAD DETAILS: whenever the customer reveals new details, add ONE hidden tag at the very end of your reply in this exact form: [LEAD]{\"name\":\"\",\"area\":\"\",\"type\":\"\",\"budget\":\"\"} — fill only what they actually said (area = city/area of the site, type = home/office/shop/restaurant/kitchen/renovation etc., budget = the range in their words). Never ask for a budget more than once and never suggest one. The customer never sees this tag.\n" .
         "If the customer asks for a human, is upset, wants to finalise a deal, or asks something you cannot answer, say a team member will reply shortly and add the tag [HUMAN] at the very end.\n" .
-        "Office hours: {$cfg['hours']}. It is currently " . (chat_open_now() ? 'within' : 'outside') . " office hours.\nContact: {$co['phones']} · {$co['email']} · {$co['address']}\n\nKNOWLEDGE:\n" . $cfg['knowledge'] .
+        "Office hours: {$cfg['hours']}. It is currently " . (chat_open_now() ? 'within' : 'outside') . " office hours.\nContact: {$co['phones']} · {$co['email']} · {$co['address']}\n\nSTUDIO FACTS (always true):\n" . CHAT_FACTS . "\n\nKNOWLEDGE:\n" . $cfg['knowledge'] .
         ($cfg['prices'] !== '' && empty($cfg['noPrices']) ? "\n\nPRICE GUIDANCE (starting rates only; always add that the final quote comes after a site visit):\n" . $cfg['prices'] : '') .
         ($faq ? "\n\nQ&A:\n" . mb_substr(implode("\n\n", $faq), 0, 9000) : '') .
         ($wa ? "\n\nChannel: WhatsApp (their number is already known)." : "\n\nVisitor is on page: " . ($c['page'] ?? '/')) . (!empty($c['name']) ? "\nCustomer name: " . $c['name'] : '') . (!empty($c['phone']) && !$wa ? "\nPhone already given: yes" : '');
+}
+/** P38: split an AI reply into [visible text, needs human]; saves any [LEAD]{...} details to the chat's CRM lead (creates it when the phone is known and auto-lead is on). */
+function chat_ai_post(array $c, string $r): array {
+    $human = strpos($r, '[HUMAN]') !== false; $r = str_replace('[HUMAN]', '', $r); $d = [];
+    if (preg_match('~\[LEAD\]\s*(\{[^{}]*\})~u', $r, $m)) { $d = json_decode($m[1], true) ?: []; }
+    $r = trim(preg_replace('~\[LEAD\]\s*(\{[^{}]*\})?~u', '', $r));
+    if ($d && !empty($c['id'])) try {
+        $d = array_filter(array_map(fn($v) => mb_substr(trim(strip_tags((string)$v)), 0, 80), array_intersect_key($d, ['name' => 1, 'area' => 1, 'type' => 1, 'budget' => 1])), 'strlen');
+        if (!empty($d['name']) && trim((string)($c['name'] ?? '')) === '') { q('UPDATE wx_chats SET name=? WHERE id=?', [$d['name'], $c['id']]); $c['name'] = $d['name']; }
+        if (empty($c['lead_id']) && !empty($c['phone']) && !empty(chat_cfg()['autoLead'])) $c = chat_make_lead($c);
+        if (!empty($c['lead_id'])) {
+            $l = q('SELECT name,service,fields FROM wx_leads WHERE id=?', [$c['lead_id']])->fetch();
+            if ($l) { $f = json_decode((string)$l['fields'], true) ?: []; foreach (['area' => 'Area', 'type' => 'Project type', 'budget' => 'Budget (customer)'] as $k => $lab) if (!empty($d[$k])) $f[$lab] = $d[$k];
+                $nm = (!empty($d['name']) && preg_match('~^Chat visitor #~', (string)$l['name'])) ? $d['name'] : $l['name'];
+                q('UPDATE wx_leads SET name=?,service=?,fields=? WHERE id=?', [$nm, ($l['service'] ?: ($d['type'] ?? '')), json_encode($f, JSON_UNESCAPED_UNICODE), $c['lead_id']]); }
+        }
+    } catch (Throwable $e) { error_log('chat lead details: ' . $e->getMessage()); }
+    return [$r, $human];
 }
 /** Call the configured AI with role turns; returns '' on any failure (never exits). */
 function chat_ai_call(string $sys, array $turns): string {
@@ -130,7 +153,7 @@ function chat_ai_call(string $sys, array $turns): string {
     while ($turns && $turns[0]['role'] !== 'user') array_shift($turns); if (!$turns) return '';
     if ($p === 'anthropic') { $url = 'https://api.anthropic.com/v1/messages'; $h = ['x-api-key: ' . $key, 'anthropic-version: 2023-06-01', 'content-type: application/json']; $body = ['model' => $model, 'max_tokens' => 400, 'system' => $sys, 'messages' => $turns]; }
     else { $url = ai_chat_url($a); $h = ['authorization: Bearer ' . $key, 'content-type: application/json', 'HTTP-Referer: https://woodex.com.pk', 'X-Title: Woodex Chat']; $body = ['model' => $model, 'max_tokens' => 400, 'messages' => array_merge([['role' => 'system', 'content' => $sys]], $turns)]; }
-    $ch = curl_init($url); curl_setopt_array($ch, [CURLOPT_CAINFO => __DIR__ . '/cacert.pem', CURLOPT_POST => true, CURLOPT_HTTPHEADER => $h, CURLOPT_POSTFIELDS => json_encode($body), CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 25]);
+    $ch = curl_init($url); curl_setopt_array($ch, [CURLOPT_CAINFO => __DIR__ . '/cacert.pem', CURLOPT_POST => true, CURLOPT_HTTPHEADER => $h, CURLOPT_POSTFIELDS => json_encode($body), CURLOPT_RETURNTRANSFER => true, CURLOPT_CONNECTTIMEOUT => 5, CURLOPT_TIMEOUT => 14]);
     $raw = curl_exec($ch); $code = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE); curl_close($ch);
     if ($raw === false || $code >= 400) { error_log('chat ai: HTTP ' . $code); return ''; }
     $j = json_decode((string)$raw, true) ?: [];
@@ -159,15 +182,20 @@ function chat_rule_reply(array $c, string $text): string {
     if ($score >= 0.5) return $best;
     $has = fn(string $re) => preg_match('~' . $re . '~iu', $t);
     $phone = preg_match('~(\+?92|0)3\d{2}[\s-]?\d{7}~', preg_replace('~\s+~', '', $t));
-    if ($phone) return 'Thank you, we have your number. A designer from our team will call you ' . (chat_open_now() ? 'shortly' : 'during office hours (' . $cfg['hours'] . ')') . '. Could you also share your area and what you need (home, office, renovation or furniture)?';
-    if ($has('\b(price|cost|rate|rates|budget|kitna|kitne|qeemat|charges|per sq|sqft|square f)')) return 'Cost depends on the scope, size, materials and site condition, so we prepare an itemised quotation after a free site visit. You can also try our online cost estimator at /estimator/. May I have your phone number so a designer can call you?';
-    if ($has('\b(time|timing|hours|open|close|closed|office hours|kab)')) return 'Our office hours are ' . $cfg['hours'] . '. You can leave a message here any time and the team will get back to you.';
-    if ($has('\b(where|address|location|office|map|visit you|kahan)')) return 'Our office: ' . $co['address'] . '. Please call ' . $co['phones'] . ' before visiting so a designer is available.';
-    if ($has('\b(phone|number|call|contact|whatsapp|email|rabta)')) return 'You can reach us at ' . $co['phones'] . ' or ' . $co['email'] . '. Or leave your number here and we will call you.';
-    if ($has('\b(human|agent|person|team|representative|banda|insaan)')) return 'Sure, a team member will reply here shortly. [HUMAN]';
-    if ($has('\b(service|services|kitchen|bedroom|office|renovat|furniture|design|interior|fit-?out|ceiling|wardrobe|3d)')) return 'Yes, we handle interior design, renovation, office fit-out and custom furniture, from 3D design to handover. Please share your area, the space type and approximate size, and your phone number so a designer can guide you.';
-    if ($has('^(hi|hello|hey|salam|assalam|aoa|a\.o\.a|asalam)')) return 'Wa alaikum assalam, welcome to Woodex Interior. How can we help you today: home interior, office, renovation or furniture?';
-    if ($has('\b(thank|thanks|shukria|ok|okay)\b')) return 'You are welcome. Is there anything else I can help you with?';
+    $pick = fn(array $o) => $o[array_rand($o)];
+    $later = chat_open_now() ? 'in a little while' : 'as soon as the office opens (' . $cfg['hours'] . ')';
+    if ($phone) return $pick(['Perfect, thank you. One of our designers will call you ' . $later . '. Meanwhile, which area is the project in, and is it a home, office or shop?', 'Got it, thanks! A designer will give you a call ' . $later . '. Just so they come prepared, roughly what size is the space?']);
+    if ($has('\\b(price|cost|rate|rates|budget|kitna|kitne|qeemat|charges|per sq|sqft|square f)')) return $pick(['Honestly, it depends a lot on the size, the finishes you choose and the condition of the site, so any number without seeing it would be a guess. We usually do a quick site visit and then share an itemised quotation, so you can see exactly where the money goes. Could you share your number so a designer can set that up?', 'Good question. Two similar-looking spaces can cost very differently once services, materials and joinery are counted, which is why we price from an itemised bill of quantities after seeing the site. What kind of space is it, and roughly how big?']);
+    if ($has('\\b(time|timing|hours|open|close|closed|office hours|kab)')) return 'We are in the studio ' . $cfg['hours'] . '. You can leave your message here any time though, and the team will pick it up first thing.';
+    if ($has('\\b(where|address|location|office|map|visit you|kahan)')) return 'Our studio is at ' . $co['address'] . '. Do give us a call on ' . $co['phones'] . ' before coming so a designer is free to sit with you, and bring any photos or plans you have.';
+    if ($has('\\b(phone|number|call|contact|whatsapp|email|rabta)')) return 'Sure. You can call or WhatsApp us on ' . $co['phones'] . ', or email ' . $co['email'] . '. If it is easier, leave your number here and we will call you.';
+    if ($has('\\b(human|agent|person|team|representative|banda|insaan)')) return 'Of course, I have asked a designer to join this chat. They will reply here shortly. [HUMAN]';
+    if ($has('\\b(kitchen|wardrobe|bedroom|furniture)')) return 'We design and build kitchens, wardrobes and furniture to the drawing, so the finished piece matches the drawing exactly. If you can share the room size and a photo of the space, a designer can suggest a layout. Which city are you in?';
+    if ($has('\\b(office|workplace|fit-?out|commercial|shop|retail|restaurant|cafe)')) return 'That is the kind of project we do a lot of. For commercial spaces the layout and services matter more than finishes, so we always start with a site visit. How big is the space, and when would you like it ready?';
+    if ($has('\\b(renovat|remodel|repair|old house|refurb)')) return 'Renovations go much smoother when the house is surveyed before any finishes are chosen, since wiring, plumbing and damp often decide the plan. Is it the whole house or a few rooms?';
+    if ($has('\\b(service|services|design|interior|ceiling|3d|architect)')) return 'We handle the full journey, from design and 3D views to building and handover, all with one team. Tell me a little about your space, where it is and what you would like to change, and I can point you in the right direction.';
+    if ($has('^(hi|hello|hey|salam|assalam|aoa|a\\.o\\.a|asalam)')) return $pick(['Wa alaikum assalam! Thanks for reaching out to Woodex. What are you planning, a home, an office or something else?', 'Hello and welcome to Woodex Interior. Tell me a bit about your space and what you have in mind.']);
+    if ($has('\\b(thank|thanks|shukria|ok|okay)\\b')) return $pick(['My pleasure. Anything else you would like to know?', 'You are most welcome. I am here if anything else comes up.']);
     return '';
 }
 
@@ -231,7 +259,7 @@ function chat_actions(string $action, array $in): bool {
             $a = cms_load()['ai']; if (($a[$a['provider'] . 'Key'] ?? '') === '') fail('Add an AI key first (Blog & insights → AI settings)');
             $r = chat_ai_call(chat_ai_system(['channel' => ($in['channel'] ?? '') === 'wa' ? 'wa' : 'web', 'page' => '/', 'name' => '', 'phone' => '']), $turns);
             if ($r === '') fail('The AI did not answer. Check the AI key and model.');
-            $h = strpos($r, '[HUMAN]') !== false; out(['ok' => true, 'reply' => trim(str_replace('[HUMAN]', '', $r)), 'human' => $h]);
+            $lead = preg_match('~\[LEAD\]\s*(\{[^{}]*\})~u', $r, $lm) ? (json_decode($lm[1], true) ?: null) : null; [$vis, $h] = chat_ai_post([], $r); out(['ok' => true, 'reply' => $vis, 'human' => $h, 'lead' => $lead]);
         case 'notif_poll': // bell: unread leads + chats waiting; items for the dropdown
             $u = need(); crm_migrate(); $items = [];
             $sales = in_array($u['role'], $SALES, true);

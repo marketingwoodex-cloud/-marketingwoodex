@@ -103,14 +103,18 @@
     var bi = brand.querySelector("img"), wm = brand.querySelector(".brand-wordmark"), sm = wm && wm.querySelector("small");
     D.header = { logo: bi ? bi.getAttribute("src") : "", lw: bi ? bi.getAttribute("width") : "", lh: bi ? bi.getAttribute("height") : "", word: wm ? wm.childNodes[0].textContent.trim() : "", small: sm ? sm.textContent.trim() : "", aria: brand.getAttribute("aria-label") || "", cta: cta ? cta.textContent.trim() : "Get a quote" };
     var h2 = foot.querySelector("#footer-heading"), fp = foot.querySelector("#footer-copy"), fc = foot.querySelector("#footer-cta"), ct = foot.querySelector(".footer-contact");
-    var tels = [], email = "", wa = { label: "", href: "" };
-    arr(ct ? ct.querySelectorAll("a") : []).forEach(function (a) { var h = a.getAttribute("href") || ""; if (/^mailto:/.test(h)) email = h.slice(7); else if (/wa\.me/.test(h)) wa = { label: a.textContent.trim(), href: h }; else if (/^tel:/.test(h)) tels.push(a.textContent.trim()); });
+    var tels = [], email = "", wa = { label: "", href: "" }; var vs = foot.querySelector(".footer-visit");
+    var ntx = function (el) { var c = el.cloneNode(true); arr(c.querySelectorAll(".fl")).forEach(function (x) { x.remove(); }); return c.textContent.trim(); };
+    arr(ct ? ct.querySelectorAll(":scope > a") : []).forEach(function (a) { var h = a.getAttribute("href") || ""; if (/^mailto:/.test(h)) email = h.slice(7); else if (/wa\.me/.test(h)) wa = { label: ntx(a), href: h }; else if (/^tel:/.test(h)) tels.push(ntx(a)); });
+    if (!wa.href) { var swa = foot.querySelector('.footer-social a[href*="wa.me"]'); if (swa) wa = { label: tels[0] || "WhatsApp", href: swa.getAttribute("href") }; }
     var bot = foot.querySelector(".footer-bottom");
     D.footer = {
       heading: h2 ? h2.innerHTML.replace(/<br\s*\/?>/gi, "\n").replace(/<[^>]+>/g, "") : "", copy: fp ? fp.textContent.trim() : "", ctaLabel: fc ? fc.textContent.trim() : "", ctaHref: fc ? fc.getAttribute("href") : "/contact/",
       cols: arr(foot.querySelectorAll("nav.footer-column")).map(function (n) { var t = n.querySelector("h3"); return { title: t ? t.textContent.trim() : "", links: arr(n.querySelectorAll("a")).map(linkOf) }; }),
       contact: { title: ct && ct.querySelector("h3") ? ct.querySelector("h3").textContent.trim() : "Get in touch", email: email, waLabel: wa.label, waHref: wa.href, tels: tels.join("\n"),
-        address: ct && ct.querySelector("address") ? ct.querySelector("address").innerHTML.replace(/<br\s*\/?>/gi, "\n").replace(/<[^>]+>/g, "").trim() : "", hours: ct && ct.querySelector("p") ? ct.querySelector("p").textContent.trim() : "" },
+        address: (vs || ct) && (vs || ct).querySelector("address") ? (vs || ct).querySelector("address").innerHTML.replace(/<span class="fl"[^>]*>[\s\S]*?<\/span>/g, "").replace(/<br\s*\/?>/gi, "\n").replace(/<[^>]+>/g, "").trim() : "", hours: (vs || ct) && (vs || ct).querySelector("p") ? (vs || ct).querySelector("p").textContent.trim() : "", visitTitle: vs && vs.querySelector("h3") ? vs.querySelector("h3").textContent.trim() : "Visit us" },
+      social: !!foot.querySelector(".footer-social") || !foot.querySelector(".footer-intro"),
+      socX: arr(foot.querySelectorAll(".footer-social a[data-soc]")).map(function (x) { return x.outerHTML; }).join(""),
       word: (foot.querySelector(".footer-word") || {}).textContent || "",
       copyright: bot && bot.querySelector("span") ? bot.querySelector("span").textContent.trim() : "",
       bottom: arr(bot ? bot.querySelectorAll("div a") : []).map(linkOf),
@@ -125,7 +129,7 @@
   function build(D) {
     var M = D.menu, G = D.mega, H = D.header, F = D.footer;
     var megaHtml = function (label) {
-      return '      <div class="nav-services">\n        <button class="nav-services-trigger" type="button" aria-expanded="false" aria-controls="services-menu">' + A(label) + ' <span aria-hidden="true">⌄</span></button>\n        <div class="mega-menu" id="services-menu"' + (G.cols.length !== 4 ? ' data-cols="' + G.cols.length + '"' : "") + ">\n" +
+      return '      <div class="nav-services">\n        <a class="nav-services-trigger" href="/services/" aria-haspopup="true" aria-controls="services-menu">' + A(label) + ' <span aria-hidden="true">⌄</span></a>\n        <div class="mega-menu" id="services-menu"' + (G.cols.length !== 4 ? ' data-cols="' + G.cols.length + '"' : "") + ">\n" +
         G.cols.map(function (c, ci) { return '          <div class="mega-column"><span class="mega-number">' + String(ci + 1).padStart(2, "0") + '</span><a class="mega-title" href="' + A(c.href) + '"' + (c.route ? ' data-page-route="' + A(c.route) + '"' : "") + ">" + A(c.title) + "</a>" + c.links.map(function (l) { return aTag(l); }).join("") + "</div>\n"; }).join("") +
         '          <div class="mega-feature">' + (G.studio.label ? aTag(G.studio, "mega-studio") : "") + '<a class="mega-project" href="' + A(G.card.href) + '"><img' + (G.card.srcset && G.card.srcset.indexOf(G.card.img) >= 0 ? ' sizes="' + A(G.card.sizes || "50vw") + '" srcset="' + A(G.card.srcset) + '"' : "") + ' loading="lazy" decoding="async" src="' + A(G.card.img) + '" alt="' + A(G.card.alt) + '"' + (G.card.w ? ' width="' + A(G.card.w) + '" height="' + A(G.card.h) + '"' : "") + "><span>" + A(G.card.text) + "</span></a></div>\n        </div>\n      </div>";
     };
@@ -135,11 +139,21 @@
     var mobile = '<nav class="mobile-panel" id="mobile-menu" aria-label="Mobile navigation">' + M.mobile.map(function (l) { return "<a" + (l.primary ? ' class="mobile-primary"' : "") + ' href="' + A(l.href) + '">' + A(l.label) + "</a>"; }).join("") + "</nav>";
     var brand = '<a class="brand" href="/" data-page-route="home" aria-label="' + A(H.aria || "Woodex Interior home") + '"><img class="brand-mark" src="' + A(H.logo) + '" alt=""' + (H.lw ? ' width="' + A(H.lw) + '" height="' + A(H.lh) + '"' : "") + '><span class="brand-divider" aria-hidden="true"></span><span class="brand-wordmark">' + A(H.word) + (H.small ? " <small>" + A(H.small) + "</small>" : "") + "</span></a>";
     var C = F.contact, nl = function (s) { return String(s || "").split("\n").map(function (x) { return A(x.trim()); }).filter(Boolean).join("<br>"); };
-    var footer = '<footer class="footer"><div class="wrap">\n    <div class="footer-main">\n      <div class="footer-intro"><h2 id="footer-heading">' + nl(F.heading) + '</h2><p id="footer-copy">' + A(F.copy) + '</p><a class="btn footer-cta" id="footer-cta" href="' + A(F.ctaHref) + '">' + A(F.ctaLabel) + "</a></div>\n" +
+    var ico = function (d) { return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="' + d + '"/></svg>'; };
+    var firstTel = String(C.tels || "").split("\n").map(function (t) { return t.trim(); }).filter(Boolean)[0] || "";
+    var social = F.social === false ? "" : '<div class="footer-social" aria-label="Contact Woodex">' +
+      (C.waHref ? '<a href="' + A(C.waHref) + '" aria-label="WhatsApp">' + ico("M3 21l1.7-5A8.5 8.5 0 1 1 8 19.4z M9 8.5c0 3.6 2.9 6.5 6.5 6.5l1-1.6-2-1-1 .8a4.5 4.5 0 0 1-2.2-2.2l.8-1-1-2z") + "</a>" : "") +
+      (firstTel ? '<a href="tel:' + A(firstTel.replace(/[^\d+]/g, "")) + '" aria-label="Call">' + ico("M5 4h3l2 5-2.5 1.5a11 11 0 0 0 6 6L15 14l5 2v3a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2") + "</a>" : "") +
+      (C.email ? '<a href="mailto:' + A(C.email) + '" aria-label="Email">' + ico("M3 6h18v12H3z M3 7l9 6 9-6") + "</a>" : "") +
+      (C.address ? '<a href="https://www.google.com/maps/search/?api=1&amp;query=' + A(encodeURIComponent(String(C.address).replace(/\n/g, ", "))) + '" target="_blank" rel="noopener" aria-label="Map">' + ico("M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z M12 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5") + "</a>" : "") + "</div>";
+    if (social && F.socX) social = social.replace(/<\/div>\s*$/, F.socX + "</div>");
+    var fbrand = '<a class="footer-brand" href="/" aria-label="' + A(H.aria || "Woodex Interior home") + '"><img src="' + A(H.logo) + '" alt="" width="78" height="48"><span>' + A(H.word) + (H.small ? " <small>" + A(H.small) + "</small>" : "") + "</span></a>";
+    var footer = '<footer class="footer"><div class="wrap">\n    <div class="footer-main">\n      <div class="footer-intro">' + fbrand + '<h2 id="footer-heading">' + nl(F.heading) + '</h2><p id="footer-copy">' + A(F.copy) + "</p>" + social + (String(F.ctaLabel || "").trim() ? '<a class="btn footer-cta" id="footer-cta" href="' + A(F.ctaHref) + '">' + A(F.ctaLabel) + "</a>" : "") + "</div>\n" +
       F.cols.map(function (c) { return '      <nav class="footer-column" aria-label="' + A(c.title) + ' links"><h3>' + A(c.title) + "</h3>" + c.links.map(function (l) { return aTag(l); }).join("") + "</nav>\n"; }).join("") +
-      '      <div class="footer-column footer-contact"><h3>' + A(C.title) + "</h3>" + (C.email ? '<a href="mailto:' + A(C.email) + '">' + A(C.email) + "</a>" : "") + (C.waHref ? '<a href="' + A(C.waHref) + '">' + A(C.waLabel || "WhatsApp") + "</a>" : "") +
-      String(C.tels || "").split("\n").map(function (t) { t = t.trim(); return t ? '<a href="tel:' + A(t.replace(/[^\d+]/g, "")) + '">' + A(t) + "</a>" : ""; }).join("") +
-      (C.address ? "<address>" + nl(C.address) + "</address>" : "") + (C.hours ? "<p><strong>" + A(C.hours) + "</strong></p>" : "") + "</div>\n    </div>\n" +
+      '      <div class="footer-column footer-contact"><h3>' + A(C.title) + "</h3>" + (C.email ? '<a href="mailto:' + A(C.email) + '"><span class="fl" aria-hidden="true">E</span>' + A(C.email) + "</a>" : "") +
+      String(C.tels || "").split("\n").map(function (t) { t = t.trim(); return t ? '<a href="tel:' + A(t.replace(/[^\d+]/g, "")) + '"><span class="fl" aria-hidden="true">P</span>' + A(t) + "</a>" : ""; }).join("") +
+      (C.address ? '<address><span class="fl" aria-hidden="true">L</span><a href="https://www.google.com/maps/search/?api=1&amp;query=' + A(encodeURIComponent(String(C.address).replace(/\n/g, ", "))) + '" target="_blank" rel="noopener">' + nl(C.address) + "</a></address>" : "") +
+      (C.hours ? "<p><strong>" + A(C.hours) + "</strong></p>" : "") + "</div>\n" + "    </div>\n" +
       (F.word.trim() ? '    <div class="footer-word" aria-label="' + A(F.word.trim()) + '">' + A(F.word.trim()) + "</div>\n" : "") +
       '    <div class="footer-bottom"><span>' + A(F.copyright) + "</span><div>" + F.bottom.map(function (l) { return aTag(l); }).join("") + "</div></div>\n  </div></footer>";
     return { desktop: desktop, mobile: mobile, brand: brand, cta: H.cta, footer: footer, style: designTag(D.design), phone: phoneHtml(D.design) };
@@ -241,14 +255,14 @@
         }
       } else if (tab === "footer") {
         var F = D.footer;
-        h += card("Intro", fld("Heading (new line = line break)", area("footer.heading", F.heading, 2)) + fld("Text", area("footer.copy", F.copy, 2)) + "<div style='display:grid;grid-template-columns:1fr 1fr;gap:8px'>" + fld("Button text", inp("footer.ctaLabel", F.ctaLabel)) + fld("Button link", inp("footer.ctaHref", F.ctaHref, "", "list='hf-pages'")) + "</div>" +
-          "<label class='check'><input type='checkbox' data-pc='footer.introAll'" + (F.introAll ? " checked" : "") + "> Use this intro on <b>all</b> pages <span class='muted'>(off = service pages keep their own heading &amp; button)</span></label>");
+        h += card("Intro", fld("Heading (new line = line break)", area("footer.heading", F.heading, 2)) + fld("Text", area("footer.copy", F.copy, 2)) + "<div style='display:grid;grid-template-columns:1fr 1fr;gap:8px'>" + fld("Button text (empty = no button)", inp("footer.ctaLabel", F.ctaLabel)) + fld("Button link", inp("footer.ctaHref", F.ctaHref, "", "list='hf-pages'")) + "</div>" +
+          "<label class='check'><input type='checkbox' data-pc='footer.social'" + (F.social !== false ? " checked" : "") + "> Show contact icons (WhatsApp, call, email, map) under the text</label>" + "<label class='check'><input type='checkbox' data-pc='footer.introAll'" + (F.introAll ? " checked" : "") + "> Use this intro on <b>all</b> pages <span class='muted'>(off = service pages keep their own heading &amp; button)</span></label>");
         h += F.cols.map(function (c, ci) { var b = "footer.cols." + ci; return card("Column " + (ci + 1), fld("Title", inp(b + ".title", c.title)) + c.links.map(function (l, li) { return row(b + ".links." + li, l, l.id ? "<span class='badge' title='Points to a section on each page'>auto</span>" : ""); }).join("") + addBtn(b + ".links"),
           "<span style='display:flex;gap:4px;align-items:center'>" + grip + "<button class='btn sm' data-mv='" + b + "|-1' title='Move left'>←</button><button class='btn sm' data-mv='" + b + "|1' title='Move right'>→</button>" + (F.cols.length > 1 ? "<button class='btn sm danger' data-rm='" + b + "'>Remove column</button>" : "") + "</span>"); }).join("");
         if (F.cols.length < 4) h += "<button class='btn' data-add='footer.cols' style='margin-bottom:16px'>" + ic("plus") + "Add footer column</button>";
         var C = F.contact;
         h += card("Contact", fld("Title", inp("footer.contact.title", C.title)) + "<div style='display:grid;grid-template-columns:1fr 1fr;gap:8px'>" + fld("Email", inp("footer.contact.email", C.email)) + fld("WhatsApp link", inp("footer.contact.waHref", C.waHref, "https://wa.me/92…")) + "</div>" +
-          fld("WhatsApp text", inp("footer.contact.waLabel", C.waLabel)) + fld("Phone numbers (one per line)", area("footer.contact.tels", C.tels, 2)) + fld("Address (one line each)", area("footer.contact.address", C.address, 3)) + fld("Hours", inp("footer.contact.hours", C.hours)));
+          fld("WhatsApp text (used by the round WhatsApp icon)", inp("footer.contact.waLabel", C.waLabel)) + fld("Phone numbers (one per line)", area("footer.contact.tels", C.tels, 2)) + fld("Address (one line each)", area("footer.contact.address", C.address, 3)) + fld("Hours", inp("footer.contact.hours", C.hours)));
         h += card("Bottom bar", fld("Big word", inp("footer.word", F.word, "INTERIORS")) + fld("Copyright", inp("footer.copyright", F.copyright)) + F.bottom.map(function (l, i) { return row("footer.bottom." + i, l, "<label class='check' style='margin:0 4px 0 0;font-size:12px'><input type='checkbox' data-pc='footer.bottom." + i + ".ext'" + (l.ext ? " checked" : "") + ">New tab</label>"); }).join("") + addBtn("footer.bottom"));
       } else if (tab === "design") {
         var G = D.design = dfix(D.design), sel = function (k, opts) { return "<select data-p='design." + k + "' style='margin:0'>" + opts.map(function (o) { return "<option value='" + o[0] + "'" + (String(G[k]) === o[0] ? " selected" : "") + ">" + o[1] + "</option>"; }).join("") + "</select>"; },

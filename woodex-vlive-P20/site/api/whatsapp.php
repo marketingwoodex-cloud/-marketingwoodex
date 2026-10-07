@@ -74,7 +74,7 @@ function wa_incoming(array $m, string $pname, array $cfg): void {
     $cnt = (int)q("SELECT COUNT(*) FROM wx_chat_msgs WHERE chat_id=? AND who='ai' AND t > ?", [$c['id'], date('Y-m-d H:i:s', time() - 86400)])->fetchColumn();
     $r = ($cfg['ai'] && $cnt < 40) ? chat_ai_reply($c) : '';
     if ($r !== '') {
-        $human = strpos($r, '[HUMAN]') !== false; $r = trim(str_replace('[HUMAN]', '', $r));
+        [$r, $human] = chat_ai_post($c, $r);
         $e = wa_text($phone, $r); if ($e !== '') { error_log('wa send: ' . $e); q('UPDATE wx_chats SET needs=1 WHERE id=?', [$c['id']]); return; }
         chat_add((int)$c['id'], 'ai', 'Woodex assistant', $r);
         if ($human) q('UPDATE wx_chats SET needs=1 WHERE id=?', [$c['id']]);

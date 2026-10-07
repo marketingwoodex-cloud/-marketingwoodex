@@ -1,5 +1,9 @@
-# On-page — score 98/100
+# On-page — score 99/100
 
-## [Medium] Title over 60 chars (truncated in SERP) (1)
-- /services/
+## [Low] Meta description over 160 chars (5)
+- /healthcare-fit-out/
+- /pharmacy-fit-out/
+- /restaurant-fit-out/
+- /retail-fit-out/
+- /turnkey-design-build/
 
