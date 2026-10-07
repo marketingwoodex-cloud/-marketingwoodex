@@ -113,6 +113,7 @@
     ["Settings"],
     { g: "Settings", icon: "settings", id: "settings", items: [
       ["business", "Business info", "building", "owner,admin"],
+      ["theme", "Theme, colours & fonts", "sparkles", "owner,admin"],
       ["settings", "Integrations & APIs", "zap", "owner,admin"],
       ["users", "Users & roles", "users", "owner,admin"],
       ["backups", "Backups", "hard-drive", "owner,admin"],

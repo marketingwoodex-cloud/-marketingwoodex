@@ -948,3 +948,21 @@ html.dark .hub-bar{background:#111a2b;border-color:#24304a}html.dark .hub-bar a{
 .fg-pg{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:4px 12px;max-height:220px;overflow:auto;border:1px solid #eaecf0;border-radius:10px;padding:10px;margin-top:6px}
 /* P19 F9: template library */
 .tp-lib{display:grid;gap:10px;max-height:60vh;overflow:auto}.tp-li{display:grid;grid-template-columns:120px 1fr auto;gap:14px;align-items:center;border:1px solid #eaecf0;border-radius:12px;padding:10px}.tp-li .tp-thumb{height:84px}.tp-li p{margin:2px 0 0;font-size:12.5px}
+/* Phase 2 — Theme */
+.th-wrap{display:grid;grid-template-columns:340px 1fr;gap:18px;align-items:start}
+.th-side{display:grid;gap:14px}.th-side label{display:grid;gap:6px;font-size:13px;margin-bottom:10px}
+.th-presets{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.th-pre{text-align:left;border:1px solid var(--line,#e4e7ec);background:#fff;border-radius:12px;padding:10px;cursor:pointer;display:grid;gap:4px;transition:border-color .2s,box-shadow .2s}
+.th-pre:hover{border-color:#b8956a}.th-pre.on{border-color:#0c1628;box-shadow:0 0 0 2px #b8956a}
+.th-pre b{font-size:14px}.th-pre small{font-size:11px;color:#667085;line-height:1.35}
+.th-sw{display:flex;gap:4px}.th-sw i{width:22px;height:22px;border-radius:50%;border:1px solid rgba(0,0,0,.08)}
+.th-c{display:grid!important;grid-template-columns:40px 1fr auto;align-items:center;gap:10px!important}
+.th-c input{width:40px;height:40px;padding:0;border:1px solid var(--line,#e4e7ec);border-radius:10px;cursor:pointer;background:none}
+.th-c span{display:grid}.th-c small{color:#667085;font-size:11px}.th-c code{font-size:11px;color:#667085}
+.th-main{position:sticky;top:90px;overflow:hidden}
+.th-bar{display:flex;gap:10px;align-items:center;padding:10px 14px;border-bottom:1px solid var(--line,#e4e7ec);font-weight:600;font-size:13px}
+.th-bar select{margin-left:auto;width:auto}.th-dev{display:flex;border:1px solid var(--line,#e4e7ec);border-radius:8px;overflow:hidden}
+.th-dev button{border:0;background:#fff;padding:6px 10px;font-size:12px;cursor:pointer}.th-dev button.on{background:#0c1628;color:#fff}
+.th-frame{background:#f2f4f7;height:calc(100vh - 220px);min-height:520px;display:flex;justify-content:center}
+.th-frame iframe{width:100%;height:100%;border:0;background:#fff;transition:width .3s}
+@media (max-width:1100px){.th-wrap{grid-template-columns:1fr}.th-main{position:static}}
