@@ -104,6 +104,27 @@
       }).join("") + "</ul><p class='muted p36-key' style='margin:10px 0 0;font-size:12px'><span class='p36-st you'>" + sym.you + "</span> needs your input <span class='p36-st warn'>" + sym.warn + "</span> needs work <span class='p36-st ok'>" + sym.ok + "</span> done</p>";
     });
   }
+  /* P21 revision: quick actions + connected apps status (placed above Pending tasks) */
+  function p21Cards(box) {
+    if (box.querySelector("#p21-quick")) return;
+    var qa = [["#/quotes/new", "plus", "New quotation"], ["#/enquiries", "inbox", "Leads"], ["#/chat", "message-circle", "Inbox"], ["#/social", "image", "Social post"], ["#/blog", "book-open", "Write article"], ["#/seoagent", "sparkles", "SEO agent"]];
+    var q = document.createElement("div"); q.className = "card p36-card p21-quick"; q.id = "p21-quick"; q.style.marginTop = "18px";
+    q.innerHTML = "<h3>Quick actions</h3><div class='p21-qa'>" + qa.map(function (x) { return "<a class='p21-qa-i' href='" + x[0] + "'>" + ic(x[1]) + "<span>" + x[2] + "</span></a>"; }).join("") + "</div>";
+    box.appendChild(q);
+    var c = document.createElement("div"); c.className = "card p36-card"; c.id = "p21-apps"; c.style.marginTop = "18px";
+    c.innerHTML = "<div style='display:flex;justify-content:space-between;align-items:center;gap:10px'><h3 style='margin:0'>Connected apps</h3><a class='btn sm' href='#/settings/integrations'>Add connector</a></div><div class='muted' style='margin-top:10px'>Checking…</div>";
+    box.appendChild(c);
+    Promise.all([api("conn_list").catch(function () { return {}; }), api("crm_wa_status").catch(function () { return {}; }), api("tg_get").catch(function () { return {}; })]).then(function (r) {
+      var items = (r[0] && r[0].items) || [], wa = r[1] || {}, tg = (r[2] && r[2].cfg) || {};
+      var has = function (k) { var m = items.filter(function (x) { return x.key === k; })[0]; return m ? (m.status === "connected" ? "ok" : m.status === "error" ? "bad" : "warn") : "off"; };
+      var apps = [["Gmail", has("gmail")], ["Google Drive", has("gdrive")], ["GitHub", has("github")], ["WhatsApp", wa.connected || wa.ok && wa.ready ? "ok" : "off"], ["Telegram", tg.bot || tg.botName || tg.ready ? "ok" : "off"]];
+      var lbl = { ok: "Connected", warn: "Needs setup", bad: "Error", off: "Not connected" };
+      c.lastChild.outerHTML = "<div class='p21-apps'>" + apps.map(function (a) { return "<a class='p21-app' href='" + (a[0] === "Telegram" ? "#/telegram" : a[0] === "WhatsApp" ? "#/wahub" : "#/settings/integrations") + "'><b>" + a[0] + "</b><span class='badge " + (a[1] === "ok" ? "ok" : a[1] === "bad" ? "bad" : a[1] === "warn" ? "warn" : "") + "'>" + lbl[a[1]] + "</span></a>"; }).join("") + "</div>";
+    });
+  }
+  if (!document.getElementById("p21-css")) { var st = document.createElement("style"); st.id = "p21-css";
+    st.textContent = ".p21-qa{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-top:12px}.p21-qa-i{display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 8px;border:1px solid var(--line,#e4e7ec);border-radius:12px;text-decoration:none;color:inherit;font-size:13px;font-weight:600;transition:border-color .2s,transform .2s}.p21-qa-i:hover{border-color:#b8956a;transform:translateY(-2px)}.p21-qa-i svg{width:20px;height:20px;color:#b8956a}.p21-apps{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-top:12px}.p21-app{display:flex;flex-direction:column;gap:6px;padding:12px;border:1px solid var(--line,#e4e7ec);border-radius:12px;text-decoration:none;color:inherit}.p21-app .badge{align-self:flex-start}@media(max-width:900px){.p21-qa{grid-template-columns:repeat(3,1fr)}.p21-apps{grid-template-columns:repeat(2,1fr)}}";
+    document.head.appendChild(st); }
   var dashOrig = VIEWS.dashboard;
   if (dashOrig) VIEWS.dashboard = function (el) {
     dashOrig(el);
@@ -111,7 +132,7 @@
     waitFor(el, ".ph", function () { setTimeout(function () {
       if (el.querySelector("#p36-tasks")) return;
       var dx = el.querySelector("#dx");
-      if (dx && dx.querySelector(".dx-chips")) return pendingCard(dx);
+      if (dx && dx.querySelector(".dx-chips")) { p21Cards(dx); return pendingCard(dx); }
       var host = document.createElement("div"), ph = el.querySelector(".ph"); ph.parentNode.insertBefore(host, ph.nextSibling); pendingCard(host);
     }, 1500); });
   };
