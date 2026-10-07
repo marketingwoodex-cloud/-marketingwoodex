@@ -88,6 +88,6 @@ function tg_update(array $j, array $tg): void {
     $e = chat_deliver($c, $text);
     if ($e !== '') { tg_send($chat, '❌ Not delivered: ' . $e, ['reply_to_message_id' => (int)$m['message_id']]); return; }
     chat_add($cid, 'agent', (string)$u['name'], $text);
-    q("UPDATE wx_chats SET mode='human', agent_name=?, assigned_to=COALESCE(assigned_to, ?), status='open', unread=0, needs=0 WHERE id=?", [$u['name'], (int)$u['id'], $cid]);
+    q("UPDATE wx_chats SET mode='human', handoff='', agent_name=?, assigned_to=COALESCE(assigned_to, ?), status='open', unread=0, needs=0 WHERE id=?", [$u['name'], (int)$u['id'], $cid]);
     tg_api('setMessageReaction', ['chat_id' => $chat, 'message_id' => (int)$m['message_id'], 'reaction' => [['type' => 'emoji', 'emoji' => '👍']]]);
 }

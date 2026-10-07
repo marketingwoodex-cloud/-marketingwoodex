@@ -1,5 +1,6 @@
 /* Woodex Admin — Phase 10: Live chat inbox, notification bell (sound + browser notifications), chat settings, forgot / reset password. */
 (function () {
+  var HR = { person: "Asked for a person", price: "Price / quote", complaint: "Complaint", unsure: "AI not sure", deal: "Ready to finalise", stuck: "No progress" }; // P39 Phase 5 hand-off reasons
   "use strict";
   var W = window.WXA; if (!W) return;
   var api = W.api, esc = W.esc, ic = W.ic, $ = W.$, $$ = W.$$, toast = W.toast, S = W.S;
@@ -119,7 +120,7 @@
         TEAM = r.team || []; SAVED = (r.cfg && r.cfg.saved) || []; ME = r.me || 0;
         if (r.counts) Object.keys(r.counts).forEach(function (k) { var n = document.querySelector('#lc-box [data-n="' + k + '"]'); if (n) n.textContent = r.counts[k]; });
         L.innerHTML = r.chats.length ? r.chats.map(function (c) {
-          return '<a class="lc-it' + (c.id === cur ? " on" : "") + '" href="#/chat/' + c.id + '"><div class="r1"><b>' + (c.channel === "wa" ? '<span class="lc-tag" style="background:#25d366;color:#fff">WA</span> ' : c.channel === "tg" ? '<span class="lc-tag" style="background:#229ED9;color:#fff">TG</span> ' : "") + esc(c.name || "Visitor #" + c.id) + (c.needs ? '<span class="lc-tag nd">needs you</span>' : c.mode === "ai" ? '<span class="lc-tag ai">AI</span>' : '<span class="lc-tag hu">' + esc(c.agent || "Team") + "</span>") + wait(c) + (c.assigned ? '<span class="lc-as" title="Assigned">' + initials(c.assigned) + "</span>" : "") + "</b>" + (c.unread ? '<span class="u">' + c.unread + "</span>" : "<em>" + esc(ago(c.updated_at)) + "</em>") + "</div><small>" + esc(c.last || "") + "</small>" + ((c.tags || []).length ? "<div>" + c.tags.map(function (t) { return '<span class="lc-chip">' + esc(t) + "</span>"; }).join("") + "</div>" : "") + "</a>";
+          return '<a class="lc-it' + (c.id === cur ? " on" : "") + '" href="#/chat/' + c.id + '"><div class="r1"><b>' + (c.channel === "wa" ? '<span class="lc-tag" style="background:#25d366;color:#fff">WA</span> ' : c.channel === "tg" ? '<span class="lc-tag" style="background:#229ED9;color:#fff">TG</span> ' : "") + esc(c.name || "Visitor #" + c.id) + (c.needs || c.handoff ? '<span class="lc-tag nd" title="AI handed this chat to the team">' + (c.handoff ? "🙋 " + esc(HR[c.handoff] || c.handoff) : "needs you") + '</span>' : c.mode === "ai" ? '<span class="lc-tag ai">AI</span>' : '<span class="lc-tag hu">' + esc(c.agent || "Team") + "</span>") + wait(c) + (c.assigned ? '<span class="lc-as" title="Assigned">' + initials(c.assigned) + "</span>" : "") + "</b>" + (c.unread ? '<span class="u">' + c.unread + "</span>" : "<em>" + esc(ago(c.updated_at)) + "</em>") + "</div><small>" + esc(c.last || "") + "</small>" + ((c.tags || []).length ? "<div>" + c.tags.map(function (t) { return '<span class="lc-chip">' + esc(t) + "</span>"; }).join("") + "</div>" : "") + "</a>";
         }).join("") : '<div class="lc-empty">' + (tab === "open" ? "No open chats." : "No closed chats.") + "</div>";
       });
     }
@@ -156,7 +157,7 @@
     }
     function top() {
       var c = chat; if (!c) return;
-      $("#lc-top").innerHTML = '<button class="btn sm" id="lc-bk" title="Back" style="display:none">' + ic("chevron-left") + "</button><div><h3>" + esc(c.name || "Visitor #" + c.id) + "</h3><small>" + (c.mode === "ai" ? "AI assistant is answering" : "Handled by " + esc(c.agent || "team")) + " · started " + esc(ago(c.created_at)) + '</small></div><span class="sp"></span>' +
+      $("#lc-top").innerHTML = '<button class="btn sm" id="lc-bk" title="Back" style="display:none">' + ic("chevron-left") + "</button><div><h3>" + esc(c.name || "Visitor #" + c.id) + "</h3><small>" + (c.mode === "ai" ? "AI assistant is answering" : "Handled by " + esc(c.agent || "team")) + " · started " + esc(ago(c.created_at)) + (c.handoff ? ' · <b style="color:#b45309">🙋 AI handed over: ' + esc(HR[c.handoff] || c.handoff) + "</b>" : "") + '</small></div><span class="sp"></span>' +
         (c.mode === "ai" ? '<button class="btn sm" id="lc-take">' + ic("user") + "Take over</button>" : '<button class="btn sm" id="lc-ai">' + ic("sparkles") + "Hand back to AI</button>") +
         (c.lead_id ? '<a class="btn sm" href="#/enquiries">' + ic("inbox") + "Lead #" + c.lead_id + "</a>" : '<button class="btn sm" id="lc-lead">' + ic("plus") + "Save as lead</button>") +
         '<select id="lc-as" title="Assign to">' + '<option value="0">Unassigned</option>' + TEAM.map(function (t) { return '<option value="' + t.id + '"' + (c.assigned === t.id ? " selected" : "") + ">" + esc(t.id === ME ? t.name + " (me)" : t.name) + "</option>"; }).join("") + "</select>" +

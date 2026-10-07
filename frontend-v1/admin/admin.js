@@ -101,6 +101,7 @@
     ["telegram", "Telegram", "send", "owner,admin,editor"],
     ["updates", "Client updates", "send", "g:updates"],
     ["train", "AI agent", "sparkles", "g:ai"],
+    ["aireport", "AI report", "star", "g:ai"],
     ["Website"],
     { g: "Pages & builder", icon: "square-pen", id: "site", items: [
       ["pages", "All pages", "file-text", "g:website"],

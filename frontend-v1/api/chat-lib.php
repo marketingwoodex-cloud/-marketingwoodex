@@ -45,7 +45,7 @@ function chat_migrate(): void {
     try { q("ALTER TABLE wx_chats ADD COLUMN channel VARCHAR(8) NOT NULL DEFAULT 'web'"); } catch (Throwable $x) { /* already there */ }
     q('CREATE TABLE IF NOT EXISTS wx_chat_msgs (id INT AUTO_INCREMENT PRIMARY KEY, chat_id INT NOT NULL, t DATETIME NOT NULL, who VARCHAR(8) NOT NULL, name VARCHAR(120) NULL, text TEXT NOT NULL, INDEX(chat_id, id))' . $e);
     // P18 D: attachments (JSON {u,n,k,s}) + typing status
-    foreach (["ALTER TABLE wx_chat_msgs ADD COLUMN att TEXT NULL", "ALTER TABLE wx_chats ADD COLUMN vtype DATETIME NULL", "ALTER TABLE wx_chats ADD COLUMN atype DATETIME NULL", "ALTER TABLE wx_chats ADD COLUMN ext VARCHAR(40) NULL", "ALTER TABLE wx_chats ADD COLUMN assigned_to INT NULL", "ALTER TABLE wx_chats ADD COLUMN tags VARCHAR(200) NULL"] as $sql) { try { q($sql); } catch (Throwable $x) { /* already there */ } }
+    foreach (["ALTER TABLE wx_chats ADD COLUMN handoff VARCHAR(20) NULL", "ALTER TABLE wx_chat_msgs ADD COLUMN att TEXT NULL", "ALTER TABLE wx_chats ADD COLUMN vtype DATETIME NULL", "ALTER TABLE wx_chats ADD COLUMN atype DATETIME NULL", "ALTER TABLE wx_chats ADD COLUMN ext VARCHAR(40) NULL", "ALTER TABLE wx_chats ADD COLUMN assigned_to INT NULL", "ALTER TABLE wx_chats ADD COLUMN tags VARCHAR(200) NULL"] as $sql) { try { q($sql); } catch (Throwable $x) { /* already there */ } }
 }
 function chat_get(int $id): array { $c = q('SELECT * FROM wx_chats WHERE id=?', [$id])->fetch(); if (!$c) fail('Chat not found', 404); return $c; }
 function chat_msgs(int $cid, int $since = 0, bool $notes = false): array {
@@ -240,13 +240,13 @@ function chat_actions(string $action, array $in): bool {
             $att = chat_save_att((string)($in['data'] ?? ''), (string)($in['name'] ?? ''), !empty($in['voice']));
             if ($c['mode'] === 'ai') chat_add((int)$c['id'], 'sys', '', $u['name'] . ' joined the chat');
             $cap = trim(mb_substr((string)($in['text'] ?? ''), 0, 500));
-            $mid = chat_add((int)$c['id'], 'agent', $u['name'], $cap !== '' ? $cap : chat_att_text($att), $att); q("UPDATE wx_chats SET mode='human', agent_name=?, status='open', unread=0, needs=0, atype=NULL WHERE id=?", [$u['name'], $c['id']]);
+            $mid = chat_add((int)$c['id'], 'agent', $u['name'], $cap !== '' ? $cap : chat_att_text($att), $att); q("UPDATE wx_chats SET mode='human', handoff='', agent_name=?, status='open', unread=0, needs=0, atype=NULL WHERE id=?", [$u['name'], $c['id']]);
             log_act($u, 'chat.file', '#' . $c['id'] . ' ' . $att['k']); out(['ok' => true, 'id' => $mid, 'chat' => chat_pub(chat_get((int)$c['id']))]);
         case 'chat_reply':
             $u = need($SALES); $c = chat_get((int)($in['id'] ?? 0)); $t = trim((string)($in['text'] ?? '')); if ($t === '') fail('Write a message');
             if ($c['mode'] === 'ai') chat_add((int)$c['id'], 'sys', '', $u['name'] . ' joined the chat');
             $e = chat_deliver($c, $t); if ($e !== '') fail($e);
-            $mid = chat_add((int)$c['id'], 'agent', $u['name'], $t); q("UPDATE wx_chats SET mode='human', agent_name=?, assigned_to=COALESCE(assigned_to, ?), status='open', unread=0, needs=0 WHERE id=?", [$u['name'], (int)$u['id'], $c['id']]);
+            $mid = chat_add((int)$c['id'], 'agent', $u['name'], $t); q("UPDATE wx_chats SET mode='human', handoff='', agent_name=?, assigned_to=COALESCE(assigned_to, ?), status='open', unread=0, needs=0 WHERE id=?", [$u['name'], (int)$u['id'], $c['id']]);
             out(['ok' => true, 'id' => $mid, 'chat' => chat_pub(chat_get((int)$c['id']))]);
         case 'chat_mode':
             $u = need($SALES); $c = chat_get((int)($in['id'] ?? 0)); $m = ($in['mode'] ?? '') === 'ai' ? 'ai' : 'human';

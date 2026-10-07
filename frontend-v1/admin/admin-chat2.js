@@ -60,6 +60,10 @@
     var t = document.createElement("div"); t.className = "cx-tools";
     t.innerHTML = '<button type="button" class="btn ghost" data-cx="emo" title="Emoji">🙂</button><button type="button" class="btn ghost" data-cx="file" title="Send a photo or PDF">' + ic("paperclip") + '</button><button type="button" class="btn ghost" data-cx="rec" title="Record a voice note">' + ic("mic") + "</button>";
     form.insertBefore(t, ta); W.fillIcons && W.fillIcons(t);
+    // P39 Phase 5: AI-drafted reply for staff to edit before sending
+    var sg = document.createElement("button"); sg.type = "button"; sg.className = "btn ghost"; sg.title = "Suggest a reply (AI draft — you can edit before sending)"; sg.textContent = "✨ Suggest"; sg.style.whiteSpace = "nowrap"; t.appendChild(sg);
+    sg.onclick = function () { var id = getId(); if (!id) return; sg.disabled = true; sg.textContent = "✨ Writing…";
+      api("chat_suggest", { id: id }).then(function (r) { sg.disabled = false; sg.textContent = "✨ Suggest"; if (!r.ok) return toast(r.error || "Could not suggest a reply", true); ta.value = r.text || ""; ta.focus(); ta.dispatchEvent(new Event("input")); }); };
     var fi = document.createElement("input"); fi.type = "file"; fi.accept = "image/jpeg,image/png,image/webp,image/gif,application/pdf"; fi.hidden = true; form.appendChild(fi);
     var send = function (blob, name, voice) {
       var id = getId(); if (!id) return;
