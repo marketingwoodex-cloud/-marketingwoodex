@@ -737,7 +737,7 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
   }
   // P36: connectors (mirror of api/conn-lib.php)
   async function conn(action, inp, need) {
-    if (!["conn_list", "conn_save", "conn_delete", "conn_test"].includes(action)) return null;
+    if (!["conn_list", "conn_save", "conn_delete", "conn_test", "conn_gmail_send", "conn_gmail_use", "conn_push"].includes(action)) return null;
     need(["owner", "admin"]); const F = path.join(PRIV, "connectors.json");
     let items = []; try { items = JSON.parse(fs.readFileSync(F, "utf8")).items || []; } catch (e) {}
     const put = () => { fs.mkdirSync(PRIV, { recursive: true }); fs.writeFileSync(F, JSON.stringify({ items }, null, 2)); };
@@ -746,6 +746,18 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
     if (action === "conn_list") return { ok: true, items: all() };
     const i = items.findIndex((c) => c.id === String(inp.id || ""));
     if (action === "conn_delete") { if (i < 0) throw new Fail("Connector not found", 404); items.splice(i, 1); put(); return { ok: true, items: all() }; }
+    if (action === "conn_gmail_send" || action === "conn_gmail_use") { /* P22 preview mirror: validates, no real email from the preview */
+      if (i < 0 || items[i].key !== "gmail") throw new Fail("Gmail connector not found", 404); const c = items[i];
+      if (!/^\S+@\S+\.\S+$/.test(c.account || "") || String(c.secret || "").replace(/\s+/g, "").length !== 16) throw new Fail("Save the Gmail address and the 16-letter app password first");
+      if (action === "conn_gmail_use") return { ok: true, message: "Gmail is now used for all email alerts (preview: saved only)." };
+      c.note = "Preview: details OK. On Hostinger this sends a real test email."; c.checked = Math.floor(Date.now() / 1000); put(); return { ok: true, pass: true, message: c.note, items: all() };
+    }
+    if (action === "conn_push") {
+      if (i < 0) throw new Fail("Connector not found", 404); const c = items[i]; let ok = false, msg = "Backups work with GitHub and Google Drive";
+      if (c.key === "github") { ok = /^[\w.-]+\/[\w.-]+$/.test(c.account || "") && !!c.secret; msg = ok ? "Preview: backup ready. On Hostinger it uploads to GitHub backups/." : "Save the repository (owner/name) and token first"; }
+      if (c.key === "gdrive") { ok = /folders\/[\w-]+/.test(c.account || "") && /^https:\/\/script\.google\.com\/macros\/s\/[\w-]+\/exec$/.test(c.url || "") && !!c.secret; msg = ok ? "Preview: backup ready. On Hostinger it uploads to your Drive folder." : "Save the Drive folder link, the Apps Script web-app address and the script key first"; }
+      Object.assign(c, { lastPush: Math.floor(Date.now() / 1000), pushOk: ok, note: msg }); put(); return { ok: true, pass: ok, message: msg, items: all() };
+    }
     if (action === "conn_test") {
       if (i < 0) throw new Fail("Connector not found", 404); const c = items[i]; let ok = !!(c.secret || c.account), msg = "Saved. No test address, so nothing to check.";
       if (/^https:\/\//i.test(c.url || "")) { try { const r = await fetch(c.url, { signal: AbortSignal.timeout(8000) }); ok = r.status < 400; msg = "Address answered with HTTP " + r.status; } catch (e) { ok = false; msg = "Address did not answer"; } }
