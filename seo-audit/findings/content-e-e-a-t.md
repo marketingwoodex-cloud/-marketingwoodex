@@ -1,10 +1,4 @@
-# Content & E-E-A-T — score 88/100
-
-## [High] Thin content (<300 words in <main>) (4)
-- /book-a-visit/ (218 words)
-- /contact/ (234 words)
-- /estimator/ (277 words)
-- /projects/ (298 words)
+# Content & E-E-A-T — score 94/100
 
 ## [High] Articles credited to Organization, not a named designer (Person) (48)
 - /insights/1-kanal-house-interior-cost-lahore/

@@ -780,3 +780,17 @@ main .wx-short ul li:before{content:"";position:absolute;left:0;top:.6em;width:6
 /* ===== P34 reviews slider: 2 per view so it slides ===== */
 #home-page .hm-rv-track{grid-auto-columns:calc((100% - 16px)/2)}
 @media(max-width:760px){#home-page .hm-rv-track{grid-auto-columns:88%}}
+
+/* P36 FAQ block */
+.wx-faq-sec{padding:clamp(56px,8vw,96px) 0;background:#f4efe7}
+.wx-faq-sec .wx-faq-in{width:min(860px,calc(100% - 40px));margin:0 auto}
+.wx-faq-sec .wx-faq-k{margin:0 0 8px;color:#b8956a;font-size:.75rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase}
+.wx-faq-sec h2{margin:0 0 24px;color:#0c1628;font-size:clamp(1.6rem,3.2vw,2.3rem);line-height:1.15}
+.wx-faq-sec details p a{color:#0c1628;text-decoration:underline;text-underline-offset:3px}
+.wx-short-post{margin:0 0 28px;padding:0;background:none}.wx-short-post .wx-short-in{width:auto;margin:0;padding:22px 24px;border-left:3px solid #b8956a;border-radius:14px;background:#f4efe7}.wx-short-post ul{margin:8px 0 0;padding-left:18px}.wx-short-post li{margin:4px 0}
+.wx-faq-sec details,.wx-faq-sec summary{color:#0c1628}.wx-faq-sec details p{color:#4a5568}.wx-faq-sec details{padding:18px 22px}
+/* P36: home transparent header must not whiten links inside the light mega panel */
+body[data-page="home"] .mega-menu .mega-column a{color:#656565}
+body[data-page="home"] .mega-menu .mega-column a.mega-title{color:#0c1628}
+body[data-page="home"] .mega-menu .mega-column a:hover{color:#0c1628}
+body[data-page="home"] .mega-menu a.mega-studio{color:#0c1628}

@@ -106,7 +106,7 @@ def internal_links():
     if orphans: add(c, "High", "Orphan pages (0 inbound internal links)", orphans)
     if weak: add(c, "Medium", "Weakly linked pages (1-2 inbound)", weak)
     ins = [u for u in PAGES if u.startswith("/insights/") and u != "/insights/"]
-    svc_to_blog = [u for u in PAGES if not u.startswith("/insights") and not any(l.startswith("/insights/") and len(l) > 10 for l in links(PAGES[u]))]
+    svc_to_blog = [u for u in PAGES if u != "/privacy/" and not u.startswith("/insights") and not any(l.startswith("/insights/") and len(l) > 10 for l in links(PAGES[u]))]
     add(c, "Medium", "Service/location pages that link to no insights article (topic-cluster gap)", svc_to_blog)
     return inbound
 
@@ -185,7 +185,7 @@ def geo():
     if not os.path.exists(os.path.join(ROOT, "llms.txt")): add(c, "Medium", "No /llms.txt")
     for bot in ["GPTBot", "OAI-SearchBot", "PerplexityBot", "ClaudeBot", "Google-Extended"]:
         if bot not in rb: add(c, "Info", f"robots.txt has no explicit policy for {bot} (allowed by default)")
-    nofaq = [u for u, s in PAGES.items() if "FAQPage" not in s and not u.startswith("/insights/")]
+    nofaq = [u for u, s in PAGES.items() if "FAQPage" not in s and u != "/privacy/" and not u.startswith("/insights/")]
     add(c, "Medium", "Service pages without FAQ block/FAQPage schema (answer-engine extractability)", nofaq)
     nosum = [u for u, s in PAGES.items() if u.startswith("/insights/") and u != "/insights/" and "dx-short" not in s and "Short version" not in s and "wx-short" not in s]
     if nosum: add(c, "Low", "Articles without a summary box near top", nosum)
