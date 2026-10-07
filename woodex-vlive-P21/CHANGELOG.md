@@ -1,4 +1,5 @@
 # Changelog
+- **P21 cache fix**: ?v=p21 on CSS/JS links in all 145 pages; update zip woodex-P21-update-cachefix.zip.
 - **P21** (8 Oct 2026): deep QA + security audit, 3 fixes, templates folder + import from file, to-do plan, credentials sheet, zip woodex-live-P21.zip.
 - **P41**: SEO agent (Claude/Codex/Hermes/local), LinkedIn + GBP posting, smoother chat typing, alert phone.
 - **P40**: Telegram channel + QR, one website button, social media (FB/IG) planner + comments, CSV lead import, chatbot training.

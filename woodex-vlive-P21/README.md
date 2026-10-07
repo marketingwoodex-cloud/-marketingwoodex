@@ -33,3 +33,10 @@ See FEATURES.md, QA-REPORT.md, SECURITY-AUDIT.md, CHANGELOG.md.
 First login `admin` / `admin` (change it). Fill `CREDENTIALS-TEMPLATE.md` offline — real passwords are never stored in the zip.
 
 Also: TODO-PLAN.md.
+
+## Cache fix update (8 Oct 2026)
+Problem: after upload, Hostinger CDN kept serving OLD `site.css` / `v1.css` (30-day cache) → FAQ text invisible, services strip broken.
+Fix: every page now loads `site.css?v=p21`, `v1.css?v=p21`, `theme.css?v=p21`, `site.js?v=p21`, so the cache fetches the new files.
+- Already uploaded P21? Upload **woodex-P21-update-cachefix.zip** to `public_html` → Extract → Overwrite. Then Cache Manager → Purge all once.
+- New install: use **woodex-live-P21.zip** (fix included).
+Next release: change `p21` to the new version name in pages to force a refresh.
