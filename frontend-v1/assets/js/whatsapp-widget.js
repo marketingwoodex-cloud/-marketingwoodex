@@ -76,6 +76,12 @@
       ".wx-ch-form button.wx-ch-x{width:36px;height:42px;background:transparent!important;border-radius:10px!important}.wx-ch-form button.wx-ch-x svg{fill:none;stroke:#54656f;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;width:21px;height:21px}.wx-ch-form button.wx-ch-x.rec{background:#e11d48!important;width:auto;padding:0 10px!important;color:#fff;font:600 12px/1 inherit}.wx-ch-form button.wx-ch-x.rec svg{display:none}",
       ".wx-m img{display:block;max-width:200px;max-height:200px;border-radius:8px;margin-top:2px}.wx-m audio{display:block;width:210px;max-width:100%;height:36px}.wx-m a.wx-f{color:inherit;font-weight:600}.wx-ch-ty{font-size:12px;color:#667781;font-style:italic;padding:2px 12px;min-height:18px;background:#f6f1e9}",
       ".wx-opt .ic.tg{background:#229ED9}.wx-opt .ic.tg svg{width:20px;height:20px;fill:#fff}.wx-ch-q{display:flex;gap:6px;overflow-x:auto;padding:6px 10px 2px;background:#f6f1e9;scrollbar-width:none}.wx-ch-q::-webkit-scrollbar{display:none}.wx-ch-q button{flex:none;border:1px solid #d9c7ab!important;background:#fff!important;color:#0c1628!important;border-radius:999px!important;padding:6px 12px!important;font:600 12.5px/1.2 inherit;cursor:pointer;min-width:0!important}.wx-ch-q button:hover{border-color:#b8956a!important;background:#fbf6ee!important}.wx-ch-q .tg{background:#229ED9!important;border-color:#229ED9!important;color:#fff!important}",
+      /* P40 B: clean launcher, status ring, unread count, teaser, typing dots, times, mobile full screen */
+      ".wx-wa-btn .wx-st{position:absolute;right:1px;bottom:1px;width:14px;height:14px;border-radius:50%;border:2.5px solid #fff;background:" + (open ? "#22c55e" : "#94a3b8") + "}.wx-wa-btn .wx-n{position:absolute;top:-4px;right:-4px;min-width:20px;height:20px;padding:0 5px;border-radius:10px;background:#b8956a;color:#0c1628;font:700 11px/20px system-ui,sans-serif;border:2px solid #fff;text-align:center;box-sizing:border-box}",
+      ".wx-tease{position:absolute;right:70px;bottom:6px;width:max-content;max-width:240px;background:#fff;color:#0c1628;border-radius:14px 14px 4px 14px;padding:11px 30px 11px 14px;font-size:13.5px;line-height:1.4;box-shadow:0 10px 30px rgba(12,22,40,.18);cursor:pointer;animation:wxwa .3s ease}.wx-tease b{display:block;font-size:13.5px}.wx-tease span{color:#667781;font-size:12.5px}.wx-tease button{position:absolute;top:4px;right:4px;border:0!important;background:none!important;color:#94a3b8!important;font-size:17px;line-height:1;cursor:pointer;padding:4px!important;min-width:0!important}",
+      ".wx-typing{display:inline-flex;gap:4px;align-items:center;padding:11px 13px!important}.wx-typing i{width:6px;height:6px;border-radius:50%;background:#94a3b8;animation:wxdot 1.2s infinite}.wx-typing i:nth-child(2){animation-delay:.15s}.wx-typing i:nth-child(3){animation-delay:.3s}@keyframes wxdot{0%,60%,100%{opacity:.35;transform:none}30%{opacity:1;transform:translateY(-3px)}}",
+      ".wx-m .tm{display:block;font-size:10px;color:#8696a0;text-align:right;margin-top:3px;font-weight:400}.wx-m.ai small,.wx-m.them small{color:#8a6a43}.wx-join{align-self:center;font-size:12px;color:#0c1628;background:#efe3cf;border-radius:999px;padding:5px 12px;margin:4px 0}",
+      "@media(max-width:520px){.wx-wa-panel{right:0;bottom:0;width:100vw;max-width:100vw;max-height:100dvh;height:100dvh;border-radius:0;display:none;flex-direction:column}.wx-wa-panel.open{display:flex;z-index:2147483000}.wx-wa-panel .v-chat{flex:1;min-height:0}.wx-ch-list{height:auto!important;flex:1;max-height:none!important}.wx-tease{max-width:200px}}",
       ".wx-wa-foot{padding:10px 18px 16px;line-height:1.5;background:#f6f1e9;font-size:11px;color:#667781;text-align:center}"
     ].join("\n");
     document.head.appendChild(el("style", null, css));
@@ -83,12 +89,12 @@
     var waGlyph = '<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 3C9.4 3 4 8.4 4 15c0 2.4.7 4.6 2 6.5L4 29l7.7-2c1.8 1 3.9 1.6 6.1 1.6h.2c6.6 0 12-5.4 12-12S22.6 3 16 3zm0 21.8c-1.9 0-3.7-.5-5.3-1.5l-.4-.2-4.6 1.2 1.2-4.4-.3-.4c-1-1.6-1.6-3.5-1.6-5.5 0-5.5 4.5-10 10-10s10 4.5 10 10-4.5 10.8-9 10.8zm5.5-7.5c-.3-.2-1.8-.9-2-1-.3-.1-.5-.2-.7.2-.2.3-.8 1-.9 1.2-.2.2-.3.2-.6.1-.3-.2-1.3-.5-2.4-1.5-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.5.1-.6l.4-.5c.2-.2.2-.3.3-.5.1-.2 0-.4 0-.5l-.9-2.2c-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.2.2 2.1 3.2 5.1 4.5.7.3 1.3.5 1.7.6.7.2 1.4.2 1.9.1.6-.1 1.8-.7 2-1.4.3-.7.3-1.3.2-1.4-.1-.2-.3-.3-.6-.4z"/></svg>';
     var sendGlyph = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 20l18-8L3 4v6l12 2-12 2v6z"/></svg>';
 
-    var wrap = el("div", "wx-wa"), btn = el("button", "wx-wa-btn", '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-4.9A8 8 0 1 1 21 12Z"/><path d="M8.5 11h.01M12 11h.01M15.5 11h.01"/></svg><span class="wx-wa-badge" aria-hidden="true">' + waGlyph + '</span>');
+    var wrap = el("div", "wx-wa"), btn = el("button", "wx-wa-btn", '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-4.9A8 8 0 1 1 21 12Z"/><path d="M8.5 11h.01M12 11h.01M15.5 11h.01"/></svg><span class="wx-st" aria-hidden="true"></span>');
     btn.type = "button"; btn.setAttribute("aria-label", "Chat with Woodex"); btn.setAttribute("aria-expanded", "false"); wrap.appendChild(btn);
 
     var panel = el("div", "wx-wa-panel"); panel.setAttribute("role", "dialog"); panel.setAttribute("aria-label", "Chat with Woodex");
     panel.innerHTML =
-      '<div class="wx-wa-head"><button type="button" class="wx-back" aria-label="Back" hidden>&#8249;</button><span class="wx-wa-av">W</span><div><div class="t">Woodex Interior</div><div class="s"><i></i>' + (open ? "Design team online · replies in a few minutes" : "Away · replies from 9:30 am, Mon–Sat") + '</div></div><button type="button" class="wx-wa-x" aria-label="Close chat">&times;</button></div>' +
+      '<div class="wx-wa-head"><button type="button" class="wx-back" aria-label="Back" hidden>&#8249;</button><span class="wx-wa-av">W</span><div><div class="t" id="wx-nm">Woodex Interior</div><div class="s"><i></i>' + (open ? "Design team online · replies in a few minutes" : "Away · replies from 9:30 am, Mon–Sat") + '</div></div><button type="button" class="wx-wa-x" aria-label="Close chat">&times;</button></div>' +
       '<div class="v-home"><div class="wx-wa-body"><div class="wx-wa-msg">Assalam-o-Alaikum! How would you like to talk to us?</div>' +
       '<button type="button" class="wx-opt" data-go="chat"><span class="ic ch"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-4.9A8 8 0 1 1 21 12Z"/><path d="M8.5 11h.01M12 11h.01M15.5 11h.01"/></svg></span><span><b>Live chat with a designer</b><small>Instant answers here · our team can join</small></span></button>' +
       '<button type="button" class="wx-opt" data-go="wa"><span class="ic">' + waGlyph + '</span><span><b>WhatsApp</b><small>Message us on +92 322 4000768</small></span></button>' +
@@ -123,7 +129,8 @@
       if (window.fbq) try { window.fbq("track", "Contact"); } catch (e) {}
     }
     // ---------- views + live chat
-    var CH = { greet: "Assalam-o-Alaikum and welcome to Woodex Interior. Thank you for connecting with us. Tell us a little about your space, and share your WhatsApp number. A designer from our team will join you shortly.", on: false, id: 0, tok: "", last: 0, timer: null, busy: false }, view = "home";
+    var CH = { greet: "Assalam-o-Alaikum and welcome to Woodex Interior. Thank you for connecting with us. Tell us a little about your space, and share your WhatsApp number. A designer from our team will join you shortly.", on: false, id: 0, tok: "", last: 0, timer: null, busy: false, joined: {}, unread: 0, asst: "" }, view = "home";
+    try { CH.joined = JSON.parse(localStorage.getItem("wxJoined") || "{}") || {}; } catch (e) {}
     try { var sv = JSON.parse(localStorage.getItem("wxChat") || "null"); if (sv && sv.id && sv.tok) { CH.id = sv.id; CH.tok = sv.tok; } } catch (e) {}
     function show(v) {
       view = v; ["home", "chat", "wa"].forEach(function (k) { panel.querySelector(".v-" + k).hidden = k !== v; });
@@ -137,16 +144,18 @@
       var ty = L.querySelector(".wx-typing"); if (ty) ty.remove();
       msgs.forEach(function (m) {
         if (m.id && m.id <= CH.last) return; if (m.id) CH.last = m.id;
-        var d = el("div", "wx-m " + (m.who === "visitor" ? "me" : m.who === "sys" ? "sys" : "them"));
+        if (m.who === "agent" && !CH.joined[m.name || "team"]) { CH.joined[m.name || "team"] = 1; try { localStorage.setItem("wxJoined", JSON.stringify(CH.joined)); } catch (x) {} if (!reset || CH.last) L.appendChild(el("div", "wx-join", "👋 " + esc(m.name || "A designer") + " from the Woodex team joined the chat")); }
+        var d = el("div", "wx-m " + (m.who === "visitor" ? "me" : m.who === "sys" ? "sys" : m.who === "ai" ? "them ai" : "them"));
         var a = m.att && /^\/assets\/uploads\/chat\//.test(m.att.u) ? m.att : null, au = a ? esc(a.u) : "";
         var at = a ? (a.k === "img" ? '<a href="' + au + '" target="_blank" rel="noopener"><img src="' + au + '" alt="Photo"></a>' : a.k === "voice" ? '<audio controls preload="metadata" src="' + au + '"></audio>' : '<a class="wx-f" href="' + au + '" target="_blank" rel="noopener">📄 ' + esc(a.n || "File") + "</a>") : "";
-        d.innerHTML = (m.who === "agent" ? "<small>" + esc(m.name || "Woodex team") + "</small>" : "") + (a && /^(🎤 Voice note|📷 Photo|📎 .*)$/.test(m.text) ? "" : esc(m.text)) + at; L.appendChild(d);
+        var tm = m.t ? String(m.t).slice(11, 16) : ""; if (tm) { var hh = +tm.slice(0, 2); tm = ((hh % 12) || 12) + ":" + tm.slice(3) + (hh < 12 ? " am" : " pm"); }
+        d.innerHTML = (m.who === "agent" ? "<small>" + esc(m.name || "Woodex team") + " · Woodex team</small>" : m.who === "ai" && CH.asst ? "<small>" + esc(CH.asst) + "</small>" : "") + (a && /^(🎤 Voice note|📷 Photo|📎 .*)$/.test(m.text) ? "" : esc(m.text)) + at + (tm && m.who !== "sys" ? '<span class="tm">' + tm + "</span>" : ""); L.appendChild(d);
       });
       L.scrollTop = L.scrollHeight;
     }
-    function poll() { if (!CH.id || CH.busy) return; chatApi({ action: "poll", chat_id: CH.id, token: CH.tok, since: CH.last }).then(function (r) { if (r.ok) { var tyEl = $(".wx-ch-ty"); if (tyEl) tyEl.textContent = r.typing ? "Woodex team is typing…" : ""; if (r.messages.length) { var fresh = r.messages.filter(function (m) { return m.id > CH.last && m.who !== "visitor"; }).length; draw(r.messages, !CH.last); if (fresh && (!panel.classList.contains("open") || view !== "chat")) dotOn(); } } else if (r.error === "Chat not found") { CH.id = 0; CH.tok = ""; CH.last = 0; localStorage.removeItem("wxChat"); } }).catch(function () {}); }
+    function poll() { if (!CH.id || CH.busy) return; chatApi({ action: "poll", chat_id: CH.id, token: CH.tok, since: CH.last }).then(function (r) { if (r.ok) { var tyEl = $(".wx-ch-ty"); if (tyEl) tyEl.textContent = r.typing ? "A designer is typing…" : ""; if (r.messages.length) { var fresh = r.messages.filter(function (m) { return m.id > CH.last && m.who !== "visitor"; }).length; draw(r.messages, !CH.last); if (fresh && (!panel.classList.contains("open") || view !== "chat")) dotOn(fresh); } } else if (r.error === "Chat not found") { CH.id = 0; CH.tok = ""; CH.last = 0; localStorage.removeItem("wxChat"); } }).catch(function () {}); }
     function startPoll() { clearInterval(CH.timer); if (!CH.id) return; CH.timer = setInterval(poll, panel.classList.contains("open") && view === "chat" ? 3000 : 15000); }
-    function dotOn() { if (!btn.querySelector(".wx-wa-dot")) btn.insertAdjacentHTML("beforeend", '<span class="wx-wa-dot" aria-hidden="true"></span>'); }
+    function dotOn(n) { CH.unread += n || 1; var b = btn.querySelector(".wx-n"); if (!b) { btn.insertAdjacentHTML("beforeend", '<span class="wx-n" aria-hidden="true"></span>'); b = btn.querySelector(".wx-n"); } b.textContent = CH.unread > 9 ? "9+" : CH.unread; btn.setAttribute("aria-label", "Chat with Woodex, " + CH.unread + " new message" + (CH.unread > 1 ? "s" : "")); tease(true); }
     panel.querySelector(".v-home").addEventListener("click", function (e) { var b = e.target.closest("[data-go]"); if (b) show(b.dataset.go); });
     $(".wx-back").addEventListener("click", function () { show("home"); startPoll(); });
     var ta = $(".wx-ch-form textarea");
@@ -195,7 +204,7 @@
     });
     $(".wx-ch-form").addEventListener("submit", function (e) {
       e.preventDefault(); var t = ta.value.trim(); if (!t || CH.busy) return; ta.value = ""; ta.style.height = "auto";
-      var L = $(".wx-ch-list"), mine = el("div", "wx-m me"); mine.textContent = t; L.appendChild(mine); L.insertAdjacentHTML("beforeend", '<div class="wx-typing">typing…</div>'); L.scrollTop = L.scrollHeight;
+      var L = $(".wx-ch-list"), mine = el("div", "wx-m me"); mine.textContent = t; L.appendChild(mine); L.insertAdjacentHTML("beforeend", '<div class="wx-typing" aria-label="typing"><i></i><i></i><i></i></div>'); L.scrollTop = L.scrollHeight;
       CH.busy = true;
       chatApi({ action: "send", chat_id: CH.id || 0, token: CH.tok, text: t, page: location.pathname, since: CH.last, _hp: $(".wx-ch-form [name=hp]").value }).then(function (r) {
         CH.busy = false; mine.remove();
@@ -222,14 +231,24 @@
     chatApi({ action: "cfg" }).then(function (r) {
       if (r && r.ok && r.tg && r.tg.bot) { CH.tg = r.tg; var t = panel.querySelector("[data-tg]"); t.hidden = false; if (r.tg.waDown) panel.querySelector(".wx-tg-s").textContent = "WhatsApp is busy right now: reach us on Telegram"; t.addEventListener("click", goTg); }
       if (r && r.ok && r.on) quick(r);
+      if (r && r.ok && r.assistant && r.assistant.name) { CH.asst = r.assistant.name + (r.assistant.role ? " · " + r.assistant.role : ""); $("#wx-nm").textContent = r.assistant.name + " · Woodex Interior"; $(".wx-wa-av").textContent = r.assistant.name.charAt(0).toUpperCase(); }
+      if (r && r.ok && r.on && !CH.id) setTimeout(function () { tease(false, r.assistant && r.assistant.name); }, 7000);
       CH.on = !!(r && r.ok && r.on); CH.greet = (r && r.greeting) || CH.greet; show(CH.on && CH.id ? "chat" : "home"); if (CH.on && CH.id) { poll(); startPoll(); }
     }).catch(function () { show("home"); });
     function toggle(force) {
       var o = typeof force === "boolean" ? force : !panel.classList.contains("open");
       panel.classList.toggle("open", o); btn.setAttribute("aria-expanded", String(o));
-      var dot = btn.querySelector(".wx-wa-dot"); if (dot) dot.remove();
+      var dot = btn.querySelector(".wx-n"); if (o && dot) { dot.remove(); CH.unread = 0; btn.setAttribute("aria-label", "Chat with Woodex"); } if (o) tease(true);
       if (o && view === "wa") setTimeout(function () { $("#wx-wa-n").focus(); }, 50);
       if (o && view === "chat") { poll(); setTimeout(function () { ta.focus(); }, 60); } startPoll();
+    }
+    // P40 B: one gentle greeting bubble per visit (not when a chat already exists or the panel is open)
+    function tease(hide, nm) {
+      var t = wrap.querySelector(".wx-tease"); if (hide) { if (t) t.remove(); return; }
+      if (t || panel.classList.contains("open") || CH.id) return; try { if (sessionStorage.getItem("wxTease")) return; sessionStorage.setItem("wxTease", "1"); } catch (x) {}
+      t = el("div", "wx-tease", "<b>" + (open ? "👋 Planning a space?" : "👋 Leave us a message") + "</b><span>" + (open ? (nm ? esc(nm) + " and our designers are" : "Our designers are") + " online. Ask anything." : "We reply from 9:30 am, Mon–Sat.") + '</span><button type="button" aria-label="Dismiss">×</button>');
+      wrap.appendChild(t); t.addEventListener("click", function (e) { t.remove(); if (!e.target.closest("button")) { toggle(true); if (CH.on) show("chat"); } });
+      setTimeout(function () { if (t.isConnected) t.remove(); }, 15000);
     }
     btn.addEventListener("click", function () { toggle(); });
     $(".wx-wa-x").addEventListener("click", function () { toggle(false); });

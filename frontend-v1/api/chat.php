@@ -14,7 +14,7 @@ $cfg = chat_cfg();
 @set_time_limit(60);
 try {
 chat_migrate();
-if ($act === 'cfg') out(['ok' => true, 'on' => (bool)$cfg['on'], 'greeting' => $cfg['greeting'], 'hours' => $cfg['hours'], 'open' => chat_open_now(), 'ai' => (bool)$cfg['ai'], 'quick' => array_map(fn($x) => ['label' => $x['label'], 'text' => $x['text']], array_slice((array)$cfg['quick'], 0, 6)), 'tg' => tg_button_on() ? ['bot' => tg_cfg()['bot'], 'waDown' => wa_down()] : null]);
+if ($act === 'cfg') out(['ok' => true, 'on' => (bool)$cfg['on'], 'greeting' => $cfg['greeting'], 'hours' => $cfg['hours'], 'open' => chat_open_now(), 'ai' => (bool)$cfg['ai'], 'quick' => array_map(fn($x) => ['label' => $x['label'], 'text' => $x['text']], array_slice((array)$cfg['quick'], 0, 6)), 'assistant' => (function () { if (!function_exists('aic_cfg') && is_file(__DIR__ . '/ai-center-lib.php')) require_once __DIR__ . '/ai-center-lib.php'; if (!function_exists('aic_cfg')) return null; try { $p = aic_cfg()['persona']; } catch (Throwable $e) { return null; } return trim((string)$p['name']) !== '' ? ['name' => (string)$p['name'], 'role' => (string)$p['role']] : null; })(), 'tg' => tg_button_on() ? ['bot' => tg_cfg()['bot'], 'waDown' => wa_down()] : null]);
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') fail('POST required', 405);
 if (!$cfg['on']) fail('Chat is offline', 403);
 
