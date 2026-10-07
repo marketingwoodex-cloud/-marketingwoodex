@@ -146,6 +146,43 @@ function wah_actions(string $action, array $in): bool {
             foreach (['remindChats', 'remindLeads'] as $k) if (array_key_exists($k, $s)) $c[$k] = !empty($s[$k]);
             if (isset($s['waba'])) $c['waba'] = substr(preg_replace('~\D~', '', (string)$s['waba']), 0, 30);
             $d['hub'] = $c; wag_save($d); log_act($u, 'wa.hub', ''); out(['ok' => true, 'hub' => $c]);
+        case 'wah_insights': // P40 C: insights for the hub dashboard
+            $u = need($SALES); $d = wag_load(); $days = max(7, min(90, (int)($in['days'] ?? 14))); $from = date('Y-m-d', time() - ($days - 1) * 86400);
+            $ser = []; for ($i = $days - 1; $i >= 0; $i--) { $k = date('Y-m-d', time() - $i * 86400); $ser[$k] = ['d' => $k, 'web' => 0, 'wa' => 0, 'tg' => 0, 'leads' => 0, 'auto' => (int)($d['day'][$k] ?? 0)]; }
+            try { foreach (q("SELECT DATE(created_at) d, channel c, COUNT(*) n FROM wx_chats WHERE created_at>=? GROUP BY DATE(created_at), channel", [$from . ' 00:00:00'])->fetchAll() as $r) { $c = in_array($r['c'], ['wa', 'tg'], true) ? $r['c'] : 'web'; if (isset($ser[$r['d']])) $ser[$r['d']][$c] += (int)$r['n']; } } catch (Throwable $e) {}
+            $src = [];
+            foreach (q("SELECT DATE(created_at) d, source s, COUNT(*) n FROM wx_leads WHERE created_at>=? GROUP BY DATE(created_at), source", [$from . ' 00:00:00'])->fetchAll() as $r) { if (isset($ser[$r['d']])) $ser[$r['d']]['leads'] += (int)$r['n']; $sk = (string)$r['s'] ?: 'other'; $src[$sk] = ($src[$sk] ?? 0) + (int)$r['n']; }
+            arsort($src);
+            $fun = array_fill_keys(array_keys(WAH_STAGES), 0);
+            foreach (q("SELECT stage, COUNT(*) n FROM wx_leads WHERE created_at>=? GROUP BY stage", [date('Y-m-d H:i:s', time() - 90 * 86400)])->fetchAll() as $r) if (isset($fun[$r['stage']])) $fun[$r['stage']] = (int)$r['n'];
+            $rt = ['ai' => [], 'team' => []];
+            try {
+                $rows = q("SELECT m.chat_id, m.who, m.t FROM wx_chat_msgs m JOIN wx_chats c ON c.id=m.chat_id WHERE c.created_at>=? ORDER BY m.chat_id, m.id LIMIT 20000", [$from . ' 00:00:00'])->fetchAll();
+                $st = []; foreach ($rows as $r) { $c = (int)$r['chat_id']; if (!isset($st[$c])) $st[$c] = []; $x = &$st[$c]; if (!isset($x['v']) && $r['who'] === 'visitor') $x['v'] = strtotime($r['t']);
+                    elseif (isset($x['v']) && in_array($r['who'], ['ai', 'agent'], true)) { $w = $r['who'] === 'ai' ? 'ai' : 'team'; if (!isset($x[$w])) { $x[$w] = 1; $rt[$w][] = max(0, strtotime($r['t']) - $x['v']); } } unset($x); }
+            } catch (Throwable $e) {}
+            $med = function (array $a) { if (!$a) return null; sort($a); return $a[intdiv(count($a), 2)]; };
+            $flows = []; foreach ($d['flows'] as $k => $f) if ((int)$f['sent'] || (int)($f['mailed'] ?? 0) || (int)$f['failed'] || $f['on']) $flows[] = ['k' => $k, 'name' => WAG_FLOWS[$k] ?? $k, 'on' => (bool)$f['on'], 'sent' => (int)$f['sent'], 'mailed' => (int)($f['mailed'] ?? 0), 'failed' => (int)$f['failed']];
+            $camps = array_map(fn($c) => ['name' => $c['name'], 'when' => $c['when'] ?? '', 'status' => $c['status']] + wag_stats($c), array_slice(array_reverse($d['camps']), 0, 6));
+            $won = $fun['won']; $closed = $won + $fun['lost'];
+            out(['ok' => true, 'days' => $days, 'series' => array_values($ser), 'sources' => $src, 'funnel' => $fun, 'stages' => WAH_STAGES, 'winRate' => $closed ? round($won * 100 / $closed) : null,
+                'reply' => ['ai' => $med($rt['ai']), 'team' => $med($rt['team']), 'aiN' => count($rt['ai']), 'teamN' => count($rt['team'])], 'flows' => $flows, 'camps' => $camps, 'optout' => count($d['optout'])]);
+        case 'wah_tpl_submit': // P40 C: send a template to Meta for approval
+            $u = need($OA); $d = wag_load(); $t = wag_tpl($d, (string)($in['id'] ?? '')); if (!$t) fail('Template not found');
+            $c = wah_cfg($d); $crm = crm_cfg(); $waba = preg_replace('~\D~', '', (string)$c['waba']);
+            if ($crm['waToken'] === '') fail('Connect WhatsApp first (WhatsApp hub → Connect)');
+            if ($waba === '') fail('Add your WhatsApp Business Account ID in the hub settings first');
+            if (!preg_match('~^[a-z0-9_]{1,512}$~', (string)$t['name'])) fail('Template name must be lowercase letters, numbers and _ only');
+            $n = 0; $body = preg_replace_callback('~\{\{\s*\d+\s*\}\}~', function () use (&$n) { return '{{' . (++$n) . '}}'; }, (string)$t['body']);
+            $comp = ['type' => 'BODY', 'text' => $body]; if ($n) $comp['example'] = ['body_text' => [array_map(fn($i) => ['Ayesha', 'WI-10100', 'Lahore', '12 Oct', '10:30 am'][$i % 5], range(0, $n - 1))]];
+            $ch = curl_init('https://graph.facebook.com/v21.0/' . $waba . '/message_templates');
+            curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 25, CURLOPT_POST => true, CURLOPT_HTTPHEADER => ['Authorization: Bearer ' . $crm['waToken'], 'Content-Type: application/json'],
+                CURLOPT_POSTFIELDS => json_encode(['name' => $t['name'], 'language' => $t['lang'] ?: 'en', 'category' => ($t['cat'] ?? '') === 'marketing' ? 'MARKETING' : 'UTILITY', 'components' => [$comp]], JSON_UNESCAPED_UNICODE)]);
+            if (is_file(__DIR__ . '/cacert.pem')) curl_setopt($ch, CURLOPT_CAINFO, __DIR__ . '/cacert.pem');
+            $raw = curl_exec($ch); $err = curl_error($ch); curl_close($ch); $j = json_decode((string)$raw, true);
+            if (!is_array($j) || isset($j['error'])) fail('Meta: ' . ($j['error']['error_user_msg'] ?? $j['error']['message'] ?? ($err ?: 'no answer')));
+            foreach ($d['tpls'] as &$x) if ($x['id'] === $t['id']) { $x['status'] = (string)($j['status'] ?? 'PENDING'); $x['checked'] = now(); $x['metaId'] = (string)($j['id'] ?? ''); } unset($x);
+            wag_save($d); log_act($u, 'wa.tpl.submit', $t['name']); out(['ok' => true, 'status' => (string)($j['status'] ?? 'PENDING'), 'tpls' => $d['tpls']]);
         case 'wah_tpl_sync':
             $u = need($OA); $d = wag_load(); $r = wah_tpl_sync($d); if (!$r['ok']) fail($r['error']);
             wag_save($d); out($r + ['tpls' => $d['tpls']]);

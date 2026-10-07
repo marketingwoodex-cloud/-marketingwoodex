@@ -96,6 +96,7 @@
     ["chat", "Inbox", "message-circle", "g:conversations"],
     { g: "WhatsApp", icon: "send", id: "wa", items: [
       ["wahub", "Overview & rules", "send", "g:broadcast"],
+      ["wainsights", "Insights", "layers", "g:broadcast"],
       ["wauto", "Broadcasts & automations", "zap", "g:broadcast"],
       ["offers", "Discount offers", "send", "g:broadcast"],
       ["settings/connections", "Connect WhatsApp", "zap", "g:settings"]] },
@@ -294,7 +295,7 @@
   // P19 D: hubs — one sidebar item, related screens as tabs on top
   var HUBS = [
     { id: "ai-hub", items: [["aicenter", "Settings"], ["train", "Knowledge & Q&A"], ["aireport", "AI report"]] },
-    { id: "wa-hub", items: [["wahub", "Overview & rules"], ["wauto", "Broadcasts & automations"], ["offers", "Discount offers"]] }
+    { id: "wa-hub", items: [["wahub", "Overview & rules"], ["wainsights", "Insights"], ["wauto", "Broadcasts & automations"], ["offers", "Discount offers"]] }
   ];
   function hubOf(v) { for (var i = 0; i < HUBS.length; i++) for (var j = 0; j < HUBS[i].items.length; j++) if (HUBS[i].items[j][0] === v) return HUBS[i]; return null; }
   function hubBar(view, v) {

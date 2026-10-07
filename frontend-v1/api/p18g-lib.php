@@ -8,7 +8,7 @@
  */
 const WAG_FILE = PRIVATE_DIR . '/wa-auto.json';
 const WAG_VARS = ['{name}' => 'First name', '{fullname}' => 'Full name', '{company}' => 'Company', '{city}' => 'City', '{ref}' => 'Quote / invoice no.', '{amount}' => 'Amount (Rs)', '{date}' => 'Date', '{time}' => 'Time', '{link}' => 'Link'];
-const WAG_FLOWS = ['welcome' => 'New enquiry → welcome', 'quote' => 'Quote sent → 1st follow-up', 'quote2' => 'Quote sent → 2nd follow-up', 'quote3' => 'Quote sent → last follow-up', 'invoice' => 'Invoice due → reminder', 'booking' => 'Site visit → reminder the day before'];
+const WAG_FLOWS = ['welcome' => 'New enquiry → welcome', 'lead1' => 'New lead, no reply → 1st follow-up', 'lead2' => 'New lead, no reply → 2nd follow-up', 'lead3' => 'New lead, no reply → last follow-up', 'quote' => 'Quote sent → 1st follow-up', 'quote2' => 'Quote sent → 2nd follow-up', 'quote3' => 'Quote sent → last follow-up', 'invoice' => 'Invoice due soon → reminder', 'invoice0' => 'Invoice due today → reminder', 'invoice_late' => 'Invoice overdue → reminder', 'booking' => 'Site visit → reminder the day before'];
 const WAG_STOP = '~^\s*(stop|unsubscribe|band karo|بند|ruk jao|no more)\s*[.!]*\s*$~iu';
 
 function wag_load(): array {
@@ -16,7 +16,7 @@ function wag_load(): array {
     $d['cfg'] = array_merge(['dailyCap' => 250, 'perTick' => 25, 'cronKey' => '', 'quietFrom' => '21:00', 'quietTo' => '09:00'], $d['cfg'] ?? []);
     if ($d['cfg']['cronKey'] === '') $d['cfg']['cronKey'] = bin2hex(random_bytes(12));
     $fl = $d['flows'] ?? [];
-    foreach (WAG_FLOWS as $k => $l) $fl[$k] = array_merge(['on' => false, 'tpl' => '', 'params' => [], 'days' => ['quote' => 1, 'quote2' => 3, 'quote3' => 7][$k] ?? 1, 'sent' => 0, 'failed' => 0], is_array($fl[$k] ?? null) ? $fl[$k] : []);
+    foreach (WAG_FLOWS as $k => $l) $fl[$k] = array_merge(['on' => false, 'tpl' => '', 'params' => [], 'days' => ['lead1' => 1, 'lead2' => 3, 'lead3' => 7, 'quote' => 1, 'quote2' => 3, 'quote3' => 7, 'invoice' => 3, 'invoice0' => 0, 'invoice_late' => 3][$k] ?? 1, 'sent' => 0, 'failed' => 0, 'mail' => false, 'subject' => '', 'body' => '', 'mailed' => 0], is_array($fl[$k] ?? null) ? $fl[$k] : []);
     $d['flows'] = $fl;
     foreach (['tpls', 'segs', 'camps'] as $k) $d[$k] = array_values($d[$k] ?? []);
     foreach (['optout', 'day', 'flowlog', 'mid'] as $k) $d[$k] = $d[$k] ?? [];
@@ -100,10 +100,18 @@ function wag_tick(bool $force = false): array {
         // --- auto flows
         foreach (wag_flow_due($d) as $job) {
             if ($budget <= 0) break;
-            [$fk, $key, $v] = $job; $f = $d['flows'][$fk]; $t = wag_tpl($d, $f['tpl']); if (!$t) continue;
-            if (isset($d['optout'][$v['p']])) { $d['flowlog'][$key] = now(); continue; }
-            $r = $send($v['p'], $t, wag_fill($f['params'], $v)); $d['flowlog'][$key] = now();
-            if ($r['ok']) { $d['flows'][$fk]['sent']++; $sum['flows']++; if (!empty($r['id'])) $d['mid'][$r['id']] = ['f', $fk, now()]; if (!empty($v['lid'])) try { lead_note_add((int)$v['lid'], 'WhatsApp automation', 'Auto message sent: ' . WAG_FLOWS[$fk], true); } catch (Throwable $e) {} }
+            [$fk, $key, $v] = $job; $f = $d['flows'][$fk]; $t = $f['tpl'] !== '' ? wag_tpl($d, $f['tpl']) : null; $p = (string)($v['p'] ?? '');
+            $r = ['ok' => false, 'error' => $t ? 'No WhatsApp number' : 'No WhatsApp template'];
+            if ($p !== '' && isset($d['optout'][$p])) { $d['flowlog'][$key] = now(); continue; }
+            if ($t && $p !== '') $r = $send($p, $t, wag_fill($f['params'], $v));
+            $d['flowlog'][$key] = now(); $how = 'WhatsApp';
+            // P40 C: email backup when WhatsApp is not possible or failed
+            if (!$r['ok'] && !empty($f['mail']) && !empty($v['em']) && trim((string)$f['body']) !== '' && function_exists('smtp_send')) {
+                [$sub, $body] = wag_fill([(string)$f['subject'] ?: 'Woodex Interior', (string)$f['body']], $v);
+                $e = smtp_send(crm_cfg(), [$v['em']], $sub, $body . "\n\nWoodex Interior\n+92 322 4000768 · info@woodex.com.pk");
+                if ($e === '') { $r = ['ok' => true]; $how = 'Email'; $d['flows'][$fk]['mailed'] = (int)($f['mailed'] ?? 0) + 1; } else $r['error'] .= ' · email: ' . $e;
+            }
+            if ($r['ok']) { if ($how === 'WhatsApp') $d['flows'][$fk]['sent']++; $sum['flows']++; if (!empty($r['id'])) $d['mid'][$r['id']] = ['f', $fk, now()]; if (!empty($v['lid'])) try { lead_note_add((int)$v['lid'], 'Follow-up automation', $how . ' sent: ' . WAG_FLOWS[$fk], true); } catch (Throwable $e) {} }
             else { $d['flows'][$fk]['failed']++; $sum['failed']++; $d['flows'][$fk]['lastError'] = $r['error']; }
         }
         // --- P39 Phase 6: if/then rules + no-reply reminders
@@ -129,35 +137,49 @@ function wag_tick(bool $force = false): array {
 /** Due auto-flow jobs: [flowKey, dedupeKey, vars]. */
 function wag_flow_due(array $d): array {
     $jobs = []; $F = $d['flows']; $log = $d['flowlog'];
-    if ($F['welcome']['on'] && $F['welcome']['tpl']) {
+    $on = fn($k) => !empty($F[$k]['on']) && ($F[$k]['tpl'] !== '' || (!empty($F[$k]['mail']) && trim((string)$F[$k]['body']) !== ''));
+    if ($on('welcome')) {
         foreach (q('SELECT id,name,phone,company,location FROM wx_leads WHERE created_at >= ? ORDER BY id', [date('Y-m-d H:i:s', time() - 2 * 86400)])->fetchAll() as $l) {
             $k = 'welcome:' . $l['id']; $p = wag_phone((string)$l['phone']); if (!$p || isset($log[$k])) continue;
             $jobs[] = ['welcome', $k, ['p' => $p, 'n' => $l['name'], 'co' => (string)$l['company'], 'city' => (string)$l['location'], 'lid' => (int)$l['id']]];
         }
     }
-    if (($F['quote']['on'] && $F['quote']['tpl']) || ($F['quote2']['on'] && $F['quote2']['tpl']) || ($F['quote3']['on'] && $F['quote3']['tpl']) || ($F['invoice']['on'] && $F['invoice']['tpl'])) {
+    // P40 C: new leads nobody heard back from (stage New/Contacted, no customer message since the enquiry) → day 1 / 3 / 7
+    foreach (['lead1', 'lead2', 'lead3'] as $lk) {
+        if (!$on($lk)) continue; $n = max(1, (int)$F[$lk]['days']);
+        $rows = q("SELECT id,name,phone,email,company,location,created_at FROM wx_leads WHERE stage IN ('new','contacted') AND created_at<=? AND created_at>=? ORDER BY id LIMIT 500", [date('Y-m-d H:i:s', time() - $n * 86400), date('Y-m-d H:i:s', time() - ($n + 7) * 86400)])->fetchAll();
+        foreach ($rows as $l) {
+            $k = $lk . ':' . $l['id']; $p = wag_phone((string)$l['phone']); $em = filter_var((string)$l['email'], FILTER_VALIDATE_EMAIL) ? (string)$l['email'] : '';
+            if ((!$p && !$em) || isset($log[$k])) continue;
+            try { if (q("SELECT 1 FROM wx_chat_msgs m JOIN wx_chats c ON c.id=m.chat_id WHERE c.lead_id=? AND m.who='visitor' AND m.t>? LIMIT 1", [(int)$l['id'], date('Y-m-d H:i:s', strtotime((string)$l['created_at']) + 600)])->fetchColumn()) continue; } catch (Throwable $e) {}
+            $jobs[] = [$lk, $k, ['p' => $p, 'em' => $em, 'n' => $l['name'], 'co' => (string)$l['company'], 'city' => (string)$l['location'], 'lid' => (int)$l['id']]];
+        }
+    }
+    if ($on('quote') || $on('quote2') || $on('quote3') || $on('invoice') || $on('invoice0') || $on('invoice_late')) {
         if (function_exists('doc_all')) {
             foreach (['quote', 'quote2', 'quote3'] as $qk) { // P39: day 1 / 3 / 7 follow-ups; stop when the customer replies or the quote is answered
-                if (!$F[$qk]['on'] || !$F[$qk]['tpl']) continue;
+                if (!$on($qk)) continue;
                 $cut = date('Y-m-d H:i:s', time() - max(1, (int)$F[$qk]['days']) * 86400); $old = date('Y-m-d H:i:s', time() - (max(1, (int)$F[$qk]['days']) + 7) * 86400);
                 foreach (doc_all('wx_quotes') as $x) {
                     if (($x['status'] ?? '') !== 'sent' || empty($x['sent_at']) || $x['sent_at'] > $cut || $x['sent_at'] < $old) continue;
-                    $k = ($qk === 'quote' ? 'quote:' : $qk . ':') . $x['id']; $p = wag_phone((string)($x['client']['phone'] ?? '')); if (!$p || isset($log[$k])) continue;
+                    $k = ($qk === 'quote' ? 'quote:' : $qk . ':') . $x['id']; $p = wag_phone((string)($x['client']['phone'] ?? '')); $em = filter_var((string)($x['client']['email'] ?? ''), FILTER_VALIDATE_EMAIL) ? (string)$x['client']['email'] : ''; if ((!$p && !$em) || isset($log[$k])) continue;
                     if (!empty($x['lead_id'])) { try { if (q("SELECT 1 FROM wx_chat_msgs m JOIN wx_chats c ON c.id=m.chat_id WHERE c.lead_id=? AND m.who='visitor' AND m.t>? LIMIT 1", [(int)$x['lead_id'], $x['sent_at']])->fetchColumn()) continue; } catch (Throwable $e) {} }
-                    $jobs[] = [$qk, $k, ['p' => $p, 'n' => (string)($x['client']['name'] ?? ''), 'co' => (string)($x['client']['company'] ?? ''), 'ref' => (string)($x['no'] ?? ''), 'amount' => $x['total'] ?? 0, 'lid' => $x['lead_id'] ?? null]];
+                    $jobs[] = [$qk, $k, ['p' => $p, 'em' => $em, 'n' => (string)($x['client']['name'] ?? ''), 'co' => (string)($x['client']['company'] ?? ''), 'ref' => (string)($x['no'] ?? ''), 'amount' => $x['total'] ?? 0, 'lid' => $x['lead_id'] ?? null]];
                 }
             }
-            if ($F['invoice']['on'] && $F['invoice']['tpl']) {
-                $due = date('Y-m-d', time() + max(0, (int)$F['invoice']['days']) * 86400);
+            foreach (['invoice' => 1, 'invoice0' => 0, 'invoice_late' => -1] as $ik => $dir) {
+                if (!$on($ik)) continue;
+                $due = date('Y-m-d', time() + $dir * max($dir ? 1 : 0, (int)$F[$ik]['days']) * 86400);
                 foreach (doc_all('wx_invoices') as $i) {
                     $i = inv_pub($i); if (($i['due_date'] ?? '') !== $due || $i['balance'] <= 0) continue;
-                    $k = 'invoice:' . $i['id'] . ':' . $due; $p = wag_phone((string)($i['client']['phone'] ?? '')); if (!$p || isset($log[$k])) continue;
-                    $jobs[] = ['invoice', $k, ['p' => $p, 'n' => (string)($i['client']['name'] ?? ''), 'co' => (string)($i['client']['company'] ?? ''), 'ref' => (string)($i['no'] ?? ''), 'amount' => $i['balance'], 'date' => date('j M Y', strtotime($due))]];
+                    $k = $ik . ':' . $i['id'] . ':' . $due; $p = wag_phone((string)($i['client']['phone'] ?? '')); $em = filter_var((string)($i['client']['email'] ?? ''), FILTER_VALIDATE_EMAIL) ? (string)$i['client']['email'] : '';
+                    if ((!$p && !$em) || isset($log[$k])) continue;
+                    $jobs[] = [$ik, $k, ['p' => $p, 'em' => $em, 'n' => (string)($i['client']['name'] ?? ''), 'co' => (string)($i['client']['company'] ?? ''), 'ref' => (string)($i['no'] ?? ''), 'amount' => $i['balance'], 'date' => date('j M Y', strtotime((string)$i['due_date']))]];
                 }
             }
         }
     }
-    if ($F['booking']['on'] && $F['booking']['tpl']) {
+    if ($on('booking')) {
         try { $rows = q("SELECT id,name,phone,d,tm,lead_id FROM wx_bookings WHERE d=? AND status='confirmed'", [date('Y-m-d', time() + 86400)])->fetchAll(); } catch (Throwable $e) { $rows = []; }
         foreach ($rows as $b) {
             $k = 'booking:' . $b['id'] . ':' . $b['d']; $p = wag_phone((string)$b['phone']); if (!$p || isset($log[$k])) continue;
@@ -276,7 +298,8 @@ function p18g_actions(string $action, array $in): bool {
         case 'wag_flows_save':
             $u = need($OA); $d = wag_load();
             foreach ((array)($in['flows'] ?? []) as $k => $f) { if (!isset(WAG_FLOWS[$k]) || !is_array($f)) continue;
-                $t = wag_tpl($d, (string)($f['tpl'] ?? '')); if (!empty($f['on']) && !$t) fail(WAG_FLOWS[$k] . ': choose a template');
+                $t = wag_tpl($d, (string)($f['tpl'] ?? '')); $mailOk = !empty($f['mail']) && trim((string)($f['body'] ?? '')) !== ''; if (!empty($f['on']) && !$t && !$mailOk) fail(WAG_FLOWS[$k] . ': choose a template or write the backup email');
+                $d['flows'][$k]['mail'] = !empty($f['mail']); $d['flows'][$k]['subject'] = clip($f['subject'] ?? '', 120); $d['flows'][$k]['body'] = mb_substr(trim(strip_tags((string)($f['body'] ?? ''))), 0, 2000);
                 $d['flows'][$k] = array_merge($d['flows'][$k], ['on' => !empty($f['on']), 'tpl' => $t ? $t['id'] : '', 'days' => max(0, min(30, (int)($f['days'] ?? $d['flows'][$k]['days']))), 'params' => $t ? array_pad(array_slice(array_map(fn($p) => clip($p, 200), (array)($f['params'] ?? $t['params'])), 0, count($t['params'])), count($t['params']), '{name}') : []]); }
             if (isset($in['cfg'])) { $cf = (array)$in['cfg']; $d['cfg']['dailyCap'] = max(1, min(100000, (int)($cf['dailyCap'] ?? 250))); $d['cfg']['perTick'] = max(1, min(200, (int)($cf['perTick'] ?? 25)));
                 foreach (['quietFrom', 'quietTo'] as $k) { $v = (string)($cf[$k] ?? ''); $d['cfg'][$k] = preg_match('~^\d\d:\d\d$~', $v) ? $v : ''; } }

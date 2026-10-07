@@ -864,13 +864,13 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
   }
   /* P18 G mirror: WhatsApp automation (mirrors api/p18g-lib.php). The preview has no real WhatsApp number, so sends are SIMULATED (fake message ids). */
   const WAGF = path.join(PRIV, "wa-auto.json");
-  const WAG_FLOWS = { welcome: "New enquiry → welcome", quote: "Quote sent → 1st follow-up", quote2: "Quote sent → 2nd follow-up", quote3: "Quote sent → last follow-up", invoice: "Invoice due → reminder", booking: "Site visit → reminder the day before" };
+  const WAG_FLOWS = { welcome: "New enquiry → welcome", lead1: "New lead, no reply → 1st follow-up", lead2: "New lead, no reply → 2nd follow-up", lead3: "New lead, no reply → last follow-up", quote: "Quote sent → 1st follow-up", quote2: "Quote sent → 2nd follow-up", quote3: "Quote sent → last follow-up", invoice: "Invoice due soon → reminder", invoice0: "Invoice due today → reminder", invoice_late: "Invoice overdue → reminder", booking: "Site visit → reminder the day before" };
   const WAG_VARS = { "{name}": "First name", "{fullname}": "Full name", "{company}": "Company", "{city}": "City", "{ref}": "Quote / invoice no.", "{amount}": "Amount (Rs)", "{date}": "Date", "{time}": "Time", "{link}": "Link" };
   const WAG_STOP = /^\s*(stop|unsubscribe|band karo|بند|ruk jao|no more)\s*[.!]*\s*$/iu;
   const dts = (ms) => new Date(ms).toISOString().slice(0, 19).replace("T", " ");
   function wagLoad() {
     const d = jr(WAGF, {}); d.cfg = { dailyCap: 250, perTick: 25, cronKey: "", quietFrom: "21:00", quietTo: "09:00", ...(d.cfg || {}) }; if (!d.cfg.cronKey) d.cfg.cronKey = crypto.randomBytes(12).toString("hex");
-    const fl = d.flows || {}; for (const k of Object.keys(WAG_FLOWS)) fl[k] = { on: false, tpl: "", params: [], days: ({ quote: 1, quote2: 3, quote3: 7 })[k] || 1, sent: 0, failed: 0, ...(fl[k] || {}) }; d.flows = fl;
+    const fl = d.flows || {}; for (const k of Object.keys(WAG_FLOWS)) fl[k] = { on: false, tpl: "", params: [], days: ({ lead1: 1, lead2: 3, lead3: 7, quote: 1, quote2: 3, quote3: 7, invoice: 3, invoice0: 0, invoice_late: 3 })[k] ?? 1, sent: 0, failed: 0, mail: false, subject: "", body: "", mailed: 0, ...(fl[k] || {}) }; d.flows = fl;
     for (const k of ["tpls", "segs", "camps"]) d[k] = d[k] || []; for (const k of ["optout", "day", "flowlog", "mid"]) d[k] = d[k] || {}; return d;
   }
   const wagSave = (d) => jw(WAGF, d);
@@ -961,6 +961,17 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
         wagSave(d); log(db, u, "wa.rule", o.name, ip); save(db); return { ok: true, rules: d.rules }; }
       case "wah_rule_delete": { const u = need(OA), d = wagLoad(); d.rules = (d.rules || []).filter((x) => x.id !== inp.id); wagSave(d); log(db, u, "wa.rule.delete", inp.id, ip); save(db); return { ok: true, rules: d.rules }; }
       case "wah_cfg_save": { const u = need(OA), d = wagLoad(), c = hubCfg(d), h = inp.hub || {}; if ("remindHours" in h) c.remindHours = Math.max(0, Math.min(168, +h.remindHours || 0)); for (const k of ["remindChats", "remindLeads"]) if (k in h) c[k] = !!h[k]; if ("waba" in h) c.waba = String(h.waba || "").replace(/\D/g, "").slice(0, 30); d.hub = c; wagSave(d); log(db, u, "wa.hub", "", ip); save(db); return { ok: true, hub: c }; }
+      case "wah_insights": { need(SL); const d = wagLoad(); ensureCrm(db); const days = Math.max(7, Math.min(90, parseInt(inp.days) || 14)); const ds = (i) => new Date(Date.now() - i * 864e5).toISOString().slice(0, 10);
+        const ser = {}; for (let i = days - 1; i >= 0; i--) { const k = ds(i); ser[k] = { d: k, web: 0, wa: 0, tg: 0, leads: 0, auto: +(d.day[k] || 0) }; }
+        for (const c of (db.chats || [])) { const k = String(c.created_at || "").slice(0, 10); if (ser[k]) ser[k][c.channel === "wa" || c.channel === "tg" ? c.channel : "web"]++; }
+        const src = {}; for (const l of db.leads) { const k = String(l.created_at || "").slice(0, 10); if (ser[k]) { ser[k].leads++; src[l.source || "other"] = (src[l.source || "other"] || 0) + 1; } }
+        const ST = { new: "New", contacted: "Contacted", visit: "Site visit", quote: "Quote sent", won: "Won", lost: "Lost" }, fun = {}; for (const k in ST) fun[k] = 0; for (const l of db.leads) if (fun[l.stage] != null) fun[l.stage]++;
+        const ts = (m) => Date.parse(String(m.t).replace(" ", "T")); const rt = { ai: [], team: [] };
+        for (const c of (db.chats || [])) { let v = null, a = 0, t = 0; for (const m of (db.chatMsgs || []).filter((x) => x.chat_id === c.id)) { if (v == null && m.who === "visitor") v = ts(m); else if (v != null && m.who === "ai" && !a) { a = 1; rt.ai.push(Math.max(0, Math.round((ts(m) - v) / 1000))); } else if (v != null && m.who === "agent" && !t) { t = 1; rt.team.push(Math.max(0, Math.round((ts(m) - v) / 1000))); } } }
+        const med = (a) => a.length ? a.sort((x, y) => x - y)[Math.floor(a.length / 2)] : null; const won = fun.won, cl = won + fun.lost;
+        return { ok: true, days, series: Object.values(ser), sources: Object.fromEntries(Object.entries(src).sort((a, b) => b[1] - a[1])), funnel: fun, stages: ST, winRate: cl ? Math.round(won * 100 / cl) : null, reply: { ai: med(rt.ai), team: med(rt.team), aiN: rt.ai.length, teamN: rt.team.length },
+          flows: Object.entries(d.flows).filter(([, f]) => f.on || f.sent || f.mailed || f.failed).map(([k, f]) => ({ k, name: WAG_FLOWS[k], on: !!f.on, sent: +f.sent || 0, mailed: +f.mailed || 0, failed: +f.failed || 0 })), camps: [], optout: Object.keys(d.optout || {}).length }; }
+      case "wah_tpl_submit": { need(OA); const d = wagLoad(); if (!wagTpl(d, inp.id)) throw new Fail("Template not found"); if (!hubCfg(d).waba) throw new Fail("Add your WhatsApp Business Account ID in the hub settings first"); throw new Fail("Connect WhatsApp first (WhatsApp hub → Connect)"); }
       case "wah_tpl_sync": { need(OA); const d = wagLoad(); if (!hubCfg(d).waba) throw new Fail("Add your WhatsApp Business Account ID in Settings first (Meta → WhatsApp Manager → Account tools)"); throw new Fail("Connect WhatsApp first (WhatsApp hub → Connect)"); }
       case "wag_get": { const u = need(SL), d = wagLoad(); wagSave(d); const all = wagContacts(db), vals = (k) => [...new Set(all.map((c) => String(c[k] || "").trim()).filter(Boolean))], tags = new Set(); all.forEach((c) => c.tags.forEach((t) => String(t).trim() && tags.add(String(t).trim())));
         const oa = OA.includes(u.role); return { ok: true, cfg: oa ? d.cfg : { ...d.cfg, cronKey: undefined }, cronUrl: oa ? "/api/wa-cron.php?key=" + d.cfg.cronKey : "", flows: d.flows, flowNames: WAG_FLOWS, tpls: d.tpls, segs: d.segs, camps: [...d.camps].reverse().map((c) => wagPub(c)), vars: WAG_VARS,
@@ -992,9 +1003,9 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
         else throw new Fail("That action is not possible now");
         wagSave(d); log(db, u, "wa.campaign." + dd, inp.id, ip); save(db); if (["resume", "start", "retry"].includes(dd)) wagTick(db); return { ok: true }; }
       case "wag_flows_save": { const u = need(OA), d = wagLoad();
-        for (const [k, f] of Object.entries(inp.flows || {})) { if (!WAG_FLOWS[k] || !f) continue; const t = wagTpl(d, f.tpl); if (f.on && !t) throw new Fail(WAG_FLOWS[k] + ": choose a template");
+        for (const [k, f] of Object.entries(inp.flows || {})) { if (!WAG_FLOWS[k] || !f) continue; const t = wagTpl(d, f.tpl); const mailOk = !!f.mail && String(f.body || "").trim() !== ""; if (f.on && !t && !mailOk) throw new Fail(WAG_FLOWS[k] + ": choose a template or write the backup email");
           const pr = t ? (Array.isArray(f.params) ? f.params : t.params).slice(0, t.params.length).map((p) => clip(p, 200)) : []; while (t && pr.length < t.params.length) pr.push("{name}");
-          d.flows[k] = { ...d.flows[k], on: !!f.on, tpl: t ? t.id : "", days: Math.max(0, Math.min(30, parseInt(f.days ?? d.flows[k].days) || 0)), params: pr }; }
+          d.flows[k] = { ...d.flows[k], on: !!f.on, tpl: t ? t.id : "", days: Math.max(0, Math.min(30, parseInt(f.days ?? d.flows[k].days) || 0)), params: pr, mail: !!f.mail, subject: clip(f.subject, 120), body: String(f.body || "").replace(/<[^>]*>/g, "").trim().slice(0, 2000) }; }
         if (inp.cfg) { const cf = inp.cfg; d.cfg.dailyCap = Math.max(1, Math.min(100000, parseInt(cf.dailyCap) || 250)); d.cfg.perTick = Math.max(1, Math.min(200, parseInt(cf.perTick) || 25)); for (const k of ["quietFrom", "quietTo"]) d.cfg[k] = /^\d\d:\d\d$/.test(cf[k] || "") ? cf[k] : ""; }
         wagSave(d); log(db, u, "wa.flows", "", ip); save(db); return { ok: true, flows: d.flows, cfg: d.cfg }; }
       case "wag_optout": { need(SL); const d = wagLoad(), p = wagPhone(inp.phone); if (!p) throw new Fail("Enter a valid phone number"); if (inp.remove) delete d.optout[p]; else d.optout[p] = now(); wagSave(d); return { ok: true, optout: Object.keys(d.optout).length }; }
