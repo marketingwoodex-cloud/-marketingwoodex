@@ -1,4 +1,5 @@
 # Changelog
+- **Master P21 r6**: dashboard Quick actions + Connected apps status; full 5-role QA sweep clean.
 - **Master P21 r5**: dashboard Pending tasks moved to the bottom (icon badges); connectors Gmail, Google Drive, GitHub featured with real Test checks (GitHub API repo/permission check, Gmail app-password check, Drive folder link check).
 - **Master P21 r3**: wx-install asks for the owner name/email/password; fixed re-run resetting the admin password to admin.
 - **Master P21 r2**: admin setup reconnects an existing database (no forced new owner); README explains db.json and the setup pages.
