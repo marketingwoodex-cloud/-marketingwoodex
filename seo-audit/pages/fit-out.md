@@ -1,5 +1,5 @@
 # Page audit: /fit-out/
-Type **pillar** · score **100/100** · 930 words · 54 inbound links
+Type **pillar** · score **100/100** · 1000 words · 54 inbound links
 
 ## Target keywords
 - **Primary:** fit out lahore
@@ -30,7 +30,7 @@ Type **pillar** · score **100/100** · 930 words · 54 inbound links
 - Outbound (12): /, /book-a-visit/, /commercial-fit-out/, /contact/, /healthcare-fit-out/, /insights/design-process-explained/, /insights/interior-design-cost-pakistan/, /office-fit-out/, /pharmacy-fit-out/, /restaurant-fit-out/, /retail-fit-out/, /turnkey-design-build/
 
 ## Schema
-- Present: Answer, BreadcrumbList, City, FAQPage, ListItem, LocalBusiness, OpeningHoursSpecification, PostalAddress, Question, Service
+- Present: Answer, BreadcrumbList, City, FAQPage, ListItem, LocalBusiness, OpeningHoursSpecification, PostalAddress, Question, Service, SpeakableSpecification, WebPage
 
 ## Issues
 

@@ -1,5 +1,5 @@
 # Page audit: /restaurant-cafe-building-design/
-Type **service** · score **83/100** · 911 words · 4 inbound links
+Type **service** · score **88/100** · 978 words · 4 inbound links
 
 ## Target keywords
 - **Primary:** restaurant and cafe building design lahore
@@ -28,15 +28,13 @@ Type **service** · score **83/100** · 911 words · 4 inbound links
 - Outbound (12): /, /architecture/, /book-a-visit/, /contact/, /educational-buildings-design/, /fit-out/, /healthcare-facilities-design/, /insights/lighting-design-layers-explained/, /insights/restaurant-cafe-interior-cost-lahore/, /insights/restaurant-planning-guide/, /interior-design/, /master-planning/
 
 ## Schema
-- Present: Answer, BreadcrumbList, City, FAQPage, ListItem, LocalBusiness, OpeningHoursSpecification, PostalAddress, Question, Service
+- Present: Answer, BreadcrumbList, City, FAQPage, ListItem, LocalBusiness, OpeningHoursSpecification, PostalAddress, Question, Service, SpeakableSpecification, WebPage
 
 ## Issues
 - **[High]** Target keyword “restaurant and cafe building design lahore” not in title
-- **[Medium]** Keyword not in first 150 words
 
 ## Fix list
 - [ ] Rewrite title to lead with the keyword
-- [ ] Use keyword in intro paragraph
 
 ## E-E-A-T notes
 - No link to a real project/case study (Experience)

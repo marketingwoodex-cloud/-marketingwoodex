@@ -1,5 +1,5 @@
 # Page audit: /residential-renovation/
-Type **service** · score **100/100** · 911 words · 12 inbound links
+Type **service** · score **100/100** · 979 words · 12 inbound links
 
 ## Target keywords
 - **Primary:** residential renovation lahore
@@ -28,7 +28,7 @@ Type **service** · score **100/100** · 911 words · 12 inbound links
 - Outbound (15): /, /book-a-visit/, /commercial-renovation/, /contact/, /fit-out/, /healthcare-renovation/, /insights/home-renovation-checklist/, /insights/house-renovation-cost-lahore-2026/, /insights/house-renovation-timeline-lahore/, /interior-design/, /office-renovation/, /renovation/, /restaurant-cafe-renovation/, /retail-showroom-renovation/, /specialized-renovation-services/
 
 ## Schema
-- Present: Answer, BreadcrumbList, City, FAQPage, ListItem, LocalBusiness, OpeningHoursSpecification, PostalAddress, Question, Service
+- Present: Answer, BreadcrumbList, City, FAQPage, ListItem, LocalBusiness, OpeningHoursSpecification, PostalAddress, Question, Service, SpeakableSpecification, WebPage
 
 ## Issues
 

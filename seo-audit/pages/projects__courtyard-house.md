@@ -1,5 +1,5 @@
 # Page audit: /projects/courtyard-house/
-Type **case-study** · score **95/100** · 444 words · 4 inbound links
+Type **case-study** · score **95/100** · 451 words · 4 inbound links
 
 ## Target keywords
 - **Primary:** house renovation

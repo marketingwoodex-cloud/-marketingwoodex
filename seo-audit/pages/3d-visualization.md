@@ -1,5 +1,5 @@
 # Page audit: /3d-visualization/
-Type **pillar** · score **98/100** · 1614 words · 29 inbound links
+Type **pillar** · score **98/100** · 1682 words · 29 inbound links
 
 ## Target keywords
 - **Primary:** 3d visualization lahore
@@ -34,7 +34,7 @@ Type **pillar** · score **98/100** · 1614 words · 29 inbound links
 - Outbound (12): /, /3d-visualization/, /book-a-visit/, /contact/, /insights/3d-interior-design-cost-pakistan/, /insights/3d-visualization-guide/, /insights/design-process-explained/, /interior-design/, /office-fit-out/, /office-interior-design/, /projects/, /turnkey-design-build/
 
 ## Schema
-- Present: Answer, BreadcrumbList, City, FAQPage, ListItem, LocalBusiness, OpeningHoursSpecification, PostalAddress, Question, Service
+- Present: Answer, BreadcrumbList, City, FAQPage, ListItem, LocalBusiness, OpeningHoursSpecification, PostalAddress, Question, Service, SpeakableSpecification, WebPage
 
 ## Issues
 - **[Low]** 6 content image(s) with empty alt

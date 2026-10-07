@@ -1,5 +1,5 @@
 # Page audit: /commercial-fit-out/
-Type **service** · score **100/100** · 914 words · 6 inbound links
+Type **service** · score **100/100** · 981 words · 6 inbound links
 
 ## Target keywords
 - **Primary:** commercial fit out lahore
@@ -28,7 +28,7 @@ Type **service** · score **100/100** · 914 words · 6 inbound links
 - Outbound (13): /, /book-a-visit/, /contact/, /fit-out/, /healthcare-fit-out/, /insights/office-fit-out-cost-pakistan-2026/, /insights/office-interior-guide/, /insights/office-layout-mistakes-productivity/, /office-fit-out/, /pharmacy-fit-out/, /restaurant-fit-out/, /retail-fit-out/, /turnkey-design-build/
 
 ## Schema
-- Present: Answer, BreadcrumbList, City, FAQPage, ListItem, LocalBusiness, OpeningHoursSpecification, PostalAddress, Question, Service
+- Present: Answer, BreadcrumbList, City, FAQPage, ListItem, LocalBusiness, OpeningHoursSpecification, PostalAddress, Question, Service, SpeakableSpecification, WebPage
 
 ## Issues
 

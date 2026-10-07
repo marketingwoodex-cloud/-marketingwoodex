@@ -1,5 +1,5 @@
 # Page audit: /master-planning/
-Type **service** · score **100/100** · 911 words · 4 inbound links
+Type **service** · score **100/100** · 979 words · 4 inbound links
 
 ## Target keywords
 - **Primary:** master planning lahore
@@ -28,7 +28,7 @@ Type **service** · score **100/100** · 911 words · 4 inbound links
 - Outbound (12): /, /1-kanal-house-design/, /10-marla-house-design/, /5-marla-house-design/, /architecture/, /book-a-visit/, /contact/, /fit-out/, /insights/1-kanal-house-interior-cost-lahore/, /insights/5-marla-house-renovation-cost-lahore/, /insights/architect-fee-lahore-2026/, /interior-design/
 
 ## Schema
-- Present: Answer, BreadcrumbList, City, FAQPage, ListItem, LocalBusiness, OpeningHoursSpecification, PostalAddress, Question, Service
+- Present: Answer, BreadcrumbList, City, FAQPage, ListItem, LocalBusiness, OpeningHoursSpecification, PostalAddress, Question, Service, SpeakableSpecification, WebPage
 
 ## Issues
 

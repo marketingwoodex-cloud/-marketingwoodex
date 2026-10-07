@@ -1,5 +1,5 @@
 # Page audit: /residential-dining-room-design/
-Type **service** · score **95/100** · 926 words · 2 inbound links
+Type **service** · score **95/100** · 994 words · 2 inbound links
 
 ## Target keywords
 - **Primary:** dining room design in lahore
@@ -28,7 +28,7 @@ Type **service** · score **95/100** · 926 words · 2 inbound links
 - Outbound (11): /, /3d-visualization/, /book-a-visit/, /complete-home-redesign/, /contact/, /insights/apartment-small-space-planning-lahore/, /insights/lighting-design-layers-explained/, /insights/materials-that-survive-lahore-climate/, /interior-design/, /kitchen-design/, /residential-living-room-design/
 
 ## Schema
-- Present: Answer, BreadcrumbList, FAQPage, ListItem, LocalBusiness, OpeningHoursSpecification, PostalAddress, Question, Service
+- Present: Answer, BreadcrumbList, FAQPage, ListItem, LocalBusiness, OpeningHoursSpecification, PostalAddress, Question, Service, SpeakableSpecification, WebPage
 
 ## Issues
 - **[Medium]** Only 2 inbound contextual links
@@ -42,7 +42,7 @@ Type **service** · score **95/100** · 926 words · 2 inbound links
 
 ## Claims needing the owner's word
 - 🔴 **Price / PKR figure:** …nsultation starts from around PKR 12,000, while full packages rang…
-- 🔴 **'Free' offer:** …way you host and live. Get a Free Consultation Dining room design concept What Is Dining Room Desi…
+- 🔴 **'Free' offer:** …way you host and live. Get a Free Consultation Dining room design concept In short Dining room des…
 - 🔴 **'Free' offer:** …+ The initial consultation is free. Design consultation sta…
 - 🔴 **'Free' offer:** …e feeling you want to create. Free first consultation Photoreal 3D before you commit Design, build…
 - 🔴 **Timeline / response promise:** …inal design package Typically 1-2 weeks What's included What you…

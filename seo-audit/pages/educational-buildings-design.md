@@ -1,5 +1,5 @@
 # Page audit: /educational-buildings-design/
-Type **service** · score **95/100** · 911 words · 4 inbound links
+Type **service** · score **100/100** · 978 words · 4 inbound links
 
 ## Target keywords
 - **Primary:** educational building design lahore
@@ -28,13 +28,11 @@ Type **service** · score **95/100** · 911 words · 4 inbound links
 - Outbound (12): /, /10-marla-house-design/, /5-marla-house-design/, /architecture/, /book-a-visit/, /contact/, /fit-out/, /insights/1-kanal-house-interior-cost-lahore/, /insights/5-marla-house-renovation-cost-lahore/, /insights/architect-fee-lahore-2026/, /interior-design/, /master-planning/
 
 ## Schema
-- Present: Answer, BreadcrumbList, City, FAQPage, ListItem, LocalBusiness, OpeningHoursSpecification, PostalAddress, Question, Service
+- Present: Answer, BreadcrumbList, City, FAQPage, ListItem, LocalBusiness, OpeningHoursSpecification, PostalAddress, Question, Service, SpeakableSpecification, WebPage
 
 ## Issues
-- **[Medium]** Keyword not in first 150 words
 
 ## Fix list
-- [ ] Use keyword in intro paragraph
 
 ## E-E-A-T notes
 - No link to a real project/case study (Experience)

@@ -1,5 +1,5 @@
 # Page audit: /gym-design/
-Type **service** · score **100/100** · 913 words · 3 inbound links
+Type **service** · score **100/100** · 983 words · 3 inbound links
 
 ## Target keywords
 - **Primary:** gym design in lahore
@@ -28,7 +28,7 @@ Type **service** · score **100/100** · 913 words · 3 inbound links
 - Outbound (12): /, /book-a-visit/, /commercial-interior/, /contact/, /fit-out/, /hotel-interior-design/, /insights/lighting-design-layers-explained/, /insights/materials-that-survive-lahore-climate/, /insights/retail-shop-interior-guide/, /interior-design/, /renovation/, /spa-design/
 
 ## Schema
-- Present: AdministrativeArea, Answer, BreadcrumbList, City, Country, FAQPage, ListItem, LocalBusiness, Offer, OfferCatalog, OpeningHoursSpecification, PostalAddress, Question, Service
+- Present: AdministrativeArea, Answer, BreadcrumbList, City, Country, FAQPage, ListItem, LocalBusiness, Offer, OfferCatalog, OpeningHoursSpecification, PostalAddress, Question, Service, SpeakableSpecification, WebPage
 
 ## Issues
 
@@ -41,6 +41,7 @@ Type **service** · score **100/100** · 913 words · 3 inbound links
 ## Claims needing the owner's word
 - 🔴 **Price / PKR figure:** …lanned for comfort at peak hours. 01 / 08 Our Design Process…
 - 🔴 **'Free' offer:** …d everyday performance. Get a Free Consultation WhatsApp Woodex 200+ spaces delivered 10 years expe…
+- 🔴 **'Free' offer:** …and 3D visualization. Book a free consultation with Woodex. Based in Lahore (M-71,…
 - 🔴 **'Free' offer:** …onger sessions. 03 Strength & Free-Weight Zones Racks, machines and lifting platforms arranged for…
 - 🔴 **'Free' offer:** …xperience you want to create. Free first consultation Photoreal 3D before you commit Design, build…
 - 🔴 **Timeline / response promise:** …by phone or WhatsApp, usually within one working day. Name Phone / WhatsApp P…

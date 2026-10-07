@@ -1,5 +1,5 @@
 # Page audit: /residential-basement-design/
-Type **service** · score **95/100** · 989 words · 2 inbound links
+Type **service** · score **95/100** · 1059 words · 2 inbound links
 
 ## Target keywords
 - **Primary:** basement design in lahore
@@ -28,7 +28,7 @@ Type **service** · score **95/100** · 989 words · 2 inbound links
 - Outbound (10): /, /3d-visualization/, /book-a-visit/, /contact/, /insights/apartment-small-space-planning-lahore/, /insights/lighting-design-layers-explained/, /insights/materials-that-survive-lahore-climate/, /interior-design/, /residential-home-office-design/, /residential-kids-room-design/
 
 ## Schema
-- Present: Answer, BreadcrumbList, FAQPage, ListItem, LocalBusiness, Offer, OpeningHoursSpecification, PostalAddress, Question, Service
+- Present: Answer, BreadcrumbList, FAQPage, ListItem, LocalBusiness, Offer, OpeningHoursSpecification, PostalAddress, Question, Service, SpeakableSpecification, WebPage
 
 ## Issues
 - **[Medium]** Only 2 inbound contextual links
@@ -41,7 +41,8 @@ Type **service** · score **95/100** · 989 words · 2 inbound links
 
 ## Claims needing the owner's word
 - 🔴 **Price / PKR figure:** …assessment starts from around PKR 15,000, and full packages range…
-- 🔴 **'Free' offer:** …how you want to use it. Get a Free Consultation Basement conversion concept What Is Basement Design…
+- 🔴 **'Free' offer:** …how you want to use it. Get a Free Consultation Basement conversion concept In short Basement desig…
+- 🔴 **'Free' offer:** …nd ventilation planned first. Free consultation. Based in Lahore (M-71,…
 - 🔴 **'Free' offer:** …nsultation and assessment are free. Design assessment start…
 - 🔴 **'Free' offer:** …rt with an honest assessment. Free first consultation Photoreal 3D before you commit Design, build…
 - 🔴 **Timeline / response promise:** …inal design package Typically 2-3 weeks. Basements need more ass…

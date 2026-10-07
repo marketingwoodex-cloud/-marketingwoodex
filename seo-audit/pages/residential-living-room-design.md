@@ -1,5 +1,5 @@
 # Page audit: /residential-living-room-design/
-Type **service** · score **100/100** · 934 words · 3 inbound links
+Type **service** · score **100/100** · 1003 words · 3 inbound links
 
 ## Target keywords
 - **Primary:** living room design in lahore
@@ -28,7 +28,7 @@ Type **service** · score **100/100** · 934 words · 3 inbound links
 - Outbound (11): /, /3d-visualization/, /book-a-visit/, /complete-home-redesign/, /contact/, /insights/apartment-small-space-planning-lahore/, /insights/lighting-design-layers-explained/, /insights/materials-that-survive-lahore-climate/, /interior-design/, /kitchen-design/, /residential-bedroom-design/
 
 ## Schema
-- Present: Answer, BreadcrumbList, FAQPage, ListItem, LocalBusiness, Offer, OpeningHoursSpecification, PostalAddress, Question, Service
+- Present: Answer, BreadcrumbList, FAQPage, ListItem, LocalBusiness, Offer, OpeningHoursSpecification, PostalAddress, Question, Service, SpeakableSpecification, WebPage
 
 ## Issues
 
@@ -40,7 +40,8 @@ Type **service** · score **100/100** · 934 words · 3 inbound links
 
 ## Claims needing the owner's word
 - 🔴 **Price / PKR figure:** …nsultation starts from around PKR 12,000. Full packages range fro…
-- 🔴 **'Free' offer:** …o one comfortable plan. Get a Free Consultation Living room design concept The heart of the home Wh…
+- 🔴 **'Free' offer:** …o one comfortable plan. Get a Free Consultation Living room design concept In short Living room des…
+- 🔴 **'Free' offer:** …lighting and finishes. Book a free consultation with Woodex Interior. Based in Lahore (M-71,…
 - 🔴 **'Free' offer:** …w you want the space to feel. Free first consultation Photoreal 3D before you commit Design, build…
 - 🔴 **Timeline / response promise:** …inal design package Typically 1–2 weeks from consultation to fin…
 - 🔴 **Timeline / response promise:** …+ A typical living room takes 1–2 weeks from consultation to the…

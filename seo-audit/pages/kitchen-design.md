@@ -1,5 +1,5 @@
 # Page audit: /kitchen-design/
-Type **service** · score **100/100** · 1161 words · 9 inbound links
+Type **service** · score **100/100** · 1227 words · 9 inbound links
 
 ## Target keywords
 - **Primary:** kitchen design in lahore
@@ -30,7 +30,7 @@ Type **service** · score **100/100** · 1161 words · 9 inbound links
 - Outbound (10): /, /3d-visualization/, /book-a-visit/, /complete-home-redesign/, /contact/, /insights/kitchen-layouts-that-work-lahore-homes/, /insights/kitchen-renovation-cost-lahore/, /insights/modular-kitchen-price-pakistan-2026/, /interior-design/, /residential-dining-room-design/
 
 ## Schema
-- Present: Answer, BreadcrumbList, FAQPage, ListItem, LocalBusiness, Offer, OfferCatalog, OpeningHoursSpecification, PostalAddress, Question, Service
+- Present: Answer, BreadcrumbList, FAQPage, ListItem, LocalBusiness, Offer, OfferCatalog, OpeningHoursSpecification, PostalAddress, Question, Service, SpeakableSpecification, WebPage
 
 ## Issues
 

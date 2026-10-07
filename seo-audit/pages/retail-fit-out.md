@@ -1,5 +1,5 @@
 # Page audit: /retail-fit-out/
-Type **service** · score **100/100** · 869 words · 6 inbound links
+Type **service** · score **100/100** · 936 words · 6 inbound links
 
 ## Target keywords
 - **Primary:** retail fit out lahore
@@ -28,7 +28,7 @@ Type **service** · score **100/100** · 869 words · 6 inbound links
 - Outbound (13): /, /book-a-visit/, /commercial-fit-out/, /contact/, /fit-out/, /healthcare-fit-out/, /insights/lighting-design-layers-explained/, /insights/materials-that-survive-lahore-climate/, /insights/retail-shop-interior-guide/, /office-fit-out/, /pharmacy-fit-out/, /restaurant-fit-out/, /turnkey-design-build/
 
 ## Schema
-- Present: Answer, BreadcrumbList, City, FAQPage, ListItem, LocalBusiness, OpeningHoursSpecification, PostalAddress, Question, Service
+- Present: Answer, BreadcrumbList, City, FAQPage, ListItem, LocalBusiness, OpeningHoursSpecification, PostalAddress, Question, Service, SpeakableSpecification, WebPage
 
 ## Issues
 
@@ -39,6 +39,7 @@ Type **service** · score **100/100** · 869 words · 6 inbound links
 - No client testimonial/review (Trust)
 
 ## Claims needing the owner's word
+- 🔴 **Price / PKR figure:** …anning, lighting and joinery. PKR 7.5M–22.5M. Based in Lahor…
 - 🔴 **Price / PKR figure:** …il unit typically ranges from PKR 7.5M to 22.5M, depending o…
 - 🔴 **'Free' offer:** …built for opening day. Get a Free Consultation Brand stores, showrooms, boutiques and chain rollou…
 - 🔴 **Timeline / response promise:** …A standard retail unit takes 5–7 weeks. A chain prototype can t…

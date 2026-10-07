@@ -1,5 +1,5 @@
 # Page audit: /restaurant-cafe-renovation/
-Type **service** · score **83/100** · 886 words · 8 inbound links
+Type **service** · score **88/100** · 952 words · 8 inbound links
 
 ## Target keywords
 - **Primary:** restaurant and café renovation lahore
@@ -28,15 +28,13 @@ Type **service** · score **83/100** · 886 words · 8 inbound links
 - Outbound (15): /, /book-a-visit/, /commercial-renovation/, /contact/, /fit-out/, /healthcare-renovation/, /insights/lighting-design-layers-explained/, /insights/restaurant-cafe-interior-cost-lahore/, /insights/restaurant-planning-guide/, /interior-design/, /office-renovation/, /renovation/, /residential-renovation/, /retail-showroom-renovation/, /specialized-renovation-services/
 
 ## Schema
-- Present: Answer, BreadcrumbList, City, FAQPage, ListItem, LocalBusiness, OpeningHoursSpecification, PostalAddress, Question, Service
+- Present: Answer, BreadcrumbList, City, FAQPage, ListItem, LocalBusiness, OpeningHoursSpecification, PostalAddress, Question, Service, SpeakableSpecification, WebPage
 
 ## Issues
 - **[High]** Target keyword “restaurant and café renovation lahore” not in title
-- **[Medium]** Keyword not in first 150 words
 
 ## Fix list
 - [ ] Rewrite title to lead with the keyword
-- [ ] Use keyword in intro paragraph
 
 ## E-E-A-T notes
 - No link to a real project/case study (Experience)

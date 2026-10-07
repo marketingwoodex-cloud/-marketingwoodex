@@ -1,5 +1,5 @@
 # Page audit: /turnkey-design-build/
-Type **pillar** · score **88/100** · 967 words · 8 inbound links
+Type **pillar** · score **88/100** · 1041 words · 8 inbound links
 
 ## Target keywords
 - **Primary:** turnkey interior design and build lahore
@@ -28,7 +28,7 @@ Type **pillar** · score **88/100** · 967 words · 8 inbound links
 - Outbound (13): /, /book-a-visit/, /commercial-fit-out/, /contact/, /fit-out/, /healthcare-fit-out/, /insights/house-renovation-timeline-lahore/, /insights/interior-designer-vs-contractor-lahore/, /insights/office-fit-out-cost-pakistan-2026/, /office-fit-out/, /pharmacy-fit-out/, /restaurant-fit-out/, /retail-fit-out/
 
 ## Schema
-- Present: Answer, BreadcrumbList, City, FAQPage, ListItem, LocalBusiness, OpeningHoursSpecification, PostalAddress, Question, Service
+- Present: Answer, BreadcrumbList, City, FAQPage, ListItem, LocalBusiness, OpeningHoursSpecification, PostalAddress, Question, Service, SpeakableSpecification, WebPage
 
 ## Issues
 - **[High]** Target keyword “turnkey interior design and build lahore” not in title
@@ -40,9 +40,10 @@ Type **pillar** · score **88/100** · 967 words · 8 inbound links
 - No link to a real project/case study (Experience)
 
 ## Claims needing the owner's word
+- 🔴 **Price / PKR figure:** …handover under one contract. PKR 9M–28M for a 2,000 sq. ft. benc…
 - 🔴 **Price / PKR figure:** …tractors and furniture suppliers. 01 Space planning Concepts,…
 - 🔴 **'Free' offer:** …ure and final handover. Get a Free Consultation Offices, homes and commercial spaces from brief to…
-- 🔴 **Timeline / response promise:** …from brief to handover Design 2–4 weeks · Build 6–12 weeks One d…
+- 🔴 **Timeline / response promise:** …from brief to handover Design 2–4 weeks · Build 6–12 weeks In sh…
 - 🔴 **Timeline / response promise:** …ake? + Design typically takes 2–4 weeks and execution 6–12 weeks…
 - 🔴 **Timeline / response promise:** …by phone or WhatsApp, usually within one working day. Name Phone / WhatsApp P…
 - 🔴 **Warranty / guarantee:** …, cleaning, documentation and warranties. A controlled programme…

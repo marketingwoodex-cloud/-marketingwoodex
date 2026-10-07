@@ -1,5 +1,5 @@
 # Page audit: /office-interior-design/
-Type **service** · score **100/100** · 1115 words · 10 inbound links
+Type **service** · score **100/100** · 1183 words · 10 inbound links
 
 ## Target keywords
 - **Primary:** office interior design in lahore
@@ -29,7 +29,7 @@ Type **service** · score **100/100** · 1115 words · 10 inbound links
 - Outbound (11): /, /3d-visualization/, /book-a-visit/, /complete-home-redesign/, /contact/, /insights/office-fit-out-cost-pakistan-2026/, /insights/office-interior-guide/, /insights/office-layout-mistakes-productivity/, /interior-design/, /office-fit-out/, /residential-home-office-design/
 
 ## Schema
-- Present: Answer, BreadcrumbList, FAQPage, ListItem, LocalBusiness, OpeningHoursSpecification, PostalAddress, Question, Service
+- Present: Answer, BreadcrumbList, FAQPage, ListItem, LocalBusiness, OpeningHoursSpecification, PostalAddress, Question, Service, SpeakableSpecification, WebPage
 
 ## Issues
 
@@ -40,6 +40,7 @@ Type **service** · score **100/100** · 1115 words · 10 inbound links
 
 ## Claims needing the owner's word
 - 🔴 **'Free' offer:** …efore site work begins. Get a Free Consultation WhatsApp Woodex Workplace concept and 3D visualizat…
+- 🔴 **'Free' offer:** …and working drawings. Book a free Woodex consultation. Based in Lahore (M-71,…
 - 🔴 **'Free' offer:** …ine the right starting point. Free first consultation Photoreal 3D before you commit Design, build…
 - 🔴 **Timeline / response promise:** …cal design timeline Typically 2-4 weeks from brief to approved d…
 - 🔴 **Timeline / response promise:** …00 sq ft office usually takes 2 to 4 weeks from brief to approved d…

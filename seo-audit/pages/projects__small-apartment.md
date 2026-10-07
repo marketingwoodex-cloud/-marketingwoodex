@@ -1,5 +1,5 @@
 # Page audit: /projects/small-apartment/
-Type **case-study** · score **90/100** · 455 words · 4 inbound links
+Type **case-study** · score **90/100** · 462 words · 4 inbound links
 
 ## Target keywords
 - **Primary:** small apartment interior

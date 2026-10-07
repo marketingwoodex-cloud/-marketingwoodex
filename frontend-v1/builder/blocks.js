@@ -17,7 +17,7 @@ window.WX_BLOCKS = [
 
   { id: "split-rev", name: "Image + text", icon: "🪞", html: `
 <section class="wx-split wx-reverse"><div class="wrap wx-split-grid">
-  <div class="wx-split-copy"><p class="wx-kicker">Craft</p><h2>Made in our own workshop</h2>
+  <div class="wx-split-copy"><p class="wx-kicker">Craft</p><h2>Joinery made to the drawing</h2>
     <p>Kitchens, wardrobes and joinery built to the same drawings the site team uses, so everything fits on the first install.</p>
     <div class="wx-actions"><a class="btn wx-btn-outline" href="/projects/">See projects</a></div></div>
   <figure class="wx-split-media"><img src="/assets/img/img-f655d51401e8.webp" alt="Describe this image" loading="lazy" width="1600" height="1200"></figure>
@@ -103,7 +103,7 @@ window.WX_BLOCKS = [
   <ul class="wx-trust-list">
     <li><strong>200+ completed spaces</strong><span>Homes, offices, retail and hospitality.</span></li>
     <li><strong>In-house 3D studio</strong><span>See the space before work begins.</span></li>
-    <li><strong>Own furniture workshop</strong><span>Joinery made to the drawing.</span></li>
+    <li><strong>Clear programme</strong><span>Quantities, phasing and handover dates agreed up front.</span></li>
     <li><strong>Clear programme</strong><span>Dates agreed up front.</span></li>
   </ul>
 </div></section>` }

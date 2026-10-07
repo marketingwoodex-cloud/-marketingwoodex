@@ -1,5 +1,5 @@
 # Page audit: /interior-home-refurbishment/
-Type **service** · score **95/100** · 1106 words · 1 inbound links
+Type **service** · score **95/100** · 1178 words · 1 inbound links
 
 ## Target keywords
 - **Primary:** home refurbishment in lahore
@@ -29,7 +29,7 @@ Type **service** · score **95/100** · 1106 words · 1 inbound links
 - Outbound (10): /, /book-a-visit/, /complete-home-redesign/, /contact/, /insights/apartment-small-space-planning-lahore/, /insights/lighting-design-layers-explained/, /insights/materials-that-survive-lahore-climate/, /interior-design/, /kitchen-design/, /residential-bedroom-design/
 
 ## Schema
-- Present: Answer, BreadcrumbList, FAQPage, ListItem, LocalBusiness, Offer, OfferCatalog, OpeningHoursSpecification, PostalAddress, Question, Service
+- Present: Answer, BreadcrumbList, FAQPage, ListItem, LocalBusiness, Offer, OfferCatalog, OpeningHoursSpecification, PostalAddress, Question, Service, SpeakableSpecification, WebPage
 
 ## Issues
 - **[Medium]** Only 1 inbound contextual links

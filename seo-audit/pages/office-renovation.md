@@ -1,5 +1,5 @@
 # Page audit: /office-renovation/
-Type **service** · score **100/100** · 929 words · 7 inbound links
+Type **service** · score **100/100** · 995 words · 7 inbound links
 
 ## Target keywords
 - **Primary:** office renovation lahore
@@ -28,7 +28,7 @@ Type **service** · score **100/100** · 929 words · 7 inbound links
 - Outbound (15): /, /book-a-visit/, /commercial-renovation/, /contact/, /fit-out/, /healthcare-renovation/, /insights/office-fit-out-cost-pakistan-2026/, /insights/office-interior-guide/, /insights/office-layout-mistakes-productivity/, /interior-design/, /renovation/, /residential-renovation/, /restaurant-cafe-renovation/, /retail-showroom-renovation/, /specialized-renovation-services/
 
 ## Schema
-- Present: Answer, BreadcrumbList, City, FAQPage, ListItem, LocalBusiness, OpeningHoursSpecification, PostalAddress, Question, Service
+- Present: Answer, BreadcrumbList, City, FAQPage, ListItem, LocalBusiness, OpeningHoursSpecification, PostalAddress, Question, Service, SpeakableSpecification, WebPage
 
 ## Issues
 

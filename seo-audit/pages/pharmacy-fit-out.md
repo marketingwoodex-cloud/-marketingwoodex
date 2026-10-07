@@ -1,5 +1,5 @@
 # Page audit: /pharmacy-fit-out/
-Type **service** · score **100/100** · 831 words · 6 inbound links
+Type **service** · score **100/100** · 899 words · 6 inbound links
 
 ## Target keywords
 - **Primary:** pharmacy fit out lahore
@@ -28,7 +28,7 @@ Type **service** · score **100/100** · 831 words · 6 inbound links
 - Outbound (13): /, /book-a-visit/, /commercial-fit-out/, /contact/, /fit-out/, /healthcare-fit-out/, /insights/lighting-design-layers-explained/, /insights/materials-that-survive-lahore-climate/, /insights/retail-shop-interior-guide/, /office-fit-out/, /restaurant-fit-out/, /retail-fit-out/, /turnkey-design-build/
 
 ## Schema
-- Present: Answer, BreadcrumbList, City, FAQPage, ListItem, LocalBusiness, OpeningHoursSpecification, PostalAddress, Question, Service
+- Present: Answer, BreadcrumbList, City, FAQPage, ListItem, LocalBusiness, OpeningHoursSpecification, PostalAddress, Question, Service, SpeakableSpecification, WebPage
 
 ## Issues
 
@@ -38,6 +38,7 @@ Type **service** · score **100/100** · 831 words · 6 inbound links
 - No link to a real project/case study (Experience)
 
 ## Claims needing the owner's word
+- 🔴 **Price / PKR figure:** …climate control and security. PKR 5.5M–12M. Based in Lahore…
 - 🔴 **Price / PKR figure:** …harmacy typically ranges from PKR 5.5M to 12M, depending on…
 - 🔴 **'Free' offer:** …ies and chain rollouts. Get a Free Consultation Independent pharmacies, hospital dispensaries and c…
 - 🔴 **'Free' offer:** …e. 06 Pharmacy lighting Glare-free 4000K–5000K light for labels. 07 Signage and branding…

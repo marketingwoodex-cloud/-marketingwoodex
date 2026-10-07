@@ -1,5 +1,5 @@
 # Page audit: /gujranwala/
-Type **city** · score **93/100** · 639 words · 4 inbound links
+Type **city** · score **98/100** · 846 words · 4 inbound links
 
 ## Target keywords
 - **Primary:** interior design gujranwala
@@ -15,26 +15,25 @@ Type **city** · score **93/100** · 639 words · 4 inbound links
 
 ## Section blocks (H2 outline)
 1. What we take on in Gujranwala
-2. How a Gujranwala project runs
-3. A note on working in Gujranwala
-4. Questions, answered
-5. Also served from the Lahore studio
-6. Start your Gujranwala project with one accountable team.
-7. One accountable team from brief to handover
-8. Read before you plan
+2. Interior design in Gujranwala: what we plan for
+3. How a Gujranwala project runs
+4. A note on working in Gujranwala
+5. Questions, answered
+6. Also served from the Lahore studio
+7. Start your Gujranwala project with one accountable team.
+8. One accountable team from brief to handover
+9. Read before you plan
 
 ## Internal links
 - Outbound (13): /, /3d-visualization/, /contact/, /faisalabad/, /fit-out/, /insights/design-process-explained/, /insights/interior-design-cost-pakistan/, /insights/interior-designer-vs-contractor-lahore/, /interior-design/, /lahore/, /rawalpindi/, /renovation/, /sialkot/
 
 ## Schema
-- Present: Answer, BreadcrumbList, City, FAQPage, ListItem, LocalBusiness, OpeningHoursSpecification, PostalAddress, Question, Service
+- Present: Answer, BreadcrumbList, City, FAQPage, ListItem, LocalBusiness, OpeningHoursSpecification, PostalAddress, Question, Service, SpeakableSpecification, WebPage
 
 ## Issues
-- **[Medium]** 639 words in <main> (target 700+ for city)
 - **[Low]** 1 content image(s) with empty alt
 
 ## Fix list
-- [ ] Expand with unique, useful sections
 - [ ] Add alts if informative
 
 ## E-E-A-T notes

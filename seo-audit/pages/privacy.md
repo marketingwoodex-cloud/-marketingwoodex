@@ -1,5 +1,5 @@
 # Page audit: /privacy/
-Type **utility** · score **90/100** · 566 words · 0 inbound links
+Type **utility** · score **90/100** · 573 words · 0 inbound links
 
 ## Target keywords
 - **Primary:** privacy policy

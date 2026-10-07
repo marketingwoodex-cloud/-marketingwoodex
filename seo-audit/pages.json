@@ -2,7 +2,7 @@
  {
   "url": "/",
   "type": "home",
-  "words": 1562,
+  "words": 1559,
   "title": "Interior Design Lahore | Fit-Out & Architecture | Woodex",
   "desc": "Interior design in Lahore by Woodex Interior: homes, offices, fit-out, renovation, architecture, 3D visualization and custom furniture from one studio.",
   "h1": [
@@ -122,7 +122,7 @@
  {
   "url": "/1-kanal-house-design/",
   "type": "service",
-  "words": 913,
+  "words": 982,
   "title": "1 Kanal House Design Lahore | Woodex Architecture",
   "desc": "1 Kanal house design in Lahore with premium planning, master suite, service access, landscape, elevations and coordinated drawings by Woodex.",
   "h1": [
@@ -171,7 +171,9 @@
    "OpeningHoursSpecification",
    "PostalAddress",
    "Question",
-   "Service"
+   "Service",
+   "SpeakableSpecification",
+   "WebPage"
   ],
   "issues": [],
   "fixes": [],
@@ -204,7 +206,7 @@
  {
   "url": "/10-marla-house-design/",
   "type": "service",
-  "words": 921,
+  "words": 990,
   "title": "10 Marla House Design Lahore | Woodex Architecture",
   "desc": "10 Marla house design in Lahore with family zoning, kitchen planning, outdoor space, elevations and coordinated construction drawings by Woodex.",
   "h1": [
@@ -253,7 +255,9 @@
    "OpeningHoursSpecification",
    "PostalAddress",
    "Question",
-   "Service"
+   "Service",
+   "SpeakableSpecification",
+   "WebPage"
   ],
   "issues": [],
   "fixes": [],
@@ -286,7 +290,7 @@
  {
   "url": "/2-kanal-house-design/",
   "type": "service",
-  "words": 931,
+  "words": 1001,
   "title": "2 Kanal House Design Lahore | Woodex Architecture",
   "desc": "2 Kanal house design in Lahore for estate-scale homes with master and guest wings, amenities, staff planning, landscape and coordinated drawings.",
   "h1": [
@@ -335,7 +339,9 @@
    "OpeningHoursSpecification",
    "PostalAddress",
    "Question",
-   "Service"
+   "Service",
+   "SpeakableSpecification",
+   "WebPage"
   ],
   "issues": [],
   "fixes": [],
@@ -368,7 +374,7 @@
  {
   "url": "/3d-visualization/",
   "type": "pillar",
-  "words": 1614,
+  "words": 1682,
   "title": "3D Visualization Lahore | 3D Interior Rendering | Woodex",
   "desc": "3D visualization in Lahore: photoreal interior and exterior renders, walkthroughs and virtual tours from the in-house Woodex 3D studio.",
   "h1": [
@@ -423,7 +429,9 @@
    "OpeningHoursSpecification",
    "PostalAddress",
    "Question",
-   "Service"
+   "Service",
+   "SpeakableSpecification",
+   "WebPage"
   ],
   "issues": [
    [
@@ -486,7 +494,7 @@
  {
   "url": "/5-marla-house-design/",
   "type": "service",
-  "words": 938,
+  "words": 1006,
   "title": "5 Marla House Design Lahore | Woodex Architecture",
   "desc": "5 Marla house design in Lahore with compact planning, parking, privacy, daylight, elevations and construction-ready drawings by Woodex Architecture.",
   "h1": [
@@ -535,7 +543,9 @@
    "OpeningHoursSpecification",
    "PostalAddress",
    "Question",
-   "Service"
+   "Service",
+   "SpeakableSpecification",
+   "WebPage"
   ],
   "issues": [],
   "fixes": [],
@@ -568,7 +578,7 @@
  {
   "url": "/about/",
   "type": "utility",
-  "words": 573,
+  "words": 580,
   "title": "About Woodex Interior | Design & Build Lahore",
   "desc": "About Woodex Interior, Lahore. Founded in 2016 by Imtiaz Ahmad: interior design, fit-out, renovation, architecture, visualization and joinery under one team.",
   "h1": [
@@ -636,7 +646,7 @@
  {
   "url": "/architecture/",
   "type": "pillar",
-  "words": 1675,
+  "words": 1743,
   "title": "Architecture Services Lahore | House Design | Woodex",
   "desc": "Architecture services in Lahore for house design, commercial buildings, front elevations and master planning, from concept to construction-ready drawings.",
   "h1": [
@@ -696,7 +706,9 @@
    "OpeningHoursSpecification",
    "PostalAddress",
    "Question",
-   "Service"
+   "Service",
+   "SpeakableSpecification",
+   "WebPage"
   ],
   "issues": [],
   "fixes": [],
@@ -757,7 +769,7 @@
  {
   "url": "/bahawalpur/",
   "type": "city",
-  "words": 625,
+  "words": 817,
   "title": "Interior Design Bahawalpur | Homes & Offices | Woodex",
   "desc": "Interior design in Bahawalpur by Woodex Interior, Lahore: homes and select commercial work, one accountable team throughout.",
   "h1": [
@@ -765,6 +777,7 @@
   ],
   "h2": [
    "What we take on in Bahawalpur",
+   "Interior design in Bahawalpur: what we plan for",
    "How a Bahawalpur project runs",
    "A note on working in Bahawalpur",
    "Questions, answered",
@@ -806,13 +819,11 @@
    "OpeningHoursSpecification",
    "PostalAddress",
    "Question",
-   "Service"
+   "Service",
+   "SpeakableSpecification",
+   "WebPage"
   ],
   "issues": [
-   [
-    "Medium",
-    "625 words in <main> (target 700+ for city)"
-   ],
    [
     "Low",
     "1 content image(s) with empty alt"
@@ -823,10 +834,6 @@
    ]
   ],
   "fixes": [
-   [
-    "Expand with unique, useful sections",
-    false
-   ],
    [
     "Add alts if informative",
     false
@@ -844,7 +851,7 @@
  {
   "url": "/beauty-salon-design/",
   "type": "service",
-  "words": 912,
+  "words": 980,
   "title": "Beauty Salon Design in Lahore | Woodex",
   "desc": "Beauty salon design in Lahore for styling stations, treatment rooms, waiting lounges, retail displays and 3D visualization by Woodex.",
   "h1": [
@@ -893,7 +900,9 @@
    "OpeningHoursSpecification",
    "PostalAddress",
    "Question",
-   "Service"
+   "Service",
+   "SpeakableSpecification",
+   "WebPage"
   ],
   "issues": [],
   "fixes": [],
@@ -993,7 +1002,7 @@
  {
   "url": "/cafe-interior-design/",
   "type": "service",
-  "words": 921,
+  "words": 989,
   "title": "Café Interior Design in Lahore | Woodex",
   "desc": "Café interior design in Lahore for counters, seating, lighting, brand styling and 3D visualization. Book a free Woodex consultation.",
   "h1": [
@@ -1043,7 +1052,9 @@
    "OpeningHoursSpecification",
    "PostalAddress",
    "Question",
-   "Service"
+   "Service",
+   "SpeakableSpecification",
+   "WebPage"
   ],
   "issues": [],
   "fixes": [],
@@ -1055,6 +1066,10 @@
    [
     "'Free' offer",
     "…a reason to come back. Get a Free Consultation 200+ spaces delivered 10 years experience 1 year wo…"
+   ],
+   [
+    "'Free' offer",
+    "…and 3D visualization. Book a free Woodex consultation. Based in Lahore (M-71,…"
    ],
    [
     "'Free' offer",
@@ -1073,7 +1088,7 @@
  {
   "url": "/commercial-fit-out/",
   "type": "service",
-  "words": 914,
+  "words": 981,
   "title": "Commercial Fit-Out Lahore | Woodex Interior",
   "desc": "Commercial fit-out in Lahore for offices, retail, restaurants, clinics, showrooms and coworking spaces, from shell to operational.",
   "h1": [
@@ -1123,7 +1138,9 @@
    "OpeningHoursSpecification",
    "PostalAddress",
    "Question",
-   "Service"
+   "Service",
+   "SpeakableSpecification",
+   "WebPage"
   ],
   "issues": [],
   "fixes": [],
@@ -1153,7 +1170,7 @@
  {
   "url": "/commercial-interior/",
   "type": "service",
-  "words": 971,
+  "words": 1039,
   "title": "Commercial Interior Design in Lahore | Woodex",
   "desc": "Commercial interior design in Lahore for offices, retail, hospitality, wellness and healthcare spaces. Plan your space with Woodex Interior.",
   "h1": [
@@ -1211,7 +1228,9 @@
    "OpeningHoursSpecification",
    "PostalAddress",
    "Question",
-   "Service"
+   "Service",
+   "SpeakableSpecification",
+   "WebPage"
   ],
   "issues": [],
   "fixes": [],
@@ -1244,7 +1263,7 @@
  {
   "url": "/commercial-renovation/",
   "type": "service",
-  "words": 891,
+  "words": 960,
   "title": "Commercial Renovation Lahore | Property Upgrades | Woodex",
   "desc": "Commercial renovation in Lahore for business properties, common areas and tenant improvements, with surveyed scope, itemized BOQs and phased delivery.",
   "h1": [
@@ -1296,7 +1315,9 @@
    "OpeningHoursSpecification",
    "PostalAddress",
    "Question",
-   "Service"
+   "Service",
+   "SpeakableSpecification",
+   "WebPage"
   ],
   "issues": [],
   "fixes": [],
@@ -1326,7 +1347,7 @@
  {
   "url": "/complete-home-redesign/",
   "type": "service",
-  "words": 992,
+  "words": 1062,
   "title": "Complete Home Redesign in Lahore | Woodex",
   "desc": "Complete home redesign in Lahore with one team, phased planning, 3D views and fixed room-by-room pricing. Book a free Woodex consultation.",
   "h1": [
@@ -1374,7 +1395,9 @@
    "OpeningHoursSpecification",
    "PostalAddress",
    "Question",
-   "Service"
+   "Service",
+   "SpeakableSpecification",
+   "WebPage"
   ],
   "issues": [],
   "fixes": [],
@@ -1385,6 +1408,10 @@
    [
     "'Free' offer",
     "…age under one contract. Get a Free Consultation WhatsApp Woodex Phased room by room Fixed price by…"
+   ],
+   [
+    "'Free' offer",
+    "…room-by-room pricing. Book a free Woodex consultation. Based in Lahore (M-71,…"
    ],
    [
     "'Free' offer",
@@ -1494,7 +1521,7 @@
  {
   "url": "/coworking-space-design/",
   "type": "service",
-  "words": 946,
+  "words": 1013,
   "title": "Coworking Space Design in Lahore | Woodex",
   "desc": "Coworking space design in Lahore with flexible layouts, acoustic planning, furniture, technology and 3D visualization by Woodex Interior.",
   "h1": [
@@ -1543,7 +1570,9 @@
    "OpeningHoursSpecification",
    "PostalAddress",
    "Question",
-   "Service"
+   "Service",
+   "SpeakableSpecification",
+   "WebPage"
   ],
   "issues": [],
   "fixes": [],
@@ -1577,7 +1606,7 @@
  {
   "url": "/educational-buildings-design/",
   "type": "service",
-  "words": 911,
+  "words": 978,
   "title": "Educational Building Design Lahore | Woodex Architecture",
   "desc": "Educational building design in Lahore with classrooms, circulation, safety, assembly, recreation and coordinated architecture for schools and academies.",
   "h1": [
@@ -1626,20 +1655,12 @@
    "OpeningHoursSpecification",
    "PostalAddress",
    "Question",
-   "Service"
+   "Service",
+   "SpeakableSpecification",
+   "WebPage"
   ],
-  "issues": [
-   [
-    "Medium",
-    "Keyword not in first 150 words"
-   ]
-  ],
-  "fixes": [
-   [
-    "Use keyword in intro paragraph",
-    false
-   ]
-  ],
+  "issues": [],
+  "fixes": [],
   "eeat": [
    "No link to a real project/case study (Experience)"
   ],
@@ -1717,7 +1738,7 @@
  {
   "url": "/faisalabad/",
   "type": "city",
-  "words": 630,
+  "words": 846,
   "title": "Interior Design Faisalabad | Homes & Offices | Woodex",
   "desc": "Interior design in Faisalabad by Woodex Interior, Lahore: offices, retail and pragmatic commercial interiors, fit out and custom furniture.",
   "h1": [
@@ -1725,6 +1746,7 @@
   ],
   "h2": [
    "What we take on in Faisalabad",
+   "Interior design in Faisalabad: what we plan for",
    "How a Faisalabad project runs",
    "A note on working in Faisalabad",
    "Questions, answered",
@@ -1766,23 +1788,17 @@
    "OpeningHoursSpecification",
    "PostalAddress",
    "Question",
-   "Service"
+   "Service",
+   "SpeakableSpecification",
+   "WebPage"
   ],
   "issues": [
-   [
-    "Medium",
-    "630 words in <main> (target 700+ for city)"
-   ],
    [
     "Low",
     "1 content image(s) with empty alt"
    ]
   ],
   "fixes": [
-   [
-    "Expand with unique, useful sections",
-    false
-   ],
    [
     "Add alts if informative",
     false
@@ -1796,7 +1812,7 @@
  {
   "url": "/farmhouse-design/",
   "type": "service",
-  "words": 916,
+  "words": 979,
   "title": "Farmhouse Design Lahore | Woodex Architecture",
   "desc": "Farmhouse design near Lahore with site-responsive planning, infrastructure, landscape integration and construction-ready architectural drawings.",
   "h1": [
@@ -1845,7 +1861,9 @@
    "OpeningHoursSpecification",
    "PostalAddress",
    "Question",
-   "Service"
+   "Service",
+   "SpeakableSpecification",
+   "WebPage"
   ],
   "issues": [],
   "fixes": [],
@@ -1874,7 +1892,7 @@
  {
   "url": "/fit-out/",
   "type": "pillar",
-  "words": 930,
+  "words": 1000,
   "title": "Fit-Out Company Lahore | Office & Commercial | Woodex",
   "desc": "Fit out in Lahore for offices, restaurants, retail, healthcare and commercial spaces: design, MEP coordination, joinery and handover by Woodex.",
   "h1": [
@@ -1925,7 +1943,9 @@
    "OpeningHoursSpecification",
    "PostalAddress",
    "Question",
-   "Service"
+   "Service",
+   "SpeakableSpecification",
+   "WebPage"
   ],
   "issues": [],
   "fixes": [],
@@ -1950,7 +1970,7 @@
  {
   "url": "/front-elevation-design/",
   "type": "service",
-  "words": 914,
+  "words": 983,
   "title": "Front Elevation Design Lahore | Woodex Architecture",
   "desc": "Front elevation design in Lahore with a photorealistic 3D facade study and 2D elevation drawing for houses and commercial buildings.",
   "h1": [
@@ -1999,7 +2019,9 @@
    "OpeningHoursSpecification",
    "PostalAddress",
    "Question",
-   "Service"
+   "Service",
+   "SpeakableSpecification",
+   "WebPage"
   ],
   "issues": [],
   "fixes": [],
@@ -2028,7 +2050,7 @@
  {
   "url": "/gujranwala/",
   "type": "city",
-  "words": 639,
+  "words": 846,
   "title": "Interior Design Gujranwala | Homes & Offices | Woodex",
   "desc": "Interior design in Gujranwala by Woodex Interior, Lahore: new shops and family homes, fit out, interiors and custom furniture.",
   "h1": [
@@ -2036,6 +2058,7 @@
   ],
   "h2": [
    "What we take on in Gujranwala",
+   "Interior design in Gujranwala: what we plan for",
    "How a Gujranwala project runs",
    "A note on working in Gujranwala",
    "Questions, answered",
@@ -2077,23 +2100,17 @@
    "OpeningHoursSpecification",
    "PostalAddress",
    "Question",
-   "Service"
+   "Service",
+   "SpeakableSpecification",
+   "WebPage"
   ],
   "issues": [
-   [
-    "Medium",
-    "639 words in <main> (target 700+ for city)"
-   ],
    [
     "Low",
     "1 content image(s) with empty alt"
    ]
   ],
   "fixes": [
-   [
-    "Expand with unique, useful sections",
-    false
-   ],
    [
     "Add alts if informative",
     false
@@ -2107,7 +2124,7 @@
  {
   "url": "/gym-design/",
   "type": "service",
-  "words": 913,
+  "words": 983,
   "title": "Gym Design in Lahore | Woodex Interior",
   "desc": "Gym design in Lahore for training zones, cardio, studios, locker rooms, lighting and 3D visualization. Book a free consultation with Woodex.",
   "h1": [
@@ -2160,7 +2177,9 @@
    "OpeningHoursSpecification",
    "PostalAddress",
    "Question",
-   "Service"
+   "Service",
+   "SpeakableSpecification",
+   "WebPage"
   ],
   "issues": [],
   "fixes": [],
@@ -2176,6 +2195,10 @@
    [
     "'Free' offer",
     "…d everyday performance. Get a Free Consultation WhatsApp Woodex 200+ spaces delivered 10 years expe…"
+   ],
+   [
+    "'Free' offer",
+    "…and 3D visualization. Book a free consultation with Woodex. Based in Lahore (M-71,…"
    ],
    [
     "'Free' offer",
@@ -2206,7 +2229,7 @@
  {
   "url": "/healthcare-design/",
   "type": "service",
-  "words": 910,
+  "words": 980,
   "title": "Healthcare Design in Lahore | Woodex",
   "desc": "Healthcare design in Lahore for clinics, labs and care spaces. Calm patient flow, practical rooms and 3D visualization by Woodex Interior.",
   "h1": [
@@ -2259,7 +2282,9 @@
    "OpeningHoursSpecification",
    "PostalAddress",
    "Question",
-   "Service"
+   "Service",
+   "SpeakableSpecification",
+   "WebPage"
   ],
   "issues": [
    [
@@ -2307,7 +2332,7 @@
  {
   "url": "/healthcare-facilities-design/",
   "type": "service",
-  "words": 876,
+  "words": 941,
   "title": "Healthcare Facility Design Lahore | Woodex Architecture",
   "desc": "Healthcare facility design in Lahore with clinical flow, infection control, medical infrastructure, accessibility and compliance coordination.",
   "h1": [
@@ -2356,20 +2381,12 @@
    "OpeningHoursSpecification",
    "PostalAddress",
    "Question",
-   "Service"
+   "Service",
+   "SpeakableSpecification",
+   "WebPage"
   ],
-  "issues": [
-   [
-    "Medium",
-    "Keyword not in first 150 words"
-   ]
-  ],
-  "fixes": [
-   [
-    "Use keyword in intro paragraph",
-    false
-   ]
-  ],
+  "issues": [],
+  "fixes": [],
   "eeat": [
    "No link to a real project/case study (Experience)"
   ],
@@ -2399,7 +2416,7 @@
  {
   "url": "/healthcare-fit-out/",
   "type": "service",
-  "words": 858,
+  "words": 928,
   "title": "Healthcare Fit-Out Lahore | Clinics & Labs | Woodex",
   "desc": "Healthcare fit-out in Lahore for clinics, diagnostic labs and OPDs, with hygienic finishes, clinical lighting, HVAC and plumbing. PKR 9M–18M.",
   "h1": [
@@ -2449,7 +2466,9 @@
    "OpeningHoursSpecification",
    "PostalAddress",
    "Question",
-   "Service"
+   "Service",
+   "SpeakableSpecification",
+   "WebPage"
   ],
   "issues": [],
   "fixes": [],
@@ -2457,6 +2476,10 @@
    "No link to a real project/case study (Experience)"
   ],
   "claims": [
+   [
+    "Price / PKR figure",
+    "…lighting, HVAC and plumbing. PKR 9M–18M. Based in Lahore (M-71,…"
+   ],
    [
     "Price / PKR figure",
     "…ft. clinic or lab ranges from PKR 9M to 18M, depending on roo…"
@@ -2490,7 +2513,7 @@
  {
   "url": "/healthcare-renovation/",
   "type": "service",
-  "words": 883,
+  "words": 949,
   "title": "Healthcare Renovation Lahore | Clinics & Labs | Woodex",
   "desc": "Healthcare renovation in Lahore for clinics, labs and pharmacies, with hygiene-first finishes, service-preserving phasing and itemized BOQs.",
   "h1": [
@@ -2542,7 +2565,9 @@
    "OpeningHoursSpecification",
    "PostalAddress",
    "Question",
-   "Service"
+   "Service",
+   "SpeakableSpecification",
+   "WebPage"
   ],
   "issues": [],
   "fixes": [],
@@ -2576,7 +2601,7 @@
  {
   "url": "/hotel-interior-design/",
   "type": "service",
-  "words": 912,
+  "words": 980,
   "title": "Hotel Interior Design in Lahore | Woodex",
   "desc": "Hotel interior design in Lahore for lobbies, rooms, suites, restaurants and banquet halls. Book a free consultation with Woodex.",
   "h1": [
@@ -2626,7 +2651,9 @@
    "OpeningHoursSpecification",
    "PostalAddress",
    "Question",
-   "Service"
+   "Service",
+   "SpeakableSpecification",
+   "WebPage"
   ],
   "issues": [],
   "fixes": [],
@@ -2637,6 +2664,10 @@
    [
     "'Free' offer",
     "…keep guests returning. Get a Free Consultation WhatsApp Woodex 200+ spaces delivered 10 years expe…"
+   ],
+   [
+    "'Free' offer",
+    "…nts and banquet halls. Book a free consultation with Woodex. Based in Lahore (M-71,…"
    ],
    [
     "'Free' offer",
@@ -2659,7 +2690,7 @@
  {
   "url": "/hyderabad/",
   "type": "city",
-  "words": 635,
+  "words": 822,
   "title": "Interior Design Hyderabad | Homes & Offices | Woodex",
   "desc": "Interior design in Hyderabad by Woodex Interior, Lahore: shops, offices and homes, run in scheduled phases with site visits at each stage.",
   "h1": [
@@ -2667,6 +2698,7 @@
   ],
   "h2": [
    "What we take on in Hyderabad",
+   "Interior design in Hyderabad: what we plan for",
    "How a Hyderabad project runs",
    "A note on working in Hyderabad",
    "Questions, answered",
@@ -2708,23 +2740,17 @@
    "OpeningHoursSpecification",
    "PostalAddress",
    "Question",
-   "Service"
+   "Service",
+   "SpeakableSpecification",
+   "WebPage"
   ],
   "issues": [
-   [
-    "Medium",
-    "635 words in <main> (target 700+ for city)"
-   ],
    [
     "Low",
     "1 content image(s) with empty alt"
    ]
   ],
   "fixes": [
-   [
-    "Expand with unique, useful sections",
-    false
-   ],
    [
     "Add alts if informative",
     false
@@ -4488,7 +4514,7 @@
  {
   "url": "/interior-design/",
   "type": "pillar",
-  "words": 1326,
+  "words": 1396,
   "title": "Interior Design Lahore | Rooms, Kitchens, Offices | Woodex",
   "desc": "Interior design in Lahore for kitchens, bedrooms, living rooms, offices and complete homes. Layouts, materials and 3D views by Woodex Interior.",
   "h1": [
@@ -4560,7 +4586,9 @@
    "OpeningHoursSpecification",
    "PostalAddress",
    "Question",
-   "Service"
+   "Service",
+   "SpeakableSpecification",
+   "WebPage"
   ],
   "issues": [
    [
@@ -4615,7 +4643,7 @@
  {
   "url": "/interior-home-refurbishment/",
   "type": "service",
-  "words": 1106,
+  "words": 1178,
   "title": "Home Refurbishment in Lahore | Woodex",
   "desc": "Home refurbishment in Lahore for room, floor and whole-home upgrades, with design, 3D views and a fixed quote after survey by Woodex Interior.",
   "h1": [
@@ -4664,7 +4692,9 @@
    "OpeningHoursSpecification",
    "PostalAddress",
    "Question",
-   "Service"
+   "Service",
+   "SpeakableSpecification",
+   "WebPage"
   ],
   "issues": [
    [
@@ -4716,7 +4746,7 @@
  {
   "url": "/islamabad/",
   "type": "city",
-  "words": 636,
+  "words": 866,
   "title": "Interior Design Islamabad | Homes & Offices | Woodex",
   "desc": "Interior design in Islamabad by Woodex Interior, Lahore: grey structure to turnkey homes, offices and interiors in the capital's sectors and farmhouses.",
   "h1": [
@@ -4724,6 +4754,7 @@
   ],
   "h2": [
    "What we take on in Islamabad",
+   "Interior design in Islamabad: what we plan for",
    "How a Islamabad project runs",
    "A note on working in Islamabad",
    "Questions, answered",
@@ -4765,23 +4796,17 @@
    "OpeningHoursSpecification",
    "PostalAddress",
    "Question",
-   "Service"
+   "Service",
+   "SpeakableSpecification",
+   "WebPage"
   ],
   "issues": [
-   [
-    "Medium",
-    "636 words in <main> (target 700+ for city)"
-   ],
    [
     "Low",
     "1 content image(s) with empty alt"
    ]
   ],
   "fixes": [
-   [
-    "Expand with unique, useful sections",
-    false
-   ],
    [
     "Add alts if informative",
     false
@@ -4795,7 +4820,7 @@
  {
   "url": "/karachi/",
   "type": "city",
-  "words": 654,
+  "words": 879,
   "title": "Interior Design Karachi | Homes & Offices | Woodex",
   "desc": "Interior design in Karachi by Woodex Interior, Lahore: retail, office and hospitality fit outs, interiors and 3D visualization in scheduled phases.",
   "h1": [
@@ -4803,6 +4828,7 @@
   ],
   "h2": [
    "What we take on in Karachi",
+   "Interior design in Karachi: what we plan for",
    "How a Karachi project runs",
    "A note on working in Karachi",
    "Questions, answered",
@@ -4844,13 +4870,11 @@
    "OpeningHoursSpecification",
    "PostalAddress",
    "Question",
-   "Service"
+   "Service",
+   "SpeakableSpecification",
+   "WebPage"
   ],
   "issues": [
-   [
-    "Medium",
-    "654 words in <main> (target 700+ for city)"
-   ],
    [
     "Low",
     "1 content image(s) with empty alt"
@@ -4861,10 +4885,6 @@
    ]
   ],
   "fixes": [
-   [
-    "Expand with unique, useful sections",
-    false
-   ],
    [
     "Add alts if informative",
     false
@@ -4882,7 +4902,7 @@
  {
   "url": "/kitchen-design/",
   "type": "service",
-  "words": 1161,
+  "words": 1227,
   "title": "Kitchen Design in Lahore | Woodex Interior",
   "desc": "Modular, custom and modern kitchen design in Lahore, with layouts, storage, finishes, lighting, ventilation, 3D views and installation.",
   "h1": [
@@ -4932,7 +4952,9 @@
    "OpeningHoursSpecification",
    "PostalAddress",
    "Question",
-   "Service"
+   "Service",
+   "SpeakableSpecification",
+   "WebPage"
   ],
   "issues": [],
   "fixes": [],
@@ -4985,7 +5007,7 @@
  {
   "url": "/lahore/",
   "type": "city",
-  "words": 663,
+  "words": 734,
   "title": "Interior Design in Lahore | Woodex Interior",
   "desc": "Interior design in Lahore by Woodex Interior: a local design and build studio for homes, offices, fit-out, renovation, architecture and 3D views.",
   "h1": [
@@ -5035,23 +5057,17 @@
    "OpeningHoursSpecification",
    "PostalAddress",
    "Question",
-   "Service"
+   "Service",
+   "SpeakableSpecification",
+   "WebPage"
   ],
   "issues": [
-   [
-    "Medium",
-    "663 words in <main> (target 700+ for city)"
-   ],
    [
     "Low",
     "1 content image(s) with empty alt"
    ]
   ],
   "fixes": [
-   [
-    "Expand with unique, useful sections",
-    false
-   ],
    [
     "Add alts if informative",
     false
@@ -5065,7 +5081,7 @@
  {
   "url": "/master-planning/",
   "type": "service",
-  "words": 911,
+  "words": 979,
   "title": "Master Planning Lahore | Woodex Architecture",
   "desc": "Master planning in Lahore for housing, mixed-use and farmhouse developments with land use, plots, roads, utilities, approvals and phasing.",
   "h1": [
@@ -5114,7 +5130,9 @@
    "OpeningHoursSpecification",
    "PostalAddress",
    "Question",
-   "Service"
+   "Service",
+   "SpeakableSpecification",
+   "WebPage"
   ],
   "issues": [],
   "fixes": [],
@@ -5147,7 +5165,7 @@
  {
   "url": "/multan/",
   "type": "city",
-  "words": 638,
+  "words": 840,
   "title": "Interior Design Multan | Homes & Offices | Woodex",
   "desc": "Interior design in Multan by Woodex Interior, Lahore: homes and commercial interiors chosen to handle heat, dust and daily use.",
   "h1": [
@@ -5155,6 +5173,7 @@
   ],
   "h2": [
    "What we take on in Multan",
+   "Interior design in Multan: what we plan for",
    "How a Multan project runs",
    "A note on working in Multan",
    "Questions, answered",
@@ -5196,23 +5215,17 @@
    "OpeningHoursSpecification",
    "PostalAddress",
    "Question",
-   "Service"
+   "Service",
+   "SpeakableSpecification",
+   "WebPage"
   ],
   "issues": [
-   [
-    "Medium",
-    "638 words in <main> (target 700+ for city)"
-   ],
    [
     "Low",
     "1 content image(s) with empty alt"
    ]
   ],
   "fixes": [
-   [
-    "Expand with unique, useful sections",
-    false
-   ],
    [
     "Add alts if informative",
     false
@@ -5226,7 +5239,7 @@
  {
   "url": "/office-buildings-design/",
   "type": "service",
-  "words": 905,
+  "words": 971,
   "title": "Office Building Design Lahore | Woodex Architecture",
   "desc": "Office building design in Lahore with efficient floor plates, cores, facade, lobby, parking, structural and MEP coordination.",
   "h1": [
@@ -5275,20 +5288,12 @@
    "OpeningHoursSpecification",
    "PostalAddress",
    "Question",
-   "Service"
+   "Service",
+   "SpeakableSpecification",
+   "WebPage"
   ],
-  "issues": [
-   [
-    "Medium",
-    "Keyword not in first 150 words"
-   ]
-  ],
-  "fixes": [
-   [
-    "Use keyword in intro paragraph",
-    false
-   ]
-  ],
+  "issues": [],
+  "fixes": [],
   "eeat": [
    "No link to a real project/case study (Experience)"
   ],
@@ -5314,7 +5319,7 @@
  {
   "url": "/office-fit-out/",
   "type": "service",
-  "words": 1349,
+  "words": 1417,
   "title": "Office Fit-Out Lahore | Complete Office Fit-Out | Woodex",
   "desc": "Complete office fit-out in Lahore by Woodex Interior, including partitions, ceilings, flooring, electrical, lighting, plumbing, joinery and furniture.",
   "h1": [
@@ -5365,7 +5370,9 @@
    "OpeningHoursSpecification",
    "PostalAddress",
    "Question",
-   "Service"
+   "Service",
+   "SpeakableSpecification",
+   "WebPage"
   ],
   "issues": [],
   "fixes": [],
@@ -5399,7 +5406,7 @@
    ],
    [
     "Warranty / guarantee",
-    "…Experience Fixed-Price 1-Year Warranty From shell to working of…"
+    "…Experience Fixed-Price 1-Year Warranty In short Complete office…"
    ],
    [
     "Warranty / guarantee",
@@ -5426,7 +5433,7 @@
  {
   "url": "/office-interior-design/",
   "type": "service",
-  "words": 1115,
+  "words": 1183,
   "title": "Office Interior Design in Lahore | Woodex",
   "desc": "Office interior design in Lahore with space planning, 3D visualization, materials and working drawings. Book a free Woodex consultation.",
   "h1": [
@@ -5474,7 +5481,9 @@
    "OpeningHoursSpecification",
    "PostalAddress",
    "Question",
-   "Service"
+   "Service",
+   "SpeakableSpecification",
+   "WebPage"
   ],
   "issues": [],
   "fixes": [],
@@ -5485,6 +5494,10 @@
    [
     "'Free' offer",
     "…efore site work begins. Get a Free Consultation WhatsApp Woodex Workplace concept and 3D visualizat…"
+   ],
+   [
+    "'Free' offer",
+    "…and working drawings. Book a free Woodex consultation. Based in Lahore (M-71,…"
    ],
    [
     "'Free' offer",
@@ -5515,7 +5528,7 @@
  {
   "url": "/office-renovation/",
   "type": "service",
-  "words": 929,
+  "words": 995,
   "title": "Office Renovation Lahore | Workplace Upgrades | Woodex",
   "desc": "Office renovation in Lahore for occupied workplaces, reconfiguration and modernization, with itemized BOQs and phased low-disruption delivery.",
   "h1": [
@@ -5567,7 +5580,9 @@
    "OpeningHoursSpecification",
    "PostalAddress",
    "Question",
-   "Service"
+   "Service",
+   "SpeakableSpecification",
+   "WebPage"
   ],
   "issues": [],
   "fixes": [],
@@ -5597,7 +5612,7 @@
  {
   "url": "/peshawar/",
   "type": "city",
-  "words": 637,
+  "words": 845,
   "title": "Interior Design Peshawar | Homes & Offices | Woodex",
   "desc": "Interior design in Peshawar by Woodex Interior, Lahore: durable shops, offices and family homes built for high traffic and daily use.",
   "h1": [
@@ -5605,6 +5620,7 @@
   ],
   "h2": [
    "What we take on in Peshawar",
+   "Interior design in Peshawar: what we plan for",
    "How a Peshawar project runs",
    "A note on working in Peshawar",
    "Questions, answered",
@@ -5646,23 +5662,17 @@
    "OpeningHoursSpecification",
    "PostalAddress",
    "Question",
-   "Service"
+   "Service",
+   "SpeakableSpecification",
+   "WebPage"
   ],
   "issues": [
-   [
-    "Medium",
-    "637 words in <main> (target 700+ for city)"
-   ],
    [
     "Low",
     "1 content image(s) with empty alt"
    ]
   ],
   "fixes": [
-   [
-    "Expand with unique, useful sections",
-    false
-   ],
    [
     "Add alts if informative",
     false
@@ -5676,7 +5686,7 @@
  {
   "url": "/pharmacy-fit-out/",
   "type": "service",
-  "words": 831,
+  "words": 899,
   "title": "Pharmacy Fit-Out Lahore | Counters & Storage | Woodex",
   "desc": "Pharmacy fit-out in Lahore with dispensing counters, controlled drug storage, compliant finishes, climate control and security. PKR 5.5M–12M.",
   "h1": [
@@ -5726,7 +5736,9 @@
    "OpeningHoursSpecification",
    "PostalAddress",
    "Question",
-   "Service"
+   "Service",
+   "SpeakableSpecification",
+   "WebPage"
   ],
   "issues": [],
   "fixes": [],
@@ -5734,6 +5746,10 @@
    "No link to a real project/case study (Experience)"
   ],
   "claims": [
+   [
+    "Price / PKR figure",
+    "…climate control and security. PKR 5.5M–12M. Based in Lahore…"
+   ],
    [
     "Price / PKR figure",
     "…harmacy typically ranges from PKR 5.5M to 12M, depending on…"
@@ -5767,7 +5783,7 @@
  {
   "url": "/privacy/",
   "type": "utility",
-  "words": 566,
+  "words": 573,
   "title": "Privacy Policy | Woodex Interior",
   "desc": "How Woodex Interior collects, uses and protects your information when you contact us, use the cost estimator or chat with our team.",
   "h1": [
@@ -5837,7 +5853,7 @@
  {
   "url": "/projects/",
   "type": "projects-hub",
-  "words": 291,
+  "words": 298,
   "title": "Interior Design Projects Lahore | Design Studies | Woodex",
   "desc": "Interior design projects from Woodex, Lahore: illustrative design studies for homes, clinics, cafes, offices and retail, with plans and 3D views.",
   "h1": [
@@ -5888,7 +5904,7 @@
  {
   "url": "/projects/cafe-corner/",
   "type": "case-study",
-  "words": 451,
+  "words": 458,
   "title": "Cafe Interior Design Study: A Corner Cafe | Woodex",
   "desc": "Cafe interior design study by Woodex: a corner cafe with counter flow, a seating mix and lighting that holds a crowd. Illustrative design study.",
   "h1": [
@@ -5949,7 +5965,7 @@
  {
   "url": "/projects/clinic-fit-out/",
   "type": "case-study",
-  "words": 422,
+  "words": 429,
   "title": "Clinic Fit Out Study: A Calm Compact Clinic | Woodex",
   "desc": "Clinic fit out study by Woodex: a compact clinic with calm waiting, consult and procedure flow, and easy-clean finishes. Illustrative study.",
   "h1": [
@@ -6002,7 +6018,7 @@
  {
   "url": "/projects/courtyard-house/",
   "type": "case-study",
-  "words": 444,
+  "words": 451,
   "title": "House Renovation Study: Courtyard Home Lahore | Woodex",
   "desc": "House renovation study by Woodex: a Lahore house re-planned around a small courtyard for light, air and better family rooms. Illustrative study.",
   "h1": [
@@ -6055,7 +6071,7 @@
  {
   "url": "/projects/office-floor/",
   "type": "case-study",
-  "words": 444,
+  "words": 451,
   "title": "Office Layout Study: One Floor, Three Modes | Woodex",
   "desc": "Office layout study by Woodex: one floor with focus rows, meeting rooms and a social zone, planned for how teams work. Illustrative study.",
   "h1": [
@@ -6121,7 +6137,7 @@
  {
   "url": "/projects/retail-corner/",
   "type": "case-study",
-  "words": 439,
+  "words": 446,
   "title": "Shop Interior Study: A Corner Shop That Sells | Woodex",
   "desc": "Shop interior study by Woodex: a small corner shop with a display wall, clear customer path and checkout triangle. Illustrative design study.",
   "h1": [
@@ -6174,7 +6190,7 @@
  {
   "url": "/projects/small-apartment/",
   "type": "case-study",
-  "words": 455,
+  "words": 462,
   "title": "Small Apartment Interior Study: 60 sq m | Woodex",
   "desc": "Small apartment interior study by Woodex: a 60 sq m home with a storage wall and clear sightlines that feels larger. Illustrative design study.",
   "h1": [
@@ -6235,7 +6251,7 @@
  {
   "url": "/quetta/",
   "type": "city",
-  "words": 625,
+  "words": 834,
   "title": "Interior Design Quetta | Homes & Offices | Woodex",
   "desc": "Interior design in Quetta by Woodex Interior, Lahore: homes and select commercial work designed for cold winters and daily life.",
   "h1": [
@@ -6243,6 +6259,7 @@
   ],
   "h2": [
    "What we take on in Quetta",
+   "Interior design in Quetta: what we plan for",
    "How a Quetta project runs",
    "A note on working in Quetta",
    "Questions, answered",
@@ -6284,23 +6301,17 @@
    "OpeningHoursSpecification",
    "PostalAddress",
    "Question",
-   "Service"
+   "Service",
+   "SpeakableSpecification",
+   "WebPage"
   ],
   "issues": [
-   [
-    "Medium",
-    "625 words in <main> (target 700+ for city)"
-   ],
    [
     "Low",
     "1 content image(s) with empty alt"
    ]
   ],
   "fixes": [
-   [
-    "Expand with unique, useful sections",
-    false
-   ],
    [
     "Add alts if informative",
     false
@@ -6314,7 +6325,7 @@
  {
   "url": "/rawalpindi/",
   "type": "city",
-  "words": 629,
+  "words": 846,
   "title": "Interior Design Rawalpindi | Homes & Offices | Woodex",
   "desc": "Interior design in Rawalpindi by Woodex Interior, Lahore: residential and commercial interiors run in planned phases with scheduled site visits.",
   "h1": [
@@ -6322,6 +6333,7 @@
   ],
   "h2": [
    "What we take on in Rawalpindi",
+   "Interior design in Rawalpindi: what we plan for",
    "How a Rawalpindi project runs",
    "A note on working in Rawalpindi",
    "Questions, answered",
@@ -6363,23 +6375,17 @@
    "OpeningHoursSpecification",
    "PostalAddress",
    "Question",
-   "Service"
+   "Service",
+   "SpeakableSpecification",
+   "WebPage"
   ],
   "issues": [
-   [
-    "Medium",
-    "629 words in <main> (target 700+ for city)"
-   ],
    [
     "Low",
     "1 content image(s) with empty alt"
    ]
   ],
   "fixes": [
-   [
-    "Expand with unique, useful sections",
-    false
-   ],
    [
     "Add alts if informative",
     false
@@ -6393,7 +6399,7 @@
  {
   "url": "/renovation/",
   "type": "pillar",
-  "words": 1511,
+  "words": 1580,
   "title": "Renovation Company Lahore | Offices, Homes & Retail | Woodex",
   "desc": "Renovation company in Lahore for homes, offices, retail, healthcare and restaurants: survey, design, phased works and handover by Woodex Interior.",
   "h1": [
@@ -6446,7 +6452,9 @@
    "OpeningHoursSpecification",
    "PostalAddress",
    "Question",
-   "Service"
+   "Service",
+   "SpeakableSpecification",
+   "WebPage"
   ],
   "issues": [],
   "fixes": [],
@@ -6479,7 +6487,7 @@
  {
   "url": "/residential-basement-design/",
   "type": "service",
-  "words": 989,
+  "words": 1059,
   "title": "Basement Design in Lahore | Woodex Interior",
   "desc": "Basement design in Lahore for home theaters, lounges, gyms and guest rooms, with moisture, lighting and ventilation planned first. Free consultation.",
   "h1": [
@@ -6526,7 +6534,9 @@
    "OpeningHoursSpecification",
    "PostalAddress",
    "Question",
-   "Service"
+   "Service",
+   "SpeakableSpecification",
+   "WebPage"
   ],
   "issues": [
    [
@@ -6550,7 +6560,11 @@
    ],
    [
     "'Free' offer",
-    "…how you want to use it. Get a Free Consultation Basement conversion concept What Is Basement Design…"
+    "…how you want to use it. Get a Free Consultation Basement conversion concept In short Basement desig…"
+   ],
+   [
+    "'Free' offer",
+    "…nd ventilation planned first. Free consultation. Based in Lahore (M-71,…"
    ],
    [
     "'Free' offer",
@@ -6589,7 +6603,7 @@
  {
   "url": "/residential-bedroom-design/",
   "type": "service",
-  "words": 892,
+  "words": 962,
   "title": "Bedroom Design in Lahore | Woodex Interior",
   "desc": "Bedroom design in Lahore for master, guest and small bedrooms. Smart layouts, storage, lighting and finishes. Book a free Woodex consultation.",
   "h1": [
@@ -6637,7 +6651,9 @@
    "OpeningHoursSpecification",
    "PostalAddress",
    "Question",
-   "Service"
+   "Service",
+   "SpeakableSpecification",
+   "WebPage"
   ],
   "issues": [],
   "fixes": [],
@@ -6652,7 +6668,11 @@
    ],
    [
     "'Free' offer",
-    "…way you rest and live. Get a Free Consultation Bedroom design concept Your private retreat What Is…"
+    "…way you rest and live. Get a Free Consultation Bedroom design concept In short Bedroom design in L…"
+   ],
+   [
+    "'Free' offer",
+    "…lighting and finishes. Book a free Woodex consultation. Based in Lahore (M-71,…"
    ],
    [
     "'Free' offer",
@@ -6687,7 +6707,7 @@
  {
   "url": "/residential-dining-room-design/",
   "type": "service",
-  "words": 926,
+  "words": 994,
   "title": "Dining Room Design in Lahore | Woodex",
   "desc": "Dining room design in Lahore for family, formal and open-plan spaces. Layout, lighting, furniture and finishes by Woodex Interior.",
   "h1": [
@@ -6734,7 +6754,9 @@
    "OpeningHoursSpecification",
    "PostalAddress",
    "Question",
-   "Service"
+   "Service",
+   "SpeakableSpecification",
+   "WebPage"
   ],
   "issues": [
    [
@@ -6759,7 +6781,7 @@
    ],
    [
     "'Free' offer",
-    "…way you host and live. Get a Free Consultation Dining room design concept What Is Dining Room Desi…"
+    "…way you host and live. Get a Free Consultation Dining room design concept In short Dining room des…"
    ],
    [
     "'Free' offer",
@@ -6798,7 +6820,7 @@
  {
   "url": "/residential-home-office-design/",
   "type": "service",
-  "words": 910,
+  "words": 977,
   "title": "Home Office Design in Lahore | Woodex",
   "desc": "Home office design in Lahore for productive layouts, ergonomic furniture, lighting, storage, connectivity and privacy. Free Woodex consultation.",
   "h1": [
@@ -6844,7 +6866,9 @@
    "OpeningHoursSpecification",
    "PostalAddress",
    "Question",
-   "Service"
+   "Service",
+   "SpeakableSpecification",
+   "WebPage"
   ],
   "issues": [],
   "fixes": [],
@@ -6858,7 +6882,11 @@
    ],
    [
     "'Free' offer",
-    "…character of your home. Get a Free Consultation Residential workspace concept A calm place to think…"
+    "…character of your home. Get a Free Consultation Residential workspace concept In short Home office…"
+   ],
+   [
+    "'Free' offer",
+    "…ge, connectivity and privacy. Free Woodex consultation. Based in Lahore (M-71,…"
    ],
    [
     "'Free' offer",
@@ -6893,7 +6921,7 @@
  {
   "url": "/residential-kids-room-design/",
   "type": "service",
-  "words": 972,
+  "words": 1043,
   "title": "Kids Room Design in Lahore | Woodex",
   "desc": "Kids room design in Lahore for safe bedrooms, nurseries, play areas and study nooks that grow with your child. Free Woodex consultation.",
   "h1": [
@@ -6940,7 +6968,9 @@
    "OpeningHoursSpecification",
    "PostalAddress",
    "Question",
-   "Service"
+   "Service",
+   "SpeakableSpecification",
+   "WebPage"
   ],
   "issues": [],
   "fixes": [],
@@ -6958,7 +6988,11 @@
    ],
    [
     "'Free' offer",
-    "…adapt as children grow. Get a Free Consultation Sleep, play, study and grow What Is Kids Room Desig…"
+    "…adapt as children grow. Get a Free Consultation Sleep, play, study and grow In short Kids room desi…"
+   ],
+   [
+    "'Free' offer",
+    "…ks that grow with your child. Free Woodex consultation. Based in Lahore (M-71,…"
    ],
    [
     "'Free' offer",
@@ -6993,7 +7027,7 @@
  {
   "url": "/residential-living-room-design/",
   "type": "service",
-  "words": 934,
+  "words": 1003,
   "title": "Living Room Design in Lahore | Woodex",
   "desc": "Living room design in Lahore for comfortable layouts, TV integration, lighting and finishes. Book a free consultation with Woodex Interior.",
   "h1": [
@@ -7041,7 +7075,9 @@
    "OpeningHoursSpecification",
    "PostalAddress",
    "Question",
-   "Service"
+   "Service",
+   "SpeakableSpecification",
+   "WebPage"
   ],
   "issues": [],
   "fixes": [],
@@ -7056,7 +7092,11 @@
    ],
    [
     "'Free' offer",
-    "…o one comfortable plan. Get a Free Consultation Living room design concept The heart of the home Wh…"
+    "…o one comfortable plan. Get a Free Consultation Living room design concept In short Living room des…"
+   ],
+   [
+    "'Free' offer",
+    "…lighting and finishes. Book a free consultation with Woodex Interior. Based in Lahore (M-71,…"
    ],
    [
     "'Free' offer",
@@ -7091,7 +7131,7 @@
  {
   "url": "/residential-renovation/",
   "type": "service",
-  "words": 911,
+  "words": 979,
   "title": "Residential Renovation Lahore | Homes & Apartments | Woodex",
   "desc": "Residential renovation in Lahore for rooms, kitchens, bathrooms, apartments and homes, with 3D approval, itemized BOQs and room-by-room phasing.",
   "h1": [
@@ -7143,7 +7183,9 @@
    "OpeningHoursSpecification",
    "PostalAddress",
    "Question",
-   "Service"
+   "Service",
+   "SpeakableSpecification",
+   "WebPage"
   ],
   "issues": [],
   "fixes": [],
@@ -7173,7 +7215,7 @@
  {
   "url": "/restaurant-cafe-building-design/",
   "type": "service",
-  "words": 911,
+  "words": 978,
   "title": "Restaurant & Cafe Building Design Lahore | Woodex",
   "desc": "Restaurant and cafe building design in Lahore with kitchen planning, ventilation, seating, health compliance, services and facade design.",
   "h1": [
@@ -7222,25 +7264,19 @@
    "OpeningHoursSpecification",
    "PostalAddress",
    "Question",
-   "Service"
+   "Service",
+   "SpeakableSpecification",
+   "WebPage"
   ],
   "issues": [
    [
     "High",
     "Target keyword “restaurant and cafe building design lahore” not in title"
-   ],
-   [
-    "Medium",
-    "Keyword not in first 150 words"
    ]
   ],
   "fixes": [
    [
     "Rewrite title to lead with the keyword",
-    false
-   ],
-   [
-    "Use keyword in intro paragraph",
     false
    ]
   ],
@@ -7269,7 +7305,7 @@
  {
   "url": "/restaurant-cafe-renovation/",
   "type": "service",
-  "words": 886,
+  "words": 952,
   "title": "Restaurant & Café Renovation Lahore | Woodex",
   "desc": "Restaurant and café renovation in Lahore with kitchen, ventilation and gas coordination, hospitality-grade finishes and out-of-hours phasing.",
   "h1": [
@@ -7321,25 +7357,19 @@
    "OpeningHoursSpecification",
    "PostalAddress",
    "Question",
-   "Service"
+   "Service",
+   "SpeakableSpecification",
+   "WebPage"
   ],
   "issues": [
    [
     "High",
     "Target keyword “restaurant and café renovation lahore” not in title"
-   ],
-   [
-    "Medium",
-    "Keyword not in first 150 words"
    ]
   ],
   "fixes": [
    [
     "Rewrite title to lead with the keyword",
-    false
-   ],
-   [
-    "Use keyword in intro paragraph",
     false
    ]
   ],
@@ -7373,7 +7403,7 @@
  {
   "url": "/restaurant-fit-out/",
   "type": "service",
-  "words": 878,
+  "words": 947,
   "title": "Restaurant & Café Fit-Out Lahore | Woodex",
   "desc": "Restaurant and café fit-out in Lahore with kitchen workflow, ventilation, wet areas, dining atmosphere and food-grade finishes. PKR 14M–32M.",
   "h1": [
@@ -7423,7 +7453,9 @@
    "OpeningHoursSpecification",
    "PostalAddress",
    "Question",
-   "Service"
+   "Service",
+   "SpeakableSpecification",
+   "WebPage"
   ],
   "issues": [],
   "fixes": [],
@@ -7431,6 +7463,10 @@
    "No link to a real project/case study (Experience)"
   ],
   "claims": [
+   [
+    "Price / PKR figure",
+    "…here and food-grade finishes. PKR 14M–32M. Based in Lahore (M-71,…"
+   ],
    [
     "Price / PKR figure",
     "…ient, task and decorative layers. 04 Durable surfaces Anti-sl…"
@@ -7460,7 +7496,7 @@
  {
   "url": "/restaurant-interior-design/",
   "type": "service",
-  "words": 918,
+  "words": 986,
   "title": "Restaurant Interior Design Lahore | Woodex",
   "desc": "Restaurant interior design in Lahore for dining rooms, bars, kitchens, entrances and terraces. Plan your atmosphere with Woodex Interior.",
   "h1": [
@@ -7509,7 +7545,9 @@
    "OpeningHoursSpecification",
    "PostalAddress",
    "Question",
-   "Service"
+   "Service",
+   "SpeakableSpecification",
+   "WebPage"
   ],
   "issues": [],
   "fixes": [],
@@ -7543,7 +7581,7 @@
  {
   "url": "/retail-buildings-design/",
   "type": "service",
-  "words": 891,
+  "words": 957,
   "title": "Retail Building Design Lahore | Woodex Architecture",
   "desc": "Retail building design in Lahore with shop frontage, anchor planning, circulation, parking, loading and coordinated building services.",
   "h1": [
@@ -7592,20 +7630,12 @@
    "OpeningHoursSpecification",
    "PostalAddress",
    "Question",
-   "Service"
+   "Service",
+   "SpeakableSpecification",
+   "WebPage"
   ],
-  "issues": [
-   [
-    "Medium",
-    "Keyword not in first 150 words"
-   ]
-  ],
-  "fixes": [
-   [
-    "Use keyword in intro paragraph",
-    false
-   ]
-  ],
+  "issues": [],
+  "fixes": [],
   "eeat": [
    "No link to a real project/case study (Experience)"
   ],
@@ -7639,7 +7669,7 @@
  {
   "url": "/retail-design/",
   "type": "service",
-  "words": 894,
+  "words": 962,
   "title": "Retail Design in Lahore | Woodex Interior",
   "desc": "Retail design in Lahore for store layouts, displays, lighting, brand styling and 3D visualization. Book a free Woodex consultation.",
   "h1": [
@@ -7689,7 +7719,9 @@
    "OpeningHoursSpecification",
    "PostalAddress",
    "Question",
-   "Service"
+   "Service",
+   "SpeakableSpecification",
+   "WebPage"
   ],
   "issues": [],
   "fixes": [],
@@ -7701,6 +7733,10 @@
    [
     "'Free' offer",
     "…ally toward a purchase. Get a Free Consultation WhatsApp Woodex 200+ spaces delivered 10 years expe…"
+   ],
+   [
+    "'Free' offer",
+    "…and 3D visualization. Book a free Woodex consultation. Based in Lahore (M-71,…"
    ],
    [
     "'Free' offer",
@@ -7727,7 +7763,7 @@
  {
   "url": "/retail-fit-out/",
   "type": "service",
-  "words": 869,
+  "words": 936,
   "title": "Retail & Showroom Fit-Out Lahore | Woodex",
   "desc": "Retail and showroom fit-out in Lahore with shopfronts, branded displays, customer-flow planning, lighting and joinery. PKR 7.5M–22.5M.",
   "h1": [
@@ -7777,7 +7813,9 @@
    "OpeningHoursSpecification",
    "PostalAddress",
    "Question",
-   "Service"
+   "Service",
+   "SpeakableSpecification",
+   "WebPage"
   ],
   "issues": [],
   "fixes": [],
@@ -7786,6 +7824,10 @@
    "No client testimonial/review (Trust)"
   ],
   "claims": [
+   [
+    "Price / PKR figure",
+    "…anning, lighting and joinery. PKR 7.5M–22.5M. Based in Lahor…"
+   ],
    [
     "Price / PKR figure",
     "…il unit typically ranges from PKR 7.5M to 22.5M, depending o…"
@@ -7815,7 +7857,7 @@
  {
   "url": "/retail-showroom-renovation/",
   "type": "service",
-  "words": 896,
+  "words": 963,
   "title": "Retail & Showroom Renovation Lahore | Woodex",
   "desc": "Retail and showroom renovation in Lahore with overnight or zone-by-zone phasing, display upgrades, itemized BOQs and trading-focused delivery.",
   "h1": [
@@ -7867,25 +7909,19 @@
    "OpeningHoursSpecification",
    "PostalAddress",
    "Question",
-   "Service"
+   "Service",
+   "SpeakableSpecification",
+   "WebPage"
   ],
   "issues": [
    [
     "High",
     "Target keyword “retail and showroom renovation lahore” not in title"
-   ],
-   [
-    "Medium",
-    "Keyword not in first 150 words"
    ]
   ],
   "fixes": [
    [
     "Rewrite title to lead with the keyword",
-    false
-   ],
-   [
-    "Use keyword in intro paragraph",
     false
    ]
   ],
@@ -7919,7 +7955,7 @@
  {
   "url": "/shopping-mall-design/",
   "type": "service",
-  "words": 924,
+  "words": 993,
   "title": "Shopping Mall Design in Lahore | Woodex",
   "desc": "Shopping mall design in Lahore for atriums, retail corridors, food courts, wayfinding and 3D visualization. Book a free Woodex consultation.",
   "h1": [
@@ -7968,7 +8004,9 @@
    "OpeningHoursSpecification",
    "PostalAddress",
    "Question",
-   "Service"
+   "Service",
+   "SpeakableSpecification",
+   "WebPage"
   ],
   "issues": [],
   "fixes": [],
@@ -7980,6 +8018,10 @@
    [
     "'Free' offer",
     "…clear visitor journey. Get a Free Consultation WhatsApp Woodex 200+ spaces delivered 10 years expe…"
+   ],
+   [
+    "'Free' offer",
+    "…and 3D visualization. Book a free Woodex consultation. Based in Lahore (M-71,…"
    ],
    [
     "'Free' offer",
@@ -8006,7 +8048,7 @@
  {
   "url": "/showroom-design/",
   "type": "service",
-  "words": 920,
+  "words": 990,
   "title": "Showroom Design in Lahore | Woodex Interior",
   "desc": "Showroom design in Lahore for stronger displays, customer flow, brand zones, product lighting and 3D visualization. Book a free Woodex consultation.",
   "h1": [
@@ -8055,7 +8097,9 @@
    "OpeningHoursSpecification",
    "PostalAddress",
    "Question",
-   "Service"
+   "Service",
+   "SpeakableSpecification",
+   "WebPage"
   ],
   "issues": [],
   "fixes": [],
@@ -8066,6 +8110,10 @@
    [
     "'Free' offer",
     "…lore and ready to sell. Get a Free Consultation WhatsApp Woodex 200+ spaces delivered 10 years expe…"
+   ],
+   [
+    "'Free' offer",
+    "…and 3D visualization. Book a free Woodex consultation. Based in Lahore (M-71,…"
    ],
    [
     "'Free' offer",
@@ -8085,7 +8133,7 @@
    ],
    [
     "Superlative",
-    "…rved Products placed in their best light What We Design Eight connected layers turn a sho…"
+    "…rved Products placed in their best light In short Showroom design in Lahore for stronger…"
    ],
    [
     "Superlative",
@@ -8100,7 +8148,7 @@
  {
   "url": "/sialkot/",
   "type": "city",
-  "words": 629,
+  "words": 828,
   "title": "Interior Design Sialkot | Homes & Offices | Woodex",
   "desc": "Interior design in Sialkot by Woodex Interior, Lahore: offices, showrooms and owner homes for the city's export industry and beyond.",
   "h1": [
@@ -8108,6 +8156,7 @@
   ],
   "h2": [
    "What we take on in Sialkot",
+   "Interior design in Sialkot: what we plan for",
    "How a Sialkot project runs",
    "A note on working in Sialkot",
    "Questions, answered",
@@ -8149,23 +8198,17 @@
    "OpeningHoursSpecification",
    "PostalAddress",
    "Question",
-   "Service"
+   "Service",
+   "SpeakableSpecification",
+   "WebPage"
   ],
   "issues": [
-   [
-    "Medium",
-    "629 words in <main> (target 700+ for city)"
-   ],
    [
     "Low",
     "1 content image(s) with empty alt"
    ]
   ],
   "fixes": [
-   [
-    "Expand with unique, useful sections",
-    false
-   ],
    [
     "Add alts if informative",
     false
@@ -8179,7 +8222,7 @@
  {
   "url": "/spa-design/",
   "type": "service",
-  "words": 896,
+  "words": 965,
   "title": "Spa Design in Lahore | Woodex Interior",
   "desc": "Spa design in Lahore for treatment rooms, relaxation lounges, reception, wet areas and 3D visualization. Book a free Woodex consultation.",
   "h1": [
@@ -8229,7 +8272,9 @@
    "OpeningHoursSpecification",
    "PostalAddress",
    "Question",
-   "Service"
+   "Service",
+   "SpeakableSpecification",
+   "WebPage"
   ],
   "issues": [],
   "fixes": [],
@@ -8245,6 +8290,10 @@
    [
     "'Free' offer",
     "…enuine sense of escape. Get a Free Consultation WhatsApp Woodex 200+ spaces delivered 10 years expe…"
+   ],
+   [
+    "'Free' offer",
+    "…and 3D visualization. Book a free Woodex consultation. Based in Lahore (M-71,…"
    ],
    [
     "'Free' offer",
@@ -8271,7 +8320,7 @@
  {
   "url": "/specialized-renovation-services/",
   "type": "service",
-  "words": 908,
+  "words": 977,
   "title": "Specialized Renovation Services Lahore | Woodex",
   "desc": "Specialized renovation services in Lahore for ceilings, flooring, lighting, partitions, joinery and focused interior upgrades, as standalone or add-on scopes.",
   "h1": [
@@ -8323,20 +8372,12 @@
    "OpeningHoursSpecification",
    "PostalAddress",
    "Question",
-   "Service"
+   "Service",
+   "SpeakableSpecification",
+   "WebPage"
   ],
-  "issues": [
-   [
-    "Medium",
-    "Keyword not in first 150 words"
-   ]
-  ],
-  "fixes": [
-   [
-    "Use keyword in intro paragraph",
-    false
-   ]
-  ],
+  "issues": [],
+  "fixes": [],
   "eeat": [
    "No link to a real project/case study (Experience)",
    "No client testimonial/review (Trust)"
@@ -8363,7 +8404,7 @@
  {
   "url": "/turnkey-design-build/",
   "type": "pillar",
-  "words": 967,
+  "words": 1041,
   "title": "Turnkey Interior Design & Build Lahore | Woodex",
   "desc": "Turnkey interior design and build in Lahore with design, construction, furniture and handover under one contract. PKR 9M–28M for a 2,000 sq. ft. benchmark.",
   "h1": [
@@ -8413,7 +8454,9 @@
    "OpeningHoursSpecification",
    "PostalAddress",
    "Question",
-   "Service"
+   "Service",
+   "SpeakableSpecification",
+   "WebPage"
   ],
   "issues": [
    [
@@ -8433,6 +8476,10 @@
   "claims": [
    [
     "Price / PKR figure",
+    "…handover under one contract. PKR 9M–28M for a 2,000 sq. ft. benc…"
+   ],
+   [
+    "Price / PKR figure",
     "…tractors and furniture suppliers. 01 Space planning Concepts,…"
    ],
    [
@@ -8441,7 +8488,7 @@
    ],
    [
     "Timeline / response promise",
-    "…from brief to handover Design 2–4 weeks · Build 6–12 weeks One d…"
+    "…from brief to handover Design 2–4 weeks · Build 6–12 weeks In sh…"
    ],
    [
     "Timeline / response promise",

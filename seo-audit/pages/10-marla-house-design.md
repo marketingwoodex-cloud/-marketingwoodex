@@ -1,5 +1,5 @@
 # Page audit: /10-marla-house-design/
-Type **service** · score **100/100** · 921 words · 5 inbound links
+Type **service** · score **100/100** · 990 words · 5 inbound links
 
 ## Target keywords
 - **Primary:** 10 marla house design lahore
@@ -28,7 +28,7 @@ Type **service** · score **100/100** · 921 words · 5 inbound links
 - Outbound (12): /, /1-kanal-house-design/, /2-kanal-house-design/, /architecture/, /book-a-visit/, /contact/, /farmhouse-design/, /fit-out/, /insights/1-kanal-house-interior-cost-lahore/, /insights/5-marla-house-renovation-cost-lahore/, /insights/architect-fee-lahore-2026/, /interior-design/
 
 ## Schema
-- Present: Answer, BreadcrumbList, City, FAQPage, ListItem, LocalBusiness, OpeningHoursSpecification, PostalAddress, Question, Service
+- Present: Answer, BreadcrumbList, City, FAQPage, ListItem, LocalBusiness, OpeningHoursSpecification, PostalAddress, Question, Service, SpeakableSpecification, WebPage
 
 ## Issues
 

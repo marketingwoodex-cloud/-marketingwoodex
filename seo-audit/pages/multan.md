@@ -1,5 +1,5 @@
 # Page audit: /multan/
-Type **city** · score **93/100** · 638 words · 6 inbound links
+Type **city** · score **98/100** · 840 words · 6 inbound links
 
 ## Target keywords
 - **Primary:** interior design multan
@@ -15,26 +15,25 @@ Type **city** · score **93/100** · 638 words · 6 inbound links
 
 ## Section blocks (H2 outline)
 1. What we take on in Multan
-2. How a Multan project runs
-3. A note on working in Multan
-4. Questions, answered
-5. Also served from the Lahore studio
-6. Start your Multan project with one accountable team.
-7. One accountable team from brief to handover
-8. Read before you plan
+2. Interior design in Multan: what we plan for
+3. How a Multan project runs
+4. A note on working in Multan
+5. Questions, answered
+6. Also served from the Lahore studio
+7. Start your Multan project with one accountable team.
+8. One accountable team from brief to handover
+9. Read before you plan
 
 ## Internal links
 - Outbound (13): /, /3d-visualization/, /bahawalpur/, /contact/, /faisalabad/, /fit-out/, /hyderabad/, /insights/design-process-explained/, /insights/interior-design-cost-pakistan/, /insights/interior-designer-vs-contractor-lahore/, /interior-design/, /lahore/, /renovation/
 
 ## Schema
-- Present: Answer, BreadcrumbList, City, FAQPage, ListItem, LocalBusiness, OpeningHoursSpecification, PostalAddress, Question, Service
+- Present: Answer, BreadcrumbList, City, FAQPage, ListItem, LocalBusiness, OpeningHoursSpecification, PostalAddress, Question, Service, SpeakableSpecification, WebPage
 
 ## Issues
-- **[Medium]** 638 words in <main> (target 700+ for city)
 - **[Low]** 1 content image(s) with empty alt
 
 ## Fix list
-- [ ] Expand with unique, useful sections
 - [ ] Add alts if informative
 
 ## E-E-A-T notes

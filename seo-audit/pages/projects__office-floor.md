@@ -1,5 +1,5 @@
 # Page audit: /projects/office-floor/
-Type **case-study** · score **90/100** · 444 words · 4 inbound links
+Type **case-study** · score **90/100** · 451 words · 4 inbound links
 
 ## Target keywords
 - **Primary:** office layout

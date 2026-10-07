@@ -1,5 +1,5 @@
 # Page audit: /projects/clinic-fit-out/
-Type **case-study** · score **95/100** · 422 words · 4 inbound links
+Type **case-study** · score **95/100** · 429 words · 4 inbound links
 
 ## Target keywords
 - **Primary:** clinic fit out

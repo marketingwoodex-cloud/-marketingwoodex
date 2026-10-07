@@ -1,5 +1,5 @@
 # Page audit: /
-Type **home** · score **93/100** · 1562 words · 69 inbound links
+Type **home** · score **93/100** · 1559 words · 69 inbound links
 
 ## Target keywords
 - **Primary:** interior design lahore

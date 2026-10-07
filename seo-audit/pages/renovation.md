@@ -1,5 +1,5 @@
 # Page audit: /renovation/
-Type **pillar** · score **100/100** · 1511 words · 35 inbound links
+Type **pillar** · score **100/100** · 1580 words · 35 inbound links
 
 ## Target keywords
 - **Primary:** renovation company lahore
@@ -31,7 +31,7 @@ Type **pillar** · score **100/100** · 1511 words · 35 inbound links
 - Outbound (13): /, /book-a-visit/, /commercial-renovation/, /contact/, /healthcare-renovation/, /insights/home-renovation-checklist/, /insights/house-renovation-cost-lahore-2026/, /insights/house-renovation-timeline-lahore/, /office-renovation/, /residential-renovation/, /restaurant-cafe-renovation/, /retail-showroom-renovation/, /specialized-renovation-services/
 
 ## Schema
-- Present: Answer, BreadcrumbList, City, FAQPage, ListItem, LocalBusiness, OpeningHoursSpecification, PostalAddress, Question, Service
+- Present: Answer, BreadcrumbList, City, FAQPage, ListItem, LocalBusiness, OpeningHoursSpecification, PostalAddress, Question, Service, SpeakableSpecification, WebPage
 
 ## Issues
 

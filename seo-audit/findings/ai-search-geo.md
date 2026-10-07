@@ -1,6 +1,4 @@
-# AI search / GEO — score 95/100
-
-## [Medium] No /llms.txt (0)
+# AI search / GEO — score 97/100
 
 ## [Medium] Service pages without FAQ block/FAQPage schema (answer-engine extractability) (11)
 - /about/
@@ -31,14 +29,4 @@
 - /insights/interior-design-cost-pakistan/
 - /insights/interior-designer-cost-lahore-2026/
 - /insights/interior-designer-vs-contractor-lahore/
-
-## [Info] robots.txt has no explicit policy for GPTBot (allowed by default) (0)
-
-## [Info] robots.txt has no explicit policy for OAI-SearchBot (allowed by default) (0)
-
-## [Info] robots.txt has no explicit policy for PerplexityBot (allowed by default) (0)
-
-## [Info] robots.txt has no explicit policy for ClaudeBot (allowed by default) (0)
-
-## [Info] robots.txt has no explicit policy for Google-Extended (allowed by default) (0)
 

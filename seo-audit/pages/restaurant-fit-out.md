@@ -1,5 +1,5 @@
 # Page audit: /restaurant-fit-out/
-Type **service** · score **100/100** · 878 words · 7 inbound links
+Type **service** · score **100/100** · 947 words · 7 inbound links
 
 ## Target keywords
 - **Primary:** restaurant fit out lahore
@@ -28,7 +28,7 @@ Type **service** · score **100/100** · 878 words · 7 inbound links
 - Outbound (13): /, /book-a-visit/, /commercial-fit-out/, /contact/, /fit-out/, /healthcare-fit-out/, /insights/lighting-design-layers-explained/, /insights/restaurant-cafe-interior-cost-lahore/, /insights/restaurant-planning-guide/, /office-fit-out/, /pharmacy-fit-out/, /retail-fit-out/, /turnkey-design-build/
 
 ## Schema
-- Present: Answer, BreadcrumbList, City, FAQPage, ListItem, LocalBusiness, OpeningHoursSpecification, PostalAddress, Question, Service
+- Present: Answer, BreadcrumbList, City, FAQPage, ListItem, LocalBusiness, OpeningHoursSpecification, PostalAddress, Question, Service, SpeakableSpecification, WebPage
 
 ## Issues
 
@@ -38,6 +38,7 @@ Type **service** · score **100/100** · 878 words · 7 inbound links
 - No link to a real project/case study (Experience)
 
 ## Claims needing the owner's word
+- 🔴 **Price / PKR figure:** …here and food-grade finishes. PKR 14M–32M. Based in Lahore (M-71,…
 - 🔴 **Price / PKR figure:** …ient, task and decorative layers. 04 Durable surfaces Anti-sl…
 - 🔴 **Price / PKR figure:** …q. ft. restaurant ranges from PKR 14M to 32M, depending on fin…
 - 🔴 **'Free' offer:** …ets and cloud kitchens. Get a Free Consultation Kitchen workflow, dining atmosphere and compliant s…

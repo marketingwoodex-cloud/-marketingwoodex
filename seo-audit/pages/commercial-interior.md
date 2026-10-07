@@ -1,5 +1,5 @@
 # Page audit: /commercial-interior/
-Type **service** · score **100/100** · 971 words · 12 inbound links
+Type **service** · score **100/100** · 1039 words · 12 inbound links
 
 ## Target keywords
 - **Primary:** commercial interior design in lahore
@@ -27,7 +27,7 @@ Type **service** · score **100/100** · 971 words · 12 inbound links
 - Outbound (21): /, /beauty-salon-design/, /book-a-visit/, /cafe-interior-design/, /contact/, /coworking-space-design/, /fit-out/, /gym-design/, /healthcare-design/, /hotel-interior-design/, /insights/office-fit-out-cost-pakistan-2026/, /insights/office-interior-guide/, /insights/office-layout-mistakes-productivity/, /interior-design/, /office-interior-design/, /renovation/, /restaurant-interior-design/, /retail-design/, /shopping-mall-design/, /showroom-design/, /spa-design/
 
 ## Schema
-- Present: Answer, BreadcrumbList, FAQPage, ListItem, LocalBusiness, Offer, OfferCatalog, OpeningHoursSpecification, PostalAddress, Question, Service
+- Present: Answer, BreadcrumbList, FAQPage, ListItem, LocalBusiness, Offer, OfferCatalog, OpeningHoursSpecification, PostalAddress, Question, Service, SpeakableSpecification, WebPage
 
 ## Issues
 

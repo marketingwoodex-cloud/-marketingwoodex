@@ -1,5 +1,5 @@
 # Page audit: /beauty-salon-design/
-Type **service** · score **100/100** · 912 words · 3 inbound links
+Type **service** · score **100/100** · 980 words · 3 inbound links
 
 ## Target keywords
 - **Primary:** beauty salon design in lahore
@@ -28,7 +28,7 @@ Type **service** · score **100/100** · 912 words · 3 inbound links
 - Outbound (11): /, /book-a-visit/, /commercial-interior/, /contact/, /fit-out/, /hotel-interior-design/, /insights/lighting-design-layers-explained/, /insights/materials-that-survive-lahore-climate/, /insights/retail-shop-interior-guide/, /interior-design/, /renovation/
 
 ## Schema
-- Present: Answer, BreadcrumbList, FAQPage, ListItem, LocalBusiness, Offer, OfferCatalog, OpeningHoursSpecification, PostalAddress, Question, Service
+- Present: Answer, BreadcrumbList, FAQPage, ListItem, LocalBusiness, Offer, OfferCatalog, OpeningHoursSpecification, PostalAddress, Question, Service, SpeakableSpecification, WebPage
 
 ## Issues
 

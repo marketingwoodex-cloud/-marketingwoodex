@@ -1,5 +1,5 @@
 # Page audit: /coworking-space-design/
-Type **service** · score **100/100** · 946 words · 3 inbound links
+Type **service** · score **100/100** · 1013 words · 3 inbound links
 
 ## Target keywords
 - **Primary:** coworking space design in lahore
@@ -28,7 +28,7 @@ Type **service** · score **100/100** · 946 words · 3 inbound links
 - Outbound (11): /, /book-a-visit/, /commercial-interior/, /contact/, /fit-out/, /insights/office-fit-out-cost-pakistan-2026/, /insights/office-interior-guide/, /insights/office-layout-mistakes-productivity/, /interior-design/, /office-interior-design/, /renovation/
 
 ## Schema
-- Present: Answer, BreadcrumbList, FAQPage, ListItem, LocalBusiness, Offer, OfferCatalog, OpeningHoursSpecification, PostalAddress, Question, Service
+- Present: Answer, BreadcrumbList, FAQPage, ListItem, LocalBusiness, Offer, OfferCatalog, OpeningHoursSpecification, PostalAddress, Question, Service, SpeakableSpecification, WebPage
 
 ## Issues
 

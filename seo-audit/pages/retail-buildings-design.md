@@ -1,5 +1,5 @@
 # Page audit: /retail-buildings-design/
-Type **service** · score **95/100** · 891 words · 4 inbound links
+Type **service** · score **100/100** · 957 words · 4 inbound links
 
 ## Target keywords
 - **Primary:** retail building design lahore
@@ -28,13 +28,11 @@ Type **service** · score **95/100** · 891 words · 4 inbound links
 - Outbound (12): /, /architecture/, /book-a-visit/, /contact/, /educational-buildings-design/, /fit-out/, /healthcare-facilities-design/, /insights/lighting-design-layers-explained/, /insights/materials-that-survive-lahore-climate/, /insights/retail-shop-interior-guide/, /interior-design/, /restaurant-cafe-building-design/
 
 ## Schema
-- Present: Answer, BreadcrumbList, City, FAQPage, ListItem, LocalBusiness, OpeningHoursSpecification, PostalAddress, Question, Service
+- Present: Answer, BreadcrumbList, City, FAQPage, ListItem, LocalBusiness, OpeningHoursSpecification, PostalAddress, Question, Service, SpeakableSpecification, WebPage
 
 ## Issues
-- **[Medium]** Keyword not in first 150 words
 
 ## Fix list
-- [ ] Use keyword in intro paragraph
 
 ## E-E-A-T notes
 - No link to a real project/case study (Experience)

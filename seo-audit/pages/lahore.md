@@ -1,5 +1,5 @@
 # Page audit: /lahore/
-Type **city** · score **93/100** · 663 words · 12 inbound links
+Type **city** · score **98/100** · 734 words · 12 inbound links
 
 ## Target keywords
 - **Primary:** interior design lahore
@@ -27,14 +27,12 @@ Type **city** · score **93/100** · 663 words · 12 inbound links
 - Outbound (14): /, /3d-visualization/, /contact/, /faisalabad/, /fit-out/, /gujranwala/, /insights/design-process-explained/, /insights/dha-vs-bahria-town-interior-cost-lahore/, /insights/house-renovation-cost-lahore-2026/, /insights/interior-designer-cost-lahore-2026/, /interior-design/, /islamabad/, /multan/, /renovation/
 
 ## Schema
-- Present: Answer, BreadcrumbList, City, FAQPage, ListItem, LocalBusiness, OpeningHoursSpecification, PostalAddress, Question, Service
+- Present: Answer, BreadcrumbList, City, FAQPage, ListItem, LocalBusiness, OpeningHoursSpecification, PostalAddress, Question, Service, SpeakableSpecification, WebPage
 
 ## Issues
-- **[Medium]** 663 words in <main> (target 700+ for city)
 - **[Low]** 1 content image(s) with empty alt
 
 ## Fix list
-- [ ] Expand with unique, useful sections
 - [ ] Add alts if informative
 
 ## E-E-A-T notes

@@ -1,5 +1,5 @@
 # Page audit: /spa-design/
-Type **service** · score **100/100** · 896 words · 4 inbound links
+Type **service** · score **100/100** · 965 words · 4 inbound links
 
 ## Target keywords
 - **Primary:** spa design in lahore
@@ -28,7 +28,7 @@ Type **service** · score **100/100** · 896 words · 4 inbound links
 - Outbound (12): /, /beauty-salon-design/, /book-a-visit/, /commercial-interior/, /contact/, /fit-out/, /hotel-interior-design/, /insights/lighting-design-layers-explained/, /insights/materials-that-survive-lahore-climate/, /insights/retail-shop-interior-guide/, /interior-design/, /renovation/
 
 ## Schema
-- Present: Answer, BreadcrumbList, FAQPage, ListItem, LocalBusiness, Offer, OfferCatalog, OpeningHoursSpecification, PostalAddress, Question, Service
+- Present: Answer, BreadcrumbList, FAQPage, ListItem, LocalBusiness, Offer, OfferCatalog, OpeningHoursSpecification, PostalAddress, Question, Service, SpeakableSpecification, WebPage
 
 ## Issues
 
@@ -41,6 +41,7 @@ Type **service** · score **100/100** · 896 words · 4 inbound links
 ## Claims needing the owner's word
 - 🔴 **Price / PKR figure:** …ss experience recognisably yours. 01 / 08 Our Design Process…
 - 🔴 **'Free' offer:** …enuine sense of escape. Get a Free Consultation WhatsApp Woodex 200+ spaces delivered 10 years expe…
+- 🔴 **'Free' offer:** …and 3D visualization. Book a free Woodex consultation. Based in Lahore (M-71,…
 - 🔴 **'Free' offer:** …xperience you want to create. Free first consultation Photoreal 3D before you commit Design, build…
 - 🔴 **Timeline / response promise:** …by phone or WhatsApp, usually within one working day. Name Phone / WhatsApp P…
 - 🔴 **Warranty / guarantee:** …experience 1 year workmanship warranty 4 cities served Quiet ma…

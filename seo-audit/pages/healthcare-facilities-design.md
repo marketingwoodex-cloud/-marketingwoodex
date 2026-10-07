@@ -1,5 +1,5 @@
 # Page audit: /healthcare-facilities-design/
-Type **service** · score **95/100** · 876 words · 4 inbound links
+Type **service** · score **100/100** · 941 words · 4 inbound links
 
 ## Target keywords
 - **Primary:** healthcare facility design lahore
@@ -28,13 +28,11 @@ Type **service** · score **95/100** · 876 words · 4 inbound links
 - Outbound (12): /, /5-marla-house-design/, /architecture/, /book-a-visit/, /contact/, /educational-buildings-design/, /fit-out/, /insights/design-process-explained/, /insights/materials-that-survive-lahore-climate/, /insights/office-layout-mistakes-productivity/, /interior-design/, /master-planning/
 
 ## Schema
-- Present: Answer, BreadcrumbList, City, FAQPage, ListItem, LocalBusiness, OpeningHoursSpecification, PostalAddress, Question, Service
+- Present: Answer, BreadcrumbList, City, FAQPage, ListItem, LocalBusiness, OpeningHoursSpecification, PostalAddress, Question, Service, SpeakableSpecification, WebPage
 
 ## Issues
-- **[Medium]** Keyword not in first 150 words
 
 ## Fix list
-- [ ] Use keyword in intro paragraph
 
 ## E-E-A-T notes
 - No link to a real project/case study (Experience)

@@ -1,5 +1,5 @@
 # Page audit: /healthcare-fit-out/
-Type **service** · score **100/100** · 858 words · 7 inbound links
+Type **service** · score **100/100** · 928 words · 7 inbound links
 
 ## Target keywords
 - **Primary:** healthcare fit out lahore
@@ -28,7 +28,7 @@ Type **service** · score **100/100** · 858 words · 7 inbound links
 - Outbound (13): /, /book-a-visit/, /commercial-fit-out/, /contact/, /fit-out/, /insights/design-process-explained/, /insights/materials-that-survive-lahore-climate/, /insights/office-layout-mistakes-productivity/, /office-fit-out/, /pharmacy-fit-out/, /restaurant-fit-out/, /retail-fit-out/, /turnkey-design-build/
 
 ## Schema
-- Present: Answer, BreadcrumbList, City, FAQPage, ListItem, LocalBusiness, OpeningHoursSpecification, PostalAddress, Question, Service
+- Present: Answer, BreadcrumbList, City, FAQPage, ListItem, LocalBusiness, OpeningHoursSpecification, PostalAddress, Question, Service, SpeakableSpecification, WebPage
 
 ## Issues
 
@@ -38,6 +38,7 @@ Type **service** · score **100/100** · 858 words · 7 inbound links
 - No link to a real project/case study (Experience)
 
 ## Claims needing the owner's word
+- 🔴 **Price / PKR figure:** …lighting, HVAC and plumbing. PKR 9M–18M. Based in Lahore (M-71,…
 - 🔴 **Price / PKR figure:** …ft. clinic or lab ranges from PKR 9M to 18M, depending on roo…
 - 🔴 **'Free' offer:** …mer patient experience. Get a Free Consultation Clinics, diagnostic labs, OPDs and healthcare facil…
 - 🔴 **'Free' offer:** …linical lighting 5000K shadow-free task lighting. 06 Lab HVAC Negative-pr…

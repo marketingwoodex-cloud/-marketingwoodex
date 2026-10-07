@@ -1,5 +1,5 @@
 # Page audit: /about/
-Type **utility** · score **93/100** · 573 words · 1 inbound links
+Type **utility** · score **93/100** · 580 words · 1 inbound links
 
 ## Target keywords
 - **Primary:** woodex interior

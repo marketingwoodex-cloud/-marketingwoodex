@@ -1,5 +1,5 @@
 # Page audit: /residential-bedroom-design/
-Type **service** · score **100/100** · 892 words · 7 inbound links
+Type **service** · score **100/100** · 962 words · 7 inbound links
 
 ## Target keywords
 - **Primary:** bedroom design in lahore
@@ -28,7 +28,7 @@ Type **service** · score **100/100** · 892 words · 7 inbound links
 - Outbound (11): /, /3d-visualization/, /book-a-visit/, /complete-home-redesign/, /contact/, /insights/lighting-design-layers-explained/, /insights/small-space-ideas/, /insights/wardrobe-design-cost-pakistan-2026/, /interior-design/, /kitchen-design/, /residential-kids-room-design/
 
 ## Schema
-- Present: Answer, BreadcrumbList, FAQPage, ListItem, LocalBusiness, Offer, OpeningHoursSpecification, PostalAddress, Question, Service
+- Present: Answer, BreadcrumbList, FAQPage, ListItem, LocalBusiness, Offer, OpeningHoursSpecification, PostalAddress, Question, Service, SpeakableSpecification, WebPage
 
 ## Issues
 
@@ -40,7 +40,8 @@ Type **service** · score **100/100** · 892 words · 7 inbound links
 
 ## Claims needing the owner's word
 - 🔴 **Price / PKR figure:** …nsultation starts from around PKR 12,000, while full packages rang…
-- 🔴 **'Free' offer:** …way you rest and live. Get a Free Consultation Bedroom design concept Your private retreat What Is…
+- 🔴 **'Free' offer:** …way you rest and live. Get a Free Consultation Bedroom design concept In short Bedroom design in L…
+- 🔴 **'Free' offer:** …lighting and finishes. Book a free Woodex consultation. Based in Lahore (M-71,…
 - 🔴 **'Free' offer:** …+ The initial consultation is free. Design consultation sta…
 - 🔴 **'Free' offer:** …ow you want the room to feel. Free first consultation Photoreal 3D before you commit Design, build…
 - 🔴 **Timeline / response promise:** …inal design package Typically 1-2 weeks What's included What you…

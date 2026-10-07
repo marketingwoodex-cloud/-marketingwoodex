@@ -1,5 +1,5 @@
 # Page audit: /projects/retail-corner/
-Type **case-study** · score **95/100** · 439 words · 5 inbound links
+Type **case-study** · score **95/100** · 446 words · 5 inbound links
 
 ## Target keywords
 - **Primary:** shop interior

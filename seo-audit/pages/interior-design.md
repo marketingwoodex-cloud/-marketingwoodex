@@ -1,5 +1,5 @@
 # Page audit: /interior-design/
-Type **pillar** · score **95/100** · 1326 words · 64 inbound links
+Type **pillar** · score **95/100** · 1396 words · 64 inbound links
 
 ## Target keywords
 - **Primary:** interior design lahore
@@ -31,7 +31,7 @@ Type **pillar** · score **95/100** · 1326 words · 64 inbound links
 - Outbound (32): /, /3d-visualization/, /architecture/, /beauty-salon-design/, /book-a-visit/, /cafe-interior-design/, /commercial-interior/, /complete-home-redesign/, /contact/, /coworking-space-design/, /fit-out/, /gym-design/, /healthcare-design/, /hotel-interior-design/, /insights/interior-designer-cost-lahore-2026/, /insights/interior-designer-vs-contractor-lahore/, /insights/lighting-design-layers-explained/, /interior-home-refurbishment/, /kitchen-design/, /office-interior-design/, /renovation/, /residential-basement-design/, /residential-bedroom-design/, /residential-dining-room-design/, /residential-home-office-design/, /residential-kids-room-design/, /residential-living-room-design/, /restaurant-interior-design/, /retail-design/, /shopping-mall-design/
 
 ## Schema
-- Present: Answer, BreadcrumbList, City, FAQPage, ListItem, LocalBusiness, OpeningHoursSpecification, PostalAddress, Question, Service
+- Present: Answer, BreadcrumbList, City, FAQPage, ListItem, LocalBusiness, OpeningHoursSpecification, PostalAddress, Question, Service, SpeakableSpecification, WebPage
 
 ## Issues
 - **[Medium]** H1 “Every room, designed around you.” does not express the keyword

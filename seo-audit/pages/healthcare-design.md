@@ -1,5 +1,5 @@
 # Page audit: /healthcare-design/
-Type **service** · score **95/100** · 910 words · 2 inbound links
+Type **service** · score **95/100** · 980 words · 2 inbound links
 
 ## Target keywords
 - **Primary:** healthcare design in lahore
@@ -28,7 +28,7 @@ Type **service** · score **95/100** · 910 words · 2 inbound links
 - Outbound (12): /, /book-a-visit/, /commercial-interior/, /contact/, /fit-out/, /gym-design/, /insights/design-process-explained/, /insights/materials-that-survive-lahore-climate/, /insights/office-layout-mistakes-productivity/, /interior-design/, /renovation/, /spa-design/
 
 ## Schema
-- Present: AdministrativeArea, Answer, BreadcrumbList, City, Country, FAQPage, ListItem, LocalBusiness, Offer, OfferCatalog, OpeningHoursSpecification, PostalAddress, Question, Service
+- Present: AdministrativeArea, Answer, BreadcrumbList, City, Country, FAQPage, ListItem, LocalBusiness, Offer, OfferCatalog, OpeningHoursSpecification, PostalAddress, Question, Service, SpeakableSpecification, WebPage
 
 ## Issues
 - **[Medium]** Only 2 inbound contextual links

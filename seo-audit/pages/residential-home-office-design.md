@@ -1,5 +1,5 @@
 # Page audit: /residential-home-office-design/
-Type **service** · score **100/100** · 910 words · 4 inbound links
+Type **service** · score **100/100** · 977 words · 4 inbound links
 
 ## Target keywords
 - **Primary:** home office design in lahore
@@ -28,7 +28,7 @@ Type **service** · score **100/100** · 910 words · 4 inbound links
 - Outbound (10): /, /3d-visualization/, /book-a-visit/, /complete-home-redesign/, /contact/, /insights/apartment-small-space-planning-lahore/, /insights/lighting-design-layers-explained/, /insights/materials-that-survive-lahore-climate/, /interior-design/, /residential-bedroom-design/
 
 ## Schema
-- Present: Answer, BreadcrumbList, FAQPage, ListItem, LocalBusiness, OpeningHoursSpecification, PostalAddress, Question, Service
+- Present: Answer, BreadcrumbList, FAQPage, ListItem, LocalBusiness, OpeningHoursSpecification, PostalAddress, Question, Service, SpeakableSpecification, WebPage
 
 ## Issues
 
@@ -39,7 +39,8 @@ Type **service** · score **100/100** · 910 words · 4 inbound links
 
 ## Claims needing the owner's word
 - 🔴 **Price / PKR figure:** …nsultation starts from around PKR 10,000, while full packages rang…
-- 🔴 **'Free' offer:** …character of your home. Get a Free Consultation Residential workspace concept A calm place to think…
+- 🔴 **'Free' offer:** …character of your home. Get a Free Consultation Residential workspace concept In short Home office…
+- 🔴 **'Free' offer:** …ge, connectivity and privacy. Free Woodex consultation. Based in Lahore (M-71,…
 - 🔴 **'Free' offer:** …+ The initial consultation is free. Design consultation sta…
 - 🔴 **'Free' offer:** …at would make the day easier. Free first consultation Photoreal 3D before you commit Design, build…
 - 🔴 **Timeline / response promise:** …inal design package Typically 1–2 weeks from consultation to fin…

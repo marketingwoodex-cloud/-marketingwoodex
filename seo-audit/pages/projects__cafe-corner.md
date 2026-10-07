@@ -1,5 +1,5 @@
 # Page audit: /projects/cafe-corner/
-Type **case-study** · score **90/100** · 451 words · 3 inbound links
+Type **case-study** · score **90/100** · 458 words · 3 inbound links
 
 ## Target keywords
 - **Primary:** cafe interior design

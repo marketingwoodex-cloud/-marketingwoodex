@@ -4,7 +4,7 @@
 - /book-a-visit/ (218 words)
 - /contact/ (248 words)
 - /estimator/ (277 words)
-- /projects/ (291 words)
+- /projects/ (298 words)
 
 ## [High] Articles credited to Organization, not a named designer (Person) (28)
 - /insights/1-kanal-house-interior-cost-lahore/

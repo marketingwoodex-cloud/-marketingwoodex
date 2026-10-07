@@ -1,5 +1,5 @@
 # Page audit: /front-elevation-design/
-Type **service** · score **100/100** · 914 words · 5 inbound links
+Type **service** · score **100/100** · 983 words · 5 inbound links
 
 ## Target keywords
 - **Primary:** front elevation design lahore
@@ -28,7 +28,7 @@ Type **service** · score **100/100** · 914 words · 5 inbound links
 - Outbound (12): /, /architecture/, /book-a-visit/, /contact/, /fit-out/, /insights/1-kanal-house-interior-cost-lahore/, /insights/5-marla-house-renovation-cost-lahore/, /insights/architect-fee-lahore-2026/, /interior-design/, /office-buildings-design/, /restaurant-cafe-building-design/, /retail-buildings-design/
 
 ## Schema
-- Present: Answer, BreadcrumbList, City, FAQPage, ListItem, LocalBusiness, OpeningHoursSpecification, PostalAddress, Question, Service
+- Present: Answer, BreadcrumbList, City, FAQPage, ListItem, LocalBusiness, OpeningHoursSpecification, PostalAddress, Question, Service, SpeakableSpecification, WebPage
 
 ## Issues
 

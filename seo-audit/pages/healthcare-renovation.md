@@ -1,5 +1,5 @@
 # Page audit: /healthcare-renovation/
-Type **service** · score **100/100** · 883 words · 8 inbound links
+Type **service** · score **100/100** · 949 words · 8 inbound links
 
 ## Target keywords
 - **Primary:** healthcare renovation lahore
@@ -28,7 +28,7 @@ Type **service** · score **100/100** · 883 words · 8 inbound links
 - Outbound (15): /, /book-a-visit/, /commercial-renovation/, /contact/, /fit-out/, /insights/design-process-explained/, /insights/materials-that-survive-lahore-climate/, /insights/office-layout-mistakes-productivity/, /interior-design/, /office-renovation/, /renovation/, /residential-renovation/, /restaurant-cafe-renovation/, /retail-showroom-renovation/, /specialized-renovation-services/
 
 ## Schema
-- Present: Answer, BreadcrumbList, City, FAQPage, ListItem, LocalBusiness, OpeningHoursSpecification, PostalAddress, Question, Service
+- Present: Answer, BreadcrumbList, City, FAQPage, ListItem, LocalBusiness, OpeningHoursSpecification, PostalAddress, Question, Service, SpeakableSpecification, WebPage
 
 ## Issues
 

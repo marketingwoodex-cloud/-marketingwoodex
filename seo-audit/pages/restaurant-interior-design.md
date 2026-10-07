@@ -1,5 +1,5 @@
 # Page audit: /restaurant-interior-design/
-Type **service** · score **100/100** · 918 words · 5 inbound links
+Type **service** · score **100/100** · 986 words · 5 inbound links
 
 ## Target keywords
 - **Primary:** restaurant interior design lahore
@@ -28,7 +28,7 @@ Type **service** · score **100/100** · 918 words · 5 inbound links
 - Outbound (11): /, /book-a-visit/, /commercial-interior/, /contact/, /fit-out/, /insights/lighting-design-layers-explained/, /insights/restaurant-cafe-interior-cost-lahore/, /insights/restaurant-planning-guide/, /interior-design/, /renovation/, /retail-design/
 
 ## Schema
-- Present: Answer, BreadcrumbList, FAQPage, ListItem, LocalBusiness, Offer, OfferCatalog, OpeningHoursSpecification, PostalAddress, Question, Service
+- Present: Answer, BreadcrumbList, FAQPage, ListItem, LocalBusiness, Offer, OfferCatalog, OpeningHoursSpecification, PostalAddress, Question, Service, SpeakableSpecification, WebPage
 
 ## Issues
 

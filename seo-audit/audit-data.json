@@ -1,50 +1,14 @@
 {
  "summary": {
-  "health_score": 96,
+  "health_score": 97,
   "pages": 107,
   "business_type": "Local service (interior design & build, Lahore HQ)"
  },
  "categories": [
   {
    "name": "AI search / GEO",
-   "score": 95,
+   "score": 97,
    "findings": [
-    {
-     "severity": "Medium",
-     "issue": "No /llms.txt",
-     "count": 0,
-     "pages": []
-    },
-    {
-     "severity": "Info",
-     "issue": "robots.txt has no explicit policy for GPTBot (allowed by default)",
-     "count": 0,
-     "pages": []
-    },
-    {
-     "severity": "Info",
-     "issue": "robots.txt has no explicit policy for OAI-SearchBot (allowed by default)",
-     "count": 0,
-     "pages": []
-    },
-    {
-     "severity": "Info",
-     "issue": "robots.txt has no explicit policy for PerplexityBot (allowed by default)",
-     "count": 0,
-     "pages": []
-    },
-    {
-     "severity": "Info",
-     "issue": "robots.txt has no explicit policy for ClaudeBot (allowed by default)",
-     "count": 0,
-     "pages": []
-    },
-    {
-     "severity": "Info",
-     "issue": "robots.txt has no explicit policy for Google-Extended (allowed by default)",
-     "count": 0,
-     "pages": []
-    },
     {
      "severity": "Medium",
      "issue": "Service pages without FAQ block/FAQPage schema (answer-engine extractability)",
@@ -99,7 +63,7 @@
       "/book-a-visit/ (218 words)",
       "/contact/ (248 words)",
       "/estimator/ (277 words)",
-      "/projects/ (291 words)"
+      "/projects/ (298 words)"
      ]
     },
     {
@@ -189,7 +153,7 @@
    "findings": [
     {
      "severity": "Info",
-     "issue": "Schema types found: Question\u00d7521, Answer\u00d7521, ListItem\u00d7340, Service\u00d7158, LocalBusiness\u00d7149, BreadcrumbList\u00d7107, FAQPage\u00d795, PostalAddress\u00d787, OpeningHoursSpecification\u00d787, Offer\u00d776, City\u00d765, Organization\u00d763, BlogPosting\u00d728, ImageObject\u00d720, OfferCatalog\u00d715, CreativeWork\u00d76, WebSite\u00d72, AdministrativeArea\u00d72, Country\u00d72, CollectionPage\u00d72, ItemList\u00d72, Person\u00d71, AboutPage\u00d71, ContactPage\u00d71, WebPage\u00d71",
+     "issue": "Schema types found: Question\u00d7521, Answer\u00d7521, ListItem\u00d7340, Service\u00d7158, LocalBusiness\u00d7149, BreadcrumbList\u00d7107, FAQPage\u00d795, PostalAddress\u00d787, OpeningHoursSpecification\u00d787, Offer\u00d776, WebPage\u00d766, City\u00d765, SpeakableSpecification\u00d765, Organization\u00d763, BlogPosting\u00d728, ImageObject\u00d720, OfferCatalog\u00d715, CreativeWork\u00d76, WebSite\u00d72, AdministrativeArea\u00d72, Country\u00d72, CollectionPage\u00d72, ItemList\u00d72, Person\u00d71, AboutPage\u00d71, ContactPage\u00d71",
      "count": 0,
      "pages": []
     }

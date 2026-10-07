@@ -1,5 +1,5 @@
 # Page audit: /projects/
-Type **projects-hub** · score **95/100** · 291 words · 4 inbound links
+Type **projects-hub** · score **95/100** · 298 words · 4 inbound links
 
 ## Target keywords
 - **Primary:** interior design projects lahore
