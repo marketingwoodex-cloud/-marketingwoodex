@@ -18,7 +18,7 @@
   function scr() { return (location.hash.replace(/^#\/?/, "").split(/[\/?]/)[0]) || "dashboard"; }
   function fresh(action, p) { var h = scr(); if (isWrite(action)) return p; return p.then(function (j) { return scr() !== h ? new Promise(function () {}) : j; }); }
   /* P39: a Manager's change comes back {ok, pending}: tell them it is waiting for the Master (after the screen's own "Saved" toast). */
-  function pendingNote(j) { if (j && j.pending) { setTimeout(function () { toast("⏳ " + (j.message || "Sent to the Master for approval")); }, 80); setTimeout(navBadges, 300); } return j; }
+  function pendingNote(j) { if (j && j.pending) { setTimeout(function () { toast((j.message || "Sent to the Master for approval")); }, 80); setTimeout(navBadges, 300); } return j; }
   function api(action, data) { return fresh(action, api0(action, data)); }
   function api0(action, data) {
     return fetch(API, { method: "POST", headers: { "Content-Type": "application/json", "X-WX-ADM": S.token }, body: JSON.stringify(Object.assign({ action: action }, data || {})) })

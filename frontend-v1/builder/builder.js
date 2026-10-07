@@ -20,7 +20,7 @@
     return fetch(API, o).then(function (r) {
       return r.json().catch(function () { return { ok: false, error: "Server error (" + r.status + ")" }; }).then(function (j) {
         j.status = r.status;
-        if (j.pending) setTimeout(function () { toast("⏳ " + (j.message || "Sent to the Master for approval")); }, 80);
+        if (j.pending) setTimeout(function () { toast((j.message || "Sent to the Master for approval")); }, 80);
         if (r.status === 401 && action !== "login" && action !== "status") {
           sessionStorage.removeItem("wxTok"); S.csrf = null;
           if (S.adminOnly) adminRenew().then(function (ok) { if (ok) toast("Session renewed — please try that again."); else showLogin(false); }); else showLogin(false);
