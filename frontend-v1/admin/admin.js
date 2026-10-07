@@ -95,8 +95,9 @@
     ["Conversations"],
     ["chat", "Inbox", "message-circle", "g:conversations"],
     { g: "WhatsApp", icon: "send", id: "wa", items: [
-      ["offers", "Broadcasts & offers", "send", "g:broadcast"],
-      ["wauto", "Automations", "zap", "g:broadcast"],
+      ["wahub", "Overview & rules", "send", "g:broadcast"],
+      ["wauto", "Broadcasts & automations", "zap", "g:broadcast"],
+      ["offers", "Discount offers", "send", "g:broadcast"],
       ["settings/connections", "Connect WhatsApp", "zap", "g:settings"]] },
     ["telegram", "Telegram", "send", "owner,admin,editor"],
     ["updates", "Client updates", "send", "g:updates"],

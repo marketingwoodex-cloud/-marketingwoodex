@@ -412,7 +412,7 @@
     };
     var detail = function (id) {
       var p = data.projects.find(function (x) { return x.id === id; }), edit = can("owner,admin,sales");
-      modal('<div class="ld-head"><div><h2 style="margin:0">' + esc(p.name) + '</h2><small class="muted">' + esc(p.client_name || "") + (p.no ? " · " + esc(p.no) : "") + (p.site ? " · " + esc(p.site) : "") + "</small></div>" + (p.invoice_id ? '<a class="btn sm" href="#/invoice/' + p.invoice_id + '" id="pd-inv">Invoice ' + esc(p.no) + "</a>" : "") + "</div>" +
+      modal('<div class="ld-head"><div><h2 style="margin:0">' + esc(p.name) + '</h2><small class="muted">' + esc(p.client_name || "") + (p.no ? " · " + esc(p.no) : "") + (p.site ? " · " + esc(p.site) : "") + "</small></div>" + (p.invoice_id ? '<a class="btn sm" href="#/invoice/' + p.invoice_id + '" id="pd-inv">Invoice ' + esc(p.no) + "</a>" : "") + (can("g:updates") ? '<button class="btn sm" id="pd-send" title="WhatsApp + email to the client">' + ic("send") + "Send update</button>" : "") + "</div>" +
         '<div class="pj-stepper">' + PORDER.map(function (s, i) { return '<button class="' + (s === p.stage ? "cur" : PORDER.indexOf(p.stage) > i ? "done" : "") + '" data-st="' + s + '"' + (edit ? "" : " disabled") + "><span>" + (i + 1) + "</span>" + PST[s] + "</button>"; }).join("") + "</div>" +
         '<div class="ld-grid"><div><h3 class="ld-h" style="margin-top:4px">Site photos <small class="muted">(' + p.photos.length + ')</small></h3><div class="pj-photos">' + p.photos.slice().reverse().map(function (ph) { return '<figure><a href="' + esc(ph.url) + '" target="_blank"><img src="' + esc(ph.url) + '" alt="" loading="lazy"></a><figcaption>' + esc(PST[ph.stage] || "") + " · " + dshort(ph.t) + (ph.caption ? "<br>" + esc(ph.caption) : "") + "</figcaption>" + (edit ? '<button class="btn sm danger" data-rp="' + esc(ph.url) + '">✕</button>' : "") + "</figure>"; }).join("") +
         '<label class="pj-up">' + ic("upload") + '<span>Add photos</span><input type="file" id="pd-up" accept="image/*" multiple hidden></label></div>' +
@@ -426,6 +426,22 @@
       var refresh = function (x) { if (!x.ok) { toast(x.error, true); return; } var k = data.projects.findIndex(function (y) { return y.id === id; }); x.project.paid = data.projects[k].paid; data.projects[k] = Object.assign(data.projects[k], x.project); draw(); detail(id); };
       $("#pd-x").onclick = close; if ($("#pd-inv")) $("#pd-inv").onclick = close;
       $$("[data-st]").forEach(function (b) { b.onclick = function () { api("proj_save", { id: id, stage: b.dataset.st }).then(refresh); }; });
+      // P39 Phase 6: send a progress update now (chosen site photos + optional message)
+      if ($("#pd-send")) $("#pd-send").onclick = function () {
+        if ($("#pd-sp")) { $("#pd-sp").remove(); return; }
+        var box = document.createElement("div"); box.id = "pd-sp"; box.className = "card"; box.style.cssText = "margin:12px 0;padding:14px";
+        box.innerHTML = "<b>Send a progress update to the client</b><p class='muted' style='margin:4px 0 8px;font-size:12.5px'>Goes by WhatsApp and email. Leave the message empty to use the standard “" + esc(PST[p.stage]) + " stage” text (Client updates settings).</p>" +
+          '<textarea id="pd-sm" rows="3" maxlength="1000" placeholder="Optional message, e.g. Kitchen cabinets are installed; countertops arrive on Monday."></textarea>' +
+          (p.photos.length ? '<div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0">' + p.photos.slice().reverse().slice(0, 12).map(function (ph) { return '<label style="position:relative;cursor:pointer"><input type="checkbox" data-sp="' + esc(ph.url) + '"' + (ph.stage === p.stage ? " checked" : "") + ' style="position:absolute;top:5px;left:5px"><img src="' + esc(ph.url) + '" alt="" style="width:76px;height:58px;object-fit:cover;border-radius:6px;display:block"></label>'; }).join("") + '</div><small class="muted">Up to 3 photos are sent as links.</small>' : "<p class='muted' style='font-size:12.5px'>No site photos yet; add some below to include them.</p>") +
+          '<div style="text-align:right;margin-top:8px"><button class="btn pri" id="pd-sgo">Send update</button></div>';
+        $(".pj-stepper").after(box);
+        $("#pd-sgo").onclick = function () {
+          var b = this, ph = $$("[data-sp]").filter(function (x) { return x.checked; }).map(function (x) { return x.dataset.sp; }).slice(0, 3);
+          b.disabled = true; b.textContent = "Sending…";
+          api("notify_proj_send", { id: id, note: $("#pd-sm").value, photos: ph }).then(function (x) { b.disabled = false; b.textContent = "Send update"; if (!x.ok) return toast(x.error, true);
+            toast(x.pending ? "Sent for Master approval" : "Update sent: " + Object.keys(x.result).map(function (k) { return k + " " + x.result[k]; }).join(" · ")); box.remove(); });
+        };
+      };
       $("#pd-add").onclick = function () { var t = ($("#pd-note").dataset.full || $("#pd-note").value).trim(); $("#pd-note").dataset.full = ""; if (t) api("proj_update", { id: id, text: t }).then(refresh); };
       $("#pd-note").onkeydown = function (e) { if (e.key === "Enter") $("#pd-add").click(); };
       $$("[data-rp]").forEach(function (b) { b.onclick = function () { if (confirm("Delete this photo?")) api("proj_photo_delete", { id: id, url: b.dataset.rp }).then(refresh); }; });

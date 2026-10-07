@@ -236,7 +236,7 @@ function p18g_actions(string $action, array $in): bool {
             preg_match_all('~\{\{(\d+)\}\}~', $body, $m); $n = $m[1] ? max(array_map('intval', $m[1])) : 0;
             $params = array_slice(array_map(fn($p) => clip($p, 200), (array)($in['params'] ?? [])), 0, $n); while (count($params) < $n) $params[] = '{name}';
             $t = ['id' => (string)($in['id'] ?? '') ?: wag_id(), 'name' => $name, 'lang' => clip($in['lang'] ?? 'en', 10) ?: 'en', 'label' => clip($in['label'] ?? '', 60) ?: $name, 'body' => $body, 'params' => $params, 'cat' => in_array($in['cat'] ?? '', ['marketing', 'utility'], true) ? $in['cat'] : 'marketing'];
-            $hit = false; foreach ($d['tpls'] as &$x) if ($x['id'] === $t['id']) { $x = $t; $hit = true; } unset($x); if (!$hit) $d['tpls'][] = $t;
+            $hit = false; foreach ($d['tpls'] as &$x) if ($x['id'] === $t['id']) { if ($x['name'] === $t['name'] && $x['lang'] === $t['lang'] && isset($x['status'])) { $t['status'] = $x['status']; $t['checked'] = $x['checked'] ?? ''; } $x = $t; $hit = true; } unset($x); if (!$hit) $d['tpls'][] = $t;
             wag_save($d); log_act($u, 'wa.template', $name); out(['ok' => true, 'tpl' => $t]);
         case 'wag_tpl_delete':
             $u = need($OA); $d = wag_load(); $id = (string)($in['id'] ?? '');
