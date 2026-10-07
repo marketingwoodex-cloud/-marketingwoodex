@@ -43,7 +43,7 @@ function wx_action_group(string $a): ?string {
         // Master only
         'master' => '~^(user_save|sec_2fa_reset|backup_(run|delete|restore)|restore|dbx_row|db_reconnect|google_save|mcp_token_(new|regen|revoke|toggle))$~',
         // support may read a client / project to answer a chat
-        'support_view' => '~^(client_360|get_lead|projs_list|proj_milestones)$~',
+        'support_view' => '~^(client_360|get_lead|projs_list)$~',
         'updates' => '~^(proj_update)$~',
         'conversations' => '~^(chat_(list|get|reply|close|file|mode|lead|typing)|wa_stats|whatsapp_stats|crm_wa_status)$~',
         'ai' => '~^(chat_cfg_get|chat_cfg_save|chat_test|ai_test)$~',

@@ -23,6 +23,7 @@ const BCONFIG     = PRIVATE_DIR . '/config.json';   // shared with builder.php
 const ACT_FILE    = PRIVATE_DIR . '/activity.jsonl'; // builder.php appends here
 const ROLES       = ['owner', 'admin', 'editor', 'sales', 'support'];
 require_once __DIR__ . '/roles-lib.php';
+require_once __DIR__ . '/approvals-lib.php';
 
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
@@ -249,6 +250,30 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST' && $action !== 'status' && $action !==
 if ($action === 'cron') { $n = 0; $bk = []; try { $n = cms_tick(); } catch (Throwable $e) { error_log('cron: ' . $e->getMessage()); } try { $bk = a7_backup_auto(); } catch (Throwable $e) { error_log('backup: ' . $e->getMessage()); } $rm = 0; try { $rm = bk_remind(); } catch (Throwable $e) { error_log('booking remind: ' . $e->getMessage()); } out(['ok' => true, 'published' => $n, 'backups' => $bk, 'reminders' => $rm]); }
 if ($action === 'backup_dl') media_download();
 if (in_array($action, ['backup_up', 'db_dl', 'db_up'], true)) media_raw($action);
+
+// ---------- P39 Phase 2: Master approval ----------
+if (in_array($action, ['appr_count', 'appr_list', 'appr_get', 'appr_reject', 'appr_cancel', 'appr_cfg_get', 'appr_cfg_save'], true)) {
+    $u = need(); $isM = $u['role'] === 'owner';
+    $mine = function ($a) use ($u) { return (int)($a['by']['id'] ?? 0) === (int)$u['id']; };
+    $lite = function ($a) { $x = $a; foreach ($x['in'] as $k => $v) { if (is_string($v) && strlen($v) > 400) $x['in'][$k] = ['_long' => strlen($v), 'preview' => mb_substr(trim(preg_replace('~\s+~', ' ', strip_tags($v))), 0, 240)]; elseif (is_array($v) && strlen((string)json_encode($v)) > 1500) $x['in'][$k] = ['_long' => strlen((string)json_encode($v)), 'preview' => mb_substr((string)json_encode($v, JSON_UNESCAPED_UNICODE), 0, 240)]; } return $x; };
+    switch ($action) {
+        case 'appr_count': $p = appr_list('pending'); out(['ok' => true, 'pending' => count($isM ? $p : array_filter($p, $mine)), 'master' => $isM]);
+        case 'appr_list': $l = appr_list((string)($in['status'] ?? 'pending')); if (!$isM) $l = array_values(array_filter($l, $mine)); out(['ok' => true, 'items' => array_map($lite, array_slice($l, 0, 200)), 'cfg' => appr_cfg(), 'master' => $isM]);
+        case 'appr_get': $a = appr_get((string)($in['id'] ?? '')); if (!$a || (!$isM && !$mine($a))) fail('Not found', 404); out(['ok' => true, 'item' => $a]);
+        case 'appr_reject': if (!$isM) fail('Only the Master can reject changes', 403); $a = appr_get((string)($in['id'] ?? '')); if (!$a || $a['status'] !== 'pending') fail('Not pending');
+            appr_set($a['id'], ['status' => 'rejected', 'note' => mb_substr(trim((string)($in['note'] ?? '')), 0, 500), 'decidedBy' => $u['name'], 'decidedAt' => date('c')]); log_act($u, 'approval.reject', $a['summary']); out(['ok' => true]);
+        case 'appr_cancel': $a = appr_get((string)($in['id'] ?? '')); if (!$a || !$mine($a) || $a['status'] !== 'pending') fail('Not pending'); appr_set($a['id'], ['status' => 'cancelled']); out(['ok' => true]);
+        case 'appr_cfg_get': out(['ok' => true, 'cfg' => appr_cfg()]);
+        case 'appr_cfg_save': if (!$isM) fail('Only the Master can change approval rules', 403); $c = ['manager' => !empty($in['manager']), 'developer' => !empty($in['developer']), 'notify' => !empty($in['notify'])]; appr_write(APPR_CFG, $c); log_act($u, 'approval.rules', json_encode($c)); out(['ok' => true, 'cfg' => $c]);
+    }
+}
+if ($action === 'appr_apply') {
+    $u = need(); if (isset($in['edits']) && is_array($in['edits'])) $GLOBALS['WX_APPR_EDITS'] = $in['edits'];
+    $aid = (string)($in['id'] ?? ''); [$action, $in] = appr_begin_replay($u, $aid, 'admin'); log_act($u, 'approval.approve', (string)(appr_get($aid)['summary'] ?? $aid));
+} else {
+    $u0 = current_user();
+    if ($u0 && appr_needed((string)$u0['role'], $action, 'admin') && wx_allowed($u0, $action, []) !== false) out(appr_queue($u0, 'admin', $action, $in));
+}
 
 try {
 if ($action !== "setup" && $action !== "status") { try { cms_tick(); } catch (Throwable $e) { error_log("cms_tick: " . $e->getMessage()); } }
