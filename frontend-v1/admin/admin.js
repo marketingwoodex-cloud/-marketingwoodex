@@ -92,6 +92,7 @@
       ["builder", "Page builder", "square-pen", "owner,admin,editor"],
       ["library", "Section library", "blocks", "owner,admin,editor"],
       ["global", "Header & footer", "panel-left", "owner,admin"],
+      ["heroes", "Hero slides", "image", "owner,admin,editor"],
       ["redirects", "Redirects", "refresh-cw", "owner,admin"]] },
     { g: "Content", icon: "book-open", id: "content", items: [
       ["blog", "Blog & insights", "book-open", "owner,admin,editor"],

@@ -63,10 +63,24 @@
     }
   }
 
+  /* P38 template slider heroes (.wxh--slider) */
+  Array.prototype.forEach.call(doc.querySelectorAll('.wxh--slider'), function (h) {
+    var ss = Array.prototype.slice.call(h.querySelectorAll('.wxh-slide')), ds = Array.prototype.slice.call(h.querySelectorAll('.wxh-dot')), i = 0, t = null;
+    if (ss.length < 2) return;
+    var rm = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches, ms = Math.max(3, Math.min(15, Number(h.getAttribute('data-interval')) || 6)) * 1000;
+    function go(n) { i = (n + ss.length) % ss.length; ss.forEach(function (s, k) { s.classList.toggle('is-on', k === i); s.setAttribute('aria-hidden', String(k !== i)); }); ds.forEach(function (d, k) { d.classList.toggle('is-on', k === i); d.setAttribute('aria-current', String(k === i)); }); }
+    function run() { if (!rm && !t) t = setInterval(function () { if (doc.visibilityState === 'visible') go(i + 1); }, ms); }
+    function halt() { clearInterval(t); t = null; }
+    ds.forEach(function (d, k) { d.addEventListener('click', function () { go(k); halt(); run(); }); });
+    h.addEventListener('mouseenter', halt); h.addEventListener('mouseleave', run);
+    go(0); run();
+  });
+
   /* Home hero slider — first slide is active in markup; this adds rotation. */
   var hero = doc.getElementById('hm-hero');
   if (hero) {
-    var slides = Array.prototype.slice.call(hero.querySelectorAll('[data-home-slide]'));
+    var slides = Array.prototype.slice.call(hero.querySelectorAll('[data-home-slide]:not([data-hm-off])'));
+    var hmInt = Math.max(3, Math.min(15, Number(hero.getAttribute('data-interval')) || 5)) * 1000;
     var dots = Array.prototype.slice.call(hero.querySelectorAll('[data-home-dot]'));
     var prev = doc.getElementById('hm-hero-prev'), next = doc.getElementById('hm-hero-next');
     var idx = 0, paused = false, timer = null;
@@ -90,7 +104,7 @@
       if (reduceMotion || paused || timer || !slides.length) return;
       timer = setInterval(function () {
         if (doc.visibilityState === 'visible') show(idx + 1, false);
-      }, 5000);
+      }, hmInt);
     }
     function restart() { stop(); start(); }
     dots.forEach(function (d) {
