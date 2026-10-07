@@ -2009,7 +2009,7 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
     if (+inp.chat_id) c = vchat();
     else { token = crypto.randomBytes(20).toString("hex"); c = { id: ++db.seqCh, token: sha(token), created_at: now(), updated_at: now(), page: String(inp.page || "/").replace(/[^\w/\-.?=&%]/g, "").slice(0, 200) || "/", ip, name: clip(inp.name, 120) || "", status: "open", mode: "ai", unread: 0, needs: 0 }; db.chats.push(c); isNew = true; chatAdd(db, c, "ai", "Woodex assistant", cfg.greeting); }
     c.status = "open"; chatAdd(db, c, "visitor", c.name, text); chatCapture(db, c, text); c.alerted = 1;
-    const rr = c.mode === "ai" ? chatRule(cfg, text) : "";
+    const rr = c.mode === "ai" ? chatRule(cfg, text, db, c) : "";
     if (rr) { const hu = rr.includes("[HUMAN]"); chatAdd(db, c, "ai", "Woodex assistant", rr.replace("[HUMAN]", "").trim()); aiAfter(db, c, hu, hu ? "person" : ""); }
     else if (c.mode === "ai") aiUnans(db, c.id, text);
     if (rr) {}
@@ -2017,26 +2017,24 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
     save(db); return { ...vpub(c, isNew ? 0 : +inp.since || 0), ...(token ? { token } : {}) };
   };
   // P19 B1 mirror of chat_rule_reply()
-  const chatRule = (cfg, text) => {
+  const chatRule = (cfg, text, db, c) => {
     const co = companyCfg(), t = String(text).toLowerCase().trim(), STOP = ["the","and","you","your","for","are","can","what","how","does","with","have","this","that","from","kya","hai","aap","mein","please"];
     const words = (s) => String(s).toLowerCase().split(/[^\p{L}\p{N}]+/u).filter((w) => w.length > 2 && !STOP.includes(w));
     const tw = words(t); let best = "", score = 0;
     for (const x of cfg.qa || []) { if (!x.q || !x.a) continue; const qw = words(x.q); if (!qw.length) continue; const hit = qw.filter((w) => tw.includes(w)).length, sc = hit / qw.length; if ((hit >= 2 || (hit >= 1 && qw.length <= 2)) && sc > score) { score = sc; best = x.a; } }
     if (score >= 0.5) return best;
-    const has = (re) => new RegExp(re, "iu").test(t);
-    const pick = (o) => o[Math.floor(Math.random() * o.length)], later = chatOpenNow() ? "in a little while" : "as soon as the office opens (" + cfg.hours + ")";
-    if (/(\+?92|0)3\d{2}-?\d{7}/.test(t.replace(/\s+/g, ""))) return pick(["Perfect, thank you. One of our designers will call you " + later + ". Meanwhile, which area is the project in, and is it a home, office or shop?", "Got it, thanks! A designer will give you a call " + later + ". Just so they come prepared, roughly what size is the space?"]);
-    if (has("\\b(price|cost|rate|rates|budget|kitna|kitne|qeemat|charges|per sq|sqft|square f)")) return pick(["Honestly, it depends a lot on the size, the finishes you choose and the condition of the site, so any number without seeing it would be a guess. We usually do a quick site visit and then share an itemised quotation, so you can see exactly where the money goes. Could you share your number so a designer can set that up?", "Good question. Two similar-looking spaces can cost very differently once services, materials and joinery are counted, which is why we price from an itemised bill of quantities after seeing the site. What kind of space is it, and roughly how big?"]);
-    if (has("\\b(time|timing|hours|open|close|closed|office hours|kab)")) return "We are in the studio " + cfg.hours + ". You can leave your message here any time though, and the team will pick it up first thing.";
-    if (has("\\b(where|address|location|office|map|visit you|kahan)")) return "Our studio is at " + co.address + ". Do give us a call on " + co.phones + " before coming so a designer is free to sit with you, and bring any photos or plans you have.";
-    if (has("\\b(phone|number|call|contact|whatsapp|email|rabta)")) return "Sure. You can call or WhatsApp us on " + co.phones + ", or email " + co.email + ". If it is easier, leave your number here and we will call you.";
-    if (has("\\b(human|agent|person|team|representative|banda|insaan)")) return "Of course, I have asked a designer to join this chat. They will reply here shortly. [HUMAN]";
-    if (has("\\b(kitchen|wardrobe|bedroom|furniture)")) return "We design and build kitchens, wardrobes and furniture to the drawing, so the finished piece matches the drawing exactly. If you can share the room size and a photo of the space, a designer can suggest a layout. Which city are you in?";
-    if (has("\\b(office|workplace|fit-?out|commercial|shop|retail|restaurant|cafe)")) return "That is the kind of project we do a lot of. For commercial spaces the layout and services matter more than finishes, so we always start with a site visit. How big is the space, and when would you like it ready?";
-    if (has("\\b(renovat|remodel|repair|old house|refurb)")) return "Renovations go much smoother when the house is surveyed before any finishes are chosen, since wiring, plumbing and damp often decide the plan. Is it the whole house or a few rooms?";
-    if (has("\\b(service|services|design|interior|ceiling|3d|architect)")) return "We handle the full journey, from design and 3D views to building and handover, all with one team. Tell me a little about your space, where it is and what you would like to change, and I can point you in the right direction.";
-    if (has("^(hi|hello|hey|salam|assalam|aoa|asalam)")) return pick(["Wa alaikum assalam! Thanks for reaching out to Woodex. What are you planning, a home, an office or something else?", "Hello and welcome to Woodex Interior. Tell me a bit about your space and what you have in mind."]);
-    if (has("\\b(thank|thanks|shukria|ok|okay)\\b")) return pick(["My pleasure. Anything else you would like to know?", "You are most welcome. I am here if anything else comes up."]);
+    // P40: same backup answers as chat_rule_reply() — api/chat-rules.json
+    let R; try { R = JSON.parse(fs.readFileSync(path.join(ROOT, "api", "chat-rules.json"), "utf8")); } catch (e) { return ""; }
+    const prev = c && db ? db.chatMsgs.filter((m) => m.chat_id === c.id && m.who === "ai").map((m) => m.text.replace(R.askPhone, "").trim()) : [];
+    const later = chatOpenNow() ? "in a little while" : "as soon as the office opens (" + cfg.hours + ")";
+    const fill = (x) => x.replace("{address}", co.address).replace("{phones}", co.phones).replace("{email}", co.email).replace("{hours}", cfg.hours).replace("{later}", later);
+    const fresh = (o) => { const f = o.map(fill).filter((x) => !prev.includes(x)); return f.length ? f[Math.floor(Math.random() * f.length)] : ""; };
+    if (/(\+?92|0)3\d{2}-?\d{7}/.test(t.replace(/[\s-]+/g, ""))) { const a = fresh(R.phone); if (a) return a; }
+    const t2 = t.replace(/^\W*(hi+|hello|hey|salam|assalam\w*(\s*o?\s*-?\s*alaikum)?|aoa|a\.o\.a|asalam\w*|good (morning|afternoon|evening))\b[\s,.!]*/iu, "").trim();
+    if (t2.length < 3) return fresh(R.greeting);
+    const wa = c && c.channel && c.channel !== "web", hasPhone = !!(c && c.phone);
+    for (const r of R.rules) { let ok = false; try { ok = new RegExp(r.re, "iu").test(t2); } catch (e) {} if (!ok) continue;
+      let a = fresh(r.a); if (!a) continue; if (!wa && !hasPhone && !r.noask && !r.human && !/\?\s*$/.test(a)) a += R.askPhone; return a + (r.human ? " [HUMAN]" : ""); }
     return "";
   };
   // ---- Phase 12 mirror: client updates (preview writes to _private/outbox/*-update.txt; PHP sends real WhatsApp/email)

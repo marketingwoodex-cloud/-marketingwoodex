@@ -187,23 +187,23 @@ function chat_rule_reply(array $c, string $text): string {
     $qa = (array)$cfg['qa'];
     foreach (cms_load()['items'] as $it) if ($it['type'] === 'faq' && ($it['status'] ?? '') === 'published') foreach (($it['data']['items'] ?? []) as $f) if (!empty($f['q'])) $qa[] = ['q' => $f['q'], 'a' => strip_tags((string)($f['a'] ?? ''))];
     foreach ($qa as $x) { if (empty($x['q']) || empty($x['a'])) continue; $qw = $words($x['q']); if (!$qw) continue; $hit = count(array_intersect($qw, $tw)); $s = $hit / count($qw); if ($hit >= 2 && $s > $score || $hit >= 1 && count($qw) <= 2 && $s > $score) { $score = $s; $best = (string)$x['a']; } }
-    if ($score >= 0.5) return $best;
-    $has = fn(string $re) => preg_match('~' . $re . '~iu', $t);
-    $phone = preg_match('~(\+?92|0)3\d{2}[\s-]?\d{7}~', preg_replace('~\s+~', '', $t));
-    $pick = fn(array $o) => $o[array_rand($o)];
+    if ($score >= 0.5 && !(!empty($c['id']) && (int)q("SELECT COUNT(*) FROM wx_chat_msgs WHERE chat_id=? AND who='ai' AND text=?", [(int)$c['id'], $best])->fetchColumn())) return $best;
+    // P40: backup answers from api/chat-rules.json (shared with the preview). Service first, then the general topics; never repeat an answer in the same chat.
+    $R = json_decode((string)@file_get_contents(__DIR__ . '/chat-rules.json'), true); if (!is_array($R)) return '';
+    $prev = []; if (!empty($c['id'])) try { foreach (chat_msgs((int)$c['id']) as $m) if ($m['who'] === 'ai') $prev[] = trim(str_replace((string)$R['askPhone'], '', $m['text'])); } catch (Throwable $e) {}
     $later = chat_open_now() ? 'in a little while' : 'as soon as the office opens (' . $cfg['hours'] . ')';
-    if ($phone) return $pick(['Perfect, thank you. One of our designers will call you ' . $later . '. Meanwhile, which area is the project in, and is it a home, office or shop?', 'Got it, thanks! A designer will give you a call ' . $later . '. Just so they come prepared, roughly what size is the space?']);
-    if ($has('\\b(price|cost|rate|rates|budget|kitna|kitne|qeemat|charges|per sq|sqft|square f)')) return $pick(['Honestly, it depends a lot on the size, the finishes you choose and the condition of the site, so any number without seeing it would be a guess. We usually do a quick site visit and then share an itemised quotation, so you can see exactly where the money goes. Could you share your number so a designer can set that up?', 'Good question. Two similar-looking spaces can cost very differently once services, materials and joinery are counted, which is why we price from an itemised bill of quantities after seeing the site. What kind of space is it, and roughly how big?']);
-    if ($has('\\b(time|timing|hours|open|close|closed|office hours|kab)')) return 'We are in the studio ' . $cfg['hours'] . '. You can leave your message here any time though, and the team will pick it up first thing.';
-    if ($has('\\b(where|address|location|office|map|visit you|kahan)')) return 'Our studio is at ' . $co['address'] . '. Do give us a call on ' . $co['phones'] . ' before coming so a designer is free to sit with you, and bring any photos or plans you have.';
-    if ($has('\\b(phone|number|call|contact|whatsapp|email|rabta)')) return 'Sure. You can call or WhatsApp us on ' . $co['phones'] . ', or email ' . $co['email'] . '. If it is easier, leave your number here and we will call you.';
-    if ($has('\\b(human|agent|person|team|representative|banda|insaan)')) return 'Of course, I have asked a designer to join this chat. They will reply here shortly. [HUMAN]';
-    if ($has('\\b(kitchen|wardrobe|bedroom|furniture)')) return 'We design and build kitchens, wardrobes and furniture to the drawing, so the finished piece matches the drawing exactly. If you can share the room size and a photo of the space, a designer can suggest a layout. Which city are you in?';
-    if ($has('\\b(office|workplace|fit-?out|commercial|shop|retail|restaurant|cafe)')) return 'That is the kind of project we do a lot of. For commercial spaces the layout and services matter more than finishes, so we always start with a site visit. How big is the space, and when would you like it ready?';
-    if ($has('\\b(renovat|remodel|repair|old house|refurb)')) return 'Renovations go much smoother when the house is surveyed before any finishes are chosen, since wiring, plumbing and damp often decide the plan. Is it the whole house or a few rooms?';
-    if ($has('\\b(service|services|design|interior|ceiling|3d|architect)')) return 'We handle the full journey, from design and 3D views to building and handover, all with one team. Tell me a little about your space, where it is and what you would like to change, and I can point you in the right direction.';
-    if ($has('^(hi|hello|hey|salam|assalam|aoa|a\\.o\\.a|asalam)')) return $pick(['Wa alaikum assalam! Thanks for reaching out to Woodex. What are you planning, a home, an office or something else?', 'Hello and welcome to Woodex Interior. Tell me a bit about your space and what you have in mind.']);
-    if ($has('\\b(thank|thanks|shukria|ok|okay)\\b')) return $pick(['My pleasure. Anything else you would like to know?', 'You are most welcome. I am here if anything else comes up.']);
+    $fill = fn(string $s) => strtr($s, ['{address}' => $co['address'], '{phones}' => $co['phones'], '{email}' => $co['email'], '{hours}' => $cfg['hours'], '{later}' => $later]);
+    $fresh = function (array $o) use ($prev, $fill) { $o = array_values(array_filter(array_map($fill, $o), fn($x) => !in_array($x, $prev, true))); return $o ? $o[array_rand($o)] : ''; };
+    if (preg_match('~(\+?92|0)3\d{2}-?\d{7}~', preg_replace('~[\s-]+~', '', $t))) { $a = $fresh((array)$R['phone']); if ($a !== '') return $a; }
+    $t2 = trim(preg_replace('~^\W*(hi+|hello|hey|salam|assalam\w*(\s*o?\s*-?\s*alaikum)?|aoa|a\.o\.a|asalam\w*|good (morning|afternoon|evening))\b[\s,.!]*~iu', '', $t));
+    if ($t2 === '' || mb_strlen($t2) < 3) return $fresh((array)$R['greeting']);
+    $wa = ($c['channel'] ?? 'web') !== 'web'; $hasPhone = !empty($c['phone']);
+    foreach ((array)$R['rules'] as $r) {
+        if (empty($r['re']) || !@preg_match('~' . $r['re'] . '~iu', $t2)) continue;
+        $a = $fresh((array)$r['a']); if ($a === '') continue;
+        if (!$wa && !$hasPhone && empty($r['noask']) && empty($r['human']) && substr(rtrim($a), -1) !== '?') $a .= (string)$R['askPhone'];
+        return $a . (!empty($r['human']) ? ' [HUMAN]' : '');
+    }
     return '';
 }
 
