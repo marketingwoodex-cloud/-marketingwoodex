@@ -14,7 +14,7 @@ Phase E (claims) is skipped for now. Work order: A, then B, then C. Tick each bo
 ## B. On-page SEO and content
 - [x] B1 Bring the 20 P34/P35 posts past 900 words
 - [ ] B2 Expand the 28 older posts (about 300–500 words of article text each)
-- [ ] B3 Unique share images: 9 of 15 done; 6 left (master-planning, office/retail/restaurant/educational/healthcare buildings)
+- [x] B3 Unique share images for all 15 pages
 - [x] B4 Replace the house exterior image on the Interior design hub card
 - [ ] B5 Named author and reviewer on the 48 posts (Person schema). **Needs names and credentials from you**
 - [ ] B6 Real project photos to replace stock/AI images. **Needs photos from you**
