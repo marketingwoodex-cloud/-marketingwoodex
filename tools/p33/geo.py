@@ -86,7 +86,8 @@ def run():
         if k == "svc": g = "Main services" if u.strip("/") in ("interior-design", "fit-out", "renovation", "architecture", "3d-visualization", "turnkey-design-build") else "Services"
         if u in ("/insights/", "/projects/"): g = "Company"
         groups[g].append(f"- [{title(s)}]({DOM}{u}): {meta(s, 'description')}")
-        if k in ("svc", "city") and "wx-short" not in s:
+        if u == "/services/": g = "Company"
+        if k in ("svc", "city") and "wx-short" not in s and "sv-short" not in s:
             m = re.search(r"<main[^>]*>[\s\S]*?</section>", s)
             if m: s = s.replace(m.group(0), m.group(0) + "\n" + short_box(s, u, k), 1)
             types = re.findall(r'"@type"\s*:\s*"([^"]+)"', s)

@@ -129,7 +129,7 @@
   function build(D) {
     var M = D.menu, G = D.mega, H = D.header, F = D.footer;
     var megaHtml = function (label) {
-      return '      <div class="nav-services">\n        <button class="nav-services-trigger" type="button" aria-expanded="false" aria-controls="services-menu">' + A(label) + ' <span aria-hidden="true">⌄</span></button>\n        <div class="mega-menu" id="services-menu"' + (G.cols.length !== 4 ? ' data-cols="' + G.cols.length + '"' : "") + ">\n" +
+      return '      <div class="nav-services">\n        <a class="nav-services-trigger" href="/services/" aria-haspopup="true" aria-controls="services-menu">' + A(label) + ' <span aria-hidden="true">⌄</span></a>\n        <div class="mega-menu" id="services-menu"' + (G.cols.length !== 4 ? ' data-cols="' + G.cols.length + '"' : "") + ">\n" +
         G.cols.map(function (c, ci) { return '          <div class="mega-column"><span class="mega-number">' + String(ci + 1).padStart(2, "0") + '</span><a class="mega-title" href="' + A(c.href) + '"' + (c.route ? ' data-page-route="' + A(c.route) + '"' : "") + ">" + A(c.title) + "</a>" + c.links.map(function (l) { return aTag(l); }).join("") + "</div>\n"; }).join("") +
         '          <div class="mega-feature">' + (G.studio.label ? aTag(G.studio, "mega-studio") : "") + '<a class="mega-project" href="' + A(G.card.href) + '"><img' + (G.card.srcset && G.card.srcset.indexOf(G.card.img) >= 0 ? ' sizes="' + A(G.card.sizes || "50vw") + '" srcset="' + A(G.card.srcset) + '"' : "") + ' loading="lazy" decoding="async" src="' + A(G.card.img) + '" alt="' + A(G.card.alt) + '"' + (G.card.w ? ' width="' + A(G.card.w) + '" height="' + A(G.card.h) + '"' : "") + "><span>" + A(G.card.text) + "</span></a></div>\n        </div>\n      </div>";
     };
