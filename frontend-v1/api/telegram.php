@@ -51,8 +51,16 @@ function tg_update(array $j, array $tg): void {
         if (preg_match('~^/start(?:@\w+)?\s+L([A-F0-9]{6})$~', $text, $x)) { // staff account link
             $code = $x[1]; $c = tg_cfg(); $row = $c['codes'][$code] ?? null;
             if (!$row || (int)$row['exp'] < time()) { tg_send($chat, 'This link has expired. Open Admin → My profile → Telegram and try again.'); return; }
-            unset($c['codes'][$code]); $c['links'][(string)$row['uid']] = (string)$from['id']; tg_save($c);
-            tg_send($chat, '✅ Your Telegram is now linked to Woodex Admin. You can reply to customers from the team group.'); return;
+            unset($c['codes'][$code]); $c['links'][(string)$row['uid']] = (string)$from['id'];
+            $c['dm'] = array_values(array_unique(array_merge(array_map('intval', (array)$c['dm']), [(int)$row['uid']]))); tg_save($c);
+            tg_send($chat, "✅ Your Telegram is now linked to Woodex Admin.\nNew clients, leads and chats will arrive here. Reply to a chat message to answer the customer (/ai hands it back to the assistant, /close closes it)."); return;
+        }
+        $su = tg_user((int)($from['id'] ?? 0));
+        if ($su) { // a linked staff member in their personal chat with the bot
+            $re = $m['reply_to_message'] ?? null; $cid = $re ? (int)(tg_cfg()['dmMap'][$chat . ':' . (int)$re['message_id']] ?? 0) : 0;
+            if ($cid) { tg_staff_reply($chat, $m, $su, $cid, $text, $name); return; }
+            if (!preg_match('~^/start~', $text)) { tg_send($chat, 'Hi ' . $su['name'] . '! To answer a customer, swipe left on (reply to) their chat message here. New chats and leads arrive automatically.'); return; }
+            return;
         }
         if (preg_match('~^/start(?:@\w+)?\s+(c\d+_[a-f0-9]{12})$~', $text, $x)) { if (tg_link_web_chat($chat, $x[1], $name)) return; }
         if (!$tg['customers']) { tg_send($chat, 'Please contact Woodex Interior on +92 322 4000768 or info@woodex.com.pk.'); return; }
@@ -78,16 +86,5 @@ function tg_update(array $j, array $tg): void {
     $re = $m['reply_to_message'] ?? null; if (!$re) return;
     $row = q('SELECT chat_id FROM wx_tg_map WHERE msg_id=?', [(int)$re['message_id']])->fetch(); if (!$row) return;
     if (!$u) { tg_send($chat, '⚠️ ' . ($name ?: 'You') . ', link your Telegram first (Admin → My profile → Telegram), then reply again.', ['reply_to_message_id' => (int)$m['message_id']]); return; }
-    if (!tg_can_chat($u)) { tg_send($chat, '⚠️ Your role cannot reply to customers.', ['reply_to_message_id' => (int)$m['message_id']]); return; }
-    $c = chat_get((int)$row['chat_id']); $cid = (int)$c['id'];
-    if (preg_match('~^/ai\b~', $text)) { q("UPDATE wx_chats SET mode='ai', agent_name=NULL WHERE id=?", [$cid]); chat_add($cid, 'sys', '', 'The assistant is back in this chat'); tg_send($chat, '🤖 #' . $cid . ' is back with the assistant.'); return; }
-    if (preg_match('~^/close\b~', $text)) { q("UPDATE wx_chats SET status='closed', unread=0, needs=0 WHERE id=?", [$cid]); log_act($u, 'chat.close', '#' . $cid . ' (Telegram)'); tg_send($chat, '✔️ #' . $cid . ' closed.'); return; }
-    if (preg_match('~^/open\b~', $text)) { q("UPDATE wx_chats SET status='open' WHERE id=?", [$cid]); tg_send($chat, '#' . $cid . ' reopened.'); return; }
-    if ($text === '' || $text[0] === '/') return;
-    if ($c['mode'] === 'ai') chat_add($cid, 'sys', '', $u['name'] . ' joined the chat');
-    $e = chat_deliver($c, $text);
-    if ($e !== '') { tg_send($chat, '❌ Not delivered: ' . $e, ['reply_to_message_id' => (int)$m['message_id']]); return; }
-    chat_add($cid, 'agent', (string)$u['name'], $text);
-    q("UPDATE wx_chats SET mode='human', handoff='', agent_name=?, assigned_to=COALESCE(assigned_to, ?), status='open', unread=0, needs=0 WHERE id=?", [$u['name'], (int)$u['id'], $cid]);
-    tg_api('setMessageReaction', ['chat_id' => $chat, 'message_id' => (int)$m['message_id'], 'reaction' => [['type' => 'emoji', 'emoji' => '👍']]]);
+    tg_staff_reply($chat, $m, $u, (int)$row['chat_id'], $text, $name);
 }
