@@ -2106,6 +2106,37 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
     }
     return null;
   }
+  // ---- P40 E mirror: social media planner (preview stores _private/social.json; PHP publishes for real)
+  async function soc(action, inp, need) {
+    if (!/^soc_/.test(action)) return null;
+    const F = path.join(PRIV, "social.json"), OA = ["owner", "admin"];
+    const L = () => { const d = jr(F, {}); d.cfg = { pageId: "", igId: "", token: "", tags: "#WoodexInterior #InteriorDesignLahore #Lahore", ...(d.cfg || {}) }; d.posts = d.posts || []; return d; };
+    const S = (d) => fs.writeFileSync(F, JSON.stringify(d, null, 1)); const pubc = (c) => ({ ...c, tokenSet: !!c.token, token: "" });
+    const nowS = () => new Date(Date.now() + 5 * 3600e3).toISOString().slice(0, 19).replace("T", " ");
+    switch (action) {
+      case "soc_get": { need(OA); const d = L(); const ps = d.posts.slice().sort((a, b) => String(b.when || b.created_at).localeCompare(String(a.when || a.created_at))); return { ok: true, cfg: pubc(d.cfg), connected: !!d.cfg.token && !!(d.cfg.pageId || d.cfg.igId), posts: ps, now: nowS() }; }
+      case "soc_cfg_save": { need(OA); const d = L(), c = inp.cfg || {}; for (const k of ["pageId", "igId"]) if (c[k] != null) d.cfg[k] = String(c[k]).replace(/\D/g, "").slice(0, 30); if (c.token && String(c.token).trim()) d.cfg.token = String(c.token).replace(/[^A-Za-z0-9_\-|.]/g, "").slice(0, 600); if (c.clearToken) d.cfg.token = ""; if (c.tags != null) d.cfg.tags = String(c.tags).replace(/<[^>]*>/g, "").trim().slice(0, 300); S(d); return { ok: true, cfg: pubc(d.cfg) }; }
+      case "soc_post_save": { const u = need(OA), d = L(), x = inp.post || {}; const ix = d.posts.findIndex((p) => p.id === x.id), old = ix >= 0 ? d.posts[ix] : null;
+        if (old && ["published", "partial"].includes(old.status)) throw new Fail("This post is already published. Duplicate it to post again.");
+        const nets = ["fb", "ig"].filter((n) => (x.nets || []).includes(n)); if (!nets.length) throw new Fail("Choose Facebook, Instagram or both");
+        const text = String(x.text || "").replace(/<[^>]*>/g, "").trim().slice(0, 2200); if (!text) throw new Fail("Write the post text");
+        const image = String(x.image || "").trim(); if (nets.includes("ig") && !image) throw new Fail("Instagram posts need an image");
+        const link = String(x.link || "").trim(); if (link && !/^https?:\/\/\S+$/.test(link)) throw new Fail("The link must start with https://");
+        let when = String(x.when || "").trim(); if (when) { if (isNaN(Date.parse(when.replace(" ", "T")))) throw new Fail("Pick a valid date and time"); when = when.replace("T", " ").slice(0, 16) + ":00"; }
+        const status = x.status === "scheduled" ? "scheduled" : "draft"; if (status === "scheduled" && !when) throw new Fail("Pick a date and time to schedule");
+        const p = { ...(old || { id: "p" + crypto.randomBytes(5).toString("hex"), created_at: nowS(), res: {} }), nets, text, image, link, when, status, error: "", title: String(x.title || "").slice(0, 80), by: u.name, updated_at: nowS() };
+        if (ix >= 0) d.posts[ix] = p; else d.posts.push(p); S(d); return { ok: true, post: p }; }
+      case "soc_post_delete": { need(OA); const d = L(); d.posts = d.posts.filter((p) => p.id !== inp.id); S(d); return { ok: true }; }
+      case "soc_post_send": { need(OA); const d = L(), p = d.posts.find((q) => q.id === inp.id); if (!p) throw new Fail("Post not found");
+        p.status = "failed"; p.error = d.cfg.token ? "Preview cannot publish. On the live site this posts to Facebook/Instagram." : "Connect Facebook first (Social media → Settings)"; S(d); return { ok: false, post: p, error: p.error }; }
+      case "soc_ai_caption": { need(OA); const t = String(inp.topic || "").trim(); if (!t) throw new Fail("Describe the post first (e.g. \"DHA office fit-out, walnut and brass, 40 seats\")"); const tags = L().cfg.tags;
+        return { ok: true, preview: true, options: [
+          "A closer look at " + t + ".\n\nWe started with how the space is used every day, then chose materials and light to match. Small decisions in the layout made the biggest difference.\n\nPlanning something similar? WhatsApp us on +92 322 4000768.\n\n" + tags + " #InteriorDesign #DesignAndBuild",
+          "From 3D view to finished space: " + t + ".\n\nOur in-house 3D studio helped the client see every detail before work began, so the build matched the design.\n\nTell us about your space: +92 322 4000768.\n\n" + tags + " #3DVisualization #HomeInterior",
+          "Details that make a space work ✨ " + t + ".\n\nThoughtful joinery, warm materials and a clear plan from start to handover.\n\nSee more on our Projects page.\n\n" + tags + " #OfficeDesign #PakistanInteriors"] }; }
+    }
+    return null;
+  }
   async function p10(action, inp, need, db, ip, req) {
     if (!/^(chat_|notif_|tg_|ai_report|ai_unans_|aic_)/.test(action)) return null;
     ensureChat(db); ensureCrm(db); const SALES = ["owner", "admin", "sales"], done = (o) => { save(db); return o; };
@@ -2369,7 +2400,7 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
         return done({ ok: true, rows: all.slice((page - 1) * per, page * per).map(({ user_name, action, target, ip, created_at }) => ({ user_name, action, target, ip, created_at })), total: all.length, per, page });
       }
       default: {
-        const r = (await conn(action, inp, need)) || (await logos(action, inp, need)) || (await p19c(action, inp, need, db, ip)) || (await p18j(action, inp, need, db, ip)) || (await p18h(action, inp, need, db, ip)) || (await p18g(action, inp, need, db, ip)) || (await p18e(action, inp, need, db, ip)) || (await pbk(action, inp, need, db, ip)) || (await a2(action, inp, need, db, ip)) || (await a17(action, inp, need, db, ip)) || (await a4(action, inp, need, db, ip)) || a5(action, inp, need, db, ip) || (await a6(action, inp, need, db, ip)) || (await a7(action, inp, need, db, ip)) || (await a8(action, inp, need, db, ip)) || (await p8(action, inp, need, db, ip, req)) || (await p10(action, inp, need, db, ip, req)) || (await p12(action, inp, need, db, ip)) || (await p13(action, inp, need, db, ip)); if (r) return r;
+        const r = (await soc(action, inp, need)) || (await conn(action, inp, need)) || (await logos(action, inp, need)) || (await p19c(action, inp, need, db, ip)) || (await p18j(action, inp, need, db, ip)) || (await p18h(action, inp, need, db, ip)) || (await p18g(action, inp, need, db, ip)) || (await p18e(action, inp, need, db, ip)) || (await pbk(action, inp, need, db, ip)) || (await a2(action, inp, need, db, ip)) || (await a17(action, inp, need, db, ip)) || (await a4(action, inp, need, db, ip)) || a5(action, inp, need, db, ip) || (await a6(action, inp, need, db, ip)) || (await a7(action, inp, need, db, ip)) || (await a8(action, inp, need, db, ip)) || (await p8(action, inp, need, db, ip, req)) || (await p10(action, inp, need, db, ip, req)) || (await p12(action, inp, need, db, ip)) || (await p13(action, inp, need, db, ip)); if (r) return r;
         throw new Fail("Unknown action", 404);
       }
     }

@@ -101,6 +101,7 @@
       ["offers", "Discount offers", "send", "g:broadcast"],
       ["settings/connections", "Connect WhatsApp", "zap", "g:settings"]] },
     ["telegram", "Telegram", "send", "owner,admin,editor"],
+    ["social", "Social media", "image", "owner,admin"],
     ["updates", "Client updates", "send", "g:updates"],
     ["aicenter", "AI Assistant", "sparkles", "g:ai"],
     ["train", "Knowledge & Q&A", "book-open", "g:ai"],
