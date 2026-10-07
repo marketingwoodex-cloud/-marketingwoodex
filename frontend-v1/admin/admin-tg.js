@@ -15,7 +15,9 @@
       var site = '<div class="card" style="margin-bottom:12px"><div class="card-h"><h3>Website contact button</h3><small class="muted">The website shows only one button</small></div><div class="card-b">' +
         '<div class="seg" id="tg-site">' + [["chat", "Live chat"], ["whatsapp", "WhatsApp"], ["telegram", "Telegram"]].map(function (x) { return '<button data-v="' + x[0] + '"' + ((c.site || "chat") === x[0] ? ' class="on"' : "") + ">" + x[1] + "</button>"; }).join("") + "</div>" +
         '<p class="muted" style="font-size:12.5px;margin:8px 0 10px">Live chat: AI answers first and your team can take over (you get it on Telegram). WhatsApp: opens WhatsApp +92 322 4000768. Telegram: opens ' + (on ? "your bot @" + esc(c.bot) + " (chats come to the Inbox)" : "your Telegram account below") + ". If WhatsApp is down, the site switches to Telegram by itself.</p>" +
-        '<label>Your Telegram username <small class="muted">(used for the Telegram button when no bot is connected)</small><div style="display:flex;gap:8px"><input id="tg-user" value="' + esc(c.tgUser || "") + '" placeholder="WOODEXINTERIOR" style="margin:0;flex:1"><button class="btn" id="tg-user-sv">Save</button></div></label></div></div>';
+        '<label>Your Telegram username <small class="muted">(used for the Telegram button when no bot is connected)</small><div style="display:flex;gap:8px"><input id="tg-user" value="' + esc(c.tgUser || "") + '" placeholder="WOODEXINTERIOR" style="margin:0;flex:1"><button class="btn" id="tg-user-sv">Save</button></div></label>' +
+        '<label style="margin-top:10px">Live chat alert phone <small class="muted">(gets a WhatsApp alert for each new chat and when a customer asks for a person)</small><div style="display:flex;gap:8px"><input id="tg-ap" value="' + esc(c.alertPhone ? "+" + c.alertPhone.replace(/^(\d{2})(\d{3})(\d{7})$/, "$1 $2 $3") : "") + '" placeholder="+92 322 4200768" style="margin:0;flex:1"><button class="btn" id="tg-ap-sv">Save</button></div></label>' +
+        '<p class="muted" style="font-size:12.5px;margin:6px 0 0">For <b>Telegram</b> alerts on that phone: open Telegram on it and scan the QR in step 2 (or from My profile). WhatsApp alerts need WhatsApp connected (Settings → WhatsApp).</p></div></div>';
       $("#tg-b").innerHTML = site +
         '<div class="card" style="margin-bottom:12px"><div class="card-b" style="display:flex;gap:14px;align-items:center;flex-wrap:wrap">' + ic("send") +
         '<div style="flex:1;min-width:220px"><b>' + (on ? "Connected: @" + esc(c.bot) : "Not connected") + "</b><br><small class=\"muted\">" +
@@ -43,6 +45,7 @@
       if ($("#tg-tme")) $("#tg-tme").onclick = testMe;
       if ($("#tg-dm")) $("#tg-dm").onchange = function () { var x = this; api("tg_dm_set", { on: x.checked }).then(function (y) { if (!y.ok) { x.checked = !x.checked; return toast(y.error, true); } toast(x.checked ? "Alerts will come to your Telegram ✓" : "Personal alerts off"); }); };
       $("#tg-site").onclick = function (e) { var b = e.target.closest("[data-v]"); if (!b) return; if (b.dataset.v === "telegram" && !on && !$("#tg-user").value.trim()) return toast("Connect the bot or enter your Telegram username first", true); [].forEach.call(this.children, function (x) { x.classList.toggle("on", x === b); }); save({ site: b.dataset.v }); };
+      $("#tg-ap-sv").onclick = function () { save({ alertPhone: $("#tg-ap").value }); };
       $("#tg-user-sv").onclick = function () { save({ tgUser: $("#tg-user").value }); };
       var save = function (o) { api("tg_save", o).then(function (x) { toast(x.ok ? "Saved" : x.error, !x.ok); }); };
       $("#tg-cus").onchange = function () { save({ customers: this.checked }); };

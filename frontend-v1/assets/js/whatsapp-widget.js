@@ -80,7 +80,7 @@
       /* P40 B: clean launcher, status ring, unread count, teaser, typing dots, times, mobile full screen */
       ".wx-wa-btn .wx-st{position:absolute;right:1px;bottom:1px;width:14px;height:14px;border-radius:50%;border:2.5px solid #fff;background:" + (open ? "#22c55e" : "#94a3b8") + "}.wx-wa-btn .wx-n{position:absolute;top:-4px;right:-4px;min-width:20px;height:20px;padding:0 5px;border-radius:10px;background:#b8956a;color:#0c1628;font:700 11px/20px system-ui,sans-serif;border:2px solid #fff;text-align:center;box-sizing:border-box}",
       ".wx-tease{position:absolute;right:70px;bottom:6px;width:max-content;max-width:240px;background:#fff;color:#0c1628;border-radius:14px 14px 4px 14px;padding:11px 30px 11px 14px;font-size:13.5px;line-height:1.4;box-shadow:0 10px 30px rgba(12,22,40,.18);cursor:pointer;animation:wxwa .3s ease}.wx-tease b{display:block;font-size:13.5px}.wx-tease span{color:#667781;font-size:12.5px}.wx-tease button{position:absolute;top:4px;right:4px;border:0!important;background:none!important;color:#94a3b8!important;font-size:17px;line-height:1;cursor:pointer;padding:4px!important;min-width:0!important}",
-      ".wx-typing{display:inline-flex;gap:4px;align-items:center;padding:11px 13px!important}.wx-typing i{width:6px;height:6px;border-radius:50%;background:#94a3b8;animation:wxdot 1.2s infinite}.wx-typing i:nth-child(2){animation-delay:.15s}.wx-typing i:nth-child(3){animation-delay:.3s}@keyframes wxdot{0%,60%,100%{opacity:.35;transform:none}30%{opacity:1;transform:translateY(-3px)}}",
+      ".wx-m{animation:wxin .28s ease-out both}@keyframes wxin{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}.wx-m .tx{white-space:pre-wrap}" + ".wx-typing{display:inline-flex;gap:4px;align-items:center;padding:11px 13px!important}.wx-typing i{width:6px;height:6px;border-radius:50%;background:#94a3b8;animation:wxdot 1.2s infinite}.wx-typing i:nth-child(2){animation-delay:.15s}.wx-typing i:nth-child(3){animation-delay:.3s}@keyframes wxdot{0%,60%,100%{opacity:.35;transform:none}30%{opacity:1;transform:translateY(-3px)}}",
       ".wx-m .tm{display:block;font-size:10px;color:#8696a0;text-align:right;margin-top:3px;font-weight:400}.wx-m.ai small,.wx-m.them small{color:#8a6a43}.wx-join{align-self:center;font-size:12px;color:#0c1628;background:#efe3cf;border-radius:999px;padding:5px 12px;margin:4px 0}",
       "@media(max-width:520px){.wx-wa-panel{right:0;bottom:0;width:100vw;max-width:100vw;max-height:100dvh;height:100dvh;border-radius:0;display:none;flex-direction:column}.wx-wa-panel.open{display:flex;z-index:2147483000}.wx-wa-panel .v-chat{flex:1;min-height:0}.wx-ch-list{height:auto!important;flex:1;max-height:none!important}.wx-tease{max-width:200px}}",
       ".wx-wa-foot{padding:10px 18px 16px;line-height:1.5;background:#f6f1e9;font-size:11px;color:#667781;text-align:center}"
@@ -148,7 +148,25 @@
       if (v === "wa") setTimeout(function () { $("#wx-wa-n").focus(); }, 50);
     }
     function chatApi(body) { return fetch("/api/chat.php", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }).then(function (r) { return r.json(); }); }
-    function draw(msgs, reset) {
+    // Human feel: typing dots for a moment (longer for longer answers), then the reply types itself out
+    function human(msgs) {
+      var q = (msgs || []).filter(function (m) { return !(m.id && m.id <= CH.last); });
+      var vis = q.filter(function (m) { return m.who === "visitor" || m.who === "sys"; }), rest = q.filter(function (m) { return m.who !== "visitor" && m.who !== "sys"; });
+      if (vis.length) draw(vis); if (!rest.length) { draw([]); return; }
+      var reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches; if (reduce) { draw(rest); return; }
+      CH.busy = true; var L = $(".wx-ch-list"), i = 0;
+      (function next() {
+        if (i >= rest.length) { CH.busy = false; return; }
+        var m = rest[i++], n = String(m.text || "").length;
+        if (!L.querySelector(".wx-typing")) { L.insertAdjacentHTML("beforeend", '<div class="wx-typing" aria-label="typing"><i></i><i></i><i></i></div>'); L.scrollTop = L.scrollHeight; }
+        setTimeout(function () { draw([m], false, true); setTimeout(next, Math.min(1400, n * 12) + 350); }, Math.max(800, Math.min(2600, 500 + n * 16)) + (i === 1 ? 300 : 0));
+      })();
+    }
+    function typeOut(node, text) {
+      var words = text.split(/(\s+)/), k = 0, L = $(".wx-ch-list"), step = Math.max(1, Math.ceil(words.length / 60));
+      var t = setInterval(function () { k += step; node.textContent = words.slice(0, k).join(""); L.scrollTop = L.scrollHeight; if (k >= words.length) { clearInterval(t); node.textContent = text; } }, 28);
+    }
+    function draw(msgs, reset, anim) {
       var L = $(".wx-ch-list"); if (reset) L.innerHTML = "";
       var ty = L.querySelector(".wx-typing"); if (ty) ty.remove();
       msgs.forEach(function (m) {
@@ -158,11 +176,12 @@
         var a = m.att && /^\/assets\/uploads\/chat\//.test(m.att.u) ? m.att : null, au = a ? esc(a.u) : "";
         var at = a ? (a.k === "img" ? '<a href="' + au + '" target="_blank" rel="noopener"><img src="' + au + '" alt="Photo"></a>' : a.k === "voice" ? '<audio controls preload="metadata" src="' + au + '"></audio>' : '<a class="wx-f" href="' + au + '" target="_blank" rel="noopener">📄 ' + esc(a.n || "File") + "</a>") : "";
         var tm = m.t ? String(m.t).slice(11, 16) : ""; if (tm) { var hh = +tm.slice(0, 2); tm = ((hh % 12) || 12) + ":" + tm.slice(3) + (hh < 12 ? " am" : " pm"); }
-        d.innerHTML = (m.who === "agent" ? "<small>" + esc(m.name || "Woodex team") + " · Woodex team</small>" : m.who === "ai" && CH.asst ? "<small>" + esc(CH.asst) + "</small>" : "") + (a && /^(🎤 Voice note|📷 Photo|📎 .*)$/.test(m.text) ? "" : esc(m.text)) + at + (tm && m.who !== "sys" ? '<span class="tm">' + tm + "</span>" : ""); L.appendChild(d);
+        d.innerHTML = (m.who === "agent" ? "<small>" + esc(m.name || "Woodex team") + " · Woodex team</small>" : m.who === "ai" && CH.asst ? "<small>" + esc(CH.asst) + "</small>" : "") + (a && /^(🎤 Voice note|📷 Photo|📎 .*)$/.test(m.text) ? "" : (anim && !a ? '<span class="tx"></span>' : esc(m.text))) + at + (tm && m.who !== "sys" ? '<span class="tm">' + tm + "</span>" : ""); L.appendChild(d);
+        if (anim && !a) typeOut(d.querySelector(".tx"), String(m.text || ""));
       });
       L.scrollTop = L.scrollHeight;
     }
-    function poll() { if (!CH.id || CH.busy) return; chatApi({ action: "poll", chat_id: CH.id, token: CH.tok, since: CH.last }).then(function (r) { if (r.ok) { var tyEl = $(".wx-ch-ty"); if (tyEl) tyEl.textContent = r.typing ? "A designer is typing…" : ""; if (r.messages.length) { var fresh = r.messages.filter(function (m) { return m.id > CH.last && m.who !== "visitor"; }).length; draw(r.messages, !CH.last); if (fresh && (!panel.classList.contains("open") || view !== "chat")) dotOn(fresh); } } else if (r.error === "Chat not found") { CH.id = 0; CH.tok = ""; CH.last = 0; localStorage.removeItem("wxChat"); } }).catch(function () {}); }
+    function poll() { if (!CH.id || CH.busy) return; chatApi({ action: "poll", chat_id: CH.id, token: CH.tok, since: CH.last }).then(function (r) { if (r.ok) { var tyEl = $(".wx-ch-ty"); if (tyEl) tyEl.textContent = r.typing ? "A designer is typing…" : ""; if (r.messages.length) { var fresh = r.messages.filter(function (m) { return m.id > CH.last && m.who !== "visitor"; }).length; if (!CH.last || !panel.classList.contains("open") || view !== "chat") draw(r.messages, !CH.last); else human(r.messages); if (fresh && (!panel.classList.contains("open") || view !== "chat")) dotOn(fresh); } } else if (r.error === "Chat not found") { CH.id = 0; CH.tok = ""; CH.last = 0; localStorage.removeItem("wxChat"); } }).catch(function () {}); }
     function startPoll() { clearInterval(CH.timer); if (!CH.id) return; CH.timer = setInterval(poll, panel.classList.contains("open") && view === "chat" ? 3000 : 15000); }
     function dotOn(n) { CH.unread += n || 1; var b = btn.querySelector(".wx-n"); if (!b) { btn.insertAdjacentHTML("beforeend", '<span class="wx-n" aria-hidden="true"></span>'); b = btn.querySelector(".wx-n"); } b.textContent = CH.unread > 9 ? "9+" : CH.unread; btn.setAttribute("aria-label", "Chat with Woodex, " + CH.unread + " new message" + (CH.unread > 1 ? "s" : "")); tease(true); }
     panel.querySelector(".v-home").addEventListener("click", function (e) { var b = e.target.closest("[data-go]"); if (b) show(b.dataset.go); });
@@ -221,7 +240,7 @@
         if (!r.ok && !CH.on) return fallback(t);
         if (!r.ok) { var ty = L.querySelector(".wx-typing"); if (ty) ty.remove(); var er = el("div", "wx-m sys"); er.innerHTML = esc(CH.on ? (r.error || "Could not send.") : "Our live team is away right now.") + ' <a href="https://wa.me/' + number + '?text=' + encodeURIComponent(t) + '" target="_blank" rel="noopener" style="font-weight:700;color:#0c1628">Continue on WhatsApp →</a>'; L.appendChild(er); return; }
         if (r.token) { CH.id = r.chat_id; CH.tok = r.token; CH.last = 0; localStorage.setItem("wxChat", JSON.stringify({ id: CH.id, tok: CH.tok })); L.innerHTML = ""; }
-        draw(r.messages); startPoll();
+        human(r.messages); startPoll();
         if (window.gtag && r.token) try { window.gtag("event", "chat_start"); } catch (x) {}
       }).catch(function () { CH.busy = false; mine.remove(); fallback(t); });
     });

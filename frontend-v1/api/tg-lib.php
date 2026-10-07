@@ -12,7 +12,7 @@
 const TG_FILE = PRIVATE_DIR . '/telegram.json';
 const WA_HEALTH = PRIVATE_DIR . '/wa-health.json';
 const TG_DEF = ['token' => '', 'bot' => '', 'botName' => '', 'secret' => '', 'group' => '', 'groupTitle' => '', 'customers' => true, 'button' => 'auto',
-    'alertChats' => true, 'alertLeads' => true, 'alertAppr' => true, 'links' => [], 'codes' => [], 'dm' => [], 'dmMap' => [], 'site' => 'chat', 'tgUser' => '', 'connectedAt' => '', 'lastError' => ''];
+    'alertChats' => true, 'alertLeads' => true, 'alertAppr' => true, 'links' => [], 'codes' => [], 'dm' => [], 'dmMap' => [], 'site' => 'chat', 'tgUser' => '', 'alertPhone' => '923224200768', 'phoneAlerted' => [], 'connectedAt' => '', 'lastError' => ''];
 
 function tg_cfg(): array { return array_merge(TG_DEF, jread(TG_FILE)); }
 function tg_save(array $c): void { jwrite(TG_FILE, $c); }
@@ -68,6 +68,7 @@ function tg_map_migrate(): void { static $d = false; if ($d) return; $d = true; 
 function tg_chan_label(string $ch): string { return ['wa' => 'WhatsApp', 'tg' => 'Telegram'][$ch] ?? 'Website'; }
 /** Post a customer message to the staff group (reply to it to answer). */
 function tg_team_post(array $c, string $text, string $tag = ''): void {
+    try { tg_phone_alert($c, $text, $tag); } catch (Throwable $x) { error_log('phone alert: ' . $x->getMessage()); }
     $g = tg_cfg(); if (!tg_ready() || !$g['alertChats'] || ($g['group'] === '' && !tg_dm_targets($g))) return;
     $who = (string)($c['name'] ?: ($c['phone'] ?: 'Visitor #' . $c['id']));
     $msg = ($tag !== '' ? $tag . "\n" : '') . '💬 <b>' . tg_h($who) . '</b> · ' . tg_chan_label((string)($c['channel'] ?? 'web')) . ' · #' . (int)$c['id'] . ($c['mode'] === 'ai' ? ' · 🤖 AI answering' : '') . "\n" . tg_h(mb_substr($text, 0, 1500)) . "\n\n<i>Reply to this message to answer · /ai · /close</i>";
@@ -81,6 +82,17 @@ function tg_alert(string $kind, string $text): void {
     if (($kind === 'leads' && !$g['alertLeads']) || ($kind === 'appr' && !$g['alertAppr'])) return;
     if ($g['group'] !== '') { try { tg_send($g['group'], $text, ['parse_mode' => 'HTML']); } catch (Throwable $x) { error_log('tg alert: ' . $x->getMessage()); } }
     tg_dm_post($text, 0);
+}
+/** WhatsApp alert to the live-chat alert phone: once per new chat, and again when the customer asks for a person. */
+function tg_phone_alert(array $c, string $text, string $tag): void {
+    $g = tg_cfg(); $to = preg_replace('~\D~', '', (string)$g['alertPhone']); if ($to === '' || !function_exists('crm_cfg') || !function_exists('wa_send')) return;
+    $cid = (int)$c['id']; $key = $cid . ($tag !== '' ? ':p' : ''); $done = (array)$g['phoneAlerted']; if (isset($done[$key])) return;
+    $crm = crm_cfg(); if (empty($crm['waToken']) || empty($crm['waPhoneId'])) return;
+    $who = (string)($c['name'] ?: ($c['phone'] ?: 'Visitor #' . $cid));
+    $l = ['id' => $cid, 'name' => $who, 'phone' => (string)($c['phone'] ?? ''), 'source' => 'chat', 'service' => 'Live chat', 'message' => $text];
+    $msg = ($tag !== '' ? '🙋 Needs a person' : '💬 New live chat') . ' · ' . tg_chan_label((string)($c['channel'] ?? 'web')) . ' · #' . $cid . "\n" . $who . ': ' . mb_substr($text, 0, 500) . "\n\nReply in Admin → Inbox or on Telegram.";
+    wa_send($crm, $to, $l, $msg);
+    $g = tg_cfg(); $done[$key] = time(); $g['phoneAlerted'] = array_slice($done, -300, null, true); tg_save($g);
 }
 /** Staff who chose "Send alerts to my Telegram" (linked by QR). Returns Telegram user ids. */
 function tg_dm_targets(array $g): array {
@@ -160,7 +172,7 @@ function tg_link_web_chat(string $tgChat, string $payload, string $name): bool {
 
 /* ---------------------------------------------------------------- Admin actions: tg_* */
 function tg_pub(array $c): array {
-    $o = $c; unset($o['token'], $o['secret'], $o['codes']); $o['tokenSet'] = $c['token'] !== ''; $o['linked'] = count((array)$c['links']); $o['dmCount'] = count(tg_dm_targets($c)); unset($o['dmMap'], $o['links']);
+    $o = $c; unset($o['token'], $o['secret'], $o['codes']); $o['tokenSet'] = $c['token'] !== ''; $o['linked'] = count((array)$c['links']); $o['dmCount'] = count(tg_dm_targets($c)); unset($o['dmMap'], $o['links'], $o['phoneAlerted']);
     $o['webhook'] = (isset($_SERVER['HTTP_HOST']) ? 'https://' . $_SERVER['HTTP_HOST'] : SITE) . '/api/telegram.php'; $o['waDown'] = wa_down(); $o['buttonLive'] = tg_button_on();
     return $o;
 }
@@ -174,6 +186,7 @@ function tg_actions(string $action, array $in): bool {
             foreach (['customers', 'alertChats', 'alertLeads', 'alertAppr'] as $k) if (array_key_exists($k, $in)) $c[$k] = !empty($in[$k]);
             if (isset($in['button']) && in_array($in['button'], ['auto', 'always', 'off'], true)) $c['button'] = $in['button'];
             if (isset($in['site']) && in_array($in['site'], ['chat', 'whatsapp', 'telegram'], true)) $c['site'] = $in['site'];
+            if (isset($in['alertPhone'])) { $ap = preg_replace('~\D~', '', (string)$in['alertPhone']); if (str_starts_with($ap, '0')) $ap = '92' . substr($ap, 1); if ($ap !== '' && !preg_match('~^92\d{10}$~', $ap)) fail('Alert phone: use a Pakistani mobile like +92 322 4200768'); $c['alertPhone'] = $ap; }
             if (isset($in['tgUser'])) { $tu = ltrim(trim((string)$in['tgUser']), '@'); $tu = preg_replace('~^https?://t\.me/~i', '', $tu); if ($tu !== '' && !preg_match('~^[A-Za-z0-9_]{5,32}$~', $tu)) fail('Telegram username: 5-32 letters, numbers or _'); $c['tgUser'] = $tu; }
             tg_save($c); log_act($u, 'telegram.settings'); out(['ok' => true, 'cfg' => tg_pub($c)]);
         case 'tg_connect': // check the BotFather token, then point Telegram at our webhook
