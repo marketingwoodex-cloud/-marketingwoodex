@@ -690,3 +690,16 @@ html body .footer .footer-column h3{font-size:.8rem!important;line-height:1.3!im
 @media(max-width:520px){.wx-feat-grid{grid-template-columns:1fr}}
 main .wx-feat-grid li,main .wx-guides li{padding-left:0}
 main .wx-feat-grid li:before,main .wx-guides li:before{display:none}
+
+/* P32 city local section */
+.ct-local-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:36px}
+.ct-local-card{background:#fff;border:1px solid rgba(12,22,40,.08);border-radius:18px;padding:26px}
+.ct-local-card h3{margin:0 0 10px;font-size:1.12rem;color:#0c1628}
+.ct-local-card p{margin:0;color:#5b6472;line-height:1.65;font-size:.96rem}
+.ct-local-faq{margin-top:28px;display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.ct-local-faq div{border-top:1px solid rgba(12,22,40,.14);padding-top:18px}
+.ct-local-faq h3{margin:0 0 8px;font-size:1.02rem;color:#0c1628}
+.ct-local-faq p{margin:0;color:#5b6472;line-height:1.65;font-size:.95rem}
+@media(max-width:860px){.ct-local-grid,.ct-local-faq{grid-template-columns:1fr}}
+.ct-local-card h3{font-size:1.15rem!important;line-height:1.3!important;letter-spacing:-.01em!important}
+.ct-local-faq h3{font-size:1.05rem!important;line-height:1.35!important;letter-spacing:0!important}
