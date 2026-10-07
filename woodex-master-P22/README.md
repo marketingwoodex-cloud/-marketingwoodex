@@ -1,11 +1,11 @@
 # Woodex Master P22 — Hostinger release
 
-Upload BOTH zips: **woodex-master-P22.zip** (website + Admin v2 + installer) and **woodex-P22-setup-files.zip** (example settings).
+Upload ONE file: **woodex-master-P22.zip** (website + Admin v2 + installer + example settings).
 Code source: `frontend-v1/` on this branch. Old P21 zips are deleted — use only P22.
 
 ## Install (PHP 7.4+)
 1. hPanel → Databases → create MySQL DB + user.
-2. File Manager → `public_html` → upload both zips → **Extract** each (Overwrite). Do not use the "website import" tool.
+2. File Manager → `public_html` → upload the zip → **Extract** (Overwrite). Do not use the "website import" tool.
 3. Open `https://woodex.com.pk/wx-install.php` → DB details + your owner name / email / password → Install.
 4. Log in at `/admin/` with that email.
 5. Delete `wx-install.php`, `wx-demo.php`, `wx-check.php`.
@@ -30,4 +30,4 @@ Code source: `frontend-v1/` on this branch. Old P21 zips are deleted — use onl
 
 Backups contain pages + database, but never passwords, API keys, users or `_private` files.
 
-See FEATURES.md, QA-REPORT.md, SECURITY-AUDIT.md, CHANGELOG.md.
+Full check results: P22-DEEP-CHECK-REPORT.md. Also FEATURES.md, CHANGELOG.md.
