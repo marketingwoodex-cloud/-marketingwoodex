@@ -15,12 +15,12 @@
   document.head.appendChild(css);
 
   W.VIEWS.train = function (el) {
-    el.innerHTML = W.head("AI agent", "AI agent · training", '<button class="btn pri" id="tr-save">' + ic("check") + "Save training</button>") + '<div class="card" style="padding:18px">Loading…</div>';
+    el.innerHTML = W.head("AI agent", "AI agent · training", '<button class="btn pri" id="tr-save">' + ic("check") + "Save training</button>") + '<div class="card" id="ld-card" style="padding:18px">Loading…</div>';
     W.fillIcons(el);
     api("chat_cfg_get").then(function (r) {
-      if (!r.ok) { el.querySelector(".card").textContent = r.error; return; }
+      if (!r.ok) { (el.querySelector("#ld-card") || el.querySelector(".card")).textContent = r.error; return; }
       var c = r.cfg, qa = (c.qa || []).slice(), hook = location.origin + "/api/whatsapp.php";
-      el.querySelector(".card").outerHTML = (r.aiReady ? "" : '<div class="banner" style="margin-bottom:12px">Add an AI key first in <a href="#/posts">Blog &amp; insights → AI settings</a>. Without it the assistant cannot answer.</div>') +
+      (el.querySelector("#ld-card") || el.querySelector(".card")).outerHTML = (r.aiReady ? "" : '<div class="banner" style="margin-bottom:12px">Add an AI key first in <a href="#/posts">Blog &amp; insights → AI settings</a>. Without it the assistant cannot answer.</div>') +
         '<div class="tr"><div class="card" style="padding:18px"><div class="tr-tabs">' +
         ["Knowledge & tone", "Q&A pairs", "Prices", "Do not answer", "Hours", "WhatsApp"].map(function (t, i) { return '<button data-i="' + i + '"' + (i ? "" : ' class="on"') + ">" + t + "</button>"; }).join("") + "</div>" +
         // 0 knowledge

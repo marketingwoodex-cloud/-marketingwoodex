@@ -1,7 +1,7 @@
 <?php
 /* WOODEX V20 one-page installer (PHP 7.4+).
    https://woodex.com.pk/wx-install.php → enter the database password → Install.
-   Writes _private/db.json, creates all 16 tables from _database/woodex-v20.sql, creates the login admin / admin.
+   Writes _private/db.json, creates all 20 tables from _database/woodex-v20.sql, creates the login admin / admin.
    Nothing is ever deleted. Delete this file after installing. */
 error_reporting(E_ALL); ini_set('display_errors', '0');
 header('Content-Type: text/html; charset=utf-8'); header('X-Robots-Tag: noindex'); header('Cache-Control: no-store');
