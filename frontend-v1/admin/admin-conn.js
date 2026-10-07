@@ -13,7 +13,7 @@
     ["instagram", "Instagram Messages", "fs", "Answer Instagram DMs and story replies in one place.", "#e1306c", "Instagram business account ID", "Page access token", "Your Instagram must be a Business account linked to the Facebook Page. " + META_HELP],
     ["threads", "Threads", "fs", "Share new projects and articles to Threads.", "#000000", "Threads user ID", "Threads access token", "Create a Threads app at developers.facebook.com → Use cases → Access the Threads API, then generate a user token."],
     ["gbp", "Google Business Profile", "fb", "Keep hours, photos and posts on Google Maps up to date.", "#4285f4", "Business profile name or ID", "API key (optional)", "Open business.google.com and copy the profile name. API access needs an approved Google Cloud project."],
-    ["gmail", "Gmail", "fp", "Send quotations and replies from woodexinterior.pk@gmail.com.", "#ea4335", "Gmail address", "App password", "Google Account → Security → 2-Step Verification → App passwords. Create one called Woodex Admin."],
+    ["gmail", "Gmail", "fp", "Send quotations and replies from woodexinterior.pk@gmail.com.", "#ea4335", "Gmail address", "App password (16 letters)", "Google Account → Security → 2-Step Verification (turn on) → App passwords. Create one called Woodex Admin, paste the 16 letters, then press Test."],
     ["slack", "Slack", "fp", "Post new enquiries to a team channel.", "#4a154b", "Channel name", "Incoming webhook URL", "api.slack.com/apps → Create app → Incoming Webhooks → Add to channel. Paste the webhook URL."],
     ["tiktok", "TikTok", "s", "Link your TikTok for project reels.", "#010101", "TikTok username", "Access token (optional)", "Add the username so it shows on the site. Posting needs a TikTok developer app."],
     ["youtube", "YouTube", "s", "Show project walkthrough videos.", "#ff0000", "Channel ID or @handle", "API key (optional)", "YouTube Studio → Settings → Channel → Advanced settings shows the channel ID."],
@@ -24,7 +24,8 @@
     ["zoho", "Zoho CRM", "b", "Copy new leads into Zoho CRM.", "#e42527", "Organisation ID", "Client secret / token", "api-console.zoho.com → Self client → generate a code."],
     ["calendly", "Calendly", "bp", "Let clients book site visits.", "#006bff", "Booking page URL", "Personal access token (optional)", "Calendly → Integrations → API & webhooks."],
     ["gcal", "Google Calendar", "p", "Add site visits to the team calendar.", "#1a73e8", "Calendar ID", "API key (optional)", "Google Calendar → Settings → your calendar → Integrate calendar → Calendar ID."],
-    ["gdrive", "Google Drive", "p", "Keep drawings and quotations in a shared folder.", "#0f9d58", "Folder link", "", "Share the folder with your team and paste its link."],
+    ["gdrive", "Google Drive", "p", "Keep drawings, quotations and backups in a shared Drive folder.", "#0f9d58", "Folder link (https://drive.google.com/drive/folders/…)", "", "Open the folder in Google Drive → Share → add your team → Copy link, then paste it here."],
+    ["github", "GitHub", "fp", "Keep a copy of the website code in a private GitHub repository.", "#24292f", "Repository (owner/name)", "Personal access token", "github.com → Settings → Developer settings → Fine-grained tokens → Generate. Pick only this repository, Contents: Read and write. Paste the token and owner/repo, then press Test."],
     ["notion", "Notion", "p", "Track projects in a Notion database.", "#000000", "Database ID", "Integration secret", "notion.so/my-integrations → New integration, then share the database with it."],
     ["trello", "Trello", "p", "Turn won leads into Trello cards.", "#0079bf", "Board ID", "API key + token", "trello.com/power-ups/admin → New → API key."],
     ["teams", "Microsoft Teams", "p", "Post enquiry alerts to a Teams channel.", "#5059c9", "Channel name", "Workflow webhook URL", "Teams channel → … → Workflows → Post to a channel when a webhook request is received."],
@@ -32,7 +33,7 @@
     ["make", "Make", "bp", "Automate workflows with a Make scenario.", "#6d00cc", "Scenario name", "Webhook URL", "make.com → Create scenario → Webhooks → Custom webhook."],
     ["custom", "Any app (custom)", "", "Connect any service with an API key or webhook.", "#465fff", "Account / user ID", "API key, token or webhook URL", "Paste the details the other app gives you. Add a test address (https://…) to check it answers."]
   ];
-  var FEAT = ["facebook", "messenger", "instagram", "threads", "gbp", "gmail", "slack", "zapier"];
+  var FEAT = ["gmail", "gdrive", "github", "facebook", "messenger", "instagram", "gbp", "slack", "zapier"];
   var TABS = [["f", "Featured"], ["b", "Business"], ["s", "Social & Entertainment"], ["p", "Productivity"], ["all", "See all"]];
   var tab = "f", q = "", mine = null;
   function cat(id) { for (var i = 0; i < CAT.length; i++) if (CAT[i][0] === id) return CAT[i]; return CAT[CAT.length - 1]; }

@@ -13,7 +13,7 @@
     ".p36-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.p36-row b{flex:1;min-width:200px;font-weight:600}" +
     ".p36-row .btn{margin-left:auto}.p36-pages{margin:8px 0 0;padding:10px 12px;background:var(--bg,#f6f7f9);border-radius:10px;font-size:13px;max-height:220px;overflow:auto}" +
     ".p36-pages a{display:inline-block;margin:2px 10px 2px 0}.p36-st{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;font-size:12px;font-weight:700;flex:none}" +
-    ".p36-st.ok{background:var(--ok-soft);color:var(--ok)}.p36-st.warn{background:var(--warn-soft);color:var(--warn)}.p36-st.you{background:var(--info-soft);color:var(--info)}" +
+    ".p36-st.ok{background:var(--ok-soft);color:var(--ok)}.p36-st.warn{background:var(--warn-soft);color:var(--warn)}.p36-st svg{width:13px;height:13px}.p36-st.you{background:#eef2ff;color:#465fff}.p36-key{display:flex;align-items:center;gap:6px;flex-wrap:wrap}.p36-key .p36-st{width:18px;height:18px}.p36-key .p36-st svg{width:11px;height:11px}.p36-st.you{background:var(--info-soft);color:var(--info)}" +
     ".p36-sum{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}@media(max-width:640px){.p36-row b{min-width:0;flex-basis:calc(100% - 40px)}.p36-row .btn{margin-left:0}}";
   document.head.appendChild(css);
 
@@ -81,7 +81,7 @@
   function pendingCard(box) {
     var card = document.createElement("div"); card.className = "card p36-card"; card.id = "p36-tasks";
     card.innerHTML = "<h3>Pending tasks</h3><p class='muted'>Detected live from the website and your integrations. Done items tick themselves.</p><div class='muted'>Checking…</div>";
-    box.insertBefore(card, box.firstChild);
+    card.style.marginTop = "18px"; box.appendChild(card); /* P21: moved from top to bottom of the dashboard */
     var fetchText = function (u) { return fetch(u + "?p36=" + Date.now(), { credentials: "same-origin" }).then(function (r) { return r.ok ? r.text() : ""; }).catch(function () { return ""; }); };
     Promise.all([seoTodo().catch(function () { return null; }), api("crm_wa_status").catch(function () { return {}; }), api("gdata_status").catch(function () { return {}; }), fetchText("/book-a-visit/"), fetchText("/projects/")]).then(function (r) {
       var d = r[0], wa = r[1] || {}, g = r[2] || {}, book = r[3], proj = r[4];
@@ -97,11 +97,11 @@
         [/design stud/i.test(proj) ? "you" : "ok", "Real project photos", /design stud/i.test(proj) ? "Projects still show design studies; send real photos" : "Done", "#/portfolio", "Portfolio"],
         ["you", "Real Google reviews", "Slider now links to Google; paste real reviews to replace the sample cards", "#/testimonials", "Testimonials"]
       ];
-      var sym = { ok: "✓", warn: "!", you: "→" }, open = T.filter(function (t) { return t[0] !== "ok"; }).length;
+      var sym = { ok: ic("check"), warn: ic("info"), you: ic("edit") }, open = T.filter(function (t) { return t[0] !== "ok"; }).length;
       card.querySelector("h3").innerHTML = "Pending tasks <span class='badge " + (open ? "warn" : "ok") + "'>" + open + " open</span>";
       card.lastChild.outerHTML = '<ul class="p36-list">' + T.map(function (t) {
         return '<li><div class="p36-row"><span class="p36-st ' + t[0] + '">' + sym[t[0]] + "</span><b>" + t[1] + '</b><span class="muted">' + t[2] + '</span><a class="btn sm" href="' + t[3] + '">' + t[4] + "</a></div></li>";
-      }).join("") + "</ul><p class='muted' style='margin:10px 0 0;font-size:12px'>→ needs your input · ! needs work · ✓ done</p>";
+      }).join("") + "</ul><p class='muted p36-key' style='margin:10px 0 0;font-size:12px'><span class='p36-st you'>" + sym.you + "</span> needs your input <span class='p36-st warn'>" + sym.warn + "</span> needs work <span class='p36-st ok'>" + sym.ok + "</span> done</p>";
     });
   }
   var dashOrig = VIEWS.dashboard;

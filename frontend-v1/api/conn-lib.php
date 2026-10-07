@@ -16,7 +16,24 @@ function conn_actions(string $action, array $in): bool {
     if ($action === 'conn_test') {
         $i = $find((string)($in['id'] ?? '')); if ($i < 0) fail('Connector not found', 404);
         $c = &$items[$i]; $url = (string)($c['url'] ?? ''); $msg = 'Saved. No test address, so nothing to check.'; $ok = !empty($c['secret']) || !empty($c['account']);
-        if ($url !== '' && preg_match('~^https://~i', $url)) {
+        $key = (string)($c['key'] ?? ''); $acc = trim((string)($c['account'] ?? '')); $sec = (string)($c['secret'] ?? '');
+        if ($key === 'github') { /* P21: real check with the GitHub API */
+            if (!preg_match('~^[\w.-]+/[\w.-]+$~', $acc) || $sec === '') { $ok = false; $msg = 'Enter the repository as owner/name and a token.'; }
+            else {
+                $ctx = stream_context_create(['http' => ['method' => 'GET', 'timeout' => 10, 'ignore_errors' => true, 'header' => "User-Agent: WoodexAdmin\r\nAccept: application/vnd.github+json\r\nAuthorization: Bearer $sec\r\n"]]);
+                $r = @file_get_contents('https://api.github.com/repos/' . $acc, false, $ctx, 0, 20000); $code = 0;
+                foreach ((array)($http_response_header ?? []) as $h) if (preg_match('~^HTTP/\S+\s+(\d+)~', $h, $m)) $code = (int)$m[1];
+                $j = json_decode((string)$r, true) ?: []; $ok = $code === 200;
+                $msg = $ok ? 'Connected to ' . ($j['full_name'] ?? $acc) . (!empty($j['private']) ? ' (private)' : ' (public: make it private!)') . (empty($j['permissions']['push']) ? ' · token can only read' : ' · write access OK')
+                    : ($code === 401 ? 'Token rejected. Create a new token.' : ($code === 404 ? 'Repository not found, or the token has no access to it.' : 'GitHub did not answer (HTTP ' . $code . ')'));
+            }
+        } elseif ($key === 'gmail') {
+            $ok = (bool)filter_var($acc, FILTER_VALIDATE_EMAIL) && strlen(preg_replace('~\s+~', '', $sec)) === 16;
+            $msg = $ok ? 'Gmail address and 16-letter app password look right. Use them in Settings → Email (SMTP smtp.gmail.com, port 587).' : 'Enter a Gmail address and the 16-letter app password (not your normal password).';
+        } elseif ($key === 'gdrive') {
+            $ok = (bool)preg_match('~^https://drive\.google\.com/(drive/(u/\d+/)?folders/|open\?id=)[\w-]+~', $acc . ' ') || (bool)preg_match('~^https://drive\.google\.com/~', $url);
+            $msg = $ok ? 'Drive folder link saved. Your team opens it from Settings → Integrations.' : 'Paste a folder link that starts with https://drive.google.com/drive/folders/';
+        } elseif ($url !== '' && preg_match('~^https://~i', $url)) {
             $ctx = stream_context_create(['http' => ['method' => 'GET', 'timeout' => 8, 'ignore_errors' => true, 'header' => "User-Agent: WoodexAdmin\r\n"]]);
             $r = @file_get_contents($url, false, $ctx, 0, 2048); $code = 0;
             foreach ((array)($http_response_header ?? []) as $h) if (preg_match('~^HTTP/\S+\s+(\d+)~', $h, $m)) $code = (int)$m[1];
