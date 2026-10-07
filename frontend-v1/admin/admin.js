@@ -78,26 +78,28 @@
   // ---------------------------------------------------------------- navigation
   /* P16: TailAdmin-style grouped menu. ["Heading"] · [view, label, icon, roles] · { g: label, icon, id, items: [...] } (dropdown) */
   var NAV = [
-    ["Menu"],
-    ["dashboard", "Dashboard", "layout-dashboard"],
+    ["Home"],
+    ["dashboard", "Home", "layout-dashboard"],
     ["approvals", "Approvals", "shield-check", "owner,admin,editor"],
     ["Sales"],
-    ["enquiries", "Enquiries & leads", "inbox", "g:sales"],
+    ["enquiries", "Leads", "inbox", "g:sales"],
     ["pipeline", "Pipeline", "kanban", "g:sales"],
-    ["bookings", "Bookings", "clock", "g:sales", null, "new"],
+    ["bookings", "Bookings", "clock", "g:sales"],
     ["clients", "Clients", "contact", "g:sales"],
     { g: "Quotes & invoices", icon: "file-text", id: "money", items: [
       ["quotes", "Quotations", "file-text", "g:sales"],
       ["invoices", "Invoices", "receipt", "g:sales"],
-      ["transactions", "Transactions", "receipt", "g:sales", null, "new"],
+      ["transactions", "Payments", "receipt", "g:sales"],
       ["templates", "Quote templates", "layers", "g:sales"]] },
     ["projects", "Projects", "briefcase", "g:sales,g:support_view"],
-    ["offers", "WhatsApp", "send", "g:broadcast"],
-    ["wauto", "WhatsApp automation", "zap", "g:broadcast", null, "hide"],
-    ["Support"],
+    ["Conversations"],
     ["chat", "Inbox", "message-circle", "g:conversations"],
+    { g: "WhatsApp", icon: "send", id: "wa", items: [
+      ["offers", "Broadcasts & offers", "send", "g:broadcast"],
+      ["wauto", "Automations", "zap", "g:broadcast"],
+      ["settings/connections", "Connect WhatsApp", "zap", "g:settings"]] },
     ["updates", "Client updates", "send", "g:updates"],
-    ["train", "Train AI", "sparkles", "g:ai"],
+    ["train", "AI agent", "sparkles", "g:ai"],
     ["Website"],
     { g: "Pages & builder", icon: "square-pen", id: "site", items: [
       ["pages", "All pages", "file-text", "g:website"],
@@ -107,38 +109,43 @@
       ["heroes", "Hero slides", "image", "g:website"],
       ["redirects", "Redirects", "refresh-cw", "g:website"]] },
     { g: "Content", icon: "book-open", id: "content", items: [
-      ["blog", "Blog & insights", "book-open", "g:website"],
-      ["pagetpl", "Page templates", "layers", "g:website", null, "new"],
-      ["estimator", "Estimator", "gauge", "g:website", null, "new"],
-      ["forms", "Forms", "file-text", "g:website", null, "new"],
+      ["blog", "Blog", "book-open", "g:website"],
       ["portfolio", "Portfolio", "image", "g:website"],
       ["services", "Service pages", "layers", "g:website"],
       ["cities", "City pages", "map-pin", "g:website"],
-      ["faqs", "FAQ groups", "help-circle", "g:website"],
+      ["pagetpl", "Page templates", "layers", "g:website"],
+      ["forms", "Forms", "file-text", "g:website"],
+      ["estimator", "Estimator", "gauge", "g:website"],
+      ["faqs", "FAQs", "help-circle", "g:website"],
       ["testimonials", "Testimonials", "message-square", "g:website"],
-      ["logos", "Client logos", "image", "g:website", null, "new"],
-      ["team", "Team (on website)", "users", "g:website"]] },
-    ["media", "Media library", "image", "g:website"],
-    ["Marketing"],
+      ["logos", "Client logos", "image", "g:website"],
+      ["team", "Team", "users", "g:website"]] },
+    ["media", "Media", "image", "g:website"],
     ["seo", "SEO", "search", "g:website"],
     ["speed", "Speed", "gauge", "g:website"],
     ["health", "Site health", "heart-pulse", "g:website"],
-    ["Settings"],
-    { g: "Settings", icon: "settings", id: "settings", items: [
-      ["business", "Business info", "building", "g:settings"],
-      ["theme", "Theme, colours & fonts", "sparkles", "g:settings"],
-      ["settings", "Integrations & APIs", "zap", "g:settings"],
-      ["users", "Users & roles", "users", "owner,admin"],
+    ["theme", "Theme", "sparkles", "g:settings"],
+    ["Admin"],
+    ["business", "Business info", "building", "g:settings"],
+    ["settings", "Integrations", "zap", "g:settings"],
+    ["users", "Users & roles", "users", "owner,admin"],
+    { g: "System", icon: "settings", id: "settings", items: [
       ["backups", "Backups", "hard-drive", "owner,admin"],
-      ["maintenance", "Maintenance & error pages", "shield", "g:settings"],
-      ["files", "File manager", "folder", "g:website"],
       ["database", "Database", "database", "owner,admin"],
+      ["files", "File manager", "folder", "g:website"],
+      ["maintenance", "Maintenance", "shield", "g:settings"],
       ["activity", "Activity log", "activity", "g:settings"],
       ["system", "System check", "activity", "g:settings"]] },
+    ["Me"],
+    ["profile", "My profile", "user"],
     ["security", "My security", "shield"]
   ];
+  /* P39 Phase 3: collapsible sections + per-user pinned screens */
+  var navSec = (function () { try { return JSON.parse(localStorage.getItem("wxNavSec") || "{}"); } catch (e) { return {}; } })();
+  function pinKey() { return "wxPins" + (S.user ? S.user.id : ""); }
+  function pins() { try { return JSON.parse(localStorage.getItem(pinKey()) || "[]"); } catch (e) { return []; } }
   var navOpen = (function () { try { return JSON.parse(localStorage.getItem("wxNavOpen") || "{}"); } catch (e) { return {}; } })();
-  function navLink(n, sub) { return '<a class="nav-a' + (sub ? " sub" : "") + (n[4] ? " soon" : "") + '" href="#/' + n[0] + '" data-v="' + n[0] + '" title="' + n[1] + '">' + ic(n[2]) + "<span>" + n[1] + "</span>" + (n[4] ? '<span class="pill">' + n[4] + "</span>" : "") + (n[5] === "new" ? '<span class="nav-new">NEW</span>' : "") + '<span class="nav-bdg" data-bdg="' + n[0] + '" hidden></span></a>'; }
+  function navLink(n, sub) { return '<a class="nav-a' + (sub ? " sub" : "") + (n[4] ? " soon" : "") + '" href="#/' + n[0] + '" data-v="' + n[0] + '" title="' + n[1] + '">' + ic(n[2]) + "<span>" + n[1] + "</span>" + (n[4] ? '<span class="pill">' + n[4] + "</span>" : "") + (n[5] === "new" ? '<span class="nav-new">NEW</span>' : "") + '<span class="nav-bdg" data-bdg="' + n[0] + '" hidden></span><span class="nav-pin' + (pins().indexOf(n[0]) > -1 ? " on" : "") + '" data-pin="' + n[0] + '" title="Pin to top">★</span></a>'; }
   // P16: live count badges (new leads, chats needing a reply)
   function navBadges() {
     if (!S.user) return;
@@ -152,16 +159,22 @@
   setInterval(function () { if (!document.hidden) navBadges(); }, 60000);
   function renderNav() {
     var ok = function (n) { return n[5] !== "hide" && (!n[3] || can(n[3])); }, out = [], pendingH = null; /*P19 D: hidden = reachable via hub tabs only*/
+    var sec = null, flat = {}, secs = [];
     NAV.forEach(function (n) {
-      if (Array.isArray(n) && n.length === 1) { pendingH = n[0]; return; }
+      if (Array.isArray(n) && n.length === 1) { sec = { name: n[0], html: [] }; secs.push(sec); return; }
       var html;
-      if (n.g) { var its = n.items.filter(ok); if (!its.length) return;
-        html = '<div class="nav-g' + (navOpen[n.id] ? " open" : "") + '" data-g="' + n.id + '"><button type="button" class="nav-a nav-gb" title="' + n.g + '">' + ic(n.icon) + "<span>" + n.g + '</span><span class="nav-car">' + ic("chevron-down") + '</span></button><div class="nav-sub">' + its.map(function (x) { return navLink(x, true); }).join("") + "</div></div>";
-      } else { if (!ok(n)) return; html = navLink(n); }
-      if (pendingH) { out.push('<div class="nav-h">' + pendingH + "</div>"); pendingH = null; }
-      out.push(html);
+      if (n.g) { var its = n.items.filter(ok); if (!its.length) return; its.forEach(function (x) { flat[x[0]] = x; });
+        html = '<div class="nav-g' + (navOpen[n.id] ? " open" : "") + '" data-g="' + n.id + '"><button type="button" class="nav-a nav-gb" title="' + n.g + '">' + ic(n.icon) + "<span>" + n.g + '</span><span class="nav-car">' + ic("chevron-down") + '</span></button><div class="nav-sub">' + its.map(function (x) { return navLink(x, 1); }).join("") + "</div></div>";
+      } else { if (!ok(n)) return; flat[n[0]] = n; html = navLink(n); }
+      sec.html.push(html);
     });
+    var pn = pins().filter(function (v) { return flat[v]; });
+    if (pn.length) out.push('<div class="nav-sec pinned"><div class="nav-h">★ Pinned</div>' + pn.map(function (v) { return navLink(flat[v]); }).join("") + "</div>");
+    secs.forEach(function (x) { if (!x.html.length) return; var shut = navSec[x.name] && x.name !== "Home";
+      out.push('<div class="nav-sec' + (shut ? " shut" : "") + '" data-s="' + x.name + '">' + (x.name === "Home" ? "" : '<button type="button" class="nav-h nav-hb">' + x.name + '<span class="nav-car">' + ic("chevron-down") + "</span></button>") + '<div class="nav-sb">' + x.html.join("") + "</div></div>"); });
     $("#nav").innerHTML = out.join("");
+    $$(".nav-hb").forEach(function (h) { h.onclick = function () { var x = h.parentNode; x.classList.toggle("shut"); navSec[x.dataset.s] = x.classList.contains("shut"); localStorage.setItem("wxNavSec", JSON.stringify(navSec)); }; });
+    $$(".nav-pin").forEach(function (p) { p.onclick = function (e) { e.preventDefault(); e.stopPropagation(); var l = pins(), v = p.dataset.pin, i = l.indexOf(v); if (i > -1) l.splice(i, 1); else l.push(v); localStorage.setItem(pinKey(), JSON.stringify(l.slice(-8))); renderNav(); route0Mark(); }; });
     setTimeout(navBadges, 400);
     $$(".nav-gb").forEach(function (b) { b.onclick = function () { var g = b.parentNode; if ($("#app").classList.contains("mini")) { $("#app").classList.remove("mini"); g.classList.add("open"); } else g.classList.toggle("open"); navOpen[g.dataset.g] = g.classList.contains("open"); try { localStorage.setItem("wxNavOpen", JSON.stringify(navOpen)); } catch (e) {} }; });
     $$("[data-roles]").forEach(function (a) { a.hidden = !can(a.dataset.roles); });
@@ -251,6 +264,10 @@
 
   // ---------------------------------------------------------------- router
   window.addEventListener("hashchange", route);
+  function route0Mark(v) {
+    v = v || S.view;
+    var nv = { quote: "quotes", template: "templates", invoice: "invoices", post: "blog", study: "portfolio", fields: "services", citydraft: "cities" }[v] || v; $$(".nav-a").forEach(function (a) { a.classList.toggle("on", a.dataset.v === nv); }); $$(".nav-g").forEach(function (g) { var has = !!g.querySelector('.nav-a[data-v="' + nv + '"]'); g.classList.toggle("has-on", has); if (has) g.classList.add("open"); }); $$(".nav-sec.shut").forEach(function (x) { if (x.querySelector(".nav-a.on")) x.classList.remove("shut"); });
+  }
   function route() {
     if (!S.user) return;
     var parts = (location.hash.replace(/^#\/?/, "") || "dashboard").split("/"), v = parts[0];
@@ -262,7 +279,7 @@
     if (!def && v !== "profile") v = "dashboard", def = find("dashboard");
     if (def && def[3] && !can(def[3])) { v = "dashboard"; toast("You do not have access to that section", true); }
     S.view = v; S.charts.forEach(function (c) { c.destroy(); }); S.charts = [];
-    var nv = { quote: "quotes", template: "templates", invoice: "invoices", post: "blog", study: "portfolio", fields: "services", citydraft: "cities" }[v] || v; $$(".nav-a").forEach(function (a) { a.classList.toggle("on", a.dataset.v === nv); }); $$(".nav-g").forEach(function (g) { var has = !!g.querySelector('.nav-a[data-v="' + nv + '"]'); g.classList.toggle("has-on", has); if (has) g.classList.add("open"); });
+    route0Mark(v);
     $("#app").classList.remove("open");
     var old = $("#view"), view = old.cloneNode(false); old.parentNode.replaceChild(view, old); view.className = "content"; /* fresh element: listeners from the previous screen can never fire here */ $("#app").classList.toggle("mini", v === "builder" && innerWidth > 1024 ? true : $("#app").classList.contains("mini") && S.lastView !== "builder");
     S.lastView = v;

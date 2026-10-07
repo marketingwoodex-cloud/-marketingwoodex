@@ -33,7 +33,7 @@
     if (parts && parts[0] === "classic") return OLD.enquiries(el, []);
     var st = S.s17q || (S.s17q = { month: today().slice(0, 7), line: "", who: "", stage: "", q: "", tab: "all" });
     var admin = can("owner,admin");
-    el.innerHTML = head("Enquiries & leads", "Enquiries", '<a class="btn" href="#/enquiries/classic">' + ic("layers") + 'Classic list</a><a class="btn" href="#/pipeline">' + ic("kanban") + "Pipeline</a>" +
+    el.innerHTML = head("Leads", "Leads", '<a class="btn" href="#/enquiries/classic">' + ic("layers") + 'Classic list</a><a class="btn" href="#/pipeline">' + ic("kanban") + "Pipeline</a>" +
         (admin ? '<button class="btn" id="s17-imp">' + ic("upload") + "Import sheet</button>" : "") + '<button class="btn" id="s17-exp">' + ic("download") + 'Export</button><button class="btn pri" id="s17-add">' + ic("plus") + "Add lead</button>") +
       '<div class="s17-bar"><div class="s17-month"><button class="icon-btn" id="s17-prev" title="Previous month">‹</button><select id="s17-m"></select><button class="icon-btn" id="s17-next" title="Next month">›</button></div>' +
       '<div class="seg" id="s17-lines"></div></div>' +

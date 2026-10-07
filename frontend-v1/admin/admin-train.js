@@ -15,7 +15,7 @@
   document.head.appendChild(css);
 
   W.VIEWS.train = function (el) {
-    el.innerHTML = W.head("Train AI", "Train AI", '<button class="btn pri" id="tr-save">' + ic("check") + "Save training</button>") + '<div class="card" style="padding:18px">Loading…</div>';
+    el.innerHTML = W.head("AI agent", "AI agent · training", '<button class="btn pri" id="tr-save">' + ic("check") + "Save training</button>") + '<div class="card" style="padding:18px">Loading…</div>';
     W.fillIcons(el);
     api("chat_cfg_get").then(function (r) {
       if (!r.ok) { el.querySelector(".card").textContent = r.error; return; }
