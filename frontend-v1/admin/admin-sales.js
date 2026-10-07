@@ -276,7 +276,7 @@
   // =========================================================== TEMPLATES
   W.VIEWS.templates = function (el) {
     var admin = can("owner,admin");
-    el.innerHTML = head("Quotation templates", "Templates", (admin ? '<button class="btn" id="tp-st">' + ic("sparkles") + 'Import Woodex starter templates</button><button class="btn pri" id="tp-new">' + ic("plus") + "New template</button>" : "")) +
+    el.innerHTML = head("Quotation templates", "Templates", (admin ? '<button class="btn" id="tp-st">' + ic("sparkles") + 'Import Woodex starter templates</button><button class="btn ghost" id="tp-file">' + ic("upload") + 'Import from file</button><input type="file" id="tp-fin" accept=".json,application/json" hidden><button class="btn pri" id="tp-new">' + ic("plus") + "New template</button>" : "")) +
       '<p class="muted" style="margin:-8px 0 18px">One template per type of work. A quotation made from a template can be changed freely for each client.</p><div class="tp-grid" id="tp-g"><div class="empty">Loading…</div></div>';
     var load = function () {
       api("tpl_list").then(function (r) {
@@ -299,6 +299,12 @@
       var list = (window.WX_QUOT_TEMPLATES || []).map(function (t) { return { name: t.name, kind: kindOf(t.name), description: t.description, sections: t.sections, terms: t.terms }; });
       api("tpl_import", { templates: list }).then(function (x) { if (!x.ok) return toast(x.error, true); toast(x.imported + " templates imported ✓"); load(); });
     };
+    if ($("#tp-file")) { $("#tp-file").onclick = function () { $("#tp-fin").click(); };
+      $("#tp-fin").onchange = function () { var f = this.files[0]; if (!f) return; var rd = new FileReader();
+        rd.onload = function () { var d; try { d = JSON.parse(rd.result); } catch (e) { return toast("That file is not a valid templates JSON", true); }
+          var list = Array.isArray(d) ? d : (d.templates || []); if (!list.length) return toast("No templates found in the file", true);
+          api("tpl_import", { templates: list }).then(function (x) { if (!x.ok) return toast(x.error, true); toast(x.imported + " new templates imported (existing names skipped) ✓"); load(); }); };
+        rd.readAsText(f); this.value = ""; }; }
     load();
   };
   W.VIEWS.template = function (el, parts) {

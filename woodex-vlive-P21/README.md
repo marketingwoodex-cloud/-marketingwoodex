@@ -1,6 +1,6 @@
 # Woodex Live P21 — complete release
 
-One zip for Hostinger: **woodex-v21-master.zip** (website + Admin v2 + database installer).
+One zip for Hostinger: **woodex-live-P21.zip** (website + Admin v2 + database installer).
 Code source (browsable): `frontend-v1/` on this branch. Commit: `3e7c11c`.
 
 ## Install (Hostinger, PHP 7.4+)
@@ -25,3 +25,11 @@ Code source (browsable): `frontend-v1/` on this branch. Commit: `3e7c11c`.
 WhatsApp Cloud API · Telegram bot (BotFather) · Meta Page token (FB/IG) · LinkedIn · Google Business · AI key (Claude/OpenAI/OpenRouter/local) · Turnstile · SMTP.
 
 See FEATURES.md, QA-REPORT.md, SECURITY-AUDIT.md, CHANGELOG.md.
+
+## Templates
+`_templates/` (web-blocked) has backup copies of all templates. If any are missing: Admin → Sales → Templates → **Import from file**. See `_templates/README.md`.
+
+## Logins
+First login `admin` / `admin` (change it). Fill `CREDENTIALS-TEMPLATE.md` offline — real passwords are never stored in the zip.
+
+Also: TODO-PLAN.md.
