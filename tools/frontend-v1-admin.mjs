@@ -15,10 +15,10 @@ const ACT_GROUPS = [
   ["self", /^(tg_link_code|tg_unlink|me|me_get|me_save|me_avatar|me_avatars|profile|password|logout|ping|poll|notif_poll|typing|dashboard|dash_data|site_stats|leads_count|mt_get|sec_(get|alerts|2fa_begin|2fa_enable|2fa_disable|recovery_new|revoke)|google_(me|link|unlink))$/],
   ["master", /^(user_save|sec_2fa_reset|backup_(run|delete|restore)|restore|dbx_row|db_reconnect|google_save|mcp_token_(new|regen|revoke|toggle))$/],
   ["support_view", /^(client_360|get_lead|projs_list)$/],
-  ["updates", /^(proj_update)$/],
+  ["updates", /^(proj_update|notify_proj_send)$/],
   ["conversations", /^(chat_(list|get|reply|close|file|mode|lead|typing|assign|note|tags|suggest)|wa_stats|whatsapp_stats|crm_wa_status)$/],
   ["ai", /^(chat_cfg_get|chat_cfg_save|chat_test|ai_test|ai_report|ai_unans_list|ai_unans_add|ai_unans_ignore)$/],
-  ["broadcast", /^(crm_offers|crm_offer_(save|send|delete)|wag_[a-z_]+)$/],
+  ["broadcast", /^(crm_offers|crm_offer_(save|send|delete)|wag_[a-z_]+|wah_[a-z_]+)$/],
   ["sales", /^(leads?_[a-z0-9_]+|add_lead_note|lead_note|get_lead|list_leads|clients?_[a-z0-9_]+|list_clients|quotes?_[a-z_]+|get_quote|list_quotes|create_quote_draft|invs?_[a-z_]+|pay_(add|delete)|projs?_[a-z_]+|bk_[a-z_]+|est_[a-z_]+|s17_meta|dash_target_save|monthly_report|tpl_(list|save|delete|import)|company_get)$/],
   ["settings", /^(tg_(get|save|connect|disconnect|test)|set_[a-z_]+|crm_settings|crm_settings_save|crm_test|crm_wa_connect|crm_wa_disconnect|notify_(get|save|test)|company_save|cms_biz_[a-z_]+|cms_ai_[a-z_]+|cms_announce_[a-z_]+|mt_set|sys_check|activity|google_cfg|health_settings|sheets_[a-z_]+|gdata_(save|clear))$/],
   ["website", /^(cms_[a-z_]+|page_[a-z_]+|pages|pages_list|list_pages|seo_[a-z_]+|blocks_[a-z_]+|global_[a-z_]+|chrome_[a-z_]+|theme|theme_get|media|media_[a-z_]+|fm_[a-z_]+|redirects|redirects_[a-z_]+|r404_[a-z_]+|health_(get|psi|scan|speed)|forms_(get|save)|gdata_(status|report)|backups|backup_(list|get)|users|dbx_(browse|export|tables)|mcp_(tokens|log))$/]
@@ -864,13 +864,13 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
   }
   /* P18 G mirror: WhatsApp automation (mirrors api/p18g-lib.php). The preview has no real WhatsApp number, so sends are SIMULATED (fake message ids). */
   const WAGF = path.join(PRIV, "wa-auto.json");
-  const WAG_FLOWS = { welcome: "New enquiry → welcome", quote: "Quote sent → follow-up", invoice: "Invoice due → reminder", booking: "Site visit → reminder the day before" };
+  const WAG_FLOWS = { welcome: "New enquiry → welcome", quote: "Quote sent → 1st follow-up", quote2: "Quote sent → 2nd follow-up", quote3: "Quote sent → last follow-up", invoice: "Invoice due → reminder", booking: "Site visit → reminder the day before" };
   const WAG_VARS = { "{name}": "First name", "{fullname}": "Full name", "{company}": "Company", "{city}": "City", "{ref}": "Quote / invoice no.", "{amount}": "Amount (Rs)", "{date}": "Date", "{time}": "Time", "{link}": "Link" };
   const WAG_STOP = /^\s*(stop|unsubscribe|band karo|بند|ruk jao|no more)\s*[.!]*\s*$/iu;
   const dts = (ms) => new Date(ms).toISOString().slice(0, 19).replace("T", " ");
   function wagLoad() {
     const d = jr(WAGF, {}); d.cfg = { dailyCap: 250, perTick: 25, cronKey: "", quietFrom: "21:00", quietTo: "09:00", ...(d.cfg || {}) }; if (!d.cfg.cronKey) d.cfg.cronKey = crypto.randomBytes(12).toString("hex");
-    const fl = d.flows || {}; for (const k of Object.keys(WAG_FLOWS)) fl[k] = { on: false, tpl: "", params: [], days: k === "quote" ? 2 : 1, sent: 0, failed: 0, ...(fl[k] || {}) }; d.flows = fl;
+    const fl = d.flows || {}; for (const k of Object.keys(WAG_FLOWS)) fl[k] = { on: false, tpl: "", params: [], days: ({ quote: 1, quote2: 3, quote3: 7 })[k] || 1, sent: 0, failed: 0, ...(fl[k] || {}) }; d.flows = fl;
     for (const k of ["tpls", "segs", "camps"]) d[k] = d[k] || []; for (const k of ["optout", "day", "flowlog", "mid"]) d[k] = d[k] || {}; return d;
   }
   const wagSave = (d) => jw(WAGF, d);
@@ -940,9 +940,28 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
     wagSave(d); return stopped;
   }
   async function p18g(action, inp, need, db, ip) {
-    if (!/^wag_/.test(action)) return null;
+    if (!/^wa[gh]_/.test(action)) return null;
     const OA = ["owner", "admin"], SL = ["owner", "admin", "sales"];
+    // P39 Phase 6 mirror (wahub-lib.php)
+    const WAH_ST = { new: "New", contacted: "Contacted", visit: "Site visit", quote: "Quote sent", won: "Won", lost: "Lost" };
+    const hubCfg = (d) => ({ remindHours: 24, remindChats: true, remindLeads: true, waba: "", ...(d.hub || {}) });
     switch (action) {
+      case "wah_overview": { const u = need(SL), d = wagLoad(); ensureCrm(db); const day = (i) => new Date(Date.now() - i * 864e5).toISOString().slice(0, 10); let wk = 0; for (let i = 0; i < 7; i++) wk += +(d.day[day(i)] || 0);
+        const tot = { sent: 0, delivered: 0, read: 0, replied: 0, failed: 0 }; d.camps.forEach((c) => { const x = wagStats(c); for (const k in tot) tot[k] += x[k]; });
+        const rules = d.rules || []; let fl = 0; Object.values(d.flows).forEach((f) => (fl += +f.sent || 0)); rules.forEach((r) => (fl += +r.sent || 0));
+        const ch = (db.chats || []).filter((c) => c.status === "open" && c.channel === "wa"); const hub = hubCfg(d);
+        return { ok: true, connected: false, today: +(d.day[day(0)] || 0), week: wk, cap: d.cfg.dailyCap, camp: tot, camps: d.camps.length, running: d.camps.filter((c) => ["sending", "scheduled"].includes(c.status)).length,
+          flowsOn: Object.values(d.flows).filter((f) => f.on).length + rules.filter((r) => r.on).length, autoSent: fl, optout: Object.keys(d.optout || {}).length, tpls: d.tpls.length, approved: d.tpls.filter((t) => t.status === "APPROVED").length,
+          wa: { open: ch.length, waiting: ch.filter((c) => c.needs).length }, lastTick: d.lastTick || null, hub: OA.includes(u.role) ? hub : { ...hub, waba: undefined }, rules, stages: WAH_ST,
+          users: db.users.filter((x) => x.active !== false && ["owner", "admin", "sales", "support"].includes(x.role)).map((x) => ({ id: x.id, name: x.name })), tplList: d.tpls.map((t) => ({ id: t.id, label: t.label, params: t.params, status: t.status || "" })), vars: { "{name}": "First name", "{fullname}": "Full name", "{company}": "Company", "{city}": "City" } }; }
+      case "wah_rule_save": { const u = need(OA), d = wagLoad(), r = inp.rule || {}, t = r.tpl ? wagTpl(d, r.tpl) : null; const stage = WAH_ST[r.stage] ? r.stage : "new", days = Math.max(0, Math.min(90, +r.days || 0));
+        const o = { id: /^[a-f0-9]{6,12}$/.test(r.id || "") ? r.id : wagId(), name: clip(r.name, 80) || WAH_ST[stage] + " · " + days + " day" + (days === 1 ? "" : "s"), on: !!r.on, stage, when: r.when === "created" ? "created" : "quiet", days, tpl: t ? t.id : "", params: t ? t.params.map((p, i) => clip((r.params || [])[i] || p, 200)) : [], tag: clip(String(r.tag || "").replace(/,/g, " "), 40), assign: +r.assign || null, alert: !!r.alert };
+        if (!o.tpl && !o.tag && !o.assign && !o.alert) throw new Fail("Choose at least one action: send a template, add a tag, assign or alert the team");
+        d.rules = d.rules || []; const i = d.rules.findIndex((x) => x.id === o.id); if (i >= 0) d.rules[i] = { ...d.rules[i], ...o }; else { if (d.rules.length >= 30) throw new Fail("Up to 30 rules"); d.rules.push({ ...o, sent: 0, runs: 0, created: now() }); }
+        wagSave(d); log(db, u, "wa.rule", o.name, ip); save(db); return { ok: true, rules: d.rules }; }
+      case "wah_rule_delete": { const u = need(OA), d = wagLoad(); d.rules = (d.rules || []).filter((x) => x.id !== inp.id); wagSave(d); log(db, u, "wa.rule.delete", inp.id, ip); save(db); return { ok: true, rules: d.rules }; }
+      case "wah_cfg_save": { const u = need(OA), d = wagLoad(), c = hubCfg(d), h = inp.hub || {}; if ("remindHours" in h) c.remindHours = Math.max(0, Math.min(168, +h.remindHours || 0)); for (const k of ["remindChats", "remindLeads"]) if (k in h) c[k] = !!h[k]; if ("waba" in h) c.waba = String(h.waba || "").replace(/\D/g, "").slice(0, 30); d.hub = c; wagSave(d); log(db, u, "wa.hub", "", ip); save(db); return { ok: true, hub: c }; }
+      case "wah_tpl_sync": { need(OA); const d = wagLoad(); if (!hubCfg(d).waba) throw new Fail("Add your WhatsApp Business Account ID in Settings first (Meta → WhatsApp Manager → Account tools)"); throw new Fail("Connect WhatsApp first (WhatsApp hub → Connect)"); }
       case "wag_get": { const u = need(SL), d = wagLoad(); wagSave(d); const all = wagContacts(db), vals = (k) => [...new Set(all.map((c) => String(c[k] || "").trim()).filter(Boolean))], tags = new Set(); all.forEach((c) => c.tags.forEach((t) => String(t).trim() && tags.add(String(t).trim())));
         const oa = OA.includes(u.role); return { ok: true, cfg: oa ? d.cfg : { ...d.cfg, cronKey: undefined }, cronUrl: oa ? "/api/wa-cron.php?key=" + d.cfg.cronKey : "", flows: d.flows, flowNames: WAG_FLOWS, tpls: d.tpls, segs: d.segs, camps: [...d.camps].reverse().map((c) => wagPub(c)), vars: WAG_VARS,
           optout: Object.keys(d.optout).length, today: d.day[now().slice(0, 10)] || 0, left: wagLeft(d), lastTick: d.lastTick || null, connected: true, preview: true, opts: { lines: vals("line"), cities: vals("city").slice(0, 80), tags: [...tags].slice(0, 80) }, contacts: all.length }; }
@@ -2060,6 +2079,12 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
     if (!action.startsWith("notify_")) return null;
     const done = (x) => x;
     switch (action) {
+      case "notify_proj_send": { const u = need(["owner", "admin", "sales", "support"]), p = (db.projects || []).find((x) => x.id === +inp.id); if (!p) throw new Fail("Project not found", 404);
+        const cl = (db.clients || []).find((c) => c.id === p.client_id) || {}; if (!cl.phone && !cl.email) throw new Fail("This project has no client phone or email");
+        const ph = (inp.photos || []).filter((x) => /^\/assets\/uploads\/projects\/[\w.-]+$/.test(x)).slice(0, 3), note = clip(inp.note, 1000);
+        const ob = path.join(PRIV, "outbox"); fs.mkdirSync(ob, { recursive: true }); fs.writeFileSync(path.join(ob, Date.now() + "-progress.txt"), "To: " + [cl.phone, cl.email].filter(Boolean).join(" / ") + "\n\nDear " + (cl.name || "Customer") + ",\n" + (note || "Progress update on " + p.name + ": we are now at the " + p.stage + " stage.") + (ph.length ? "\nSite photos: " + ph.join(" ") : ""));
+        const result = {}; if (cl.phone) result.whatsapp = "sent (preview outbox)"; if (cl.email) result.email = "sent (preview outbox)";
+        p.updates.push({ t: now(), user: u.name, text: "Progress update sent to the client" + (ph.length ? " with " + ph.length + " photo" + (ph.length > 1 ? "s" : "") : "") }); save(db); return { ok: true, result }; }
       case "notify_get": need(["owner", "admin"]); return { ok: true, cfg: ntCfg(), events: NT_EV, waReady: false, emailReady: false, log: ntLog.slice(0, 60) };
       case "notify_save": { need(["owner", "admin"]); const s = inp.cfg || {}, c = ntCfg(); for (const k of ["email", "wa"]) if (k in s) c[k] = !!s[k]; if (s.waLang) c.waLang = String(s.waLang);
         for (const k in NT_EV) if (s.ev && s.ev[k]) { const x = s.ev[k]; if ("on" in x) c.ev[k].on = !!x.on; for (const f of ["text", "subject", "tpl"]) if (f in x) c.ev[k][f] = String(x[f]).slice(0, 3000); }

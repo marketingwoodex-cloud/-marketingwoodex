@@ -292,7 +292,7 @@
   }
   // P19 D: hubs — one sidebar item, related screens as tabs on top
   var HUBS = [
-    { id: "offers", items: [["offers", "Offers & broadcasts"], ["wauto", "Automation & templates"]] }
+    { id: "wa-hub", items: [["wahub", "Overview & rules"], ["wauto", "Broadcasts & automations"], ["offers", "Discount offers"]] }
   ];
   function hubOf(v) { for (var i = 0; i < HUBS.length; i++) for (var j = 0; j < HUBS[i].items.length; j++) if (HUBS[i].items[j][0] === v) return HUBS[i]; return null; }
   function hubBar(view, v) {

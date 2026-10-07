@@ -1,5 +1,5 @@
 /* Woodex Admin — P39 Phase 6: WhatsApp hub.
-   One place for WhatsApp: a shared tab strip (Overview · Broadcasts & automations · Discount offers · Connect) on top of the existing screens,
+   One place for WhatsApp: a shared tab strip (admin.js HUBS) on top of the existing screens,
    plus the new Overview page with if/then rules and "no reply" reminders. API: wah_* (api/wahub-lib.php). */
 (function () {
   "use strict";
@@ -15,22 +15,10 @@
     ".wh-st{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px}.wh-dot{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;padding:5px 10px;border-radius:99px;background:var(--card);border:1px solid var(--line)}.wh-dot i{width:8px;height:8px;border-radius:50%;display:inline-block}";
   document.head.appendChild(css);
 
-  var TABS = [["wahub", "Overview & rules"], ["wauto", "Broadcasts & automations"], ["offers", "Discount offers"], ["settings/connections", "Connect", "g:settings"]];
-  function strip(active) {
-    return '<nav class="wh-tabs" aria-label="WhatsApp hub">' + TABS.filter(function (t) { return !t[2] || W.can(t[2]); }).map(function (t) { return '<a href="#/' + t[0] + '"' + (t[0] === active ? ' class="on"' : "") + ">" + t[1] + "</a>"; }).join("") + "</nav>";
-  }
-  W.waStrip = strip;
-  // Put the strip on top of the existing WhatsApp screens.
-  ["wauto", "offers"].forEach(function (k) {
-    var orig = V[k]; if (!orig || orig._wh) return;
-    V[k] = function (el) { var r = orig.apply(this, arguments); var h = el.querySelector(".page-h, .ph, h1"); var box = document.createElement("div"); box.innerHTML = strip(k); var n = box.firstChild; var anchor = h && h.closest(".page-h, .ph") || (h ? h.parentNode : null); if (anchor && anchor.parentNode === el) anchor.after(n); else el.prepend(n); return r; };
-    V[k]._wh = true;
-  });
-
   function pct(a, b) { return b ? Math.round((a / b) * 100) + "%" : "—"; }
   var D = null;
   V.wahub = function (el) {
-    el.innerHTML = W.head("WhatsApp hub", "Conversations / WhatsApp", '<a class="btn pri" href="#/wauto">' + ic("plus") + "New campaign</a>") + strip("wahub") + '<div id="wh-b"><div class="card"><div class="empty">Loading…</div></div></div>';
+    el.innerHTML = W.head("WhatsApp hub", "Conversations / WhatsApp", '<a class="btn pri" href="#/wauto">' + ic("plus") + "New campaign</a>") + '<div id="wh-b"><div class="card"><div class="empty">Loading…</div></div></div>';
     W.fillIcons(el); load();
   };
   function load() {
@@ -42,7 +30,7 @@
   }
   function draw() {
     var r = D, b = $("#wh-b"), c = r.camp, edit = W.can("owner,admin");
-    var tick = r.lastTick ? "Automation last ran " + esc(W.ago(r.lastTick)) : "Automation has not run yet (set up the cron job in Broadcasts & automations → Settings)";
+    var tick = r.lastTick ? "Automation last ran " + esc(W.ago(r.lastTick)) : "Automation has not run yet (set up the cron job: Broadcasts & automations → Settings)";
     b.innerHTML =
       '<div class="wh-st"><span class="wh-dot"><i style="background:' + (r.connected ? "#12b76a" : "#f79009") + '"></i>' + (r.connected ? "WhatsApp connected" : 'WhatsApp not connected · <a href="#/settings/connections">Connect</a>') + "</span>" +
         '<span class="wh-dot"><i style="background:' + (r.lastTick ? "#12b76a" : "#98a2b3") + '"></i>' + tick + "</span>" +
