@@ -43,7 +43,7 @@
     var D;
     function load() { api("me_get").then(function (r) { if (!r.ok) return ($("#pr").innerHTML = '<div class="empty">' + esc(r.error) + "</div>"); D = r; draw(); }); }
     function draw() {
-      var u = D.user, p = D.profile, s = D.stats, sc = D.security, ROLE = { owner: "Owner", admin: "Admin", editor: "Editor", sales: "Sales" };
+      var u = D.user, p = D.profile, s = D.stats, sc = D.security, ROLE = { owner: "Master", admin: "Manager", editor: "Developer", sales: "Sales", support: "Support" };
       var wa = (p.whatsapp || p.phone || "").replace(/[^0-9]/g, "").replace(/^0/, "92");
       var row = function (k, v, wide) { return "<div" + (wide ? ' class="w"' : "") + "><dt>" + k + "</dt><dd" + (v ? "" : ' class="e"') + ">" + (v ? esc(v) : "Not added") + "</dd></div>"; };
       $("#pr").innerHTML =

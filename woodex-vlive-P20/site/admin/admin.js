@@ -56,7 +56,16 @@
     return new Date(d).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" });
   }
   function bytes(n) { return n > 1048576 ? (n / 1048576).toFixed(1) + " MB" : Math.round(n / 1024) + " KB"; }
-  var can = function (roles) { return S.user && roles.split(",").indexOf(S.user.role) >= 0; };
+  /* P39: roles. Stored codes: owner=Master, admin=Manager, editor=Developer, sales=Sales, support=Support.
+     can("owner,admin") = role list · can("g:sales") = permission group (role groups + extra permissions set by the Master). */
+  var PERM_LABEL = { sales: "Sales (leads, quotes, projects)", conversations: "Inbox", updates: "Client updates", broadcast: "WhatsApp broadcasts & automation", ai: "Train AI", website: "Website (pages, content, SEO)", settings: "Settings & integrations" };
+  var ROLE_LABEL = { owner: "Master", admin: "Manager", editor: "Developer", sales: "Sales", support: "Support" };
+  var ROLE_GROUPS = { owner: ["sales", "conversations", "updates", "broadcast", "ai", "website", "settings", "master"], admin: ["sales", "conversations", "updates", "broadcast", "ai", "website", "settings"], editor: ["website", "settings"], sales: ["sales", "conversations", "support_view"], support: ["conversations", "updates", "support_view"] };
+  var groupsOf = function (u) { return (ROLE_GROUPS[u.role] || []).concat(u.perms || []); };
+  var can = function (roles) {
+    if (!S.user) return false; var g = groupsOf(S.user);
+    return roles.split(",").some(function (r) { r = r.trim(); return r.indexOf("g:") === 0 ? g.indexOf(r.slice(2)) >= 0 : r === S.user.role; });
+  };
   var ACT = {
     login: ["log-out", "signed in"], logout: ["log-out", "signed out"], setup: ["shield-check", "installed Woodex Admin"], "profile.update": ["user", "updated their profile"], "password.change": ["key-round", "changed their password"],
     "user.create": ["users", "added team member"], "user.update": ["users", "updated team member"], "builder.save": ["square-pen", "edited page"], "builder.page_new": ["file-plus", "created page"],
@@ -70,59 +79,59 @@
     ["Menu"],
     ["dashboard", "Dashboard", "layout-dashboard"],
     ["Sales"],
-    ["enquiries", "Enquiries & leads", "inbox", "owner,admin,sales"],
-    ["pipeline", "Pipeline", "kanban", "owner,admin,sales"],
-    ["bookings", "Bookings", "clock", "owner,admin,sales", null, "new"],
-    ["clients", "Clients", "contact", "owner,admin,sales"],
+    ["enquiries", "Enquiries & leads", "inbox", "g:sales"],
+    ["pipeline", "Pipeline", "kanban", "g:sales"],
+    ["bookings", "Bookings", "clock", "g:sales", null, "new"],
+    ["clients", "Clients", "contact", "g:sales"],
     { g: "Quotes & invoices", icon: "file-text", id: "money", items: [
-      ["quotes", "Quotations", "file-text", "owner,admin,sales"],
-      ["invoices", "Invoices", "receipt", "owner,admin,sales"],
-      ["transactions", "Transactions", "receipt", "owner,admin,sales", null, "new"],
-      ["templates", "Quote templates", "layers", "owner,admin,sales"]] },
-    ["projects", "Projects", "briefcase"],
-    ["offers", "WhatsApp", "send", "owner,admin,sales"],
-    ["wauto", "WhatsApp automation", "zap", "owner,admin,sales", null, "hide"],
+      ["quotes", "Quotations", "file-text", "g:sales"],
+      ["invoices", "Invoices", "receipt", "g:sales"],
+      ["transactions", "Transactions", "receipt", "g:sales", null, "new"],
+      ["templates", "Quote templates", "layers", "g:sales"]] },
+    ["projects", "Projects", "briefcase", "g:sales,g:support_view"],
+    ["offers", "WhatsApp", "send", "g:broadcast"],
+    ["wauto", "WhatsApp automation", "zap", "g:broadcast", null, "hide"],
     ["Support"],
-    ["chat", "Inbox", "message-circle", "owner,admin,sales"],
-    ["updates", "Client updates", "send", "owner,admin"],
-    ["train", "Train AI", "sparkles", "owner,admin"],
+    ["chat", "Inbox", "message-circle", "g:conversations"],
+    ["updates", "Client updates", "send", "g:updates"],
+    ["train", "Train AI", "sparkles", "g:ai"],
     ["Website"],
     { g: "Pages & builder", icon: "square-pen", id: "site", items: [
-      ["pages", "All pages", "file-text", "owner,admin,editor"],
-      ["builder", "Page builder", "square-pen", "owner,admin,editor"],
-      ["library", "Section library", "blocks", "owner,admin,editor"],
-      ["global", "Header & footer", "panel-left", "owner,admin"],
-      ["heroes", "Hero slides", "image", "owner,admin,editor"],
-      ["redirects", "Redirects", "refresh-cw", "owner,admin"]] },
+      ["pages", "All pages", "file-text", "g:website"],
+      ["builder", "Page builder", "square-pen", "g:website"],
+      ["library", "Section library", "blocks", "g:website"],
+      ["global", "Header & footer", "panel-left", "g:website"],
+      ["heroes", "Hero slides", "image", "g:website"],
+      ["redirects", "Redirects", "refresh-cw", "g:website"]] },
     { g: "Content", icon: "book-open", id: "content", items: [
-      ["blog", "Blog & insights", "book-open", "owner,admin,editor"],
-      ["pagetpl", "Page templates", "layers", "owner,admin,editor", null, "new"],
-      ["estimator", "Estimator", "gauge", "owner,admin", null, "new"],
-      ["forms", "Forms", "file-text", "owner,admin", null, "new"],
-      ["portfolio", "Portfolio", "image", "owner,admin,editor"],
-      ["services", "Service pages", "layers", "owner,admin,editor"],
-      ["cities", "City pages", "map-pin", "owner,admin,editor"],
-      ["faqs", "FAQ groups", "help-circle", "owner,admin,editor"],
-      ["testimonials", "Testimonials", "message-square", "owner,admin,editor"],
-      ["logos", "Client logos", "image", "owner,admin,editor", null, "new"],
-      ["team", "Team (on website)", "users", "owner,admin,editor"]] },
-    ["media", "Media library", "image", "owner,admin,editor"],
+      ["blog", "Blog & insights", "book-open", "g:website"],
+      ["pagetpl", "Page templates", "layers", "g:website", null, "new"],
+      ["estimator", "Estimator", "gauge", "g:website", null, "new"],
+      ["forms", "Forms", "file-text", "g:website", null, "new"],
+      ["portfolio", "Portfolio", "image", "g:website"],
+      ["services", "Service pages", "layers", "g:website"],
+      ["cities", "City pages", "map-pin", "g:website"],
+      ["faqs", "FAQ groups", "help-circle", "g:website"],
+      ["testimonials", "Testimonials", "message-square", "g:website"],
+      ["logos", "Client logos", "image", "g:website", null, "new"],
+      ["team", "Team (on website)", "users", "g:website"]] },
+    ["media", "Media library", "image", "g:website"],
     ["Marketing"],
-    ["seo", "SEO", "search", "owner,admin,editor"],
-    ["speed", "Speed", "gauge", "owner,admin,editor"],
-    ["health", "Site health", "heart-pulse", "owner,admin,editor"],
+    ["seo", "SEO", "search", "g:website"],
+    ["speed", "Speed", "gauge", "g:website"],
+    ["health", "Site health", "heart-pulse", "g:website"],
     ["Settings"],
     { g: "Settings", icon: "settings", id: "settings", items: [
-      ["business", "Business info", "building", "owner,admin"],
-      ["theme", "Theme, colours & fonts", "sparkles", "owner,admin"],
-      ["settings", "Integrations & APIs", "zap", "owner,admin"],
+      ["business", "Business info", "building", "g:settings"],
+      ["theme", "Theme, colours & fonts", "sparkles", "g:settings"],
+      ["settings", "Integrations & APIs", "zap", "g:settings"],
       ["users", "Users & roles", "users", "owner,admin"],
       ["backups", "Backups", "hard-drive", "owner,admin"],
-      ["maintenance", "Maintenance & error pages", "shield", "owner,admin"],
-      ["files", "File manager", "folder", "owner,admin,editor"],
+      ["maintenance", "Maintenance & error pages", "shield", "g:settings"],
+      ["files", "File manager", "folder", "g:website"],
       ["database", "Database", "database", "owner,admin"],
-      ["activity", "Activity log", "activity", "owner,admin"],
-      ["system", "System check", "activity", "owner,admin"]] },
+      ["activity", "Activity log", "activity", "g:settings"],
+      ["system", "System check", "activity", "g:settings"]] },
     ["security", "My security", "shield"]
   ];
   var navOpen = (function () { try { return JSON.parse(localStorage.getItem("wxNavOpen") || "{}"); } catch (e) { return {}; } })();
@@ -131,7 +140,7 @@
   function navBadges() {
     if (!S.user) return;
     var set = function (v, n) { var b = document.querySelector('[data-bdg="' + v + '"]'); if (b) { b.hidden = !n; b.textContent = n > 99 ? "99+" : n; } };
-    if (can("owner,admin,sales")) {
+    if (can("g:sales,g:conversations")) {
       api("leads_count").then(function (r) { if (r && r.ok) set("enquiries", r.unread); });
       api("chat_list", { status: "open" }).then(function (r) { if (r && r.ok) set("chat", (r.chats || []).filter(function (c) { return c.unread || c.needs; }).length); });
     }
@@ -176,7 +185,7 @@
     sessionStorage.setItem("wxaTok", S.token); if (S.btoken) sessionStorage.setItem("wxTok", S.btoken);
     wxShare();
     $("#auth").hidden = true; $("#app").hidden = false;
-    $("#u-name").textContent = S.user.name; $("#u-role").textContent = S.user.role; $("#u-av").textContent = initials(S.user.name);
+    $("#u-name").textContent = S.user.name; $("#u-role").textContent = ROLE_LABEL[S.user.role] || S.user.role; $("#u-av").textContent = initials(S.user.name);
     renderNav(); route();
     if (S.btoken) bapi("pages").then(function (p) { if (p.ok) { S.pages = p.pages; $("#gsearch-list").innerHTML = p.pages.map(function (x) { return '<option value="' + esc(x.url) + '">' + esc(x.title) + "</option>"; }).join(""); } });
   }
@@ -352,13 +361,13 @@
     el.innerHTML = head("Team & roles", "Team", '<button class="btn pri" id="u-add">' + ic("plus") + "Add member</button>") +
       '<div class="card"><div class="tbl-wrap"><table class="tbl"><thead><tr><th>Member</th><th>Role</th><th>Status</th><th>Last sign-in</th><th></th></tr></thead><tbody id="u-rows"><tr><td colspan="5" class="empty">Loading…</td></tr></tbody></table></div></div>' +
       '<div class="card" style="margin-top:24px"><div class="card-h"><h3>What each role can do</h3></div><div class="card-b"><div class="roadmap">' +
-        [["Owner", "Everything, including other owners and settings"], ["Admin", "Everything except managing owners"], ["Editor", "Pages, builder, media and section library"], ["Sales", "Dashboard, enquiries, pipeline, clients, quotations, invoices and projects"]]
+        [["Master", "Everything. Adds users, sets roles and extra permissions, backups, database. Approves Manager changes (Phase 2)."], ["Manager", "Sees and prepares everything: sales, conversations, website, settings. Cannot add users or restore backups."], ["Developer", "Website only: pages, builder, hero slides, content, media, SEO, theme, integrations. No sales data."], ["Sales", "Leads, pipeline, bookings, clients, quotes, invoices, projects and the Inbox."], ["Support", "Inbox (website chat + WhatsApp) and client updates; can view a client or project to answer."]]
           .map(function (r) { return '<div class="rm"><span class="badge gold">' + r[0] + "</span><small style='display:block;margin-top:6px'>" + r[1] + "</small></div>"; }).join("") + "</div></div></div>";
     var users = [];
     var load = function () { api("users").then(function (r) { if (!r.ok) return toast(r.error, true); users = r.users; draw(); }); };
     var draw = function () {
       $("#u-rows").innerHTML = users.map(function (u) {
-        return "<tr><td><div class='who'><span class='av'>" + initials(u.name) + "</span><div><b>" + esc(u.name) + (u.id === S.user.id ? " <span class='badge'>you</span>" : "") + "</b><small>" + esc(u.email) + "</small></div></div></td><td><span class='badge gold' style='text-transform:capitalize'>" + u.role + "</span></td><td>" +
+        return "<tr><td><div class='who'><span class='av'>" + initials(u.name) + "</span><div><b>" + esc(u.name) + (u.id === S.user.id ? " <span class='badge'>you</span>" : "") + "</b><small>" + esc(u.email) + "</small></div></div></td><td><span class='badge gold' data-role='" + u.role + "'>" + (ROLE_LABEL[u.role] || u.role) + "</span>" + ((u.perms || []).length ? "<small class='muted' style='display:block;margin-top:4px'>+ " + u.perms.map(function (p) { return PERM_LABEL[p] || p; }).join(", ") + "</small>" : "") + "</td><td>" +
           (u.active ? "<span class='badge ok'>Active</span>" : "<span class='badge bad'>Disabled</span>") + "</td><td>" + (u.last_login ? ago(u.last_login) : "never") + "</td><td style='text-align:right'>" +
           (u.role === "owner" && S.user.role !== "owner" ? "" : "<button class='btn sm' data-edit='" + u.id + "'>Edit</button>") + "</td></tr>";
       }).join("");
@@ -366,16 +375,17 @@
     };
     var form = function (u) {
       u = u || { id: 0, name: "", email: "", role: "editor", active: true };
-      var roles = ["owner", "admin", "editor", "sales"].filter(function (r) { return r !== "owner" || S.user.role === "owner"; });
+      var roles = ["owner", "admin", "editor", "sales", "support"].filter(function (r) { return r !== "owner" || S.user.role === "owner"; }); u.perms = u.perms || [];
       modal("<h2>" + (u.id ? "Edit team member" : "Add team member") + "</h2><form id='uf'><div class='g2'><label>Name<input id='uf-n' value='" + esc(u.name) + "' required></label><label>Email<input type='email' id='uf-e' value='" + esc(u.email) + "' required></label></div>" +
-        "<div class='g2'><label>Role<select id='uf-r'>" + roles.map(function (r) { return "<option value='" + r + "'" + (r === u.role ? " selected" : "") + " style='text-transform:capitalize'>" + r + "</option>"; }).join("") + "</select></label>" +
+        "<div class='g2'><label>Role<select id='uf-r'>" + roles.map(function (r) { return "<option value='" + r + "'" + (r === u.role ? " selected" : "") + ">" + ROLE_LABEL[r] + "</option>"; }).join("") + "</select></label>" +
         "<label>" + (u.id ? "New password <small>(leave empty to keep)</small>" : "Password <small>(8+ characters)</small>") + "<input type='text' id='uf-p' autocomplete='new-password'" + (u.id ? "" : " required minlength='8'") + "></label></div>" +
-        "<label class='check'><input type='checkbox' id='uf-a'" + (u.active ? " checked" : "") + "> Active (can sign in)</label><p class='err' id='uf-err'></p>" +
+        "<label class='check'><input type='checkbox' id='uf-a'" + (u.active ? " checked" : "") + "> Active (can sign in)</label>" + (S.user.role === "owner" ? "<fieldset class='uf-perms'><legend>Extra permissions <small class='muted'>(on top of the role)</small></legend>" + Object.keys(PERM_LABEL).map(function (p) { return "<label class='check'><input type='checkbox' data-perm='" + p + "'" + (u.perms.indexOf(p) >= 0 ? " checked" : "") + "> " + PERM_LABEL[p] + "</label>"; }).join("") + "</fieldset>" : "") + "<p class='err' id='uf-err'></p>" +
         "<div class='modal-actions'><button type='button' class='btn' id='uf-c'>Cancel</button><button class='btn pri'>" + (u.id ? "Save changes" : "Add member") + "</button></div></form>");
       $("#uf-c").onclick = closeModal;
       $("#uf").onsubmit = function (e) {
         e.preventDefault();
-        api("user_save", { id: u.id, name: $("#uf-n").value, email: $("#uf-e").value, role: $("#uf-r").value, password: $("#uf-p").value, active: $("#uf-a").checked })
+        var pay = { id: u.id, name: $("#uf-n").value, email: $("#uf-e").value, role: $("#uf-r").value, password: $("#uf-p").value, active: $("#uf-a").checked }; if (S.user.role === "owner") pay.perms = $$("[data-perm]").filter(function (c) { return c.checked; }).map(function (c) { return c.dataset.perm; });
+        api("user_save", pay)
           .then(function (r) { if (!r.ok) return ($("#uf-err").textContent = r.error); closeModal(); toast(u.id ? "Saved ✓" : "Team member added ✓"); load(); });
       };
     };
@@ -430,7 +440,7 @@
   /* Screens from separate files (defer scripts) may not exist yet when the first screen is drawn after a refresh:
      redraw once everything has loaded, if a placeholder was shown for a screen that now exists. */
   window.addEventListener("load", function () { setTimeout(function () { if (S.user && document.querySelector("#view .soon-box")) { var v = (location.hash.replace(/^#\/?/, "").split("/")[0] || "dashboard"); if (VIEWS[v] && VIEWS[v] !== VIEWS.soon) route(); } }, 0); });
-  window.WXA = { formDraft: formDraft, S: S, signedIn: signedIn, showAuth: showAuth, api: api, bapi: bapi, modal: modal, closeModal: closeModal, toast: toast, esc: esc, ic: ic, fillIcons: fillIcons, ago: ago, head: head, can: can, VIEWS: VIEWS, $: $, $$: $$, route: function () { route(); } };
+  window.WXA = { formDraft: formDraft, S: S, signedIn: signedIn, showAuth: showAuth, api: api, bapi: bapi, modal: modal, closeModal: closeModal, toast: toast, esc: esc, ic: ic, fillIcons: fillIcons, ago: ago, head: head, can: can, ROLE_LABEL: ROLE_LABEL, PERM_LABEL: PERM_LABEL, VIEWS: VIEWS, $: $, $$: $$, route: function () { route(); } };
   Object.assign(ACT, { "page.meta": ["file-text", "updated SEO/settings of"], "page.delete": ["x", "deleted page"], "redirects.save": ["refresh-cw", "saved redirects"], "global.menu": ["panel-left", "updated the site menu on"], "global.replace": ["refresh-cw", "replaced in header/footer"], "global.chrome": ["panel-left", "published header & footer on"] });
 
   // ---------------------------------------------------------------- boot
