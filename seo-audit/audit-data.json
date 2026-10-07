@@ -1,6 +1,6 @@
 {
  "summary": {
-  "health_score": 92,
+  "health_score": 94,
   "pages": 107,
   "business_type": "Local service (interior design & build, Lahore HQ)"
  },
@@ -220,26 +220,8 @@
   },
   {
    "name": "Local SEO",
-   "score": 86,
+   "score": 100,
    "findings": [
-    {
-     "severity": "High",
-     "issue": "NAP: multiple phone numbers used: +923224000768\u00d7329, +923214686884\u00d715",
-     "count": 0,
-     "pages": []
-    },
-    {
-     "severity": "Medium",
-     "issue": "NAP: multiple emails used: info@woodex.com.pk\u00d7214, woodexinterior.pk@gmail.com\u00d764",
-     "count": 0,
-     "pages": []
-    },
-    {
-     "severity": "High",
-     "issue": "Inconsistent streetAddress: M-71, Zainab Tower, Model Town Link Road; M-71 Zainab Tower, Model Town Link Road Lahore; M-71 Zainab Tower Model Town Link Road; M-71 Zainab Tower, Model Town Link Road; M-71 Zainab Tower Model Town Link Road Lahore; M-71 Zainab Tower Model Town Link Road Lahore PK",
-     "count": 0,
-     "pages": []
-    },
     {
      "severity": "Info",
      "issue": "No review markup (only add with real, on-site reviews)",
@@ -260,7 +242,7 @@
    "findings": [
     {
      "severity": "Info",
-     "issue": "Schema types found: Question\u00d7499, Answer\u00d7499, ListItem\u00d7307, Service\u00d7158, LocalBusiness\u00d7149, BreadcrumbList\u00d7107, FAQPage\u00d795, PostalAddress\u00d787, Offer\u00d776, City\u00d765, Organization\u00d740, BlogPosting\u00d720, ImageObject\u00d720, OfferCatalog\u00d715, AdministrativeArea\u00d72, Country\u00d72, WebPage\u00d71, WebSite\u00d71",
+     "issue": "Schema types found: Question\u00d7499, Answer\u00d7499, ListItem\u00d7306, Service\u00d7158, LocalBusiness\u00d7149, BreadcrumbList\u00d7107, FAQPage\u00d795, PostalAddress\u00d787, OpeningHoursSpecification\u00d787, Offer\u00d776, City\u00d765, Organization\u00d740, BlogPosting\u00d720, ImageObject\u00d720, OfferCatalog\u00d715, AdministrativeArea\u00d72, Country\u00d72, WebPage\u00d71, WebSite\u00d71",
      "count": 0,
      "pages": []
     }
@@ -268,29 +250,11 @@
   },
   {
    "name": "Sitemap",
-   "score": 97,
+   "score": 99,
    "findings": [
-    {
-     "severity": "Medium",
-     "issue": "No <lastmod> in sitemap (Google uses it for recrawl)",
-     "count": 0,
-     "pages": []
-    },
     {
      "severity": "Low",
      "issue": "No image sitemap entries",
-     "count": 0,
-     "pages": []
-    }
-   ]
-  },
-  {
-   "name": "Technical",
-   "score": 94,
-   "findings": [
-    {
-     "severity": "High",
-     "issue": "No www -> non-www 301 rule in .htaccess",
      "count": 0,
      "pages": []
     }

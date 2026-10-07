@@ -33,18 +33,18 @@ Google still lists old WordPress and hacked spam URLs (they return 404). These n
 
 ### Phase A: Go-live and technical fixes (Critical, in code)
 - [ ] A1. Upload the current zip to Hostinger (makes P25–P29 and the 20 articles live)
-- [ ] A2. `.htaccess`: 301 www → non-www and http → https in one hop; HSTS, nosniff and Referrer-Policy headers
-- [ ] A3. `.htaccess`: return 410 Gone for old WordPress and spam URL patterns (`/?p=`, `/wp-*`, `/product/`, spam slugs)
-- [ ] A4. Sitemap: add `<lastmod>` (from git dates) and image entries; generate it automatically in the builder
+- [x] A2. `.htaccess`: 301 www → non-www and http → https in one hop; HSTS, nosniff and Referrer-Policy headers
+- [x] A3. `.htaccess`: return 410 Gone for old WordPress and spam URL patterns (`/?p=`, `/wp-*`, `/product/`, spam slugs)
+- [x] A4. Sitemap: add `<lastmod>` (from git dates) and image entries; generate it automatically in the builder
 - [ ] A5. Search Console: submit the sitemap and request removal of the spam URLs (step guide)
 
 ### Phase B: NAP and local signals (High)
-- [ ] B1. One phone number everywhere: choose between +92 322 4000768 (used 329 times) and +92 321 4686884 (15 times)
-- [ ] B2. One email everywhere: info@woodex.com.pk (214) or woodexinterior.pk@gmail.com (64 pages still use it)
-- [ ] B3. One exact address string in all schema and footers: "M-71, Zainab Tower, Model Town Link Road, Lahore 54700"
+- [x] B1. One phone number everywhere: choose between +92 322 4000768 (used 329 times) and +92 321 4686884 (15 times)
+- [x] B2. One email everywhere: info@woodex.com.pk (214) or woodexinterior.pk@gmail.com (64 pages still use it)
+- [x] B3. One exact address string in all schema and footers: "M-71, Zainab Tower, Model Town Link Road, Lahore 54700"
 - [ ] B4. LocalBusiness schema: add geo coordinates, `openingHoursSpecification` (Mon–Sat 9:30–6:30), `sameAs` (GBP, Facebook, Instagram, LinkedIn) and `hasMap`
-- [ ] B5. GBP checklist: primary category "Interior designer", secondary categories, services matching site pages, weekly posts, photo plan, review request flow (WhatsApp template after handover)
-- [ ] B6. Citation list: the 15 key PK and global directories with the exact NAP
+- [x] B5. GBP checklist: primary category "Interior designer", secondary categories, services matching site pages, weekly posts, photo plan, review request flow (WhatsApp template after handover)
+- [x] B6. Citation list: the 15 key PK and global directories with the exact NAP
 
 ### Phase C: E-E-A-T and content quality (High)
 - [ ] C1. Author system: named designer profiles (`/about/team/<name>/`) with credentials; `author: Person` plus `reviewedBy` on all 28 articles; visible byline

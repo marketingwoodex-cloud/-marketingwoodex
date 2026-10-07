@@ -10,7 +10,7 @@ if (!defined('PRIVATE_DIR')) { http_response_code(404); exit; }
 
 const CMS_FILE   = PRIVATE_DIR . '/content.json';
 const CMS_TYPES  = ['post', 'study', 'testimonial', 'member', 'faq', 'city'];
-const BIZ_DEF = ['email' => 'woodexinterior.pk@gmail.com', 'phone1' => '+92 322 4000768', 'phone2' => '+92 321 4686884', 'wa' => '+92 322 4000768', 'addr1' => 'M-71, Zainab Tower', 'addr2' => 'Model Town Link Road', 'city' => 'Lahore', 'country' => 'Pakistan', 'days' => 'Mon–Sat', 'open' => '10:00', 'close' => '19:30', 'facebook' => '', 'instagram' => '', 'linkedin' => '', 'youtube' => '', 'tiktok' => '', 'pinterest' => '', 'x' => ''];
+const BIZ_DEF = ['email' => 'info@woodex.com.pk', 'phone1' => '+92 322 4000768', 'phone2' => '+92 322 4000768', 'wa' => '+92 322 4000768', 'addr1' => 'M-71, Zainab Tower', 'addr2' => 'Model Town Link Road', 'city' => 'Lahore', 'country' => 'Pakistan', 'days' => 'Mon–Sat', 'open' => '10:00', 'close' => '19:30', 'facebook' => '', 'instagram' => '', 'linkedin' => '', 'youtube' => '', 'tiktok' => '', 'pinterest' => '', 'x' => ''];
 const BIZ_ASSETS = ['assets/site.js', 'assets/js/whatsapp-widget.js'];
 const CMS_PAGES  = ['post' => 'insights', 'study' => 'projects'];
 const AI_SECRETS = ['anthropicKey', 'openaiKey', 'openrouterKey', 'customKey'];
@@ -35,7 +35,7 @@ function sitemap_add(string $rel): void {
     $f = ROOT_DIR . '/sitemap.xml'; if (!is_file($f)) return;
     $loc = 'https://woodex.com.pk/' . preg_replace('~index\.html$~', '', $rel); $x = (string)file_get_contents($f);
     if (strpos($x, '<loc>' . $loc . '</loc>') !== false || strpos($x, '</urlset>') === false) return;
-    file_put_contents($f, str_replace('</urlset>', '  <url><loc>' . htmlspecialchars($loc, ENT_XML1) . "</loc></url>\n</urlset>", $x), LOCK_EX);
+    file_put_contents($f, str_replace('</urlset>', '  <url><loc>' . htmlspecialchars($loc, ENT_XML1) . '</loc><lastmod>' . date('Y-m-d') . "</lastmod></url>\n</urlset>", $x), LOCK_EX);
 }
 /** P18 I: unlisted posts stay reachable by link but are kept out of the sitemap. */
 function sitemap_del(string $rel): void {

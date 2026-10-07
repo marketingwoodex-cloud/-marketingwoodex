@@ -83,7 +83,7 @@ def technical():
     if nolang: add(c, "Medium", "Missing <html lang>", nolang)
     if noog: add(c, "Medium", "Missing og:image (social/AI previews)", noog)
     ht = open(os.path.join(ROOT, ".htaccess"), encoding="utf-8").read()
-    if not re.search(r"www\.", ht, re.I): add(c, "High", "No www -> non-www 301 rule in .htaccess")
+    if "^www" not in ht: add(c, "High", "No www -> non-www 301 rule in .htaccess")
     if "HTTPS" not in ht.upper() or "on" not in ht: add(c, "Medium", "Check HTTP -> HTTPS 301 rule")
     for h in ["Strict-Transport-Security", "X-Content-Type-Options", "Referrer-Policy"]:
         if h.lower() not in ht.lower(): add(c, "Low", "Security header missing: " + h)
