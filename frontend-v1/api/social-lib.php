@@ -41,8 +41,10 @@ function soc_li_post(array $cfg, string $text, string $img, string $link, string
     $H = ['Authorization: Bearer ' . $cfg['liToken'], 'LinkedIn-Version: 202409', 'X-Restli-Protocol-Version: 2.0.0', 'Content-Type: application/json'];
     $owner = 'urn:li:organization:' . $cfg['liOrg']; $content = null;
     if ($img !== '') {
-        $file = preg_match('~^https?://~', $img) ? '' : ROOT_DIR . '/' . ltrim(parse_url($img, PHP_URL_PATH) ?: '', '/');
-        $bytes = $file !== '' && is_file($file) ? (string)file_get_contents($file) : (string)@file_get_contents($img);
+        $bytes = ''; // security: local files only from /assets (no ../), remote only https pictures, max 8 MB
+        if (!preg_match('~^https?://~', $img)) { $f = realpath(ROOT_DIR . '/' . ltrim(parse_url($img, PHP_URL_PATH) ?: '', '/')); $base = realpath(ROOT_DIR . '/assets');
+            if ($f && $base && str_starts_with($f, $base . DIRECTORY_SEPARATOR) && preg_match('~\.(jpe?g|png|webp|gif)$~i', $f) && filesize($f) < 8388608) $bytes = (string)file_get_contents($f); }
+        elseif (preg_match('~^https://~', $img)) { $bytes = (string)@file_get_contents($img, false, stream_context_create(['http' => ['timeout' => 20, 'follow_location' => 0]]), 0, 8388608); if ($bytes !== '' && !preg_match('~^(\xFF\xD8|\x89PNG|RIFF|GIF8)~', $bytes)) $bytes = ''; }
         if ($bytes !== '') {
             $init = soc_http('POST', 'https://api.linkedin.com/rest/images?action=initializeUpload', $H, ['initializeUploadRequest' => ['owner' => $owner]]);
             $up = (string)($init['value']['uploadUrl'] ?? ''); $urn = (string)($init['value']['image'] ?? '');
@@ -136,7 +138,7 @@ function soc_auto_drafts(array &$d): int {
         $url = soc_base() . '/' . preg_replace('~index\.html$~', '', ltrim((string)$it['rel'], '/'));
         $dek = trim(strip_tags((string)($it['data']['dek'] ?? $it['seo']['desc'] ?? '')));
         $img = trim((string)($it['data']['hero'] ?? $it['seo']['og'] ?? ''));
-        if ($img !== '' && !preg_match('~^(/[\w\-./%]+|https://[^\s"<>]+)$~', $img)) $img = '';
+        if ($img !== '' && (!preg_match('~^(/[\w\-./%]+|https://[^\s"<>]+)$~', $img) || str_contains($img, '..'))) $img = '';
         $nets = ['fb']; if ($img !== '' && preg_match('~\.jpe?g(\?|$)~i', $img)) $nets[] = 'ig';
         $lead = $it['type'] === 'study' ? 'New project story: ' : 'New on the Woodex journal: ';
         $text = $lead . $it['title'] . ($dek ? "\n\n" . $dek : '') . "\n\nRead it here: " . $url . "\n\n" . $tags;
@@ -184,7 +186,7 @@ function soc_clean(array $in, ?array $old): array {
     $nets = array_values(array_intersect(SOC_NETS, (array)($in['nets'] ?? [])));
     if (!$nets) fail('Choose at least one: Facebook, Instagram, LinkedIn or Google');
     $text = mb_substr(trim(strip_tags((string)($in['text'] ?? ''))), 0, 2200); if ($text === '') fail('Write the post text');
-    $img = trim((string)($in['image'] ?? '')); if ($img !== '' && !preg_match('~^(/[\w\-./%]+|https://[^\s"<>]+)$~', $img)) fail('Image must be from the Media library or an https link');
+    $img = trim((string)($in['image'] ?? '')); if ($img !== '' && (!preg_match('~^(/[\w\-./%]+|https://[^\s"<>]+)$~', $img) || str_contains($img, '..') || !preg_match('~\.(jpe?g|png|webp|gif)(\?.*)?$~i', $img))) fail('Image must be a picture from the Media library or an https link');
     $link = trim((string)($in['link'] ?? '')); if ($link !== '' && !preg_match('~^https?://[^\s"<>]+$~', $link)) fail('The link must start with https://');
     if (in_array('ig', $nets, true) && $img === '') fail('Instagram posts need an image');
     $when = trim((string)($in['when'] ?? '')); if ($when !== '') { $ts = strtotime($when); if (!$ts) fail('Pick a valid date and time'); $when = date('Y-m-d H:i:00', $ts); }
