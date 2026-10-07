@@ -131,7 +131,7 @@
       });
     }
     function rows() {
-      $("#db-h").textContent = NICE[S.t] || S.t;
+      $("#db-h").textContent = NICE[S.t] || S.t; $("#db-h").setAttribute("data-t", S.t);
       api("dbx_browse", { table: S.t, q: S.q, page: S.page }).then(function (r) {
         if (!r.ok) return ($("#db-rows").innerHTML = '<div class="empty">' + esc(r.error) + "</div>");
         var cols = r.cols.map(function (c) { return c.name; });

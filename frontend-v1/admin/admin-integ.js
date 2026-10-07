@@ -11,9 +11,11 @@
     "in-trk": ["Tracking codes", "Google", "GA4, Tag Manager, Meta Pixel and Search Console tag.", "#ea4335"],
     "in-psi": ["Google PageSpeed", "Google", "Speed and SEO scores for every page.", "#34a853"],
     "in-ai": ["AI writing", "AI", "Blog drafts, SEO text, chat replies (Claude, OpenAI, OpenRouter, local).", "#7a5af8"],
+    "in-sheets": ["Google Sheets", "Data", "New enquiries added as rows in your own sheet.", "#0f9d58"],
+    "in-excel": ["Excel downloads", "Data", "Leads, clients, quotes and invoices as .xlsx files.", "#217346"],
     "in-ts": ["Cloudflare Turnstile", "Security", "Invisible spam protection for website forms.", "#f38020"]
   };
-  var ORDER = ["in-wa", "in-mail", "in-gdata", "in-trk", "in-psi", "in-ai", "in-ts"];
+  var ORDER = ["in-wa", "in-mail", "in-gdata", "in-trk", "in-psi", "in-ai", "in-ts", "in-sheets", "in-excel"];
   var KEYS = [["in-ai", "AI provider key", "Blog, SEO, chat AI"], ["in-wa", "WhatsApp access token", "WhatsApp inbox & offers"], ["in-mail", "SMTP password", "All outgoing email"],
     ["in-gdata", "Google service-account key", "Analytics & Search Console"], ["in-psi", "PageSpeed API key", "Speed & Site health"], ["in-ts", "Turnstile secret key", "Form spam check"]];
   var filt = "all", open = null;

@@ -96,6 +96,7 @@ try {
     ignore_user_abort(true);
     $fc = array_merge(['alertTo' => '', 'waTo' => '', 'waAlert' => true, 'reply' => true, 'replyText' => ''], (array)((jread(PRIVATE_DIR . '/forms.json')['forms'] ?? [])[$source] ?? [])); // P18 E
     try { send_alerts($lead, '', $fc); } catch (Throwable $e) { error_log('forms.php alerts: ' . $e->getMessage()); }
+    try { $lead['created_at'] = now(); $lead['stage'] = 'new'; sheets_push($lead); } catch (Throwable $e) { error_log('forms.php sheets: ' . $e->getMessage()); }
     if ($fc['reply'] && $form !== 'whatsapp' && forms_reply_ok($phone, $email) && is_file(__DIR__ . '/notify-lib.php')) { require_once __DIR__ . '/notify-lib.php'; notify_client('lead', ['name' => $name, 'phone' => $phone, 'email' => $email, 'ref' => 'Enquiry #' . $id, 'project' => $lead['service'], 'tpl' => (string)$fc['replyText']]); }
     exit;
 } catch (PDOException $e) { error_log('forms.php: ' . $e->getMessage()); fail('Could not save your enquiry. Please WhatsApp us.', 500); }

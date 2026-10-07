@@ -967,3 +967,4 @@ html.dark .hub-bar{background:#111a2b;border-color:#24304a}html.dark .hub-bar a{
 .th-frame iframe{width:100%;height:100%;border:0;background:#fff;transition:width .3s}
 @media (max-width:1100px){.th-wrap{grid-template-columns:1fr}.th-main{position:static}}
 .th-c input[type=color]{padding:3px!important;width:40px!important;height:40px!important;min-height:0!important}.th-c input::-webkit-color-swatch-wrapper{padding:0}.th-c input::-webkit-color-swatch{border:0;border-radius:7px}
+.xl-grid{display:flex;flex-wrap:wrap;gap:8px}.xl-grid .btn svg{color:#217346}
