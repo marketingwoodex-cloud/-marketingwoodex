@@ -17,11 +17,13 @@
   function isWrite(a) { var g = String(a).toLowerCase().split(/[_\-]/); if (/^(get|list|load|view|info|stats|data|all|one|search|history|preview|page|pages)$/.test(g[g.length - 1])) return false; return g.some(function (x) { return WRITE.test(x); }); }
   function scr() { return (location.hash.replace(/^#\/?/, "").split(/[\/?]/)[0]) || "dashboard"; }
   function fresh(action, p) { var h = scr(); if (isWrite(action)) return p; return p.then(function (j) { return scr() !== h ? new Promise(function () {}) : j; }); }
+  /* P39: a Manager's change comes back {ok, pending}: tell them it is waiting for the Master (after the screen's own "Saved" toast). */
+  function pendingNote(j) { if (j && j.pending) { setTimeout(function () { toast("⏳ " + (j.message || "Sent to the Master for approval")); }, 80); setTimeout(navBadges, 300); } return j; }
   function api(action, data) { return fresh(action, api0(action, data)); }
   function api0(action, data) {
     return fetch(API, { method: "POST", headers: { "Content-Type": "application/json", "X-WX-ADM": S.token }, body: JSON.stringify(Object.assign({ action: action }, data || {})) })
       .then(function (r) { return r.json().catch(function () { return { ok: false, error: "Server error (" + r.status + "). Open /wx-check.php to see why." }; }).then(function (j) { if (r.status === 401 && S.user) signedOut("Your session expired. Please sign in again."); return j; }); })
-      .catch(function () { return { ok: false, error: "Network error — check your connection" }; });
+      .then(pendingNote).catch(function () { return { ok: false, error: "Network error — check your connection" }; });
   }
   function bapi(action, data) { return fresh(action, bapi0(action, data)); }
   function bapi0(action, data) {
@@ -29,7 +31,7 @@
       .then(function (r) { return r.json().catch(function () { return { ok: false, error: "Page-builder API error (" + r.status + ")" }; }).then(function (j) {
         if (!j.ok && r.status === 401 && !bapi.warned) { bapi.warned = 1; toast((j.error || "Page builder: not signed in") + " — see Settings → System check", true); setTimeout(function () { bapi.warned = 0; }, 15000); }
         return j; }); })
-      .catch(function () { return { ok: false, error: "Network error — check your connection" }; });
+      .then(pendingNote).catch(function () { return { ok: false, error: "Network error — check your connection" }; });
   }
   function modal(html, cls) { $("#modal-card").innerHTML = html; $("#modal-card").className = cls ? "modal-card " + cls : $("#modal-card").className.replace(/ wide/g, ""); fillIcons($("#modal-card")); $("#modal").hidden = false; var f = $("#modal-card input,#modal-card select"); if (f) f.focus(); }
   function closeModal() { $("#modal").hidden = true; }
@@ -78,6 +80,7 @@
   var NAV = [
     ["Menu"],
     ["dashboard", "Dashboard", "layout-dashboard"],
+    ["approvals", "Approvals", "shield-check", "owner,admin,editor"],
     ["Sales"],
     ["enquiries", "Enquiries & leads", "inbox", "g:sales"],
     ["pipeline", "Pipeline", "kanban", "g:sales"],
@@ -140,6 +143,7 @@
   function navBadges() {
     if (!S.user) return;
     var set = function (v, n) { var b = document.querySelector('[data-bdg="' + v + '"]'); if (b) { b.hidden = !n; b.textContent = n > 99 ? "99+" : n; } };
+    if (can("owner,admin,editor")) api("appr_count").then(function (r) { if (r && r.ok) set("approvals", r.pending); });
     if (can("g:sales,g:conversations")) {
       api("leads_count").then(function (r) { if (r && r.ok) set("enquiries", r.unread); });
       api("chat_list", { status: "open" }).then(function (r) { if (r && r.ok) set("chat", (r.chats || []).filter(function (c) { return c.unread || c.needs; }).length); });
@@ -440,7 +444,7 @@
   /* Screens from separate files (defer scripts) may not exist yet when the first screen is drawn after a refresh:
      redraw once everything has loaded, if a placeholder was shown for a screen that now exists. */
   window.addEventListener("load", function () { setTimeout(function () { if (S.user && document.querySelector("#view .soon-box")) { var v = (location.hash.replace(/^#\/?/, "").split("/")[0] || "dashboard"); if (VIEWS[v] && VIEWS[v] !== VIEWS.soon) route(); } }, 0); });
-  window.WXA = { formDraft: formDraft, S: S, signedIn: signedIn, showAuth: showAuth, api: api, bapi: bapi, modal: modal, closeModal: closeModal, toast: toast, esc: esc, ic: ic, fillIcons: fillIcons, ago: ago, head: head, can: can, ROLE_LABEL: ROLE_LABEL, PERM_LABEL: PERM_LABEL, VIEWS: VIEWS, $: $, $$: $$, route: function () { route(); } };
+  window.WXA = { formDraft: formDraft, S: S, signedIn: signedIn, showAuth: showAuth, api: api, bapi: bapi, modal: modal, closeModal: closeModal, toast: toast, esc: esc, ic: ic, fillIcons: fillIcons, ago: ago, head: head, navBadges: function () { navBadges(); }, can: can, ROLE_LABEL: ROLE_LABEL, PERM_LABEL: PERM_LABEL, VIEWS: VIEWS, $: $, $$: $$, route: function () { route(); } };
   Object.assign(ACT, { "page.meta": ["file-text", "updated SEO/settings of"], "page.delete": ["x", "deleted page"], "redirects.save": ["refresh-cw", "saved redirects"], "global.menu": ["panel-left", "updated the site menu on"], "global.replace": ["refresh-cw", "replaced in header/footer"], "global.chrome": ["panel-left", "published header & footer on"] });
 
   // ---------------------------------------------------------------- boot

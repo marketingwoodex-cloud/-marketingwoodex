@@ -186,6 +186,14 @@ $in = $isMultipart ? $_POST : (json_decode((string)file_get_contents('php://inpu
 $action = (string)($in['action'] ?? $_GET['action'] ?? 'status');
 if ($_SERVER['REQUEST_METHOD'] !== 'POST' && $action !== 'status') fail('POST required', 405);
 
+// P39 Phase 2: Manager page/theme/library changes wait for the Master (shared queue with admin.php)
+require_once __DIR__ . '/approvals-lib.php';
+if ($action === 'appr_apply') {
+    require_auth(); [$action, $in] = appr_begin_replay(['role' => $GLOBALS['WX_AUTH_ROLE'] ?? '', 'name' => 'Master'], (string)($in['id'] ?? ''), 'builder');
+} elseif (in_array($action, APPR_BUILDER_WRITE, true) && logged_in() && appr_needed((string)($GLOBALS['WX_AUTH_ROLE'] ?? ''), $action, 'builder')) {
+    out(appr_queue(['id' => (int)$GLOBALS['WX_AUTH_UID'], 'name' => 'User #' . (int)$GLOBALS['WX_AUTH_UID'], 'role' => (string)$GLOBALS['WX_AUTH_ROLE']], 'builder', $action, $in));
+}
+
 switch ($action) {
     case 'status':
         out(['ok' => true, 'loggedIn' => logged_in(), 'why' => $GLOBALS['WX_AUTH_WHY'] ?? null, 'needsSetup' => !admin_installed() && empty(config()['password_hash']), 'adminOnly' => admin_installed()]);

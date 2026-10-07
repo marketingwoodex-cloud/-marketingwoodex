@@ -14,7 +14,7 @@ const EXPAND = { website: ["editor"], settings: ["editor"], conversations: ["sal
 const ACT_GROUPS = [
   ["self", /^(me|me_get|me_save|me_avatar|me_avatars|profile|password|logout|ping|poll|notif_poll|typing|dashboard|dash_data|site_stats|leads_count|mt_get|sec_(get|alerts|2fa_begin|2fa_enable|2fa_disable|recovery_new|revoke)|google_(me|link|unlink))$/],
   ["master", /^(user_save|sec_2fa_reset|backup_(run|delete|restore)|restore|dbx_row|db_reconnect|google_save|mcp_token_(new|regen|revoke|toggle))$/],
-  ["support_view", /^(client_360|get_lead|projs_list|proj_milestones)$/],
+  ["support_view", /^(client_360|get_lead|projs_list)$/],
   ["updates", /^(proj_update)$/],
   ["conversations", /^(chat_(list|get|reply|close|file|mode|lead|typing)|wa_stats|whatsapp_stats|crm_wa_status)$/],
   ["ai", /^(chat_cfg_get|chat_cfg_save|chat_test|ai_test)$/],
@@ -121,6 +121,48 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
   const RESERVED = /^(_private|builder|admin|api|assets)\//;
   const jr = (f, d) => { try { return JSON.parse(fs.readFileSync(f, "utf8")); } catch { return d; } };
   const jw = (f, d) => fs.writeFileSync(f, JSON.stringify(d, null, 1));
+  // ---- P39 Phase 2: Master approval (mirror of api/approvals-lib.php) ----
+  const APPR = path.join(PRIV, "approvals.json"), APPR_CFG = path.join(PRIV, "approvals-cfg.json");
+  const APPR_SKIP = /^(me|me_[a-z_]+|profile|password|login[a-z_0-9]*|logout|ping|poll|notif_poll|typing|status|setup|sec_[a-z0-9_]+|google_(me|link|unlink|login)|pw_[a-z_]+|chat_[a-z_]+|lead_note|add_lead_note|media_upload|fm_upload|upload|import_url|fetch_page|appr_[a-z_]+|[a-z0-9_]*_test|ai_test|health_(scan|psi|speed)|seo_ai|ai_run|outline|improve|excerpt|meta|text|button|alt|fix|article|city|location|faqs|interactive|initialize|load)$/, APPR_WRITE = /(save|delete|send|_new|restore|import|import2|merge|convert|_status|toggle|clear|purge|move|rename|trash|replace|reorder|connect|disconnect|_add|update|_action|mkdir|_zip|bill|photo|regen|revoke|_set|close|copy|invoice|link|sync|folder|_run|tick|optout|camp_action|delete)$/;
+  const APPR_EXTRA = ["global_menu", "global_chrome", "media_alt", "proj_meta", "proj_milestones", "dbx_row"], APPR_READS = ["crm_wa_status", "gdata_status"];
+  const APPR_BUILDER = ["save", "restore", "theme", "page_new", "media_delete", "blocks_save", "blocks_delete", "blocks_import", "blocks_sync"];
+  const apprCfg = () => ({ manager: true, developer: false, notify: true, ...jr(APPR_CFG, {}) });
+  const apprNeeded = (role, action, src, inp, req) => {
+    if (req && req._wxReplay) return false; const c = apprCfg();
+    if (!((role === "admin" && c.manager) || (role === "editor" && c.developer))) return false;
+    if (src === "builder") return APPR_BUILDER.includes(action);
+    if (APPR_SKIP.test(action) || APPR_READS.includes(action)) return false;
+    if (action === "health_settings") return Object.keys(inp || {}).some((k) => k !== "action");
+    return APPR_EXTRA.includes(action) || APPR_WRITE.test(action);
+  };
+  const apprSummary = (src, action, inp) => {
+    const t = (k) => { const v = inp[k]; return v != null && typeof v !== "object" ? String(v).trim().slice(0, 80) : ""; };
+    const what = t("title") || t("name") || t("path") || t("email") || t("client") || t("label") || (t("id") ? "#" + t("id") : "");
+    const verb = /delete|trash|purge/.test(action) ? "Delete" : /send|camp_action/.test(action) ? "Send" : /new|add|import/.test(action) ? "Add" : /restore/.test(action) ? "Restore" : "Change";
+    const area = src === "builder" ? (action === "theme" ? "website theme" : action.startsWith("blocks") ? "section library" : "page") : action.replace(/_(save|delete|send|new|add|status|update|set)$/, "").replace(/_/g, " ");
+    return (verb + " " + area + (what ? ": " + what : "")).trim();
+  };
+  const apprQueue = (u, src, action, inp) => {
+    const x = { ...inp }; delete x.action; const raw = JSON.stringify(x);
+    if (raw.length > 3000000) return { ok: false, error: "This change is too large to send for approval. Ask the Master to make it." };
+    const all = jr(APPR, []), id = "A" + new Date().toISOString().replace(/\D/g, "").slice(2, 14) + crypto.randomBytes(2).toString("hex");
+    const item = { id, src, action, in: x, summary: apprSummary(src, action, x), by: { id: u.id, name: u.name, role: u.role }, at: new Date().toISOString(), status: "pending" };
+    all.unshift(item); jw(APPR, all.slice(0, 500));
+    return { ok: true, pending: true, approval: id, message: "Sent to the Master for approval: " + item.summary };
+  };
+  const apprList = (status = "pending") => { const all = jr(APPR, []); let ch = false; all.forEach((a) => { if (a.status === "pending" && Date.parse(a.at) < Date.now() - 14 * 864e5) { a.status = "expired"; ch = true; } }); if (ch) jw(APPR, all); return all.filter((a) => status === "all" || a.status === status); };
+  const apprGet = (id) => jr(APPR, []).find((a) => a.id === id) || null;
+  const apprSet = (id, patch) => { const all = jr(APPR, []); all.forEach((a, i) => { if (a.id === id) all[i] = { ...a, ...patch }; }); jw(APPR, all); };
+  /** Master approves: replay the stored request through run(inp) with the Master's sign-in; record the result. */
+  const apprApply = async (master, id, src, edits, run, req) => {
+    if (!master || master.role !== "owner") throw new Fail("Only the Master can approve changes", 403);
+    const a = apprGet(id); if (!a || a.src !== src) throw new Fail("Approval not found"); if (a.status !== "pending") throw new Fail("Already " + a.status);
+    apprSet(id, { status: "applying", decidedBy: master.name || "Master", decidedAt: new Date().toISOString() });
+    req._wxReplay = true;
+    try { const r = await run({ ...a.in, ...(edits && typeof edits === "object" ? edits : {}), action: a.action }); apprSet(id, r && r.ok ? { status: "approved" } : { status: "pending", lastError: (r && r.error) || "Failed" }); return r; }
+    catch (e) { apprSet(id, { status: "pending", lastError: e.message || "Failed" }); throw e; }
+    finally { req._wxReplay = false; }
+  };
   const urlOf = (rel) => "/" + rel.replace(/index\.html$/, "");
   const relOk = (rel) => {
     rel = String(rel || "").replace(/\\/g, "/").replace(/^\/+/, ""); if (rel === "" || rel.endsWith("/")) rel += "index.html";
@@ -2093,6 +2135,22 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
     let db = load(); if (db) { try { if (cmsTick(db)) save(db); } catch (e) { console.error("cmsTick", e.message); } }
     const need = (roles) => { const u = current(db, req); if (!u) throw new Fail("Not signed in", 401); const ok = wxAllowed(u, action, roles); if (ok === false || (ok === null && roles && !roles.includes(u.role))) throw new Fail("Your role (" + (ROLE_LABELS[u.role] || u.role) + ") does not have permission for this", 403); return u; };
     const done = (o) => { save(db); return o; };
+    // P39 Phase 2: approvals
+    if (/^appr_/.test(action)) {
+      const u = need(), isM = u.role === "owner", mine = (a) => a.by && a.by.id === u.id;
+      const lite = (a) => { const x = { ...a, in: { ...a.in } }; for (const k in x.in) { const v = x.in[k], j = typeof v === "string" ? v : JSON.stringify(v); if (j && j.length > (typeof v === "string" ? 400 : 1500)) x.in[k] = { _long: j.length, preview: j.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 240) }; } return x; };
+      switch (action) {
+        case "appr_count": { const p = apprList("pending"); return { ok: true, pending: (isM ? p : p.filter(mine)).length, master: isM }; }
+        case "appr_list": { let l = apprList(String(inp.status || "pending")); if (!isM) l = l.filter(mine); return { ok: true, items: l.slice(0, 200).map(lite), cfg: apprCfg(), master: isM }; }
+        case "appr_get": { const a = apprGet(String(inp.id || "")); if (!a || (!isM && !mine(a))) throw new Fail("Not found", 404); return { ok: true, item: a }; }
+        case "appr_reject": { if (!isM) throw new Fail("Only the Master can reject changes", 403); const a = apprGet(String(inp.id || "")); if (!a || a.status !== "pending") throw new Fail("Not pending"); apprSet(a.id, { status: "rejected", note: String(inp.note || "").trim().slice(0, 500), decidedBy: u.name, decidedAt: new Date().toISOString() }); log(db, u, "approval.reject", a.summary, ip); return done({ ok: true }); }
+        case "appr_cancel": { const a = apprGet(String(inp.id || "")); if (!a || !mine(a) || a.status !== "pending") throw new Fail("Not pending"); apprSet(a.id, { status: "cancelled" }); return { ok: true }; }
+        case "appr_cfg_get": return { ok: true, cfg: apprCfg() };
+        case "appr_cfg_save": { if (!isM) throw new Fail("Only the Master can change approval rules", 403); const c = { manager: !!inp.manager, developer: !!inp.developer, notify: !!inp.notify }; jw(APPR_CFG, c); log(db, u, "approval.rules", JSON.stringify(c), ip); return done({ ok: true, cfg: c }); }
+        case "appr_apply": { const a0 = apprGet(String(inp.id || "")); const r = await apprApply(u, String(inp.id || ""), "admin", inp.edits, (x) => adminApi(req, x), req); if (r && r.ok) { const d2 = load(); log(d2, u, "approval.approve", a0 ? a0.summary : "", ip); save(d2); } return r; }
+      }
+    }
+    { const u0 = db && current(db, req); if (u0 && apprNeeded(u0.role, action, "admin", inp, req) && wxAllowed(u0, action, []) !== false) return apprQueue(u0, "admin", action, inp); }
     switch (action) {
       case "cron": { let backups = []; try { backups = backupAuto(); } catch (e) { console.error("backup", e.message); } return { ok: true, published: 0, backups }; }
       /* P15 test mode: WX_DB_BROKEN=1 simulates a broken DB connection (mirrors db_reconnect in admin.php) */
@@ -2223,6 +2281,14 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
     }
   };
   adminApi.installed = () => !!load();
+  /** P39: builder side of approvals. Returns a result object, or null when the request should run normally. */
+  adminApi.builderAppr = async function (req, inp, run) {
+    const m = /^(\d{10})\.(\d+)\./.exec(String(req.headers["x-wx-csrf"] || "")), db = load(), u = m && db && db.users.find((x) => x.id === +m[2]);
+    if (!u) return null; const action = String(inp.action || "");
+    if (action === "appr_apply") return apprApply(u, String(inp.id || ""), "builder", inp.edits, run, req);
+    if (apprNeeded(u.role, action, "builder", inp, req)) return apprQueue(u, "builder", action, inp);
+    return null;
+  };
   /** Builder token check: signature + user active + builder role + admin session still alive. */
   adminApi.builderOk = function (t) {
     const m = /^(\d{10})\.(\d+)\.([a-f0-9]{16})\.([a-f0-9]{64})$/.exec(String(t || ""));

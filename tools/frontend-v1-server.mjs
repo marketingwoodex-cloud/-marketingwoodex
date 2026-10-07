@@ -137,6 +137,8 @@ async function api(req, body) {
   const action = String(inp.action || "status");
   const need = () => { if (!loggedIn(req)) throw new Fail("Not signed in", 401); };
   const ip = req.socket.remoteAddress;
+  // P39 Phase 2: Manager builder changes wait for the Master
+  if (action === "appr_apply" || (loggedIn(req) && adminApi.installed())) { if (action === "appr_apply") need(); const ar = await adminApi.builderAppr(req, inp, (x) => api(req, Buffer.from(JSON.stringify(x)))); if (ar) return ar; }
 
   switch (action) {
     case "status": return { ok: true, loggedIn: loggedIn(req), needsSetup: false, adminOnly: adminApi.installed() };
