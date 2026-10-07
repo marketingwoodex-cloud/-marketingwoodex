@@ -1,0 +1,300 @@
+{
+ "summary": {
+  "health_score": 92,
+  "pages": 107,
+  "business_type": "Local service (interior design & build, Lahore HQ)"
+ },
+ "categories": [
+  {
+   "name": "AI search / GEO",
+   "score": 95,
+   "findings": [
+    {
+     "severity": "Medium",
+     "issue": "No /llms.txt",
+     "count": 0,
+     "pages": []
+    },
+    {
+     "severity": "Info",
+     "issue": "robots.txt has no explicit policy for GPTBot (allowed by default)",
+     "count": 0,
+     "pages": []
+    },
+    {
+     "severity": "Info",
+     "issue": "robots.txt has no explicit policy for OAI-SearchBot (allowed by default)",
+     "count": 0,
+     "pages": []
+    },
+    {
+     "severity": "Info",
+     "issue": "robots.txt has no explicit policy for PerplexityBot (allowed by default)",
+     "count": 0,
+     "pages": []
+    },
+    {
+     "severity": "Info",
+     "issue": "robots.txt has no explicit policy for ClaudeBot (allowed by default)",
+     "count": 0,
+     "pages": []
+    },
+    {
+     "severity": "Info",
+     "issue": "robots.txt has no explicit policy for Google-Extended (allowed by default)",
+     "count": 0,
+     "pages": []
+    },
+    {
+     "severity": "Medium",
+     "issue": "Service pages without FAQ block/FAQPage schema (answer-engine extractability)",
+     "count": 11,
+     "pages": [
+      "/about/",
+      "/book-a-visit/",
+      "/contact/",
+      "/privacy/",
+      "/projects/",
+      "/projects/cafe-corner/",
+      "/projects/clinic-fit-out/",
+      "/projects/courtyard-house/",
+      "/projects/office-floor/",
+      "/projects/retail-corner/",
+      "/projects/small-apartment/"
+     ]
+    },
+    {
+     "severity": "Low",
+     "issue": "Articles without a summary box near top",
+     "count": 28,
+     "pages": [
+      "/insights/1-kanal-house-interior-cost-lahore/",
+      "/insights/3d-interior-design-cost-pakistan/",
+      "/insights/3d-visualization-guide/",
+      "/insights/5-marla-house-renovation-cost-lahore/",
+      "/insights/apartment-small-space-planning-lahore/",
+      "/insights/architect-fee-lahore-2026/",
+      "/insights/design-process-explained/",
+      "/insights/dha-vs-bahria-town-interior-cost-lahore/",
+      "/insights/false-ceiling-cost-lahore-2026/",
+      "/insights/home-renovation-checklist/",
+      "/insights/house-renovation-cost-lahore-2026/",
+      "/insights/house-renovation-timeline-lahore/",
+      "/insights/interior-design-cost-pakistan/",
+      "/insights/interior-designer-cost-lahore-2026/",
+      "/insights/interior-designer-vs-contractor-lahore/"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Content & E-E-A-T",
+   "score": 74,
+   "findings": [
+    {
+     "severity": "High",
+     "issue": "Thin content (<300 words in <main>)",
+     "count": 4,
+     "pages": [
+      "/book-a-visit/ (218 words)",
+      "/contact/ (248 words)",
+      "/estimator/ (277 words)",
+      "/projects/ (291 words)"
+     ]
+    },
+    {
+     "severity": "High",
+     "issue": "Articles without author in schema (E-E-A-T)",
+     "count": 8,
+     "pages": [
+      "/insights/3d-visualization-guide/",
+      "/insights/design-process-explained/",
+      "/insights/home-renovation-checklist/",
+      "/insights/interior-design-cost-pakistan/",
+      "/insights/office-interior-guide/",
+      "/insights/restaurant-planning-guide/",
+      "/insights/retail-shop-interior-guide/",
+      "/insights/small-space-ideas/"
+     ]
+    },
+    {
+     "severity": "Medium",
+     "issue": "Articles without dates",
+     "count": 8,
+     "pages": [
+      "/insights/3d-visualization-guide/",
+      "/insights/design-process-explained/",
+      "/insights/home-renovation-checklist/",
+      "/insights/interior-design-cost-pakistan/",
+      "/insights/office-interior-guide/",
+      "/insights/restaurant-planning-guide/",
+      "/insights/retail-shop-interior-guide/",
+      "/insights/small-space-ideas/"
+     ]
+    },
+    {
+     "severity": "High",
+     "issue": "Articles credited to Organization, not a named designer (Person)",
+     "count": 28,
+     "pages": [
+      "/insights/1-kanal-house-interior-cost-lahore/",
+      "/insights/3d-interior-design-cost-pakistan/",
+      "/insights/3d-visualization-guide/",
+      "/insights/5-marla-house-renovation-cost-lahore/",
+      "/insights/apartment-small-space-planning-lahore/",
+      "/insights/architect-fee-lahore-2026/",
+      "/insights/design-process-explained/",
+      "/insights/dha-vs-bahria-town-interior-cost-lahore/",
+      "/insights/false-ceiling-cost-lahore-2026/",
+      "/insights/home-renovation-checklist/",
+      "/insights/house-renovation-cost-lahore-2026/",
+      "/insights/house-renovation-timeline-lahore/",
+      "/insights/interior-design-cost-pakistan/",
+      "/insights/interior-designer-cost-lahore-2026/",
+      "/insights/interior-designer-vs-contractor-lahore/"
+     ]
+    },
+    {
+     "severity": "High",
+     "issue": "Near-duplicate city pages (doorway-page risk)",
+     "count": 8,
+     "pages": [
+      "/bahawalpur/ (64% similar to /karachi/)",
+      "/faisalabad/ (61% similar to /karachi/)",
+      "/gujranwala/ (64% similar to /karachi/)",
+      "/islamabad/ (61% similar to /karachi/)",
+      "/multan/ (63% similar to /karachi/)",
+      "/quetta/ (63% similar to /karachi/)",
+      "/rawalpindi/ (62% similar to /karachi/)",
+      "/sialkot/ (63% similar to /karachi/)"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Internal links",
+   "score": 96,
+   "findings": [
+    {
+     "severity": "Medium",
+     "issue": "Weakly linked pages (1-2 inbound)",
+     "count": 12,
+     "pages": [
+      "/bahawalpur/",
+      "/healthcare-design/",
+      "/insights/3d-interior-design-cost-pakistan/",
+      "/insights/architect-fee-lahore-2026/",
+      "/insights/dha-vs-bahria-town-interior-cost-lahore/",
+      "/insights/false-ceiling-cost-lahore-2026/",
+      "/insights/house-renovation-timeline-lahore/",
+      "/insights/restaurant-cafe-interior-cost-lahore/",
+      "/interior-home-refurbishment/",
+      "/karachi/",
+      "/residential-basement-design/",
+      "/residential-dining-room-design/"
+     ]
+    },
+    {
+     "severity": "Medium",
+     "issue": "Service/location pages that link to no insights article (topic-cluster gap)",
+     "count": 64,
+     "pages": [
+      "/1-kanal-house-design/",
+      "/10-marla-house-design/",
+      "/2-kanal-house-design/",
+      "/3d-visualization/",
+      "/5-marla-house-design/",
+      "/about/",
+      "/architecture/",
+      "/beauty-salon-design/",
+      "/book-a-visit/",
+      "/cafe-interior-design/",
+      "/commercial-fit-out/",
+      "/commercial-interior/",
+      "/commercial-renovation/",
+      "/complete-home-redesign/",
+      "/contact/"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Local SEO",
+   "score": 86,
+   "findings": [
+    {
+     "severity": "High",
+     "issue": "NAP: multiple phone numbers used: +923224000768\u00d7329, +923214686884\u00d715",
+     "count": 0,
+     "pages": []
+    },
+    {
+     "severity": "Medium",
+     "issue": "NAP: multiple emails used: info@woodex.com.pk\u00d7214, woodexinterior.pk@gmail.com\u00d764",
+     "count": 0,
+     "pages": []
+    },
+    {
+     "severity": "High",
+     "issue": "Inconsistent streetAddress: M-71, Zainab Tower, Model Town Link Road; M-71 Zainab Tower, Model Town Link Road Lahore; M-71 Zainab Tower Model Town Link Road; M-71 Zainab Tower, Model Town Link Road; M-71 Zainab Tower Model Town Link Road Lahore; M-71 Zainab Tower Model Town Link Road Lahore PK",
+     "count": 0,
+     "pages": []
+    },
+    {
+     "severity": "Info",
+     "issue": "No review markup (only add with real, on-site reviews)",
+     "count": 0,
+     "pages": []
+    },
+    {
+     "severity": "Info",
+     "issue": "Off-site (needs owner access): GBP categories/photos/posts, citations (Yelp PK, Brownbook, Bing Places, Apple Business Connect), review velocity, geo-grid rank tracking (needs DataForSEO/Local Falcon key)",
+     "count": 0,
+     "pages": []
+    }
+   ]
+  },
+  {
+   "name": "Schema",
+   "score": 100,
+   "findings": [
+    {
+     "severity": "Info",
+     "issue": "Schema types found: Question\u00d7499, Answer\u00d7499, ListItem\u00d7307, Service\u00d7158, LocalBusiness\u00d7149, BreadcrumbList\u00d7107, FAQPage\u00d795, PostalAddress\u00d787, Offer\u00d776, City\u00d765, Organization\u00d740, BlogPosting\u00d720, ImageObject\u00d720, OfferCatalog\u00d715, AdministrativeArea\u00d72, Country\u00d72, WebPage\u00d71, WebSite\u00d71",
+     "count": 0,
+     "pages": []
+    }
+   ]
+  },
+  {
+   "name": "Sitemap",
+   "score": 97,
+   "findings": [
+    {
+     "severity": "Medium",
+     "issue": "No <lastmod> in sitemap (Google uses it for recrawl)",
+     "count": 0,
+     "pages": []
+    },
+    {
+     "severity": "Low",
+     "issue": "No image sitemap entries",
+     "count": 0,
+     "pages": []
+    }
+   ]
+  },
+  {
+   "name": "Technical",
+   "score": 94,
+   "findings": [
+    {
+     "severity": "High",
+     "issue": "No www -> non-www 301 rule in .htaccess",
+     "count": 0,
+     "pages": []
+    }
+   ]
+  }
+ ]
+}
