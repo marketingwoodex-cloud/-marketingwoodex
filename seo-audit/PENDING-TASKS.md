@@ -2,13 +2,13 @@
 Phase E (claims) is skipped for now. Work order: A, then B, then C. Tick each box when done.
 
 ## A. Technical SEO (from audit.py)
-- [ ] A1 Add FAQ block and FAQPage schema to 11 service pages
-- [ ] A2 Link 13 service/location pages to a related Insights article
-- [ ] A3 Raise inbound links for 19 weakly linked pages
-- [ ] A4 Shorten 1 title that is over 60 characters
-- [ ] A5 Add image entries to the sitemap
-- [ ] A6 Bring the 4 thin utility pages over 300 words (or noindex them)
-- [ ] A7 Add the new pages to the header mega-menu (services hub, new services, 8 Lahore areas)
+- [x] A1 Add FAQ block and FAQPage schema to 11 service pages
+- [x] A2 Link 13 service/location pages to a related Insights article
+- [x] A3 Raise inbound links for 19 weakly linked pages
+- [x] A4 Shorten 1 title that is over 60 characters
+- [x] A5 Add image entries to the sitemap
+- [x] A6 Bring the 4 thin utility pages over 300 words (or noindex them)
+- [x] A7 Add the new pages to the header mega-menu (services hub, new services, 8 Lahore areas)
 - [ ] A8 Hosting setup after upload: www to non-www 301, HTTPS, 410 for the old WordPress/spam URLs, submit the sitemap in Search Console
 
 ## B. On-page SEO and content
