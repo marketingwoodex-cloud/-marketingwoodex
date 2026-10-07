@@ -30,15 +30,19 @@ def art(slug):
     im = re.search(r'class="dx-hero-bg"[^>]*src="/assets/img/([a-z0-9-]+?)\.webp"', s) or re.search(r'<meta property="og:image" content="[^"]*/assets/img/([a-z0-9-]+?)(?:-960)?\.webp"', s)
     i = im.group(1) if im else "img-774a712057fc"
     i = re.sub(r"-(960|480)$", "", i)
+    alts = [x for x in dict.fromkeys(re.findall(r'src="/assets/img/((?:img|ins)-[a-z0-9]+)(?:-960)?\.webp"', s)) if os.path.exists(os.path.join(ROOT, "assets", "img", x + "-960.webp"))]
+    i = [i] + [x for x in alts if x != i]
     rt = re.search(r"(\d+) min read", s); rt = rt.group(0) if rt else "5 min read"
     return t, k, i, rt
+FORCE = False
 def guides(s):
-    m = re.search(r'<section class="wx-guides"[\s\S]*?</section>\n?', s)
-    if not m or "wx-guides-v2" in m.group(0): return s
+    m = re.search(r'<section class="wx-guides[^"]*"[\s\S]*?</section>\n?', s)
+    if not m or ("wx-guides-v2" in m.group(0) and not FORCE): return s
     slugs = re.findall(r'href="/insights/([a-z0-9-]+)/"', m.group(0))
-    cards = ""
+    cards = ""; used = set()
     for n, sl in enumerate(slugs):
-        t, k, i, rt = art(sl)
+        t, k, ims, rt = art(sl)
+        i = next((x for x in ims if x not in used), ims[0]); used.add(i)
         cards += (f'<li><a href="/insights/{sl}/"><figure><img src="/assets/img/{i}-960.webp" srcset="/assets/img/{i}-480.webp 480w, /assets/img/{i}-960.webp 960w" '
                   f'sizes="(max-width: 860px) 100vw, 33vw" alt="{html.escape(t, quote=True)}" loading="lazy" decoding="async" width="960" height="640">'
                   f'<span class="wx-g-tag">{html.escape(k)}</span></figure><div class="wx-g-body"><small>{rt}</small><strong>{html.escape(t)}</strong>'
