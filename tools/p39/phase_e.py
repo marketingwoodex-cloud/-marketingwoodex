@@ -43,7 +43,7 @@ SENT = re.compile(r"[^.!?<>\"]*[.!?]?")
 
 def fix_sentences(text, test, repl):
     out, last = [], None
-    for m in re.finditer(r"[^.!?]+[.!?]?\s*", text):
+    for m in re.finditer(r".+?(?:[.!?](?=\s+[A-Z(\"]|\s*$)|$)\s*", text, re.S):
         s = m.group(0)
         if test(s):
             if last == repl:
