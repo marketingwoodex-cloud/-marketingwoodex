@@ -26,6 +26,7 @@ import cmsBackups from "../netlify/functions/cms-backups.mjs";
 import cmsClients from "../netlify/functions/cms-clients.mjs";
 import cmsHealth from "../netlify/functions/cms-health.mjs";
 import cmsLocations from "../netlify/functions/cms-locations.mjs";
+import cmsPages from "../netlify/functions/cms-pages.mjs";
 import cmsRedirects from "../netlify/functions/cms-redirects.mjs";
 import cmsServices from "../netlify/functions/cms-services.mjs";
 import cmsSiteVisits from "../netlify/functions/cms-site-visits.mjs";
@@ -58,6 +59,7 @@ const HANDLERS = {
   "cms-clients": cmsClients,
   "cms-health": cmsHealth,
   "cms-locations": cmsLocations,
+  "cms-pages": cmsPages,
   "cms-redirects": cmsRedirects,
   "cms-services": cmsServices,
   "cms-site-visits": cmsSiteVisits,
