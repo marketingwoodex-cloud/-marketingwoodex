@@ -16,6 +16,9 @@
     ".so-pv{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fff;color:#111;font-size:13.5px}.so-pv .h{display:flex;gap:8px;align-items:center;padding:10px}.so-pv .h i{width:30px;height:30px;border-radius:50%;background:#0c1628;color:#fff;display:grid;place-items:center;font-style:normal;font-weight:700}.so-pv img{width:100%;aspect-ratio:1/1;object-fit:cover;display:block;background:#eee}.so-pv p{white-space:pre-wrap;margin:0;padding:10px;line-height:1.45}" +
     ".so-opt{border:1px solid var(--line);border-radius:10px;padding:10px;margin:8px 0;font-size:13px;white-space:pre-wrap;cursor:pointer}.so-opt:hover{border-color:#b8956a}" +
     ".so-g{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px;max-height:52vh;overflow:auto}.so-g button{border:2px solid transparent;padding:0;border-radius:8px;overflow:hidden;cursor:pointer;background:#eee}.so-g button:hover{border-color:#b8956a}.so-g img{width:100%;height:90px;object-fit:cover;display:block}.so-g small{display:block;font-size:10px;padding:2px 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}";
+  css.textContent += ".so-ub{display:inline-block;min-width:18px;padding:0 5px;border-radius:99px;background:#d92d20;color:#fff;font-size:11px;line-height:18px;margin-left:4px}" +
+    ".so-cm{padding:12px 16px;border-bottom:1px solid var(--line)}.so-cm:last-child{border-bottom:0}.so-cm.new{background:#fffaf0;box-shadow:3px 0 0 #b8956a inset}.so-cm-h{display:flex;gap:6px;align-items:center;font-size:13px;flex-wrap:wrap}.so-cm-t{margin:6px 0;font-size:14px;white-space:pre-wrap}" +
+    ".so-cm-r{font-size:13px;color:var(--mut);background:var(--bg,#f8f9fb);border-radius:8px;padding:6px 10px}.so-cm-r svg{width:13px;height:13px;vertical-align:-2px}.so-cm-f textarea{width:100%;margin:4px 0 6px}.so-cm-f .toolbar{justify-content:flex-end}";
   document.head.appendChild(css);
   var D = null, wk = 0, tab = "plan";
   var NET = { fb: "Facebook", ig: "Instagram" }, STL = { draft: "Draft", scheduled: "Scheduled", published: "Published", partial: "Partly published", failed: "Failed" };
@@ -26,7 +29,7 @@
 
   V.social = function (el) {
     el.innerHTML = W.head("Social media", "Marketing / Social media", '<button class="btn pri" id="so-new">' + ic("plus") + "New post</button>") +
-      '<div class="tabs" id="so-tabs" style="margin-bottom:14px"><button data-t="plan">Planner</button><button data-t="list">All posts</button><button data-t="set">Settings</button></div><div id="so-b"><div class="card"><div class="empty">Loading…</div></div></div>';
+      '<div class="tabs" id="so-tabs" style="margin-bottom:14px"><button data-t="plan">Planner</button><button data-t="list">All posts</button><button data-t="com">Comments <span class="so-ub" id="so-ub"></span></button><button data-t="set">Settings</button></div><div id="so-b"><div class="card"><div class="empty">Loading…</div></div></div>';
     $("#so-new").onclick = function () { compose(); };
     $$("#so-tabs button").forEach(function (b) { b.onclick = function () { tab = b.dataset.t; draw(); }; });
     W.fillIcons(el); load();
@@ -35,7 +38,8 @@
   function draw() {
     var b = $("#so-b"); if (!b || !D) return; $$("#so-tabs button").forEach(function (x) { x.classList.toggle("on", x.dataset.t === tab); });
     var banner = D.connected ? "" : '<div class="banner" style="margin-bottom:14px">' + ic("info") + ' Facebook / Instagram are not connected yet. You can plan and write posts now; they publish after you connect in <a href="#" id="so-goset">Settings</a>.</div>';
-    if (tab === "set") b.innerHTML = settings(); else if (tab === "list") b.innerHTML = banner + list(); else b.innerHTML = banner + plan();
+    var ub = $("#so-ub"); if (ub) { ub.textContent = D.unread || ""; ub.style.display = D.unread ? "" : "none"; }
+    if (tab === "com") b.innerHTML = banner + comments(); else if (tab === "set") b.innerHTML = settings(); else if (tab === "list") b.innerHTML = banner + list(); else b.innerHTML = banner + plan();
     W.fillIcons(b); bind(b);
   }
   function plan() {
@@ -56,12 +60,25 @@
     return '<div class="card"><table class="tbl"><thead><tr><th></th><th>Post</th><th>Where</th><th>When</th><th>Status</th><th></th></tr></thead><tbody>' + D.posts.map(function (p) {
       return "<tr><td style='width:56px'>" + (p.image ? '<img src="' + esc(p.image) + '" alt="" style="width:48px;height:48px;object-fit:cover;border-radius:6px">' : "") + "</td><td style='max-width:420px'><b>" + esc(p.title || p.text.slice(0, 60)) + "</b><div class='muted' style='font-size:12px'>by " + esc(p.by || "") + "</div>" + (p.error ? "<div style='color:#b42318;font-size:12px'>" + esc(p.error) + "</div>" : "") + "</td><td>" + nets(p) + "</td><td>" + esc(nice(p.published_at || p.when) || "—") + "</td><td><span class='so-st " + p.status + "'>" + STL[p.status] + "</span></td><td style='white-space:nowrap'><button class='btn sm' data-ed='" + p.id + "'>Open</button> <button class='btn sm' data-dup='" + p.id + "'>Duplicate</button></td></tr>"; }).join("") + "</tbody></table></div>";
   }
+  function comments() {
+    var L = D.comments || [];
+    var head = '<div class="toolbar" style="margin-bottom:12px;align-items:center"><span class="muted" style="font-size:13px">' + (D.commentsAt ? "Last checked " + nice(D.commentsAt) + " · checks every 15 minutes" : "Comments on posts published from here (last 30 days)") + '</span><span style="flex:1"></span>' +
+      (D.unread ? '<button class="btn" id="cm-all">' + ic("check") + "Mark all read</button>" : "") + '<button class="btn pri" id="cm-sync"' + (D.connected ? "" : " disabled") + ">" + ic("inbox") + "Check now</button></div>";
+    if (!L.length) return head + '<div class="card"><div class="empty">No comments yet. When people comment on your Facebook or Instagram posts, they appear here and you can reply without leaving the admin.</div></div>';
+    return head + '<div class="card">' + L.map(function (c) {
+      return '<div class="so-cm' + (c.read ? "" : " new") + '" data-cm="' + esc(c.id) + '"><div class="so-cm-h">' + nets({ nets: [c.net] }) + "<b>" + esc(c.name) + '</b><span class="muted"> on ' + esc(c.postTitle) + '</span><span style="flex:1"></span><small class="muted">' + nice(c.t) + "</small></div>" +
+        '<div class="so-cm-t">' + esc(c.text) + "</div>" +
+        (c.reply ? '<div class="so-cm-r">' + ic("send") + " <b>" + esc(c.replyBy || "You") + ":</b> " + esc(c.reply) + "</div>" :
+          '<div class="so-cm-f"><textarea rows="2" placeholder="Write a reply…"></textarea><div class="toolbar"><button class="btn" data-cai>' + ic("sparkles") + 'Suggest reply</button><button class="btn pri" data-csend>' + ic("send") + "Reply</button></div></div>") + "</div>";
+    }).join("") + "</div>";
+  }
   function settings() {
     var c = D.cfg;
     return '<div class="so-m"><div class="card"><div class="card-h"><h3>Connect Facebook &amp; Instagram</h3>' + (D.connected ? '<span class="badge ok">Connected</span>' : '<span class="badge warn">Not connected</span>') + '</div><div class="card-b">' +
       '<label>Facebook Page ID<input id="ss-p" value="' + esc(c.pageId) + '" placeholder="e.g. 102345678901234"></label><label>Instagram Business account ID <small class="muted">(optional)</small><input id="ss-i" value="' + esc(c.igId) + '" placeholder="e.g. 17841400000000000"></label>' +
       '<label>Page access token' + (c.tokenSet ? ' <small class="muted">(saved; leave empty to keep)</small>' : "") + '<input id="ss-t" type="password" autocomplete="off" placeholder="' + (c.tokenSet ? "••••••••••" : "Paste the long-lived Page token") + '"></label>' +
       '<label>Hashtags always added by the AI<input id="ss-h" value="' + esc(c.tags) + '"></label>' +
+      '<label style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="ss-ad"' + (c.autoDraft !== false ? " checked" : "") + ' style="width:auto"> New articles and project stories become draft posts automatically</label>' +
       '<div class="toolbar" style="justify-content:flex-end"><button class="btn" id="ss-clr"' + (c.tokenSet ? "" : " disabled") + '>Remove token</button><button class="btn pri" id="ss-sv">' + ic("check") + "Save</button></div></div></div>" +
       '<div class="card"><div class="card-h"><h3>How to connect (one time)</h3></div><div class="card-b" style="font-size:13.5px;line-height:1.65"><ol style="margin:0;padding-left:18px">' +
       "<li>Your Instagram must be a <b>Business</b> account linked to the Woodex Facebook Page (Instagram app → Settings → Account type).</li>" +
@@ -77,8 +94,17 @@
     $$("[data-add]", b).forEach(function (x) { x.onclick = function () { compose(null, x.dataset.add + " 11:00"); }; });
     $$("[data-ed]", b).forEach(function (x) { x.onclick = function () { compose(D.posts.filter(function (p) { return p.id === x.dataset.ed; })[0]); }; });
     $$("[data-dup]", b).forEach(function (x) { x.onclick = function () { var p = D.posts.filter(function (q) { return q.id === x.dataset.dup; })[0]; compose({ nets: p.nets, text: p.text, image: p.image, link: p.link, title: p.title, status: "draft", when: "" }); }; });
+    if ($("#cm-sync", b)) $("#cm-sync").onclick = function () { var x = this; x.disabled = true; x.textContent = "Checking…"; api("soc_comments_sync").then(function (r) { if (!r.ok) { toast(r.error, true); x.disabled = false; return; } if (r.errors && r.errors.length) toast(r.errors[0], true); load(); }); };
+    if ($("#cm-all", b)) $("#cm-all").onclick = function () { api("soc_comment_read", { all: true }).then(load); };
+    $$("[data-cm]", b).forEach(function (row) {
+      var id = row.dataset.cm, c = D.comments.filter(function (q) { return q.id === id; })[0];
+      if (c && !c.read) row.addEventListener("click", function () { if (c.read) return; c.read = true; row.classList.remove("new"); D.unread = Math.max(0, (D.unread || 1) - 1); var ub = $("#so-ub"); if (ub) { ub.textContent = D.unread || ""; ub.style.display = D.unread ? "" : "none"; } api("soc_comment_read", { ids: [id] }); });
+      var ai = $("[data-cai]", row), sd = $("[data-csend]", row), ta = $("textarea", row);
+      if (ai) ai.onclick = function () { ai.disabled = true; api("soc_ai_reply", { id: id }).then(function (r) { ai.disabled = false; if (!r.ok) return toast(r.error, true); ta.value = r.text; ta.focus(); }); };
+      if (sd) sd.onclick = function () { if (!ta.value.trim()) return toast("Write a reply first", true); sd.disabled = true; api("soc_comment_reply", { id: id, text: ta.value }).then(function (r) { sd.disabled = false; if (!r.ok) return toast(r.error, true); toast("Reply posted ✓"); load(); }); };
+    });
     if ($("#ss-sv", b)) {
-      $("#ss-sv").onclick = function () { api("soc_cfg_save", { cfg: { pageId: $("#ss-p").value, igId: $("#ss-i").value, token: $("#ss-t").value, tags: $("#ss-h").value } }).then(function (r) { if (r.pending) return toast("Sent to Master for approval"); if (!r.ok) return toast(r.error, true); toast("Saved ✓"); load(); }); };
+      $("#ss-sv").onclick = function () { api("soc_cfg_save", { cfg: { pageId: $("#ss-p").value, igId: $("#ss-i").value, token: $("#ss-t").value, tags: $("#ss-h").value, autoDraft: $("#ss-ad").checked } }).then(function (r) { if (r.pending) return toast("Sent to Master for approval"); if (!r.ok) return toast(r.error, true); toast("Saved ✓"); load(); }); };
       $("#ss-clr").onclick = function () { if (confirm("Remove the saved token? Scheduled posts will stop publishing.")) api("soc_cfg_save", { cfg: { clearToken: true } }).then(function (r) { if (r.ok) { toast("Token removed"); load(); } else toast(r.error || "Sent for approval", !r.pending); }); };
     }
   }

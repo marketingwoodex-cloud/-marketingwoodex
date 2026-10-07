@@ -12,7 +12,9 @@ const SOC_GRAPH = 'https://graph.facebook.com/v21.0/';
 
 function soc_load(): array {
     $d = jread(SOC_FILE);
-    $d['cfg'] = array_merge(['pageId' => '', 'igId' => '', 'token' => '', 'tags' => '#WoodexInterior #InteriorDesignLahore #Lahore'], is_array($d['cfg'] ?? null) ? $d['cfg'] : []);
+    $d['cfg'] = array_merge(['pageId' => '', 'igId' => '', 'token' => '', 'tags' => '#WoodexInterior #InteriorDesignLahore #Lahore', 'autoDraft' => true, 'autoSince' => ''], is_array($d['cfg'] ?? null) ? $d['cfg'] : []);
+    $d['seen'] = is_array($d['seen'] ?? null) ? $d['seen'] : [];
+    $d['comments'] = is_array($d['comments'] ?? null) ? $d['comments'] : [];
     $d['posts'] = array_values(is_array($d['posts'] ?? null) ? $d['posts'] : []);
     return $d;
 }
@@ -61,13 +63,72 @@ function soc_publish(array &$p, array $cfg): void {
     if ($ok) $p['published_at'] = now();
 }
 
+/** GET from the Graph API. */
+function soc_graph_get(string $path, array $q, string $token): array {
+    if (!function_exists('curl_init')) return ['error' => ['message' => 'The server has no cURL']];
+    $ch = curl_init(SOC_GRAPH . $path . '?' . http_build_query($q + ['access_token' => $token]));
+    curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 30]);
+    if (is_file(__DIR__ . '/cacert.pem')) curl_setopt($ch, CURLOPT_CAINFO, __DIR__ . '/cacert.pem');
+    $raw = curl_exec($ch); $err = curl_error($ch); curl_close($ch);
+    $j = json_decode((string)$raw, true);
+    return is_array($j) ? $j : ['error' => ['message' => $err ?: 'No answer from Meta']];
+}
+
+/** New published articles / case studies → draft social posts (once each). Returns how many were added. */
+function soc_auto_drafts(array &$d): int {
+    if (empty($d['cfg']['autoDraft']) || !function_exists('cms_load')) return 0;
+    if ($d['cfg']['autoSince'] === '') { $d['cfg']['autoSince'] = now(); return -1; } // start from today: older items are skipped
+    $n = 0; $tags = $d['cfg']['tags'];
+    foreach ((cms_load()['items'] ?? []) as $it) {
+        if (!in_array($it['type'] ?? '', ['post', 'study'], true) || ($it['status'] ?? '') !== 'published' || empty($it['rel'])) continue;
+        $key = $it['type'] . ':' . $it['id'];
+        if (isset($d['seen'][$key]) || (string)($it['published_at'] ?? '') < $d['cfg']['autoSince']) continue;
+        $d['seen'][$key] = now();
+        $url = soc_base() . '/' . preg_replace('~index\.html$~', '', ltrim((string)$it['rel'], '/'));
+        $dek = trim(strip_tags((string)($it['data']['dek'] ?? $it['seo']['desc'] ?? '')));
+        $img = trim((string)($it['data']['hero'] ?? $it['seo']['og'] ?? ''));
+        if ($img !== '' && !preg_match('~^(/[\w\-./%]+|https://[^\s"<>]+)$~', $img)) $img = '';
+        $nets = ['fb']; if ($img !== '' && preg_match('~\.jpe?g(\?|$)~i', $img)) $nets[] = 'ig';
+        $lead = $it['type'] === 'study' ? 'New project story: ' : 'New on the Woodex journal: ';
+        $text = $lead . $it['title'] . ($dek ? "\n\n" . $dek : '') . "\n\nRead it here: " . $url . "\n\n" . $tags;
+        $d['posts'][] = ['id' => soc_id(), 'created_at' => now(), 'res' => [], 'nets' => $nets, 'text' => mb_substr($text, 0, 2200), 'image' => $img, 'link' => $url, 'when' => '', 'status' => 'draft', 'error' => '', 'title' => mb_substr(($it['type'] === 'study' ? 'Project: ' : 'Article: ') . $it['title'], 0, 80), 'by' => 'Auto (website)', 'auto' => $key];
+        $n++;
+    }
+    return $n;
+}
+
+/** Pull recent comments for published posts (last 30 days, max 25 posts). */
+function soc_fetch_comments(array &$d): array {
+    $cfg = $d['cfg']; if ($cfg['token'] === '') return ['error' => 'Connect Facebook first'];
+    $old = []; foreach ($d['comments'] as $c) $old[$c['id']] = $c;
+    $lim = date('Y-m-d H:i:s', time() - 30 * 86400); $k = 0; $errs = [];
+    foreach (array_reverse($d['posts']) as $p) {
+        if ($k >= 25) break; if (!in_array($p['status'] ?? '', ['published', 'partial'], true) || (string)($p['published_at'] ?? '') < $lim) continue; $k++;
+        foreach (['fb', 'ig'] as $n) {
+            $mid = (string)($p['res'][$n]['id'] ?? ''); if ($mid === '') continue;
+            $j = $n === 'fb' ? soc_graph_get($mid . '/comments', ['fields' => 'id,message,from{name},created_time', 'limit' => 50, 'order' => 'reverse_chronological'], $cfg['token'])
+                             : soc_graph_get($mid . '/comments', ['fields' => 'id,text,username,timestamp', 'limit' => 50], $cfg['token']);
+            if (isset($j['error'])) { $errs[] = strtoupper($n) . ': ' . ($j['error']['message'] ?? 'error'); continue; }
+            foreach ((array)($j['data'] ?? []) as $c) {
+                $id = (string)($c['id'] ?? ''); if ($id === '' || isset($old[$id])) continue;
+                $ts = strtotime((string)($c['created_time'] ?? $c['timestamp'] ?? '')) ?: time();
+                $old[$id] = ['id' => $id, 'net' => $n, 'post' => $p['id'], 'postTitle' => $p['title'] ?: mb_substr($p['text'], 0, 50), 'name' => mb_substr((string)($c['from']['name'] ?? $c['username'] ?? 'Someone'), 0, 80), 'text' => mb_substr((string)($c['message'] ?? $c['text'] ?? ''), 0, 1000), 't' => date('Y-m-d H:i:s', $ts), 'read' => false, 'reply' => ''];
+            }
+        }
+    }
+    uasort($old, fn($a, $b) => strcmp($b['t'], $a['t']));
+    $d['comments'] = array_values(array_slice($old, 0, 500)); $d['commentsAt'] = now();
+    return ['ok' => true, 'errors' => $errs];
+}
+
 /** Cron: publish posts whose time has come (max 5 per run). */
 function soc_tick(): array {
-    if (!is_file(SOC_FILE)) return ['social' => 0];
     $d = soc_load(); $n = 0;
     foreach ($d['posts'] as &$p) { if ($n >= 5) break; if (($p['status'] ?? '') === 'scheduled' && (string)$p['when'] !== '' && $p['when'] <= now()) { soc_publish($p, $d['cfg']); $n++; } } unset($p);
-    if ($n) soc_save($d);
-    return ['social' => $n];
+    $a = 0; try { $a = soc_auto_drafts($d); } catch (Throwable $e) { error_log('soc auto: ' . $e->getMessage()); }
+    $c = 0; if ($d['cfg']['token'] !== '' && (string)($d['commentsAt'] ?? '') < date('Y-m-d H:i:s', time() - 900)) { $before = count($d['comments']); soc_fetch_comments($d); $c = count($d['comments']) - $before; }
+    if ($n || $a || ($d['commentsAt'] ?? '') !== '') soc_save($d);
+    return ['social' => $n, 'socialDrafts' => max(0, $a), 'socialComments' => max(0, $c)];
 }
 
 function soc_clean(array $in, ?array $old): array {
@@ -88,14 +149,15 @@ function soc_actions(string $action, array $in): bool {
     $OA = ['owner', 'admin'];
     switch ($action) {
         case 'soc_get':
-            $u = need($OA); $d = soc_load(); $c = $d['cfg'];
+            $u = need($OA); $d = soc_load(); if (soc_auto_drafts($d) !== 0) soc_save($d); $c = $d['cfg'];
             $posts = $d['posts']; usort($posts, fn($a, $b) => strcmp((string)($b['when'] ?: $b['created_at']), (string)($a['when'] ?: $a['created_at'])));
-            out(['ok' => true, 'cfg' => soc_pub_cfg($c), 'connected' => $c['token'] !== '' && ($c['pageId'] !== '' || $c['igId'] !== ''), 'posts' => $posts, 'now' => now()]);
+            out(['ok' => true, 'cfg' => soc_pub_cfg($c), 'connected' => $c['token'] !== '' && ($c['pageId'] !== '' || $c['igId'] !== ''), 'posts' => $posts, 'comments' => array_slice($d['comments'], 0, 200), 'unread' => count(array_filter($d['comments'], fn($x) => empty($x['read']))), 'commentsAt' => $d['commentsAt'] ?? '', 'now' => now()]);
         case 'soc_cfg_save':
             $u = need($OA); $d = soc_load(); $s = (array)($in['cfg'] ?? []);
             foreach (['pageId', 'igId'] as $k) if (isset($s[$k])) $d['cfg'][$k] = substr(preg_replace('~\D~', '', (string)$s[$k]), 0, 30);
             if (isset($s['token']) && trim((string)$s['token']) !== '') $d['cfg']['token'] = substr(preg_replace('~[^A-Za-z0-9_\-|.]~', '', (string)$s['token']), 0, 600);
             if (!empty($s['clearToken'])) $d['cfg']['token'] = '';
+            if (isset($s['autoDraft'])) $d['cfg']['autoDraft'] = (bool)$s['autoDraft'];
             if (isset($s['tags'])) $d['cfg']['tags'] = mb_substr(trim(strip_tags((string)$s['tags'])), 0, 300);
             soc_save($d); log_act($u, 'social.cfg', ''); out(['ok' => true, 'cfg' => soc_pub_cfg($d['cfg'])]);
         case 'soc_post_save':
@@ -113,6 +175,27 @@ function soc_actions(string $action, array $in): bool {
             foreach ($d['posts'] as &$p) if ($p['id'] === $id) { soc_publish($p, $d['cfg']); $hit = $p; } unset($p);
             if (!$hit) fail('Post not found'); soc_save($d); log_act($u, 'social.publish', $hit['status']);
             out(['ok' => $hit['status'] !== 'failed', 'post' => $hit, 'error' => $hit['status'] === 'failed' ? $hit['error'] : null]);
+        case 'soc_comments_sync':
+            $u = need($OA); $d = soc_load(); $r = soc_fetch_comments($d); if (isset($r['error'])) fail($r['error']); soc_save($d);
+            out(['ok' => true, 'comments' => array_slice($d['comments'], 0, 200), 'errors' => $r['errors'], 'commentsAt' => $d['commentsAt']]);
+        case 'soc_comment_read':
+            $u = need($OA); $d = soc_load(); $ids = array_map('strval', (array)($in['ids'] ?? []));
+            foreach ($d['comments'] as &$c) if (in_array($c['id'], $ids, true) || !empty($in['all'])) $c['read'] = true; unset($c);
+            soc_save($d); out(['ok' => true]);
+        case 'soc_comment_reply':
+            $u = need($OA); $d = soc_load(); $id = (string)($in['id'] ?? ''); $text = mb_substr(trim(strip_tags((string)($in['text'] ?? ''))), 0, 1000);
+            if ($text === '') fail('Write a reply'); if ($d['cfg']['token'] === '') fail('Connect Facebook first');
+            $ix = -1; foreach ($d['comments'] as $i => $c) if ($c['id'] === $id) $ix = $i; if ($ix < 0) fail('Comment not found');
+            $c = $d['comments'][$ix];
+            $j = $c['net'] === 'ig' ? soc_graph($id . '/replies', ['message' => $text], $d['cfg']['token']) : soc_graph($id . '/comments', ['message' => $text], $d['cfg']['token']);
+            if (isset($j['error'])) fail('Meta: ' . ($j['error']['error_user_msg'] ?? $j['error']['message'] ?? 'reply failed'));
+            $d['comments'][$ix]['reply'] = $text; $d['comments'][$ix]['replyBy'] = $u['name']; $d['comments'][$ix]['replyAt'] = now(); $d['comments'][$ix]['read'] = true;
+            soc_save($d); log_act($u, 'social.reply', mb_substr($text, 0, 40)); out(['ok' => true, 'comment' => $d['comments'][$ix]]);
+        case 'soc_ai_reply':
+            $u = need($OA); $d = soc_load(); $id = (string)($in['id'] ?? ''); $c = null; foreach ($d['comments'] as $x) if ($x['id'] === $id) $c = $x; if (!$c) fail('Comment not found');
+            $sys = "You reply to social media comments for Woodex Interior, a design-and-build studio in Lahore. Voice: a friendly, experienced interior designer. Reply in the same language as the comment, 1-3 short sentences. Never quote prices or promises; for price or project questions invite them to WhatsApp +92 322 4000768 or send a message. Return only the reply text.";
+            $r = trim((string)ai_call(cms_load()['ai'], $sys, "Post: " . $c['postTitle'] . "\nComment from " . $c['name'] . ": " . $c['text']));
+            out(['ok' => true, 'text' => mb_substr($r, 0, 1000)]);
         case 'soc_ai_caption':
             $u = need($OA); $topic = mb_substr(trim(strip_tags((string)($in['topic'] ?? ''))), 0, 600); if ($topic === '') fail('Describe the post first (e.g. "DHA office fit-out, walnut and brass, 40 seats")');
             $nets = array_values(array_intersect(['fb', 'ig'], (array)($in['nets'] ?? ['fb', 'ig']))); $tone = (string)($in['tone'] ?? 'designer');
