@@ -16,9 +16,9 @@ Phase E (claims) is skipped for now. Work order: A, then B, then C. Tick each bo
 - [x] B2 All 48 posts now 900+ words
 - [x] B3 Unique share images for all 15 pages
 - [x] B4 Replace the house exterior image on the Interior design hub card
-- [ ] B5 Named author and reviewer on the 48 posts (Person schema). **Needs names and credentials from you**
+- [~] B5 (fallback live: "By Woodex Studio" + Organization schema) Named author and reviewer on the 48 posts (Person schema). **Needs names and credentials from you**
 - [ ] B6 Real project photos to replace stock/AI images. **Needs photos from you**
-- [ ] B7 Real Google reviews for the review slider and review markup. **Needs reviews from you**
+- [~] B7 ("See all reviews on Google" link added) Real Google reviews for the review slider and review markup. **Needs reviews from you**
 - [x] B8 Raster logo (PNG) for Organization schema
 
 ## C. Admin dashboard improvements
@@ -33,4 +33,4 @@ Phase E (claims) is skipped for now. Work order: A, then B, then C. Tick each bo
 - [ ] C9 Fresh zip after all changes, then upload to Hostinger. **Needs your upload**
 
 ## Parked
-- [ ] Phase E claims sheet (seo-audit/PHASE-E-APPROVAL.md)
+- [x] Phase E claims sheet — applied recommended safe wording 7 Oct (tools/p39/phase_e.py) (seo-audit/PHASE-E-APPROVAL.md)
