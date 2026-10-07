@@ -97,6 +97,7 @@
     var folderBase = from && from.path.split("/").length > 2 ? from.path.split("/")[0] : "";
     modal("<h2>" + (from ? "Duplicate page" : "New page") + "</h2><form id='np'>" +
       "<label>Start from<select id='np-tpl'><option value='__blank'>Blank page (site header & footer, empty content)</option>" +
+        (W.LAYOUTS ? "<optgroup label='Ready layouts (new sections)'>" + W.LAYOUTS.map(function (l) { return "<option value='__L:" + l[0] + "'>" + esc(l[1]) + " — " + esc(l[2]) + "</option>"; }).join("") + "</optgroup>" : "") +
         Object.keys(groups).map(function (g) { return "<optgroup label='" + esc(g) + " (copy layout)'>" + groups[g].map(function (p) { return "<option value='" + esc(p.path) + "'" + (from && from.path === p.path ? " selected" : "") + ">" + esc(p.title.slice(0, 70)) + "</option>"; }).join("") + "</optgroup>"; }).join("") + "</select></label>" +
       "<label>Page title<input id='np-t' required value='" + esc(from ? from.title + " (copy)" : "") + "' placeholder='e.g. Office Interior Design in Lahore'></label>" +
       "<div class='g2'><label>Folder <small>(optional)</small><input id='np-f' value='" + esc(folderBase) + "' placeholder='e.g. insights'></label><label>Page address<input id='np-s' required value='" + esc(slugBase) + "' placeholder='office-design-lahore'></label></div>" +
@@ -113,12 +114,13 @@
     $("#np").onsubmit = function (e) {
       e.preventDefault(); var go = $("#np-go"); go.disabled = true; $("#np-err").textContent = "";
       var tpl = $("#np-tpl").value, title = $("#np-t").value.trim(), folder = slugify($("#np-f").value), slug = $("#np-s").value.replace(/^-+|-+$/g, "");
-      bapi("load", { path: tpl === "__blank" ? "index.html" : tpl }).then(function (r) {
+      bapi("load", { path: tpl === "__blank" || tpl.indexOf("__L:") === 0 ? "index.html" : tpl }).then(function (r) {
         if (!r.ok) throw new Error(r.error || "Could not load the template");
         var html = r.html, e2 = function (s) { return esc(s); };
         html = html.replace(/<title>[\s\S]*?<\/title>/i, function () { return "<title>" + e2(title) + "</title>"; });
         html = html.replace(/<link\b[^>]*rel=["']canonical["'][^>]*>\s*/i, "");
-        if (tpl === "__blank") html = html.replace(/<main\b[\s\S]*<\/main>/i, function () { return '<main id="main"><section class="wx-section" style="padding:160px 0 96px"><div class="container"><h1>' + e2(title) + "</h1><p>Start building this page: add sections from the left panel.</p></div></section></main>"; });
+        if (tpl.indexOf("__L:") === 0 && W.layoutHtml) html = html.replace(/<main\b[\s\S]*<\/main>/i, function () { return '<main id="main">' + W.layoutHtml(tpl.slice(4), e2(title)) + "</main>"; });
+        else if (tpl === "__blank") html = html.replace(/<main\b[\s\S]*<\/main>/i, function () { return '<main id="main"><section class="wx-section" style="padding:160px 0 96px"><div class="container"><h1>' + e2(title) + "</h1><p>Start building this page: add sections from the left panel.</p></div></section></main>"; });
         else { var once = false; html = html.replace(/(<main\b[\s\S]*?<h1\b[^>]*>)([\s\S]*?)(<\/h1>)/i, function (m, a, b, c) { if (once) return m; once = true; return a + e2(title) + c; }); }
         return bapi("page_new", { folder: folder, slug: slug, html: html });
       }).then(function (r) {
