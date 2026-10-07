@@ -8,7 +8,7 @@
  */
 const WAG_FILE = PRIVATE_DIR . '/wa-auto.json';
 const WAG_VARS = ['{name}' => 'First name', '{fullname}' => 'Full name', '{company}' => 'Company', '{city}' => 'City', '{ref}' => 'Quote / invoice no.', '{amount}' => 'Amount (Rs)', '{date}' => 'Date', '{time}' => 'Time', '{link}' => 'Link'];
-const WAG_FLOWS = ['welcome' => 'New enquiry → welcome', 'quote' => 'Quote sent → follow-up', 'invoice' => 'Invoice due → reminder', 'booking' => 'Site visit → reminder the day before'];
+const WAG_FLOWS = ['welcome' => 'New enquiry → welcome', 'quote' => 'Quote sent → 1st follow-up', 'quote2' => 'Quote sent → 2nd follow-up', 'quote3' => 'Quote sent → last follow-up', 'invoice' => 'Invoice due → reminder', 'booking' => 'Site visit → reminder the day before'];
 const WAG_STOP = '~^\s*(stop|unsubscribe|band karo|بند|ruk jao|no more)\s*[.!]*\s*$~iu';
 
 function wag_load(): array {
@@ -16,7 +16,7 @@ function wag_load(): array {
     $d['cfg'] = array_merge(['dailyCap' => 250, 'perTick' => 25, 'cronKey' => '', 'quietFrom' => '21:00', 'quietTo' => '09:00'], $d['cfg'] ?? []);
     if ($d['cfg']['cronKey'] === '') $d['cfg']['cronKey'] = bin2hex(random_bytes(12));
     $fl = $d['flows'] ?? [];
-    foreach (WAG_FLOWS as $k => $l) $fl[$k] = array_merge(['on' => false, 'tpl' => '', 'params' => [], 'days' => $k === 'quote' ? 2 : 1, 'sent' => 0, 'failed' => 0], is_array($fl[$k] ?? null) ? $fl[$k] : []);
+    foreach (WAG_FLOWS as $k => $l) $fl[$k] = array_merge(['on' => false, 'tpl' => '', 'params' => [], 'days' => ['quote' => 1, 'quote2' => 3, 'quote3' => 7][$k] ?? 1, 'sent' => 0, 'failed' => 0], is_array($fl[$k] ?? null) ? $fl[$k] : []);
     $d['flows'] = $fl;
     foreach (['tpls', 'segs', 'camps'] as $k) $d[$k] = array_values($d[$k] ?? []);
     foreach (['optout', 'day', 'flowlog', 'mid'] as $k) $d[$k] = $d[$k] ?? [];
@@ -106,6 +106,8 @@ function wag_tick(bool $force = false): array {
             if ($r['ok']) { $d['flows'][$fk]['sent']++; $sum['flows']++; if (!empty($r['id'])) $d['mid'][$r['id']] = ['f', $fk, now()]; if (!empty($v['lid'])) try { lead_note_add((int)$v['lid'], 'WhatsApp automation', 'Auto message sent: ' . WAG_FLOWS[$fk], true); } catch (Throwable $e) {} }
             else { $d['flows'][$fk]['failed']++; $sum['failed']++; $d['flows'][$fk]['lastError'] = $r['error']; }
         }
+        // --- P39 Phase 6: if/then rules + no-reply reminders
+        if (function_exists('wah_tick')) wah_tick($d, $budget, $send, $sum);
         // --- campaigns
         foreach ($d['camps'] as &$c) {
             if ($c['status'] === 'scheduled' && $c['when'] <= now()) $c['status'] = 'sending';
@@ -133,14 +135,16 @@ function wag_flow_due(array $d): array {
             $jobs[] = ['welcome', $k, ['p' => $p, 'n' => $l['name'], 'co' => (string)$l['company'], 'city' => (string)$l['location'], 'lid' => (int)$l['id']]];
         }
     }
-    if (($F['quote']['on'] && $F['quote']['tpl']) || ($F['invoice']['on'] && $F['invoice']['tpl'])) {
+    if (($F['quote']['on'] && $F['quote']['tpl']) || ($F['quote2']['on'] && $F['quote2']['tpl']) || ($F['quote3']['on'] && $F['quote3']['tpl']) || ($F['invoice']['on'] && $F['invoice']['tpl'])) {
         if (function_exists('doc_all')) {
-            if ($F['quote']['on'] && $F['quote']['tpl']) {
-                $cut = date('Y-m-d H:i:s', time() - max(1, (int)$F['quote']['days']) * 86400); $old = date('Y-m-d H:i:s', time() - (max(1, (int)$F['quote']['days']) + 7) * 86400);
+            foreach (['quote', 'quote2', 'quote3'] as $qk) { // P39: day 1 / 3 / 7 follow-ups; stop when the customer replies or the quote is answered
+                if (!$F[$qk]['on'] || !$F[$qk]['tpl']) continue;
+                $cut = date('Y-m-d H:i:s', time() - max(1, (int)$F[$qk]['days']) * 86400); $old = date('Y-m-d H:i:s', time() - (max(1, (int)$F[$qk]['days']) + 7) * 86400);
                 foreach (doc_all('wx_quotes') as $x) {
                     if (($x['status'] ?? '') !== 'sent' || empty($x['sent_at']) || $x['sent_at'] > $cut || $x['sent_at'] < $old) continue;
-                    $k = 'quote:' . $x['id']; $p = wag_phone((string)($x['client']['phone'] ?? '')); if (!$p || isset($log[$k])) continue;
-                    $jobs[] = ['quote', $k, ['p' => $p, 'n' => (string)($x['client']['name'] ?? ''), 'co' => (string)($x['client']['company'] ?? ''), 'ref' => (string)($x['no'] ?? ''), 'amount' => $x['total'] ?? 0, 'lid' => $x['lead_id'] ?? null]];
+                    $k = ($qk === 'quote' ? 'quote:' : $qk . ':') . $x['id']; $p = wag_phone((string)($x['client']['phone'] ?? '')); if (!$p || isset($log[$k])) continue;
+                    if (!empty($x['lead_id'])) { try { if (q("SELECT 1 FROM wx_chat_msgs m JOIN wx_chats c ON c.id=m.chat_id WHERE c.lead_id=? AND m.who='visitor' AND m.t>? LIMIT 1", [(int)$x['lead_id'], $x['sent_at']])->fetchColumn()) continue; } catch (Throwable $e) {} }
+                    $jobs[] = [$qk, $k, ['p' => $p, 'n' => (string)($x['client']['name'] ?? ''), 'co' => (string)($x['client']['company'] ?? ''), 'ref' => (string)($x['no'] ?? ''), 'amount' => $x['total'] ?? 0, 'lid' => $x['lead_id'] ?? null]];
                 }
             }
             if ($F['invoice']['on'] && $F['invoice']['tpl']) {

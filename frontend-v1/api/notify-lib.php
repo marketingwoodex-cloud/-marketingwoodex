@@ -5,7 +5,7 @@
  * Settings: _private/notify.json. Log: wx_notify_log. Admin actions: notify_*.
  */
 const NOTIFY_FILE = PRIVATE_DIR . '/notify.json';
-const NOTIFY_EVENTS = ['lead' => 'Enquiry received', 'quote' => 'Quotation sent', 'started' => 'Work started', 'handover' => 'Handover', 'booking' => 'Booking confirmed', 'remind' => 'Booking reminder (day before)'];
+const NOTIFY_EVENTS = ['lead' => 'Enquiry received', 'quote' => 'Quotation sent', 'started' => 'Work started', 'handover' => 'Handover', 'booking' => 'Booking confirmed', 'remind' => 'Booking reminder (day before)', 'stage' => 'Project progress (other stages, with photos)'];
 const NOTIFY_DEF = [
     'email' => true, 'wa' => true,
     'ev' => [
@@ -21,6 +21,8 @@ const NOTIFY_DEF = [
             "Dear {name},\nYour {ref} is confirmed. Place: {project}.\nNeed to change it? Just reply to this message.\n\nمحترم {name}، آپ کی ملاقات ({ref}) کنفرم ہو گئی ہے۔ جگہ: {project}۔ تبدیلی کے لیے اسی پیغام کا جواب دیں۔\n\n{company} · {phone}"],
         'remind' => ['on' => true, 'subject' => 'Reminder: {ref}', 'tpl' => '', 'text' =>
             "Dear {name},\nA friendly reminder of your {ref} tomorrow. Place: {project}.\nSee you then!\n\nمحترم {name}، یاد دہانی: کل آپ کی ملاقات ({ref}) ہے۔ جگہ: {project}۔\n\n{company} · {phone}"],
+        'stage' => ['on' => true, 'subject' => 'Progress update: {project}', 'tpl' => '', 'text' =>
+            "Dear {name},\nProgress update on {project}: we are now at the {stage} stage.\nSite photos: {link}\n\nمحترم {name}، {project} کی تازہ صورتحال: اب کام {stage} کے مرحلے میں ہے۔\n\n{company} · {phone}"],
     ],
     'waLang' => 'en',
 ];
@@ -42,8 +44,9 @@ function notify_client(string $event, array $d, bool $force = false): array {
     try {
         notify_migrate(); $c = notify_cfg(); $ev = $c['ev'][$event] ?? null; if (!$ev || (!$ev['on'] && !$force)) return ['skipped' => 'off'];
         $co = function_exists('company_cfg') ? company_cfg() : ['name' => 'Woodex Interior', 'phones' => '+92 322 4000768']; $v = ['name' => trim((string)($d['name'] ?? '')) ?: 'Customer', 'company' => $co['name'], 'phone' => trim(preg_split('~[,·]~u', (string)$co['phones'])[0] ?? ''),
-            'ref' => (string)($d['ref'] ?? ''), 'project' => (string)($d['project'] ?? '') ?: 'your project', 'link' => (string)($d['link'] ?? '')];
-        $text = trim(preg_replace("~[^\n]*\{link\}[^\n]*\n?~u", $v['link'] === '' ? '' : '$0', trim((string)($d['tpl'] ?? '')) !== '' ? (string)$d['tpl'] : $ev['text'])); // P18 E: per-form reply text $text = notify_fill($text, $v);
+            'ref' => (string)($d['ref'] ?? ''), 'project' => (string)($d['project'] ?? '') ?: 'your project', 'link' => (string)($d['link'] ?? ''), 'stage' => (string)($d['stage'] ?? '')];
+        $text = trim(preg_replace("~[^\n]*\{link\}[^\n]*\n?~u", $v['link'] === '' ? '' : '$0', trim((string)($d['tpl'] ?? '')) !== '' ? (string)$d['tpl'] : $ev['text'])); // P18 E: per-form reply text
+        $text = notify_fill($text, $v);
         $crm = crm_cfg();
         $wa = notify_pk((string)($d['phone'] ?? ''));
         if ($c['wa'] && $wa !== '') {
@@ -83,9 +86,25 @@ function notify_proj_contact(array $p): array {
 /** Called after a project stage change. Sends each event once per project. Returns the project (with 'notified' marks). */
 function notify_project_stage(array $p, string $before): array {
     $order = array_flip(SALES_PSTAGES); $now = $order[$p['stage']] ?? 0; $was = $order[$before] ?? 0; if ($now <= $was) return $p;
-    $ev = $now >= $order['handover'] ? 'handover' : ($now >= $order['execution'] ? 'started' : ''); if ($ev === '' || !empty($p['notified'][$ev])) return $p;
-    $r = notify_client($ev, notify_proj_contact($p)); if (isset($r['skipped']) && $r['skipped'] === 'off') return $p;
-    $p['notified'][$ev] = now(); return doc_put('wx_projects', $p);
+    $ev = $now >= $order['handover'] ? 'handover' : ($now >= $order['execution'] ? 'started' : '');
+    if ($ev !== '' && empty($p['notified'][$ev])) { // first time past execution / handover: the main update
+        $r = notify_client($ev, notify_proj_contact($p)); if (isset($r['skipped']) && $r['skipped'] === 'off') return $p;
+        $p['notified'][$ev] = now(); return doc_put('wx_projects', $p);
+    }
+    // P39 Phase 6: every other stage → short progress update with this stage's site photos
+    $key = 'stage:' . $p['stage']; if (!empty($p['notified'][$key]) || in_array($p['stage'], ['execution', 'handover'], true)) return $p;
+    $r = notify_client('stage', notify_proj_contact($p) + ['stage' => notify_stage_label((string)$p['stage']), 'link' => notify_proj_photos($p)]); if (isset($r['skipped']) && $r['skipped'] === 'off') return $p;
+    $p['notified'][$key] = now(); return doc_put('wx_projects', $p);
+}
+function notify_stage_label(string $s): string { return ['planning' => 'planning', 'design' => 'design', 'procurement' => 'material procurement', 'execution' => 'execution', 'finishing' => 'finishing', 'handover' => 'handover', 'completed' => 'completed'][$s] ?? $s; }
+/** Links to up to 3 photos from the current stage (newest first). */
+function notify_proj_photos(array $p, array $only = []): string {
+    $base = function_exists('wah_base') ? wah_base() : 'https://woodex.com.pk'; $out = [];
+    foreach (array_reverse((array)($p['photos'] ?? [])) as $ph) {
+        if ($only ? !in_array($ph['url'], $only, true) : (($ph['stage'] ?? '') !== $p['stage'])) continue;
+        $out[] = $base . $ph['url']; if (count($out) >= 3) break;
+    }
+    return implode(' ', $out);
 }
 
 function notify_actions(string $action, array $in): bool {
@@ -106,6 +125,15 @@ function notify_actions(string $action, array $in): bool {
                 if (isset($x['text'])) $c['ev'][$e]['text'] = mb_substr(trim((string)$x['text']), 0, 3000) ?: NOTIFY_DEF['ev'][$e]['text'];
                 if (isset($x['tpl'])) $c['ev'][$e]['tpl'] = preg_replace('~[^a-z0-9_]~', '', strtolower((string)$x['tpl'])); }
             jwrite(NOTIFY_FILE, $c); log_act($u, 'notify.settings'); out(['ok' => true, 'cfg' => $c]);
+        case 'notify_proj_send': // P39 Phase 6: send a progress update now, with chosen site photos
+            $u = need(['owner', 'admin', 'sales', 'support']); $p = doc_get('wx_projects', $in['id'] ?? 0, 'Project');
+            $urls = array_values(array_filter(array_map('strval', (array)($in['photos'] ?? [])), fn($x) => preg_match('~^/assets/uploads/projects/[a-z0-9._-]+$~i', $x)));
+            $note = clip($in['note'] ?? '', 1000); $ct = notify_proj_contact($p);
+            $ev = notify_cfg()['ev']['stage']; $tpl = $note !== '' ? "Dear {name},\n" . $note . "\nSite photos: {link}\n\n{company} · {phone}" : $ev['text'];
+            $r = notify_client('stage', $ct + ['stage' => notify_stage_label((string)$p['stage']), 'link' => $urls ? notify_proj_photos($p, $urls) : notify_proj_photos($p), 'tpl' => $tpl], true);
+            if (isset($r['skipped'])) fail('This project has no client phone or email');
+            $p['updates'][] = hist($u, 'Progress update sent to the client' . ($urls ? ' with ' . count($urls) . ' photo' . (count($urls) > 1 ? 's' : '') : '') . ' (' . implode(', ', array_map(fn($k, $v) => $k . ': ' . $v, array_keys($r), $r)) . ')');
+            doc_put('wx_projects', $p); log_act($u, 'notify.project', (string)($p['no'] ?? $p['id'])); out(['ok' => true, 'result' => $r]);
         case 'notify_test':
             $u = need(['owner', 'admin']); $e = (string)($in['event'] ?? ''); if (!isset(NOTIFY_EVENTS[$e])) fail('Unknown event');
             $ph = trim((string)($in['phone'] ?? '')); $em = trim((string)($in['email'] ?? '')); if ($ph === '' && $em === '') fail('Enter your phone or email to receive the test');
