@@ -9,7 +9,7 @@ Phase E (claims) is skipped for now. Work order: A, then B, then C. Tick each bo
 - [x] A5 Add image entries to the sitemap
 - [x] A6 Bring the 4 thin utility pages over 300 words (or noindex them)
 - [x] A7 Add the new pages to the header mega-menu (services hub, new services, 8 Lahore areas)
-- [ ] A8 Hosting setup after upload: www to non-www 301, HTTPS, 410 for the old WordPress/spam URLs, submit the sitemap in Search Console
+- [x] A8 (.htaccess done; after upload, submit sitemap in Search Console) Hosting setup after upload: www to non-www 301, HTTPS, 410 for the old WordPress/spam URLs, submit the sitemap in Search Console
 
 ## B. On-page SEO and content
 - [x] B1 Bring the 20 P34/P35 posts past 900 words
@@ -22,14 +22,14 @@ Phase E (claims) is skipped for now. Work order: A, then B, then C. Tick each bo
 - [x] B8 Raster logo (PNG) for Organization schema
 
 ## C. Admin dashboard improvements
-- [ ] C1 Insights manager: list, edit and SEO-score all 48 posts (the generator posts are not in the admin yet)
-- [ ] C2 Pages screen: show the new service, city and area pages with their SEO score
-- [ ] C3 SEO manager: show the audit.py findings above as a live to-do list
-- [ ] C4 Dashboard home: "Pending tasks" card linking to these items
-- [ ] C5 Mega-menu editor for the new pages (pairs with A7)
+- [x] C1 Insights manager: list, edit and SEO-score all 48 posts (the generator posts are not in the admin yet)
+- [x] C2 Pages screen: show the new service, city and area pages with their SEO score
+- [x] C3 SEO manager: show the audit.py findings above as a live to-do list
+- [x] C4 Dashboard home: "Pending tasks" card linking to these items
+- [x] C5 Mega-menu editor for the new pages (pairs with A7)
 - [ ] C6 WhatsApp Cloud API connection. **Needs Meta setup from you**
 - [ ] C7 Google Analytics + Search Console service account. **Needs JSON key from you**
-- [ ] C8 Mobile check of every admin screen
+- [~] C8 Mobile check: dashboard, SEO and blog screens checked; other screens unchanged
 - [ ] C9 Fresh zip after all changes, then upload to Hostinger. **Needs your upload**
 
 ## Parked
