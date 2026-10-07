@@ -718,3 +718,7 @@ Already verified (no action needed): founded 2016 · 200+ completed spaces · in
 
 - **/about/**
   - …ded in Lahore by Imtiaz Ahmad 200+ Projects completed 4 Cities serve…
+
+## P35 additions
+- "Showroom and material library at Zainab Tower" appears on /lahore/ (note + FAQ). Confirm it exists, or we remove it.
+- Removed "built by our own joinery" and "our own site teams" from 12 city pages (P33 rule).

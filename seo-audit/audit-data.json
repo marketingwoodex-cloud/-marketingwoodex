@@ -1,7 +1,7 @@
 {
  "summary": {
   "health_score": 97,
-  "pages": 124,
+  "pages": 132,
   "business_type": "Local service (interior design & build, Lahore HQ)"
  },
  "categories": [
@@ -97,12 +97,11 @@
     {
      "severity": "Medium",
      "issue": "Weakly linked pages (1-2 inbound)",
-     "count": 17,
+     "count": 16,
      "pages": [
       "/apartment-interior-design/",
       "/bahawalpur/",
       "/dressing-room-design/",
-      "/false-ceiling-design/",
       "/insights/10-marla-house-interior-lahore/",
       "/insights/bathroom-renovation-lahore/",
       "/insights/clinic-interior-design-lahore/",
@@ -113,7 +112,8 @@
       "/insights/office-interior-gulberg-lahore/",
       "/insights/paint-colours-pakistani-homes/",
       "/insights/salon-interior-design-lahore/",
-      "/interior-home-refurbishment/"
+      "/interior-home-refurbishment/",
+      "/karachi/"
      ]
     },
     {
@@ -176,7 +176,7 @@
    "findings": [
     {
      "severity": "Info",
-     "issue": "Schema types found: Question\u00d7631, Answer\u00d7631, ListItem\u00d7475, Service\u00d7171, LocalBusiness\u00d7157, BreadcrumbList\u00d7131, FAQPage\u00d7118, Organization\u00d7103, PostalAddress\u00d794, OpeningHoursSpecification\u00d794, Offer\u00d782, City\u00d772, WebPage\u00d772, SpeakableSpecification\u00d772, BlogPosting\u00d748, ImageObject\u00d730, OfferCatalog\u00d715, Country\u00d78, CreativeWork\u00d76, WebSite\u00d73, CollectionPage\u00d73, ItemList\u00d73, AdministrativeArea\u00d72, Person\u00d71, AboutPage\u00d71, ContactPage\u00d71",
+     "issue": "Schema types found: Question\u00d7695, Answer\u00d7695, ListItem\u00d7515, Service\u00d7187, LocalBusiness\u00d7173, BreadcrumbList\u00d7147, FAQPage\u00d7134, Organization\u00d7103, PostalAddress\u00d7102, OpeningHoursSpecification\u00d7102, City\u00d788, Offer\u00d782, WebPage\u00d780, SpeakableSpecification\u00d780, BlogPosting\u00d748, ImageObject\u00d730, OfferCatalog\u00d715, Country\u00d78, Place\u00d78, CreativeWork\u00d76, WebSite\u00d73, CollectionPage\u00d73, ItemList\u00d73, AdministrativeArea\u00d72, Person\u00d71, AboutPage\u00d71, ContactPage\u00d71",
      "count": 0,
      "pages": []
     }
