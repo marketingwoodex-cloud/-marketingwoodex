@@ -1,6 +1,6 @@
 # Woodex Master P22 — Deep Check Report
 
-**Date:** 2026-10-08 · **File checked:** `woodex-master-P22.zip` (28.6 MB, 623 files, SHA-256 starts `acbe9b8ea350318a`)
+**Date:** 2026-10-08 · **File checked:** `woodex-master-P22.1.zip` (28.6 MB, 623 files, SHA-256 starts `acbe9b8ea350318a`)
 **Result: READY TO UPLOAD.** One file only. No blocking issues.
 
 All checks below were run fresh in this round on the exact zip (not copied from earlier reports).
@@ -56,7 +56,7 @@ Note: "Something went wrong" appears 7 times in the sweep. It is only the title 
 
 ## 6. Upload (one file)
 1. hPanel → Databases → create MySQL DB + user.
-2. File Manager → `public_html` → upload `woodex-master-P22.zip` → **Extract** (Overwrite).
+2. File Manager → `public_html` → upload `woodex-master-P22.1.zip` → **Extract** (Overwrite).
 3. Open `/wx-install.php` → DB details + your owner name/email/password → Install.
 4. Log in at `/admin/` → delete the 3 `wx-*.php` files.
 5. Cron every 5 min: `php public_html/api/wa-cron.php`.

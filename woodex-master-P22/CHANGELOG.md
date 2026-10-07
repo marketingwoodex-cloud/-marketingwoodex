@@ -1,3 +1,7 @@
+
+# P22.1 (2026-10-08)
+- Rebuilt as standard zip with folder entries (158 folders, 623 files). Same code as P22.
+- Upload via File Manager → Extract (the Hostinger import tool cannot recognise this site).
 # P22 (2026-10-08)
 - Gmail connector: real SMTP test email + 'Use for all email alerts'.
 - GitHub + Google Drive connectors: 'Back up now' + daily auto backup (cron) of pages + database.
