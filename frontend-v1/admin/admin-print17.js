@@ -31,40 +31,50 @@
     });
     return out;
   }
+  /*P36 designs: Classic (navy + gold), Minimal (black on white), Premium (espresso + cream)*/
+  var DZ = "classic";
+  var DESIGNS = {
+    classic: { ink: "#0c1628", gold: "#b8956a", g2: "#8a6a40", line: "#e3e1dc", soft: "#f4efe7", sec: "#eceae5", thbg: "#0c1628", tht: "#ffffff", thb: "#0c1628", totbg: "#0c1628", tott: "#ffffff", tota: "#e6cfa5", box: "#fcfbf9", hdr: "#ffffff", bar: [11, 15, 23], bar2: [43, 47, 55], acc: [184, 149, 106] },
+    minimal: { ink: "#111111", gold: "#111111", g2: "#4b5563", line: "#e5e7eb", soft: "#f9fafb", sec: "#f3f4f6", thbg: "#ffffff", tht: "#111111", thb: "#111111", totbg: "#111111", tott: "#ffffff", tota: "#ffffff", box: "#ffffff", hdr: "#ffffff", bar: [17, 17, 17], bar2: [17, 17, 17], acc: [17, 17, 17] },
+    premium: { ink: "#2b2118", gold: "#b8956a", g2: "#8a6a40", line: "#e8dfd1", soft: "#f4efe7", sec: "#efe6d8", thbg: "#2b2118", tht: "#f4efe7", thb: "#2b2118", totbg: "#2b2118", tott: "#f4efe7", tota: "#e6cfa5", box: "#fbf8f3", hdr: "#f7f1e8", bar: [43, 33, 24], bar2: [74, 58, 43], acc: [184, 149, 106] }
+  };
+  P.DESIGNS = DESIGNS;
+  function dz() { return DESIGNS[DZ] || DESIGNS.classic; }
   function css(pdf) {
+    var t = dz();
     return '@font-face{font-family:"DM Sans";src:url("/assets/fonts/dm-sans-400.woff2") format("woff2");font-weight:400}@font-face{font-family:"DM Sans";src:url("/assets/fonts/dm-sans-500.woff2") format("woff2");font-weight:500 700}' +
-      ":root{--ink:#0c1628;--gold:#b8956a;--g2:#8a6a40;--line:#e3e1dc;--soft:#f4efe7;--sec:#eceae5;--mut:#6b7280}" +
+      ":root{--ink:" + t.ink + ";--gold:" + t.gold + ";--g2:" + t.g2 + ";--line:" + t.line + ";--soft:" + t.soft + ";--sec:" + t.sec + ";--mut:#6b7280;--thbg:" + t.thbg + ";--tht:" + t.tht + ";--thb:" + t.thb + ";--totbg:" + t.totbg + ";--tott:" + t.tott + ";--tota:" + t.tota + ";--box:" + t.box + ";--hdr:" + t.hdr + "}" +
       '@page{size:A4;margin:0}' + /*P18page*/
       "*{box-sizing:border-box}html{-webkit-print-color-adjust:exact;print-color-adjust:exact}" +
       "body{margin:0;font-family:'DM Sans',Arial,sans-serif;color:var(--ink);font-size:9.4pt;line-height:1.45;background:" + (pdf ? "#fff" : "#e7e5e0") + "}" +
       ".doc{background:#fff;width:210mm;margin:" + (pdf ? "0" : "8mm auto") + ";padding:" + (pdf ? "0 12mm" : "11mm 12mm 14mm") + ";box-shadow:" + (pdf ? "none" : "0 8px 34px rgba(12,22,40,.16)") + "}" +
       "@media print{body{background:#fff}.doc{width:auto;margin:0;padding:0 12mm;box-shadow:none}.xf{position:fixed;left:0;right:0;bottom:0}.xf-sp{height:21mm}.xh-sp{height:11mm}}@media screen{.xf{margin:10mm -12mm -14mm}.xf-sp,.xh-sp{display:none}}body.dl{background:#fff}.dl .doc{margin:0;box-shadow:none;padding:0 12mm}.dl .xf,.dl .xf-sp,.dl .xh-sp{display:none!important}" +
       "table.pg{width:100%;border-collapse:collapse}table.pg>thead>tr>td,table.pg>tfoot>tr>td,table.pg>tbody>tr>td{padding:0;border:0}" +
-      ".xh{display:flex;justify-content:space-between;align-items:flex-start;gap:8mm;padding-bottom:4mm;margin-bottom:5mm;border-bottom:1.5px solid var(--ink);position:relative}.xh:after{content:'';position:absolute;left:0;bottom:-4px;width:34mm;height:2.5px;background:var(--gold)}" +
+      ".xh{display:flex;justify-content:space-between;align-items:flex-start;gap:8mm;padding-bottom:4mm;background:var(--hdr);margin-bottom:5mm;border-bottom:1.5px solid var(--ink);position:relative}.xh:after{content:'';position:absolute;left:0;bottom:-4px;width:34mm;height:2.5px;background:var(--gold)}" +
       ".xb{display:flex;align-items:center;gap:3.2mm}.xb img{height:13mm}.xb b{display:block;font-size:15pt;letter-spacing:.2em;line-height:1}.xb small{display:block;font-size:6.6pt;letter-spacing:.42em;color:var(--g2);margin-top:1.4mm}.xb em{display:block;font-style:normal;font-size:7pt;color:var(--mut);margin-top:1.2mm;letter-spacing:.02em}" +
       ".xr{text-align:right}.xr h1{margin:0;font-size:21pt;letter-spacing:.14em;font-weight:700;line-height:1}.xr h1 span{color:var(--gold)}" +
       ".xm{display:inline-grid;grid-template-columns:auto auto;gap:.6mm 4mm;margin-top:2.4mm;font-size:8.6pt;text-align:right}.xm small{color:var(--mut);text-align:left}.xm b{font-weight:600}" +
       ".xc{font-size:7.4pt;color:var(--mut);margin-top:2mm;line-height:1.5}" +
       ".chips{display:flex;gap:2mm;justify-content:flex-end;margin-top:2mm}.chip{font-size:7pt;font-weight:700;letter-spacing:.12em;border:1px solid var(--gold);color:var(--g2);border-radius:1.4mm;padding:.6mm 2.2mm;text-transform:uppercase}" +
-      ".boxes{display:grid;grid-template-columns:1fr 1fr;gap:4mm;margin-bottom:5mm}.box{border:1px solid var(--line);border-radius:2.4mm;padding:3.4mm 4mm;background:#fcfbf9}.box small{display:block;font-size:6.8pt;letter-spacing:.16em;text-transform:uppercase;color:var(--g2);font-weight:700;margin-bottom:1.2mm}.box b{font-size:10.5pt}.box div{font-size:8.6pt;color:#374151}" +
+      ".boxes{display:grid;grid-template-columns:1fr 1fr;gap:4mm;margin-bottom:5mm}.box{border:1px solid var(--line);border-radius:2.4mm;padding:3.4mm 4mm;background:var(--box)}.box small{display:block;font-size:6.8pt;letter-spacing:.16em;text-transform:uppercase;color:var(--g2);font-weight:700;margin-bottom:1.2mm}.box b{font-size:10.5pt}.box div{font-size:8.6pt;color:#374151}" +
       ".box dl{display:grid;grid-template-columns:auto 1fr;gap:.5mm 3mm;margin:0;font-size:8.6pt}.box dt{color:var(--mut)}.box dd{margin:0;font-weight:500}" +
       ".intro{color:#374151;margin:0 0 4mm;font-size:9pt}" +
       "table.t{width:100%;border-collapse:collapse}table.t thead{display:table-header-group}table.t tr{break-inside:avoid;page-break-inside:avoid}" +
-      "table.t th{background:var(--ink);color:#fff;font-weight:600;font-size:7.4pt;letter-spacing:.08em;text-transform:uppercase;padding:2.3mm 2.2mm;text-align:left}table.t th:first-child{border-radius:1.6mm 0 0 0}table.t th:last-child{border-radius:0 1.6mm 0 0}" +
+      "table.t th{background:var(--thbg);color:var(--tht);border-bottom:1.5px solid var(--thb);font-weight:600;font-size:7.4pt;letter-spacing:.08em;text-transform:uppercase;padding:2.3mm 2.2mm;text-align:left}table.t th:first-child{border-radius:1.6mm 0 0 0}table.t th:last-child{border-radius:0 1.6mm 0 0}" +
       "th.r,td.r{text-align:right}th.c,td.c{text-align:center}table.t td{padding:2mm 2.2mm;border-bottom:1px solid var(--line);vertical-align:top;font-size:8.8pt}" +
       "td.sr{width:13mm;color:var(--mut);font-variant-numeric:tabular-nums}td.n{white-space:nowrap;font-variant-numeric:tabular-nums}" +
       "tr.sec td{background:var(--sec);font-weight:700;font-size:8.8pt;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid #d6d3cc}tr.sec td.sr{color:var(--g2);font-weight:700}" +
       "tr.hd td{font-weight:700;background:#faf8f4}tr.sp td{color:#4b5563;font-size:8.2pt;font-style:italic;padding-top:.6mm;border-bottom-style:dashed}tr.sp td.d{white-space:pre-wrap}" +
       "tr.ss td{font-weight:700;background:#fff;border-bottom:1.5px solid var(--ink)}" +
       ".foot2{display:grid;grid-template-columns:1fr 78mm;gap:6mm;margin-top:4mm;break-inside:avoid}.words{border:1px dashed var(--gold);border-radius:2mm;padding:3mm 3.5mm;font-size:8.6pt;align-self:start;background:#fffdf9}.words small{display:block;font-size:6.8pt;letter-spacing:.14em;text-transform:uppercase;color:var(--g2);font-weight:700}" +
-      ".tot div{display:flex;justify-content:space-between;padding:1.3mm 3mm;font-size:9pt;border-bottom:1px solid var(--line)}.tot .g{background:var(--ink);color:#fff;font-weight:700;font-size:11.5pt;padding:2.8mm 3mm;border-radius:1.6mm;border:0;margin-top:1.4mm}.tot .g span:last-child{color:#e6cfa5}" +
+      ".tot div{display:flex;justify-content:space-between;padding:1.3mm 3mm;font-size:9pt;border-bottom:1px solid var(--line)}.tot .g{background:var(--totbg);color:var(--tott);font-weight:700;font-size:11.5pt;padding:2.8mm 3mm;border-radius:1.6mm;border:0;margin-top:1.4mm}.tot .g span:last-child{color:var(--tota)}" +
       "h3{font-size:8.6pt;letter-spacing:.16em;text-transform:uppercase;color:var(--g2);margin:6mm 0 2.4mm;break-after:avoid}" +
       ".terms{margin:0;padding-left:4.5mm;color:#374151;font-size:8.6pt}.terms li{margin-bottom:1.1mm;break-inside:avoid}" +
       ".scope{columns:2;column-gap:8mm;margin:0;padding-left:4.5mm;font-size:8.8pt}.scope li{margin-bottom:1.2mm;break-inside:avoid}" +
       ".banks{display:grid;grid-template-columns:repeat(auto-fit,minmax(60mm,1fr));gap:3mm}.bank1{display:grid;grid-template-columns:auto 1fr;gap:.6mm 3mm;font-size:8.4pt;border:1px solid var(--line);border-radius:2mm;padding:3mm 4mm;align-content:start}.bank1 .bn{grid-column:1/-1;font-size:9pt;margin-bottom:.8mm}.bank1 small{color:var(--mut)}.bank1 span{font-weight:600;word-break:break-all}" + ".bank{display:grid;grid-template-columns:auto 1fr auto 1fr;gap:.8mm 4mm;font-size:8.6pt;border:1px solid var(--line);border-radius:2mm;padding:3mm 4mm}.bank small{color:var(--mut)}" +
       ".sign{display:grid;grid-template-columns:1fr 1fr;gap:16mm;margin-top:14mm;break-inside:avoid}.sign div{border-top:1px solid var(--ink);padding-top:1.8mm;font-size:8.4pt;font-weight:700}.sign small{display:block;font-weight:400;color:var(--mut);font-size:7.6pt}" +
       ".sign.three{grid-template-columns:repeat(3,1fr);gap:10mm}" +
-      ".xf{background:#fff}.xf-t{display:flex;justify-content:space-between;align-items:center;gap:6mm;padding:2.6mm 12mm 2.4mm;font-size:7.8pt;font-weight:600;letter-spacing:.03em;color:#1f2937;border-top:1px solid var(--line)}.xf-t i{font-style:normal;color:var(--gold);margin:0 2.2mm}.xf-t b{font-weight:700;letter-spacing:.06em;white-space:nowrap;flex:none}.xf-t span{min-width:0}.xf-bar{position:relative;height:6mm;background:#0b0f17}.xf-bar:before{content:'';position:absolute;right:0;top:0;bottom:0;width:72mm;background:#2b2f37;clip-path:polygon(7mm 0,100% 0,100% 100%,0 100%)}.xf-bar:after{content:'';position:absolute;right:0;top:0;width:65mm;height:.7mm;background:var(--gold)}/*P18foot*/" +
+      ".xf{background:#fff}.xf-t{display:flex;justify-content:space-between;align-items:center;gap:6mm;padding:2.6mm 10mm 2.4mm;font-size:7.8pt;font-weight:700;letter-spacing:.02em;color:#000;border-top:1px solid var(--line)}.xf-t i{font-style:normal;color:#111;margin:0 1.1mm;font-weight:700}.xf-t .xf-i{font-style:normal;display:inline-flex;align-items:center;gap:.9mm;white-space:nowrap}.xf-t .xf-i svg{width:3mm;height:3mm;fill:#000;flex:none}.xf-t span{display:flex;flex-wrap:nowrap;align-items:center;font-size:6.1pt;letter-spacing:0;min-width:0;overflow:hidden}.xf-t>b{font-size:6.6pt;letter-spacing:.03em}.xf-t b{font-weight:700;letter-spacing:.06em;white-space:nowrap;flex:none}.xf-t span{min-width:0}.xf-bar{position:relative;height:6mm;background:var(--totbg)}.xf-bar:before{content:'';position:absolute;right:0;top:0;bottom:0;width:72mm;background:var(--ink);opacity:.85;clip-path:polygon(7mm 0,100% 0,100% 100%,0 100%)}.xf-bar:after{content:'';position:absolute;right:0;top:0;width:65mm;height:.7mm;background:var(--gold)}/*P18foot*/" +
       ".brk{break-before:page;page-break-before:always}.keep{break-inside:avoid}" +
       ".trade{display:flex;justify-content:space-between;align-items:flex-end;margin:0 0 3mm;padding-bottom:2mm;border-bottom:1px solid var(--line)}.trade h2{margin:0;font-size:14pt;text-transform:uppercase;letter-spacing:.04em}.trade h2 span{color:var(--gold);margin-right:2.5mm}.trade .kv{font-size:8pt;color:var(--mut);text-align:right}.trade .kv b{color:var(--ink)}" +
       ".note{margin-top:2.4mm;font-size:8.2pt;color:#4b5563;border-left:2.5px solid var(--gold);padding:.6mm 0 .6mm 3mm}" +
@@ -78,14 +88,16 @@
       '<div class="xc">' + esc(c.address) + "<br>" + esc(c.phones) + " · " + esc(c.email) + (c.ntn ? " · NTN " + esc(c.ntn) : "") + "</div></div></div>";
   }
   // PDF mode: the PDF maker stamps a compact letterhead on every page, so the first page shows the title band only
-  function pdfBand(title, meta) { return '<div class="xh-pdf" style="justify-content:space-between;align-items:flex-end;margin:0 0 5mm"><h1 style="margin:0;font-size:20pt;letter-spacing:.14em">' + title + '<span style="color:#b8956a">.</span></h1><div class="xm">' + meta.map(function (m) { return "<small>" + m[0] + "</small><b>" + esc(m[1]) + "</b>"; }).join("") + "</div></div>"; }
-  function footer(c, label) {
-    var ph = String(c.phones || "").split("·")[0].trim(); /*P18fm*/
-    var bits = [ph, c.email, c.address, c.web].filter(Boolean).map(esc).join("<i>|</i>");
+  function pdfBand(title, meta) { return '<div class="xh-pdf" style="justify-content:space-between;align-items:flex-end;margin:0 0 5mm"><h1 style="margin:0;font-size:20pt;letter-spacing:.14em">' + title + '<span style="color:' + dz().gold + '">.</span></h1><div class="xm">' + meta.map(function (m) { return "<small>" + m[0] + "</small><b>" + esc(m[1]) + "</b>"; }).join("") + "</div></div>"; }
+  function footer(c, label) { /*P36 footer: bold, black icons; contacts left, thank-you right*/
+    var ph = String(c.phones || "").split("·")[0].trim();
+    var IC = { p: "<svg viewBox=\"0 0 24 24\"><path d=\"M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.4 11.4 0 0 0 3.6.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1z\"/></svg>", e: "<svg viewBox=\"0 0 24 24\"><path d=\"M3 5h18a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1zm9 7.2L4.4 7H19.6zM4 8.6V17h16V8.6l-8 5.4z\"/></svg>", l: "<svg viewBox=\"0 0 24 24\"><path d=\"M12 2a7 7 0 0 1 7 7c0 5.2-7 13-7 13S5 14.2 5 9a7 7 0 0 1 7-7zm0 4.5A2.5 2.5 0 1 0 12 11.5 2.5 2.5 0 0 0 12 6.5z\"/></svg>" };
+    var bits = [["p", ph], ["e", c.email], ["l", c.address]].filter(function (x) { return x[1]; })
+      .map(function (x) { return '<em class="xf-i" data-k="' + x[0] + '">' + IC[x[0]] + esc(x[1]) + "</em>"; }).join("<i>|</i>");
     return '<div class="xf"><div class="xf-t"><span>' + bits + "</span><b>Thank you for your business</b></div><div class='xf-bar'></div></div>";
   }
   function wrap(title, inner, c, label, pdf) {
-    return "<!doctype html><html><head><meta charset='utf-8'><title>" + esc(title) + "</title><style>" + css(pdf) + "</style></head><body><div class='doc'><table class='pg'><thead><tr><td><div class='xh-sp'></div></td></tr></thead><tbody><tr><td>" + inner + "</td></tr></tbody><tfoot><tr><td><div class='xf-sp'></div></td></tr></tfoot></table>" + footer(c, label) + "</div></body></html>";
+    return "<!doctype html><html><head><meta charset='utf-8'><meta name='wx-design' content='" + DZ + "'><title>" + esc(title) + "</title><style>" + css(pdf) + "</style></head><body><div class='doc'><table class='pg'><thead><tr><td><div class='xh-sp'></div></td></tr></thead><tbody><tr><td>" + inner + "</td></tr></tbody><tfoot><tr><td><div class='xf-sp'></div></td></tr></tfoot></table>" + footer(c, label) + "</div></body></html>";
   }
   function boxes(cl, rightTitle, rows) {
     return '<div class="boxes"><div class="box"><small>Prepared for</small><b>' + esc(cl.company || cl.name) + "</b>" + (cl.company && cl.name !== cl.company ? "<div>Attn: " + esc(cl.name) + "</div>" : "") + (cl.address ? "<div>" + esc(cl.address) + "</div>" : "") + "<div>" + esc([cl.phone, cl.email].filter(Boolean).join(" · ")) + "</div></div>" +
@@ -159,7 +171,7 @@
   }
 
   // ------------------------------------------------------------- SINGLE-PAGE QUOTATION
-  function single(q, c, pdf, classic) { /*P19 B5: classic BOQ shares the block system*/
+  function single(q, c, pdf, classic) { DZ = q.design || "classic"; /*P19 B5: classic BOQ shares the block system*/
     var label = P.label(q), valid = addDays(q.date, q.valid_days || c.validDays || 15), secs = q.sections.filter(function (s) { return s.items.length; });
     var meta = [["Quotation no.", label], ["Date", dlong(q.date)], ["Valid until", dlong(valid)]];
     var area = q.sections.reduce(function (a, s) { return a + (+s.area || 0); }, 0);
@@ -184,7 +196,7 @@
   function scopeBlock(q) { var l = lines(q.scope); return l.length ? '<div class="keep"><h3>Scope of work</h3><ul class="scope">' + l.map(function (x) { return "<li>" + esc(x) + "</li>"; }).join("") + "</ul></div>" : ""; }
 
   // ------------------------------------------------------------- PROJECT QUOTATION (summary + trade pages)
-  function project(q, c, pdf) {
+  function project(q, c, pdf) { DZ = q.design || "classic";
     var label = P.label(q), valid = addDays(q.date, q.valid_days || c.validDays || 15);
     var chips = [q.option || "Option-1", "V-" + (q.version || 1)].concat(q.qtype ? [QT[q.qtype]] : []);
     var meta = [["Quotation no.", label], ["Date", dlong(q.date)], ["Valid until", dlong(valid)]];
@@ -222,7 +234,7 @@
 
   // ------------------------------------------------------------- INVOICE (new design, all invoices)
   P.invoice = function (inv, c, opts) {
-    opts = opts || {}; if (opts.classic) return OLDI(inv, legacy(c, inv));
+    opts = opts || {}; if (opts.classic) return OLDI(inv, legacy(c, inv)); DZ = inv.design || "classic";
     var st = inv.payStatus === "paid" ? '<span class="stamp paid">Paid</span>' : inv.payStatus === "partial" ? '<span class="stamp part">Part paid</span>' : '<span class="stamp due">' + (inv.mode === "after_delivery" ? "Due on delivery" : "Unpaid") + "</span>";
     var meta = [["Invoice no.", inv.no], ["Date", dlong(inv.issue_date)]].concat(inv.due_date ? [["Due date", dlong(inv.due_date)]] : []).concat(inv.po ? [["PO #", inv.po]] : []);
     var secs = (inv.sections || []).filter(function (s) { return s.items.length; });
@@ -256,6 +268,8 @@
       document.body.appendChild(f);
       var done = function (e, r) { setTimeout(function () { f.remove(); }, 50); e ? reject(e) : resolve(r); };
       var foot = /class="xf"/.test(html), m = html.match(/<div class="xf-t"><span>([\s\S]*?)<\/span>/);
+      var dm = html.match(/name='wx-design' content='([a-z]+)'/), TH = DESIGNS[dm ? dm[1] : "classic"] || DESIGNS.classic;
+      var items = []; if (m) m[1].replace(/<em class="xf-i" data-k="(\w)">[\s\S]*?<\/svg>([\s\S]*?)<\/em>/g, function (_, k, t) { items.push([k, t.replace(/&amp;/g, "&").replace(/&#39;/g, "'").replace(/&quot;/g, '"')]); });
       var txt = m ? m[1].replace(/<i>\|<\/i>/g, "  |  ").replace(/<[^>]+>/g, "").replace(/&amp;/g, "&").replace(/&#39;/g, "'").replace(/&quot;/g, '"') : "";
       f.onload = function () {
         var w = f.contentWindow, d = w.document, sc = d.createElement("script"); sc.src = "/admin/vendor/html2pdf.bundle.min.js";
@@ -268,11 +282,18 @@
                 if (foot) for (var i = 1; i <= n; i++) {
                   pdf.setPage(i);
                   pdf.setDrawColor(227, 225, 220); pdf.setLineWidth(0.25); pdf.line(12, H - 15.5, W - 12, H - 15.5);
-                  pdf.setFont("helvetica", "bold"); pdf.setFontSize(7.2); pdf.setTextColor(31, 41, 55);
-                  pdf.text(txt, 12, H - 10.6, { maxWidth: 140 }); pdf.text("Thank you for your business", W - 12, H - 10.6, { align: "right" });
-                  pdf.setFillColor(11, 15, 23); pdf.rect(0, H - 6, W, 6, "F");
-                  pdf.setFillColor(43, 47, 55); pdf.triangle(W - 72, H, W - 65, H - 6, W - 65, H, "F"); pdf.rect(W - 65, H - 6, 65, 6, "F");
-                  pdf.setFillColor(184, 149, 106); pdf.rect(W - 65, H - 6, 65, 0.7, "F");
+                  pdf.setFont("helvetica", "bold"); pdf.setFontSize(6.4); pdf.setTextColor(0, 0, 0);
+                  if (items.length) { /*P36: black vector icons + bold text*/
+                    var x = 12, y = H - 10.6, ic = function (k, x0) { var cy = y - 1.05; pdf.setFillColor(0, 0, 0); pdf.setDrawColor(0, 0, 0);
+                      if (k === "p") { pdf.setLineWidth(0.55); pdf.roundedRect(x0 + 0.35, cy - 1.25, 1.5, 2.5, 0.3, 0.3, "F"); pdf.setFillColor(255, 255, 255); pdf.rect(x0 + 0.6, cy - 0.9, 1, 1.5, "F"); }
+                      else if (k === "e") { pdf.setLineWidth(0.3); pdf.rect(x0, cy - 0.95, 2.4, 1.9, "S"); pdf.line(x0, cy - 0.95, x0 + 1.2, cy + 0.1); pdf.line(x0 + 2.4, cy - 0.95, x0 + 1.2, cy + 0.1); }
+                      else { pdf.circle(x0 + 1, cy - 0.4, 0.95, "F"); pdf.triangle(x0 + 0.15, cy - 0.1, x0 + 1.85, cy - 0.1, x0 + 1, cy + 1.3, "F"); pdf.setFillColor(255, 255, 255); pdf.circle(x0 + 1, cy - 0.4, 0.35, "F"); } };
+                    items.forEach(function (it, n) { if (n) { pdf.text("|", x + 1.4, y); x += 4.4; } ic(it[0], x); x += 3.1; pdf.text(it[1], x, y); x += pdf.getTextWidth(it[1]); });
+                  } else pdf.text(txt, 12, H - 10.6, { maxWidth: 140 });
+                  pdf.text("Thank you for your business", W - 12, H - 10.6, { align: "right" });
+                  pdf.setFillColor(TH.bar[0], TH.bar[1], TH.bar[2]); pdf.rect(0, H - 6, W, 6, "F");
+                  pdf.setFillColor(TH.bar2[0], TH.bar2[1], TH.bar2[2]); pdf.triangle(W - 72, H, W - 65, H - 6, W - 65, H, "F"); pdf.rect(W - 65, H - 6, 65, 6, "F");
+                  pdf.setFillColor(TH.acc[0], TH.acc[1], TH.acc[2]); pdf.rect(W - 65, H - 6, 65, 0.7, "F");
                 }
                 var blob = pdf.output("blob"), fr = new FileReader();
                 fr.onload = function () { done(null, { blob: blob, base64: String(fr.result).split(",")[1], name: stem + ".pdf", pages: n }); };

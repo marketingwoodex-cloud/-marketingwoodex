@@ -660,6 +660,30 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
     if (action === "logos_get") { let d = {}; try { d = JSON.parse(fs.readFileSync(F, "utf8")); } catch (e) {} return { ok: true, data: clean(d) }; }
     const d = clean(inp.data || {}); fs.mkdirSync(path.dirname(F), { recursive: true }); fs.writeFileSync(F, JSON.stringify(d, null, 2)); return { ok: true, data: d };
   }
+  // P36: connectors (mirror of api/conn-lib.php)
+  async function conn(action, inp, need) {
+    if (!["conn_list", "conn_save", "conn_delete", "conn_test"].includes(action)) return null;
+    need(["owner", "admin"]); const F = path.join(PRIV, "connectors.json");
+    let items = []; try { items = JSON.parse(fs.readFileSync(F, "utf8")).items || []; } catch (e) {}
+    const put = () => { fs.mkdirSync(PRIV, { recursive: true }); fs.writeFileSync(F, JSON.stringify({ items }, null, 2)); };
+    const pub = (c) => { const p = { ...c }; delete p.secret; p.hasSecret = !!c.secret; return p; }, all = () => items.map(pub);
+    const s = (v, n) => String(v ?? "").replace(/<[^>]*>/g, "").trim().slice(0, n);
+    if (action === "conn_list") return { ok: true, items: all() };
+    const i = items.findIndex((c) => c.id === String(inp.id || ""));
+    if (action === "conn_delete") { if (i < 0) throw new Fail("Connector not found", 404); items.splice(i, 1); put(); return { ok: true, items: all() }; }
+    if (action === "conn_test") {
+      if (i < 0) throw new Fail("Connector not found", 404); const c = items[i]; let ok = !!(c.secret || c.account), msg = "Saved. No test address, so nothing to check.";
+      if (/^https:\/\//i.test(c.url || "")) { try { const r = await fetch(c.url, { signal: AbortSignal.timeout(8000) }); ok = r.status < 400; msg = "Address answered with HTTP " + r.status; } catch (e) { ok = false; msg = "Address did not answer"; } }
+      Object.assign(c, { status: ok ? "connected" : "error", checked: Math.floor(Date.now() / 1000), note: msg }); put(); return { ok: true, pass: ok, message: msg, items: all() };
+    }
+    const name = s(inp.name, 60); if (!name) throw new Fail("Give the connector a name");
+    const url = String(inp.url || "").trim(); if (url && !/^https?:\/\/[^\s<>"]+$/i.test(url)) throw new Fail("Address must start with https://");
+    const c = i >= 0 ? items[i] : { id: "c" + crypto.randomBytes(5).toString("hex"), added: Math.floor(Date.now() / 1000) };
+    Object.assign(c, { key: String(inp.key || "custom").toLowerCase().replace(/[^a-z0-9_-]/g, "") || "custom", name, cat: s(inp.cat || "Custom", 40), account: s(inp.account, 160), url: url.slice(0, 300), notes: s(inp.notes, 400), on: inp.on !== false });
+    const sec = String(inp.secret || "").trim(); if (sec) { c.secret = sec.slice(0, 2000); c.hint = sec.slice(-4); }
+    c.status = c.secret || c.account ? "connected" : "setup"; c.updated = Math.floor(Date.now() / 1000);
+    if (i < 0) items.push(c); put(); return { ok: true, item: pub(c), items: all() };
+  }
   async function p19c(action, inp, need, db, ip) {
     if (!["client_comms", "clients_link"].includes(action)) return null;
     const u = need(["owner", "admin", "sales"]);
@@ -2160,7 +2184,7 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
         return done({ ok: true, rows: all.slice((page - 1) * per, page * per).map(({ user_name, action, target, ip, created_at }) => ({ user_name, action, target, ip, created_at })), total: all.length, per, page });
       }
       default: {
-        const r = (await logos(action, inp, need)) || (await p19c(action, inp, need, db, ip)) || (await p18j(action, inp, need, db, ip)) || (await p18h(action, inp, need, db, ip)) || (await p18g(action, inp, need, db, ip)) || (await p18e(action, inp, need, db, ip)) || (await pbk(action, inp, need, db, ip)) || (await a2(action, inp, need, db, ip)) || (await a17(action, inp, need, db, ip)) || (await a4(action, inp, need, db, ip)) || a5(action, inp, need, db, ip) || (await a6(action, inp, need, db, ip)) || (await a7(action, inp, need, db, ip)) || (await a8(action, inp, need, db, ip)) || (await p8(action, inp, need, db, ip, req)) || (await p10(action, inp, need, db, ip, req)) || (await p12(action, inp, need, db, ip)) || (await p13(action, inp, need, db, ip)); if (r) return r;
+        const r = (await conn(action, inp, need)) || (await logos(action, inp, need)) || (await p19c(action, inp, need, db, ip)) || (await p18j(action, inp, need, db, ip)) || (await p18h(action, inp, need, db, ip)) || (await p18g(action, inp, need, db, ip)) || (await p18e(action, inp, need, db, ip)) || (await pbk(action, inp, need, db, ip)) || (await a2(action, inp, need, db, ip)) || (await a17(action, inp, need, db, ip)) || (await a4(action, inp, need, db, ip)) || a5(action, inp, need, db, ip) || (await a6(action, inp, need, db, ip)) || (await a7(action, inp, need, db, ip)) || (await a8(action, inp, need, db, ip)) || (await p8(action, inp, need, db, ip, req)) || (await p10(action, inp, need, db, ip, req)) || (await p12(action, inp, need, db, ip)) || (await p13(action, inp, need, db, ip)); if (r) return r;
         throw new Fail("Unknown action", 404);
       }
     }
