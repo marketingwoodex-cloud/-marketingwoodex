@@ -10,7 +10,7 @@ if (!defined('PRIVATE_DIR')) { http_response_code(404); exit; }
 
 const CMS_FILE   = PRIVATE_DIR . '/content.json';
 const CMS_TYPES  = ['post', 'study', 'testimonial', 'member', 'faq', 'city'];
-const BIZ_DEF = ['email' => 'woodexinterior.pk@gmail.com', 'phone1' => '+92 322 4000768', 'phone2' => '+92 321 4686884', 'wa' => '+92 322 4000768', 'addr1' => 'M-71, Zainab Tower', 'addr2' => 'Model Town Link Road', 'city' => 'Lahore', 'country' => 'Pakistan', 'days' => 'Mon–Sat', 'open' => '10:00', 'close' => '19:30'];
+const BIZ_DEF = ['email' => 'woodexinterior.pk@gmail.com', 'phone1' => '+92 322 4000768', 'phone2' => '+92 321 4686884', 'wa' => '+92 322 4000768', 'addr1' => 'M-71, Zainab Tower', 'addr2' => 'Model Town Link Road', 'city' => 'Lahore', 'country' => 'Pakistan', 'days' => 'Mon–Sat', 'open' => '10:00', 'close' => '19:30', 'facebook' => '', 'instagram' => '', 'linkedin' => '', 'youtube' => '', 'tiktok' => '', 'pinterest' => '', 'x' => ''];
 const BIZ_ASSETS = ['assets/site.js', 'assets/js/whatsapp-widget.js'];
 const CMS_PAGES  = ['post' => 'insights', 'study' => 'projects'];
 const AI_SECRETS = ['anthropicKey', 'openaiKey', 'openrouterKey', 'customKey'];
@@ -151,6 +151,7 @@ function content_actions(string $action, array $in): bool {
             foreach (BIZ_DEF as $key => $def) { $v = clip($b[$key] ?? '', 160); $o[$key] = $v !== '' ? $v : $def; }
             if (!preg_match('~^[^@\s]+@[^@\s]+\.[^@\s]+$~', $o['email'])) fail('Check the email address');
             foreach (['phone1', 'phone2', 'wa'] as $key) if (strlen(preg_replace('~\D~', '', $o[$key])) < 10) fail('Check the phone numbers (use +92 format)');
+            foreach (['facebook','instagram','linkedin','youtube','tiktok','pinterest','x'] as $key) if ($o[$key] !== '' && !preg_match('~^https://[^\s"<>]+$~', $o[$key])) fail('Social links must start with https://');
             if (!preg_match('~^\d{2}:\d{2}$~', $o['open']) || !preg_match('~^\d{2}:\d{2}$~', $o['close'])) fail('Check the opening hours');
             $c['biz'] = $o; if (!empty($in['applied'])) $c['bizApplied'] = $o; cms_save_file($c); log_act($u, !empty($in['applied']) ? 'business.apply' : 'business.save', '');
             out(['ok' => true, 'biz' => $o, 'applied' => array_merge(BIZ_DEF, $c['bizApplied'] ?? [])]);

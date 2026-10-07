@@ -114,6 +114,7 @@
       contact: { title: ct && ct.querySelector("h3") ? ct.querySelector("h3").textContent.trim() : "Get in touch", email: email, waLabel: wa.label, waHref: wa.href, tels: tels.join("\n"),
         address: (vs || ct) && (vs || ct).querySelector("address") ? (vs || ct).querySelector("address").innerHTML.replace(/<span class="fl"[^>]*>[\s\S]*?<\/span>/g, "").replace(/<br\s*\/?>/gi, "\n").replace(/<[^>]+>/g, "").trim() : "", hours: (vs || ct) && (vs || ct).querySelector("p") ? (vs || ct).querySelector("p").textContent.trim() : "", visitTitle: vs && vs.querySelector("h3") ? vs.querySelector("h3").textContent.trim() : "Visit us" },
       social: !!foot.querySelector(".footer-social") || !foot.querySelector(".footer-intro"),
+      socX: arr(foot.querySelectorAll(".footer-social a[data-soc]")).map(function (x) { return x.outerHTML; }).join(""),
       word: (foot.querySelector(".footer-word") || {}).textContent || "",
       copyright: bot && bot.querySelector("span") ? bot.querySelector("span").textContent.trim() : "",
       bottom: arr(bot ? bot.querySelectorAll("div a") : []).map(linkOf),
@@ -145,6 +146,7 @@
       (firstTel ? '<a href="tel:' + A(firstTel.replace(/[^\d+]/g, "")) + '" aria-label="Call">' + ico("M5 4h3l2 5-2.5 1.5a11 11 0 0 0 6 6L15 14l5 2v3a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2") + "</a>" : "") +
       (C.email ? '<a href="mailto:' + A(C.email) + '" aria-label="Email">' + ico("M3 6h18v12H3z M3 7l9 6 9-6") + "</a>" : "") +
       (C.address ? '<a href="https://www.google.com/maps/search/?api=1&amp;query=' + A(encodeURIComponent(String(C.address).replace(/\n/g, ", "))) + '" target="_blank" rel="noopener" aria-label="Map">' + ico("M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z M12 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5") + "</a>" : "") + "</div>";
+    if (social && F.socX) social = social.replace(/<\/div>\s*$/, F.socX + "</div>");
     var fbrand = '<a class="footer-brand" href="/" aria-label="' + A(H.aria || "Woodex Interior home") + '"><img src="' + A(H.logo) + '" alt="" width="78" height="48"><span>' + A(H.word) + (H.small ? " <small>" + A(H.small) + "</small>" : "") + "</span></a>";
     var footer = '<footer class="footer"><div class="wrap">\n    <div class="footer-main">\n      <div class="footer-intro">' + fbrand + '<h2 id="footer-heading">' + nl(F.heading) + '</h2><p id="footer-copy">' + A(F.copy) + "</p>" + social + (String(F.ctaLabel || "").trim() ? '<a class="btn footer-cta" id="footer-cta" href="' + A(F.ctaHref) + '">' + A(F.ctaLabel) + "</a>" : "") + "</div>\n" +
       F.cols.map(function (c) { return '      <nav class="footer-column" aria-label="' + A(c.title) + ' links"><h3>' + A(c.title) + "</h3>" + c.links.map(function (l) { return aTag(l); }).join("") + "</nav>\n"; }).join("") +

@@ -52,8 +52,8 @@
 
   // ------------------------------------------------------------------ settings view
   W.VIEWS.settings = function (el, parts) {
-    var tab = parts[0] || "general", D;
-    el.innerHTML = head("Settings & APIs", "Settings", "") + '<div class="tabs" id="st-tabs">' + [["general", "General"], ["integrations", "Integrations"], ["system", "System"]].map(function (t) { return '<button data-t="' + t[0] + '" class="' + (tab === t[0] ? "on" : "") + '">' + t[1] + "</button>"; }).join("") + '</div><div id="st-b"><p class="muted">Loading…</p></div>';
+    var tab = parts[0] || "integrations", D, solo = tab === "general";
+    el.innerHTML = head(solo ? "Brand & logo" : "Integrations & APIs", "Settings", "") + '<div class="tabs" id="st-tabs"' + (solo ? " hidden" : "") + '>' + [["integrations", "Integrations"], ["system", "System status"]].map(function (t) { return '<button data-t="' + t[0] + '" class="' + (tab === t[0] ? "on" : "") + '">' + t[1] + "</button>"; }).join("") + '</div><div id="st-b"><p class="muted">Loading…</p></div>';
     $("#st-tabs").onclick = function (e) { var b = e.target.closest("button"); if (!b) return; tab = b.dataset.t; $$("#st-tabs button").forEach(function (x) { x.classList.toggle("on", x === b); }); draw(); };
     function load() { return api("set_get").then(function (r) { if (!r.ok) { $("#st-b").innerHTML = '<div class="card card-b">' + esc(r.error) + "</div>"; return; } D = r; draw(); }); }
     function draw() { if (!D) return; var B = $("#st-b"); if (tab === "general") general(B); else if (tab === "integrations") integrations(B); else system(B); W.fillIcons(B); }

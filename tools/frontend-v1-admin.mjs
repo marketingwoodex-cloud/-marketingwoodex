@@ -1383,7 +1383,7 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
     city: (i) => `You are localising a Woodex city landing page from ${i.source} to ${i.city}, Pakistan. The studio is based in Lahore and serves ${i.city} with site visits.\nRewrite each string for ${i.city}: mention real ${i.city} areas/neighbourhoods where natural, keep facts honest (the studio and showroom are in Lahore, not in ${i.city}), keep roughly the same length, keep **bold** markers and [link](url) markup unchanged.\nReturn ONLY a JSON array of exactly ${(i.texts || []).length} strings in the same order.\n\n${JSON.stringify((i.texts || []).slice(0, 120)).slice(0, 14000)}`,
     faqs: (i) => `Write 4 FAQs a Pakistani client would ask about: ${i.title}.\nContext: ${String(i.text || "").slice(0, 3000)}\nReturn ONLY JSON: [{"q":"...","a":"1-3 sentences"}]`,
   };
-  const BIZ_DEF = { email: "info@woodex.com.pk", phone1: "+92 322 4000768", phone2: "+92 321 4686884", wa: "+92 322 4000768", addr1: "M-71, Zainab Tower", addr2: "Model Town Link Road", city: "Lahore", country: "Pakistan", days: "Mon–Sat", open: "10:00", close: "19:30" };
+  const BIZ_DEF = { email: "info@woodex.com.pk", phone1: "+92 322 4000768", phone2: "+92 321 4686884", wa: "+92 322 4000768", addr1: "M-71, Zainab Tower", addr2: "Model Town Link Road", city: "Lahore", country: "Pakistan", days: "Mon–Sat", open: "10:00", close: "19:30", facebook: "", instagram: "", linkedin: "", youtube: "", tiktok: "", pinterest: "", x: "" };
   const BIZ_ASSETS = ["assets/site.js", "assets/js/whatsapp-widget.js"];
   const safeRel = (r) => typeof r === "string" && /^[a-z0-9][a-z0-9/_\-.]*\.html$/i.test(r) && !r.includes("..") && !/^(_private|builder|admin|api|assets)\//.test(r);
   const cityRelOk = (r) => typeof r === "string" && /^[a-z0-9][a-z0-9-]{0,59}\/index\.html$/.test(r) && !/^(builder|admin|api|assets|insights|projects)\//.test(r);
@@ -1414,6 +1414,7 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
         const u = need(OA), b = inp.biz || {}, o = {}; for (const k of Object.keys(BIZ_DEF)) o[k] = clip(b[k], 160) || BIZ_DEF[k];
         if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(o.email)) throw new Fail("Check the email address");
         for (const k of ["phone1", "phone2", "wa"]) if (o[k].replace(/\D/g, "").length < 10) throw new Fail("Check the phone numbers (use +92 format)");
+        for (const k of ["facebook", "instagram", "linkedin", "youtube", "tiktok", "pinterest", "x"]) if (o[k] && !/^https:\/\/[^\s"<>]+$/.test(o[k])) throw new Fail("Social links must start with https://");
         if (!/^\d{2}:\d{2}$/.test(o.open) || !/^\d{2}:\d{2}$/.test(o.close)) throw new Fail("Check the opening hours");
         c.biz = o; if (inp.applied) c.bizApplied = { ...o }; log(db, u, inp.applied ? "business.apply" : "business.save", "", ip); return done({ ok: true, biz: o, applied: Object.assign({}, BIZ_DEF, c.bizApplied || {}) });
       }
