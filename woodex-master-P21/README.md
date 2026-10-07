@@ -41,3 +41,10 @@ After uploading, run Cache Manager → Purge all once.
 
 ## Telegram
 Revoke the old token in @BotFather (`/revoke`) → Admin → Telegram → paste the NEW token → Connect → scan the QR code → Start → Send test. Never put the token in files.
+
+## Important: db.json and the setup pages
+- **db.json is never in the zip** (it holds your database password). It is created on the server when you run the installer.
+- Use only ONE setup page: `https://woodex.com.pk/wx-install.php`. Enter Host `localhost` and the database name, user and password from hPanel, then click Install. That creates `_private/db.json`, the 20 tables and the login **admin / admin**.
+- If `/admin/` shows "Set up Woodex Admin" (db.json missing) and the database already has users: fill only the Database box and **leave the Owner account empty**, then submit. The site reconnects and you sign in with your existing login.
+- File Manager may hide db.json (permission 600). That's normal. Test by signing in.
+- If files like `wx-demo.php` or `_database/woodex-v20.sql` are missing after extracting, the extraction did not finish. Extract the zip again with Overwrite.
