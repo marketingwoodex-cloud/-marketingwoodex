@@ -1,20 +1,10 @@
-# Content & E-E-A-T — score 74/100
+# Content & E-E-A-T — score 82/100
 
 ## [High] Thin content (<300 words in <main>) (4)
 - /book-a-visit/ (218 words)
 - /contact/ (248 words)
 - /estimator/ (277 words)
 - /projects/ (291 words)
-
-## [High] Articles without author in schema (E-E-A-T) (8)
-- /insights/3d-visualization-guide/
-- /insights/design-process-explained/
-- /insights/home-renovation-checklist/
-- /insights/interior-design-cost-pakistan/
-- /insights/office-interior-guide/
-- /insights/restaurant-planning-guide/
-- /insights/retail-shop-interior-guide/
-- /insights/small-space-ideas/
 
 ## [High] Articles credited to Organization, not a named designer (Person) (28)
 - /insights/1-kanal-house-interior-cost-lahore/
@@ -42,14 +32,4 @@
 - /quetta/ (63% similar to /karachi/)
 - /rawalpindi/ (62% similar to /karachi/)
 - /sialkot/ (63% similar to /karachi/)
-
-## [Medium] Articles without dates (8)
-- /insights/3d-visualization-guide/
-- /insights/design-process-explained/
-- /insights/home-renovation-checklist/
-- /insights/interior-design-cost-pakistan/
-- /insights/office-interior-guide/
-- /insights/restaurant-planning-guide/
-- /insights/retail-shop-interior-guide/
-- /insights/small-space-ideas/
 

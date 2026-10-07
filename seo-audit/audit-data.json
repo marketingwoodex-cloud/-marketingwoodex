@@ -1,6 +1,6 @@
 {
  "summary": {
-  "health_score": 94,
+  "health_score": 95,
   "pages": 107,
   "business_type": "Local service (interior design & build, Lahore HQ)"
  },
@@ -89,7 +89,7 @@
   },
   {
    "name": "Content & E-E-A-T",
-   "score": 74,
+   "score": 82,
    "findings": [
     {
      "severity": "High",
@@ -100,36 +100,6 @@
       "/contact/ (248 words)",
       "/estimator/ (277 words)",
       "/projects/ (291 words)"
-     ]
-    },
-    {
-     "severity": "High",
-     "issue": "Articles without author in schema (E-E-A-T)",
-     "count": 8,
-     "pages": [
-      "/insights/3d-visualization-guide/",
-      "/insights/design-process-explained/",
-      "/insights/home-renovation-checklist/",
-      "/insights/interior-design-cost-pakistan/",
-      "/insights/office-interior-guide/",
-      "/insights/restaurant-planning-guide/",
-      "/insights/retail-shop-interior-guide/",
-      "/insights/small-space-ideas/"
-     ]
-    },
-    {
-     "severity": "Medium",
-     "issue": "Articles without dates",
-     "count": 8,
-     "pages": [
-      "/insights/3d-visualization-guide/",
-      "/insights/design-process-explained/",
-      "/insights/home-renovation-checklist/",
-      "/insights/interior-design-cost-pakistan/",
-      "/insights/office-interior-guide/",
-      "/insights/restaurant-planning-guide/",
-      "/insights/retail-shop-interior-guide/",
-      "/insights/small-space-ideas/"
      ]
     },
     {
@@ -178,16 +148,11 @@
     {
      "severity": "Medium",
      "issue": "Weakly linked pages (1-2 inbound)",
-     "count": 12,
+     "count": 7,
      "pages": [
       "/bahawalpur/",
       "/healthcare-design/",
-      "/insights/3d-interior-design-cost-pakistan/",
-      "/insights/architect-fee-lahore-2026/",
-      "/insights/dha-vs-bahria-town-interior-cost-lahore/",
       "/insights/false-ceiling-cost-lahore-2026/",
-      "/insights/house-renovation-timeline-lahore/",
-      "/insights/restaurant-cafe-interior-cost-lahore/",
       "/interior-home-refurbishment/",
       "/karachi/",
       "/residential-basement-design/",
@@ -197,23 +162,20 @@
     {
      "severity": "Medium",
      "issue": "Service/location pages that link to no insights article (topic-cluster gap)",
-     "count": 64,
+     "count": 12,
      "pages": [
-      "/1-kanal-house-design/",
-      "/10-marla-house-design/",
-      "/2-kanal-house-design/",
-      "/3d-visualization/",
-      "/5-marla-house-design/",
       "/about/",
-      "/architecture/",
-      "/beauty-salon-design/",
       "/book-a-visit/",
-      "/cafe-interior-design/",
-      "/commercial-fit-out/",
-      "/commercial-interior/",
-      "/commercial-renovation/",
-      "/complete-home-redesign/",
-      "/contact/"
+      "/contact/",
+      "/estimator/",
+      "/privacy/",
+      "/projects/",
+      "/projects/cafe-corner/",
+      "/projects/clinic-fit-out/",
+      "/projects/courtyard-house/",
+      "/projects/office-floor/",
+      "/projects/retail-corner/",
+      "/projects/small-apartment/"
      ]
     }
    ]
@@ -242,7 +204,7 @@
    "findings": [
     {
      "severity": "Info",
-     "issue": "Schema types found: Question\u00d7499, Answer\u00d7499, ListItem\u00d7306, Service\u00d7158, LocalBusiness\u00d7149, BreadcrumbList\u00d7107, FAQPage\u00d795, PostalAddress\u00d787, OpeningHoursSpecification\u00d787, Offer\u00d776, City\u00d765, Organization\u00d740, BlogPosting\u00d720, ImageObject\u00d720, OfferCatalog\u00d715, AdministrativeArea\u00d72, Country\u00d72, WebPage\u00d71, WebSite\u00d71",
+     "issue": "Schema types found: Question\u00d7499, Answer\u00d7499, ListItem\u00d7340, Service\u00d7158, LocalBusiness\u00d7149, BreadcrumbList\u00d7107, FAQPage\u00d795, PostalAddress\u00d787, OpeningHoursSpecification\u00d787, Offer\u00d776, City\u00d765, Organization\u00d763, BlogPosting\u00d728, ImageObject\u00d720, OfferCatalog\u00d715, CreativeWork\u00d76, WebSite\u00d72, AdministrativeArea\u00d72, Country\u00d72, CollectionPage\u00d72, ItemList\u00d72, Person\u00d71, AboutPage\u00d71, ContactPage\u00d71, WebPage\u00d71",
      "count": 0,
      "pages": []
     }

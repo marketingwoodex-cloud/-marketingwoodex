@@ -1,0 +1,50 @@
+# Page audit: /restaurant-cafe-renovation/
+Type **service** · score **83/100** · 837 words · 8 inbound links
+
+## Target keywords
+- **Primary:** restaurant and café renovation lahore
+- Related: restaurant and café renovation pakistan
+- Related: restaurant and café renovation cost
+- Related: restaurant and café renovation company lahore
+- Related: restaurant and café renovation ideas
+
+## Title / meta / H1
+- Title (44): Restaurant & Café Renovation Lahore | Woodex
+- Meta (141): Restaurant and café renovation in Lahore with kitchen, ventilation and gas coordination, hospitality-grade finishes and out-of-hours phasing.
+- H1: Restaurant & Café Renovation
+
+## Section blocks (H2 outline)
+1. What the scope can include
+2. A process shaped for restaurant & café renovation
+3. Indicative renovation pricing
+4. Choose the right starting point
+5. Restaurant & Café Renovation FAQs
+6. Explore related renovation sectors
+7. Read before you plan
+8. Talk to Woodex
+9. One accountable team from brief to handover
+
+## Internal links
+- Outbound (14): /, /commercial-renovation/, /contact/, /fit-out/, /healthcare-renovation/, /insights/lighting-design-layers-explained/, /insights/restaurant-cafe-interior-cost-lahore/, /insights/restaurant-planning-guide/, /interior-design/, /office-renovation/, /renovation/, /residential-renovation/, /retail-showroom-renovation/, /specialized-renovation-services/
+
+## Schema
+- Present: Answer, BreadcrumbList, City, FAQPage, ListItem, LocalBusiness, OpeningHoursSpecification, PostalAddress, Question, Service
+
+## Issues
+- **[High]** Target keyword “restaurant and café renovation lahore” not in title
+- **[Medium]** Keyword not in first 150 words
+
+## Fix list
+- [ ] Rewrite title to lead with the keyword
+- [ ] Use keyword in intro paragraph
+
+## E-E-A-T notes
+- No link to a real project/case study (Experience)
+- No client testimonial/review (Trust)
+
+## Claims needing the owner's word
+- 🔴 **Price / PKR figure:** …or disruptive tasks out of hours. 05 Commission and reopen Te…
+- 🔴 **Price / PKR figure:** …BOQ 2,000 sq. ft. restaurant PKR 3M–6M+ 500–1,000 sq. ft. retail…
+- 🔴 **'Free' offer:** …d out-of-hours windows. Get a Free Consultation WhatsApp Woodex Itemized BOQ Trade-by-trade clarity…
+- 🔴 **'Free' offer:** …ws and target reopening date. Free condition survey in Lahore Itemized BOQ before any work Phased a…
+- 🔴 **Timeline / response promise:** …by phone or WhatsApp, usually within one working day. Name Phone / WhatsApp P…

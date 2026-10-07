@@ -72,3 +72,23 @@ Google still lists old WordPress and hacked spam URLs (they return 404). These n
 
 ## 4. Recommended order
 **A → B → C → D → E → F.** A and B are quick and have the biggest impact. C is the main ranking lever for a local service business. D and E build on C.
+
+---
+## P31: Per-page deep audit + implementation (2026-10-07)
+- Tool: `tools/seo-audit/page_audit.py`, one worker per page in parallel, 107 pages. Report: `seo-audit/PAGE-AUDIT-INDEX.md` plus `seo-audit/pages/<page>.md`, with sections: target keywords · title/meta/H1 · section blocks · internal links · schema · issues · fix list · E-E-A-T · owner claims.
+- Fixer: `tools/seo-audit/fix_pages.py` (safe to re-run). It never touches claims.
+- **Average page score 80 → 97. Site health 92 → 95.**
+- Done:
+  - [x] Hours text set to Mon–Sat 9:30–6:30 on 26 pages
+  - [x] 112 "placeholder" image alts rewritten
+  - [x] Keyword-led titles and metas on 35 pages (home, 3D, 11 cities, 8 older articles, 6 project studies, hubs, lahore, renovation, fit-out, contact, estimator)
+  - [x] Schema: Organization + WebSite (home), AboutPage, ContactPage, CollectionPage ×2, BlogPosting ×8, CreativeWork ×6
+  - [x] "Related guides" block on 64 service, pillar and city pages (topic-matched articles)
+  - [x] Service links from the older articles
+- Waiting on the owner: `seo-audit/OWNER-CLAIMS.md` (prices on 60 pages, "free" on 49, timelines on 56, warranty on 16, superlatives on 34, absolute claims on 7)
+- Still open:
+  - C1 named authors
+  - C3 unique city content (8 near-duplicate pages)
+  - creative H1s on /interior-design/ and the project studies (design choice, not changed)
+  - kitchen card image on /interior-design/
+  - raster logo for schema (currently favicon.svg)

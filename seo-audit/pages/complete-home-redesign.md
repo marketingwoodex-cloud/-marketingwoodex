@@ -1,0 +1,52 @@
+# Page audit: /complete-home-redesign/
+Type **service** · score **100/100** · 989 words · 10 inbound links
+
+## Target keywords
+- **Primary:** complete home redesign in lahore
+- Related: complete home redesign in pakistan
+- Related: complete home redesign in cost
+- Related: complete home redesign in company lahore
+- Related: complete home redesign in ideas
+
+## Title / meta / H1
+- Title (41): Complete Home Redesign in Lahore | Woodex
+- Meta (138): Complete home redesign in Lahore with one team, phased planning, 3D views and fixed room-by-room pricing. Book a free Woodex consultation.
+- H1: Complete Home Redesign in Lahore
+
+## Section blocks (H2 outline)
+1. What Is a Complete Home Redesign?
+2. What We Deliver
+3. Our Design Process
+4. Pricing
+5. Complete Home Redesign FAQs
+6. Related Services
+7. Read before you plan
+8. Talk to Woodex
+9. One accountable team from brief to handover
+
+## Internal links
+- Outbound (11): /, /3d-visualization/, /contact/, /insights/apartment-small-space-planning-lahore/, /insights/lighting-design-layers-explained/, /insights/materials-that-survive-lahore-climate/, /interior-design/, /kitchen-design/, /residential-basement-design/, /residential-bedroom-design/, /residential-living-room-design/
+
+## Schema
+- Present: Answer, BreadcrumbList, FAQPage, ListItem, LocalBusiness, OpeningHoursSpecification, PostalAddress, Question, Service
+
+## Issues
+
+## Fix list
+
+## E-E-A-T notes
+- No link to a real project/case study (Experience)
+
+## Claims needing the owner's word
+- 🔴 **Price / PKR figure:** …ign fees typically range from PKR 50,000-150,000+. Get a Free Consultation…
+- 🔴 **Price / PKR figure:** …scope. 1-bed apartment Around PKR 50K-80K Compact whole-home desig…
+- 🔴 **Price / PKR figure:** …. 3-bed / 5-marla home Around PKR 70K-110K Coordinated design acros…
+- 🔴 **Price / PKR figure:** …n rooms. 10-marla home Around PKR 100K-150K+ Broader scope and more d…
+- 🔴 **'Free' offer:** …age under one contract. Get a Free Consultation WhatsApp Woodex Phased room by room Fixed price by…
+- 🔴 **'Free' offer:** …longer. Pricing Start with a free whole-home survey and consultation. Design fees typically r…
+- 🔴 **'Free' offer:** …pace that suits your family. Free first consultation Photoreal 3D before you commit Design, build…
+- 🔴 **Timeline / response promise:** …cal design timeline Typically 2-3 weeks from whole-home survey t…
+- 🔴 **Timeline / response promise:** …esign package typically takes 2-3 weeks. Phased execution usuall…
+- 🔴 **Timeline / response promise:** …by phone or WhatsApp, usually within one working day. Name Phone / WhatsApp P…
+- 🔴 **Warranty / guarantee:** …easier to control. 08 Quality Warranty A 2-year warranty covers…
+- 🔴 **Warranty / guarantee:** …rs on timing, phasing, style, warranty and furniture. How long…
