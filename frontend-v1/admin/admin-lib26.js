@@ -6,7 +6,7 @@
   var esc = W.esc, ic = W.ic, bapi = W.bapi, toast = W.toast, $ = W.$;
   var base = W.VIEWS.library, tab = "v26", cat = "", q = "", skin = "";
   var SK = [["", "Original"], ["white", "White"], ["cream", "Cream"], ["navy", "Navy"]];
-  var CSS = '<link rel="stylesheet" href="/assets/v1.css"><link rel="stylesheet" href="/assets/theme.css"><link rel="stylesheet" href="/assets/site.css"><style>html,body{margin:0;overflow:hidden;pointer-events:none;background:#fff}.t6-hero{min-height:720px}</style>';
+  var CSS = '<link rel="stylesheet" href="/assets/v1-p21.css"><link rel="stylesheet" href="/assets/theme.css"><link rel="stylesheet" href="/assets/site-p21.css"><style>html,body{margin:0;overflow:hidden;pointer-events:none;background:#fff}.t6-hero{min-height:720px}</style>';
   function load() { return window.WX_TEMPLATES ? Promise.resolve(window.WX_TEMPLATES) : new Promise(function (ok, no) { var s = document.createElement("script"); s.src = "/builder/templates-v26.js"; s.onload = function () { ok(window.WX_TEMPLATES || []); }; s.onerror = no; document.head.appendChild(s); }); }
   function isHero(html) { return /class="[^"]*\b(t6-hero|hero)\b/.test(html.slice(0, 200)); }
   function applySkin(html, s) {

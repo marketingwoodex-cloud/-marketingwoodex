@@ -172,7 +172,7 @@
       $$("[data-mv]").forEach(function (b) { b.onclick = function () { var x = b.dataset.mv.split(",").map(Number), c = D.cols[x[0]], j = x[1] + x[2]; if (j < 0 || j >= c.length) return; var v = c[x[1]]; c[x[1]] = c[j]; c[j] = v; cols(); pv(); }; });
       $$(".p17-lay button").forEach(function (b) { b.classList.toggle("on", b.dataset.l === D.lay); });
     }
-    function pv() { clearTimeout(t); t = setTimeout(function () { $("#ds-pv").srcdoc = "<!doctype html><html><head><meta charset='utf-8'><link rel='stylesheet' href='/assets/site.css'><link rel='stylesheet' href='/assets/v1.css'><link rel='stylesheet' href='/assets/theme.css'><style>html{zoom:.62}body{margin:0}</style></head><body><main>" + htmlOf() + "</main></body></html>"; }, 150); }
+    function pv() { clearTimeout(t); t = setTimeout(function () { $("#ds-pv").srcdoc = "<!doctype html><html><head><meta charset='utf-8'><link rel='stylesheet' href='/assets/site-p21.css'><link rel='stylesheet' href='/assets/v1-p21.css'><link rel='stylesheet' href='/assets/theme.css'><style>html{zoom:.62}body{margin:0}</style></head><body><main>" + htmlOf() + "</main></body></html>"; }, 150); }
     var bind = function (id, k, prop) { $(id).oninput = $(id).onchange = function () { D[k] = prop === "checked" ? this.checked : this.value; if (k === "head") $("#ds-hb").hidden = !D.head; pv(); }; };
     bind("#ds-n", "name"); bind("#ds-c", "cat"); bind("#ds-t", "tags"); bind("#ds-bg", "bg"); bind("#ds-sp", "sp"); bind("#ds-nw", "narrow", "checked"); bind("#ds-ct", "center", "checked"); bind("#ds-hd", "head", "checked"); bind("#ds-k", "kicker"); bind("#ds-h", "title"); bind("#ds-s", "sub");
     $$(".p17-lay button").forEach(function (b) { b.onclick = function () { setLay(b.dataset.l); cols(); pv(); }; });

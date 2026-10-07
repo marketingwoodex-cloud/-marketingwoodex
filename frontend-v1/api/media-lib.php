@@ -56,7 +56,7 @@ function a7_backup(string $kind, ?array $u = null): array {
     if ($z->open(SBK_DIR . '/' . $name, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) fail('Could not create the backup file');
     $add = function (string $rel) use ($z) { $a = ROOT_DIR . '/' . $rel; if (is_file($a)) $z->addFile($a, $rel); elseif (is_dir($a)) foreach (a7_walk($a, '~.~') as $f) $z->addFile($f, a7_rel($f)); };
     foreach (a7_pages() as $r) $add($r);
-    foreach (['sitemap.xml', 'robots.txt', '.htaccess', 'assets/site.js', 'assets/js', 'assets/v1.css'] as $r) $add($r);
+    foreach (['sitemap.xml', 'robots.txt', '.htaccess', 'assets/site.js', 'assets/js', 'assets/v1-p21.css'] as $r) $add($r);
     foreach (scandir(PRIVATE_DIR) ?: [] as $f) if ($f[0] !== '.' && !preg_match('~^(backups|site-backups|media-trash|trash)$~', $f)) $add('_private/' . $f);
     if ($kind !== 'daily') foreach (IMG_DIRS as $d) $add($d);
     // MySQL dump (all wx_ tables) as JSON

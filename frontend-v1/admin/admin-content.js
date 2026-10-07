@@ -677,7 +677,7 @@
     var live = items.filter(function (x) { return x.status === "published"; });
     function pv() { var d = ($("[name=pl-d]:checked") || {}).value || "cards"; $$(".tst-d").forEach(function (l) { l.classList.toggle("on", l.querySelector("input").checked); });
       var f = $("#pl-pv"); if (!f) return; var h = tstHtml(live.length ? live : [{ title: "Sample Client", data: { rating: 5, text: "Add testimonials and mark them Live to see them here.", role: "Owner" } }], { kicker: $("#pl-k").value, heading: $("#pl-h").value, max: +$("#pl-m").value || 0 }, d);
-      f.srcdoc = '<!doctype html><html><head><base href="' + location.origin + '/"><link rel="stylesheet" href="/assets/site.css"><link rel="stylesheet" href="/assets/v1.css"><link rel="stylesheet" href="/assets/theme.css"><style>body{margin:0}</style></head><body>' + h + "</body></html>"; }
+      f.srcdoc = '<!doctype html><html><head><base href="' + location.origin + '/"><link rel="stylesheet" href="/assets/site-p21.css"><link rel="stylesheet" href="/assets/v1-p21.css"><link rel="stylesheet" href="/assets/theme.css"><style>body{margin:0}</style></head><body>' + h + "</body></html>"; }
     $$("[name=pl-d]").forEach(function (r) { r.onchange = pv; }); ["#pl-k", "#pl-h", "#pl-m"].forEach(function (q) { if ($(q)) $(q).addEventListener("input", pv); }); pv();
     $("#modal-card").classList.add("wide");
   }

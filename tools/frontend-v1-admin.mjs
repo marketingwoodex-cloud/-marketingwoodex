@@ -1647,7 +1647,7 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
   function backupOne(kind, u) {
     fs.mkdirSync(SBK, { recursive: true });
     const t = new Date(), p = (n) => String(n).padStart(2, "0"), name = `${kind}-${t.getFullYear()}${p(t.getMonth() + 1)}${p(t.getDate())}-${p(t.getHours())}${p(t.getMinutes())}${p(t.getSeconds())}.tar.gz`;
-    const list = [...htmlPages(), "sitemap.xml", "robots.txt", ".htaccess", "assets/site.js", "assets/js", "assets/v1.css"].filter((r) => fs.existsSync(path.join(ROOT, r)));
+    const list = [...htmlPages(), "sitemap.xml", "robots.txt", ".htaccess", "assets/site.js", "assets/js", "assets/v1-p21.css"].filter((r) => fs.existsSync(path.join(ROOT, r)));
     if (fs.existsSync(PRIV)) for (const f of fs.readdirSync(PRIV)) if (!/^(backups|site-backups|media-trash|trash)$/.test(f)) list.push("_private/" + f);
     if (kind !== "daily") list.push(...IMG_DIRS.filter((d) => fs.existsSync(path.join(ROOT, d))));
     const lf = path.join(SBK, ".list"); fs.writeFileSync(lf, list.join("\n"));

@@ -261,7 +261,7 @@
       Object.keys(TPL).map(function (k) { return '<div class="hx-tc"><div class="hx-tf"><iframe loading="lazy" title="' + TPL[k][0] + '" data-k="' + k + '"></iframe></div><b>' + TPL[k][0] + "</b><small class='muted'>" + TPL[k][1] + "</small></div>"; }).join("") + "</div></div>";
     [].forEach.call(box.querySelectorAll("iframe[data-k]"), function (fr) {
       var k = fr.dataset.k, d = k === "slider" ? Object.assign({}, demo, { slides: [demo, Object.assign({}, demo, { title: "Workplaces that work", img: "/assets/img/img-1d6ad6c77d0f-960.webp" })] }) : demo;
-      fr.srcdoc = '<!doctype html><html><head><link rel="stylesheet" href="/assets/v1.css"><link rel="stylesheet" href="/assets/theme.css"><link rel="stylesheet" href="/assets/site.css"><style>body{margin:0}</style></head><body>' + build(k, d, "services/demo/index.html") + "</body></html>";
+      fr.srcdoc = '<!doctype html><html><head><link rel="stylesheet" href="/assets/v1-p21.css"><link rel="stylesheet" href="/assets/theme.css"><link rel="stylesheet" href="/assets/site-p21.css"><style>body{margin:0}</style></head><body>' + build(k, d, "services/demo/index.html") + "</body></html>";
     });
   }
 
