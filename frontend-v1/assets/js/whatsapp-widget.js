@@ -151,7 +151,8 @@
     // Human feel: typing dots for a moment (longer for longer answers), then the reply types itself out
     function human(msgs) {
       var q = (msgs || []).filter(function (m) { return !(m.id && m.id <= CH.last); });
-      var vis = q.filter(function (m) { return m.who === "visitor" || m.who === "sys"; }), rest = q.filter(function (m) { return m.who !== "visitor" && m.who !== "sys"; });
+      var lastMe = 0; q.forEach(function (m) { if (m.who === "visitor" && (m.id || 0) > lastMe) lastMe = m.id || 0; });
+      var vis = q.filter(function (m) { return m.who === "visitor" || m.who === "sys" || (m.id && m.id < lastMe); }), rest = q.filter(function (m) { return vis.indexOf(m) < 0; });
       if (vis.length) draw(vis); if (!rest.length) { draw([]); return; }
       var reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches; if (reduce) { draw(rest); return; }
       CH.busy = true; var L = $(".wx-ch-list"), i = 0;
@@ -159,7 +160,7 @@
         if (i >= rest.length) { CH.busy = false; return; }
         var m = rest[i++], n = String(m.text || "").length;
         if (!L.querySelector(".wx-typing")) { L.insertAdjacentHTML("beforeend", '<div class="wx-typing" aria-label="typing"><i></i><i></i><i></i></div>'); L.scrollTop = L.scrollHeight; }
-        setTimeout(function () { draw([m], false, true); setTimeout(next, Math.min(1400, n * 12) + 350); }, Math.max(800, Math.min(2600, 500 + n * 16)) + (i === 1 ? 300 : 0));
+        setTimeout(function () { draw([m], false, true); setTimeout(next, Math.min(900, n * 8) + 250); }, Math.max(700, Math.min(1800, 450 + n * 8)) + (i === 1 ? 250 : 0));
       })();
     }
     function typeOut(node, text) {

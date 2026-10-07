@@ -66,7 +66,7 @@ function sag_check(string $rel, array $seoPages, array &$titles, array &$descs):
         if (!str_contains(mb_strtolower($t['desc']), $lk)) $add('desc', 1, "Focus keyphrase \"$kw\" is not in the description");
     }
     $words = str_word_count(strip_tags($t['text'])); if ($words < 250 && !preg_match('~^(contact|thank|privacy|terms)~', $rel)) $add('thin', 1, "Thin content ($words words). Add useful text in the builder or Blog editor", ['manual' => true]);
-    if (preg_match_all('~<img\b[^>]*>~i', $h, $m)) { $n = 0; foreach ($m[0] as $img) { if ($n >= 6) break; $alt = preg_match('~\salt\s*=\s*["\']([^"\']*)["\']~i', $img, $a) ? trim($a[1]) : null; $src = tag_attr($img, 'src'); if ($src === '' || ($alt !== null && $alt !== '') || preg_match('~(logo|icon|sprite|pixel)~i', $src)) continue; $add('alt', 1, 'Image without alt text: ' . basename(parse_url($src, PHP_URL_PATH) ?: $src), ['src' => $src]); $n++; } }
+    if (preg_match_all('~<img\b[^>]*>~i', $h, $m)) { $n = 0; foreach ($m[0] as $img) { if ($n >= 6) break; $alt = preg_match('~\salt\s*=\s*["\']([^"\']*)["\']~i', $img, $a) ? trim($a[1]) : null; $src = tag_attr($img, 'src'); if ($src === '' || $alt !== null || preg_match('~(logo|icon|sprite|pixel)~i', $src)) continue; /* alt="" = decorative, that is correct */ $add('alt', 1, 'Image without alt text: ' . basename(parse_url($src, PHP_URL_PATH) ?: $src), ['src' => $src]); $n++; } }
     if (!str_contains($h, 'application/ld+json')) $add('schema', 1, 'No structured data (add it in SEO manager → page → Schema)', ['manual' => true]);
     if (!preg_match('~<link[^>]+rel=["\']canonical~i', $h)) $add('canonical', 1, 'No canonical link', ['manual' => true]);
     return $I;
@@ -75,6 +75,7 @@ function sag_check(string $rel, array $seoPages, array &$titles, array &$descs):
 function sag_scan(): array {
     $sp = function_exists('seo_data') ? seo_data()['pages'] : []; $titles = []; $descs = []; $all = []; $pages = sag_pages();
     foreach ($pages as $rel) foreach (sag_check($rel, $sp, $titles, $descs) as $x) $all[] = $x;
+    $u = []; foreach ($all as $x) $u[$x['id']] = $x; $all = array_values($u);
     usort($all, fn($a, $b) => $b['sev'] <=> $a['sev'] ?: strcmp($a['page'], $b['page']));
     $pen = 0; foreach ($all as $x) $pen += [1 => 1, 2 => 3, 3 => 6][$x['sev']];
     $score = max(0, min(100, (int)round(100 - $pen * 100 / max(1, count($pages) * 8))));
