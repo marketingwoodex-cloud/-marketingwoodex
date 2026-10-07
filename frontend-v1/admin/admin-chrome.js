@@ -106,6 +106,7 @@
     var tels = [], email = "", wa = { label: "", href: "" }; var vs = foot.querySelector(".footer-visit");
     var ntx = function (el) { var c = el.cloneNode(true); arr(c.querySelectorAll(".fl")).forEach(function (x) { x.remove(); }); return c.textContent.trim(); };
     arr(ct ? ct.querySelectorAll(":scope > a") : []).forEach(function (a) { var h = a.getAttribute("href") || ""; if (/^mailto:/.test(h)) email = h.slice(7); else if (/wa\.me/.test(h)) wa = { label: ntx(a), href: h }; else if (/^tel:/.test(h)) tels.push(ntx(a)); });
+    if (!wa.href) { var swa = foot.querySelector('.footer-social a[href*="wa.me"]'); if (swa) wa = { label: tels[0] || "WhatsApp", href: swa.getAttribute("href") }; }
     var bot = foot.querySelector(".footer-bottom");
     D.footer = {
       heading: h2 ? h2.innerHTML.replace(/<br\s*\/?>/gi, "\n").replace(/<[^>]+>/g, "") : "", copy: fp ? fp.textContent.trim() : "", ctaLabel: fc ? fc.textContent.trim() : "", ctaHref: fc ? fc.getAttribute("href") : "/contact/",
@@ -149,7 +150,6 @@
       F.cols.map(function (c) { return '      <nav class="footer-column" aria-label="' + A(c.title) + ' links"><h3>' + A(c.title) + "</h3>" + c.links.map(function (l) { return aTag(l); }).join("") + "</nav>\n"; }).join("") +
       '      <div class="footer-column footer-contact"><h3>' + A(C.title) + "</h3>" + (C.email ? '<a href="mailto:' + A(C.email) + '"><span class="fl" aria-hidden="true">E</span>' + A(C.email) + "</a>" : "") +
       String(C.tels || "").split("\n").map(function (t) { t = t.trim(); return t ? '<a href="tel:' + A(t.replace(/[^\d+]/g, "")) + '"><span class="fl" aria-hidden="true">P</span>' + A(t) + "</a>" : ""; }).join("") +
-      (C.waHref ? '<a href="' + A(C.waHref) + '"><span class="fl" aria-hidden="true">W</span>' + A(C.waLabel || "WhatsApp") + "</a>" : "") +
       (C.address ? '<address><span class="fl" aria-hidden="true">L</span><a href="https://www.google.com/maps/search/?api=1&amp;query=' + A(encodeURIComponent(String(C.address).replace(/\n/g, ", "))) + '" target="_blank" rel="noopener">' + nl(C.address) + "</a></address>" : "") +
       (C.hours ? "<p><strong>" + A(C.hours) + "</strong></p>" : "") + "</div>\n" + "    </div>\n" +
       (F.word.trim() ? '    <div class="footer-word" aria-label="' + A(F.word.trim()) + '">' + A(F.word.trim()) + "</div>\n" : "") +
@@ -260,7 +260,7 @@
         if (F.cols.length < 4) h += "<button class='btn' data-add='footer.cols' style='margin-bottom:16px'>" + ic("plus") + "Add footer column</button>";
         var C = F.contact;
         h += card("Contact", fld("Title", inp("footer.contact.title", C.title)) + "<div style='display:grid;grid-template-columns:1fr 1fr;gap:8px'>" + fld("Email", inp("footer.contact.email", C.email)) + fld("WhatsApp link", inp("footer.contact.waHref", C.waHref, "https://wa.me/92…")) + "</div>" +
-          fld("WhatsApp text (e.g. the number)", inp("footer.contact.waLabel", C.waLabel)) + fld("Phone numbers (one per line)", area("footer.contact.tels", C.tels, 2)) + fld("Address (one line each)", area("footer.contact.address", C.address, 3)) + fld("Hours", inp("footer.contact.hours", C.hours)));
+          fld("WhatsApp text (used by the round WhatsApp icon)", inp("footer.contact.waLabel", C.waLabel)) + fld("Phone numbers (one per line)", area("footer.contact.tels", C.tels, 2)) + fld("Address (one line each)", area("footer.contact.address", C.address, 3)) + fld("Hours", inp("footer.contact.hours", C.hours)));
         h += card("Bottom bar", fld("Big word", inp("footer.word", F.word, "INTERIORS")) + fld("Copyright", inp("footer.copyright", F.copyright)) + F.bottom.map(function (l, i) { return row("footer.bottom." + i, l, "<label class='check' style='margin:0 4px 0 0;font-size:12px'><input type='checkbox' data-pc='footer.bottom." + i + ".ext'" + (l.ext ? " checked" : "") + ">New tab</label>"); }).join("") + addBtn("footer.bottom"));
       } else if (tab === "design") {
         var G = D.design = dfix(D.design), sel = function (k, opts) { return "<select data-p='design." + k + "' style='margin:0'>" + opts.map(function (o) { return "<option value='" + o[0] + "'" + (String(G[k]) === o[0] ? " selected" : "") + ">" + o[1] + "</option>"; }).join("") + "</select>"; },

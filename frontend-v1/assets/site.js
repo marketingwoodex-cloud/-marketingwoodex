@@ -451,3 +451,21 @@
   var io = new IntersectionObserver(function (es) { es.forEach(function (e) { if (e.isIntersecting && links[e.target.id]) { for (var k in links) links[k].classList.remove("on"); links[e.target.id].classList.add("on"); } }); }, { rootMargin: "-20% 0px -70% 0px" });
   Object.keys(links).forEach(function (id) { var h = document.getElementById(id); if (h) io.observe(h); });
 })();
+
+/* P27: auto-sliding tracks (home reviews + insights) — pause on hover/touch, loop, arrows */
+(function () {
+  function slider(track, prev, next, ms) {
+    if (!track) return;
+    var step = function () { var c = track.firstElementChild; return c ? c.getBoundingClientRect().width + parseFloat(getComputedStyle(track).columnGap || 16) : 300; };
+    var go = function (d) { var max = track.scrollWidth - track.clientWidth - 4; if (d > 0 && track.scrollLeft >= max) track.scrollTo({ left: 0 }); else if (d < 0 && track.scrollLeft <= 4) track.scrollTo({ left: max }); else track.scrollBy({ left: d * step() }); };
+    prev && prev.addEventListener("click", function () { go(-1); }); next && next.addEventListener("click", function () { go(1); });
+    if (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    var hold = false, vis = false, t = setInterval(function () { if (!hold && vis && !document.hidden) go(1); }, ms);
+    ["mouseenter", "touchstart", "focusin"].forEach(function (e) { track.addEventListener(e, function () { hold = true; }, { passive: true }); });
+    ["mouseleave", "touchend", "focusout"].forEach(function (e) { track.addEventListener(e, function () { setTimeout(function () { hold = false; }, 2500); }, { passive: true }); });
+    if ("IntersectionObserver" in window) new IntersectionObserver(function (es) { vis = es[0].isIntersecting; }).observe(track); else vis = true;
+  }
+  var rv = document.querySelector("#home-page .hm-rv-track");
+  if (rv && !document.querySelector(".hm-rv-nav")) { var n = document.createElement("div"); n.className = "hm-rv-nav"; n.innerHTML = '<button type="button" aria-label="Previous review">←</button><button type="button" aria-label="Next review">→</button>'; rv.parentNode.parentNode.insertBefore(n, rv.parentNode.nextSibling); slider(rv, n.children[0], n.children[1], 4500); }
+  slider(document.querySelector("#home-page .hm-ins-track"), document.querySelector(".hm-ins-prev"), document.querySelector(".hm-ins-next"), 5000);
+})();

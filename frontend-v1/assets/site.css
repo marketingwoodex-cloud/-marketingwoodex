@@ -2598,3 +2598,18 @@ html:not(.js) .ih-faq-a,html:not(.js) .in-faq-a,html:not(.js) .ph-faq-a,html:not
 .wx-trust-copy h2{height:auto!important;max-height:none!important;line-height:1.12!important;overflow:visible}
 .wx-trust-copy .wx-btn,.wx-trust-copy a{margin:0 10px 10px 0}
 .wx-trust-copy a[href*="estimat"] span,.wx-trust-copy a[href*="estimat"] svg{color:#0c1628;opacity:1}
+
+/* P27: home sliders — reviews auto-slide, insights slider, clients marquee */
+#home-page .hm-rv-track{scroll-behavior:smooth}
+#home-page .hm-ins-track{display:grid!important;grid-auto-flow:column;grid-auto-columns:calc((100% - 48px)/3);grid-template-columns:none!important;gap:24px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-behavior:smooth;scrollbar-width:none;padding-bottom:6px}
+#home-page .hm-ins-track::-webkit-scrollbar{display:none}
+#home-page .hm-ins-track>.hm-article{scroll-snap-align:start;min-width:0}
+#home-page .hm-ins-track figure img{transition:transform .9s cubic-bezier(.22,1,.36,1)}
+#home-page .hm-ins-track .hm-article:hover figure img{transform:scale(1.05)}
+.hm-ins-nav{display:flex;gap:10px}
+.hm-ins-nav button,.hm-rv-nav button{width:48px;height:48px;border-radius:50%;border:1px solid rgba(12,22,40,.18);background:#fff;color:#0c1628;font-size:18px;cursor:pointer;transition:background .25s,color .25s,transform .25s}
+.hm-ins-nav button:hover,.hm-rv-nav button:hover{background:#0c1628;color:#fff;transform:translateY(-2px)}
+.hm-rv-nav{display:flex;gap:10px;justify-content:flex-end;margin-top:18px}
+@media(max-width:900px){#home-page .hm-ins-track{grid-auto-columns:82%}}
+/* contact map: our card sits over Google's place card (no duplicate labels) */
+@media(min-width:821px){#contact-page .ct-map-card{top:10px!important;left:10px!important;bottom:auto!important;min-width:330px;min-height:80px}}

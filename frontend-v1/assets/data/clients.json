@@ -1,7 +1,7 @@
 {
   "title": "Our clients",
   "kicker": "Trusted by",
-  "mode": "grid",
+  "mode": "slider",
   "speed": 30,
   "grey": true,
   "show": true,
