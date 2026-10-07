@@ -1388,7 +1388,7 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
   const safeRel = (r) => typeof r === "string" && /^[a-z0-9][a-z0-9/_\-.]*\.html$/i.test(r) && !r.includes("..") && !/^(_private|builder|admin|api|assets)\//.test(r);
   const cityRelOk = (r) => typeof r === "string" && /^[a-z0-9][a-z0-9-]{0,59}\/index\.html$/.test(r) && !/^(builder|admin|api|assets|insights|projects)\//.test(r);
   async function a6(action, inp, need, db, ip) {
-    if (!/^(cms_|ai_)/.test(action)) return null;
+    if (!/^(cms_|ai_|sheets_)/.test(action)) return null;
     const ED = ["owner", "admin", "editor"], OA = ["owner", "admin"];
     const c = cmsLoad(), done = (o) => { jw(CMS, c); save(db); return o; };
     const find = (id) => { const it = c.items.find((x) => x.id === +id); if (!it) throw new Fail("Item not found", 404); return it; };
@@ -1410,9 +1410,9 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
       case "cms_page_kinds": { need(ED); const out = {}; const walk = (d) => { for (const f of fs.readdirSync(d, { withFileTypes: true })) { const a = path.join(d, f.name); if (f.isDirectory()) { if (!/^(_private|builder|admin|api|assets|node_modules)$/.test(f.name) || d !== ROOT) walk(a); } else if (f.name.endsWith(".html")) { const rel = path.relative(ROOT, a).split(path.sep).join("/"); if (!safeRel(rel)) continue; const m = /<body[^>]*data-page="([^"]*)"/i.exec(fs.readFileSync(a, "utf8").slice(0, 400000)); out[rel] = m ? m[1] : ""; } } }; walk(ROOT); return { ok: true, kinds: out }; }
       case "cms_sitemap_add": { need(ED); const rel = String(inp.rel || ""); if (!safeRel(rel) || !fs.existsSync(path.join(ROOT, rel))) throw new Fail("Page not found"); sitemapAdd(rel); return { ok: true }; }
       case "cms_biz_get": { need(ED); return { ok: true, biz: Object.assign({}, BIZ_DEF, c.biz || {}), applied: Object.assign({}, BIZ_DEF, c.bizApplied || {}) }; }
-      case "sheets_get": { need(OA); return done({ ok: true, cfg: Object.assign({ url: "", on: false, last: "", lastErr: "" }, db.sheets || {}) }); }
-      case "sheets_save": { const u = need(OA), url = String(inp.url || "").trim(); if (url && !/^https:\/\/script\.google(usercontent)?\.com\/[A-Za-z0-9/_\-.?=&]+$/.test(url)) throw new Fail("Paste the Apps Script web app URL (it starts with https://script.google.com/)"); db.sheets = Object.assign({}, db.sheets || {}, { url, on: !!inp.on && !!url }); save(db); log(db, u, "sheets.save", "", ip); return done({ ok: true, cfg: db.sheets }); }
-      case "sheets_test": case "sheets_sync": { need(OA); if (!(db.sheets || {}).url) throw new Fail("Save the web app URL first"); throw new Fail("The preview cannot reach Google. This works on your Hostinger site."); }
+      case "sheets_get": { need(OA); return done({ ok: true, cfg: Object.assign({ url: "", on: false, last: "", lastErr: "" }, c.sheets || {}) }); }
+      case "sheets_save": { const u = need(OA), url = String(inp.url || "").trim(); if (url && !/^https:\/\/script\.google(usercontent)?\.com\/[A-Za-z0-9/_\-.?=&]+$/.test(url)) throw new Fail("Paste the Apps Script web app URL (it starts with https://script.google.com/)"); c.sheets = Object.assign({}, c.sheets || {}, { url, on: !!inp.on && !!url }); log(db, u, "sheets.save", "", ip); return done({ ok: true, cfg: c.sheets }); }
+      case "sheets_test": case "sheets_sync": { need(OA); if (!(c.sheets || {}).url) throw new Fail("Save the web app URL first"); throw new Fail("The preview cannot reach Google. This works on your Hostinger site."); }
       case "cms_biz_save": {
         const u = need(OA), b = inp.biz || {}, o = {}; for (const k of Object.keys(BIZ_DEF)) o[k] = clip(b[k], 160) || BIZ_DEF[k];
         if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(o.email)) throw new Fail("Check the email address");
