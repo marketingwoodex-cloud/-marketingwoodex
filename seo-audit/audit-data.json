@@ -81,7 +81,7 @@
    "findings": [
     {
      "severity": "Info",
-     "issue": "Schema types found: Question\u00d7775, Answer\u00d7775, ListItem\u00d7545, Service\u00d7187, LocalBusiness\u00d7173, BreadcrumbList\u00d7157, FAQPage\u00d7154, Organization\u00d7143, PostalAddress\u00d7102, OpeningHoursSpecification\u00d7102, City\u00d788, Offer\u00d782, WebPage\u00d780, SpeakableSpecification\u00d780, BlogPosting\u00d768, ImageObject\u00d740, OfferCatalog\u00d715, Country\u00d78, Place\u00d78, CreativeWork\u00d76, WebSite\u00d73, CollectionPage\u00d73, ItemList\u00d73, AdministrativeArea\u00d72, Person\u00d71, AboutPage\u00d71, ContactPage\u00d71",
+     "issue": "Schema types found: Question\u00d7775, Answer\u00d7775, ListItem\u00d7545, Service\u00d7187, Organization\u00d7183, LocalBusiness\u00d7173, BreadcrumbList\u00d7157, FAQPage\u00d7154, PostalAddress\u00d7102, OpeningHoursSpecification\u00d7102, City\u00d788, BlogPosting\u00d788, Offer\u00d782, WebPage\u00d780, SpeakableSpecification\u00d780, ImageObject\u00d740, OfferCatalog\u00d715, Country\u00d78, Place\u00d78, CreativeWork\u00d76, WebSite\u00d73, CollectionPage\u00d73, ItemList\u00d73, AdministrativeArea\u00d72, Person\u00d71, AboutPage\u00d71, ContactPage\u00d71",
      "count": 0,
      "pages": []
     }
