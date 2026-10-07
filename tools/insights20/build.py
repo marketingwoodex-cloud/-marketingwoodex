@@ -95,7 +95,7 @@ def build(p, tpl):
     s = s.replace("<title>", '<meta name="keywords" content="%s" />\n<meta property="article:published_time" content="%s" />\n<meta property="article:modified_time" content="%s" />\n<title>' % (E(", ".join([p["kw"]] + p["related_kw"])), DATE, DATE), 1)
     ld = [
         {"@context": "https://schema.org", "@type": "BlogPosting", "headline": p["title"], "description": p["desc"], "image": "%s/assets/img/%s.webp" % (SITE, p["cover"]), "datePublished": DATE, "dateModified": DATE,
-         "author": {"@type": "Organization", "name": "Woodex Studio", "url": SITE + "/about/"}, "publisher": {"@type": "Organization", "name": "Woodex Interior", "logo": {"@type": "ImageObject", "url": SITE + "/assets/img/img-f941b08b9510.webp"}},
+         "author": {"@type": "Organization", "name": "Woodex Studio", "url": SITE + "/about/"}, "publisher": {"@type": "Organization", "name": "Woodex Interior", "logo": {"@type": "ImageObject", "url": SITE + "/assets/img/woodex-logo.png", "width": 600, "height": 600}},
          "mainEntityOfPage": url, "keywords": ", ".join([p["kw"]] + p["related_kw"]), "articleSection": p["kicker"], "inLanguage": "en-PK", "wordCount": words(p)},
         {"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": SITE + "/"}, {"@type": "ListItem", "position": 2, "name": "Insights", "item": SITE + "/insights/"}, {"@type": "ListItem", "position": 3, "name": p["title"], "item": url}]},
         {"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": q, "acceptedAnswer": {"@type": "Answer", "text": a}} for q, a in p["faqs"]]},
