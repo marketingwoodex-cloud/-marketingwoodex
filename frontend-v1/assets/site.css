@@ -2646,3 +2646,10 @@ html:not(.js) .ih-faq-a,html:not(.js) .in-faq-a,html:not(.js) .ph-faq-a,html:not
 .wxh-dot{width:34px;height:4px;border:0;border-radius:4px;background:rgba(255,255,255,.35);cursor:pointer;padding:0}.wxh-dot.is-on{background:var(--wxh-wood);width:54px}
 @media (max-width:860px){.wxh--split .wxh-in{grid-template-columns:1fr;gap:28px}.wxh--split .wxh-media{order:0}.wxh--image,.wxh--center{min-height:620px;padding:120px 0 54px}.wxh--split,.wxh--plain{padding:112px 0 50px}.wxh-slide{padding:120px 0 80px}.wxh-in{width:calc(100% - 36px)}}
 @media (prefers-reduced-motion:reduce){.wxh-slide,.wxh-slide .wxh-media img{transition:none}}
+/* P38 section skins (Section library / builder): white, cream, navy for any section */
+.wx-skin-white{background:#fff!important;color:#12151c}
+.wx-skin-cream{background:#f4efe7!important;color:#12151c}
+.wx-skin-navy{background:#0c1628!important;color:#f4efe7}
+.wx-skin-navy h1,.wx-skin-navy h2,.wx-skin-navy h3,.wx-skin-navy h4{color:#fff}
+.wx-skin-navy p,.wx-skin-navy li{color:rgba(244,239,231,.76)}
+.wx-skin-navy a:not([class*="btn"]){color:#e6cfa5}
