@@ -48,3 +48,8 @@ Revoke the old token in @BotFather (`/revoke`) → Admin → Telegram → paste 
 - If `/admin/` shows "Set up Woodex Admin" (db.json missing) and the database already has users: fill only the Database box and **leave the Owner account empty**, then submit. The site reconnects and you sign in with your existing login.
 - File Manager may hide db.json (permission 600). That's normal. Test by signing in.
 - If files like `wx-demo.php` or `_database/woodex-v20.sql` are missing after extracting, the extraction did not finish. Extract the zip again with Overwrite.
+
+## Setup files only: woodex-P21-setup-files.zip
+If `wx-install.php`, `wx-demo.php` or `woodex-v20.sql` are missing after extracting the big zip, upload this small zip to `public_html` → Extract → Overwrite. It contains:
+`wx-install.php`, `wx-demo.php`, `wx-check.php`, `_database/woodex-v20.sql`, `_private/.htaccess`, `_private/db.example.json`.
+`db.json` is NOT a file you upload. `wx-install.php` creates it from the details you type in. (Manual fallback: copy `db.example.json` → `db.json` in File Manager and fill in the 4 values from hPanel.)
