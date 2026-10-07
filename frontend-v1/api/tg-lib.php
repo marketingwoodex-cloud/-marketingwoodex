@@ -107,7 +107,7 @@ function tg_incoming(string $tgChat, string $name, string $text, string $usernam
     if ($r !== '') [$r, $human] = chat_ai_post($c, $r);
     else { $r = $new ? (chat_open_now() ? $cfg['waGreeting'] : $cfg['afterHours']) : ''; $human = true; }
     if ($r !== '') { [$e] = tg_send($tgChat, $r, $new ? tg_quick_kb() : []); if ($e === '') chat_add((int)$c['id'], 'ai', 'Woodex assistant', $r); else $human = true; }
-    if ($human) { q('UPDATE wx_chats SET needs=1 WHERE id=?', [$c['id']]); tg_team_post(chat_get((int)$c['id']), 'Customer asked for a person', '🙋 <b>Needs a person</b>'); }
+    if ($human) q('UPDATE wx_chats SET needs=1 WHERE id=?', [$c['id']]);
 }
 
 /** Customer opened t.me/bot?start=c{id}_{sig}: move that website chat onto Telegram (same thread). */

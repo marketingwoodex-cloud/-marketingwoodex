@@ -60,7 +60,7 @@ function chat_add(int $cid, string $who, string $name, string $text, ?array $att
 }
 function chat_pub(array $c): array {
     return ['id' => (int)$c['id'], 'created_at' => $c['created_at'], 'updated_at' => $c['updated_at'], 'name' => (string)$c['name'], 'phone' => (string)$c['phone'], 'email' => (string)$c['email'], 'page' => (string)$c['page'],
-        'status' => $c['status'], 'mode' => $c['mode'], 'agent' => (string)$c['agent_name'], 'unread' => (int)$c['unread'], 'needs' => (bool)$c['needs'], 'last' => (string)$c['last_text'], 'lead_id' => $c['lead_id'] !== null ? (int)$c['lead_id'] : null, 'assigned' => isset($c['assigned_to']) && $c['assigned_to'] !== null ? (int)$c['assigned_to'] : null, 'tags' => array_values(array_filter(explode(',', (string)($c['tags'] ?? '')))), 'waitFrom' => (int)$c['unread'] || (int)$c['needs'] ? (string)(q("SELECT MIN(t) FROM wx_chat_msgs WHERE chat_id=? AND who='visitor' AND id > COALESCE((SELECT MAX(id) FROM wx_chat_msgs WHERE chat_id=? AND who IN ('agent','ai')),0)", [$c['id'], $c['id']])->fetchColumn() ?: '') : '', 'channel' => (string)($c['channel'] ?? 'web')];
+        'status' => $c['status'], 'mode' => $c['mode'], 'agent' => (string)$c['agent_name'], 'unread' => (int)$c['unread'], 'needs' => (bool)$c['needs'], 'last' => (string)$c['last_text'], 'lead_id' => $c['lead_id'] !== null ? (int)$c['lead_id'] : null, 'handoff' => (string)($c['handoff'] ?? ''), 'assigned' => isset($c['assigned_to']) && $c['assigned_to'] !== null ? (int)$c['assigned_to'] : null, 'tags' => array_values(array_filter(explode(',', (string)($c['tags'] ?? '')))), 'waitFrom' => (int)$c['unread'] || (int)$c['needs'] ? (string)(q("SELECT MIN(t) FROM wx_chat_msgs WHERE chat_id=? AND who='visitor' AND id > COALESCE((SELECT MAX(id) FROM wx_chat_msgs WHERE chat_id=? AND who IN ('agent','ai')),0)", [$c['id'], $c['id']])->fetchColumn() ?: '') : '', 'channel' => (string)($c['channel'] ?? 'web')];
 }
 
 /** P18 D: store a chat attachment (image / PDF / voice note). Random file name in /assets/uploads/chat/YYYYMM/. Returns att array. */
@@ -132,11 +132,12 @@ function chat_ai_system(array $c): string {
         "Office hours: {$cfg['hours']}. It is currently " . (chat_open_now() ? 'within' : 'outside') . " office hours.\nContact: {$co['phones']} · {$co['email']} · {$co['address']}\n\nSTUDIO FACTS (always true):\n" . CHAT_FACTS . "\n\nKNOWLEDGE:\n" . $cfg['knowledge'] .
         ($cfg['prices'] !== '' && empty($cfg['noPrices']) ? "\n\nPRICE GUIDANCE (starting rates only; always add that the final quote comes after a site visit):\n" . $cfg['prices'] : '') .
         ($faq ? "\n\nQ&A:\n" . mb_substr(implode("\n\n", $faq), 0, 9000) : '') .
-        ($wa ? "\n\nChannel: WhatsApp (their number is already known)." : "\n\nVisitor is on page: " . ($c['page'] ?? '/')) . (!empty($c['name']) ? "\nCustomer name: " . $c['name'] : '') . (!empty($c['phone']) && !$wa ? "\nPhone already given: yes" : '');
+        (function_exists('aia_prompt') ? aia_prompt() : '') . ($wa ? "\n\nChannel: WhatsApp (their number is already known)." : "\n\nVisitor is on page: " . ($c['page'] ?? '/')) . (!empty($c['name']) ? "\nCustomer name: " . $c['name'] : '') . (!empty($c['phone']) && !$wa ? "\nPhone already given: yes" : '');
 }
 /** P38: split an AI reply into [visible text, needs human]; saves any [LEAD]{...} details to the chat's CRM lead (creates it when the phone is known and auto-lead is on). */
 function chat_ai_post(array $c, string $r): array {
-    $human = strpos($r, '[HUMAN]') !== false; $r = str_replace('[HUMAN]', '', $r); $d = [];
+    $reason = ''; $human = false; if (function_exists('aia_parse')) [$r, $human, $reason] = aia_parse($c, $r);
+    $human = $human || strpos($r, '[HUMAN]') !== false; $r = str_replace('[HUMAN]', '', $r); $d = [];
     if (preg_match('~\[LEAD\]\s*(\{[^{}]*\})~u', $r, $m)) { $d = json_decode($m[1], true) ?: []; }
     $r = trim(preg_replace('~\[LEAD\]\s*(\{[^{}]*\})?~u', '', $r));
     if ($d && !empty($c['id'])) try {
@@ -150,6 +151,7 @@ function chat_ai_post(array $c, string $r): array {
                 q('UPDATE wx_leads SET name=?,service=?,fields=? WHERE id=?', [$nm, ($l['service'] ?: ($d['type'] ?? '')), json_encode($f, JSON_UNESCAPED_UNICODE), $c['lead_id']]); }
         }
     } catch (Throwable $e) { error_log('chat lead details: ' . $e->getMessage()); }
+    if (!empty($c['id']) && function_exists('aia_after')) { try { $lq = (string)(q("SELECT text FROM wx_chat_msgs WHERE chat_id=? AND who='visitor' ORDER BY id DESC LIMIT 1", [$c['id']])->fetchColumn() ?: ''); aia_after($c, $human, $reason, $lq); } catch (Throwable $e) { error_log('ai after: ' . $e->getMessage()); } }
     return [$r, $human];
 }
 /** Call the configured AI with role turns; returns '' on any failure (never exits). */

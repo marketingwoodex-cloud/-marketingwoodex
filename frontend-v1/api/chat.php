@@ -65,7 +65,7 @@ switch ($act) {
         if ($c['mode'] === 'ai') {
             $cnt = (int)q("SELECT COUNT(*) FROM wx_chat_msgs WHERE chat_id=? AND who='ai'", [$c['id']])->fetchColumn();
             $r = $cnt < 40 ? chat_ai_reply($c) : '';
-            if ($r === '' && $cnt < 40) $r = chat_rule_reply($c, $text); // P19 B1: never go silent when AI is off/down
+            if ($r === '' && $cnt < 40) { $r = chat_rule_reply($c, $text); if ($r === '' && function_exists('aia_unans')) aia_unans((int)$c['id'], $text); } // P19 B1: never go silent when AI is off/down
             if ($r !== '') {
                 [$r, $human] = chat_ai_post($c, $r);
                 chat_add((int)$c['id'], 'ai', 'Woodex assistant', $r);
