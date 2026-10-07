@@ -104,13 +104,14 @@
     D.header = { logo: bi ? bi.getAttribute("src") : "", lw: bi ? bi.getAttribute("width") : "", lh: bi ? bi.getAttribute("height") : "", word: wm ? wm.childNodes[0].textContent.trim() : "", small: sm ? sm.textContent.trim() : "", aria: brand.getAttribute("aria-label") || "", cta: cta ? cta.textContent.trim() : "Get a quote" };
     var h2 = foot.querySelector("#footer-heading"), fp = foot.querySelector("#footer-copy"), fc = foot.querySelector("#footer-cta"), ct = foot.querySelector(".footer-contact");
     var tels = [], email = "", wa = { label: "", href: "" }; var vs = foot.querySelector(".footer-visit");
-    arr(ct ? ct.querySelectorAll("a") : []).forEach(function (a) { var h = a.getAttribute("href") || ""; if (/^mailto:/.test(h)) email = h.slice(7); else if (/wa\.me/.test(h)) wa = { label: a.textContent.trim(), href: h }; else if (/^tel:/.test(h)) tels.push(a.textContent.trim()); });
+    var ntx = function (el) { var c = el.cloneNode(true); arr(c.querySelectorAll(".fl")).forEach(function (x) { x.remove(); }); return c.textContent.trim(); };
+    arr(ct ? ct.querySelectorAll(":scope > a") : []).forEach(function (a) { var h = a.getAttribute("href") || ""; if (/^mailto:/.test(h)) email = h.slice(7); else if (/wa\.me/.test(h)) wa = { label: ntx(a), href: h }; else if (/^tel:/.test(h)) tels.push(ntx(a)); });
     var bot = foot.querySelector(".footer-bottom");
     D.footer = {
       heading: h2 ? h2.innerHTML.replace(/<br\s*\/?>/gi, "\n").replace(/<[^>]+>/g, "") : "", copy: fp ? fp.textContent.trim() : "", ctaLabel: fc ? fc.textContent.trim() : "", ctaHref: fc ? fc.getAttribute("href") : "/contact/",
       cols: arr(foot.querySelectorAll("nav.footer-column")).map(function (n) { var t = n.querySelector("h3"); return { title: t ? t.textContent.trim() : "", links: arr(n.querySelectorAll("a")).map(linkOf) }; }),
       contact: { title: ct && ct.querySelector("h3") ? ct.querySelector("h3").textContent.trim() : "Get in touch", email: email, waLabel: wa.label, waHref: wa.href, tels: tels.join("\n"),
-        address: (vs || ct) && (vs || ct).querySelector("address") ? (vs || ct).querySelector("address").innerHTML.replace(/<br\s*\/?>/gi, "\n").replace(/<[^>]+>/g, "").trim() : "", hours: (vs || ct) && (vs || ct).querySelector("p") ? (vs || ct).querySelector("p").textContent.trim() : "", visitTitle: vs && vs.querySelector("h3") ? vs.querySelector("h3").textContent.trim() : "Visit us" },
+        address: (vs || ct) && (vs || ct).querySelector("address") ? (vs || ct).querySelector("address").innerHTML.replace(/<span class="fl"[^>]*>[\s\S]*?<\/span>/g, "").replace(/<br\s*\/?>/gi, "\n").replace(/<[^>]+>/g, "").trim() : "", hours: (vs || ct) && (vs || ct).querySelector("p") ? (vs || ct).querySelector("p").textContent.trim() : "", visitTitle: vs && vs.querySelector("h3") ? vs.querySelector("h3").textContent.trim() : "Visit us" },
       social: !!foot.querySelector(".footer-social") || !foot.querySelector(".footer-intro"),
       word: (foot.querySelector(".footer-word") || {}).textContent || "",
       copyright: bot && bot.querySelector("span") ? bot.querySelector("span").textContent.trim() : "",
@@ -146,9 +147,11 @@
     var fbrand = '<a class="footer-brand" href="/" aria-label="' + A(H.aria || "Woodex Interior home") + '"><img src="' + A(H.logo) + '" alt="" width="78" height="48"><span>' + A(H.word) + (H.small ? " <small>" + A(H.small) + "</small>" : "") + "</span></a>";
     var footer = '<footer class="footer"><div class="wrap">\n    <div class="footer-main">\n      <div class="footer-intro">' + fbrand + '<h2 id="footer-heading">' + nl(F.heading) + '</h2><p id="footer-copy">' + A(F.copy) + "</p>" + social + (String(F.ctaLabel || "").trim() ? '<a class="btn footer-cta" id="footer-cta" href="' + A(F.ctaHref) + '">' + A(F.ctaLabel) + "</a>" : "") + "</div>\n" +
       F.cols.map(function (c) { return '      <nav class="footer-column" aria-label="' + A(c.title) + ' links"><h3>' + A(c.title) + "</h3>" + c.links.map(function (l) { return aTag(l); }).join("") + "</nav>\n"; }).join("") +
-      '      <div class="footer-column footer-contact"><h3>' + A(C.title) + "</h3>" + (C.email ? '<a href="mailto:' + A(C.email) + '">' + A(C.email) + "</a>" : "") + (C.waHref ? '<a href="' + A(C.waHref) + '">' + A(C.waLabel || "WhatsApp") + "</a>" : "") +
-      String(C.tels || "").split("\n").map(function (t) { t = t.trim(); return t ? '<a href="tel:' + A(t.replace(/[^\d+]/g, "")) + '">' + A(t) + "</a>" : ""; }).join("") + "</div>\n" +
-      (C.address || C.hours ? '      <div class="footer-column footer-visit"><h3>' + A(C.visitTitle || "Visit us") + "</h3>" + (C.address ? "<address>" + nl(C.address) + "</address>" : "") + (C.hours ? "<p><strong>" + A(C.hours) + "</strong></p>" : "") + "</div>\n" : "") + "    </div>\n" +
+      '      <div class="footer-column footer-contact"><h3>' + A(C.title) + "</h3>" + (C.email ? '<a href="mailto:' + A(C.email) + '"><span class="fl" aria-hidden="true">E</span>' + A(C.email) + "</a>" : "") +
+      String(C.tels || "").split("\n").map(function (t) { t = t.trim(); return t ? '<a href="tel:' + A(t.replace(/[^\d+]/g, "")) + '"><span class="fl" aria-hidden="true">P</span>' + A(t) + "</a>" : ""; }).join("") +
+      (C.waHref ? '<a href="' + A(C.waHref) + '"><span class="fl" aria-hidden="true">W</span>' + A(C.waLabel || "WhatsApp") + "</a>" : "") +
+      (C.address ? '<address><span class="fl" aria-hidden="true">L</span><a href="https://www.google.com/maps/search/?api=1&amp;query=' + A(encodeURIComponent(String(C.address).replace(/\n/g, ", "))) + '" target="_blank" rel="noopener">' + nl(C.address) + "</a></address>" : "") +
+      (C.hours ? "<p><strong>" + A(C.hours) + "</strong></p>" : "") + "</div>\n" + "    </div>\n" +
       (F.word.trim() ? '    <div class="footer-word" aria-label="' + A(F.word.trim()) + '">' + A(F.word.trim()) + "</div>\n" : "") +
       '    <div class="footer-bottom"><span>' + A(F.copyright) + "</span><div>" + F.bottom.map(function (l) { return aTag(l); }).join("") + "</div></div>\n  </div></footer>";
     return { desktop: desktop, mobile: mobile, brand: brand, cta: H.cta, footer: footer, style: designTag(D.design), phone: phoneHtml(D.design) };
@@ -257,7 +260,7 @@
         if (F.cols.length < 4) h += "<button class='btn' data-add='footer.cols' style='margin-bottom:16px'>" + ic("plus") + "Add footer column</button>";
         var C = F.contact;
         h += card("Contact", fld("Title", inp("footer.contact.title", C.title)) + "<div style='display:grid;grid-template-columns:1fr 1fr;gap:8px'>" + fld("Email", inp("footer.contact.email", C.email)) + fld("WhatsApp link", inp("footer.contact.waHref", C.waHref, "https://wa.me/92…")) + "</div>" +
-          fld("WhatsApp text", inp("footer.contact.waLabel", C.waLabel)) + fld("Phone numbers (one per line)", area("footer.contact.tels", C.tels, 2)) + fld("Address (one line each)", area("footer.contact.address", C.address, 3)) + fld("Hours", inp("footer.contact.hours", C.hours)) + fld("Visit column title", inp("footer.contact.visitTitle", C.visitTitle || "Visit us")));
+          fld("WhatsApp text (e.g. the number)", inp("footer.contact.waLabel", C.waLabel)) + fld("Phone numbers (one per line)", area("footer.contact.tels", C.tels, 2)) + fld("Address (one line each)", area("footer.contact.address", C.address, 3)) + fld("Hours", inp("footer.contact.hours", C.hours)));
         h += card("Bottom bar", fld("Big word", inp("footer.word", F.word, "INTERIORS")) + fld("Copyright", inp("footer.copyright", F.copyright)) + F.bottom.map(function (l, i) { return row("footer.bottom." + i, l, "<label class='check' style='margin:0 4px 0 0;font-size:12px'><input type='checkbox' data-pc='footer.bottom." + i + ".ext'" + (l.ext ? " checked" : "") + ">New tab</label>"); }).join("") + addBtn("footer.bottom"));
       } else if (tab === "design") {
         var G = D.design = dfix(D.design), sel = function (k, opts) { return "<select data-p='design." + k + "' style='margin:0'>" + opts.map(function (o) { return "<option value='" + o[0] + "'" + (String(G[k]) === o[0] ? " selected" : "") + ">" + o[1] + "</option>"; }).join("") + "</select>"; },
