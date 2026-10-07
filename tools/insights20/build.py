@@ -124,7 +124,9 @@ def main():
             if bad in (body + " " + p["desc"].lower() + " " + " ".join(a for q, a in p["faqs"]).lower()): errs.append("%s banned phrase '%s'" % (p["slug"], bad.strip()))
         if re.search(r"(rs\.?|pkr)\s?[0-9]", body): errs.append(p["slug"] + " invented price")
     if errs: print("\n".join(errs)); sys.exit(1)
+    only = os.environ.get("ONLY")
     for p in POSTS:
+        if only and not p["slug"] in [x.strip() for x in open(only).read().split()]: continue
         d = os.path.join(ROOT, "insights", p["slug"]); os.makedirs(d, exist_ok=True)
         open(os.path.join(d, "index.html"), "w", encoding="utf-8").write(build(p, tpl))
         print("%-48s %4d words  %d sections  %d faqs" % (p["slug"], words(p), len(p["sections"]), len(p["faqs"])))

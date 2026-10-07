@@ -1,7 +1,7 @@
 {
  "summary": {
   "health_score": 97,
-  "pages": 107,
+  "pages": 117,
   "business_type": "Local service (interior design & build, Lahore HQ)"
  },
  "categories": [
@@ -30,23 +30,23 @@
     {
      "severity": "Low",
      "issue": "Articles without a summary box near top",
-     "count": 28,
+     "count": 38,
      "pages": [
       "/insights/1-kanal-house-interior-cost-lahore/",
+      "/insights/10-marla-house-interior-lahore/",
       "/insights/3d-interior-design-cost-pakistan/",
       "/insights/3d-visualization-guide/",
       "/insights/5-marla-house-renovation-cost-lahore/",
       "/insights/apartment-small-space-planning-lahore/",
       "/insights/architect-fee-lahore-2026/",
+      "/insights/bathroom-renovation-lahore/",
+      "/insights/clinic-interior-design-lahore/",
       "/insights/design-process-explained/",
       "/insights/dha-vs-bahria-town-interior-cost-lahore/",
       "/insights/false-ceiling-cost-lahore-2026/",
-      "/insights/home-renovation-checklist/",
-      "/insights/house-renovation-cost-lahore-2026/",
-      "/insights/house-renovation-timeline-lahore/",
-      "/insights/interior-design-cost-pakistan/",
-      "/insights/interior-designer-cost-lahore-2026/",
-      "/insights/interior-designer-vs-contractor-lahore/"
+      "/insights/flooring-options-pakistan/",
+      "/insights/grey-structure-finishing-lahore/",
+      "/insights/home-office-design-ideas/"
      ]
     }
    ]
@@ -61,7 +61,7 @@
      "count": 4,
      "pages": [
       "/book-a-visit/ (218 words)",
-      "/contact/ (248 words)",
+      "/contact/ (234 words)",
       "/estimator/ (277 words)",
       "/projects/ (298 words)"
      ]
@@ -69,23 +69,23 @@
     {
      "severity": "High",
      "issue": "Articles credited to Organization, not a named designer (Person)",
-     "count": 28,
+     "count": 38,
      "pages": [
       "/insights/1-kanal-house-interior-cost-lahore/",
+      "/insights/10-marla-house-interior-lahore/",
       "/insights/3d-interior-design-cost-pakistan/",
       "/insights/3d-visualization-guide/",
       "/insights/5-marla-house-renovation-cost-lahore/",
       "/insights/apartment-small-space-planning-lahore/",
       "/insights/architect-fee-lahore-2026/",
+      "/insights/bathroom-renovation-lahore/",
+      "/insights/clinic-interior-design-lahore/",
       "/insights/design-process-explained/",
       "/insights/dha-vs-bahria-town-interior-cost-lahore/",
       "/insights/false-ceiling-cost-lahore-2026/",
-      "/insights/home-renovation-checklist/",
-      "/insights/house-renovation-cost-lahore-2026/",
-      "/insights/house-renovation-timeline-lahore/",
-      "/insights/interior-design-cost-pakistan/",
-      "/insights/interior-designer-cost-lahore-2026/",
-      "/insights/interior-designer-vs-contractor-lahore/"
+      "/insights/flooring-options-pakistan/",
+      "/insights/grey-structure-finishing-lahore/",
+      "/insights/home-office-design-ideas/"
      ]
     }
    ]
@@ -97,15 +97,23 @@
     {
      "severity": "Medium",
      "issue": "Weakly linked pages (1-2 inbound)",
-     "count": 7,
+     "count": 16,
      "pages": [
       "/bahawalpur/",
-      "/healthcare-design/",
+      "/insights/10-marla-house-interior-lahore/",
+      "/insights/bathroom-renovation-lahore/",
+      "/insights/clinic-interior-design-lahore/",
       "/insights/false-ceiling-cost-lahore-2026/",
+      "/insights/flooring-options-pakistan/",
+      "/insights/grey-structure-finishing-lahore/",
+      "/insights/home-office-design-ideas/",
+      "/insights/interior-design-trends-pakistan-2027/",
+      "/insights/office-interior-gulberg-lahore/",
+      "/insights/paint-colours-pakistani-homes/",
+      "/insights/salon-interior-design-lahore/",
       "/interior-home-refurbishment/",
       "/karachi/",
-      "/residential-basement-design/",
-      "/residential-dining-room-design/"
+      "/residential-basement-design/"
      ]
     },
     {
@@ -153,7 +161,7 @@
    "findings": [
     {
      "severity": "Info",
-     "issue": "Schema types found: Question\u00d7521, Answer\u00d7521, ListItem\u00d7340, Service\u00d7158, LocalBusiness\u00d7149, BreadcrumbList\u00d7107, FAQPage\u00d795, PostalAddress\u00d787, OpeningHoursSpecification\u00d787, Offer\u00d776, WebPage\u00d766, City\u00d765, SpeakableSpecification\u00d765, Organization\u00d763, BlogPosting\u00d728, ImageObject\u00d720, OfferCatalog\u00d715, CreativeWork\u00d76, WebSite\u00d72, AdministrativeArea\u00d72, Country\u00d72, CollectionPage\u00d72, ItemList\u00d72, Person\u00d71, AboutPage\u00d71, ContactPage\u00d71",
+     "issue": "Schema types found: Question\u00d7561, Answer\u00d7561, ListItem\u00d7370, Service\u00d7158, LocalBusiness\u00d7149, BreadcrumbList\u00d7117, FAQPage\u00d7105, Organization\u00d7103, PostalAddress\u00d787, OpeningHoursSpecification\u00d787, Offer\u00d776, WebPage\u00d766, City\u00d765, SpeakableSpecification\u00d765, BlogPosting\u00d748, ImageObject\u00d730, OfferCatalog\u00d715, CreativeWork\u00d76, WebSite\u00d72, AdministrativeArea\u00d72, Country\u00d72, CollectionPage\u00d72, ItemList\u00d72, Person\u00d71, AboutPage\u00d71, ContactPage\u00d71",
      "count": 0,
      "pages": []
     }
