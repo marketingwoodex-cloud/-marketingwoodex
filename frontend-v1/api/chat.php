@@ -14,7 +14,7 @@ $cfg = chat_cfg();
 @set_time_limit(60);
 try {
 chat_migrate();
-if ($act === 'cfg') out(['ok' => true, 'on' => (bool)$cfg['on'], 'greeting' => $cfg['greeting'], 'hours' => $cfg['hours'], 'open' => chat_open_now(), 'ai' => (bool)$cfg['ai']]);
+if ($act === 'cfg') out(['ok' => true, 'on' => (bool)$cfg['on'], 'greeting' => $cfg['greeting'], 'hours' => $cfg['hours'], 'open' => chat_open_now(), 'ai' => (bool)$cfg['ai'], 'quick' => array_map(fn($x) => ['label' => $x['label'], 'text' => $x['text']], array_slice((array)$cfg['quick'], 0, 6)), 'tg' => tg_button_on() ? ['bot' => tg_cfg()['bot'], 'waDown' => wa_down()] : null]);
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') fail('POST required', 405);
 if (!$cfg['on']) fail('Chat is offline', 403);
 
@@ -33,6 +33,8 @@ function vlimit(int $max, int $win): void { // per-IP message limit (wx_throttle
 }
 
 switch ($act) {
+    case 'tglink': // P39: continue this chat on Telegram (signed deep link)
+        $c = vchat($in); if (!tg_ready() || !tg_cfg()['customers']) fail('Telegram is not available', 404); out(['ok' => true, 'link' => tg_chat_link((int)$c['id'])]);
     case 'poll':
         $c = vchat($in); out(vpub($c, (int)($in['since'] ?? 0)));
     case 'typing': // P18 D

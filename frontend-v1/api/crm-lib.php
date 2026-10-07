@@ -77,8 +77,9 @@ function wa_text(string $to, string $text): string {
     curl_setopt_array($ch, [CURLOPT_CAINFO => __DIR__ . '/cacert.pem', CURLOPT_POST => true, CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 10, CURLOPT_HTTPHEADER => ['Authorization: Bearer ' . $c['waToken'], 'Content-Type: application/json'],
         CURLOPT_POSTFIELDS => json_encode(['messaging_product' => 'whatsapp', 'to' => preg_replace('~\D~', '', $to), 'type' => 'text', 'text' => ['body' => mb_substr($text, 0, 4000)]])]);
     $r = curl_exec($ch); $code = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE); $err = curl_error($ch); curl_close($ch);
-    if ($r === false) return 'failed: ' . $err;
-    if ($code >= 300) { $j = json_decode((string)$r, true); return 'failed: ' . ($j['error']['message'] ?? "HTTP $code"); }
+    if ($r === false) { if (function_exists('wa_mark')) wa_mark(false, $err); return 'failed: ' . $err; }
+    if ($code >= 300) { $j = json_decode((string)$r, true); $m = (string)($j['error']['message'] ?? "HTTP $code"); if (function_exists('wa_mark') && $code !== 400) wa_mark(false, $m); return 'failed: ' . $m; }
+    if (function_exists('wa_mark')) wa_mark(true);
     return '';
 }
 /** P16: check a Cloud API number with Meta (also used to verify a new/changed number). */
@@ -111,6 +112,7 @@ function wa_send(array $c, string $to, array $l, string $text): string {
 }
 function send_alerts(array $l, string $only = '', array $over = []): array {
     $c = crm_cfg(); $res = []; $text = lead_text($l);
+    if (!$only && function_exists('tg_alert')) tg_alert('leads', "📥 <b>New lead</b>\n" . tg_h($text));
     if (!empty($over['alertTo'])) $c['emailTo'] = (string)$over['alertTo']; // P18 E: per-form recipients
     if (!empty($over['waTo'])) $c['waTo'] = (string)$over['waTo']; // P19 F7: per-form WhatsApp numbers
     if (array_key_exists('waAlert', $over) && !$over['waAlert'] && !$only) $c['waOn'] = false;

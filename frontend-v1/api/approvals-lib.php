@@ -49,6 +49,7 @@ function appr_queue(array $u, string $src, string $action, array $in): array {
     $item = ['id' => $id, 'src' => $src, 'action' => $action, 'in' => $in, 'summary' => appr_summary($src, $action, $in), 'by' => ['id' => (int)$u['id'], 'name' => (string)($u['name'] ?? ''), 'role' => (string)$u['role']], 'at' => date('c'), 'status' => 'pending'];
     array_unshift($all, $item); $all = array_slice($all, 0, 500); appr_write(APPR_FILE, $all);
     appr_alert($item);
+    if (function_exists('tg_alert')) tg_alert('appr', "🛡 <b>Waiting for Master approval</b>\n" . tg_h($item['summary']) . ' · by ' . tg_h((string)$item['by']['name']));
     return ['ok' => true, 'pending' => true, 'approval' => $id, 'message' => 'Sent to the Master for approval: ' . $item['summary']];
 }
 
