@@ -90,7 +90,7 @@ function p22_offsite_zip(): array {
     $add = function (string $rel) use ($z) { $a = ROOT_DIR . '/' . $rel; if (is_file($a)) $z->addFile($a, $rel); };
     if (function_exists('a7_pages')) foreach (a7_pages() as $r) $add($r);
     foreach (['sitemap.xml', 'robots.txt', 'llms.txt', 'assets/site.js', 'assets/site-p21.css', 'assets/v1-p21.css', 'assets/theme.css'] as $r) $add($r);
-    $db = []; try { foreach (q("SHOW TABLES LIKE 'wx\\_%'")->fetchAll(PDO::FETCH_NUM) as $t) { if (in_array($t[0], ['wx_users', 'wx_throttle'], true)) continue; $db[$t[0]] = q('SELECT * FROM `' . $t[0] . '`')->fetchAll(); } } catch (Throwable $e) { $db['_error'] = $e->getMessage(); }
+    $db = []; try { foreach (q("SHOW TABLES LIKE 'wx\\_%'")->fetchAll(PDO::FETCH_NUM) as $t) { if (in_array($t[0], ['wx_users', 'wx_throttle', 'wx_settings'], true)) continue; $db[$t[0]] = q('SELECT * FROM `' . $t[0] . '`')->fetchAll(); } } catch (Throwable $e) { $db['_error'] = $e->getMessage(); }
     $z->addFromString('database.json', json_encode($db, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
     $z->addFromString('README.txt', "Woodex off-site backup " . gmdate('Y-m-d H:i') . " UTC\nWebsite pages + database (no passwords, no API keys).\nRestore: Admin > Settings > Backups, or upload the pages with File Manager.\n");
     $z->close(); return [$f, ''];
