@@ -38,5 +38,5 @@ Also: TODO-PLAN.md.
 Problem: after upload, Hostinger CDN kept serving OLD `site.css` / `v1.css` (30-day cache) → FAQ text invisible, services strip broken.
 Fix: every page now loads `site.css?v=p21`, `v1.css?v=p21`, `theme.css?v=p21`, `site.js?v=p21`, so the cache fetches the new files.
 - Already uploaded P21? Upload **woodex-P21-update-cachefix.zip** to `public_html` → Extract → Overwrite. Then Cache Manager → Purge all once.
-- New install: use **woodex-live-P21.zip** (fix included).
+- New install: use **woodex-v21-master.zip** or **woodex-live-P21.zip** (same file, fix included).
 Next release: change `p21` to the new version name in pages to force a refresh.
