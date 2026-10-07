@@ -239,7 +239,7 @@
   $("#setup-form").onsubmit = function (e) {
     e.preventDefault(); var b = $("#s-btn"); b.disabled = true; $("#s-err").textContent = "";
     api("setup", { dbHost: $("#s-host").value, dbName: $("#s-name").value, dbUser: $("#s-user").value, dbPass: $("#s-dpass").value, name: $("#s-uname").value, email: $("#s-email").value, password: $("#s-pass").value, builderPassword: $("#s-bpass").value })
-      .then(function (r) { b.disabled = false; if (!r.ok) return ($("#s-err").textContent = r.error); toast("Woodex Admin is ready ✓"); signedIn(r); });
+      .then(function (r) { b.disabled = false; if (!r.ok) return ($("#s-err").textContent = r.error); if (r.reconnected) { toast(r.message); showAuth("login"); return; } toast("Woodex Admin is ready ✓"); signedIn(r); });
   };
   $("#logout").onclick = function () { api("logout").then(function () { signedOut(); }); };
 

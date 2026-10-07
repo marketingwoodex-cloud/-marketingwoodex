@@ -340,10 +340,18 @@ switch ($action) {
         $c = ['host' => trim((string)($in['dbHost'] ?? 'localhost')), 'name' => trim((string)($in['dbName'] ?? '')), 'user' => trim((string)($in['dbUser'] ?? '')), 'pass' => (string)($in['dbPass'] ?? '')];
         if (!$c['name'] || !$c['user']) fail('Enter the database name and user');
         $name = trim((string)($in['name'] ?? '')); $email = strtolower(trim((string)($in['email'] ?? ''))); $pw = (string)($in['password'] ?? '');
-        if (!$name || !filter_var($email, FILTER_VALIDATE_EMAIL)) fail('Enter your name and a valid email'); valid_pw($pw);
         try { $pdo = connect($c); } catch (Throwable $e) { fail('Could not connect to the database. Check the details in hPanel → Databases.'); }
         migrate($pdo);
-        jwrite(DB_FILE, $c);
+        /* P21 fix: database already has users (e.g. from wx-install) but db.json was missing -> just reconnect, keep existing logins */
+        $hasUsers = (int)$pdo->query('SELECT COUNT(*) FROM wx_users')->fetchColumn() > 0;
+        if ($hasUsers && ($email === '' || $pdo->query('SELECT COUNT(*) FROM wx_users WHERE email=' . $pdo->quote($email))->fetchColumn() > 0)) {
+            if (@file_put_contents(DB_FILE, json_encode($c, JSON_PRETTY_PRINT), LOCK_EX) === false) fail('Could not save _private/db.json. In File Manager set the _private folder permission to 755 and try again.');
+            @chmod(DB_FILE, 0600);
+            out(['ok' => true, 'reconnected' => true, 'message' => 'Database connected. Your existing accounts are kept. Sign in with your existing login (first install: admin / admin).']);
+        }
+        if (!$name || !filter_var($email, FILTER_VALIDATE_EMAIL)) fail('Enter your name and a valid email (or leave the owner fields empty to keep the existing accounts)'); valid_pw($pw);
+        if (@file_put_contents(DB_FILE, json_encode($c, JSON_PRETTY_PRINT), LOCK_EX) === false) fail('Could not save _private/db.json. In File Manager set the _private folder permission to 755 and try again.');
+        @chmod(DB_FILE, 0600);
         q('INSERT INTO wx_users (name,email,role,pass_hash,created_at) VALUES (?,?,?,?,?)', [$name, $email, 'owner', password_hash($pw, PASSWORD_DEFAULT), now()]);
         if (empty($bc['password_hash'])) { $bc['password_hash'] = password_hash(bin2hex(random_bytes(16)), PASSWORD_DEFAULT); $bc['secret'] = $bc['secret'] ?? bin2hex(random_bytes(32)); jwrite(BCONFIG, $bc); }
         $u = q('SELECT * FROM wx_users WHERE email=?', [$email])->fetch();
