@@ -76,6 +76,7 @@
       ".wx-ch-form button.wx-ch-x{width:36px;height:42px;background:transparent!important;border-radius:10px!important}.wx-ch-form button.wx-ch-x svg{fill:none;stroke:#54656f;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;width:21px;height:21px}.wx-ch-form button.wx-ch-x.rec{background:#e11d48!important;width:auto;padding:0 10px!important;color:#fff;font:600 12px/1 inherit}.wx-ch-form button.wx-ch-x.rec svg{display:none}",
       ".wx-m img{display:block;max-width:200px;max-height:200px;border-radius:8px;margin-top:2px}.wx-m audio{display:block;width:210px;max-width:100%;height:36px}.wx-m a.wx-f{color:inherit;font-weight:600}.wx-ch-ty{font-size:12px;color:#667781;font-style:italic;padding:2px 12px;min-height:18px;background:#f6f1e9}",
       ".wx-opt .ic.tg{background:#229ED9}.wx-opt .ic.tg svg{width:20px;height:20px;fill:#fff}.wx-ch-q{display:flex;gap:6px;overflow-x:auto;padding:6px 10px 2px;background:#f6f1e9;scrollbar-width:none}.wx-ch-q::-webkit-scrollbar{display:none}.wx-ch-q button{flex:none;border:1px solid #d9c7ab!important;background:#fff!important;color:#0c1628!important;border-radius:999px!important;padding:6px 12px!important;font:600 12.5px/1.2 inherit;cursor:pointer;min-width:0!important}.wx-ch-q button:hover{border-color:#b8956a!important;background:#fbf6ee!important}.wx-ch-q .tg{background:#229ED9!important;border-color:#229ED9!important;color:#fff!important}",
+      ".wx-wa-btn.m-whatsapp{background:#1f9d55}.wx-wa-btn.m-telegram{background:#229ED9}.wx-wa-btn.m-telegram .wx-st{display:none}",
       /* P40 B: clean launcher, status ring, unread count, teaser, typing dots, times, mobile full screen */
       ".wx-wa-btn .wx-st{position:absolute;right:1px;bottom:1px;width:14px;height:14px;border-radius:50%;border:2.5px solid #fff;background:" + (open ? "#22c55e" : "#94a3b8") + "}.wx-wa-btn .wx-n{position:absolute;top:-4px;right:-4px;min-width:20px;height:20px;padding:0 5px;border-radius:10px;background:#b8956a;color:#0c1628;font:700 11px/20px system-ui,sans-serif;border:2px solid #fff;text-align:center;box-sizing:border-box}",
       ".wx-tease{position:absolute;right:70px;bottom:6px;width:max-content;max-width:240px;background:#fff;color:#0c1628;border-radius:14px 14px 4px 14px;padding:11px 30px 11px 14px;font-size:13.5px;line-height:1.4;box-shadow:0 10px 30px rgba(12,22,40,.18);cursor:pointer;animation:wxwa .3s ease}.wx-tease b{display:block;font-size:13.5px}.wx-tease span{color:#667781;font-size:12.5px}.wx-tease button{position:absolute;top:4px;right:4px;border:0!important;background:none!important;color:#94a3b8!important;font-size:17px;line-height:1;cursor:pointer;padding:4px!important;min-width:0!important}",
@@ -89,7 +90,14 @@
     var waGlyph = '<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 3C9.4 3 4 8.4 4 15c0 2.4.7 4.6 2 6.5L4 29l7.7-2c1.8 1 3.9 1.6 6.1 1.6h.2c6.6 0 12-5.4 12-12S22.6 3 16 3zm0 21.8c-1.9 0-3.7-.5-5.3-1.5l-.4-.2-4.6 1.2 1.2-4.4-.3-.4c-1-1.6-1.6-3.5-1.6-5.5 0-5.5 4.5-10 10-10s10 4.5 10 10-4.5 10.8-9 10.8zm5.5-7.5c-.3-.2-1.8-.9-2-1-.3-.1-.5-.2-.7.2-.2.3-.8 1-.9 1.2-.2.2-.3.2-.6.1-.3-.2-1.3-.5-2.4-1.5-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.5.1-.6l.4-.5c.2-.2.2-.3.3-.5.1-.2 0-.4 0-.5l-.9-2.2c-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.2.2 2.1 3.2 5.1 4.5.7.3 1.3.5 1.7.6.7.2 1.4.2 1.9.1.6-.1 1.8-.7 2-1.4.3-.7.3-1.3.2-1.4-.1-.2-.3-.3-.6-.4z"/></svg>';
     var sendGlyph = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 20l18-8L3 4v6l12 2-12 2v6z"/></svg>';
 
-    var wrap = el("div", "wx-wa"), btn = el("button", "wx-wa-btn", '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-4.9A8 8 0 1 1 21 12Z"/><path d="M8.5 11h.01M12 11h.01M15.5 11h.01"/></svg><span class="wx-st" aria-hidden="true"></span>');
+    var MODE = "chat", SITE_TG = "", SITE_TGBOT = false;
+    var ICONS = {
+      chat: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6.5A2.5 2.5 0 0 1 6.5 4h11A2.5 2.5 0 0 1 20 6.5v7a2.5 2.5 0 0 1-2.5 2.5H10l-4.2 3.4c-.5.4-1.3 0-1.3-.6V16A2.5 2.5 0 0 1 4 13.5Z"/><path d="M8.5 10h.01M12 10h.01M15.5 10h.01" stroke-width="2.4"/></svg>',
+      whatsapp: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11.6a8 8 0 0 1-11.8 7L4 20l1.4-4.1A8 8 0 1 1 20 11.6Z"/><path d="M9 8.6c.2-.5.6-.6.9-.6h.5c.2 0 .4.1.5.4l.7 1.6c.1.2 0 .5-.1.6l-.5.6c.6 1.2 1.6 2.1 2.8 2.7l.6-.6c.2-.2.4-.2.6-.1l1.6.7c.2.1.3.3.3.5v.5c0 .4-.2.7-.6.9-.6.3-1.3.4-2 .2A8 8 0 0 1 9 10.6c-.2-.7-.2-1.4 0-2Z" stroke-width="1.3"/></svg>',
+      telegram: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 4.5 3.6 11.3c-.8.3-.8 1.4 0 1.7l4.2 1.4 1.6 5c.2.7 1.1.9 1.6.4l2.4-2.3 4.3 3.2c.6.4 1.4.1 1.6-.6L22 5.6c.2-.8-.5-1.4-1-1.1Z"/><path d="m8 14.4 9.5-6.6-6.9 7.4"/></svg>'
+    };
+    try { var m0 = sessionStorage.getItem("wxMode"); if (m0) MODE = m0; } catch (x) {}
+    var wrap = el("div", "wx-wa"), btn = el("button", "wx-wa-btn m-" + MODE, (ICONS[MODE] || ICONS.chat) + '<span class="wx-st" aria-hidden="true"></span>');
     btn.type = "button"; btn.setAttribute("aria-label", "Chat with Woodex"); btn.setAttribute("aria-expanded", "false"); wrap.appendChild(btn);
 
     var panel = el("div", "wx-wa-panel"); panel.setAttribute("role", "dialog"); panel.setAttribute("aria-label", "Chat with Woodex");
@@ -133,8 +141,9 @@
     try { CH.joined = JSON.parse(localStorage.getItem("wxJoined") || "{}") || {}; } catch (e) {}
     try { var sv = JSON.parse(localStorage.getItem("wxChat") || "null"); if (sv && sv.id && sv.tok) { CH.id = sv.id; CH.tok = sv.tok; } } catch (e) {}
     function show(v) {
+      if (MODE !== "both" && v === "home") v = MODE === "whatsapp" ? "wa" : "chat";
       view = v; ["home", "chat", "wa"].forEach(function (k) { panel.querySelector(".v-" + k).hidden = k !== v; });
-      $(".wx-back").hidden = v === "home";
+      $(".wx-back").hidden = v === "home" || MODE !== "both";
       if (v === "chat") { if (!CH.last && CH.id) poll(); else if (!CH.id) draw([{ who: "ai", name: "Woodex assistant", text: CH.greet }], true); setTimeout(function () { $(".wx-ch-form textarea").focus(); }, 60); startPoll(); }
       if (v === "wa") setTimeout(function () { $("#wx-wa-n").focus(); }, 50);
     }
@@ -170,7 +179,7 @@
       var me = el("div", "wx-m me"); me.textContent = t; L.appendChild(me);
       var ph = (t.replace(/[\s-]/g, "").match(/(\+?92|0)3\d{9}/) || [])[0], reply;
       if (ph && !FB.saved) { FB.saved = true; post({ form: "whatsapp", name: "Website chat visitor", phone: ph, service: "Live chat", message: "Live chat (offline): " + t, page: location.pathname });
-        reply = "Thank you! We have your number " + ph + ". A Woodex designer will message you on WhatsApp " + (open ? "shortly" : "from 10:00 am (Mon–Sat)") + ". Anything you would like us to know about your space?"; }
+        reply = "Thank you! We have your number " + ph + ". A Woodex designer will message you on WhatsApp " + (open ? "shortly" : "from 9:30 am (Mon–Sat)") + ". Anything you would like us to know about your space?"; }
       else if (FB.saved) reply = "Noted, thank you. Our team will continue with you on WhatsApp soon.";
       else { reply = FB.asked ? "To connect you with a designer, please type your WhatsApp number (for example 0300 1234567)." : "Thank you for your message! Please share your WhatsApp number and a Woodex designer will join you shortly."; FB.asked = true; }
       var d = el("div", "wx-m them"); d.innerHTML = "<small>Woodex assistant</small>" + esc(reply); L.appendChild(d); L.scrollTop = L.scrollHeight;
@@ -229,13 +238,25 @@
       box.addEventListener("click", function (e) { var b = e.target.closest("button"); if (!b) return; if (b.hasAttribute("data-qtg")) return goTg(); var x = q[+b.dataset.q]; if (!x) return; ta.value = x.text || x.label; $(".wx-ch-form").requestSubmit ? $(".wx-ch-form").requestSubmit() : $(".wx-ch-form button[type=submit]").click(); });
     }
     chatApi({ action: "cfg" }).then(function (r) {
+      if (r && r.ok && r.site) setMode(r.site);
       if (r && r.ok && r.tg && r.tg.bot) { CH.tg = r.tg; var t = panel.querySelector("[data-tg]"); t.hidden = false; if (r.tg.waDown) panel.querySelector(".wx-tg-s").textContent = "WhatsApp is busy right now: reach us on Telegram"; t.addEventListener("click", goTg); }
       if (r && r.ok && r.on) quick(r);
       if (r && r.ok && r.assistant && r.assistant.name) { CH.asst = r.assistant.name + (r.assistant.role ? " · " + r.assistant.role : ""); $("#wx-nm").textContent = r.assistant.name + " · Woodex Interior"; $(".wx-wa-av").textContent = r.assistant.name.charAt(0).toUpperCase(); }
       if (r && r.ok && r.on && !CH.id) setTimeout(function () { tease(false, r.assistant && r.assistant.name); }, 7000);
       CH.on = !!(r && r.ok && r.on); CH.greet = (r && r.greeting) || CH.greet; show(CH.on && CH.id ? "chat" : "home"); if (CH.on && CH.id) { poll(); startPoll(); }
     }).catch(function () { show("home"); });
+    // One contact button, chosen in Admin → Telegram → Website contact button: chat | whatsapp | telegram
+    function setMode(st) {
+      MODE = st.mode || "chat"; try { sessionStorage.setItem("wxMode", MODE); } catch (x) {}
+      if (st.tgLink) { SITE_TG = st.tgLink; SITE_TGBOT = !!st.tgBot; }
+      btn.querySelector("svg").outerHTML = ICONS[MODE] || ICONS.chat; btn.className = "wx-wa-btn m-" + MODE;
+      btn.setAttribute("aria-label", MODE === "whatsapp" ? "Message Woodex on WhatsApp" : MODE === "telegram" ? "Message Woodex on Telegram" : "Chat with Woodex");
+      if (MODE !== "both") show(MODE === "whatsapp" ? "wa" : "chat");
+    }
+    function openTg() { var w = window.open("about:blank", "_blank"); var fin = function (u) { if (w) w.location = u; else location.href = u; };
+      if (!SITE_TGBOT || !CH.id) return fin(SITE_TG); chatApi({ action: "tglink", chat_id: CH.id, token: CH.tok }).then(function (r) { fin(r && r.ok ? r.link : SITE_TG); }).catch(function () { fin(SITE_TG); }); }
     function toggle(force) {
+      if (MODE === "telegram" && force !== false) { tease(true); return openTg(); }
       var o = typeof force === "boolean" ? force : !panel.classList.contains("open");
       panel.classList.toggle("open", o); btn.setAttribute("aria-expanded", String(o));
       var dot = btn.querySelector(".wx-n"); if (o && dot) { dot.remove(); CH.unread = 0; btn.setAttribute("aria-label", "Chat with Woodex"); } if (o) tease(true);

@@ -314,7 +314,7 @@
 (function () {
   if (location.pathname.indexOf("/admin") === 0) return;
   var s = document.createElement("script");
-  s.src = "/assets/js/whatsapp-widget.js?v=p40b";
+  s.src = "/assets/js/whatsapp-widget.js?v=p41a";
   s.defer = true;
   document.head.appendChild(s);
 })();
