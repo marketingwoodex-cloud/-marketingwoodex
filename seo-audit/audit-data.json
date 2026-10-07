@@ -1,6 +1,6 @@
 {
  "summary": {
-  "health_score": 95,
+  "health_score": 96,
   "pages": 107,
   "business_type": "Local service (interior design & build, Lahore HQ)"
  },
@@ -89,7 +89,7 @@
   },
   {
    "name": "Content & E-E-A-T",
-   "score": 82,
+   "score": 88,
    "findings": [
     {
      "severity": "High",
@@ -122,21 +122,6 @@
       "/insights/interior-design-cost-pakistan/",
       "/insights/interior-designer-cost-lahore-2026/",
       "/insights/interior-designer-vs-contractor-lahore/"
-     ]
-    },
-    {
-     "severity": "High",
-     "issue": "Near-duplicate city pages (doorway-page risk)",
-     "count": 8,
-     "pages": [
-      "/bahawalpur/ (64% similar to /karachi/)",
-      "/faisalabad/ (61% similar to /karachi/)",
-      "/gujranwala/ (64% similar to /karachi/)",
-      "/islamabad/ (61% similar to /karachi/)",
-      "/multan/ (63% similar to /karachi/)",
-      "/quetta/ (63% similar to /karachi/)",
-      "/rawalpindi/ (62% similar to /karachi/)",
-      "/sialkot/ (63% similar to /karachi/)"
      ]
     }
    ]
@@ -204,7 +189,7 @@
    "findings": [
     {
      "severity": "Info",
-     "issue": "Schema types found: Question\u00d7499, Answer\u00d7499, ListItem\u00d7340, Service\u00d7158, LocalBusiness\u00d7149, BreadcrumbList\u00d7107, FAQPage\u00d795, PostalAddress\u00d787, OpeningHoursSpecification\u00d787, Offer\u00d776, City\u00d765, Organization\u00d763, BlogPosting\u00d728, ImageObject\u00d720, OfferCatalog\u00d715, CreativeWork\u00d76, WebSite\u00d72, AdministrativeArea\u00d72, Country\u00d72, CollectionPage\u00d72, ItemList\u00d72, Person\u00d71, AboutPage\u00d71, ContactPage\u00d71, WebPage\u00d71",
+     "issue": "Schema types found: Question\u00d7521, Answer\u00d7521, ListItem\u00d7340, Service\u00d7158, LocalBusiness\u00d7149, BreadcrumbList\u00d7107, FAQPage\u00d795, PostalAddress\u00d787, OpeningHoursSpecification\u00d787, Offer\u00d776, City\u00d765, Organization\u00d763, BlogPosting\u00d728, ImageObject\u00d720, OfferCatalog\u00d715, CreativeWork\u00d76, WebSite\u00d72, AdministrativeArea\u00d72, Country\u00d72, CollectionPage\u00d72, ItemList\u00d72, Person\u00d71, AboutPage\u00d71, ContactPage\u00d71, WebPage\u00d71",
      "count": 0,
      "pages": []
     }

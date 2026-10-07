@@ -1,5 +1,5 @@
 # Page audit: /office-buildings-design/
-Type **service** · score **95/100** · 897 words · 4 inbound links
+Type **service** · score **95/100** · 905 words · 4 inbound links
 
 ## Target keywords
 - **Primary:** office building design lahore
@@ -16,7 +16,7 @@ Type **service** · score **95/100** · 897 words · 4 inbound links
 ## Section blocks (H2 outline)
 1. What the architecture covers
 2. From brief to buildable drawings
-3. A clear range before the proposal
+3. What you get with Office Building Design
 4. Carry the idea into the interior
 5. Office Buildings Design FAQs
 6. Related Architecture Pages
@@ -25,7 +25,7 @@ Type **service** · score **95/100** · 897 words · 4 inbound links
 9. One accountable team from brief to handover
 
 ## Internal links
-- Outbound (11): /, /architecture/, /contact/, /fit-out/, /healthcare-facilities-design/, /insights/office-fit-out-cost-pakistan-2026/, /insights/office-interior-guide/, /insights/office-layout-mistakes-productivity/, /interior-design/, /restaurant-cafe-building-design/, /retail-buildings-design/
+- Outbound (12): /, /architecture/, /book-a-visit/, /contact/, /fit-out/, /healthcare-facilities-design/, /insights/office-fit-out-cost-pakistan-2026/, /insights/office-interior-guide/, /insights/office-layout-mistakes-productivity/, /interior-design/, /restaurant-cafe-building-design/, /retail-buildings-design/
 
 ## Schema
 - Present: Answer, BreadcrumbList, City, FAQPage, ListItem, LocalBusiness, OpeningHoursSpecification, PostalAddress, Question, Service
@@ -41,6 +41,6 @@ Type **service** · score **95/100** · 897 words · 4 inbound links
 
 ## Claims needing the owner's word
 - 🔴 **Price / PKR figure:** …e in. Get a Free Consultation PKR 1M–3M Indicative design fee 8…
-- 🔴 **Price / PKR figure:** …needed. Indicative design fee PKR 1M–3M The final proposal refle…
 - 🔴 **Price / PKR figure:** …ndicative architecture fee is PKR 1M–3M, depending on area, floo…
 - 🔴 **Timeline / response promise:** …by phone or WhatsApp, usually within one working day. Name Phone / WhatsApp P…
+- 🔴 **Absolute process claim:** …t with Office Building Design Every project is scoped after a site visit or brief, then quoted in writing so you know…

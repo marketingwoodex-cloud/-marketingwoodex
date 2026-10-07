@@ -1,5 +1,5 @@
 # Page audit: /commercial-interior/
-Type **service** · score **100/100** · 942 words · 12 inbound links
+Type **service** · score **100/100** · 971 words · 12 inbound links
 
 ## Target keywords
 - **Primary:** commercial interior design in lahore
@@ -16,7 +16,7 @@ Type **service** · score **100/100** · 942 words · 12 inbound links
 ## Section blocks (H2 outline)
 1. What We Design
 2. The Commercial Design Process
-3. Commercial Pricing
+3. What you get with Commercial Interior Design
 4. Commercial Interior FAQs
 5. Related Services
 6. Read before you plan
@@ -24,7 +24,7 @@ Type **service** · score **100/100** · 942 words · 12 inbound links
 8. One accountable team from brief to handover
 
 ## Internal links
-- Outbound (20): /, /beauty-salon-design/, /cafe-interior-design/, /contact/, /coworking-space-design/, /fit-out/, /gym-design/, /healthcare-design/, /hotel-interior-design/, /insights/office-fit-out-cost-pakistan-2026/, /insights/office-interior-guide/, /insights/office-layout-mistakes-productivity/, /interior-design/, /office-interior-design/, /renovation/, /restaurant-interior-design/, /retail-design/, /shopping-mall-design/, /showroom-design/, /spa-design/
+- Outbound (21): /, /beauty-salon-design/, /book-a-visit/, /cafe-interior-design/, /contact/, /coworking-space-design/, /fit-out/, /gym-design/, /healthcare-design/, /hotel-interior-design/, /insights/office-fit-out-cost-pakistan-2026/, /insights/office-interior-guide/, /insights/office-layout-mistakes-productivity/, /interior-design/, /office-interior-design/, /renovation/, /restaurant-interior-design/, /retail-design/, /shopping-mall-design/, /showroom-design/, /spa-design/
 
 ## Schema
 - Present: Answer, BreadcrumbList, FAQPage, ListItem, LocalBusiness, Offer, OfferCatalog, OpeningHoursSpecification, PostalAddress, Question, Service
@@ -37,11 +37,8 @@ Type **service** · score **100/100** · 942 words · 12 inbound links
 - No link to a real project/case study (Experience)
 
 ## Claims needing the owner's word
-- 🔴 **Price / PKR figure:** …Small fit-design project From PKR 30,000 per room/zone Typical of…
-- 🔴 **Price / PKR figure:** …pical office or retail design PKR 100,000–500,000 Large hospitality or mall…
 - 🔴 **'Free' offer:** …eep the space on brand. Get a Free Consultation WhatsApp Woodex 200+ spaces delivered 10 years expe…
-- 🔴 **'Free' offer:** …sultation and site survey are free. We issue an exact fixed…
-- 🔴 **'Free' offer:** …ce and scope are clear. Get a Free Consultation Small fit-design project From PKR 30,000 per room/z…
 - 🔴 **'Free' offer:** …ine the right starting point. Free first consultation Photoreal 3D before you commit Design, build…
 - 🔴 **Timeline / response promise:** …by phone or WhatsApp, usually within one working day. Name Phone / WhatsApp P…
 - 🔴 **Warranty / guarantee:** …experience 1 year workmanship warranty 4 cities served Commerci…
+- 🔴 **Absolute process claim:** …th Commercial Interior Design Every project is scoped after a site visit or brief, then quoted in writing so you know…

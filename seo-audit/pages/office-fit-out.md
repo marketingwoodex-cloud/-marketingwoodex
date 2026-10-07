@@ -1,5 +1,5 @@
 # Page audit: /office-fit-out/
-Type **service** · score **100/100** · 1415 words · 12 inbound links
+Type **service** · score **100/100** · 1349 words · 12 inbound links
 
 ## Target keywords
 - **Primary:** office fit out lahore
@@ -18,7 +18,7 @@ Type **service** · score **100/100** · 1415 words · 12 inbound links
 2. What Woodex Office Fit-Out Includes
 3. Office Fit-Out Process, Step by Step
 4. Office Fit-Out for Different Business Types
-5. Office Fit-Out Cost, What Influences Price
+5. What you get with Office Fit-Out
 6. Office Fit-Out vs Interior Design vs Turnkey
 7. Office Fit-Out FAQ
 8. Request an Office Fit-Out Quote
@@ -26,7 +26,7 @@ Type **service** · score **100/100** · 1415 words · 12 inbound links
 10. Read before you plan
 
 ## Internal links
-- Outbound (11): /, /3d-visualization/, /contact/, /fit-out/, /healthcare-fit-out/, /insights/office-fit-out-cost-pakistan-2026/, /insights/office-interior-guide/, /insights/office-layout-mistakes-productivity/, /office-fit-out/, /office-interior-design/, /turnkey-design-build/
+- Outbound (12): /, /3d-visualization/, /book-a-visit/, /contact/, /fit-out/, /healthcare-fit-out/, /insights/office-fit-out-cost-pakistan-2026/, /insights/office-interior-guide/, /insights/office-layout-mistakes-productivity/, /office-fit-out/, /office-interior-design/, /turnkey-design-build/
 
 ## Schema
 - Present: Answer, BreadcrumbList, FAQPage, ListItem, LocalBusiness, Offer, OfferCatalog, OpeningHoursSpecification, PostalAddress, Question, Service
@@ -39,9 +39,6 @@ Type **service** · score **100/100** · 1415 words · 12 inbound links
 - No link to a real project/case study (Experience)
 
 ## Claims needing the owner's word
-- 🔴 **Price / PKR figure:** …to 1,000 sq. ft. Small office PKR 800K to 2.5M 1,000 to 2,500 s…
-- 🔴 **Price / PKR figure:** …o 2,500 sq. ft. Medium office PKR 2M to 6M 2,500 to 5,000+ sq…
-- 🔴 **Price / PKR figure:** …o 5,000+ sq. ft. Large office PKR 5M to 15M+ Size Area sets m…
 - 🔴 **Price / PKR figure:** …et Range * Select range Under PKR 1M PKR 1M to 3M PKR 3M to 6…
 - 🔴 **Price / PKR figure:** …3M PKR 3M to 6M PKR 6M to 10M PKR 10M+ Need guidance Anything E…
 - 🔴 **Timeline / response promise:** …to move in. Typical timeline: 3 to 6 weeks for a 1,000 to 3,000 sq.…
@@ -51,3 +48,6 @@ Type **service** · score **100/100** · 1415 words · 12 inbound links
 - 🔴 **Warranty / guarantee:** …Experience Fixed-Price 1-Year Warranty From shell to working of…
 - 🔴 **Warranty / guarantee:** …, one project manager and one warranty. Need design first? Expl…
 - 🔴 **Warranty / guarantee:** …equencing, quality checks and warranty. 01 / 12 A clear route t…
+- 🔴 **Warranty / guarantee:** …ems you source yourself. What warranty do you provide? + The ag…
+- 🔴 **Warranty / guarantee:** …carries a 1-year workmanship warranty. Do you handle building…
+- 🔴 **Absolute process claim:** …t you get with Office Fit-Out Every project is scoped after a site visit or brief, then quoted in writing so you know…

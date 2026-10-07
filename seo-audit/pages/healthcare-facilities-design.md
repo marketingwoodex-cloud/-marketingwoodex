@@ -1,5 +1,5 @@
 # Page audit: /healthcare-facilities-design/
-Type **service** · score **95/100** · 872 words · 4 inbound links
+Type **service** · score **95/100** · 876 words · 4 inbound links
 
 ## Target keywords
 - **Primary:** healthcare facility design lahore
@@ -16,7 +16,7 @@ Type **service** · score **95/100** · 872 words · 4 inbound links
 ## Section blocks (H2 outline)
 1. What the architecture covers
 2. From brief to buildable drawings
-3. A clear range before the proposal
+3. What you get with Healthcare Facility Design
 4. Carry the idea into the interior
 5. Healthcare Facilities Design FAQs
 6. Related Architecture Pages
@@ -25,7 +25,7 @@ Type **service** · score **95/100** · 872 words · 4 inbound links
 9. One accountable team from brief to handover
 
 ## Internal links
-- Outbound (11): /, /5-marla-house-design/, /architecture/, /contact/, /educational-buildings-design/, /fit-out/, /insights/design-process-explained/, /insights/materials-that-survive-lahore-climate/, /insights/office-layout-mistakes-productivity/, /interior-design/, /master-planning/
+- Outbound (12): /, /5-marla-house-design/, /architecture/, /book-a-visit/, /contact/, /educational-buildings-design/, /fit-out/, /insights/design-process-explained/, /insights/materials-that-survive-lahore-climate/, /insights/office-layout-mistakes-productivity/, /interior-design/, /master-planning/
 
 ## Schema
 - Present: Answer, BreadcrumbList, City, FAQPage, ListItem, LocalBusiness, OpeningHoursSpecification, PostalAddress, Question, Service
@@ -41,7 +41,7 @@ Type **service** · score **95/100** · 872 words · 4 inbound links
 
 ## Claims needing the owner's word
 - 🔴 **Price / PKR figure:** …sion. Get a Free Consultation PKR 1M–3M Indicative design fee 8…
-- 🔴 **Price / PKR figure:** …needed. Indicative design fee PKR 1M–3M The final proposal refle…
 - 🔴 **Price / PKR figure:** …ndicative architecture fee is PKR 1M–3M, depending on department…
 - 🔴 **Timeline / response promise:** …by phone or WhatsApp, usually within one working day. Name Phone / WhatsApp P…
+- 🔴 **Absolute process claim:** …th Healthcare Facility Design Every project is scoped after a site visit or brief, then quoted in writing so you know…
 - 🔴 **Superlative:** …Survive Lahore's Climate The best flooring for Lahore's climate and other materials that…

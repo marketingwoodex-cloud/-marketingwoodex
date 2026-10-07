@@ -1,5 +1,5 @@
 # Page audit: /restaurant-fit-out/
-Type **service** · score **100/100** · 868 words · 7 inbound links
+Type **service** · score **100/100** · 878 words · 7 inbound links
 
 ## Target keywords
 - **Primary:** restaurant fit out lahore
@@ -16,7 +16,7 @@ Type **service** · score **100/100** · 868 words · 7 inbound links
 ## Section blocks (H2 outline)
 1. What Restaurant Fit-Out includes
 2. 6 steps from brief to handover
-3. A practical range before the survey
+3. What you get with Restaurant & Café Fit-Out
 4. One standard from the drawings to the last detail
 5. Restaurant Fit-Out FAQs
 6. Related Fit-Out Pages
@@ -25,7 +25,7 @@ Type **service** · score **100/100** · 868 words · 7 inbound links
 9. One accountable team from brief to handover
 
 ## Internal links
-- Outbound (12): /, /commercial-fit-out/, /contact/, /fit-out/, /healthcare-fit-out/, /insights/lighting-design-layers-explained/, /insights/restaurant-cafe-interior-cost-lahore/, /insights/restaurant-planning-guide/, /office-fit-out/, /pharmacy-fit-out/, /retail-fit-out/, /turnkey-design-build/
+- Outbound (13): /, /book-a-visit/, /commercial-fit-out/, /contact/, /fit-out/, /healthcare-fit-out/, /insights/lighting-design-layers-explained/, /insights/restaurant-cafe-interior-cost-lahore/, /insights/restaurant-planning-guide/, /office-fit-out/, /pharmacy-fit-out/, /retail-fit-out/, /turnkey-design-build/
 
 ## Schema
 - Present: Answer, BreadcrumbList, City, FAQPage, ListItem, LocalBusiness, OpeningHoursSpecification, PostalAddress, Question, Service
@@ -39,11 +39,8 @@ Type **service** · score **100/100** · 868 words · 7 inbound links
 
 ## Claims needing the owner's word
 - 🔴 **Price / PKR figure:** …ient, task and decorative layers. 04 Durable surfaces Anti-sl…
-- 🔴 **Price / PKR figure:** …fication approval. Basic Café PKR 7,000–9,000 / sq. ft. PKR 14M–18M Mid…
-- 🔴 **Price / PKR figure:** …R 14M–18M Mid-Spec Restaurant PKR 9,000–12,000 / sq. ft. PKR 18M–24M Pre…
-- 🔴 **Price / PKR figure:** …KR 18M–24M Premium Restaurant PKR 12,000–16,000 / sq. ft. PKR 24M–32M Exa…
 - 🔴 **Price / PKR figure:** …q. ft. restaurant ranges from PKR 14M to 32M, depending on fin…
 - 🔴 **'Free' offer:** …ets and cloud kitchens. Get a Free Consultation Kitchen workflow, dining atmosphere and compliant s…
-- 🔴 **'Free' offer:** …coordinated quotation. Get a Free Consultation Scope, materials and labour set out in one BOQ Why…
 - 🔴 **Timeline / response promise:** …it take? + A café often takes 6–8 weeks. A full restaurant commo…
 - 🔴 **Timeline / response promise:** …by phone or WhatsApp, usually within one working day. Name Phone / WhatsApp P…
+- 🔴 **Absolute process claim:** …ith Restaurant & Café Fit-Out Every project is scoped after a site visit or brief, then quoted in writing so you know…

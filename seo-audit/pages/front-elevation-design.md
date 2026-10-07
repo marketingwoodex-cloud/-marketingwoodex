@@ -1,5 +1,5 @@
 # Page audit: /front-elevation-design/
-Type **service** · score **100/100** · 908 words · 5 inbound links
+Type **service** · score **100/100** · 914 words · 5 inbound links
 
 ## Target keywords
 - **Primary:** front elevation design lahore
@@ -16,7 +16,7 @@ Type **service** · score **100/100** · 908 words · 5 inbound links
 ## Section blocks (H2 outline)
 1. What the architecture covers
 2. From brief to buildable drawings
-3. A clear range before the proposal
+3. What you get with Front Elevation Design
 4. Carry the idea into the interior
 5. Front Elevation Design FAQs
 6. Related Architecture Pages
@@ -25,7 +25,7 @@ Type **service** · score **100/100** · 908 words · 5 inbound links
 9. One accountable team from brief to handover
 
 ## Internal links
-- Outbound (11): /, /architecture/, /contact/, /fit-out/, /insights/1-kanal-house-interior-cost-lahore/, /insights/5-marla-house-renovation-cost-lahore/, /insights/architect-fee-lahore-2026/, /interior-design/, /office-buildings-design/, /restaurant-cafe-building-design/, /retail-buildings-design/
+- Outbound (12): /, /architecture/, /book-a-visit/, /contact/, /fit-out/, /insights/1-kanal-house-interior-cost-lahore/, /insights/5-marla-house-renovation-cost-lahore/, /insights/architect-fee-lahore-2026/, /interior-design/, /office-buildings-design/, /restaurant-cafe-building-design/, /retail-buildings-design/
 
 ## Schema
 - Present: Answer, BreadcrumbList, City, FAQPage, ListItem, LocalBusiness, OpeningHoursSpecification, PostalAddress, Question, Service
@@ -39,6 +39,6 @@ Type **service** · score **100/100** · 908 words · 5 inbound links
 
 ## Claims needing the owner's word
 - 🔴 **Price / PKR figure:** …cade. Get a Free Consultation PKR 50K–150K Indicative design fee 8…
-- 🔴 **Price / PKR figure:** …needed. Indicative design fee PKR 50K–150K The final fee reflects f…
 - 🔴 **Price / PKR figure:** …cost? + The indicative fee is PKR 50K–150K, depending on frontage,…
 - 🔴 **Timeline / response promise:** …by phone or WhatsApp, usually within one working day. Name Phone / WhatsApp P…
+- 🔴 **Absolute process claim:** …t with Front Elevation Design Every project is scoped after a site visit or brief, then quoted in writing so you know…

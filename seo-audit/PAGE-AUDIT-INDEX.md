@@ -33,23 +33,23 @@
 ## Claims needing the owner's word (count of occurrences)
 | Claim type | Count |
 |---|---|
-| Price / PKR figure | 183 |
-| 'Free' offer | 136 |
 | Timeline / response promise | 95 |
-| Superlative | 48 |
-| Warranty / guarantee | 19 |
-| Absolute process claim | 7 |
+| 'Free' offer | 87 |
+| Price / PKR figure | 81 |
+| Absolute process claim | 59 |
+| Superlative | 54 |
+| Warranty / guarantee | 23 |
 | Volume claim | 1 |
 
 ## All pages
 | Page | Type | Score | Words | Inbound | Issues | Claims |
 |---|---|---|---|---|---|---|
-| [/restaurant-cafe-building-design/](pages/restaurant-cafe-building-design.md) | service | 83 | 907 | 4 | 2 | 4 |
-| [/restaurant-cafe-renovation/](pages/restaurant-cafe-renovation.md) | service | 83 | 837 | 8 | 2 | 5 |
-| [/retail-showroom-renovation/](pages/retail-showroom-renovation.md) | service | 83 | 846 | 7 | 2 | 5 |
+| [/restaurant-cafe-building-design/](pages/restaurant-cafe-building-design.md) | service | 83 | 911 | 4 | 2 | 4 |
+| [/restaurant-cafe-renovation/](pages/restaurant-cafe-renovation.md) | service | 83 | 886 | 8 | 2 | 5 |
+| [/retail-showroom-renovation/](pages/retail-showroom-renovation.md) | service | 83 | 896 | 7 | 2 | 5 |
 | [/bahawalpur/](pages/bahawalpur.md) | city | 88 | 625 | 1 | 3 | 0 |
 | [/karachi/](pages/karachi.md) | city | 88 | 654 | 2 | 3 | 0 |
-| [/turnkey-design-build/](pages/turnkey-design-build.md) | pillar | 88 | 956 | 8 | 1 | 10 |
+| [/turnkey-design-build/](pages/turnkey-design-build.md) | pillar | 88 | 967 | 8 | 1 | 7 |
 | [/insights/](pages/insights.md) | hub | 90 | 841 | 0 | 2 | 0 |
 | [/insights/false-ceiling-cost-lahore-2026/](pages/insights__false-ceiling-cost-lahore-2026.md) | article | 90 | 582 | 2 | 2 | 1 |
 | [/insights/materials-that-survive-lahore-climate/](pages/insights__materials-that-survive-lahore-climate.md) | article | 90 | 592 | 26 | 2 | 5 |
@@ -70,47 +70,47 @@
 | [/quetta/](pages/quetta.md) | city | 93 | 625 | 3 | 2 | 0 |
 | [/rawalpindi/](pages/rawalpindi.md) | city | 93 | 629 | 4 | 2 | 0 |
 | [/sialkot/](pages/sialkot.md) | city | 93 | 629 | 3 | 2 | 0 |
-| [/book-a-visit/](pages/book-a-visit.md) | utility | 95 | 225 | 4 | 1 | 2 |
-| [/educational-buildings-design/](pages/educational-buildings-design.md) | service | 95 | 902 | 4 | 1 | 4 |
+| [/book-a-visit/](pages/book-a-visit.md) | utility | 95 | 225 | 57 | 1 | 2 |
+| [/educational-buildings-design/](pages/educational-buildings-design.md) | service | 95 | 911 | 4 | 1 | 4 |
 | [/estimator/](pages/estimator.md) | utility | 95 | 277 | 8 | 1 | 1 |
-| [/healthcare-design/](pages/healthcare-design.md) | service | 95 | 883 | 2 | 1 | 9 |
-| [/healthcare-facilities-design/](pages/healthcare-facilities-design.md) | service | 95 | 872 | 4 | 1 | 5 |
+| [/healthcare-design/](pages/healthcare-design.md) | service | 95 | 910 | 2 | 1 | 6 |
+| [/healthcare-facilities-design/](pages/healthcare-facilities-design.md) | service | 95 | 876 | 4 | 1 | 5 |
 | [/insights/3d-visualization-guide/](pages/insights__3d-visualization-guide.md) | article | 95 | 715 | 7 | 1 | 3 |
 | [/insights/apartment-small-space-planning-lahore/](pages/insights__apartment-small-space-planning-lahore.md) | article | 95 | 571 | 10 | 1 | 3 |
 | [/insights/design-process-explained/](pages/insights__design-process-explained.md) | article | 95 | 790 | 28 | 1 | 3 |
 | [/insights/dha-vs-bahria-town-interior-cost-lahore/](pages/insights__dha-vs-bahria-town-interior-cost-lahore.md) | article | 95 | 632 | 3 | 1 | 1 |
 | [/insights/lighting-design-layers-explained/](pages/insights__lighting-design-layers-explained.md) | article | 95 | 565 | 31 | 1 | 2 |
-| [/interior-design/](pages/interior-design.md) | pillar | 95 | 1331 | 64 | 1 | 12 |
-| [/interior-home-refurbishment/](pages/interior-home-refurbishment.md) | service | 95 | 1073 | 1 | 1 | 10 |
-| [/office-buildings-design/](pages/office-buildings-design.md) | service | 95 | 897 | 4 | 1 | 4 |
+| [/interior-design/](pages/interior-design.md) | pillar | 95 | 1326 | 64 | 1 | 8 |
+| [/interior-home-refurbishment/](pages/interior-home-refurbishment.md) | service | 95 | 1106 | 1 | 1 | 7 |
+| [/office-buildings-design/](pages/office-buildings-design.md) | service | 95 | 905 | 4 | 1 | 4 |
 | [/projects/](pages/projects.md) | projects-hub | 95 | 291 | 4 | 1 | 0 |
 | [/projects/clinic-fit-out/](pages/projects__clinic-fit-out.md) | case-study | 95 | 422 | 4 | 1 | 0 |
 | [/projects/courtyard-house/](pages/projects__courtyard-house.md) | case-study | 95 | 444 | 4 | 1 | 0 |
 | [/projects/retail-corner/](pages/projects__retail-corner.md) | case-study | 95 | 439 | 5 | 1 | 0 |
-| [/residential-basement-design/](pages/residential-basement-design.md) | service | 95 | 982 | 2 | 1 | 12 |
-| [/residential-dining-room-design/](pages/residential-dining-room-design.md) | service | 95 | 902 | 2 | 1 | 12 |
-| [/retail-buildings-design/](pages/retail-buildings-design.md) | service | 95 | 884 | 4 | 1 | 6 |
-| [/specialized-renovation-services/](pages/specialized-renovation-services.md) | service | 95 | 864 | 7 | 1 | 5 |
-| [/3d-visualization/](pages/3d-visualization.md) | pillar | 98 | 1594 | 29 | 1 | 11 |
-| [/1-kanal-house-design/](pages/1-kanal-house-design.md) | service | 100 | 905 | 6 | 0 | 5 |
-| [/10-marla-house-design/](pages/10-marla-house-design.md) | service | 100 | 911 | 5 | 0 | 5 |
-| [/2-kanal-house-design/](pages/2-kanal-house-design.md) | service | 100 | 924 | 4 | 0 | 5 |
-| [/5-marla-house-design/](pages/5-marla-house-design.md) | service | 100 | 925 | 6 | 0 | 5 |
-| [/architecture/](pages/architecture.md) | pillar | 100 | 1696 | 16 | 0 | 12 |
-| [/beauty-salon-design/](pages/beauty-salon-design.md) | service | 100 | 885 | 3 | 0 | 10 |
-| [/cafe-interior-design/](pages/cafe-interior-design.md) | service | 100 | 890 | 4 | 0 | 7 |
-| [/commercial-fit-out/](pages/commercial-fit-out.md) | service | 100 | 907 | 6 | 0 | 7 |
-| [/commercial-interior/](pages/commercial-interior.md) | service | 100 | 942 | 12 | 0 | 8 |
-| [/commercial-renovation/](pages/commercial-renovation.md) | service | 100 | 845 | 7 | 0 | 5 |
-| [/complete-home-redesign/](pages/complete-home-redesign.md) | service | 100 | 989 | 10 | 0 | 12 |
-| [/coworking-space-design/](pages/coworking-space-design.md) | service | 100 | 924 | 3 | 0 | 8 |
-| [/farmhouse-design/](pages/farmhouse-design.md) | service | 100 | 908 | 4 | 0 | 4 |
-| [/fit-out/](pages/fit-out.md) | pillar | 100 | 911 | 54 | 0 | 4 |
-| [/front-elevation-design/](pages/front-elevation-design.md) | service | 100 | 908 | 5 | 0 | 4 |
-| [/gym-design/](pages/gym-design.md) | service | 100 | 889 | 3 | 0 | 11 |
-| [/healthcare-fit-out/](pages/healthcare-fit-out.md) | service | 100 | 851 | 7 | 0 | 10 |
-| [/healthcare-renovation/](pages/healthcare-renovation.md) | service | 100 | 836 | 8 | 0 | 5 |
-| [/hotel-interior-design/](pages/hotel-interior-design.md) | service | 100 | 886 | 5 | 0 | 8 |
+| [/residential-basement-design/](pages/residential-basement-design.md) | service | 95 | 989 | 2 | 1 | 10 |
+| [/residential-dining-room-design/](pages/residential-dining-room-design.md) | service | 95 | 926 | 2 | 1 | 10 |
+| [/retail-buildings-design/](pages/retail-buildings-design.md) | service | 95 | 891 | 4 | 1 | 6 |
+| [/specialized-renovation-services/](pages/specialized-renovation-services.md) | service | 95 | 908 | 7 | 1 | 4 |
+| [/3d-visualization/](pages/3d-visualization.md) | pillar | 98 | 1614 | 29 | 1 | 10 |
+| [/1-kanal-house-design/](pages/1-kanal-house-design.md) | service | 100 | 913 | 6 | 0 | 5 |
+| [/10-marla-house-design/](pages/10-marla-house-design.md) | service | 100 | 921 | 5 | 0 | 5 |
+| [/2-kanal-house-design/](pages/2-kanal-house-design.md) | service | 100 | 931 | 4 | 0 | 5 |
+| [/5-marla-house-design/](pages/5-marla-house-design.md) | service | 100 | 938 | 6 | 0 | 5 |
+| [/architecture/](pages/architecture.md) | pillar | 100 | 1675 | 16 | 0 | 12 |
+| [/beauty-salon-design/](pages/beauty-salon-design.md) | service | 100 | 912 | 3 | 0 | 7 |
+| [/cafe-interior-design/](pages/cafe-interior-design.md) | service | 100 | 921 | 4 | 0 | 4 |
+| [/commercial-fit-out/](pages/commercial-fit-out.md) | service | 100 | 914 | 6 | 0 | 4 |
+| [/commercial-interior/](pages/commercial-interior.md) | service | 100 | 971 | 12 | 0 | 5 |
+| [/commercial-renovation/](pages/commercial-renovation.md) | service | 100 | 891 | 7 | 0 | 4 |
+| [/complete-home-redesign/](pages/complete-home-redesign.md) | service | 100 | 992 | 10 | 0 | 11 |
+| [/coworking-space-design/](pages/coworking-space-design.md) | service | 100 | 946 | 3 | 0 | 5 |
+| [/farmhouse-design/](pages/farmhouse-design.md) | service | 100 | 916 | 4 | 0 | 4 |
+| [/fit-out/](pages/fit-out.md) | pillar | 100 | 930 | 54 | 0 | 3 |
+| [/front-elevation-design/](pages/front-elevation-design.md) | service | 100 | 914 | 5 | 0 | 4 |
+| [/gym-design/](pages/gym-design.md) | service | 100 | 913 | 3 | 0 | 8 |
+| [/healthcare-fit-out/](pages/healthcare-fit-out.md) | service | 100 | 858 | 7 | 0 | 7 |
+| [/healthcare-renovation/](pages/healthcare-renovation.md) | service | 100 | 883 | 8 | 0 | 5 |
+| [/hotel-interior-design/](pages/hotel-interior-design.md) | service | 100 | 912 | 5 | 0 | 5 |
 | [/insights/1-kanal-house-interior-cost-lahore/](pages/insights__1-kanal-house-interior-cost-lahore.md) | article | 100 | 697 | 13 | 0 | 1 |
 | [/insights/3d-interior-design-cost-pakistan/](pages/insights__3d-interior-design-cost-pakistan.md) | article | 100 | 604 | 3 | 0 | 0 |
 | [/insights/5-marla-house-renovation-cost-lahore/](pages/insights__5-marla-house-renovation-cost-lahore.md) | article | 100 | 615 | 13 | 0 | 0 |
@@ -132,22 +132,22 @@
 | [/insights/retail-shop-interior-guide/](pages/insights__retail-shop-interior-guide.md) | article | 100 | 675 | 15 | 0 | 3 |
 | [/insights/small-space-ideas/](pages/insights__small-space-ideas.md) | article | 100 | 681 | 8 | 0 | 2 |
 | [/insights/wardrobe-design-cost-pakistan-2026/](pages/insights__wardrobe-design-cost-pakistan-2026.md) | article | 100 | 604 | 4 | 0 | 2 |
-| [/kitchen-design/](pages/kitchen-design.md) | service | 100 | 1145 | 9 | 0 | 12 |
-| [/master-planning/](pages/master-planning.md) | service | 100 | 919 | 4 | 0 | 7 |
-| [/office-fit-out/](pages/office-fit-out.md) | service | 100 | 1415 | 12 | 0 | 12 |
-| [/office-interior-design/](pages/office-interior-design.md) | service | 100 | 1077 | 10 | 0 | 9 |
-| [/office-renovation/](pages/office-renovation.md) | service | 100 | 881 | 7 | 0 | 4 |
-| [/pharmacy-fit-out/](pages/pharmacy-fit-out.md) | service | 100 | 824 | 6 | 0 | 10 |
-| [/renovation/](pages/renovation.md) | pillar | 100 | 1469 | 35 | 0 | 6 |
-| [/residential-bedroom-design/](pages/residential-bedroom-design.md) | service | 100 | 870 | 7 | 0 | 12 |
-| [/residential-home-office-design/](pages/residential-home-office-design.md) | service | 100 | 885 | 4 | 0 | 12 |
-| [/residential-kids-room-design/](pages/residential-kids-room-design.md) | service | 100 | 957 | 3 | 0 | 12 |
-| [/residential-living-room-design/](pages/residential-living-room-design.md) | service | 100 | 911 | 3 | 0 | 12 |
-| [/residential-renovation/](pages/residential-renovation.md) | service | 100 | 873 | 12 | 0 | 5 |
-| [/restaurant-fit-out/](pages/restaurant-fit-out.md) | service | 100 | 868 | 7 | 0 | 9 |
-| [/restaurant-interior-design/](pages/restaurant-interior-design.md) | service | 100 | 890 | 5 | 0 | 8 |
-| [/retail-design/](pages/retail-design.md) | service | 100 | 863 | 4 | 0 | 9 |
-| [/retail-fit-out/](pages/retail-fit-out.md) | service | 100 | 859 | 6 | 0 | 9 |
-| [/shopping-mall-design/](pages/shopping-mall-design.md) | service | 100 | 898 | 3 | 0 | 9 |
-| [/showroom-design/](pages/showroom-design.md) | service | 100 | 898 | 5 | 0 | 11 |
-| [/spa-design/](pages/spa-design.md) | service | 100 | 871 | 4 | 0 | 10 |
+| [/kitchen-design/](pages/kitchen-design.md) | service | 100 | 1161 | 9 | 0 | 10 |
+| [/master-planning/](pages/master-planning.md) | service | 100 | 911 | 4 | 0 | 5 |
+| [/office-fit-out/](pages/office-fit-out.md) | service | 100 | 1349 | 12 | 0 | 12 |
+| [/office-interior-design/](pages/office-interior-design.md) | service | 100 | 1115 | 10 | 0 | 7 |
+| [/office-renovation/](pages/office-renovation.md) | service | 100 | 929 | 7 | 0 | 4 |
+| [/pharmacy-fit-out/](pages/pharmacy-fit-out.md) | service | 100 | 831 | 6 | 0 | 7 |
+| [/renovation/](pages/renovation.md) | pillar | 100 | 1511 | 35 | 0 | 5 |
+| [/residential-bedroom-design/](pages/residential-bedroom-design.md) | service | 100 | 892 | 7 | 0 | 9 |
+| [/residential-home-office-design/](pages/residential-home-office-design.md) | service | 100 | 910 | 4 | 0 | 9 |
+| [/residential-kids-room-design/](pages/residential-kids-room-design.md) | service | 100 | 972 | 3 | 0 | 10 |
+| [/residential-living-room-design/](pages/residential-living-room-design.md) | service | 100 | 934 | 3 | 0 | 9 |
+| [/residential-renovation/](pages/residential-renovation.md) | service | 100 | 911 | 12 | 0 | 4 |
+| [/restaurant-fit-out/](pages/restaurant-fit-out.md) | service | 100 | 878 | 7 | 0 | 6 |
+| [/restaurant-interior-design/](pages/restaurant-interior-design.md) | service | 100 | 918 | 5 | 0 | 5 |
+| [/retail-design/](pages/retail-design.md) | service | 100 | 894 | 4 | 0 | 6 |
+| [/retail-fit-out/](pages/retail-fit-out.md) | service | 100 | 869 | 6 | 0 | 6 |
+| [/shopping-mall-design/](pages/shopping-mall-design.md) | service | 100 | 924 | 3 | 0 | 6 |
+| [/showroom-design/](pages/showroom-design.md) | service | 100 | 920 | 5 | 0 | 8 |
+| [/spa-design/](pages/spa-design.md) | service | 100 | 896 | 4 | 0 | 7 |

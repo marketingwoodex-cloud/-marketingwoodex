@@ -1,5 +1,5 @@
 # Page audit: /1-kanal-house-design/
-Type **service** · score **100/100** · 905 words · 6 inbound links
+Type **service** · score **100/100** · 913 words · 6 inbound links
 
 ## Target keywords
 - **Primary:** 1 kanal house design lahore
@@ -16,7 +16,7 @@ Type **service** · score **100/100** · 905 words · 6 inbound links
 ## Section blocks (H2 outline)
 1. What the architecture covers
 2. From brief to buildable drawings
-3. A clear range before the proposal
+3. What you get with 1 Kanal House Design
 4. Carry the idea into the interior
 5. 1 Kanal House Design FAQs
 6. Related Architecture Pages
@@ -25,7 +25,7 @@ Type **service** · score **100/100** · 905 words · 6 inbound links
 9. One accountable team from brief to handover
 
 ## Internal links
-- Outbound (11): /, /2-kanal-house-design/, /architecture/, /contact/, /farmhouse-design/, /fit-out/, /front-elevation-design/, /insights/1-kanal-house-interior-cost-lahore/, /insights/5-marla-house-renovation-cost-lahore/, /insights/architect-fee-lahore-2026/, /interior-design/
+- Outbound (12): /, /2-kanal-house-design/, /architecture/, /book-a-visit/, /contact/, /farmhouse-design/, /fit-out/, /front-elevation-design/, /insights/1-kanal-house-interior-cost-lahore/, /insights/5-marla-house-renovation-cost-lahore/, /insights/architect-fee-lahore-2026/, /interior-design/
 
 ## Schema
 - Present: Answer, BreadcrumbList, City, FAQPage, ListItem, LocalBusiness, OpeningHoursSpecification, PostalAddress, Question, Service
@@ -39,7 +39,7 @@ Type **service** · score **100/100** · 905 words · 6 inbound links
 
 ## Claims needing the owner's word
 - 🔴 **Price / PKR figure:** …idea. Get a Free Consultation PKR 600K–1M Indicative design fee 8…
-- 🔴 **Price / PKR figure:** …needed. Indicative design fee PKR 600K–1M The final proposal refle…
 - 🔴 **Price / PKR figure:** …-Out Explore → Practical answers 1 Kanal House Design FAQs Si…
 - 🔴 **Price / PKR figure:** …ndicative architecture fee is PKR 600K–1M, depending on scope and…
 - 🔴 **Timeline / response promise:** …by phone or WhatsApp, usually within one working day. Name Phone / WhatsApp P…
+- 🔴 **Absolute process claim:** …get with 1 Kanal House Design Every project is scoped after a site visit or brief, then quoted in writing so you know…

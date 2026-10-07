@@ -1,5 +1,5 @@
 # Page audit: /fit-out/
-Type **pillar** · score **100/100** · 911 words · 54 inbound links
+Type **pillar** · score **100/100** · 930 words · 54 inbound links
 
 ## Target keywords
 - **Primary:** fit out lahore
@@ -19,7 +19,7 @@ Type **pillar** · score **100/100** · 911 words · 54 inbound links
 3. Fit-out services for every commercial setting
 4. Six clear steps to handover
 5. Spaces shaped around the operation
-6. Fit-out pricing, without the mystery
+6. What you get with Fit-Out Company
 7. The people and trades move as one team
 8. Plan the build with fewer surprises
 9. Fit-Out FAQ
@@ -27,7 +27,7 @@ Type **pillar** · score **100/100** · 911 words · 54 inbound links
 11. One accountable team from brief to handover
 
 ## Internal links
-- Outbound (11): /, /commercial-fit-out/, /contact/, /healthcare-fit-out/, /insights/design-process-explained/, /insights/interior-design-cost-pakistan/, /office-fit-out/, /pharmacy-fit-out/, /restaurant-fit-out/, /retail-fit-out/, /turnkey-design-build/
+- Outbound (12): /, /book-a-visit/, /commercial-fit-out/, /contact/, /healthcare-fit-out/, /insights/design-process-explained/, /insights/interior-design-cost-pakistan/, /office-fit-out/, /pharmacy-fit-out/, /restaurant-fit-out/, /retail-fit-out/, /turnkey-design-build/
 
 ## Schema
 - Present: Answer, BreadcrumbList, City, FAQPage, ListItem, LocalBusiness, OpeningHoursSpecification, PostalAddress, Question, Service
@@ -40,7 +40,6 @@ Type **pillar** · score **100/100** · 911 words · 54 inbound links
 - No link to a real project/case study (Experience)
 
 ## Claims needing the owner's word
-- 🔴 **Price / PKR figure:** …ffice Fit-Out · 1,000 sq. ft. PKR 1.5M to 3.5M Commercial Fi…
-- 🔴 **Price / PKR figure:** …rcial Fit-Out · 1,000 sq. ft. PKR 2M to 4.5M Retail Fit-Out ·…
 - 🔴 **Price / PKR figure:** …dget Range Select range Under PKR 1M PKR 1M to 3M PKR 3M to 6…
 - 🔴 **Price / PKR figure:** …3M PKR 3M to 6M PKR 6M to 10M PKR 10M+ Need guidance Project De…
+- 🔴 **Absolute process claim:** …you get with Fit-Out Company Every project is scoped after a site visit or brief, then quoted in writing so you know…

@@ -1,5 +1,5 @@
 # Page audit: /restaurant-cafe-renovation/
-Type **service** · score **83/100** · 837 words · 8 inbound links
+Type **service** · score **83/100** · 886 words · 8 inbound links
 
 ## Target keywords
 - **Primary:** restaurant and café renovation lahore
@@ -16,7 +16,7 @@ Type **service** · score **83/100** · 837 words · 8 inbound links
 ## Section blocks (H2 outline)
 1. What the scope can include
 2. A process shaped for restaurant & café renovation
-3. Indicative renovation pricing
+3. What you get with Restaurant & Café Renovation
 4. Choose the right starting point
 5. Restaurant & Café Renovation FAQs
 6. Explore related renovation sectors
@@ -25,7 +25,7 @@ Type **service** · score **83/100** · 837 words · 8 inbound links
 9. One accountable team from brief to handover
 
 ## Internal links
-- Outbound (14): /, /commercial-renovation/, /contact/, /fit-out/, /healthcare-renovation/, /insights/lighting-design-layers-explained/, /insights/restaurant-cafe-interior-cost-lahore/, /insights/restaurant-planning-guide/, /interior-design/, /office-renovation/, /renovation/, /residential-renovation/, /retail-showroom-renovation/, /specialized-renovation-services/
+- Outbound (15): /, /book-a-visit/, /commercial-renovation/, /contact/, /fit-out/, /healthcare-renovation/, /insights/lighting-design-layers-explained/, /insights/restaurant-cafe-interior-cost-lahore/, /insights/restaurant-planning-guide/, /interior-design/, /office-renovation/, /renovation/, /residential-renovation/, /retail-showroom-renovation/, /specialized-renovation-services/
 
 ## Schema
 - Present: Answer, BreadcrumbList, City, FAQPage, ListItem, LocalBusiness, OpeningHoursSpecification, PostalAddress, Question, Service
@@ -44,7 +44,7 @@ Type **service** · score **83/100** · 837 words · 8 inbound links
 
 ## Claims needing the owner's word
 - 🔴 **Price / PKR figure:** …or disruptive tasks out of hours. 05 Commission and reopen Te…
-- 🔴 **Price / PKR figure:** …BOQ 2,000 sq. ft. restaurant PKR 3M–6M+ 500–1,000 sq. ft. retail…
 - 🔴 **'Free' offer:** …d out-of-hours windows. Get a Free Consultation WhatsApp Woodex Itemized BOQ Trade-by-trade clarity…
 - 🔴 **'Free' offer:** …ws and target reopening date. Free condition survey in Lahore Itemized BOQ before any work Phased a…
 - 🔴 **Timeline / response promise:** …by phone or WhatsApp, usually within one working day. Name Phone / WhatsApp P…
+- 🔴 **Absolute process claim:** …Restaurant & Café Renovation Every project is scoped after a site visit or brief, then quoted in writing so you know…

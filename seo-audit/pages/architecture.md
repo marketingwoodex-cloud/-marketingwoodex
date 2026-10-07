@@ -1,5 +1,5 @@
 # Page audit: /architecture/
-Type **pillar** · score **100/100** · 1696 words · 16 inbound links
+Type **pillar** · score **100/100** · 1675 words · 16 inbound links
 
 ## Target keywords
 - **Primary:** architecture services lahore
@@ -21,7 +21,7 @@ Type **pillar** · score **100/100** · 1696 words · 16 inbound links
 5. Front Elevation Design
 6. Master Planning
 7. Our Architecture Process
-8. What Architecture Costs in Lahore
+8. What you get with Architecture Services
 9. Why Woodex for Architecture
 10. Architecture vs Interior Design vs Fit-Out
 11. Architecture Questions, Answered
@@ -30,7 +30,7 @@ Type **pillar** · score **100/100** · 1696 words · 16 inbound links
 14. One accountable team from brief to handover
 
 ## Internal links
-- Outbound (17): /, /1-kanal-house-design/, /10-marla-house-design/, /2-kanal-house-design/, /5-marla-house-design/, /contact/, /educational-buildings-design/, /farmhouse-design/, /front-elevation-design/, /healthcare-facilities-design/, /insights/1-kanal-house-interior-cost-lahore/, /insights/5-marla-house-renovation-cost-lahore/, /insights/architect-fee-lahore-2026/, /master-planning/, /office-buildings-design/, /restaurant-cafe-building-design/, /retail-buildings-design/
+- Outbound (18): /, /1-kanal-house-design/, /10-marla-house-design/, /2-kanal-house-design/, /5-marla-house-design/, /book-a-visit/, /contact/, /educational-buildings-design/, /farmhouse-design/, /front-elevation-design/, /healthcare-facilities-design/, /insights/1-kanal-house-interior-cost-lahore/, /insights/5-marla-house-renovation-cost-lahore/, /insights/architect-fee-lahore-2026/, /master-planning/, /office-buildings-design/, /restaurant-cafe-building-design/, /retail-buildings-design/
 
 ## Schema
 - Present: Answer, BreadcrumbList, City, FAQPage, ListItem, LocalBusiness, OpeningHoursSpecification, PostalAddress, Question, Service

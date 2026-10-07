@@ -1,5 +1,5 @@
 # Page audit: /shopping-mall-design/
-Type **service** · score **100/100** · 898 words · 3 inbound links
+Type **service** · score **100/100** · 924 words · 3 inbound links
 
 ## Target keywords
 - **Primary:** shopping mall design in lahore
@@ -16,7 +16,7 @@ Type **service** · score **100/100** · 898 words · 3 inbound links
 ## Section blocks (H2 outline)
 1. What We Design
 2. Our Design Process
-3. Pricing
+3. What you get with Shopping Mall Design
 4. Choose the Right Scope
 5. Shopping Mall Design FAQs
 6. Related Spaces
@@ -25,7 +25,7 @@ Type **service** · score **100/100** · 898 words · 3 inbound links
 9. One accountable team from brief to handover
 
 ## Internal links
-- Outbound (10): /, /commercial-interior/, /contact/, /fit-out/, /insights/lighting-design-layers-explained/, /insights/materials-that-survive-lahore-climate/, /insights/retail-shop-interior-guide/, /interior-design/, /renovation/, /showroom-design/
+- Outbound (11): /, /book-a-visit/, /commercial-interior/, /contact/, /fit-out/, /insights/lighting-design-layers-explained/, /insights/materials-that-survive-lahore-climate/, /insights/retail-shop-interior-guide/, /interior-design/, /renovation/, /showroom-design/
 
 ## Schema
 - Present: Answer, BreadcrumbList, FAQPage, ListItem, LocalBusiness, Offer, OfferCatalog, OpeningHoursSpecification, PostalAddress, Question, Service
@@ -39,12 +39,9 @@ Type **service** · score **100/100** · 898 words · 3 inbound links
 - No client testimonial/review (Trust)
 
 ## Claims needing the owner's word
-- 🔴 **Price / PKR figure:** …ey Free Mall zone design From PKR 300,000 Typical projects PKR 500…
-- 🔴 **Price / PKR figure:** …500,000-1,500,000 Large malls PKR 1,500,000-3,000,000+ Your fixed quote follows…
 - 🔴 **'Free' offer:** …clear visitor journey. Get a Free Consultation WhatsApp Woodex 200+ spaces delivered 10 years expe…
-- 🔴 **'Free' offer:** …sultation and site survey are free. We provide a fixed quot…
-- 🔴 **'Free' offer:** …d 3D package are clear. Get a Free Consultation Initial consultation and site survey Free Mall zone…
 - 🔴 **'Free' offer:** …he zones you need to develop. Free first consultation Photoreal 3D before you commit Design, build…
 - 🔴 **Timeline / response promise:** …by phone or WhatsApp, usually within one working day. Name Phone / WhatsApp P…
 - 🔴 **Warranty / guarantee:** …experience 1 year workmanship warranty 4 cities served Clear mo…
+- 🔴 **Absolute process claim:** …get with Shopping Mall Design Every project is scoped after a site visit or brief, then quoted in writing so you know…
 - 🔴 **Superlative:** …Survive Lahore's Climate The best flooring for Lahore's climate and other materials that…

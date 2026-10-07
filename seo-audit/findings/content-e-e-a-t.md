@@ -1,4 +1,4 @@
-# Content & E-E-A-T — score 82/100
+# Content & E-E-A-T — score 88/100
 
 ## [High] Thin content (<300 words in <main>) (4)
 - /book-a-visit/ (218 words)
@@ -22,14 +22,4 @@
 - /insights/interior-design-cost-pakistan/
 - /insights/interior-designer-cost-lahore-2026/
 - /insights/interior-designer-vs-contractor-lahore/
-
-## [High] Near-duplicate city pages (doorway-page risk) (8)
-- /bahawalpur/ (64% similar to /karachi/)
-- /faisalabad/ (61% similar to /karachi/)
-- /gujranwala/ (64% similar to /karachi/)
-- /islamabad/ (61% similar to /karachi/)
-- /multan/ (63% similar to /karachi/)
-- /quetta/ (63% similar to /karachi/)
-- /rawalpindi/ (62% similar to /karachi/)
-- /sialkot/ (63% similar to /karachi/)
 

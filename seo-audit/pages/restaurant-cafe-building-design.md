@@ -1,5 +1,5 @@
 # Page audit: /restaurant-cafe-building-design/
-Type **service** · score **83/100** · 907 words · 4 inbound links
+Type **service** · score **83/100** · 911 words · 4 inbound links
 
 ## Target keywords
 - **Primary:** restaurant and cafe building design lahore
@@ -16,7 +16,7 @@ Type **service** · score **83/100** · 907 words · 4 inbound links
 ## Section blocks (H2 outline)
 1. What the architecture covers
 2. From brief to buildable drawings
-3. A clear range before the proposal
+3. What you get with Restaurant & Cafe Building Design
 4. Carry the idea into the interior
 5. Restaurant & Cafe Building Design FAQs
 6. Related Architecture Pages
@@ -25,7 +25,7 @@ Type **service** · score **83/100** · 907 words · 4 inbound links
 9. One accountable team from brief to handover
 
 ## Internal links
-- Outbound (11): /, /architecture/, /contact/, /educational-buildings-design/, /fit-out/, /healthcare-facilities-design/, /insights/lighting-design-layers-explained/, /insights/restaurant-cafe-interior-cost-lahore/, /insights/restaurant-planning-guide/, /interior-design/, /master-planning/
+- Outbound (12): /, /architecture/, /book-a-visit/, /contact/, /educational-buildings-design/, /fit-out/, /healthcare-facilities-design/, /insights/lighting-design-layers-explained/, /insights/restaurant-cafe-interior-cost-lahore/, /insights/restaurant-planning-guide/, /interior-design/, /master-planning/
 
 ## Schema
 - Present: Answer, BreadcrumbList, City, FAQPage, ListItem, LocalBusiness, OpeningHoursSpecification, PostalAddress, Question, Service
@@ -43,6 +43,6 @@ Type **service** · score **83/100** · 907 words · 4 inbound links
 
 ## Claims needing the owner's word
 - 🔴 **Price / PKR figure:** …ding. Get a Free Consultation PKR 500K–1.5M Indicative design fee…
-- 🔴 **Price / PKR figure:** …needed. Indicative design fee PKR 500K–1.5M This range suits focu…
 - 🔴 **Price / PKR figure:** …cost? + The indicative fee is PKR 500K–1.5M. Larger or more compl…
 - 🔴 **Timeline / response promise:** …by phone or WhatsApp, usually within one working day. Name Phone / WhatsApp P…
+- 🔴 **Absolute process claim:** …aurant & Cafe Building Design Every project is scoped after a site visit or brief, then quoted in writing so you know…

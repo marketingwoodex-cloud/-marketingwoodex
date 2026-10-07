@@ -1,5 +1,5 @@
 # Page audit: /spa-design/
-Type **service** · score **100/100** · 871 words · 4 inbound links
+Type **service** · score **100/100** · 896 words · 4 inbound links
 
 ## Target keywords
 - **Primary:** spa design in lahore
@@ -16,7 +16,7 @@ Type **service** · score **100/100** · 871 words · 4 inbound links
 ## Section blocks (H2 outline)
 1. What We Design
 2. Our Design Process
-3. Pricing
+3. What you get with Spa Design
 4. Design vs Fit-Out vs Renovation
 5. Spa Design FAQs
 6. Related Spaces
@@ -25,7 +25,7 @@ Type **service** · score **100/100** · 871 words · 4 inbound links
 9. One accountable team from brief to handover
 
 ## Internal links
-- Outbound (11): /, /beauty-salon-design/, /commercial-interior/, /contact/, /fit-out/, /hotel-interior-design/, /insights/lighting-design-layers-explained/, /insights/materials-that-survive-lahore-climate/, /insights/retail-shop-interior-guide/, /interior-design/, /renovation/
+- Outbound (12): /, /beauty-salon-design/, /book-a-visit/, /commercial-interior/, /contact/, /fit-out/, /hotel-interior-design/, /insights/lighting-design-layers-explained/, /insights/materials-that-survive-lahore-climate/, /insights/retail-shop-interior-guide/, /interior-design/, /renovation/
 
 ## Schema
 - Present: Answer, BreadcrumbList, FAQPage, ListItem, LocalBusiness, Offer, OfferCatalog, OpeningHoursSpecification, PostalAddress, Question, Service
@@ -40,12 +40,9 @@ Type **service** · score **100/100** · 871 words · 4 inbound links
 
 ## Claims needing the owner's word
 - 🔴 **Price / PKR figure:** …ss experience recognisably yours. 01 / 08 Our Design Process…
-- 🔴 **Price / PKR figure:** …survey Free Compact spas From PKR 120,000 Typical spas PKR 250,000…
-- 🔴 **Price / PKR figure:** …600,000 Premium wellness spas PKR 600,000-1,200,000+ Cost varies with treatme…
 - 🔴 **'Free' offer:** …enuine sense of escape. Get a Free Consultation WhatsApp Woodex 200+ spaces delivered 10 years expe…
-- 🔴 **'Free' offer:** …sultation and site survey are free. We provide an exact fix…
-- 🔴 **'Free' offer:** …d 3D package are clear. Get a Free Consultation Initial consultation and site survey Free Compact s…
 - 🔴 **'Free' offer:** …xperience you want to create. Free first consultation Photoreal 3D before you commit Design, build…
 - 🔴 **Timeline / response promise:** …by phone or WhatsApp, usually within one working day. Name Phone / WhatsApp P…
 - 🔴 **Warranty / guarantee:** …experience 1 year workmanship warranty 4 cities served Quiet ma…
+- 🔴 **Absolute process claim:** …What you get with Spa Design Every project is scoped after a site visit or brief, then quoted in writing so you know…
 - 🔴 **Superlative:** …Survive Lahore's Climate The best flooring for Lahore's climate and other materials that…

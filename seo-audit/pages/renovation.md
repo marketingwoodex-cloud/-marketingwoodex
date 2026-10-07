@@ -1,5 +1,5 @@
 # Page audit: /renovation/
-Type **pillar** · score **100/100** · 1469 words · 35 inbound links
+Type **pillar** · score **100/100** · 1511 words · 35 inbound links
 
 ## Target keywords
 - **Primary:** renovation company lahore
@@ -19,7 +19,7 @@ Type **pillar** · score **100/100** · 1469 words · 35 inbound links
 3. Renovation, fit-out or new build?
 4. Every renovation service, organized by sector
 5. The renovation process in ten clear steps
-6. Renovation pricing
+6. What you get with Renovation Company
 7. What Woodex can upgrade
 8. Renovation needs more than a contractor
 9. Renovation FAQ
@@ -28,7 +28,7 @@ Type **pillar** · score **100/100** · 1469 words · 35 inbound links
 12. Read before you plan
 
 ## Internal links
-- Outbound (12): /, /commercial-renovation/, /contact/, /healthcare-renovation/, /insights/home-renovation-checklist/, /insights/house-renovation-cost-lahore-2026/, /insights/house-renovation-timeline-lahore/, /office-renovation/, /residential-renovation/, /restaurant-cafe-renovation/, /retail-showroom-renovation/, /specialized-renovation-services/
+- Outbound (13): /, /book-a-visit/, /commercial-renovation/, /contact/, /healthcare-renovation/, /insights/home-renovation-checklist/, /insights/house-renovation-cost-lahore-2026/, /insights/house-renovation-timeline-lahore/, /office-renovation/, /residential-renovation/, /restaurant-cafe-renovation/, /retail-showroom-renovation/, /specialized-renovation-services/
 
 ## Schema
 - Present: Answer, BreadcrumbList, City, FAQPage, ListItem, LocalBusiness, OpeningHoursSpecification, PostalAddress, Question, Service
@@ -41,9 +41,8 @@ Type **pillar** · score **100/100** · 1469 words · 35 inbound links
 - No link to a real project/case study (Experience)
 
 ## Claims needing the owner's word
-- 🔴 **Price / PKR figure:** …size alone. Room refresh From PKR 500K Commercial renovation PK…
-- 🔴 **Price / PKR figure:** …to 5M+ Whole-home renovation PKR 2M to 7M+ Planning ranges o…
 - 🔴 **Price / PKR figure:** …by room, floor or working hours. 3D before site Approve the…
 - 🔴 **'Free' offer:** …ually within one working day. Free condition survey in Lahore Itemized BOQ before any work Phased a…
 - 🔴 **Timeline / response promise:** …+ A focused refresh can take 1 to 3 weeks. A full home, floor or m…
 - 🔴 **Timeline / response promise:** …r multi-zone project can take 4 to 10 weeks. Do you work outside Lah…
+- 🔴 **Absolute process claim:** …u get with Renovation Company Every project is scoped after a site visit or brief, then quoted in writing so you know…

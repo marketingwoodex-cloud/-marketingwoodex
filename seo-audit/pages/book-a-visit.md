@@ -1,5 +1,5 @@
 # Page audit: /book-a-visit/
-Type **utility** · score **95/100** · 225 words · 4 inbound links
+Type **utility** · score **95/100** · 225 words · 57 inbound links
 
 ## Target keywords
 - **Primary:** book a site visit
