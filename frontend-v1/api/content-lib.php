@@ -145,6 +145,14 @@ function content_actions(string $action, array $in): bool {
             out(['ok' => true, 'kinds' => $kinds]);
         case 'cms_sitemap_add':
             need($ED); $rel = (string)($in['rel'] ?? ''); if (!cms_safe_rel($rel) || !is_file(ROOT_DIR . '/' . $rel)) fail('Page not found'); sitemap_add($rel); out(['ok' => true]);
+        case 'cms_announce_get':
+            need($ED); $f = ROOT_DIR . '/assets/announce.json'; out(['ok' => true, 'ann' => array_merge(['on' => false, 'text' => '', 'link' => '', 'linkText' => '', 'style' => 'navy'], is_file($f) ? (array)json_decode((string)file_get_contents($f), true) : [])]);
+        case 'cms_announce_save':
+            $u = need($OA); $a = is_array($in['ann'] ?? null) ? $in['ann'] : [];
+            $o = ['on' => !empty($a['on']), 'text' => clip($a['text'] ?? '', 160), 'link' => clip($a['link'] ?? '', 300), 'linkText' => clip($a['linkText'] ?? '', 40), 'style' => in_array($a['style'] ?? '', ['navy', 'wood', 'cream'], true) ? $a['style'] : 'navy', 'v' => time()];
+            if ($o['on'] && $o['text'] === '') fail('Write the announcement text');
+            if ($o['link'] !== '' && !preg_match('~^(/[^\s"<>]*|https://[^\s"<>]+|tel:\+?[0-9 ]+|mailto:[^\s"<>]+)$~', $o['link'])) fail('The link must start with /, https://, tel: or mailto:');
+            file_put_contents(ROOT_DIR . '/assets/announce.json', json_encode($o, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), LOCK_EX); log_act($u, 'announce.save', $o['on'] ? 'on' : 'off'); out(['ok' => true, 'ann' => $o]);
         case 'cms_biz_get': need($ED); out(['ok' => true, 'biz' => array_merge(BIZ_DEF, $c['biz'] ?? []), 'applied' => array_merge(BIZ_DEF, $c['bizApplied'] ?? [])]);
         case 'cms_biz_save':
             $u = need($OA); $b = is_array($in['biz'] ?? null) ? $in['biz'] : []; $o = [];

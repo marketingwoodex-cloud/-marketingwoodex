@@ -469,3 +469,16 @@
   if (rv && !document.querySelector(".hm-rv-nav")) { var n = document.createElement("div"); n.className = "hm-rv-nav"; n.innerHTML = '<button type="button" aria-label="Previous review">←</button><button type="button" aria-label="Next review">→</button>'; rv.parentNode.parentNode.insertBefore(n, rv.parentNode.nextSibling); slider(rv, n.children[0], n.children[1], 4500); }
   slider(document.querySelector("#home-page .hm-ins-track"), document.querySelector(".hm-ins-prev"), document.querySelector(".hm-ins-next"), 5000);
 })();
+/* Phase 3 — announcement bar (edited in Admin → Header & footer). */
+(function () {
+  if (!window.fetch || /^\/(admin|builder)\//.test(location.pathname)) return;
+  fetch("/assets/announce.json", { cache: "no-cache" }).then(function (r) { return r.ok ? r.json() : null; }).then(function (a) {
+    if (!a || !a.on || !a.text) return; var k = "wx-ann-" + (a.v || 0); try { if (sessionStorage.getItem(k)) return; } catch (e) {}
+    var b = document.createElement("div"); b.className = "wx-ann wx-ann--" + (a.style || "navy"); b.setAttribute("role", "region"); b.setAttribute("aria-label", "Announcement");
+    var t = document.createElement("span"); t.textContent = a.text; b.appendChild(t);
+    if (a.link) { var l = document.createElement("a"); l.href = a.link; l.textContent = a.linkText || "Learn more"; if (/^https:/.test(a.link) && a.link.indexOf(location.host) < 0) { l.target = "_blank"; l.rel = "noopener"; } b.appendChild(l); }
+    var x = document.createElement("button"); x.type = "button"; x.setAttribute("aria-label", "Close announcement"); x.innerHTML = "&times;"; b.appendChild(x);
+    x.onclick = function () { b.remove(); document.documentElement.classList.remove("wx-has-ann"); try { sessionStorage.setItem(k, "1"); } catch (e) {} };
+    document.body.insertBefore(b, document.body.firstChild); document.documentElement.classList.add("wx-has-ann");
+  }).catch(function () {});
+})();
