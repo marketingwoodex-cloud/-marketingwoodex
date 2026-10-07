@@ -1,4 +1,5 @@
 # Changelog
+- **Master P21 r3**: wx-install asks for the owner name/email/password; fixed re-run resetting the admin password to admin.
 - **Master P21 r2**: admin setup reconnects an existing database (no forced new owner); README explains db.json and the setup pages.
 - **Master P21** (8 Oct 2026): CSS renamed to site-p21.css / v1-p21.css (fixes broken styles from Hostinger cache); single upload zip woodex-master-P21.zip.
 - **P21 cache fix**: ?v=p21 on CSS/JS links in all 145 pages; update zip woodex-P21-update-cachefix.zip.
