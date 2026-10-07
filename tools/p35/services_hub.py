@@ -9,7 +9,8 @@ E = lambda s: html.escape(str(s), quote=True)
 GROUPS = [
  ("interior", "Interior design", "Homes and rooms designed around how you live, with photoreal 3D before work starts.",
   ["interior-design", "kitchen-design", "residential-living-room-design", "residential-bedroom-design", "residential-dining-room-design",
-   "residential-kids-room-design", "residential-home-office-design", "residential-basement-design", "complete-home-redesign", "3d-visualization"]),
+   "residential-kids-room-design", "residential-home-office-design", "residential-basement-design", "bathroom-design", "wardrobe-design",
+   "dressing-room-design", "false-ceiling-design", "apartment-interior-design", "complete-home-redesign", "3d-visualization"]),
  ("commercial", "Commercial and workplace interiors", "Offices, retail and showrooms planned for people, brand and daily use.",
   ["commercial-interior", "office-interior-design", "coworking-space-design", "retail-design", "showroom-design", "shopping-mall-design"]),
  ("hospitality", "Hospitality, wellness and healthcare", "Restaurants, cafes, hotels, salons, gyms and clinics where flow and durability matter.",
@@ -17,7 +18,7 @@ GROUPS = [
  ("fitout", "Fit-out and turnkey", "One accountable team taking a space from shell to handover.",
   ["fit-out", "turnkey-design-build", "commercial-fit-out", "office-fit-out", "retail-fit-out", "restaurant-fit-out", "healthcare-fit-out", "pharmacy-fit-out"]),
  ("renovation", "Renovation", "Upgrades for homes and businesses, planned to limit disruption.",
-  ["renovation", "residential-renovation", "interior-home-refurbishment", "commercial-renovation", "office-renovation",
+  ["renovation", "residential-renovation", "kitchen-renovation", "interior-home-refurbishment", "commercial-renovation", "office-renovation",
    "retail-showroom-renovation", "restaurant-cafe-renovation", "healthcare-renovation", "specialized-renovation-services"]),
  ("architecture", "Architecture", "House plans, elevations and buildings designed with the interior in mind.",
   ["architecture", "5-marla-house-design", "10-marla-house-design", "1-kanal-house-design", "2-kanal-house-design", "farmhouse-design",

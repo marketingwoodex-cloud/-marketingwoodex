@@ -1,11 +1,13 @@
 # Internal links — score 96/100
 
-## [Medium] Weakly linked pages (1-2 inbound) (16)
+## [Medium] Weakly linked pages (1-2 inbound) (17)
+- /apartment-interior-design/
 - /bahawalpur/
+- /dressing-room-design/
+- /false-ceiling-design/
 - /insights/10-marla-house-interior-lahore/
 - /insights/bathroom-renovation-lahore/
 - /insights/clinic-interior-design-lahore/
-- /insights/false-ceiling-cost-lahore-2026/
 - /insights/flooring-options-pakistan/
 - /insights/grey-structure-finishing-lahore/
 - /insights/home-office-design-ideas/
@@ -14,10 +16,8 @@
 - /insights/paint-colours-pakistani-homes/
 - /insights/salon-interior-design-lahore/
 - /interior-home-refurbishment/
-- /karachi/
-- /residential-basement-design/
 
-## [Medium] Service/location pages that link to no insights article (topic-cluster gap) (12)
+## [Medium] Service/location pages that link to no insights article (topic-cluster gap) (13)
 - /about/
 - /book-a-visit/
 - /contact/
@@ -30,4 +30,5 @@
 - /projects/office-floor/
 - /projects/retail-corner/
 - /projects/small-apartment/
+- /services/
 
