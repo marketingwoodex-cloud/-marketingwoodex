@@ -7,7 +7,7 @@
   var FLOWS = {
     chat: ["How the inbox works", [
       ["Customer writes", "Website chat bubble or your WhatsApp number. Both land here."],
-      ["AI answers first", "Uses Train AI: tone, Q&A, hours, topics to avoid. Replies in the customer's language."],
+      ["AI answers first", "Uses AI agent training: tone, Q&A, hours, topics to avoid. Replies in the customer's language."],
       ["Details go to CRM", "Name, phone, area, project type and budget are saved to the lead automatically."],
       ["Hand-over", "Asks for a person, is upset or ready to book → tagged “needs you” + alert."],
       ["You take over", "Reply here and the AI stops for that chat. Hand back to AI any time."],

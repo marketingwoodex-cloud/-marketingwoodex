@@ -968,3 +968,15 @@ html.dark .hub-bar{background:#111a2b;border-color:#24304a}html.dark .hub-bar a{
 @media (max-width:1100px){.th-wrap{grid-template-columns:1fr}.th-main{position:static}}
 .th-c input[type=color]{padding:3px!important;width:40px!important;height:40px!important;min-height:0!important}.th-c input::-webkit-color-swatch-wrapper{padding:0}.th-c input::-webkit-color-swatch{border:0;border-radius:7px}
 .xl-grid{display:flex;flex-wrap:wrap;gap:8px}.xl-grid .btn svg{color:#217346}
+/* P39 Phase 3: collapsible sections + pins */
+.nav-hb{display:flex;align-items:center;width:calc(100% - 24px);background:none;border:0;cursor:pointer;font-family:inherit;text-transform:uppercase;padding:0;text-align:left}
+.nav-hb .nav-car svg{width:13px;height:13px}
+.nav-sec.shut .nav-sb{display:none}.nav-sec.shut .nav-hb .nav-car{transform:rotate(-90deg)}
+.nav-hb:hover{color:#c8d1de}
+.nav-a{position:relative}
+.nav-pin{margin-left:6px;font-size:12px;color:#6b7a90;opacity:0;cursor:pointer;line-height:1;padding:2px}
+.nav-a:hover .nav-pin{opacity:.8}.nav-pin:hover{color:var(--gold)!important;opacity:1}.nav-pin.on{color:var(--gold);opacity:.9}
+.nav-sec.pinned .nav-pin{opacity:0}.nav-sec.pinned .nav-a:hover .nav-pin{opacity:.9}
+.nav-sec.pinned .nav-h{color:var(--gold)}
+.app.mini .nav-pin,.app.mini .nav-hb .nav-car{display:none}.app.mini .nav-sec.shut .nav-sb{display:block}
+.nav-pin{margin-left:auto}.nav-bdg:not([hidden])+.nav-pin{margin-left:6px}

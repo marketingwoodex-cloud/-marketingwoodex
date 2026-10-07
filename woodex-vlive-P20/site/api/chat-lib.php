@@ -13,6 +13,9 @@ const CHAT_DEF = [
     'tone' => 'designer', 'toneNote' => '', 'qa' => [], 'avoid' => "Competitor comparisons\nPolitics or religion\nLegal or medical advice\nExact final prices before a site visit", 'prices' => '',
     'openFrom' => '09:30', 'openTo' => '18:30', 'days' => [1, 2, 3, 4, 5, 6],
     'afterHours' => 'Thanks for your message! We are away right now. Leave your name and phone number and we will call you back first thing.',
+    // P39 Phase 4: customer quick answers (website chat + Telegram buttons) and team saved replies ("/" in the Inbox)
+    'quick' => [['label' => 'Our services', 'text' => 'What services do you offer?'], ['label' => 'Book a site visit', 'text' => 'I would like to book a site visit.'], ['label' => 'See our work', 'text' => 'Can I see your recent projects?'], ['label' => 'Talk to a person', 'text' => 'I would like to talk to a person.'], ['label' => 'Hours & location', 'text' => 'What are your hours and where is your office?']],
+    'saved' => [['k' => 'hello', 't' => 'Assalam-o-Alaikum, thank you for contacting Woodex Interior. How can I help you with your space?'], ['k' => 'visit', 't' => 'We would be glad to visit your site. Please share your address, a suitable day and time, and the best number to reach you.'], ['k' => 'number', 't' => 'Could you share your WhatsApp number so our designer can send you ideas and follow up?'], ['k' => 'portfolio', 't' => 'You can see our recent projects here: https://woodex.com.pk/portfolio/'], ['k' => 'hours', 't' => 'Our office is open Monday to Saturday, 9:30 AM to 6:30 PM (Sunday closed). Call or WhatsApp +92 322 4000768.'], ['k' => 'thanks', 't' => 'Thank you for your time. Our designer will be in touch shortly.']],
     'waAgent' => false, 'waVerify' => '', 'waSecret' => '', 'waGreeting' => 'Assalam-o-Alaikum! Thank you for contacting Woodex Interior. How can we help you today?',
     'knowledge' => "Woodex Interior is an interior design and build company in Lahore, Pakistan (since 2011).\nServices: interior design (homes, offices, retail, restaurants), renovation, office fit-out, turnkey design-build, architecture and house design (5 marla to 2 kanal), 3D visualization, custom furniture.\nContact: phone/WhatsApp +92 322 4000768, email info@woodex.com.pk, office M-71 Zainab Tower, Model Town Link Road, Lahore. Office hours Mon–Sat 9:30 am – 6:30 pm.\nProcess: free consultation → site visit and measurements → design and 3D views → quotation → execution → handover.\nWe work across Lahore and also take projects in Islamabad, Karachi and other cities.\nPrices depend on area, finishes and scope; a site visit gives an exact quotation. The online cost estimator is at /estimator/.\nFor a quote or site visit ask for the client's name, phone number, area/location and what they need.",
 ];
@@ -42,20 +45,22 @@ function chat_migrate(): void {
     try { q("ALTER TABLE wx_chats ADD COLUMN channel VARCHAR(8) NOT NULL DEFAULT 'web'"); } catch (Throwable $x) { /* already there */ }
     q('CREATE TABLE IF NOT EXISTS wx_chat_msgs (id INT AUTO_INCREMENT PRIMARY KEY, chat_id INT NOT NULL, t DATETIME NOT NULL, who VARCHAR(8) NOT NULL, name VARCHAR(120) NULL, text TEXT NOT NULL, INDEX(chat_id, id))' . $e);
     // P18 D: attachments (JSON {u,n,k,s}) + typing status
-    foreach (["ALTER TABLE wx_chat_msgs ADD COLUMN att TEXT NULL", "ALTER TABLE wx_chats ADD COLUMN vtype DATETIME NULL", "ALTER TABLE wx_chats ADD COLUMN atype DATETIME NULL"] as $sql) { try { q($sql); } catch (Throwable $x) { /* already there */ } }
+    foreach (["ALTER TABLE wx_chat_msgs ADD COLUMN att TEXT NULL", "ALTER TABLE wx_chats ADD COLUMN vtype DATETIME NULL", "ALTER TABLE wx_chats ADD COLUMN atype DATETIME NULL", "ALTER TABLE wx_chats ADD COLUMN ext VARCHAR(40) NULL", "ALTER TABLE wx_chats ADD COLUMN assigned_to INT NULL", "ALTER TABLE wx_chats ADD COLUMN tags VARCHAR(200) NULL"] as $sql) { try { q($sql); } catch (Throwable $x) { /* already there */ } }
 }
 function chat_get(int $id): array { $c = q('SELECT * FROM wx_chats WHERE id=?', [$id])->fetch(); if (!$c) fail('Chat not found', 404); return $c; }
-function chat_msgs(int $cid, int $since = 0): array {
-    return array_map(fn($m) => ['id' => (int)$m['id'], 't' => $m['t'], 'who' => $m['who'], 'name' => (string)$m['name'], 'text' => $m['text'], 'att' => !empty($m['att']) ? json_decode((string)$m['att'], true) : null], q('SELECT * FROM wx_chat_msgs WHERE chat_id=? AND id>? ORDER BY id LIMIT 300', [$cid, $since])->fetchAll());
+function chat_msgs(int $cid, int $since = 0, bool $notes = false): array {
+    return array_map(fn($m) => ['id' => (int)$m['id'], 't' => $m['t'], 'who' => $m['who'], 'name' => (string)$m['name'], 'text' => $m['text'], 'att' => !empty($m['att']) ? json_decode((string)$m['att'], true) : null], q('SELECT * FROM wx_chat_msgs WHERE chat_id=? AND id>?' . ($notes ? '' : " AND who<>'note'") . ' ORDER BY id LIMIT 300', [$cid, $since])->fetchAll());
 }
 function chat_add(int $cid, string $who, string $name, string $text, ?array $att = null): int {
     q('INSERT INTO wx_chat_msgs (chat_id,t,who,name,text,att) VALUES (?,?,?,?,?,?)', [$cid, now(), $who, mb_substr($name, 0, 120), mb_substr($text, 0, 4000), $att ? json_encode($att, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) : null]); $mid = (int)db()->lastInsertId();
+    if ($who === 'note') return $mid; // internal note: never shown to the customer
+    if ($who === 'visitor' && function_exists('tg_team_post')) { try { $cc = q('SELECT * FROM wx_chats WHERE id=?', [$cid])->fetch(); if ($cc) tg_team_post($cc, $text); } catch (Throwable $e) { error_log('tg post: ' . $e->getMessage()); } }
     q('UPDATE wx_chats SET updated_at=?, last_text=?' . ($who === 'visitor' ? ', unread=unread+1' : '') . ' WHERE id=?', [now(), mb_substr(($who === 'visitor' ? '' : ($who === 'agent' ? 'You: ' : 'AI: ')) . $text, 0, 250), $cid]);
     return $mid;
 }
 function chat_pub(array $c): array {
     return ['id' => (int)$c['id'], 'created_at' => $c['created_at'], 'updated_at' => $c['updated_at'], 'name' => (string)$c['name'], 'phone' => (string)$c['phone'], 'email' => (string)$c['email'], 'page' => (string)$c['page'],
-        'status' => $c['status'], 'mode' => $c['mode'], 'agent' => (string)$c['agent_name'], 'unread' => (int)$c['unread'], 'needs' => (bool)$c['needs'], 'last' => (string)$c['last_text'], 'lead_id' => $c['lead_id'] !== null ? (int)$c['lead_id'] : null, 'channel' => (string)($c['channel'] ?? 'web')];
+        'status' => $c['status'], 'mode' => $c['mode'], 'agent' => (string)$c['agent_name'], 'unread' => (int)$c['unread'], 'needs' => (bool)$c['needs'], 'last' => (string)$c['last_text'], 'lead_id' => $c['lead_id'] !== null ? (int)$c['lead_id'] : null, 'assigned' => isset($c['assigned_to']) && $c['assigned_to'] !== null ? (int)$c['assigned_to'] : null, 'tags' => array_values(array_filter(explode(',', (string)($c['tags'] ?? '')))), 'waitFrom' => (int)$c['unread'] || (int)$c['needs'] ? (string)(q("SELECT MIN(t) FROM wx_chat_msgs WHERE chat_id=? AND who='visitor' AND id > COALESCE((SELECT MAX(id) FROM wx_chat_msgs WHERE chat_id=? AND who IN ('agent','ai')),0)", [$c['id'], $c['id']])->fetchColumn() ?: '') : '', 'channel' => (string)($c['channel'] ?? 'web')];
 }
 
 /** P18 D: store a chat attachment (image / PDF / voice note). Random file name in /assets/uploads/chat/YYYYMM/. Returns att array. */
@@ -204,16 +209,32 @@ function chat_actions(string $action, array $in): bool {
     chat_migrate(); $SALES = ['owner', 'admin', 'sales'];
     switch ($action) {
         case 'chat_list':
-            need($SALES); $st = ($in['status'] ?? 'open') === 'closed' ? 'closed' : 'open';
-            out(['ok' => true, 'chats' => array_map('chat_pub', q('SELECT * FROM wx_chats WHERE status=? ORDER BY needs DESC, updated_at DESC LIMIT 200', [$st])->fetchAll()), 'cfg' => ['ai' => chat_cfg()['ai'], 'on' => chat_cfg()['on']]]);
+            $u = need($SALES); $st = ($in['status'] ?? 'open') === 'closed' ? 'closed' : 'open'; $box = (string)($in['box'] ?? 'all');
+            $w = $box === 'mine' ? ' AND assigned_to=' . (int)$u['id'] : ($box === 'unassigned' ? ' AND assigned_to IS NULL' : '');
+            $cc = chat_cfg(); $team = array_map(fn($r) => ['id' => (int)$r['id'], 'name' => (string)$r['name']], q("SELECT id,name,role FROM wx_users WHERE active=1 AND role IN ('owner','admin','sales','support') ORDER BY name")->fetchAll());
+            $cnt = q("SELECT SUM(assigned_to=?) mine, SUM(assigned_to IS NULL) un, COUNT(*) a FROM wx_chats WHERE status='open'", [(int)$u['id']])->fetch();
+            out(['ok' => true, 'chats' => array_map('chat_pub', q('SELECT * FROM wx_chats WHERE status=?' . $w . ' ORDER BY needs DESC, updated_at DESC LIMIT 200', [$st])->fetchAll()), 'team' => $team, 'me' => (int)$u['id'],
+                'counts' => ['mine' => (int)$cnt['mine'], 'unassigned' => (int)$cnt['un'], 'all' => (int)$cnt['a']], 'cfg' => ['ai' => $cc['ai'], 'on' => $cc['on'], 'saved' => $cc['saved'], 'tg' => function_exists('tg_ready') && tg_ready()]]);
+        case 'chat_assign':
+            $u = need($SALES); $c = chat_get((int)($in['id'] ?? 0)); $to = (int)($in['user_id'] ?? 0); $nm = '';
+            if ($to) { $r = q("SELECT name FROM wx_users WHERE id=? AND active=1", [$to])->fetch(); if (!$r) fail('User not found'); $nm = (string)$r['name']; }
+            q('UPDATE wx_chats SET assigned_to=? WHERE id=?', [$to ?: null, $c['id']]); chat_add((int)$c['id'], 'note', $u['name'], $to ? 'Assigned to ' . $nm : 'Unassigned');
+            log_act($u, 'chat.assign', '#' . $c['id'] . ' → ' . ($nm ?: 'nobody')); out(['ok' => true, 'chat' => chat_pub(chat_get((int)$c['id']))]);
+        case 'chat_note':
+            $u = need($SALES); $c = chat_get((int)($in['id'] ?? 0)); $t = trim(mb_substr((string)($in['text'] ?? ''), 0, 2000)); if ($t === '') fail('Write a note');
+            $mid = chat_add((int)$c['id'], 'note', $u['name'], $t); out(['ok' => true, 'id' => $mid]);
+        case 'chat_tags':
+            $u = need($SALES); $c = chat_get((int)($in['id'] ?? 0)); $tg = [];
+            foreach ((array)($in['tags'] ?? []) as $x) { $x = mb_strtolower(trim(preg_replace('~[^\p{L}\p{N} \-]~u', '', (string)$x))); if ($x !== '' && count($tg) < 6) $tg[] = mb_substr($x, 0, 24); }
+            q('UPDATE wx_chats SET tags=? WHERE id=?', [$tg ? implode(',', array_unique($tg)) : null, $c['id']]); out(['ok' => true, 'chat' => chat_pub(chat_get((int)$c['id']))]);
         case 'chat_get':
             need($SALES); $c = chat_get((int)($in['id'] ?? 0)); $since = (int)($in['since'] ?? 0);
             if ((int)$c['unread'] || (int)$c['needs']) q('UPDATE wx_chats SET unread=0, needs=0 WHERE id=?', [$c['id']]);
-            out(['ok' => true, 'chat' => chat_pub($c), 'messages' => chat_msgs((int)$c['id'], $since), 'typing' => chat_recent($c['vtype'] ?? null)]);
+            out(['ok' => true, 'chat' => chat_pub($c), 'messages' => chat_msgs((int)$c['id'], $since, true), 'typing' => chat_recent($c['vtype'] ?? null)]);
         case 'chat_typing':
             need($SALES); q('UPDATE wx_chats SET atype=? WHERE id=?', [now(), (int)($in['id'] ?? 0)]); out(['ok' => true]);
         case 'chat_file':
-            $u = need($SALES); $c = chat_get((int)($in['id'] ?? 0)); if (($c['channel'] ?? 'web') === 'wa') fail('Attachments work in website chats. For WhatsApp chats, send files from the WhatsApp app.');
+            $u = need($SALES); $c = chat_get((int)($in['id'] ?? 0)); if (($c['channel'] ?? 'web') !== 'web') fail('Attachments work in website chats. For WhatsApp or Telegram chats, send files from the app.');
             $att = chat_save_att((string)($in['data'] ?? ''), (string)($in['name'] ?? ''), !empty($in['voice']));
             if ($c['mode'] === 'ai') chat_add((int)$c['id'], 'sys', '', $u['name'] . ' joined the chat');
             $cap = trim(mb_substr((string)($in['text'] ?? ''), 0, 500));
@@ -222,8 +243,8 @@ function chat_actions(string $action, array $in): bool {
         case 'chat_reply':
             $u = need($SALES); $c = chat_get((int)($in['id'] ?? 0)); $t = trim((string)($in['text'] ?? '')); if ($t === '') fail('Write a message');
             if ($c['mode'] === 'ai') chat_add((int)$c['id'], 'sys', '', $u['name'] . ' joined the chat');
-            if (($c['channel'] ?? 'web') === 'wa') { $e = wa_text((string)$c['phone'], $t); if ($e !== '') fail('WhatsApp: ' . $e . (stripos($e, '24') !== false || stripos($e, 're-engagement') !== false ? ' (customer must message you first; 24-hour window)' : '')); }
-            $mid = chat_add((int)$c['id'], 'agent', $u['name'], $t); q("UPDATE wx_chats SET mode='human', agent_name=?, status='open', unread=0, needs=0 WHERE id=?", [$u['name'], $c['id']]);
+            $e = chat_deliver($c, $t); if ($e !== '') fail($e);
+            $mid = chat_add((int)$c['id'], 'agent', $u['name'], $t); q("UPDATE wx_chats SET mode='human', agent_name=?, assigned_to=COALESCE(assigned_to, ?), status='open', unread=0, needs=0 WHERE id=?", [$u['name'], (int)$u['id'], $c['id']]);
             out(['ok' => true, 'id' => $mid, 'chat' => chat_pub(chat_get((int)$c['id']))]);
         case 'chat_mode':
             $u = need($SALES); $c = chat_get((int)($in['id'] ?? 0)); $m = ($in['mode'] ?? '') === 'ai' ? 'ai' : 'human';
@@ -250,6 +271,8 @@ function chat_actions(string $action, array $in): bool {
             foreach (['openFrom', 'openTo'] as $k) if (isset($s[$k]) && preg_match('~^\d{2}:\d{2}$~', (string)$s[$k])) $c[$k] = $s[$k];
             if (isset($s['days']) && is_array($s['days'])) $c['days'] = array_values(array_unique(array_filter(array_map('intval', $s['days']), fn($d) => $d >= 0 && $d <= 6)));
             if (isset($s['qa']) && is_array($s['qa'])) { $c['qa'] = []; foreach (array_slice($s['qa'], 0, 150) as $x) { $qq = mb_substr(trim((string)($x['q'] ?? '')), 0, 300); $aa = mb_substr(trim((string)($x['a'] ?? '')), 0, 1500); if ($qq !== '' && $aa !== '') $c['qa'][] = ['q' => $qq, 'a' => $aa]; } }
+            if (isset($s['quick']) && is_array($s['quick'])) { $c['quick'] = []; foreach (array_slice($s['quick'], 0, 8) as $x) { $l = mb_substr(trim((string)($x['label'] ?? '')), 0, 30); $tx = mb_substr(trim((string)($x['text'] ?? '')), 0, 300); if ($l !== '') $c['quick'][] = ['label' => $l, 'text' => $tx !== '' ? $tx : $l]; } }
+            if (isset($s['saved']) && is_array($s['saved'])) { $c['saved'] = []; foreach (array_slice($s['saved'], 0, 60) as $x) { $k = mb_strtolower(preg_replace('~[^\w-]~u', '', (string)($x['k'] ?? ''))); $tx = mb_substr(trim((string)($x['t'] ?? '')), 0, 1500); if ($k !== '' && $tx !== '') $c['saved'][] = ['k' => mb_substr($k, 0, 20), 't' => $tx]; } }
             if ($c['waVerify'] === '') $c['waVerify'] = bin2hex(random_bytes(12));
             jwrite(CHAT_FILE, $c); log_act($u, 'chat.settings'); out(['ok' => true, 'cfg' => $c]);
         case 'chat_test': // training screen test box — nothing is saved

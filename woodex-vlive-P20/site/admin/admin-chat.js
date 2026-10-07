@@ -25,6 +25,11 @@
     ".lc-in{display:flex;gap:8px;padding:10px;border-top:1px solid var(--line,#e5e7eb)}.lc-in textarea{flex:1;margin:0;resize:none;min-height:44px;max-height:140px}.lc-empty{flex:1;display:grid;place-items:center;color:var(--mut);text-align:center;padding:20px}" +
     ".lc-info{font-size:12.5px;color:var(--mut);padding:8px 14px;border-bottom:1px solid var(--line,#e5e7eb);display:flex;gap:14px;flex-wrap:wrap}.lc-info b{color:var(--txt,#111);font-weight:600}" +
     "@media(max-width:860px){.lc{grid-template-columns:1fr;height:auto}.lc.has .lc-l{display:none}.lc:not(.has) .lc-r{display:none}.lc-msgs{height:55vh}}";
+  css.textContent += ".lc-box{display:flex;gap:4px;padding:8px;border-bottom:1px solid var(--line,#e5e7eb)}.lc-box button{flex:1;border:1px solid var(--line,#e5e7eb);background:none;border-radius:8px;padding:6px 4px;font:600 12px/1.2 inherit;color:var(--mut);cursor:pointer}.lc-box button.on{background:#0c1628;color:#fff;border-color:#0c1628}.lc-box i{font-style:normal;opacity:.7;margin-left:3px}" +
+    ".lc-wait{font-size:10.5px;font-weight:700;border-radius:6px;padding:1px 6px;background:#fef3c7;color:#92400e;margin-left:4px}.lc-wait.late{background:#fee2e2;color:#b91c1c}.lc-as{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:#f4efe7;color:#8a6a3f;font:700 10px/1 inherit;margin-left:4px}.lc-chip{display:inline-block;font-size:10.5px;border-radius:6px;padding:1px 6px;background:#f1f5f9;color:#334155;margin:3px 3px 0 0}" +
+    ".lm.n{align-self:stretch;max-width:100%;background:#fffbea;border:1px dashed #e5c76b;color:#5b4a12;font-size:13px}.lm.n small{color:#8a6d1a}.lc-in.note textarea{background:#fffbea;border-color:#e5c76b}.lc-mode{display:flex;flex-direction:column;gap:4px}.lc-mode button{border:1px solid var(--line,#e5e7eb);background:none;border-radius:8px;padding:4px 8px;font:600 11.5px inherit;cursor:pointer;color:var(--mut)}.lc-mode button.on{background:#0c1628;color:#fff;border-color:#0c1628}.lc-mode button.on[data-m=note]{background:#e5c76b;color:#3b2f07;border-color:#e5c76b}" +
+    ".lc-sv{position:absolute;bottom:100%;left:10px;right:10px;background:#fff;border:1px solid var(--line,#e5e7eb);border-radius:10px;box-shadow:0 10px 30px rgba(12,22,40,.15);max-height:240px;overflow:auto;z-index:5}.lc-sv a{display:block;padding:8px 12px;font-size:13px;color:inherit;text-decoration:none;border-bottom:1px solid #f1f5f9}.lc-sv a.on,.lc-sv a:hover{background:#f4efe7}.lc-sv b{color:#8a6a3f;margin-right:6px}.lc-in{position:relative}" +
+    ".lc-top select{max-width:150px;margin:0;padding:5px 8px;font-size:12.5px;height:auto}";
   document.head.appendChild(css);
 
   // ================================================================ notifications (bell + sound + browser notifications)
@@ -96,32 +101,55 @@
 
   // ================================================================ Live chat inbox
   W.VIEWS.chat = function (el, parts) {
-    var cur = +(parts[0] || 0), tab = "open", last = 0, chat = null, timer = null, admin = can("owner,admin");
-    el.innerHTML = W.head("Live chat", "Live chat", (admin ? '<button class="btn" id="lc-set">' + ic("settings") + "Chat settings</button>" : "")) +
-      '<div class="lc' + (cur ? " has" : "") + '"><div class="lc-l"><div class="lc-tabs"><button class="on" data-t="open">Open</button><button data-t="closed">Closed</button></div><div class="lc-list" id="lc-list"><div class="lc-empty">Loading…</div></div></div>' +
+    var cur = +(parts[0] || 0), tab = "open", last = 0, chat = null, timer = null, admin = can("owner,admin"), box = localStorage.getItem("wxInboxBox") || "all", TEAM = [], SAVED = [], ME = 0, mode = "reply";
+    el.innerHTML = W.head("Inbox", "Inbox", (admin ? '<button class="btn" id="lc-rp">' + ic("message-square") + "Replies & quick answers</button><button class=\"btn\" id=\"lc-set\">" + ic("settings") + "Chat settings</button>" : "")) +
+      '<div class="lc' + (cur ? " has" : "") + '"><div class="lc-l"><div class="lc-box" id="lc-box">' + [["mine", "Mine"], ["unassigned", "Unassigned"], ["all", "All"]].map(function (b) { return '<button data-b="' + b[0] + '"' + (b[0] === box ? ' class="on"' : '') + '>' + b[1] + '<i data-n="' + b[0] + '"></i></button>'; }).join('') + '</div><div class="lc-tabs"><button class="on" data-t="open">Open</button><button data-t="closed">Closed</button></div><div class="lc-list" id="lc-list"><div class="lc-empty">Loading…</div></div></div>' +
       '<div class="lc-r" id="lc-r"><div class="lc-empty"><div>' + ic("message-circle") + "<p>Select a chat.<br><small>New chats from the website appear here. The AI assistant answers first; reply here to take over.</small></p></div></div></div></div>";
     W.fillIcons(el);
     if ($("#lc-set")) $("#lc-set").onclick = cfgModal;
+    if ($("#lc-rp")) $("#lc-rp").onclick = repliesModal;
+    $("#lc-box").onclick = function (e) { var b = e.target.closest("[data-b]"); if (!b) return; box = b.dataset.b; localStorage.setItem("wxInboxBox", box); $$("#lc-box button").forEach(function (x) { x.classList.toggle("on", x === b); }); list(); };
+    function initials(id) { var t = TEAM.filter(function (x) { return x.id === id; })[0]; return t ? t.name.split(" ").map(function (w) { return w[0]; }).join("").slice(0, 2).toUpperCase() : "?"; }
+    function wait(c) { if (!c.waitFrom) return ""; var m = Math.max(0, Math.round((Date.now() - new Date(String(c.waitFrom).replace(" ", "T"))) / 60000)); if (!isFinite(m)) return ""; return '<span class="lc-wait' + (m >= 5 ? " late" : "") + '" title="Waiting for a reply">' + (m < 60 ? m + "m" : Math.round(m / 60) + "h") + "</span>"; }
     $(".lc-tabs", el).onclick = function (e) { var b = e.target.closest("button"); if (!b) return; tab = b.dataset.t; $$(".lc-tabs button", el).forEach(function (x) { x.classList.toggle("on", x === b); }); list(); };
     function list() {
-      api("chat_list", { status: tab }).then(function (r) {
+      api("chat_list", { status: tab, box: box }).then(function (r) {
         var L = $("#lc-list"); if (!L) return; if (!r.ok) { L.innerHTML = '<div class="lc-empty">' + esc(r.error) + "</div>"; return; }
         if (r.cfg && !r.cfg.on && !$("#lc-off")) L.insertAdjacentHTML("beforebegin", '<div id="lc-off" class="banner" style="margin:8px;font-size:12.5px">Live chat is turned off on the website.' + (admin ? " Turn it on in Chat settings." : "") + "</div>");
+        TEAM = r.team || []; SAVED = (r.cfg && r.cfg.saved) || []; ME = r.me || 0;
+        if (r.counts) Object.keys(r.counts).forEach(function (k) { var n = document.querySelector('#lc-box [data-n="' + k + '"]'); if (n) n.textContent = r.counts[k]; });
         L.innerHTML = r.chats.length ? r.chats.map(function (c) {
-          return '<a class="lc-it' + (c.id === cur ? " on" : "") + '" href="#/chat/' + c.id + '"><div class="r1"><b>' + (c.channel === "wa" ? '<span class="lc-tag" style="background:#25d366;color:#fff">WA</span> ' : "") + esc(c.name || "Visitor #" + c.id) + (c.needs ? '<span class="lc-tag nd">needs you</span>' : c.mode === "ai" ? '<span class="lc-tag ai">AI</span>' : '<span class="lc-tag hu">' + esc(c.agent || "Team") + "</span>") + "</b>" + (c.unread ? '<span class="u">' + c.unread + "</span>" : "<em>" + esc(ago(c.updated_at)) + "</em>") + "</div><small>" + esc(c.last || "") + "</small></a>";
+          return '<a class="lc-it' + (c.id === cur ? " on" : "") + '" href="#/chat/' + c.id + '"><div class="r1"><b>' + (c.channel === "wa" ? '<span class="lc-tag" style="background:#25d366;color:#fff">WA</span> ' : c.channel === "tg" ? '<span class="lc-tag" style="background:#229ED9;color:#fff">TG</span> ' : "") + esc(c.name || "Visitor #" + c.id) + (c.needs ? '<span class="lc-tag nd">needs you</span>' : c.mode === "ai" ? '<span class="lc-tag ai">AI</span>' : '<span class="lc-tag hu">' + esc(c.agent || "Team") + "</span>") + wait(c) + (c.assigned ? '<span class="lc-as" title="Assigned">' + initials(c.assigned) + "</span>" : "") + "</b>" + (c.unread ? '<span class="u">' + c.unread + "</span>" : "<em>" + esc(ago(c.updated_at)) + "</em>") + "</div><small>" + esc(c.last || "") + "</small>" + ((c.tags || []).length ? "<div>" + c.tags.map(function (t) { return '<span class="lc-chip">' + esc(t) + "</span>"; }).join("") + "</div>" : "") + "</a>";
         }).join("") : '<div class="lc-empty">' + (tab === "open" ? "No open chats." : "No closed chats.") + "</div>";
       });
     }
     function open(id) {
       cur = id; last = 0; chat = null; $(".lc", el).classList.toggle("has", !!id); if (!id) return;
       $$(".lc-it", el).forEach(function (a) { a.classList.toggle("on", a.getAttribute("href") === "#/chat/" + id); });
-      $("#lc-r").innerHTML = '<div class="lc-top" id="lc-top"></div><div class="lc-info" id="lc-info"></div><div class="lc-msgs" id="lc-msgs"></div><div class="cx-typing" id="lc-ty"></div><form class="lc-in" id="lc-in"><textarea placeholder="Type a reply… (Enter to send, Shift+Enter for a new line)" rows="1"></textarea><button class="btn pri">' + ic("send") + "Send</button></form>";
+      $("#lc-r").innerHTML = '<div class="lc-top" id="lc-top"></div><div class="lc-info" id="lc-info"></div><div class="lc-msgs" id="lc-msgs"></div><div class="cx-typing" id="lc-ty"></div><form class="lc-in" id="lc-in"><div class="lc-mode"><button type="button" data-m="reply" class="on">Reply</button><button type="button" data-m="note">Note</button></div><textarea placeholder="Type a reply… (Enter to send · / for saved replies)" rows="1"></textarea><button class="btn pri">' + ic("send") + "Send</button></form>";
       W.fillIcons($("#lc-r"));
       var ta = $("#lc-in textarea");
-      ta.addEventListener("keydown", function (e) { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); $("#lc-in").requestSubmit(); } });
+      mode = "reply";
+      $(".lc-mode", el).onclick = function (e) { var b = e.target.closest("[data-m]"); if (!b) return; mode = b.dataset.m; $$(".lc-mode button", el).forEach(function (x) { x.classList.toggle("on", x === b); }); $("#lc-in").classList.toggle("note", mode === "note"); ta.placeholder = mode === "note" ? "Internal note: only your team sees this" : "Type a reply… (Enter to send · / for saved replies)"; ta.focus(); };
+      var sv = { on: false, i: 0, m: [] };
+      function svClose() { sv.on = false; var x = $(".lc-sv", el); if (x) x.remove(); }
+      function svDraw() {
+        var q = ta.value.slice(1).toLowerCase(); sv.m = SAVED.filter(function (x) { return !q || x.k.indexOf(q) === 0 || x.t.toLowerCase().indexOf(q) > -1; }).slice(0, 8);
+        var x = $(".lc-sv", el); if (!sv.m.length) { if (x) x.remove(); sv.on = false; return; }
+        if (!x) { x = document.createElement("div"); x.className = "lc-sv"; $("#lc-in").appendChild(x); }
+        sv.on = true; sv.i = Math.min(sv.i, sv.m.length - 1);
+        x.innerHTML = sv.m.map(function (r, i) { return '<a href="#" data-i="' + i + '"' + (i === sv.i ? ' class="on"' : "") + "><b>/" + esc(r.k) + "</b>" + esc(r.t.slice(0, 90)) + "</a>"; }).join("");
+        x.onmousedown = function (e) { var a = e.target.closest("[data-i]"); if (!a) return; e.preventDefault(); svPick(+a.dataset.i); };
+      }
+      function svPick(i) { var r = sv.m[i]; if (!r) return; var f = (chat && chat.name || "").split(" ")[0]; ta.value = r.t.replace(/\{name\}/g, f || "there"); svClose(); ta.focus(); }
+      ta.addEventListener("input", function () { if (ta.value[0] === "/" && ta.value.indexOf(" ") < 0 && ta.value.indexOf("\n") < 0) svDraw(); else svClose(); });
+      ta.addEventListener("keydown", function (e) {
+        if (sv.on) { if (e.key === "ArrowDown") { sv.i = (sv.i + 1) % sv.m.length; svDraw(); e.preventDefault(); return; } if (e.key === "ArrowUp") { sv.i = (sv.i - 1 + sv.m.length) % sv.m.length; svDraw(); e.preventDefault(); return; } if (e.key === "Enter" || e.key === "Tab") { e.preventDefault(); svPick(sv.i); return; } if (e.key === "Escape") { svClose(); return; } }
+        if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); $("#lc-in").requestSubmit(); }
+      });
       $("#lc-in").onsubmit = function (e) {
-        e.preventDefault(); var t = ta.value.trim(); if (!t) return; ta.value = ""; ta.disabled = true;
-        api("chat_reply", { id: cur, text: t }).then(function (r) { ta.disabled = false; ta.focus(); if (!r.ok) { ta.value = t; return toast(r.error, true); } load(); list(); });
+        e.preventDefault(); var t = ta.value.trim(); if (!t) return; ta.value = ""; ta.disabled = true; svClose();
+        api(mode === "note" ? "chat_note" : "chat_reply", { id: cur, text: t }).then(function (r) { ta.disabled = false; ta.focus(); if (!r.ok) { ta.value = t; return toast(r.error, true); } load(); list(); });
       };
       if (W.chatX) W.chatX.composer($("#lc-in"), function () { return cur; }, function () { load(); list(); });
       load(true);
@@ -131,11 +159,19 @@
       $("#lc-top").innerHTML = '<button class="btn sm" id="lc-bk" title="Back" style="display:none">' + ic("chevron-left") + "</button><div><h3>" + esc(c.name || "Visitor #" + c.id) + "</h3><small>" + (c.mode === "ai" ? "AI assistant is answering" : "Handled by " + esc(c.agent || "team")) + " · started " + esc(ago(c.created_at)) + '</small></div><span class="sp"></span>' +
         (c.mode === "ai" ? '<button class="btn sm" id="lc-take">' + ic("user") + "Take over</button>" : '<button class="btn sm" id="lc-ai">' + ic("sparkles") + "Hand back to AI</button>") +
         (c.lead_id ? '<a class="btn sm" href="#/enquiries">' + ic("inbox") + "Lead #" + c.lead_id + "</a>" : '<button class="btn sm" id="lc-lead">' + ic("plus") + "Save as lead</button>") +
+        '<select id="lc-as" title="Assign to">' + '<option value="0">Unassigned</option>' + TEAM.map(function (t) { return '<option value="' + t.id + '"' + (c.assigned === t.id ? " selected" : "") + ">" + esc(t.id === ME ? t.name + " (me)" : t.name) + "</option>"; }).join("") + "</select>" +
+        '<button class="btn sm" id="lc-tg" title="Tags">' + ic("star") + ((c.tags || []).length ? esc(c.tags.join(", ")) : "Tags") + "</button>" +
         (c.status === "open" ? '<button class="btn sm" id="lc-close">' + ic("circle-check") + "Close</button>" : '<button class="btn sm" id="lc-reopen">Reopen</button>');
-      $("#lc-info").innerHTML = "<span>Phone: <b>" + esc(c.phone || "—") + "</b></span><span>Email: <b>" + esc(c.email || "—") + "</b></span><span>Page: <b>" + esc(c.page || "/") + "</b></span>" + (c.phone ? '<a href="https://wa.me/' + esc(String(c.phone).replace(/\D/g, "").replace(/^0/, "92")) + '" target="_blank" rel="noopener">WhatsApp them</a>' : "");
+      $("#lc-info").innerHTML = "<span>Channel: <b>" + ({ wa: "WhatsApp", tg: "Telegram" }[c.channel] || "Website") + "</b></span><span>Phone: <b>" + esc(c.phone || "—") + "</b></span><span>Email: <b>" + esc(c.email || "—") + "</b></span><span>Page: <b>" + esc(c.page || "/") + "</b></span>" + (c.phone ? '<a href="https://wa.me/' + esc(String(c.phone).replace(/\D/g, "").replace(/^0/, "92")) + '" target="_blank" rel="noopener">WhatsApp them</a>' : "");
       W.fillIcons($("#lc-top"));
       if (window.innerWidth <= 860) { $("#lc-bk").style.display = ""; $("#lc-bk").onclick = function () { location.hash = "#/chat"; }; }
       var act = function (a, p, msg) { api(a, Object.assign({ id: c.id }, p || {})).then(function (r) { if (!r.ok) return toast(r.error, true); chat = r.chat; top(); list(); load(); if (msg) toast(msg); }); };
+      $("#lc-as").onchange = function () { act("chat_assign", { user_id: +this.value }, +this.value ? "Assigned" : "Unassigned"); };
+      $("#lc-tg").onclick = function () {
+        var PRE = ["hot", "quote", "site visit", "complaint", "follow up", "won"], cur0 = (c.tags || []).slice();
+        W.modal("<h3>Tags</h3><div id='tg-l' style='display:flex;flex-wrap:wrap;gap:8px;margin:8px 0'>" + PRE.concat(cur0.filter(function (t) { return PRE.indexOf(t) < 0; })).map(function (t) { return "<label class='check' style='margin:0'><input type='checkbox' value='" + esc(t) + "'" + (cur0.indexOf(t) > -1 ? " checked" : "") + "> " + esc(t) + "</label>"; }).join("") + "</div><label>Other tag<input id='tg-x' placeholder='e.g. kitchen'></label><div class='modal-actions'><button class='btn' onclick='WXA.closeModal()'>Cancel</button><button class='btn pri' id='tg-go'>Save</button></div>");
+        $("#tg-go").onclick = function () { var t = $$("#tg-l input:checked").map(function (i) { return i.value; }); if ($("#tg-x").value.trim()) t.push($("#tg-x").value.trim()); W.closeModal(); act("chat_tags", { tags: t }, "Tags saved"); };
+      };
       if ($("#lc-take")) $("#lc-take").onclick = function () { act("chat_mode", { mode: "human" }, "You took over. The AI will stay quiet."); };
       if ($("#lc-ai")) $("#lc-ai").onclick = function () { act("chat_mode", { mode: "ai" }, "The AI assistant is answering again"); };
       if ($("#lc-close")) $("#lc-close").onclick = function () { act("chat_close", {}, "Chat closed"); };
@@ -149,10 +185,10 @@
       if (!cur) return; var id = cur;
       api("chat_get", { id: id, since: last }).then(function (r) {
         if (id !== cur || !$("#lc-msgs")) return; if (!r.ok) { $("#lc-r").innerHTML = '<div class="lc-empty">' + esc(r.error) + "</div>"; return; }
-        var changed = !chat || chat.mode !== r.chat.mode || chat.status !== r.chat.status || chat.phone !== r.chat.phone || chat.lead_id !== r.chat.lead_id || chat.name !== r.chat.name;
+        var changed = !chat || chat.mode !== r.chat.mode || chat.status !== r.chat.status || chat.phone !== r.chat.phone || chat.lead_id !== r.chat.lead_id || chat.name !== r.chat.name || chat.assigned !== r.chat.assigned || String(chat.tags) !== String(r.chat.tags);
         chat = r.chat; if (changed) top();
         var M = $("#lc-msgs"), atEnd = M.scrollHeight - M.scrollTop - M.clientHeight < 60;
-        r.messages.forEach(function (m) { if (m.id <= last) return; last = m.id; var d = document.createElement("div"); d.className = "lm " + ({ visitor: "v", ai: "a", agent: "g", sys: "s" })[m.who]; d.innerHTML = (m.who !== "sys" ? "<small>" + esc(m.who === "visitor" ? (chat.name || "Visitor") : m.who === "ai" ? "AI assistant" : m.name) + " · " + esc(String(m.t).slice(11, 16)) + "</small>" : "") + (W.chatX ? W.chatX.body(m) : esc(m.text)); M.appendChild(d); });
+        r.messages.forEach(function (m) { if (m.id <= last) return; last = m.id; var d = document.createElement("div"); d.className = "lm " + ({ visitor: "v", ai: "a", agent: "g", sys: "s", note: "n" })[m.who]; d.innerHTML = (m.who !== "sys" ? "<small>" + (m.who === "note" ? "📝 Note · " : "") + esc(m.who === "visitor" ? (chat.name || "Visitor") : m.who === "ai" ? "AI assistant" : m.name) + " · " + esc(String(m.t).slice(11, 16)) + "</small>" : "") + (W.chatX ? W.chatX.body(m) : esc(m.text)); M.appendChild(d); });
         if (first || atEnd) M.scrollTop = M.scrollHeight;
         if ($("#lc-ty")) $("#lc-ty").textContent = r.typing ? (chat.name || "Visitor") + " is typing…" : "";
         if (first) { list(); setTimeout(pollN, 300); }
@@ -164,6 +200,19 @@
     list(); if (cur) open(cur);
   };
 
+  function repliesModal() {
+    api("chat_cfg_get").then(function (r) {
+      if (!r.ok) return toast(r.error, true); var c = r.cfg;
+      W.modal("<h3>Replies & quick answers</h3>" +
+        "<p class='muted' style='font-size:13px'><b>Saved replies</b> are for your team: type <b>/</b> in the Inbox to insert one. One per line: <code>key | text</code>. {name} becomes the customer's first name.</p>" +
+        "<textarea id='rp-s' rows='8' style='font-size:13px'>" + esc((c.saved || []).map(function (x) { return x.k + " | " + x.t; }).join("\n")) + "</textarea>" +
+        "<p class='muted' style='font-size:13px;margin-top:12px'><b>Quick answers</b> are buttons customers can tap in the website chat and on Telegram (max 6). One per line: <code>button | message sent</code>.</p>" +
+        "<textarea id='rp-q' rows='6' style='font-size:13px'>" + esc((c.quick || []).map(function (x) { return x.label + " | " + x.text; }).join("\n")) + "</textarea>" +
+        "<div class='modal-actions'><button class='btn' onclick='WXA.closeModal()'>Cancel</button><button class='btn pri' id='rp-go'>Save</button></div>", "wide");
+      var parse = function (v, a, b) { return v.split("\n").map(function (l) { var i = l.indexOf("|"); if (i < 0) return null; var o = {}; o[a] = l.slice(0, i).trim(); o[b] = l.slice(i + 1).trim(); return o[a] && o[b] ? o : null; }).filter(Boolean); };
+      $("#rp-go").onclick = function () { api("chat_cfg_save", { cfg: { saved: parse($("#rp-s").value, "k", "t"), quick: parse($("#rp-q").value, "label", "text").slice(0, 6) } }).then(function (x) { if (!x.ok) return toast(x.error, true); W.closeModal(); toast("Saved ✓"); if (W._chatRefresh) W._chatRefresh(); }); };
+    });
+  }
   function cfgModal() {
     api("chat_cfg_get").then(function (r) {
       if (!r.ok) return toast(r.error, true); var c = r.cfg;
@@ -208,3 +257,5 @@
     });
   };
 })();
+/* P39 Phase 4: composer layout (Reply/Note toggle above the input) */
+(function () { var s = document.createElement("style"); s.textContent = ".lc-in{flex-wrap:wrap}.lc-in .lc-mode{flex-direction:row;flex-basis:100%;order:-1}.lc-in textarea{flex:1 1 220px;min-width:180px}.lc-top select#lc-as{min-width:140px;width:auto}"; document.head.appendChild(s); })();

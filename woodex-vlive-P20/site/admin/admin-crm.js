@@ -101,7 +101,7 @@
   W.VIEWS.enquiries = function (el) {
     var st = S.enqState || (S.enqState = { q: "", stage: "", source: "", who: "", due: false });
     var admin = can("owner,admin");
-    el.innerHTML = head("Enquiries & leads", "Enquiries", (admin ? '<button class="btn" id="eq-set">' + ic("settings") + 'Alerts & spam</button><button class="btn" id="eq-imp">' + ic("upload") + "Import CSV</button>" : "") + '<button class="btn" id="eq-exp">' + ic("download") + 'Export CSV</button><button class="btn pri" id="eq-add">' + ic("plus") + "Add enquiry</button>") +
+    el.innerHTML = head("Leads", "Leads", (admin ? '<button class="btn" id="eq-set">' + ic("settings") + 'Alerts & spam</button><button class="btn" id="eq-imp">' + ic("upload") + "Import CSV</button>" : "") + '<button class="btn" id="eq-exp">' + ic("download") + 'Export CSV</button><button class="btn pri" id="eq-add">' + ic("plus") + "Add enquiry</button>") +
       '<div class="grid kpis" id="eq-kpis"></div><div class="card"><div class="card-b" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;border-bottom:1px solid var(--line)">' +
       '<input type="search" id="eq-q" placeholder="Search name, phone, email, message…" style="margin:0;max-width:300px">' +
       '<select id="eq-stage" style="margin:0;width:auto"><option value="">All stages</option>' + ORDER.map(function (s) { return '<option value="' + s + '">' + STAGE[s][0] + "</option>"; }).join("") + "</select>" +
