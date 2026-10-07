@@ -12,14 +12,14 @@ Phase E (claims) is skipped for now. Work order: A, then B, then C. Tick each bo
 - [ ] A8 Hosting setup after upload: www to non-www 301, HTTPS, 410 for the old WordPress/spam URLs, submit the sitemap in Search Console
 
 ## B. On-page SEO and content
-- [ ] B1 Bring the 20 P34/P35 posts past 900 words
+- [x] B1 Bring the 20 P34/P35 posts past 900 words
 - [ ] B2 Expand the 28 older posts (about 300–500 words of article text each)
-- [ ] B3 Create 15 unique share/cover images (see tools/p35/PENDING-IMAGES.md)
-- [ ] B4 Replace the house exterior image on the Interior design hub card
+- [ ] B3 Unique share images: 9 of 15 done; 6 left (master-planning, office/retail/restaurant/educational/healthcare buildings)
+- [x] B4 Replace the house exterior image on the Interior design hub card
 - [ ] B5 Named author and reviewer on the 48 posts (Person schema). **Needs names and credentials from you**
 - [ ] B6 Real project photos to replace stock/AI images. **Needs photos from you**
 - [ ] B7 Real Google reviews for the review slider and review markup. **Needs reviews from you**
-- [ ] B8 Raster logo (PNG) for Organization schema
+- [x] B8 Raster logo (PNG) for Organization schema
 
 ## C. Admin dashboard improvements
 - [ ] C1 Insights manager: list, edit and SEO-score all 48 posts (the generator posts are not in the admin yet)
