@@ -65,7 +65,7 @@ switch ($act) {
             $r = $cnt < 40 ? chat_ai_reply($c) : '';
             if ($r === '' && $cnt < 40) $r = chat_rule_reply($c, $text); // P19 B1: never go silent when AI is off/down
             if ($r !== '') {
-                $human = strpos($r, '[HUMAN]') !== false; $r = trim(str_replace('[HUMAN]', '', $r));
+                [$r, $human] = chat_ai_post($c, $r);
                 chat_add((int)$c['id'], 'ai', 'Woodex assistant', $r);
                 if ($human) q('UPDATE wx_chats SET needs=1 WHERE id=?', [$c['id']]);
             } elseif (!(int)q("SELECT COUNT(*) FROM wx_chat_msgs WHERE chat_id=? AND who='sys'", [$c['id']])->fetchColumn()) {

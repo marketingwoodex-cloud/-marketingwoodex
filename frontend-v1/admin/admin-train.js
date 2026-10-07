@@ -80,9 +80,11 @@
         var w = bub("s", "typing…");
         api("chat_test", { turns: turns, channel: $("#t-ch").value }).then(function (x) {
           w.remove(); if (!x.ok) return bub("err", "⚠ " + (x.error || "AI did not answer") + " — check Settings → System check");
-          var d = bub("a", x.reply), cp = document.createElement("button"); cp.className = "cp"; cp.type = "button"; cp.textContent = "Copy reply"; cp.onclick = function () { navigator.clipboard.writeText(x.reply).then(function () { toast("Copied ✓"); }); }; d.appendChild(cp); turns.push({ who: "ai", text: x.reply }); if (x.human) bub("s", "→ This chat would be flagged “needs you” for the team");
+          var d = bub("a", x.reply); if (x.lead || x.human) { var lc = document.createElement("div"); lc.className = "tr-lead"; lc.textContent = (x.lead ? "Saved to CRM → " + Object.keys(x.lead).filter(function (k) { return x.lead[k]; }).map(function (k) { return ({ name: "Name", area: "Area", type: "Project", budget: "Budget" })[k] + ": " + x.lead[k]; }).join(" · ") : "") + (x.human ? (x.lead ? "   " : "") + "⚑ Hands over to the team" : ""); $("#t-m").appendChild(lc); }
+          var cp = document.createElement("button"); cp.className = "cp"; cp.type = "button"; cp.textContent = "Copy reply"; cp.onclick = function () { navigator.clipboard.writeText(x.reply).then(function () { toast("Copied ✓"); }); }; d.appendChild(cp); turns.push({ who: "ai", text: x.reply }); if (x.human) bub("s", "→ This chat would be flagged “needs you” for the team");
         });
       };
     });
   };
+  var st = document.createElement("style"); st.textContent = ".tr-lead{align-self:flex-start;font-size:11.5px;background:#ecfdf3;color:#05603a;border:1px dashed #6ce9a6;border-radius:8px;padding:4px 9px;margin:-2px 0 6px;max-width:85%}"; document.head.appendChild(st);
 })();

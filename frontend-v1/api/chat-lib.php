@@ -122,11 +122,30 @@ function chat_ai_system(array $c): string {
         "When a Q&A answer below matches the question, use it (you may rephrase). Never invent prices, discounts, timelines or promises that are not written below; say the team will confirm after a site visit. Currency is PKR.\n" .
         (!empty($cfg['noPrices']) ? "PRICES: never quote any price, rate, per-square-foot cost, budget, range or estimate — not even approximately, even if asked repeatedly. Explain that cost depends on scope, size, materials and site condition, and offer a free site visit or a detailed itemised quotation.\n" : '') .
         ($avoid ? "Do NOT discuss these topics; politely say the team will help with that and move on: " . implode('; ', $avoid) . "\n" : '') .
+        "LEAD DETAILS: whenever the customer reveals new details, add ONE hidden tag at the very end of your reply in this exact form: [LEAD]{\"name\":\"\",\"area\":\"\",\"type\":\"\",\"budget\":\"\"} — fill only what they actually said (area = city/area of the site, type = home/office/shop/restaurant/kitchen/renovation etc., budget = the range in their words). Never ask for a budget more than once and never suggest one. The customer never sees this tag.\n" .
         "If the customer asks for a human, is upset, wants to finalise a deal, or asks something you cannot answer, say a team member will reply shortly and add the tag [HUMAN] at the very end.\n" .
         "Office hours: {$cfg['hours']}. It is currently " . (chat_open_now() ? 'within' : 'outside') . " office hours.\nContact: {$co['phones']} · {$co['email']} · {$co['address']}\n\nSTUDIO FACTS (always true):\n" . CHAT_FACTS . "\n\nKNOWLEDGE:\n" . $cfg['knowledge'] .
         ($cfg['prices'] !== '' && empty($cfg['noPrices']) ? "\n\nPRICE GUIDANCE (starting rates only; always add that the final quote comes after a site visit):\n" . $cfg['prices'] : '') .
         ($faq ? "\n\nQ&A:\n" . mb_substr(implode("\n\n", $faq), 0, 9000) : '') .
         ($wa ? "\n\nChannel: WhatsApp (their number is already known)." : "\n\nVisitor is on page: " . ($c['page'] ?? '/')) . (!empty($c['name']) ? "\nCustomer name: " . $c['name'] : '') . (!empty($c['phone']) && !$wa ? "\nPhone already given: yes" : '');
+}
+/** P38: split an AI reply into [visible text, needs human]; saves any [LEAD]{...} details to the chat's CRM lead (creates it when the phone is known and auto-lead is on). */
+function chat_ai_post(array $c, string $r): array {
+    $human = strpos($r, '[HUMAN]') !== false; $r = str_replace('[HUMAN]', '', $r); $d = [];
+    if (preg_match('~\[LEAD\]\s*(\{[^{}]*\})~u', $r, $m)) { $d = json_decode($m[1], true) ?: []; }
+    $r = trim(preg_replace('~\[LEAD\]\s*(\{[^{}]*\})?~u', '', $r));
+    if ($d && !empty($c['id'])) try {
+        $d = array_filter(array_map(fn($v) => mb_substr(trim(strip_tags((string)$v)), 0, 80), array_intersect_key($d, ['name' => 1, 'area' => 1, 'type' => 1, 'budget' => 1])), 'strlen');
+        if (!empty($d['name']) && trim((string)($c['name'] ?? '')) === '') { q('UPDATE wx_chats SET name=? WHERE id=?', [$d['name'], $c['id']]); $c['name'] = $d['name']; }
+        if (empty($c['lead_id']) && !empty($c['phone']) && !empty(chat_cfg()['autoLead'])) $c = chat_make_lead($c);
+        if (!empty($c['lead_id'])) {
+            $l = q('SELECT name,service,fields FROM wx_leads WHERE id=?', [$c['lead_id']])->fetch();
+            if ($l) { $f = json_decode((string)$l['fields'], true) ?: []; foreach (['area' => 'Area', 'type' => 'Project type', 'budget' => 'Budget (customer)'] as $k => $lab) if (!empty($d[$k])) $f[$lab] = $d[$k];
+                $nm = (!empty($d['name']) && preg_match('~^Chat visitor #~', (string)$l['name'])) ? $d['name'] : $l['name'];
+                q('UPDATE wx_leads SET name=?,service=?,fields=? WHERE id=?', [$nm, ($l['service'] ?: ($d['type'] ?? '')), json_encode($f, JSON_UNESCAPED_UNICODE), $c['lead_id']]); }
+        }
+    } catch (Throwable $e) { error_log('chat lead details: ' . $e->getMessage()); }
+    return [$r, $human];
 }
 /** Call the configured AI with role turns; returns '' on any failure (never exits). */
 function chat_ai_call(string $sys, array $turns): string {
@@ -240,7 +259,7 @@ function chat_actions(string $action, array $in): bool {
             $a = cms_load()['ai']; if (($a[$a['provider'] . 'Key'] ?? '') === '') fail('Add an AI key first (Blog & insights → AI settings)');
             $r = chat_ai_call(chat_ai_system(['channel' => ($in['channel'] ?? '') === 'wa' ? 'wa' : 'web', 'page' => '/', 'name' => '', 'phone' => '']), $turns);
             if ($r === '') fail('The AI did not answer. Check the AI key and model.');
-            $h = strpos($r, '[HUMAN]') !== false; out(['ok' => true, 'reply' => trim(str_replace('[HUMAN]', '', $r)), 'human' => $h]);
+            $lead = preg_match('~\[LEAD\]\s*(\{[^{}]*\})~u', $r, $lm) ? (json_decode($lm[1], true) ?: null) : null; [$vis, $h] = chat_ai_post([], $r); out(['ok' => true, 'reply' => $vis, 'human' => $h, 'lead' => $lead]);
         case 'notif_poll': // bell: unread leads + chats waiting; items for the dropdown
             $u = need(); crm_migrate(); $items = [];
             $sales = in_array($u['role'], $SALES, true);
