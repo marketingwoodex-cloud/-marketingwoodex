@@ -13,7 +13,7 @@
 
   VIEWS.dashboard = function (el) {
     var u = W.S && W.S.user || {};
-    if (u.role === "editor") return classic(el);
+    if (u.role === "editor" || u.role === "support") return classic(el);
     kill();
     var h = new Date().getHours(), hi = h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening";
     el.innerHTML = '<div class="ph"><div><h1>' + hi + ", " + esc((u.name || "").split(" ")[0]) + '</h1><div class="crumb">Here is how Woodex is doing</div></div><div class="toolbar">' +

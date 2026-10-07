@@ -21,7 +21,8 @@ const PRIVATE_DIR = ROOT_DIR . '/_private';
 const DB_FILE     = PRIVATE_DIR . '/db.json';
 const BCONFIG     = PRIVATE_DIR . '/config.json';   // shared with builder.php
 const ACT_FILE    = PRIVATE_DIR . '/activity.jsonl'; // builder.php appends here
-const ROLES       = ['owner', 'admin', 'editor', 'sales'];
+const ROLES       = ['owner', 'admin', 'editor', 'sales', 'support'];
+require_once __DIR__ . '/roles-lib.php';
 
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
@@ -95,8 +96,14 @@ function current_user(): ?array {
     if (!sec_session_ok((int)$u['id'], $m[3])) return null; // signed out remotely
     $GLOBALS['WX_SID'] = $m[3]; return $u;
 }
-function need(array $roles = []): array { $u = current_user(); if (!$u) fail('Not signed in', 401); if ($roles && !in_array($u['role'], $roles, true)) fail('You do not have permission for this', 403); return $u; }
-function pub(array $u): array { return ['id' => (int)$u['id'], 'name' => $u['name'], 'email' => $u['email'], 'role' => $u['role'], 'active' => (bool)$u['active'], 'created_at' => $u['created_at'], 'last_login' => $u['last_login']]; }
+function need(array $roles = []): array {
+    $u = current_user(); if (!$u) fail('Not signed in', 401);
+    $act = defined('WX_LIB_ONLY') ? '' : (string)($GLOBALS['action'] ?? '');
+    $ok = ($act !== '' && function_exists('wx_allowed')) ? wx_allowed($u, $act, $roles) : null;
+    if ($ok === false || ($ok === null && $roles && !in_array($u['role'], $roles, true))) fail('Your role (' . (ROLE_LABELS[$u['role']] ?? $u['role']) . ') does not have permission for this', 403);
+    return $u;
+}
+function pub(array $u): array { return ['id' => (int)$u['id'], 'name' => $u['name'], 'email' => $u['email'], 'role' => $u['role'], 'roleLabel' => ROLE_LABELS[$u['role']] ?? $u['role'], 'perms' => function_exists('wx_user_perms') ? wx_user_perms($u) : [], 'active' => (bool)$u['active'], 'created_at' => $u['created_at'], 'last_login' => $u['last_login']]; }
 function throttle(bool $failed = false): void {
     $r = q('SELECT n,t FROM wx_throttle WHERE ip=?', [ip()])->fetch();
     if (!$failed) { if ($r && $r['n'] >= 8 && time() - $r['t'] < 600) fail('Too many attempts — wait 10 minutes', 429); return; }
@@ -339,7 +346,7 @@ switch ($action) {
         log_act($u, 'password.reset'); out(['ok' => true, 'message' => 'Password changed. Sign in with your new password.']);
 
     case 'me':
-        $u = need(); out(['ok' => true, 'user' => pub($u), 'builderToken' => in_array($u['role'], ['owner', 'admin', 'editor'], true) ? builder_token((int)$u['id']) : null]);
+        $u = need(); out(['ok' => true, 'user' => pub($u), 'caps' => wx_caps($u), 'builderToken' => in_array($u['role'], ['owner', 'admin', 'editor'], true) ? builder_token((int)$u['id']) : null]);
 
     case 'logout':
         if ($u = current_user()) { $s = sec_get_u((int)$u['id']); $s['sessions'] = array_values(array_filter($s['sessions'] ?? [], fn($x) => $x['sid'] !== ($GLOBALS['WX_SID'] ?? ''))); sec_put_u((int)$u['id'], $s); log_act($u, 'logout'); } out(['ok' => true]);
@@ -376,10 +383,13 @@ switch ($action) {
             q('UPDATE wx_users SET name=?,email=?,role=?,active=?' . ($pw !== '' || !$active ? ',pw_ver=pw_ver+1' : '') . ' WHERE id=?', [$name, $email, $role, $active, $id]);
             if ($pw !== '') { valid_pw($pw); q('UPDATE wx_users SET pass_hash=? WHERE id=?', [password_hash($pw, PASSWORD_DEFAULT), $id]); }
             if (($pw !== '' || !$active || $old['role'] !== $role) && (int)$old['id'] !== (int)$me['id']) { $s = sec_get_u($id); $s['sessions'] = []; sec_put_u($id, $s); } // sign out everywhere (admin + builder)
+            if (isset($in['perms']) && is_array($in['perms'])) { $s = sec_get_u($id); $s['perms'] = array_values(array_intersect($in['perms'], array_keys(PERM_GROUPS))); sec_put_u($id, $s); }
             log_act($me, 'user.update', $email);
         } else {
             valid_pw($pw);
             q('INSERT INTO wx_users (name,email,role,pass_hash,active,created_at) VALUES (?,?,?,?,?,?)', [$name, $email, $role, password_hash($pw, PASSWORD_DEFAULT), $active, now()]);
+            $nid = (int)q('SELECT id FROM wx_users WHERE email=?', [$email])->fetchColumn();
+            if ($nid && isset($in['perms']) && is_array($in['perms'])) { $s = sec_get_u($nid); $s['perms'] = array_values(array_intersect($in['perms'], array_keys(PERM_GROUPS))); sec_put_u($nid, $s); }
             log_act($me, 'user.create', $email);
         }
         out(['ok' => true]);

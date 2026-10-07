@@ -5,7 +5,40 @@ import path from "node:path";
 import crypto from "node:crypto";
 import { execFileSync } from "node:child_process";
 
-const ROLES = ["owner", "admin", "editor", "sales"];
+const ROLES = ["owner", "admin", "editor", "sales", "support"];
+// ---- P39 roles (mirror of api/roles-lib.php) ----
+const ROLE_LABELS = { owner: "Master", admin: "Manager", editor: "Developer", sales: "Sales", support: "Support" };
+const PERM_GROUPS = ["sales", "conversations", "updates", "broadcast", "ai", "website", "settings"];
+const ROLE_GROUPS = { owner: ["self", "sales", "conversations", "updates", "broadcast", "ai", "website", "settings", "master"], admin: ["self", "sales", "conversations", "updates", "broadcast", "ai", "website", "settings"], editor: ["self", "website", "settings"], sales: ["self", "sales", "conversations"], support: ["self", "conversations", "updates", "support_view"] };
+const EXPAND = { website: ["editor"], settings: ["editor"], conversations: ["sales", "support"], updates: ["support"], support_view: ["support"] };
+const ACT_GROUPS = [
+  ["self", /^(me|me_get|me_save|me_avatar|me_avatars|profile|password|logout|ping|poll|notif_poll|typing|dashboard|dash_data|site_stats|leads_count|mt_get|sec_(get|alerts|2fa_begin|2fa_enable|2fa_disable|recovery_new|revoke)|google_(me|link|unlink))$/],
+  ["master", /^(user_save|sec_2fa_reset|backup_(run|delete|restore)|restore|dbx_row|db_reconnect|google_save|mcp_token_(new|regen|revoke|toggle))$/],
+  ["support_view", /^(client_360|get_lead|projs_list|proj_milestones)$/],
+  ["updates", /^(proj_update)$/],
+  ["conversations", /^(chat_(list|get|reply|close|file|mode|lead|typing)|wa_stats|whatsapp_stats|crm_wa_status)$/],
+  ["ai", /^(chat_cfg_get|chat_cfg_save|chat_test|ai_test)$/],
+  ["broadcast", /^(crm_offers|crm_offer_(save|send|delete)|wag_[a-z_]+)$/],
+  ["sales", /^(leads?_[a-z0-9_]+|add_lead_note|lead_note|get_lead|list_leads|clients?_[a-z0-9_]+|list_clients|quotes?_[a-z_]+|get_quote|list_quotes|create_quote_draft|invs?_[a-z_]+|pay_(add|delete)|projs?_[a-z_]+|bk_[a-z_]+|est_[a-z_]+|s17_meta|dash_target_save|monthly_report|tpl_(list|save|delete|import)|company_get)$/],
+  ["settings", /^(set_[a-z_]+|crm_settings|crm_settings_save|crm_test|crm_wa_connect|crm_wa_disconnect|notify_(get|save|test)|company_save|cms_biz_[a-z_]+|cms_ai_[a-z_]+|cms_announce_[a-z_]+|mt_set|sys_check|activity|google_cfg|health_settings|sheets_[a-z_]+|gdata_(save|clear))$/],
+  ["website", /^(cms_[a-z_]+|page_[a-z_]+|pages|pages_list|list_pages|seo_[a-z_]+|blocks_[a-z_]+|global_[a-z_]+|chrome_[a-z_]+|theme|theme_get|media|media_[a-z_]+|fm_[a-z_]+|redirects|redirects_[a-z_]+|r404_[a-z_]+|health_(get|psi|scan|speed)|forms_(get|save)|gdata_(status|report)|backups|backup_(list|get)|users|dbx_(browse|export|tables)|mcp_(tokens|log))$/]
+];
+const VIEW_ONLY_OA = ["users", "backups", "backup_list", "backup_get", "dbx_browse", "dbx_export", "dbx_tables", "mcp_tokens", "mcp_log"];
+const SHARED = { est_tpls: ["sales", "website"], est_tpl_save: ["sales", "website"], est_save: ["sales", "website"], crm_wa_status: ["conversations", "settings", "broadcast"], gdata_report: ["sales", "website"], s17_meta: ["sales", "support_view"], projs_table: ["sales", "support_view"], notify_get: ["settings", "updates"] };
+const wxGroup = (a) => { for (const [g, re] of ACT_GROUPS) if (re.test(a)) return g; return null; };
+const wxPerms = (u) => (Array.isArray(u.perms) ? u.perms : []).filter((p) => PERM_GROUPS.includes(p));
+function wxAllowed(u, action, legacy) {
+  if (SHARED[action]) { const mine = [...(ROLE_GROUPS[u.role] || []), ...wxPerms(u)]; return SHARED[action].some((g) => mine.includes(g) || (g === "support_view" && mine.includes("sales"))); }
+  const g = wxGroup(action); if (g === null) return null;
+  if (VIEW_ONLY_OA.includes(action)) return ["owner", "admin"].includes(u.role);
+  const extra = wxPerms(u), mine = [...(ROLE_GROUPS[u.role] || ["self"]), ...extra];
+  const has = mine.includes(g) || (["support_view", "updates"].includes(g) && mine.includes("sales"));
+  if (!has) return false;
+  if (!legacy || !legacy.length || legacy.includes(u.role)) return true;
+  return (EXPAND[g] || []).includes(u.role) || extra.includes(g);
+}
+const wxCaps = (u) => ({ label: ROLE_LABELS[u.role] || u.role, groups: [...new Set([...(ROLE_GROUPS[u.role] || ["self"]), ...wxPerms(u)])], perms: wxPerms(u) });
+
 class Fail extends Error { constructor(m, c = 400) { super(m); this.code = c; } }
 
 export function createAdmin({ ROOT, secret, builderPassword }) {
@@ -34,7 +67,7 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
   const sha = (x) => crypto.createHash("sha256").update(String(x)).digest("hex");
   /** Builder token = exp.uid.sid.sig — bound to the admin session: signing out / revoking / disabling kills builder access too. */
   const builderToken = (uid, sid) => { const exp = String(Math.floor(Date.now() / 1000) + 12 * 3600); return exp + "." + uid + "." + sid + "." + hmac("wx|" + exp + "|" + uid + "|" + sid); };
-  const pub = (u) => ({ id: u.id, name: u.name, email: u.email, role: u.role, active: !!u.active, created_at: u.created_at, last_login: u.last_login });
+  const pub = (u) => ({ id: u.id, name: u.name, email: u.email, role: u.role, roleLabel: ROLE_LABELS[u.role] || u.role, perms: wxPerms(u), active: !!u.active, created_at: u.created_at, last_login: u.last_login });
   const canBuild = (u) => ["owner", "admin", "editor"].includes(u.role);
   const validPw = (p) => { if (String(p || "").length < 8) throw new Fail("Password must be at least 8 characters"); };
 
@@ -2058,12 +2091,12 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
   const adminApi = async function (req, inp) {
     const action = String(inp.action || "status"), ip = req.socket.remoteAddress || "";
     let db = load(); if (db) { try { if (cmsTick(db)) save(db); } catch (e) { console.error("cmsTick", e.message); } }
-    const need = (roles) => { const u = current(db, req); if (!u) throw new Fail("Not signed in", 401); if (roles && !roles.includes(u.role)) throw new Fail("You do not have permission for this", 403); return u; };
+    const need = (roles) => { const u = current(db, req); if (!u) throw new Fail("Not signed in", 401); const ok = wxAllowed(u, action, roles); if (ok === false || (ok === null && roles && !roles.includes(u.role))) throw new Fail("Your role (" + (ROLE_LABELS[u.role] || u.role) + ") does not have permission for this", 403); return u; };
     const done = (o) => { save(db); return o; };
     switch (action) {
       case "cron": { let backups = []; try { backups = backupAuto(); } catch (e) { console.error("backup", e.message); } return { ok: true, published: 0, backups }; }
       /* P15 test mode: WX_DB_BROKEN=1 simulates a broken DB connection (mirrors db_reconnect in admin.php) */
-      case "sys_check": { const u = current(db, req); if (!u) throw new Fail("Not signed in", 401); if (!["owner","admin"].includes(u.role)) throw new Fail("You do not have permission for this", 403);
+      case "sys_check": { const u = need(["owner", "admin"]);
         const C = (g, n, ok, d, f) => ({ group: g, name: n, ok, detail: d, fix: f || "" }); const checks = [C("Server","PHP version",true,"Node preview " + process.version), C("Database","MySQL connection",true,"JSON store (preview)"), C("Files","SSL certificate bundle", fs.existsSync(path.join(ROOT,"api/cacert.pem")), "api/cacert.pem"), C("Sign-in","Admin token received", !!req.headers["x-wx-adm"], req.headers["x-wx-adm"] ? "header X-WX-ADM OK" : "missing")];
         for (const [n, url] of [["Google","https://www.googleapis.com/"],["OpenAI","https://api.openai.com/v1/models"]]) { try { const r = await fetch(url, { method: "HEAD", signal: AbortSignal.timeout(6000) }); checks.push(C("Outgoing HTTPS", n, true, "HTTP " + r.status)); } catch (e) { checks.push(C("Outgoing HTTPS", n, false, String(e.cause?.code || e.message), "Sandbox network")); } }
         return { ok: true, checks, version: "P16", time: new Date().toISOString(), server: "node-preview" }; }
@@ -2142,7 +2175,7 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
         const u = db && db.users.find((x) => x.id === +m[1] && x.active); if (!u || hmac("pwr|" + u.id + "|" + m[2] + "|" + u.pw_ver + "|" + u.pass_hash) !== m[3]) throw new Fail("This reset link is not valid or was already used. Ask for a new one.", 401);
         validPw(inp.password); u.pass_hash = hash(inp.password); u.pw_ver++; u.sessions = []; log(db, u, "password.reset", "", ip); return done({ ok: true, message: "Password changed. Sign in with your new password." });
       }
-      case "me": { const u = need(); return { ok: true, user: pub(u), builderToken: canBuild(u) ? builderToken(u.id, u._sid) : null }; }
+      case "me": { const u = need(); return { ok: true, user: pub(u), caps: wxCaps(u), builderToken: canBuild(u) ? builderToken(u.id, u._sid) : null }; }
       case "logout": { const u = current(db, req); if (u) { u.sessions = (u.sessions || []).filter((x) => x.sid !== u._sid); log(db, u, "logout", "", ip); save(db); } return { ok: true }; }
       case "profile": { const u = need(); const n = String(inp.name || "").trim(); if (!n) throw new Fail("Name is required"); u.name = n.slice(0, 120); log(db, u, "profile.update", "", ip); return done({ ok: true, user: pub(u) }); }
       case "password": {
@@ -2163,10 +2196,10 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
           if (old.role === "owner" && (role !== "owner" || !active) && db.users.filter((x) => x.role === "owner" && x.active).length < 2) throw new Fail("There must be at least one active owner");
           if (old.id === me.id && !active) throw new Fail("You cannot deactivate yourself");
           if (pw) validPw(pw);
-          const bump = pw || !active || old.role !== role; Object.assign(old, { name, email, role, active }); if (pw || !active) old.pw_ver++; if (pw) old.pass_hash = hash(pw);
+          const bump = pw || !active || old.role !== role; Object.assign(old, { name, email, role, active }); if (Array.isArray(inp.perms)) old.perms = inp.perms.filter((p) => PERM_GROUPS.includes(p)); if (pw || !active) old.pw_ver++; if (pw) old.pass_hash = hash(pw);
           if (bump && old.id !== me.id) old.sessions = []; // sign out everywhere (admin + builder) when access changes
           log(db, me, "user.update", email, ip);
-        } else { validPw(pw); db.users.push({ id: ++db.seqU, name, email, role, pass_hash: hash(pw), active, pw_ver: 1, created_at: now(), last_login: null }); log(db, me, "user.create", email, ip); }
+        } else { validPw(pw); db.users.push({ id: ++db.seqU, name, email, role, perms: Array.isArray(inp.perms) ? inp.perms.filter((p) => PERM_GROUPS.includes(p)) : [], pass_hash: hash(pw), active, pw_ver: 1, created_at: now(), last_login: null }); log(db, me, "user.create", email, ip); }
         return done({ ok: true });
       }
       case "dashboard": {

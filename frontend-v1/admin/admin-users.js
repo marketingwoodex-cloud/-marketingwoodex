@@ -18,14 +18,14 @@
     var card = tbl.closest(".card");
     card.insertAdjacentHTML("beforebegin", '<div class="grid kpis us-kpis" id="us-k"></div>');
     card.insertAdjacentHTML("afterbegin", '<div class="us-bar"><input type="search" id="us-q" placeholder="Search name or email…"><div class="seg" id="us-r">' +
-      [["all", "All"], ["owner", "Owners"], ["admin", "Admins"], ["editor", "Editors"], ["sales", "Sales"]].map(function (x) { return '<button data-r="' + x[0] + '"' + (x[0] === role ? ' class="on"' : "") + ">" + x[1] + "</button>"; }).join("") + "</div></div>");
+      [["all", "All"], ["owner", "Master"], ["admin", "Managers"], ["editor", "Developers"], ["sales", "Sales"], ["support", "Support"]].map(function (x) { return '<button data-r="' + x[0] + '"' + (x[0] === role ? ' class="on"' : "") + ">" + x[1] + "</button>"; }).join("") + "</div></div>");
     el.querySelector("#us-q").value = q;
     el.querySelector("#us-q").oninput = function () { q = this.value.toLowerCase(); apply(); };
     el.querySelector("#us-r").onclick = function (e) { var b = e.target.closest("[data-r]"); if (!b) return; role = b.dataset.r; [].forEach.call(this.children, function (x) { x.classList.toggle("on", x === b); }); apply(); };
     function apply() {
-      var rows = [].slice.call(tbl.rows).filter(function (r) { return !r.querySelector(".empty"); }), k = { all: 0, active: 0, owner: 0, admin: 0, editor: 0, sales: 0 };
+      var rows = [].slice.call(tbl.rows).filter(function (r) { return !r.querySelector(".empty"); }), k = { all: 0, active: 0, owner: 0, admin: 0, editor: 0, sales: 0, support: 0 };
       rows.forEach(function (r) {
-        var t = r.textContent.toLowerCase(), rl = (r.cells[1] && r.cells[1].textContent.trim().toLowerCase()) || "", on = /active/i.test(r.cells[2] ? r.cells[2].textContent : "");
+        var t = r.textContent.toLowerCase(), rl = (r.cells[1] && r.cells[1].querySelector("[data-role]") ? r.cells[1].querySelector("[data-role]").dataset.role : ""), on = /active/i.test(r.cells[2] ? r.cells[2].textContent : "");
         k.all++; if (on) k.active++; if (k[rl] != null) k[rl]++;
         r.style.display = (!q || t.indexOf(q) >= 0) && (role === "all" || rl === role) ? "" : "none";
         var last = r.cells[r.cells.length - 1];
@@ -33,8 +33,8 @@
           last.insertAdjacentHTML("afterbegin", '<a class="btn sm us-act" href="#/activity" data-n="' + esc(nm) + '" title="See what this person changed">' + ic("activity") + "Activity</a> "); W.fillIcons(last); }
       });
       var kpi = function (icon, label, v, b) { return '<div class="card kpi"><div class="kpi-ic">' + ic(icon) + "</div><small>" + label + '</small><div class="kpi-row"><b>' + v + "</b>" + (b || "") + "</div></div>"; };
-      el.querySelector("#us-k").innerHTML = kpi("users", "Team members", k.all, '<span class="badge ok">' + k.active + " active</span>") + kpi("shield", "Owners & admins", k.owner + k.admin, '<span class="badge gold">full access</span>') +
-        kpi("square-pen", "Editors", k.editor, '<span class="badge">website</span>') + kpi("inbox", "Sales", k.sales, '<span class="badge info">CRM</span>');
+      el.querySelector("#us-k").innerHTML = kpi("users", "Team members", k.all, '<span class="badge ok">' + k.active + " active</span>") + kpi("shield", "Master & managers", k.owner + k.admin, '<span class="badge gold">whole system</span>') +
+        kpi("square-pen", "Developers", k.editor, '<span class="badge">website</span>') + kpi("inbox", "Sales & support", k.sales + k.support, '<span class="badge info">CRM + inbox</span>');
       W.fillIcons(el.querySelector("#us-k"));
     }
     new MutationObserver(function () { if (!tbl.dataset.busy) { tbl.dataset.busy = 1; apply(); setTimeout(function () { delete tbl.dataset.busy; }, 0); } }).observe(tbl, { childList: true });
