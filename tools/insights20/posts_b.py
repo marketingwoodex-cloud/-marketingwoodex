@@ -178,7 +178,7 @@ POSTS = [
  "dek": "Most office problems are not about style. They are layout decisions made too fast. Here are the mistakes we see most, and how to fix them before move-in.",
  "cover": "img-197da8ddab9b", "cover_alt": "Office floor with desks, phone booths and lounge",
  "images": [("img-81b231a6c390", "Office reception and collaborative lounge", "Collaboration zones work best away from focus desks.", 2),
-            ("img-e670623c742b", "Office workstations with daylight", "Daylight helps, but glare control matters just as much.", 4)],
+            ("img-c349a92a4ae0", "Office workstations with daylight", "Daylight helps, but glare control matters just as much.", 4)],
  "sections": [
   ("Mistake 1: one big open floor with no quiet",
    "<p>The most common of all <strong>office design mistakes</strong> is an open plan with nowhere to concentrate or take a call. Noise spreads, people put on headphones and productivity drops. Add a few phone booths and a quiet zone, and separate loud teams from focus work.</p>"),

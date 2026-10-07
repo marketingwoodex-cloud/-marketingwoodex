@@ -61,7 +61,7 @@ POSTS = [
  "dek": "Landlords talk about shell and Cat A. Contractors talk about Cat B. Here is what each means for your office fit-out cost in Pakistan, and where the money really goes.",
  "cover": "img-81b231a6c390", "cover_alt": "Premium office interior with reception, lounge and meeting space",
  "images": [("img-197da8ddab9b", "Coworking office floor with hot desks and phone booths", "Density and the meeting-room mix drive the fit-out brief.", 2),
-            ("img-e670623c742b", "Light-filled office workstations with garden views", "Good light and acoustics cost little when planned early.", 4)],
+            ("img-c349a92a4ae0", "Light-filled office workstations with garden views", "Good light and acoustics cost little when planned early.", 4)],
  "sections": [
   ("Start with what the landlord hands over",
    "<p>Your <strong>office fit out cost in Pakistan</strong> depends first on the condition of the space on day one. Three terms come up in every lease discussion, and they mean very different starting points.</p>"

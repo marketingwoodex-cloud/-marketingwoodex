@@ -117,8 +117,8 @@ def main():
         check_links(p)
         if len(p["seo_title"]) > 60: errs.append("%s seo_title %d" % (p["slug"], len(p["seo_title"])))
         if not 120 <= len(p["desc"]) <= 160: errs.append("%s desc %d" % (p["slug"], len(p["desc"])))
-        body = " ".join(s[1] for s in p["sections"]).lower()
-        if p["kw"].lower() not in (p["title"] + " " + p["dek"] + " " + body).lower(): errs.append(p["slug"] + " focus keyword missing in text")
+        body = re.sub(r"<[^>]+>", "", " ".join(s[1] for s in p["sections"])).lower().replace("'s", "")
+        if not re.search(r"\W+(?:\w+\W+){0,2}".join(map(re.escape, p["kw"].lower().split())), (p["title"] + " " + p["dek"] + " " + body).lower()): errs.append(p["slug"] + " focus keyword missing in text")
         if p["kw"].split()[0].lower() not in p["seo_title"].lower(): errs.append(p["slug"] + " keyword not in seo title")
         for bad in ["free ", "warranty", "guarantee", "turnkey one contract", "in today's", "delve", "comprehensive", "leverage", "in conclusion", "pcatp", "drap", "pfa"]:
             if bad in (body + " " + p["desc"].lower() + " " + " ".join(a for q, a in p["faqs"]).lower()): errs.append("%s banned phrase '%s'" % (p["slug"], bad.strip()))
