@@ -2107,6 +2107,47 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
     return null;
   }
   // ---- P40 E mirror: social media planner (preview stores _private/social.json; PHP publishes for real)
+  async function sag(action, inp, need) {
+    if (!/^sag_/.test(action)) return null;
+    const F = path.join(PRIV, "seo-agent.json"), ED = ["owner", "admin", "editor"];
+    const L = () => { const d = jr(F, {}); d.cfg = { engine: "", model: "", weekly: true, ...(d.cfg || {}) }; d.history = d.history || []; return d; };
+    const S = (d) => fs.writeFileSync(F, JSON.stringify(d, null, 1)), nowS = () => new Date(Date.now() + 5 * 3600e3).toISOString().slice(0, 19).replace("T", " ");
+    const ENG = { anthropic: "Claude (Anthropic)", openai: "OpenAI / Codex", openrouter: "Hermes (OpenRouter)", custom: "Local model (Ollama / LM Studio)" };
+    const pages = () => { const out = []; const walk = (d) => { for (const n of fs.readdirSync(path.join(ROOT, d), { withFileTypes: true })) { const r = d ? d + "/" + n.name : n.name; if (n.isDirectory()) { if (!/^(admin|builder|api|assets|_private|vendor|node_modules|deploy|uploads|tools)$/.test(r) && !n.name.startsWith("_")) walk(r); } else if (/\.html$/.test(n.name) && !/^(404|offline|thank-you)/.test(n.name)) out.push(r); } }; walk(""); return out.sort().slice(0, 400); };
+    const txt = (h) => { const g = (re) => ((h.match(re) || [])[1] || "").replace(/<[^>]+>/g, "").replace(/&amp;/g, "&").trim(); return { title: g(/<title>([\s\S]*?)<\/title>/i), desc: (h.match(/<meta[^>]+name=["']description["'][^>]*content=["']([^"']*)["']/i) || [])[1] || "", h1: g(/<h1\b[^>]*>([\s\S]*?)<\/h1>/i), text: h.replace(/<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>/gi, " ").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ") }; };
+    const id = (s) => crypto.createHash("md5").update(s).digest("hex").slice(0, 10);
+    const scan = () => { const sp = (jr(path.join(PRIV, "seo.json"), {}).pages) || {}, T = {}, Dd = {}, all = [], P = pages();
+      for (const rel of P) { const h = fs.readFileSync(path.join(ROOT, rel), "utf8"); if (/<meta[^>]+name=["']robots["'][^>]+noindex/i.test(h)) continue; const t = txt(h), kw = String((sp[rel] || {}).kw || "").trim();
+        const add = (kind, sev, msg, x = {}) => all.push({ id: id(rel + kind + (x.src || "") + msg), page: rel, kind, sev, msg, ...x });
+        const tl = t.title.length, dl = t.desc.length;
+        if (!tl) add("title", 3, "Missing page title"); else if (tl < 30) add("title", 2, `Title is short (${tl} characters, aim for 50-60)`); else if (tl > 65) add("title", 1, `Title is long (${tl} characters): Google cuts it after about 60`);
+        if (!dl) add("desc", 3, "Missing meta description"); else if (dl < 110) add("desc", 2, `Meta description is short (${dl} characters, aim for 140-155)`); else if (dl > 165) add("desc", 1, `Meta description is long (${dl} characters)`);
+        if (t.title) { const k = t.title.toLowerCase(); if (T[k]) add("title", 2, "Same title as /" + T[k].replace(/index\.html$/, "")); else T[k] = rel; }
+        if (t.desc) { const k = t.desc.toLowerCase(); if (Dd[k]) add("desc", 2, "Same description as /" + Dd[k].replace(/index\.html$/, "")); else Dd[k] = rel; }
+        const h1 = (h.match(/<h1\b/gi) || []).length; if (!h1) add("h1", 2, "No H1 heading (fix in the page builder)", { manual: true }); else if (h1 > 1) add("h1", 1, h1 + " H1 headings: keep one (fix in the page builder)", { manual: true });
+        if (!kw) add("kw", 1, "No focus keyphrase set", { manual: true }); else { if (!t.title.toLowerCase().includes(kw.toLowerCase())) add("title", 2, `Focus keyphrase "${kw}" is not in the title`); if (!t.desc.toLowerCase().includes(kw.toLowerCase())) add("desc", 1, `Focus keyphrase "${kw}" is not in the description`); }
+        const w = t.text.split(" ").filter(Boolean).length; if (w < 250 && !/^(contact|thank|privacy|terms)/.test(rel)) add("thin", 1, `Thin content (${w} words). Add useful text in the builder or Blog editor`, { manual: true });
+        let n = 0; for (const img of h.match(/<img\b[^>]*>/gi) || []) { if (n >= 6) break; const src = (img.match(/\ssrc=["']([^"']+)/i) || [])[1] || "", alt = img.match(/\salt=["']([^"']*)["']/i); if (!src || (alt && alt[1].trim()) || /(logo|icon|sprite|pixel)/i.test(src)) continue; add("alt", 1, "Image without alt text: " + src.split("/").pop(), { src }); n++; }
+        if (!h.includes("application/ld+json")) add("schema", 1, "No structured data (add it in SEO manager → page → Schema)", { manual: true });
+        if (!/<link[^>]+rel=["']canonical/i.test(h)) add("canonical", 1, "No canonical link", { manual: true }); }
+      all.sort((a, b) => b.sev - a.sev || a.page.localeCompare(b.page)); let pen = 0; all.forEach((x) => { pen += { 1: 1, 2: 3, 3: 6 }[x.sev]; });
+      return { at: nowS(), pages: P.length, score: Math.max(0, Math.min(100, Math.round(100 - pen * 100 / Math.max(1, P.length * 8)))), issues: all.slice(0, 600), counts: { high: all.filter((x) => x.sev === 3).length, med: all.filter((x) => x.sev === 2).length, low: all.filter((x) => x.sev === 1).length } }; };
+    switch (action) {
+      case "sag_get": { need(ED); const d = L(), ai = (jr(path.join(PRIV, "content.json"), {}).ai) || {}; return { ok: true, cfg: d.cfg, last: d.last || null, history: d.history, engines: { default: ai.provider || "anthropic", list: Object.entries(ENG).map(([k, label]) => ({ id: k, label, ready: !!ai[k + "Key"] || (k === "custom" && !!ai.customUrl), model: ai[k + "Model"] || { anthropic: "claude-sonnet-4-5", openai: "gpt-4o-mini", openrouter: "nousresearch/hermes-3-llama-3.1-405b", custom: "llama3.1" }[k] })) } }; }
+      case "sag_cfg_save": { need(["owner", "admin"]); const d = L(), c = inp.cfg || {}; if ("engine" in c) d.cfg.engine = ENG[c.engine] ? c.engine : ""; if ("model" in c) d.cfg.model = String(c.model || "").replace(/[^\w.:/-]/g, "").slice(0, 100); if ("weekly" in c) d.cfg.weekly = !!c.weekly; S(d); return { ok: true, cfg: d.cfg }; }
+      case "sag_scan": { need(ED); const d = L(), r = scan(); d.last = r; d.history.push({ at: r.at, score: r.score, issues: r.issues.length }); d.history = d.history.slice(-26); S(d); return { ok: true, last: r, history: d.history }; }
+      case "sag_propose": { need(ED); const x = inp.issue || {}; if (!["title", "desc", "alt"].includes(x.kind)) throw new Fail("The agent can only write titles, descriptions and alt text. Fix this one by hand.");
+        const h = fs.readFileSync(path.join(ROOT, String(x.page).replace(/\.\./g, "")), "utf8"), t = txt(h), kw = String(((jr(path.join(PRIV, "seo.json"), {}).pages || {})[x.page] || {}).kw || "").trim();
+        if (x.kind === "alt") return { ok: true, preview: true, fix: { alt: "Finished interior by Woodex Interior in Lahore, warm wood and soft lighting" } };
+        const base = (t.h1 || t.title || "Interior design").replace(/\s*\|.*$/, "").slice(0, 38), k = kw || base;
+        return { ok: true, preview: true, fix: { kw: k, title: (k.charAt(0).toUpperCase() + k.slice(1)).slice(0, 40) + " in Lahore | Woodex Interior", desc: (k.charAt(0).toUpperCase() + k.slice(1)) + " by Woodex Interior, Lahore: design, 3D views and a clear plan from start to handover. Book a site visit today.", why: "Preview sample: on the live site the chosen AI engine writes this from the page text.", old: { title: t.title, desc: t.desc } } }; }
+      case "sag_fix_save": { need(ED); const rel = String(inp.page || "").replace(/\.\./g, ""), f = path.join(ROOT, rel), fx = inp.fix || {}; if (!/\.html$/.test(rel) || !fs.existsSync(f)) throw new Fail("Page not found"); let h = fs.readFileSync(f, "utf8"); const ea = (s) => String(s).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
+        if (fx.alt != null) { let n = 0; h = h.replace(/<img\b[^>]*>/gi, (m) => { if (n || ((m.match(/\ssrc=["']([^"']+)/i) || [])[1] || "") !== fx.src) return m; n++; return m.replace(/\salt=(["'])[^"']*\1/i, "").replace(/^<img/i, '<img alt="' + ea(fx.alt) + '"'); }); if (!n) throw new Fail("That image is no longer on the page"); }
+        else { if (fx.title) h = h.replace(/<title>[\s\S]*?<\/title>/i, "<title>" + ea(fx.title) + "</title>"); if (fx.desc) h = /<meta[^>]+name=["']description["']/i.test(h) ? h.replace(/(<meta[^>]+name=["']description["'][^>]*content=["'])[^"']*/i, "$1" + ea(fx.desc)) : h.replace(/<\/head>/i, '<meta name="description" content="' + ea(fx.desc) + '">\n</head>'); }
+        fs.writeFileSync(f, h); const d = L(); if (d.last) { const ids = (inp.ids || []).map(String); d.last.issues = d.last.issues.filter((q) => !ids.includes(q.id)); S(d); } return { ok: true }; }
+    }
+    return null;
+  }
   async function soc(action, inp, need) {
     if (!/^soc_/.test(action)) return null;
     const F = path.join(PRIV, "social.json"), OA = ["owner", "admin"];
@@ -2418,7 +2459,7 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
         return done({ ok: true, rows: all.slice((page - 1) * per, page * per).map(({ user_name, action, target, ip, created_at }) => ({ user_name, action, target, ip, created_at })), total: all.length, per, page });
       }
       default: {
-        const r = (await soc(action, inp, need)) || (await conn(action, inp, need)) || (await logos(action, inp, need)) || (await p19c(action, inp, need, db, ip)) || (await p18j(action, inp, need, db, ip)) || (await p18h(action, inp, need, db, ip)) || (await p18g(action, inp, need, db, ip)) || (await p18e(action, inp, need, db, ip)) || (await pbk(action, inp, need, db, ip)) || (await a2(action, inp, need, db, ip)) || (await a17(action, inp, need, db, ip)) || (await a4(action, inp, need, db, ip)) || a5(action, inp, need, db, ip) || (await a6(action, inp, need, db, ip)) || (await a7(action, inp, need, db, ip)) || (await a8(action, inp, need, db, ip)) || (await p8(action, inp, need, db, ip, req)) || (await p10(action, inp, need, db, ip, req)) || (await p12(action, inp, need, db, ip)) || (await p13(action, inp, need, db, ip)); if (r) return r;
+        const r = (await sag(action, inp, need)) || (await soc(action, inp, need)) || (await conn(action, inp, need)) || (await logos(action, inp, need)) || (await p19c(action, inp, need, db, ip)) || (await p18j(action, inp, need, db, ip)) || (await p18h(action, inp, need, db, ip)) || (await p18g(action, inp, need, db, ip)) || (await p18e(action, inp, need, db, ip)) || (await pbk(action, inp, need, db, ip)) || (await a2(action, inp, need, db, ip)) || (await a17(action, inp, need, db, ip)) || (await a4(action, inp, need, db, ip)) || a5(action, inp, need, db, ip) || (await a6(action, inp, need, db, ip)) || (await a7(action, inp, need, db, ip)) || (await a8(action, inp, need, db, ip)) || (await p8(action, inp, need, db, ip, req)) || (await p10(action, inp, need, db, ip, req)) || (await p12(action, inp, need, db, ip)) || (await p13(action, inp, need, db, ip)); if (r) return r;
         throw new Fail("Unknown action", 404);
       }
     }

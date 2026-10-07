@@ -128,6 +128,7 @@
       ["team", "Team", "users", "g:website"]] },
     ["media", "Media", "image", "g:website"],
     ["seo", "SEO", "search", "g:website"],
+    ["seoagent", "SEO agent", "sparkles", "g:website"],
     ["speed", "Speed", "gauge", "g:website"],
     ["health", "Site health", "heart-pulse", "g:website"],
     ["theme", "Theme", "sparkles", "g:settings"],
