@@ -12,4 +12,4 @@ header('Content-Type: application/json');
 if (!is_file(DB_FILE)) { http_response_code(503); exit('{"ok":false}'); }
 $d = wag_load();
 if (!hash_equals((string)$d['cfg']['cronKey'], (string)($_GET['key'] ?? ''))) { http_response_code(403); exit('{"ok":false,"error":"bad key"}'); }
-try { echo json_encode(['ok' => true] + wag_tick()); } catch (Throwable $e) { http_response_code(500); echo json_encode(['ok' => false, 'error' => $e->getMessage()]); }
+try { $soc = function_exists('soc_tick') ? soc_tick() : []; echo json_encode(['ok' => true] + wag_tick() + $soc); } catch (Throwable $e) { http_response_code(500); echo json_encode(['ok' => false, 'error' => $e->getMessage()]); }
