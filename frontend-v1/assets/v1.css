@@ -534,3 +534,10 @@ section.lr-section.lr-process p.lr-label{color:rgba(255,255,255,.78)!important}
 .footer .footer-bottom{width:auto;right:auto;flex-direction:column;align-items:flex-start;gap:6px}
 @media(max-width:700px){.footer .footer-word:before{font-size:18vw!important}.footer .footer-bottom{right:0;align-items:center}}
 @media(max-width:700px){.footer .footer-word{padding-bottom:0!important;margin-top:40px!important}.footer .footer-bottom{position:static;padding:14px 0 24px!important}}
+/* P24b: closer to reference — brand, short text, icons only; tighter INTERIORS row */
+.footer .footer-intro h2{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.footer .footer-intro .footer-cta{display:none!important}
+.footer .footer-intro p{font-size:.92rem;line-height:1.75;margin:0 0 22px;max-width:32ch}
+.footer .footer-social{margin:0}
+.footer{padding-top:72px!important}
+@media(min-width:701px){.footer .footer-word{margin-top:40px!important;height:clamp(58px,7.4vw,108px)!important;border-top:0!important}.footer .footer-word:before{margin-top:0}.footer .footer-bottom{flex-direction:row;align-items:center;gap:18px;padding-bottom:20px!important}.footer .footer-bottom div{gap:18px}.footer .footer-bottom div a:first-child{border-left:1px solid rgba(255,255,255,.25);padding-left:18px}}
