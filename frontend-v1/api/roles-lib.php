@@ -46,7 +46,7 @@ function wx_action_group(string $a): ?string {
         'support_view' => '~^(client_360|get_lead|projs_list)$~',
         'updates' => '~^(proj_update|notify_proj_send)$~',
         'conversations' => '~^(chat_(list|get|reply|close|file|mode|lead|typing|assign|note|tags|suggest)|wa_stats|whatsapp_stats|crm_wa_status)$~',
-        'ai' => '~^(chat_cfg_get|chat_cfg_save|chat_test|ai_test|ai_report|ai_unans_[a-z]+)$~',
+        'ai' => '~^(chat_cfg_get|chat_cfg_save|chat_test|ai_test|ai_report|ai_unans_[a-z]+|aic_[a-z]+)$~',
         'broadcast' => '~^(crm_offers|crm_offer_(save|send|delete)|wag_[a-z_]+|wah_[a-z_]+)$~',
         'sales' => '~^(leads?_[a-z0-9_]+|add_lead_note|lead_note|get_lead|list_leads|clients?_[a-z0-9_]+|list_clients|quotes?_[a-z_]+|get_quote|list_quotes|create_quote_draft|invs?_[a-z_]+|pay_(add|delete)|projs?_[a-z_]+|bk_[a-z_]+|est_[a-z_]+|s17_meta|dash_target_save|monthly_report|tpl_(list|save|delete|import)|company_get)$~',
         'settings' => '~^(tg_(get|save|connect|disconnect|test)|set_[a-z_]+|crm_settings|crm_settings_save|crm_test|crm_wa_connect|crm_wa_disconnect|notify_(get|save|test)|company_save|cms_biz_[a-z_]+|cms_ai_[a-z_]+|cms_announce_[a-z_]+|mt_set|sys_check|activity|google_cfg|health_settings|sheets_[a-z_]+|gdata_(save|clear))$~',

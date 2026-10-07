@@ -17,7 +17,7 @@ const ACT_GROUPS = [
   ["support_view", /^(client_360|get_lead|projs_list)$/],
   ["updates", /^(proj_update|notify_proj_send)$/],
   ["conversations", /^(chat_(list|get|reply|close|file|mode|lead|typing|assign|note|tags|suggest)|wa_stats|whatsapp_stats|crm_wa_status)$/],
-  ["ai", /^(chat_cfg_get|chat_cfg_save|chat_test|ai_test|ai_report|ai_unans_list|ai_unans_add|ai_unans_ignore)$/],
+  ["ai", /^(chat_cfg_get|chat_cfg_save|chat_test|ai_test|ai_report|ai_unans_list|ai_unans_add|ai_unans_ignore|aic_get|aic_save|aic_health)$/],
   ["broadcast", /^(crm_offers|crm_offer_(save|send|delete)|wag_[a-z_]+|wah_[a-z_]+)$/],
   ["sales", /^(leads?_[a-z0-9_]+|add_lead_note|lead_note|get_lead|list_leads|clients?_[a-z0-9_]+|list_clients|quotes?_[a-z_]+|get_quote|list_quotes|create_quote_draft|invs?_[a-z_]+|pay_(add|delete)|projs?_[a-z_]+|bk_[a-z_]+|est_[a-z_]+|s17_meta|dash_target_save|monthly_report|tpl_(list|save|delete|import)|company_get)$/],
   ["settings", /^(tg_(get|save|connect|disconnect|test)|set_[a-z_]+|crm_settings|crm_settings_save|crm_test|crm_wa_connect|crm_wa_disconnect|notify_(get|save|test)|company_save|cms_biz_[a-z_]+|cms_ai_[a-z_]+|cms_announce_[a-z_]+|mt_set|sys_check|activity|google_cfg|health_settings|sheets_[a-z_]+|gdata_(save|clear))$/],
@@ -2098,13 +2098,37 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
     return null;
   }
   async function p10(action, inp, need, db, ip, req) {
-    if (!/^(chat_|notif_|tg_|ai_report|ai_unans_)/.test(action)) return null;
+    if (!/^(chat_|notif_|tg_|ai_report|ai_unans_|aic_)/.test(action)) return null;
     ensureChat(db); ensureCrm(db); const SALES = ["owner", "admin", "sales"], done = (o) => { save(db); return o; };
     const get = (id) => { const c = db.chats.find((x) => x.id === +id); if (!c) throw new Fail("Chat not found", 404); return c; };
     switch (action) {
       case "chat_list": { const u = need(SALES); const st = inp.status === "closed" ? "closed" : "open", box = String(inp.box || "all"), cc = chatCfg(); const open = db.chats.filter((c) => c.status === "open");
         const L = db.chats.filter((c) => c.status === st && (box === "mine" ? c.assigned_to === u.id : box === "unassigned" ? !c.assigned_to : true)).sort((a, b) => (b.needs || 0) - (a.needs || 0) || String(b.updated_at).localeCompare(a.updated_at)).map(chatPub);
         return { ok: true, chats: L, me: u.id, team: db.users.filter((x) => x.active && ["owner", "admin", "sales", "support"].includes(x.role)).map((x) => ({ id: x.id, name: x.name })), counts: { mine: open.filter((c) => c.assigned_to === u.id).length, unassigned: open.filter((c) => !c.assigned_to).length, all: open.length }, cfg: { ai: cc.ai, on: cc.on, saved: cc.saved, tg: !!tgCfg().bot } }; }
+      case "aic_get": case "aic_health": case "aic_save": { const u = need(["owner", "admin"]); const raw = jr(CHATF, {}), c = chatCfg();
+        const D0 = { style: "balanced", creativity: 40, length: "short", instructions: "", persona: { name: "", role: "Interior design assistant", about: "" }, chan: { web: { on: true, style: "", note: "" }, wa: { on: true, style: "", note: "" }, tg: { on: true, style: "", note: "" } }, urdu: "match", signoff: false };
+        const A = (x) => { x = x || {}; const o = { ...D0, ...x, persona: { ...D0.persona, ...(x.persona || {}) }, chan: {} }; for (const k of ["web", "wa", "tg"]) o.chan[k] = { ...D0.chan[k], ...((x.chan || {})[k] || {}) }; return o; };
+        const tgc = jr(path.join(PRIV, "telegram.json"), {}), wd = jr(WAGF, {}), un = ((db.aiUn) || []).filter((x) => x.status === "open").length, qa = (c.qa || []).length;
+        const health = [{ k: "ai", label: "AI key", st: "bad", msg: "No AI key. The chat uses Q&A rule answers only. Add it in Blog & insights → AI settings.", link: "#/blog" },
+          { k: "chat", label: "Website chat", st: c.on !== false ? (c.ai !== false ? "ok" : "warn") : "bad", msg: c.on !== false ? (c.ai !== false ? "On, AI answers first" : "On, but AI replies are off (team answers only)") : "Chat bubble is turned off", link: "#/train" },
+          { k: "wa", label: "WhatsApp Cloud API", st: "warn", msg: "Not connected. Customers can still click to WhatsApp you, but replies are not in the Inbox.", link: "#/settings/connections" },
+          { k: "waai", label: "WhatsApp AI agent", st: "off", msg: "Needs WhatsApp connected first", link: "#/train" },
+          { k: "tg", label: "Telegram bot", st: tgc.token ? "ok" : "warn", msg: tgc.token ? "Bot connected" : "Not connected (optional: team alerts and replies from Telegram)", link: "#/telegram" },
+          { k: "mail", label: "Email (SMTP)", st: "warn", msg: "Not set up: email alerts and client emails are not sent", link: "#/settings" },
+          { k: "cron", label: "Automation worker (cron)", st: wd.lastTick ? "ok" : "bad", msg: wd.lastTick ? "Last ran " + wd.lastTick : "Never ran: follow-ups, rules and reminders will not send. Add the cron job (every 5 min).", link: "#/wauto" },
+          { k: "tpl", label: "WhatsApp templates", st: "warn", msg: (wd.tpls || []).length ? "0 of " + wd.tpls.length + " approved by Meta" : "No templates yet (needed for follow-ups after 24 hours)", link: "#/wauto" },
+          { k: "qa", label: "Training Q&A", st: qa >= 10 ? "ok" : "warn", msg: qa + " answer" + (qa === 1 ? "" : "s") + (qa < 10 ? ": add at least 10 common questions" : ""), link: "#/train" },
+          { k: "un", label: "Unanswered questions", st: un ? "warn" : "ok", msg: un ? un + " to review" : "Nothing to review", link: "#/aireport" },
+          { k: "spam", label: "Spam protection (Turnstile)", st: "warn", msg: "Off: forms use honeypot + rate limit only", link: "#/settings" }];
+        if (action === "aic_health") return { ok: true, health };
+        if (action === "aic_get") return { ok: true, aic: A(raw.aic), styles: { concise: "Concise", balanced: "Balanced", expressive: "Expressive" }, channels: { web: "Website chat", wa: "WhatsApp", tg: "Telegram" }, base: { greeting: c.greeting, waGreeting: c.waGreeting || "", tone: c.tone || "designer", tones: ["designer", "friendly", "professional", "sales"], noPrices: c.noPrices !== false, ai: c.ai !== false, waAgent: !!c.waAgent, on: c.on !== false, hours: c.hours }, health };
+        const a = A(raw.aic), x = inp.aic || {}, b = inp.base || {};
+        if (["concise", "balanced", "expressive"].includes(x.style)) a.style = x.style; if (["short", "medium", "long"].includes(x.length)) a.length = x.length; if (["match", "roman", "script"].includes(x.urdu)) a.urdu = x.urdu;
+        if ("creativity" in x) a.creativity = Math.max(0, Math.min(100, +x.creativity || 0)); if ("instructions" in x) a.instructions = clip(x.instructions, 2000); if ("signoff" in x) a.signoff = !!x.signoff;
+        if (x.persona) for (const [k, n] of [["name", 40], ["role", 60], ["about", 1000]]) if (k in x.persona) a.persona[k] = clip(x.persona[k], n);
+        if (x.chan) for (const k of ["web", "wa", "tg"]) { const y = x.chan[k]; if (!y) continue; if ("on" in y) a.chan[k].on = !!y.on; if ("style" in y) a.chan[k].style = ["concise", "balanced", "expressive"].includes(y.style) ? y.style : ""; if ("note" in y) a.chan[k].note = clip(y.note, 600); }
+        raw.aic = a; for (const [k, n] of [["greeting", 500], ["waGreeting", 500]]) if (k in b) raw[k] = clip(b[k], n); if (["designer", "friendly", "professional", "sales"].includes(b.tone)) raw.tone = b.tone; for (const k of ["noPrices", "ai", "waAgent", "on"]) if (k in b) raw[k] = !!b[k];
+        jw(CHATF, raw); log(db, u, "ai.settings", "", ip); return done({ ok: true, aic: a }); }
       case "chat_suggest": { need(SALES); get(inp.id); throw new Fail("Add an AI key first (Blog & insights → AI settings)"); }
       case "ai_report": { need(["owner", "admin"]); const days = Math.max(1, Math.min(365, +inp.days || 30)), from = new Date(Date.now() - days * 864e5).toISOString().replace("T", " ").slice(0, 19);
         const ch = db.chats.filter((c) => String(c.created_at) >= from), ids = new Set(ch.map((c) => c.id)), hum = new Set(db.chatMsgs.filter((m) => m.who === "agent" && ids.has(m.chat_id)).map((m) => m.chat_id)), ev = db.aiEv.filter((e) => e.t >= from);
@@ -2132,7 +2156,7 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
       case "chat_mode": { const u = need(SALES), c = get(inp.id), m = inp.mode === "ai" ? "ai" : "human"; c.mode = m; c.agent_name = m === "human" ? u.name : null; chatAdd(db, c, "sys", "", m === "human" ? u.name + " joined the chat" : "The assistant is back in this chat"); return done({ ok: true, chat: chatPub(c) }); }
       case "chat_close": { const u = need(SALES), c = get(inp.id); c.status = inp.reopen ? "open" : "closed"; c.unread = 0; c.needs = 0; log(db, u, inp.reopen ? "chat.reopen" : "chat.close", "#" + c.id, ip); return done({ ok: true, chat: chatPub(c) }); }
       case "chat_lead": { const u = need(SALES), c = get(inp.id); for (const k of ["name", "phone", "email"]) if (String(inp[k] || "").trim()) c[k] = clip(inp[k], 190); if (!c.lead_id) chatMakeLead(db, c); log(db, u, "chat.lead", "#" + c.id, ip); return done({ ok: true, chat: chatPub(c) }); }
-      case "chat_test": { need(["owner", "admin"]); return { ok: false, error: "Add an AI key first (Blog & insights → AI settings)" }; }
+      case "chat_test": { need(["owner", "admin"]); const tu = (inp.turns || []).filter((x) => x.who === "user"), q = String((tu[tu.length - 1] || {}).text || inp.text || "").trim(); if (!q) throw new Fail("Type a test message"); const rr = chatRule(chatCfg(), q); return { ok: true, reply: rr.replace("[HUMAN]", "").trim() || "(No Q&A answer matched. With an AI key the assistant would answer; without one this question is logged under Unanswered.)", human: rr.includes("[HUMAN]"), rules: true }; }
       case "chat_cfg_get": { need(["owner", "admin"]); return { ok: true, cfg: chatCfg(), aiReady: false }; }
       case "chat_cfg_save": { const u = need(["owner", "admin"]), sv = inp.cfg || {}, c = chatCfg(); for (const k of ["on", "ai", "emailAlert", "autoLead", "noPrices"]) if (k in sv) c[k] = !!sv[k]; for (const [k, n] of [["greeting", 500], ["hours", 80], ["knowledge", 12000], ["toneNote", 400], ["avoid", 2000], ["prices", 4000], ["afterHours", 500], ["waGreeting", 500], ["waSecret", 120], ["openFrom", 5], ["openTo", 5], ["tone", 20]]) if (k in sv) c[k] = String(sv[k]).trim().slice(0, n); if ("waAgent" in sv) c.waAgent = !!sv.waAgent; if (Array.isArray(sv.days)) c.days = sv.days.map(Number); if (Array.isArray(sv.qa)) c.qa = sv.qa.filter((x) => x && x.q && x.a).map((x) => ({ q: String(x.q).slice(0, 300), a: String(x.a).slice(0, 1500) })); if (Array.isArray(sv.quick)) c.quick = sv.quick.filter((x) => x && x.label).slice(0, 8).map((x) => ({ label: String(x.label).slice(0, 30), text: String(x.text || x.label).slice(0, 300) })); if (Array.isArray(sv.saved)) c.saved = sv.saved.filter((x) => x && x.k && x.t).slice(0, 60).map((x) => ({ k: String(x.k).toLowerCase().replace(/[^\w-]/g, "").slice(0, 20), t: String(x.t).slice(0, 1500) })); if (!c.waVerify) c.waVerify = require_rand(); jw(CHATF, c); log(db, u, "chat.settings", "", ip); return done({ ok: true, cfg: c }); }
       case "notif_poll": {

@@ -132,7 +132,7 @@ function chat_ai_system(array $c): string {
         "Office hours: {$cfg['hours']}. It is currently " . (chat_open_now() ? 'within' : 'outside') . " office hours.\nContact: {$co['phones']} · {$co['email']} · {$co['address']}\n\nSTUDIO FACTS (always true):\n" . CHAT_FACTS . "\n\nKNOWLEDGE:\n" . $cfg['knowledge'] .
         ($cfg['prices'] !== '' && empty($cfg['noPrices']) ? "\n\nPRICE GUIDANCE (starting rates only; always add that the final quote comes after a site visit):\n" . $cfg['prices'] : '') .
         ($faq ? "\n\nQ&A:\n" . mb_substr(implode("\n\n", $faq), 0, 9000) : '') .
-        (function_exists('aia_prompt') ? aia_prompt() : '') . ($wa ? "\n\nChannel: WhatsApp (their number is already known)." : "\n\nVisitor is on page: " . ($c['page'] ?? '/')) . (!empty($c['name']) ? "\nCustomer name: " . $c['name'] : '') . (!empty($c['phone']) && !$wa ? "\nPhone already given: yes" : '');
+        (function_exists('aic_prompt') ? aic_prompt((string)($c['channel'] ?? 'web')) : '') . (function_exists('aia_prompt') ? aia_prompt() : '') . ($wa ? "\n\nChannel: WhatsApp (their number is already known)." : "\n\nVisitor is on page: " . ($c['page'] ?? '/')) . (!empty($c['name']) ? "\nCustomer name: " . $c['name'] : '') . (!empty($c['phone']) && !$wa ? "\nPhone already given: yes" : '');
 }
 /** P38: split an AI reply into [visible text, needs human]; saves any [LEAD]{...} details to the chat's CRM lead (creates it when the phone is known and auto-lead is on). */
 function chat_ai_post(array $c, string $r): array {
@@ -158,8 +158,8 @@ function chat_ai_post(array $c, string $r): array {
 function chat_ai_call(string $sys, array $turns): string {
     $a = cms_load()['ai']; $p = $a['provider']; $key = $a[$p . 'Key'] ?? ''; $model = $a[$p . 'Model'] ?? ''; if ($key === '' || !function_exists('curl_init')) return '';
     while ($turns && $turns[0]['role'] !== 'user') array_shift($turns); if (!$turns) return '';
-    if ($p === 'anthropic') { $url = 'https://api.anthropic.com/v1/messages'; $h = ['x-api-key: ' . $key, 'anthropic-version: 2023-06-01', 'content-type: application/json']; $body = ['model' => $model, 'max_tokens' => 400, 'system' => $sys, 'messages' => $turns]; }
-    else { $url = ai_chat_url($a); $h = ['authorization: Bearer ' . $key, 'content-type: application/json', 'HTTP-Referer: https://woodex.com.pk', 'X-Title: Woodex Chat']; $body = ['model' => $model, 'max_tokens' => 400, 'messages' => array_merge([['role' => 'system', 'content' => $sys]], $turns)]; }
+    if ($p === 'anthropic') { $url = 'https://api.anthropic.com/v1/messages'; $h = ['x-api-key: ' . $key, 'anthropic-version: 2023-06-01', 'content-type: application/json']; [$aicT, $aicM] = function_exists('aic_gen') ? aic_gen() : [0.5, 400]; $body = ['model' => $model, 'max_tokens' => $aicM, 'temperature' => $aicT, 'system' => $sys, 'messages' => $turns]; }
+    else { $url = ai_chat_url($a); $h = ['authorization: Bearer ' . $key, 'content-type: application/json', 'HTTP-Referer: https://woodex.com.pk', 'X-Title: Woodex Chat']; [$aicT, $aicM] = function_exists('aic_gen') ? aic_gen() : [0.5, 400]; $body = ['model' => $model, 'max_tokens' => $aicM, 'temperature' => $aicT, 'messages' => array_merge([['role' => 'system', 'content' => $sys]], $turns)]; }
     $ch = curl_init($url); curl_setopt_array($ch, [CURLOPT_CAINFO => __DIR__ . '/cacert.pem', CURLOPT_POST => true, CURLOPT_HTTPHEADER => $h, CURLOPT_POSTFIELDS => json_encode($body), CURLOPT_RETURNTRANSFER => true, CURLOPT_CONNECTTIMEOUT => 5, CURLOPT_TIMEOUT => 14]);
     $raw = curl_exec($ch); $code = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE); curl_close($ch);
     if ($raw === false || $code >= 400) { error_log('chat ai: HTTP ' . $code); return ''; }
@@ -172,6 +172,7 @@ function chat_turns(int $cid): array {
 }
 function chat_ai_reply(array $c): string {
     $cfg = chat_cfg(); if (!$cfg['ai'] || $c['mode'] !== 'ai') return '';
+    if (function_exists('aic_channel_on') && !aic_channel_on((string)($c['channel'] ?? 'web'))) return ''; // P40 A: AI off for this channel
     // Security audit NV-1: site-wide cap of 400 AI answers per day (protects the AI bill); after that the Q&A rule answers + team take over
     try { $dk = 'ai-day:' . gmdate('Ymd'); $d = q('SELECT n FROM wx_throttle WHERE ip=?', [$dk])->fetch(); if ($d && (int)$d['n'] >= 400) return '';
         if ($d) q('UPDATE wx_throttle SET n=n+1 WHERE ip=?', [$dk]); else q('REPLACE INTO wx_throttle (ip,n,t) VALUES (?,1,?)', [$dk, time()]); } catch (Throwable $e) {}
@@ -281,8 +282,10 @@ function chat_actions(string $action, array $in): bool {
             need(['owner', 'admin']); $turns = [];
             foreach (array_slice((array)($in['turns'] ?? []), -16) as $x) { $t = mb_substr(trim((string)($x['text'] ?? '')), 0, 2000); if ($t !== '') $turns[] = ['role' => ($x['who'] ?? '') === 'user' ? 'user' : 'assistant', 'content' => $t]; }
             if (!$turns) fail('Type a test message');
-            $a = cms_load()['ai']; if (($a[$a['provider'] . 'Key'] ?? '') === '') fail('Add an AI key first (Blog & insights → AI settings)');
-            $r = chat_ai_call(chat_ai_system(['channel' => ($in['channel'] ?? '') === 'wa' ? 'wa' : 'web', 'page' => '/', 'name' => '', 'phone' => '']), $turns);
+            $a = cms_load()['ai']; if (($a[$a['provider'] . 'Key'] ?? '') === '') { // P40 A: no key → show what the rule answers would say
+                $lu = ''; foreach ($turns as $x) if ($x['role'] === 'user') $lu = $x['content']; $rr = chat_rule_reply(['channel' => 'web', 'mode' => 'ai'], $lu);
+                out(['ok' => true, 'reply' => trim(str_replace('[HUMAN]', '', $rr)) ?: '(No Q&A answer matched. With an AI key the assistant would answer; without one this question is logged under Unanswered.)', 'human' => strpos($rr, '[HUMAN]') !== false, 'rules' => true]); }
+            $r = chat_ai_call(chat_ai_system(['channel' => in_array($in['channel'] ?? '', ['wa', 'tg'], true) ? $in['channel'] : 'web', 'page' => '/', 'name' => '', 'phone' => '']), $turns);
             if ($r === '') fail('The AI did not answer. Check the AI key and model.');
             $lead = preg_match('~\[LEAD\]\s*(\{[^{}]*\})~u', $r, $lm) ? (json_decode($lm[1], true) ?: null) : null; [$vis, $h] = chat_ai_post([], $r); out(['ok' => true, 'reply' => $vis, 'human' => $h, 'lead' => $lead]);
         case 'notif_poll': // bell: unread leads + chats waiting; items for the dropdown

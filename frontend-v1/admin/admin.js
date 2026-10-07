@@ -101,7 +101,8 @@
       ["settings/connections", "Connect WhatsApp", "zap", "g:settings"]] },
     ["telegram", "Telegram", "send", "owner,admin,editor"],
     ["updates", "Client updates", "send", "g:updates"],
-    ["train", "AI agent", "sparkles", "g:ai"],
+    ["aicenter", "AI Assistant", "sparkles", "g:ai"],
+    ["train", "Knowledge & Q&A", "book-open", "g:ai"],
     ["aireport", "AI report", "star", "g:ai"],
     ["Website"],
     { g: "Pages & builder", icon: "square-pen", id: "site", items: [
@@ -292,6 +293,7 @@
   }
   // P19 D: hubs — one sidebar item, related screens as tabs on top
   var HUBS = [
+    { id: "ai-hub", items: [["aicenter", "Settings"], ["train", "Knowledge & Q&A"], ["aireport", "AI report"]] },
     { id: "wa-hub", items: [["wahub", "Overview & rules"], ["wauto", "Broadcasts & automations"], ["offers", "Discount offers"]] }
   ];
   function hubOf(v) { for (var i = 0; i < HUBS.length; i++) for (var j = 0; j < HUBS[i].items.length; j++) if (HUBS[i].items[j][0] === v) return HUBS[i]; return null; }
