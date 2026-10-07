@@ -12,7 +12,7 @@ const SOC_GRAPH = 'https://graph.facebook.com/v21.0/';
 
 function soc_load(): array {
     $d = jread(SOC_FILE);
-    $d['cfg'] = array_merge(['pageId' => '', 'igId' => '', 'token' => '', 'tags' => '#WoodexInterior #InteriorDesignLahore #Lahore', 'autoDraft' => true, 'autoSince' => ''], is_array($d['cfg'] ?? null) ? $d['cfg'] : []);
+    $d['cfg'] = array_merge(['pageId' => '', 'igId' => '', 'token' => '', 'tags' => '#WoodexInterior #InteriorDesignLahore #Lahore', 'autoDraft' => true, 'autoSince' => '', 'liOrg' => '', 'liToken' => '', 'gAcc' => '', 'gLoc' => '', 'gClient' => '', 'gSecret' => '', 'gRefresh' => ''], is_array($d['cfg'] ?? null) ? $d['cfg'] : []);
     $d['seen'] = is_array($d['seen'] ?? null) ? $d['seen'] : [];
     $d['comments'] = is_array($d['comments'] ?? null) ? $d['comments'] : [];
     $d['posts'] = array_values(is_array($d['posts'] ?? null) ? $d['posts'] : []);
@@ -21,7 +21,54 @@ function soc_load(): array {
 function soc_save(array $d): void { jwrite(SOC_FILE, $d); }
 function soc_id(): string { return 'p' . bin2hex(random_bytes(5)); }
 function soc_base(): string { $h = preg_replace('~[^a-z0-9.:-]~i', '', (string)($_SERVER['HTTP_HOST'] ?? '')); return $h !== '' ? 'https://' . $h : 'https://woodex.com.pk'; }
-function soc_pub_cfg(array $c): array { $o = $c; $o['tokenSet'] = $c['token'] !== ''; $o['token'] = ''; return $o; }
+const SOC_SECRETS = ['token', 'liToken', 'gSecret', 'gRefresh'];
+const SOC_NETS = ['fb', 'ig', 'li', 'gb'];
+function soc_pub_cfg(array $c): array { $o = $c; foreach (SOC_SECRETS as $k) { $o[$k . 'Set'] = $c[$k] !== ''; $o[$k] = ''; } $o['tokenSet'] = $c['token'] !== ''; return $o; }
+function soc_ready(array $c): array { return ['fb' => $c['token'] !== '' && $c['pageId'] !== '', 'ig' => $c['token'] !== '' && $c['igId'] !== '', 'li' => $c['liToken'] !== '' && $c['liOrg'] !== '', 'gb' => $c['gRefresh'] !== '' && $c['gClient'] !== '' && $c['gSecret'] !== '' && $c['gAcc'] !== '' && $c['gLoc'] !== '']; }
+/** JSON HTTP call (LinkedIn / Google). */
+function soc_http(string $method, string $url, array $headers, $body = null, bool $raw = false): array {
+    if (!function_exists('curl_init')) return ['_code' => 0, 'error' => ['message' => 'The server has no cURL']];
+    $ch = curl_init($url); $o = [CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 40, CURLOPT_CUSTOMREQUEST => $method, CURLOPT_HTTPHEADER => $headers, CURLOPT_HEADER => true];
+    if ($body !== null) $o[CURLOPT_POSTFIELDS] = $raw ? $body : (is_string($body) ? $body : json_encode($body));
+    curl_setopt_array($ch, $o); if (is_file(__DIR__ . '/cacert.pem')) curl_setopt($ch, CURLOPT_CAINFO, __DIR__ . '/cacert.pem');
+    $res = curl_exec($ch); $code = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE); $hs = (int)curl_getinfo($ch, CURLINFO_HEADER_SIZE); $err = curl_error($ch); curl_close($ch);
+    if ($res === false) return ['_code' => 0, 'error' => ['message' => $err ?: 'No answer']];
+    $head = substr($res, 0, $hs); $j = json_decode(substr($res, $hs), true); $j = is_array($j) ? $j : [];
+    if (preg_match('~^x-restli-id:\s*(\S+)~mi', $head, $m)) $j['_id'] = trim($m[1]);
+    $j['_code'] = $code; return $j;
+}
+function soc_li_post(array $cfg, string $text, string $img, string $link, string $title): array {
+    $H = ['Authorization: Bearer ' . $cfg['liToken'], 'LinkedIn-Version: 202409', 'X-Restli-Protocol-Version: 2.0.0', 'Content-Type: application/json'];
+    $owner = 'urn:li:organization:' . $cfg['liOrg']; $content = null;
+    if ($img !== '') {
+        $file = preg_match('~^https?://~', $img) ? '' : ROOT_DIR . '/' . ltrim(parse_url($img, PHP_URL_PATH) ?: '', '/');
+        $bytes = $file !== '' && is_file($file) ? (string)file_get_contents($file) : (string)@file_get_contents($img);
+        if ($bytes !== '') {
+            $init = soc_http('POST', 'https://api.linkedin.com/rest/images?action=initializeUpload', $H, ['initializeUploadRequest' => ['owner' => $owner]]);
+            $up = (string)($init['value']['uploadUrl'] ?? ''); $urn = (string)($init['value']['image'] ?? '');
+            if ($up !== '' && $urn !== '') { $put = soc_http('PUT', $up, ['Authorization: Bearer ' . $cfg['liToken'], 'Content-Type: application/octet-stream'], $bytes, true); if ($put['_code'] < 300) $content = ['media' => ['id' => $urn, 'title' => mb_substr($title ?: 'Woodex Interior', 0, 100)]]; }
+        }
+    }
+    if (!$content && $link !== '') $content = ['article' => ['source' => $link, 'title' => mb_substr($title ?: 'Woodex Interior', 0, 200)]];
+    $body = ['author' => $owner, 'commentary' => mb_substr($text . ($link !== '' && isset($content['media']) ? "\n\n" . $link : ''), 0, 3000), 'visibility' => 'PUBLIC', 'distribution' => ['feedDistribution' => 'MAIN_FEED', 'targetEntities' => [], 'thirdPartyDistributionChannels' => []], 'lifecycleState' => 'PUBLISHED', 'isReshareDisabledByAuthor' => false];
+    if ($content) $body['content'] = $content;
+    $j = soc_http('POST', 'https://api.linkedin.com/rest/posts', $H, $body);
+    if ($j['_code'] >= 300) return ['error' => (string)($j['message'] ?? ('LinkedIn error ' . $j['_code'])) . ($j['_code'] === 401 ? ' (token expired: LinkedIn tokens last 60 days, paste a new one in Settings)' : '')];
+    return ['id' => (string)($j['_id'] ?? ''), 't' => now()];
+}
+function soc_g_token(array $cfg): string {
+    $j = soc_http('POST', 'https://oauth2.googleapis.com/token', ['Content-Type: application/x-www-form-urlencoded'], http_build_query(['client_id' => $cfg['gClient'], 'client_secret' => $cfg['gSecret'], 'refresh_token' => $cfg['gRefresh'], 'grant_type' => 'refresh_token']), true);
+    return (string)($j['access_token'] ?? '');
+}
+function soc_gb_post(array $cfg, string $text, string $url, string $link): array {
+    $tok = soc_g_token($cfg); if ($tok === '') return ['error' => 'Google sign-in failed: check the client ID, secret and refresh token'];
+    $body = ['languageCode' => 'en', 'summary' => mb_substr(preg_replace('~(^|\s)#\w+~u', '', $text), 0, 1500), 'topicType' => 'STANDARD'];
+    if ($link !== '') $body['callToAction'] = ['actionType' => 'LEARN_MORE', 'url' => $link]; else $body['callToAction'] = ['actionType' => 'CALL'];
+    if ($url !== '') $body['media'] = [['mediaFormat' => 'PHOTO', 'sourceUrl' => $url]];
+    $j = soc_http('POST', 'https://mybusiness.googleapis.com/v4/accounts/' . rawurlencode($cfg['gAcc']) . '/locations/' . rawurlencode($cfg['gLoc']) . '/localPosts', ['Authorization: Bearer ' . $tok, 'Content-Type: application/json'], $body);
+    if ($j['_code'] >= 300) return ['error' => (string)($j['error']['message'] ?? ('Google error ' . $j['_code']))];
+    return ['id' => (string)($j['name'] ?? 'posted'), 't' => now(), 'url' => (string)($j['searchUrl'] ?? '')];
+}
 
 /** One Graph API call. Returns decoded JSON or ['error' => ['message' => ...]]. */
 function soc_graph(string $path, array $post, string $token): array {
@@ -39,9 +86,11 @@ function soc_publish(array &$p, array $cfg): void {
     $img = trim((string)($p['image'] ?? '')); $url = $img === '' ? '' : (preg_match('~^https?://~', $img) ? $img : soc_base() . '/' . ltrim($img, '/'));
     $text = trim((string)$p['text']); $link = trim((string)($p['link'] ?? ''));
     $res = is_array($p['res'] ?? null) ? $p['res'] : [];
-    if ($cfg['token'] === '') { $p['status'] = 'failed'; $p['error'] = 'Connect Facebook first (Social media → Settings)'; return; }
     foreach ((array)$p['nets'] as $n) {
         if (!empty($res[$n]['id'])) continue; // already published there
+        if ($n === 'li') { $res['li'] = soc_ready($cfg)['li'] ? soc_li_post($cfg, $text, $img, $link, (string)($p['title'] ?? '')) : ['error' => 'Connect LinkedIn first (Social media → Settings)']; continue; }
+        if ($n === 'gb') { $res['gb'] = soc_ready($cfg)['gb'] ? soc_gb_post($cfg, $text, $url, $link) : ['error' => 'Connect Google Business Profile first (Social media → Settings)']; continue; }
+        if ($cfg['token'] === '') { $res[$n] = ['error' => 'Connect Facebook first (Social media → Settings)']; continue; }
         if ($n === 'fb') {
             if ($cfg['pageId'] === '') { $res['fb'] = ['error' => 'Facebook Page ID is missing']; continue; }
             $j = $url !== '' ? soc_graph($cfg['pageId'] . '/photos', ['url' => $url, 'caption' => $text . ($link ? "\n\n" . $link : '')], $cfg['token'])
@@ -132,8 +181,8 @@ function soc_tick(): array {
 }
 
 function soc_clean(array $in, ?array $old): array {
-    $nets = array_values(array_intersect(['fb', 'ig'], (array)($in['nets'] ?? [])));
-    if (!$nets) fail('Choose Facebook, Instagram or both');
+    $nets = array_values(array_intersect(SOC_NETS, (array)($in['nets'] ?? [])));
+    if (!$nets) fail('Choose at least one: Facebook, Instagram, LinkedIn or Google');
     $text = mb_substr(trim(strip_tags((string)($in['text'] ?? ''))), 0, 2200); if ($text === '') fail('Write the post text');
     $img = trim((string)($in['image'] ?? '')); if ($img !== '' && !preg_match('~^(/[\w\-./%]+|https://[^\s"<>]+)$~', $img)) fail('Image must be from the Media library or an https link');
     $link = trim((string)($in['link'] ?? '')); if ($link !== '' && !preg_match('~^https?://[^\s"<>]+$~', $link)) fail('The link must start with https://');
@@ -151,12 +200,16 @@ function soc_actions(string $action, array $in): bool {
         case 'soc_get':
             $u = need($OA); $d = soc_load(); if (soc_auto_drafts($d) !== 0) soc_save($d); $c = $d['cfg'];
             $posts = $d['posts']; usort($posts, fn($a, $b) => strcmp((string)($b['when'] ?: $b['created_at']), (string)($a['when'] ?: $a['created_at'])));
-            out(['ok' => true, 'cfg' => soc_pub_cfg($c), 'connected' => $c['token'] !== '' && ($c['pageId'] !== '' || $c['igId'] !== ''), 'posts' => $posts, 'comments' => array_slice($d['comments'], 0, 200), 'unread' => count(array_filter($d['comments'], fn($x) => empty($x['read']))), 'commentsAt' => $d['commentsAt'] ?? '', 'now' => now()]);
+            out(['ok' => true, 'cfg' => soc_pub_cfg($c), 'connected' => in_array(true, soc_ready($c), true), 'ready' => soc_ready($c), 'posts' => $posts, 'comments' => array_slice($d['comments'], 0, 200), 'unread' => count(array_filter($d['comments'], fn($x) => empty($x['read']))), 'commentsAt' => $d['commentsAt'] ?? '', 'now' => now()]);
         case 'soc_cfg_save':
             $u = need($OA); $d = soc_load(); $s = (array)($in['cfg'] ?? []);
             foreach (['pageId', 'igId'] as $k) if (isset($s[$k])) $d['cfg'][$k] = substr(preg_replace('~\D~', '', (string)$s[$k]), 0, 30);
             if (isset($s['token']) && trim((string)$s['token']) !== '') $d['cfg']['token'] = substr(preg_replace('~[^A-Za-z0-9_\-|.]~', '', (string)$s['token']), 0, 600);
             if (!empty($s['clearToken'])) $d['cfg']['token'] = '';
+            foreach (['liOrg', 'gAcc', 'gLoc'] as $k) if (isset($s[$k])) $d['cfg'][$k] = substr(preg_replace('~\D~', '', (string)$s[$k]), 0, 30);
+            if (isset($s['gClient'])) $d['cfg']['gClient'] = substr(preg_replace('~[^A-Za-z0-9_.\-]~', '', (string)$s['gClient']), 0, 200);
+            foreach (['liToken', 'gSecret', 'gRefresh'] as $k) if (isset($s[$k]) && trim((string)$s[$k]) !== '') $d['cfg'][$k] = substr(preg_replace('~[^A-Za-z0-9_\-|./~+=]~', '', (string)$s[$k]), 0, 1000);
+            foreach ((array)($s['clear'] ?? []) as $k) if (in_array($k, ['liToken', 'gRefresh'], true)) $d['cfg'][$k] = '';
             if (isset($s['autoDraft'])) $d['cfg']['autoDraft'] = (bool)$s['autoDraft'];
             if (isset($s['tags'])) $d['cfg']['tags'] = mb_substr(trim(strip_tags((string)$s['tags'])), 0, 300);
             soc_save($d); log_act($u, 'social.cfg', ''); out(['ok' => true, 'cfg' => soc_pub_cfg($d['cfg'])]);
@@ -198,13 +251,13 @@ function soc_actions(string $action, array $in): bool {
             out(['ok' => true, 'text' => mb_substr($r, 0, 1000)]);
         case 'soc_ai_caption':
             $u = need($OA); $topic = mb_substr(trim(strip_tags((string)($in['topic'] ?? ''))), 0, 600); if ($topic === '') fail('Describe the post first (e.g. "DHA office fit-out, walnut and brass, 40 seats")');
-            $nets = array_values(array_intersect(['fb', 'ig'], (array)($in['nets'] ?? ['fb', 'ig']))); $tone = (string)($in['tone'] ?? 'designer');
+            $nets = array_values(array_intersect(SOC_NETS, (array)($in['nets'] ?? ['fb', 'ig']))); $tone = (string)($in['tone'] ?? 'designer');
             $d = soc_load(); $co = function_exists('company_cfg') ? company_cfg() : ['phones' => '+92 322 4000768'];
             $sys = "You write social media captions for Woodex Interior, a design-and-build studio in Lahore (200+ completed spaces, in-house 3D studio). Voice: an experienced interior designer, warm and specific, never salesy. " .
                 "Rules: no prices, rates, discounts or promises; no 'free', 'guarantee', 'warranty'; no invented facts or project names; plain English; 1–2 emojis at most. " .
                 "Write 3 short options. Each: a strong first line, 2–3 sentences about the design thinking (materials, light, layout, how the space is used), then a soft call to action (WhatsApp " . $co['phones'] . " or 'link in bio' for Instagram). " .
                 "End each option with 6–10 relevant hashtags including: " . $d['cfg']['tags'] . ". Return ONLY JSON: {\"options\":[\"...\",\"...\",\"...\"]}";
-            $raw = ai_call(cms_load()['ai'], $sys, 'Platforms: ' . implode(' + ', array_map(fn($n) => $n === 'fb' ? 'Facebook' : 'Instagram', $nets)) . "\nTone: $tone\nPost about: $topic");
+            $raw = ai_call(cms_load()['ai'], $sys, 'Platforms: ' . implode(' + ', array_map(fn($n) => ['fb' => 'Facebook', 'ig' => 'Instagram', 'li' => 'LinkedIn (professional tone, fewer hashtags)', 'gb' => 'Google Business Profile (no hashtags, under 1500 characters)'][$n], $nets)) . "\nTone: $tone\nPost about: $topic");
             $j = json_decode(preg_replace('~^[^{]*|[^}]*$~s', '', $raw), true); $opts = array_values(array_filter(array_map(fn($x) => mb_substr(trim((string)$x), 0, 2200), (array)($j['options'] ?? []))));
             if (!$opts) $opts = [trim($raw)];
             out(['ok' => true, 'options' => array_slice($opts, 0, 3)]);
