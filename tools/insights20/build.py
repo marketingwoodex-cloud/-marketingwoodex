@@ -17,8 +17,8 @@ for f in sorted(glob.glob(os.path.join(os.path.dirname(__file__), "posts_*.py"))
     POSTS.extend(m.POSTS)
     for slug, extra in getattr(m, "EXTRA", {}).items():
         for p in POSTS:
-            if p["slug"] == slug and not p.get("_x"):
-                p["sections"] = p["sections"][:-1] + extra + p["sections"][-1:]; p["_x"] = True
+            if p["slug"] == slug and m.__name__ not in p.setdefault("_xs", []):
+                p["sections"] = p["sections"][:-1] + extra + p["sections"][-1:]; p["_xs"].append(m.__name__)
 BY = {p["slug"]: p for p in POSTS}
 E = lambda s: html.escape(str(s), quote=True)
 
