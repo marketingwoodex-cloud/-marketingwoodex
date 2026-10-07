@@ -443,3 +443,11 @@
     io ? io.observe(s) : (s.textContent = end + plus);
   });
 })();
+
+/* P25: article contents — highlight the section in view */
+(function () {
+  var toc = document.querySelector("#insight-page .dx-toc"); if (!toc || !("IntersectionObserver" in window)) return;
+  var links = {}; [].forEach.call(toc.querySelectorAll("a"), function (a) { links[a.getAttribute("href").slice(1)] = a; });
+  var io = new IntersectionObserver(function (es) { es.forEach(function (e) { if (e.isIntersecting && links[e.target.id]) { for (var k in links) links[k].classList.remove("on"); links[e.target.id].classList.add("on"); } }); }, { rootMargin: "-20% 0px -70% 0px" });
+  Object.keys(links).forEach(function (id) { var h = document.getElementById(id); if (h) io.observe(h); });
+})();

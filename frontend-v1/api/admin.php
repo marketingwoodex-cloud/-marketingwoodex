@@ -507,7 +507,7 @@ switch ($action) {
                 $f = $foot;
                 foreach (['footer-process', 'footer-services', 'footer-faq'] as $id)   // this page's own section links
                     if (preg_match('~<a id="' . $id . '" href="([^"]*)"~', $old[0], $m)) $f = preg_replace('~(<a id="' . $id . '" href=")[^"]*"~', '${1}' . $m[1] . '"', $f, 1);
-                if (!$introAll && preg_match('~<div class="footer-intro">.*?</a></div>~s', $old[0], $intro)) $f = preg_replace_callback('~<div class="footer-intro">.*?</a></div>~s', fn() => $intro[0], $f, 1);
+                if (!$introAll && preg_match('~<div class="footer-intro">.*?</div>(?=\s*<nav)~s', $old[0], $intro)) $f = preg_replace_callback('~<div class="footer-intro">.*?</div>(?=\s*<nav)~s', fn() => $intro[0], $f, 1);
                 // fix "/#page-contact" (sent visitors to the home page) → "#page-contact" when that section is on this page
                 $f = preg_replace_callback('~(id="footer-cta" href=")/#([a-z0-9-]+)"~', fn($m) => strpos($h, 'id="' . $m[2] . '"') !== false ? $m[1] . '#' . $m[2] . '"' : $m[0], $f);
                 $h = preg_replace_callback('~<footer class="footer">.*?</footer>~s', fn() => $f, $h, 1);

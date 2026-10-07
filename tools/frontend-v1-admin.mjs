@@ -290,7 +290,7 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
           if (old) {
             let f = foot;
             for (const id of ["footer-process", "footer-services", "footer-faq"]) { const m = new RegExp('<a id="' + id + '" href="([^"]*)"').exec(old[0]); if (m) f = f.replace(new RegExp('(<a id="' + id + '" href=")[^"]*"'), (x, a) => a + m[1] + '"'); }
-            if (!introAll) { const it = /<div class="footer-intro">[\s\S]*?<\/a><\/div>/.exec(old[0]); if (it) f = f.replace(/<div class="footer-intro">[\s\S]*?<\/a><\/div>/, () => it[0]); }
+            if (!introAll) { const it = /<div class="footer-intro">[\s\S]*?<\/div>(?=\s*<nav)/.exec(old[0]); if (it) f = f.replace(/<div class="footer-intro">[\s\S]*?<\/div>(?=\s*<nav)/, () => it[0]); }
             f = f.replace(/(id="footer-cta" href=")\/#([a-z0-9-]+)"/g, (m, a, id) => (h.includes('id="' + id + '"') ? a + "#" + id + '"' : m));
             h = h.replace(/<footer class="footer">[\s\S]*?<\/footer>/, () => f);
           }
