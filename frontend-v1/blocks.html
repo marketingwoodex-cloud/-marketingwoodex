@@ -174,6 +174,91 @@
     </div>
   </div>
 
+  <!-- Block 5: BLK-EST-04 -->
+  <div class="block-preview-wrap">
+    <div class="block-preview-head">
+      <span class="block-title">📐 BLK-EST-04 · Interactive Construction &amp; Interior Estimator</span>
+      <button class="block-code-btn" onclick="navigator.clipboard.writeText(document.getElementById('b-est-code').innerHTML); alert('Estimator block HTML copied!')">Copy Block HTML</button>
+    </div>
+    <div id="b-est-code">
+      <section class="v3-blk-estimator">
+        <div class="v3-wrap">
+          <div class="v3-sec-head">
+            <div class="v3-sec-kicker">Instant Cost Schedule</div>
+            <h2 class="v3-sec-title">Interior &amp; Fit-Out Estimator</h2>
+            <p class="v3-sec-sub">Select your property size and specification tier for an instant turn-key budget projection.</p>
+          </div>
+          <div class="v3-est-card">
+            <div class="v3-est-form">
+              <div>
+                <label style="display:block;font-size:12px;font-weight:600;margin-bottom:6px;color:#e5e7eb">Property Covered Area</label>
+                <select class="v3-input-pill" style="width:100%" id="est-area">
+                  <option value="5000">1-Kanal Villa (approx. 5,000 sq ft)</option>
+                  <option value="3100">10-Marla Modern House (approx. 3,100 sq ft)</option>
+                  <option value="1800">5-Marla House (approx. 1,800 sq ft)</option>
+                  <option value="2500">Commercial Office (approx. 2,500 sq ft)</option>
+                </select>
+              </div>
+              <div>
+                <label style="display:block;font-size:12px;font-weight:600;margin-bottom:6px;color:#e5e7eb">Specification Level</label>
+                <select class="v3-input-pill" style="width:100%" id="est-tier">
+                  <option value="luxury">Ultra-Luxury (German hardware, imported marble, UV acrylic)</option>
+                  <option value="executive">Executive (Soft-close joinery, Spanish tiles, ambient LEDs)</option>
+                  <option value="standard">Standard Quality (Durable melamine, porcelain tiles, false ceiling)</option>
+                </select>
+              </div>
+            </div>
+            <div class="v3-est-result-box">
+              <div>
+                <small style="text-transform:uppercase;font-size:11px;font-weight:700;color:#00d3f2;letter-spacing:0.08em">Estimated Budget (PKR)</small>
+                <div class="v3-est-price-tag" style="margin:8px 0">PKR 4,850,000</div>
+                <p style="font-size:12px;color:#9ca3af;margin:0">Includes complete 3D design, false ceiling, German-hardware modular kitchens, wardrobes &amp; master electrical lighting.</p>
+              </div>
+              <a href="/estimator/" class="v3-btn-pill-pri" style="margin-top:20px;text-align:center;justify-content:center">Open Full BOQ Breakdown →</a>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <!-- Block 6: BLK-RES-01 -->
+  <div class="block-preview-wrap">
+    <div class="block-preview-head">
+      <span class="block-title">🏡 BLK-RES-01 · 1-Kanal &amp; 10-Marla Residential Villa Architectural Specs</span>
+      <button class="block-code-btn" onclick="navigator.clipboard.writeText(document.getElementById('b-res-code').innerHTML); alert('Residential specs block HTML copied!')">Copy Block HTML</button>
+    </div>
+    <div id="b-res-code">
+      <section class="v3-blk-res-specs">
+        <div class="v3-wrap">
+          <div class="v3-sec-head">
+            <div class="v3-sec-kicker">Architectural Benchmarks</div>
+            <h2 class="v3-sec-title">1-Kanal Villa Design Specifications</h2>
+            <p class="v3-sec-sub">Standard architectural zoning for 50x90 plots in DHA Lahore, Bahria Town, and Islamabad.</p>
+          </div>
+          <div class="v3-res-grid">
+            <div class="v3-res-card">
+              <div class="v3-res-stat">5,200 sq.ft</div>
+              <div class="v3-res-label">Covered Area (GF + FF + Rooftop)</div>
+            </div>
+            <div class="v3-res-card">
+              <div class="v3-res-stat">5 Master Beds</div>
+              <div class="v3-res-label">En-suite Bathrooms &amp; Walk-in Closets</div>
+            </div>
+            <div class="v3-res-card">
+              <div class="v3-res-stat">2 Kitchens</div>
+              <div class="v3-res-label">Main Show Kitchen + Dirty/Spice Kitchen</div>
+            </div>
+            <div class="v3-res-card">
+              <div class="v3-res-stat">12-14 Weeks</div>
+              <div class="v3-res-label">Average Turnkey Handover Timeline</div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
 </main>
 </body>
 </html>

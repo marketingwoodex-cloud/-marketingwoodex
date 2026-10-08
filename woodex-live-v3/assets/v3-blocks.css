@@ -440,3 +440,110 @@
   .v3-hero-media-card img { height: 340px; }
   .v3-cta-card { padding: 34px 20px; }
 }
+
+/* ---------- 6. BLK-EST-04: Interactive Construction & Interior Estimator ---------- */
+.v3-blk-estimator {
+  padding: 90px 0;
+  background: radial-gradient(circle at top right, rgba(0, 184, 219, 0.12) 0%, #050608 60%);
+}
+.v3-est-card {
+  background: var(--v3-bg-card);
+  backdrop-filter: blur(25px);
+  border: 1px solid var(--v3-border);
+  border-left: 1px solid var(--v3-border-cyan);
+  border-radius: var(--v3-radius-xl);
+  padding: 38px 32px;
+  box-shadow: var(--v3-shadow-glow);
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 36px;
+}
+.v3-est-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.v3-est-result-box {
+  background: rgba(0, 184, 219, 0.05);
+  border: 1px solid var(--v3-border-cyan);
+  border-radius: var(--v3-radius-lg);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.v3-est-price-tag {
+  font-size: clamp(2rem, 3.5vw, 2.6rem);
+  font-weight: 800;
+  color: var(--v3-accent);
+  letter-spacing: -0.02em;
+}
+
+/* ---------- 7. BLK-RES-01: Residential Villa Architectural Specs (1-Kanal / 10-Marla) ---------- */
+.v3-blk-res-specs {
+  padding: 90px 0;
+  background: #08090d;
+}
+.v3-res-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+.v3-res-card {
+  background: var(--v3-bg-card);
+  border: 1px solid var(--v3-border);
+  border-radius: var(--v3-radius-xl);
+  padding: 24px;
+  transition: all 0.25s var(--v3-ease);
+}
+.v3-res-card:hover {
+  border-color: var(--v3-border-cyan);
+  box-shadow: var(--v3-shadow-glow);
+}
+.v3-res-stat {
+  font-size: 26px;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 4px;
+}
+.v3-res-label {
+  font-size: 11.5px;
+  text-transform: uppercase;
+  color: var(--v3-accent);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+}
+
+/* ---------- 8. BLK-KITCHEN-01: Custom Cabinetry & Materials Matrix ---------- */
+.v3-blk-kitchen-mat {
+  padding: 90px 0;
+  background: var(--v3-bg);
+}
+.v3-mat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 22px;
+}
+.v3-mat-card {
+  background: var(--v3-bg-card);
+  border: 1px solid var(--v3-border);
+  border-radius: var(--v3-radius-xl);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.v3-mat-thumb {
+  height: 180px;
+  position: relative;
+}
+.v3-mat-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.v3-mat-body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
