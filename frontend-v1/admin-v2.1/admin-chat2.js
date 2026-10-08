@@ -109,8 +109,8 @@
     return d;
   }
   function stop() { clearInterval(D.timer); D.timer = null; }
-  function hide() { var d = dockEl(); d.hidden = true; $("#cx-bub").hidden = true; stop(); if (D.id) D.hiddenFor[D.id] = D.lastSeen || 0; }
-  function minimise() { var d = dockEl(); d.hidden = true; stop(); if (D.id) D.hiddenFor[D.id] = D.lastSeen || 0; } // P19 B2: minimise = hide; reopen from the top-bar chat icon
+  function hide() { var d = dockEl(); d.hidden = true; var b = $("#cx-bub"); if (b) b.hidden = false; stop(); if (D.id) D.hiddenFor[D.id] = D.lastSeen || 0; }
+  function minimise() { var d = dockEl(); d.hidden = true; var b = $("#cx-bub"); if (b) b.hidden = false; stop(); if (D.id) D.hiddenFor[D.id] = D.lastSeen || 0; } // P19 B2: minimise = hide; reopen from the top-bar chat icon
   function head(title, sub, av, extra) {
     return '<div class="cx-h"><span class="cx-av">' + esc(av) + '</span><span class="sp"><b>' + esc(title) + "</b><small>" + esc(sub) + "</small></span>" + (extra || "") +
       '<button type="button" data-d="min" title="Minimise">–</button><button type="button" data-d="x" title="Hide (opens again on the next message)">×</button></div>';
