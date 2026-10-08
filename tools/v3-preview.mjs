@@ -37,7 +37,16 @@ http
         headers: { ...req.headers, host: `127.0.0.1:${UP.port}` },
       },
       (pres) => {
-        res.writeHead(pres.statusCode, pres.headers);
+        // Never let a stale v3 shell or asset survive a theme change: the
+        // browser has cached an old v3.css before and kept showing the
+        // previous palette. The ?v=<hash> on the asset links covers
+        // production; this covers anyone hitting the preview directly.
+        const headers = { ...pres.headers };
+        if (p === "/admin-v3/" || /^\/admin-v3\/[^?]*\.(css|js)$/.test(p)) {
+          headers["cache-control"] = "no-store, must-revalidate";
+          delete headers.etag;
+        }
+        res.writeHead(pres.statusCode, headers);
         pres.pipe(res);
       },
     );
