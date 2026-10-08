@@ -1,5 +1,5 @@
--- WOODEX V20 DATABASE: all 16 tables + login (email: admin / password: admin)
--- Use EITHER the installer (https://woodex.com.pk/wx-install.php)  OR  phpMyAdmin -> u128159657_woodex -> Import this file.
+-- WOODEX P22 DATABASE: all 20 wx_ tables (structure only, no logins).
+-- Best: run the installer https://woodex.com.pk/wx-install.php (it creates YOUR owner login). phpMyAdmin import also works; then run the installer to add your login.
 -- Safe to run again: nothing is deleted.
 SET NAMES utf8mb4;
 CREATE TABLE IF NOT EXISTS wx_users (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(120) NOT NULL, email VARCHAR(190) NOT NULL UNIQUE,
@@ -48,4 +48,3 @@ CREATE TABLE IF NOT EXISTS wx_ai_unans (id INT AUTO_INCREMENT PRIMARY KEY, t DAT
 CREATE TABLE IF NOT EXISTS wx_tg_seen (uid BIGINT PRIMARY KEY, t DATETIME NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 CREATE TABLE IF NOT EXISTS wx_tg_map (msg_id BIGINT NOT NULL, chat_id INT NOT NULL, t DATETIME NOT NULL, PRIMARY KEY(msg_id)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-INSERT INTO wx_users (name,email,role,pass_hash,active,pw_ver,created_at) VALUES ('Admin','admin','owner','$2y$10$.xP9p.h.R3H7AaDj/wW1P.pB25YEM0qx07xus/3GmFkI4QCygXGw2',1,1,NOW()) ON DUPLICATE KEY UPDATE pass_hash=VALUES(pass_hash), role='owner', active=1;

@@ -1,5 +1,5 @@
 <?php
-/* Woodex P20: demo logins for testing.
+/* Woodex P22: demo logins for testing.
    Open https://woodex.com.pk/wx-demo.php → enter your DATABASE password (proves you own the site) → Create.
    Creates or resets 4 demo users (Owner, Admin, Sales, Editor) in your existing database. Your data is kept.
    Demo logins stop working automatically after 7 days. Remove them, and delete this file, when testing is done.
@@ -55,7 +55,7 @@ h1{margin:0 0 6px}table{width:100%;border-collapse:collapse;margin:12px 0}td,th{
 input{font:inherit;padding:10px 12px;border:1px solid #d0d5dd;border-radius:10px;width:100%;box-sizing:border-box}button{font:inherit;font-weight:700;border:0;border-radius:10px;padding:11px 16px;cursor:pointer}
 .pri{background:#0c1628;color:#fff}.gold{background:#b8956a;color:#0c1628}.red{background:#fef3f2;color:#b42318}.ok{background:#ecfdf3;color:#067647;padding:12px;border-radius:10px;font-weight:600}.err{background:#fef3f2;color:#b42318;padding:12px;border-radius:10px;font-weight:600}
 code{background:#f4efe7;padding:2px 7px;border-radius:6px}.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.m{color:#667085;font-size:13px}</style></head><body><main>
-<h1>Woodex demo logins (P20)</h1>
+<h1>Woodex demo logins (P22)</h1>
 <p class="m">For testing only. Demo logins stop working after 7 days. Remove them and delete this file when you are done.</p>
 <?php if (!is_array($db)): ?><div class="err">The site is not set up yet. Open <a href="/admin/">/admin/</a> and complete Setup first, then come back here.</div>
 <?php else: ?>
