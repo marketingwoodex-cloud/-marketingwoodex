@@ -1,3 +1,9 @@
+# P22.2 (2026-10-08)
+- Package now identifies as P22 everywhere: installer "Woodex P22 installer", demo page P22, admin version tag `P22.2`.
+- Database file renamed `_database/woodex-v20.sql` -> `_database/woodex-p22.sql` (all 20 tables, header fixed).
+- Security: removed the built-in admin/admin login from the SQL file (a phpMyAdmin import could reset an `admin` account). Installer no longer falls back to admin/admin; a new site must enter its owner login.
+- Repository: removed old P1-P20 / v26 / release zips and the `woodex-vlive-P20` folder, so only P22.2 remains.
+- Code verified: 44/44 PHP, zip = source (623 files, 158 folders, 0 diffs).
 
 # P22.1 (2026-10-08)
 - Rebuilt as standard zip with folder entries (158 folders, 623 files). Same code as P22.

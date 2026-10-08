@@ -1,6 +1,19 @@
-# Woodex Master P22 — Deep Check Report
+# Woodex Master P22.2 — Deep Check Report
 
-**Date:** 2026-10-08 · **File checked:** `woodex-master-P22.1.zip` (28.6 MB, 623 files, SHA-256 starts `acbe9b8ea350318a`)
+## P22.2 update (2026-10-08)
+| Check | Result |
+|---|---|
+| Version labels | Installer, demo page and admin now say P22 / P22.2; no `V20` left in shipped PHP/HTML/SQL |
+| Database file | `_database/woodex-p22.sql`: 20 tables = the 20 tables the code creates; **no logins inside** |
+| Default admin/admin | Removed from SQL and installer. New site must enter owner name, email, password (8+) |
+| Old zips | P1-P20, v26, release zips and `woodex-vlive-P20/` deleted from the repo |
+| Zip vs source | 623 files, 158 folders, **0 differences**; `db.json` and `router.php` not included |
+| PHP syntax | 44/44 source, 43/43 in zip (`router.php` is preview-only) |
+
+Earlier P22 checks below still apply (code unchanged except the files above).
+
+
+**Date:** 2026-10-08 · **File checked:** `woodex-master-P22.2.zip` (28.6 MB, 623 files, SHA-256 starts `63936f5b54656c33`, 158 folders)
 **Result: READY TO UPLOAD.** One file only. No blocking issues.
 
 All checks below were run fresh in this round on the exact zip (not copied from earlier reports).
@@ -56,7 +69,7 @@ Note: "Something went wrong" appears 7 times in the sweep. It is only the title 
 
 ## 6. Upload (one file)
 1. hPanel → Databases → create MySQL DB + user.
-2. File Manager → `public_html` → upload `woodex-master-P22.1.zip` → **Extract** (Overwrite).
+2. File Manager → `public_html` → upload `woodex-master-P22.2.zip` → **Extract** (Overwrite).
 3. Open `/wx-install.php` → DB details + your owner name/email/password → Install.
 4. Log in at `/admin/` → delete the 3 `wx-*.php` files.
 5. Cron every 5 min: `php public_html/api/wa-cron.php`.
