@@ -1,5 +1,14 @@
 # Woodex Master P22 — Deep Check Report
 
+> **⚠ Correction (2026-10-08, later round).** The SHA-256 on the line below
+> (`acbe9b8ea350318a…`) belongs to the **pre-P22.1** build. The P22.1 zip that
+> shipped on `main` was `84cc33d4b27a2c01…`, and it has since been rebuilt after a
+> mobile-overflow fix on `/about/` — it is now
+> `37f29edf3bdff8236a5653b6fd30eefc0881d7a273b3e44aa81d9d18d7179973`
+> (28,615,930 bytes, 781 entries = 623 files + 158 folders).
+> Every other claim in this report still holds.
+> **See `P22.1-RE-VERIFICATION-REPORT.md` for the fresh full re-check.**
+
 **Date:** 2026-10-08 · **File checked:** `woodex-master-P22.1.zip` (28.6 MB, 623 files, SHA-256 starts `acbe9b8ea350318a`)
 **Result: READY TO UPLOAD.** One file only. No blocking issues.
 
