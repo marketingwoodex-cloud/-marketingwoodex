@@ -777,3 +777,30 @@ table.tbl.zebra tbody tr:nth-child(even):hover{background:var(--accent-soft)}
 .stepper button:hover{border-color:var(--accent);color:var(--accent)}
 .stepper button.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
 .stepper button .dot{width:7px;height:7px}
+
+/* ---------- 26. conversations hub components ---------- */
+.quota-box{background:var(--muted);border-radius:var(--r-lg);padding:10px 12px;display:flex;flex-direction:column;gap:6px}
+.quota-bar{height:6px;border-radius:var(--r-full);background:var(--border-2);overflow:hidden}
+.quota-bar i{display:block;height:100%;border-radius:var(--r-full);background:var(--primary)}
+.rule-item{display:flex;align-items:center;gap:12px;padding:10px var(--pad);border-bottom:1px solid var(--border-3);transition:background .12s var(--ease)}
+.rule-item:hover{background:var(--muted)}
+.rule-item .r-info{flex:1;min-width:0}
+.rule-item .r-info b{display:block;font-size:12.5px;font-weight:600;color:var(--foreground)}
+.rule-item .r-info small{display:block;font-size:11px;color:var(--muted-foreground);margin-top:2px}
+.tpl-card{background:var(--card);border:1px solid var(--border-2);border-radius:var(--r-lg);padding:12px;display:flex;flex-direction:column;gap:8px;position:relative}
+.tpl-card.active{border-color:var(--accent);box-shadow:var(--sh-accent)}
+.tpl-body{font-size:12px;line-height:1.6;color:var(--foreground);background:var(--muted);padding:9px 11px;border-radius:var(--r);white-space:pre-wrap;font-family:inherit}
+.tpl-body mark{background:var(--accent-soft);color:var(--accent);padding:1px 4px;border-radius:var(--r-xs);font-weight:600}
+.comment-card{display:flex;gap:11px;padding:11px var(--pad);border-bottom:1px solid var(--border-3);transition:background .12s var(--ease)}
+.comment-card:hover{background:var(--muted)}
+.comment-card.unread{background:var(--accent-soft)}
+.comment-card .c-main{flex:1;min-width:0}
+.comment-card .c-head{display:flex;align-items:center;gap:7px;margin-bottom:3px}
+.comment-card .c-text{font-size:12px;line-height:1.5;color:var(--foreground);margin-bottom:6px}
+.comment-card .c-reply{background:var(--card);border:1px solid var(--border-2);border-radius:var(--r);padding:8px 10px;font-size:11.5px;color:var(--foreground-2);margin-top:6px}
+.qr-box{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;background:var(--muted);border:1px dashed var(--border-2);border-radius:var(--r-xl);text-align:center}
+.sandbox-box{display:flex;flex-direction:column;height:380px;background:var(--card);border:1px solid var(--border-2);border-radius:var(--r-xl);overflow:hidden}
+.sandbox-msgs{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px}
+.sandbox-in{display:flex;gap:6px;padding:8px 12px;border-top:1px solid var(--border-2);background:var(--card)}
+.prompt-area{width:100%;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-size:11.5px;line-height:1.6;background:var(--muted);color:var(--foreground);border:1px solid var(--border-2);border-radius:var(--r);padding:9px 11px;resize:vertical}
+.prompt-area:focus{border-color:var(--accent);outline:none;background:var(--card)}

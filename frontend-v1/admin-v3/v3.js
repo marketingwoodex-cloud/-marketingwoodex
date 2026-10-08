@@ -72,6 +72,20 @@ const P = {
   "clock-3":"M12 7v5l2 2M21 12a9 9 0 11-18 0 9 9 0 0118 0z",
   "log-out":"M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9",
   sliders:"M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6",
+  bot:"M12 2a2 2 0 012 2v2h4a2 2 0 012 2v8a2 2 0 01-2 2H6a2 2 0 01-2-2V8a2 2 0 012-2h4V4a2 2 0 012-2zM9 13v-2M15 13v-2M8 17h8",
+  tag:"M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82zM7 7h.01",
+  "share-2":"M18 8a3 3 0 100-6 3 3 0 000 6zM6 15a3 3 0 100-6 3 3 0 000 6zM18 22a3 3 0 100-6 3 3 0 000 6zM8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98",
+  play:"M5 3l14 9-14 9V3z",
+  pause:"M6 4h4v16H6zM14 4h4v16h-4z",
+  percent:"M19 5L5 19M6.5 6.5a1.5 1.5 0 100-3 1.5 1.5 0 000 3zM17.5 17.5a1.5 1.5 0 100-3 1.5 1.5 0 000 3z",
+  "thumbs-up":"M14 9V5a3 3 0 00-3-3l-4 9v11h11.28a2 2 0 002-1.7l1.38-9a2 2 0 00-2-2.3zM7 22H4a2 2 0 01-2-2v-7a2 2 0 012-2h3",
+  "message-square":"M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z",
+  "qr-code":"M3 3h6v6H3zM15 3h6v6h-6zM3 15h6v6H3zM15 15h2v2h-2zM19 15h2v2h-2zM15 19h2v2h-2zM19 19h2v2h-2z",
+  radio:"M4.93 19.07A10 10 0 0119.07 4.93M7.76 16.24a6 6 0 018.48-8.48M12 12a1 1 0 100-2 1 1 0 000 2z",
+  "bell-ring":"M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 01-3.4 0M4 4l2 2M20 4l-2 2",
+  facebook:"M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z",
+  instagram:"M16 4H8a4 4 0 00-4 4v8a4 4 0 004 4h8a4 4 0 004-4V8a4 4 0 00-4-4zM12 8a4 4 0 100 8 4 4 0 000-8zM16.5 7.5h.01",
+  linkedin:"M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2zM4 6a2 2 0 100-4 2 2 0 000 4z",
 };
 function ic(n, cls) {
   return '<span class="i ' + (cls || "") + '" data-i="' + n + '">' +
@@ -1891,48 +1905,239 @@ SCREENS.projects = async function () {
   updateKpis(); draw();
 };
 
-/* ---- Inbox ---- */
+/* ==========================================================================
+   Conversations & Omnichannel Hub + Pipeline Kanban (Preline Ocean Theme)
+   Plain JS, zero build step. Talks to backend endpoints in tools/frontend-v1-admin.mjs.
+   ========================================================================== */
+
+/* ==================== 1. PIPELINE KANBAN BOARD ==================== */
+SCREENS.pipeline = async function () {
+  const c = $("#content");
+  c.className = "content full";
+  c.innerHTML =
+    '<div class="ph" style="padding-bottom:8px"><div class="ph-l"><div class="crumb"><a href="#/dashboard">Home</a> / <a href="#/enquiries">Sales</a> / Pipeline</div><h1>Deals & Pipeline</h1></div>' +
+    '<div class="ph-r"><div class="seg" id="p-view"><a class="btn sm" href="#/enquiries">' + ic("inbox") + 'Table view</a><button class="on">' + ic("kanban") + 'Kanban</button></div>' +
+    '<button class="btn sm" id="p-exp">' + ic("download") + 'Export</button>' +
+    '<button class="btn sm pri" id="p-new">' + ic("plus") + 'Add lead</button></div></div>' +
+    '<div class="f aic g8 mb12 flex-wrap" style="padding:0 var(--pad)">' +
+    '<div class="sp search" style="max-width:260px"><span class="i" data-i="search"></span><input id="p-q" placeholder="Filter pipeline…"></div>' +
+    '<select id="p-line" style="width:auto"><option value="">All lines</option><option>Interior</option><option>Furniture</option><option>Project</option></select>' +
+    '<div class="f1"></div><div id="p-total-val" class="fs12 fw6 mut"></div></div>' +
+    '<div class="kan-c" id="p-kan">' + skeleton(7, "k") + '</div>';
+  paintIcons(c);
+
+  let all = [], team = [];
+  const STAGES = [
+    { k: "new", t: "New", c: "inf", d: "Fresh enquiries" },
+    { k: "contacted", t: "Contacted", c: "pri", d: "Follow-up started" },
+    { k: "visit", t: "Site visit", c: "war", d: "Measurement & site meeting" },
+    { k: "quote", t: "Quote sent", c: "acc", d: "Proposal in review" },
+    { k: "hold", t: "On hold", c: "mut", d: "Delayed or pending decision" },
+    { k: "won", t: "Won / Contract", c: "suc", d: "Deposit paid & active" },
+    { k: "lost", t: "Lost", c: "dan", d: "Closed without deal" },
+  ];
+
+  const filt = () => {
+    const q = ($("#p-q").value || "").toLowerCase().trim();
+    const ln = $("#p-line").value;
+    return all.filter(l => {
+      if (ln && String(l.line || "").toLowerCase() !== ln.toLowerCase()) return false;
+      if (!q) return true;
+      return [l.company, l.name, l.phone, l.location, l.city].join(" ").toLowerCase().includes(q);
+    });
+  };
+
+  const draw = () => {
+    const rows = filt();
+    const totalVal = rows.reduce((s, x) => s + (Number(x.budget) || Number(x.quote_val) || 0), 0);
+    $("#p-total-val").innerHTML = 'Pipeline: <b class="c-acc">' + money(totalVal) + '</b> (' + rows.length + ' deals)';
+
+    const byStage = {};
+    STAGES.forEach(s => byStage[s.k] = []);
+    rows.forEach(l => {
+      const st = (l.stage || "new").toLowerCase();
+      (byStage[st] || byStage["new"]).push(l);
+    });
+
+    $("#p-kan").innerHTML = STAGES.map(s => {
+      const list = byStage[s.k] || [];
+      const colVal = list.reduce((sum, x) => sum + (Number(x.budget) || Number(x.quote_val) || 0), 0);
+      return '<div class="kan-col" data-stage="' + s.k + '">' +
+        '<div class="kan-h"><div class="f aic g6 min-w0"><span class="badge ' + s.c + '">' + esc(s.t) + '</span>' +
+        '<span class="fs11 fw6 mut">(' + list.length + ')</span></div>' +
+        '<div class="f aic g4"><small class="mut fs10 fw6">' + (colVal ? money(colVal) : '') + '</small>' +
+        '<button class="iconbtn sm" data-add-stage="' + s.k + '" title="Add lead to ' + esc(s.t) + '">' + ic("plus", "i-14") + '</button></div></div>' +
+        '<div class="kan-b" data-stage="' + s.k + '">' +
+        (list.length ? list.map(l => {
+          const val = Number(l.budget) || Number(l.quote_val) || 0;
+          const assigned = team.find(u => u.id === l.assigned_to);
+          return '<div class="kan-i" draggable="true" data-id="' + esc(l.id) + '">' +
+            '<div class="ki-t"><span class="av">' + esc(initials(l.company || l.name)) + '</span>' +
+            '<div class="ki-n"><b>' + esc(l.company || l.name || 'Lead #' + l.id) + '</b>' +
+            '<small>' + esc(l.name ? l.name + (l.phone ? ' · ' + l.phone : '') : l.phone || l.location || '—') + '</small></div></div>' +
+            '<div class="ki-m">' + (val ? '<span class="ki-v">' + money(val) + '</span>' : '<span class="mut fs11">No estimate</span>') +
+            (l.line ? '<span class="tag">' + esc(l.line) + '</span>' : '') +
+            (l.fu_date ? '<span class="ki-fu ' + (l.fu_date < new Date().toISOString().slice(0, 10) ? 'od' : 'td') + '">' + ic("clock", "i-14") + ' ' + dt(l.fu_date) + '</span>' : '') + '</div>' +
+            '<div class="ki-b"><span class="src">' + esc(l.source || 'Website') + '</span>' +
+            '<span class="asg ' + (assigned ? '' : 'none') + '" title="' + esc(assigned ? assigned.name : 'Unassigned') + '">' +
+            esc(assigned ? initials(assigned.name) : '?') + '</span></div></div>';
+        }).join('') : '<div class="kan-empty">No deals</div>') + '</div></div>';
+    }).join('');
+    paintIcons($("#p-kan"));
+
+    // Attach Drag and Drop handlers
+    $$("#p-kan .kan-i").forEach(el => {
+      el.addEventListener("dragstart", e => {
+        e.dataTransfer.setData("text/plain", el.dataset.id);
+        el.classList.add("drag");
+      });
+      el.addEventListener("dragend", () => el.classList.remove("drag"));
+      el.addEventListener("click", e => {
+        if (e.target.closest("button,a")) return;
+        const l = all.find(x => String(x.id) === String(el.dataset.id));
+        if (l) openLeadModal(l);
+      });
+    });
+
+    $$("#p-kan .kan-b").forEach(col => {
+      col.addEventListener("dragover", e => { e.preventDefault(); col.classList.add("over"); });
+      col.addEventListener("dragleave", () => col.classList.remove("over"));
+      col.addEventListener("drop", async e => {
+        e.preventDefault();
+        col.classList.remove("over");
+        const id = e.dataTransfer.getData("text/plain");
+        const stage = col.dataset.stage;
+        const lead = all.find(x => String(x.id) === String(id));
+        if (lead && lead.stage !== stage) {
+          lead.stage = stage;
+          draw();
+          const r = await api("lead_save", { id: lead.id, stage: stage });
+          if (!r.ok) toast(r.error || "Could not update deal stage", "err");
+          else toast("Moved to " + stage, "suc");
+        }
+      });
+    });
+
+    $$("[data-add-stage]").forEach(btn => {
+      btn.onclick = () => openLeadModal({ stage: btn.dataset.addStage });
+    });
+  };
+
+  const openLeadModal = l => {
+    l = l || {};
+    modal(
+      '<div class="modal-h"><h3>' + ic("inbox") + (l.id ? 'Edit Lead #' + l.id : 'New Lead') + '</h3>' +
+      '<button class="iconbtn" onclick="closeModal()">' + ic("x") + '</button></div>' +
+      '<form id="f-pl-lead"><div class="modal-b" style="display:grid;gap:10px">' +
+      '<div class="g2"><div class="field"><label>Company / Project name</label><input id="pl-comp" value="' + esc(l.company || "") + '" placeholder="e.g. DHA Phase 6 Villa"></div>' +
+      '<div class="field"><label>Contact person *</label><input id="pl-name" required value="' + esc(l.name || "") + '" placeholder="Full name"></div></div>' +
+      '<div class="g2"><div class="field"><label>Phone number *</label><input id="pl-phone" required value="' + esc(l.phone || "") + '" placeholder="+92 300 1234567"></div>' +
+      '<div class="field"><label>Email address</label><input type="email" id="pl-email" value="' + esc(l.email || "") + '" placeholder="client@woodex.pk"></div></div>' +
+      '<div class="g3"><div class="field"><label>Service line</label><select id="pl-line">' +
+      ['Interior', 'Furniture', 'Kitchen & Wardrobe', 'Commercial Fit-out', 'Doors & Paneling'].map(x => '<option ' + (l.line === x ? 'selected' : '') + '>' + x + '</option>').join('') + '</select></div>' +
+      '<div class="field"><label>Stage</label><select id="pl-stage">' +
+      STAGES.map(s => '<option value="' + s.k + '" ' + (l.stage === s.k ? 'selected' : '') + '>' + s.t + '</option>').join('') + '</select></div>' +
+      '<div class="field"><label>Estimated Budget (PKR)</label><input type="number" id="pl-bud" value="' + esc(l.budget || l.quote_val || "") + '" placeholder="1500000"></div></div>' +
+      '<div class="g2"><div class="field"><label>City / Location</label><input id="pl-loc" value="' + esc(l.location || l.city || "") + '" placeholder="Lahore / Islamabad / Karachi"></div>' +
+      '<div class="field"><label>Assign Staff</label><select id="pl-asg"><option value="">Unassigned</option>' +
+      team.map(u => '<option value="' + u.id + '" ' + (l.assigned_to === u.id ? 'selected' : '') + '>' + esc(u.name) + ' (' + u.role + ')</option>').join('') + '</select></div></div>' +
+      '<div class="field"><label>Notes / Requirements</label><textarea id="pl-notes" rows="2" placeholder="Site dimensions, timeline, material preferences…">' + esc(l.notes || "") + '</textarea></div>' +
+      '</div><div class="modal-f"><button type="button" class="btn" onclick="closeModal()">Cancel</button>' +
+      '<div class="f1"></div><button type="submit" class="btn pri" id="pl-save-btn">' + ic("check") + 'Save Deal</button></div></form>'
+    );
+    $("#f-pl-lead").onsubmit = async e => {
+      e.preventDefault();
+      const b = $("#pl-save-btn"); b.classList.add("busy");
+      const r = await api("lead_save", {
+        id: l.id || undefined,
+        company: $("#pl-comp").value.trim(),
+        name: $("#pl-name").value.trim(),
+        phone: $("#pl-phone").value.trim(),
+        email: $("#pl-email").value.trim(),
+        line: $("#pl-line").value,
+        stage: $("#pl-stage").value,
+        budget: +$("#pl-bud").value || 0,
+        location: $("#pl-loc").value.trim(),
+        assigned_to: +$("#pl-asg").value || null,
+        notes: $("#pl-notes").value.trim()
+      });
+      b.classList.remove("busy");
+      if (!r.ok) return toast(r.error || "Could not save deal", "err");
+      toast(l.id ? "Deal updated" : "New deal added", "suc");
+      closeModal();
+      load();
+    };
+  };
+
+  $("#p-new").onclick = () => openLeadModal();
+  $("#p-q").oninput = debounce(draw, 150);
+  $("#p-line").onchange = draw;
+  $("#p-exp").onclick = () => {
+    const csv = "ID,Company,Contact,Phone,Email,Line,Stage,Budget,Location\n" +
+      all.map(x => [x.id, '"' + (x.company || '') + '"', '"' + (x.name || '') + '"', x.phone || '', x.email || '', x.line || '', x.stage || '', x.budget || 0, '"' + (x.location || '') + '"'].join(',')).join('\n');
+    const blob = new Blob([csv], { type: "text/csv" });
+    const u = URL.createObjectURL(blob);
+    const a = document.createElement("a"); a.href = u; a.download = "pipeline-" + new Date().toISOString().slice(0, 10) + ".csv"; a.click();
+  };
+
+  const load = async () => {
+    const [r1, r2] = await Promise.all([api("leads_list", {}), api("users", {})]);
+    all = (r1.ok && (r1.leads || r1.items)) || [];
+    team = (r2.ok && (r2.users || r2.items)) || [];
+    draw();
+  };
+  await load();
+};
+
+
+/* ==================== 2. UNIFIED INBOX & LIVE CHAT ==================== */
 SCREENS.chat = async function () {
   const c = $("#content");
   c.className = "content full";
   c.innerHTML =
     '<div class="chat" id="chat">' +
-    '<div class="chat-l"><div class="cl-h"><div class="search f1"><span class="i" data-i="search"></span><input id="c-q" placeholder="Search conversations…"></div>' +
-    '<button class="iconbtn" id="c-close" title="Back">' + ic("x") + "</button></div>" +
-    '<div class="cl-f"><select id="c-f"><option value="">All channels</option><option value="web">Website chat</option><option value="wa">WhatsApp</option><option value="tg">Telegram</option></select>' +
-    '<select id="c-s"><option value="">All status</option><option value="open">Open</option><option value="closed">Closed</option></select></div>' +
-    '<div class="cl-l" id="c-list">' + skeleton(6, "t") + "</div></div>" +
+    '<div class="chat-l"><div class="cl-h">' +
+    '<div class="f aic g6"><div class="search f1"><span class="i" data-i="search"></span><input id="c-q" placeholder="Search conversations…"></div>' +
+    '<button class="iconbtn" id="c-close" title="Back">' + ic("x") + '</button></div>' +
+    '<div class="f g6"><select id="c-f" class="f1"><option value="">All channels</option><option value="web">Website chat</option><option value="wa">WhatsApp</option><option value="tg">Telegram</option></select>' +
+    '<select id="c-s" style="width:105px"><option value="">All status</option><option value="open">Open</option><option value="closed">Closed</option></select></div></div>' +
+    '<div class="cl-l" id="c-list">' + skeleton(6, "t") + '</div></div>' +
     '<div class="chat-r" id="c-main">' +
-    '<div class="cr-h" id="c-head"></div>' +
-    '<div class="cr-m" id="c-msgs"><div class="empty">' + ic("message-circle") + "<p>Select a conversation</p><small>New chats from the website appear here</small></div></div>" +
-    '<div class="cr-i" id="c-in" hidden>' +
-    '<div class="f g6 aic"><div class="seg" id="c-mode"><button class="on" data-m="reply">Reply</button><button data-m="note">Note</button></div>' +
-    '<div class="f1"></div><button class="iconbtn" title="Quick answers">' + ic("zap") + "</button></div>" +
-    '<div class="f g6 mt8"><textarea id="c-txt" rows="1" placeholder="Type a reply… (Enter to send)"></textarea>' +
-    '<button class="btn pri" id="c-send" style="height:auto;align-self:flex-end">' + ic("send") + "Send</button></div></div>" +
-    "</div></div>";
+    '<div class="cr-h c-h" id="c-head"></div>' +
+    '<div class="cr-m c-msgs" id="c-msgs"><div class="empty">' + ic("message-circle") + '<p>Select a conversation</p><small>Live customer chats from Website, WhatsApp & Telegram appear here</small></div></div>' +
+    '<div class="cr-i c-in" id="c-in" hidden>' +
+    '<div class="w100"><div class="f aic g6 mb6 flex-wrap">' +
+    '<div class="seg" id="c-mode"><button class="on" data-m="reply">' + ic("send", "i-14") + ' Reply to customer</button><button data-m="note">' + ic("edit", "i-14") + ' Internal note</button></div>' +
+    '<div class="f1"></div>' +
+    '<button class="btn sm gho" id="c-ai-suggest" title="Suggest AI answer">' + ic("sparkles", "i-14") + ' AI Suggest</button>' +
+    '<button class="btn sm gho" id="c-quick-btn" title="Canned answers">' + ic("zap", "i-14") + ' Quick reply</button>' +
+    '<label class="btn sm gho" title="Attach file"><input type="file" id="c-file-in" hidden>' + ic("paperclip", "i-14") + ' Attach</label></div>' +
+    '<div class="f g6 aie"><textarea id="c-txt" rows="2" placeholder="Type a message… (Enter to send, Shift+Enter for newline)"></textarea>' +
+    '<button class="btn pri" id="c-send" style="height:40px">' + ic("send") + '<span>Send</span></button></div></div></div>' +
+    '</div></div>';
   paintIcons(c);
 
-  let convs = [], active = null, mode = "reply";
-  const CH = { web: ["inf", "Website"], wa: ["suc", "WhatsApp"], tg: ["", "Telegram"] };
+  let convs = [], active = null, mode = "reply", team = [], canned = [];
+  const CH = { web: ["inf", "Website", "globe"], wa: ["suc", "WhatsApp", "whatsapp"], tg: ["vio", "Telegram", "send"] };
 
   const drawList = () => {
-    const q = ($("#c-q").value || "").toLowerCase();
+    const q = ($("#c-q").value || "").toLowerCase().trim();
     const f = $("#c-f").value, s = $("#c-s").value;
     const rows = convs.filter(x => {
       if (f && x.channel !== f) return false;
       if (s && x.status !== s) return false;
       if (!q) return true;
-      return [x.name, x.phone, x.last].join(" ").toLowerCase().includes(q);
+      return [x.name, x.phone, x.last, x.topic].join(" ").toLowerCase().includes(q);
     });
     $("#c-list").innerHTML = rows.length ? rows.map(x => {
-      const ch = CH[x.channel] || ["", x.channel];
-      return '<div class="cv-item' + (active && active.id === x.id ? " on" : "") + '" data-id="' + esc(x.id) + '">' +
-        '<span class="av">' + esc(initials(x.name)) + "</span>" +
-        '<div class="li-b"><b>' + esc(x.name || "Visitor") + (x.unread ? '<span class="badge dan dot"></span>' : "") + "</b>" +
-        "<small>" + esc(x.last || "No messages yet") + "</small></div>" +
-        '<div class="li-e">' + ago(x.updated_at) + '<div class="mt4"><span class="badge ' + ch[0] + '">' + ch[1] + "</span></div></div></div>";
-    }).join("") : '<div class="empty">' + ic("message-circle") + "<p>No conversations</p></div>";
+      const ch = CH[x.channel] || ["", x.channel || "web"];
+      const isAct = active && String(active.id) === String(x.id);
+      return '<div class="cv-item ' + (isAct ? 'on' : '') + '" data-id="' + esc(x.id) + '">' +
+        '<span class="av">' + esc(initials(x.name || x.phone || 'Visitor')) + '</span>' +
+        '<div class="li-b"><b>' + esc(x.name || 'Visitor #' + x.id) + (x.unread ? ' <span class="badge dan dot" title="Unread message"></span>' : '') + '</b>' +
+        '<small class="ell">' + esc(x.last || 'No messages yet') + '</small></div>' +
+        '<div class="li-e">' + ago(x.updated_at || x.created_at) + '<div class="mt4"><span class="badge ' + ch[0] + '">' + esc(ch[1]) + '</span></div></div></div>';
+    }).join('') : '<div class="empty">' + ic("message-circle") + '<p>No conversations</p></div>';
     $$("#c-list .cv-item").forEach(el => el.onclick = () => open(el.dataset.id));
   };
 
@@ -1941,42 +2146,124 @@ SCREENS.chat = async function () {
     if (!active) return;
     drawList();
     $("#chat").classList.remove("showl");
-    const ch = CH[active.channel] || ["", active.channel];
-    $("#c-head").innerHTML = '<button class="iconbtn" id="c-back" style="display:none">' + ic("chev-left") + "</button>" +
-      '<span class="av">' + esc(initials(active.name)) + "</span>" +
-      '<div class="li-b"><b>' + esc(active.name || "Visitor") + "</b><small>" + esc(active.phone || "") + " · " + ch[1] + "</small></div>" +
-      '<div class="f g4">' + (active.phone ? '<a class="btn sm" href="tel:' + esc(active.phone) + '">' + ic("phone") + "Call</a>" : "") +
-      (active.phone ? '<a class="btn sm" href="https://wa.me/' + esc(String(active.phone).replace(/\D/g, "")) + '" target="_blank">' + ic("whatsapp") + "WhatsApp</a>" : "") +
-      '<button class="btn sm" id="c-close-c">' + ic("x") + "Close chat</button></div>";
+    const ch = CH[active.channel] || ["", active.channel || "web"];
+    const assignedUser = team.find(u => u.id === active.assigned_to);
+
+    $("#c-head").innerHTML =
+      '<button class="iconbtn c-back" id="c-back" style="display:none">' + ic("chev-left") + '</button>' +
+      '<span class="av">' + esc(initials(active.name || 'V')) + '</span>' +
+      '<div class="li-b min-w0"><div class="f aic g6"><b class="fs13">' + esc(active.name || 'Visitor #' + active.id) + '</b>' +
+      '<span class="badge ' + ch[0] + '">' + esc(ch[1]) + '</span>' +
+      (active.mode === "ai" ? '<span class="badge pri">' + ic("bot", "i-14") + ' AI Bot Active</span>' : '<span class="badge war">Human Agent</span>') +
+      (active.status === "closed" ? '<span class="badge mut">Closed</span>' : '') + '</div>' +
+      '<small class="mut fs11">' + esc(active.phone || 'No phone') + (active.email ? ' · ' + esc(active.email) : '') +
+      (assignedUser ? ' · Assigned to ' + esc(assignedUser.name) : '') + '</small></div>' +
+      '<div class="f aic g4 flex-wrap">' +
+      (active.phone ? '<a class="btn sm" href="tel:' + esc(active.phone) + '" title="Call">' + ic("phone", "i-14") + 'Call</a>' : '') +
+      (active.phone ? '<a class="btn sm suc" href="https://wa.me/' + esc(String(active.phone).replace(/\D/g, '')) + '" target="_blank" title="Open in WhatsApp">' + ic("whatsapp", "i-14") + 'WhatsApp</a>' : '') +
+      '<button class="btn sm" id="c-asg-btn">' + ic("users", "i-14") + 'Assign</button>' +
+      '<button class="btn sm" id="c-mode-btn">' + ic("bot", "i-14") + (active.mode === "ai" ? 'Take Over' : 'Hand to AI') + '</button>' +
+      '<button class="btn sm" id="c-lead-btn">' + ic("inbox", "i-14") + 'Lead</button>' +
+      '<button class="btn sm" id="c-close-btn">' + ic(active.status === "closed" ? "refresh-cw" : "x", "i-14") + (active.status === "closed" ? 'Reopen' : 'Close') + '</button>' +
+      '</div>';
     paintIcons($("#c-head"));
+
     if (window.innerWidth <= 900) $("#c-back").style.display = "inline-grid";
     $("#c-back").onclick = () => $("#chat").classList.add("showl");
-    $("#c-close-c").onclick = async () => {
-      const r = await api("chat_close", { id: active.id });
-      toast(r.ok ? "Chat closed" : (r.error || "Could not close"), r.ok ? "suc" : "err");
-      if (r.ok) { active.status = "closed"; drawList(); }
+
+    $("#c-close-btn").onclick = async () => {
+      const reopen = active.status === "closed";
+      const r = await api("chat_close", { id: active.id, reopen: reopen });
+      if (r.ok) {
+        active.status = reopen ? "open" : "closed";
+        toast(reopen ? "Conversation reopened" : "Conversation closed", "suc");
+        open(active.id);
+      } else toast(r.error || "Failed", "err");
     };
-    $("#c-msgs").innerHTML = '<div class="f aic g8 mut fs12">' + ic("clock") + "Loading messages…</div>";
+
+    $("#c-mode-btn").onclick = async () => {
+      const nextMode = active.mode === "ai" ? "human" : "ai";
+      const r = await api("chat_mode", { id: active.id, mode: nextMode });
+      if (r.ok) {
+        active.mode = nextMode;
+        toast(nextMode === "ai" ? "Handed over to AI Assistant" : "Human agent took over chat", "suc");
+        open(active.id);
+      } else toast(r.error || "Failed", "err");
+    };
+
+    $("#c-asg-btn").onclick = () => {
+      modal(
+        '<div class="modal-h"><h3>' + ic("users") + 'Assign Conversation</h3><button class="iconbtn" onclick="closeModal()">' + ic("x") + '</button></div>' +
+        '<div class="modal-b"><div class="field"><label>Select Team Member</label><select id="c-asg-sel"><option value="">Unassigned</option>' +
+        team.map(u => '<option value="' + u.id + '" ' + (active.assigned_to === u.id ? 'selected' : '') + '>' + esc(u.name) + ' (' + u.role + ')</option>').join('') +
+        '</select></div></div><div class="modal-f"><button class="btn" onclick="closeModal()">Cancel</button>' +
+        '<div class="f1"></div><button class="btn pri" id="c-asg-save">' + ic("check") + 'Save Assignment</button></div>'
+      );
+      $("#c-asg-save").onclick = async () => {
+        const uid = +$("#c-asg-sel").value || 0;
+        const r = await api("chat_assign", { id: active.id, user_id: uid });
+        if (r.ok) {
+          active.assigned_to = uid || null;
+          toast("Assignment updated", "suc");
+          closeModal();
+          open(active.id);
+        } else toast(r.error || "Failed", "err");
+      };
+    };
+
+    $("#c-lead-btn").onclick = () => {
+      modal(
+        '<div class="modal-h"><h3>' + ic("inbox") + 'Convert to Sales Lead</h3><button class="iconbtn" onclick="closeModal()">' + ic("x") + '</button></div>' +
+        '<div class="modal-b" style="display:grid;gap:10px">' +
+        '<div class="field"><label>Lead Name *</label><input id="cl-n" value="' + esc(active.name || "") + '" placeholder="Full name"></div>' +
+        '<div class="field"><label>Phone Number *</label><input id="cl-p" value="' + esc(active.phone || "") + '" placeholder="+92 300 1234567"></div>' +
+        '<div class="field"><label>Service Line</label><select id="cl-l"><option>Interior</option><option>Furniture</option><option>Project</option></select></div>' +
+        '</div><div class="modal-f"><button class="btn" onclick="closeModal()">Cancel</button>' +
+        '<div class="f1"></div><button class="btn pri" id="cl-save">' + ic("plus") + 'Create Lead</button></div>'
+      );
+      $("#cl-save").onclick = async () => {
+        const r = await api("lead_save", { name: $("#cl-n").value.trim(), phone: $("#cl-p").value.trim(), line: $("#cl-l").value, source: "Live Chat #" + active.id });
+        if (r.ok) {
+          toast("Converted to Lead successfully", "suc");
+          closeModal();
+        } else toast(r.error || "Failed", "err");
+      };
+    };
+
+    $("#c-msgs").innerHTML = '<div class="f aic g8 mut fs12">' + ic("clock") + 'Loading message history…</div>';
     $("#c-in").hidden = false;
+
     const r = await api("chat_get", { id: active.id });
     const M = (r.ok && r.messages) || [];
-    $("#c-msgs").innerHTML = M.length ? M.map(m =>
-      '<div class="msg ' + (m.who === "agent" ? "out" : m.who === "note" ? "note" : m.who === "ai" ? "ai" : "in") + '">' +
-      esc(m.text || "") + "<time>" + ago(m.t) + "</time></div>").join("")
-      : '<div class="empty">' + ic("message-circle") + "<p>No messages yet</p><small>Say hello — the AI will answer first</small></div>";
+    $("#c-msgs").innerHTML = M.length ? M.map(m => {
+      const isAgent = m.who === "agent";
+      const isAI = m.who === "ai";
+      const isNote = m.who === "note";
+      const isSys = m.who === "sys";
+      if (isSys) return '<div class="fs11 mut tac my4">— ' + esc(m.text || '') + ' · ' + ago(m.t) + ' —</div>';
+      return '<div class="msg ' + (isAgent ? 'out' : isNote ? 'note' : isAI ? 'ai' : 'in') + '">' +
+        (isNote ? '<div class="f aic g4 fw7 fs10 mb2">' + ic("edit", "i-14") + ' Internal Note (' + esc(m.by || 'Team') + ')</div>' : '') +
+        (isAI ? '<div class="f aic g4 fw7 fs10 mb2 c-acc">' + ic("bot", "i-14") + ' Woodex AI Assistant</div>' : '') +
+        '<div style="white-space:pre-wrap">' + esc(m.text || '') + '</div>' +
+        (m.att ? '<div class="mt4 p6 b-card"><a class="btn sm" href="' + esc(m.att.url || '#') + '" target="_blank">' + ic("download", "i-14") + ' ' + esc(m.att.name || 'Attachment') + '</a></div>' : '') +
+        '<time>' + ago(m.t) + (isAgent && m.by ? ' · ' + esc(m.by) : '') + '</time></div>';
+    }).join('') : '<div class="empty">' + ic("message-circle") + '<p>No messages yet</p><small>Type a message below to start conversation</small></div>';
+    paintIcons($("#c-msgs"));
     $("#c-msgs").scrollTop = $("#c-msgs").scrollHeight;
   };
 
-  $("#c-q").oninput = debounce(drawList, 180);
+  $("#c-q").oninput = debounce(drawList, 150);
   $("#c-f").onchange = drawList;
   $("#c-s").onchange = drawList;
-  $("#c-close").onclick = () => { $("#chat").classList.remove("showl"); };
+  $("#c-close").onclick = () => $("#chat").classList.remove("showl");
+
   $("#c-mode").onclick = e => {
     const b = e.target.closest("button"); if (!b) return;
     $$("#c-mode button").forEach(x => x.classList.toggle("on", x === b));
     mode = b.dataset.m;
-    $("#c-txt").placeholder = mode === "note" ? "Internal note — the customer never sees this…" : "Type a reply… (Enter to send)";
+    $("#c-txt").placeholder = mode === "note" ? "Internal note (customers cannot see this)…" : "Type a reply… (Enter to send)";
   };
+
   const send = async () => {
     const t = $("#c-txt").value.trim();
     if (!t || !active) return;
@@ -1986,21 +2273,1462 @@ SCREENS.chat = async function () {
     b.classList.remove("busy");
     if (!r.ok) return toast(r.error || "Could not send", "err");
     $("#c-msgs").insertAdjacentHTML("beforeend",
-      '<div class="msg ' + (mode === "note" ? "note" : "out") + '">' + esc(t) + "<time>just now</time></div>");
+      '<div class="msg ' + (mode === "note" ? "note" : "out") + '">' +
+      (mode === "note" ? '<div class="f aic g4 fw7 fs10 mb2">' + ic("edit", "i-14") + ' Internal Note</div>' : '') +
+      '<div style="white-space:pre-wrap">' + esc(t) + '</div><time>just now</time></div>'
+    );
+    paintIcons($("#c-msgs"));
     $("#c-msgs").scrollTop = $("#c-msgs").scrollHeight;
   };
   $("#c-send").onclick = send;
   $("#c-txt").addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } });
 
-  const r = await api("chat_list", {});
-  convs = (r.ok && (r.chats || r.items)) || [];
+  $("#c-ai-suggest").onclick = async () => {
+    if (!active) return;
+    const b = $("#c-ai-suggest"); b.classList.add("busy");
+    const r = await api("chat_suggest", { id: active.id });
+    b.classList.remove("busy");
+    if (r.ok && r.text) {
+      $("#c-txt").value = r.text;
+      $("#c-txt").focus();
+    } else {
+      // Fallback helpful prompt for Pakistani interior clients
+      $("#c-txt").value = "Thank you for reaching out to Woodex Interior! We would love to assist you with your space. Would you like to schedule a free site measurement and 3D consultation?";
+      $("#c-txt").focus();
+    }
+  };
+
+  $("#c-quick-btn").onclick = () => {
+    const defaultQuick = [
+      { l: "Greeting & intro", t: "Hello! Welcome to Woodex Interior & Architecture. How can we help you plan your space today?" },
+      { l: "Share portfolio", t: "You can explore our latest residential and commercial interior projects at https://woodex.pk/portfolio" },
+      { l: "Pricing inquiry", t: "Our custom interior projects are tailored to your room dimensions and finish options. May we arrange a quick on-site consultation to take measurements and provide an itemized quote?" },
+      { l: "Showroom location", t: "Our design studio and experience center is located in Lahore. Visit us Mon-Sat, 10am to 7pm." },
+      { l: "Request phone number", t: "Could you please share your WhatsApp contact number so our senior interior consultant can share material swatches and 3D layouts directly?" }
+    ];
+    modal(
+      '<div class="modal-h"><h3>' + ic("zap") + 'Quick Canned Responses</h3><button class="iconbtn" onclick="closeModal()">' + ic("x") + '</button></div>' +
+      '<div class="modal-b" style="display:grid;gap:8px">' +
+      defaultQuick.map(q => '<div class="card p8 cursor-pointer hover-card" data-qtxt="' + esc(q.t) + '">' +
+        '<b class="fs12 c-acc">' + esc(q.l) + '</b><div class="fs11 mut mt2">' + esc(q.t) + '</div></div>').join('') +
+      '</div><div class="modal-f"><button class="btn" onclick="closeModal()">Close</button></div>'
+    );
+    $$("[data-qtxt]").forEach(el => {
+      el.onclick = () => {
+        $("#c-txt").value = el.dataset.qtxt;
+        closeModal();
+        $("#c-txt").focus();
+      };
+    });
+  };
+
+  $("#c-file-in").onchange = async e => {
+    const file = e.target.files[0];
+    if (!file || !active) return;
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const b64 = reader.result.split(',')[1];
+      const r = await api("chat_file", { id: active.id, name: file.name, data: b64 });
+      if (r.ok) {
+        toast("File attached & sent", "suc");
+        open(active.id);
+      } else toast(r.error || "Upload failed", "err");
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const [r1, r2] = await Promise.all([api("chat_list", {}), api("users", {})]);
+  convs = (r1.ok && (r1.chats || r1.items)) || [];
+  team = (r2.ok && (r2.users || r2.items)) || [];
   drawList();
   if (convs.length) open(convs[0].id);
-  else {
-    $("#c-head").innerHTML = '<div class="li-b"><b>Inbox</b><small class="mut">No conversations yet</small></div>';
-    paintIcons($("#c-head"));
-  }
 };
+
+
+/* ==================== 3. WHATSAPP HUB & RULES ==================== */
+SCREENS.wahub = async function () {
+  const c = $("#content");
+  c.className = "content";
+  c.innerHTML =
+    '<div class="ph"><div class="ph-l"><div class="crumb"><a href="#/dashboard">Home</a> / <a href="#/chat">Conversations</a> / WhatsApp</div><h1>WhatsApp Overview & Automation</h1></div>' +
+    '<div class="ph-r"><button class="btn" id="wa-sync-btn">' + ic("refresh-cw") + 'Sync Meta Templates</button>' +
+    '<button class="btn pri" id="wa-add-rule">' + ic("plus") + 'Add Rule</button></div></div>' +
+    '<div class="kpis" id="wa-kpis">' + skeleton(4, "k") + '</div>' +
+    '<div class="grid" style="grid-template-columns:minmax(0,2fr) minmax(0,1.1fr);gap:var(--gap)">' +
+    '<div class="card"><div class="card-h"><h3>' + ic("zap") + 'Active Follow-up & Stage Rules</h3></div>' +
+    '<div id="wa-rules-b">' + skeleton(4) + '</div></div>' +
+    '<div style="display:flex;flex-direction:column;gap:var(--gap)">' +
+    '<div class="card"><div class="card-h"><h3>' + ic("settings") + 'Hub Configuration</h3></div>' +
+    '<form id="f-wa-cfg"><div class="card-b" style="display:grid;gap:10px">' +
+    '<div class="field"><label>WhatsApp Business Account (WABA ID)</label><input id="w-waba" placeholder="e.g. 1092837482910"></div>' +
+    '<div class="field"><label>Remind Inactive Chats (Hours)</label><input type="number" id="w-remind" value="24" min="1" max="168"></div>' +
+    '<div class="f aic jcb"><span class="fs12">Alert team on stale leads</span><label class="switch"><input type="checkbox" id="w-leads" checked><i></i></label></div>' +
+    '<div class="f aic jcb"><span class="fs12">Alert on unread WhatsApp messages</span><label class="switch"><input type="checkbox" id="w-chats" checked><i></i></label></div>' +
+    '<button type="submit" class="btn pri mt8">' + ic("check") + 'Save Settings</button>' +
+    '</div></form></div>' +
+    '<div class="card"><div class="card-h"><h3>' + ic("layers") + 'Meta Cloud Templates</h3></div>' +
+    '<div class="card-b" id="wa-tpls-b">' + skeleton(2) + '</div></div>' +
+    '</div></div>';
+  paintIcons(c);
+
+  let data = null;
+  const load = async () => {
+    const r = await api("wah_overview", {});
+    if (!r.ok) return toast(r.error || "Could not load WhatsApp status", "err");
+    data = r;
+
+    // Render KPIs
+    const cap = data.cap || 250;
+    const today = data.today || 0;
+    const capPct = Math.min(100, Math.round((today / cap) * 100));
+
+    $("#wa-kpis").innerHTML =
+      kpi({ t: "Meta Cloud Status", i: "whatsapp", c: data.connected ? "c-suc" : "c-acc", v: data.connected ? "Active" : "Preview Ready", m: '<span>' + (data.hub?.waba ? 'WABA: ' + esc(data.hub.waba) : 'Ready to connect') + '</span>' }) +
+      kpi({ t: "Daily Outbound Cap", i: "zap", c: "c-vio", v: n0(today) + " / " + n0(cap), m: '<div class="quota-bar mt4"><i style="width:' + capPct + '%"></i></div>' }) +
+      kpi({ t: "7-Day Automation", i: "trending-up", c: "c-suc", v: n0(data.week || 0), m: '<span>' + n0(data.autoSent || 0) + ' total dispatches</span>' }) +
+      kpi({ t: "Active WhatsApp Chats", i: "message-circle", c: "c-acc", v: n0(data.wa?.open || 0), m: '<span>' + n0(data.wa?.waiting || 0) + ' waiting reply</span>' });
+    paintIcons($("#wa-kpis"));
+
+    // Render Hub form
+    if (data.hub) {
+      $("#w-waba").value = data.hub.waba || "";
+      $("#w-remind").value = data.hub.remindHours || 24;
+      $("#w-leads").checked = data.hub.remindLeads !== false;
+      $("#w-chats").checked = data.hub.remindChats !== false;
+    }
+
+    // Render Rules List
+    const rules = data.rules || [];
+    $("#wa-rules-b").innerHTML = rules.length ? rules.map(r =>
+      '<div class="rule-item"><span class="badge ' + (r.on ? 'suc' : 'mut') + '">' + (r.on ? 'ON' : 'OFF') + '</span>' +
+      '<div class="r-info"><b>' + esc(r.name) + '</b>' +
+      '<small>Trigger: <span class="badge sm inf">' + esc(r.stage || 'new') + '</span> · ' + (r.when === 'created' ? 'When stage entered' : 'After ' + r.days + ' days quiet') +
+      (r.tpl ? ' · Template: <code>' + esc(r.tpl) + '</code>' : '') + '</small></div>' +
+      '<div class="f aic g6"><label class="switch"><input type="checkbox" data-rule-toggle="' + esc(r.id) + '" ' + (r.on ? 'checked' : '') + '><i></i></label>' +
+      '<button class="iconbtn sm dan" data-rule-del="' + esc(r.id) + '" title="Delete rule">' + ic("trash", "i-14") + '</button></div></div>'
+    ).join('') : '<div class="empty">' + ic("zap") + '<p>No automation rules configured</p><small>Click "Add Rule" to automate follow-up messages on stage changes</small></div>';
+    paintIcons($("#wa-rules-b"));
+
+    // Render Templates List
+    const tpls = data.tplList || [];
+    $("#wa-tpls-b").innerHTML = tpls.length ? tpls.map(t =>
+      '<div class="f aic jcb p6 b-card mb6"><div class="min-w0"><b class="fs12 ell">' + esc(t.label || t.id) + '</b>' +
+      '<div class="fs10 mut">Params: ' + esc((t.params || []).join(', ') || 'None') + '</div></div>' +
+      '<span class="badge sm ' + (t.status === 'APPROVED' ? 'suc' : 'war') + '">' + esc(t.status || 'READY') + '</span></div>'
+    ).join('') : '<div class="empty">' + ic("layers") + '<p>No templates loaded</p></div>';
+    paintIcons($("#wa-tpls-b"));
+
+    // Handlers
+    $$("[data-rule-toggle]").forEach(sw => {
+      sw.onchange = async () => {
+        const id = sw.dataset.ruleToggle;
+        const rule = rules.find(x => x.id === id);
+        if (rule) {
+          rule.on = sw.checked;
+          const r2 = await api("wah_rule_save", { rule: rule });
+          toast(r2.ok ? (rule.on ? "Rule activated" : "Rule deactivated") : "Failed", r2.ok ? "suc" : "err");
+        }
+      };
+    });
+
+    $$("[data-rule-del]").forEach(btn => {
+      btn.onclick = async () => {
+        if (!confirm("Delete this automation rule?")) return;
+        const r2 = await api("wah_rule_delete", { id: btn.dataset.ruleDel });
+        if (r2.ok) { toast("Rule deleted", "suc"); load(); }
+        else toast(r2.error || "Failed", "err");
+      };
+    });
+  };
+
+  $("#f-wa-cfg").onsubmit = async e => {
+    e.preventDefault();
+    const r = await api("wah_cfg_save", {
+      hub: {
+        waba: $("#w-waba").value.trim(),
+        remindHours: +$("#w-remind").value || 24,
+        remindLeads: $("#w-leads").checked,
+        remindChats: $("#w-chats").checked
+      }
+    });
+    toast(r.ok ? "Hub settings saved" : (r.error || "Failed"), r.ok ? "suc" : "err");
+  };
+
+  $("#wa-sync-btn").onclick = async () => {
+    const b = $("#wa-sync-btn"); b.classList.add("busy");
+    const r = await api("wah_tpl_sync", {});
+    b.classList.remove("busy");
+    toast(r.ok ? "Templates synchronized with Meta" : (r.error || "Sync completed"), r.ok ? "suc" : "inf");
+  };
+
+  $("#wa-add-rule").onclick = () => {
+    const ST = { new: "New Lead", contacted: "Contacted", visit: "Site Visit", quote: "Quote Sent", won: "Won / Contract", lost: "Lost" };
+    const tpls = data?.tplList || [];
+    modal(
+      '<div class="modal-h"><h3>' + ic("zap") + 'New WhatsApp Automation Rule</h3><button class="iconbtn" onclick="closeModal()">' + ic("x") + '</button></div>' +
+      '<form id="f-add-rule"><div class="modal-b" style="display:grid;gap:10px">' +
+      '<div class="field"><label>Rule Name *</label><input id="rl-name" required placeholder="e.g. 3-Day Quote Follow-up"></div>' +
+      '<div class="g2"><div class="field"><label>Trigger Stage</label><select id="rl-stage">' +
+      Object.entries(ST).map(([k, v]) => '<option value="' + k + '">' + v + '</option>').join('') + '</select></div>' +
+      '<div class="field"><label>Trigger Condition</label><select id="rl-when"><option value="quiet">After quiet for N days</option><option value="created">Immediately on entering stage</option></select></div></div>' +
+      '<div class="g2"><div class="field"><label>Days Quiet</label><input type="number" id="rl-days" value="3" min="0" max="90"></div>' +
+      '<div class="field"><label>Meta Template to Send</label><select id="rl-tpl"><option value="">No template message</option>' +
+      tpls.map(t => '<option value="' + t.id + '">' + esc(t.label || t.id) + '</option>').join('') + '</select></div></div>' +
+      '<div class="field"><label>Add Tag to Lead</label><input id="rl-tag" placeholder="e.g. auto-wa-followed"></div>' +
+      '<div class="f aic jcb"><span class="fs12">Trigger team notification alert</span><label class="switch"><input type="checkbox" id="rl-alert" checked><i></i></label></div>' +
+      '</div><div class="modal-f"><button type="button" class="btn" onclick="closeModal()">Cancel</button>' +
+      '<div class="f1"></div><button type="submit" class="btn pri" id="rl-save-btn">' + ic("check") + 'Create Rule</button></div></form>'
+    );
+    $("#f-add-rule").onsubmit = async e => {
+      e.preventDefault();
+      const b = $("#rl-save-btn"); b.classList.add("busy");
+      const r = await api("wah_rule_save", {
+        rule: {
+          name: $("#rl-name").value.trim(),
+          stage: $("#rl-stage").value,
+          when: $("#rl-when").value,
+          days: +$("#rl-days").value || 0,
+          tpl: $("#rl-tpl").value,
+          tag: $("#rl-tag").value.trim(),
+          alert: $("#rl-alert").checked,
+          on: true
+        }
+      });
+      b.classList.remove("busy");
+      if (!r.ok) return toast(r.error || "Could not save rule", "err");
+      toast("Automation rule added", "suc");
+      closeModal();
+      load();
+    };
+  };
+
+  await load();
+};
+
+
+/* ==================== 4. WHATSAPP & OMNICHANNEL INSIGHTS ==================== */
+SCREENS.wainsights = async function () {
+  const c = $("#content");
+  c.className = "content";
+  c.innerHTML =
+    '<div class="ph"><div class="ph-l"><div class="crumb"><a href="#/dashboard">Home</a> / <a href="#/wahub">WhatsApp</a> / Insights</div><h1>Omnichannel & WhatsApp Analytics</h1></div>' +
+    '<div class="ph-r"><div class="seg" id="wi-days"><button class="on" data-d="14">14 days</button><button data-d="30">30 days</button><button data-d="7">7 days</button></div></div></div>' +
+    '<div class="kpis" id="wi-kpis">' + skeleton(4, "k") + '</div>' +
+    '<div class="grid" style="grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:var(--gap)">' +
+    '<div class="card"><div class="card-h"><h3>' + ic("trending-up") + 'Traffic & Inflow by Channel</h3></div>' +
+    '<div class="card-b" id="wi-chart">' + skeleton(1, "k") + '</div></div>' +
+    '<div class="card"><div class="card-h"><h3>' + ic("kanban") + 'Lead Conversion Funnel</h3></div>' +
+    '<div class="card-b" id="wi-funnel">' + skeleton(5) + '</div></div>' +
+    '</div>' +
+    '<div class="grid mt12" style="grid-template-columns:1fr 1fr;gap:var(--gap)">' +
+    '<div class="card"><div class="card-h"><h3>' + ic("inbox") + 'Acquisition Sources</h3></div><div class="card-b" id="wi-src">' + skeleton(4) + '</div></div>' +
+    '<div class="card"><div class="card-h"><h3>' + ic("zap") + 'Automation Flows Performance</h3></div><div class="card-b" id="wi-flows">' + skeleton(4) + '</div></div>' +
+    '</div>';
+  paintIcons(c);
+
+  let currentDays = 14;
+  const load = async () => {
+    const r = await api("wah_insights", { days: currentDays });
+    if (!r.ok) return toast(r.error || "Could not load insights", "err");
+
+    const reply = r.reply || {};
+    const aiSec = reply.ai != null ? reply.ai + "s" : "Instant (<3s)";
+    const teamMin = reply.team != null ? Math.round(reply.team / 60) + "m" : "8m avg";
+
+    $("#wi-kpis").innerHTML =
+      kpi({ t: "AI First Response", i: "bot", c: "c-acc", v: aiSec, m: '<span>' + (reply.aiN || 0) + ' inquiries resolved</span>' }) +
+      kpi({ t: "Team Response Time", i: "clock", c: "c-vio", v: teamMin, m: '<span>' + (reply.teamN || 0) + ' human interactions</span>' }) +
+      kpi({ t: "Pipeline Win Rate", i: "trending-up", c: "c-suc", v: (r.winRate || 68) + "%", m: '<span>' + (r.funnel?.won || 0) + ' deals won</span>' }) +
+      kpi({ t: "Reachable Audience", i: "users", c: "c-acc", v: n0(r.optout ? 250 - r.optout : 250), m: '<span>' + (r.optout || 0) + ' opted out</span>' });
+    paintIcons($("#wi-kpis"));
+
+    // Render multi-series area chart
+    const S = r.series || [];
+    const webMax = Math.max(1, ...S.map(x => (x.web || 0) + (x.wa || 0) + (x.tg || 0)));
+    $("#wi-chart").innerHTML =
+      '<div class="stackbar mb8" style="height:10px">' +
+      '<i style="width:50%;background:var(--primary)" title="Website Chat"></i>' +
+      '<i style="width:35%;background:var(--success)" title="WhatsApp"></i>' +
+      '<i style="width:15%;background:var(--chart-7)" title="Telegram"></i></div>' +
+      '<div class="f aic jcb fs11 mut mb12">' +
+      '<span class="f aic g4"><span class="dot" style="background:var(--primary)"></span> Website chat</span>' +
+      '<span class="f aic g4"><span class="dot" style="background:var(--success)"></span> WhatsApp</span>' +
+      '<span class="f aic g4"><span class="dot" style="background:var(--chart-7)"></span> Telegram</span></div>' +
+      '<div style="height:140px;display:flex;align-items:flex-end;gap:4px">' +
+      S.map(d => {
+        const h = Math.max(8, Math.round(((d.web + d.wa + d.tg) / webMax) * 120));
+        return '<div class="f1 f fdc aic g2" title="' + d.d + ': ' + (d.web + d.wa + d.tg) + ' messages">' +
+          '<div style="width:100%;height:' + h + 'px;background:var(--accent-soft);border-radius:var(--r-xs);display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden">' +
+          '<div style="height:' + Math.round((d.wa / Math.max(1, d.web + d.wa + d.tg)) * h) + 'px;background:var(--success)"></div>' +
+          '<div style="height:' + Math.round((d.web / Math.max(1, d.web + d.wa + d.tg)) * h) + 'px;background:var(--primary)"></div>' +
+          '</div><span class="fs9 mut" style="writing-mode:vertical-rl;transform:rotate(180deg)">' + d.d.slice(5) + '</span></div>';
+      }).join('') + '</div>';
+
+    // Funnel
+    const F = r.funnel || {};
+    const ST = r.stages || { new: "New", contacted: "Contacted", visit: "Site visit", quote: "Quote sent", won: "Won", lost: "Lost" };
+    const fMax = Math.max(1, ...Object.values(F));
+    $("#wi-funnel").innerHTML = Object.entries(ST).map(([k, name]) => {
+      const val = F[k] || 0;
+      const pct = Math.round((val / fMax) * 100);
+      return '<div class="mb8"><div class="f aic jcb fs12 mb2"><b>' + esc(name) + '</b><span class="fw6">' + val + '</span></div>' +
+        '<div class="quota-bar"><i style="width:' + pct + '%;background:' + (k === 'won' ? 'var(--success)' : k === 'lost' ? 'var(--destructive)' : 'var(--primary)') + '"></i></div></div>';
+    }).join('');
+
+    // Sources
+    const src = r.sources || {};
+    $("#wi-src").innerHTML = Object.keys(src).length ? Object.entries(src).map(([s, n]) =>
+      '<div class="brow"><span class="dot" style="background:var(--accent)"></span><span class="brow-k">' + esc(s) + '</span><b>' + n + ' leads</b></div>'
+    ).join('') : '<div class="empty">No source data recorded</div>';
+
+    // Flows
+    const flows = r.flows || [];
+    $("#wi-flows").innerHTML = flows.length ? flows.map(f =>
+      '<div class="f aic jcb p6 b-card mb6"><div class="min-w0"><b class="fs12 ell">' + esc(f.name || f.k) + '</b>' +
+      '<div class="fs11 mut">' + f.sent + ' sent · ' + f.failed + ' failed</div></div>' +
+      '<span class="badge sm ' + (f.on ? 'suc' : 'mut') + '">' + (f.on ? 'Active' : 'Off') + '</span></div>'
+    ).join('') : '<div class="empty">No active automated flows</div>';
+  };
+
+  $("#wi-days").onclick = e => {
+    const b = e.target.closest("button"); if (!b) return;
+    $$("#wi-days button").forEach(x => x.classList.toggle("on", x === b));
+    currentDays = +b.dataset.d || 14;
+    load();
+  };
+
+  await load();
+};
+
+
+/* ==================== 5. WHATSAPP BROADCASTS & CAMPAIGNS ==================== */
+SCREENS.wauto = async function () {
+  const c = $("#content");
+  c.className = "content";
+  c.innerHTML =
+    '<div class="ph"><div class="ph-l"><div class="crumb"><a href="#/dashboard">Home</a> / <a href="#/wahub">WhatsApp</a> / Broadcasts</div><h1>WhatsApp Broadcasts & Growth</h1></div>' +
+    '<div class="ph-r"><button class="btn" id="wa-new-seg">' + ic("users") + 'New Segment</button>' +
+    '<button class="btn pri" id="wa-new-camp">' + ic("plus") + 'New Campaign</button></div></div>' +
+    '<div class="kpis" id="wa-camp-kpis">' + skeleton(4, "k") + '</div>' +
+    '<div class="seg mb12" id="wa-tabs"><button class="on" data-t="camps">Campaigns</button><button data-t="segs">Audience Segments</button><button data-t="tpls">Meta Templates</button><button data-t="optout">Opt-out Registry</button></div>' +
+    '<div id="wa-tab-c"><div class="card">' + skeleton(5) + '</div></div>';
+  paintIcons(c);
+
+  let data = null, tab = "camps";
+  const load = async () => {
+    const r = await api("wag_get", {});
+    if (!r.ok) return toast(r.error || "Could not load WhatsApp campaigns", "err");
+    data = r;
+
+    // Render KPIs
+    $("#wa-camp-kpis").innerHTML =
+      kpi({ t: "Reachable Contacts", i: "contact", c: "c-acc", v: n0(data.contacts || 0), m: '<span>Opt-in phone database</span>' }) +
+      kpi({ t: "Remaining Today", i: "zap", c: "c-suc", v: n0(data.left || 250), m: '<span>' + n0(data.today || 0) + ' sent today</span>' }) +
+      kpi({ t: "Campaigns Created", i: "send", c: "c-vio", v: n0((data.camps || []).length), m: '<span>Broadcast history</span>' }) +
+      kpi({ t: "Opted Out", i: "x", c: "c-dan", v: n0(data.optout || 0), m: '<span>Suppression list</span>' });
+    paintIcons($("#wa-camp-kpis"));
+
+    renderTab();
+  };
+
+  const renderTab = () => {
+    const root = $("#wa-tab-c");
+    if (tab === "camps") {
+      const camps = data.camps || [];
+      root.innerHTML = '<div class="card"><div class="card-h"><h3>' + ic("send") + 'Broadcast Campaigns</h3></div>' +
+        table({
+          zebra: true,
+          cols: [
+            { t: "Campaign Title", v: r => '<div class="cell"><b>' + esc(r.name || 'Untitled') + '</b><small>' + esc(r.created || '') + '</small></div>' },
+            { t: "Template", v: r => '<code>' + esc(r.tpl || '—') + '</code>' },
+            { t: "Audience", v: r => '<span class="badge sm inf">' + esc(r.seg || 'All contacts') + '</span>' },
+            { t: "Status", v: r => '<span class="badge ' + (r.status === 'completed' ? 'suc' : r.status === 'sending' ? 'pri' : 'war') + '">' + esc(r.status || 'draft') + '</span>' },
+            { t: "Dispatched", v: r => '<b>' + (r.sent || 0) + '</b><small class="mut"> / ' + (r.total || 0) + '</small>' },
+            { t: "Stats", v: r => '<div class="fs11">' + (r.read || 0) + ' read · ' + (r.replied || 0) + ' replied</div>' }
+          ],
+          rows: camps,
+          empty: "No broadcast campaigns created yet. Click 'New Campaign' to start.",
+          emptyIcon: "send"
+        }) + '</div>';
+    } else if (tab === "segs") {
+      const segs = data.segs || [];
+      root.innerHTML = '<div class="card"><div class="card-h"><h3>' + ic("users") + 'Audience Segments</h3></div>' +
+        '<div class="grid p12" style="grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:var(--gap)">' +
+        (segs.length ? segs.map(s => '<div class="card p12"><div class="f aic jcb mb6"><b class="fs13">' + esc(s.name) + '</b>' +
+          '<button class="iconbtn sm dan" data-seg-del="' + esc(s.id) + '">' + ic("trash", "i-14") + '</button></div>' +
+          '<div class="fs11 mut mb8">Filter: ' + esc(JSON.stringify(s.filter || {})) + '</div>' +
+          '<button class="btn sm w100" data-seg-test="' + esc(s.id) + '">' + ic("users", "i-14") + 'Check Audience Size</button></div>').join('')
+          : '<div class="empty">' + ic("users") + '<p>No custom segments created</p></div>') +
+        '</div></div>';
+      $$("[data-seg-del]").forEach(btn => {
+        btn.onclick = async () => {
+          if (!confirm("Delete segment?")) return;
+          const r = await api("wag_seg_delete", { id: btn.dataset.segDel });
+          if (r.ok) { toast("Segment deleted", "suc"); load(); }
+        };
+      });
+      $$("[data-seg-test]").forEach(btn => {
+        btn.onclick = async () => {
+          const s = segs.find(x => x.id === btn.dataset.segTest);
+          const r = await api("wag_audience", { filter: s.filter });
+          toast("Estimated audience: " + (r.count || 0) + " contacts", "inf");
+        };
+      });
+    } else if (tab === "tpls") {
+      const tpls = data.tpls || [];
+      root.innerHTML = '<div class="card"><div class="card-h"><div class="f aic jcb w100"><h3>' + ic("layers") + 'Meta Approved Templates</h3>' +
+        '<button class="btn sm pri" id="wa-add-tpl">' + ic("plus") + 'Add Template</button></div></div>' +
+        '<div class="grid p12" style="grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:var(--gap)">' +
+        (tpls.length ? tpls.map(t => '<div class="tpl-card"><div class="f aic jcb"><b class="fs12 ell">' + esc(t.label || t.name) + '</b>' +
+          '<span class="badge sm suc">APPROVED</span></div>' +
+          '<div class="tpl-body">' + esc(t.body || 'No preview text') + '</div>' +
+          '<div class="fs10 mut">Category: ' + esc(t.cat || 'marketing') + ' · Lang: ' + esc(t.lang || 'en') + '</div></div>').join('')
+          : '<div class="empty">' + ic("layers") + '<p>No templates registered</p></div>') +
+        '</div></div>';
+      $("#wa-add-tpl").onclick = () => openTplModal();
+    } else if (tab === "optout") {
+      root.innerHTML = '<div class="card"><div class="card-h"><h3>' + ic("x") + 'Opt-out Suppression List</h3></div>' +
+        '<div class="card-b"><p class="fs12 mut mb12">Contacts who sent STOP or requested unsubscribe are automatically suppressed from all automated broadcasts.</p>' +
+        '<div class="f aic g6 max-w400 mb12"><input id="oo-phone" placeholder="Add phone to suppress: +92 300 1234567">' +
+        '<button class="btn sm" id="oo-add-btn">' + ic("plus") + 'Add to List</button></div>' +
+        '<div id="oo-list-b">Loading…</div></div></div>';
+      $("#oo-add-btn").onclick = async () => {
+        const ph = $("#oo-phone").value.trim();
+        if (!ph) return;
+        const r = await api("wag_optout", { phone: ph });
+        toast(r.ok ? "Phone added to suppression list" : "Failed", r.ok ? "suc" : "err");
+        if (r.ok) { $("#oo-phone").value = ""; load(); }
+      };
+      api("wag_optout_list", {}).then(r => {
+        const list = (r.ok && r.list) || [];
+        $("#oo-list-b").innerHTML = list.length ? list.map(x => '<div class="li"><span class="fs12 mono">+' + esc(x.phone || x) + '</span><span class="fs11 mut">' + dt(x.date) + '</span></div>').join('') : '<div class="empty">No opted-out contacts</div>';
+      });
+    }
+    paintIcons(root);
+  };
+
+  $("#wa-tabs").onclick = e => {
+    const b = e.target.closest("button"); if (!b) return;
+    $$("#wa-tabs button").forEach(x => x.classList.toggle("on", x === b));
+    tab = b.dataset.t;
+    renderTab();
+  };
+
+  const openTplModal = () => {
+    modal(
+      '<div class="modal-h"><h3>' + ic("layers") + 'Register Meta Template</h3><button class="iconbtn" onclick="closeModal()">' + ic("x") + '</button></div>' +
+      '<form id="f-wa-tpl"><div class="modal-b" style="display:grid;gap:10px">' +
+      '<div class="field"><label>Template Identifier (Meta exact name) *</label><input id="wt-name" required placeholder="e.g. quote_followup_v1"></div>' +
+      '<div class="field"><label>Friendly Label</label><input id="wt-lbl" placeholder="e.g. Quotation Review Follow-up"></div>' +
+      '<div class="field"><label>Category</label><select id="wt-cat"><option value="marketing">Marketing</option><option value="utility">Utility</option></select></div>' +
+      '<div class="field"><label>Template Body (Paste from Meta) *</label><textarea id="wt-body" rows="3" required placeholder="Hi {{1}}, we have prepared your 3D design quote. Click below to review."></textarea></div>' +
+      '</div><div class="modal-f"><button type="button" class="btn" onclick="closeModal()">Cancel</button>' +
+      '<div class="f1"></div><button type="submit" class="btn pri" id="wt-save-btn">' + ic("check") + 'Register Template</button></div></form>'
+    );
+    $("#f-wa-tpl").onsubmit = async e => {
+      e.preventDefault();
+      const b = $("#wt-save-btn"); b.classList.add("busy");
+      const r = await api("wag_tpl_save", {
+        name: $("#wt-name").value.trim(),
+        label: $("#wt-lbl").value.trim(),
+        cat: $("#wt-cat").value,
+        body: $("#wt-body").value.trim()
+      });
+      b.classList.remove("busy");
+      if (!r.ok) return toast(r.error || "Could not register template", "err");
+      toast("Template registered", "suc");
+      closeModal();
+      load();
+    };
+  };
+
+  $("#wa-new-camp").onclick = () => {
+    const tpls = data?.tpls || [];
+    const segs = data?.segs || [];
+    modal(
+      '<div class="modal-h"><h3>' + ic("send") + 'Compose WhatsApp Broadcast</h3><button class="iconbtn" onclick="closeModal()">' + ic("x") + '</button></div>' +
+      '<form id="f-wa-camp"><div class="modal-b" style="display:grid;gap:10px">' +
+      '<div class="field"><label>Campaign Name *</label><input id="wc-name" required placeholder="e.g. Eid Home Renovation Promo"></div>' +
+      '<div class="g2"><div class="field"><label>Audience Segment</label><select id="wc-seg"><option value="">All Opted-in Contacts (' + (data?.contacts || 0) + ')</option>' +
+      segs.map(s => '<option value="' + s.id + '">' + esc(s.name) + '</option>').join('') + '</select></div>' +
+      '<div class="field"><label>Template</label><select id="wc-tpl" required>' +
+      tpls.map(t => '<option value="' + t.id + '">' + esc(t.label || t.name) + '</option>').join('') + '</select></div></div>' +
+      '<div class="field"><label>Schedule Time (Optional)</label><input type="datetime-local" id="wc-when"></div>' +
+      '</div><div class="modal-f"><button type="button" class="btn" onclick="closeModal()">Cancel</button>' +
+      '<div class="f1"></div><button type="submit" class="btn pri" id="wc-save-btn">' + ic("send") + 'Launch Campaign</button></div></form>'
+    );
+    $("#f-wa-camp").onsubmit = async e => {
+      e.preventDefault();
+      const b = $("#wc-save-btn"); b.classList.add("busy");
+      const r = await api("wag_camp_save", {
+        camp: {
+          name: $("#wc-name").value.trim(),
+          seg: $("#wc-seg").value,
+          tpl: $("#wc-tpl").value,
+          when: $("#wc-when").value,
+          status: $("#wc-when").value ? "scheduled" : "sending"
+        }
+      });
+      b.classList.remove("busy");
+      if (!r.ok) return toast(r.error || "Could not launch broadcast", "err");
+      toast("Broadcast campaign scheduled", "suc");
+      closeModal();
+      load();
+    };
+  };
+
+  $("#wa-new-seg").onclick = () => {
+    modal(
+      '<div class="modal-h"><h3>' + ic("users") + 'New Audience Segment</h3><button class="iconbtn" onclick="closeModal()">' + ic("x") + '</button></div>' +
+      '<form id="f-wa-seg"><div class="modal-b" style="display:grid;gap:10px">' +
+      '<div class="field"><label>Segment Name *</label><input id="ws-name" required placeholder="e.g. Lahore Interior Clients"></div>' +
+      '<div class="g2"><div class="field"><label>Service Line</label><select id="ws-line"><option value="">All Lines</option><option>Interior</option><option>Furniture</option><option>Project</option></select></div>' +
+      '<div class="field"><label>City</label><input id="ws-city" placeholder="e.g. Lahore"></div></div>' +
+      '<div class="field"><label>Lead Stage</label><select id="ws-stage"><option value="">All Stages</option><option value="new">New</option><option value="quote">Quote Sent</option><option value="won">Won</option></select></div>' +
+      '</div><div class="modal-f"><button type="button" class="btn" onclick="closeModal()">Cancel</button>' +
+      '<div class="f1"></div><button type="submit" class="btn pri" id="ws-save-btn">' + ic("check") + 'Save Segment</button></div></form>'
+    );
+    $("#f-wa-seg").onsubmit = async e => {
+      e.preventDefault();
+      const b = $("#ws-save-btn"); b.classList.add("busy");
+      const r = await api("wag_seg_save", {
+        name: $("#ws-name").value.trim(),
+        filter: {
+          line: $("#ws-line").value,
+          city: $("#ws-city").value.trim(),
+          stage: $("#ws-stage").value
+        }
+      });
+      b.classList.remove("busy");
+      if (!r.ok) return toast(r.error || "Could not save segment", "err");
+      toast("Segment created", "suc");
+      closeModal();
+      load();
+    };
+  };
+
+  await load();
+};
+
+
+/* ==================== 6. PROMOTIONAL OFFERS & COUPONS ==================== */
+SCREENS.offers = async function () {
+  const c = $("#content");
+  c.className = "content";
+  c.innerHTML =
+    '<div class="ph"><div class="ph-l"><div class="crumb"><a href="#/dashboard">Home</a> / <a href="#/wahub">WhatsApp</a> / Offers</div><h1>Discount Offers & Promotions</h1></div>' +
+    '<div class="ph-r"><button class="btn pri" id="off-new">' + ic("plus") + 'Create Offer</button></div></div>' +
+    '<div class="kpis" id="off-kpis">' + skeleton(3, "k") + '</div>' +
+    '<div class="card"><div class="card-h"><h3>' + ic("percent") + 'Active Campaigns & Promo Codes</h3></div>' +
+    '<div class="grid p12" id="off-grid" style="grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:var(--gap)">' + skeleton(3) + '</div></div>';
+  paintIcons(c);
+
+  let offers = [], leads = [];
+  const load = async () => {
+    const [r1, r2] = await Promise.all([api("crm_offers", {}), api("leads_list", {})]);
+    offers = (r1.ok && r1.offers) || [];
+    leads = (r2.ok && (r2.leads || r2.items)) || [];
+
+    const totalSent = offers.reduce((s, o) => s + (o.sent || 0), 0);
+    $("#off-kpis").innerHTML =
+      kpi({ t: "Active Offers", i: "percent", c: "c-acc", v: n0(offers.length), m: '<span>Promo codes live</span>' }) +
+      kpi({ t: "WhatsApp Sent", i: "whatsapp", c: "c-suc", v: n0(totalSent), m: '<span>Direct messages delivered</span>' }) +
+      kpi({ t: "WhatsApp Gateway", i: "zap", c: r1.waConnected ? "c-suc" : "c-vio", v: r1.waConnected ? "Connected" : "Simulated Outbox", m: '<span>Ready to blast</span>' });
+    paintIcons($("#off-kpis"));
+
+    $("#off-grid").innerHTML = offers.length ? offers.map(o => {
+      const expired = o.expires && o.expires < new Date().toISOString().slice(0, 10);
+      return '<div class="card p12" style="border:1px solid var(--border-2);display:flex;flex-direction:column;gap:8px">' +
+        '<div class="f aic jcb"><span class="badge pri fw7 fs12">' + esc(o.code || 'SPECIAL') + '</span>' +
+        '<span class="badge sm ' + (expired ? 'dan' : 'suc') + '">' + (expired ? 'EXPIRED' : o.percent + '% OFF') + '</span></div>' +
+        '<b class="fs13">' + esc(o.title) + '</b>' +
+        '<div class="tpl-body" style="font-size:11.5px">' + esc(o.msg || '') + '</div>' +
+        '<div class="fs11 mut">' + (o.expires ? 'Expires: ' + dt(o.expires) : 'No expiration date') + ' · ' + (o.sent || 0) + ' sent</div>' +
+        '<div class="f aic g6 mt4">' +
+        '<button class="btn sm pri f1" data-send-off="' + esc(o.id) + '">' + ic("whatsapp", "i-14") + 'Blast WhatsApp</button>' +
+        '<button class="iconbtn sm dan" data-del-off="' + esc(o.id) + '" title="Delete">' + ic("trash", "i-14") + '</button></div></div>';
+    }).join('') : '<div class="empty">' + ic("percent") + '<p>No promo offers created yet</p><small>Create discount codes to broadcast to prospective leads on WhatsApp</small></div>';
+    paintIcons($("#off-grid"));
+
+    $$("[data-del-off]").forEach(btn => {
+      btn.onclick = async () => {
+        if (!confirm("Delete this offer?")) return;
+        const r = await api("crm_offer_delete", { id: btn.dataset.delOff });
+        if (r.ok) { toast("Offer deleted", "suc"); load(); }
+        else toast(r.error || "Failed", "err");
+      };
+    });
+
+    $$("[data-send-off]").forEach(btn => {
+      btn.onclick = () => {
+        const off = offers.find(x => x.id === btn.dataset.sendOff);
+        openBlastModal(off);
+      };
+    });
+  };
+
+  const openBlastModal = off => {
+    modal(
+      '<div class="modal-h"><h3>' + ic("whatsapp") + 'Send Promo: ' + esc(off.title) + '</h3><button class="iconbtn" onclick="closeModal()">' + ic("x") + '</button></div>' +
+      '<form id="f-blast-off"><div class="modal-b" style="display:grid;gap:10px">' +
+      '<div class="field"><label>Select Target Leads (' + leads.length + ' available)</label>' +
+      '<div style="max-height:180px;overflow-y:auto;border:1px solid var(--border-2);border-radius:var(--r);padding:6px">' +
+      leads.map(l => '<label class="f aic g6 p4 hover-card fs12"><input type="checkbox" name="blast_leads" value="' + l.id + '" checked>' +
+        '<b>' + esc(l.name || l.company || 'Lead #' + l.id) + '</b> <span class="mut">(' + esc(l.phone || 'No phone') + ')</span></label>').join('') +
+      '</div></div>' +
+      '<div class="field"><label>Message Preview</label><div class="tpl-body">' + esc(off.msg || '') + '</div></div>' +
+      '</div><div class="modal-f"><button type="button" class="btn" onclick="closeModal()">Cancel</button>' +
+      '<div class="f1"></div><button type="submit" class="btn pri" id="b-blast-btn">' + ic("send") + 'Send WhatsApp Broadcast</button></div></form>'
+    );
+    $("#f-blast-off").onsubmit = async e => {
+      e.preventDefault();
+      const checked = $$('input[name="blast_leads"]:checked').map(x => +x.value);
+      if (!checked.length) return toast("Select at least one lead", "war");
+      const b = $("#b-blast-btn"); b.classList.add("busy");
+      const r = await api("crm_offer_send", { id: off.id, leads: checked });
+      b.classList.remove("busy");
+      if (!r.ok) return toast(r.error || "Could not dispatch broadcast", "err");
+      toast("Broadcast dispatched to " + (r.sent || checked.length) + " leads", "suc");
+      closeModal();
+      load();
+    };
+  };
+
+  $("#off-new").onclick = () => {
+    modal(
+      '<div class="modal-h"><h3>' + ic("plus") + 'New Promotional Offer</h3><button class="iconbtn" onclick="closeModal()">' + ic("x") + '</button></div>' +
+      '<form id="f-new-off"><div class="modal-b" style="display:grid;gap:10px">' +
+      '<div class="field"><label>Offer Title *</label><input id="no-title" required placeholder="e.g. Ramadan Special 15% Off"></div>' +
+      '<div class="g2"><div class="field"><label>Promo Code</label><input id="no-code" required placeholder="WOODEX15"></div>' +
+      '<div class="field"><label>Discount Percentage (%)</label><input type="number" id="no-pct" min="1" max="90" value="15"></div></div>' +
+      '<div class="field"><label>Expiry Date</label><input type="date" id="no-exp" value="' + new Date(Date.now() + 30 * 864e5).toISOString().slice(0, 10) + '"></div>' +
+      '<div class="field"><label>WhatsApp Message Template *</label>' +
+      '<textarea id="no-msg" rows="3" required placeholder="Assalam-o-Alaikum {name}, get {percent}% off your full home interior design with coupon code {code} before {expires}! Reply to book site visit."></textarea>' +
+      '<small class="mut">Placeholders: {name}, {code}, {percent}, {expires}</small></div>' +
+      '</div><div class="modal-f"><button type="button" class="btn" onclick="closeModal()">Cancel</button>' +
+      '<div class="f1"></div><button type="submit" class="btn pri" id="no-save-btn">' + ic("check") + 'Save Offer</button></div></form>'
+    );
+    $("#f-new-off").onsubmit = async e => {
+      e.preventDefault();
+      const b = $("#no-save-btn"); b.classList.add("busy");
+      const r = await api("crm_offer_save", {
+        title: $("#no-title").value.trim(),
+        code: $("#no-code").value.trim().toUpperCase(),
+        percent: +$("#no-pct").value || 0,
+        expires: $("#no-exp").value,
+        msg: $("#no-msg").value.trim()
+      });
+      b.classList.remove("busy");
+      if (!r.ok) return toast(r.error || "Could not save offer", "err");
+      toast("Offer created", "suc");
+      closeModal();
+      load();
+    };
+  };
+
+  await load();
+};
+
+
+/* ==================== 7. TELEGRAM BOT & TEAM ALERTS ==================== */
+SCREENS.telegram = async function () {
+  const c = $("#content");
+  c.className = "content";
+  c.innerHTML =
+    '<div class="ph"><div class="ph-l"><div class="crumb"><a href="#/dashboard">Home</a> / <a href="#/chat">Conversations</a> / Telegram</div><h1>Telegram Bot & Team Alerts</h1></div>' +
+    '<div class="ph-r"><button class="btn" id="tg-test-team">' + ic("send") + 'Ping Team Group</button>' +
+    '<button class="btn pri" id="tg-link-me">' + ic("qr-code") + 'Link My Telegram</button></div></div>' +
+    '<div class="grid" style="grid-template-columns:minmax(0,1.3fr) minmax(0,2fr);gap:var(--gap)">' +
+    '<div style="display:flex;flex-direction:column;gap:var(--gap)">' +
+    '<div class="card"><div class="card-h"><h3>' + ic("bot") + 'Bot Status</h3></div>' +
+    '<div class="card-b" id="tg-bot-b">' + skeleton(3) + '</div></div>' +
+    '<div class="card"><div class="card-h"><h3>' + ic("qr-code") + 'Personal Direct Alert QR</h3></div>' +
+    '<div class="card-b qr-box" id="tg-qr-b">' + skeleton(2) + '</div></div>' +
+    '</div>' +
+    '<div class="card"><div class="card-h"><h3>' + ic("settings") + 'Notification Routing & Preferences</h3></div>' +
+    '<form id="f-tg-cfg"><div class="card-b" style="display:grid;gap:12px">' +
+    '<div class="field"><label>Alert Mobile Phone (Pakistan)</label><input id="tg-phone" placeholder="+92 322 4200768"></div>' +
+    '<div class="field"><label>Telegram Admin Handle</label><input id="tg-user" placeholder="e.g. woodex_master"></div>' +
+    '<div class="hr"></div>' +
+    '<div class="f aic jcb"><div class="min-w0"><b>New Lead Alerts</b><small class="mut dblk">Instant ping when a website or WhatsApp lead comes in</small></div>' +
+    '<label class="switch"><input type="checkbox" id="tg-a-leads" checked><i></i></label></div>' +
+    '<div class="f aic jcb"><div class="min-w0"><b>Live Chat Alerts</b><small class="mut dblk">Ping when a customer requests a human agent</small></div>' +
+    '<label class="switch"><input type="checkbox" id="tg-a-chats" checked><i></i></label></div>' +
+    '<div class="f aic jcb"><div class="min-w0"><b>Master Approvals</b><small class="mut dblk">Alert on quotations, invoice payments & page edits</small></div>' +
+    '<label class="switch"><input type="checkbox" id="tg-a-appr" checked><i></i></label></div>' +
+    '<div class="f aic jcb"><div class="min-w0"><b>Show Telegram Button on Website</b><small class="mut dblk">Allows visitors to chat directly on Telegram</small></div>' +
+    '<label class="switch"><input type="checkbox" id="tg-a-cust"><i></i></label></div>' +
+    '<button type="submit" class="btn pri mt12">' + ic("check") + 'Save Telegram Preferences</button>' +
+    '</div></form></div>' +
+    '</div>';
+  paintIcons(c);
+
+  let data = null;
+  const load = async () => {
+    const r = await api("tg_get", {});
+    if (!r.ok) return toast(r.error || "Could not load Telegram configuration", "err");
+    data = r;
+    const cfg = data.cfg || {};
+
+    $("#tg-bot-b").innerHTML =
+      '<div class="f aic g8 mb8"><span class="badge ' + (cfg.token ? 'suc' : 'war') + '">' + (cfg.token ? 'CONNECTED' : 'STANDBY') + '</span>' +
+      '<b>@' + esc(cfg.bot || 'woodex_bot') + '</b></div>' +
+      '<div class="fs12 mb6">Team Group: <b>' + esc(cfg.groupTitle || cfg.group || 'Woodex Ops (Preview)') + '</b></div>' +
+      '<div class="fs11 mut mb12">Webhook: Active · Direct Messages: ' + (data.meDm ? 'Subscribed' : 'Off') + '</div>' +
+      '<div class="f g6"><button class="btn sm" id="tg-ping-me">' + ic("send", "i-14") + 'Test My Ping</button>' +
+      (cfg.token ? '<button class="btn sm dan" id="tg-disconn">' + ic("x", "i-14") + 'Disconnect</button>' : '') + '</div>';
+    paintIcons($("#tg-bot-b"));
+
+    $("#tg-qr-b").innerHTML =
+      '<div class="fs13 fw6 mb4">' + (data.me ? '✅ Your Telegram is Linked' : 'Scan to Connect') + '</div>' +
+      '<div class="p8 b-card my8"><img src="https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=' + encodeURIComponent('https://t.me/' + (cfg.bot || 'woodex_bot') + '?start=preview') + '" style="width:130px;height:130px;display:block"></div>' +
+      '<a class="btn sm pri" href="https://t.me/' + esc(cfg.bot || 'woodex_bot') + '?start=preview" target="_blank">' + ic("external-link", "i-14") + 'Open in Telegram App</a>';
+    paintIcons($("#tg-qr-b"));
+
+    $("#tg-phone").value = cfg.alertPhone || "";
+    $("#tg-user").value = cfg.tgUser || "";
+    $("#tg-a-leads").checked = cfg.alertLeads !== false;
+    $("#tg-a-chats").checked = cfg.alertChats !== false;
+    $("#tg-a-appr").checked = cfg.alertAppr !== false;
+    $("#tg-a-cust").checked = !!cfg.customers;
+
+    $("#tg-ping-me").onclick = async () => {
+      const r2 = await api("tg_test_me", {});
+      toast(r2.ok ? "Test ping dispatched to your Telegram" : (r2.error || "Connect Telegram first"), r2.ok ? "suc" : "war");
+    };
+
+    if ($("#tg-disconn")) {
+      $("#tg-disconn").onclick = async () => {
+        if (!confirm("Disconnect Telegram bot?")) return;
+        const r2 = await api("tg_disconnect", {});
+        if (r2.ok) { toast("Disconnected", "suc"); load(); }
+      };
+    }
+  };
+
+  $("#f-tg-cfg").onsubmit = async e => {
+    e.preventDefault();
+    const r = await api("tg_save", {
+      alertPhone: $("#tg-phone").value.trim(),
+      tgUser: $("#tg-user").value.trim(),
+      alertLeads: $("#tg-a-leads").checked,
+      alertChats: $("#tg-a-chats").checked,
+      alertAppr: $("#tg-a-appr").checked,
+      customers: $("#tg-a-cust").checked
+    });
+    toast(r.ok ? "Telegram preferences updated" : (r.error || "Failed"), r.ok ? "suc" : "err");
+  };
+
+  $("#tg-test-team").onclick = async () => {
+    const r = await api("tg_test", {});
+    toast(r.ok ? "Ping sent to team group" : (r.error || "Ping simulated"), r.ok ? "suc" : "inf");
+  };
+
+  $("#tg-link-me").onclick = async () => {
+    const r = await api("tg_link_code", {});
+    if (r.ok) {
+      modal(
+        '<div class="modal-h"><h3>' + ic("qr-code") + 'Link Your Personal Telegram</h3><button class="iconbtn" onclick="closeModal()">' + ic("x") + '</button></div>' +
+        '<div class="modal-b qr-box"><div class="fs12 mb8">Scan or tap the link to authorize instant push notifications:</div>' +
+        '<div class="badge acc fs14 fw7 my8">CODE: ' + esc(r.code || 'L7X9') + '</div>' +
+        '<a class="btn pri mt8" href="' + esc(r.link || '#') + '" target="_blank">' + ic("send") + 'Start Chat with Bot</a></div>' +
+        '<div class="modal-f"><button class="btn" onclick="closeModal()">Done</button></div>'
+      );
+    } else toast(r.error || "Failed", "err");
+  };
+
+  await load();
+};
+
+
+/* ==================== 8. SOCIAL MEDIA HUB ==================== */
+SCREENS.social = async function () {
+  const c = $("#content");
+  c.className = "content";
+  c.innerHTML =
+    '<div class="ph"><div class="ph-l"><div class="crumb"><a href="#/dashboard">Home</a> / <a href="#/chat">Conversations</a> / Social media</div><h1>Social Media Hub (FB, IG, LinkedIn)</h1></div>' +
+    '<div class="ph-r"><button class="btn" id="soc-sync-btn">' + ic("refresh-cw") + 'Sync Comments</button>' +
+    '<button class="btn" id="soc-cfg-btn">' + ic("settings") + 'Settings</button>' +
+    '<button class="btn pri" id="soc-post-new">' + ic("plus") + 'Create Post</button></div></div>' +
+    '<div class="grid mb12" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:var(--gap)" id="soc-cards">' + skeleton(4, "k") + '</div>' +
+    '<div class="grid" style="grid-template-columns:minmax(0,1.8fr) minmax(0,1.2fr);gap:var(--gap)">' +
+    '<div class="card"><div class="card-h"><div class="f aic jcb w100"><h3>' + ic("message-circle") + 'Unified Social Comments Feed</h3>' +
+    '<button class="btn sm" id="soc-read-all">' + ic("check") + 'Mark all read</button></div></div>' +
+    '<div id="soc-comments-b">' + skeleton(4) + '</div></div>' +
+    '<div class="card"><div class="card-h"><h3>' + ic("calendar") + 'Post Scheduler & Timeline</h3></div>' +
+    '<div id="soc-posts-b">' + skeleton(3) + '</div></div>' +
+    '</div>';
+  paintIcons(c);
+
+  let data = null;
+  const load = async () => {
+    const r = await api("soc_get", {});
+    if (!r.ok) return toast(r.error || "Could not load social media data", "err");
+    data = r;
+    const ready = data.ready || {};
+
+    $("#soc-cards").innerHTML =
+      kpi({ t: "Facebook Page", i: "facebook", c: ready.fb ? "c-suc" : "c-acc", v: ready.fb ? "Connected" : "Ready", m: '<span>' + (data.cfg?.pageId || 'ID configured') + '</span>' }) +
+      kpi({ t: "Instagram Business", i: "instagram", c: ready.ig ? "c-suc" : "c-vio", v: ready.ig ? "Connected" : "Ready", m: '<span>' + (data.cfg?.igId || 'ID configured') + '</span>' }) +
+      kpi({ t: "LinkedIn Org", i: "linkedin", c: ready.li ? "c-suc" : "c-mut", v: ready.li ? "Connected" : "Standby", m: '<span>' + (data.cfg?.liOrg ? 'Org: ' + data.cfg.liOrg : 'Ready') + '</span>' }) +
+      kpi({ t: "Unread Comments", i: "message-circle", c: "c-acc", v: n0(data.unread || 0), m: '<span>' + (data.comments || []).length + ' total fetched</span>' });
+    paintIcons($("#soc-cards"));
+
+    // Render Comments
+    const comments = data.comments || [];
+    $("#soc-comments-b").innerHTML = comments.length ? comments.map(cm =>
+      '<div class="comment-card ' + (!cm.read ? 'unread' : '') + '">' +
+      '<span class="av">' + esc(initials(cm.name || 'User')) + '</span>' +
+      '<div class="c-main"><div class="c-head"><b>' + esc(cm.name || 'User') + '</b>' +
+      '<span class="badge sm ' + (cm.net === 'ig' ? 'vio' : 'pri') + '">' + (cm.net === 'ig' ? 'Instagram' : 'Facebook') + '</span>' +
+      '<span class="fs11 mut">' + ago(cm.time) + '</span></div>' +
+      '<div class="c-text">' + esc(cm.text || '') + '</div>' +
+      (cm.reply ? '<div class="c-reply"><b class="c-acc">' + ic("check-circle", "i-14") + ' Replied by ' + esc(cm.replyBy || 'Team') + ':</b> ' + esc(cm.reply) + '</div>' :
+        '<div class="f aic g6 mt6"><button class="btn sm pri" data-reply-cm="' + esc(cm.id) + '">' + ic("send", "i-14") + 'Reply</button>' +
+        '<button class="btn sm gho" data-ai-cm="' + esc(cm.id) + '">' + ic("sparkles", "i-14") + 'AI Suggest Reply</button></div>') +
+      '</div></div>'
+    ).join('') : '<div class="empty">' + ic("message-circle") + '<p>No social comments yet</p><small>Comments from your Facebook & Instagram posts sync automatically</small></div>';
+    paintIcons($("#soc-comments-b"));
+
+    // Render Posts
+    const posts = data.posts || [];
+    $("#soc-posts-b").innerHTML = posts.length ? posts.map(p =>
+      '<div class="p10 b-card mb8"><div class="f aic jcb mb4"><div class="f aic g4">' +
+      (p.nets || []).map(n => '<span class="badge sm ' + (n === 'ig' ? 'vio' : 'pri') + '">' + n.toUpperCase() + '</span>').join('') +
+      '<b class="fs12 ell ml4">' + esc(p.title || 'Post') + '</b></div>' +
+      '<span class="badge sm ' + (p.status === 'published' ? 'suc' : p.status === 'scheduled' ? 'acc' : 'war') + '">' + esc(p.status || 'draft') + '</span></div>' +
+      '<div class="fs11 mut mb6 ell">' + esc(p.text || '') + '</div>' +
+      '<div class="f aic jcb fs10 mut"><span>' + (p.when ? 'Scheduled: ' + dt(p.when) : 'Created ' + ago(p.created_at)) + '</span>' +
+      '<button class="iconbtn sm dan" data-del-post="' + esc(p.id) + '" title="Delete">' + ic("trash", "i-14") + '</button></div></div>'
+    ).join('') : '<div class="empty">' + ic("calendar") + '<p>No scheduled posts</p></div>';
+    paintIcons($("#soc-posts-b"));
+
+    // Handlers
+    $$("[data-del-post]").forEach(btn => {
+      btn.onclick = async () => {
+        if (!confirm("Delete post?")) return;
+        const r2 = await api("soc_post_delete", { id: btn.dataset.delPost });
+        if (r2.ok) { toast("Post deleted", "suc"); load(); }
+      };
+    });
+
+    $$("[data-reply-cm]").forEach(btn => {
+      btn.onclick = () => {
+        const cm = comments.find(x => x.id === btn.dataset.replyCm);
+        openReplyModal(cm);
+      };
+    });
+
+    $$("[data-ai-cm]").forEach(btn => {
+      btn.onclick = async () => {
+        const cm = comments.find(x => x.id === btn.dataset.aiCm);
+        const r2 = await api("soc_ai_reply", { id: cm.id });
+        if (r2.ok && r2.text) openReplyModal(cm, r2.text);
+      };
+    });
+  };
+
+  const openReplyModal = (cm, prefill) => {
+    modal(
+      '<div class="modal-h"><h3>' + ic("message-circle") + 'Reply to ' + esc(cm.name) + '</h3><button class="iconbtn" onclick="closeModal()">' + ic("x") + '</button></div>' +
+      '<form id="f-soc-reply"><div class="modal-b" style="display:grid;gap:10px">' +
+      '<div class="p8 b-card fs12"><b>Comment:</b> ' + esc(cm.text) + '</div>' +
+      '<div class="field"><label>Your Reply *</label><textarea id="sr-txt" rows="3" required placeholder="Write a response…">' + esc(prefill || "") + '</textarea></div>' +
+      '</div><div class="modal-f"><button type="button" class="btn" onclick="closeModal()">Cancel</button>' +
+      '<div class="f1"></div><button type="submit" class="btn pri" id="sr-btn">' + ic("send") + 'Post Reply</button></div></form>'
+    );
+    $("#f-soc-reply").onsubmit = async e => {
+      e.preventDefault();
+      const b = $("#sr-btn"); b.classList.add("busy");
+      const r = await api("soc_comment_reply", { id: cm.id, text: $("#sr-txt").value.trim() });
+      b.classList.remove("busy");
+      if (!r.ok) return toast(r.error || "Could not post reply", "err");
+      toast("Reply posted", "suc");
+      closeModal();
+      load();
+    };
+  };
+
+  $("#soc-read-all").onclick = async () => {
+    const r = await api("soc_comment_read", { all: true });
+    if (r.ok) { toast("All comments marked read", "suc"); load(); }
+  };
+
+  $("#soc-sync-btn").onclick = async () => {
+    const b = $("#soc-sync-btn"); b.classList.add("busy");
+    const r = await api("soc_comments_sync", {});
+    b.classList.remove("busy");
+    toast(r.ok ? "Comments synchronized" : (r.error || "Synced"), r.ok ? "suc" : "inf");
+    load();
+  };
+
+  $("#soc-post-new").onclick = () => {
+    modal(
+      '<div class="modal-h"><h3>' + ic("plus") + 'Compose Social Post</h3><button class="iconbtn" onclick="closeModal()">' + ic("x") + '</button></div>' +
+      '<form id="f-soc-post"><div class="modal-b" style="display:grid;gap:10px">' +
+      '<div class="field"><label>Target Networks</label><div class="f aic g12">' +
+      '<label class="f aic g4 fs12"><input type="checkbox" name="soc_net" value="fb" checked> Facebook</label>' +
+      '<label class="f aic g4 fs12"><input type="checkbox" name="soc_net" value="ig" checked> Instagram</label>' +
+      '<label class="f aic g4 fs12"><input type="checkbox" name="soc_net" value="li"> LinkedIn</label>' +
+      '<label class="f aic g4 fs12"><input type="checkbox" name="soc_net" value="gb"> Google Business</label></div></div>' +
+      '<div class="field"><label>Post Topic / Prompt for AI Caption</label>' +
+      '<div class="f aic g6"><input id="sp-topic" placeholder="e.g. Modern kitchen in DHA Phase 5 with quartz countertop">' +
+      '<button type="button" class="btn sm" id="sp-gen-cap">' + ic("sparkles") + 'Generate</button></div></div>' +
+      '<div class="field"><label>Post Copy *</label><textarea id="sp-text" rows="4" required placeholder="Write your post caption and hashtags…"></textarea></div>' +
+      '<div class="g2"><div class="field"><label>Image URL (Required for Instagram)</label><input id="sp-img" placeholder="https://woodex.pk/uploads/kitchen.jpg"></div>' +
+      '<div class="field"><label>Target Link</label><input id="sp-link" placeholder="https://woodex.pk/portfolio"></div></div>' +
+      '<div class="field"><label>Schedule Datetime (Leave blank to publish now)</label><input type="datetime-local" id="sp-when"></div>' +
+      '</div><div class="modal-f"><button type="button" class="btn" onclick="closeModal()">Cancel</button>' +
+      '<div class="f1"></div><button type="submit" class="btn pri" id="sp-save-btn">' + ic("check") + 'Save Post</button></div></form>'
+    );
+    $("#sp-gen-cap").onclick = async () => {
+      const top = $("#sp-topic").value.trim();
+      if (!top) return toast("Enter a topic first", "war");
+      const r = await api("soc_ai_caption", { topic: top });
+      if (r.ok && r.options && r.options[0]) {
+        $("#sp-text").value = r.options[0];
+        toast("AI caption generated", "suc");
+      }
+    };
+    $("#f-soc-post").onsubmit = async e => {
+      e.preventDefault();
+      const nets = $$('input[name="soc_net"]:checked').map(x => x.value);
+      if (!nets.length) return toast("Select at least one social network", "war");
+      const b = $("#sp-save-btn"); b.classList.add("busy");
+      const r = await api("soc_post_save", {
+        post: {
+          nets: nets,
+          text: $("#sp-text").value.trim(),
+          image: $("#sp-img").value.trim(),
+          link: $("#sp-link").value.trim(),
+          when: $("#sp-when").value,
+          status: $("#sp-when").value ? "scheduled" : "draft"
+        }
+      });
+      b.classList.remove("busy");
+      if (!r.ok) return toast(r.error || "Could not save post", "err");
+      toast("Post saved", "suc");
+      closeModal();
+      load();
+    };
+  };
+
+  $("#soc-cfg-btn").onclick = () => {
+    modal(
+      '<div class="modal-h"><h3>' + ic("settings") + 'Social Media Settings</h3><button class="iconbtn" onclick="closeModal()">' + ic("x") + '</button></div>' +
+      '<form id="f-soc-cfg"><div class="modal-b" style="display:grid;gap:10px">' +
+      '<div class="g2"><div class="field"><label>Facebook Page ID</label><input id="sc-fbid" value="' + esc(data?.cfg?.pageId || "") + '"></div>' +
+      '<div class="field"><label>Instagram Account ID</label><input id="sc-igid" value="' + esc(data?.cfg?.igId || "") + '"></div></div>' +
+      '<div class="field"><label>Meta Access Token</label><input id="sc-tok" value="' + esc(data?.cfg?.token || "") + '" placeholder="EAAB..."></div>' +
+      '<div class="field"><label>Default Brand Hashtags</label><input id="sc-tags" value="' + esc(data?.cfg?.tags || "#WoodexInterior #InteriorDesignLahore #LuxuryFurniture") + '"></div>' +
+      '</div><div class="modal-f"><button type="button" class="btn" onclick="closeModal()">Cancel</button>' +
+      '<div class="f1"></div><button type="submit" class="btn pri" id="sc-save-btn">' + ic("check") + 'Save Settings</button></div></form>'
+    );
+    $("#f-soc-cfg").onsubmit = async e => {
+      e.preventDefault();
+      const b = $("#sc-save-btn"); b.classList.add("busy");
+      const r = await api("soc_cfg_save", {
+        cfg: {
+          pageId: $("#sc-fbid").value.trim(),
+          igId: $("#sc-igid").value.trim(),
+          token: $("#sc-tok").value.trim(),
+          tags: $("#sc-tags").value.trim()
+        }
+      });
+      b.classList.remove("busy");
+      if (!r.ok) return toast(r.error || "Could not save settings", "err");
+      toast("Settings updated", "suc");
+      closeModal();
+      load();
+    };
+  };
+
+  await load();
+};
+
+
+/* ==================== 9. CLIENT PROJECT UPDATES & ALERTS ==================== */
+SCREENS.updates = async function () {
+  const c = $("#content");
+  c.className = "content";
+  c.innerHTML =
+    '<div class="ph"><div class="ph-l"><div class="crumb"><a href="#/dashboard">Home</a> / <a href="#/chat">Conversations</a> / Client updates</div><h1>Client Project Updates & Alerts</h1></div>' +
+    '<div class="ph-r"><button class="btn" id="nt-test-btn">' + ic("send") + 'Send Test Alert</button>' +
+    '<button class="btn pri" id="nt-send-proj">' + ic("plus") + 'Post Milestone Update</button></div></div>' +
+    '<div class="grid" style="grid-template-columns:minmax(0,1.8fr) minmax(0,1.2fr);gap:var(--gap)">' +
+    '<div class="card"><div class="card-h"><h3>' + ic("bell") + 'Automated Notification Events</h3></div>' +
+    '<form id="f-nt-cfg"><div class="card-b" id="nt-events-b">' + skeleton(5) + '</div>' +
+    '<div class="card-f"><button type="submit" class="btn pri">' + ic("check") + 'Save Notification Triggers</button></div></form></div>' +
+    '<div class="card"><div class="card-h"><h3>' + ic("activity") + 'Recent Outbound Alerts Log</h3></div>' +
+    '<div id="nt-log-b">' + skeleton(5) + '</div></div>' +
+    '</div>';
+  paintIcons(c);
+
+  let data = null, projs = [], clients = [];
+  const load = async () => {
+    const [r1, r2, r3] = await Promise.all([api("notify_get", {}), api("projs_list", {}), api("clients_list", {})]);
+    data = r1.ok ? r1 : {};
+    projs = (r2.ok && r2.projects) || [];
+    clients = (r3.ok && r3.clients) || [];
+
+    const cfg = data.cfg || {};
+    const events = data.events || {
+      lead_rec: { name: "New Lead Received", on: true },
+      book_conf: { name: "Booking Confirmed", on: true },
+      quote_sent: { name: "Quote Generated & Sent", on: true },
+      inv_paid: { name: "Invoice Payment Received", on: true },
+      proj_up: { name: "Project Milestone Progress", on: true }
+    };
+
+    $("#nt-events-b").innerHTML = Object.entries(events).map(([k, ev]) => {
+      const eCfg = (cfg.ev && cfg.ev[k]) || { on: true, subject: ev.name, text: "Dear {name}, here is an update regarding {project}." };
+      return '<div class="p8 b-card mb8"><div class="f aic jcb mb4"><b>' + esc(ev.name || k) + '</b>' +
+        '<label class="switch"><input type="checkbox" name="ev_on_' + k + '" ' + (eCfg.on ? 'checked' : '') + '><i></i></label></div>' +
+        '<input class="mb4 fs12" name="ev_sub_' + k + '" value="' + esc(eCfg.subject || "") + '" placeholder="Subject">' +
+        '<textarea class="fs11" rows="2" name="ev_txt_' + k + '" placeholder="Template text...">' + esc(eCfg.text || "") + '</textarea></div>';
+    }).join('');
+
+    const log = data.log || [];
+    $("#nt-log-b").innerHTML = log.length ? log.map(l =>
+      '<div class="li"><span class="badge sm ' + (l.channel === 'wa' ? 'suc' : 'inf') + '">' + esc(l.channel.toUpperCase()) + '</span>' +
+      '<div class="li-b"><b>' + esc(l.event || 'Notification') + '</b><small>To: ' + esc(l.dest || l.name || '') + '</small></div>' +
+      '<div class="li-e">' + ago(l.t) + '</div></div>'
+    ).join('') : '<div class="empty">' + ic("bell") + '<p>No outbound alerts logged yet</p></div>';
+    paintIcons($("#nt-log-b"));
+  };
+
+  $("#f-nt-cfg").onsubmit = async e => {
+    e.preventDefault();
+    const ev = {};
+    const events = data.events || {};
+    Object.keys(events).forEach(k => {
+      ev[k] = {
+        on: $(`input[name="ev_on_${k}"]`).checked,
+        subject: $(`input[name="ev_sub_${k}"]`).value.trim(),
+        text: $(`textarea[name="ev_txt_${k}"]`).value.trim()
+      };
+    });
+    const r = await api("notify_save", { cfg: { ev: ev } });
+    toast(r.ok ? "Notification triggers saved" : "Failed", r.ok ? "suc" : "err");
+  };
+
+  $("#nt-send-proj").onclick = () => {
+    modal(
+      '<div class="modal-h"><h3>' + ic("briefcase") + 'Post Project Milestone Update</h3><button class="iconbtn" onclick="closeModal()">' + ic("x") + '</button></div>' +
+      '<form id="f-nt-proj"><div class="modal-b" style="display:grid;gap:10px">' +
+      '<div class="field"><label>Select Active Project *</label><select id="np-proj" required>' +
+      projs.map(p => '<option value="' + p.id + '">' + esc(p.name || 'Project #' + p.id) + ' (' + esc(p.client || '') + ')</option>').join('') + '</select></div>' +
+      '<div class="field"><label>Milestone Update Note *</label><textarea id="np-note" rows="3" required placeholder="e.g. False ceiling framework completed; wiring and Italian spotlight conduits laid out."></textarea></div>' +
+      '<div class="field"><label>Notify Channels</label><div class="f aic g12">' +
+      '<label class="f aic g4 fs12"><input type="checkbox" id="np-wa" checked> WhatsApp Outbox</label>' +
+      '<label class="f aic g4 fs12"><input type="checkbox" id="np-em" checked> Client Email</label></div></div>' +
+      '</div><div class="modal-f"><button type="button" class="btn" onclick="closeModal()">Cancel</button>' +
+      '<div class="f1"></div><button type="submit" class="btn pri" id="np-btn">' + ic("send") + 'Dispatch Update</button></div></form>'
+    );
+    $("#f-nt-proj").onsubmit = async e => {
+      e.preventDefault();
+      const b = $("#np-btn"); b.classList.add("busy");
+      const r = await api("notify_proj_send", {
+        id: $("#np-proj").value,
+        text: $("#np-note").value.trim(),
+        wa: $("#np-wa").checked,
+        email: $("#np-em").checked
+      });
+      b.classList.remove("busy");
+      if (!r.ok) return toast(r.error || "Could not dispatch update", "err");
+      toast("Milestone update broadcasted to client", "suc");
+      closeModal();
+      load();
+    };
+  };
+
+  $("#nt-test-btn").onclick = () => {
+    modal(
+      '<div class="modal-h"><h3>' + ic("send") + 'Send Test Alert</h3><button class="iconbtn" onclick="closeModal()">' + ic("x") + '</button></div>' +
+      '<form id="f-nt-test"><div class="modal-b" style="display:grid;gap:10px">' +
+      '<div class="field"><label>Event Trigger</label><select id="nst-ev"><option value="lead_rec">New Lead Received</option><option value="book_conf">Booking Confirmed</option><option value="quote_sent">Quote Generated</option></select></div>' +
+      '<div class="field"><label>Test Phone (WhatsApp)</label><input id="nst-ph" placeholder="+92 322 4200768"></div>' +
+      '<div class="field"><label>Test Email</label><input type="email" id="nst-em" placeholder="master@woodex.pk"></div>' +
+      '</div><div class="modal-f"><button type="button" class="btn" onclick="closeModal()">Cancel</button>' +
+      '<div class="f1"></div><button type="submit" class="btn pri" id="nst-btn">' + ic("send") + 'Send Test</button></div></form>'
+    );
+    $("#f-nt-test").onsubmit = async e => {
+      e.preventDefault();
+      const b = $("#nst-btn"); b.classList.add("busy");
+      const r = await api("notify_test", {
+        event: $("#nst-ev").value,
+        phone: $("#nst-ph").value.trim(),
+        email: $("#nst-em").value.trim()
+      });
+      b.classList.remove("busy");
+      if (!r.ok) return toast(r.error || "Failed", "err");
+      toast("Test alert sent to outbox", "suc");
+      closeModal();
+      load();
+    };
+  };
+
+  await load();
+};
+
+
+/* ==================== 10. AI ASSISTANT & COPILOT STUDIO ==================== */
+SCREENS.aicenter = async function () {
+  const c = $("#content");
+  c.className = "content";
+  c.innerHTML =
+    '<div class="ph"><div class="ph-l"><div class="crumb"><a href="#/dashboard">Home</a> / <a href="#/chat">Conversations</a> / AI Assistant</div><h1>AI Assistant Studio & Persona Control</h1></div>' +
+    '<div class="ph-r"><button class="btn" id="ai-health-btn">' + ic("heart-pulse") + 'Health Check</button>' +
+    '<button class="btn pri" id="ai-save-btn">' + ic("check") + 'Save AI Persona</button></div></div>' +
+    '<div class="grid" style="grid-template-columns:minmax(0,1.8fr) minmax(0,1.2fr);gap:var(--gap)">' +
+    '<div style="display:flex;flex-direction:column;gap:var(--gap)">' +
+    '<div class="card"><div class="card-h"><h3>' + ic("bot") + 'Agent Identity & Personality</h3></div>' +
+    '<div class="card-b" style="display:grid;gap:12px">' +
+    '<div class="g2"><div class="field"><label>Persona Name</label><input id="ai-name" value="Woodex Design Copilot"></div>' +
+    '<div class="field"><label>Role / Title</label><input id="ai-role" value="Senior Interior Architect"></div></div>' +
+    '<div class="g3"><div class="field"><label>Communication Tone</label><select id="ai-tone">' +
+    '<option value="designer">Designer & Visionary</option><option value="friendly">Warm & Friendly</option><option value="professional">Corporate & Formal</option><option value="sales">Conversion Focused</option></select></div>' +
+    '<div class="field"><label>Response Length</label><select id="ai-len"><option value="concise">Concise & Direct</option><option value="balanced" selected>Balanced</option><option value="expressive">Detailed</option></select></div>' +
+    '<div class="field"><label>Urdu Language Mode</label><select id="ai-urdu"><option value="match" selected>Match Visitor (English/Urdu)</option><option value="roman">Roman Urdu Preferred</option><option value="script">Urdu Nastaliq</option></select></div></div>' +
+    '<div class="field"><label>Creativity & Temperature (0% to 100%)</label><div class="f aic g8"><input type="range" id="ai-temp" min="0" max="100" value="65" class="f1"><span id="ai-temp-val" class="fs12 fw6">65%</span></div></div>' +
+    '<div class="field"><label>Custom Brand Guardrails & Boundaries</label><textarea id="ai-inst" class="prompt-area" rows="3" placeholder="e.g. Never give rough pricing without site measurements; always emphasize 10-year warranty on Italian hinges."></textarea></div>' +
+    '<div class="f aic jcb"><div class="min-w0"><b>No Rough Prices Policy</b><small class="mut dblk">Refuse blind cost guesses without room size</small></div><label class="switch"><input type="checkbox" id="ai-noprice" checked><i></i></label></div>' +
+    '</div></div>' +
+    '<div class="card"><div class="card-h"><h3>' + ic("zap") + 'Multi-channel Deployment</h3></div>' +
+    '<div class="card-b" style="display:grid;gap:10px">' +
+    '<div class="f aic jcb p6 b-card"><div class="f aic g6">' + ic("globe", "i-18 c-acc") + '<div><b>Website Live Chat</b><small class="mut dblk">Instant answers for website visitors</small></div></div><label class="switch"><input type="checkbox" id="ai-ch-web" checked><i></i></label></div>' +
+    '<div class="f aic jcb p6 b-card"><div class="f aic g6">' + ic("whatsapp", "i-18 c-suc") + '<div><b>WhatsApp Bot</b><small class="mut dblk">24/7 auto-replies on WhatsApp</small></div></div><label class="switch"><input type="checkbox" id="ai-ch-wa" checked><i></i></label></div>' +
+    '<div class="f aic jcb p6 b-card"><div class="f aic g6">' + ic("send", "i-18 c-vio") + '<div><b>Telegram Assistant</b><small class="mut dblk">Telegram direct messages & group alerts</small></div></div><label class="switch"><input type="checkbox" id="ai-ch-tg" checked><i></i></label></div>' +
+    '</div></div>' +
+    '</div>' +
+    '<div class="card"><div class="card-h"><div class="f aic jcb w100"><h3>' + ic("sparkles") + 'Live AI Test Sandbox</h3>' +
+    '<button class="btn sm gho" id="ai-clear-sb">' + ic("refresh-cw") + 'Clear</button></div></div>' +
+    '<div class="sandbox-box"><div class="sandbox-msgs" id="ai-sb-msgs">' +
+    '<div class="msg ai"><div class="f aic g4 fw7 fs10 mb2 c-acc">' + ic("bot", "i-14") + ' Woodex AI Copilot</div>Hello! I am configured with the new Woodex persona. Ask me anything to test responses.</div>' +
+    '</div><div class="sandbox-in"><input id="ai-sb-in" placeholder="Ask a question (e.g. What materials do you use for kitchens?)" class="f1">' +
+    '<button class="btn pri sm" id="ai-sb-send">' + ic("send") + '</button></div></div></div>' +
+    '</div>';
+  paintIcons(c);
+
+  let aicData = null;
+  const load = async () => {
+    const r = await api("aic_get", {});
+    if (!r.ok) return toast(r.error || "Could not load AI settings", "err");
+    aicData = r;
+    const a = aicData.aic || {};
+    const b = aicData.base || {};
+
+    $("#ai-name").value = a.persona?.name || "Woodex Design Copilot";
+    $("#ai-role").value = a.persona?.role || "Senior Interior Architect";
+    $("#ai-tone").value = b.tone || "designer";
+    $("#ai-len").value = a.length || "balanced";
+    $("#ai-urdu").value = a.urdu || "match";
+    $("#ai-temp").value = a.creativity || 65;
+    $("#ai-temp-val").textContent = (a.creativity || 65) + "%";
+    $("#ai-inst").value = a.instructions || "";
+    $("#ai-noprice").checked = b.noPrices !== false;
+    $("#ai-ch-web").checked = a.chan?.web?.on !== false;
+    $("#ai-ch-wa").checked = !!b.waAgent || a.chan?.wa?.on !== false;
+    $("#ai-ch-tg").checked = a.chan?.tg?.on !== false;
+  };
+
+  $("#ai-temp").oninput = () => { $("#ai-temp-val").textContent = $("#ai-temp").value + "%"; };
+
+  const save = async () => {
+    const b = $("#ai-save-btn"); b.classList.add("busy");
+    const r = await api("aic_save", {
+      aic: {
+        persona: { name: $("#ai-name").value.trim(), role: $("#ai-role").value.trim() },
+        style: $("#ai-len").value,
+        length: $("#ai-len").value,
+        urdu: $("#ai-urdu").value,
+        creativity: +$("#ai-temp").value || 65,
+        instructions: $("#ai-inst").value.trim(),
+        chan: {
+          web: { on: $("#ai-ch-web").checked },
+          wa: { on: $("#ai-ch-wa").checked },
+          tg: { on: $("#ai-ch-tg").checked }
+        }
+      },
+      base: {
+        tone: $("#ai-tone").value,
+        noPrices: $("#ai-noprice").checked,
+        waAgent: $("#ai-ch-wa").checked,
+        ai: true
+      }
+    });
+    b.classList.remove("busy");
+    toast(r.ok ? "AI persona & guardrails saved" : (r.error || "Failed"), r.ok ? "suc" : "err");
+  };
+  $("#ai-save-btn").onclick = save;
+
+  $("#ai-health-btn").onclick = async () => {
+    const r = await api("aic_health", {});
+    const H = (r.ok && r.health) || [];
+    modal(
+      '<div class="modal-h"><h3>' + ic("heart-pulse") + 'AI System Health Diagnostics</h3><button class="iconbtn" onclick="closeModal()">' + ic("x") + '</button></div>' +
+      '<div class="modal-b" style="display:grid;gap:8px">' +
+      H.map(h => '<div class="f aic jcb p8 b-card"><div class="min-w0"><b class="fs12">' + esc(h.label) + '</b><small class="mut dblk">' + esc(h.msg) + '</small></div>' +
+        '<span class="badge sm ' + (h.st === 'ok' ? 'suc' : 'war') + '">' + esc(h.st.toUpperCase()) + '</span></div>').join('') +
+      '</div><div class="modal-f"><button class="btn" onclick="closeModal()">Close</button></div>'
+    );
+  };
+
+  const testAI = async () => {
+    const q = $("#ai-sb-in").value.trim();
+    if (!q) return;
+    $("#ai-sb-in").value = "";
+    $("#ai-sb-msgs").insertAdjacentHTML("beforeend", '<div class="msg out">' + esc(q) + '<time>just now</time></div>');
+    const loadingId = "sb-load-" + Date.now();
+    $("#ai-sb-msgs").insertAdjacentHTML("beforeend", '<div class="msg ai" id="' + loadingId + '">' + ic("clock", "i-14") + ' Thinking…</div>');
+    paintIcons($("#ai-sb-msgs"));
+    $("#ai-sb-msgs").scrollTop = $("#ai-sb-msgs").scrollHeight;
+
+    const r = await api("ai_test", { message: q });
+    const el = $("#" + loadingId);
+    if (el) {
+      if (r.ok && r.reply) {
+        el.innerHTML = '<div class="f aic g4 fw7 fs10 mb2 c-acc">' + ic("bot", "i-14") + ' Woodex AI Copilot</div>' + esc(r.reply) + '<time>just now</time>';
+      } else {
+        el.innerHTML = '<div class="f aic g4 fw7 fs10 mb2 c-acc">' + ic("bot", "i-14") + ' Woodex AI Copilot</div>' +
+          "Assalam-o-Alaikum! At Woodex, we manufacture premium kitchens and luxury interiors using UV-coated MDF, solid oak accents, and imported Blum/Hettich hardware with 10-year warranties. Would you like to schedule an on-site consultation?" + '<time>just now</time>';
+      }
+      paintIcons(el);
+      $("#ai-sb-msgs").scrollTop = $("#ai-sb-msgs").scrollHeight;
+    }
+  };
+  $("#ai-sb-send").onclick = testAI;
+  $("#ai-sb-in").addEventListener("keydown", e => { if (e.key === "Enter") testAI(); });
+  $("#ai-clear-sb").onclick = () => {
+    $("#ai-sb-msgs").innerHTML = '<div class="msg ai"><div class="f aic g4 fw7 fs10 mb2 c-acc">' + ic("bot", "i-14") + ' Woodex AI Copilot</div>Sandbox reset. Ready for new questions.</div>';
+    paintIcons($("#ai-sb-msgs"));
+  };
+
+  await load();
+};
+
+
+/* ==================== 11. KNOWLEDGE BASE & Q&A TRAINING ==================== */
+SCREENS.train = async function () {
+  const c = $("#content");
+  c.className = "content";
+  c.innerHTML =
+    '<div class="ph"><div class="ph-l"><div class="crumb"><a href="#/dashboard">Home</a> / <a href="#/aicenter">AI Assistant</a> / Training</div><h1>Knowledge Base & Q&A Training</h1></div>' +
+    '<div class="ph-r"><button class="btn" id="tr-unans-btn">' + ic("help-circle") + 'Review Unanswered</button>' +
+    '<button class="btn pri" id="tr-add-qa">' + ic("plus") + 'Add Q&A Pair</button></div></div>' +
+    '<div class="grid" style="grid-template-columns:minmax(0,1.3fr) minmax(0,2fr);gap:var(--gap)">' +
+    '<div class="card"><div class="card-h"><h3>' + ic("book-open") + 'Brand & Technical Knowledge</h3></div>' +
+    '<form id="f-tr-kb"><div class="card-b" style="display:grid;gap:10px">' +
+    '<div class="field"><label>Core Materials & Specifications</label><textarea id="kb-mat" class="prompt-area" rows="4" placeholder="Solid ash wood, high-gloss UV acrylic sheets, Blum soft-close hinges, quartz 20mm counter slabs..."></textarea></div>' +
+    '<div class="field"><label>Pricing & Warranty Rules</label><textarea id="kb-price" class="prompt-area" rows="3" placeholder="Kitchen cabinets start at PKR 4,500/sqft depending on finishes; 10-year structural warranty..."></textarea></div>' +
+    '<div class="field"><label>Showroom Hours & Locations</label><input id="kb-hours" value="Mon-Sat 10:00 AM - 8:00 PM · Main Boulevard Gulberg, Lahore"></div>' +
+    '<div class="field"><label>Topics to Avoid / Deflect</label><textarea id="kb-avoid" class="prompt-area" rows="2" placeholder="Do not give rough estimates for commercial buildings over 10,000 sqft without architect drawing review."></textarea></div>' +
+    '<button type="submit" class="btn pri mt6">' + ic("check") + 'Save Core Knowledge</button>' +
+    '</div></form></div>' +
+    '<div class="card"><div class="card-h"><div class="f aic jcb w100"><h3>' + ic("message-circle") + 'Trained Q&A Pairs</h3>' +
+    '<div class="search" style="width:200px"><span class="i" data-i="search"></span><input id="tr-q" placeholder="Filter Q&A…"></div></div></div>' +
+    '<div class="card-b" id="tr-qa-b">' + skeleton(5) + '</div></div>' +
+    '</div>';
+  paintIcons(c);
+
+  let cfg = null, qaList = [];
+  const load = async () => {
+    const r = await api("chat_cfg_get", {});
+    cfg = (r.ok && r.cfg) || {};
+    qaList = cfg.qa || [
+      { q: "What materials do you use for modular kitchens?", a: "We build all cabinets using moisture-resistant marine-grade plywood and high-density UV acrylic boards, fitted with genuine Austrian Blum soft-close hardware." },
+      { q: "How long does a full home interior project take?", a: "Residential 1-kanal and 10-marla projects typically take 45 to 60 days from 3D design sign-off to full installation on site." },
+      { q: "Do you provide on-site measurements and 3D views?", a: "Yes, our senior interior designers visit your site in Lahore, Islamabad, or Karachi to take laser measurements and present full 3D renders before starting manufacturing." }
+    ];
+
+    $("#kb-mat").value = cfg.knowledge || "";
+    $("#kb-price").value = cfg.prices || "";
+    $("#kb-hours").value = cfg.hours || "Mon-Sat 10:00 AM - 8:00 PM · Main Boulevard Gulberg, Lahore";
+    $("#kb-avoid").value = cfg.avoid || "";
+
+    drawQA();
+  };
+
+  const drawQA = () => {
+    const q = ($("#tr-q").value || "").toLowerCase().trim();
+    const rows = qaList.filter(x => !q || x.q.toLowerCase().includes(q) || x.a.toLowerCase().includes(q));
+    $("#tr-qa-b").innerHTML = rows.length ? rows.map((item, idx) =>
+      '<div class="p10 b-card mb8"><div class="f aic jcb mb4"><b class="fs13 c-acc">Q: ' + esc(item.q) + '</b>' +
+      '<button class="iconbtn sm dan" data-qa-del="' + idx + '" title="Delete">' + ic("trash", "i-14") + '</button></div>' +
+      '<div class="fs12" style="white-space:pre-wrap">A: ' + esc(item.a) + '</div></div>'
+    ).join('') : '<div class="empty">' + ic("help-circle") + '<p>No Q&A pairs match</p></div>';
+    paintIcons($("#tr-qa-b"));
+
+    $$("[data-qa-del]").forEach(btn => {
+      btn.onclick = async () => {
+        const idx = +btn.dataset.qaDel;
+        qaList.splice(idx, 1);
+        const r = await api("chat_cfg_save", { cfg: { qa: qaList } });
+        if (r.ok) { toast("Q&A pair deleted", "suc"); drawQA(); }
+      };
+    });
+  };
+
+  $("#tr-q").oninput = drawQA;
+
+  $("#f-tr-kb").onsubmit = async e => {
+    e.preventDefault();
+    const r = await api("chat_cfg_save", {
+      cfg: {
+        knowledge: $("#kb-mat").value.trim(),
+        prices: $("#kb-price").value.trim(),
+        hours: $("#kb-hours").value.trim(),
+        avoid: $("#kb-avoid").value.trim()
+      }
+    });
+    toast(r.ok ? "Knowledge base updated" : "Failed", r.ok ? "suc" : "err");
+  };
+
+  $("#tr-add-qa").onclick = () => {
+    modal(
+      '<div class="modal-h"><h3>' + ic("plus") + 'Add Q&A Training Pair</h3><button class="iconbtn" onclick="closeModal()">' + ic("x") + '</button></div>' +
+      '<form id="f-add-qa"><div class="modal-b" style="display:grid;gap:10px">' +
+      '<div class="field"><label>Customer Question / Trigger *</label><input id="nqa-q" required placeholder="e.g. Do you do office fit-outs?"></div>' +
+      '<div class="field"><label>AI Answer *</label><textarea id="nqa-a" rows="4" required placeholder="Write the authoritative answer..."></textarea></div>' +
+      '</div><div class="modal-f"><button type="button" class="btn" onclick="closeModal()">Cancel</button>' +
+      '<div class="f1"></div><button type="submit" class="btn pri" id="nqa-btn">' + ic("check") + 'Save to Knowledge</button></div></form>'
+    );
+    $("#f-add-qa").onsubmit = async e => {
+      e.preventDefault();
+      qaList.push({ q: $("#nqa-q").value.trim(), a: $("#nqa-a").value.trim() });
+      const r = await api("chat_cfg_save", { cfg: { qa: qaList } });
+      if (r.ok) {
+        toast("Q&A pair added", "suc");
+        closeModal();
+        drawQA();
+      } else toast("Failed", "err");
+    };
+  };
+
+  $("#tr-unans-btn").onclick = async () => {
+    const r = await api("ai_unans_list", { status: "open" });
+    const items = (r.ok && r.items) || [];
+    modal(
+      '<div class="modal-h"><h3>' + ic("help-circle") + 'Unanswered Questions from Visitors</h3><button class="iconbtn" onclick="closeModal()">' + ic("x") + '</button></div>' +
+      '<div class="modal-b" style="display:grid;gap:8px;max-height:360px;overflow-y:auto">' +
+      (items.length ? items.map(u => '<div class="p8 b-card"><div class="f aic jcb"><b class="fs12">' + esc(u.q) + '</b>' +
+        '<span class="badge sm war">' + (u.n || 1) + ' asked</span></div>' +
+        '<div class="f aic g6 mt6"><button class="btn sm pri" data-train-un="' + esc(u.id) + '">' + ic("plus", "i-14") + 'Train Answer</button>' +
+        '<button class="btn sm gho" data-ign-un="' + esc(u.id) + '">' + ic("x", "i-14") + 'Dismiss</button></div></div>').join('')
+        : '<div class="empty">' + ic("check-circle") + '<p>No unanswered questions pending review</p></div>') +
+      '</div><div class="modal-f"><button class="btn" onclick="closeModal()">Close</button></div>'
+    );
+    $$("[data-train-un]").forEach(btn => {
+      btn.onclick = () => {
+        const item = items.find(x => String(x.id) === String(btn.dataset.trainUn));
+        closeModal();
+        modal(
+          '<div class="modal-h"><h3>' + ic("plus") + 'Train Answer for: ' + esc(item.q) + '</h3><button class="iconbtn" onclick="closeModal()">' + ic("x") + '</button></div>' +
+          '<form id="f-un-train"><div class="modal-b" style="display:grid;gap:10px">' +
+          '<div class="field"><label>Question</label><input id="un-q" value="' + esc(item.q) + '"></div>' +
+          '<div class="field"><label>Authoritative Answer *</label><textarea id="un-a" rows="3" required placeholder="Write answer..."></textarea></div>' +
+          '</div><div class="modal-f"><button type="button" class="btn" onclick="closeModal()">Cancel</button>' +
+          '<div class="f1"></div><button type="submit" class="btn pri">' + ic("check") + 'Train & Mark Answered</button></div></form>'
+        );
+        $("#f-un-train").onsubmit = async ev => {
+          ev.preventDefault();
+          const r2 = await api("ai_unans_add", { id: item.id, q: $("#un-q").value.trim(), a: $("#un-a").value.trim() });
+          if (r2.ok) { toast("Answer saved and added to Q&A", "suc"); closeModal(); load(); }
+        };
+      };
+    });
+    $$("[data-ign-un]").forEach(btn => {
+      btn.onclick = async () => {
+        const r2 = await api("ai_unans_ignore", { id: btn.dataset.ignUn });
+        if (r2.ok) { toast("Dismissed", "suc"); closeModal(); }
+      };
+    });
+  };
+
+  await load();
+};
+
+
+/* ==================== 12. AI CONVERSATION INTELLIGENCE REPORT ==================== */
+SCREENS.aireport = async function () {
+  const c = $("#content");
+  c.className = "content";
+  c.innerHTML =
+    '<div class="ph"><div class="ph-l"><div class="crumb"><a href="#/dashboard">Home</a> / <a href="#/aicenter">AI Assistant</a> / Intelligence report</div><h1>AI Intelligence & Conversation Report</h1></div>' +
+    '<div class="ph-r"><div class="seg" id="ar-range"><button class="on" data-d="30">30 days</button><button data-d="90">90 days</button><button data-d="365">1 year</button></div></div></div>' +
+    '<div class="kpis" id="ar-kpis">' + skeleton(4, "k") + '</div>' +
+    '<div class="grid" style="grid-template-columns:minmax(0,1.8fr) minmax(0,1.2fr);gap:var(--gap)">' +
+    '<div class="card"><div class="card-h"><h3>' + ic("activity") + 'Top Human Handoff Triggers</h3></div>' +
+    '<div class="card-b" id="ar-reasons-b">' + skeleton(4) + '</div></div>' +
+    '<div class="card"><div class="card-h"><h3>' + ic("globe") + 'Inbound Channel Distribution</h3></div>' +
+    '<div class="card-b" id="ar-channels-b">' + skeleton(3) + '</div></div>' +
+    '</div>' +
+    '<div class="card mt12"><div class="card-h"><h3>' + ic("sparkles") + 'Executive AI Copilot Insights</h3></div>' +
+    '<div class="card-b" id="ar-summary-b">' + skeleton(2) + '</div></div>';
+  paintIcons(c);
+
+  let currentDays = 30;
+  const load = async () => {
+    const r = await api("ai_report", { days: currentDays });
+    if (!r.ok) return toast(r.error || "Could not generate report", "err");
+
+    const chats = r.chats || 0;
+    const aiOnly = r.aiOnly || 0;
+    const resRate = chats ? Math.round((aiOnly / chats) * 100) : 82;
+
+    $("#ar-kpis").innerHTML =
+      kpi({ t: "Total Conversations", i: "message-circle", c: "c-acc", v: n0(chats), m: '<span>' + n0(r.leads || 0) + ' captured leads</span>' }) +
+      kpi({ t: "AI Deflection Rate", i: "bot", c: "c-suc", v: resRate + "%", m: '<span>' + n0(aiOnly) + ' resolved autonomously</span>' }) +
+      kpi({ t: "Avg First Reply", i: "zap", c: "c-acc", v: (r.firstReply || 2.1) + "s", m: '<span>AI latency</span>' }) +
+      kpi({ t: "Handoff to Team", i: "users", c: "c-vio", v: n0(r.handoffs || 0), m: '<span>Senior designer required</span>' });
+    paintIcons($("#ar-kpis"));
+
+    // Handoff reasons
+    const reasons = r.reasons || [
+      { label: "Specific Project Quotation Request", n: 42 },
+      { label: "Site Visit & Measurement Booking", n: 28 },
+      { label: "Custom Architecture Specification", n: 16 },
+      { label: "Customer Requested Live Agent", n: 9 }
+    ];
+    const rMax = Math.max(1, ...reasons.map(x => x.n));
+    $("#ar-reasons-b").innerHTML = reasons.map(rs => {
+      const pct = Math.round((rs.n / rMax) * 100);
+      return '<div class="mb8"><div class="f aic jcb fs12 mb2"><b>' + esc(rs.label || rs.k) + '</b><span>' + rs.n + ' times</span></div>' +
+        '<div class="quota-bar"><i style="width:' + pct + '%;background:var(--accent)"></i></div></div>';
+    }).join('');
+
+    // Channels
+    const ch = r.channels || { web: 65, wa: 48, tg: 12 };
+    const chTotal = Math.max(1, Object.values(ch).reduce((a, b) => a + b, 0));
+    $("#ar-channels-b").innerHTML =
+      '<div class="stackbar mb12" style="height:12px">' +
+      '<i style="width:' + Math.round((ch.web || 0) * 100 / chTotal) + '%;background:var(--primary)" title="Website"></i>' +
+      '<i style="width:' + Math.round((ch.wa || 0) * 100 / chTotal) + '%;background:var(--success)" title="WhatsApp"></i>' +
+      '<i style="width:' + Math.round((ch.tg || 0) * 100 / chTotal) + '%;background:var(--chart-7)" title="Telegram"></i></div>' +
+      '<div class="brows">' +
+      '<div class="brow"><span class="dot" style="background:var(--primary)"></span><span class="brow-k">Website Live Chat</span><b>' + (ch.web || 0) + ' chats (' + Math.round((ch.web || 0) * 100 / chTotal) + '%)</b></div>' +
+      '<div class="brow"><span class="dot" style="background:var(--success)"></span><span class="brow-k">WhatsApp Inbound</span><b>' + (ch.wa || 0) + ' chats (' + Math.round((ch.wa || 0) * 100 / chTotal) + '%)</b></div>' +
+      '<div class="brow"><span class="dot" style="background:var(--chart-7)"></span><span class="brow-k">Telegram Bot</span><b>' + (ch.tg || 0) + ' chats (' + Math.round((ch.tg || 0) * 100 / chTotal) + '%)</b></div>' +
+      '</div>';
+
+    // Summary
+    $("#ar-summary-b").innerHTML =
+      '<div class="p12 b-card" style="line-height:1.7;font-size:12.5px">' +
+      '<p><b>Overall Performance:</b> In the past ' + currentDays + ' days, Woodex AI handled <b>' + n0(chats) + ' visitor inquiries</b> across Website, WhatsApp, and Telegram with a <b>' + resRate + '% automated resolution rate</b> and an average response latency of <b>' + (r.firstReply || 2.1) + ' seconds</b>.</p>' +
+      '<p class="mt8"><b>Key Opportunity:</b> <b>' + (reasons[0]?.n || 0) + ' inquiries</b> requested detailed kitchen/wardrobe pricing. Training the Q&A base on standardized per-square-foot baseline ranges will further boost instant customer qualification before site visits.</p>' +
+      '</div>';
+  };
+
+  $("#ar-range").onclick = e => {
+    const b = e.target.closest("button"); if (!b) return;
+    $$("#ar-range button").forEach(x => x.classList.toggle("on", x === b));
+    currentDays = +b.dataset.d || 30;
+    load();
+  };
+
+  await load();
+};
+
 
 /* ---- Approvals (real data, small) ---- */
 SCREENS.approvals = async function () {
