@@ -1,0 +1,5 @@
+WOODEX V20: ONE ZIP INSTALL ON HOSTINGER
+1. hPanel -> Databases -> MySQL: create database "woodex", user "woodex", a password (Hostinger requires this; skip if it exists).
+2. File Manager -> public_html -> upload woodex-v20-master.zip -> Extract (folder name empty, Overwrite).
+3. Open https://woodex.com.pk/admin/ -> it opens the installer -> type the database password -> Install.
+4. Sign in: email admin / password admin. Change it later in My security.

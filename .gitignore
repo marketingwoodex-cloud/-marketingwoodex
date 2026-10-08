@@ -1,2 +1,6 @@
 node_modules/
 mcp-server/.env
+
+# Page builder private data (password hash, sessions, backups)
+frontend-v1/_private/*
+!frontend-v1/_private/.htaccess
