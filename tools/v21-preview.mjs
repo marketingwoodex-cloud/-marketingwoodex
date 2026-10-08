@@ -1,5 +1,5 @@
 /* Woodex Admin v2.1 — dedicated preview on port 8083.
- * Transparently forwards `/` to `/admin-v2.1/` without requiring an iframe redirect.
+ * Transparently maps all requests to `/admin-v2.1/` while keeping `/api/` and `/assets/` intact.
  */
 import http from "node:http";
 
@@ -19,8 +19,8 @@ http
     let targetPath = req.url;
     if (p === "/" || p === "/index.html") {
       targetPath = "/admin-v2.1/";
-    } else if (p.startsWith("/v2.1.") || p === "/favicon.ico") {
-      targetPath = "/admin-v2.1" + req.url;
+    } else if (!p.startsWith("/api/") && !p.startsWith("/assets/") && !p.startsWith("/admin-v2.1/")) {
+      targetPath = "/admin-v2.1" + (req.url.startsWith("/") ? req.url : "/" + req.url);
     }
 
     const pr = http.request(
@@ -45,5 +45,5 @@ http
     req.pipe(pr);
   })
   .listen(PORT, "0.0.0.0", () =>
-    console.log(`v2.1 preview → :${PORT}   (/ → transparent /admin-v2.1/)`),
+    console.log(`v2.1 preview → :${PORT}   (transparent /admin-v2.1/ forwarding)`),
   );

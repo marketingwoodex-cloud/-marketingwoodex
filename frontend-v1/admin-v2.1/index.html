@@ -4,133 +4,197 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
-<title>Woodex Admin v2.1</title>
+<title>Woodex Admin</title>
 <link rel="icon" href="/favicon.ico">
-<link rel="stylesheet" href="v2.1.css?v=12ce3331">
-<link rel="preload" href="/assets/fonts/inter-400.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="/assets/fonts/inter-600.woff2" as="font" type="font/woff2" crossorigin>
-<script>try{if(localStorage.getItem("wx21Theme")==="dark"||(!localStorage.getItem("wx21Theme")&&matchMedia("(prefers-color-scheme: dark)").matches))document.documentElement.classList.add("dark")}catch(e){}</script>
+<link rel="stylesheet" href="admin.css">
+<script>try{if(localStorage.getItem("wxaTheme")==="dark"||(!localStorage.getItem("wxaTheme")&&matchMedia("(prefers-color-scheme: dark)").matches))document.documentElement.classList.add("dark")}catch(e){}</script>
 </head>
 <body>
 
-<!-- ==================== AUTH (Glassmorphic Obsidian Reference) ==================== -->
+<!-- ============ AUTH (setup / login) ============ -->
 <div class="auth" id="auth" hidden>
-  <div class="auth-glow"></div>
+  <aside class="auth-side" aria-hidden="true">
+    <div class="as-brand"><span class="logo">W</span><b>Woodex Interior</b></div>
+    <div class="as-copy"><span class="as-kicker">Admin v2</span><h2>Run the whole studio<br>from one place.</h2>
+      <ul><li>Enquiries, pipeline &amp; follow-ups</li><li>Quotations, invoices &amp; payments</li><li>Live chat, WhatsApp &amp; AI replies</li><li>Pages, blog, SEO &amp; speed</li></ul></div>
+    <small class="as-foot">© Woodex Interior · woodex.com.pk</small>
+  </aside>
   <div class="auth-card">
-    <form id="f-login">
-      <h1 class="auth-title">Log in</h1>
-      <p class="auth-sub">Log in to your account and seamlessly continue managing your projects, ideas, and progress just where you left off.</p>
-      
-      <div class="auth-input-group">
-        <span class="auth-icon" data-i="mail"></span>
-        <input type="text" id="l-email" class="auth-input-pill" inputmode="email" autocomplete="username" autocapitalize="none" required placeholder="Enter your email address">
-      </div>
+    <div class="brand"><span class="logo">W</span><div><b>Woodex</b><small>Admin</small></div></div>
 
-      <div class="auth-input-group">
-        <span class="auth-icon" data-i="lock"></span>
-        <input type="password" id="l-pass" class="auth-input-pill" autocomplete="current-password" required placeholder="Enter your password">
-        <button type="button" class="auth-pass-toggle" id="l-pass-toggle" aria-label="Toggle password visibility">
-          <span class="i" data-i="lock"></span>
-        </button>
-      </div>
-
+    <form id="login-form" hidden>
+      <h1>Sign in</h1><p class="muted">Welcome back. Sign in to manage the website.</p>
+      <label>Email<input type="text" inputmode="email" id="l-email" autocomplete="username" autocapitalize="none" required></label>
+      <label>Password<span class="pw-wrap"><input type="password" id="l-pass" autocomplete="current-password" required><button type="button" class="pw-eye" aria-label="Show password" onclick="var i=this.previousElementSibling;i.type=i.type==='password'?'text':'password';this.classList.toggle('on')">Show</button></span></label>
       <p class="err" id="l-err"></p>
-
-      <button type="submit" class="btn-auth-pill" id="l-btn">Log in</button>
-
-      <!-- Social Login Row (with Google Single Option) -->
-      <div class="auth-social-row">
-        <button type="button" class="btn-social-pill" id="l-soc-fb">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-          Facebook
-        </button>
-        <button type="button" class="btn-social-pill" id="l-soc-google">
-          <svg width="14" height="14" viewBox="0 0 24 24"><path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.66v3.05h3.9c2.28-2.1 3.645-5.2 3.645-9.15z"/><path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.9-3.05c-1.08.72-2.45 1.16-4.03 1.16-3.1 0-5.74-2.09-6.68-4.91H1.21v3.13C3.25 21.43 7.33 24 12 24z"/><path fill="#FBBC05" d="M5.32 14.29c-.24-.72-.38-1.49-.38-2.29s.14-1.57.38-2.29V6.58H1.21C.44 8.11 0 9.99 0 12s.44 3.89 1.21 5.42l4.11-3.13z"/><path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.25 2.57 1.21 6.58l4.11 3.13c.94-2.82 3.58-4.96 6.68-4.96z"/></svg>
-          Google
-        </button>
-        <button type="button" class="btn-social-pill" id="l-soc-apple">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.37c.63-.77 1.06-1.85.94-2.93-.91.04-2.02.61-2.67 1.37-.58.67-1.09 1.76-.95 2.81 1.02.08 2.05-.48 2.68-1.25z"/></svg>
-          Apple
-        </button>
-      </div>
-
-      <p class="auth-signup-text">Didn't have an account? <a href="#" id="l-signup" class="auth-link">Sign up</a></p>
-
-      <!-- Quick Test Login Badges -->
-      <div class="auth-demo-bar">
-        <span class="fs10 mut">🚀 Quick Demo Access:</span>
-        <div class="f aic g4 flex-wrap mt4">
-          <button type="button" class="btn-demo-pill" data-e="master@woodex.pk" title="Owner / Full Control">Master</button>
-          <button type="button" class="btn-demo-pill" data-e="manager@woodex.pk" title="Admin / Operations">Manager</button>
-          <button type="button" class="btn-demo-pill" data-e="developer@woodex.pk" title="Developer / Editor">Developer</button>
-          <button type="button" class="btn-demo-pill" data-e="sales@woodex.pk" title="Sales Executive">Sales</button>
-          <button type="button" class="btn-demo-pill" data-e="support@woodex.pk" title="Support Specialist">Support</button>
-        </div>
-      </div>
+      <button class="btn pri block" id="l-btn">Sign in</button>
+      <p style="text-align:center;margin:10px 0 0;font-size:13px"><a href="#" id="l-forgot">Forgot password?</a></p>
+      <div id="g-login" hidden><div class="g-or"><span>or</span></div><div id="g-btn"></div><p class="muted" style="font-size:12px;text-align:center;margin:6px 0 0">Only for existing Admin users.</p></div>
     </form>
 
-    <form id="f-2fa" hidden>
-      <h1 class="auth-title">Two-Step Verification</h1>
-      <p class="auth-sub">Enter the 6-digit verification code from your authenticator app.</p>
-      <div class="auth-input-group">
-        <span class="auth-icon" data-i="shield-check"></span>
-        <input id="t-code" class="auth-input-pill" inputmode="numeric" autocomplete="one-time-code" maxlength="9" required placeholder="Enter 6-digit TOTP code">
-      </div>
+    <form id="fp-form" hidden>
+      <h1>Forgot password</h1><p class="muted">Enter your Admin email. We will email you a link to choose a new password.</p>
+      <label>Email<input type="email" id="fp-email" autocomplete="username" required></label>
+      <p class="err" id="fp-err"></p><p class="muted" id="fp-ok" style="font-size:13px"></p>
+      <button class="btn pri block" id="fp-btn">Send reset link</button>
+      <p style="text-align:center;margin:10px 0 0;font-size:13px"><a href="#" class="fp-back">Back to sign in</a></p>
+    </form>
+    <form id="rp-form" hidden>
+      <h1>Choose a new password</h1><p class="muted">At least 8 characters. You will be signed out of other devices.</p>
+      <label>New password<input type="password" id="rp-pass" autocomplete="new-password" minlength="8" required></label>
+      <label>Repeat new password<input type="password" id="rp-pass2" autocomplete="new-password" minlength="8" required></label>
+      <p class="err" id="rp-err"></p>
+      <button class="btn pri block" id="rp-btn">Save new password</button>
+      <p style="text-align:center;margin:10px 0 0;font-size:13px"><a href="#" class="fp-back">Back to sign in</a></p>
+    </form>
+
+    <form id="tfa-form" hidden>
+      <h1>Two-step sign in</h1><p class="muted">Open your authenticator app and enter the 6-digit code for Woodex Admin. Lost your phone? Enter one of your recovery codes.</p>
+      <label>Code<input id="t-code" inputmode="numeric" autocomplete="one-time-code" maxlength="9" required placeholder="123456"></label>
       <p class="err" id="t-err"></p>
-      <button type="submit" class="btn-auth-pill" id="t-btn">Verify &amp; Sign in</button>
-      <p class="auth-signup-text"><a href="#" id="t-back" class="auth-link">Back to login</a></p>
+      <button class="btn pri block" id="t-btn">Verify</button>
+      <button type="button" class="btn block ghost" id="t-back" style="margin-top:8px">Back</button>
+    </form>
+
+    <form id="setup-form" hidden>
+      <h1>Set up Woodex Admin</h1><p class="muted">One-time setup. Creates the database tables and your owner account.</p>
+      <fieldset id="s-db"><legend>Database <small>(hPanel → Databases → MySQL)</small></legend>
+        <div class="g2"><label>Host<input id="s-host" value="localhost"></label><label>Database name<input id="s-name"></label></div>
+        <div class="g2"><label>Database user<input id="s-user"></label><label>Database password<input type="password" id="s-dpass"></label></div>
+      </fieldset>
+      <fieldset><legend>Owner account</legend>
+        <div class="g2"><label>Your name<input id="s-uname"></label><label>Email<input type="email" id="s-email"></label></div>
+        <label>Password <small>(8+ characters)</small><input type="password" id="s-pass" minlength="8"></label>
+        <p class="muted" style="font-size:12px;margin:6px 0 0">Already installed with wx-install.php? Leave these 3 fields empty: the database is reconnected and you sign in with <b>admin</b> / <b>admin</b>.</p>
+      </fieldset>
+      <fieldset id="s-bp"><legend>Security check</legend>
+        <label>Current page-builder password<input type="password" id="s-bpass"></label>
+        <p class="hint">Proves you own this site. After setup everyone signs in with their own email.</p>
+      </fieldset>
+      <p class="err" id="s-err"></p>
+      <button class="btn pri block" id="s-btn">Install &amp; create owner</button>
+    </form>
+    <form id="db-form" hidden>
+      <h1>Reconnect the database</h1><p class="muted">The admin can’t reach its database (for example after a new Hostinger database or password). Enter the details from <b>hPanel → Websites → Dashboard → Databases Management</b>. Existing data is kept.</p>
+      <fieldset><legend>Database</legend>
+        <div class="g2"><label>Host<input id="d-host" value="localhost"></label><label>Database name<input id="d-name" placeholder="u128159657_woodex" required></label></div>
+        <div class="g2"><label>Database user<input id="d-user" placeholder="u128159657_woodex" required></label><label>Database password<input type="password" id="d-dpass"></label></div>
+      </fieldset>
+      <fieldset id="d-owner" hidden><legend>New owner account <small>(the database is empty)</small></legend>
+        <div class="g2"><label>Your name<input id="d-uname"></label><label>Email<input type="email" id="d-email"></label></div>
+        <label>Password <small>(8+ characters)</small><input type="password" id="d-pass" minlength="8"></label>
+      </fieldset>
+      <fieldset><legend>Security check</legend>
+        <label>Page-builder password<input type="password" id="d-bpass" required></label>
+        <p class="hint">Proves you own this site (same password you used at first setup).</p>
+      </fieldset>
+      <p class="err" id="d-err"></p>
+      <button class="btn pri block" id="d-btn">Test &amp; reconnect</button>
     </form>
   </div>
 </div>
 
-<!-- ==================== APP ==================== -->
+<!-- ============ APP ============ -->
 <div class="app" id="app" hidden>
-  <div class="shade" id="shade"></div>
-
   <aside class="side" id="side">
-    <div class="side-top">
-      <span class="logo">W</span>
-      <div class="st-t"><b>Woodex</b><small>Admin v2.1</small></div>
-      <button class="iconbtn" id="rail" title="Collapse sidebar" aria-label="Collapse sidebar"></button>
-    </div>
-    <nav id="nav" aria-label="Main"></nav>
-    <div class="side-foot" id="sidefoot"></div>
+    <div class="side-top"><a href="#/dashboard" class="brand"><span class="logo">W</span><div><b>Woodex</b><small>Admin v2</small></div></a>
+      <button class="icon-btn side-x" id="side-x" aria-label="Close menu"><i data-i="x"></i></button></div>
+    <nav id="nav"></nav>
+    <div class="side-foot"><a href="/" target="_blank" rel="noopener"><i data-i="external-link"></i><span>View website</span></a></div>
   </aside>
+  <div class="side-shade" id="side-shade"></div>
 
   <div class="main">
     <header class="top">
-      <button class="iconbtn burger" id="burger" aria-label="Open menu"></button>
-      <div class="top-search">
-        <span class="i" data-i="search"></span>
-        <input id="q-top" placeholder="Search pages, leads, quotes…  ⌘K" readonly>
-      </div>
+      <button class="icon-btn" id="menu-btn" aria-label="Toggle menu"><i data-i="panel-left"></i></button>
+      <div class="top-search"><i data-i="search"></i><input id="gsearch" placeholder="Search pages…  ( / )" list="gsearch-list" autocomplete="off"><datalist id="gsearch-list"></datalist></div>
+      <button class="pk-btn" id="pk-btn" type="button" title="Search all screens"><i data-i="search"></i><span>Go to screen…</span><kbd>Ctrl K</kbd></button>
       <div class="top-r">
-        <button class="iconbtn" id="b-notif" title="Notifications" aria-label="Notifications"></button>
-        <button class="iconbtn" id="b-theme" title="Toggle theme" aria-label="Toggle theme"></button>
-        <span class="top-sep"></span>
-        <button class="userbtn" id="b-user">
-          <span class="av" id="u-av">O</span>
-          <span class="u-t"><b id="u-name">Owner</b><small id="u-role">Master</small></span>
-          <span class="i i-14" data-i="chev-down"></span>
-        </button>
+        <div class="dd" id="nt-dd"><button class="icon-btn" id="nt-btn" aria-label="Notifications"><i data-i="bell"></i><span class="nt-n" id="nt-n" hidden>0</span></button><div class="dd-menu nt-menu" id="nt-menu" hidden></div></div>
+        <button class="icon-btn" id="dark-btn" aria-label="Dark mode"><i data-i="moon" class="i-moon"></i><i data-i="sun" class="i-sun"></i></button>
+        <div class="dd" id="user-dd">
+          <button class="user-btn" id="user-btn"><span class="av" id="u-av">?</span><span class="u-txt"><b id="u-name">…</b><small id="u-role"></small></span><i data-i="chevron-down"></i></button>
+          <div class="dd-menu" id="user-menu" hidden>
+            <a href="#/profile"><i data-i="user"></i>My profile</a>
+            <a href="#/activity" data-roles="owner,admin"><i data-i="activity"></i>Activity log</a>
+            <button id="logout"><i data-i="log-out"></i>Sign out</button>
+          </div>
+        </div>
       </div>
     </header>
-    <main class="content" id="content"></main>
+    <main class="content" id="view"></main>
   </div>
 </div>
 
-<!-- ==================== OVERLAYS ==================== -->
-<div class="modal" id="modal"><div class="modal-c" id="modal-c" role="dialog" aria-modal="true"></div></div>
-<div class="drawer" id="drawer" role="dialog" aria-modal="true"></div>
-<div class="cmdk" id="cmdk">
-  <div class="cmdk-c" role="dialog" aria-modal="true">
-    <div class="cmdk-h"><span class="i i-18" data-i="search"></span><input id="cmdk-in" placeholder="Jump to a screen or run a command…"></div>
-    <div class="cmdk-l" id="cmdk-l"></div>
-    <div class="cmdk-f"><span><b>↑↓</b> navigate</span><span><b>↵</b> open</span><span><b>esc</b> close</span></div>
-  </div>
-</div>
-<div class="toasts" id="toasts"></div>
+<div class="toast" id="toast" role="status"></div>
+<div class="modal" id="modal" hidden><div class="modal-card" id="modal-card"></div></div>
 
-<script src="v2.1.js?v=46e47fad" defer></script>
+<script src="vendor/icons.js"></script>
+<script src="vendor/chart.umd.js" defer></script>
+<script src="admin.js" defer></script>
+<script src="admin-pages.js" defer></script>
+<script src="admin-chrome.js" defer></script>
+<script src="/builder/wx-css.js" defer></script>
+<script src="/builder/blocks.js" defer></script>
+<script src="admin-library.js" defer></script>
+<script src="admin-lib26.js" defer></script>
+<script src="admin-crm.js" defer></script>
+<script src="admin-reports.js" defer></script>
+<script src="vendor/quote-starter.js" defer></script>
+<script src="admin-print.js" defer></script>
+<script src="admin-print17.js" defer></script>
+<script src="/assets/js/quotation-scopes.js" defer></script>
+<script src="admin-sales.js" defer></script>
+<script src="admin-content.js" defer></script>
+<script src="admin-starters.js" defer></script>
+<script src="admin-fields.js" defer></script>
+<script src="admin-media.js" defer></script>
+<script src="admin-speed.js" defer></script>
+<script src="admin-system.js" defer></script>
+<script src="vendor/qrcode.js" defer></script>
+<script src="admin-settings.js" defer></script>
+<script src="admin-theme.js" defer></script>
+<script src="admin-xlsx.js" defer></script>
+<script src="admin-sheets.js" defer></script>
+<script src="admin-p3.js" defer></script>
+<script src="admin-p8.js" defer></script>
+<script src="admin-chat.js" defer></script>
+<script src="admin-chat2.js" defer></script>
+  <script src="admin-train.js" defer></script>
+  <script src="admin-notify.js" defer></script>
+  <script src="seo-analyzer.js" defer></script>
+  <script src="admin-seo.js" defer></script>
+<script src="admin-offers.js" defer></script>
+<script src="admin-google.js" defer></script>
+<script src="admin-dash.js" defer></script>
+<script src="admin-lists.js" defer></script>
+<script src="admin-integ.js" defer></script>
+<script src="admin-conn.js" defer></script>
+<script src="admin-inbox.js" defer></script>
+<script src="admin-users.js" defer></script>
+<script src="admin-redirects.js" defer></script>
+<script src="admin-templates.js" defer></script>
+<script src="admin-booking.js" defer></script>
+<script src="admin-p18.js" defer></script>
+<script src="admin-p18e.js" defer></script>
+<script src="admin-p18g.js" defer></script>
+<script src="admin-p18h.js" defer></script>
+<script src="admin-p18j.js" defer></script>
+<script src="admin-p19f.js" defer></script>
+<script src="admin-logos.js" defer></script>
+<script src="admin-p19c.js" defer></script>
+<script src="admin-sales17.js" defer></script>
+<script src="admin-p38wa.js" defer></script>
+<script src="admin-hero.js" defer></script>
+<script src="admin-p36.js" defer></script>
+<script src="admin-seo38.js" defer></script>
+<script src="admin-appr.js" defer></script>
+<script src="admin-tg.js" defer></script>
+<script src="admin-aia.js" defer></script>
+<script src="admin-wahub.js" defer></script>
+<script src="admin-wains.js" defer></script>
+<script src="admin-aicenter.js" defer></script>
+<script src="admin-social.js" defer></script>
+<script src="admin-seoagent.js" defer></script>
 </body>
 </html>
