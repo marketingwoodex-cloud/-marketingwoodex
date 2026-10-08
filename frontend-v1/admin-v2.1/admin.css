@@ -5,18 +5,19 @@
 @font-face{font-family:"Inter", system-ui, -apple-system, sans-serif;src:url("/assets/fonts/dm-sans-700.woff2") format("woff2");font-weight:700;font-display:swap}
 
 :root{
-  --bg:#050608;--card:#111318;--card-elevated:#161b24;--line:#20242f;--line2:#2b3140;--txt:#f3f4f6;--txt2:#d1d5db;--mut:#9ca3af;--mut2:#6b7280;
-  --navy:#050608;--gold:#00b8db;--gold-d:#00d3f2;--pri:#00b8db;--pri-fg:#04222b;--pri-soft:rgba(0,184,219,0.12);
-  --cyan:#00b8db;--cyan-glow:rgba(0,184,219,0.3);
-  --ok:#10b981;--ok-soft:rgba(16,185,129,0.15);--warn:#f59e0b;--warn-soft:rgba(245,158,11,0.15);--bad:#ef4444;--bad-soft:rgba(239,68,68,0.15);--info:#00b8db;--info-soft:rgba(0,184,219,0.15);
-  --side:280px;--top:68px;--r:12px;--sh:0 4px 20px rgba(0,0,0,0.4);
-  color-scheme:dark
+  --bg:#f9fafb;--card:#ffffff;--card-elevated:#ffffff;--line:#e5e7eb;--line2:#d1d5db;--txt:#111827;--txt2:#374151;--mut:#6b7280;--mut2:#9ca3af;
+  --navy:#0f172a;--gold:#007595;--gold-d:#005a74;--pri:#007595;--pri-fg:#ffffff;--pri-soft:rgba(0,117,149,0.1);
+  --cyan:#007595;--cyan-glow:rgba(0,117,149,0.2);
+  --ok:#10b981;--ok-soft:#ecfdf5;--warn:#f59e0b;--warn-soft:#fffbeb;--bad:#ef4444;--bad-soft:#fef2f2;--info:#0284c7;--info-soft:#f0f9ff;
+  --side:280px;--top:68px;--r:12px;--sh:0 1px 3px rgba(0,0,0,0.1);
+  color-scheme:light
 }
 html.dark{
   --bg:#050608;--card:#111318;--card-elevated:#161b24;--line:#20242f;--line2:#2b3140;--txt:#f3f4f6;--txt2:#d1d5db;--mut:#9ca3af;--mut2:#6b7280;
   --navy:#050608;--gold:#00b8db;--gold-d:#00d3f2;--pri:#00b8db;--pri-fg:#04222b;--pri-soft:rgba(0,184,219,0.12);
   --cyan:#00b8db;--cyan-glow:rgba(0,184,219,0.3);
   --ok:#10b981;--ok-soft:rgba(16,185,129,0.15);--warn:#f59e0b;--warn-soft:rgba(245,158,11,0.15);--bad:#ef4444;--bad-soft:rgba(239,68,68,0.15);--info:#00b8db;--info-soft:rgba(0,184,219,0.15);
+  --side:280px;--top:68px;--r:12px;--sh:0 4px 20px rgba(0,0,0,0.4);
   color-scheme:dark
 }
 *{box-sizing:border-box}
@@ -1417,4 +1418,85 @@ html.dark ::-webkit-scrollbar-track{background:transparent}
   background: #00d3f2 !important;
   box-shadow: 0 4px 14px rgba(0, 184, 219, 0.35) !important;
 }
+
+
+/* ==================== HIGH CONTRAST CHAT BUBBLES ==================== */
+.lm {
+  border-radius: 14px !important;
+  padding: 10px 14px !important;
+  font-size: 13.5px !important;
+  line-height: 1.5 !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+}
+html.dark .lm.v {
+  background: #1c2333 !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: #f9fafb !important;
+}
+html.dark .lm.v small {
+  color: #9ca3af !important;
+}
+html.dark .lm.a {
+  background: #082836 !important;
+  border: 1px solid rgba(0, 184, 219, 0.4) !important;
+  color: #e0f7fa !important;
+}
+html.dark .lm.a small {
+  color: #38bdf8 !important;
+}
+html.dark .lm.g {
+  background: #00b8db !important;
+  border: none !important;
+  color: #04222b !important;
+  font-weight: 500 !important;
+}
+html.dark .lm.g small {
+  color: #083344 !important;
+}
+html.dark .lm.s, html.dark .lm.n {
+  background: rgba(245, 158, 11, 0.15) !important;
+  border: 1px dashed rgba(245, 158, 11, 0.4) !important;
+  color: #fef3c7 !important;
+}
+
+:root:not(.dark) .lm.v {
+  background: #f3f4f6 !important;
+  border: 1px solid #e5e7eb !important;
+  color: #111827 !important;
+}
+:root:not(.dark) .lm.a {
+  background: #e0f2fe !important;
+  border: 1px solid #bae6fd !important;
+  color: #0369a1 !important;
+}
+:root:not(.dark) .lm.g {
+  background: #007595 !important;
+  border: none !important;
+  color: #ffffff !important;
+}
+:root:not(.dark) .lm.s, :root:not(.dark) .lm.n {
+  background: #fffbeb !important;
+  border: 1px dashed #fde68a !important;
+  color: #92400e !important;
+}
+
+/* Primary Button Text Contrast */
+.btn.pri {
+  background: var(--pri) !important;
+  color: var(--pri-fg) !important;
+  border: none !important;
+  font-weight: 600 !important;
+  border-radius: 8px !important;
+  transition: all 0.15s ease !important;
+}
+.btn.pri:hover {
+  filter: brightness(1.1) !important;
+  box-shadow: 0 4px 14px var(--cyan-glow) !important;
+}
+
+/* Light / Dark Mode Topbar Icon visibility */
+html.dark .i-sun { display: inline-flex !important; }
+html.dark .i-moon { display: none !important; }
+:root:not(.dark) .i-sun { display: none !important; }
+:root:not(.dark) .i-moon { display: inline-flex !important; }
 

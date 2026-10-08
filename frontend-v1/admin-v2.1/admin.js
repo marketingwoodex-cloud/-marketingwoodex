@@ -78,10 +78,10 @@
   // ---------------------------------------------------------------- navigation
   /* P16: TailAdmin-style grouped menu. ["Heading"] · [view, label, icon, roles] · { g: label, icon, id, items: [...] } (dropdown) */
   var NAV = [
-    ["Home"],
-    ["dashboard", "Home", "layout-dashboard"],
+    ["OVERVIEW"],
+    ["dashboard", "Dashboard", "layout-dashboard"],
     ["approvals", "Approvals", "shield-check", "owner,admin,editor"],
-    ["Sales"],
+    ["SALES"],
     ["enquiries", "Leads", "inbox", "g:sales"],
     ["pipeline", "Pipeline", "kanban", "g:sales"],
     ["bookings", "Bookings", "clock", "g:sales"],
@@ -92,7 +92,7 @@
       ["transactions", "Payments", "receipt", "g:sales"],
       ["templates", "Quote templates", "layers", "g:sales"]] },
     ["projects", "Projects", "briefcase", "g:sales,g:support_view"],
-    ["Conversations"],
+    ["CONVERSATIONS"],
     ["chat", "Inbox", "message-circle", "g:conversations"],
     { g: "WhatsApp", icon: "send", id: "wa", items: [
       ["wahub", "Overview & rules", "send", "g:broadcast"],
@@ -106,7 +106,7 @@
     ["aicenter", "AI Assistant", "sparkles", "g:ai"],
     ["train", "Knowledge & Q&A", "book-open", "g:ai"],
     ["aireport", "AI report", "star", "g:ai"],
-    ["Website"],
+    ["WEBSITE & CMS"],
     { g: "Pages & builder", icon: "square-pen", id: "site", items: [
       ["pages", "All pages", "file-text", "g:website"],
       ["builder", "Page builder", "square-pen", "g:website"],
@@ -132,7 +132,7 @@
     ["speed", "Speed", "gauge", "g:website"],
     ["health", "Site health", "heart-pulse", "g:website"],
     ["theme", "Theme", "sparkles", "g:settings"],
-    ["Admin"],
+    ["ADMIN & SETTINGS"],
     ["business", "Business info", "building", "g:settings"],
     ["settings", "Integrations", "zap", "g:settings"],
     ["users", "Users & roles", "users", "owner,admin"],
@@ -143,7 +143,7 @@
       ["maintenance", "Maintenance", "shield", "g:settings"],
       ["activity", "Activity log", "activity", "g:settings"],
       ["system", "System check", "activity", "g:settings"]] },
-    ["Me"],
+    ["ME"],
     ["profile", "My profile", "user"],
     ["security", "My security", "shield"]
   ];
