@@ -526,13 +526,35 @@ table.tbl tr:hover .act{opacity:1}
 .meter>i{display:block;height:100%;border-radius:var(--r-full);background:var(--primary)}
 .bar{height:6px;border-radius:var(--r-full);background:var(--muted);overflow:hidden;min-width:56px}
 .bar>i{display:block;height:100%;border-radius:var(--r-full);background:var(--accent)}
-.kan{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(210px,1fr);gap:var(--gap);overflow-x:auto;padding-bottom:6px}
-.kan-c{background:var(--muted);border-radius:var(--r-lg);padding:8px;min-height:120px}
-.kan-h{display:flex;align-items:center;justify-content:space-between;font-size:10px;font-weight:700;
-  letter-spacing:.08em;text-transform:uppercase;color:var(--muted-foreground);margin-bottom:7px}
-.kan-i{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:8px;margin-bottom:6px;cursor:grab}
-.kan-i b{display:block;font-size:12px;font-weight:600}
-.kan-i small{font-size:10.5px;color:var(--muted-foreground)}
+/* kanban board (Preline-style columns + cards) */
+.kan{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(264px,1fr);gap:var(--gap);overflow-x:auto;padding-bottom:6px;align-items:start}
+.kan-c{background:var(--muted);border:1px solid var(--border);border-radius:var(--r-xl);padding:8px;min-height:140px;display:flex;flex-direction:column;transition:background .15s var(--ease),border-color .15s var(--ease)}
+.kan-c.over{background:var(--accent-soft);border-color:var(--accent)}
+.kan-h{display:flex;align-items:center;gap:7px;padding:2px 4px 8px;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted-foreground)}
+.kan-h small{font-size:9.5px;font-weight:600;letter-spacing:0;text-transform:none;color:var(--muted-foreground);font-variant-numeric:tabular-nums}
+.kan-h b{margin-left:auto;font-size:10.5px;font-weight:700;color:var(--foreground-2);background:var(--card);border:1px solid var(--border);border-radius:var(--r-full);padding:1px 7px;font-variant-numeric:tabular-nums}
+.kan-b{display:flex;flex-direction:column;gap:7px;min-height:48px}
+.kan-i{background:var(--card);border:1px solid var(--border);border-radius:var(--r-lg);padding:9px 10px;cursor:grab;box-shadow:var(--sh1);transition:box-shadow .15s var(--ease),border-color .15s var(--ease),opacity .15s var(--ease)}
+.kan-i:hover{border-color:var(--border-2);box-shadow:var(--sh2)}
+.kan-i:active{cursor:grabbing}
+.kan-i.drag{opacity:.4}
+.kan-empty{padding:20px 8px;text-align:center;font-size:11px;color:var(--muted-foreground);border:1px dashed var(--border-2);border-radius:var(--r-lg)}
+.kan-i .ki-t{display:flex;align-items:center;gap:8px}
+.kan-i .ki-t .av{width:24px;height:24px;font-size:9.5px}
+.kan-i .ki-n{flex:1;min-width:0}
+.kan-i .ki-n b{display:block;font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kan-i .ki-n small{display:block;font-size:10.5px;color:var(--muted-foreground);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kan-i .pri{width:7px;height:7px;border-radius:var(--r-full);background:var(--destructive);flex:none}
+.kan-i .ki-m{display:flex;align-items:center;gap:6px;margin-top:7px;flex-wrap:wrap}
+.kan-i .ki-v{font-size:11.5px;font-weight:700;color:var(--foreground);font-variant-numeric:tabular-nums}
+.kan-i .ki-v small{font-size:9.5px;font-weight:600;color:var(--muted-foreground)}
+.kan-i .ki-fu{margin-left:auto;font-size:10px;font-weight:600;padding:2px 6px;border-radius:var(--r-sm);background:var(--muted);color:var(--muted-foreground);white-space:nowrap}
+.kan-i .ki-fu.od{background:var(--destructive-soft);color:var(--destructive)}
+.kan-i .ki-fu.td{background:var(--warning-soft);color:var(--warning)}
+.kan-i .ki-b{display:flex;align-items:center;gap:6px;margin-top:7px;padding-top:7px;border-top:1px solid var(--border-3)}
+.kan-i .src{font-size:10px;color:var(--muted-foreground);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.kan-i .asg{margin-left:auto;width:18px;height:18px;border-radius:var(--r-full);background:var(--primary);color:var(--primary-foreground);font-size:8.5px;font-weight:700;display:grid;place-items:center;flex:none}
+.kan-i .asg.none{background:var(--muted);color:var(--muted-foreground)}
 
 /* ---------- 16. chat / inbox ---------- */
 .chat{display:grid;grid-template-columns:320px minmax(0,1fr);gap:var(--gap);height:calc(100vh - var(--top-h) - 44px)}
@@ -723,6 +745,13 @@ table.tbl.zebra tbody tr:nth-child(even):hover{background:var(--accent-soft)}
 .kpi-v.c-acc{color:var(--accent)}
 .kpi-v.c-vio{color:var(--chart-7)}
 .kpi-v.c-suc{color:var(--success)}
+.c-dan{color:var(--destructive)!important}
+.c-suc{color:var(--success)!important}
+.c-acc{color:var(--accent)!important}
+.c-vio{color:var(--chart-7)!important}
+.py4{padding-top:4px;padding-bottom:4px}
+.border-b{border-bottom:1px solid var(--border-3)}
+.flex-wrap{flex-wrap:wrap}
 /* segmented distribution bar (referral-traffic style) */
 .stackbar{display:flex;gap:2px;height:8px;border-radius:var(--r-full);overflow:hidden;background:var(--muted)}
 .stackbar i{display:block;height:100%;border-radius:var(--r-xs)}
@@ -736,3 +765,15 @@ table.tbl.zebra tbody tr:nth-child(even):hover{background:var(--accent-soft)}
 /* second series on the area chart — violet, like the reference "Last month" */
 .chart .ar2{fill:var(--chart-7);opacity:.09}
 .chart .ln2{fill:none;stroke:var(--chart-7);stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;opacity:.85}
+
+/* ---------- 25. pipeline board & lead drawer shared bits ---------- */
+/* global coloured dot — stage dots, breakdown rows, stepper chips */
+.dot{display:inline-block;width:8px;height:8px;border-radius:var(--r-full);flex:none}
+/* thin divider inside drawers / cards */
+.hr{height:1px;background:var(--border-3);margin:2px 0;flex:none}
+/* stage stepper (lead drawer) */
+.stepper{display:flex;flex-wrap:wrap;gap:4px}
+.stepper button{height:26px;padding:0 9px;border:1px solid var(--border-2);border-radius:var(--r-full);background:var(--card);color:var(--foreground-2);font-size:11px;font-weight:600;cursor:pointer;transition:background .15s var(--ease),border-color .15s var(--ease),color .15s var(--ease);display:inline-flex;align-items:center;gap:5px}
+.stepper button:hover{border-color:var(--accent);color:var(--accent)}
+.stepper button.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.stepper button .dot{width:7px;height:7px}

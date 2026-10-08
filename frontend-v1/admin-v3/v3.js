@@ -822,6 +822,1075 @@ SCREENS.enquiries = async function () {
   draw();
 };
 
+
+/* ==================== SALES & CRM HUB ==================== */
+
+function bookingStatusBadge(s) {
+  const m = { pending: ["war", "Pending"], confirmed: ["suc", "Confirmed"], done: ["inf", "Completed"], cancelled: ["dan", "Cancelled"] };
+  const k = String(s || "").toLowerCase();
+  const v = m[k] || ["", s || "—"];
+  return '<span class="badge ' + v[0] + '">' + esc(v[1]) + '</span>';
+}
+function quoteStatusBadge(s) {
+  const m = { draft: ["mut", "Draft"], sent: ["inf", "Sent"], approved: ["suc", "Approved"], rejected: ["dan", "Rejected"], invoiced: ["acc", "Invoiced"], superseded: ["mut", "Superseded"] };
+  const k = String(s || "").toLowerCase();
+  const v = m[k] || ["", s || "—"];
+  return '<span class="badge ' + v[0] + '">' + esc(v[1]) + '</span>';
+}
+function invoiceStatusBadge(s, od) {
+  if (od) return '<span class="badge dan">Overdue</span>';
+  const m = { unpaid: ["dan", "Unpaid"], partial: ["war", "Partial"], paid: ["suc", "Paid"], draft: ["mut", "Draft"], cancelled: ["mut", "Cancelled"] };
+  const k = String(s || "").toLowerCase();
+  const v = m[k] || ["", s || "—"];
+  return '<span class="badge ' + v[0] + '">' + esc(v[1]) + '</span>';
+}
+function payMethodBadge(m) {
+  const k = String(m || "bank").toLowerCase();
+  const labels = { bank: "Bank transfer", cash: "Cash", cheque: "Cheque", online: "Online" };
+  return '<span class="tag">' + esc(labels[k] || k) + '</span>';
+}
+function projectStageBadge(s) {
+  const m = { planning: ["inf", "Planning"], design: ["acc", "Design"], procurement: ["war", "Procurement"], execution: ["war", "Execution"], finishing: ["acc", "Finishing"], handover: ["suc", "Handover"], completed: ["suc", "Completed"] };
+  const k = String(s || "").toLowerCase();
+  const v = m[k] || ["", s || "—"];
+  return '<span class="badge ' + v[0] + '">' + esc(v[1]) + '</span>';
+}
+
+/* ---- Bookings ---- */
+SCREENS.bookings = async function () {
+  const c = $("#content");
+  c.innerHTML =
+    '<div class="ph"><div class="ph-l"><div class="crumb"><a href="#/dashboard">Home</a> / Bookings</div><h1>Bookings</h1></div>' +
+    '<div class="ph-r"><button class="btn pri" id="bk-new">' + ic("plus") + 'New booking</button></div></div>' +
+    '<div class="kpis" id="bk-kpis">' + skeleton(4, "k") + '</div>' +
+    '<div class="card"><div class="tbl-bar">' +
+    '<div class="sp search"><span class="i" data-i="search"></span><input id="bk-q" placeholder="Search client, phone, type…"></div>' +
+    '<select id="bk-st" style="width:auto;min-width:130px"><option value="">All statuses</option><option value="pending">Pending</option><option value="confirmed">Confirmed</option><option value="done">Completed</option><option value="cancelled">Cancelled</option></select>' +
+    '<select id="bk-tp" style="width:auto;min-width:130px"><option value="">All types</option></select>' +
+    '<div class="seg" id="bk-view"><button class="on" data-v="table">Table</button><button data-v="cards">Cards</button></div>' +
+    '</div>' +
+    '<div id="bk-body">' + skeleton(6) + '</div>' +
+    '<div class="tbl-foot"><span id="bk-count">Loading…</span><div class="pager" id="bk-page"></div></div></div>';
+  paintIcons(c);
+
+  let all = [], cfg = {}, team = [], view = "table", page = 1, PER = 20;
+
+  const filt = () => {
+    const q = ($("#bk-q").value || "").toLowerCase().trim();
+    const st = $("#bk-st").value, tp = $("#bk-tp").value;
+    return all.filter(b => {
+      if (st && String(b.status || "").toLowerCase() !== st) return false;
+      if (tp && String(b.type || "").toLowerCase() !== tp) return false;
+      if (!q) return true;
+      return [b.name, b.phone, b.email, b.type_label, b.type, b.loc, b.staff].join(" ").toLowerCase().includes(q);
+    });
+  };
+
+  const draw = () => {
+    const rows = filt();
+    const pages = Math.max(1, Math.ceil(rows.length / PER));
+    if (page > pages) page = pages;
+    const slice = rows.slice((page - 1) * PER, page * PER);
+    $("#bk-count").textContent = rows.length + " booking" + (rows.length === 1 ? "" : "s") + (rows.length > PER ? " · page " + page + " of " + pages : "");
+
+    if (view === "cards") {
+      $("#bk-body").innerHTML = '<div class="card-b"><div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(250px,1fr))">' +
+        (slice.length ? slice.map(b => '<div class="kpi" style="align-items:flex-start;gap:7px">' +
+          '<div class="f jcb aic w100"><span class="av">' + esc(initials(b.name)) + '</span>' + bookingStatusBadge(b.status) + '</div>' +
+          '<div class="fs13 sb ell w100">' + esc(b.name || "—") + '</div>' +
+          '<div class="fs11 mut">' + ic("clock", "i-14") + ' ' + esc(b.when || (b.d + " " + b.tm)) + ' (' + (b.dur || 60) + 'm)</div>' +
+          '<div class="fs11 mut">' + ic("phone", "i-14") + ' ' + esc(b.phone || "—") + '</div>' +
+          (b.type_label ? '<span class="tag">' + esc(b.type_label) + '</span>' : '') +
+          '<div class="f g4 mt4"><button class="btn sm" data-open="' + esc(b.id) + '">Open</button>' +
+          (b.phone ? '<a class="btn sm" href="tel:' + esc(b.phone) + '">Call</a>' : '') + '</div></div>').join("")
+          : '<div class="empty">' + ic("clock") + '<p>No bookings match</p></div>') + '</div></div>';
+    } else {
+      $("#bk-body").innerHTML = table({
+        zebra: true,
+        cols: [
+          { t: "Client", v: r => '<div class="cell"><span class="av">' + esc(initials(r.name)) + '</span><div><b>' + esc(r.name || "—") + '</b><small>' + esc(r.phone || "") + '</small></div></div>' },
+          { t: "Date & Time", v: r => '<div><b>' + esc(dt(r.d)) + '</b> <span class="fs11 mut">' + esc(r.tm || "") + ' (' + (r.dur || 60) + 'm)</span></div>' },
+          { t: "Type", v: r => r.type_label ? '<span class="tag">' + esc(r.type_label) + '</span>' : esc(r.type || "—") },
+          { t: "Assigned", v: r => r.staff ? esc(r.staff) : '<span class="mut">—</span>' },
+          { t: "Status", v: r => bookingStatusBadge(r.status) },
+          { t: "", cls: "tr", v: r => '<div class="act" style="justify-content:flex-end"><button class="iconbtn" data-open="' + esc(r.id) + '" title="Open">' + ic("external-link") + '</button></div>' }
+        ],
+        rows: slice,
+        empty: "No bookings found",
+        emptyIcon: "clock"
+      });
+    }
+    paintIcons($("#bk-body"));
+
+    let p = "";
+    if (pages > 1) {
+      p += '<button data-p="' + (page - 1) + '"' + (page === 1 ? ' disabled' : '') + '>‹</button>';
+      for (let i = 1; i <= pages; i++) {
+        if (pages > 7 && Math.abs(i - page) > 2 && i !== 1 && i !== pages) { if (i === 2 || i === pages - 1) p += '<button disabled>…</button>'; continue; }
+        p += '<button data-p="' + i + '"' + (i === page ? ' class="on"' : '') + '>' + i + '</button>';
+      }
+      p += '<button data-p="' + (page + 1) + '"' + (page === pages ? ' disabled' : '') + '>›</button>';
+    }
+    $("#bk-page").innerHTML = p;
+    $$("#bk-page button[data-p]").forEach(b => b.onclick = () => { page = +b.dataset.p; draw(); });
+    $$("#bk-body [data-open]").forEach(b => b.onclick = () => openBookingDrawer(b.dataset.open));
+  };
+
+  const openBookingDrawer = id => {
+    const b = all.find(x => String(x.id) === String(id)); if (!b) return;
+    drawer(
+      '<div class="drawer-h"><span class="av">' + esc(initials(b.name)) + '</span>' +
+      '<div class="f1"><h3>' + esc(b.name || "Booking") + '</h3><div class="fs11 mut">' + esc(b.when || (b.d + " " + b.tm)) + '</div></div>' +
+      '<button class="iconbtn" data-x>' + ic("x") + '</button></div>' +
+      '<div class="drawer-b">' +
+      '<div class="f g6 mb12">' + bookingStatusBadge(b.status) + (b.type_label ? '<span class="tag">' + esc(b.type_label) + '</span>' : '') + '</div>' +
+      '<div class="list">' +
+      [["phone", "Phone", b.phone], ["mail", "Email", b.email], ["map-pin", "Location / Site", b.loc],
+       ["clock", "Date & time", dt(b.d) + " at " + b.tm + " (" + (b.dur || 60) + " mins)"],
+       ["user", "Staff assigned", b.staff], ["message-circle", "Notes", b.notes]]
+        .filter(r => r[2]).map(r => '<div class="li"><span class="i mut">' + ic(r[0]) + '</span><div class="li-b"><b>' + esc(r[2]) + '</b><small>' + r[1] + '</small></div></div>').join("") +
+      '</div>' +
+      '<div class="hr"></div>' +
+      '<h4 class="fs12 sb mb4">Update status</h4>' +
+      '<div class="f g6 flex-wrap" id="bk-st-btns">' +
+      '<button class="btn sm' + (b.status === "confirmed" ? ' pri' : '') + '" data-st="confirmed">' + ic("check") + 'Confirm</button>' +
+      '<button class="btn sm' + (b.status === "done" ? ' pri' : '') + '" data-st="done">' + ic("check-circle") + 'Complete</button>' +
+      '<button class="btn sm dan" data-st="cancelled">' + ic("x") + 'Cancel booking</button>' +
+      '</div>' +
+      '<div class="hr"></div>' +
+      '<div class="f g6">' +
+      (b.phone ? '<a class="btn" href="tel:' + esc(b.phone) + '">' + ic("phone") + 'Call</a>' : '') +
+      (b.phone ? '<a class="btn" target="_blank" href="https://wa.me/' + esc(String(b.phone).replace(/\D/g, "")) + '">' + ic("whatsapp") + 'WhatsApp</a>' : '') +
+      '</div>' +
+      '</div>' +
+      '<div class="drawer-f"><button class="btn" data-x>Close</button></div>');
+    paintIcons($("#drawer"));
+
+    $$("#bk-st-btns button[data-st]").forEach(btn => btn.onclick = async () => {
+      const st = btn.dataset.st;
+      const r = await api("bk_status", { id: b.id, status: st });
+      if (!r.ok) return toast(r.error || "Could not update", "err");
+      b.status = st; toast("Status updated to " + st, "suc");
+      openBookingDrawer(b.id); draw(); updateKpis();
+    });
+  };
+
+  const updateKpis = () => {
+    const todayStr = new Date().toISOString().slice(0, 10);
+    const pend = all.filter(b => b.status === "pending").length;
+    const conf = all.filter(b => b.status === "confirmed").length;
+    const todayCount = all.filter(b => b.d === todayStr).length;
+    $("#bk-kpis").innerHTML =
+      kpi({ t: "Total bookings", i: "clock", c: "c-acc", v: n0(all.length) }) +
+      kpi({ t: "Today", i: "calendar", c: "c-acc", v: n0(todayCount) }) +
+      kpi({ t: "Pending", i: "alert-circle", c: "c-vio", v: n0(pend) }) +
+      kpi({ t: "Confirmed", i: "check-circle", c: "c-suc", v: n0(conf) });
+  };
+
+  $("#bk-q").oninput = debounce(() => { page = 1; draw(); }, 180);
+  $("#bk-st").onchange = () => { page = 1; draw(); };
+  $("#bk-tp").onchange = () => { page = 1; draw(); };
+  $("#bk-view").onclick = e => {
+    const b = e.target.closest("button"); if (!b) return;
+    $$("#bk-view button").forEach(x => x.classList.toggle("on", x === b));
+    view = b.dataset.v; draw();
+  };
+  $("#bk-new").onclick = () => {
+    const types = (cfg && cfg.types) || [{ id: "visit", label: "Site visit" }, { id: "studio", label: "Studio meeting" }];
+    const todayStr = new Date().toISOString().slice(0, 10);
+    modal(
+      '<div class="modal-h"><h3>New booking</h3><button class="iconbtn" data-x>' + ic("x") + '</button></div>' +
+      '<div class="modal-b"><div class="g2">' +
+      '<label><span class="lb">Client name *</span><input id="nb-nm" placeholder="Ali Khan"></label>' +
+      '<label><span class="lb">Phone *</span><input id="nb-ph" inputmode="tel" placeholder="+92…"></label>' +
+      '<label><span class="lb">Email</span><input id="nb-em" type="email"></label>' +
+      '<label><span class="lb">Type *</span><select id="nb-tp">' + types.map(t => '<option value="' + esc(t.id) + '">' + esc(t.label) + '</option>').join("") + '</select></label>' +
+      '<label><span class="lb">Date *</span><input id="nb-d" type="date" value="' + todayStr + '"></label>' +
+      '<label><span class="lb">Time *</span><input id="nb-tm" type="time" value="11:00"></label>' +
+      '<label><span class="lb">Duration (mins)</span><input id="nb-dur" type="number" value="60" step="15"></label>' +
+      '<label><span class="lb">Site / Location</span><input id="nb-loc" placeholder="Phase 6 DHA, Lahore"></label>' +
+      '</div><label><span class="lb">Notes</span><textarea id="nb-no" placeholder="Booking requirements…"></textarea></label>' +
+      '<p class="err" id="nb-err"></p></div>' +
+      '<div class="modal-f"><button class="btn" data-x>Cancel</button><button class="btn pri" id="nb-go">' + ic("check") + 'Save booking</button></div>');
+    $("#nb-go").onclick = async () => {
+      const nm = $("#nb-nm").value.trim(), ph = $("#nb-ph").value.trim(), d = $("#nb-d").value, tm = $("#nb-tm").value;
+      if (!nm || !ph || !d || !tm) return ($("#nb-err").textContent = "Name, phone, date and time are required");
+      const b = $("#nb-go"); b.classList.add("busy");
+      const r = await api("bk_save", { name: nm, phone: ph, email: $("#nb-em").value.trim(), type: $("#nb-tp").value, d: d, tm: tm, dur: +$("#nb-dur").value || 60, loc: $("#nb-loc").value.trim(), notes: $("#nb-no").value.trim(), force: true });
+      b.classList.remove("busy");
+      if (!r.ok) return ($("#nb-err").textContent = r.error || "Could not save booking");
+      closeModal(); toast("Booking scheduled", "suc");
+      if (r.item) all.unshift(r.item);
+      draw(); updateKpis();
+    };
+  };
+
+  const r = await api("bk_list", {});
+  all = (r.ok && r.items) || [];
+  cfg = (r.ok && r.cfg) || {};
+  team = (r.ok && r.team) || [];
+  const types = (cfg && cfg.types) || [];
+  $("#bk-tp").innerHTML = '<option value="">All types</option>' + types.map(t => '<option value="' + esc(t.id) + '">' + esc(t.label) + '</option>').join("");
+  updateKpis(); draw();
+};
+
+/* ---- Clients ---- */
+SCREENS.clients = async function () {
+  const c = $("#content");
+  c.innerHTML =
+    '<div class="ph"><div class="ph-l"><div class="crumb"><a href="#/dashboard">Home</a> / Clients</div><h1>Clients</h1></div>' +
+    '<div class="ph-r"><button class="btn pri" id="cl-new">' + ic("plus") + 'New client</button></div></div>' +
+    '<div class="kpis" id="cl-kpis">' + skeleton(4, "k") + '</div>' +
+    '<div class="card"><div class="tbl-bar">' +
+    '<div class="sp search"><span class="i" data-i="search"></span><input id="cl-q" placeholder="Search name, company, phone, city…"></div>' +
+    '<select id="cl-type" style="width:auto;min-width:130px"><option value="">All types</option></select>' +
+    '<select id="cl-line" style="width:auto;min-width:120px"><option value="">All lines</option></select>' +
+    '</div>' +
+    '<div id="cl-body">' + skeleton(8) + '</div>' +
+    '<div class="tbl-foot"><span id="cl-count">Loading…</span><div class="pager" id="cl-page"></div></div></div>';
+  paintIcons(c);
+
+  let all = [], META = {}, page = 1, PER = 25;
+
+  const filt = () => {
+    const q = ($("#cl-q").value || "").toLowerCase().trim();
+    const tp = $("#cl-type").value, ln = $("#cl-line").value;
+    return all.filter(cl => {
+      if (tp && String(cl.type || "").toLowerCase() !== tp.toLowerCase()) return false;
+      if (ln && String(cl.line || "").toLowerCase() !== ln.toLowerCase()) return false;
+      if (!q) return true;
+      return [cl.name, cl.company, cl.phone, cl.email, cl.city, cl.address, cl.designation].join(" ").toLowerCase().includes(q);
+    });
+  };
+
+  const draw = () => {
+    const rows = filt();
+    const pages = Math.max(1, Math.ceil(rows.length / PER));
+    if (page > pages) page = pages;
+    const slice = rows.slice((page - 1) * PER, page * PER);
+    $("#cl-count").textContent = rows.length + " client" + (rows.length === 1 ? "" : "s") + (rows.length > PER ? " · page " + page + " of " + pages : "");
+
+    $("#cl-body").innerHTML = table({
+      zebra: true,
+      cols: [
+        { t: "Client / Company", v: r => '<div class="cell"><span class="av">' + esc(initials(r.company || r.name)) + '</span><div><b>' + esc(r.name || "—") + '</b><small>' + esc(r.company || "") + '</small></div></div>' },
+        { t: "Contact", v: r => '<div class="fs12">' + esc(r.phone || "—") + '</div><small class="mut">' + esc(r.email || "") + '</small>' },
+        { t: "City", k: "city", cls: "mut" },
+        { t: "Type", v: r => r.type ? '<span class="tag">' + esc((META.clientTypes || {})[r.type] || r.type) + '</span>' : '<span class="mut">—</span>' },
+        { t: "Line", v: r => r.line ? '<span class="tag">' + esc((META.lines || {})[r.line] || r.line) + '</span>' : '<span class="mut">—</span>' },
+        { t: "Lifetime Value", v: r => r.value ? '<b>' + esc(money(r.value).replace("PKR ", "")) + '</b> <small class="mut">PKR</small>' : '<span class="mut">PKR 0</span>' },
+        { t: "Added", v: r => '<span class="mut fs11">' + dt(r.created_at) + '</span>' },
+        { t: "", cls: "tr", v: r => '<div class="act" style="justify-content:flex-end"><button class="iconbtn" data-open="' + esc(r.id) + '" title="View 360">' + ic("external-link") + '</button></div>' }
+      ],
+      rows: slice,
+      empty: "No clients found",
+      emptyIcon: "contact"
+    });
+    paintIcons($("#cl-body"));
+
+    let p = "";
+    if (pages > 1) {
+      p += '<button data-p="' + (page - 1) + '"' + (page === 1 ? ' disabled' : '') + '>‹</button>';
+      for (let i = 1; i <= pages; i++) {
+        if (pages > 7 && Math.abs(i - page) > 2 && i !== 1 && i !== pages) { if (i === 2 || i === pages - 1) p += '<button disabled>…</button>'; continue; }
+        p += '<button data-p="' + i + '"' + (i === page ? ' class="on"' : '') + '>' + i + '</button>';
+      }
+      p += '<button data-p="' + (page + 1) + '"' + (page === pages ? ' disabled' : '') + '>›</button>';
+    }
+    $("#cl-page").innerHTML = p;
+    $$("#cl-page button[data-p]").forEach(b => b.onclick = () => { page = +b.dataset.p; draw(); });
+    $$("#cl-body [data-open]").forEach(b => b.onclick = () => openClientDrawer(b.dataset.open));
+  };
+
+  const openClientDrawer = async id => {
+    const cl = all.find(x => String(x.id) === String(id)); if (!cl) return;
+    drawer('<div class="drawer-h"><span class="av">' + esc(initials(cl.company || cl.name)) + '</span>' +
+      '<div class="f1"><h3>' + esc(cl.name || "Client") + '</h3><div class="fs11 mut">' + esc(cl.company || cl.city || "") + '</div></div>' +
+      '<button class="iconbtn" data-x>' + ic("x") + '</button></div>' +
+      '<div class="drawer-b"><div class="empty">' + ic("contact") + '<p>Loading 360 profile…</p></div></div>');
+    paintIcons($("#drawer"));
+
+    const r = await api("client_360", { id: cl.id });
+    if (!r.ok) return drawer('<div class="drawer-h"><h3>Error</h3><button class="iconbtn" data-x>' + ic("x") + '</button></div><div class="drawer-b"><p class="err">' + esc(r.error || "Could not load") + '</p></div>');
+
+    const leads = r.leads || [], quotes = r.quotes || [], invs = r.invs || [], tl = r.tl || [];
+    const totalRev = leads.filter(l => l.stage === "won").reduce((a, l) => a + (l.value || 0), 0);
+
+    drawer(
+      '<div class="drawer-h"><span class="av">' + esc(initials(r.company || r.name)) + '</span>' +
+      '<div class="f1"><h3>' + esc(r.name || "Client") + '</h3><div class="fs11 mut">' + esc(r.company ? r.company + " · " + (r.city || "") : (r.city || "")) + '</div></div>' +
+      '<button class="iconbtn" data-x>' + ic("x") + '</button></div>' +
+      '<div class="drawer-b">' +
+      '<div class="f g6 mb12">' +
+      (r.type ? '<span class="tag">' + esc((META.clientTypes || {})[r.type] || r.type) + '</span>' : '') +
+      (r.line ? '<span class="tag">' + esc((META.lines || {})[r.line] || r.line) + '</span>' : '') +
+      '</div>' +
+      '<div class="grid mb12" style="grid-template-columns:repeat(3,1fr);gap:6px">' +
+      '<div class="kpi" style="padding:8px"><div class="kpi-t">Revenue</div><div class="kpi-v c-acc" style="font-size:16px">' + money(totalRev).replace("PKR ", "") + '<small>PKR</small></div></div>' +
+      '<div class="kpi" style="padding:8px"><div class="kpi-t">Deals</div><div class="kpi-v c-vio" style="font-size:16px">' + leads.length + '</div></div>' +
+      '<div class="kpi" style="padding:8px"><div class="kpi-t">Quotes</div><div class="kpi-v c-suc" style="font-size:16px">' + quotes.length + '</div></div>' +
+      '</div>' +
+      '<div class="list">' +
+      [["phone", "Phone", r.phone], ["mail", "Email", r.email], ["map-pin", "City / Address", [r.city, r.address].filter(Boolean).join(", ")],
+       ["briefcase", "Designation", r.designation], ["calendar", "Client since", dt(r.created_at)], ["message-circle", "Notes", r.notes]]
+        .filter(x => x[2]).map(x => '<div class="li"><span class="i mut">' + ic(x[0]) + '</span><div class="li-b"><b>' + esc(x[2]) + '</b><small>' + x[1] + '</small></div></div>').join("") +
+      '</div>' +
+      '<div class="f g6 mt8">' +
+      (r.phone ? '<a class="btn sm" href="tel:' + esc(r.phone) + '">' + ic("phone") + 'Call</a>' : '') +
+      (r.phone ? '<a class="btn sm" target="_blank" href="https://wa.me/' + esc(String(r.phone).replace(/\D/g, "")) + '">' + ic("whatsapp") + 'WhatsApp</a>' : '') +
+      '<button class="btn sm" id="cl-edit">' + ic("edit") + 'Edit</button>' +
+      '</div>' +
+      '<div class="hr"></div>' +
+      '<h4 class="fs12 sb mb4">Timeline & Activity</h4>' +
+      (tl.length ? '<div class="feed">' + tl.slice(0, 10).map(t => '<div class="fd"><span class="fd-d acc"><i></i></span><div class="fd-b"><b>' + esc(t.title || "") + '</b>' + (t.sub ? '<div class="mut">' + esc(t.sub) + '</div>' : '') + '<time>' + ago(t.t) + '</time></div></div>').join("") + '</div>'
+        : '<div class="empty" style="padding:14px"><p>No activity recorded</p></div>') +
+      '</div>' +
+      '<div class="drawer-f"><button class="btn" data-x>Close</button></div>');
+    paintIcons($("#drawer"));
+
+    $("#cl-edit").onclick = () => openEditClientModal(r);
+  };
+
+  const openEditClientModal = c0 => {
+    modal(
+      '<div class="modal-h"><h3>' + (c0 ? 'Edit client' : 'New client') + '</h3><button class="iconbtn" data-x>' + ic("x") + '</button></div>' +
+      '<div class="modal-b"><div class="g2">' +
+      '<label><span class="lb">Name *</span><input id="nc-nm" value="' + esc(c0 ? c0.name : "") + '" placeholder="Client full name"></label>' +
+      '<label><span class="lb">Company</span><input id="nc-co" value="' + esc(c0 ? c0.company : "") + '" placeholder="Company name"></label>' +
+      '<label><span class="lb">Phone *</span><input id="nc-ph" inputmode="tel" value="' + esc(c0 ? c0.phone : "") + '" placeholder="+92…"></label>' +
+      '<label><span class="lb">Email</span><input id="nc-em" type="email" value="' + esc(c0 ? c0.email : "") + '"></label>' +
+      '<label><span class="lb">City</span><input id="nc-ct" value="' + esc(c0 ? c0.city || "Lahore" : "Lahore") + '"></label>' +
+      '<label><span class="lb">Address</span><input id="nc-ad" value="' + esc(c0 ? c0.address : "") + '"></label>' +
+      '<label><span class="lb">Type</span><select id="nc-tp"><option value="">—</option>' + Object.keys(META.clientTypes || {}).map(k => '<option value="' + k + '"' + (c0 && c0.type === k ? ' selected' : '') + '>' + esc((META.clientTypes || {})[k]) + '</option>').join("") + '</select></label>' +
+      '<label><span class="lb">Line</span><select id="nc-ln"><option value="">—</option>' + Object.keys(META.lines || {}).map(k => '<option value="' + k + '"' + (c0 && c0.line === k ? ' selected' : '') + '>' + esc((META.lines || {})[k]) + '</option>').join("") + '</select></label>' +
+      '</div><label><span class="lb">Notes</span><textarea id="nc-no">' + esc(c0 ? c0.notes : "") + '</textarea></label>' +
+      '<p class="err" id="nc-err"></p></div>' +
+      '<div class="modal-f"><button class="btn" data-x>Cancel</button><button class="btn pri" id="nc-go">' + ic("check") + (c0 ? 'Save changes' : 'Create client') + '</button></div>');
+
+    $("#nc-go").onclick = async () => {
+      const nm = $("#nc-nm").value.trim(), ph = $("#nc-ph").value.trim();
+      if (!nm) return ($("#nc-err").textContent = "Name is required");
+      const b = $("#nc-go"); b.classList.add("busy");
+      const r = await api("client_save", { id: c0 ? c0.id : 0, name: nm, company: $("#nc-co").value.trim(), phone: ph, email: $("#nc-em").value.trim(), city: $("#nc-ct").value.trim(), address: $("#nc-ad").value.trim(), type: $("#nc-tp").value, line: $("#nc-ln").value, notes: $("#nc-no").value.trim() });
+      b.classList.remove("busy");
+      if (!r.ok) return ($("#nc-err").textContent = r.error || "Could not save client");
+      closeModal(); toast(c0 ? "Client updated" : "Client created", "suc");
+      if (c0 && r.client) Object.assign(c0, r.client);
+      else if (r.client) all.unshift(r.client);
+      draw(); updateKpis();
+    };
+  };
+
+  const updateKpis = () => {
+    const totalRev = all.reduce((a, cl) => a + (cl.value || 0), 0);
+    const withDeals = all.filter(cl => (cl.leads || []).length > 0).length;
+    $("#cl-kpis").innerHTML =
+      kpi({ t: "Total clients", i: "contact", c: "c-acc", v: n0(all.length) }) +
+      kpi({ t: "Lifetime revenue", i: "receipt", c: "c-acc", v: money(totalRev).replace("PKR ", ""), unit: "PKR" }) +
+      kpi({ t: "With active deals", i: "kanban", c: "c-vio", v: n0(withDeals) }) +
+      kpi({ t: "Repeat clients", i: "star", c: "c-suc", v: n0(all.filter(cl => (cl.leads || []).length > 1).length) });
+  };
+
+  $("#cl-q").oninput = debounce(() => { page = 1; draw(); }, 180);
+  $("#cl-type").onchange = () => { page = 1; draw(); };
+  $("#cl-line").onchange = () => { page = 1; draw(); };
+  $("#cl-new").onclick = () => openEditClientModal(null);
+
+  const [cr, mr] = await Promise.all([api("clients_list", {}), api("s17_meta", {}).catch(() => ({ ok: false }))]);
+  all = (cr.ok && cr.clients) || [];
+  META = (mr.ok && mr) || {};
+  $("#cl-type").innerHTML = '<option value="">All types</option>' + Object.keys(META.clientTypes || {}).map(k => '<option value="' + esc(k) + '">' + esc((META.clientTypes || {})[k]) + '</option>').join("");
+  $("#cl-line").innerHTML = '<option value="">All lines</option>' + Object.keys(META.lines || {}).map(k => '<option value="' + esc(k) + '">' + esc((META.lines || {})[k]) + '</option>').join("");
+  updateKpis(); draw();
+};
+
+/* ---- Quotations ---- */
+SCREENS.quotes = async function () {
+  const c = $("#content");
+  c.innerHTML =
+    '<div class="ph"><div class="ph-l"><div class="crumb"><a href="#/dashboard">Home</a> / Quotations</div><h1>Quotations</h1></div>' +
+    '<div class="ph-r"><button class="btn pri" id="q-new">' + ic("plus") + 'New quotation</button></div></div>' +
+    '<div class="kpis" id="q-kpis">' + skeleton(4, "k") + '</div>' +
+    '<div class="card"><div class="tbl-bar">' +
+    '<div class="sp search"><span class="i" data-i="search"></span><input id="q-q" placeholder="Search quote no, client, project…"></div>' +
+    '<select id="q-st" style="width:auto;min-width:130px"><option value="">All statuses</option><option value="draft">Draft</option><option value="sent">Sent</option><option value="approved">Approved</option><option value="invoiced">Invoiced</option><option value="rejected">Rejected</option><option value="superseded">Superseded</option></select>' +
+    '</div>' +
+    '<div id="q-body">' + skeleton(8) + '</div>' +
+    '<div class="tbl-foot"><span id="q-count">Loading…</span><div class="pager" id="q-page"></div></div></div>';
+  paintIcons(c);
+
+  let all = [], page = 1, PER = 25;
+
+  const filt = () => {
+    const q = ($("#q-q").value || "").toLowerCase().trim();
+    const st = $("#q-st").value;
+    return all.filter(item => {
+      if (st && String(item.status || "").toLowerCase() !== st) return false;
+      if (!q) return true;
+      const cl = item.client || {}, pj = item.project || {};
+      return [item.no, item.label, cl.name, cl.company, cl.phone, pj.name, pj.site, item.created_by].join(" ").toLowerCase().includes(q);
+    });
+  };
+
+  const draw = () => {
+    const rows = filt();
+    const pages = Math.max(1, Math.ceil(rows.length / PER));
+    if (page > pages) page = pages;
+    const slice = rows.slice((page - 1) * PER, page * PER);
+    $("#q-count").textContent = rows.length + " quote" + (rows.length === 1 ? "" : "s") + (rows.length > PER ? " · page " + page + " of " + pages : "");
+
+    $("#q-body").innerHTML = table({
+      zebra: true,
+      cols: [
+        { t: "Quotation #", v: r => '<div><b>' + esc(r.label || r.no) + '</b>' + (r.version > 1 ? ' <span class="tag">V' + r.version + '</span>' : '') + '</div>' },
+        { t: "Client & Project", v: r => { const cl = r.client || {}, pj = r.project || {}; return '<div class="cell"><span class="av">' + esc(initials(cl.company || cl.name)) + '</span><div><b>' + esc(cl.name || cl.company || "—") + '</b><small>' + esc(pj.name || pj.site || "") + '</small></div></div>'; } },
+        { t: "Total Value", v: r => '<b>' + esc(money(r.total || 0).replace("PKR ", "")) + '</b> <small class="mut">PKR</small>' },
+        { t: "Status", v: r => quoteStatusBadge(r.status) },
+        { t: "Created by", k: "created_by", cls: "mut" },
+        { t: "Date", v: r => '<span class="mut fs11">' + dt(r.date || r.created_at) + '</span>' },
+        { t: "", cls: "tr", v: r => '<div class="act" style="justify-content:flex-end"><button class="iconbtn" data-open="' + esc(r.id) + '" title="View quotation">' + ic("external-link") + '</button></div>' }
+      ],
+      rows: slice,
+      empty: "No quotations found",
+      emptyIcon: "file-text"
+    });
+    paintIcons($("#q-body"));
+
+    let p = "";
+    if (pages > 1) {
+      p += '<button data-p="' + (page - 1) + '"' + (page === 1 ? ' disabled' : '') + '>‹</button>';
+      for (let i = 1; i <= pages; i++) {
+        if (pages > 7 && Math.abs(i - page) > 2 && i !== 1 && i !== pages) { if (i === 2 || i === pages - 1) p += '<button disabled>…</button>'; continue; }
+        p += '<button data-p="' + i + '"' + (i === page ? ' class="on"' : '') + '>' + i + '</button>';
+      }
+      p += '<button data-p="' + (page + 1) + '"' + (page === pages ? ' disabled' : '') + '>›</button>';
+    }
+    $("#q-page").innerHTML = p;
+    $$("#q-page button[data-p]").forEach(b => b.onclick = () => { page = +b.dataset.p; draw(); });
+    $$("#q-body [data-open]").forEach(b => b.onclick = () => openQuoteDrawer(b.dataset.open));
+  };
+
+  const openQuoteDrawer = async id => {
+    const q0 = all.find(x => String(x.id) === String(id)); if (!q0) return;
+    drawer('<div class="drawer-h"><h3>Quotation ' + esc(q0.label || q0.no) + '</h3><button class="iconbtn" data-x>' + ic("x") + '</button></div><div class="drawer-b"><div class="empty">' + ic("file-text") + '<p>Loading quotation…</p></div></div>');
+    paintIcons($("#drawer"));
+
+    const r = await api("quote_get", { id: q0.id });
+    if (!r.ok) return drawer('<div class="drawer-h"><h3>Error</h3><button class="iconbtn" data-x>' + ic("x") + '</button></div><div class="drawer-b"><p class="err">' + esc(r.error || "Could not load quote") + '</p></div>');
+
+    const q = r.quote || q0, fam = r.family || [], inv = r.invoice;
+    const cl = q.client || {}, pj = q.project || {}, secs = q.sections || [];
+
+    drawer(
+      '<div class="drawer-h"><div class="f1"><h3>' + esc(q.label || q.no) + '</h3><div class="fs11 mut">' + esc(cl.name || cl.company || "") + ' · ' + dt(q.date || q.created_at) + '</div></div>' +
+      quoteStatusBadge(q.status) +
+      '<button class="iconbtn" data-x>' + ic("x") + '</button></div>' +
+      '<div class="drawer-b">' +
+      (fam.length > 1 ? '<div class="f g4 mb12 flex-wrap"><span class="fs11 mut" style="line-height:24px">Versions:</span>' +
+        fam.map(v => '<button class="btn sm' + (v.id === q.id ? ' pri' : '') + '" data-vid="' + v.id + '">' + esc(v.label || ("V" + v.version)) + '</button>').join("") + '</div>' : '') +
+      '<div class="grid mb12" style="grid-template-columns:repeat(2,1fr);gap:8px">' +
+      '<div class="kpi" style="padding:10px"><div class="kpi-t">Grand Total</div><div class="kpi-v c-acc">' + money(q.total || 0).replace("PKR ", "") + '<small>PKR</small></div></div>' +
+      '<div class="kpi" style="padding:10px"><div class="kpi-t">Subtotal</div><div class="kpi-v c-vio">' + money(q.subtotal || q.total || 0).replace("PKR ", "") + '<small>PKR</small></div></div>' +
+      '</div>' +
+      '<div class="list mb12">' +
+      [["contact", "Client", [cl.name, cl.company].filter(Boolean).join(" · ")],
+       ["phone", "Phone", cl.phone],
+       ["mail", "Email", cl.email],
+       ["briefcase", "Project", pj.name || pj.site || "—"]]
+        .filter(x => x[2]).map(x => '<div class="li"><span class="i mut">' + ic(x[0]) + '</span><div class="li-b"><b>' + esc(x[2]) + '</b><small>' + x[1] + '</small></div></div>').join("") +
+      '</div>' +
+      '<div class="hr"></div>' +
+      '<h4 class="fs12 sb mb8">Sections & Items (' + secs.length + ')</h4>' +
+      (secs.length ? secs.map(s => '<div class="card mb8"><div class="card-h"><b>' + esc(s.title || "Section") + '</b><small class="mut">' + money(s.total || 0) + '</small></div>' +
+        '<div class="card-b tight">' + (s.items || []).map(it => '<div class="f jcb aic py4 fs12 border-b"><span>' + esc(it.name || "Item") + (it.qty ? ' <small class="mut">(' + it.qty + ' ' + (it.unit || "unit") + ')</small>' : '') + '</span><b>' + money(it.total || 0) + '</b></div>').join("") + '</div></div>').join("")
+        : '<p class="mut fs12">No item breakdown available</p>') +
+      '<div class="hr"></div>' +
+      '<h4 class="fs12 sb mb4">Actions</h4>' +
+      '<div class="f g6 flex-wrap">' +
+      (q.status === "draft" ? '<button class="btn sm pri" id="qd-send">' + ic("send") + 'Mark Sent</button>' : '') +
+      (q.status === "sent" ? '<button class="btn sm pri" id="qd-appr">' + ic("check-circle") + 'Mark Approved</button><button class="btn sm dan" id="qd-rej">' + ic("x") + 'Mark Rejected</button>' : '') +
+      (q.status === "approved" && !inv ? '<button class="btn sm pri" id="qd-inv">' + ic("receipt") + 'Create Invoice</button>' : '') +
+      (inv ? '<a class="btn sm acc" href="#/invoices">' + ic("receipt") + 'View Invoice (' + esc(inv.no) + ')</a>' : '') +
+      '<button class="btn sm" id="qd-dup">' + ic("copy") + 'Duplicate</button>' +
+      (cl.phone ? '<a class="btn sm" target="_blank" href="https://wa.me/' + esc(String(cl.phone).replace(/\D/g, "")) + '">' + ic("whatsapp") + 'WhatsApp</a>' : '') +
+      '</div>' +
+      '</div>' +
+      '<div class="drawer-f"><button class="btn" data-x>Close</button></div>');
+    paintIcons($("#drawer"));
+
+    $$("#drawer button[data-vid]").forEach(b => b.onclick = () => openQuoteDrawer(b.dataset.vid));
+    if ($("#qd-send")) $("#qd-send").onclick = async () => {
+      const r = await api("quote_status", { id: q.id, status: "sent" });
+      if (!r.ok) return toast(r.error || "Could not update status", "err");
+      q.status = "sent"; toast("Marked as Sent", "suc"); openQuoteDrawer(q.id); draw(); updateKpis();
+    };
+    if ($("#qd-appr")) $("#qd-appr").onclick = async () => {
+      const r = await api("quote_status", { id: q.id, status: "approved" });
+      if (!r.ok) return toast(r.error || "Could not approve", "err");
+      q.status = "approved"; toast("Quotation approved", "suc"); openQuoteDrawer(q.id); draw(); updateKpis();
+    };
+    if ($("#qd-rej")) $("#qd-rej").onclick = async () => {
+      const r = await api("quote_status", { id: q.id, status: "rejected" });
+      if (!r.ok) return toast(r.error || "Could not reject", "err");
+      q.status = "rejected"; toast("Quotation marked rejected", "suc"); openQuoteDrawer(q.id); draw(); updateKpis();
+    };
+    if ($("#qd-inv")) $("#qd-inv").onclick = async () => {
+      const r = await api("quote_invoice", { id: q.id });
+      if (!r.ok) return toast(r.error || "Could not create invoice", "err");
+      toast("Invoice generated: " + (r.invoice && r.invoice.no), "suc");
+      location.hash = "#/invoices";
+    };
+    if ($("#qd-dup")) $("#qd-dup").onclick = async () => {
+      const r = await api("quote_copy", { id: q.id, mode: "duplicate" });
+      if (!r.ok) return toast(r.error || "Could not duplicate", "err");
+      toast("Quotation duplicated: " + (r.quote && r.quote.no), "suc");
+      if (r.quote) all.unshift(r.quote); draw(); updateKpis();
+    };
+  };
+
+  const updateKpis = () => {
+    const totalVal = all.reduce((a, q) => a + (+q.total || 0), 0);
+    const approved = all.filter(q => q.status === "approved" || q.status === "invoiced").length;
+    const sent = all.filter(q => q.status === "sent").length;
+    $("#q-kpis").innerHTML =
+      kpi({ t: "Total quotations", i: "file-text", c: "c-acc", v: n0(all.length) }) +
+      kpi({ t: "Quoted value", i: "receipt", c: "c-acc", v: money(totalVal).replace("PKR ", ""), unit: "PKR" }) +
+      kpi({ t: "Approved", i: "check-circle", c: "c-suc", v: n0(approved) }) +
+      kpi({ t: "In review / Sent", i: "clock", c: "c-vio", v: n0(sent) });
+  };
+
+  $("#q-q").oninput = debounce(() => { page = 1; draw(); }, 180);
+  $("#q-st").onchange = () => { page = 1; draw(); };
+  $("#q-new").onclick = () => {
+    modal(
+      '<div class="modal-h"><h3>New quotation</h3><button class="iconbtn" data-x>' + ic("x") + '</button></div>' +
+      '<div class="modal-b"><div class="g2">' +
+      '<label><span class="lb">Client name *</span><input id="nq-nm" placeholder="Client or Company"></label>' +
+      '<label><span class="lb">Phone *</span><input id="nq-ph" inputmode="tel" placeholder="+92…"></label>' +
+      '<label><span class="lb">Email</span><input id="nq-em" type="email"></label>' +
+      '<label><span class="lb">Project name</span><input id="nq-pj" placeholder="e.g. 1 Kanal Modern Residence"></label>' +
+      '</div><label><span class="lb">Site address / location</span><input id="nq-loc" placeholder="DHA Phase 5, Lahore"></label>' +
+      '<p class="err" id="nq-err"></p></div>' +
+      '<div class="modal-f"><button class="btn" data-x>Cancel</button><button class="btn pri" id="nq-go">' + ic("check") + 'Create quotation</button></div>');
+    $("#nq-go").onclick = async () => {
+      const nm = $("#nq-nm").value.trim(), ph = $("#nq-ph").value.trim();
+      if (!nm || !ph) return ($("#nq-err").textContent = "Client name and phone are required");
+      const b = $("#nq-go"); b.classList.add("busy");
+      const r = await api("quote_save", { client: { name: nm, phone: ph, email: $("#nq-em").value.trim() }, project: { name: $("#nq-pj").value.trim(), site: $("#nq-loc").value.trim() } });
+      b.classList.remove("busy");
+      if (!r.ok) return ($("#nq-err").textContent = r.error || "Could not create quotation");
+      closeModal(); toast("Quotation created: " + (r.quote && r.quote.no), "suc");
+      if (r.quote) all.unshift(r.quote); draw(); updateKpis();
+    };
+  };
+
+  const r = await api("quotes_list", {});
+  all = (r.ok && r.quotes) || [];
+  updateKpis(); draw();
+};
+
+/* ---- Invoices ---- */
+SCREENS.invoices = async function () {
+  const c = $("#content");
+  c.innerHTML =
+    '<div class="ph"><div class="ph-l"><div class="crumb"><a href="#/dashboard">Home</a> / Invoices</div><h1>Invoices</h1></div>' +
+    '<div class="ph-r"><a class="btn" href="#/transactions">' + ic("receipt") + 'View payments</a></div></div>' +
+    '<div class="kpis" id="inv-kpis">' + skeleton(4, "k") + '</div>' +
+    '<div class="card"><div class="tbl-bar">' +
+    '<div class="sp search"><span class="i" data-i="search"></span><input id="inv-q" placeholder="Search invoice no, client, project…"></div>' +
+    '<select id="inv-st" style="width:auto;min-width:130px"><option value="">All statuses</option><option value="unpaid">Unpaid</option><option value="partial">Partial</option><option value="paid">Paid</option><option value="overdue">Overdue</option></select>' +
+    '</div>' +
+    '<div id="inv-body">' + skeleton(8) + '</div>' +
+    '<div class="tbl-foot"><span id="inv-count">Loading…</span><div class="pager" id="inv-page"></div></div></div>';
+  paintIcons(c);
+
+  let all = [], page = 1, PER = 25;
+
+  const filt = () => {
+    const q = ($("#inv-q").value || "").toLowerCase().trim();
+    const st = $("#inv-st").value;
+    return all.filter(inv => {
+      if (st === "overdue" && !inv.overdue) return false;
+      if (st && st !== "overdue" && String(inv.payStatus || "").toLowerCase() !== st) return false;
+      if (!q) return true;
+      const cl = inv.client || {}, pj = inv.project || {};
+      return [inv.no, cl.name, cl.company, cl.phone, pj.name, pj.site].join(" ").toLowerCase().includes(q);
+    });
+  };
+
+  const draw = () => {
+    const rows = filt();
+    const pages = Math.max(1, Math.ceil(rows.length / PER));
+    if (page > pages) page = pages;
+    const slice = rows.slice((page - 1) * PER, page * PER);
+    $("#inv-count").textContent = rows.length + " invoice" + (rows.length === 1 ? "" : "s") + (rows.length > PER ? " · page " + page + " of " + pages : "");
+
+    $("#inv-body").innerHTML = table({
+      zebra: true,
+      cols: [
+        { t: "Invoice #", v: r => '<div><b>' + esc(r.no) + '</b></div>' },
+        { t: "Client & Project", v: r => { const cl = r.client || {}, pj = r.project || {}; return '<div class="cell"><span class="av">' + esc(initials(cl.company || cl.name)) + '</span><div><b>' + esc(cl.name || cl.company || "—") + '</b><small>' + esc(pj.name || pj.site || "") + '</small></div></div>'; } },
+        { t: "Total", v: r => '<b>' + esc(money(r.total || 0).replace("PKR ", "")) + '</b> <small class="mut">PKR</small>' },
+        { t: "Paid", v: r => '<span class="c-suc fw6">' + esc(money(r.paid || 0).replace("PKR ", "")) + '</span> <small class="mut">PKR</small>' },
+        { t: "Balance", v: r => r.balance > 0 ? '<span class="c-acc fw6">' + esc(money(r.balance).replace("PKR ", "")) + '</span> <small class="mut">PKR</small>' : '<span class="mut">—</span>' },
+        { t: "Status", v: r => invoiceStatusBadge(r.payStatus, r.overdue) },
+        { t: "Due Date", v: r => '<span class="mut fs11' + (r.overdue ? ' c-dan fw6' : '') + '">' + dt(r.due_date) + '</span>' },
+        { t: "", cls: "tr", v: r => '<div class="act" style="justify-content:flex-end"><button class="iconbtn" data-open="' + esc(r.id) + '" title="View invoice">' + ic("external-link") + '</button></div>' }
+      ],
+      rows: slice,
+      empty: "No invoices found",
+      emptyIcon: "receipt"
+    });
+    paintIcons($("#inv-body"));
+
+    let p = "";
+    if (pages > 1) {
+      p += '<button data-p="' + (page - 1) + '"' + (page === 1 ? ' disabled' : '') + '>‹</button>';
+      for (let i = 1; i <= pages; i++) {
+        if (pages > 7 && Math.abs(i - page) > 2 && i !== 1 && i !== pages) { if (i === 2 || i === pages - 1) p += '<button disabled>…</button>'; continue; }
+        p += '<button data-p="' + i + '"' + (i === page ? ' class="on"' : '') + '>' + i + '</button>';
+      }
+      p += '<button data-p="' + (page + 1) + '"' + (page === pages ? ' disabled' : '') + '>›</button>';
+    }
+    $("#inv-page").innerHTML = p;
+    $$("#inv-page button[data-p]").forEach(b => b.onclick = () => { page = +b.dataset.p; draw(); });
+    $$("#inv-body [data-open]").forEach(b => b.onclick = () => openInvoiceDrawer(b.dataset.open));
+  };
+
+  const openInvoiceDrawer = async id => {
+    const inv0 = all.find(x => String(x.id) === String(id)); if (!inv0) return;
+    drawer('<div class="drawer-h"><h3>Invoice ' + esc(inv0.no) + '</h3><button class="iconbtn" data-x>' + ic("x") + '</button></div><div class="drawer-b"><div class="empty">' + ic("receipt") + '<p>Loading invoice…</p></div></div>');
+    paintIcons($("#drawer"));
+
+    const r = await api("inv_get", { id: inv0.id });
+    if (!r.ok) return drawer('<div class="drawer-h"><h3>Error</h3><button class="iconbtn" data-x>' + ic("x") + '</button></div><div class="drawer-b"><p class="err">' + esc(r.error || "Could not load") + '</p></div>');
+
+    const inv = r.invoice || inv0, cl = inv.client || {}, pj = inv.project || {}, pays = inv.payments || [];
+    const pct = inv.total > 0 ? Math.min(100, Math.round((inv.paid / inv.total) * 100)) : 0;
+
+    drawer(
+      '<div class="drawer-h"><div class="f1"><h3>' + esc(inv.no) + '</h3><div class="fs11 mut">' + esc(cl.name || cl.company || "") + ' · Issued ' + dt(inv.issue_date) + '</div></div>' +
+      invoiceStatusBadge(inv.payStatus, inv.overdue) +
+      '<button class="iconbtn" data-x>' + ic("x") + '</button></div>' +
+      '<div class="drawer-b">' +
+      '<div class="grid mb12" style="grid-template-columns:repeat(3,1fr);gap:6px">' +
+      '<div class="kpi" style="padding:8px"><div class="kpi-t">Total</div><div class="kpi-v" style="font-size:15px">' + money(inv.total || 0).replace("PKR ", "") + '<small>PKR</small></div></div>' +
+      '<div class="kpi" style="padding:8px"><div class="kpi-t">Paid</div><div class="kpi-v c-suc" style="font-size:15px">' + money(inv.paid || 0).replace("PKR ", "") + '<small>PKR</small></div></div>' +
+      '<div class="kpi" style="padding:8px"><div class="kpi-t">Balance</div><div class="kpi-v c-acc" style="font-size:15px">' + money(inv.balance || 0).replace("PKR ", "") + '<small>PKR</small></div></div>' +
+      '</div>' +
+      '<div class="mb12"><div class="f jcb fs11 mut mb4"><span>Payment progress</span><span>' + pct + '%</span></div><div class="meter"><i style="width:' + pct + '%"></i></div></div>' +
+      '<div class="list mb12">' +
+      [["contact", "Client", [cl.name, cl.company].filter(Boolean).join(" · ")],
+       ["phone", "Phone", cl.phone],
+       ["calendar", "Due date", dt(inv.due_date)],
+       ["briefcase", "Project", pj.name || pj.site || "—"]]
+        .filter(x => x[2]).map(x => '<div class="li"><span class="i mut">' + ic(x[0]) + '</span><div class="li-b"><b>' + esc(x[2]) + '</b><small>' + x[1] + '</small></div></div>').join("") +
+      '</div>' +
+      '<div class="hr"></div>' +
+      '<div class="f jcb aic mb8"><h4 class="fs12 sb">Payments received (' + pays.length + ')</h4>' +
+      (inv.balance > 0 ? '<button class="btn sm pri" id="inv-pay-btn">' + ic("plus") + 'Record payment</button>' : '') + '</div>' +
+      (pays.length ? '<div class="list">' + pays.map(p => '<div class="li"><span class="i mut">' + ic("receipt") + '</span><div class="li-b"><b>' + esc(p.rcpt || "Receipt") + ' · ' + money(p.amount) + '</b><small>' + esc(p.method || "bank") + (p.ref ? " · " + esc(p.ref) : "") + ' · ' + dt(p.date) + '</small></div></div>').join("") + '</div>'
+        : '<p class="mut fs12">No payments recorded yet</p>') +
+      '</div>' +
+      '<div class="drawer-f"><button class="btn" data-x>Close</button></div>');
+    paintIcons($("#drawer"));
+
+    if ($("#inv-pay-btn")) $("#inv-pay-btn").onclick = () => openRecordPaymentModal(inv);
+  };
+
+  const openRecordPaymentModal = inv => {
+    const todayStr = new Date().toISOString().slice(0, 10);
+    modal(
+      '<div class="modal-h"><h3>Record payment</h3><button class="iconbtn" data-x>' + ic("x") + '</button></div>' +
+      '<div class="modal-b"><div class="g2">' +
+      '<label><span class="lb">Amount (PKR) *</span><input id="np-am" type="number" value="' + (inv.balance || "") + '"></label>' +
+      '<label><span class="lb">Date *</span><input id="np-dt" type="date" value="' + todayStr + '"></label>' +
+      '<label><span class="lb">Payment method *</span><select id="np-m"><option value="bank">Bank transfer</option><option value="cash">Cash</option><option value="cheque">Cheque</option><option value="online">Online</option></select></label>' +
+      '<label><span class="lb">Reference / Txn #</span><input id="np-rf" placeholder="e.g. IBFT 987123"></label>' +
+      '</div><label><span class="lb">Note</span><textarea id="np-no" placeholder="Payment notes…"></textarea></label>' +
+      '<p class="err" id="np-err"></p></div>' +
+      '<div class="modal-f"><button class="btn" data-x>Cancel</button><button class="btn pri" id="np-go">' + ic("check") + 'Save payment</button></div>');
+
+    $("#np-go").onclick = async () => {
+      const am = +$("#np-am").value;
+      if (!am || am <= 0) return ($("#np-err").textContent = "Enter a valid amount");
+      const b = $("#np-go"); b.classList.add("busy");
+      const r = await api("pay_add", { id: inv.id, amount: am, date: $("#np-dt").value, method: $("#np-m").value, ref: $("#np-rf").value.trim(), note: $("#np-no").value.trim() });
+      b.classList.remove("busy");
+      if (!r.ok) return ($("#np-err").textContent = r.error || "Could not record payment");
+      closeModal(); toast("Payment recorded: PKR " + n0(am), "suc");
+      if (r.invoice) { Object.assign(inv, r.invoice); openInvoiceDrawer(inv.id); }
+      draw(); updateKpis();
+    };
+  };
+
+  const updateKpis = () => {
+    const totalInvoiced = all.reduce((a, i) => a + (+i.total || 0), 0);
+    const totalPaid = all.reduce((a, i) => a + (+i.paid || 0), 0);
+    const totalBalance = all.reduce((a, i) => a + (+i.balance || 0), 0);
+    const overdueCount = all.filter(i => i.overdue).length;
+    $("#inv-kpis").innerHTML =
+      kpi({ t: "Total invoiced", i: "receipt", c: "c-acc", v: money(totalInvoiced).replace("PKR ", ""), unit: "PKR" }) +
+      kpi({ t: "Collected", i: "check-circle", c: "c-suc", v: money(totalPaid).replace("PKR ", ""), unit: "PKR" }) +
+      kpi({ t: "Outstanding", i: "clock", c: "c-vio", v: money(totalBalance).replace("PKR ", ""), unit: "PKR" }) +
+      kpi({ t: "Overdue", i: "alert-circle", c: overdueCount > 0 ? "c-dan" : "", v: n0(overdueCount) });
+  };
+
+  $("#inv-q").oninput = debounce(() => { page = 1; draw(); }, 180);
+  $("#inv-st").onchange = () => { page = 1; draw(); };
+
+  const r = await api("invs_list", {});
+  all = (r.ok && r.invoices) || [];
+  updateKpis(); draw();
+};
+
+/* ---- Payments & Transactions ---- */
+SCREENS.transactions = async function () {
+  const c = $("#content");
+  c.innerHTML =
+    '<div class="ph"><div class="ph-l"><div class="crumb"><a href="#/dashboard">Home</a> / Payments</div><h1>Payments & Receipts</h1></div>' +
+    '<div class="ph-r"><a class="btn" href="#/invoices">' + ic("file-text") + 'View invoices</a></div></div>' +
+    '<div class="kpis" id="tr-kpis">' + skeleton(4, "k") + '</div>' +
+    '<div class="card"><div class="tbl-bar">' +
+    '<div class="sp search"><span class="i" data-i="search"></span><input id="tr-q" placeholder="Search receipt, invoice, client, note…"></div>' +
+    '<select id="tr-m" style="width:auto;min-width:130px"><option value="">All methods</option><option value="bank">Bank transfer</option><option value="cash">Cash</option><option value="cheque">Cheque</option><option value="online">Online</option></select>' +
+    '</div>' +
+    '<div id="tr-body">' + skeleton(8) + '</div>' +
+    '<div class="tbl-foot"><span id="tr-count">Loading…</span><div class="pager" id="tr-page"></div></div></div>';
+  paintIcons(c);
+
+  let payments = [], page = 1, PER = 25;
+
+  const filt = () => {
+    const q = ($("#tr-q").value || "").toLowerCase().trim();
+    const m = $("#tr-m").value;
+    return payments.filter(p => {
+      if (m && String(p.method || "").toLowerCase() !== m) return false;
+      if (!q) return true;
+      return [p.rcpt, p.invoice_no, p.client_name, p.ref, p.note, p.by].join(" ").toLowerCase().includes(q);
+    });
+  };
+
+  const draw = () => {
+    const rows = filt();
+    const pages = Math.max(1, Math.ceil(rows.length / PER));
+    if (page > pages) page = pages;
+    const slice = rows.slice((page - 1) * PER, page * PER);
+    $("#tr-count").textContent = rows.length + " payment" + (rows.length === 1 ? "" : "s") + (rows.length > PER ? " · page " + page + " of " + pages : "");
+
+    $("#tr-body").innerHTML = table({
+      zebra: true,
+      cols: [
+        { t: "Receipt #", v: r => '<b>' + esc(r.rcpt || "—") + '</b>' },
+        { t: "Invoice #", v: r => r.invoice_id ? '<a class="acc fw6" href="#/invoices">' + esc(r.invoice_no) + '</a>' : esc(r.invoice_no || "—") },
+        { t: "Client", k: "client_name" },
+        { t: "Amount", v: r => '<span class="c-suc fw7">' + esc(money(r.amount || 0).replace("PKR ", "")) + '</span> <small class="mut">PKR</small>' },
+        { t: "Method", v: r => payMethodBadge(r.method) },
+        { t: "Reference", k: "ref", cls: "mut" },
+        { t: "Received by", k: "by", cls: "mut" },
+        { t: "Date", v: r => '<span class="mut fs11">' + dt(r.date || r.t) + '</span>' }
+      ],
+      rows: slice,
+      empty: "No payments found",
+      emptyIcon: "receipt"
+    });
+    paintIcons($("#tr-body"));
+
+    let p = "";
+    if (pages > 1) {
+      p += '<button data-p="' + (page - 1) + '"' + (page === 1 ? ' disabled' : '') + '>‹</button>';
+      for (let i = 1; i <= pages; i++) {
+        if (pages > 7 && Math.abs(i - page) > 2 && i !== 1 && i !== pages) { if (i === 2 || i === pages - 1) p += '<button disabled>…</button>'; continue; }
+        p += '<button data-p="' + i + '"' + (i === page ? ' class="on"' : '') + '>' + i + '</button>';
+      }
+      p += '<button data-p="' + (page + 1) + '"' + (page === pages ? ' disabled' : '') + '>›</button>';
+    }
+    $("#tr-page").innerHTML = p;
+    $$("#tr-page button[data-p]").forEach(b => b.onclick = () => { page = +b.dataset.p; draw(); });
+  };
+
+  const updateKpis = () => {
+    const totalCollected = payments.reduce((a, p) => a + (+p.amount || 0), 0);
+    const bankSum = payments.filter(p => p.method === "bank").reduce((a, p) => a + (+p.amount || 0), 0);
+    const cashSum = payments.filter(p => p.method === "cash").reduce((a, p) => a + (+p.amount || 0), 0);
+    $("#tr-kpis").innerHTML =
+      kpi({ t: "Total collected", i: "receipt", c: "c-acc", v: money(totalCollected).replace("PKR ", ""), unit: "PKR" }) +
+      kpi({ t: "Receipts issued", i: "file-text", c: "c-vio", v: n0(payments.length) }) +
+      kpi({ t: "Via Bank transfer", i: "building", c: "c-suc", v: money(bankSum).replace("PKR ", ""), unit: "PKR" }) +
+      kpi({ t: "Via Cash / Other", i: "receipt", c: "c-acc", v: money(cashSum).replace("PKR ", ""), unit: "PKR" });
+  };
+
+  $("#tr-q").oninput = debounce(() => { page = 1; draw(); }, 180);
+  $("#tr-m").onchange = () => { page = 1; draw(); };
+
+  const r = await api("invs_list", {});
+  const invs = (r.ok && r.invoices) || [];
+  payments = invs.flatMap(inv => (inv.payments || []).map(p => ({
+    ...p,
+    invoice_id: inv.id,
+    invoice_no: inv.no,
+    client_name: (inv.client && (inv.client.company || inv.client.name)) || "—"
+  }))).sort((a, b) => (String(b.date || b.t) < String(a.date || a.t) ? -1 : 1));
+
+  updateKpis(); draw();
+};
+
+/* ---- Quote Templates ---- */
+SCREENS.templates = async function () {
+  const c = $("#content");
+  c.innerHTML =
+    '<div class="ph"><div class="ph-l"><div class="crumb"><a href="#/dashboard">Home</a> / Quote templates</div><h1>Quote templates</h1></div>' +
+    '<div class="ph-r"><button class="btn pri" id="tp-new">' + ic("plus") + 'New template</button></div></div>' +
+    '<div class="kpis" id="tp-kpis">' + skeleton(3, "k") + '</div>' +
+    '<div class="card"><div class="tbl-bar">' +
+    '<div class="sp search"><span class="i" data-i="search"></span><input id="tp-q" placeholder="Search template name, description…"></div>' +
+    '<select id="tp-k" style="width:auto;min-width:130px"><option value="">All categories</option><option value="design">Design</option><option value="fitout">Fit-out</option><option value="renovation">Renovation</option><option value="other">Other</option></select>' +
+    '</div>' +
+    '<div id="tp-body">' + skeleton(6) + '</div>' +
+    '<div class="tbl-foot"><span id="tp-count">Loading…</span></div></div>';
+  paintIcons(c);
+
+  let all = [];
+
+  const filt = () => {
+    const q = ($("#tp-q").value || "").toLowerCase().trim();
+    const k = $("#tp-k").value;
+    return all.filter(t => {
+      if (k && String(t.kind || "").toLowerCase() !== k) return false;
+      if (!q) return true;
+      return [t.name, t.description, t.kind].join(" ").toLowerCase().includes(q);
+    });
+  };
+
+  const draw = () => {
+    const rows = filt();
+    $("#tp-count").textContent = rows.length + " template" + (rows.length === 1 ? "" : "s");
+
+    $("#tp-body").innerHTML = table({
+      zebra: true,
+      cols: [
+        { t: "Template Name", v: r => '<div><b>' + esc(r.name || "—") + '</b><div class="fs11 mut">' + esc(r.description || "") + '</div></div>' },
+        { t: "Category", v: r => '<span class="tag">' + esc(r.kind || "other") + '</span>' },
+        { t: "Sections", v: r => (r.sections || []).length + " sections" },
+        { t: "Est. Total", v: r => r.total ? '<b>' + esc(money(r.total).replace("PKR ", "")) + '</b> <small class="mut">PKR</small>' : '<span class="mut">—</span>' },
+        { t: "", cls: "tr", v: r => '<div class="act" style="justify-content:flex-end"><button class="iconbtn" data-open="' + esc(r.id) + '" title="View template">' + ic("external-link") + '</button></div>' }
+      ],
+      rows: rows,
+      empty: "No quote templates found",
+      emptyIcon: "layers"
+    });
+    paintIcons($("#tp-body"));
+    $$("#tp-body [data-open]").forEach(b => b.onclick = () => openTemplateDrawer(b.dataset.open));
+  };
+
+  const openTemplateDrawer = id => {
+    const t = all.find(x => String(x.id) === String(id)); if (!t) return;
+    const secs = t.sections || [];
+    drawer(
+      '<div class="drawer-h"><div class="f1"><h3>' + esc(t.name) + '</h3><div class="fs11 mut">' + esc(t.kind || "other") + " · " + secs.length + ' sections</div></div>' +
+      '<button class="iconbtn" data-x>' + ic("x") + '</button></div>' +
+      '<div class="drawer-b">' +
+      (t.description ? '<p class="mut fs12 mb12">' + esc(t.description) + '</p>' : '') +
+      '<div class="kpi mb12" style="padding:10px"><div class="kpi-t">Estimated Value</div><div class="kpi-v c-acc">' + money(t.total || 0).replace("PKR ", "") + '<small>PKR</small></div></div>' +
+      '<h4 class="fs12 sb mb8">Sections & Standard Rates</h4>' +
+      (secs.length ? secs.map(s => '<div class="card mb8"><div class="card-h"><b>' + esc(s.title || "Section") + '</b><small class="mut">' + money(s.total || 0) + '</small></div>' +
+        '<div class="card-b tight">' + (s.items || []).map(it => '<div class="f jcb aic py4 fs12 border-b"><span>' + esc(it.name || "Item") + ' <small class="mut">(' + (it.qty || 1) + ' ' + (it.unit || "unit") + ' @ ' + (it.rate ? money(it.rate) : "rate") + ')</small></span><b>' + money(it.total || (it.qty * it.rate) || 0) + '</b></div>').join("") + '</div></div>').join("")
+        : '<p class="mut fs12">No section items</p>') +
+      '</div>' +
+      '<div class="drawer-f"><button class="btn" data-x>Close</button></div>');
+    paintIcons($("#drawer"));
+  };
+
+  const updateKpis = () => {
+    $("#tp-kpis").innerHTML =
+      kpi({ t: "Total templates", i: "layers", c: "c-acc", v: n0(all.length) }) +
+      kpi({ t: "Design templates", i: "sparkles", c: "c-vio", v: n0(all.filter(t => t.kind === "design").length) }) +
+      kpi({ t: "Fit-out templates", i: "building", c: "c-suc", v: n0(all.filter(t => t.kind === "fitout").length) });
+  };
+
+  $("#tp-q").oninput = debounce(() => draw(), 180);
+  $("#tp-k").onchange = () => draw();
+  $("#tp-new").onclick = () => {
+    modal(
+      '<div class="modal-h"><h3>New template</h3><button class="iconbtn" data-x>' + ic("x") + '</button></div>' +
+      '<div class="modal-b"><div class="g2">' +
+      '<label><span class="lb">Template name *</span><input id="ntp-nm" placeholder="e.g. Turnkey Office Fit-out"></label>' +
+      '<label><span class="lb">Category</span><select id="ntp-kd"><option value="design">Design</option><option value="fitout">Fit-out</option><option value="renovation">Renovation</option><option value="other">Other</option></select></label>' +
+      '</div><label><span class="lb">Description</span><textarea id="ntp-dc" placeholder="When to use this quote template…"></textarea></label>' +
+      '<p class="err" id="ntp-err"></p></div>' +
+      '<div class="modal-f"><button class="btn" data-x>Cancel</button><button class="btn pri" id="ntp-go">' + ic("check") + 'Save template</button></div>');
+    $("#ntp-go").onclick = async () => {
+      const nm = $("#ntp-nm").value.trim();
+      if (!nm) return ($("#ntp-err").textContent = "Template name is required");
+      const b = $("#ntp-go"); b.classList.add("busy");
+      const r = await api("tpl_save", { name: nm, kind: $("#ntp-kd").value, description: $("#ntp-dc").value.trim(), sections: [] });
+      b.classList.remove("busy");
+      if (!r.ok) return ($("#ntp-err").textContent = r.error || "Could not save template");
+      closeModal(); toast("Template created", "suc");
+      if (r.template) all.unshift(r.template); draw(); updateKpis();
+    };
+  };
+
+  const r = await api("tpl_list", {});
+  all = (r.ok && r.templates) || [];
+  updateKpis(); draw();
+};
+
+/* ---- Projects ---- */
+SCREENS.projects = async function () {
+  const c = $("#content");
+  c.innerHTML =
+    '<div class="ph"><div class="ph-l"><div class="crumb"><a href="#/dashboard">Home</a> / Projects</div><h1>Projects</h1></div>' +
+    '<div class="ph-r"><button class="btn pri" id="pj-new">' + ic("plus") + 'New project</button></div></div>' +
+    '<div class="kpis" id="pj-kpis">' + skeleton(4, "k") + '</div>' +
+    '<div class="card"><div class="tbl-bar">' +
+    '<div class="sp search"><span class="i" data-i="search"></span><input id="pj-q" placeholder="Search project, client, site…"></div>' +
+    '<select id="pj-st" style="width:auto;min-width:130px"><option value="">All stages</option><option value="planning">Planning</option><option value="design">Design</option><option value="procurement">Procurement</option><option value="execution">Execution</option><option value="finishing">Finishing</option><option value="handover">Handover</option><option value="completed">Completed</option></select>' +
+    '</div>' +
+    '<div id="pj-body">' + skeleton(8) + '</div>' +
+    '<div class="tbl-foot"><span id="pj-count">Loading…</span><div class="pager" id="pj-page"></div></div></div>';
+  paintIcons(c);
+
+  let all = [], team = [], page = 1, PER = 25;
+
+  const filt = () => {
+    const q = ($("#pj-q").value || "").toLowerCase().trim();
+    const st = $("#pj-st").value;
+    return all.filter(p => {
+      if (st && String(p.stage || "").toLowerCase() !== st) return false;
+      if (!q) return true;
+      return [p.name, p.no, p.client_name, p.site, p.manager_name].join(" ").toLowerCase().includes(q);
+    });
+  };
+
+  const draw = () => {
+    const rows = filt();
+    const pages = Math.max(1, Math.ceil(rows.length / PER));
+    if (page > pages) page = pages;
+    const slice = rows.slice((page - 1) * PER, page * PER);
+    $("#pj-count").textContent = rows.length + " project" + (rows.length === 1 ? "" : "s") + (rows.length > PER ? " · page " + page + " of " + pages : "");
+
+    $("#pj-body").innerHTML = table({
+      zebra: true,
+      cols: [
+        { t: "Project / Site", v: r => '<div class="cell"><span class="av">' + esc(initials(r.name)) + '</span><div><b>' + esc(r.name || "—") + '</b><small>' + esc(r.site || r.no || "") + '</small></div></div>' },
+        { t: "Client", k: "client_name" },
+        { t: "Stage", v: r => projectStageBadge(r.stage) },
+        { t: "Contract Value", v: r => r.value ? '<b>' + esc(money(r.value).replace("PKR ", "")) + '</b> <small class="mut">PKR</small>' : '<span class="mut">—</span>' },
+        { t: "Manager", v: r => r.manager_name ? esc(r.manager_name) : '<span class="mut">—</span>' },
+        { t: "Start Date", v: r => '<span class="mut fs11">' + dt(r.start) + '</span>' },
+        { t: "", cls: "tr", v: r => '<div class="act" style="justify-content:flex-end"><button class="iconbtn" data-open="' + esc(r.id) + '" title="Open project">' + ic("external-link") + '</button></div>' }
+      ],
+      rows: slice,
+      empty: "No projects found",
+      emptyIcon: "briefcase"
+    });
+    paintIcons($("#pj-body"));
+
+    let p = "";
+    if (pages > 1) {
+      p += '<button data-p="' + (page - 1) + '"' + (page === 1 ? ' disabled' : '') + '>‹</button>';
+      for (let i = 1; i <= pages; i++) {
+        if (pages > 7 && Math.abs(i - page) > 2 && i !== 1 && i !== pages) { if (i === 2 || i === pages - 1) p += '<button disabled>…</button>'; continue; }
+        p += '<button data-p="' + i + '"' + (i === page ? ' class="on"' : '') + '>' + i + '</button>';
+      }
+      p += '<button data-p="' + (page + 1) + '"' + (page === pages ? ' disabled' : '') + '>›</button>';
+    }
+    $("#pj-page").innerHTML = p;
+    $$("#pj-page button[data-p]").forEach(b => b.onclick = () => { page = +b.dataset.p; draw(); });
+    $$("#pj-body [data-open]").forEach(b => b.onclick = () => openProjectDrawer(b.dataset.open));
+  };
+
+  const openProjectDrawer = id => {
+    const pj = all.find(x => String(x.id) === String(id)); if (!pj) return;
+    const ms = pj.milestones || [], up = (pj.updates || []).slice().reverse();
+    drawer(
+      '<div class="drawer-h"><span class="av">' + esc(initials(pj.name)) + '</span>' +
+      '<div class="f1"><h3>' + esc(pj.name || "Project") + '</h3><div class="fs11 mut">' + esc(pj.client_name ? pj.client_name + " · " + (pj.site || "") : (pj.site || "")) + '</div></div>' +
+      projectStageBadge(pj.stage) +
+      '<button class="iconbtn" data-x>' + ic("x") + '</button></div>' +
+      '<div class="drawer-b">' +
+      '<div class="grid mb12" style="grid-template-columns:repeat(2,1fr);gap:8px">' +
+      '<div class="kpi" style="padding:10px"><div class="kpi-t">Contract Value</div><div class="kpi-v c-acc">' + money(pj.value || 0).replace("PKR ", "") + '<small>PKR</small></div></div>' +
+      '<div class="kpi" style="padding:10px"><div class="kpi-t">Paid to date</div><div class="kpi-v c-suc">' + money(pj.paid || 0).replace("PKR ", "") + '<small>PKR</small></div></div>' +
+      '</div>' +
+      '<div class="list mb12">' +
+      [["contact", "Client", pj.client_name],
+       ["map-pin", "Site location", pj.site],
+       ["user", "Project manager", pj.manager_name],
+       ["calendar", "Timeline", dt(pj.start) + (pj.target ? " → " + dt(pj.target) : "")]]
+        .filter(x => x[2]).map(x => '<div class="li"><span class="i mut">' + ic(x[0]) + '</span><div class="li-b"><b>' + esc(x[2]) + '</b><small>' + x[1] + '</small></div></div>').join("") +
+      '</div>' +
+      '<div class="hr"></div>' +
+      '<h4 class="fs12 sb mb8">Milestones (' + ms.length + ')</h4>' +
+      (ms.length ? '<div class="list mb12">' + ms.map(m => '<div class="li"><span class="i mut">' + ic("check-circle") + '</span><div class="li-b"><b>' + esc(m.title || "Milestone") + ' (' + (m.pct || 0) + '%)</b><small>' + (m.val ? money(m.val) + " · " : "") + (m.due ? "Due " + dt(m.due) : "") + '</small></div>' + (m.inv_id ? '<span class="badge suc">Billed</span>' : '<span class="badge war">Pending</span>') + '</div>').join("") + '</div>'
+        : '<p class="mut fs12 mb12">No milestones defined</p>') +
+      '<div class="hr"></div>' +
+      '<h4 class="fs12 sb mb4">Site Updates & Notes</h4>' +
+      (up.length ? '<div class="feed mb12">' + up.slice(0, 8).map(u => '<div class="fd"><span class="fd-d acc"><i></i></span><div class="fd-b"><b>' + esc(u.user || "Team") + '</b>: ' + esc(u.text || "") + '<time>' + ago(u.t) + '</time></div></div>').join("") + '</div>'
+        : '<div class="empty" style="padding:14px"><p>No updates yet</p></div>') +
+      '<label><span class="lb">Post update</span><textarea id="pju-txt" placeholder="Add site progress note…"></textarea></label>' +
+      '<button class="btn pri sm w100 mt4" id="pju-post">' + ic("plus") + 'Post update</button>' +
+      '</div>' +
+      '<div class="drawer-f"><button class="btn" data-x>Close</button></div>');
+    paintIcons($("#drawer"));
+
+    $("#pju-post").onclick = async () => {
+      const txt = $("#pju-txt").value.trim();
+      if (!txt) return;
+      const b = $("#pju-post"); b.classList.add("busy");
+      const r = await api("proj_update", { id: pj.id, text: txt });
+      b.classList.remove("busy");
+      if (!r.ok) return toast(r.error || "Could not post update", "err");
+      toast("Update posted", "suc");
+      if (r.project) Object.assign(pj, r.project);
+      openProjectDrawer(pj.id);
+    };
+  };
+
+  const updateKpis = () => {
+    const totalVal = all.reduce((a, p) => a + (+p.value || 0), 0);
+    const active = all.filter(p => !["completed", "handover"].includes(p.stage)).length;
+    $("#pj-kpis").innerHTML =
+      kpi({ t: "Total projects", i: "briefcase", c: "c-acc", v: n0(all.length) }) +
+      kpi({ t: "Active in progress", i: "kanban", c: "c-vio", v: n0(active) }) +
+      kpi({ t: "Contract value", i: "receipt", c: "c-suc", v: money(totalVal).replace("PKR ", ""), unit: "PKR" }) +
+      kpi({ t: "Completed", i: "check-circle", c: "c-acc", v: n0(all.filter(p => p.stage === "completed").length) });
+  };
+
+  $("#pj-q").oninput = debounce(() => { page = 1; draw(); }, 180);
+  $("#pj-st").onchange = () => { page = 1; draw(); };
+  $("#pj-new").onclick = () => {
+    modal(
+      '<div class="modal-h"><h3>New project</h3><button class="iconbtn" data-x>' + ic("x") + '</button></div>' +
+      '<div class="modal-b"><div class="g2">' +
+      '<label><span class="lb">Project name *</span><input id="npj-nm" placeholder="e.g. Al-Fatah Showroom Fit-out"></label>' +
+      '<label><span class="lb">Client name</span><input id="npj-cl" placeholder="Client or Company"></label>' +
+      '<label><span class="lb">Site address</span><input id="npj-st" placeholder="Gulberg III, Lahore"></label>' +
+      '<label><span class="lb">Contract value (PKR)</span><input id="npj-vl" type="number" placeholder="0"></label>' +
+      '<label><span class="lb">Start date</span><input id="npj-sd" type="date" value="' + new Date().toISOString().slice(0, 10) + '"></label>' +
+      '<label><span class="lb">Target completion</span><input id="npj-td" type="date"></label>' +
+      '</div>' +
+      '<p class="err" id="npj-err"></p></div>' +
+      '<div class="modal-f"><button class="btn" data-x>Cancel</button><button class="btn pri" id="npj-go">' + ic("check") + 'Create project</button></div>');
+    $("#npj-go").onclick = async () => {
+      const nm = $("#npj-nm").value.trim();
+      if (!nm) return ($("#npj-err").textContent = "Project name is required");
+      const b = $("#npj-go"); b.classList.add("busy");
+      const r = await api("proj_save", { name: nm, client_name: $("#npj-cl").value.trim(), site: $("#npj-st").value.trim(), value: +$("#npj-vl").value || 0, start: $("#npj-sd").value, target: $("#npj-td").value });
+      b.classList.remove("busy");
+      if (!r.ok) return ($("#npj-err").textContent = r.error || "Could not create project");
+      closeModal(); toast("Project created", "suc");
+      if (r.project) all.unshift(r.project); draw(); updateKpis();
+    };
+  };
+
+  const r = await api("projs_list", {});
+  all = (r.ok && r.projects) || [];
+  team = (r.ok && r.team) || [];
+  updateKpis(); draw();
+};
+
 /* ---- Inbox ---- */
 SCREENS.chat = async function () {
   const c = $("#content");
