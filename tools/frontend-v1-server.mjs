@@ -404,6 +404,15 @@ http.createServer(async (req, res) => {
       return res.end(body);
     }
     // mirror Hostinger .htaccess: gzip text (mod_deflate) + 30-day cache for static assets
+    if (ext === ".zip") {
+      res.writeHead(200, {
+        "Content-Type": "application/zip",
+        "Content-Disposition": `attachment; filename="${path.basename(file)}"`,
+        "Content-Length": fs.statSync(file).size,
+        "Cache-Control": "no-cache"
+      });
+      return fs.createReadStream(file).pipe(res);
+    }
     const cache = /^\.(webp|jpe?g|png|gif|svg|woff2|avif)$/.test(ext) && !/^\/(builder|admin)/.test(p) ? "public, max-age=2592000" : "no-cache";
     if (/^\.(css|js|svg|json|txt|xml)$/.test(ext) && /gzip/.test(req.headers["accept-encoding"] || "")) { res.writeHead(200, { "Content-Type": MIME[ext] || "application/octet-stream", "Cache-Control": cache, "Content-Encoding": "gzip", Vary: "Accept-Encoding" }); return fs.createReadStream(file).pipe(zlib.createGzip()).pipe(res); }
     res.writeHead(200, { "Content-Type": MIME[ext] || "application/octet-stream", "Cache-Control": cache });

@@ -5,3 +5,5 @@ mcp-server/.env
 frontend-v1/_private/*
 !frontend-v1/_private/.htaccess
 frontend-v1/woodex-master-p22.1-updated.zip
+woodex-live-v3/woodex-master-p22.1-updated.zip
+frontend-v1/woodex-live-v3/woodex-master-p22.1-updated.zip
