@@ -804,3 +804,61 @@ table.tbl.zebra tbody tr:nth-child(even):hover{background:var(--accent-soft)}
 .sandbox-in{display:flex;gap:6px;padding:8px 12px;border-top:1px solid var(--border-2);background:var(--card)}
 .prompt-area{width:100%;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-size:11.5px;line-height:1.6;background:var(--muted);color:var(--foreground);border:1px solid var(--border-2);border-radius:var(--r);padding:9px 11px;resize:vertical}
 .prompt-area:focus{border-color:var(--accent);outline:none;background:var(--card)}
+
+/* ---------- 27. website & media hub components ---------- */
+.media-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
+.media-card{background:var(--card);border:1px solid var(--border-2);border-radius:var(--r-lg);overflow:hidden;display:flex;flex-direction:column;cursor:pointer;transition:border-color .15s var(--ease),box-shadow .15s var(--ease)}
+.media-card:hover{border-color:var(--accent);box-shadow:var(--sh-accent)}
+.media-card.selected{border-color:var(--primary);box-shadow:0 0 0 2px var(--primary)}
+.media-thumb{height:110px;background:var(--muted);display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative}
+.media-thumb img{width:100%;height:100%;object-fit:cover}
+.media-info{padding:7px 9px;display:flex;flex-direction:column;gap:2px;background:var(--card)}
+.media-info b{font-size:11px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--foreground)}
+.media-info small{font-size:10px;color:var(--muted-foreground)}
+
+.builder-split{display:grid;grid-template-columns:340px minmax(0,1fr);gap:var(--gap);height:calc(100vh - var(--top-h) - 44px)}
+.builder-sidebar{background:var(--card);border:1px solid var(--border);border-radius:var(--r-xl);overflow-y:auto;display:flex;flex-direction:column}
+.builder-preview{background:var(--muted);border:1px solid var(--border);border-radius:var(--r-xl);overflow:hidden;display:flex;flex-direction:column;align-items:center}
+.builder-frame-c{flex:1;width:100%;display:flex;align-items:center;justify-content:center;padding:12px;overflow:auto}
+.builder-frame{background:#fff;border:1px solid var(--border-2);border-radius:var(--r);box-shadow:var(--sh2);transition:width .25s var(--ease);height:100%;width:100%}
+
+.score-badge{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:var(--r-full);font-size:12px;font-weight:700;font-variant-numeric:tabular-nums}
+.score-badge.good{background:var(--success-soft);color:var(--success)}
+.score-badge.avg{background:var(--warning-soft);color:var(--warning)}
+.score-badge.bad{background:var(--destructive-soft);color:var(--destructive)}
+
+.post-card{background:var(--card);border:1px solid var(--border-2);border-radius:var(--r-xl);overflow:hidden;display:flex;flex-direction:column;transition:box-shadow .15s var(--ease)}
+.post-card:hover{box-shadow:var(--sh2)}
+.post-thumb{height:140px;background:var(--muted);position:relative;overflow:hidden}
+.post-thumb img{width:100%;height:100%;object-fit:cover}
+.post-b{padding:12px;display:flex;flex-direction:column;gap:6px;flex:1}
+
+/* ---------- 28. admin, system & general layout helpers ---------- */
+.b-card{background:var(--muted);border:1px solid var(--border-2);border-radius:var(--r);padding:10px}
+.hover-card{transition:border-color .15s var(--ease),box-shadow .15s var(--ease)}
+.hover-card:hover{border-color:var(--accent);box-shadow:var(--sh-accent)}
+.cursor-pointer{cursor:pointer}
+.dblk{display:block}
+.fdc{display:flex;flex-direction:column}
+.min-w0{min-width:0}
+.max-w400{max-width:400px}
+.grid-3{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:var(--gap)}
+.tac{text-align:center}
+.ell{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.g12{gap:12px}
+.mt2{margin-top:2px}
+.mt6{margin-top:6px}
+.mt10{margin-top:10px}
+.mb2{margin-bottom:2px}
+.mb6{margin-bottom:6px}
+.my4{margin-top:4px;margin-bottom:4px}
+.my8{margin-top:8px;margin-bottom:8px}
+.ml4{margin-left:4px}
+.p4{padding:4px}
+.p6{padding:6px}
+.p8{padding:8px}
+.p10{padding:10px}
+.p12{padding:12px}
+.fs9{font-size:9px}
+.fs10{font-size:10px}
+.fs14{font-size:14px}
