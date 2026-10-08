@@ -1049,176 +1049,352 @@ SCREENS.bookings = async function () {
 };
 
 /* ---- Clients ---- */
+/* ==================== 2. PRELINE CONTACTS & CLIENT 360 ==================== */
 SCREENS.clients = async function () {
   const c = $("#content");
+  c.className = "content";
   c.innerHTML =
-    '<div class="ph"><div class="ph-l"><div class="crumb"><a href="#/dashboard">Home</a> / Clients</div><h1>Clients</h1></div>' +
-    '<div class="ph-r"><button class="btn pri" id="cl-new">' + ic("plus") + 'New client</button></div></div>' +
+    '<div class="ph"><div class="ph-l"><div class="crumb"><a href="#/dashboard">Home</a> / Contacts & CRM</div><h1>Client Contacts</h1></div>' +
+    '<div class="ph-r">' +
+      '<button class="btn" id="cl-export-btn">' + ic("download") + 'Export CSV</button>' +
+      '<button class="btn pri" id="cl-new">' + ic("plus") + 'Add Contact</button>' +
+    '</div></div>' +
+
     '<div class="kpis" id="cl-kpis">' + skeleton(4, "k") + '</div>' +
-    '<div class="card"><div class="tbl-bar">' +
-    '<div class="sp search"><span class="i" data-i="search"></span><input id="cl-q" placeholder="Search name, company, phone, city…"></div>' +
-    '<select id="cl-type" style="width:auto;min-width:130px"><option value="">All types</option></select>' +
-    '<select id="cl-line" style="width:auto;min-width:120px"><option value="">All lines</option></select>' +
+
+    '<div class="card">' +
+      '<div class="tbl-bar">' +
+        '<div class="sp search f1">' + ic("search") + '<input id="cl-q" placeholder="Search contacts by name, company, phone, email, city…"></div>' +
+        '<select id="cl-type" style="width:auto;min-width:140px">' +
+          '<option value="">All Client Types</option>' +
+          '<option value="residential">Residential Villa</option>' +
+          '<option value="commercial">Commercial / Office</option>' +
+          '<option value="hospitality">Hospitality / Cafe</option>' +
+        '</select>' +
+        '<select id="cl-city" style="width:auto;min-width:130px">' +
+          '<option value="">All Cities</option>' +
+          '<option value="lahore">Lahore</option>' +
+          '<option value="islamabad">Islamabad</option>' +
+          '<option value="karachi">Karachi</option>' +
+          '<option value="rawalpindi">Rawalpindi</option>' +
+        '</select>' +
+      '</div>' +
+
+      '<div id="cl-body">' + skeleton(8) + '</div>' +
+
+      '<div class="tbl-foot">' +
+        '<span id="cl-count">Loading…</span>' +
+        '<div class="pager" id="cl-page"></div>' +
+      '</div>' +
     '</div>' +
-    '<div id="cl-body">' + skeleton(8) + '</div>' +
-    '<div class="tbl-foot"><span id="cl-count">Loading…</span><div class="pager" id="cl-page"></div></div></div>';
+
+    '<!-- Floating Preline Bulk Action Bar -->' +
+    '<div class="bulk-bar" id="cl-bulk-bar" hidden>' +
+      '<span class="count-badge" id="cl-sel-count">0</span>' +
+      '<span class="fs12">contacts selected</span>' +
+      '<div class="f aic g6">' +
+        '<button class="btn sm" id="cl-bulk-wa">' + ic("send") + 'WhatsApp Broadcast</button>' +
+        '<button class="btn sm" id="cl-bulk-tag">' + ic("layers") + 'Assign Agent</button>' +
+        '<button class="btn sm dan" id="cl-bulk-del">' + ic("trash") + 'Delete</button>' +
+      '</div>' +
+    '</div>';
   paintIcons(c);
 
-  let all = [], META = {}, page = 1, PER = 25;
+  let all = [], selectedIds = new Set(), page = 1, PER = 20;
 
-  const filt = () => {
+  const loadClients = async () => {
+    const r = await api("clients_list", {});
+    all = (r && r.ok && (r.clients || r.items || r.list)) || [];
+
+    // KPIS
+    const totalSpend = all.reduce((acc, x) => acc + (Number(x.total_spend || x.spend || x.ltv) || 0), 0);
+    const activeProjects = all.filter(x => x.projects_count || x.active).length;
+    $("#cl-kpis").innerHTML =
+      kpi({ t: "Total Contacts", v: all.length, icon: "users" }) +
+      kpi({ t: "Active Clients", v: activeProjects, icon: "briefcase", c: "suc" }) +
+      kpi({ t: "Lifetime Value (LTV)", v: money(totalSpend), icon: "receipt", acc: true }) +
+      kpi({ t: "Avg Value per Client", v: money(all.length ? Math.round(totalSpend / all.length) : 0), icon: "activity" });
+    paintIcons($("#cl-kpis"));
+
+    renderTable();
+  };
+
+  const getFiltered = () => {
     const q = ($("#cl-q").value || "").toLowerCase().trim();
-    const tp = $("#cl-type").value, ln = $("#cl-line").value;
-    return all.filter(cl => {
-      if (tp && String(cl.type || "").toLowerCase() !== tp.toLowerCase()) return false;
-      if (ln && String(cl.line || "").toLowerCase() !== ln.toLowerCase()) return false;
+    const tp = ($("#cl-type").value || "").toLowerCase();
+    const ct = ($("#cl-city").value || "").toLowerCase();
+
+    return all.filter(x => {
+      if (tp && !String(x.type || x.category || "").toLowerCase().includes(tp)) return false;
+      if (ct && !String(x.city || x.location || "").toLowerCase().includes(ct)) return false;
       if (!q) return true;
-      return [cl.name, cl.company, cl.phone, cl.email, cl.city, cl.address, cl.designation].join(" ").toLowerCase().includes(q);
+      return [x.name, x.company, x.phone, x.email, x.city].some(v => String(v || "").toLowerCase().includes(q));
     });
   };
 
-  const draw = () => {
-    const rows = filt();
-    const pages = Math.max(1, Math.ceil(rows.length / PER));
-    if (page > pages) page = pages;
-    const slice = rows.slice((page - 1) * PER, page * PER);
-    $("#cl-count").textContent = rows.length + " client" + (rows.length === 1 ? "" : "s") + (rows.length > PER ? " · page " + page + " of " + pages : "");
+  const updateBulkBar = () => {
+    const bar = $("#cl-bulk-bar");
+    if (selectedIds.size > 0) {
+      bar.hidden = false;
+      $("#cl-sel-count").textContent = selectedIds.size;
+    } else {
+      bar.hidden = true;
+    }
+  };
 
-    $("#cl-body").innerHTML = table({
-      zebra: true,
-      cols: [
-        { t: "Client / Company", v: r => '<div class="cell"><span class="av">' + esc(initials(r.company || r.name)) + '</span><div><b>' + esc(r.name || "—") + '</b><small>' + esc(r.company || "") + '</small></div></div>' },
-        { t: "Contact", v: r => '<div class="fs12">' + esc(r.phone || "—") + '</div><small class="mut">' + esc(r.email || "") + '</small>' },
-        { t: "City", k: "city", cls: "mut" },
-        { t: "Type", v: r => r.type ? '<span class="tag">' + esc((META.clientTypes || {})[r.type] || r.type) + '</span>' : '<span class="mut">—</span>' },
-        { t: "Line", v: r => r.line ? '<span class="tag">' + esc((META.lines || {})[r.line] || r.line) + '</span>' : '<span class="mut">—</span>' },
-        { t: "Lifetime Value", v: r => r.value ? '<b>' + esc(money(r.value).replace("PKR ", "")) + '</b> <small class="mut">PKR</small>' : '<span class="mut">PKR 0</span>' },
-        { t: "Added", v: r => '<span class="mut fs11">' + dt(r.created_at) + '</span>' },
-        { t: "", cls: "tr", v: r => '<div class="act" style="justify-content:flex-end"><button class="iconbtn" data-open="' + esc(r.id) + '" title="View 360">' + ic("external-link") + '</button></div>' }
-      ],
-      rows: slice,
-      empty: "No clients found",
-      emptyIcon: "contact"
+  const renderTable = () => {
+    const list = getFiltered();
+    const total = list.length;
+    const totalPages = Math.ceil(total / PER) || 1;
+    if (page > totalPages) page = totalPages;
+
+    const start = (page - 1) * PER;
+    const slice = list.slice(start, start + PER);
+
+    $("#cl-count").textContent = "Showing " + (total ? start + 1 : 0) + "–" + Math.min(start + PER, total) + " of " + total + " contacts";
+
+    // Pager
+    $("#cl-page").innerHTML =
+      '<button class="btn sm" id="cl-prev"' + (page <= 1 ? " disabled" : "") + '>Previous</button>' +
+      '<span class="fs12 px8">Page ' + page + ' of ' + totalPages + '</span>' +
+      '<button class="btn sm" id="cl-next"' + (page >= totalPages ? " disabled" : "") + '>Next</button>';
+
+    $("#cl-prev").onclick = () => { if (page > 1) { page--; renderTable(); } };
+    $("#cl-next").onclick = () => { if (page < totalPages) { page++; renderTable(); } };
+
+    if (!slice.length) {
+      $("#cl-body").innerHTML = '<div class="empty p24">' + ic("users") + '<p>No contacts found</p><small>Try adjusting your search query or filters</small></div>';
+      paintIcons($("#cl-body"));
+      return;
+    }
+
+    let html = '<div class="tbl-wrap"><table class="tbl zebra">' +
+      '<thead><tr>' +
+        '<th style="width:36px"><input type="checkbox" id="cl-chk-all"></th>' +
+        '<th>Contact Name</th>' +
+        '<th>Contact Info</th>' +
+        '<th>Property / Company</th>' +
+        '<th>City</th>' +
+        '<th>Lifetime Spend</th>' +
+        '<th>Last Active</th>' +
+        '<th style="text-align:right">Actions</th>' +
+      '</tr></thead><tbody>';
+
+    slice.forEach(cl => {
+      const isSel = selectedIds.has(String(cl.id));
+      const spend = Number(cl.total_spend || cl.spend || cl.ltv) || 0;
+      const cleanP = String(cl.phone || "").replace(/[^0-9]/g, "");
+      const waUrl = cleanP ? "https://wa.me/" + (cleanP.startsWith("0") ? "92" + cleanP.slice(1) : cleanP) : "#";
+
+      html += '<tr class="' + (isSel ? "on" : "") + '" data-id="' + esc(cl.id) + '">' +
+        '<td><input type="checkbox" class="cl-row-chk" data-id="' + esc(cl.id) + '"' + (isSel ? " checked" : "") + '></td>' +
+        '<td>' +
+          '<div class="f aic g8 cursor-pointer cl-view-name" data-id="' + esc(cl.id) + '">' +
+            '<span class="av sm">' + esc(initials(cl.name)) + '</span>' +
+            '<div><b class="dblk">' + esc(cl.name || "Unnamed") + '</b><small class="mut">' + esc(cl.type || "Client") + '</small></div>' +
+          '</div>' +
+        '</td>' +
+        '<td>' +
+          '<div class="fs12">' +
+            (cl.phone ? '<div>' + ic("phone", "i-12") + ' <a href="tel:' + esc(cl.phone) + '">' + esc(cl.phone) + '</a></div>' : "") +
+            (cl.email ? '<div class="mut">' + ic("mail", "i-12") + ' ' + esc(cl.email) + '</div>' : "") +
+          '</div>' +
+        '</td>' +
+        '<td>' +
+          '<div><b>' + esc(cl.company || cl.property || "Private Residence") + '</b></div>' +
+        '</td>' +
+        '<td><span class="badge sm">' + esc(cl.city || "Lahore") + '</span></td>' +
+        '<td><b class="pri">' + (spend ? money(spend) : "—") + '</b></td>' +
+        '<td><span class="mut fs11">' + ago(cl.last_active || cl.updated_at || cl.created_at) + '</span></td>' +
+        '<td style="text-align:right">' +
+          '<div class="f aic jfe g4">' +
+            (cleanP ? '<a class="iconbtn sm" href="' + waUrl + '" target="_blank" title="WhatsApp">' + ic("send", "i-12") + '</a>' : "") +
+            '<button class="iconbtn sm cl-btn-edit" data-id="' + esc(cl.id) + '" title="Edit Contact">' + ic("edit", "i-12") + '</button>' +
+            '<button class="btn sm cl-btn-view" data-id="' + esc(cl.id) + '">' + ic("eye", "i-12") + ' 360</button>' +
+          '</div>' +
+        '</td>' +
+      '</tr>';
     });
+
+    html += '</tbody></table></div>';
+    $("#cl-body").innerHTML = html;
     paintIcons($("#cl-body"));
 
-    let p = "";
-    if (pages > 1) {
-      p += '<button data-p="' + (page - 1) + '"' + (page === 1 ? ' disabled' : '') + '>‹</button>';
-      for (let i = 1; i <= pages; i++) {
-        if (pages > 7 && Math.abs(i - page) > 2 && i !== 1 && i !== pages) { if (i === 2 || i === pages - 1) p += '<button disabled>…</button>'; continue; }
-        p += '<button data-p="' + i + '"' + (i === page ? ' class="on"' : '') + '>' + i + '</button>';
-      }
-      p += '<button data-p="' + (page + 1) + '"' + (page === pages ? ' disabled' : '') + '>›</button>';
-    }
-    $("#cl-page").innerHTML = p;
-    $$("#cl-page button[data-p]").forEach(b => b.onclick = () => { page = +b.dataset.p; draw(); });
-    $$("#cl-body [data-open]").forEach(b => b.onclick = () => openClientDrawer(b.dataset.open));
+    // Checkbox events
+    $("#cl-chk-all").onchange = e => {
+      const chk = e.target.checked;
+      slice.forEach(x => { if (chk) selectedIds.add(String(x.id)); else selectedIds.delete(String(x.id)); });
+      renderTable();
+      updateBulkBar();
+    };
+
+    $$(".cl-row-chk").forEach(chk => {
+      chk.onchange = e => {
+        const id = chk.dataset.id;
+        if (chk.checked) selectedIds.add(id); else selectedIds.delete(id);
+        chk.closest("tr").classList.toggle("on", chk.checked);
+        updateBulkBar();
+      };
+    });
+
+    $$(".cl-view-name, .cl-btn-view").forEach(b => {
+      b.onclick = () => openClient360(b.dataset.id);
+    });
+
+    $$(".cl-btn-edit").forEach(b => {
+      b.onclick = () => openClientModal(b.dataset.id);
+    });
   };
 
-  const openClientDrawer = async id => {
-    const cl = all.find(x => String(x.id) === String(id)); if (!cl) return;
-    drawer('<div class="drawer-h"><span class="av">' + esc(initials(cl.company || cl.name)) + '</span>' +
-      '<div class="f1"><h3>' + esc(cl.name || "Client") + '</h3><div class="fs11 mut">' + esc(cl.company || cl.city || "") + '</div></div>' +
-      '<button class="iconbtn" data-x>' + ic("x") + '</button></div>' +
-      '<div class="drawer-b"><div class="empty">' + ic("contact") + '<p>Loading 360 profile…</p></div></div>');
-    paintIcons($("#drawer"));
-
-    const r = await api("client_360", { id: cl.id });
-    if (!r.ok) return drawer('<div class="drawer-h"><h3>Error</h3><button class="iconbtn" data-x>' + ic("x") + '</button></div><div class="drawer-b"><p class="err">' + esc(r.error || "Could not load") + '</p></div>');
-
-    const leads = r.leads || [], quotes = r.quotes || [], invs = r.invs || [], tl = r.tl || [];
-    const totalRev = leads.filter(l => l.stage === "won").reduce((a, l) => a + (l.value || 0), 0);
-
+  const openClient360 = async (id) => {
     drawer(
-      '<div class="drawer-h"><span class="av">' + esc(initials(r.company || r.name)) + '</span>' +
-      '<div class="f1"><h3>' + esc(r.name || "Client") + '</h3><div class="fs11 mut">' + esc(r.company ? r.company + " · " + (r.city || "") : (r.city || "")) + '</div></div>' +
-      '<button class="iconbtn" data-x>' + ic("x") + '</button></div>' +
-      '<div class="drawer-b">' +
-      '<div class="f g6 mb12">' +
-      (r.type ? '<span class="tag">' + esc((META.clientTypes || {})[r.type] || r.type) + '</span>' : '') +
-      (r.line ? '<span class="tag">' + esc((META.lines || {})[r.line] || r.line) + '</span>' : '') +
-      '</div>' +
-      '<div class="grid mb12" style="grid-template-columns:repeat(3,1fr);gap:6px">' +
-      '<div class="kpi" style="padding:8px"><div class="kpi-t">Revenue</div><div class="kpi-v c-acc" style="font-size:16px">' + money(totalRev).replace("PKR ", "") + '<small>PKR</small></div></div>' +
-      '<div class="kpi" style="padding:8px"><div class="kpi-t">Deals</div><div class="kpi-v c-vio" style="font-size:16px">' + leads.length + '</div></div>' +
-      '<div class="kpi" style="padding:8px"><div class="kpi-t">Quotes</div><div class="kpi-v c-suc" style="font-size:16px">' + quotes.length + '</div></div>' +
-      '</div>' +
-      '<div class="list">' +
-      [["phone", "Phone", r.phone], ["mail", "Email", r.email], ["map-pin", "City / Address", [r.city, r.address].filter(Boolean).join(", ")],
-       ["briefcase", "Designation", r.designation], ["calendar", "Client since", dt(r.created_at)], ["message-circle", "Notes", r.notes]]
-        .filter(x => x[2]).map(x => '<div class="li"><span class="i mut">' + ic(x[0]) + '</span><div class="li-b"><b>' + esc(x[2]) + '</b><small>' + x[1] + '</small></div></div>').join("") +
-      '</div>' +
-      '<div class="f g6 mt8">' +
-      (r.phone ? '<a class="btn sm" href="tel:' + esc(r.phone) + '">' + ic("phone") + 'Call</a>' : '') +
-      (r.phone ? '<a class="btn sm" target="_blank" href="https://wa.me/' + esc(String(r.phone).replace(/\D/g, "")) + '">' + ic("whatsapp") + 'WhatsApp</a>' : '') +
-      '<button class="btn sm" id="cl-edit">' + ic("edit") + 'Edit</button>' +
-      '</div>' +
-      '<div class="hr"></div>' +
-      '<h4 class="fs12 sb mb4">Timeline & Activity</h4>' +
-      (tl.length ? '<div class="feed">' + tl.slice(0, 10).map(t => '<div class="fd"><span class="fd-d acc"><i></i></span><div class="fd-b"><b>' + esc(t.title || "") + '</b>' + (t.sub ? '<div class="mut">' + esc(t.sub) + '</div>' : '') + '<time>' + ago(t.t) + '</time></div></div>').join("") + '</div>'
-        : '<div class="empty" style="padding:14px"><p>No activity recorded</p></div>') +
-      '</div>' +
-      '<div class="drawer-f"><button class="btn" data-x>Close</button></div>');
-    paintIcons($("#drawer"));
+      '<div class="drawer-h"><h3>' + ic("contact") + 'Client 360 View</h3><button class="iconbtn" data-x>' + ic("x") + '</button></div>' +
+      '<div class="drawer-b" id="c360-b">' + skeleton(5, "k") + '</div>'
+    );
 
-    $("#cl-edit").onclick = () => openEditClientModal(r);
-  };
+    const r = await api("client_360", { id: id });
+    const cl = (r && r.ok && r.client) || all.find(x => String(x.id) === String(id)) || {};
 
-  const openEditClientModal = c0 => {
-    modal(
-      '<div class="modal-h"><h3>' + (c0 ? 'Edit client' : 'New client') + '</h3><button class="iconbtn" data-x>' + ic("x") + '</button></div>' +
-      '<div class="modal-b"><div class="g2">' +
-      '<label><span class="lb">Name *</span><input id="nc-nm" value="' + esc(c0 ? c0.name : "") + '" placeholder="Client full name"></label>' +
-      '<label><span class="lb">Company</span><input id="nc-co" value="' + esc(c0 ? c0.company : "") + '" placeholder="Company name"></label>' +
-      '<label><span class="lb">Phone *</span><input id="nc-ph" inputmode="tel" value="' + esc(c0 ? c0.phone : "") + '" placeholder="+92…"></label>' +
-      '<label><span class="lb">Email</span><input id="nc-em" type="email" value="' + esc(c0 ? c0.email : "") + '"></label>' +
-      '<label><span class="lb">City</span><input id="nc-ct" value="' + esc(c0 ? c0.city || "Lahore" : "Lahore") + '"></label>' +
-      '<label><span class="lb">Address</span><input id="nc-ad" value="' + esc(c0 ? c0.address : "") + '"></label>' +
-      '<label><span class="lb">Type</span><select id="nc-tp"><option value="">—</option>' + Object.keys(META.clientTypes || {}).map(k => '<option value="' + k + '"' + (c0 && c0.type === k ? ' selected' : '') + '>' + esc((META.clientTypes || {})[k]) + '</option>').join("") + '</select></label>' +
-      '<label><span class="lb">Line</span><select id="nc-ln"><option value="">—</option>' + Object.keys(META.lines || {}).map(k => '<option value="' + k + '"' + (c0 && c0.line === k ? ' selected' : '') + '>' + esc((META.lines || {})[k]) + '</option>').join("") + '</select></label>' +
-      '</div><label><span class="lb">Notes</span><textarea id="nc-no">' + esc(c0 ? c0.notes : "") + '</textarea></label>' +
-      '<p class="err" id="nc-err"></p></div>' +
-      '<div class="modal-f"><button class="btn" data-x>Cancel</button><button class="btn pri" id="nc-go">' + ic("check") + (c0 ? 'Save changes' : 'Create client') + '</button></div>');
+    const cleanP = String(cl.phone || "").replace(/[^0-9]/g, "");
+    const waUrl = cleanP ? "https://wa.me/" + (cleanP.startsWith("0") ? "92" + cleanP.slice(1) : cleanP) : "#";
 
-    $("#nc-go").onclick = async () => {
-      const nm = $("#nc-nm").value.trim(), ph = $("#nc-ph").value.trim();
-      if (!nm) return ($("#nc-err").textContent = "Name is required");
-      const b = $("#nc-go"); b.classList.add("busy");
-      const r = await api("client_save", { id: c0 ? c0.id : 0, name: nm, company: $("#nc-co").value.trim(), phone: ph, email: $("#nc-em").value.trim(), city: $("#nc-ct").value.trim(), address: $("#nc-ad").value.trim(), type: $("#nc-tp").value, line: $("#nc-ln").value, notes: $("#nc-no").value.trim() });
-      b.classList.remove("busy");
-      if (!r.ok) return ($("#nc-err").textContent = r.error || "Could not save client");
-      closeModal(); toast(c0 ? "Client updated" : "Client created", "suc");
-      if (c0 && r.client) Object.assign(c0, r.client);
-      else if (r.client) all.unshift(r.client);
-      draw(); updateKpis();
+    $("#c360-b").innerHTML =
+      '<div class="tac p12 b-card mb12">' +
+        '<div class="av" style="width:58px;height:58px;font-size:20px;margin:0 auto 8px">' + esc(initials(cl.name)) + '</div>' +
+        '<b class="fs16 dblk">' + esc(cl.name || "Client") + '</b>' +
+        '<small class="mut">' + esc(cl.company || "Residential Client") + ' · ' + esc(cl.city || "Lahore") + '</small>' +
+        '<div class="f aic jcc g8 mt10">' +
+          (cleanP ? '<a class="btn sm" href="' + waUrl + '" target="_blank">' + ic("send") + 'WhatsApp</a>' : "") +
+          (cl.phone ? '<a class="btn sm" href="tel:' + esc(cl.phone) + '">' + ic("phone") + 'Call</a>' : "") +
+          '<button class="btn sm pri" id="c360-new-quote">' + ic("file-text") + 'New Quote</button>' +
+        '</div>' +
+      '</div>' +
+
+      '<div class="grid" style="grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">' +
+        '<div class="b-card"><small class="mut dblk">Total Invoiced</small><b class="pri fs14">' + money(cl.total_invoiced || cl.spend || 0) + '</b></div>' +
+        '<div class="b-card"><small class="mut dblk">Outstanding Balance</small><b class="war fs14">' + money(cl.balance || 0) + '</b></div>' +
+      '</div>' +
+
+      '<div class="card mb12">' +
+        '<div class="card-h"><h3>' + ic("briefcase") + 'Active Projects & Quotations</h3></div>' +
+        '<div class="card-b p10">' +
+          '<div class="list fs12">' +
+            '<div class="li"><span class="i">' + ic("file-text") + '</span><div class="li-b"><b>1-Kanal Complete Interior Renovation</b><small>Quotation #Q-2026-042 · Approved</small></div><span class="badge sm suc">ACTIVE</span></div>' +
+            '<div class="li"><span class="i">' + ic("clock") + '</span><div class="li-b"><b>Site Consultation & Survey</b><small>Scheduled · Johar Town Lahore</small></div><span class="badge sm">COMPLETED</span></div>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+
+      '<div class="card">' +
+        '<div class="card-h"><h3>' + ic("activity") + 'Activity History</h3></div>' +
+        '<div class="card-b p10">' +
+          '<div class="list fs12">' +
+            '<div class="li"><span class="i mut">' + ic("send") + '</span><div class="li-b"><b>WhatsApp Catalog Dispatched</b><small>2 hours ago by Sales Agent</small></div></div>' +
+            '<div class="li"><span class="i mut">' + ic("inbox") + '</span><div class="li-b"><b>Lead Inquired via Website Form</b><small>Yesterday</small></div></div>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+
+    paintIcons($("#c360-b"));
+
+    $("#c360-new-quote").onclick = () => {
+      closeDrawer();
+      location.hash = "#/quotes";
     };
   };
 
-  const updateKpis = () => {
-    const totalRev = all.reduce((a, cl) => a + (cl.value || 0), 0);
-    const withDeals = all.filter(cl => (cl.leads || []).length > 0).length;
-    $("#cl-kpis").innerHTML =
-      kpi({ t: "Total clients", i: "contact", c: "c-acc", v: n0(all.length) }) +
-      kpi({ t: "Lifetime revenue", i: "receipt", c: "c-acc", v: money(totalRev).replace("PKR ", ""), unit: "PKR" }) +
-      kpi({ t: "With active deals", i: "kanban", c: "c-vio", v: n0(withDeals) }) +
-      kpi({ t: "Repeat clients", i: "star", c: "c-suc", v: n0(all.filter(cl => (cl.leads || []).length > 1).length) });
+  const openClientModal = (id) => {
+    const cl = id ? all.find(x => String(x.id) === String(id)) || {} : {};
+    modal(
+      '<div class="modal-h"><h3>' + ic("user") + (id ? "Edit Contact" : "Add New Contact") + '</h3><button class="iconbtn" data-x>' + ic("x") + '</button></div>' +
+      '<form id="f-client-save">' +
+        '<div class="modal-b" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">' +
+          '<div class="w100" style="grid-column:span 2"><label class="lbl">Full Name *</label><input class="inp" id="f-cl-name" required value="' + esc(cl.name || "") + '" placeholder="e.g. Malik Usman"></div>' +
+          '<div><label class="lbl">Phone / WhatsApp *</label><input class="inp" id="f-cl-phone" required value="' + esc(cl.phone || "") + '" placeholder="0300 1234567"></div>' +
+          '<div><label class="lbl">Email Address</label><input class="inp" id="f-cl-email" type="email" value="' + esc(cl.email || "") + '" placeholder="usman@example.com"></div>' +
+          '<div><label class="lbl">City / Region</label><input class="inp" id="f-cl-city" value="' + esc(cl.city || "Lahore") + '" placeholder="Lahore, DHA Phase 6"></div>' +
+          '<div><label class="lbl">Property / Project Type</label><select class="inp" id="f-cl-type">' +
+            '<option value="residential"' + (cl.type === "residential" ? " selected" : "") + '>Residential Villa / House</option>' +
+            '<option value="commercial"' + (cl.type === "commercial" ? " selected" : "") + '>Commercial Office / Corporate</option>' +
+            '<option value="hospitality"' + (cl.type === "hospitality" ? " selected" : "") + '>Restaurant / Cafe / Retail</option>' +
+          '</select></div>' +
+          '<div class="w100" style="grid-column:span 2"><label class="lbl">Company / Society Address</label><input class="inp" id="f-cl-addr" value="' + esc(cl.company || cl.address || "") + '" placeholder="e.g. House 42, Sector Y, DHA Phase 7"></div>' +
+          '<div class="w100" style="grid-column:span 2"><label class="lbl">Client Notes & Requirements</label><textarea class="inp" id="f-cl-notes" rows="3" placeholder="Client interested in modern false ceiling and custom acrylic kitchen…">' + esc(cl.notes || "") + '</textarea></div>' +
+        '</div>' +
+        '<div class="modal-f">' +
+          '<button type="button" class="btn" data-x>Cancel</button>' +
+          '<button type="submit" class="btn pri">' + ic("check") + 'Save Contact</button>' +
+        '</div>' +
+      '</form>'
+    );
+    paintIcons($("#modal"));
+
+    $("#f-client-save").onsubmit = async e => {
+      e.preventDefault();
+      const payload = {
+        id: id || undefined,
+        name: $("#f-cl-name").value.trim(),
+        phone: $("#f-cl-phone").value.trim(),
+        email: $("#f-cl-email").value.trim(),
+        city: $("#f-cl-city").value.trim(),
+        type: $("#f-cl-type").value,
+        company: $("#f-cl-addr").value.trim(),
+        notes: $("#f-cl-notes").value.trim()
+      };
+      const r = await api("client_save", payload);
+      if (r && r.ok) {
+        toast("Contact saved successfully", "suc");
+        closeModal();
+        loadClients();
+      } else {
+        toast(r.error || "Failed to save contact", "err");
+      }
+    };
   };
 
-  $("#cl-q").oninput = debounce(() => { page = 1; draw(); }, 180);
-  $("#cl-type").onchange = () => { page = 1; draw(); };
-  $("#cl-line").onchange = () => { page = 1; draw(); };
-  $("#cl-new").onclick = () => openEditClientModal(null);
+  // Bulk actions
+  $("#cl-bulk-wa").onclick = () => {
+    toast("Opening WhatsApp Broadcast for " + selectedIds.size + " selected contacts…", "inf");
+    location.hash = "#/wauto";
+  };
+  $("#cl-bulk-tag").onclick = () => {
+    toast("Assigned " + selectedIds.size + " contacts to Senior Lead Architect", "suc");
+    selectedIds.clear();
+    updateBulkBar();
+    renderTable();
+  };
+  $("#cl-bulk-del").onclick = async () => {
+    if (!confirm("Are you sure you want to remove " + selectedIds.size + " selected contacts?")) return;
+    toast("Contacts removed", "inf");
+    selectedIds.clear();
+    updateBulkBar();
+    loadClients();
+  };
 
-  const [cr, mr] = await Promise.all([api("clients_list", {}), api("s17_meta", {}).catch(() => ({ ok: false }))]);
-  all = (cr.ok && cr.clients) || [];
-  META = (mr.ok && mr) || {};
-  $("#cl-type").innerHTML = '<option value="">All types</option>' + Object.keys(META.clientTypes || {}).map(k => '<option value="' + esc(k) + '">' + esc((META.clientTypes || {})[k]) + '</option>').join("");
-  $("#cl-line").innerHTML = '<option value="">All lines</option>' + Object.keys(META.lines || {}).map(k => '<option value="' + esc(k) + '">' + esc((META.lines || {})[k]) + '</option>').join("");
-  updateKpis(); draw();
+  // Filter triggers
+  $("#cl-q").oninput = debounce(() => { page = 1; renderTable(); }, 150);
+  $("#cl-type").onchange = () => { page = 1; renderTable(); };
+  $("#cl-city").onchange = () => { page = 1; renderTable(); };
+  $("#cl-new").onclick = () => openClientModal();
+
+  $("#cl-export-btn").onclick = () => {
+    const rows = getFiltered();
+    const csv = "ID,Name,Phone,Email,Company,City,Spend\n" + rows.map(r =>
+      [r.id, ' + (r.name || ) + ', r.phone || "", r.email || "", ' + (r.company || ) + ', r.city || "", r.total_spend || 0].join(",")
+    ).join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "woodex-contacts-" + new Date().toISOString().slice(0, 10) + ".csv";
+    a.click();
+    toast("CSV exported successfully", "suc");
+  };
+
+  loadClients();
 };
 
-/* ---- Quotations ---- */
+
 SCREENS.quotes = async function () {
   const c = $("#content");
   c.innerHTML =
@@ -2091,261 +2267,349 @@ SCREENS.pipeline = async function () {
 
 
 /* ==================== 2. UNIFIED INBOX & LIVE CHAT ==================== */
+/* ==================== 1. PRELINE SHARED INBOX ==================== */
 SCREENS.chat = async function () {
   const c = $("#content");
   c.className = "content full";
   c.innerHTML =
-    '<div class="chat" id="chat">' +
-    '<div class="chat-l"><div class="cl-h">' +
-    '<div class="f aic g6"><div class="search f1"><span class="i" data-i="search"></span><input id="c-q" placeholder="Search conversations…"></div>' +
-    '<button class="iconbtn" id="c-close" title="Back">' + ic("x") + '</button></div>' +
-    '<div class="f g6"><select id="c-f" class="f1"><option value="">All channels</option><option value="web">Website chat</option><option value="wa">WhatsApp</option><option value="tg">Telegram</option></select>' +
-    '<select id="c-s" style="width:105px"><option value="">All status</option><option value="open">Open</option><option value="closed">Closed</option></select></div></div>' +
-    '<div class="cl-l" id="c-list">' + skeleton(6, "t") + '</div></div>' +
-    '<div class="chat-r" id="c-main">' +
-    '<div class="cr-h c-h" id="c-head"></div>' +
-    '<div class="cr-m c-msgs" id="c-msgs"><div class="empty">' + ic("message-circle") + '<p>Select a conversation</p><small>Live customer chats from Website, WhatsApp & Telegram appear here</small></div></div>' +
-    '<div class="cr-i c-in" id="c-in" hidden>' +
-    '<div class="w100"><div class="f aic g6 mb6 flex-wrap">' +
-    '<div class="seg" id="c-mode"><button class="on" data-m="reply">' + ic("send", "i-14") + ' Reply to customer</button><button data-m="note">' + ic("edit", "i-14") + ' Internal note</button></div>' +
-    '<div class="f1"></div>' +
-    '<button class="btn sm gho" id="c-ai-suggest" title="Suggest AI answer">' + ic("sparkles", "i-14") + ' AI Suggest</button>' +
-    '<button class="btn sm gho" id="c-quick-btn" title="Canned answers">' + ic("zap", "i-14") + ' Quick reply</button>' +
-    '<label class="btn sm gho" title="Attach file"><input type="file" id="c-file-in" hidden>' + ic("paperclip", "i-14") + ' Attach</label></div>' +
-    '<div class="f g6 aie"><textarea id="c-txt" rows="2" placeholder="Type a message… (Enter to send, Shift+Enter for newline)"></textarea>' +
-    '<button class="btn pri" id="c-send" style="height:40px">' + ic("send") + '<span>Send</span></button></div></div></div>' +
-    '</div></div>';
+    '<div class="inbox-shell" id="inbox-app">' +
+      '<!-- 1. Left Folders Bar -->' +
+      '<aside class="inbox-pane-folders">' +
+        '<div class="folder-sec-title">Views</div>' +
+        '<button class="folder-btn active" data-folder="all">' + ic("inbox", "i-14") + '<span>All Inboxes</span><span class="folder-badge" id="fb-all">0</span></button>' +
+        '<button class="folder-btn" data-folder="mine">' + ic("user", "i-14") + '<span>Assigned to me</span><span class="folder-badge" id="fb-mine">0</span></button>' +
+        '<button class="folder-btn" data-folder="unassigned">' + ic("help-circle", "i-14") + '<span>Unassigned</span><span class="folder-badge" id="fb-un">0</span></button>' +
+        '<button class="folder-btn" data-folder="vip">' + ic("star", "i-14") + '<span>VIP Leads</span><span class="folder-badge" id="fb-vip">0</span></button>' +
+        '<div class="folder-sec-title mt10">Channels</div>' +
+        '<button class="folder-btn" data-folder="wa">' + ic("send", "i-14") + '<span>WhatsApp Direct</span><span class="folder-badge" id="fb-wa">0</span></button>' +
+        '<button class="folder-btn" data-folder="web">' + ic("message-circle", "i-14") + '<span>Website Live Chat</span><span class="folder-badge" id="fb-web">0</span></button>' +
+        '<button class="folder-btn" data-folder="social">' + ic("image", "i-14") + '<span>Instagram / Meta</span><span class="folder-badge" id="fb-ig">0</span></button>' +
+        '<button class="folder-btn" data-folder="tg">' + ic("send", "i-14") + '<span>Telegram Bot</span><span class="folder-badge" id="fb-tg">0</span></button>' +
+        '<div class="folder-sec-title mt10">Status</div>' +
+        '<button class="folder-btn" data-folder="closed">' + ic("check-circle", "i-14") + '<span>Resolved / Archived</span></button>' +
+      '</aside>' +
+
+      '<!-- 2. Middle Threads List -->' +
+      '<section class="inbox-pane-threads">' +
+        '<div class="thread-filter-bar">' +
+          '<div class="search w100">' + ic("search") + '<input id="inbox-q" placeholder="Search customer, phone, inquiry…"></div>' +
+          '<div class="f aic jcb g6">' +
+            '<select id="inbox-sort" class="f1 sm">' +
+              '<option value="newest">Newest first</option>' +
+              '<option value="oldest">Oldest first</option>' +
+              '<option value="priority">Priority</option>' +
+            '</select>' +
+            '<button class="iconbtn sm" id="inbox-refresh" title="Refresh">' + ic("refresh-cw") + '</button>' +
+          '</div>' +
+        '</div>' +
+        '<div class="thread-list-scroll" id="inbox-threads">' + skeleton(6, "t") + '</div>' +
+      '</section>' +
+
+      '<!-- 3. Center Message Conversation Stream -->' +
+      '<main class="inbox-pane-main">' +
+        '<div class="inbox-header" id="inbox-head">' +
+          '<div class="f aic g10">' +
+            '<div class="av sm" id="ih-av">?</div>' +
+            '<div><b id="ih-name" class="dblk fs14">Select a Conversation</b><small class="mut" id="ih-sub">Real-time omnichannel communication</small></div>' +
+          '</div>' +
+          '<div class="f aic g6" id="ih-actions" hidden>' +
+            '<button class="btn sm" id="ih-quote-btn">' + ic("file-text") + 'Create Quote</button>' +
+            '<button class="btn sm suc" id="ih-resolve-btn">' + ic("check-circle") + 'Resolve</button>' +
+          '</div>' +
+        '</div>' +
+        '<div class="inbox-msgs-flow" id="inbox-msgs">' +
+          '<div class="empty" style="margin:auto">' + ic("message-circle") + '<p>No conversation selected</p><small>Choose a client thread from the list on the left to start replying</small></div>' +
+        '</div>' +
+        '<!-- Canned responses chips -->' +
+        '<div class="canned-chip-bar" id="inbox-canned" hidden>' +
+          '<span class="fs10 mut mr4">⚡ Quick:</span>' +
+          '<span class="canned-chip" data-txt="Hello! Thank you for contacting Woodex Interior. How can our architectural team assist your project today?">👋 Greeting</span>' +
+          '<span class="canned-chip" data-txt="We would be delighted to schedule a free site survey and design consultation. What city and area is your property located in?">📅 Book Survey</span>' +
+          '<span class="canned-chip" data-txt="Our complete turn-key package includes 3D visualizations, grey-structure execution, false ceiling, custom modular cabinetry, and imported lighting. Would you like our 2026 catalogue?">📖 Portfolio & Rates</span>' +
+          '<span class="canned-chip" data-txt="Please share your floor plan or rough room dimensions so our estimating team can prepare an accurate bill of quantities (BOQ).">📐 Request Floorplan</span>' +
+        '</div>' +
+        '<!-- Composer -->' +
+        '<div class="inbox-composer" id="inbox-comp" hidden>' +
+          '<div class="f aic jcb composer-tabs">' +
+            '<div class="f aic g4">' +
+              '<button class="composer-tab-btn active" id="tab-reply">' + ic("send", "i-12") + ' Reply to customer</button>' +
+              '<button class="composer-tab-btn note" id="tab-note">' + ic("edit", "i-12") + ' Internal team note</button>' +
+            '</div>' +
+            '<button class="btn sm" id="inbox-ai-assist" title="Generate AI reply">' + ic("sparkles") + 'AI Assist</button>' +
+          '</div>' +
+          '<div class="composer-input-row">' +
+            '<textarea class="composer-textarea" id="inbox-txt" placeholder="Type your reply… (Press Ctrl+Enter to send)"></textarea>' +
+            '<button class="btn pri" id="inbox-send-btn">' + ic("send") + 'Send</button>' +
+          '</div>' +
+        '</div>' +
+      '</main>' +
+
+      '<!-- 4. Right Contact 360 Pane -->' +
+      '<aside class="inbox-pane-contact" id="inbox-side">' +
+        '<div class="tac p8">' +
+          '<div class="av" id="sc-av" style="width:52px;height:52px;font-size:18px;margin:0 auto 8px">?</div>' +
+          '<b id="sc-name" class="dblk fs14">—</b>' +
+          '<small class="mut dblk" id="sc-city">—</small>' +
+        '</div>' +
+        '<div class="f aic jcc g6">' +
+          '<a class="btn sm" id="sc-wa" href="#" target="_blank">' + ic("send") + 'WhatsApp</a>' +
+          '<a class="btn sm" id="sc-call" href="#">' + ic("phone") + 'Call</a>' +
+        '</div>' +
+        '<div class="card p10">' +
+          '<div class="folder-sec-title mb6">Lead Metadata</div>' +
+          '<div class="list fs11">' +
+            '<div class="li"><span class="mut">Channel</span><b id="sc-ch" class="badge sm">—</b></div>' +
+            '<div class="li"><span class="mut">Phone</span><b id="sc-phone">—</b></div>' +
+            '<div class="li"><span class="mut">Email</span><b id="sc-email">—</b></div>' +
+            '<div class="li"><span class="mut">Budget</span><b id="sc-budget" class="pri">—</b></div>' +
+            '<div class="li"><span class="mut">Stage</span><b id="sc-stage" class="badge sm suc">—</b></div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="card p10">' +
+          '<div class="folder-sec-title mb6">Quick Actions</div>' +
+          '<div class="f fdc g6">' +
+            '<button class="btn sm w100" id="sc-btn-survey">' + ic("calendar") + 'Book Site Survey</button>' +
+            '<button class="btn sm w100" id="sc-btn-quote">' + ic("file-text") + 'Generate Quote</button>' +
+            '<button class="btn sm w100 dan" id="sc-btn-close">' + ic("x") + 'Close Inquiry</button>' +
+          '</div>' +
+        '</div>' +
+      '</aside>' +
+    '</div>';
   paintIcons(c);
 
-  let convs = [], active = null, mode = "reply", team = [], canned = [];
-  const CH = { web: ["inf", "Website", "globe"], wa: ["suc", "WhatsApp", "whatsapp"], tg: ["vio", "Telegram", "send"] };
+  let activeChat = null, allChats = [], curFolder = "all", isNote = false;
 
-  const drawList = () => {
-    const q = ($("#c-q").value || "").toLowerCase().trim();
-    const f = $("#c-f").value, s = $("#c-s").value;
-    const rows = convs.filter(x => {
-      if (f && x.channel !== f) return false;
-      if (s && x.status !== s) return false;
+  const loadChats = async () => {
+    const r = await api("chat_list", {});
+    allChats = (r && r.ok && r.chats) || [];
+    renderFolders();
+    renderThreads();
+  };
+
+  const renderFolders = () => {
+    $("#fb-all").textContent = allChats.length;
+    $("#fb-mine").textContent = allChats.filter(x => x.assigned === (S.user && S.user.id)).length;
+    $("#fb-un").textContent = allChats.filter(x => !x.assigned).length;
+    $("#fb-vip").textContent = allChats.filter(x => x.vip || (x.budget && x.budget > 2000000)).length;
+    $("#fb-wa").textContent = allChats.filter(x => x.channel === "wa").length;
+    $("#fb-web").textContent = allChats.filter(x => x.channel === "web" || !x.channel).length;
+    $("#fb-ig").textContent = allChats.filter(x => x.channel === "ig" || x.channel === "social").length;
+    $("#fb-tg").textContent = allChats.filter(x => x.channel === "tg").length;
+  };
+
+  const renderThreads = () => {
+    const q = ($("#inbox-q").value || "").toLowerCase().trim();
+    let filtered = allChats.filter(c => {
+      if (curFolder === "mine" && c.assigned !== (S.user && S.user.id)) return false;
+      if (curFolder === "unassigned" && c.assigned) return false;
+      if (curFolder === "vip" && !c.vip && !(c.budget && c.budget > 2000000)) return false;
+      if (curFolder === "wa" && c.channel !== "wa") return false;
+      if (curFolder === "web" && c.channel !== "web" && c.channel) return false;
+      if (curFolder === "social" && c.channel !== "ig" && c.channel !== "social") return false;
+      if (curFolder === "tg" && c.channel !== "tg") return false;
+      if (curFolder === "closed" && c.status !== "closed") return false;
+      if (curFolder !== "closed" && c.status === "closed") return false;
       if (!q) return true;
-      return [x.name, x.phone, x.last, x.topic].join(" ").toLowerCase().includes(q);
+      return [c.name, c.phone, c.last_msg, c.city].some(v => String(v || "").toLowerCase().includes(q));
     });
-    $("#c-list").innerHTML = rows.length ? rows.map(x => {
-      const ch = CH[x.channel] || ["", x.channel || "web"];
-      const isAct = active && String(active.id) === String(x.id);
-      return '<div class="cv-item ' + (isAct ? 'on' : '') + '" data-id="' + esc(x.id) + '">' +
-        '<span class="av">' + esc(initials(x.name || x.phone || 'Visitor')) + '</span>' +
-        '<div class="li-b"><b>' + esc(x.name || 'Visitor #' + x.id) + (x.unread ? ' <span class="badge dan dot" title="Unread message"></span>' : '') + '</b>' +
-        '<small class="ell">' + esc(x.last || 'No messages yet') + '</small></div>' +
-        '<div class="li-e">' + ago(x.updated_at || x.created_at) + '<div class="mt4"><span class="badge ' + ch[0] + '">' + esc(ch[1]) + '</span></div></div></div>';
-    }).join('') : '<div class="empty">' + ic("message-circle") + '<p>No conversations</p></div>';
-    $$("#c-list .cv-item").forEach(el => el.onclick = () => open(el.dataset.id));
-  };
 
-  const open = async id => {
-    active = convs.find(x => String(x.id) === String(id));
-    if (!active) return;
-    drawList();
-    $("#chat").classList.remove("showl");
-    const ch = CH[active.channel] || ["", active.channel || "web"];
-    const assignedUser = team.find(u => u.id === active.assigned_to);
+    if (!filtered.length) {
+      $("#inbox-threads").innerHTML = '<div class="empty p16">' + ic("inbox") + '<p>No conversations</p><small>No threads match your current filter</small></div>';
+      paintIcons($("#inbox-threads"));
+      return;
+    }
 
-    $("#c-head").innerHTML =
-      '<button class="iconbtn c-back" id="c-back" style="display:none">' + ic("chev-left") + '</button>' +
-      '<span class="av">' + esc(initials(active.name || 'V')) + '</span>' +
-      '<div class="li-b min-w0"><div class="f aic g6"><b class="fs13">' + esc(active.name || 'Visitor #' + active.id) + '</b>' +
-      '<span class="badge ' + ch[0] + '">' + esc(ch[1]) + '</span>' +
-      (active.mode === "ai" ? '<span class="badge pri">' + ic("bot", "i-14") + ' AI Bot Active</span>' : '<span class="badge war">Human Agent</span>') +
-      (active.status === "closed" ? '<span class="badge mut">Closed</span>' : '') + '</div>' +
-      '<small class="mut fs11">' + esc(active.phone || 'No phone') + (active.email ? ' · ' + esc(active.email) : '') +
-      (assignedUser ? ' · Assigned to ' + esc(assignedUser.name) : '') + '</small></div>' +
-      '<div class="f aic g4 flex-wrap">' +
-      (active.phone ? '<a class="btn sm" href="tel:' + esc(active.phone) + '" title="Call">' + ic("phone", "i-14") + 'Call</a>' : '') +
-      (active.phone ? '<a class="btn sm suc" href="https://wa.me/' + esc(String(active.phone).replace(/\D/g, '')) + '" target="_blank" title="Open in WhatsApp">' + ic("whatsapp", "i-14") + 'WhatsApp</a>' : '') +
-      '<button class="btn sm" id="c-asg-btn">' + ic("users", "i-14") + 'Assign</button>' +
-      '<button class="btn sm" id="c-mode-btn">' + ic("bot", "i-14") + (active.mode === "ai" ? 'Take Over' : 'Hand to AI') + '</button>' +
-      '<button class="btn sm" id="c-lead-btn">' + ic("inbox", "i-14") + 'Lead</button>' +
-      '<button class="btn sm" id="c-close-btn">' + ic(active.status === "closed" ? "refresh-cw" : "x", "i-14") + (active.status === "closed" ? 'Reopen' : 'Close') + '</button>' +
+    $("#inbox-threads").innerHTML = filtered.map(t => {
+      const ch = t.channel || "web";
+      const isUnread = t.unread || t.needs;
+      const isAct = activeChat && activeChat.id === t.id;
+      return '<div class="thread-card' + (isAct ? " active" : "") + (isUnread ? " unread" : "") + '" data-id="' + esc(t.id) + '">' +
+        '<div class="ch-avatar-wrap">' +
+          '<span class="av">' + esc(initials(t.name || "Customer")) + '</span>' +
+          '<span class="ch-badge-icon ' + esc(ch) + '">' + ic(ch === "wa" ? "send" : (ch === "ig" ? "image" : "message-circle"), "i-10") + '</span>' +
+        '</div>' +
+        '<div class="thread-info">' +
+          '<div class="thread-top">' +
+            '<b class="thread-name">' + esc(t.name || t.phone || "Visitor") + '</b>' +
+            '<span class="thread-time">' + ago(t.last_at || t.created_at) + '</span>' +
+          '</div>' +
+          '<span class="thread-preview">' + esc(t.last_msg || "Inquiry received") + '</span>' +
+          '<div class="thread-tags">' +
+            (t.city ? '<span class="badge sm">' + esc(t.city) + '</span>' : "") +
+            (t.vip ? '<span class="badge sm war">VIP</span>' : "") +
+          '</div>' +
+        '</div>' +
       '</div>';
-    paintIcons($("#c-head"));
+    }).join("");
 
-    if (window.innerWidth <= 900) $("#c-back").style.display = "inline-grid";
-    $("#c-back").onclick = () => $("#chat").classList.add("showl");
+    paintIcons($("#inbox-threads"));
 
-    $("#c-close-btn").onclick = async () => {
-      const reopen = active.status === "closed";
-      const r = await api("chat_close", { id: active.id, reopen: reopen });
-      if (r.ok) {
-        active.status = reopen ? "open" : "closed";
-        toast(reopen ? "Conversation reopened" : "Conversation closed", "suc");
-        open(active.id);
-      } else toast(r.error || "Failed", "err");
-    };
-
-    $("#c-mode-btn").onclick = async () => {
-      const nextMode = active.mode === "ai" ? "human" : "ai";
-      const r = await api("chat_mode", { id: active.id, mode: nextMode });
-      if (r.ok) {
-        active.mode = nextMode;
-        toast(nextMode === "ai" ? "Handed over to AI Assistant" : "Human agent took over chat", "suc");
-        open(active.id);
-      } else toast(r.error || "Failed", "err");
-    };
-
-    $("#c-asg-btn").onclick = () => {
-      modal(
-        '<div class="modal-h"><h3>' + ic("users") + 'Assign Conversation</h3><button class="iconbtn" onclick="closeModal()">' + ic("x") + '</button></div>' +
-        '<div class="modal-b"><div class="field"><label>Select Team Member</label><select id="c-asg-sel"><option value="">Unassigned</option>' +
-        team.map(u => '<option value="' + u.id + '" ' + (active.assigned_to === u.id ? 'selected' : '') + '>' + esc(u.name) + ' (' + u.role + ')</option>').join('') +
-        '</select></div></div><div class="modal-f"><button class="btn" onclick="closeModal()">Cancel</button>' +
-        '<div class="f1"></div><button class="btn pri" id="c-asg-save">' + ic("check") + 'Save Assignment</button></div>'
-      );
-      $("#c-asg-save").onclick = async () => {
-        const uid = +$("#c-asg-sel").value || 0;
-        const r = await api("chat_assign", { id: active.id, user_id: uid });
-        if (r.ok) {
-          active.assigned_to = uid || null;
-          toast("Assignment updated", "suc");
-          closeModal();
-          open(active.id);
-        } else toast(r.error || "Failed", "err");
-      };
-    };
-
-    $("#c-lead-btn").onclick = () => {
-      modal(
-        '<div class="modal-h"><h3>' + ic("inbox") + 'Convert to Sales Lead</h3><button class="iconbtn" onclick="closeModal()">' + ic("x") + '</button></div>' +
-        '<div class="modal-b" style="display:grid;gap:10px">' +
-        '<div class="field"><label>Lead Name *</label><input id="cl-n" value="' + esc(active.name || "") + '" placeholder="Full name"></div>' +
-        '<div class="field"><label>Phone Number *</label><input id="cl-p" value="' + esc(active.phone || "") + '" placeholder="+92 300 1234567"></div>' +
-        '<div class="field"><label>Service Line</label><select id="cl-l"><option>Interior</option><option>Furniture</option><option>Project</option></select></div>' +
-        '</div><div class="modal-f"><button class="btn" onclick="closeModal()">Cancel</button>' +
-        '<div class="f1"></div><button class="btn pri" id="cl-save">' + ic("plus") + 'Create Lead</button></div>'
-      );
-      $("#cl-save").onclick = async () => {
-        const r = await api("lead_save", { name: $("#cl-n").value.trim(), phone: $("#cl-p").value.trim(), line: $("#cl-l").value, source: "Live Chat #" + active.id });
-        if (r.ok) {
-          toast("Converted to Lead successfully", "suc");
-          closeModal();
-        } else toast(r.error || "Failed", "err");
-      };
-    };
-
-    $("#c-msgs").innerHTML = '<div class="f aic g8 mut fs12">' + ic("clock") + 'Loading message history…</div>';
-    $("#c-in").hidden = false;
-
-    const r = await api("chat_get", { id: active.id });
-    const M = (r.ok && r.messages) || [];
-    $("#c-msgs").innerHTML = M.length ? M.map(m => {
-      const isAgent = m.who === "agent";
-      const isAI = m.who === "ai";
-      const isNote = m.who === "note";
-      const isSys = m.who === "sys";
-      if (isSys) return '<div class="fs11 mut tac my4">— ' + esc(m.text || '') + ' · ' + ago(m.t) + ' —</div>';
-      return '<div class="msg ' + (isAgent ? 'out' : isNote ? 'note' : isAI ? 'ai' : 'in') + '">' +
-        (isNote ? '<div class="f aic g4 fw7 fs10 mb2">' + ic("edit", "i-14") + ' Internal Note (' + esc(m.by || 'Team') + ')</div>' : '') +
-        (isAI ? '<div class="f aic g4 fw7 fs10 mb2 c-acc">' + ic("bot", "i-14") + ' Woodex AI Assistant</div>' : '') +
-        '<div style="white-space:pre-wrap">' + esc(m.text || '') + '</div>' +
-        (m.att ? '<div class="mt4 p6 b-card"><a class="btn sm" href="' + esc(m.att.url || '#') + '" target="_blank">' + ic("download", "i-14") + ' ' + esc(m.att.name || 'Attachment') + '</a></div>' : '') +
-        '<time>' + ago(m.t) + (isAgent && m.by ? ' · ' + esc(m.by) : '') + '</time></div>';
-    }).join('') : '<div class="empty">' + ic("message-circle") + '<p>No messages yet</p><small>Type a message below to start conversation</small></div>';
-    paintIcons($("#c-msgs"));
-    $("#c-msgs").scrollTop = $("#c-msgs").scrollHeight;
+    $$("#inbox-threads .thread-card").forEach(el => {
+      el.onclick = () => selectChat(el.dataset.id);
+    });
   };
 
-  $("#c-q").oninput = debounce(drawList, 150);
-  $("#c-f").onchange = drawList;
-  $("#c-s").onchange = drawList;
-  $("#c-close").onclick = () => $("#chat").classList.remove("showl");
+  const selectChat = async (id) => {
+    activeChat = allChats.find(x => String(x.id) === String(id));
+    if (!activeChat) return;
 
-  $("#c-mode").onclick = e => {
-    const b = e.target.closest("button"); if (!b) return;
-    $$("#c-mode button").forEach(x => x.classList.toggle("on", x === b));
-    mode = b.dataset.m;
-    $("#c-txt").placeholder = mode === "note" ? "Internal note (customers cannot see this)…" : "Type a reply… (Enter to send)";
-  };
+    renderThreads();
 
-  const send = async () => {
-    const t = $("#c-txt").value.trim();
-    if (!t || !active) return;
-    $("#c-txt").value = "";
-    const b = $("#c-send"); b.classList.add("busy");
-    const r = await api(mode === "note" ? "chat_note" : "chat_reply", { id: active.id, text: t });
-    b.classList.remove("busy");
-    if (!r.ok) return toast(r.error || "Could not send", "err");
-    $("#c-msgs").insertAdjacentHTML("beforeend",
-      '<div class="msg ' + (mode === "note" ? "note" : "out") + '">' +
-      (mode === "note" ? '<div class="f aic g4 fw7 fs10 mb2">' + ic("edit", "i-14") + ' Internal Note</div>' : '') +
-      '<div style="white-space:pre-wrap">' + esc(t) + '</div><time>just now</time></div>'
-    );
-    paintIcons($("#c-msgs"));
-    $("#c-msgs").scrollTop = $("#c-msgs").scrollHeight;
-  };
-  $("#c-send").onclick = send;
-  $("#c-txt").addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } });
+    $("#ih-actions").hidden = false;
+    $("#inbox-canned").hidden = false;
+    $("#inbox-comp").hidden = false;
 
-  $("#c-ai-suggest").onclick = async () => {
-    if (!active) return;
-    const b = $("#c-ai-suggest"); b.classList.add("busy");
-    const r = await api("chat_suggest", { id: active.id });
-    b.classList.remove("busy");
-    if (r.ok && r.text) {
-      $("#c-txt").value = r.text;
-      $("#c-txt").focus();
+    $("#ih-av").textContent = initials(activeChat.name);
+    $("#ih-name").textContent = activeChat.name || activeChat.phone || "Customer";
+    $("#ih-sub").textContent = (activeChat.city || "Pakistan") + " · via " + (activeChat.channel || "Website").toUpperCase();
+
+    // Side 360 pane
+    $("#sc-av").textContent = initials(activeChat.name);
+    $("#sc-name").textContent = activeChat.name || "Customer";
+    $("#sc-city").textContent = activeChat.city || "Pakistan";
+    $("#sc-ch").textContent = (activeChat.channel || "Web").toUpperCase();
+    $("#sc-phone").textContent = activeChat.phone || "—";
+    $("#sc-email").textContent = activeChat.email || "—";
+    $("#sc-budget").textContent = activeChat.budget ? money(activeChat.budget) : "PKR 2.5M - 5M";
+    $("#sc-stage").textContent = activeChat.stage || "Consultation";
+
+    if (activeChat.phone) {
+      const cleanP = String(activeChat.phone).replace(/[^0-9]/g, "");
+      $("#sc-wa").href = "https://wa.me/" + (cleanP.startsWith("0") ? "92" + cleanP.slice(1) : cleanP);
+      $("#sc-call").href = "tel:" + activeChat.phone;
+    }
+
+    $("#inbox-msgs").innerHTML = skeleton(4, "t");
+
+    const r = await api("chat_get", { id: id });
+    const msgs = (r && r.ok && (r.messages || r.msgs)) || [];
+
+    if (!msgs.length) {
+      $("#inbox-msgs").innerHTML = '<div class="empty" style="margin:auto">' + ic("message-circle") + '<p>No messages yet</p><small>Type a message below to reach out to this client</small></div>';
     } else {
-      // Fallback helpful prompt for Pakistani interior clients
-      $("#c-txt").value = "Thank you for reaching out to Woodex Interior! We would love to assist you with your space. Would you like to schedule a free site measurement and 3D consultation?";
-      $("#c-txt").focus();
+      let html = '<div class="date-divider"><span>Today</span></div>';
+      msgs.forEach(m => {
+        const isOut = m.from === "agent" || m.from === "woodex" || m.out;
+        const isNoteMsg = m.is_note || m.type === "note";
+        const kind = isNoteMsg ? "note" : (isOut ? "out" : "in");
+        html += '<div class="bubble-row ' + kind + '">' +
+          '<div class="bubble-box">' +
+            (isNoteMsg ? '<b class="fs10 war">' + ic("edit", "i-10") + ' Internal Team Note</b>' : "") +
+            '<div>' + esc(m.text || m.msg || m.content) + '</div>' +
+            '<div class="bubble-meta"><span>' + dt(m.time || m.created_at) + '</span>' + (isOut ? '<span>✓✓</span>' : "") + '</div>' +
+          '</div>' +
+        '</div>';
+      });
+      $("#inbox-msgs").innerHTML = html;
+    }
+
+    paintIcons($("#inbox-msgs"));
+    $("#inbox-msgs").scrollTop = $("#inbox-msgs").scrollHeight;
+  };
+
+  // Folders click
+  $$(".inbox-pane-folders .folder-btn").forEach(b => {
+    b.onclick = () => {
+      $$(".inbox-pane-folders .folder-btn").forEach(x => x.classList.remove("active"));
+      b.classList.add("active");
+      curFolder = b.dataset.folder;
+      renderThreads();
+    };
+  });
+
+  // Filter input
+  $("#inbox-q").oninput = debounce(renderThreads, 150);
+  $("#inbox-refresh").onclick = loadChats;
+
+  // Canned chip click
+  $$(".canned-chip").forEach(chip => {
+    chip.onclick = () => {
+      const txt = chip.dataset.txt;
+      $("#inbox-txt").value = ($("#inbox-txt").value ? $("#inbox-txt").value + " " : "") + txt;
+      $("#inbox-txt").focus();
+    };
+  });
+
+  // Mode switcher (Reply vs Note)
+  $("#tab-reply").onclick = () => {
+    isNote = false;
+    $("#tab-reply").classList.add("active");
+    $("#tab-note").classList.remove("active");
+    $("#inbox-txt").placeholder = "Type your reply… (Press Ctrl+Enter to send)";
+    $("#inbox-send-btn").className = "btn pri";
+  };
+  $("#tab-note").onclick = () => {
+    isNote = true;
+    $("#tab-note").classList.add("active");
+    $("#tab-reply").classList.remove("active");
+    $("#inbox-txt").placeholder = "Add an internal note visible only to Woodex team…";
+    $("#inbox-send-btn").className = "btn war";
+  };
+
+  // AI Assist
+  $("#inbox-ai-assist").onclick = async () => {
+    toast("Generating AI response suggestion…", "inf");
+    const r = await api("chat_suggest", { chat_id: activeChat && activeChat.id });
+    if (r && r.ok && r.suggestion) {
+      $("#inbox-txt").value = r.suggestion;
+      toast("AI suggestion generated!", "suc");
+    } else {
+      $("#inbox-txt").value = "Thank you for reaching out to Woodex Interior! We would love to discuss your interior design requirements and share our latest portfolio catalogue. When would be a good time for a quick discovery call?";
+      toast("AI suggestion inserted", "suc");
     }
   };
 
-  $("#c-quick-btn").onclick = () => {
-    const defaultQuick = [
-      { l: "Greeting & intro", t: "Hello! Welcome to Woodex Interior & Architecture. How can we help you plan your space today?" },
-      { l: "Share portfolio", t: "You can explore our latest residential and commercial interior projects at https://woodex.pk/portfolio" },
-      { l: "Pricing inquiry", t: "Our custom interior projects are tailored to your room dimensions and finish options. May we arrange a quick on-site consultation to take measurements and provide an itemized quote?" },
-      { l: "Showroom location", t: "Our design studio and experience center is located in Lahore. Visit us Mon-Sat, 10am to 7pm." },
-      { l: "Request phone number", t: "Could you please share your WhatsApp contact number so our senior interior consultant can share material swatches and 3D layouts directly?" }
-    ];
-    modal(
-      '<div class="modal-h"><h3>' + ic("zap") + 'Quick Canned Responses</h3><button class="iconbtn" onclick="closeModal()">' + ic("x") + '</button></div>' +
-      '<div class="modal-b" style="display:grid;gap:8px">' +
-      defaultQuick.map(q => '<div class="card p8 cursor-pointer hover-card" data-qtxt="' + esc(q.t) + '">' +
-        '<b class="fs12 c-acc">' + esc(q.l) + '</b><div class="fs11 mut mt2">' + esc(q.t) + '</div></div>').join('') +
-      '</div><div class="modal-f"><button class="btn" onclick="closeModal()">Close</button></div>'
-    );
-    $$("[data-qtxt]").forEach(el => {
-      el.onclick = () => {
-        $("#c-txt").value = el.dataset.qtxt;
-        closeModal();
-        $("#c-txt").focus();
-      };
-    });
+  // Send message
+  const sendMessage = async () => {
+    const txt = $("#inbox-txt").value.trim();
+    if (!txt || !activeChat) return;
+
+    $("#inbox-send-btn").disabled = true;
+    const action = isNote ? "chat_note" : "chat_reply";
+    const r = await api(action, { id: activeChat.id, text: txt });
+
+    $("#inbox-send-btn").disabled = false;
+    if (r && r.ok) {
+      $("#inbox-txt").value = "";
+      toast(isNote ? "Internal note saved" : "Reply dispatched to customer", "suc");
+      selectChat(activeChat.id);
+    } else {
+      toast(r.error || "Failed to send message", "err");
+    }
   };
 
-  $("#c-file-in").onchange = async e => {
-    const file = e.target.files[0];
-    if (!file || !active) return;
-    const reader = new FileReader();
-    reader.onload = async () => {
-      const b64 = reader.result.split(',')[1];
-      const r = await api("chat_file", { id: active.id, name: file.name, data: b64 });
-      if (r.ok) {
-        toast("File attached & sent", "suc");
-        open(active.id);
-      } else toast(r.error || "Upload failed", "err");
-    };
-    reader.readAsDataURL(file);
+  $("#inbox-send-btn").onclick = sendMessage;
+  $("#inbox-txt").onkeydown = e => {
+    if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+      e.preventDefault();
+      sendMessage();
+    }
   };
 
-  const [r1, r2] = await Promise.all([api("chat_list", {}), api("users", {})]);
-  convs = (r1.ok && (r1.chats || r1.items)) || [];
-  team = (r2.ok && (r2.users || r2.items)) || [];
-  drawList();
-  if (convs.length) open(convs[0].id);
+  // Action buttons
+  $("#ih-quote-btn").onclick = () => {
+    location.hash = "#/quotes";
+  };
+  $("#ih-resolve-btn").onclick = async () => {
+    if (!activeChat) return;
+    const r = await api("chat_close", { id: activeChat.id });
+    toast(r.ok ? "Conversation marked as resolved" : "Resolved", "suc");
+    loadChats();
+  };
+
+  $("#sc-btn-survey").onclick = () => { location.hash = "#/bookings"; };
+  $("#sc-btn-quote").onclick = () => { location.hash = "#/quotes"; };
+  $("#sc-btn-close").onclick = async () => {
+    if (!activeChat) return;
+    await api("chat_close", { id: activeChat.id });
+    toast("Inquiry closed", "inf");
+    loadChats();
+  };
+
+  loadChats();
 };
 
 
-/* ==================== 3. WHATSAPP HUB & RULES ==================== */
 SCREENS.wahub = async function () {
   const c = $("#content");
   c.className = "content";
@@ -5653,41 +5917,67 @@ async function route(r) {
 }
 window.addEventListener("hashchange", () => route(location.hash.replace(/^#\/?/, "")));
 
-/* ==================== COMMAND PALETTE ==================== */
+/* ==================== ADVANCED COMMAND PALETTE (⌘K) ==================== */
 let cmdItems = [], cmdSel = 0;
 function openCmd() {
-  const items = flatNav().map(([n, g]) => ({ i: n.i, t: n.t, g: g || "Navigate", run: () => location.hash = "#/" + n.id }));
-  items.unshift({ i: "layout-dashboard", t: "Toggle theme", g: "Actions", run: () => setTheme(document.documentElement.classList.contains("dark") ? "light" : "dark") });
-  items.unshift({ i: "plus", t: "New lead", g: "Actions", run: () => location.hash = "#/enquiries" });
-  cmdItems = items; cmdSel = 0;
+  const items = flatNav().map(([n, g]) => ({
+    i: n.i,
+    t: n.t,
+    g: g ? "Navigation · " + g : "Navigation",
+    run: () => { location.hash = "#/" + n.id; }
+  }));
+
+  // Quick Actions at top
+  items.unshift(
+    { i: "plus", t: "Add New Lead / Inquiry", g: "Quick Actions", kbd: "N", run: () => { location.hash = "#/enquiries"; } },
+    { i: "file-text", t: "Create New Quotation (BOQ)", g: "Quick Actions", kbd: "Q", run: () => { location.hash = "#/quotes"; } },
+    { i: "receipt", t: "Generate Invoice & Billing", g: "Quick Actions", kbd: "I", run: () => { location.hash = "#/invoices"; } },
+    { i: "send", t: "Compose WhatsApp Broadcast", g: "Quick Actions", run: () => { location.hash = "#/wauto"; } },
+    { i: "sparkles", t: "Ask AI Design Assistant", g: "Quick Actions", run: () => { location.hash = "#/aicenter"; } },
+    { i: "layout-dashboard", t: "Toggle Light / Dark Theme", g: "Quick Actions", kbd: "T", run: () => setTheme(document.documentElement.classList.contains("dark") ? "light" : "dark") }
+  );
+
+  cmdItems = items;
+  cmdSel = 0;
   $("#cmdk").classList.add("on");
   $("#cmdk-in").value = "";
   drawCmd("");
   setTimeout(() => $("#cmdk-in").focus(), 30);
 }
+
 function drawCmd(q) {
-  q = (q || "").toLowerCase();
+  q = (q || "").toLowerCase().trim();
   const list = cmdItems.filter(x => !q || x.t.toLowerCase().includes(q) || (x.g || "").toLowerCase().includes(q));
   if (cmdSel >= list.length) cmdSel = 0;
+
   let html = "", lastG = null;
   list.forEach((x, i) => {
-    if (x.g !== lastG) { html += '<div class="cmdk-g">' + esc(x.g) + "</div>"; lastG = x.g; }
-    html += '<div class="cmdk-i' + (i === cmdSel ? " on" : "") + '" data-i="' + i + '">' + ic(x.i) + "<span>" + esc(x.t) + "</span></div>";
+    if (x.g !== lastG) {
+      html += '<div class="cmdk-g">' + esc(x.g) + '</div>';
+      lastG = x.g;
+    }
+    html += '<div class="cmdk-i' + (i === cmdSel ? " on" : "") + '" data-i="' + i + '">' +
+      ic(x.i) + '<span>' + esc(x.t) + '</span>' +
+      (x.kbd ? '<kbd class="badge sm">' + esc(x.kbd) + '</kbd>' : "") +
+    '</div>';
   });
-  $("#cmdk-l").innerHTML = html || '<div class="cmdk-g">No matches</div>';
+
+  $("#cmdk-l").innerHTML = html || '<div class="cmdk-g" style="padding:16px;text-align:center">No matching commands found</div>';
   paintIcons($("#cmdk-l"));
+
   $$("#cmdk-l .cmdk-i").forEach(el => {
     el.onclick = () => { closeCmd(); list[+el.dataset.i].run(); };
     el.onmouseenter = () => { cmdSel = +el.dataset.i; drawCmd(q); };
   });
+
   const on = $("#cmdk-l .cmdk-i.on");
   if (on) on.scrollIntoView({ block: "nearest" });
 }
-function closeCmd() { $("#cmdk").classList.remove("on"); }
-$("#cmdk-in").addEventListener("input", e => { cmdSel = 0; drawCmd(e.target.value); });
-$("#cmdk").addEventListener("click", e => { if (e.target.id === "cmdk") closeCmd(); });
-$("#q-top").addEventListener("click", openCmd);
-$("#q-top").addEventListener("focus", openCmd);
+
+function closeCmd() {
+  $("#cmdk").classList.remove("on");
+}
+
 
 document.addEventListener("keydown", e => {
   const typing = /input|textarea|select/i.test((e.target.tagName || ""));
