@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Woodex Admin v2.1</title>
+<link rel="icon" href="/favicon.ico">
+<link rel="stylesheet" href="v2.1.css?v=12ce3331">
+<link rel="preload" href="/assets/fonts/inter-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/inter-600.woff2" as="font" type="font/woff2" crossorigin>
+<script>try{if(localStorage.getItem("wx21Theme")==="dark"||(!localStorage.getItem("wx21Theme")&&matchMedia("(prefers-color-scheme: dark)").matches))document.documentElement.classList.add("dark")}catch(e){}</script>
+</head>
+<body>
+
+<!-- ==================== AUTH (Glassmorphic Obsidian Reference) ==================== -->
+<div class="auth" id="auth" hidden>
+  <div class="auth-glow"></div>
+  <div class="auth-card">
+    <form id="f-login">
+      <h1 class="auth-title">Log in</h1>
+      <p class="auth-sub">Log in to your account and seamlessly continue managing your projects, ideas, and progress just where you left off.</p>
+      
+      <div class="auth-input-group">
+        <span class="auth-icon" data-i="mail"></span>
+        <input type="text" id="l-email" class="auth-input-pill" inputmode="email" autocomplete="username" autocapitalize="none" required placeholder="Enter your email address">
+      </div>
+
+      <div class="auth-input-group">
+        <span class="auth-icon" data-i="lock"></span>
+        <input type="password" id="l-pass" class="auth-input-pill" autocomplete="current-password" required placeholder="Enter your password">
+        <button type="button" class="auth-pass-toggle" id="l-pass-toggle" aria-label="Toggle password visibility">
+          <span class="i" data-i="lock"></span>
+        </button>
+      </div>
+
+      <p class="err" id="l-err"></p>
+
+      <button type="submit" class="btn-auth-pill" id="l-btn">Log in</button>
+
+      <!-- Social Login Row (with Google Single Option) -->
+      <div class="auth-social-row">
+        <button type="button" class="btn-social-pill" id="l-soc-fb">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+          Facebook
+        </button>
+        <button type="button" class="btn-social-pill" id="l-soc-google">
+          <svg width="14" height="14" viewBox="0 0 24 24"><path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.66v3.05h3.9c2.28-2.1 3.645-5.2 3.645-9.15z"/><path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.9-3.05c-1.08.72-2.45 1.16-4.03 1.16-3.1 0-5.74-2.09-6.68-4.91H1.21v3.13C3.25 21.43 7.33 24 12 24z"/><path fill="#FBBC05" d="M5.32 14.29c-.24-.72-.38-1.49-.38-2.29s.14-1.57.38-2.29V6.58H1.21C.44 8.11 0 9.99 0 12s.44 3.89 1.21 5.42l4.11-3.13z"/><path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.25 2.57 1.21 6.58l4.11 3.13c.94-2.82 3.58-4.96 6.68-4.96z"/></svg>
+          Google
+        </button>
+        <button type="button" class="btn-social-pill" id="l-soc-apple">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.37c.63-.77 1.06-1.85.94-2.93-.91.04-2.02.61-2.67 1.37-.58.67-1.09 1.76-.95 2.81 1.02.08 2.05-.48 2.68-1.25z"/></svg>
+          Apple
+        </button>
+      </div>
+
+      <p class="auth-signup-text">Didn't have an account? <a href="#" id="l-signup" class="auth-link">Sign up</a></p>
+
+      <!-- Quick Test Login Badges -->
+      <div class="auth-demo-bar">
+        <span class="fs10 mut">🚀 Quick Demo Access:</span>
+        <div class="f aic g4 flex-wrap mt4">
+          <button type="button" class="btn-demo-pill" data-e="master@woodex.pk" title="Owner / Full Control">Master</button>
+          <button type="button" class="btn-demo-pill" data-e="manager@woodex.pk" title="Admin / Operations">Manager</button>
+          <button type="button" class="btn-demo-pill" data-e="developer@woodex.pk" title="Developer / Editor">Developer</button>
+          <button type="button" class="btn-demo-pill" data-e="sales@woodex.pk" title="Sales Executive">Sales</button>
+          <button type="button" class="btn-demo-pill" data-e="support@woodex.pk" title="Support Specialist">Support</button>
+        </div>
+      </div>
+    </form>
+
+    <form id="f-2fa" hidden>
+      <h1 class="auth-title">Two-Step Verification</h1>
+      <p class="auth-sub">Enter the 6-digit verification code from your authenticator app.</p>
+      <div class="auth-input-group">
+        <span class="auth-icon" data-i="shield-check"></span>
+        <input id="t-code" class="auth-input-pill" inputmode="numeric" autocomplete="one-time-code" maxlength="9" required placeholder="Enter 6-digit TOTP code">
+      </div>
+      <p class="err" id="t-err"></p>
+      <button type="submit" class="btn-auth-pill" id="t-btn">Verify &amp; Sign in</button>
+      <p class="auth-signup-text"><a href="#" id="t-back" class="auth-link">Back to login</a></p>
+    </form>
+  </div>
+</div>
+
+<!-- ==================== APP ==================== -->
+<div class="app" id="app" hidden>
+  <div class="shade" id="shade"></div>
+
+  <aside class="side" id="side">
+    <div class="side-top">
+      <span class="logo">W</span>
+      <div class="st-t"><b>Woodex</b><small>Admin v3</small></div>
+      <button class="iconbtn" id="rail" title="Collapse sidebar" aria-label="Collapse sidebar"></button>
+    </div>
+    <nav id="nav" aria-label="Main"></nav>
+    <div class="side-foot" id="sidefoot"></div>
+  </aside>
+
+  <div class="main">
+    <header class="top">
+      <button class="iconbtn burger" id="burger" aria-label="Open menu"></button>
+      <div class="top-search">
+        <span class="i" data-i="search"></span>
+        <input id="q-top" placeholder="Search pages, leads, quotes…  ⌘K" readonly>
+      </div>
+      <div class="top-r">
+        <button class="iconbtn" id="b-notif" title="Notifications" aria-label="Notifications"></button>
+        <button class="iconbtn" id="b-theme" title="Toggle theme" aria-label="Toggle theme"></button>
+        <span class="top-sep"></span>
+        <button class="userbtn" id="b-user">
+          <span class="av" id="u-av">O</span>
+          <span class="u-t"><b id="u-name">Owner</b><small id="u-role">Master</small></span>
+          <span class="i i-14" data-i="chev-down"></span>
+        </button>
+      </div>
+    </header>
+    <main class="content" id="content"></main>
+  </div>
+</div>
+
+<!-- ==================== OVERLAYS ==================== -->
+<div class="modal" id="modal"><div class="modal-c" id="modal-c" role="dialog" aria-modal="true"></div></div>
+<div class="drawer" id="drawer" role="dialog" aria-modal="true"></div>
+<div class="cmdk" id="cmdk">
+  <div class="cmdk-c" role="dialog" aria-modal="true">
+    <div class="cmdk-h"><span class="i i-18" data-i="search"></span><input id="cmdk-in" placeholder="Jump to a screen or run a command…"></div>
+    <div class="cmdk-l" id="cmdk-l"></div>
+    <div class="cmdk-f"><span><b>↑↓</b> navigate</span><span><b>↵</b> open</span><span><b>esc</b> close</span></div>
+  </div>
+</div>
+<div class="toasts" id="toasts"></div>
+
+<script src="v3.js?v=46e47fad" defer></script>
+</body>
+</html>
