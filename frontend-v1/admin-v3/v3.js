@@ -338,13 +338,13 @@ function renderNav() {
       if (!can(n.can)) return;
       const open = S.nav[n.g] !== false;
       html += '<div class="nav-g' + (open ? "" : " shut") + '" data-g="' + esc(n.g) + '">' +
-        '<button class="nav-gb">' + ic(n.i) + "<span>" + esc(n.g) + "</span>" + ic("chev-down", "chev") + "</button>" +
+        '<button class="nav-gb">' + ic(n.i) + '<span class="nl">' + esc(n.g) + "</span>" + ic("chev-down", "chev") + "</button>" +
         '<div class="nav-gi">' + n.items.map(x =>
-          '<a class="nav-a sub" href="#/' + x.id + '" data-v="' + x.id + '">' + ic(x.i) + "<span>" + esc(x.t) + "</span></a>").join("") + "</div></div>";
+          '<a class="nav-a sub" href="#/' + x.id + '" data-v="' + x.id + '">' + ic(x.i) + '<span class="nl">' + esc(x.t) + "</span></a>").join("") + "</div></div>";
       return;
     }
     if (!can(n.can)) return;
-    html += '<a class="nav-a" href="#/' + n.id + '" data-v="' + n.id + '">' + ic(n.i) + "<span>" + esc(n.t) + "</span>" +
+    html += '<a class="nav-a" href="#/' + n.id + '" data-v="' + n.id + '">' + ic(n.i) + '<span class="nl">' + esc(n.t) + "</span>" +
       (n.bdg ? '<span class="bdg" data-bdg="' + n.bdg + '" hidden></span>' : "") +
       '<button class="pin" data-pin="' + n.id + '" title="Pin to top" aria-label="Pin">★</button></a>';
   });
@@ -388,14 +388,22 @@ function renderShell() {
   setTheme(th);
   renderNav();
   $("#sidefoot").innerHTML =
-    '<a class="nav-a" href="/" target="_blank">' + ic("external-link") + "<span>View website</span></a>" +
-    '<a class="nav-a" href="#" id="b-logout">' + ic("log-out") + "<span>Sign out</span></a>";
+    '<button class="side-user" id="b-sideuser" title="Account">' +
+      '<span class="av">' + esc(initials(u.name)) + "</span>" +
+      '<span class="su-t"><b>' + esc(u.name || u.email) + "</b><small>" + esc(u.roleLabel || u.role) + "</small></span>" +
+      ic("chev-down", "chev") +
+    "</button>" +
+    '<div class="side-acts">' +
+      '<a class="sact" href="/" target="_blank" title="View website" aria-label="View website">' + ic("external-link") + "</a>" +
+      '<a class="sact" href="#" id="b-logout" title="Sign out" aria-label="Sign out">' + ic("log-out") + "</a>" +
+    "</div>";
   paintIcons($("#sidefoot"));
   $("#b-logout").onclick = async e => {
     e.preventDefault();
     await api("logout");
     signedOut();
   };
+  $("#b-sideuser").onclick = () => openUserModal();
   paintIcons($("#app"));
 }
 
@@ -407,7 +415,7 @@ $("#b-theme").onclick = () => setTheme(document.documentElement.classList.contai
 $("#b-notif").onclick = () => drawer(
   '<div class="drawer-h"><h3>Notifications</h3><button class="iconbtn" data-x>' + ic("x") + "</button></div>" +
   '<div class="drawer-b"><div class="list" id="nt-l"><div class="empty">' + ic("bell") + "<p>Loading…</p></div></div></div>");
-$("#b-user").onclick = () => {
+function openUserModal() {
   const u = S.user;
   modal('<div class="modal-h"><span class="av">' + esc(initials(u.name)) + "</span><h3>" + esc(u.name) + "</h3>" +
     '<button class="iconbtn" data-x>' + ic("x") + "</button></div>" +
@@ -419,7 +427,8 @@ $("#b-user").onclick = () => {
     '<div class="modal-f"><a class="btn" href="#/profile">My profile</a><a class="btn" href="#/security">Security</a>' +
     '<button class="btn dan" id="m-lo">' + ic("log-out") + "Sign out</button></div>");
   $("#m-lo").onclick = async () => { await api("logout"); closeModal(); signedOut(); };
-};
+}
+$("#b-user").onclick = () => openUserModal();
 document.addEventListener("click", e => {
   const x = e.target.closest("[data-x]");
   if (x) { const p = x.closest(".modal,.drawer"); if (p) { p.classList.remove("on"); } }
@@ -429,7 +438,7 @@ document.addEventListener("click", e => {
 function kpi(o) {
   return '<div class="kpi' + (o.acc ? " acc" : "") + '">' +
     '<div class="kpi-t">' + ic(o.icon || "activity") + esc(o.t) + "</div>" +
-    '<div class="kpi-v">' + o.v + (o.unit ? "<small>" + esc(o.unit) + "</small>" : "") + "</div>" +
+    '<div class="kpi-v' + (o.c ? " " + o.c : "") + '">' + o.v + (o.unit ? "<small>" + esc(o.unit) + "</small>" : "") + "</div>" +
     (o.m ? '<div class="kpi-m">' + o.m + "</div>" : "") +
     (o.spark || "") + "</div>";
 }
@@ -467,6 +476,53 @@ function lineChart(vals, labels, h) {
     '<path class="ar" d="' + d + " L" + X(vals.length - 1).toFixed(1) + " " + (pad.t + ih) + " L" + pad.l + " " + (pad.t + ih) + ' Z"/>' +
     '<path class="ln" d="' + d + '"/>' +
     vals.map((v, i) => '<circle class="pt" cx="' + X(i).toFixed(1) + '" cy="' + Y(v).toFixed(1) + '" r="2.6"/>').join("") + "</svg>";
+}
+/* dual-series gradient area chart — "this period" (cyan) vs "previous" (violet) */
+function areaChart2(a, b, labels, h) {
+  h = h || 200;
+  const w = 600, pad = { l: 36, r: 12, t: 14, b: 24 };
+  if (!a || !a.length) return '<div class="empty">' + ic("activity") + "<p>No data yet</p></div>";
+  const all = a.concat(b || []);
+  const mx = Math.max.apply(null, all) || 1;
+  const iw = w - pad.l - pad.r, ih = h - pad.t - pad.b;
+  const n = a.length;
+  const X = i => pad.l + (i / (n - 1 || 1)) * iw;
+  const Y = v => pad.t + ih - (v / (mx || 1)) * ih;
+  const dA = a.map((v, i) => (i ? "L" : "M") + X(i).toFixed(1) + " " + Y(v).toFixed(1)).join(" ");
+  const dB = (b || []).map((v, i) => (i ? "L" : "M") + X(i).toFixed(1) + " " + Y(v).toFixed(1)).join(" ");
+  let grid = "", ax = "";
+  for (let i = 0; i <= 4; i++) {
+    const y = pad.t + (ih / 4) * i, v = mx - (mx / 4) * i;
+    grid += '<line class="gl" x1="' + pad.l + '" y1="' + y.toFixed(1) + '" x2="' + (w - pad.r) + '" y2="' + y.toFixed(1) + '"/>';
+    ax += '<text class="ax" x="' + (pad.l - 7) + '" y="' + (y + 3).toFixed(1) + '" text-anchor="end">' + (v >= 1000 ? (v / 1000).toFixed(v >= 10000 ? 0 : 1) + "k" : Math.round(v)) + "</text>";
+  }
+  const step = Math.max(1, Math.ceil(labels.length / 7));
+  let xl = "";
+  labels.forEach((l, i) => { if (i % step === 0) xl += '<text class="ax" x="' + X(i).toFixed(1) + '" y="' + (h - 7) + '" text-anchor="middle">' + esc(l) + "</text>"; });
+  const areaA = dA + " L" + X(n - 1).toFixed(1) + " " + (pad.t + ih) + " L" + pad.l + " " + (pad.t + ih) + " Z";
+  const areaB = dB ? dB + " L" + X(n - 1).toFixed(1) + " " + (pad.t + ih) + " L" + pad.l + " " + (pad.t + ih) + " Z" : "";
+  return '<svg class="chart" viewBox="0 0 ' + w + " " + h + '"><defs>' +
+    '<linearGradient id="gA" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="var(--chart-3)"/><stop offset="100%" stop-color="var(--chart-3)" stop-opacity="0"/></linearGradient>' +
+    '<linearGradient id="gB" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="var(--chart-7)"/><stop offset="100%" stop-color="var(--chart-7)" stop-opacity="0"/></linearGradient>' +
+    "</defs>" + grid + ax + xl +
+    (areaB ? '<path class="ar2" d="' + areaB + '"/>' : "") +
+    (dB ? '<path class="ln2" d="' + dB + '"/>' : "") +
+    '<path class="ar" d="' + areaA + '"/>' +
+    '<path class="ln" d="' + dA + '"/>' +
+    a.map((v, i) => '<circle class="pt" cx="' + X(i).toFixed(1) + '" cy="' + Y(v).toFixed(1) + '" r="2.4"/>').join("") +
+    "</svg>";
+}
+/* segmented distribution bar — segments sized by value (referral-traffic style) */
+function stackBar(segs) {
+  const live = (segs || []).filter(s => s.v > 0);
+  if (!live.length) return '<div class="stackbar"></div>';
+  return '<div class="stackbar">' + live.map(s =>
+    '<i style="flex-grow:' + s.v + ';background:' + s.c + '" title="' + esc(s.k) + ": " + s.v + '"></i>').join("") + "</div>";
+}
+/* breakdown rows — coloured dot + label + value (total-sales style) */
+function brow(rows) {
+  return '<div class="brows">' + (rows || []).map(r =>
+    '<div class="brow"><i class="dot" style="background:' + r.c + '"></i><span class="brow-k">' + esc(r.k) + '</span><b>' + n0(r.v) + "</b></div>").join("") + "</div>";
 }
 function barChart(rows) {
   const mx = Math.max.apply(null, rows.map(r => r.v)) || 1;
@@ -509,10 +565,9 @@ SCREENS.dashboard = async function () {
     '<button class="btn" id="d-export">' + ic("download") + "Export</button></div></div>" +
     '<div class="kpis" id="d-kpis">' + skeleton(4, "k") + "</div>" +
     '<div class="grid" style="grid-template-columns:minmax(0,2fr) minmax(0,1fr)">' +
-    '<div class="card"><div class="card-h"><div><h3>' + ic("trending-up") + 'Enquiries</h3><div class="sub">New leads over time</div></div>' +
-    '<div class="legend"><span><i style="background:var(--accent)"></i>Leads</span></div></div>' +
+    '<div class="card"><div class="card-h"><div><h3>' + ic("trending-up") + 'Enquiries</h3><div class="sub">New leads over time</div></div></div>' +
     '<div class="card-b" id="d-chart">' + skeleton(1, "k") + "</div></div>" +
-    '<div class="card"><div class="card-h"><h3>' + ic("activity") + 'Pipeline</h3></div><div class="card-b" id="d-pipe">' + skeleton(4, "t") + "</div></div>" +
+    '<div class="card"><div class="card-h"><div><h3>' + ic("activity") + 'Pipeline</h3><div class="sub">Stage distribution</div></div></div><div class="card-b" id="d-pipe">' + skeleton(4, "t") + "</div></div>" +
     "</div>" +
     '<div class="grid mt12" style="grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1.1fr)">' +
     '<div class="card"><div class="card-h"><h3>' + ic("clock") + 'Follow-ups due</h3><a class="btn sm" href="#/enquiries">All leads</a></div><div class="card-b tight" id="d-fu">' + skeleton(3, "t") + "</div></div>" +
@@ -533,13 +588,17 @@ SCREENS.dashboard = async function () {
     const L = (leads.ok && (leads.items || leads.leads)) || [];
     const st = stats.ok ? (stats.stats || stats) : {};
 
-    // build a day series from real lead dates, or a flat series when there is none
-    const days = [], labels = [], now = new Date();
+    // day series for this period + the previous period (for the comparison area chart)
+    const days = [], prev = [], labels = [], now = new Date();
+    const countOn = key => L.filter(l => String(l.created_at || l.date || "").slice(0, 10) === key).length;
     for (let i = range - 1; i >= 0; i--) {
       const d = new Date(now.getTime() - i * 864e5);
       labels.push(d.toLocaleDateString("en-GB", { day: "numeric", month: "short" }));
-      const key = d.toISOString().slice(0, 10);
-      days.push(L.filter(l => String(l.created_at || l.date || "").slice(0, 10) === key).length);
+      days.push(countOn(d.toISOString().slice(0, 10)));
+    }
+    for (let i = range * 2 - 1; i >= range; i--) {
+      const d = new Date(now.getTime() - i * 864e5);
+      prev.push(countOn(d.toISOString().slice(0, 10)));
     }
     const total = L.length;
     const won = L.filter(l => String(l.stage).toLowerCase() === "won").length;
@@ -549,17 +608,21 @@ SCREENS.dashboard = async function () {
     const delta = prev7 ? Math.round(((last7 - prev7) / prev7) * 100) : (last7 ? 100 : 0);
 
     $("#d-kpis").innerHTML =
-      kpi({ t: "Total leads", i: "inbox", v: n0(total), m: '<span class="' + (delta >= 0 ? "up" : "dn") + '">' + (delta >= 0 ? "▲" : "▼") + " " + Math.abs(delta) + '%</span><span>vs prev 7d</span>', spark: sparkline(days.slice(-14)) }) +
-      kpi({ t: "Open pipeline", i: "kanban", v: n0(open), m: "<span>" + n0(L.filter(l => String(l.stage).toLowerCase() === "quote").length) + " at quote stage</span>", spark: sparkline(days.slice(-14).map((v, i) => open - i)) }) +
-      kpi({ t: "Won", i: "check-circle", v: n0(won), m: "<span>" + (total ? Math.round((won / total) * 100) : 0) + "% conversion</span>" }) +
-      kpi({ t: "Quoted value", i: "receipt", v: money(st.quotedValue || st.value || 0).replace("PKR ", ""), unit: "PKR", m: "<span>" + n0(st.quotes || 0) + " quotations</span>", acc: true });
+      kpi({ t: "Total leads", i: "inbox", c: "c-acc", v: n0(total), m: '<span class="' + (delta >= 0 ? "up" : "dn") + '">' + (delta >= 0 ? "▲" : "▼") + " " + Math.abs(delta) + '%</span><span>vs prev 7d</span>', spark: sparkline(days.slice(-14)) }) +
+      kpi({ t: "Open pipeline", i: "kanban", c: "c-vio", v: n0(open), m: "<span>" + n0(L.filter(l => String(l.stage).toLowerCase() === "quote").length) + " at quote stage</span>", spark: sparkline(days.slice(-14).map((v, i) => open - i)) }) +
+      kpi({ t: "Won", i: "check-circle", c: "c-suc", v: n0(won), m: "<span>" + (total ? Math.round((won / total) * 100) : 0) + "% conversion</span>" }) +
+      kpi({ t: "Quoted value", i: "receipt", c: "c-acc", v: money(st.quotedValue || st.value || 0).replace("PKR ", ""), unit: "PKR", m: "<span>" + n0(st.quotes || 0) + " quotations</span>" });
 
-    $("#d-chart").innerHTML = lineChart(days, labels);
+    $("#d-chart").innerHTML =
+      '<div class="legend" style="padding:0 0 10px"><span><i style="background:var(--chart-3)"></i>This period</span><span><i style="background:var(--chart-7)"></i>Previous</span></div>' +
+      areaChart2(days, prev, labels, 210);
 
     const stages = [
-      ["New", "new"], ["Contacted", "contacted"], ["Site visit", "visit"], ["Quote", "quote"], ["Won", "won"], ["Lost", "lost"]
+      ["New", "new", "var(--chart-6)"], ["Contacted", "contacted", "var(--chart-3)"], ["Site visit", "visit", "var(--chart-4)"],
+      ["Quote", "quote", "var(--chart-7)"], ["Won", "won", "var(--success)"], ["Lost", "lost", "var(--destructive)"]
     ];
-    $("#d-pipe").innerHTML = barChart(stages.map(([k, v]) => ({ k, v: L.filter(l => String(l.stage).toLowerCase() === v).length })));
+    const stageRows = stages.map(s => ({ k: s[0], v: L.filter(l => String(l.stage).toLowerCase() === s[1]).length, c: s[2] }));
+    $("#d-pipe").innerHTML = stackBar(stageRows) + brow(stageRows);
 
     const due = fu.ok
       ? (fu.overdue || []).map(x => Object.assign({ overdue: true }, x))
