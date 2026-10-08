@@ -203,6 +203,36 @@ $("#t-btn").closest("form").addEventListener("submit", async e => {
   S.ticket = null; signedIn(r);
 });
 $("#t-back").addEventListener("click", e => { e.preventDefault(); showAuth("login"); });
+/* ---------- test accounts (dev helper, opt-in) ---------- */
+/* Shown when the URL carries ?demo=1, or when the "Test accounts" link is
+   clicked. Never rendered in a normal production visit. */
+const TEST_ACCOUNTS = [
+  { e: "master@woodex.pk", r: "Master" },
+  { e: "manager@woodex.pk", r: "Manager" },
+  { e: "developer@woodex.pk", r: "Developer" },
+  { e: "sales@woodex.pk", r: "Sales" },
+  { e: "support@woodex.pk", r: "Support" },
+];
+const TEST_PASS = "Woodex@2026";
+(function initTestAccounts() {
+  const box = $("#as-ta"), list = $("#as-ta-l"), link = $("#l-demo");
+  if (!box || !list || !link) return;
+  list.innerHTML = TEST_ACCOUNTS.map(a =>
+    '<button class="ta-r" type="button" data-e="' + esc(a.e) + '"><code>' + esc(a.e) + "</code>" +
+    '<span class="badge inf">' + esc(a.r) + '</span><span class="i i-14" data-i="chev-right"></span></button>').join("");
+  paintIcons(list);
+  const show = on => { box.hidden = !on; if (on) { const f = list.querySelector(".ta-r"); if (f) f.focus(); } };
+  list.querySelectorAll(".ta-r").forEach(b => b.onclick = () => {
+    $("#l-email").value = b.dataset.e;
+    $("#l-pass").value = TEST_PASS;
+    $("#l-err").textContent = "";
+    show(false);
+    $("#l-btn").focus();
+  });
+  link.addEventListener("click", e => { e.preventDefault(); show(box.hidden); });
+  $("#as-ta-x").addEventListener("click", () => show(false));
+  if (/[?&]demo=1\b/.test(location.search)) show(true);
+})();
 
 /* ==================== NAV ==================== */
 const NAV = [

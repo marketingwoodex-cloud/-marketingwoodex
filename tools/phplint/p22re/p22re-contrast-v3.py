@@ -75,6 +75,15 @@ PAIRS = [
     ("INFO status",             "info",              "info-soft",          "info badges"),
     ("error text",              "destructive",       "card",               ".err"),
     ("link text",               "info",              "card",               "links"),
+    ("auth note on navy",       "sidebar-muted",     "sidebar",            ".as-note"),
+    ("auth stat label",         "sidebar-muted",     "sidebar",            ".as-stat small"),
+    ("auth stat value",         "#ffffff",          "sidebar",            ".as-stat b"),
+    ("auth kicker (gold)",      "accent",            "sidebar",            ".as-kicker"),
+    ("ta row text",             "foreground-2",      "card",               ".ta-r code"),
+    ("ta row on muted",         "foreground-2",      "muted",              ".ta-r"),
+    ("ta header",               "muted-foreground",  "muted",              ".as-ta-h"),
+    ("ta footer",               "muted-foreground",  "card",               ".as-ta-f"),
+    ("ta badge info",           "info",              "info-soft",          ".ta-r .badge.inf"),
 ]
 
 
