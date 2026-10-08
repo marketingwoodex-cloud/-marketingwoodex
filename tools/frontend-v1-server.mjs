@@ -21,7 +21,7 @@ let PASSWORD = process.env.WX_DEV_PASSWORD || (fs.existsSync(DEV_CFG) ? fs.readF
 const secret = () => crypto.createHash("sha256").update("wx-dev|" + PASSWORD).digest("hex");
 
 const MIME = { ".html": "text/html; charset=utf-8", ".css": "text/css", ".js": "text/javascript", ".json": "application/json", ".svg": "image/svg+xml",
-  ".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".webp": "image/webp", ".gif": "image/gif", ".woff2": "font/woff2", ".xml": "application/xml", ".txt": "text/plain" };
+  ".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".webp": "image/webp", ".gif": "image/gif", ".woff2": "font/woff2", ".xml": "application/xml", ".txt": "text/plain", ".zip": "application/zip" };
 
 // ---------------------------------------------------------------- auth
 const makeToken = () => { const exp = String(Math.floor(Date.now() / 1000) + 12 * 3600); return exp + "." + crypto.createHmac("sha256", secret()).update("wx|" + exp).digest("hex"); };

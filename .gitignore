@@ -4,3 +4,4 @@ mcp-server/.env
 # Page builder private data (password hash, sessions, backups)
 frontend-v1/_private/*
 !frontend-v1/_private/.htaccess
+frontend-v1/woodex-master-p22.1-updated.zip
