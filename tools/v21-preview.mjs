@@ -1,12 +1,10 @@
 /* Woodex Admin v2.1 — dedicated preview on port 8083.
- * Redirects root `/` to `/admin-v2.1/` so the preview immediately loads the new v2.1 suite.
+ * Transparently forwards `/` to `/admin-v2.1/` without requiring an iframe redirect.
  */
 import http from "node:http";
 
 const UP = { host: "127.0.0.1", port: +(process.env.UP_PORT || 8080) };
 const PORT = +(process.env.PORT || 8083);
-
-const TO_V21 = ["/", "/index.html", "/admin-v2.1", "/admin-2.1"];
 
 http
   .createServer((req, res) => {
@@ -17,23 +15,25 @@ http
       res.writeHead(400);
       return res.end();
     }
-    if (TO_V21.includes(p)) {
-      res.writeHead(302, { Location: "/admin-v2.1/", "Cache-Control": "no-store" });
-      return res.end();
+    
+    let targetPath = req.url;
+    if (p === "/" || p === "/index.html") {
+      targetPath = "/admin-v2.1/";
+    } else if (p.startsWith("/v2.1.") || p === "/favicon.ico") {
+      targetPath = "/admin-v2.1" + req.url;
     }
+
     const pr = http.request(
       {
         ...UP,
-        path: req.url,
+        path: targetPath,
         method: req.method,
         headers: { ...req.headers, host: `127.0.0.1:${UP.port}` },
       },
       (pres) => {
         const headers = { ...pres.headers };
-        if (p === "/admin-v2.1/" || /^\/admin-v2\.1\/[^?]*\.(css|js)$/.test(p)) {
-          headers["cache-control"] = "no-store, must-revalidate";
-          delete headers.etag;
-        }
+        headers["cache-control"] = "no-store, must-revalidate";
+        delete headers.etag;
         res.writeHead(pres.statusCode, headers);
         pres.pipe(res);
       },
@@ -45,5 +45,5 @@ http
     req.pipe(pr);
   })
   .listen(PORT, "0.0.0.0", () =>
-    console.log(`v2.1 preview → :${PORT}   (/ → /admin-v2.1/ · forwards to :${UP.port})`),
+    console.log(`v2.1 preview → :${PORT}   (/ → transparent /admin-v2.1/)`),
   );
