@@ -1767,9 +1767,12 @@ html.dark .lm.v small, .lm.v small {
 
 
 /* ==================== FROSTED GLASSMORPHIC OBSIDIAN AUTH (SCREENSHOT MATCH) ==================== */
+.auth[hidden], #auth[hidden] {
+  display: none !important;
+}
 .auth {
   min-height: 100vh;
-  display: flex !important;
+  display: flex;
   align-items: center;
   justify-content: center;
   padding: 32px 16px;
@@ -1989,3 +1992,8 @@ html.dark .lm.v small, .lm.v small {
   color: #00d3f2 !important;
 }
 
+
+/* Explicit guard: ensure hidden state is always respected */
+#auth[hidden], .auth[hidden], #app[hidden], .app[hidden], [hidden] {
+  display: none !important;
+}
