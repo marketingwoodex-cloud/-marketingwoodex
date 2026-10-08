@@ -392,9 +392,11 @@ http.createServer(async (req, res) => {
     if (!fs.existsSync(file)) { res.writeHead(404, { "Content-Type": MIME[".html"] }); return fs.createReadStream(path.join(ROOT, "404.html")).pipe(res); }
     const ext = path.extname(file).toLowerCase();
     if (ext === ".html" && !/^\/(builder|admin)/.test(p)) {
-      // Preview-only "Edit this page" button (never written into the site files)
+      // Preview-only "Edit this page" shortcut (never written into the site files).
+      // Hidden unless THIS browser is signed into Woodex Admin (sessionStorage
+      // "wxaTok"), so ordinary visitors never see it — exactly like Hostinger.
       const rel = path.relative(ROOT, file).split(path.sep).join("/");
-      const btn = `<a href="/builder/#${encodeURIComponent(rel)}" style="position:fixed;left:20px;bottom:20px;z-index:99999;background:#d4af6a;color:#0a0f1e;font:600 14px/1 system-ui,sans-serif;padding:14px 18px;border-radius:999px;text-decoration:none;box-shadow:0 10px 30px rgba(0,0,0,.35)">✏️ Edit this page</a>`;
+      const btn = `<a id="wx-prev-edit" href="/builder/#${encodeURIComponent(rel)}" hidden style="position:fixed;left:20px;bottom:20px;z-index:99999;background:#d4af6a;color:#0a0f1e;font:600 14px/1 system-ui,sans-serif;padding:14px 18px;border-radius:999px;text-decoration:none;box-shadow:0 10px 30px rgba(0,0,0,.35)">✏️ Edit this page</a><script>(function(){try{if(sessionStorage.getItem("wxaTok")){var b=document.getElementById("wx-prev-edit");if(b)b.hidden=false;}}catch(e){}})();</script>`;
       const lh = /Lighthouse|PageSpeed/i.test(req.headers["user-agent"] || ""); // speed tests see the page exactly as on Hostinger
       const body = fs.readFileSync(file, "utf8").replace(/<\/body>/i, (lh ? "" : btn) + "</body>");
       if (/gzip/.test(req.headers["accept-encoding"] || "")) { res.writeHead(200, { "Content-Type": MIME[".html"], "Cache-Control": "no-cache", "Content-Encoding": "gzip", Vary: "Accept-Encoding" }); return res.end(zlib.gzipSync(body)); }
