@@ -210,6 +210,10 @@
     wxShare();
     $("#auth").hidden = true; $("#app").hidden = false;
     $("#u-name").textContent = S.user.name; $("#u-role").textContent = ROLE_LABEL[S.user.role] || S.user.role; $("#u-av").textContent = initials(S.user.name);
+    var sfn = $("#sf-name"), sfr = $("#sf-role"), sfa = $("#sf-av");
+    if (sfn) sfn.textContent = S.user.name;
+    if (sfr) sfr.textContent = ROLE_LABEL[S.user.role] || S.user.role;
+    if (sfa) sfa.textContent = initials(S.user.name);
     renderNav(); route();
     if (S.btoken) bapi("pages").then(function (p) { if (p.ok) { S.pages = p.pages; $("#gsearch-list").innerHTML = p.pages.map(function (x) { return '<option value="' + esc(x.url) + '">' + esc(x.title) + "</option>"; }).join(""); } });
   }

@@ -1674,3 +1674,94 @@ html.dark .lm.v small, .lm.v small {
   color: #ffffff !important;
 }
 
+
+/* ==================== PRELINE RAIL SIDEBAR & BLOCK UTILITIES ==================== */
+#app.rail {
+  --side: 72px !important;
+}
+#app.rail .side-top .brand div,
+#app.rail .side .nav-h,
+#app.rail .side .nav-a span,
+#app.rail .side .nav-gb span,
+#app.rail .side .nav-gb i[data-i="chevron-down"],
+#app.rail .side .nav-gb .chev,
+#app.rail .side .nav-gi,
+#app.rail .side .side-user-row div {
+  display: none !important;
+}
+#app.rail .side .nav-a,
+#app.rail .side .nav-gb {
+  justify-content: center !important;
+  padding: 10px 0 !important;
+}
+#app.rail .side-top {
+  padding: 14px 10px !important;
+  justify-content: center !important;
+}
+#app.rail .side-foot {
+  padding: 10px 0 !important;
+  justify-content: center !important;
+}
+#app.rail .side-foot .side-user-row {
+  justify-content: center !important;
+}
+#app.rail .side-foot .side-user-row a,
+#app.rail .side-foot .side-user-row button {
+  display: none !important;
+}
+
+/* Preline Table Hover & Striping */
+.tbl tbody tr {
+  transition: background-color 0.15s ease !important;
+}
+.tbl tbody tr:hover {
+  background-color: rgba(255, 255, 255, 0.03) !important;
+}
+:root:not(.dark) .tbl tbody tr:hover {
+  background-color: rgba(0, 0, 0, 0.02) !important;
+}
+
+/* Preline Badges High-Contrast */
+.badge.ok, .badge.suc {
+  background: rgba(16, 185, 129, 0.15) !important;
+  color: #34d399 !important;
+  border: 1px solid rgba(16, 185, 129, 0.3) !important;
+}
+.badge.warn {
+  background: rgba(245, 158, 11, 0.15) !important;
+  color: #fbbf24 !important;
+  border: 1px solid rgba(245, 158, 11, 0.3) !important;
+}
+.badge.bad, .badge.dan {
+  background: rgba(239, 68, 68, 0.15) !important;
+  color: #f87171 !important;
+  border: 1px solid rgba(239, 68, 68, 0.3) !important;
+}
+.badge.info {
+  background: rgba(0, 184, 219, 0.15) !important;
+  color: #00d3f2 !important;
+  border: 1px solid rgba(0, 184, 219, 0.3) !important;
+}
+
+/* Light mode badge contrasts */
+:root:not(.dark) .badge.ok, :root:not(.dark) .badge.suc {
+  background: #ecfdf5 !important;
+  color: #047857 !important;
+  border-color: #a7f3d0 !important;
+}
+:root:not(.dark) .badge.warn {
+  background: #fffbeb !important;
+  color: #b45309 !important;
+  border-color: #fde68a !important;
+}
+:root:not(.dark) .badge.bad, :root:not(.dark) .badge.dan {
+  background: #fef2f2 !important;
+  color: #b91c1c !important;
+  border-color: #fecaca !important;
+}
+:root:not(.dark) .badge.info {
+  background: #ecfeff !important;
+  color: #007595 !important;
+  border-color: #a5f3fc !important;
+}
+

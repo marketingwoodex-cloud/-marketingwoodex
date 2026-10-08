@@ -97,10 +97,26 @@
 <!-- ============ APP ============ -->
 <div class="app" id="app" hidden>
   <aside class="side" id="side">
-    <div class="side-top"><a href="#/dashboard" class="brand"><span class="logo">W</span><div><b>Woodex</b><small style="color: #00d3f2; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;">ADMIN V2.1</small></div></a>
-      <button class="icon-btn side-x" id="side-x" aria-label="Close menu"><i data-i="x"></i></button></div>
+    <div class="side-top">
+      <a href="#/dashboard" class="brand">
+        <span class="logo" style="background:#00b8db;color:#04222b;font-weight:800;border-radius:10px;">W</span>
+        <div><b>Woodex</b><small style="color: #00d3f2; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;">ADMIN V2.1</small></div>
+      </a>
+      <button class="icon-btn" id="rail" title="Collapse sidebar" aria-label="Collapse sidebar" style="margin-left:auto"><i data-i="panel-left"></i></button>
+      <button class="icon-btn side-x" id="side-x" aria-label="Close menu"><i data-i="x"></i></button>
+    </div>
     <nav id="nav"></nav>
-    <div class="side-foot"><a href="/" target="_blank" rel="noopener"><i data-i="external-link"></i><span>View website</span></a></div>
+    <div class="side-foot" id="side-foot">
+      <div class="side-user-row" style="display:flex;align-items:center;gap:10px;padding:8px 0;width:100%;">
+        <span class="av" id="sf-av" style="width:34px;height:34px;border-radius:50%;background:#00b8db;color:#04222b;font-weight:700;display:grid;place-items:center;font-size:13px;flex-shrink:0;">MA</span>
+        <div style="flex:1;min-width:0;overflow:hidden;">
+          <b id="sf-name" style="display:block;font-size:13px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Master Admin</b>
+          <small id="sf-role" style="color:#9ca3af;font-size:11px;">Master</small>
+        </div>
+        <a href="/" target="_blank" rel="noopener" title="View website" style="color:#9ca3af;display:grid;place-items:center;padding:4px;"><i data-i="external-link"></i></a>
+        <button id="sf-logout" title="Sign out" style="background:none;border:none;color:#9ca3af;cursor:pointer;display:grid;place-items:center;padding:4px;"><i data-i="log-out"></i></button>
+      </div>
+    </div>
   </aside>
   <div class="side-shade" id="side-shade"></div>
 
