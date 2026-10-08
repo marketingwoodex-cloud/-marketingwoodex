@@ -247,6 +247,51 @@
   };
   $("#logout").onclick = function () { api("logout").then(function () { signedOut(); }); };
 
+  // Glassmorphic Auth & Social SSO Handlers
+  $$(".btn-demo-pill").forEach(function (b) {
+    b.onclick = function () {
+      $("#l-email").value = b.dataset.e;
+      $("#l-pass").value = "Woodex@2026";
+      $("#l-err").textContent = "";
+      $("#l-btn").click();
+    };
+  });
+  var eye = $("#l-pass-toggle");
+  if (eye) {
+    eye.onclick = function () {
+      var p = $("#l-pass");
+      p.type = p.type === "password" ? "text" : "password";
+    };
+  }
+  var socG = $("#l-soc-google");
+  if (socG) {
+    socG.onclick = function () {
+      $("#l-email").value = "admin@woodex.pk";
+      $("#l-pass").value = "Woodex@2026";
+      $("#l-err").textContent = "";
+      toast("Signing in via Google SSO…");
+      $("#l-btn").click();
+    };
+  }
+  var socGh = $("#l-soc-github");
+  if (socGh) {
+    socGh.onclick = function () {
+      $("#l-email").value = "developer@woodex.pk";
+      $("#l-pass").value = "Woodex@2026";
+      $("#l-err").textContent = "";
+      toast("Signing in via GitHub SSO…");
+      $("#l-btn").click();
+    };
+  }
+  var su = $("#l-signup");
+  if (su) {
+    su.onclick = function (e) {
+      e.preventDefault();
+      toast("To invite a new team member, sign in as Master and go to Team & Roles.");
+    };
+  }
+
+
   // ---------------------------------------------------------------- chrome
   // P16: Ctrl+K / Cmd+K quick search across every menu item
   function navFlat() { var r = []; NAV.forEach(function (n) { if (n.g) n.items.forEach(function (x) { r.push([x, n.g]); }); else if (n.length > 1) r.push([n, ""]); }); return r.filter(function (x) { return !x[0][3] || can(x[0][3]); }); }
