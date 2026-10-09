@@ -129,6 +129,11 @@ so no login or key is needed for it.
 - the login screen no longer contains the "SSO demo" shortcut that typed the owner email +
   password into the form — that password was readable in `admin/admin.js` by any visitor
 - `admin/index.html` no longer prints a suggested builder password in its placeholders
+- **`/services/` works again**: a stale “Old website menu” 301 (written before that page existed)
+  sent `/services/` → `/interior-design/`, hiding a real 124 KB page linked 458 times and listed in
+  the sitemap. The rule is gone from `.htaccess` **and** from the seed file `api/redirect-plan.json`.
+  If a server already has `_private/redirects.json` with that row, delete it in Admin → Redirects.
+- dotfiles are now blocked at **any** depth (`(^|.*/)\.(?!well-known)`), not only at the docroot
 - `config.php` and `/includes/` return **403** if anyone requests them over HTTP
   (`.env`, `*.sql`, `*.log`, `*.md`, dotfiles and `_private/ _database/ _templates/` were already blocked)
 - an uploaded file can never execute: `assets/uploads/.htaccess` and `uploads/.htaccess` deny

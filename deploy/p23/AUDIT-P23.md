@@ -197,11 +197,56 @@ in the folder + `RewriteRule ^_database(/|$) - [F,L]` in the root `.htaccess`), 
 tells you to delete the folder after the install. The loose `.sql` that used to sit at the web root —
 the exact thing Hostinger's message warned about — is gone.
 
+### Ran the package over HTTP (Apache/LiteSpeed emulator, `deploy/p23/apache-sim.js`)
+
+The sandbox has no PHP engine and no MySQL server (and no docker), so the **runtime** side cannot be
+exercised here — `api/*.php` answers 503 in the emulator and `/wx-check.php` is the on-server
+equivalent. What *can* be tested without PHP is the layer that was actually failing: which file Apache
+would hand out for each URL, and what the `.htaccess` rules do to it. 15/15 HTTP tests pass on the
+unzipped package:
+
+```
+GET /                          → index.php → readfile(index.html), 130,672 bytes   (was: HTTP 500)
+142/142 sitemap URLs           → 200
+304 distinct local references  → 200 (from 13,941 refs across 198 HTML/PHP files)
+8/8 legacy redirects           → 301 to the right target; spam + wp probes → 410 Gone
+19/19 secret paths             → 403 (db.example.json, *.sql, .env, .git, -lib.php, config.php,
+                                includes/, router.php, error_log, *.bak, *.log, .htaccess at depth)
+10/10 needed URLs not blocked  → api/*, robots, sitemap, assets, css/, js/, wx-check.php
+alias + fallback               → /images/x.webp → assets/img ✓ · unknown URL → branded 404.html
+                               /uploads/<missing> → 404 page, not a server error
+Options -Indexes               → no directory listing anywhere
+/services/                     → serves its own page (regression guard, see below)
+```
+
+**New P1 defect found by that run — a live page was being hidden by a redirect.** `sitemap.xml` and
+304 references include `/services/`, a real 124 KB page (*“Interior Design & Fit-Out Services in
+Lahore”*, linked **458 times** across 145 files). But `.htaccess` still carried the rule
+`^services/?$ → /interior-design/ [R=301,L]`, seeded from `api/redirect-plan.json` entry #3 (“Old
+website menu”) back when `/services/` was a dead WordPress menu URL. Result on Hostinger: every nav link
+to Services 301s away and the page is unreachable. Fixed in both places (`.htaccess` + the seed file,
+35 rows now), with a regression test added; if a server already holds `_private/redirects.json` with
+that row, remove it in Admin → Redirects. A scan of all 35 remaining rows found no other rule hiding a
+live page, no rule pointing at a missing target and no 410 killing a page.
+
+**SQL validated with a real MySQL grammar** (`node-sql-parser`): `woodex-database.sql` = 27 statements,
+26 parse (the one “failure” is `SET NAMES utf8mb4`, which that JS grammar doesn't model but MySQL
+accepts); `woodex-v20.sql` = 22 statements, 21 parse for the same reason; `00-verify-import.sql` and
+`01-security-cleanup.sql` parse clean. Both dumps create the same 20 tables.
+
+**Login pair generated and checked against the code's own validators** (12 checks: `valid_pw()` ≥ 8
+bytes, `filter_var(..., FILTER_VALIDATE_EMAIL)`, non-empty name, printable ASCII so `strlen` equals the
+character count, no quote/backtick/backslash so it survives a phpMyAdmin paste, bcrypt cost 10 / 60-char
+`$2y$` hash like `password_hash($pw, PASSWORD_DEFAULT)`, a wrong password rejected, and the 8-attempts/10-min
+`wx_throttle` rule noted). Handed over in chat, **deliberately not committed** anywhere in this repo.
+
 ## 5. Verification run on the package (not on faith)
 
 | Check | Tool | Result |
 |---|---|---|
 | PHP syntax, all 47 `.php` | `php-parser` (real PHP 7/8 grammar) | **0 failures** |
+| HTTP behaviour of the unzipped package | `deploy/p23/apache-sim.js test` (Apache rules modelled from the package's own `.htaccess`) | **15/15 PASS** |
+| MySQL grammar of both dumps | `node-sql-parser` | **all statements valid** (`SET NAMES` unsupported by the JS grammar) |
 | Hostinger `public_html` readiness | `deploy/p23/hostinger-check.js`, run on the **extracted zip** | **54/54 PASS** |
 | Seeded login hashes | `bcryptjs` compare against the dump | `admin` → **warning shipped in both docs** |
 | JS syntax, all 87 `.js` | `node --check` | **0 failures** |

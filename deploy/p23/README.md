@@ -9,6 +9,8 @@
 | `DATABASE-README.txt` | Copy of the DB import note, incl. the seeded-password warning. |
 | `00-verify-import.sql` / `01-security-cleanup.sql` | The two SQL snippets on their own, so they can be reviewed before import. |
 | `AUDIT-P23.md` | Full analysis of the project + every defect found (2× P0 fatal, 2× P0 security) and what was changed. |
+| `INSTALL-RUN-CARD.md` | The 10-minute install sequence, in order, with the verification table. The credentials themselves are **not** in this file — they were sent in chat on purpose. |
+| `apache-sim.js` | Runs the unzipped package over HTTP with its own `.htaccess` rules applied (DirectoryIndex, 301/410 rules, 403 blocks, aliases, ErrorDocument) + 15 assertions. `serve <dir> <port>` to browse it, `test <dir>` to check it. |
 | `hostinger-check.js` | The gate: 70 `public_html` readiness checks. `node hostinger-check.js <unzipped-package>` → exit code = failures. 70/70 on this package, 48/70 on the old static build. |
 | `phplint.js` / `links.js` | PHP-grammar lint (`npm i php-parser` first) and the local-reference resolver used in the audit. |
 
