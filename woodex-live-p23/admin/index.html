@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Woodex Admin v2.5 Pro</title>
+<link rel="icon" href="/favicon.ico">
+<link rel="stylesheet" href="admin.css?v=2.5.1">
+<script>try{if(localStorage.getItem("wxaTheme")==="dark"||(!localStorage.getItem("wxaTheme")&&matchMedia("(prefers-color-scheme: dark)").matches))document.documentElement.classList.add("dark")}catch(e){}</script>
+</head>
+<body>
+
+<!-- ============ AUTH ============ -->
+<div class="auth" id="auth" hidden>
+  <div class="auth-card">
+    <div class="brand">
+      <span class="logo">W</span>
+      <div><b>Woodex</b><small>ADMIN</small></div>
+    </div>
+
+    <!-- Login Form -->
+    <form id="login-form">
+      <h1>Sign in</h1>
+      <p class="muted">Welcome back. Sign in to manage the website.</p>
+
+      <label for="l-email">Email
+        <input type="text" inputmode="email" id="l-email" autocomplete="username" autocapitalize="none" required placeholder="master@woodex.pk">
+      </label>
+
+      <label for="l-pass">Password
+        <span class="pw-wrap">
+          <input type="password" id="l-pass" autocomplete="current-password" required placeholder="Enter password">
+          <button type="button" class="pw-eye" id="l-pass-toggle" aria-label="Toggle password visibility">Show</button>
+        </span>
+      </label>
+
+      <p class="err" id="l-err"></p>
+
+      <button type="submit" class="btn pri block" id="l-btn">Sign in</button>
+
+      <p style="text-align:center;margin:12px 0 0;font-size:13px"><a href="#" id="l-forgot">Forgot password?</a></p>
+
+      <div class="auth-divider" style="display:flex;align-items:center;gap:12px;margin:20px 0 16px;color:#64748b;font-size:12px;">
+        <span style="flex:1;height:1px;background:#28334a;"></span>
+        <span>or</span>
+        <span style="flex:1;height:1px;background:#28334a;"></span>
+      </div>
+
+      <button type="button" class="btn-sso-google" id="l-soc-google">
+        <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.66v3.05h3.9c2.28-2.1 3.645-5.2 3.645-9.15z"/><path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.9-3.05c-1.08.72-2.45 1.16-4.03 1.16-3.1 0-5.74-2.09-6.68-4.91H1.21v3.13C3.25 21.43 7.33 24 12 24z"/><path fill="#FBBC05" d="M5.32 14.29c-.24-.72-.38-1.49-.38-2.29s.14-1.57.38-2.29V6.58H1.21C.44 8.11 0 9.99 0 12s.44 3.89 1.21 5.42l4.11-3.13z"/><path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.25 2.57 1.21 6.58l4.11 3.13c.94-2.82 3.58-4.96 6.68-4.96z"/></svg>
+        <span>Continue with Google</span>
+      </button>
+
+      <div id="g-login" hidden><div class="g-or"><span>or</span></div><div id="g-btn"></div><p class="muted" style="font-size:12px;text-align:center;margin:6px 0 0">Only for existing Admin users.</p></div>
+    </form>
+
+    <!-- Forgot Password Form -->
+    <form id="fp-form" hidden>
+      <h1 class="auth-title">Reset Password</h1>
+      <p class="auth-sub">Enter your Admin email. We will email you a secure link to choose a new password.</p>
+      <div class="auth-field">
+        <label for="fp-email">Email</label>
+        <div class="auth-input-pill">
+          <input type="email" id="fp-email" autocomplete="username" required placeholder="Enter your registered email">
+        </div>
+      </div>
+      <p class="err" id="fp-err"></p>
+      <p class="muted" id="fp-ok" style="font-size:13px"></p>
+      <button type="submit" class="btn-auth-main" id="fp-btn">Send Reset Link</button>
+      <p class="auth-signup-text"><a href="#" class="fp-back auth-link-cyan">Back to sign in</a></p>
+    </form>
+
+    <!-- Two-Step Verification Form -->
+    <form id="tfa-form" hidden>
+      <h1 class="auth-title">Two-Step Sign In</h1>
+      <p class="auth-sub">Enter the 6-digit verification code from your authenticator app.</p>
+      <div class="auth-field">
+        <label for="t-code">Verification Code</label>
+        <div class="auth-input-pill">
+          <input id="t-code" inputmode="numeric" autocomplete="one-time-code" maxlength="9" required placeholder="123456">
+        </div>
+      </div>
+      <p class="err" id="t-err"></p>
+      <button type="submit" class="btn-auth-main" id="t-btn">Verify Code</button>
+      <p class="auth-signup-text"><a href="#" id="t-back" class="auth-link-cyan">Back to sign in</a></p>
+    </form>
+
+    <!-- Setup Form -->
+    <form id="setup-form" hidden>
+      <h1 class="auth-title">Set up Woodex Admin</h1>
+      <p class="auth-sub">One-time installation. Creates database tables and owner account.</p>
+      <div class="auth-field"><label>Your Name</label><div class="auth-input-pill"><input id="s-uname" placeholder="Admin Name"></div></div>
+      <div class="auth-field"><label>Email</label><div class="auth-input-pill"><input type="email" id="s-email" placeholder="admin@woodex.pk"></div></div>
+      <div class="auth-field"><label>Password</label><div class="auth-input-pill"><input type="password" id="s-pass" minlength="8" placeholder="Password (8+ chars)"></div></div>
+      <div class="auth-field"><label>Page-Builder Password</label><div class="auth-input-pill"><input type="password" id="s-bpass" placeholder="Page-builder password"></div></div>
+      <p class="err" id="s-err"></p>
+      <button type="submit" class="btn-auth-main" id="s-btn">Install &amp; Create Owner</button>
+    </form>
+
+    <!-- Reconnect Database Form -->
+    <form id="db-form" hidden>
+      <h1 class="auth-title">Reconnect Database</h1>
+      <p class="auth-sub">Enter your Hostinger MySQL database details to restore connection.</p>
+      <div class="auth-field"><label>Database Name</label><div class="auth-input-pill"><input id="d-name" placeholder="u128159657_woodex"></div></div>
+      <div class="auth-field"><label>Database User</label><div class="auth-input-pill"><input id="d-user" placeholder="u128159657_woodex"></div></div>
+      <div class="auth-field"><label>Database Password</label><div class="auth-input-pill"><input type="password" id="d-dpass"></div></div>
+      <div class="auth-field"><label>Page-Builder Password</label><div class="auth-input-pill"><input type="password" id="d-bpass" placeholder="Page-builder password"></div></div>
+      <p class="err" id="d-err"></p>
+      <button type="submit" class="btn-auth-main" id="d-btn">Test &amp; Reconnect</button>
+    </form>
+  </div>
+</div>
+
+<!-- ============ APP ============ -->
+<div class="app" id="app" hidden>
+  <aside class="side" id="side">
+    <div class="side-top">
+      <a href="#/dashboard" class="brand">
+        <span class="logo" style="background:#00b8db;color:#04222b;font-weight:800;border-radius:10px;">W</span>
+        <div><b>Woodex</b><small style="color: #00d3f2; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;">ADMIN V2.5 PRO</small></div>
+      </a>
+      <button class="icon-btn" id="rail" title="Collapse sidebar" aria-label="Collapse sidebar" style="margin-left:auto"><i data-i="panel-left"></i></button>
+      <button class="icon-btn side-x" id="side-x" aria-label="Close menu"><i data-i="x"></i></button>
+    </div>
+    <nav id="nav"></nav>
+    <div class="side-foot" id="side-foot">
+      <div class="side-user-row" style="display:flex;align-items:center;gap:10px;padding:8px 0;width:100%;">
+        <span class="av" id="sf-av" style="width:34px;height:34px;border-radius:50%;background:#00b8db;color:#04222b;font-weight:700;display:grid;place-items:center;font-size:13px;flex-shrink:0;">MA</span>
+        <div style="flex:1;min-width:0;overflow:hidden;">
+          <b id="sf-name" style="display:block;font-size:13px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Master Admin</b>
+          <small id="sf-role" style="color:#9ca3af;font-size:11px;">Master</small>
+        </div>
+        <a href="/" target="_blank" rel="noopener" title="View website" style="color:#9ca3af;display:grid;place-items:center;padding:4px;"><i data-i="external-link"></i></a>
+        <button id="sf-logout" title="Sign out" style="background:none;border:none;color:#9ca3af;cursor:pointer;display:grid;place-items:center;padding:4px;"><i data-i="log-out"></i></button>
+      </div>
+    </div>
+  </aside>
+  <div class="side-shade" id="side-shade"></div>
+
+  <div class="main">
+    <header class="top">
+      <button class="icon-btn" id="menu-btn" aria-label="Toggle menu"><i data-i="panel-left"></i></button>
+      <div class="top-search"><i data-i="search"></i><input id="gsearch" placeholder="Search pages…  ( / )" list="gsearch-list" autocomplete="off"><datalist id="gsearch-list"></datalist></div>
+      <button class="pk-btn" id="pk-btn" type="button" title="Search all screens"><i data-i="search"></i><span>Go to screen…</span><kbd>Ctrl K</kbd></button>
+      <div class="top-r">
+        <div class="dd" id="nt-dd"><button class="icon-btn" id="nt-btn" aria-label="Notifications"><i data-i="bell"></i><span class="nt-n" id="nt-n" hidden>0</span></button><div class="dd-menu nt-menu" id="nt-menu" hidden></div></div>
+        <button class="icon-btn" id="dark-btn" aria-label="Dark mode"><i data-i="moon" class="i-moon"></i><i data-i="sun" class="i-sun"></i></button>
+        <div class="dd" id="user-dd">
+          <button class="user-btn" id="user-btn"><span class="av" id="u-av">?</span><span class="u-txt"><b id="u-name">…</b><small id="u-role"></small></span><i data-i="chevron-down"></i></button>
+          <div class="dd-menu" id="user-menu" hidden>
+            <a href="#/profile"><i data-i="user"></i>My profile</a>
+            <a href="#/activity" data-roles="owner,admin"><i data-i="activity"></i>Activity log</a>
+            <button id="logout"><i data-i="log-out"></i>Sign out</button>
+          </div>
+        </div>
+      </div>
+    </header>
+    <main class="content" id="view"></main>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status"></div>
+<div class="modal" id="modal" hidden><div class="modal-card" id="modal-card"></div></div>
+
+<script src="vendor/icons.js?v=2.5.1"></script>
+<script src="vendor/chart.umd.js?v=2.5.1" defer></script>
+<script src="admin.js?v=2.5.1" defer></script>
+<script src="admin-pages.js?v=2.5.1" defer></script>
+<script src="admin-chrome.js?v=2.5.1" defer></script>
+<script src="/builder/wx-css.js?v=2.5.1" defer></script>
+<script src="/builder/blocks.js?v=2.5.1" defer></script>
+<script src="admin-library.js?v=2.5.1" defer></script>
+<script src="admin-lib26.js?v=2.5.1" defer></script>
+<script src="admin-crm.js?v=2.5.1" defer></script>
+<script src="admin-reports.js?v=2.5.1" defer></script>
+<script src="vendor/quote-starter.js?v=2.5.1" defer></script>
+<script src="admin-print.js?v=2.5.1" defer></script>
+<script src="admin-print17.js?v=2.5.1" defer></script>
+<script src="/assets/js/quotation-scopes.js?v=2.5.1" defer></script>
+<script src="admin-sales.js?v=2.5.1" defer></script>
+<script src="admin-content.js?v=2.5.1" defer></script>
+<script src="admin-starters.js?v=2.5.1" defer></script>
+<script src="admin-fields.js?v=2.5.1" defer></script>
+<script src="admin-media.js?v=2.5.1" defer></script>
+<script src="admin-speed.js?v=2.5.1" defer></script>
+<script src="admin-system.js?v=2.5.1" defer></script>
+<script src="vendor/qrcode.js?v=2.5.1" defer></script>
+<script src="admin-settings.js?v=2.5.1" defer></script>
+<script src="admin-theme.js?v=2.5.1" defer></script>
+<script src="admin-xlsx.js?v=2.5.1" defer></script>
+<script src="admin-sheets.js?v=2.5.1" defer></script>
+<script src="admin-p3.js?v=2.5.1" defer></script>
+<script src="admin-p8.js?v=2.5.1" defer></script>
+<script src="admin-chat.js?v=2.5.1" defer></script>
+<script src="admin-chat2.js?v=2.5.1" defer></script>
+  <script src="admin-train.js?v=2.5.1" defer></script>
+  <script src="admin-notify.js?v=2.5.1" defer></script>
+  <script src="seo-analyzer.js?v=2.5.1" defer></script>
+  <script src="admin-seo.js?v=2.5.1" defer></script>
+<script src="admin-offers.js?v=2.5.1" defer></script>
+<script src="admin-google.js?v=2.5.1" defer></script>
+<script src="admin-dash.js?v=2.5.1" defer></script>
+<script src="admin-lists.js?v=2.5.1" defer></script>
+<script src="admin-integ.js?v=2.5.1" defer></script>
+<script src="admin-conn.js?v=2.5.1" defer></script>
+<script src="admin-inbox.js?v=2.5.1" defer></script>
+<script src="admin-users.js?v=2.5.1" defer></script>
+<script src="admin-redirects.js?v=2.5.1" defer></script>
+<script src="admin-templates.js?v=2.5.1" defer></script>
+<script src="admin-booking.js?v=2.5.1" defer></script>
+<script src="admin-p18.js?v=2.5.1" defer></script>
+<script src="admin-p18e.js?v=2.5.1" defer></script>
+<script src="admin-p18g.js?v=2.5.1" defer></script>
+<script src="admin-p18h.js?v=2.5.1" defer></script>
+<script src="admin-p18j.js?v=2.5.1" defer></script>
+<script src="admin-p19f.js?v=2.5.1" defer></script>
+<script src="admin-logos.js?v=2.5.1" defer></script>
+<script src="admin-p19c.js?v=2.5.1" defer></script>
+<script src="admin-sales17.js?v=2.5.1" defer></script>
+<script src="admin-p38wa.js?v=2.5.1" defer></script>
+<script src="admin-hero.js?v=2.5.1" defer></script>
+<script src="admin-p36.js?v=2.5.1" defer></script>
+<script src="admin-seo38.js?v=2.5.1" defer></script>
+<script src="admin-appr.js?v=2.5.1" defer></script>
+<script src="admin-tg.js?v=2.5.1" defer></script>
+<script src="admin-aia.js?v=2.5.1" defer></script>
+<script src="admin-wahub.js?v=2.5.1" defer></script>
+<script src="admin-wains.js?v=2.5.1" defer></script>
+<script src="admin-aicenter.js?v=2.5.1" defer></script>
+<script src="admin-social.js?v=2.5.1" defer></script>
+<script src="admin-seoagent.js?v=2.5.1" defer></script>
+</body>
+</html>

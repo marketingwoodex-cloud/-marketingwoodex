@@ -1,0 +1,5 @@
+# Runtime secrets and data written by the admin: DB login (db.json), session secret (config.json), backups.
+# Only the blocking .htaccess and the template db.example.json are tracked.
+_private/*
+!_private/.htaccess
+!_private/db.example.json
