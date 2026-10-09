@@ -18,6 +18,7 @@
       <span class="logo">W</span>
       <div><b>Woodex</b><small>ADMIN</small></div>
     </div>
+<<<<<<< HEAD
 
     <!-- Login Form -->
     <form id="login-form">
@@ -41,17 +42,35 @@
 
       <p style="text-align:center;margin:12px 0 0;font-size:13px"><a href="#" id="l-forgot">Forgot password?</a></p>
 
+=======
+
+    <form id="login-form" hidden>
+      <h1>Sign in</h1>
+      <p class="muted">Welcome back. Sign in to manage the website.</p>
+      <label>Email<input type="text" inputmode="email" id="l-email" autocomplete="username" autocapitalize="none" required placeholder="master@woodex.pk"></label>
+      <label>Password<span class="pw-wrap"><input type="password" id="l-pass" autocomplete="current-password" required placeholder="Enter password"><button type="button" class="pw-eye" aria-label="Show password" onclick="var i=this.previousElementSibling;i.type=i.type==='password'?'text':'password';this.textContent=i.type==='password'?'Show':'Hide';">Show</button></span></label>
+      <p class="err" id="l-err"></p>
+      <button class="btn pri block" id="l-btn">Sign in</button>
+      <p style="text-align:center;margin:12px 0 0;font-size:13px"><a href="#" id="l-forgot">Forgot password?</a></p>
+>>>>>>> 7c4e980 (Deploy woodex-live-p23 folder and woodex-live-p23.zip with full Hostinger recognition structure and luxury sign-in)
       <div class="auth-divider" style="display:flex;align-items:center;gap:12px;margin:20px 0 16px;color:#64748b;font-size:12px;">
         <span style="flex:1;height:1px;background:#28334a;"></span>
         <span>or</span>
         <span style="flex:1;height:1px;background:#28334a;"></span>
       </div>
+<<<<<<< HEAD
 
       <button type="button" class="btn-sso-google" id="l-soc-google">
         <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.66v3.05h3.9c2.28-2.1 3.645-5.2 3.645-9.15z"/><path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.9-3.05c-1.08.72-2.45 1.16-4.03 1.16-3.1 0-5.74-2.09-6.68-4.91H1.21v3.13C3.25 21.43 7.33 24 12 24z"/><path fill="#FBBC05" d="M5.32 14.29c-.24-.72-.38-1.49-.38-2.29s.14-1.57.38-2.29V6.58H1.21C.44 8.11 0 9.99 0 12s.44 3.89 1.21 5.42l4.11-3.13z"/><path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.25 2.57 1.21 6.58l4.11 3.13c.94-2.82 3.58-4.96 6.68-4.96z"/></svg>
         <span>Continue with Google</span>
       </button>
 
+=======
+      <button type="button" class="btn-sso-google" id="l-soc-google" onclick="if(window.gButtonTrigger){window.gButtonTrigger()}else{var g=document.querySelector('#g-btn iframe')||document.querySelector('#g-btn div');if(g)g.click();}">
+        <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.66v3.05h3.9c2.28-2.1 3.645-5.2 3.645-9.15z"/><path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.9-3.05c-1.08.72-2.45 1.16-4.03 1.16-3.1 0-5.74-2.09-6.68-4.91H1.21v3.13C3.25 21.43 7.33 24 12 24z"/><path fill="#FBBC05" d="M5.32 14.29c-.24-.72-.38-1.49-.38-2.29s.14-1.57.38-2.29V6.58H1.21C.44 8.11 0 9.99 0 12s.44 3.89 1.21 5.42l4.11-3.13z"/><path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.25 2.57 1.21 6.58l4.11 3.13c.94-2.82 3.58-4.96 6.68-4.96z"/></svg>
+        <span>Continue with Google</span>
+      </button>
+>>>>>>> 7c4e980 (Deploy woodex-live-p23 folder and woodex-live-p23.zip with full Hostinger recognition structure and luxury sign-in)
       <div id="g-login" hidden><div class="g-or"><span>or</span></div><div id="g-btn"></div><p class="muted" style="font-size:12px;text-align:center;margin:6px 0 0">Only for existing Admin users.</p></div>
     </form>
 

@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 # 🚀 Hostinger Deployment & Live Setup Guide
 **Woodex Interior Architecture Platform (v2.5 Pro)**  
 **Target Host:** Hostinger Business / Cloud Web Hosting (LiteSpeed / Apache + PHP 8.1 / 8.2)
@@ -61,6 +62,13 @@
 **Target Domain:** `woodex.com.pk`  
 **Package:** `woodex-live-p23.zip` (27.28 MB) / `woodex-master-P22.1.zip` (27.28 MB)  
 **Compatibility:** Hostinger PHP 8.1 / 8.2 / 8.3 + MySQL 8.0 / MariaDB 10.3+  
+=======
+# Woodex Architecture & Luxury Interior — Hostinger Production Deployment Guide
+
+**Target Domain:** `woodex.com.pk`  
+**Package:** `woodex-live-p23.zip` (27.3 MB) / `woodex-master-P22.2.zip` (27.3 MB)  
+**Compatibility:** Hostinger PHP 7.4 / 8.0 / 8.1 / 8.2 / 8.3 + MySQL 8.0 / MariaDB 10.3+  
+>>>>>>> 7c4e980 (Deploy woodex-live-p23 folder and woodex-live-p23.zip with full Hostinger recognition structure and luxury sign-in)
 
 ---
 
@@ -68,10 +76,18 @@
 
 | Package | Direct Download Link | Size | Description |
 |---|---|---|---|
+<<<<<<< HEAD
 | **Woodex Live P23 Master ZIP** | [Download woodex-live-p23.zip](https://github.com/marketingwoodex-cloud/-marketingwoodex/raw/arena/8a776c65-marketingwoodex/woodex-live-P23/woodex-live-p23.zip) | 27.3 MB | Full flat root structure, all 147 pages, Admin v2.5, 70 Section Suite, CRM upgrades, and installer. |
 | **Woodex Master P22.2 Production Suite** | [Download woodex-master-P22.2.zip](https://github.com/marketingwoodex-cloud/-marketingwoodex/raw/arena/8a776c65-marketingwoodex/woodex-master-P22/woodex-master-P22.2.zip) | 27.3 MB | Production release with database schema, assets, and complete backend suite. |
 | **Woodex Master P22.1 Suite** | [Download woodex-master-P22.1.zip](https://github.com/marketingwoodex-cloud/-marketingwoodex/raw/arena/8a776c65-marketingwoodex/woodex-master-P22/woodex-master-P22.1.zip) | 27.3 MB | Production package copy. |
 | **Full Repository Archive (.zip)** | [Download GitHub Archive](https://github.com/marketingwoodex-cloud/-marketingwoodex/archive/refs/heads/arena/8a776c65-marketingwoodex.zip) | ~30 MB | Complete repository snapshot. |
+=======
+| **Woodex Live P23 Master ZIP (Primary)** | [Download woodex-live-p23.zip](https://github.com/marketingwoodex-cloud/-marketingwoodex/raw/arena/8a776c65-marketingwoodex/woodex-live-p23/woodex-live-p23.zip) | 27.3 MB | Full flat root structure in `woodex-live-p23/`, all 147 pages, Admin v2.5, 70 Section Suite, CRM upgrades, and installer. |
+| **Woodex Live P23 Folder (Browse Online)** | [Browse woodex-live-p23/](https://github.com/marketingwoodex-cloud/-marketingwoodex/tree/arena/8a776c65-marketingwoodex/woodex-live-p23) | — | Direct GitHub folder with all extracted website files. |
+| **Woodex Live P23 (Mirror ZIP)** | [Download woodex-live-P23.zip](https://github.com/marketingwoodex-cloud/-marketingwoodex/raw/arena/8a776c65-marketingwoodex/woodex-live-P23/woodex-live-p23.zip) | 27.3 MB | Case-insensitive mirror download link. |
+| **Woodex Master P22.2 Suite** | [Download woodex-master-P22.2.zip](https://github.com/marketingwoodex-cloud/-marketingwoodex/raw/arena/8a776c65-marketingwoodex/woodex-master-P22/woodex-master-P22.2.zip) | 27.3 MB | Production release with database schema, assets, and complete backend suite. |
+| **Woodex Master P22.1 Suite** | [Download woodex-master-P22.1.zip](https://github.com/marketingwoodex-cloud/-marketingwoodex/raw/arena/8a776c65-marketingwoodex/woodex-master-P22/woodex-master-P22.1.zip) | 27.3 MB | Production package copy. |
+>>>>>>> 7c4e980 (Deploy woodex-live-p23 folder and woodex-live-p23.zip with full Hostinger recognition structure and luxury sign-in)
 
 ---
 
@@ -83,6 +99,7 @@ Hostinger auto-scans your `public_html/` directory to recognize website technolo
 public_html/
 ├── index.php                      # Hostinger PHP Gateway & Routing
 ├── index.html                     # Luxury Homepage (130 KB)
+<<<<<<< HEAD
 ├── config.php                     # Hostinger Database Configuration
 ├── .env                           # Environment Variables
 ├── .htaccess                      # Security, HTTPS redirect & caching
@@ -90,6 +107,15 @@ public_html/
 ├── google0b104c3cfb7a4943.html    # Google Search Console Verification
 ├── favicon.ico                    # High-DPI Binary Favicon
 ├── admin/                         # Woodex Admin v2.5 Pro Dashboard
+=======
+├── config.php                     # Hostinger Database Configuration ($db_host, $db_name, $db_user, $db_pass)
+├── .env                           # Environment Variables (DB_HOST, DB_DATABASE, etc.)
+├── .htaccess                      # DirectoryIndex index.php index.html & security rules
+├── woodex-database.sql            # Master MySQL Database Schema (for phpMyAdmin)
+├── google0b104c3cfb7a4943.html    # Google Search Console Verification
+├── favicon.ico                    # High-DPI Binary Favicon
+├── admin/                         # Unified Woodex Admin v2.5 Pro Dashboard
+>>>>>>> 7c4e980 (Deploy woodex-live-p23 folder and woodex-live-p23.zip with full Hostinger recognition structure and luxury sign-in)
 ├── api/                           # PHP 8 REST API Endpoints
 ├── assets/                        # High-resolution images, fonts, styles, scripts
 ├── css/                           # Standard stylesheet folder (imports /assets/site-p21.css)
@@ -128,6 +154,7 @@ public_html/
 ### Step 3: Configure Database Connection
 Edit `public_html/config.php` (or use the Admin setup screen) with your database credentials:
 ```php
+<<<<<<< HEAD
 define('DB_HOST', 'localhost');
 define('DB_NAME', 'u128159657_woodex');
 define('DB_USER', 'u128159657_woodex');
@@ -138,13 +165,29 @@ define('DB_PASS', 'YOUR_DATABASE_PASSWORD');
 ---
 
 ## 3. Woodex Admin Sign-in & Team Roles
+=======
+$db_host = "localhost";
+$db_name = "u128159657_woodex";
+$db_user = "u128159657_woodex";
+$db_pass = "YOUR_DATABASE_PASSWORD";
+```
+
+---
+
+## 3. Woodex Admin Sign-in
+>>>>>>> 7c4e980 (Deploy woodex-live-p23 folder and woodex-live-p23.zip with full Hostinger recognition structure and luxury sign-in)
 
 Access the Admin Suite at: `https://woodex.com.pk/admin/`
 
 ### Sign-in Features:
 - **Luxury Aesthetic:** Centered frosted glass card over full-screen luxury interior visual.
+<<<<<<< HEAD
 - **Quick Demo Access:** 1-Click Auto Fill role pills for instant access.
 - **Removed GitHub SSO:** Clean, focused email/password and Google SSO options.
+=======
+- **Google SSO:** Full-width **"Continue with Google"** button.
+- **Clean Form:** Direct Email & Password sign-in.
+>>>>>>> 7c4e980 (Deploy woodex-live-p23 folder and woodex-live-p23.zip with full Hostinger recognition structure and luxury sign-in)
 
 ### Pre-Configured Demo Credentials (Password: `Woodex@2026`):
 
@@ -156,6 +199,7 @@ Access the Admin Suite at: `https://woodex.com.pk/admin/`
 | **Sales Lead** | Usman Ali | `sales@woodex.pk` | `Woodex@2026` | CRM Leads, Quotes, Invoices, WhatsApp Inbox |
 | **Support Lead** | Dr. Sarah Mansoor | `support@woodex.pk` | `Woodex@2026` | Live Chat, Client Updates, Consultations |
 | **Owner Fallback** | Woodex Owner | `admin@woodex.pk` | `Woodex@2026` | Master Administrative Access |
+<<<<<<< HEAD
 
 ---
 
@@ -165,3 +209,5 @@ Access the Admin Suite at: `https://woodex.com.pk/admin/`
 2. **Google Search Console:** Open `https://woodex.com.pk/google0b104c3cfb7a4943.html` to confirm domain verification for Google Search Console.
 3. **Live Chat & WhatsApp Dock:** Test the floating interactive chat widget on any of the 147 pages.
 >>>>>>> d21c542 (Fix Hostinger website recognition, flat folder structure, centered luxury login, demo pills, and deploy woodex-live-p23.zip)
+=======
+>>>>>>> 7c4e980 (Deploy woodex-live-p23 folder and woodex-live-p23.zip with full Hostinger recognition structure and luxury sign-in)
