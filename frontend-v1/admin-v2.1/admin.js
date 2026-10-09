@@ -135,7 +135,6 @@
     ["ADMIN & SETTINGS"],
     ["business", "Business info", "building", "g:settings"],
     ["settings", "Integrations", "zap", "g:settings"],
-    ["connections", "Connections & MCP", "zap", "owner,admin"],
     ["users", "Users & roles", "users", "owner,admin"],
     ["profile", "My profile", "user"],
     ["security", "My security", "shield"],
@@ -263,7 +262,9 @@
   if (eye) {
     eye.onclick = function () {
       var p = $("#l-pass");
-      p.type = p.type === "password" ? "text" : "password";
+      var isPw = p.type === "password";
+      p.type = isPw ? "text" : "password";
+      eye.textContent = isPw ? "Hide" : "Show";
     };
   }
   var socG = $("#l-soc-google");
@@ -508,11 +509,50 @@
 
   // ---------------- profile
   VIEWS.profile = function (el) {
-    el.innerHTML = head("My profile", "Profile") + '<div class="grid g-7-5">' +
-      '<div class="card"><div class="card-h"><h3>Details</h3></div><div class="card-b"><div class="who" style="margin-bottom:20px"><span class="av" style="width:56px;height:56px;font-size:18px">' + initials(S.user.name) + "</span><div><b>" + esc(S.user.name) + "</b><small>" + esc(S.user.email) + " · " + S.user.role + "</small></div></div>" +
-        '<form id="pf"><label>Name<input id="pf-n" value="' + esc(S.user.name) + '" required></label><label>Email <small>(ask an admin to change)</small><input value="' + esc(S.user.email) + '" disabled></label><button class="btn pri">Save</button></form></div></div>' +
-      '<div class="card"><div class="card-h"><h3>Change password</h3></div><div class="card-b"><form id="pw"><label>Current password<input type="password" id="pw-c" required autocomplete="current-password"></label><label>New password <small>(8+ characters)</small><input type="password" id="pw-n" minlength="8" required autocomplete="new-password"></label><p class="err" id="pw-err"></p><button class="btn pri">Update password</button></form></div></div></div>';
-    $("#pf").onsubmit = function (e) { e.preventDefault(); api("profile", { name: $("#pf-n").value }).then(function (r) { if (!r.ok) return toast(r.error, true); S.user = r.user; $("#u-name").textContent = r.user.name; $("#u-av").textContent = initials(r.user.name); toast("Profile saved ✓"); }); };
+    el.innerHTML = head("My account", "Home / Profile", '<a class="btn" href="#/security">' + ic("shield-check") + 'Security &amp; 2FA</a>') +
+      '<div class="grid g-7-5">' +
+        '<div class="card" style="background:#111318;border:1px solid #20242f;border-radius:14px;padding:24px">' +
+          '<div class="card-h" style="padding:0 0 16px;border-bottom:1px solid #1a1e27"><h3 style="color:#f9fafb;font-size:16px">' + ic("user") + ' Personal Information</h3></div>' +
+          '<div style="display:flex;align-items:center;gap:18px;margin:20px 0">' +
+            '<span class="av" style="width:64px;height:64px;font-size:22px;border-radius:50%;background:#00b8db;color:#04222b;font-weight:800;display:grid;place-items:center">' + initials(S.user.name) + '</span>' +
+            '<div>' +
+              '<b style="font-size:18px;color:#f9fafb;display:block">' + esc(S.user.name) + '</b>' +
+              '<div style="display:flex;align-items:center;gap:8px;margin-top:4px">' +
+                '<span class="badge gold" style="text-transform:uppercase">' + esc(S.user.role) + '</span>' +
+                '<small class="muted">' + esc(S.user.email) + '</small>' +
+              '</div>' +
+            '</div>' +
+          '</div>' +
+          '<form id="pf" style="display:flex;flex-direction:column;gap:14px">' +
+            '<label>Full Name<input id="pf-n" value="' + esc(S.user.name) + '" required style="background:#161922;border-color:#232836"></label>' +
+            '<label>Email Address <small class="muted">(contact Master Admin to change)</small><input value="' + esc(S.user.email) + '" disabled style="background:#12151d;border-color:#1e2430;opacity:0.7"></label>' +
+            '<label>Studio Department<input value="Executive Management &amp; Architecture" disabled style="background:#12151d;border-color:#1e2430;opacity:0.7"></label>' +
+            '<div style="margin-top:10px"><button class="btn pri btn-preline-cyan" style="min-width:120px">Save Profile</button></div>' +
+          '</form>' +
+        '</div>' +
+
+        '<div style="display:flex;flex-direction:column;gap:20px">' +
+          '<div class="card" style="background:#111318;border:1px solid #20242f;border-radius:14px;padding:24px">' +
+            '<div class="card-h" style="padding:0 0 16px;border-bottom:1px solid #1a1e27"><h3 style="color:#f9fafb;font-size:16px">' + ic("key-round") + ' Password &amp; Credentials</h3></div>' +
+            '<form id="pw" style="margin-top:16px;display:flex;flex-direction:column;gap:14px">' +
+              '<label>Current password<input type="password" id="pw-c" required autocomplete="current-password" style="background:#161922;border-color:#232836"></label>' +
+              '<label>New password <small class="muted">(min. 8 characters)</small><input type="password" id="pw-n" minlength="8" required autocomplete="new-password" style="background:#161922;border-color:#232836"></label>' +
+              '<p class="err" id="pw-err" style="margin:0"></p>' +
+              '<div><button class="btn" style="min-width:140px">Update Password</button></div>' +
+            '</form>' +
+          '</div>' +
+
+          '<div class="card" style="background:#111318;border:1px solid #20242f;border-radius:14px;padding:24px">' +
+            '<div class="card-h" style="padding:0 0 16px;border-bottom:1px solid #1a1e27"><h3 style="color:#f9fafb;font-size:16px">' + ic("send") + ' Telegram Alerts</h3></div>' +
+            '<div style="margin-top:14px;font-size:13px">' +
+              '<p class="muted" style="margin:0 0 12px">Receive instant customer enquiry alerts and reply directly via Telegram.</p>' +
+              '<a class="btn sm pri btn-preline-cyan" href="#/telegram">' + ic("qr-code") + 'Link Telegram Account</a>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    W.fillIcons(el);
+    $("#pf").onsubmit = function (e) { e.preventDefault(); api("profile", { name: $("#pf-n").value }).then(function (r) { if (!r.ok) return toast(r.error, true); S.user = r.user; $("#u-name").textContent = r.user.name; $("#u-av").textContent = initials(r.user.name); if ($("#sf-name")) $("#sf-name").textContent = r.user.name; if ($("#sf-av")) $("#sf-av").textContent = initials(r.user.name); toast("Profile saved ✓"); }); };
     $("#pw").onsubmit = function (e) { e.preventDefault(); api("password", { current: $("#pw-c").value, next: $("#pw-n").value }).then(function (r) { if (!r.ok) return ($("#pw-err").textContent = r.error); S.token = r.token; sessionStorage.setItem("wxaTok", r.token); $("#pw").reset(); $("#pw-err").textContent = ""; toast("Password updated ✓"); }); };
   };
 

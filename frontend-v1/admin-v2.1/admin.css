@@ -86,17 +86,20 @@ html.dark .nav-a.on i{color:var(--gold)}
 .side-foot a:hover{color:var(--txt)}
 .main{flex:1;margin-left:var(--side);min-width:0;display:flex;flex-direction:column;transition:margin .25s}
 @media(min-width:1025px){
-.app.mini .side{width:84px}
-.app.mini .main{margin-left:84px}
+.app.mini .side{width:72px;transition:width .22s cubic-bezier(.4,0,.2,1),box-shadow .22s cubic-bezier(.4,0,.2,1);overflow-x:hidden}
+.app.mini .main{margin-left:72px;transition:margin-left .22s cubic-bezier(.4,0,.2,1)}
 .app.mini .side-top{padding:0 8px;justify-content:center}
 .app.mini .side-top .brand{display:none!important}
-.app.mini .side-top #rail{margin:0 auto!important}
-.app.mini #nav{padding:8px 12px}
-.app.mini .nav-a{justify-content:center;padding:11px 0}.app.mini .nav-a>span,.app.mini .nav-a .pill{display:none}
-.app.mini .side-foot a{justify-content:center}.app.mini .side-foot span{display:none}
-.app.mini .side-user-row>div,.app.mini .side-user-row a{display:none!important}
-.app.mini .side-user-row{justify-content:center!important}
-.app.mini .nav-h{font-size:0;margin:14px 0 6px;text-align:center}.app.mini .nav-h::after{content:"•••";font-size:12px;letter-spacing:2px;color:var(--mut2)}
+.app.mini .side-top #rail{margin:0 auto!important;width:40px!important;height:40px!important;border-radius:10px!important;display:grid!important;place-items:center!important;background:rgba(255,255,255,.04)!important;border:1px solid rgba(255,255,255,.08)!important;color:#fff!important}
+.app.mini #nav{padding:8px 6px}
+.app.mini .nav-a{justify-content:center!important;padding:10px 0!important;width:44px!important;height:44px!important;margin:3px auto!important;border-radius:10px!important}
+.app.mini .nav-a>span,.app.mini .nav-a .pill,.app.mini .nav-a .nav-bdg,.app.mini .nav-a .nav-new,.app.mini .nav-car,.app.mini .nav-sub{display:none!important}
+.app.mini .nav-h,.app.mini .nav-hb{font-size:0!important;line-height:0!important;height:1px!important;margin:12px 6px!important;background:rgba(255,255,255,.08)!important;border:0!important;color:transparent!important;text-indent:-9999px!important;overflow:hidden!important;display:block!important}
+.app.mini .nav-h::after,.app.mini .nav-hb::after{display:none!important;content:""!important}
+.app.mini .side-foot{padding:10px 0!important}
+.app.mini .side-user-row{justify-content:center!important;padding:0!important}
+.app.mini .side-user-row>div,.app.mini .side-user-row a,.app.mini .side-user-row button{display:none!important}
+.app.mini .side-user-row .av{margin:0 auto!important;width:38px!important;height:38px!important;font-size:13px!important}
 }
 .top{position:sticky;top:0;z-index:30;height:var(--top);display:flex;align-items:center;gap:14px;padding:0 24px;background:var(--card);border-bottom:1px solid var(--line)}
 .top-search{position:relative;flex:1;max-width:430px}
@@ -449,19 +452,21 @@ small.bad{color:var(--bad)}small.warnc{color:var(--warn)}
 .nav-new{margin-left:auto;padding:1px 8px;border-radius:10px;border:1px solid rgba(184,149,106,.6);color:var(--gold);font:600 10.5px/16px system-ui}
 .nav-pin{background:none;border:0;color:#8b98ab;cursor:pointer;padding:6px;border-radius:8px}.nav-pin:hover{color:#fff;background:rgba(255,255,255,.06)}
 @media(min-width:1025px){
-  .app.mini .side{transition:width .2s ease}
-  #app.mini .side:hover{width:var(--side);box-shadow:8px 0 30px rgba(12,22,40,.35)}
-  #app.mini .side:hover .side-top{padding:0 24px;justify-content:space-between}
-  #app.mini .side:hover .side-top .brand>div{display:block}
-  #app.mini .side:hover #nav{padding:8px 16px 16px}
-  #app.mini .side:hover .nav-a{justify-content:flex-start;padding:10px 12px}
-  #app.mini .side:hover .nav-a>span,#app.mini .side:hover .nav-bdg,#app.mini .side:hover .nav-new{display:inline-block}
-  #app.mini .side:hover .nav-a>span:not(.nav-bdg):not(.nav-new):not(.nav-car){display:inline}
+  #app.mini .side:hover{width:260px!important;box-shadow:12px 0 36px rgba(0,0,0,.5)!important;z-index:50!important}
+  #app.mini .side:hover .side-top{padding:0 18px!important;justify-content:space-between!important}
+  #app.mini .side:hover .side-top .brand{display:flex!important}
+  #app.mini .side:hover .side-top #rail{margin-left:auto!important;margin-right:0!important;width:34px!important;height:34px!important}
+  #app.mini .side:hover #nav{padding:8px 14px 16px!important}
+  #app.mini .side:hover .nav-a{justify-content:flex-start!important;width:100%!important;padding:10px 12px!important;margin:2px 0!important}
+  #app.mini .side:hover .nav-a>span,#app.mini .side:hover .nav-bdg,#app.mini .side:hover .nav-new{display:inline-block!important}
+  #app.mini .side:hover .nav-a>span:not(.nav-bdg):not(.nav-new):not(.nav-car){display:inline!important}
   #app.mini .side:hover .nav-car{display:inline-flex!important}
   #app.mini .side:hover .nav-g.open .nav-sub{display:block!important}
-  #app.mini .side:hover .nav-h{font-size:11.5px;margin:20px 12px 6px;text-align:left}#app.mini .side:hover .nav-h::after{content:none}
-  #app.mini .side:hover .side-foot a{justify-content:flex-start}#app.mini .side:hover .side-foot span{display:inline}
-  .app.mini .nav-bdg,.app.mini .nav-new{display:none}
+  #app.mini .side:hover .nav-h,#app.mini .side:hover .nav-hb{font-size:11px!important;line-height:normal!important;height:auto!important;margin:18px 12px 6px!important;background:none!important;color:#64748b!important;text-indent:0!important;overflow:visible!important;display:block!important;letter-spacing:.08em!important;font-weight:700!important}
+  #app.mini .side:hover .nav-h::after,#app.mini .side:hover .nav-hb::after{display:none!important}
+  #app.mini .side:hover .side-user-row{justify-content:space-between!important;padding:0 8px!important}
+  #app.mini .side:hover .side-user-row>div{display:block!important}
+  #app.mini .side:hover .side-user-row a,#app.mini .side:hover .side-user-row button{display:grid!important}
 }
 /* ===== P16 3.2 smart dashboard ===== */
 .dx-chips{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px}
@@ -493,22 +498,12 @@ small.bad{color:var(--bad)}small.warnc{color:var(--warn)}
 @media(max-width:860px){.dx-g84,.dx-g3{grid-template-columns:1fr}}
 @media(max-width:520px){.dx-kpis{grid-template-columns:1fr 1fr;gap:10px}.dx-kpi{padding:14px}.dx-kpi b{font-size:18px}.dx-kpi .kpi-ic{display:none}.ph .toolbar{flex-wrap:wrap}}
 /* ===== P16 3.3 split-screen login ===== */
-.auth:not([hidden]){display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);padding:0;place-items:stretch;min-height:100vh;background:var(--bg)}
-.auth-side{background:radial-gradient(700px 400px at 90% 110%,rgba(184,149,106,.28),transparent),radial-gradient(500px 300px at 0 0,rgba(184,149,106,.12),transparent),#0c1628;color:#e8ecf3;padding:48px 56px;display:flex;flex-direction:column;justify-content:space-between}
-.as-brand{display:flex;align-items:center;gap:12px;font-size:18px}.as-brand .logo{background:#b8956a;color:#0c1628}
-.as-kicker{display:inline-block;color:#d9bf94;font-size:12px;letter-spacing:.14em;text-transform:uppercase;border:1px solid rgba(217,191,148,.4);border-radius:999px;padding:4px 12px}
-.as-copy h2{font-size:38px;line-height:1.15;letter-spacing:-.02em;margin:18px 0 26px;color:#fff}
-.as-copy ul{list-style:none;padding:0;margin:0;display:grid;gap:12px}.as-copy li{padding-left:28px;position:relative;color:#c3cad8}
-.as-copy li:before{content:"";position:absolute;left:0;top:4px;width:16px;height:16px;border-radius:50%;background:#b8956a url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230c1628' stroke-width='3.5'%3E%3Cpath d='M5 12l5 5L20 7'/%3E%3C/svg%3E") center/10px no-repeat}
-.as-foot{color:#7f8aa3}
-.auth:not([hidden]) .auth-card{align-self:center;justify-self:center;margin:32px 16px;box-shadow:none;border:0;background:transparent;max-width:440px}
-.auth .auth-card .brand{display:none}.auth-card #setup-form{max-width:520px}
-.auth-card label input,.auth-card .pw-wrap input{height:46px;border-radius:10px}
-.auth .btn.pri.block{height:46px;background:#0c1628;border-color:#0c1628}.auth .btn.pri.block:hover{background:#1a2a47}
-.pw-wrap{position:relative;display:block}.pw-wrap input{width:100%;padding-right:64px}.pw-eye{position:absolute;right:6px;top:50%;transform:translateY(-50%);border:0;background:transparent;color:#8a6a43;font:inherit;font-size:13px;font-weight:600;cursor:pointer;padding:6px 8px}.pw-eye.on{color:var(--txt2)}
-.auth a{color:#8a6a43}
-@media(max-width:900px){.auth:not([hidden]){grid-template-columns:1fr;grid-template-rows:auto 1fr;align-content:start}.auth:not([hidden]) .auth-card{align-self:start;margin-top:28px}.auth-side{padding:22px 24px;flex-direction:row;align-items:center}.as-copy,.as-foot{display:none}.auth .auth-card .brand{display:none}}
-@media(max-width:900px){#auth .auth-side{height:76px;min-height:0;padding:0 24px}#auth:not([hidden]){display:block!important}}
+.auth:not([hidden]){display:flex!important;align-items:center!important;justify-content:center!important;min-height:100vh!important;width:100vw!important;background:#090b10!important;position:fixed!important;inset:0!important;z-index:100!important;padding:20px!important;box-sizing:border-box!important}
+.auth:not([hidden]) .auth-card{margin:auto!important;max-width:420px!important;width:100%!important;background:#111318!important;border:1px solid #20242f!important;border-radius:16px!important;padding:32px 28px!important;box-shadow:0 24px 60px rgba(0,0,0,.75)!important}
+.auth-card label input,.auth-card .pw-wrap input{height:44px;border-radius:8px;background:#131720;border:1px solid #232836;color:#fff}
+.auth .btn.pri.block{height:44px;background:#b58d4a;border-color:#b58d4a;color:#0c0d12;font-weight:700}.auth .btn.pri.block:hover{background:#c59b27}
+.pw-wrap{position:relative;display:block}.pw-wrap input{width:100%;padding-right:64px}.pw-eye{position:absolute;right:6px;top:50%;transform:translateY(-50%);border:0;background:transparent;color:#b58d4a;font:inherit;font-size:13px;font-weight:600;cursor:pointer;padding:6px 8px}.pw-eye.on{color:var(--txt2)}
+.auth a{color:#b58d4a}
 /* ===== P16 3.4 list-page pattern ===== */
 #view .grid.kpis+.card,#view .grid.kpis+div>.card:first-child{margin-top:18px}
 #view .card>.tbl-wrap{max-height:none}
