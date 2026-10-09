@@ -76,10 +76,10 @@
           '<p style="margin-top:14px"><a href="#/speed" class="btn sm">' + ic("gauge") + 'Speed</a> <a href="#/system" class="btn sm">' + ic("activity") + "System check</a></p></div></div>" +
       "</div>" +
       '<!-- Pending Tasks Card (Enhanced Preline Studio Operations Hub) -->' +
-      '<div class="card" id="dx-tasks-card" style="margin-top:20px;background:#111318;border:1px solid #20242f;border-radius:14px;padding:22px">' +
+      '<div class="card" id="dx-tasks-card" style="margin-top:20px;border-radius:14px;padding:22px">' +
         '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px">' +
           '<div style="display:flex;align-items:center;gap:10px">' +
-            '<h3 style="margin:0;font-size:16px;color:#f9fafb">Pending tasks &amp; studio checklist</h3>' +
+            '<h3 style="margin:0;font-size:16px;color:var(--txt)">Pending tasks &amp; studio checklist</h3>' +
             '<span class="badge gold" style="font-size:11px" id="dx-tasks-badge">3 open · 7 completed</span>' +
           '</div>' +
           '<div class="seg" id="dx-task-filter" style="font-size:12px">' +
@@ -89,48 +89,48 @@
           '</div>' +
         '</div>' +
         '<div id="dx-task-list" style="display:flex;flex-direction:column;gap:10px">' +
-          '<div class="dx-task-item" data-st="open" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:#161922;border:1px solid #232836;border-radius:10px;gap:12px;flex-wrap:wrap">' +
-            '<div style="display:flex;align-items:center;gap:10px"><span style="color:#f59e0b;font-size:15px">⚠️</span><div><b style="font-size:13.5px;color:#f9fafb">SEO metadata &amp; OpenGraph fixes</b><small class="muted" style="display:block;font-size:12px">12 published city &amp; residential pages need meta tags validation</small></div></div>' +
+          '<div class="dx-task-item" data-st="open" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--card-sub);border:1px solid var(--line);border-radius:10px;gap:12px;flex-wrap:wrap">' +
+            '<div style="display:flex;align-items:center;gap:10px"><span style="color:#f59e0b;font-size:15px">⚠️</span><div><b style="font-size:13.5px;color:var(--txt)">SEO metadata &amp; OpenGraph fixes</b><small class="muted" style="display:block;font-size:12px">12 published city &amp; residential pages need meta tags validation</small></div></div>' +
             '<div style="display:flex;align-items:center;gap:10px"><span class="badge warn">Needs Work</span><a class="btn sm" href="#/seo">Open SEO</a></div>' +
           '</div>' +
-          '<div class="dx-task-item" data-st="open" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:#161922;border:1px solid #232836;border-radius:10px;gap:12px;flex-wrap:wrap">' +
-            '<div style="display:flex;align-items:center;gap:10px"><span style="color:#00b8db;font-size:15px">✏️</span><div><b style="font-size:13.5px;color:#f9fafb">Named architect author on insights articles</b><small class="muted" style="display:block;font-size:12px">48 articles require lead architect credentials &amp; schema</small></div></div>' +
+          '<div class="dx-task-item" data-st="open" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--card-sub);border:1px solid var(--line);border-radius:10px;gap:12px;flex-wrap:wrap">' +
+            '<div style="display:flex;align-items:center;gap:10px"><span style="color:var(--pri);font-size:15px">✏️</span><div><b style="font-size:13.5px;color:var(--txt)">Named architect author on insights articles</b><small class="muted" style="display:block;font-size:12px">48 articles require lead architect credentials &amp; schema</small></div></div>' +
             '<div style="display:flex;align-items:center;gap:10px"><span class="badge info">Input Needed</span><a class="btn sm" href="#/team">Assign Team</a></div>' +
           '</div>' +
-          '<div class="dx-task-item" data-st="open" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:#161922;border:1px solid #232836;border-radius:10px;gap:12px;flex-wrap:wrap">' +
-            '<div style="display:flex;align-items:center;gap:10px"><span style="color:#00b8db;font-size:15px">✏️</span><div><b style="font-size:13.5px;color:#f9fafb">Google Business reviews sync</b><small class="muted" style="display:block;font-size:12px">6 Luxury client testimonials live; connect Google Places API</small></div></div>' +
+          '<div class="dx-task-item" data-st="open" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--card-sub);border:1px solid var(--line);border-radius:10px;gap:12px;flex-wrap:wrap">' +
+            '<div style="display:flex;align-items:center;gap:10px"><span style="color:var(--pri);font-size:15px">✏️</span><div><b style="font-size:13.5px;color:var(--txt)">Google Business reviews sync</b><small class="muted" style="display:block;font-size:12px">6 Luxury client testimonials live; connect Google Places API</small></div></div>' +
             '<div style="display:flex;align-items:center;gap:10px"><span class="badge info">Input Needed</span><a class="btn sm" href="#/testimonials">Testimonials</a></div>' +
           '</div>' +
-          '<div class="dx-task-item" data-st="done" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:#161922;border:1px solid #232836;border-radius:10px;gap:12px;flex-wrap:wrap">' +
-            '<div style="display:flex;align-items:center;gap:10px"><span style="color:#10b981;font-size:15px">✅</span><div><b style="font-size:13.5px;color:#f9fafb">Telegram Bot @WoodexInteriorBot</b><small class="muted" style="display:block;font-size:12px">Token connected · Test broadcasts &amp; staff routing enabled</small></div></div>' +
+          '<div class="dx-task-item" data-st="done" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--card-sub);border:1px solid var(--line);border-radius:10px;gap:12px;flex-wrap:wrap">' +
+            '<div style="display:flex;align-items:center;gap:10px"><span style="color:#10b981;font-size:15px">✅</span><div><b style="font-size:13.5px;color:var(--txt)">Telegram Bot @WoodexInteriorBot</b><small class="muted" style="display:block;font-size:12px">Token connected · Test broadcasts &amp; staff routing enabled</small></div></div>' +
             '<div style="display:flex;align-items:center;gap:10px"><span class="badge ok">Operational</span><a class="btn sm" href="#/telegram">Telegram</a></div>' +
           '</div>' +
-          '<div class="dx-task-item" data-st="done" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:#161922;border:1px solid #232836;border-radius:10px;gap:12px;flex-wrap:wrap">' +
-            '<div style="display:flex;align-items:center;gap:10px"><span style="color:#10b981;font-size:15px">✅</span><div><b style="font-size:13.5px;color:#f9fafb">WhatsApp Cloud API &amp; Webhook Hub</b><small class="muted" style="display:block;font-size:12px">Automated quote templates &amp; customer chat triggers active</small></div></div>' +
+          '<div class="dx-task-item" data-st="done" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--card-sub);border:1px solid var(--line);border-radius:10px;gap:12px;flex-wrap:wrap">' +
+            '<div style="display:flex;align-items:center;gap:10px"><span style="color:#10b981;font-size:15px">✅</span><div><b style="font-size:13.5px;color:var(--txt)">WhatsApp Cloud API &amp; Webhook Hub</b><small class="muted" style="display:block;font-size:12px">Automated quote templates &amp; customer chat triggers active</small></div></div>' +
             '<div style="display:flex;align-items:center;gap:10px"><span class="badge ok">Operational</span><a class="btn sm" href="#/wahub">WhatsApp Hub</a></div>' +
           '</div>' +
-          '<div class="dx-task-item" data-st="done" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:#161922;border:1px solid #232836;border-radius:10px;gap:12px;flex-wrap:wrap">' +
-            '<div style="display:flex;align-items:center;gap:10px"><span style="color:#10b981;font-size:15px">✅</span><div><b style="font-size:13.5px;color:#f9fafb">Agent Bridge &amp; MCP Protocol (Claude/Cursor)</b><small class="muted" style="display:block;font-size:12px">7 JSON-RPC 2.0 tools exposed for autonomous CRM &amp; quotation drafting</small></div></div>' +
+          '<div class="dx-task-item" data-st="done" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--card-sub);border:1px solid var(--line);border-radius:10px;gap:12px;flex-wrap:wrap">' +
+            '<div style="display:flex;align-items:center;gap:10px"><span style="color:#10b981;font-size:15px">✅</span><div><b style="font-size:13.5px;color:var(--txt)">Agent Bridge &amp; MCP Protocol (Claude/Cursor)</b><small class="muted" style="display:block;font-size:12px">7 JSON-RPC 2.0 tools exposed for autonomous CRM &amp; quotation drafting</small></div></div>' +
             '<div style="display:flex;align-items:center;gap:10px"><span class="badge ok">Operational</span><a class="btn sm" href="#/settings">Bridge Settings</a></div>' +
           '</div>' +
-          '<div class="dx-task-item" data-st="done" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:#161922;border:1px solid #232836;border-radius:10px;gap:12px;flex-wrap:wrap">' +
-            '<div style="display:flex;align-items:center;gap:10px"><span style="color:#10b981;font-size:15px">✅</span><div><b style="font-size:13.5px;color:#f9fafb">360° VR Panoramic Virtual Tour</b><small class="muted" style="display:block;font-size:12px">Pannellum HTML5 engine &amp; DHA Phase 6 luxury living panorama loaded</small></div></div>' +
+          '<div class="dx-task-item" data-st="done" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--card-sub);border:1px solid var(--line);border-radius:10px;gap:12px;flex-wrap:wrap">' +
+            '<div style="display:flex;align-items:center;gap:10px"><span style="color:#10b981;font-size:15px">✅</span><div><b style="font-size:13.5px;color:var(--txt)">360° VR Panoramic Virtual Tour</b><small class="muted" style="display:block;font-size:12px">Pannellum HTML5 engine &amp; DHA Phase 6 luxury living panorama loaded</small></div></div>' +
             '<div style="display:flex;align-items:center;gap:10px"><span class="badge ok">Operational</span><a class="btn sm" href="#/settings">VR Controls</a></div>' +
           '</div>' +
-          '<div class="dx-task-item" data-st="done" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:#161922;border:1px solid #232836;border-radius:10px;gap:12px;flex-wrap:wrap">' +
-            '<div style="display:flex;align-items:center;gap:10px"><span style="color:#10b981;font-size:15px">✅</span><div><b style="font-size:13.5px;color:#f9fafb">Real DHA &amp; Gulberg project portfolio</b><small class="muted" style="display:block;font-size:12px">147 live public pages with high-res photography and specifications</small></div></div>' +
+          '<div class="dx-task-item" data-st="done" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--card-sub);border:1px solid var(--line);border-radius:10px;gap:12px;flex-wrap:wrap">' +
+            '<div style="display:flex;align-items:center;gap:10px"><span style="color:#10b981;font-size:15px">✅</span><div><b style="font-size:13.5px;color:var(--txt)">Real DHA &amp; Gulberg project portfolio</b><small class="muted" style="display:block;font-size:12px">147 live public pages with high-res photography and specifications</small></div></div>' +
             '<div style="display:flex;align-items:center;gap:10px"><span class="badge ok">Operational</span><a class="btn sm" href="#/portfolio">Portfolio</a></div>' +
           '</div>' +
-          '<div class="dx-task-item" data-st="done" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:#161922;border:1px solid #232836;border-radius:10px;gap:12px;flex-wrap:wrap">' +
-            '<div style="display:flex;align-items:center;gap:10px"><span style="color:#10b981;font-size:15px">✅</span><div><b style="font-size:13.5px;color:#f9fafb">Quotation &amp; BOQ dual bank routing</b><small class="muted" style="display:block;font-size:12px">Meezan &amp; Bank Alfalah accounts configured for luxury project payments</small></div></div>' +
+          '<div class="dx-task-item" data-st="done" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--card-sub);border:1px solid var(--line);border-radius:10px;gap:12px;flex-wrap:wrap">' +
+            '<div style="display:flex;align-items:center;gap:10px"><span style="color:#10b981;font-size:15px">✅</span><div><b style="font-size:13.5px;color:var(--txt)">Quotation &amp; BOQ dual bank routing</b><small class="muted" style="display:block;font-size:12px">Meezan &amp; Bank Alfalah accounts configured for luxury project payments</small></div></div>' +
             '<div style="display:flex;align-items:center;gap:10px"><span class="badge ok">Operational</span><a class="btn sm" href="#/quotes">Quotations</a></div>' +
           '</div>' +
-          '<div class="dx-task-item" data-st="done" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:#161922;border:1px solid #232836;border-radius:10px;gap:12px;flex-wrap:wrap">' +
-            '<div style="display:flex;align-items:center;gap:10px"><span style="color:#10b981;font-size:15px">✅</span><div><b style="font-size:13.5px;color:#f9fafb">Hostinger 1-click flat deployment ready</b><small class="muted" style="display:block;font-size:12px">Woodex Live P29-v2.1.zip archive generated with .htaccess &amp; database</small></div></div>' +
+          '<div class="dx-task-item" data-st="done" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--card-sub);border:1px solid var(--line);border-radius:10px;gap:12px;flex-wrap:wrap">' +
+            '<div style="display:flex;align-items:center;gap:10px"><span style="color:#10b981;font-size:15px">✅</span><div><b style="font-size:13.5px;color:var(--txt)">Hostinger 1-click flat deployment ready</b><small class="muted" style="display:block;font-size:12px">Woodex Live P29-v2.1.zip archive generated with .htaccess &amp; database</small></div></div>' +
             '<div style="display:flex;align-items:center;gap:10px"><span class="badge ok">Ready</span><a class="btn sm pri btn-preline-cyan" href="#/backups">Backups</a></div>' +
           '</div>' +
         '</div>' +
-        '<div style="display:flex;gap:18px;margin-top:16px;font-size:12px;color:#9ca3af;flex-wrap:wrap">' +
+        '<div style="display:flex;gap:18px;margin-top:16px;font-size:12px;color:var(--mut);flex-wrap:wrap">' +
           '<span>✏️ input needed</span>' +
           '<span>⚠️ action required</span>' +
           '<span>✅ operational / ready</span>' +

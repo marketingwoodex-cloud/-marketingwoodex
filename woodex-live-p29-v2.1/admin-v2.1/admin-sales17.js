@@ -93,13 +93,13 @@
         '</div>' +
 
         '<div class="crm-block-card"><div class="crm-block-h"><h3>Lead nurturing &amp; filtering</h3><button class="icon-btn" style="opacity:0.6">⋮</button></div>' +
-          '<div style="display:flex;align-items:baseline;gap:8px;margin-top:4px"><span style="font-size:30px;font-weight:800;color:#f3f4f6">44%</span><span class="crm-kpi-badge down">↘ down from 56.8%</span></div>' +
+          '<div style="display:flex;align-items:baseline;gap:8px;margin-top:4px"><span style="font-size:30px;font-weight:800;color:var(--txt)">44%</span><span class="crm-kpi-badge down">↘ down from 56.8%</span></div>' +
           '<div class="crm-gauge-wrap">' + gaugeSvg() + '</div>' +
           '<div class="crm-gauge-legend">' +
-            '<div class="crm-leg-item"><span class="crm-leg-dot" style="background:#00d3f2"></span><div><div class="crm-leg-title">47</div><div class="crm-leg-desc">Nurtured successfully</div></div></div>' +
-            '<div class="crm-leg-item"><span class="crm-leg-dot" style="background:#2563eb"></span><div><div class="crm-leg-title">23</div><div class="crm-leg-desc">Sent to sales review</div></div></div>' +
-            '<div class="crm-leg-item"><span class="crm-leg-dot" style="background:#475569"></span><div><div class="crm-leg-title">30</div><div class="crm-leg-desc">Blocked</div></div></div>' +
-            '<div class="crm-leg-item"><span class="crm-leg-dot" style="background:#94a3b8"></span><div><div class="crm-leg-title">30</div><div class="crm-leg-desc">Disqualified by team</div></div></div>' +
+            '<div class="crm-leg-item"><span class="crm-leg-dot" style="background:#00d3f2"></span><div><div class="crm-leg-title" style="color:var(--txt)">47</div><div class="crm-leg-desc">Nurtured successfully</div></div></div>' +
+            '<div class="crm-leg-item"><span class="crm-leg-dot" style="background:#2563eb"></span><div><div class="crm-leg-title" style="color:var(--txt)">23</div><div class="crm-leg-desc">Sent to sales review</div></div></div>' +
+            '<div class="crm-leg-item"><span class="crm-leg-dot" style="background:#475569"></span><div><div class="crm-leg-title" style="color:var(--txt)">30</div><div class="crm-leg-desc">Blocked</div></div></div>' +
+            '<div class="crm-leg-item"><span class="crm-leg-dot" style="background:#94a3b8"></span><div><div class="crm-leg-title" style="color:var(--txt)">30</div><div class="crm-leg-desc">Disqualified by team</div></div></div>' +
           '</div>' +
         '</div>' +
       '</div>' +

@@ -11,7 +11,7 @@
       '<button class="btn pri btn-preline-cyan" id="soc-new-post">' + ic("plus") + 'Create Post / Broadcast</button>') +
 
       '<!-- Modular Sub-Navigation Bar -->' +
-      '<div class="card" style="margin-bottom:20px;background:#111318;border:1px solid #20242f">' +
+      '<div class="card" style="margin-bottom:20px">' +
         '<div class="card-b" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:12px 18px">' +
           '<div class="seg" id="soc-subnav">' +
             '<button class="on" data-tab="connectors">' + ic("globe") + 'Profiles &amp; OAuth</button>' +
@@ -135,12 +135,12 @@
       if (sBadge) sBadge.textContent = "● " + connCount + " of " + channels.length + " Channels Live";
 
       if (curTab === "connectors") {
-        box.innerHTML = '<div class="card" style="margin-bottom:20px;background:#111318;border:1px solid #20242f">' +
+        box.innerHTML = '<div class="card" style="margin-bottom:20px">' +
           '<div class="card-b" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:16px 20px">' +
             '<div style="display:flex;align-items:center;gap:12px">' +
-              '<span class="kpi-ic" style="background:rgba(0,184,219,0.15);color:#00d3f2">' + ic("globe") + '</span>' +
+              '<span class="kpi-ic" style="background:var(--pri-soft);color:var(--pri)">' + ic("globe") + '</span>' +
               '<div>' +
-                '<b style="font-size:16px;color:#f9fafb">Connected Social Profiles &amp; Marketing Channels</b>' +
+                '<b style="font-size:16px;color:var(--txt)">Connected Social Profiles &amp; Marketing Channels</b>' +
                 '<small class="muted" style="display:block;margin-top:2px">Manage 1-click OAuth logins, automated social posts, and inbound message synchronization</small>' +
               '</div>' +
             '</div>' +
@@ -149,19 +149,19 @@
         '</div>' +
         '<div style="display:grid;grid-template-columns:repeat(auto-fill, minmax(340px, 1fr));gap:20px">' +
           channels.map(function (c) {
-            return '<div class="card" style="background:#111318;border:1px solid #20242f;border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:14px">' +
+            return '<div class="card" style="border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:14px">' +
               '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px">' +
                 '<div style="display:flex;align-items:center;gap:12px">' +
                   '<span style="font-size:26px">' + c.icon + '</span>' +
                   '<div>' +
-                    '<b style="font-size:15px;color:#f9fafb;display:block">' + esc(c.name) + '</b>' +
-                    '<small style="color:' + (c.connected ? "#00d3f2" : "#94a3b8") + ';font-size:12px;font-weight:600">' + esc(c.account) + '</small>' +
+                    '<b style="font-size:15px;color:var(--txt);display:block">' + esc(c.name) + '</b>' +
+                    '<small style="color:' + (c.connected ? "var(--pri)" : "var(--mut)") + ';font-size:12px;font-weight:600">' + esc(c.account) + '</small>' +
                   '</div>' +
                 '</div>' +
                 '<span class="badge ' + (c.connected ? "ok" : "ghost") + '" style="font-size:11px">' + (c.connected ? "Connected" : "Disconnected") + '</span>' +
               '</div>' +
-              '<p style="font-size:12.5px;color:#94a3b8;line-height:1.5;margin:0;flex:1">' + esc(c.desc) + '</p>' +
-              '<div style="border-top:1px solid #1e2430;padding-top:12px;display:flex;gap:8px;align-items:center;margin-top:auto">' +
+              '<p style="font-size:12.5px;color:var(--mut);line-height:1.5;margin:0;flex:1">' + esc(c.desc) + '</p>' +
+              '<div style="border-top:1px solid var(--line);padding-top:12px;display:flex;gap:8px;align-items:center;margin-top:auto">' +
                 (c.connected
                   ? '<button class="btn sm" data-action="manage" data-id="' + c.id + '" style="flex:1">' + ic("shield") + 'Permissions</button>' +
                     '<button class="btn sm pri btn-preline-cyan" data-action="sync" data-id="' + c.id + '">' + ic("refresh-cw") + 'Sync</button>'
@@ -173,28 +173,28 @@
         '</div>';
       } else if (curTab === "scheduler") {
         box.innerHTML = '<div style="display:grid;grid-template-columns:1fr 340px;gap:20px">' +
-          '<div class="card" style="background:#111318;border:1px solid #20242f;border-radius:14px;padding:20px">' +
-            '<div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #1e2430;padding-bottom:14px;margin-bottom:16px">' +
-              '<div><b style="font-size:16px;color:#f9fafb">Publishing Calendar &amp; Outbox</b><small class="muted" style="display:block">Automated cross-posting across Meta, Instagram, LinkedIn, and TikTok</small></div>' +
+          '<div class="card" style="border-radius:14px;padding:20px">' +
+            '<div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);padding-bottom:14px;margin-bottom:16px">' +
+              '<div><b style="font-size:16px;color:var(--txt)">Publishing Calendar &amp; Outbox</b><small class="muted" style="display:block">Automated cross-posting across Meta, Instagram, LinkedIn, and TikTok</small></div>' +
               '<button class="btn sm pri btn-preline-cyan" id="soc-add-post">' + ic("plus") + 'New Post</button>' +
             '</div>' +
             '<div style="display:flex;flex-direction:column;gap:14px">' +
               scheduledPosts.map(function(p) {
-                return '<div style="background:#0b0d13;border:1px solid #1e2430;border-radius:12px;padding:16px">' +
+                return '<div style="background:var(--card-sub);border:1px solid var(--line);border-radius:12px;padding:16px">' +
                   '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">' +
-                    '<b style="font-size:14px;color:#f9fafb">' + esc(p.title) + '</b>' +
+                    '<b style="font-size:14px;color:var(--txt)">' + esc(p.title) + '</b>' +
                     '<span class="badge ' + (p.status === "Scheduled" ? "ok" : "navy") + '">' + esc(p.status) + '</span>' +
                   '</div>' +
-                  '<p style="font-size:13px;color:#cbd5e1;line-height:1.5;margin:0 0 10px">' + esc(p.preview) + '</p>' +
-                  '<div style="display:flex;align-items:center;justify-content:space-between;font-size:12px;color:#94a3b8;border-top:1px solid #1e2430;padding-top:10px">' +
+                  '<p style="font-size:13px;color:var(--txt2);line-height:1.5;margin:0 0 10px">' + esc(p.preview) + '</p>' +
+                  '<div style="display:flex;align-items:center;justify-content:space-between;font-size:12px;color:var(--mut);border-top:1px solid var(--line);padding-top:10px">' +
                     '<span>Channels: ' + p.channels.map(function(c){ return '<span class="badge sm ghost" style="margin-right:4px">' + c + '</span>'; }).join("") + '</span>' +
-                    '<span style="color:#00d3f2;font-weight:600">' + ic("clock") + ' ' + esc(p.date) + '</span>' +
+                    '<span style="color:var(--pri);font-weight:600">' + ic("clock") + ' ' + esc(p.date) + '</span>' +
                   '</div>' +
                 '</div>';
               }).join("") +
             '</div>' +
           '</div>' +
-          '<div class="card" style="background:#111318;border:1px solid #20242f;border-radius:14px;padding:20px">' +
+          '<div class="card" style="border-radius:14px;padding:20px">' +
             '<h3>' + ic("zap") + ' Instant Quick Broadcast</h3>' +
             '<p class="muted" style="font-size:12.5px;margin:6px 0 14px">Blast an update or announcement directly to your connected social channels.</p>' +
             '<div style="display:flex;flex-direction:column;gap:12px">' +
@@ -207,10 +207,10 @@
           '</div>' +
         '</div>';
       } else if (curTab === "ai-responder") {
-        box.innerHTML = '<div class="card" style="background:#111318;border:1px solid #20242f;border-radius:14px;padding:20px">' +
-          '<div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #1e2430;padding-bottom:14px;margin-bottom:16px">' +
-            '<div><b style="font-size:16px;color:#f9fafb">24/7 AI Community Manager</b><small class="muted" style="display:block">Automatically responds to public comments and direct messages on social media</small></div>' +
-            '<label class="check" style="margin:0"><input type="checkbox" id="ai-soc-toggle" checked style="width:18px;height:18px;accent-color:#00b8db"> <b>AI Auto-Reply Enabled</b></label>' +
+        box.innerHTML = '<div class="card" style="border-radius:14px;padding:20px">' +
+          '<div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);padding-bottom:14px;margin-bottom:16px">' +
+            '<div><b style="font-size:16px;color:var(--txt)">24/7 AI Community Manager</b><small class="muted" style="display:block">Automatically responds to public comments and direct messages on social media</small></div>' +
+            '<label class="check" style="margin:0"><input type="checkbox" id="ai-soc-toggle" checked style="width:18px;height:18px;accent-color:var(--pri)"> <b>AI Auto-Reply Enabled</b></label>' +
           '</div>' +
           '<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">' +
             '<div style="display:flex;flex-direction:column;gap:14px">' +
@@ -219,35 +219,35 @@
             '</div>' +
             '<div style="display:flex;flex-direction:column;gap:14px">' +
               '<label>Auto-DM: Phone Number Capture<textarea rows="3">Thank you for reaching out to Woodex Interior! Please share your contact number and project location, and our lead architect will share a 3D mood board.</textarea></label>' +
-              '<div style="background:#0b0d13;border:1px solid #1e2430;border-radius:10px;padding:14px">' +
-                '<b style="color:#00d3f2;font-size:13px;display:flex;align-items:center;gap:6px">' + ic("shield") + ' Smart Lead Extraction</b>' +
+              '<div style="background:var(--card-sub);border:1px solid var(--line);border-radius:10px;padding:14px">' +
+                '<b style="color:var(--pri);font-size:13px;display:flex;align-items:center;gap:6px">' + ic("shield") + ' Smart Lead Extraction</b>' +
                 '<p class="muted" style="font-size:12px;margin:6px 0 0">Whenever a user comments or DMs a phone number (e.g. 03xx-xxxxxxx), the AI immediately parses it and creates a CRM Lead tagged with "Source: Social Media".</p>' +
               '</div>' +
             '</div>' +
           '</div>' +
-          '<div style="margin-top:16px;border-top:1px solid #1e2430;padding-top:14px;display:flex;justify-content:flex-end">' +
+          '<div style="margin-top:16px;border-top:1px solid var(--line);padding-top:14px;display:flex;justify-content:flex-end">' +
             '<button class="btn pri btn-preline-cyan" id="soc-save-ai">' + ic("check") + 'Save AI Community Rules</button>' +
           '</div>' +
         '</div>';
       } else if (curTab === "leads-bridge") {
-        box.innerHTML = '<div class="card" style="background:#111318;border:1px solid #20242f;border-radius:14px;padding:20px">' +
-          '<div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #1e2430;padding-bottom:14px;margin-bottom:16px">' +
-            '<div><b style="font-size:16px;color:#f9fafb">Inbound Social Leads Bridge</b><small class="muted" style="display:block">Leads automatically captured and extracted from Instagram, Facebook, and LinkedIn comments/DMs</small></div>' +
+        box.innerHTML = '<div class="card" style="border-radius:14px;padding:20px">' +
+          '<div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);padding-bottom:14px;margin-bottom:16px">' +
+            '<div><b style="font-size:16px;color:var(--txt)">Inbound Social Leads Bridge</b><small class="muted" style="display:block">Leads automatically captured and extracted from Instagram, Facebook, and LinkedIn comments/DMs</small></div>' +
             '<a class="btn sm pri btn-preline-cyan" href="#/enquiries">' + ic("inbox") + 'View in CRM</a>' +
           '</div>' +
           '<div style="display:flex;flex-direction:column;gap:12px">' +
             recentSocialLeads.map(function(l) {
-              return '<div style="background:#0b0d13;border:1px solid #1e2430;border-radius:10px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:14px">' +
+              return '<div style="background:var(--card-sub);border:1px solid var(--line);border-radius:10px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:14px">' +
                 '<div style="display:flex;align-items:center;gap:12px">' +
-                  '<span class="kpi-ic" style="background:rgba(0,184,219,0.15);color:#00d3f2">' + ic("user") + '</span>' +
+                  '<span class="kpi-ic" style="background:var(--pri-soft);color:var(--pri)">' + ic("user") + '</span>' +
                   '<div>' +
-                    '<b style="font-size:14px;color:#f9fafb;display:block">' + esc(l.user) + ' <small class="muted">via ' + esc(l.platform) + ' · ' + esc(l.time) + '</small></b>' +
-                    '<p style="font-size:12.5px;color:#cbd5e1;margin:4px 0 0">' + esc(l.comment) + '</p>' +
+                    '<b style="font-size:14px;color:var(--txt);display:block">' + esc(l.user) + ' <small class="muted">via ' + esc(l.platform) + ' · ' + esc(l.time) + '</small></b>' +
+                    '<p style="font-size:12.5px;color:var(--txt2);margin:4px 0 0">' + esc(l.comment) + '</p>' +
                   '</div>' +
                 '</div>' +
                 '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">' +
                   '<span class="badge ok">' + esc(l.status) + '</span>' +
-                  '<b style="color:#00d3f2;font-size:12px">' + esc(l.phone) + '</b>' +
+                  '<b style="color:var(--pri);font-size:12px">' + esc(l.phone) + '</b>' +
                 '</div>' +
               '</div>';
             }).join("") +

@@ -200,21 +200,21 @@
           '</div>' +
           '<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:18px">' +
             '<div>' +
-              '<label style="font-weight:600;color:#f9fafb;font-size:13px">Default Virtual Tour Provider</label>' +
-              '<select id="st-vr-provider" style="width:100%;background:#181c24;border-color:#262a33;padding:9px 14px;border-radius:8px">' +
+              '<label style="font-weight:600;font-size:13px">Default Virtual Tour Provider</label>' +
+              '<select id="st-vr-provider" style="width:100%;padding:9px 14px;border-radius:8px">' +
                 '<option value="pannellum" selected>Native HTML5 Equirectangular (Pannellum VR)</option>' +
                 '<option value="kuula">Kuula Virtual Tour Embed</option>' +
                 '<option value="matterport">Matterport 3D Showcase</option>' +
               '</select>' +
-              '<label style="margin-top:12px;font-weight:600;color:#f9fafb;font-size:13px">Featured 360 Panorama URL / Key</label>' +
-              '<input type="text" id="st-vr-url" value="/assets/panoramas/dha6-luxury-living-360.jpg" style="width:100%;background:#181c24;border-color:#262a33;padding:9px 14px;border-radius:8px">' +
+              '<label style="margin-top:12px;font-weight:600;font-size:13px">Featured 360 Panorama URL / Key</label>' +
+              '<input type="text" id="st-vr-url" value="/assets/panoramas/dha6-luxury-living-360.jpg" style="width:100%;padding:9px 14px;border-radius:8px">' +
             '</div>' +
             '<div>' +
-              '<label style="font-weight:600;color:#f9fafb;font-size:13px">VR Interactivity Settings</label>' +
+              '<label style="font-weight:600;font-size:13px">VR Interactivity Settings</label>' +
               '<div style="display:flex;flex-direction:column;gap:10px;margin-top:8px">' +
-                '<label class="check" style="color:#cbd5e1;font-size:13px"><input type="checkbox" id="st-vr-gyro" checked style="accent-color:#00b8db"> Enable Mobile Gyroscope / Device Motion Tilt</label>' +
-                '<label class="check" style="color:#cbd5e1;font-size:13px"><input type="checkbox" id="st-vr-autorotate" checked style="accent-color:#00b8db"> Auto-rotate panorama on initial page load (2.0 RPM)</label>' +
-                '<label class="check" style="color:#cbd5e1;font-size:13px"><input type="checkbox" id="st-vr-hotspots" checked style="accent-color:#00b8db"> Show Interactive Woodex Joinery Material Hotspots</label>' +
+                '<label class="check" style="font-size:13px"><input type="checkbox" id="st-vr-gyro" checked style="accent-color:var(--pri)"> Enable Mobile Gyroscope / Device Motion Tilt</label>' +
+                '<label class="check" style="font-size:13px"><input type="checkbox" id="st-vr-autorotate" checked style="accent-color:var(--pri)"> Auto-rotate panorama on initial page load (2.0 RPM)</label>' +
+                '<label class="check" style="font-size:13px"><input type="checkbox" id="st-vr-hotspots" checked style="accent-color:var(--pri)"> Show Interactive Woodex Joinery Material Hotspots</label>' +
               '</div>' +
             '</div>' +
           '</div>' +
@@ -222,8 +222,8 @@
 
         '<!-- Studio Profile & Security Columns -->' +
         '<div style="display:grid;grid-template-columns:2fr 1fr;gap:20px">' +
-          '<div class="card" style="background:#111318;border:1px solid #20242f;border-radius:14px;padding:20px">' +
-            '<div class="card-h" style="padding:0 0 14px;border-bottom:1px solid #1a1e27"><h3>' + ic("building") + ' Studio &amp; Brand Identity</h3></div>' +
+          '<div class="card" style="border-radius:14px;padding:20px">' +
+            '<div class="card-h" style="padding:0 0 14px;border-bottom:1px solid var(--line)"><h3>' + ic("building") + ' Studio &amp; Brand Identity</h3></div>' +
             '<div class="form-grid" style="margin-top:16px;display:grid;grid-template-columns:1fr 1fr;gap:14px">' +
               '<label>Studio Name<input type="text" id="st-name" value="Woodex Interior Design Studio"></label>' +
               '<label>Tagline / Motto<input type="text" id="st-tag" value="Signature Residential &amp; Commercial Turnkey Architecture"></label>' +
@@ -235,9 +235,9 @@
             '</div>' +
           '</div>' +
 
-          '<div class="card" style="background:#111318;border:1px solid #20242f;border-radius:14px;padding:20px">' +
-            '<div class="card-h" style="padding:0 0 14px;border-bottom:1px solid #1a1e27"><h3>' + ic("shield") + ' Security &amp; Access</h3></div>' +
-            '<div style="display:flex;flex-direction:column;gap:12px;margin-top:14px;font-size:12.5px;color:#cbd5e1">' +
+          '<div class="card" style="border-radius:14px;padding:20px">' +
+            '<div class="card-h" style="padding:0 0 14px;border-bottom:1px solid var(--line)"><h3>' + ic("shield") + ' Security &amp; Access</h3></div>' +
+            '<div style="display:flex;flex-direction:column;gap:12px;margin-top:14px;font-size:12.5px;color:var(--txt2)">' +
               '<div style="display:flex;align-items:center;justify-content:space-between"><span>CSRF Protection</span><span class="badge ok">Enforced</span></div>' +
               '<div style="display:flex;align-items:center;justify-content:space-between"><span>Session Timeout</span><span>4 Hours</span></div>' +
               '<div style="display:flex;align-items:center;justify-content:space-between"><span>Master Access</span><span class="badge navy">master@woodex.pk</span></div>' +
@@ -300,12 +300,12 @@
       if (statTxt) statTxt.textContent = connCount + " of " + APPS.length + " connected · 24/7 background webhook listeners active";
 
       grid.innerHTML = list.map(function (app) {
-        return '<div style="background:#161922;border:1px solid #232836;border-radius:12px;padding:16px;display:flex;align-items:center;justify-content:space-between;gap:14px">' +
+        return '<div style="background:var(--card-sub);border:1px solid var(--line);border-radius:12px;padding:16px;display:flex;align-items:center;justify-content:space-between;gap:14px">' +
           '<div style="display:flex;align-items:center;gap:12px;flex:1;min-width:0">' +
             '<span style="width:42px;height:42px;border-radius:10px;background:' + app.color + ';color:#fff;font-weight:700;font-size:14px;display:grid;place-items:center;flex-shrink:0">' + app.tag + '</span>' +
             '<div style="flex:1;min-width:0">' +
               '<div style="display:flex;align-items:center;gap:6px">' +
-                '<b style="font-size:14px;color:#f9fafb;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc(app.name) + '</b>' +
+                '<b style="font-size:14px;color:var(--txt);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc(app.name) + '</b>' +
                 (app.connected ? '<span class="badge ok" style="font-size:9.5px;padding:1px 5px">Active</span>' : '') +
               '</div>' +
               '<small class="muted" style="display:block;font-size:12px;line-height:1.4;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc(app.desc) + '</small>' +
@@ -313,7 +313,7 @@
           '</div>' +
           '<button class="btn sm ' + (app.connected ? '' : 'pri btn-preline-cyan') + '" data-app="' + app.id + '" style="font-weight:600;flex-shrink:0">' + (app.connected ? 'Settings' : 'Connect') + '</button>' +
         '</div>';
-      }).join("") || '<div class="empty" style="grid-column:1/-1;padding:24px;text-align:center;color:#94a3b8">No matching connectors found.</div>';
+      }).join("") || '<div class="empty" style="grid-column:1/-1;padding:24px;text-align:center;color:var(--mut)">No matching connectors found.</div>';
 
       $$("#conn-grid [data-app]").forEach(function (b) {
         b.onclick = function () {
@@ -428,13 +428,13 @@
 
       cont.innerHTML =
         '<!-- MCP Server Status Banner -->' +
-        '<div class="card" style="background:#111318;border:1px solid #20242f;border-radius:14px;padding:22px;margin-bottom:20px">' +
+        '<div class="card" style="border-radius:14px;padding:22px;margin-bottom:20px">' +
           '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px">' +
             '<div style="display:flex;align-items:center;gap:14px">' +
               '<span style="width:44px;height:44px;border-radius:12px;background:#00b8db;color:#04222b;font-weight:800;display:grid;place-items:center;font-size:16px">MCP</span>' +
               '<div>' +
                 '<div style="display:flex;align-items:center;gap:8px">' +
-                  '<b style="font-size:16px;color:#f9fafb">Woodex Model Context Protocol (MCP) &amp; Agent Bridge</b>' +
+                  '<b style="font-size:16px;color:var(--txt)">Woodex Model Context Protocol (MCP) &amp; Agent Bridge</b>' +
                   '<span class="badge ok">Live &amp; Operational</span>' +
                 '</div>' +
                 '<small class="muted" style="font-size:12.5px;margin-top:2px;display:block">Standardized JSON-RPC 2.0 tool server connecting Claude Desktop, Cursor, Codex, Hermes, Local LLMs &amp; WordPress Agent Bridge.</small>' +
@@ -450,29 +450,29 @@
         '<!-- 2-Column Bridge Grid -->' +
         '<div style="display:grid;grid-template-columns:1.1fr 1.2fr;gap:20px">' +
           '<!-- Left: Tool Manifest -->' +
-          '<div class="card" style="background:#111318;border:1px solid #20242f;border-radius:14px;padding:22px">' +
-            '<div class="card-h" style="padding:0 0 14px;border-bottom:1px solid #1a1e27">' +
-              '<h3 style="font-size:16px;color:#f9fafb">' + ic("wrench") + ' Exposed Agent Tool Capabilities</h3>' +
+          '<div class="card" style="border-radius:14px;padding:22px">' +
+            '<div class="card-h" style="padding:0 0 14px;border-bottom:1px solid var(--line)">' +
+              '<h3 style="font-size:16px;color:var(--txt)">' + ic("wrench") + ' Exposed Agent Tool Capabilities</h3>' +
             '</div>' +
             '<div style="display:flex;flex-direction:column;gap:12px;margin-top:16px">' +
-              '<div style="background:#161922;border:1px solid #232836;border-radius:10px;padding:14px">' +
-                '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px"><code style="color:#00d3f2;font-weight:700;font-size:13px">list_leads(stage, search, limit)</code><span class="badge ok">Read</span></div>' +
+              '<div style="background:var(--card-sub);border:1px solid var(--line);border-radius:10px;padding:14px">' +
+                '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px"><code style="color:var(--pri);font-weight:700;font-size:13px">list_leads(stage, search, limit)</code><span class="badge ok">Read</span></div>' +
                 '<small class="muted">Queries active CRM leads, quotes, customer stages, and contact WhatsApp numbers.</small>' +
               '</div>' +
-              '<div style="background:#161922;border:1px solid #232836;border-radius:10px;padding:14px">' +
-                '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px"><code style="color:#00d3f2;font-weight:700;font-size:13px">create_quote_draft(client, project, sections)</code><span class="badge gold">Write</span></div>' +
+              '<div style="background:var(--card-sub);border:1px solid var(--line);border-radius:10px;padding:14px">' +
+                '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px"><code style="color:var(--pri);font-weight:700;font-size:13px">create_quote_draft(client, project, sections)</code><span class="badge gold">Write</span></div>' +
                 '<small class="muted">Drafts customized residential/commercial BOQ quotations with PKR line item calculations.</small>' +
               '</div>' +
-              '<div style="background:#161922;border:1px solid #232836;border-radius:10px;padding:14px">' +
-                '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px"><code style="color:#00d3f2;font-weight:700;font-size:13px">save_content_draft(type, title, body, faqs)</code><span class="badge gold">Write</span></div>' +
+              '<div style="background:var(--card-sub);border:1px solid var(--line);border-radius:10px;padding:14px">' +
+                '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px"><code style="color:var(--pri);font-weight:700;font-size:13px">save_content_draft(type, title, body, faqs)</code><span class="badge gold">Write</span></div>' +
                 '<small class="muted">Creates drafts for articles, portfolio studies, and city pages with simple markdown.</small>' +
               '</div>' +
-              '<div style="background:#161922;border:1px solid #232836;border-radius:10px;padding:14px">' +
-                '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px"><code style="color:#00d3f2;font-weight:700;font-size:13px">send_telegram_alert(text, parseMode)</code><span class="badge gold">Write</span></div>' +
+              '<div style="background:var(--card-sub);border:1px solid var(--line);border-radius:10px;padding:14px">' +
+                '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px"><code style="color:var(--pri);font-weight:700;font-size:13px">send_telegram_alert(text, parseMode)</code><span class="badge gold">Write</span></div>' +
                 '<small class="muted">Dispatches milestone notification broadcasts through Telegram Bot @WoodexInteriorBot.</small>' +
               '</div>' +
-              '<div style="background:#161922;border:1px solid #232836;border-radius:10px;padding:14px">' +
-                '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px"><code style="color:#00d3f2;font-weight:700;font-size:13px">site_stats()</code><span class="badge ok">Read</span></div>' +
+              '<div style="background:var(--card-sub);border:1px solid var(--line);border-radius:10px;padding:14px">' +
+                '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px"><code style="color:var(--pri);font-weight:700;font-size:13px">site_stats()</code><span class="badge ok">Read</span></div>' +
                 '<small class="muted">Returns live KPIs: total pages, monthly leads, unread count, open pipeline and payment stats.</small>' +
               '</div>' +
             '</div>' +
@@ -480,10 +480,10 @@
 
           '<!-- Right: Client Config Snippets with Sub-tabs -->' +
           '<div style="display:flex;flex-direction:column;gap:20px">' +
-            '<div class="card" style="background:#111318;border:1px solid #20242f;border-radius:14px;padding:22px">' +
-              '<div class="card-h" style="padding:0 0 14px;border-bottom:1px solid #1a1e27;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">' +
+            '<div class="card" style="border-radius:14px;padding:22px">' +
+              '<div class="card-h" style="padding:0 0 14px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">' +
                 '<div style="display:flex;align-items:center;gap:8px">' +
-                  '<h3 style="font-size:16px;color:#f9fafb" id="mcp-client-title">' + ic("code") + ' Claude Desktop Config</h3>' +
+                  '<h3 style="font-size:16px;color:var(--txt)" id="mcp-client-title">' + ic("code") + ' Claude Desktop Config</h3>' +
                 '</div>' +
                 '<div style="display:flex;align-items:center;gap:6px">' +
                   '<button class="btn sm pri btn-preline-cyan" id="mcp-copy-cfg-btn">' + ic("copy") + 'Copy Config</button>' +
@@ -501,22 +501,46 @@
 
               '<div style="margin-top:14px">' +
                 '<p id="mcp-client-desc" class="muted" style="font-size:12.5px;margin-bottom:8px">Paste this JSON snippet into your Claude Desktop configuration file.</p>' +
-                '<pre id="mcp-client-pre" style="background:#0b0d13;border:1px solid #1e2430;border-radius:10px;padding:14px;color:#a78bfa;font-family:monospace;font-size:12px;overflow-x:auto;line-height:1.5;max-height:260px">' +
+                '<pre id="mcp-client-pre" style="background:var(--code-bg);border:1px solid var(--line);border-radius:10px;padding:14px;color:var(--code-fg);font-family:monospace;font-size:12px;overflow-x:auto;line-height:1.5;max-height:260px">' +
                   esc(CLIENT_CONFIGS.claude.code) +
                 '</pre>' +
               '</div>' +
             '</div>' +
 
-            '<div class="card" style="background:#111318;border:1px solid #20242f;border-radius:14px;padding:22px">' +
-              '<div class="card-h" style="padding:0 0 14px;border-bottom:1px solid #1a1e27"><h3 style="font-size:16px;color:#f9fafb">' + ic("terminal") + ' JSON-RPC 2.0 Endpoint</h3></div>' +
+            '<div class="card" style="border-radius:14px;padding:22px">' +
+              '<div class="card-h" style="padding:0 0 14px;border-bottom:1px solid var(--line)"><h3 style="font-size:16px;color:var(--txt)">' + ic("terminal") + ' JSON-RPC 2.0 Endpoint</h3></div>' +
               '<div style="margin-top:14px;display:flex;flex-direction:column;gap:10px;font-size:13px">' +
-                '<div style="display:flex;justify-content:space-between"><span>Protocol</span><b style="color:#00d3f2">JSON-RPC 2.0 / Streamable SSE</b></div>' +
-                '<div style="display:flex;justify-content:space-between"><span>Endpoint</span><b style="color:#cbd5e1">/api/mcp.php</b></div>' +
-                '<div style="display:flex;justify-content:space-between"><span>Authentication</span><b style="color:#10b981">Header: Authorization: Bearer wxa_...</b></div>' +
+                '<div style="display:flex;justify-content:space-between"><span>Protocol</span><b style="color:var(--pri)">JSON-RPC 2.0 / Streamable SSE</b></div>' +
+                '<div style="display:flex;justify-content:space-between"><span>Endpoint</span><b style="color:var(--txt)">/api/mcp.php</b></div>' +
+                '<div style="display:flex;justify-content:space-between"><span>Authentication</span><b style="color:var(--ok)">Header: Authorization: Bearer wxa_...</b></div>' +
               '</div>' +
             '</div>' +
           '</div>' +
         '</div>';
+
+      W.fillIcons(cont);
+
+      function updateClientView(key) {
+        currentClient = key;
+        var info = CLIENT_CONFIGS[key] || CLIENT_CONFIGS.claude;
+        var t = $("#mcp-client-title"); if (t) t.innerHTML = ic("code") + " " + esc(info.title);
+        var d = $("#mcp-client-desc"); if (d) d.innerHTML = esc(info.desc) + ' Target: <code>' + esc(info.file) + '</code>';
+        var p = $("#mcp-client-pre"); if (p) p.textContent = info.code;
+        $$("#mcp-client-seg button").forEach(function(b){ b.classList.toggle("on", b.dataset.client === key); });
+      }
+
+      $$("#mcp-client-seg button").forEach(function(b) {
+        b.onclick = function() {
+          updateClientView(b.dataset.client);
+        };
+      });
+
+      if ($("#mcp-copy-cfg-btn")) $("#mcp-copy-cfg-btn").onclick = function () {
+        var info = CLIENT_CONFIGS[currentClient] || CLIENT_CONFIGS.claude;
+        try { navigator.clipboard.writeText(info.code); } catch (e) {}
+        toast((info.title || "Config") + " copied to clipboard ✓");
+      };
+    }
 
       W.fillIcons(cont);
 
