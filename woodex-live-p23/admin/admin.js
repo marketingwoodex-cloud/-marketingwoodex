@@ -204,7 +204,9 @@
 
   // ---------------------------------------------------------------- auth flow
   function showAuth(mode, st) {
-    $("#app").hidden = true; $("#auth").hidden = false;
+    var a = $("#auth"), ap = $("#app");
+    if (ap) { ap.hidden = true; ap.style.display = "none"; }
+    if (a) { a.hidden = false; a.style.display = "flex"; }
     $("#login-form").hidden = mode !== "login"; $("#tfa-form").hidden = true; $("#setup-form").hidden = mode !== "setup"; if ($("#db-form")) $("#db-form").hidden = mode !== "db";
     if (mode === "setup") { $("#s-db").hidden = st.driver !== "mysql"; $("#s-bp").hidden = !st.builderLocked; $("#s-uname").focus(); }
     else $("#l-email").focus();
@@ -223,7 +225,9 @@
     S.token = r.token || S.token; S.user = r.user; S.btoken = r.builderToken || null;
     sessionStorage.setItem("wxaTok", S.token); if (S.btoken) sessionStorage.setItem("wxTok", S.btoken);
     wxShare();
-    $("#auth").hidden = true; $("#app").hidden = false;
+    var a = $("#auth"), ap = $("#app");
+    if (a) { a.hidden = true; a.style.display = "none"; }
+    if (ap) { ap.hidden = false; ap.style.display = "flex"; }
     $("#u-name").textContent = S.user.name; $("#u-role").textContent = ROLE_LABEL[S.user.role] || S.user.role; $("#u-av").textContent = initials(S.user.name);
     var sfn = $("#sf-name"), sfr = $("#sf-role"), sfa = $("#sf-av");
     if (sfn) sfn.textContent = S.user.name;
@@ -244,20 +248,30 @@
       showAuth("login");
     });
   };
-  $("#login-form").onsubmit = function (e) {
-    e.preventDefault();
-    var b = $("#l-btn"); b.disabled = true; b.classList.add("busy"); b.setAttribute("aria-busy", "true"); $("#l-err").textContent = "";
+
+  window.wxaLogin = function(form) {
+    var b = $("#l-btn") || (form && form.querySelector("button[type=submit]"));
+    if (b) { b.disabled = true; b.classList.add("busy"); b.setAttribute("aria-busy", "true"); }
+    var lErr = $("#l-err"); if (lErr) lErr.textContent = "";
     var em = ($("#l-email").value || "").trim();
     if (!em) em = "master@woodex.pk";
     var pw = ($("#l-pass").value || "").trim();
     if (!pw) pw = "Woodex@2026";
     api("login", { email: em, password: pw }).then(function (r) {
-      b.disabled = false; b.classList.remove("busy"); b.removeAttribute("aria-busy");
-      if (!r.ok) return ($("#l-err").textContent = r.error);
-      $("#l-pass").value = "";
-      if (r.need2fa) { S.ticket = r.ticket; $("#login-form").hidden = true; $("#tfa-form").hidden = false; $("#t-code").value = ""; $("#t-err").textContent = ""; $("#t-code").focus(); return; }
+      if (b) { b.disabled = false; b.classList.remove("busy"); b.removeAttribute("aria-busy"); }
+      if (!r.ok) return (lErr ? (lErr.textContent = r.error) : null);
+      if ($("#l-pass")) $("#l-pass").value = "";
+      if (r.need2fa) { S.ticket = r.ticket; $("#login-form").hidden = true; $("#tfa-form").hidden = false; $("#t-code").value = ""; if ($("#t-err")) $("#t-err").textContent = ""; $("#t-code").focus(); return; }
       signedIn(r);
+    }).catch(function(err) {
+      if (b) { b.disabled = false; b.classList.remove("busy"); b.removeAttribute("aria-busy"); }
+      if (lErr) lErr.textContent = "Sign-in error: " + (err.message || err);
     });
+  };
+
+  $("#login-form").onsubmit = function (e) {
+    e.preventDefault();
+    window.wxaLogin(this);
   };
   $("#tfa-form").onsubmit = function (e) {
     e.preventDefault(); var b = $("#t-btn"); b.disabled = true; $("#t-err").textContent = "";
@@ -280,16 +294,22 @@
       eye.textContent = isPass ? "Hide" : "Show";
     };
   }
+
+  window.wxaGoogle = function() {
+    var b = $("#l-soc-google");
+    if (b) b.disabled = true;
+    api("login", { email: "master@woodex.pk", password: "Woodex@2026" }).then(function (r) {
+      if (b) b.disabled = false;
+      if (!r.ok) return ($("#l-err").textContent = r.error);
+      toast("Signed in with Google SSO ✓");
+      signedIn(r);
+    });
+  };
+
   var gBtn = $("#l-soc-google");
   if (gBtn) {
     gBtn.onclick = function () {
-      var b = this; b.disabled = true;
-      api("login", { email: "master@woodex.pk", password: "Woodex@2026" }).then(function (r) {
-        b.disabled = false;
-        if (!r.ok) return ($("#l-err").textContent = r.error);
-        toast("Signed in with Google SSO ✓");
-        signedIn(r);
-      });
+      window.wxaGoogle();
     };
   }
   // Auto clear error on input

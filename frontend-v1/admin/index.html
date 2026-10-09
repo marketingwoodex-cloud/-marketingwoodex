@@ -7,7 +7,7 @@
 <title>Woodex Admin v2.5 Pro</title>
 <base href="/admin/">
 <link rel="icon" href="/favicon.ico">
-<link rel="stylesheet" href="admin.css?v=2.5.1">
+<link rel="stylesheet" href="admin.css?v=2.5.7">
 <script>try{if(localStorage.getItem("wxaTheme")==="dark"||(!localStorage.getItem("wxaTheme")&&matchMedia("(prefers-color-scheme: dark)").matches))document.documentElement.classList.add("dark")}catch(e){}</script>
 </head>
 <body>
@@ -20,7 +20,7 @@
       <div><b>Woodex</b><small>ADMIN</small></div>
     </div>
     <!-- Login Form -->
-    <form id="login-form">
+    <form id="login-form" onsubmit="event.preventDefault();if(window.wxaLogin){window.wxaLogin(this)}">
       <h1>Sign in</h1>
       <p class="muted">Welcome back. Sign in to manage the website.</p>
 
@@ -47,7 +47,7 @@
         <span style="flex:1;height:1px;background:#28334a;"></span>
       </div>
 
-      <button type="button" class="btn-sso-google" id="l-soc-google" onclick="if(window.gButtonTrigger){window.gButtonTrigger()}else{var g=document.querySelector('#g-btn iframe')||document.querySelector('#g-btn div');if(g)g.click();}">
+      <button type="button" class="btn-sso-google" id="l-soc-google" onclick="if(window.wxaGoogle){window.wxaGoogle()}">
         <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.66v3.05h3.9c2.28-2.1 3.645-5.2 3.645-9.15z"/><path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.9-3.05c-1.08.72-2.45 1.16-4.03 1.16-3.1 0-5.74-2.09-6.68-4.91H1.21v3.13C3.25 21.43 7.33 24 12 24z"/><path fill="#FBBC05" d="M5.32 14.29c-.24-.72-.38-1.49-.38-2.29s.14-1.57.38-2.29V6.58H1.21C.44 8.11 0 9.99 0 12s.44 3.89 1.21 5.42l4.11-3.13z"/><path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.25 2.57 1.21 6.58l4.11 3.13c.94-2.82 3.58-4.96 6.68-4.96z"/></svg>
         <span>Continue with Google</span>
       </button>
@@ -162,72 +162,72 @@
 <div class="toast" id="toast" role="status"></div>
 <div class="modal" id="modal" hidden><div class="modal-card" id="modal-card"></div></div>
 
-<script src="vendor/icons.js?v=2.5.1"></script>
-<script src="vendor/chart.umd.js?v=2.5.1" defer></script>
-<script src="admin.js?v=2.5.1" defer></script>
-<script src="admin-pages.js?v=2.5.1" defer></script>
-<script src="admin-chrome.js?v=2.5.1" defer></script>
-<script src="/builder/wx-css.js?v=2.5.1" defer></script>
-<script src="/builder/blocks.js?v=2.5.1" defer></script>
-<script src="admin-library.js?v=2.5.1" defer></script>
-<script src="admin-lib26.js?v=2.5.1" defer></script>
-<script src="admin-crm.js?v=2.5.1" defer></script>
-<script src="admin-reports.js?v=2.5.1" defer></script>
-<script src="vendor/quote-starter.js?v=2.5.1" defer></script>
-<script src="admin-print.js?v=2.5.1" defer></script>
-<script src="admin-print17.js?v=2.5.1" defer></script>
-<script src="/assets/js/quotation-scopes.js?v=2.5.1" defer></script>
-<script src="admin-sales.js?v=2.5.1" defer></script>
-<script src="admin-content.js?v=2.5.1" defer></script>
-<script src="admin-starters.js?v=2.5.1" defer></script>
-<script src="admin-fields.js?v=2.5.1" defer></script>
-<script src="admin-media.js?v=2.5.1" defer></script>
-<script src="admin-speed.js?v=2.5.1" defer></script>
-<script src="admin-system.js?v=2.5.1" defer></script>
-<script src="vendor/qrcode.js?v=2.5.1" defer></script>
-<script src="admin-settings.js?v=2.5.1" defer></script>
-<script src="admin-theme.js?v=2.5.1" defer></script>
-<script src="admin-xlsx.js?v=2.5.1" defer></script>
-<script src="admin-sheets.js?v=2.5.1" defer></script>
-<script src="admin-p3.js?v=2.5.1" defer></script>
-<script src="admin-p8.js?v=2.5.1" defer></script>
-<script src="admin-chat.js?v=2.5.1" defer></script>
-<script src="admin-chat2.js?v=2.5.1" defer></script>
-  <script src="admin-train.js?v=2.5.1" defer></script>
-  <script src="admin-notify.js?v=2.5.1" defer></script>
-  <script src="seo-analyzer.js?v=2.5.1" defer></script>
-  <script src="admin-seo.js?v=2.5.1" defer></script>
-<script src="admin-offers.js?v=2.5.1" defer></script>
-<script src="admin-google.js?v=2.5.1" defer></script>
-<script src="admin-dash.js?v=2.5.1" defer></script>
-<script src="admin-lists.js?v=2.5.1" defer></script>
-<script src="admin-integ.js?v=2.5.1" defer></script>
-<script src="admin-conn.js?v=2.5.1" defer></script>
-<script src="admin-inbox.js?v=2.5.1" defer></script>
-<script src="admin-users.js?v=2.5.1" defer></script>
-<script src="admin-redirects.js?v=2.5.1" defer></script>
-<script src="admin-templates.js?v=2.5.1" defer></script>
-<script src="admin-booking.js?v=2.5.1" defer></script>
-<script src="admin-p18.js?v=2.5.1" defer></script>
-<script src="admin-p18e.js?v=2.5.1" defer></script>
-<script src="admin-p18g.js?v=2.5.1" defer></script>
-<script src="admin-p18h.js?v=2.5.1" defer></script>
-<script src="admin-p18j.js?v=2.5.1" defer></script>
-<script src="admin-p19f.js?v=2.5.1" defer></script>
-<script src="admin-logos.js?v=2.5.1" defer></script>
-<script src="admin-p19c.js?v=2.5.1" defer></script>
-<script src="admin-sales17.js?v=2.5.1" defer></script>
-<script src="admin-p38wa.js?v=2.5.1" defer></script>
-<script src="admin-hero.js?v=2.5.1" defer></script>
-<script src="admin-p36.js?v=2.5.1" defer></script>
-<script src="admin-seo38.js?v=2.5.1" defer></script>
-<script src="admin-appr.js?v=2.5.1" defer></script>
-<script src="admin-tg.js?v=2.5.1" defer></script>
-<script src="admin-aia.js?v=2.5.1" defer></script>
-<script src="admin-wahub.js?v=2.5.1" defer></script>
-<script src="admin-wains.js?v=2.5.1" defer></script>
-<script src="admin-aicenter.js?v=2.5.1" defer></script>
-<script src="admin-social.js?v=2.5.1" defer></script>
-<script src="admin-seoagent.js?v=2.5.1" defer></script>
+<script src="vendor/icons.js?v=2.5.7"></script>
+<script src="vendor/chart.umd.js?v=2.5.7" defer></script>
+<script src="admin.js?v=2.5.7" defer></script>
+<script src="admin-pages.js?v=2.5.7" defer></script>
+<script src="admin-chrome.js?v=2.5.7" defer></script>
+<script src="/builder/wx-css.js?v=2.5.7" defer></script>
+<script src="/builder/blocks.js?v=2.5.7" defer></script>
+<script src="admin-library.js?v=2.5.7" defer></script>
+<script src="admin-lib26.js?v=2.5.7" defer></script>
+<script src="admin-crm.js?v=2.5.7" defer></script>
+<script src="admin-reports.js?v=2.5.7" defer></script>
+<script src="vendor/quote-starter.js?v=2.5.7" defer></script>
+<script src="admin-print.js?v=2.5.7" defer></script>
+<script src="admin-print17.js?v=2.5.7" defer></script>
+<script src="/assets/js/quotation-scopes.js?v=2.5.7" defer></script>
+<script src="admin-sales.js?v=2.5.7" defer></script>
+<script src="admin-content.js?v=2.5.7" defer></script>
+<script src="admin-starters.js?v=2.5.7" defer></script>
+<script src="admin-fields.js?v=2.5.7" defer></script>
+<script src="admin-media.js?v=2.5.7" defer></script>
+<script src="admin-speed.js?v=2.5.7" defer></script>
+<script src="admin-system.js?v=2.5.7" defer></script>
+<script src="vendor/qrcode.js?v=2.5.7" defer></script>
+<script src="admin-settings.js?v=2.5.7" defer></script>
+<script src="admin-theme.js?v=2.5.7" defer></script>
+<script src="admin-xlsx.js?v=2.5.7" defer></script>
+<script src="admin-sheets.js?v=2.5.7" defer></script>
+<script src="admin-p3.js?v=2.5.7" defer></script>
+<script src="admin-p8.js?v=2.5.7" defer></script>
+<script src="admin-chat.js?v=2.5.7" defer></script>
+<script src="admin-chat2.js?v=2.5.7" defer></script>
+  <script src="admin-train.js?v=2.5.7" defer></script>
+  <script src="admin-notify.js?v=2.5.7" defer></script>
+  <script src="seo-analyzer.js?v=2.5.7" defer></script>
+  <script src="admin-seo.js?v=2.5.7" defer></script>
+<script src="admin-offers.js?v=2.5.7" defer></script>
+<script src="admin-google.js?v=2.5.7" defer></script>
+<script src="admin-dash.js?v=2.5.7" defer></script>
+<script src="admin-lists.js?v=2.5.7" defer></script>
+<script src="admin-integ.js?v=2.5.7" defer></script>
+<script src="admin-conn.js?v=2.5.7" defer></script>
+<script src="admin-inbox.js?v=2.5.7" defer></script>
+<script src="admin-users.js?v=2.5.7" defer></script>
+<script src="admin-redirects.js?v=2.5.7" defer></script>
+<script src="admin-templates.js?v=2.5.7" defer></script>
+<script src="admin-booking.js?v=2.5.7" defer></script>
+<script src="admin-p18.js?v=2.5.7" defer></script>
+<script src="admin-p18e.js?v=2.5.7" defer></script>
+<script src="admin-p18g.js?v=2.5.7" defer></script>
+<script src="admin-p18h.js?v=2.5.7" defer></script>
+<script src="admin-p18j.js?v=2.5.7" defer></script>
+<script src="admin-p19f.js?v=2.5.7" defer></script>
+<script src="admin-logos.js?v=2.5.7" defer></script>
+<script src="admin-p19c.js?v=2.5.7" defer></script>
+<script src="admin-sales17.js?v=2.5.7" defer></script>
+<script src="admin-p38wa.js?v=2.5.7" defer></script>
+<script src="admin-hero.js?v=2.5.7" defer></script>
+<script src="admin-p36.js?v=2.5.7" defer></script>
+<script src="admin-seo38.js?v=2.5.7" defer></script>
+<script src="admin-appr.js?v=2.5.7" defer></script>
+<script src="admin-tg.js?v=2.5.7" defer></script>
+<script src="admin-aia.js?v=2.5.7" defer></script>
+<script src="admin-wahub.js?v=2.5.7" defer></script>
+<script src="admin-wains.js?v=2.5.7" defer></script>
+<script src="admin-aicenter.js?v=2.5.7" defer></script>
+<script src="admin-social.js?v=2.5.7" defer></script>
+<script src="admin-seoagent.js?v=2.5.7" defer></script>
 </body>
 </html>
