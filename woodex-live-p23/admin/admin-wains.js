@@ -6,10 +6,10 @@
   var W = window.WXA; if (!W) return;
   var api = W.api, esc = W.esc, V = W.VIEWS;
   // Visitor messages by weekday x hour (Asia/Karachi), from the server's wah_insights "heat" grid.
-  function heatCard(h) {
+  function heatCard(h, win) {
     var days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"], max = 0, tot = 0;
     (h || []).forEach(function (row) { row.forEach(function (v) { if (v > max) max = v; tot += v; }); });
-    var head = '<h3>When visitors write (Karachi time)</h3><span class="muted" style="font-size:12px">visitor messages, last 14 days · darker = busier</span>';
+    var head = '<h3>When visitors write (Karachi time)</h3><span class="muted" style="font-size:12px">visitor messages, last ' + (win || 14) + ' days · darker = busier</span>';
     if (!h || !tot) return '<div class="card"><div class="card-h">' + head + '</div><div class="card-b"><p class="muted" style="margin:0">No visitor messages in this period yet.</p></div></div>';
     var axis = '<div class="wi-hm-r"><span></span>' + Array.from({ length: 24 }, function (_, i) { return "<span>" + (i % 3 === 0 ? i : "") + "</span>"; }).join("") + "</div>";
     var rows = h.map(function (row, d) {
@@ -74,7 +74,7 @@
       '<div class="wi-lg"><span><b style="background:' + COL.web + '"></b>Website chat</span><span><b style="background:' + COL.wa + '"></b>WhatsApp</span><span><b style="background:' + COL.tg + '"></b>Telegram</span><span><b style="background:' + COL.leads + ';border-radius:50%"></b>New leads</span></div></div></div>' +
       '<div class="card"><div class="card-h"><h3>Sales funnel</h3><span class="muted" style="font-size:12px">leads from the last 90 days</span></div><div class="card-b">' +
       Object.keys(r.stages).map(function (s) { return '<div class="wi-f ' + s + '"><span>' + esc(r.stages[s]) + '</span><div class="bar"><i style="width:' + (r.funnel[s] / fmax * 100) + '%"></i></div><b style="text-align:right">' + r.funnel[s] + "</b></div>"; }).join("") +
-      '<a href="#/leads" class="btn sm" style="margin-top:8px">Open leads</a></div></div></div>' +
+      '<a href="#/enquiries" class="btn sm" style="margin-top:8px">Open leads</a></div></div></div>' +
       '<div class="wi-g"><div class="card"><div class="card-h"><h3>Follow-up automation</h3><a class="btn sm" href="#/wauto">Edit follow-ups</a></div><div class="card-b">' +
       (r.flows.length ? '<table class="tbl"><thead><tr><th>Follow-up</th><th>Status</th><th style="text-align:right">WhatsApp</th><th style="text-align:right">Email</th><th style="text-align:right">Failed</th></tr></thead><tbody>' +
         r.flows.map(function (f) { return "<tr><td>" + esc(f.name) + "</td><td>" + (f.on ? '<span class="badge ok">On</span>' : '<span class="badge">Off</span>') + '</td><td style="text-align:right">' + n(f.sent) + '</td><td style="text-align:right">' + n(f.mailed) + '</td><td style="text-align:right">' + (f.failed ? '<span style="color:#b42318">' + n(f.failed) + "</span>" : "0") + "</td></tr>"; }).join("") + "</tbody></table>"
@@ -83,7 +83,7 @@
       '<div class="card"><div class="card-h"><h3>Where leads come from</h3></div><div class="card-b">' +
       (srcK.length ? srcK.map(function (s) { return '<div class="wi-f"><span>' + esc(SRC[s] || s) + '</span><div class="bar"><i style="width:' + (r.sources[s] / smax * 100) + '%;background:#b8956a"></i></div><b style="text-align:right">' + r.sources[s] + "</b></div>"; }).join("") : '<p class="muted" style="margin:0">No leads in this period.</p>') +
       "</div></div></div>" +
-      heatCard(r.heat) +
+      heatCard(r.heat, days) +
       '<div class="card"><div class="card-h"><h3>Recent campaigns</h3><span class="muted" style="font-size:12px">' + r.optout + " opted out (STOP)</span></div><div class=\"card-b\">" +
       (r.camps.length ? '<table class="tbl"><thead><tr><th>Campaign</th><th>Status</th><th style="text-align:right">Sent</th><th style="text-align:right">Delivered</th><th style="text-align:right">Read</th><th style="text-align:right">Replied</th></tr></thead><tbody>' +
         r.camps.map(function (c) { var p = function (x) { return c.sent ? " <small class=\"muted\">" + Math.round(x * 100 / c.sent) + "%</small>" : ""; }; return "<tr><td>" + esc(c.name) + "</td><td>" + esc(c.status) + '</td><td style="text-align:right">' + n(c.sent) + '</td><td style="text-align:right">' + n(c.delivered) + p(c.delivered) + '</td><td style="text-align:right">' + n(c.read) + p(c.read) + '</td><td style="text-align:right">' + n(c.replied) + p(c.replied) + "</td></tr>"; }).join("") + "</tbody></table>"

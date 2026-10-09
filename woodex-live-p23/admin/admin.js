@@ -567,7 +567,7 @@
   };
   VIEWS.soon = function (el, a, def) {
     var s = SOON[def[0]] || ["sparkles", ""];
-    el.innerHTML = head(def[1]) + '<div class="card soon-box"><div class="kpi-ic">' + ic(s[0]) + "</div><h2>" + esc(def[1]) + ' <span class="badge gold">Phase ' + def[4] + "</span></h2><p>" + esc(s[1]) + '</p><a class="btn" href="#/dashboard">Back to dashboard</a></div>';
+    el.innerHTML = head(def[1]) + '<div class="card soon-box"><div class="kpi-ic">' + ic(s[0]) + "</div><h2>" + esc(def[1]) + (def[4] ? ' <span class="badge gold">Phase ' + esc(def[4]) + "</span>" : ' <span class="badge gold">Coming soon</span>') + "</h2><p>" + esc(s[1] || "This screen is not built yet.") + '</p><a class="btn" href="#/dashboard">Back to dashboard</a></div>';
   };
 
   /* Screens from separate files (defer scripts) may not exist yet when the first screen is drawn after a refresh:

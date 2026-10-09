@@ -87,8 +87,10 @@
   }
 
   function previewModal(t, html) {
+    // one preview at a time: opening again replaces the open preview instead of stacking a second overlay
+    document.querySelectorAll(".modal-overlay.pm-overlay").forEach(function (o) { o.remove(); });
     var m = document.createElement("div");
-    m.className = "modal-overlay";
+    m.className = "modal-overlay pm-overlay";
     m.innerHTML = '<div class="modal-card" style="max-width:1280px;width:96vw;height:92vh;display:flex;flex-direction:column;padding:0;overflow:hidden;background:#0b0d13;border:1px solid #20242f;box-shadow:0 24px 80px rgba(0,0,0,0.85)">' +
       '<div style="padding:12px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #1e2430;background:#111318;flex-wrap:wrap;gap:10px">' +
         '<div style="display:flex;align-items:center;gap:10px">' +

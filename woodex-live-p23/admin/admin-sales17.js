@@ -466,7 +466,7 @@
         var text = $("#dr-txt").value.trim(); if (!text) return toast("Write what happened", true);
         var payload = { id: l.id, kind: kind, text: text, outcome: $("#dr-out").value, next_at: $("#dr-nx").value.replace("T", " "), next_type: $("#dr-nt").value };
         if ($("#dr-st2").value) payload.stage = $("#dr-st2").value;
-        api("lead_act", payload).then(function (r) {
+        api("lead_activity", payload).then(function (r) {
           if (r.ok) { toast("Activity logged"); close(); after && after(); } else toast(r.error || "Failed", true);
         });
       };
