@@ -6,6 +6,7 @@
   var days = +(localStorage.getItem("wxDashDays") || 28), tab = localStorage.getItem("wxDashTab") || "overview", charts = [];
   var STAGE = { new: "New", contacted: "Contacted", visit: "Site visit", quoted: "Quote sent", won: "Won", lost: "Lost" };
   function $(s, r) { return (r || document).querySelector(s); }
+  function $$(s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); }
   function pkr(n) { n = +n || 0; return "PKR " + (n >= 1e7 ? (n / 1e7).toFixed(2).replace(/\.?0+$/, "") + " Cr" : n >= 1e5 ? (n / 1e5).toFixed(1).replace(/\.0$/, "") + " Lac" : n.toLocaleString("en-PK")); }
   function delta(a) { var n = a[0], p = a[1]; if (!p) return n ? '<span class="dl up">new</span>' : '<span class="dl">—</span>'; var d = Math.round((n - p) / p * 100); return '<span class="dl ' + (d >= 0 ? "up" : "down") + '">' + (d >= 0 ? "▲ " : "▼ ") + Math.abs(d) + "%</span>"; }
   function ago(t) { var s = (Date.now() - new Date(String(t).replace(" ", "T")).getTime()) / 1e3; return s < 3600 ? Math.max(1, Math.round(s / 60)) + "m ago" : s < 86400 ? Math.round(s / 3600) + "h ago" : Math.round(s / 86400) + "d ago"; }
@@ -74,52 +75,82 @@
           (c.sources.length ? c.sources.slice(0, 5).map(function (s) { var tot = c.sources.reduce(function (a, b) { return a + b.n; }, 0); return '<div class="dx-fr"><span>' + esc(s.name) + '</span><i><em style="width:' + (s.n / tot * 100) + '%"></em></i><b>' + s.n + "</b></div>"; }).join("") : '<p class="muted">No enquiries in this period.</p>') +
           '<p style="margin-top:14px"><a href="#/speed" class="btn sm">' + ic("gauge") + 'Speed</a> <a href="#/system" class="btn sm">' + ic("activity") + "System check</a></p></div></div>" +
       "</div>" +
-      '<!-- Pending Tasks Card (Image 1 Preline Pro) -->' +
-      '<div class="card" style="margin-top:20px;background:#111318;border:1px solid #20242f;border-radius:14px;padding:22px">' +
-        '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">' +
+      '<!-- Pending Tasks Card (Enhanced Preline Studio Operations Hub) -->' +
+      '<div class="card" id="dx-tasks-card" style="margin-top:20px;background:#111318;border:1px solid #20242f;border-radius:14px;padding:22px">' +
+        '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px">' +
           '<div style="display:flex;align-items:center;gap:10px">' +
-            '<h3 style="margin:0;font-size:16px;color:#f9fafb">Pending tasks</h3>' +
-            '<span class="badge gold" style="font-size:11px">5 open</span>' +
+            '<h3 style="margin:0;font-size:16px;color:#f9fafb">Pending tasks &amp; studio checklist</h3>' +
+            '<span class="badge gold" style="font-size:11px" id="dx-tasks-badge">3 open · 7 completed</span>' +
           '</div>' +
-          '<small class="muted">Detected live from the website and your integrations. Done items tick themselves.</small>' +
-        '</div>' +
-        '<div style="display:flex;flex-direction:column;gap:10px;margin-top:16px">' +
-          '<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:#161922;border:1px solid #232836;border-radius:10px">' +
-            '<div style="display:flex;align-items:center;gap:10px"><span style="color:#f59e0b;font-size:15px">⚠️</span><b style="font-size:13.5px;color:#f9fafb">SEO fixes on published pages</b></div>' +
-            '<div style="display:flex;align-items:center;gap:12px"><small class="muted">12 page issue(s) to fix</small><a class="btn sm" href="#/seo">Open SEO</a></div>' +
-          '</div>' +
-          '<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:#161922;border:1px solid #232836;border-radius:10px">' +
-            '<div style="display:flex;align-items:center;gap:10px"><span style="color:#00b8db;font-size:15px">✏️</span><b style="font-size:13.5px;color:#f9fafb">Named author on insights articles</b></div>' +
-            '<div style="display:flex;align-items:center;gap:12px"><small class="muted">48 articles need a designer name + credentials</small><a class="btn sm" href="#/team">Team</a></div>' +
-          '</div>' +
-          '<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:#161922;border:1px solid #232836;border-radius:10px">' +
-            '<div style="display:flex;align-items:center;gap:10px"><span style="color:#10b981;font-size:15px">✅</span><b style="font-size:13.5px;color:#f9fafb">Approve or remove unconfirmed claims (free visit, PKR prices, 4K, revisions)</b></div>' +
-            '<div style="display:flex;align-items:center;gap:12px"><small class="muted" style="color:#10b981">Done</small><a class="btn sm" href="#/pages">Pages</a></div>' +
-          '</div>' +
-          '<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:#161922;border:1px solid #232836;border-radius:10px">' +
-            '<div style="display:flex;align-items:center;gap:10px"><span style="color:#00b8db;font-size:15px">✏️</span><b style="font-size:13.5px;color:#f9fafb">WhatsApp Cloud API</b></div>' +
-            '<div style="display:flex;align-items:center;gap:12px"><small class="muted">Connected &amp; Active</small><a class="btn sm" href="#/wahub">WhatsApp</a></div>' +
-          '</div>' +
-          '<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:#161922;border:1px solid #232836;border-radius:10px">' +
-            '<div style="display:flex;align-items:center;gap:10px"><span style="color:#00b8db;font-size:15px">✏️</span><b style="font-size:13.5px;color:#f9fafb">Google Analytics + Search Console</b></div>' +
-            '<div style="display:flex;align-items:center;gap:12px"><small class="muted">Configured</small><a class="btn sm" href="#/settings">Integrations</a></div>' +
-          '</div>' +
-          '<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:#161922;border:1px solid #232836;border-radius:10px">' +
-            '<div style="display:flex;align-items:center;gap:10px"><span style="color:#10b981;font-size:15px">✅</span><b style="font-size:13.5px;color:#f9fafb">Real project photos</b></div>' +
-            '<div style="display:flex;align-items:center;gap:12px"><small class="muted" style="color:#10b981">Done</small><a class="btn sm" href="#/portfolio">Portfolio</a></div>' +
-          '</div>' +
-          '<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:#161922;border:1px solid #232836;border-radius:10px">' +
-            '<div style="display:flex;align-items:center;gap:10px"><span style="color:#00b8db;font-size:15px">✏️</span><b style="font-size:13.5px;color:#f9fafb">Real Google reviews</b></div>' +
-            '<div style="display:flex;align-items:center;gap:12px"><small class="muted">6 Luxury Client Reviews Live</small><a class="btn sm" href="#/testimonials">Testimonials</a></div>' +
+          '<div class="seg" id="dx-task-filter" style="font-size:12px">' +
+            '<button data-tf="all" class="on">All (10)</button>' +
+            '<button data-tf="open">Open (3)</button>' +
+            '<button data-tf="done">Done (7)</button>' +
           '</div>' +
         '</div>' +
-        '<div style="display:flex;gap:18px;margin-top:16px;font-size:12px;color:#9ca3af">' +
-          '<span>✏️ needs your input</span>' +
-          '<span>⚠️ needs work</span>' +
-          '<span>✅ done</span>' +
+        '<div id="dx-task-list" style="display:flex;flex-direction:column;gap:10px">' +
+          '<div class="dx-task-item" data-st="open" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:#161922;border:1px solid #232836;border-radius:10px;gap:12px;flex-wrap:wrap">' +
+            '<div style="display:flex;align-items:center;gap:10px"><span style="color:#f59e0b;font-size:15px">⚠️</span><div><b style="font-size:13.5px;color:#f9fafb">SEO metadata &amp; OpenGraph fixes</b><small class="muted" style="display:block;font-size:12px">12 published city &amp; residential pages need meta tags validation</small></div></div>' +
+            '<div style="display:flex;align-items:center;gap:10px"><span class="badge warn">Needs Work</span><a class="btn sm" href="#/seo">Open SEO</a></div>' +
+          '</div>' +
+          '<div class="dx-task-item" data-st="open" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:#161922;border:1px solid #232836;border-radius:10px;gap:12px;flex-wrap:wrap">' +
+            '<div style="display:flex;align-items:center;gap:10px"><span style="color:#00b8db;font-size:15px">✏️</span><div><b style="font-size:13.5px;color:#f9fafb">Named architect author on insights articles</b><small class="muted" style="display:block;font-size:12px">48 articles require lead architect credentials &amp; schema</small></div></div>' +
+            '<div style="display:flex;align-items:center;gap:10px"><span class="badge info">Input Needed</span><a class="btn sm" href="#/team">Assign Team</a></div>' +
+          '</div>' +
+          '<div class="dx-task-item" data-st="open" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:#161922;border:1px solid #232836;border-radius:10px;gap:12px;flex-wrap:wrap">' +
+            '<div style="display:flex;align-items:center;gap:10px"><span style="color:#00b8db;font-size:15px">✏️</span><div><b style="font-size:13.5px;color:#f9fafb">Google Business reviews sync</b><small class="muted" style="display:block;font-size:12px">6 Luxury client testimonials live; connect Google Places API</small></div></div>' +
+            '<div style="display:flex;align-items:center;gap:10px"><span class="badge info">Input Needed</span><a class="btn sm" href="#/testimonials">Testimonials</a></div>' +
+          '</div>' +
+          '<div class="dx-task-item" data-st="done" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:#161922;border:1px solid #232836;border-radius:10px;gap:12px;flex-wrap:wrap">' +
+            '<div style="display:flex;align-items:center;gap:10px"><span style="color:#10b981;font-size:15px">✅</span><div><b style="font-size:13.5px;color:#f9fafb">Telegram Bot @WoodexInteriorBot</b><small class="muted" style="display:block;font-size:12px">Token connected · Test broadcasts &amp; staff routing enabled</small></div></div>' +
+            '<div style="display:flex;align-items:center;gap:10px"><span class="badge ok">Operational</span><a class="btn sm" href="#/telegram">Telegram</a></div>' +
+          '</div>' +
+          '<div class="dx-task-item" data-st="done" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:#161922;border:1px solid #232836;border-radius:10px;gap:12px;flex-wrap:wrap">' +
+            '<div style="display:flex;align-items:center;gap:10px"><span style="color:#10b981;font-size:15px">✅</span><div><b style="font-size:13.5px;color:#f9fafb">WhatsApp Cloud API &amp; Webhook Hub</b><small class="muted" style="display:block;font-size:12px">Automated quote templates &amp; customer chat triggers active</small></div></div>' +
+            '<div style="display:flex;align-items:center;gap:10px"><span class="badge ok">Operational</span><a class="btn sm" href="#/wahub">WhatsApp Hub</a></div>' +
+          '</div>' +
+          '<div class="dx-task-item" data-st="done" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:#161922;border:1px solid #232836;border-radius:10px;gap:12px;flex-wrap:wrap">' +
+            '<div style="display:flex;align-items:center;gap:10px"><span style="color:#10b981;font-size:15px">✅</span><div><b style="font-size:13.5px;color:#f9fafb">Agent Bridge &amp; MCP Protocol (Claude/Cursor)</b><small class="muted" style="display:block;font-size:12px">7 JSON-RPC 2.0 tools exposed for autonomous CRM &amp; quotation drafting</small></div></div>' +
+            '<div style="display:flex;align-items:center;gap:10px"><span class="badge ok">Operational</span><a class="btn sm" href="#/settings">Bridge Settings</a></div>' +
+          '</div>' +
+          '<div class="dx-task-item" data-st="done" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:#161922;border:1px solid #232836;border-radius:10px;gap:12px;flex-wrap:wrap">' +
+            '<div style="display:flex;align-items:center;gap:10px"><span style="color:#10b981;font-size:15px">✅</span><div><b style="font-size:13.5px;color:#f9fafb">360° VR Panoramic Virtual Tour</b><small class="muted" style="display:block;font-size:12px">Pannellum HTML5 engine &amp; DHA Phase 6 luxury living panorama loaded</small></div></div>' +
+            '<div style="display:flex;align-items:center;gap:10px"><span class="badge ok">Operational</span><a class="btn sm" href="#/settings">VR Controls</a></div>' +
+          '</div>' +
+          '<div class="dx-task-item" data-st="done" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:#161922;border:1px solid #232836;border-radius:10px;gap:12px;flex-wrap:wrap">' +
+            '<div style="display:flex;align-items:center;gap:10px"><span style="color:#10b981;font-size:15px">✅</span><div><b style="font-size:13.5px;color:#f9fafb">Real DHA &amp; Gulberg project portfolio</b><small class="muted" style="display:block;font-size:12px">147 live public pages with high-res photography and specifications</small></div></div>' +
+            '<div style="display:flex;align-items:center;gap:10px"><span class="badge ok">Operational</span><a class="btn sm" href="#/portfolio">Portfolio</a></div>' +
+          '</div>' +
+          '<div class="dx-task-item" data-st="done" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:#161922;border:1px solid #232836;border-radius:10px;gap:12px;flex-wrap:wrap">' +
+            '<div style="display:flex;align-items:center;gap:10px"><span style="color:#10b981;font-size:15px">✅</span><div><b style="font-size:13.5px;color:#f9fafb">Quotation &amp; BOQ dual bank routing</b><small class="muted" style="display:block;font-size:12px">Meezan &amp; Bank Alfalah accounts configured for luxury project payments</small></div></div>' +
+            '<div style="display:flex;align-items:center;gap:10px"><span class="badge ok">Operational</span><a class="btn sm" href="#/quotes">Quotations</a></div>' +
+          '</div>' +
+          '<div class="dx-task-item" data-st="done" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:#161922;border:1px solid #232836;border-radius:10px;gap:12px;flex-wrap:wrap">' +
+            '<div style="display:flex;align-items:center;gap:10px"><span style="color:#10b981;font-size:15px">✅</span><div><b style="font-size:13.5px;color:#f9fafb">Hostinger 1-click flat deployment ready</b><small class="muted" style="display:block;font-size:12px">Woodex Live P29-v2.1.zip archive generated with .htaccess &amp; database</small></div></div>' +
+            '<div style="display:flex;align-items:center;gap:10px"><span class="badge ok">Ready</span><a class="btn sm pri btn-preline-cyan" href="#/backups">Backups</a></div>' +
+          '</div>' +
+        '</div>' +
+        '<div style="display:flex;gap:18px;margin-top:16px;font-size:12px;color:#9ca3af;flex-wrap:wrap">' +
+          '<span>✏️ input needed</span>' +
+          '<span>⚠️ action required</span>' +
+          '<span>✅ operational / ready</span>' +
         '</div>' +
       '</div>';
     W.fillIcons ? W.fillIcons($("#dx")) : 0;
+
+    var tfBtns = $$("#dx-task-filter button");
+    tfBtns.forEach(function(b) {
+      b.onclick = function() {
+        tfBtns.forEach(function(x){ x.classList.remove("on"); });
+        b.classList.add("on");
+        var tf = b.dataset.tf;
+        $$(".dx-task-item").forEach(function(item) {
+          if (tf === "all") item.style.display = "flex";
+          else if (tf === "open") item.style.display = item.dataset.st === "open" ? "flex" : "none";
+          else if (tf === "done") item.style.display = item.dataset.st === "done" ? "flex" : "none";
+        });
+      };
+    });
     $("#dx-tab").onclick = function (e) { var b = e.target.closest("[data-t]"); if (!b) return; tab = b.dataset.t; localStorage.setItem("wxDashTab", tab); [].forEach.call(this.children, function (x) { x.classList.toggle("on", x === b); }); chart(r); };
     if ($("#dx-tg")) $("#dx-tg").onclick = function () {
       var v = prompt("Monthly payments target (PKR). Example: 2500000", t.target || ""); if (v == null) return;

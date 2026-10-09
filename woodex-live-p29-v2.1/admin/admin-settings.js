@@ -328,6 +328,104 @@
       var cont = $("#st-tab-content");
       if (!cont) return;
 
+      var currentClient = "claude";
+      var CLIENT_CONFIGS = {
+        claude: {
+          title: "Claude Desktop Configuration",
+          file: "claude_desktop_config.json",
+          desc: "Paste this JSON snippet into your Claude Desktop configuration file (accessible via Settings → Developer in Claude).",
+          code: JSON.stringify({
+            "mcpServers": {
+              "woodex-interior-hub": {
+                "command": "node",
+                "args": ["tools/mcp-server.mjs"],
+                "env": {
+                  "WOODEX_API_URL": "http://localhost:8080/api/admin.php",
+                  "WOODEX_TOKEN": "wxa_live_master_session"
+                }
+              }
+            }
+          }, null, 2)
+        },
+        cursor: {
+          title: "Cursor IDE Configuration",
+          file: ".cursor/mcp.json",
+          desc: "Add this configuration to Cursor IDE Settings → Features → MCP or into your project's .cursor/mcp.json file.",
+          code: JSON.stringify({
+            "mcpServers": {
+              "woodex-studio": {
+                "url": "http://localhost:8080/api/mcp.php",
+                "headers": {
+                  "Authorization": "Bearer wxa_live_master_session"
+                }
+              }
+            }
+          }, null, 2)
+        },
+        hermes: {
+          title: "Hermes Agent & OpenRouter",
+          file: "hermes-tools.json",
+          desc: "Connect Hermes Agent or OpenRouter custom function calling tool definitions.",
+          code: JSON.stringify({
+            "name": "woodex_studio_mcp",
+            "endpoint": "http://localhost:8080/api/mcp.php",
+            "auth_token": "wxa_live_master_session",
+            "tools": [
+              "list_leads",
+              "create_quote_draft",
+              "save_content_draft",
+              "send_telegram_alert",
+              "site_stats",
+              "query_projects",
+              "send_whatsapp_template"
+            ]
+          }, null, 2)
+        },
+        codex: {
+          title: "OpenAI Codex & Custom GPT Actions",
+          file: "openapi.json",
+          desc: "Import this OpenAPI 3.1 action schema into ChatGPT Custom GPTs or OpenAI Assistant API.",
+          code: JSON.stringify({
+            "openapi": "3.1.0",
+            "info": {
+              "title": "Woodex Interior Architecture Hub",
+              "version": "2.1.0"
+            },
+            "servers": [{ "url": "http://localhost:8080/api" }],
+            "paths": {
+              "/mcp.php": {
+                "post": {
+                  "summary": "Execute JSON-RPC 2.0 Woodex Tool",
+                  "operationId": "executeMcpTool",
+                  "requestBody": {
+                    "required": true,
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "type": "object",
+                          "properties": {
+                            "jsonrpc": { "type": "string", "example": "2.0" },
+                            "method": { "type": "string", "example": "tools/call" },
+                            "params": { "type": "object" },
+                            "id": { "type": "integer", "example": 1 }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }, null, 2)
+        },
+        local: {
+          title: "Local LLMs (Ollama / vLLM / LM Studio)",
+          file: "Terminal / stdio Bridge",
+          desc: "Run local models with direct tool calling via the stdio MCP bridge or curl JSON-RPC endpoint.",
+          code: "# 1. Connect Ollama with MCP Inspector / stdio bridge:\nnode tools/mcp-server.mjs\n\n# 2. Test JSON-RPC tools endpoint over curl:\ncurl -X POST http://localhost:8080/api/mcp.php \\\n  -H \"Authorization: Bearer wxa_live_master_session\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\"jsonrpc\":\"2.0\",\"method\":\"tools/call\",\"params\":{\"name\":\"site_stats\"},\"id\":1}'"
+        }
+      };
+
       cont.innerHTML =
         '<!-- MCP Server Status Banner -->' +
         '<div class="card" style="background:#111318;border:1px solid #20242f;border-radius:14px;padding:22px;margin-bottom:20px">' +
@@ -350,7 +448,7 @@
         '</div>' +
 
         '<!-- 2-Column Bridge Grid -->' +
-        '<div style="display:grid;grid-template-columns:1.2fr 1fr;gap:20px">' +
+        '<div style="display:grid;grid-template-columns:1.1fr 1.2fr;gap:20px">' +
           '<!-- Left: Tool Manifest -->' +
           '<div class="card" style="background:#111318;border:1px solid #20242f;border-radius:14px;padding:22px">' +
             '<div class="card-h" style="padding:0 0 14px;border-bottom:1px solid #1a1e27">' +
@@ -380,38 +478,41 @@
             '</div>' +
           '</div>' +
 
-          '<!-- Right: Client Config Snippets -->' +
+          '<!-- Right: Client Config Snippets with Sub-tabs -->' +
           '<div style="display:flex;flex-direction:column;gap:20px">' +
             '<div class="card" style="background:#111318;border:1px solid #20242f;border-radius:14px;padding:22px">' +
-              '<div class="card-h" style="padding:0 0 14px;border-bottom:1px solid #1a1e27;display:flex;align-items:center;justify-content:space-between">' +
-                '<h3 style="font-size:16px;color:#f9fafb">' + ic("code") + ' Claude Desktop / Cursor Config</h3>' +
-                '<button class="btn sm" id="mcp-copy-cfg-btn">' + ic("copy") + 'Copy</button>' +
+              '<div class="card-h" style="padding:0 0 14px;border-bottom:1px solid #1a1e27;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">' +
+                '<div style="display:flex;align-items:center;gap:8px">' +
+                  '<h3 style="font-size:16px;color:#f9fafb" id="mcp-client-title">' + ic("code") + ' Claude Desktop Config</h3>' +
+                '</div>' +
+                '<div style="display:flex;align-items:center;gap:6px">' +
+                  '<button class="btn sm pri btn-preline-cyan" id="mcp-copy-cfg-btn">' + ic("copy") + 'Copy Config</button>' +
+                '</div>' +
               '</div>' +
+
+              '<!-- Client Selector Pills -->' +
+              '<div class="seg" id="mcp-client-seg" style="margin-top:14px;display:flex;flex-wrap:wrap;gap:4px">' +
+                '<button data-client="claude" class="on">Claude Desktop</button>' +
+                '<button data-client="cursor">Cursor IDE</button>' +
+                '<button data-client="hermes">Hermes</button>' +
+                '<button data-client="codex">Codex / GPTs</button>' +
+                '<button data-client="local">Local LLMs</button>' +
+              '</div>' +
+
               '<div style="margin-top:14px">' +
-                '<pre style="background:#0b0d13;border:1px solid #1e2430;border-radius:10px;padding:14px;color:#a78bfa;font-family:monospace;font-size:12px;overflow-x:auto;line-height:1.5">' +
-esc(JSON.stringify({
-  "mcpServers": {
-    "woodex-admin": {
-      "command": "node",
-      "args": ["tools/mcp-server.mjs"],
-      "env": {
-        "WOODEX_API_URL": "http://localhost:8080/api/admin.php",
-        "WOODEX_TOKEN": "wxa_live_master_session"
-      }
-    }
-  }
-}, null, 2)) +
+                '<p id="mcp-client-desc" class="muted" style="font-size:12.5px;margin-bottom:8px">Paste this JSON snippet into your Claude Desktop configuration file.</p>' +
+                '<pre id="mcp-client-pre" style="background:#0b0d13;border:1px solid #1e2430;border-radius:10px;padding:14px;color:#a78bfa;font-family:monospace;font-size:12px;overflow-x:auto;line-height:1.5;max-height:260px">' +
+                  esc(CLIENT_CONFIGS.claude.code) +
                 '</pre>' +
-                '<small class="muted" style="display:block;margin-top:8px">Paste into <code>claude_desktop_config.json</code> or <code>.cursor/mcp.json</code>.</small>' +
               '</div>' +
             '</div>' +
 
             '<div class="card" style="background:#111318;border:1px solid #20242f;border-radius:14px;padding:22px">' +
               '<div class="card-h" style="padding:0 0 14px;border-bottom:1px solid #1a1e27"><h3 style="font-size:16px;color:#f9fafb">' + ic("terminal") + ' JSON-RPC 2.0 Endpoint</h3></div>' +
               '<div style="margin-top:14px;display:flex;flex-direction:column;gap:10px;font-size:13px">' +
-                '<div style="display:flex;justify-content:space-between"><span>Protocol</span><b style="color:#00d3f2">JSON-RPC 2.0</b></div>' +
+                '<div style="display:flex;justify-content:space-between"><span>Protocol</span><b style="color:#00d3f2">JSON-RPC 2.0 / Streamable SSE</b></div>' +
                 '<div style="display:flex;justify-content:space-between"><span>Endpoint</span><b style="color:#cbd5e1">/api/mcp.php</b></div>' +
-                '<div style="display:flex;justify-content:space-between"><span>Authentication</span><b style="color:#10b981">Header: Authorization: Bearer wxmcp_...</b></div>' +
+                '<div style="display:flex;justify-content:space-between"><span>Authentication</span><b style="color:#10b981">Header: Authorization: Bearer wxa_...</b></div>' +
               '</div>' +
             '</div>' +
           '</div>' +
@@ -419,10 +520,25 @@ esc(JSON.stringify({
 
       W.fillIcons(cont);
 
-      var cfgStr = JSON.stringify({ "mcpServers": { "woodex-admin": { "command": "node", "args": ["tools/mcp-server.mjs"], "env": { "WOODEX_API_URL": "http://localhost:8080/api/admin.php", "WOODEX_TOKEN": "wxa_live_master_session" } } } }, null, 2);
+      function updateClientView(key) {
+        currentClient = key;
+        var info = CLIENT_CONFIGS[key] || CLIENT_CONFIGS.claude;
+        var t = $("#mcp-client-title"); if (t) t.innerHTML = ic("code") + " " + esc(info.title);
+        var d = $("#mcp-client-desc"); if (d) d.innerHTML = esc(info.desc) + ' Target: <code>' + esc(info.file) + '</code>';
+        var p = $("#mcp-client-pre"); if (p) p.textContent = info.code;
+        $$("#mcp-client-seg button").forEach(function(b){ b.classList.toggle("on", b.dataset.client === key); });
+      }
+
+      $$("#mcp-client-seg button").forEach(function(b) {
+        b.onclick = function() {
+          updateClientView(b.dataset.client);
+        };
+      });
+
       if ($("#mcp-copy-cfg-btn")) $("#mcp-copy-cfg-btn").onclick = function () {
-        try { navigator.clipboard.writeText(cfgStr); } catch (e) {}
-        toast("Claude Desktop MCP config copied to clipboard ✓");
+        var info = CLIENT_CONFIGS[currentClient] || CLIENT_CONFIGS.claude;
+        try { navigator.clipboard.writeText(info.code); } catch (e) {}
+        toast((info.title || "Config") + " copied to clipboard ✓");
       };
     }
 

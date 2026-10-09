@@ -154,10 +154,28 @@
       $("#cx-ty").textContent = r.typing ? n + " is typing…" : "";
     });
   }
+  function playChime() {
+    try {
+      var ctx = new (window.AudioContext || window.webkitAudioContext)();
+      var osc = ctx.createOscillator();
+      var gain = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(587.33, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.12);
+      gain.gain.setValueAtTime(0.08, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.28);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.3);
+    } catch(e) {}
+  }
+
   /** called by the notification poller (admin-chat.js) when something new arrived */
   function onNotify(r) {
     if (!canChat() || !pref("popup", true)) return;
     var it = (r.items || []).filter(function (x) { return x.kind === "chat"; })[0]; if (!it) return;
+    playChime();
     if (location.hash.indexOf("#/chat") === 0) return; // the inbox is already open
     var d = dockEl();
     if (!d.hidden && D.id === it.id) return load();
