@@ -377,10 +377,6 @@ http.createServer(async (req, res) => {
     }
 
     
-    if (p === "/" || p === "/index.html") {
-      res.writeHead(302, { "Location": "/admin/" });
-      return res.end();
-    }
 
     if (!/^\/(admin|builder|api|assets)\//.test(p)) {
       const rel = (p.endsWith("/") ? p + "index.html" : /\.[a-z0-9]+$/i.test(p) ? p : p + "/index.html").replace(/^\/+/, "");
@@ -391,11 +387,20 @@ http.createServer(async (req, res) => {
       if (g && g.notFound) { res.writeHead(404, { "Content-Type": MIME[".html"] }); return fs.createReadStream(path.join(ROOT, "404.html")).pipe(res); }
     }
     let file = path.join(ROOT, p);
-    if (fs.existsSync(file) && fs.statSync(file).isDirectory()) {
+    if (p === "/" || p === "/index.html") {
+      file = path.join(ROOT, "admin/index.html");
+    } else if (fs.existsSync(file) && fs.statSync(file).isDirectory()) {
       if (!p.endsWith("/")) { res.writeHead(301, { Location: p + "/" + url.search }); return res.end(); }
       file = path.join(file, "index.html");
+    } else if (!fs.existsSync(file)) {
+      const adminFile = path.join(ROOT, "admin", p.replace(/^\/+/, ""));
+      if (fs.existsSync(adminFile) && !fs.statSync(adminFile).isDirectory()) {
+        file = adminFile;
+      } else {
+        res.writeHead(404, { "Content-Type": MIME[".html"] });
+        return fs.createReadStream(path.join(ROOT, "404.html")).pipe(res);
+      }
     }
-    if (!fs.existsSync(file)) { res.writeHead(404, { "Content-Type": MIME[".html"] }); return fs.createReadStream(path.join(ROOT, "404.html")).pipe(res); }
     const ext = path.extname(file).toLowerCase();
     if (ext === ".html" && !/^\/(builder|admin)/.test(p)) {
       // Preview-only "Edit this page" shortcut (never written into the site files).
