@@ -8,7 +8,8 @@
       "role_label": "Master Admin & Managing Director",
       "department": "Executive Leadership",
       "phone": "+923001234567",
-      "active": true,
+      "active": 1,
+      "pass_hash": "scrypt$ffdec6010fef7c2f0e3b9c40d7338ac1$b5d57af1eb07514ff10a1e9ae7da02c118007690aef596aee833a43b29c00d00",
       "pw_hash": "$2y$10$e0MYzXyjpJS7Pd0RVvHwHe9yL1O0vY2K8z1Q.j7Yq4q7Pz0U2wG9a",
       "pw_ver": 1,
       "avatar": "KT",
@@ -20,16 +21,17 @@
     {
       "id": 2,
       "name": "Ar. Bilal Ahmed",
-      "email": "admin@woodex.pk",
+      "email": "manager@woodex.pk",
       "role": "admin",
-      "role_label": "Lead Architect & Design Director",
-      "department": "Architecture & 3D Visualization",
+      "role_label": "Studio Manager & Lead Architect",
+      "department": "Architecture & Operations",
       "phone": "+923214567890",
-      "active": true,
+      "active": 1,
+      "pass_hash": "scrypt$ffdec6010fef7c2f0e3b9c40d7338ac1$b5d57af1eb07514ff10a1e9ae7da02c118007690aef596aee833a43b29c00d00",
       "pw_hash": "$2y$10$e0MYzXyjpJS7Pd0RVvHwHe9yL1O0vY2K8z1Q.j7Yq4q7Pz0U2wG9a",
       "pw_ver": 1,
       "avatar": "BA",
-      "bio": "PCATP registered architect specializing in high-end modern residential layouts, spatial planning, and interior detailing.",
+      "bio": "PCATP registered architect specializing in high-end modern residential layouts and studio operations.",
       "permissions": [
         "website",
         "sales",
@@ -39,13 +41,35 @@
     },
     {
       "id": 3,
+      "name": "Farhan Malik",
+      "email": "developer@woodex.pk",
+      "role": "editor",
+      "role_label": "Lead Developer & Technical Architect",
+      "department": "Digital Platforms & UI/UX",
+      "phone": "+923007654321",
+      "active": 1,
+      "pass_hash": "scrypt$ffdec6010fef7c2f0e3b9c40d7338ac1$b5d57af1eb07514ff10a1e9ae7da02c118007690aef596aee833a43b29c00d00",
+      "pw_hash": "$2y$10$e0MYzXyjpJS7Pd0RVvHwHe9yL1O0vY2K8z1Q.j7Yq4q7Pz0U2wG9a",
+      "pw_ver": 1,
+      "avatar": "FM",
+      "bio": "Lead web platform engineer managing website architectures, builder integrations, and client portal.",
+      "permissions": [
+        "website",
+        "builder",
+        "media",
+        "settings"
+      ]
+    },
+    {
+      "id": 4,
       "name": "Usman Ali",
       "email": "sales@woodex.pk",
       "role": "sales",
       "role_label": "Head of Sales & Estimations",
       "department": "Sales & Client Relations",
       "phone": "+923338901234",
-      "active": true,
+      "active": 1,
+      "pass_hash": "scrypt$ffdec6010fef7c2f0e3b9c40d7338ac1$b5d57af1eb07514ff10a1e9ae7da02c118007690aef596aee833a43b29c00d00",
       "pw_hash": "$2y$10$e0MYzXyjpJS7Pd0RVvHwHe9yL1O0vY2K8z1Q.j7Yq4q7Pz0U2wG9a",
       "pw_ver": 1,
       "avatar": "UA",
@@ -56,14 +80,52 @@
       ]
     },
     {
-      "id": 4,
+      "id": 5,
+      "name": "Ayesha Khan",
+      "email": "support@woodex.pk",
+      "role": "support",
+      "role_label": "Customer Support & Inbox Lead",
+      "department": "Client Care & Operations",
+      "phone": "+923119876543",
+      "active": 1,
+      "pass_hash": "scrypt$ffdec6010fef7c2f0e3b9c40d7338ac1$b5d57af1eb07514ff10a1e9ae7da02c118007690aef596aee833a43b29c00d00",
+      "pw_hash": "$2y$10$e0MYzXyjpJS7Pd0RVvHwHe9yL1O0vY2K8z1Q.j7Yq4q7Pz0U2wG9a",
+      "pw_ver": 1,
+      "avatar": "AK",
+      "bio": "Client care coordinator managing live chat communications, WhatsApp queries, and project ticket updates.",
+      "permissions": [
+        "conversations",
+        "updates"
+      ]
+    },
+    {
+      "id": 6,
+      "name": "System Administrator",
+      "email": "admin@woodex.pk",
+      "role": "admin",
+      "role_label": "System Administrator",
+      "department": "IT & Systems",
+      "phone": "+923214567890",
+      "active": 1,
+      "pass_hash": "scrypt$ffdec6010fef7c2f0e3b9c40d7338ac1$b5d57af1eb07514ff10a1e9ae7da02c118007690aef596aee833a43b29c00d00",
+      "pw_hash": "$2y$10$e0MYzXyjpJS7Pd0RVvHwHe9yL1O0vY2K8z1Q.j7Yq4q7Pz0U2wG9a",
+      "pw_ver": 1,
+      "avatar": "SA",
+      "bio": "System administrator managing security tokens, databases, backups, and server configurations.",
+      "permissions": [
+        "all"
+      ]
+    },
+    {
+      "id": 7,
       "name": "Engr. Hamza Farooq",
       "email": "hamza.farooq@woodex.pk",
       "role": "editor",
       "role_label": "Senior Project & Site Manager",
       "department": "Site Execution & Fit-Out",
       "phone": "+923126789012",
-      "active": true,
+      "active": 1,
+      "pass_hash": "scrypt$ffdec6010fef7c2f0e3b9c40d7338ac1$b5d57af1eb07514ff10a1e9ae7da02c118007690aef596aee833a43b29c00d00",
       "pw_hash": "$2y$10$e0MYzXyjpJS7Pd0RVvHwHe9yL1O0vY2K8z1Q.j7Yq4q7Pz0U2wG9a",
       "pw_ver": 1,
       "avatar": "HF",
@@ -74,14 +136,15 @@
       ]
     },
     {
-      "id": 5,
+      "id": 8,
       "name": "Dr. Sarah Mansoor",
       "email": "sarah.mansoor@woodex.pk",
       "role": "editor",
       "role_label": "Senior Interior Stylist",
       "department": "Interior Styling & Finishes",
       "phone": "+923451239876",
-      "active": true,
+      "active": 1,
+      "pass_hash": "scrypt$ffdec6010fef7c2f0e3b9c40d7338ac1$b5d57af1eb07514ff10a1e9ae7da02c118007690aef596aee833a43b29c00d00",
       "pw_hash": "$2y$10$e0MYzXyjpJS7Pd0RVvHwHe9yL1O0vY2K8z1Q.j7Yq4q7Pz0U2wG9a",
       "pw_ver": 1,
       "avatar": "SM",
@@ -321,148 +384,155 @@
     },
     {
       "id": 2,
-      "name": "Mrs. Naveen Sheikh",
-      "company": "Residence",
-      "location": "Bahria Town Sector C, Lahore",
+      "name": "Dr. Tariq Jamil",
+      "company": "Apex Medical & Aesthetics",
+      "location": "Gulberg III, Lahore",
       "rating": 5,
       "date": "2026-09-15",
-      "avatar": "NS",
-      "tag": "Modular Kitchen & Wardrobes",
-      "title": "German acrylic finish with flawless soft-close hardware",
-      "text": "Our modular acrylic kitchen with Blum fittings was delivered right on time. The 3D render matched the finished kitchen down to the exact LED warm-white lighting tone.",
+      "avatar": "TJ",
+      "tag": "Commercial Clinic",
+      "title": "Unrivalled aesthetic appeal and functional acoustic wall panelling",
+      "text": "The patient waiting lounges and consultation suites delivered by Woodex have set a new benchmark in healthcare luxury in Lahore. Impeccable attention to detail and flawless finish.",
       "featured": true,
       "published": true
     },
     {
       "id": 3,
-      "name": "Dr. Asadullah Khan",
-      "company": "Apex Dental & Wellness Clinic",
-      "location": "Gulberg III, Lahore",
+      "name": "Mrs. Ayesha Farooq",
+      "company": "Lake City Executive Residence",
+      "location": "Lake City, Lahore",
       "rating": 5,
-      "date": "2026-08-20",
-      "avatar": "AK",
-      "tag": "Commercial Fit-Out",
-      "title": "Professional medical clinic design & acoustic panelling",
-      "text": "The Woodex team transformed our 3,000 sq ft clinic with soundproof executive doors, acoustic wall panelling, and a striking modern reception desk. Outstanding durability and finish.",
+      "date": "2026-08-30",
+      "avatar": "AF",
+      "tag": "Modular Kitchen & Wardrobes",
+      "title": "German acrylic finish and smooth Blum fittings",
+      "text": "Our modern open-concept kitchen was delivered on time with perfect laser-edge banded German UV acrylic shutters and Blum motorized servo-drive lifts. Outstanding after-sales service!",
       "featured": true,
       "published": true
     },
     {
       "id": 4,
-      "name": "Tariq Mahmood",
-      "company": "Mahmood Textiles",
-      "location": "Main Boulevard, Gulberg, Lahore",
+      "name": "Chaudhry Noman",
+      "company": "Horizon Capital Tower",
+      "location": "Bahria Town Sector C, Lahore",
       "rating": 5,
-      "date": "2026-08-04",
-      "avatar": "TM",
-      "tag": "Corporate Boardroom",
-      "title": "Solid wood boardroom table & executive interior",
-      "text": "We commissioned a custom solid wood 18-seater boardroom table and director suite. The joinery precision and wood polish quality exceeded our highest expectations.",
-      "featured": true,
+      "date": "2026-08-12",
+      "avatar": "CN",
+      "tag": "Corporate Headquarters",
+      "title": "Solid wood boardroom table and luxury acoustic fitout",
+      "text": "Woodex customized our 24-seater executive boardroom table in solid walnut veneer alongside hidden acoustic wall doors. The craftsmanship is worthy of international corporate standards.",
+      "featured": false,
       "published": true
     },
     {
       "id": 5,
-      "name": "Ayesha Farooq",
-      "company": "Lake City Villa",
-      "location": "Lake City, Lahore",
+      "name": "Engr. Salman Raza",
+      "company": "Model Town Residence",
+      "location": "Model Town, Lahore",
       "rating": 5,
-      "date": "2026-07-19",
-      "avatar": "AF",
-      "tag": "Kitchen & Island",
-      "title": "Modern matte charcoal kitchen island",
-      "text": "The team was courteous, organized, and delivered impeccable finishing. Every visitor compliments our kitchen island and custom breakfast counter.",
+      "date": "2026-07-20",
+      "avatar": "SR",
+      "tag": "Full House Renovation",
+      "title": "Completely transformed our 20-year old family home",
+      "text": "From architectural structural remodeling to bespoke TV consoles, false ceiling lighting, and bathroom vanities, Woodex turned our house into a contemporary luxury sanctuary.",
       "featured": false,
       "published": true
     },
     {
       "id": 6,
-      "name": "Zubair Hashmi",
-      "company": "Hashmi Architects",
-      "location": "Model Town, Lahore",
+      "name": "Zainab Sheikh",
+      "company": "Boutique Fashion Studio",
+      "location": "DHA Phase 5, Lahore",
       "rating": 5,
-      "date": "2026-07-02",
-      "avatar": "ZH",
-      "tag": "Walk-in Closet",
-      "title": "Architect-grade glass walk-in wardrobe",
-      "text": "As an architect, I am very particular about tolerances. Woodex demonstrated flawless edge banding, glass door framing, and concealed sensor lighting.",
+      "date": "2026-06-18",
+      "avatar": "ZS",
+      "tag": "Retail & Display",
+      "title": "Minimalist brass racks and seamless curved joinery",
+      "text": "Woodex understood our minimalist design brief immediately. The warm LED display niches, curved cashier counter, and fitting room joinery are spectacular.",
       "featured": false,
       "published": true
     }
   ],
   "social": {
     "google": {
-      "connected": true,
-      "account": "woodexinterior.pk@gmail.com",
       "name": "Google Workspace & Analytics",
-      "services": [
+      "status": "connected",
+      "account": "woodexinterior.pk@gmail.com",
+      "last_sync": "2026-10-09 10:14:00",
+      "client_id": "88401928374-woodex-cloud.apps.googleusercontent.com",
+      "scopes": [
         "Google Analytics 4 (GA4)",
         "Google Search Console",
         "Google Business Profile"
-      ],
-      "last_sync": "2026-10-09 09:30:00"
+      ]
     },
     "meta": {
-      "connected": true,
-      "account": "Woodex Interior Pakistan",
-      "name": "Meta / Facebook Business",
-      "services": [
-        "Facebook Page",
-        "Lead Generation Ads",
-        "Messenger Sync"
-      ],
-      "last_sync": "2026-10-09 09:00:00"
+      "name": "Meta Business Suite (Facebook)",
+      "status": "connected",
+      "account": "Woodex Interior Design Studio Official",
+      "page_id": "104928172635489",
+      "last_sync": "2026-10-09 09:45:00",
+      "scopes": [
+        "Page Posts",
+        "Lead Generation Forms",
+        "Messenger Webhooks"
+      ]
     },
     "instagram": {
-      "connected": true,
-      "account": "@woodexinterior",
       "name": "Instagram Professional",
-      "services": [
-        "Instagram Direct Chat",
-        "Feed Showcase",
-        "Story Highlights"
-      ],
-      "last_sync": "2026-10-09 08:45:00"
+      "status": "connected",
+      "account": "@woodex.interior.official",
+      "last_sync": "2026-10-09 09:45:00",
+      "scopes": [
+        "Media Publishing",
+        "Direct Message Auto-Sync",
+        "Story Insights"
+      ]
     },
     "whatsapp": {
-      "connected": true,
-      "account": "+92 300 4455667",
       "name": "WhatsApp Cloud API",
-      "services": [
-        "Direct wa.me link",
-        "Lead alerts",
-        "Quick template launcher"
-      ],
-      "last_sync": "2026-10-09 09:40:00"
+      "status": "connected",
+      "account": "+92 300 4455667 (Verified Business WABA)",
+      "phone_number_id": "109847261524312",
+      "last_sync": "2026-10-09 10:30:00",
+      "scopes": [
+        "Template Broadcasts",
+        "Live Two-Way Inbox",
+        "Automated Milestones"
+      ]
     },
     "linkedin": {
-      "connected": true,
-      "account": "Woodex Interior Studio",
-      "name": "LinkedIn Business Page",
-      "services": [
-        "Corporate Commercial Inquiries",
-        "Recruitment & Talent"
-      ],
-      "last_sync": "2026-10-08 18:00:00"
+      "name": "LinkedIn Company Pages",
+      "status": "connected",
+      "account": "Woodex Interior & Turnkey Architecture",
+      "org_id": "89347261",
+      "last_sync": "2026-10-08 18:20:00",
+      "scopes": [
+        "Company Updates",
+        "Architecture Showcase Articles",
+        "Lead Capture"
+      ]
     },
     "tiktok": {
-      "connected": false,
-      "account": "",
-      "name": "TikTok Creator Hub",
-      "services": [
-        "Site Videos & Reels"
-      ],
-      "last_sync": ""
+      "name": "TikTok for Business",
+      "status": "ready",
+      "account": "@woodex_luxury_spaces",
+      "last_sync": "2026-10-07 14:10:00",
+      "scopes": [
+        "Short-Form Video Renders",
+        "Factory Tour Clips"
+      ]
     },
     "youtube": {
-      "connected": true,
-      "account": "Woodex Interior Architecture",
-      "name": "YouTube Channel",
-      "services": [
-        "3D Walkthrough Tours",
-        "Project Videos"
-      ],
-      "last_sync": "2026-10-05 12:00:00"
+      "name": "YouTube Studio",
+      "status": "connected",
+      "account": "Woodex Interior Studio PK",
+      "channel_id": "UC_woodex_interior_pakistan",
+      "last_sync": "2026-10-08 12:00:00",
+      "scopes": [
+        "4K Project Walkthroughs",
+        "Site Transformation Shorts"
+      ]
     }
   }
 }

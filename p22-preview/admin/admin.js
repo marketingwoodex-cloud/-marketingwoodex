@@ -265,9 +265,12 @@
   // Glassmorphic Auth & Social SSO Handlers
   $$(".btn-demo-pill").forEach(function (b) {
     b.onclick = function () {
-      $("#l-email").value = b.dataset.e;
+      var e = b.dataset.e;
+      var roleName = b.textContent.trim();
+      $("#l-email").value = e;
       $("#l-pass").value = "Woodex@2026";
       $("#l-err").textContent = "";
+      toast("Signing in as " + roleName + " (" + e + ")…");
       $("#l-btn").click();
     };
   });
@@ -275,16 +278,60 @@
   if (eye) {
     eye.onclick = function () {
       var p = $("#l-pass");
-      p.type = p.type === "password" ? "text" : "password";
+      var isPass = p.type === "password";
+      p.type = isPass ? "text" : "password";
+      eye.innerHTML = isPass
+        ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg>'
+        : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>';
     };
   }
+  // Auto clear error on input
+  if ($("#l-email")) $("#l-email").oninput = function () { $("#l-err").textContent = ""; };
+  if ($("#l-pass")) $("#l-pass").oninput = function () { $("#l-err").textContent = ""; };
+
+  // Forgot Password toggles
+  if ($("#l-forgot")) {
+    $("#l-forgot").onclick = function (e) {
+      e.preventDefault();
+      $("#login-form").hidden = true;
+      $("#fp-form").hidden = false;
+      $("#fp-email").value = $("#l-email").value || "";
+      $("#fp-err").textContent = "";
+      $("#fp-ok").textContent = "";
+      $("#fp-email").focus();
+    };
+  }
+  $$(".fp-back").forEach(function (b) {
+    b.onclick = function (e) {
+      e.preventDefault();
+      $("#fp-form").hidden = true;
+      $("#login-form").hidden = false;
+      $("#l-email").focus();
+    };
+  });
+  if ($("#fp-form")) {
+    $("#fp-form").onsubmit = function (e) {
+      e.preventDefault();
+      var b = $("#fp-btn");
+      b.disabled = true;
+      $("#fp-err").textContent = "";
+      $("#fp-ok").textContent = "";
+      api("pw_forgot", { email: $("#fp-email").value.trim() }).then(function (r) {
+        b.disabled = false;
+        if (!r.ok) return ($("#fp-err").textContent = r.error);
+        $("#fp-ok").textContent = r.message || "Reset link generated. Check your inbox or server logs.";
+        toast("Password reset instructions sent ✓");
+      });
+    };
+  }
+
   var socG = $("#l-soc-google");
   if (socG) {
     socG.onclick = function () {
       $("#l-email").value = "admin@woodex.pk";
       $("#l-pass").value = "Woodex@2026";
       $("#l-err").textContent = "";
-      toast("Signing in via Google SSO…");
+      toast("Signing in via Google Workspace SSO…");
       $("#l-btn").click();
     };
   }
