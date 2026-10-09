@@ -3,12 +3,14 @@ import fs from "node:fs";
 import path from "node:path";
 import crypto from "node:crypto";
 import { fileURLToPath } from "node:url";
+import { createAdmin } from "./frontend-v1-admin.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../woodex-live-p23");
-const PORT = +process.env.PORT || 8082;
 const PRIV = path.join(ROOT, "_private");
 const DEV_CFG = path.join(PRIV, "dev-password.txt");
 let PASSWORD = process.env.WX_DEV_PASSWORD || (fs.existsSync(DEV_CFG) ? fs.readFileSync(DEV_CFG, "utf8").trim() : "") || "Woodex@2026";
+const secret = () => crypto.createHash("sha256").update("wx-dev|" + PASSWORD).digest("hex");
+const PORT = +process.env.PORT || 8082;
 
 const MIME = {
   ".html": "text/html; charset=utf-8",
@@ -30,6 +32,8 @@ const MIME = {
   ".sql": "text/plain; charset=utf-8"
 };
 
+const adminApi = createAdmin({ ROOT, secret, builderPassword: () => PASSWORD });
+
 function safeJoin(urlPath) {
   let p;
   try { p = decodeURIComponent(urlPath.split("?")[0]); } catch { return null; }
@@ -39,8 +43,7 @@ function safeJoin(urlPath) {
   return abs;
 }
 
-const server = http.createServer((req, res) => {
-  // CORS & Preview security headers
+const server = http.createServer(async (req, res) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS, HEAD");
   res.setHeader("Access-Control-Allow-Headers", "*");
@@ -50,14 +53,34 @@ const server = http.createServer((req, res) => {
   }
 
   const u = new URL(req.url, "http://localhost");
-  let pathname = u.pathname;
+  const pathname = u.pathname;
 
-  // Mock API responses for local preview if needed
-  if (pathname.startsWith("/api/")) {
-    if (pathname.includes("admin.php") || pathname.includes("forms.php")) {
-      res.writeHead(200, { "Content-Type": "application/json" });
-      return res.end(JSON.stringify({ ok: true, status: "active", message: "Woodex Live API Ready" }));
-    }
+  if (pathname === "/api/admin.php") {
+    let body = "";
+    req.on("data", (chunk) => (body += chunk));
+    req.on("end", async () => {
+      try {
+        let inp = {};
+        if (body.trim()) {
+          try { inp = JSON.parse(body); } catch { inp = {}; }
+        }
+        for (const [k, v] of u.searchParams.entries()) {
+          if (!(k in inp)) inp[k] = v;
+        }
+        const r = await adminApi(req, inp);
+        if (r && r.status === 302 && r.location) {
+          res.writeHead(302, { Location: r.location });
+          return res.end();
+        }
+        res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
+        res.end(JSON.stringify(r || { ok: false, error: "Empty response" }));
+      } catch (e) {
+        const code = e.code && Number.isInteger(e.code) && e.code >= 400 && e.code < 600 ? e.code : 400;
+        res.writeHead(code, { "Content-Type": "application/json; charset=utf-8" });
+        res.end(JSON.stringify({ ok: false, error: e.message || "Request failed" }));
+      }
+    });
+    return;
   }
 
   let filePath = safeJoin(pathname);
@@ -66,7 +89,6 @@ const server = http.createServer((req, res) => {
     return res.end("Forbidden");
   }
 
-  // Handle directory requests -> index.html
   if (fs.existsSync(filePath) && fs.statSync(filePath).isDirectory()) {
     filePath = path.join(filePath, "index.html");
   }
@@ -88,5 +110,5 @@ const server = http.createServer((req, res) => {
 });
 
 server.listen(PORT, "0.0.0.0", () => {
-  console.log(`Woodex Live P23 Preview running on port ${PORT} (0.0.0.0:${PORT})`);
+  console.log(`Woodex Live P23 Preview running on port ${PORT} (0.0.0.0:${PORT}) with full Admin API & Database`);
 });
