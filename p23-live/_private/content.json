@@ -1,6 +1,38 @@
 {
- "items": [],
- "seq": 0,
+ "items": [
+  {
+   "id": 1,
+   "type": "member",
+   "status": "published",
+   "created_at": "2026-10-09 11:00:21",
+   "created_by": "Kamran Tariq",
+   "rel": null,
+   "title": "new",
+   "slug": "",
+   "data": {
+    "role": "",
+    "dept": "",
+    "years": "",
+    "bio": "",
+    "phone": "",
+    "email": "",
+    "linkedin": "",
+    "showContact": false,
+    "featured": false,
+    "photo": ""
+   },
+   "seo": {
+    "title": "",
+    "desc": "",
+    "og": ""
+   },
+   "order": 1,
+   "updated_at": "2026-10-09 11:00:21",
+   "updated_by": "Kamran Tariq",
+   "published_at": "2026-10-09 11:00:21"
+  }
+ ],
+ "seq": 1,
  "ai": {
   "customKey": "",
   "customModel": "",
@@ -13,5 +45,113 @@
   "openrouterKey": "",
   "openrouterModel": "nousresearch/hermes-3-llama-3.1-405b",
   "voice": "Calm, plain, confident British English. Short sentences. No hype, no exclamation marks. Woodex Interior is a design, fit-out and renovation studio in Lahore, Pakistan."
- }
+ },
+ "tpls": [
+  {
+   "type": "post",
+   "name": "Magazine (current look)",
+   "desc": "Full-width photo, all sections — the current design.",
+   "default": true,
+   "hero": "image",
+   "toc": false,
+   "meta": true,
+   "facts": true,
+   "sections": [
+    {
+     "k": "body",
+     "on": true
+    },
+    {
+     "k": "summary",
+     "on": true
+    },
+    {
+     "k": "faqs",
+     "on": true
+    },
+    {
+     "k": "quote",
+     "on": true
+    },
+    {
+     "k": "related",
+     "on": true
+    }
+   ],
+   "id": 1,
+   "updated_at": "2026-10-09 11:00:50",
+   "by": "Kamran Tariq"
+  },
+  {
+   "type": "post",
+   "name": "Guide with contents",
+   "desc": "Navy title, contents list, summary first — best for long guides.",
+   "default": false,
+   "hero": "navy",
+   "toc": true,
+   "meta": true,
+   "facts": true,
+   "sections": [
+    {
+     "k": "summary",
+     "on": true
+    },
+    {
+     "k": "body",
+     "on": true
+    },
+    {
+     "k": "faqs",
+     "on": true
+    },
+    {
+     "k": "related",
+     "on": true
+    },
+    {
+     "k": "quote",
+     "on": true
+    }
+   ],
+   "id": 2,
+   "updated_at": "2026-10-09 11:00:50",
+   "by": "Kamran Tariq"
+  },
+  {
+   "type": "post",
+   "name": "Minimal",
+   "desc": "Title and text only — fastest page.",
+   "default": false,
+   "hero": "navy",
+   "toc": false,
+   "meta": true,
+   "facts": true,
+   "sections": [
+    {
+     "k": "body",
+     "on": true
+    },
+    {
+     "k": "related",
+     "on": true
+    },
+    {
+     "k": "summary",
+     "on": false
+    },
+    {
+     "k": "faqs",
+     "on": false
+    },
+    {
+     "k": "quote",
+     "on": false
+    }
+   ],
+   "id": 3,
+   "updated_at": "2026-10-09 11:00:50",
+   "by": "Kamran Tariq"
+  }
+ ],
+ "tplSeq": 3
 }
