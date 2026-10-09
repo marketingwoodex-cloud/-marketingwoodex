@@ -10,7 +10,7 @@ import crypto from "node:crypto";
 import { fileURLToPath } from "node:url";
 import { createAdmin } from "./frontend-v1-admin.mjs";
 
-const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../p23-live");
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../woodex-live-p23");
 const PRIV = path.join(ROOT, "_private");
 const BACKUPS = path.join(PRIV, "backups");
 const UPLOADS = path.join(ROOT, "assets/uploads");
