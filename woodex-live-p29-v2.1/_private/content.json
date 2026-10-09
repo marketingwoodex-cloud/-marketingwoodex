@@ -1,17 +1,232 @@
 {
- "items": [],
- "seq": 0,
- "ai": {
-  "customKey": "",
-  "customModel": "",
-  "customUrl": "",
-  "provider": "anthropic",
-  "anthropicKey": "",
-  "anthropicModel": "claude-sonnet-4-5",
-  "openaiKey": "",
-  "openaiModel": "gpt-4o-mini",
-  "openrouterKey": "",
-  "openrouterModel": "nousresearch/hermes-3-llama-3.1-405b",
-  "voice": "Calm, plain, confident British English. Short sentences. No hype, no exclamation marks. Woodex Interior is a design, fit-out and renovation studio in Lahore, Pakistan."
- }
+  "items": [
+    {
+      "id": 1,
+      "type": "testimonial",
+      "status": "published",
+      "created_at": "2026-09-28 10:00:00",
+      "created_by": "Kamran Tariq",
+      "title": "Malik Riaz Hussain",
+      "slug": "",
+      "order": 1,
+      "data": {
+        "role": "1 Kanal Luxury Villa Owner",
+        "city": "DHA Phase 6, Lahore",
+        "project": "Turnkey Residential",
+        "rating": 5,
+        "text": "Woodex Interior executed our complete 1 Kanal residence in DHA Phase 6 from architecture to final furniture handover. The Spanish quartz kitchen island and seamless floor-to-ceiling closets are absolutely world-class.",
+        "featured": true,
+        "photo": ""
+      }
+    },
+    {
+      "id": 2,
+      "type": "testimonial",
+      "status": "published",
+      "created_at": "2026-09-15 11:30:00",
+      "created_by": "Kamran Tariq",
+      "title": "Dr. Tariq Jamil",
+      "slug": "",
+      "order": 2,
+      "data": {
+        "role": "Director, Apex Medical & Aesthetics",
+        "city": "Gulberg III, Lahore",
+        "project": "Commercial Clinic Fitout",
+        "rating": 5,
+        "text": "The patient waiting lounges and consultation suites delivered by Woodex have set a new benchmark in healthcare luxury in Lahore. Impeccable attention to detail and flawless acoustic wall panelling.",
+        "featured": true,
+        "photo": ""
+      }
+    },
+    {
+      "id": 3,
+      "type": "testimonial",
+      "status": "published",
+      "created_at": "2026-08-30 14:15:00",
+      "created_by": "Kamran Tariq",
+      "title": "Mrs. Ayesha Farooq",
+      "slug": "",
+      "order": 3,
+      "data": {
+        "role": "Executive Residence",
+        "city": "Lake City, Lahore",
+        "project": "Modular Kitchen & Wardrobes",
+        "rating": 5,
+        "text": "Our modern open-concept kitchen was delivered on time with perfect laser-edge banded German UV acrylic shutters and Blum motorized servo-drive lifts. Outstanding after-sales service!",
+        "featured": true,
+        "photo": ""
+      }
+    },
+    {
+      "id": 4,
+      "type": "testimonial",
+      "status": "published",
+      "created_at": "2026-08-12 09:45:00",
+      "created_by": "Kamran Tariq",
+      "title": "Chaudhry Noman",
+      "slug": "",
+      "order": 4,
+      "data": {
+        "role": "Managing Director, Horizon Capital",
+        "city": "Bahria Town Sector C, Lahore",
+        "project": "Corporate Headquarters",
+        "rating": 5,
+        "text": "Woodex customized our 24-seater executive boardroom table in solid walnut veneer alongside hidden acoustic wall doors. The craftsmanship is worthy of international corporate standards.",
+        "featured": false,
+        "photo": ""
+      }
+    },
+    {
+      "id": 5,
+      "type": "testimonial",
+      "status": "published",
+      "created_at": "2026-07-20 16:00:00",
+      "created_by": "Kamran Tariq",
+      "title": "Engr. Salman Raza",
+      "slug": "",
+      "order": 5,
+      "data": {
+        "role": "Homeowner",
+        "city": "Model Town, Lahore",
+        "project": "Full House Renovation",
+        "rating": 5,
+        "text": "From architectural structural remodeling to bespoke TV consoles, false ceiling lighting, and bathroom vanities, Woodex turned our 20-year old family house into a contemporary luxury sanctuary.",
+        "featured": false,
+        "photo": ""
+      }
+    },
+    {
+      "id": 6,
+      "type": "testimonial",
+      "status": "published",
+      "created_at": "2026-06-18 12:20:00",
+      "created_by": "Kamran Tariq",
+      "title": "Zainab Sheikh",
+      "slug": "",
+      "order": 6,
+      "data": {
+        "role": "Creative Director, Boutique Studio",
+        "city": "DHA Phase 5, Lahore",
+        "project": "Retail & Display Joinery",
+        "rating": 5,
+        "text": "Woodex understood our minimalist design brief immediately. The warm LED display niches, curved cashier counter, and fitting room joinery are spectacular.",
+        "featured": false,
+        "photo": ""
+      }
+    },
+    {
+      "id": 7,
+      "type": "member",
+      "status": "published",
+      "created_at": "2026-05-01 00:00:00",
+      "created_by": "Kamran Tariq",
+      "title": "Kamran Tariq",
+      "slug": "",
+      "order": 1,
+      "data": {
+        "role": "Managing Director & Founder",
+        "dept": "Executive Leadership",
+        "years": 18,
+        "bio": "Oversees high-end turnkey luxury residential architecture, bespoke joinery fabrication, and project delivery across Pakistan.",
+        "featured": true,
+        "email": "master@woodex.pk",
+        "phone": "+92 300 1234567",
+        "showContact": true
+      }
+    },
+    {
+      "id": 8,
+      "type": "member",
+      "status": "published",
+      "created_at": "2026-05-01 00:00:00",
+      "created_by": "Kamran Tariq",
+      "title": "Ar. Bilal Ahmed",
+      "slug": "",
+      "order": 2,
+      "data": {
+        "role": "Lead Architect & Design Director",
+        "dept": "Architecture & 3D Visualization",
+        "years": 12,
+        "bio": "PCATP registered architect specializing in modern luxury residences, spatial planning, parametric ceiling design, and 3D architectural rendering.",
+        "featured": true,
+        "email": "admin@woodex.pk",
+        "phone": "+92 321 4567890",
+        "showContact": true
+      }
+    },
+    {
+      "id": 9,
+      "type": "member",
+      "status": "published",
+      "created_at": "2026-05-01 00:00:00",
+      "created_by": "Kamran Tariq",
+      "title": "Usman Ali",
+      "slug": "",
+      "order": 3,
+      "data": {
+        "role": "Head of Estimations & Sales",
+        "dept": "Sales & Client Relations",
+        "years": 10,
+        "bio": "Specialist in custom BOQ formulation, luxury joinery cost analysis, on-site measurements, and turnkey contract management.",
+        "featured": false,
+        "email": "sales@woodex.pk",
+        "phone": "+92 333 8901234",
+        "showContact": true
+      }
+    },
+    {
+      "id": 10,
+      "type": "member",
+      "status": "published",
+      "created_at": "2026-05-01 00:00:00",
+      "created_by": "Kamran Tariq",
+      "title": "Engr. Hamza Farooq",
+      "slug": "",
+      "order": 4,
+      "data": {
+        "role": "Senior Project & Site Manager",
+        "dept": "Site Execution & Fit-Out",
+        "years": 8,
+        "bio": "Civil engineer overseeing precision on-site woodwork installation, MEP services coordination, and turnkey quality audits.",
+        "featured": false,
+        "email": "hamza.farooq@woodex.pk",
+        "phone": "+92 312 6789012",
+        "showContact": true
+      }
+    },
+    {
+      "id": 11,
+      "type": "member",
+      "status": "published",
+      "created_at": "2026-05-01 00:00:00",
+      "created_by": "Kamran Tariq",
+      "title": "Dr. Sarah Mansoor",
+      "slug": "",
+      "order": 5,
+      "data": {
+        "role": "Senior Interior Stylist",
+        "dept": "Interior Styling & Finishes",
+        "years": 9,
+        "bio": "Specializes in European material palettes, imported veneer curation, bespoke lighting moods, and fabric harmony.",
+        "featured": false,
+        "email": "sarah.mansoor@woodex.pk",
+        "phone": "+92 345 1239876",
+        "showContact": true
+      }
+    }
+  ],
+  "seq": 11,
+  "ai": {
+    "customKey": "",
+    "customModel": "",
+    "customUrl": "",
+    "provider": "anthropic",
+    "anthropicKey": "",
+    "anthropicModel": "claude-sonnet-4-5",
+    "openaiKey": "",
+    "openaiModel": "gpt-4o-mini",
+    "openrouterKey": "",
+    "openrouterModel": "nousresearch/hermes-3-llama-3.1-405b",
+    "voice": "Calm, plain, confident British English. Short sentences. No hype, no exclamation marks. Woodex Interior is a design, fit-out and renovation studio in Lahore, Pakistan."
+  }
 }

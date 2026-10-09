@@ -97,6 +97,37 @@
           '</div>' +
         '</div>' +
 
+        '<!-- 360 Panoramic VR & Virtual Tour Controls -->' +
+        '<div class="card" style="background:#111318;border:1px solid #20242f;border-radius:14px;padding:24px;margin-bottom:20px">' +
+          '<div class="card-h" style="padding:0 0 16px;border-bottom:1px solid #1a1e27;display:flex;align-items:center;justify-content:space-between">' +
+            '<div>' +
+              '<h3 style="font-size:16px;color:#f9fafb;margin:0 0 4px">' + ic("eye") + ' 360 Panoramic VR &amp; Virtual Tour Controls</h3>' +
+              '<small class="muted">Interactive 360 equirectangular spherical viewer &amp; Matterport / Kuula virtual tour embeds</small>' +
+            '</div>' +
+            '<span class="badge ok">VR Engine Active</span>' +
+          '</div>' +
+          '<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:18px">' +
+            '<div>' +
+              '<label style="font-weight:600;color:#f9fafb;font-size:13px">Default Virtual Tour Provider</label>' +
+              '<select id="st-vr-provider" style="width:100%;background:#181c24;border-color:#262a33;padding:9px 14px;border-radius:8px">' +
+                '<option value="pannellum" selected>Native HTML5 Equirectangular (Pannellum VR)</option>' +
+                '<option value="kuula">Kuula Virtual Tour Embed</option>' +
+                '<option value="matterport">Matterport 3D Showcase</option>' +
+              '</select>' +
+              '<label style="margin-top:12px;font-weight:600;color:#f9fafb;font-size:13px">Featured 360 Panorama URL / Key</label>' +
+              '<input type="text" id="st-vr-url" value="/assets/panoramas/dha6-luxury-living-360.jpg" style="width:100%;background:#181c24;border-color:#262a33;padding:9px 14px;border-radius:8px">' +
+            '</div>' +
+            '<div>' +
+              '<label style="font-weight:600;color:#f9fafb;font-size:13px">VR Interactivity Settings</label>' +
+              '<div style="display:flex;flex-direction:column;gap:10px;margin-top:8px">' +
+                '<label class="check" style="color:#cbd5e1;font-size:13px"><input type="checkbox" id="st-vr-gyro" checked style="accent-color:#00b8db"> Enable Mobile Gyroscope / Device Motion Tilt</label>' +
+                '<label class="check" style="color:#cbd5e1;font-size:13px"><input type="checkbox" id="st-vr-autorotate" checked style="accent-color:#00b8db"> Auto-rotate panorama on initial page load (2.0 RPM)</label>' +
+                '<label class="check" style="color:#cbd5e1;font-size:13px"><input type="checkbox" id="st-vr-hotspots" checked style="accent-color:#00b8db"> Show Interactive Woodex Joinery Material Hotspots</label>' +
+              '</div>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+
         '<!-- Studio Profile & Security Columns -->' +
         '<div style="display:grid;grid-template-columns:2fr 1fr;gap:20px">' +
           '<div class="card" style="background:#111318;border:1px solid #20242f;border-radius:14px;padding:20px">' +
