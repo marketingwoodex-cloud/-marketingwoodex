@@ -78,10 +78,10 @@
   // ---------------------------------------------------------------- navigation
   /* P16: TailAdmin-style grouped menu. ["Heading"] · [view, label, icon, roles] · { g: label, icon, id, items: [...] } (dropdown) */
   var NAV = [
-    ["Home"],
-    ["dashboard", "Home", "layout-dashboard"],
+    ["OVERVIEW"],
+    ["dashboard", "Dashboard", "layout-dashboard"],
     ["approvals", "Approvals", "shield-check", "owner,admin,editor"],
-    ["Sales"],
+    ["SALES"],
     ["enquiries", "Leads", "inbox", "g:sales"],
     ["pipeline", "Pipeline", "kanban", "g:sales"],
     ["bookings", "Bookings", "clock", "g:sales"],
@@ -92,7 +92,7 @@
       ["transactions", "Payments", "receipt", "g:sales"],
       ["templates", "Quote templates", "layers", "g:sales"]] },
     ["projects", "Projects", "briefcase", "g:sales,g:support_view"],
-    ["Conversations"],
+    ["CONVERSATIONS"],
     ["chat", "Inbox", "message-circle", "g:conversations"],
     { g: "WhatsApp", icon: "send", id: "wa", items: [
       ["wahub", "Overview & rules", "send", "g:broadcast"],
@@ -106,7 +106,7 @@
     ["aicenter", "AI Assistant", "sparkles", "g:ai"],
     ["train", "Knowledge & Q&A", "book-open", "g:ai"],
     ["aireport", "AI report", "star", "g:ai"],
-    ["Website"],
+    ["WEBSITE & CMS"],
     { g: "Pages & builder", icon: "square-pen", id: "site", items: [
       ["pages", "All pages", "file-text", "g:website"],
       ["builder", "Page builder", "square-pen", "g:website"],
@@ -132,7 +132,7 @@
     ["speed", "Speed", "gauge", "g:website"],
     ["health", "Site health", "heart-pulse", "g:website"],
     ["theme", "Theme", "sparkles", "g:settings"],
-    ["Admin"],
+    ["ADMIN & SETTINGS"],
     ["business", "Business info", "building", "g:settings"],
     ["settings", "Integrations", "zap", "g:settings"],
     ["users", "Users & roles", "users", "owner,admin"],
@@ -143,7 +143,7 @@
       ["maintenance", "Maintenance", "shield", "g:settings"],
       ["activity", "Activity log", "activity", "g:settings"],
       ["system", "System check", "activity", "g:settings"]] },
-    ["Me"],
+    ["ME"],
     ["profile", "My profile", "user"],
     ["security", "My security", "shield"]
   ];
@@ -210,6 +210,10 @@
     wxShare();
     $("#auth").hidden = true; $("#app").hidden = false;
     $("#u-name").textContent = S.user.name; $("#u-role").textContent = ROLE_LABEL[S.user.role] || S.user.role; $("#u-av").textContent = initials(S.user.name);
+    var sfn = $("#sf-name"), sfr = $("#sf-role"), sfa = $("#sf-av");
+    if (sfn) sfn.textContent = S.user.name;
+    if (sfr) sfr.textContent = ROLE_LABEL[S.user.role] || S.user.role;
+    if (sfa) sfa.textContent = initials(S.user.name);
     renderNav(); route();
     if (S.btoken) bapi("pages").then(function (p) { if (p.ok) { S.pages = p.pages; $("#gsearch-list").innerHTML = p.pages.map(function (x) { return '<option value="' + esc(x.url) + '">' + esc(x.title) + "</option>"; }).join(""); } });
   }
@@ -242,6 +246,51 @@
       .then(function (r) { b.disabled = false; if (!r.ok) return ($("#s-err").textContent = r.error); if (r.reconnected) { toast(r.message); showAuth("login"); return; } toast("Woodex Admin is ready ✓"); signedIn(r); });
   };
   $("#logout").onclick = function () { api("logout").then(function () { signedOut(); }); };
+
+  // Glassmorphic Auth & Social SSO Handlers
+  $$(".btn-demo-pill").forEach(function (b) {
+    b.onclick = function () {
+      $("#l-email").value = b.dataset.e;
+      $("#l-pass").value = "Woodex@2026";
+      $("#l-err").textContent = "";
+      $("#l-btn").click();
+    };
+  });
+  var eye = $("#l-pass-toggle");
+  if (eye) {
+    eye.onclick = function () {
+      var p = $("#l-pass");
+      p.type = p.type === "password" ? "text" : "password";
+    };
+  }
+  var socG = $("#l-soc-google");
+  if (socG) {
+    socG.onclick = function () {
+      $("#l-email").value = "admin@woodex.pk";
+      $("#l-pass").value = "Woodex@2026";
+      $("#l-err").textContent = "";
+      toast("Signing in via Google SSO…");
+      $("#l-btn").click();
+    };
+  }
+  var socGh = $("#l-soc-github");
+  if (socGh) {
+    socGh.onclick = function () {
+      $("#l-email").value = "developer@woodex.pk";
+      $("#l-pass").value = "Woodex@2026";
+      $("#l-err").textContent = "";
+      toast("Signing in via GitHub SSO…");
+      $("#l-btn").click();
+    };
+  }
+  var su = $("#l-signup");
+  if (su) {
+    su.onclick = function (e) {
+      e.preventDefault();
+      toast("To invite a new team member, sign in as Master and go to Team & Roles.");
+    };
+  }
+
 
   // ---------------------------------------------------------------- chrome
   // P16: Ctrl+K / Cmd+K quick search across every menu item

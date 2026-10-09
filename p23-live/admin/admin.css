@@ -1,23 +1,28 @@
 /* Woodex Admin v2 — layout and components modelled on TailAdmin (free, MIT), Woodex palette, DM Sans */
-@font-face{font-family:"DM Sans";src:url("/assets/fonts/dm-sans-400.woff2") format("woff2");font-weight:400;font-display:swap}
-@font-face{font-family:"DM Sans";src:url("/assets/fonts/dm-sans-500.woff2") format("woff2");font-weight:500;font-display:swap}
-@font-face{font-family:"DM Sans";src:url("/assets/fonts/dm-sans-600.woff2") format("woff2");font-weight:600;font-display:swap}
-@font-face{font-family:"DM Sans";src:url("/assets/fonts/dm-sans-700.woff2") format("woff2");font-weight:700;font-display:swap}
+@font-face{font-family:"Inter", system-ui, -apple-system, sans-serif;src:url("/assets/fonts/dm-sans-400.woff2") format("woff2");font-weight:400;font-display:swap}
+@font-face{font-family:"Inter", system-ui, -apple-system, sans-serif;src:url("/assets/fonts/dm-sans-500.woff2") format("woff2");font-weight:500;font-display:swap}
+@font-face{font-family:"Inter", system-ui, -apple-system, sans-serif;src:url("/assets/fonts/dm-sans-600.woff2") format("woff2");font-weight:600;font-display:swap}
+@font-face{font-family:"Inter", system-ui, -apple-system, sans-serif;src:url("/assets/fonts/dm-sans-700.woff2") format("woff2");font-weight:700;font-display:swap}
 
 :root{
-  --bg:#f2f4f7;--card:#fff;--line:#e4e7ec;--line2:#d0d5dd;--txt:#101828;--txt2:#344054;--mut:#667085;--mut2:#98a2b3;
-  --navy:#0a0f1e;--gold:#d4af6a;--gold-d:#b8924c;--pri:#0a0f1e;--pri-soft:#f5efe3;
-  --ok:#12b76a;--ok-soft:#ecfdf3;--warn:#f79009;--warn-soft:#fffaeb;--bad:#f04438;--bad-soft:#fef3f2;--info:#2e90fa;--info-soft:#eff8ff;
-  --side:290px;--top:72px;--r:16px;--sh:0 1px 3px rgba(16,24,40,.1),0 1px 2px rgba(16,24,40,.06);
+  --bg:#f9fafb;--card:#ffffff;--card-elevated:#ffffff;--line:#e5e7eb;--line2:#d1d5db;--txt:#111827;--txt2:#374151;--mut:#6b7280;--mut2:#9ca3af;
+  --navy:#0f172a;--gold:#007595;--gold-d:#005a74;--pri:#007595;--pri-fg:#ffffff;--pri-soft:rgba(0,117,149,0.1);
+  --cyan:#007595;--cyan-glow:rgba(0,117,149,0.2);
+  --ok:#10b981;--ok-soft:#ecfdf5;--warn:#f59e0b;--warn-soft:#fffbeb;--bad:#ef4444;--bad-soft:#fef2f2;--info:#0284c7;--info-soft:#f0f9ff;
+  --side:280px;--top:68px;--r:12px;--sh:0 1px 3px rgba(0,0,0,0.1);
   color-scheme:light
 }
 html.dark{
-  --bg:#0c111d;--card:#161b26;--line:#1f2533;--line2:#333a4a;--txt:#f5f5f6;--txt2:#cecfd2;--mut:#94969c;--mut2:#61646c;
-  --pri:#d4af6a;--pri-soft:#2a2418;--ok-soft:#053321;--warn-soft:#4e1d09;--bad-soft:#55160c;--info-soft:#102a56;color-scheme:dark
+  --bg:#050608;--card:#111318;--card-elevated:#161b24;--line:#20242f;--line2:#2b3140;--txt:#f3f4f6;--txt2:#d1d5db;--mut:#9ca3af;--mut2:#6b7280;
+  --navy:#050608;--gold:#00b8db;--gold-d:#00d3f2;--pri:#00b8db;--pri-fg:#04222b;--pri-soft:rgba(0,184,219,0.12);
+  --cyan:#00b8db;--cyan-glow:rgba(0,184,219,0.3);
+  --ok:#10b981;--ok-soft:rgba(16,185,129,0.15);--warn:#f59e0b;--warn-soft:rgba(245,158,11,0.15);--bad:#ef4444;--bad-soft:rgba(239,68,68,0.15);--info:#00b8db;--info-soft:rgba(0,184,219,0.15);
+  --side:280px;--top:68px;--r:12px;--sh:0 4px 20px rgba(0,0,0,0.4);
+  color-scheme:dark
 }
 *{box-sizing:border-box}
 html,body{margin:0;height:100%}
-body{font:400 14px/1.5 "DM Sans",system-ui,sans-serif;background:var(--bg);color:var(--txt);-webkit-font-smoothing:antialiased}
+body{font:400 14px/1.5 "Inter", system-ui, -apple-system, sans-serif,system-ui,sans-serif;background:var(--bg);color:var(--txt);-webkit-font-smoothing:antialiased}
 a{color:inherit;text-decoration:none}
 button,input,select,textarea{font:inherit;color:inherit}
 [hidden]{display:none!important}
@@ -1030,7 +1035,7 @@ html.dark{
 @font-face{font-family:"Plus Jakarta Sans";src:url("/assets/fonts/plus-jakarta-sans-500.woff2") format("woff2");font-weight:500;font-display:swap}
 @font-face{font-family:"Plus Jakarta Sans";src:url("/assets/fonts/plus-jakarta-sans-600.woff2") format("woff2");font-weight:600;font-display:swap}
 @font-face{font-family:"Plus Jakarta Sans";src:url("/assets/fonts/plus-jakarta-sans-700.woff2") format("woff2");font-weight:700;font-display:swap}
-body{font-family:"Plus Jakarta Sans","DM Sans",system-ui,sans-serif}
+body{font-family:"Plus Jakarta Sans","Inter", system-ui, -apple-system, sans-serif,system-ui,sans-serif}
 
 /* ---------- 3. dark-mode colour fixes ----------
    each of these rules hardcoded a light colour and stayed light in dark mode */
@@ -1266,6 +1271,732 @@ html.dark ::-webkit-scrollbar{width:10px;height:10px}
 html.dark ::-webkit-scrollbar-thumb{background:var(--line2);border-radius:8px;border:2px solid var(--card)}
 html.dark ::-webkit-scrollbar-track{background:transparent}
 
+/* ==================== PRELINE OBSIDIAN & CYAN V2.1 ENHANCEMENTS ==================== */
+/* Sidebar & Navigation (Image 1 & 2) */
+.side {
+  background: #0a0c10 !important;
+  border-right: 1px solid #1a1e27 !important;
+}
+.side .nav-h, .side-group-title {
+  color: #9ca3af !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+}
+.side a.nav-item, .side .nav-a, .side a {
+  border-radius: 8px !important;
+  color: #d1d5db !important;
+  transition: all 0.15s ease !important;
+}
+.side a.nav-item:hover, .side .nav-a:hover {
+  background: rgba(255, 255, 255, 0.04) !important;
+  color: #ffffff !important;
+}
+.side a.nav-item.active, .side .nav-a.active, .side a.active {
+  background: rgba(0, 184, 219, 0.12) !important;
+  color: #00d3f2 !important;
+  font-weight: 600 !important;
+  border-left: 3px solid #00b8db !important;
+}
+
+/* Page Header & Breadcrumbs (Image 2 - Circled in Red) */
+.page-header, .header-title-row {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  margin-bottom: 16px !important;
+}
+.page-title {
+  font-size: 24px !important;
+  font-weight: 700 !important;
+  color: #ffffff !important;
+  letter-spacing: -0.02em !important;
+}
+.breadcrumb {
+  font-size: 12px !important;
+  color: #9ca3af !important;
+  margin-top: 4px !important;
+}
+
+/* Preline Segmented Glassmorphic Pill Tabs (Image 2 - Circled in Red) */
+.tabs, .sub-nav, .tab-bar, .subnav-tabs {
+  display: inline-flex !important;
+  align-items: center !important;
+  background: #111318 !important;
+  border: 1px solid #20242f !important;
+  border-radius: 9999px !important;
+  padding: 4px !important;
+  gap: 4px !important;
+  margin-bottom: 20px !important;
+}
+.tabs button, .tabs a, .sub-nav a, .tab-bar a, .subnav-tabs a, .tab-btn {
+  padding: 6px 16px !important;
+  border-radius: 9999px !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  color: #9ca3af !important;
+  border: none !important;
+  background: transparent !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+  text-decoration: none !important;
+}
+.tabs button:hover, .tabs a:hover, .sub-nav a:hover, .tab-bar a:hover {
+  color: #ffffff !important;
+}
+.tabs button.active, .tabs a.active, .sub-nav a.active, .tab-bar a.active, .subnav-tabs a.active, .tab-btn.active {
+  background: #00b8db !important;
+  color: #04222b !important;
+  font-weight: 600 !important;
+  box-shadow: 0 2px 10px rgba(0, 184, 219, 0.25) !important;
+}
+
+/* App Connectors Grid (Image 3) */
+.connector-card, .integ-card, .app-card {
+  background: #111318 !important;
+  border: 1px solid #20242f !important;
+  border-radius: 12px !important;
+  padding: 18px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease !important;
+}
+.connector-card:hover, .integ-card:hover, .app-card:hover {
+  border-color: #00b8db !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5) !important;
+}
+.app-avatar {
+  width: 36px !important;
+  height: 36px !important;
+  border-radius: 8px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-weight: 700 !important;
+  font-size: 14px !important;
+  color: #ffffff !important;
+}
+
+/* Visual Builder Canvas & Panels (Image 1) */
+.builder-topbar, .builder-header {
+  background: #0a0c10 !important;
+  border-bottom: 1px solid #1a1e27 !important;
+}
+.builder-sidebar, .builder-subnav {
+  background: #0e1117 !important;
+  border-right: 1px solid #1a1e27 !important;
+}
+.builder-inspector, .builder-panel-r {
+  background: #0e1117 !important;
+  border-left: 1px solid #1a1e27 !important;
+}
+.skin-pill {
+  border-radius: 9999px !important;
+  border: 1px solid #2b3140 !important;
+  padding: 4px 12px !important;
+  font-size: 12px !important;
+  background: #161b24 !important;
+  color: #d1d5db !important;
+}
+.skin-pill.active {
+  border-color: #00b8db !important;
+  background: rgba(0, 184, 219, 0.15) !important;
+  color: #00d3f2 !important;
+}
+
+/* Primary Cyan Action Buttons */
+.btn-cyan, .btn.pri, button.btn-primary {
+  background: #00b8db !important;
+  color: #04222b !important;
+  border: none !important;
+  font-weight: 600 !important;
+  border-radius: 8px !important;
+}
+.btn-cyan:hover, .btn.pri:hover, button.btn-primary:hover {
+  background: #00d3f2 !important;
+  box-shadow: 0 4px 14px rgba(0, 184, 219, 0.35) !important;
+}
+
+
+/* ==================== HIGH CONTRAST CHAT BUBBLES ==================== */
+.lm {
+  border-radius: 14px !important;
+  padding: 10px 14px !important;
+  font-size: 13.5px !important;
+  line-height: 1.5 !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+}
+html.dark .lm.v {
+  background: #1c2333 !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: #f9fafb !important;
+}
+html.dark .lm.v small {
+  color: #9ca3af !important;
+}
+html.dark .lm.a {
+  background: #082836 !important;
+  border: 1px solid rgba(0, 184, 219, 0.4) !important;
+  color: #e0f7fa !important;
+}
+html.dark .lm.a small {
+  color: #38bdf8 !important;
+}
+html.dark .lm.g {
+  background: #00b8db !important;
+  border: none !important;
+  color: #04222b !important;
+  font-weight: 500 !important;
+}
+html.dark .lm.g small {
+  color: #083344 !important;
+}
+html.dark .lm.s, html.dark .lm.n {
+  background: rgba(245, 158, 11, 0.15) !important;
+  border: 1px dashed rgba(245, 158, 11, 0.4) !important;
+  color: #fef3c7 !important;
+}
+
+:root:not(.dark) .lm.v {
+  background: #f3f4f6 !important;
+  border: 1px solid #e5e7eb !important;
+  color: #111827 !important;
+}
+:root:not(.dark) .lm.a {
+  background: #e0f2fe !important;
+  border: 1px solid #bae6fd !important;
+  color: #0369a1 !important;
+}
+:root:not(.dark) .lm.g {
+  background: #007595 !important;
+  border: none !important;
+  color: #ffffff !important;
+}
+:root:not(.dark) .lm.s, :root:not(.dark) .lm.n {
+  background: #fffbeb !important;
+  border: 1px dashed #fde68a !important;
+  color: #92400e !important;
+}
+
+/* Primary Button Text Contrast */
+.btn.pri {
+  background: var(--pri) !important;
+  color: var(--pri-fg) !important;
+  border: none !important;
+  font-weight: 600 !important;
+  border-radius: 8px !important;
+  transition: all 0.15s ease !important;
+}
+.btn.pri:hover {
+  filter: brightness(1.1) !important;
+  box-shadow: 0 4px 14px var(--cyan-glow) !important;
+}
+
+/* Light / Dark Mode Topbar Icon visibility */
+html.dark .i-sun { display: inline-flex !important; }
+html.dark .i-moon { display: none !important; }
+:root:not(.dark) .i-sun { display: none !important; }
+:root:not(.dark) .i-moon { display: inline-flex !important; }
+
+
+/* ==================== PRELINE OBSIDIAN & CYAN HYBRID DASHBOARD STYLES ==================== */
+.dx-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.dx-kpi {
+  background: #111318 !important;
+  border: 1px solid #20242f !important;
+  border-radius: 14px !important;
+  padding: 18px 20px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 6px !important;
+  text-decoration: none !important;
+  transition: all 0.15s ease !important;
+  position: relative;
+  overflow: hidden;
+}
+:root:not(.dark) .dx-kpi {
+  background: #ffffff !important;
+  border: 1px solid #e5e7eb !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
+}
+.dx-kpi:hover {
+  border-color: #00b8db !important;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4) !important;
+}
+.dx-kpi small {
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.06em !important;
+  text-transform: uppercase !important;
+  color: #9ca3af !important;
+}
+:root:not(.dark) .dx-kpi small {
+  color: #6b7280 !important;
+}
+.dx-kpi b {
+  font-size: 26px !important;
+  font-weight: 700 !important;
+  color: #ffffff !important;
+  letter-spacing: -0.02em !important;
+  line-height: 1.1 !important;
+}
+:root:not(.dark) .dx-kpi b {
+  color: #111827 !important;
+}
+.dx-sub {
+  font-size: 12px !important;
+  color: #00d3f2 !important;
+  font-weight: 500 !important;
+}
+:root:not(.dark) .dx-sub {
+  color: #007595 !important;
+}
+.kpi-ic {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  color: rgba(0, 184, 219, 0.4);
+}
+
+/* Floating Live Chat Dock Pill (#cx-bub) */
+#cx-bub {
+  position: fixed !important;
+  right: 24px !important;
+  bottom: 24px !important;
+  z-index: 999 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  padding: 10px 18px !important;
+  border-radius: 9999px !important;
+  background: #00b8db !important;
+  color: #04222b !important;
+  font-weight: 700 !important;
+  font-size: 13.5px !important;
+  border: none !important;
+  box-shadow: 0 4px 20px rgba(0, 184, 219, 0.4), 0 2px 6px rgba(0,0,0,0.3) !important;
+  cursor: pointer !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+#cx-bub:hover {
+  transform: translateY(-2px) scale(1.03) !important;
+  background: #00d3f2 !important;
+  box-shadow: 0 6px 24px rgba(0, 184, 219, 0.6) !important;
+}
+#cx-dock {
+  border-radius: 16px !important;
+  overflow: hidden !important;
+  background: #111318 !important;
+  border: 1px solid #20242f !important;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6) !important;
+}
+:root:not(.dark) #cx-dock {
+  background: #ffffff !important;
+  border: 1px solid #e5e7eb !important;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15) !important;
+}
+.cx-h {
+  background: #0a0c10 !important;
+  border-bottom: 1px solid #1a1e27 !important;
+}
+:root:not(.dark) .cx-h {
+  background: #f9fafb !important;
+  border-bottom: 1px solid #e5e7eb !important;
+  color: #111827 !important;
+}
+
+/* Chat Bubbles Contrast (Image 1 fix) */
+.lm {
+  border-radius: 14px !important;
+  padding: 10px 14px !important;
+  font-size: 13.5px !important;
+  line-height: 1.5 !important;
+  max-width: 82% !important;
+  margin-bottom: 8px !important;
+}
+.lm small {
+  display: block !important;
+  font-size: 11px !important;
+  margin-bottom: 4px !important;
+  font-weight: 600 !important;
+}
+/* AI message in Dark Mode */
+html.dark .lm.a, .lm.a {
+  background: #0b2230 !important;
+  border: 1px solid #00b8db !important;
+  color: #f0fdfa !important;
+}
+html.dark .lm.a small, .lm.a small {
+  color: #38bdf8 !important;
+}
+/* Visitor message in Dark Mode */
+html.dark .lm.v, .lm.v {
+  background: #1e293b !important;
+  border: 1px solid #334155 !important;
+  color: #f8fafc !important;
+}
+html.dark .lm.v small, .lm.v small {
+  color: #94a3b8 !important;
+}
+/* Agent message */
+.lm.g {
+  background: #00b8db !important;
+  border: none !important;
+  color: #04222b !important;
+  font-weight: 600 !important;
+}
+.lm.g small {
+  color: #083344 !important;
+}
+
+/* Light mode chat bubbles */
+:root:not(.dark) .lm.a {
+  background: #e0f2fe !important;
+  border: 1px solid #bae6fd !important;
+  color: #0369a1 !important;
+}
+:root:not(.dark) .lm.v {
+  background: #f3f4f6 !important;
+  border: 1px solid #e5e7eb !important;
+  color: #111827 !important;
+}
+:root:not(.dark) .lm.g {
+  background: #007595 !important;
+  border: none !important;
+  color: #ffffff !important;
+}
+
+
+/* ==================== PRELINE RAIL SIDEBAR & BLOCK UTILITIES ==================== */
+#app.rail {
+  --side: 72px !important;
+}
+#app.rail .side-top .brand div,
+#app.rail .side .nav-h,
+#app.rail .side .nav-a span,
+#app.rail .side .nav-gb span,
+#app.rail .side .nav-gb i[data-i="chevron-down"],
+#app.rail .side .nav-gb .chev,
+#app.rail .side .nav-gi,
+#app.rail .side .side-user-row div {
+  display: none !important;
+}
+#app.rail .side .nav-a,
+#app.rail .side .nav-gb {
+  justify-content: center !important;
+  padding: 10px 0 !important;
+}
+#app.rail .side-top {
+  padding: 14px 10px !important;
+  justify-content: center !important;
+}
+#app.rail .side-foot {
+  padding: 10px 0 !important;
+  justify-content: center !important;
+}
+#app.rail .side-foot .side-user-row {
+  justify-content: center !important;
+}
+#app.rail .side-foot .side-user-row a,
+#app.rail .side-foot .side-user-row button {
+  display: none !important;
+}
+
+/* Preline Table Hover & Striping */
+.tbl tbody tr {
+  transition: background-color 0.15s ease !important;
+}
+.tbl tbody tr:hover {
+  background-color: rgba(255, 255, 255, 0.03) !important;
+}
+:root:not(.dark) .tbl tbody tr:hover {
+  background-color: rgba(0, 0, 0, 0.02) !important;
+}
+
+/* Preline Badges High-Contrast */
+.badge.ok, .badge.suc {
+  background: rgba(16, 185, 129, 0.15) !important;
+  color: #34d399 !important;
+  border: 1px solid rgba(16, 185, 129, 0.3) !important;
+}
+.badge.warn {
+  background: rgba(245, 158, 11, 0.15) !important;
+  color: #fbbf24 !important;
+  border: 1px solid rgba(245, 158, 11, 0.3) !important;
+}
+.badge.bad, .badge.dan {
+  background: rgba(239, 68, 68, 0.15) !important;
+  color: #f87171 !important;
+  border: 1px solid rgba(239, 68, 68, 0.3) !important;
+}
+.badge.info {
+  background: rgba(0, 184, 219, 0.15) !important;
+  color: #00d3f2 !important;
+  border: 1px solid rgba(0, 184, 219, 0.3) !important;
+}
+
+/* Light mode badge contrasts */
+:root:not(.dark) .badge.ok, :root:not(.dark) .badge.suc {
+  background: #ecfdf5 !important;
+  color: #047857 !important;
+  border-color: #a7f3d0 !important;
+}
+:root:not(.dark) .badge.warn {
+  background: #fffbeb !important;
+  color: #b45309 !important;
+  border-color: #fde68a !important;
+}
+:root:not(.dark) .badge.bad, :root:not(.dark) .badge.dan {
+  background: #fef2f2 !important;
+  color: #b91c1c !important;
+  border-color: #fecaca !important;
+}
+:root:not(.dark) .badge.info {
+  background: #ecfeff !important;
+  color: #007595 !important;
+  border-color: #a5f3fc !important;
+}
+
+
+/* ==================== FROSTED GLASSMORPHIC OBSIDIAN AUTH (SCREENSHOT MATCH) ==================== */
+.auth[hidden], #auth[hidden] {
+  display: none !important;
+}
+.auth {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 16px;
+  background: linear-gradient(rgba(5, 6, 8, 0.82), rgba(5, 6, 8, 0.92)), url('/assets/img/svc-interior-design.webp') center/cover no-repeat fixed !important;
+  position: relative;
+  overflow: hidden;
+}
+.auth-glow {
+  position: absolute;
+  width: 500px;
+  height: 500px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0, 184, 219, 0.15) 0%, transparent 70%);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 1;
+}
+.auth-card {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 480px;
+  background: rgba(18, 22, 30, 0.78) !important;
+  backdrop-filter: blur(28px) !important;
+  -webkit-backdrop-filter: blur(28px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 28px !important;
+  padding: 36px 40px !important;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.05) !important;
+}
+.auth-title {
+  font-size: 28px !important;
+  font-weight: 700 !important;
+  color: #ffffff !important;
+  text-align: center !important;
+  margin: 0 0 6px !important;
+  letter-spacing: -0.02em !important;
+}
+.auth-sub {
+  font-size: 13.5px !important;
+  color: #9ca3af !important;
+  text-align: center !important;
+  margin: 0 0 22px !important;
+  line-height: 1.4 !important;
+}
+.auth-sso-row {
+  display: flex !important;
+  gap: 12px !important;
+  margin-bottom: 20px !important;
+}
+.btn-sso {
+  flex: 1 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  height: 44px !important;
+  border-radius: 9999px !important;
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  color: #ffffff !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+.btn-sso:hover {
+  background: rgba(255, 255, 255, 0.12) !important;
+  border-color: rgba(255, 255, 255, 0.25) !important;
+  transform: translateY(-1px) !important;
+}
+.auth-divider {
+  display: flex !important;
+  align-items: center !important;
+  text-align: center !important;
+  margin: 18px 0 !important;
+  color: #6b7280 !important;
+  font-size: 12px !important;
+}
+.auth-divider::before, .auth-divider::after {
+  content: '' !important;
+  flex: 1 !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+.auth-divider span {
+  padding: 0 12px !important;
+}
+.auth-field {
+  margin-bottom: 14px !important;
+}
+.auth-field label {
+  display: block !important;
+  font-size: 12.5px !important;
+  font-weight: 500 !important;
+  color: #d1d5db !important;
+  margin: 0 0 6px !important;
+}
+.auth-input-pill {
+  position: relative !important;
+  width: 100% !important;
+}
+.auth-input-pill input {
+  width: 100% !important;
+  height: 46px !important;
+  border-radius: 12px !important;
+  background: rgba(0, 0, 0, 0.35) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  color: #ffffff !important;
+  padding: 0 16px !important;
+  font-size: 14px !important;
+  outline: none !important;
+  transition: all 0.2s ease !important;
+  box-sizing: border-box !important;
+}
+.auth-input-pill input:focus {
+  border-color: #00b8db !important;
+  box-shadow: 0 0 0 3px rgba(0, 184, 219, 0.25) !important;
+  background: rgba(0, 0, 0, 0.5) !important;
+}
+.auth-input-pill input::placeholder {
+  color: #6b7280 !important;
+}
+.auth-eye-btn {
+  position: absolute !important;
+  right: 14px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  background: none !important;
+  border: none !important;
+  color: #9ca3af !important;
+  cursor: pointer !important;
+  display: grid !important;
+  place-items: center !important;
+  padding: 4px !important;
+}
+.auth-eye-btn:hover {
+  color: #00d3f2 !important;
+}
+.auth-sub-row {
+  display: flex !important;
+  justify-content: flex-start !important;
+  margin: 8px 0 16px !important;
+}
+.auth-link-cyan {
+  color: #00d3f2 !important;
+  font-size: 13px !important;
+  text-decoration: none !important;
+  font-weight: 500 !important;
+  transition: color 0.15s ease !important;
+}
+.auth-link-cyan:hover {
+  color: #38bdf8 !important;
+  text-decoration: underline !important;
+}
+.btn-auth-main {
+  width: 100% !important;
+  height: 48px !important;
+  border-radius: 9999px !important;
+  background: linear-gradient(135deg, #00b8db 0%, #0099cc 100%) !important;
+  color: #04222b !important;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  border: none !important;
+  cursor: pointer !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  box-shadow: 0 4px 20px rgba(0, 184, 219, 0.35) !important;
+  margin-top: 4px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+.btn-auth-main:hover {
+  background: linear-gradient(135deg, #00d3f2 0%, #00b8db 100%) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 6px 24px rgba(0, 184, 219, 0.5) !important;
+}
+.auth-signup-text {
+  text-align: center !important;
+  font-size: 13.5px !important;
+  color: #9ca3af !important;
+  margin: 18px 0 0 !important;
+}
+.auth-demo-box {
+  margin-top: 20px !important;
+  padding-top: 16px !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+  text-align: center !important;
+}
+.auth-demo-title {
+  font-size: 11.5px !important;
+  color: #9ca3af !important;
+  font-weight: 500 !important;
+}
+.auth-demo-pills {
+  display: flex !important;
+  gap: 6px !important;
+  justify-content: center !important;
+  flex-wrap: wrap !important;
+  margin-top: 8px !important;
+}
+.btn-demo-pill {
+  padding: 4px 12px !important;
+  border-radius: 9999px !important;
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  color: #d1d5db !important;
+  font-size: 11.5px !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+}
+.btn-demo-pill:hover {
+  background: rgba(0, 184, 219, 0.2) !important;
+  border-color: #00b8db !important;
+  color: #00d3f2 !important;
+}
+
+
+/* Explicit guard: ensure hidden state is always respected */
+#auth[hidden], .auth[hidden], #app[hidden], .app[hidden], [hidden] {
+  display: none !important;
+}
 
 /* ==========================================================================
    PRELINE PRO V3 HYBRID CRM & LEADS DASHBOARD STYLING
