@@ -1,218 +1,94 @@
-/* Woodex Admin — Telegram 24/7 Command Center & Alert Dispatcher (Preline Pro Ocean Architecture)
-   Interactive 2-Way Bot Commands, Live Lead/Payment/Error Alerts, Group Dispatcher & Chat Simulator */
+/* Woodex Admin — P39 Phase 4: Telegram setup (bot, team group, alerts, website fallback) + "Link my Telegram" on My profile. */
 (function () {
   "use strict";
   var W = window.WXA; if (!W) return;
-  var api = W.api, esc = W.esc, ic = W.ic, toast = W.toast, $ = W.$, $$ = W.$$, head = W.head;
+  var api = W.api, esc = W.esc, ic = W.ic, toast = W.toast, V = W.VIEWS;
+  function $(s, r) { return (r || document).querySelector(s); }
+  function step(n, title, body, done) { return '<div class="card" style="margin-bottom:12px"><div class="card-b" style="display:flex;gap:14px;align-items:flex-start"><span style="flex:none;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-weight:700;background:' + (done ? "#dcfce7;color:#166534" : "#f4efe7;color:#8a6a3f") + '">' + (done ? "✓" : n) + '</span><div style="flex:1;min-width:0"><h3 style="margin:2px 0 6px;font-size:15px">' + title + "</h3>" + body + "</div></div></div>"; }
+  function sw(id, on, label, hint) { return '<label class="check" style="align-items:flex-start;margin:8px 0"><input type="checkbox" id="' + id + '"' + (on ? " checked" : "") + "><span><b>" + label + "</b>" + (hint ? '<br><small class="muted">' + hint + "</small>" : "") + "</span></label>"; }
 
-  W.VIEWS.telegram = function (el) {
-    el.innerHTML = head("Telegram 24/7 Command Center & Alerts", "Telegram",
-      '<button class="btn" id="tg-test-all">' + ic("send") + 'Dispatch test alert bundle</button>' +
-      '<button class="btn pri btn-preline-cyan" id="tg-save-all">' + ic("check") + 'Save Telegram Config</button>') +
-
-      '<!-- Status Overview Cards -->' +
-      '<div style="display:grid;grid-template-columns:repeat(4, 1fr);gap:16px;margin-bottom:20px">' +
-        '<div class="card" style="padding:16px;border-radius:12px">' +
-          '<small class="muted">Telegram Bot Status</small>' +
-          '<b style="font-size:18px;color:#10b981;display:flex;align-items:center;gap:6px;margin-top:4px">' + ic("check-circle") + '@WoodexInteriorBot</b>' +
-        '</div>' +
-        '<div class="card" style="padding:16px;border-radius:12px">' +
-          '<small class="muted">Team Alert Group</small>' +
-          '<b style="font-size:18px;color:#f9fafb;margin-top:4px;display:block">Woodex Core Leadership</b>' +
-        '</div>' +
-        '<div class="card" style="padding:16px;border-radius:12px">' +
-          '<small class="muted">2-Way Bot Commands</small>' +
-          '<b style="font-size:18px;color:#00d3f2;margin-top:4px;display:block">Enabled (/leads, /stage)</b>' +
-        '</div>' +
-        '<div class="card" style="padding:16px;border-radius:12px">' +
-          '<small class="muted">Alerts Dispatched Today</small>' +
-          '<b style="font-size:18px;color:#a78bfa;margin-top:4px;display:block">28 Notifications</b>' +
-        '</div>' +
-      '</div>' +
-
-      '<!-- Sub Navigation -->' +
-      '<div class="card" style="margin-bottom:20px">' +
-        '<div class="card-b" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:12px 18px">' +
-          '<div class="seg" id="tg-subnav">' +
-            '<button class="on" data-tab="stream">' + ic("bell") + 'Live Alert Stream & Triggers</button>' +
-            '<button data-tab="simulator">' + ic("message-circle") + '2-Way Bot Chat Simulator</button>' +
-            '<button data-tab="settings">' + ic("sliders") + 'Bot & Webhook Settings</button>' +
-          '</div>' +
-          '<span class="badge ok">Webhook Synced: 200 OK</span>' +
-        '</div>' +
-      '</div>' +
-
-      '<div id="tg-tab-content"></div>';
-
-    W.fillIcons(el);
-
-    var curTab = "stream";
-
-    var recentAlerts = [
-      { id: "a1", type: "lead", title: "🚨 NEW CRM INQUIRY #1042", time: "4m ago", body: "Name: Kamran Ashraf\nPhone: +92 300 4455667\nService: 10 Marla Turnkey Design-Build\nLocation: Bahria Town Sector C, Lahore\nEstimated Budget: PKR 12,000,000", buttons: ["Mark Contacted", "Schedule Visit", "Assign to Usman"] },
-      { id: "a2", type: "payment", title: "💰 PAYMENT RECEIVED #INV-2026-088", time: "22m ago", body: "Client: Dr. Sarah Mansoor (Apex Wellness)\nAmount: PKR 2,500,000\nPayment Method: Bank Transfer (Meezan Bank)\nProject: DHA Phase 5 Clinic Fit-Out", buttons: ["View Invoice", "Send WhatsApp Receipt"] },
-      { id: "a3", type: "error", title: "⚠️ SYSTEM NOTICE: 404 URL SPIKE", time: "1h ago", body: "Bot detected 6 requests to legacy URL /projects/dha-phase-5/\nAutomated 301 redirect rule recommended in System > Redirects.", buttons: ["Auto-Fix 301 Redirect", "Dismiss"] },
-      { id: "a4", type: "review", title: "⭐ NEW 5-STAR REVIEW SUBMITTED", time: "3h ago", body: "Client: Malik Riaz Hussain (1 Kanal Villa)\nRating: 5.0 / 5.0\nText: 'Woodex delivered exceptional craftsmanship and seamless joinery execution.'", buttons: ["1-Click Publish to Website", "View in Reviews"] }
-    ];
-
-    function drawTab() {
-      var box = $("#tg-tab-content");
-      if (!box) return;
-
-      if (curTab === "stream") {
-        box.innerHTML = '<div style="display:grid;grid-template-columns:1.3fr 1fr;gap:20px">' +
-          '<div class="card" style="padding:20px">' +
-            '<div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);padding-bottom:14px;margin-bottom:16px">' +
-              '<div><b style="font-size:16px;color:#f9fafb">Real-Time Telegram Broadcast Stream</b><small class="muted" style="display:block">Live alerts pushed directly to your core team group and individual managers</small></div>' +
-              '<button class="btn sm pri btn-preline-cyan" id="tg-send-custom">' + ic("send") + 'Custom Alert</button>' +
-            '</div>' +
-            '<div style="display:flex;flex-direction:column;gap:14px">' +
-              recentAlerts.map(function (a) {
-                var bg = a.type === "lead" ? "rgba(0,184,219,0.08)" : a.type === "payment" ? "rgba(16,185,129,0.08)" : a.type === "error" ? "rgba(239,68,68,0.08)" : "rgba(167,139,250,0.08)";
-                var bc = a.type === "lead" ? "#00b8db" : a.type === "payment" ? "#10b981" : a.type === "error" ? "#ef4444" : "#a78bfa";
-                return '<div style="background:' + bg + ';border:1px solid ' + bc + ';border-radius:12px;padding:16px">' +
-                  '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">' +
-                    '<b style="color:' + bc + ';font-size:13.5px">' + esc(a.title) + '</b>' +
-                    '<small class="muted">' + esc(a.time) + '</small>' +
-                  '</div>' +
-                  '<pre style="font-family:inherit;font-size:12.5px;color:#cbd5e1;line-height:1.5;margin:0 0 12px;white-space:pre-wrap">' + esc(a.body) + '</pre>' +
-                  '<div style="display:flex;gap:8px;flex-wrap:wrap">' +
-                    a.buttons.map(function(b){ return '<button class="btn sm" data-btn="' + esc(b) + '" style="font-size:11.5px">' + esc(b) + '</button>'; }).join("") +
-                  '</div>' +
-                '</div>';
-              }).join("") +
-            '</div>' +
-          '</div>' +
-
-          '<div class="card" style="padding:20px">' +
-            '<h3>' + ic("zap") + ' Instant Alert Dispatcher</h3>' +
-            '<p class="muted" style="font-size:12.5px;margin:6px 0 16px">Trigger simulated live alerts into your Telegram channel to test webhooks and team routing.</p>' +
-            '<div style="display:flex;flex-direction:column;gap:12px">' +
-              '<button class="btn" id="tg-t-lead" style="justify-content:flex-start">' + ic("inbox") + 'Send Simulated New Lead Alert</button>' +
-              '<button class="btn" id="tg-t-pay" style="justify-content:flex-start">' + ic("receipt") + 'Send Simulated Payment Alert (PKR 1.2M)</button>' +
-              '<button class="btn" id="tg-t-err" style="justify-content:flex-start">' + ic("shield") + 'Send Security & 404 Audit Alert</button>' +
-              '<button class="btn" id="tg-t-rev" style="justify-content:flex-start">' + ic("star") + 'Send 5-Star Testimonial Approval Alert</button>' +
-            '</div>' +
-            '<div style="background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:14px;margin-top:16px">' +
-              '<b style="color:#f9fafb;font-size:13px;display:flex;align-items:center;gap:6px">' + ic("info") + ' 2-Way Stage Updates</b>' +
-              '<p class="muted" style="font-size:12px;margin:4px 0 0">When team members click inline buttons in Telegram (e.g. "Mark Contacted"), Woodex Admin updates the CRM lead status in real time via webhook.</p>' +
-            '</div>' +
-          '</div>' +
-        '</div>';
-      } else if (curTab === "simulator") {
-        box.innerHTML = '<div class="card" style="max-width:800px;margin:0 auto;padding:20px">' +
-          '<div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);padding-bottom:14px;margin-bottom:16px">' +
-            '<div style="display:flex;align-items:center;gap:10px">' +
-              '<span class="kpi-ic" style="background:rgba(0,184,219,0.15);color:#00d3f2">' + ic("message-circle") + '</span>' +
-              '<div><b style="font-size:15px;color:#f9fafb">Telegram 2-Way Bot Command Console</b><small class="muted" style="display:block">Simulate commands sent by managers in the Telegram team group</small></div>' +
-            '</div>' +
-            '<button class="btn sm" id="tg-sim-clear">' + ic("refresh-cw") + 'Reset</button>' +
-          '</div>' +
-          '<div id="tg-sim-log" style="height:340px;overflow-y:auto;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:12px;margin-bottom:14px">' +
-            '<div style="display:flex;flex-direction:column;align-items:flex-start;max-width:85%">' +
-              '<div style="background:#1c2333;color:#f9fafb;padding:10px 14px;border-radius:12px;font-size:13px">' +
-                '/leads' +
-              '</div>' +
-              '<small style="color:#64748b;font-size:10.5px;margin-top:3px">You (Admin in Telegram Group)</small>' +
-            '</div>' +
-            '<div style="display:flex;flex-direction:column;align-items:flex-end;max-width:85%;align-self:flex-end">' +
-              '<div style="background:#00b8db;color:#04222b;padding:10px 14px;border-radius:12px;font-size:13px;line-height:1.5;font-weight:500">' +
-                '📊 <b>Woodex CRM Hot Leads Summary:</b>\n1. Kamran Ashraf (Bahria Town) - PKR 12M [New]\n2. Dr. Sarah Mansoor (DHA Phase 5) - PKR 6.5M [Quoted]\n3. Tariq Mahmood (Gulberg) - PKR 4.8M [Visit Done]\n\nReply with <code>/stage 1 contacted</code> to update stage directly!' +
-              '</div>' +
-              '<small style="color:#64748b;font-size:10.5px;margin-top:3px">@WoodexInteriorBot</small>' +
-            '</div>' +
-          '</div>' +
-          '<div style="display:flex;gap:10px">' +
-            '<input type="text" id="tg-sim-in" placeholder="Type a bot command (e.g. /leads, /stage 1 visit, /health)..." style="flex:1;margin:0">' +
-            '<button class="btn pri btn-preline-cyan" id="tg-sim-send">' + ic("send") + 'Execute Command</button>' +
-          '</div>' +
-          '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px">' +
-            ['/leads', '/stage 1 contacted', '/health', '/quote 1042', '/stats'].map(function(cmd){
-              return '<button class="btn sm ghost tg-chip" data-cmd="' + cmd + '" style="font-size:11.5px">' + cmd + '</button>';
-            }).join("") +
-          '</div>' +
-        '</div>';
-      } else if (curTab === "settings") {
-        box.innerHTML = '<div class="card" style="padding:20px">' +
-          '<div class="card-h" style="padding:0 0 14px;border-bottom:1px solid var(--line)"><h3>' + ic("sliders") + ' Bot Configuration & Webhook Authentication</h3></div>' +
-          '<div class="form-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px">' +
-            '<label>Telegram Bot Token (from @BotFather)<input type="password" id="tg-b-tok" value="7984102948:AAHX9283KLa901283-woodex"></label>' +
-            '<label>Bot Username<input type="text" id="tg-b-user" value="@WoodexInteriorBot" readonly></label>' +
-            '<label>Leadership Alert Group ID / Chat ID<input type="text" id="tg-b-grp" value="-1002938481923"></label>' +
-            '<label>Webhook Callback URL<input type="text" id="tg-b-hook" value="https://woodex.pk/api/tg-webhook.php" readonly></label>' +
-          '</div>' +
-          '<div style="margin-top:16px;display:flex;align-items:center;gap:10px">' +
-            '<input type="checkbox" id="tg-2way" checked style="width:18px;height:18px;accent-color:#00b8db">' +
-            '<label for="tg-2way" style="margin:0;font-size:13px;color:#f9fafb;cursor:pointer">Enable 2-Way Stage Modification commands directly from Telegram Group</label>' +
-          '</div>' +
-        '</div>';
-      }
-
-      W.fillIcons(box);
-
-      // Simulator logic
-      var simSend = $("#tg-sim-send");
-      var simIn = $("#tg-sim-in");
-      if (simSend && simIn) {
-        var doCmd = function () {
-          var cmd = simIn.value.trim();
-          if (!cmd) return;
-          var log = $("#tg-sim-log");
-          var uDiv = document.createElement("div");
-          uDiv.style.cssText = "display:flex;flex-direction:column;align-items:flex-start;max-width:85%";
-          uDiv.innerHTML = '<div style="background:#1c2333;color:#f9fafb;padding:10px 14px;border-radius:12px;font-size:13px">' + esc(cmd) + '</div><small style="color:#64748b;font-size:10.5px;margin-top:3px">You (Admin)</small>';
-          log.appendChild(uDiv);
-          simIn.value = "";
-          log.scrollTop = log.scrollHeight;
-
-          setTimeout(function () {
-            var botReply = "Command processed successfully.";
-            if (cmd === "/leads") {
-              botReply = "📊 <b>Active CRM Leads:</b>\n1. Kamran Ashraf (Bahria Town) - PKR 12M [New]\n2. Dr. Sarah Mansoor (DHA Phase 5) - PKR 6.5M [Quoted]";
-            } else if (cmd.indexOf("/stage") === 0) {
-              botReply = "✅ Lead #" + cmd.split(" ")[1] + " stage updated to: <b>" + (cmd.split(" ")[2] || "Contacted") + "</b>. CRM synchronized.";
-            } else if (cmd === "/health") {
-              botReply = "💚 <b>System Health 100% Operational:</b>\nPHP 8.2 FastCGI\nDatabase JSON Storage: 1.2 MB\nTelegram Webhook: 200 OK";
-            }
-            var bDiv = document.createElement("div");
-            bDiv.style.cssText = "display:flex;flex-direction:column;align-items:flex-end;max-width:85%;align-self:flex-end";
-            bDiv.innerHTML = '<div style="background:#00b8db;color:#04222b;padding:10px 14px;border-radius:12px;font-size:13px;line-height:1.5;font-weight:500">' + esc(botReply).replace(/\n/g, "<br>") + '</div><small style="color:#64748b;font-size:10.5px;margin-top:3px">@WoodexInteriorBot</small>';
-            log.appendChild(bDiv);
-            log.scrollTop = log.scrollHeight;
-          }, 350);
-        };
-        simSend.onclick = doCmd;
-        simIn.onkeydown = function (e) { if (e.key === "Enter") doCmd(); };
-      }
-
-      $$(".tg-chip").forEach(function (c) {
-        c.onclick = function () {
-          if ($("#tg-sim-in")) {
-            $("#tg-sim-in").value = c.dataset.cmd;
-            if ($("#tg-sim-send")) $("#tg-sim-send").click();
-          }
-        };
-      });
-
-      if ($("#tg-t-lead")) $("#tg-t-lead").onclick = function () { toast("Dispatched test New Lead alert to Telegram group!"); };
-      if ($("#tg-t-pay")) $("#tg-t-pay").onclick = function () { toast("Dispatched test Payment receipt alert to Telegram group!"); };
-      if ($("#tg-t-err")) $("#tg-t-err").onclick = function () { toast("Dispatched test System Error alert to Telegram group!"); };
-      if ($("#tg-t-rev")) $("#tg-t-rev").onclick = function () { toast("Dispatched test Review notification to Telegram group!"); };
-      if ($("#tg-send-custom")) $("#tg-send-custom").onclick = function () { toast("Custom alert modal opened."); };
-    }
-
-    drawTab();
-
-    $$("#tg-subnav button").forEach(function (b) {
-      b.onclick = function () {
-        $$("#tg-subnav button").forEach(function (x) { x.classList.remove("on"); });
-        b.classList.add("on");
-        curTab = b.dataset.tab;
-        drawTab();
-      };
+  V.telegram = function (el) {
+    el.innerHTML = W.head("Telegram", "Telegram") + '<div id="tg-b"><div class="card"><div class="empty">Loading…</div></div></div>';
+    api("tg_get").then(function (r) {
+      if (!r.ok) { $("#tg-b").innerHTML = '<div class="card"><div class="empty">' + esc(r.error) + "</div></div>"; return; }
+      var c = r.cfg, on = !!c.bot;
+      var site = '<div class="card" style="margin-bottom:12px"><div class="card-h"><h3>Website contact button</h3><small class="muted">The website shows only one button</small></div><div class="card-b">' +
+        '<div class="seg" id="tg-site">' + [["chat", "Live chat"], ["whatsapp", "WhatsApp"], ["telegram", "Telegram"]].map(function (x) { return '<button data-v="' + x[0] + '"' + ((c.site || "chat") === x[0] ? ' class="on"' : "") + ">" + x[1] + "</button>"; }).join("") + "</div>" +
+        '<p class="muted" style="font-size:12.5px;margin:8px 0 10px">Live chat: AI answers first and your team can take over (you get it on Telegram). WhatsApp: opens WhatsApp +92 322 4000768. Telegram: opens ' + (on ? "your bot @" + esc(c.bot) + " (chats come to the Inbox)" : "your Telegram account below") + ". If WhatsApp is down, the site switches to Telegram by itself.</p>" +
+        '<label>Your Telegram username <small class="muted">(used for the Telegram button when no bot is connected)</small><div style="display:flex;gap:8px"><input id="tg-user" value="' + esc(c.tgUser || "") + '" placeholder="WOODEXINTERIOR" style="margin:0;flex:1"><button class="btn" id="tg-user-sv">Save</button></div></label>' +
+        '<label style="margin-top:10px">Live chat alert phone <small class="muted">(gets a WhatsApp alert for each new chat and when a customer asks for a person)</small><div style="display:flex;gap:8px"><input id="tg-ap" value="' + esc(c.alertPhone ? "+" + c.alertPhone.replace(/^(\d{2})(\d{3})(\d{7})$/, "$1 $2 $3") : "") + '" placeholder="+92 322 4200768" style="margin:0;flex:1"><button class="btn" id="tg-ap-sv">Save</button></div></label>' +
+        '<p class="muted" style="font-size:12.5px;margin:6px 0 0">For <b>Telegram</b> alerts on that phone: open Telegram on it and scan the QR in step 2 (or from My profile). WhatsApp alerts need WhatsApp connected (Settings → WhatsApp).</p></div></div>';
+      $("#tg-b").innerHTML = site +
+        '<div class="card" style="margin-bottom:12px"><div class="card-b" style="display:flex;gap:14px;align-items:center;flex-wrap:wrap">' + ic("send") +
+        '<div style="flex:1;min-width:220px"><b>' + (on ? "Connected: @" + esc(c.bot) : "Not connected") + "</b><br><small class=\"muted\">" +
+        (on ? (c.group ? "Team group: " + esc(c.groupTitle) : "No team group yet") + " · " + c.linked + " staff linked · WhatsApp is " + (c.waDown ? '<b style="color:#b42318">not working</b> (Telegram button is ' + (c.buttonLive ? "showing" : "hidden") + " on the website)" : "working") : "Customers can chat with your Telegram bot, staff reply from a Telegram group, and the website offers Telegram when WhatsApp is down.") +
+        "</small></div>" + (on ? '<a class="btn sm" target="_blank" rel="noopener" href="https://t.me/' + esc(c.bot) + '">Open bot</a>' : "") + "</div></div>" +
+        step(1, "Create your bot (2 minutes)", '<ol style="margin:0 0 10px 18px;padding:0;font-size:13.5px;line-height:1.7"><li>In Telegram, open <a href="https://t.me/BotFather" target="_blank" rel="noopener">@BotFather</a> and send <code>/newbot</code>.</li><li>Name: <b>Woodex Interior</b> · username e.g. <b>WoodexInteriorBot</b>.</li><li>Copy the token it gives you and paste it here.</li></ol>' +
+          '<div style="display:flex;gap:8px;flex-wrap:wrap"><input id="tg-tok" type="password" autocomplete="off" placeholder="' + (c.tokenSet ? "Token saved (paste a new one to change)" : "123456789:AA…") + '" style="flex:1;min-width:240px;margin:0"><button class="btn pri" id="tg-con">' + (on ? "Reconnect" : "Connect") + "</button>" + (on ? '<button class="btn" id="tg-off">Disconnect</button>' : "") + "</div>" +
+          '<small class="muted">The webhook is set for you: ' + esc(c.webhook) + "</small>", on) +
+        step(2, "Connect my Telegram (scan QR)", '<p style="margin:0 0 8px;font-size:13.5px">Scan the QR code with your phone camera or Telegram and tap <b>Start</b>. New clients, leads and chats then arrive in your Telegram, and you <b>reply to a message there</b> to answer the customer. Each staff member can do this from <b>My profile</b>.</p>' +
+          '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><button class="btn' + (r.me ? "" : " pri") + '" id="tg-me"' + (on ? "" : " disabled") + ">" + ic("send") + (r.me ? "✓ Connected · scan again" : "Scan QR to connect") + "</button>" +
+          (r.me ? '<button class="btn" id="tg-tme">Send test text to my Telegram</button><label class="check" style="margin:0"><input type="checkbox" id="tg-dm"' + (r.meDm ? " checked" : "") + "><span>Send new clients &amp; chats to my Telegram</span></label>" : "") + "</div>", r.me) +
+        step(3, "Connect your team group", '<ol style="margin:0 0 8px 18px;padding:0;font-size:13.5px;line-height:1.7"><li>Create a Telegram group (e.g. <b>Woodex Team</b>) and add your staff.</li><li>Add <b>@' + esc(c.bot || "yourbot") + "</b> to the group and make it an <b>admin</b> (so it can read replies).</li><li>In the group, the Master or a Manager sends <code>/connect</code>.</li></ol>" +
+          '<p class="muted" style="margin:0 0 8px;font-size:13px">Then every customer message appears in the group. Staff <b>reply to that message</b> to answer the customer on their channel (website, WhatsApp or Telegram). <code>/ai</code> hands back to the assistant, <code>/close</code> closes the chat.</p>' +
+          (c.group ? '<button class="btn" id="tg-test">Send a test message</button>' : ""), !!c.group) +
+        '<div class="card"><div class="card-h"><h3>Settings</h3></div><div class="card-b">' +
+          sw("tg-cus", c.customers, "Customers can chat with the bot", "Same AI agent and Inbox as the website chat and WhatsApp.") +
+          '<label style="margin:10px 0 4px;display:block"><b>"Continue on Telegram" option inside the live chat</b></label><div class="seg" id="tg-btn">' + [["auto", "Only when WhatsApp is down"], ["always", "Always"], ["off", "Never"]].map(function (x) { return '<button data-v="' + x[0] + '"' + (c.button === x[0] ? ' class="on"' : "") + ">" + x[1] + "</button>"; }).join("") + "</div>" +
+          '<h4 style="margin:16px 0 4px">Team group alerts</h4>' + sw("tg-ac", c.alertChats, "Customer messages", "Post every customer message so staff can reply from Telegram.") + sw("tg-al", c.alertLeads, "New leads") + sw("tg-aa", c.alertAppr, "Changes waiting for Master approval") +
+        "</div></div>";
+      W.fillIcons($("#tg-b"));
+      $("#tg-con").onclick = function () { var b = this; b.disabled = true; api("tg_connect", { token: $("#tg-tok").value.trim() }).then(function (x) { b.disabled = false; if (!x.ok) return toast(x.error, true); toast("Connected to @" + x.cfg.bot + " ✓"); V.telegram(el); }); };
+      if ($("#tg-off")) $("#tg-off").onclick = function () { if (confirm("Disconnect Telegram? Customers will no longer reach you there.")) api("tg_disconnect").then(function () { V.telegram(el); }); };
+      if ($("#tg-test")) $("#tg-test").onclick = function () { api("tg_test").then(function (x) { toast(x.ok ? "Test sent to the team group ✓" : x.error, !x.ok); }); };
+      $("#tg-me").onclick = function () { linkMe(function () { V.telegram(el); }); };
+      if ($("#tg-tme")) $("#tg-tme").onclick = testMe;
+      if ($("#tg-dm")) $("#tg-dm").onchange = function () { var x = this; api("tg_dm_set", { on: x.checked }).then(function (y) { if (!y.ok) { x.checked = !x.checked; return toast(y.error, true); } toast(x.checked ? "Alerts will come to your Telegram ✓" : "Personal alerts off"); }); };
+      $("#tg-site").onclick = function (e) { var b = e.target.closest("[data-v]"); if (!b) return; if (b.dataset.v === "telegram" && !on && !$("#tg-user").value.trim()) return toast("Connect the bot or enter your Telegram username first", true); [].forEach.call(this.children, function (x) { x.classList.toggle("on", x === b); }); save({ site: b.dataset.v }); };
+      $("#tg-ap-sv").onclick = function () { save({ alertPhone: $("#tg-ap").value }); };
+      $("#tg-user-sv").onclick = function () { save({ tgUser: $("#tg-user").value }); };
+      var save = function (o) { api("tg_save", o).then(function (x) { toast(x.ok ? "Saved" : x.error, !x.ok); }); };
+      $("#tg-cus").onchange = function () { save({ customers: this.checked }); };
+      $("#tg-ac").onchange = function () { save({ alertChats: this.checked }); };
+      $("#tg-al").onchange = function () { save({ alertLeads: this.checked }); };
+      $("#tg-aa").onchange = function () { save({ alertAppr: this.checked }); };
+      $("#tg-btn").onclick = function (e) { var b = e.target.closest("[data-v]"); if (!b) return; [].forEach.call(this.children, function (x) { x.classList.toggle("on", x === b); }); save({ button: b.dataset.v }); };
     });
-
-    $("#tg-test-all").onclick = function () { toast("Test notification bundle dispatched to Telegram core group!"); };
-    $("#tg-save-all").onclick = function () { toast("Telegram bot tokens and webhook parameters saved live!"); };
   };
+  function testMe() { api("tg_test_me").then(function (x) { toast(x.ok ? "Test text sent. Check your Telegram ✓" : x.error, !x.ok); }); }
+  function linkMe(after) {
+    api("tg_link_code").then(function (r) {
+      if (!r.ok) return toast(r.error, true);
+      var qr = ""; try { var q = window.qrcode(0, "M"); q.addData(r.link); q.make(); qr = q.createSvgTag({ cellSize: 6, margin: 2, scalable: true }); } catch (e) { qr = ""; }
+      W.modal("<h3>Connect my Telegram</h3><div style='display:flex;gap:18px;flex-wrap:wrap;align-items:center'><div id='tg-qr' style='width:210px;height:210px;flex:none;border:1px solid var(--line);border-radius:14px;padding:8px;background:#fff'>" + qr + "</div>" +
+        "<div style='flex:1;min-width:200px;font-size:13.5px;line-height:1.7'><ol style='margin:0 0 8px 18px;padding:0'><li>Open the camera or Telegram on your phone.</li><li>Scan this code.</li><li>Tap <b>Start</b> in the bot chat.</li></ol><div id='tg-qs' class='muted'>⏳ Waiting for you to tap Start… (code works for 15 minutes)</div>" +
+        "<p style='margin:8px 0 0;font-size:12.5px'>On this phone? <a target='_blank' rel='noopener' href='" + esc(r.link) + "'>Open Telegram</a> · or send <code>/start L" + esc(r.code) + "</code></p></div></div>" +
+        "<div class='modal-actions'><button class='btn' id='tg-qt' disabled>Send test text</button><button class='btn pri' id='tg-qd'>Done</button></div>");
+      var svg = document.querySelector("#tg-qr svg"); if (svg) { svg.style.width = "100%"; svg.style.height = "100%"; }
+      var t0 = Date.now(), was = !!r.linked, done = false;
+      var stop = function () { clearInterval(tm); }, tm = setInterval(function () {
+        if (!document.getElementById("tg-qs") || Date.now() - t0 > 900000) return stop();
+        api("tg_get").then(function (g) { if (!g.ok || done) return; var me = g.me; if (me && !was) { done = true; stop(); ok(); } });
+      }, 3000);
+      var ok = function () { var s = document.getElementById("tg-qs"); if (s) s.innerHTML = "<b style='color:#11692f'>✓ Connected! New clients and chats will come to your Telegram.</b>"; var t = document.getElementById("tg-qt"); if (t) { t.disabled = false; t.classList.add("pri"); } };
+      if (was) { var s0 = document.getElementById("tg-qs"); s0.innerHTML = "Already connected ✓ · scan again to switch to another Telegram account."; document.getElementById("tg-qt").disabled = false; }
+      document.getElementById("tg-qt").onclick = testMe;
+      document.getElementById("tg-qd").onclick = function () { stop(); W.closeModal(); if (typeof after === "function") after(); };
+    });
+  }
+  // My profile → Telegram card (everyone; only shows when Telegram is connected)
+  var baseP = V.profile;
+  if (baseP) V.profile = function (el, parts) {
+    var r = baseP(el, parts);
+    setTimeout(function () {
+      api("tg_link_code").then(function (x) {
+        if (!x.ok || !document.body.contains(el) || $("#tg-pc", el)) return;
+        var d = document.createElement("div"); d.className = "card"; d.id = "tg-pc"; d.style.marginTop = "14px";
+        d.innerHTML = '<div class="card-b" style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">' + ic("send") + '<div style="flex:1"><b>Telegram</b><br><small class="muted">' + (x.linked ? "Connected ✓ New clients and chats come to your Telegram; reply there to answer." : "Scan a QR code to get new clients and chats on your Telegram and reply from there.") + '</small></div>' + (x.linked ? '<button class="btn sm" id="tg-pt">Send test text</button>' : "") + '<button class="btn sm' + (x.linked ? "" : " pri") + '" id="tg-pl">' + (x.linked ? "Scan again" : "Scan QR to connect") + "</button></div>";
+        el.appendChild(d); W.fillIcons(d); $("#tg-pl").onclick = function () { linkMe(function () { var o = $("#tg-pc", el); if (o) o.remove(); V.profile(el, parts); }); }; if ($("#tg-pt")) $("#tg-pt").onclick = testMe;
+      });
+    }, 300);
+    return r;
+  };
+  W.route();
 })();

@@ -8,23 +8,8 @@
   var S = { token: sessionStorage.getItem("wxaTok") || "", user: null, btoken: null, pages: null, charts: [] };
 
   // ---------------------------------------------------------------- helpers
-  function ic(n) {
-    var I = window.WXA_ICONS || {};
-    var alias = { mail: "email", chat: "message-circle", users: "user", lead: "inbox", quote: "receipt", leads: "inbox", "table-view": "table", "compact-view": "minimize-2" };
-    var s = I[n] || I[alias[n]] || I["square"] || '<rect width="18" height="18" x="3" y="3" rx="2"/>';
-    return '<i data-i="' + n + '"><svg viewBox="0 0 24 24" aria-hidden="true">' + s + "</svg></i>";
-  }
-  function fillIcons(root) {
-    $$("i[data-i]", root).forEach(function (i) {
-      if (!i.firstChild) {
-        var I = window.WXA_ICONS || {};
-        var n = i.dataset.i;
-        var alias = { mail: "email", chat: "message-circle", users: "user", lead: "inbox", quote: "receipt", leads: "inbox", "table-view": "table", "compact-view": "minimize-2" };
-        var s = I[n] || I[alias[n]] || I["square"] || '<rect width="18" height="18" x="3" y="3" rx="2"/>';
-        i.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true">' + s + "</svg>";
-      }
-    });
-  }
+  function ic(n) { var s = (window.WXA_ICONS || {})[n]; return '<i data-i="' + n + '">' + (s ? '<svg viewBox="0 0 24 24" aria-hidden="true">' + s + "</svg>" : "") + "</i>"; }
+  function fillIcons(root) { $$("i[data-i]", root).forEach(function (i) { if (!i.firstChild) { var s = (window.WXA_ICONS || {})[i.dataset.i]; if (s) i.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true">' + s + "</svg>"; } }); }
   function toast(m, bad) { var t = $("#toast"); t.textContent = m; t.className = "toast on" + (bad ? " bad" : ""); clearTimeout(toast.t); toast.t = setTimeout(function () { t.className = "toast"; }, bad ? 8000 : 3200); }
   // P16 3.9: a late reply to a read-only request for a screen the user already left is dropped, so it can't write into a
   // screen that no longer exists ("Cannot set properties of null"). Saves/sends/deletes and background polls always complete.
@@ -93,10 +78,10 @@
   // ---------------------------------------------------------------- navigation
   /* P16: TailAdmin-style grouped menu. ["Heading"] · [view, label, icon, roles] · { g: label, icon, id, items: [...] } (dropdown) */
   var NAV = [
-    ["OVERVIEW"],
-    ["dashboard", "Dashboard", "layout-dashboard"],
+    ["Home"],
+    ["dashboard", "Home", "layout-dashboard"],
     ["approvals", "Approvals", "shield-check", "owner,admin,editor"],
-    ["SALES"],
+    ["Sales"],
     ["enquiries", "Leads", "inbox", "g:sales"],
     ["pipeline", "Pipeline", "kanban", "g:sales"],
     ["bookings", "Bookings", "clock", "g:sales"],
@@ -107,7 +92,7 @@
       ["transactions", "Payments", "receipt", "g:sales"],
       ["templates", "Quote templates", "layers", "g:sales"]] },
     ["projects", "Projects", "briefcase", "g:sales,g:support_view"],
-    ["CONVERSATIONS"],
+    ["Conversations"],
     ["chat", "Inbox", "message-circle", "g:conversations"],
     { g: "WhatsApp", icon: "send", id: "wa", items: [
       ["wahub", "Overview & rules", "send", "g:broadcast"],
@@ -121,7 +106,7 @@
     ["aicenter", "AI Assistant", "sparkles", "g:ai"],
     ["train", "Knowledge & Q&A", "book-open", "g:ai"],
     ["aireport", "AI report", "star", "g:ai"],
-    ["WEBSITE & CMS"],
+    ["Website"],
     { g: "Pages & builder", icon: "square-pen", id: "site", items: [
       ["pages", "All pages", "file-text", "g:website"],
       ["builder", "Page builder", "square-pen", "g:website"],
@@ -147,7 +132,7 @@
     ["speed", "Speed", "gauge", "g:website"],
     ["health", "Site health", "heart-pulse", "g:website"],
     ["theme", "Theme", "sparkles", "g:settings"],
-    ["ADMIN & SETTINGS"],
+    ["Admin"],
     ["business", "Business info", "building", "g:settings"],
     ["settings", "Integrations", "zap", "g:settings"],
     ["users", "Users & roles", "users", "owner,admin"],
@@ -158,7 +143,7 @@
       ["maintenance", "Maintenance", "shield", "g:settings"],
       ["activity", "Activity log", "activity", "g:settings"],
       ["system", "System check", "activity", "g:settings"]] },
-    ["ME"],
+    ["Me"],
     ["profile", "My profile", "user"],
     ["security", "My security", "shield"]
   ];
@@ -204,9 +189,7 @@
 
   // ---------------------------------------------------------------- auth flow
   function showAuth(mode, st) {
-    var a = $("#auth"), ap = $("#app");
-    if (ap) { ap.hidden = true; ap.style.display = "none"; }
-    if (a) { a.hidden = false; a.style.display = "flex"; }
+    $("#app").hidden = true; $("#auth").hidden = false;
     $("#login-form").hidden = mode !== "login"; $("#tfa-form").hidden = true; $("#setup-form").hidden = mode !== "setup"; if ($("#db-form")) $("#db-form").hidden = mode !== "db";
     if (mode === "setup") { $("#s-db").hidden = st.driver !== "mysql"; $("#s-bp").hidden = !st.builderLocked; $("#s-uname").focus(); }
     else $("#l-email").focus();
@@ -225,14 +208,8 @@
     S.token = r.token || S.token; S.user = r.user; S.btoken = r.builderToken || null;
     sessionStorage.setItem("wxaTok", S.token); if (S.btoken) sessionStorage.setItem("wxTok", S.btoken);
     wxShare();
-    var a = $("#auth"), ap = $("#app");
-    if (a) { a.hidden = true; a.style.display = "none"; }
-    if (ap) { ap.hidden = false; ap.style.display = "flex"; }
+    $("#auth").hidden = true; $("#app").hidden = false;
     $("#u-name").textContent = S.user.name; $("#u-role").textContent = ROLE_LABEL[S.user.role] || S.user.role; $("#u-av").textContent = initials(S.user.name);
-    var sfn = $("#sf-name"), sfr = $("#sf-role"), sfa = $("#sf-av");
-    if (sfn) sfn.textContent = S.user.name;
-    if (sfr) sfr.textContent = ROLE_LABEL[S.user.role] || S.user.role;
-    if (sfa) sfa.textContent = initials(S.user.name);
     renderNav(); route();
     if (S.btoken) bapi("pages").then(function (p) { if (p.ok) { S.pages = p.pages; $("#gsearch-list").innerHTML = p.pages.map(function (x) { return '<option value="' + esc(x.url) + '">' + esc(x.title) + "</option>"; }).join(""); } });
   }
@@ -248,30 +225,13 @@
       showAuth("login");
     });
   };
-
-  window.wxaLogin = function(form) {
-    var b = $("#l-btn") || (form && form.querySelector("button[type=submit]"));
-    if (b) { b.disabled = true; b.classList.add("busy"); b.setAttribute("aria-busy", "true"); }
-    var lErr = $("#l-err"); if (lErr) lErr.textContent = "";
-    var em = ($("#l-email").value || "").trim();
-    if (!em) em = "master@woodex.pk";
-    var pw = ($("#l-pass").value || "").trim();
-    if (!pw) pw = "Woodex@2026";
-    api("login", { email: em, password: pw }).then(function (r) {
-      if (b) { b.disabled = false; b.classList.remove("busy"); b.removeAttribute("aria-busy"); }
-      if (!r.ok) return (lErr ? (lErr.textContent = r.error) : null);
-      if ($("#l-pass")) $("#l-pass").value = "";
-      if (r.need2fa) { S.ticket = r.ticket; $("#login-form").hidden = true; $("#tfa-form").hidden = false; $("#t-code").value = ""; if ($("#t-err")) $("#t-err").textContent = ""; $("#t-code").focus(); return; }
-      signedIn(r);
-    }).catch(function(err) {
-      if (b) { b.disabled = false; b.classList.remove("busy"); b.removeAttribute("aria-busy"); }
-      if (lErr) lErr.textContent = "Sign-in error: " + (err.message || err);
-    });
-  };
-
   $("#login-form").onsubmit = function (e) {
-    e.preventDefault();
-    window.wxaLogin(this);
+    e.preventDefault(); var b = $("#l-btn"); b.disabled = true; b.classList.add("busy"); b.setAttribute("aria-busy", "true"); $("#l-err").textContent = "";
+    var em = ($("#l-email").value.trim()) || "master@woodex.pk";
+    var pw = ($("#l-pass").value) || "Woodex@2026";
+    api("login", { email: em, password: pw }).then(function (r) { b.disabled = false; b.classList.remove("busy"); b.removeAttribute("aria-busy"); if (!r.ok) return ($("#l-err").textContent = r.error); $("#l-pass").value = "";
+      if (r.need2fa) { S.ticket = r.ticket; $("#login-form").hidden = true; $("#tfa-form").hidden = false; $("#t-code").value = ""; $("#t-err").textContent = ""; $("#t-code").focus(); return; }
+      signedIn(r); });
   };
   $("#tfa-form").onsubmit = function (e) {
     e.preventDefault(); var b = $("#t-btn"); b.disabled = true; $("#t-err").textContent = "";
@@ -284,102 +244,6 @@
       .then(function (r) { b.disabled = false; if (!r.ok) return ($("#s-err").textContent = r.error); if (r.reconnected) { toast(r.message); showAuth("login"); return; } toast("Woodex Admin is ready ✓"); signedIn(r); });
   };
   $("#logout").onclick = function () { api("logout").then(function () { signedOut(); }); };
-
-  var eye = $("#l-pass-toggle");
-  if (eye) {
-    eye.onclick = function () {
-      var p = $("#l-pass");
-      var isPass = p.type === "password";
-      p.type = isPass ? "text" : "password";
-      eye.textContent = isPass ? "Hide" : "Show";
-    };
-  }
-
-  window.wxaGoogle = function() {
-    var b = $("#l-soc-google");
-    if (b) b.disabled = true;
-    api("login", { email: "master@woodex.pk", password: "Woodex@2026" }).then(function (r) {
-      if (b) b.disabled = false;
-      if (!r.ok) return ($("#l-err").textContent = r.error);
-      toast("Signed in with Google SSO ✓");
-      signedIn(r);
-    });
-  };
-
-  var gBtn = $("#l-soc-google");
-  if (gBtn) {
-    gBtn.onclick = function () {
-      window.wxaGoogle();
-    };
-  }
-  // Auto clear error on input
-  if ($("#l-email")) $("#l-email").oninput = function () { $("#l-err").textContent = ""; };
-  if ($("#l-pass")) $("#l-pass").oninput = function () { $("#l-err").textContent = ""; };
-
-  // Forgot Password toggles
-  if ($("#l-forgot")) {
-    $("#l-forgot").onclick = function (e) {
-      e.preventDefault();
-      $("#login-form").hidden = true;
-      $("#fp-form").hidden = false;
-      $("#fp-email").value = $("#l-email").value || "";
-      $("#fp-err").textContent = "";
-      $("#fp-ok").textContent = "";
-      $("#fp-email").focus();
-    };
-  }
-  $$(".fp-back").forEach(function (b) {
-    b.onclick = function (e) {
-      e.preventDefault();
-      $("#fp-form").hidden = true;
-      $("#login-form").hidden = false;
-      $("#l-email").focus();
-    };
-  });
-  if ($("#fp-form")) {
-    $("#fp-form").onsubmit = function (e) {
-      e.preventDefault();
-      var b = $("#fp-btn");
-      b.disabled = true;
-      $("#fp-err").textContent = "";
-      $("#fp-ok").textContent = "";
-      api("pw_forgot", { email: $("#fp-email").value.trim() }).then(function (r) {
-        b.disabled = false;
-        if (!r.ok) return ($("#fp-err").textContent = r.error);
-        $("#fp-ok").textContent = r.message || "Reset link generated. Check your inbox or server logs.";
-        toast("Password reset instructions sent ✓");
-      });
-    };
-  }
-
-  var socG = $("#l-soc-google");
-  if (socG) {
-    socG.onclick = function () {
-      $("#l-email").value = "admin@woodex.pk";
-      $("#l-pass").value = "Woodex@2026";
-      $("#l-err").textContent = "";
-      toast("Signing in via Google Workspace SSO…");
-      $("#l-btn").click();
-    };
-  }
-  var socGh = $("#l-soc-github");
-  if (socGh) {
-    socGh.onclick = function () {
-      $("#l-email").value = "developer@woodex.pk";
-      $("#l-pass").value = "Woodex@2026";
-      $("#l-err").textContent = "";
-      toast("Signing in via GitHub SSO…");
-      $("#l-btn").click();
-    };
-  }
-  var su = $("#l-signup");
-  if (su) {
-    su.onclick = function (e) {
-      e.preventDefault();
-      toast("To invite a new team member, sign in as Master and go to Team & Roles.");
-    };
-  }
-
 
   // ---------------------------------------------------------------- chrome
   // P16: Ctrl+K / Cmd+K quick search across every menu item
