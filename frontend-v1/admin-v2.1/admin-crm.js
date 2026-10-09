@@ -98,93 +98,13 @@
   }
 
   // =========================================================== INBOX
-  W.VIEWS.enquiries = function (el) {
-    var st = S.enqState || (S.enqState = { q: "", stage: "", source: "", who: "", due: false });
-    var admin = can("owner,admin");
-    el.innerHTML = head("Leads", "Leads", (admin ? '<button class="btn" id="eq-set">' + ic("settings") + 'Alerts & spam</button><button class="btn" id="eq-imp">' + ic("upload") + "Import CSV</button>" : "") + '<button class="btn" id="eq-exp">' + ic("download") + 'Export CSV</button><button class="btn pri" id="eq-add">' + ic("plus") + "Add enquiry</button>") +
-      '<div class="grid kpis" id="eq-kpis"></div><div class="card"><div class="card-b" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;border-bottom:1px solid var(--line)">' +
-      '<input type="search" id="eq-q" placeholder="Search name, phone, email, message…" style="margin:0;max-width:300px">' +
-      '<select id="eq-stage" style="margin:0;width:auto"><option value="">All stages</option>' + ORDER.map(function (s) { return '<option value="' + s + '">' + STAGE[s][0] + "</option>"; }).join("") + "</select>" +
-      '<select id="eq-src" style="margin:0;width:auto"></select><select id="eq-who" style="margin:0;width:auto"></select>' +
-      '<label class="check" style="margin:0"><input type="checkbox" id="eq-due"> Follow-up due</label></div>' +
-      '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Received</th><th>Name</th><th>Source / service</th><th>Stage</th><th>Assigned</th><th>Follow-up</th><th></th></tr></thead><tbody id="eq-rows"><tr><td colspan="7" class="empty">Loading…</td></tr></tbody></table></div></div>';
-    var draw = function () {
-      var L = C.leads, mon = today().slice(0, 7), open = L.filter(function (l) { return ORDER.indexOf(l.stage) < 4; });
-      var kpi = function (icon, label, val, b) { return '<div class="card kpi"><div class="kpi-ic">' + ic(icon) + "</div><small>" + label + '</small><div class="kpi-row"><b>' + val + "</b>" + (b || "") + "</div></div>"; };
-      $("#eq-kpis").innerHTML = kpi("inbox", "Unread", L.filter(function (l) { return !l.read; }).length, '<span class="badge info">' + L.filter(function (l) { return l.created_at.slice(0, 7) === mon; }).length + " this month</span>") +
-        kpi("kanban", "Open leads", open.length, '<span class="badge ' + (L.filter(due).length ? "warn" : "ok") + '">' + L.filter(due).length + " follow-ups due</span>") +
-        kpi("circle-check", "Won this month", L.filter(function (l) { return l.stage === "won" && (l.notes.filter(function (n) { return n.sys && /→ won$/.test(n.text); }).pop() || { t: l.created_at }).t.slice(0, 7) === mon; }).length, '<span class="badge ok">' + Math.round(100 * L.filter(function (l) { return l.stage === "won"; }).length / Math.max(1, L.filter(function (l) { return l.stage === "won" || l.stage === "lost"; }).length)) + "% win rate</span>") +
-        kpi("receipt", "Open pipeline value", pkr(open.reduce(function (a, l) { return a + (l.value || 0); }, 0)).replace("PKR ", ""), '<span class="badge gold">PKR</span>');
-      W.fillIcons($("#eq-kpis"));
-      var q = st.q.toLowerCase();
-      var list = L.filter(function (l) { return (!st.stage || l.stage === st.stage) && (!st.source || l.source === st.source) && (!st.who || String(l.assigned_to || "none") === st.who) && (!st.due || due(l)) &&
-        (!q || [l.name, l.phone, l.email, l.message, l.service, "#" + l.id].concat(Object.values(l.fields || {})).join(" ").toLowerCase().indexOf(q) >= 0); });
-      $("#eq-rows").innerHTML = list.map(function (l) {
-        return '<tr class="' + (l.read ? "" : "unread") + '" data-id="' + l.id + '"><td style="white-space:nowrap">' + dshort(l.created_at) + '</td><td><b>' + esc(l.name) + "</b><small class='muted' style='display:block'>" + esc(l.phone || l.email || "") + "</small></td>" +
-          "<td>" + esc(C.sources[l.source] || l.source) + (l.service ? "<small class='muted' style='display:block'>" + esc(l.service) + "</small>" : "") + "</td><td>" + badge(l.stage) + "</td><td>" + esc(l.assigned_name || "—") + "</td>" +
-          '<td style="white-space:nowrap' + (due(l) ? ';color:var(--bad);font-weight:600' : "") + '">' + (l.followup ? dshort(l.followup) : "—") + "</td>" +
-          '<td style="text-align:right;white-space:nowrap">' + (l.phone ? '<a class="btn sm wa" title="WhatsApp" target="_blank" rel="noopener" href="' + esc(waHref(l)) + '" data-stop>' + ic("message-circle") + "</a> " : "") + '<button class="btn sm">Open</button></td></tr>';
-      }).join("") || '<tr><td colspan="7" class="empty">' + (L.length ? "No enquiries match these filters." : "No enquiries yet. New website form submissions will appear here.") + "</td></tr>";
-      $$("#eq-rows tr[data-id]").forEach(function (tr) { tr.onclick = function (e) { if (e.target.closest("[data-stop]")) return; W.leadDrawer(+tr.dataset.id, draw); }; });
-      badgeNav();
-    };
-    var fill = function () {
-      $("#eq-src").innerHTML = '<option value="">All sources</option>' + Object.keys(C.sources).map(function (k) { return '<option value="' + k + '">' + esc(C.sources[k]) + "</option>"; }).join("");
-      $("#eq-who").innerHTML = '<option value="">Anyone</option><option value="none">Unassigned</option>' + C.team.map(function (u) { return '<option value="' + u.id + '">' + esc(u.name) + "</option>"; }).join("");
-      $("#eq-q").value = st.q; $("#eq-stage").value = st.stage; $("#eq-src").value = st.source; $("#eq-who").value = st.who; $("#eq-due").checked = st.due;
-    };
-    $("#eq-q").oninput = function () { st.q = this.value; draw(); };
-    $("#eq-stage").onchange = function () { st.stage = this.value; draw(); };
-    $("#eq-src").onchange = function () { st.source = this.value; draw(); };
-    $("#eq-who").onchange = function () { st.who = this.value; draw(); };
-    $("#eq-due").onchange = function () { st.due = this.checked; draw(); };
-    var reload = function () { load().then(function (ok) { if (ok) draw(); }); };
-    $("#eq-add").onclick = function () { addLead(reload); };
-    $("#eq-exp").onclick = function () { exportCsv(C.leads); };
-    if (admin) { $("#eq-imp").onclick = function () { importCsv(reload); }; $("#eq-set").onclick = settings; }
-    load().then(function (ok) { if (ok) { fill(); draw(); } });
+  W.VIEWS.enquiries = function (el, parts) {
+    if (window.WXA && window.WXA.VIEWS && window.WXA.VIEWS.enquiries && window.WXA.VIEWS.enquiries !== W.VIEWS.enquiries) {
+      return window.WXA.VIEWS.enquiries(el, parts);
+    }
   };
 
-  // =========================================================== PIPELINE
-  W.VIEWS.pipeline = function (el) {
-    el.innerHTML = head("Pipeline", "Pipeline", '<button class="btn" id="pl-hide">Hide won & lost</button><button class="btn pri" id="pl-add">' + ic("plus") + "Add enquiry</button>") + '<div class="kb" id="kb"><div class="empty">Loading…</div></div>';
-    var hide = S.plHide || false;
-    var draw = function () {
-      $("#pl-hide").textContent = hide ? "Show won & lost" : "Hide won & lost";
-      var cols = ORDER.filter(function (s) { return !hide || ORDER.indexOf(s) < 4; });
-      $("#kb").innerHTML = cols.map(function (s) {
-        var items = C.leads.filter(function (l) { return l.stage === s; }), v = items.reduce(function (a, l) { return a + (l.value || 0); }, 0);
-        return '<div class="kb-col" data-st="' + s + '"><div class="kb-h"><span class="kb-dot ' + STAGE[s][1] + '"></span><b>' + STAGE[s][0] + '</b><span class="pill">' + items.length + "</span>" + (v ? '<small class="muted" style="margin-left:auto">' + pkr(v) + "</small>" : "") + '</div><div class="kb-list">' +
-          items.map(function (l) {
-            return '<div class="kb-card" draggable="true" data-id="' + l.id + '">' + (l.read ? "" : '<span class="kb-new">new</span>') + "<b>" + esc(l.name) + "</b><small>" + esc(l.service || C.sources[l.source] || "") + "</small>" +
-              '<div class="kb-foot">' + (l.value ? "<span>" + pkr(l.value) + "</span>" : "<span></span>") + (l.followup ? '<span class="' + (due(l) ? "due" : "") + '">' + ic("clock") + dshort(l.followup) + "</span>" : "") + (l.assigned_name ? '<span class="av" title="' + esc(l.assigned_name) + '">' + esc(l.assigned_name.charAt(0)) + "</span>" : "") + "</div></div>";
-          }).join("") + "</div></div>";
-      }).join("");
-      W.fillIcons($("#kb"));
-      $$(".kb-card").forEach(function (c) {
-        c.onclick = function () { W.leadDrawer(+c.dataset.id, draw); };
-        c.ondragstart = function (e) { e.dataTransfer.setData("text/plain", c.dataset.id); e.dataTransfer.effectAllowed = "move"; c.classList.add("drag"); };
-        c.ondragend = function () { c.classList.remove("drag"); };
-      });
-      $$(".kb-col").forEach(function (col) {
-        col.ondragover = function (e) { e.preventDefault(); col.classList.add("over"); };
-        col.ondragleave = function () { col.classList.remove("over"); };
-        col.ondrop = function (e) {
-          e.preventDefault(); col.classList.remove("over");
-          var id = +e.dataTransfer.getData("text/plain"), l = C.leads.find(function (x) { return x.id === id; }), to = col.dataset.st; if (!l || l.stage === to) return;
-          var data = { id: id, stage: to };
-          if (to === "lost") { var why = prompt("Why was this lead lost? (optional)", l.lost_reason || ""); if (why === null) return; data.lost_reason = why; }
-          l.stage = to; draw();
-          api("lead_save", data).then(function (r) { if (!r.ok) { toast(r.error, true); return load().then(draw); } var i = C.leads.findIndex(function (x) { return x.id === id; }); C.leads[i] = r.lead; toast(esc(l.name) + " → " + STAGE[to][0]); });
-        };
-      });
-    };
-    $("#pl-hide").onclick = function () { hide = S.plHide = !hide; draw(); };
-    $("#pl-add").onclick = function () { addLead(function () { load().then(draw); }); };
-    load().then(function (ok) { if (ok) draw(); });
-  };
-
-  // =========================================================== CLIENTS
+  
   W.VIEWS.clients = function (el) {
     el.innerHTML = head("Clients", "Clients", '<button class="btn pri" id="cl-add">' + ic("plus") + "Add client</button>") +
       '<div class="card"><div class="card-b" style="border-bottom:1px solid var(--line)"><input type="search" id="cl-q" placeholder="Search clients…" style="margin:0;max-width:300px"></div><div class="tbl-wrap"><table class="tbl"><thead><tr><th>Client</th><th>Contact</th><th>City</th><th>Enquiries</th><th>Won value</th><th>Since</th><th></th></tr></thead><tbody id="cl-rows"><tr><td colspan="7" class="empty">Loading…</td></tr></tbody></table></div></div>';
