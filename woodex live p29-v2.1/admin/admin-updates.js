@@ -6,27 +6,53 @@
   var api = W.api, esc = W.esc, ic = W.ic, toast = W.toast, $ = W.$, $$ = W.$$, head = W.head;
 
   W.VIEWS.updates = function (el) {
-    el.innerHTML = head("Client Updates & Notifications", "Client Updates",
-      '<button class="btn" id="upd-new-btn">' + ic("plus") + 'New template</button>' +
-      '<button class="btn pri btn-preline-cyan" id="upd-send-btn">' + ic("send") + 'Dispatch Bulk Update</button>') +
+    el.innerHTML = head("Client updates", "Home / Client updates",
+      '<button class="btn pri btn-preline-cyan" id="upd-save-btn">' + ic("check") + 'Save</button>') +
 
-      '<!-- Metrics Overview -->' +
-      '<div style="display:grid;grid-template-columns:repeat(4, 1fr);gap:16px;margin-bottom:20px">' +
-        '<div class="card" style="background:#111318;border:1px solid #20242f;border-radius:12px;padding:16px">' +
-          '<small class="muted">Active Notification Triggers</small>' +
-          '<b style="font-size:20px;color:#f9fafb;margin-top:4px;display:block">8 Automated Workflows</b>' +
+      '<!-- 4-Step Lifecycle Progress Banner (From Image 10) -->' +
+      '<div class="card" style="background:#111318;border:1px solid #20242f;border-radius:14px;padding:20px;margin-bottom:20px">' +
+        '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:18px">' +
+          '<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">' +
+            '<b style="color:#f9fafb;font-size:14px">How client updates work</b>' +
+            '<span class="badge warn" style="font-size:11.5px">● WhatsApp connected</span>' +
+            '<span class="badge navy" style="font-size:11.5px">● Auto-save leads on</span>' +
+            '<span class="badge" style="font-size:11.5px;color:#9ca3af">● Mon-Sat, 9:30 am – 6:30 pm</span>' +
+          '</div>' +
+          '<button class="icon-btn sm" style="color:#6b7280;font-size:12px">Hide</button>' +
         '</div>' +
-        '<div class="card" style="background:#111318;border:1px solid #20242f;border-radius:12px;padding:16px">' +
-          '<small class="muted">WhatsApp Delivery Rate</small>' +
-          '<b style="font-size:20px;color:#10b981;margin-top:4px;display:block">99.2%</b>' +
-        '</div>' +
-        '<div class="card" style="background:#111318;border:1px solid #20242f;border-radius:12px;padding:16px">' +
-          '<small class="muted">Messages Sent This Month</small>' +
-          '<b style="font-size:20px;color:#00d3f2;margin-top:4px;display:block">1,420 Alerts</b>' +
-        '</div>' +
-        '<div class="card" style="background:#111318;border:1px solid #20242f;border-radius:12px;padding:16px">' +
-          '<small class="muted">Client Portal Logins</small>' +
-          '<b style="font-size:20px;color:#a78bfa;margin-top:4px;display:block">318 Visits</b>' +
+
+        '<div style="display:grid;grid-template-columns:repeat(4, 1fr);gap:16px;position:relative">' +
+          '<div style="background:#161922;border:1px solid #232836;border-radius:12px;padding:16px">' +
+            '<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">' +
+              '<span style="width:28px;height:28px;border-radius:50%;background:#00b8db;color:#04222b;font-weight:800;display:grid;place-items:center;font-size:12px">1</span>' +
+              '<b style="font-size:13.5px;color:#f9fafb">Project moves a step</b>' +
+            '</div>' +
+            '<small class="muted" style="font-size:12px;line-height:1.4;display:block">Enquiry received · Quotation sent · Work started · Handover.</small>' +
+          '</div>' +
+
+          '<div style="background:#161922;border:1px solid #232836;border-radius:12px;padding:16px">' +
+            '<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">' +
+              '<span style="width:28px;height:28px;border-radius:50%;background:#00b8db;color:#04222b;font-weight:800;display:grid;place-items:center;font-size:12px">2</span>' +
+              '<b style="font-size:13.5px;color:#f9fafb">Message is chosen</b>' +
+            '</div>' +
+            '<small class="muted" style="font-size:12px;line-height:1.4;display:block">Your English + Urdu text for that step, with name and project filled in.</small>' +
+          '</div>' +
+
+          '<div style="background:#161922;border:1px solid #232836;border-radius:12px;padding:16px">' +
+            '<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">' +
+              '<span style="width:28px;height:28px;border-radius:50%;background:#00b8db;color:#04222b;font-weight:800;display:grid;place-items:center;font-size:12px">3</span>' +
+              '<b style="font-size:13.5px;color:#f9fafb">Sent on 2 channels</b>' +
+            '</div>' +
+            '<small class="muted" style="font-size:12px;line-height:1.4;display:block">WhatsApp (when connected) and email, once per step, never twice.</small>' +
+          '</div>' +
+
+          '<div style="background:#161922;border:1px solid #232836;border-radius:12px;padding:16px">' +
+            '<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">' +
+              '<span style="width:28px;height:28px;border-radius:50%;background:#00b8db;color:#04222b;font-weight:800;display:grid;place-items:center;font-size:12px">4</span>' +
+              '<b style="font-size:13.5px;color:#f9fafb">Saved to timeline</b>' +
+            '</div>' +
+            '<small class="muted" style="font-size:12px;line-height:1.4;display:block">Shown on the client and project, so everyone knows what the client was told.</small>' +
+          '</div>' +
         '</div>' +
       '</div>' +
 

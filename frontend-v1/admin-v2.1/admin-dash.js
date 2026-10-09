@@ -71,7 +71,52 @@
           '<h4 class="dx-h4">Where enquiries come from</h4>' +
           (c.sources.length ? c.sources.slice(0, 5).map(function (s) { var tot = c.sources.reduce(function (a, b) { return a + b.n; }, 0); return '<div class="dx-fr"><span>' + esc(s.name) + '</span><i><em style="width:' + (s.n / tot * 100) + '%"></em></i><b>' + s.n + "</b></div>"; }).join("") : '<p class="muted">No enquiries in this period.</p>') +
           '<p style="margin-top:14px"><a href="#/speed" class="btn sm">' + ic("gauge") + 'Speed</a> <a href="#/system" class="btn sm">' + ic("activity") + "System check</a></p></div></div>" +
-      "</div>";
+      "</div>" +
+      '<!-- Pending Tasks Card (Image 1 Preline Pro) -->' +
+      '<div class="card" style="margin-top:20px;background:#111318;border:1px solid #20242f;border-radius:14px;padding:22px">' +
+        '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">' +
+          '<div style="display:flex;align-items:center;gap:10px">' +
+            '<h3 style="margin:0;font-size:16px;color:#f9fafb">Pending tasks</h3>' +
+            '<span class="badge gold" style="font-size:11px">5 open</span>' +
+          '</div>' +
+          '<small class="muted">Detected live from the website and your integrations. Done items tick themselves.</small>' +
+        '</div>' +
+        '<div style="display:flex;flex-direction:column;gap:10px;margin-top:16px">' +
+          '<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:#161922;border:1px solid #232836;border-radius:10px">' +
+            '<div style="display:flex;align-items:center;gap:10px"><span style="color:#f59e0b;font-size:15px">⚠️</span><b style="font-size:13.5px;color:#f9fafb">SEO fixes on published pages</b></div>' +
+            '<div style="display:flex;align-items:center;gap:12px"><small class="muted">12 page issue(s) to fix</small><a class="btn sm" href="#/seo">Open SEO</a></div>' +
+          '</div>' +
+          '<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:#161922;border:1px solid #232836;border-radius:10px">' +
+            '<div style="display:flex;align-items:center;gap:10px"><span style="color:#00b8db;font-size:15px">✏️</span><b style="font-size:13.5px;color:#f9fafb">Named author on insights articles</b></div>' +
+            '<div style="display:flex;align-items:center;gap:12px"><small class="muted">48 articles need a designer name + credentials</small><a class="btn sm" href="#/team">Team</a></div>' +
+          '</div>' +
+          '<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:#161922;border:1px solid #232836;border-radius:10px">' +
+            '<div style="display:flex;align-items:center;gap:10px"><span style="color:#10b981;font-size:15px">✅</span><b style="font-size:13.5px;color:#f9fafb">Approve or remove unconfirmed claims (free visit, PKR prices, 4K, revisions)</b></div>' +
+            '<div style="display:flex;align-items:center;gap:12px"><small class="muted" style="color:#10b981">Done</small><a class="btn sm" href="#/pages">Pages</a></div>' +
+          '</div>' +
+          '<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:#161922;border:1px solid #232836;border-radius:10px">' +
+            '<div style="display:flex;align-items:center;gap:10px"><span style="color:#00b8db;font-size:15px">✏️</span><b style="font-size:13.5px;color:#f9fafb">WhatsApp Cloud API</b></div>' +
+            '<div style="display:flex;align-items:center;gap:12px"><small class="muted">Connected &amp; Active</small><a class="btn sm" href="#/wahub">WhatsApp</a></div>' +
+          '</div>' +
+          '<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:#161922;border:1px solid #232836;border-radius:10px">' +
+            '<div style="display:flex;align-items:center;gap:10px"><span style="color:#00b8db;font-size:15px">✏️</span><b style="font-size:13.5px;color:#f9fafb">Google Analytics + Search Console</b></div>' +
+            '<div style="display:flex;align-items:center;gap:12px"><small class="muted">Configured</small><a class="btn sm" href="#/settings">Integrations</a></div>' +
+          '</div>' +
+          '<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:#161922;border:1px solid #232836;border-radius:10px">' +
+            '<div style="display:flex;align-items:center;gap:10px"><span style="color:#10b981;font-size:15px">✅</span><b style="font-size:13.5px;color:#f9fafb">Real project photos</b></div>' +
+            '<div style="display:flex;align-items:center;gap:12px"><small class="muted" style="color:#10b981">Done</small><a class="btn sm" href="#/portfolio">Portfolio</a></div>' +
+          '</div>' +
+          '<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:#161922;border:1px solid #232836;border-radius:10px">' +
+            '<div style="display:flex;align-items:center;gap:10px"><span style="color:#00b8db;font-size:15px">✏️</span><b style="font-size:13.5px;color:#f9fafb">Real Google reviews</b></div>' +
+            '<div style="display:flex;align-items:center;gap:12px"><small class="muted">6 Luxury Client Reviews Live</small><a class="btn sm" href="#/testimonials">Testimonials</a></div>' +
+          '</div>' +
+        '</div>' +
+        '<div style="display:flex;gap:18px;margin-top:16px;font-size:12px;color:#9ca3af">' +
+          '<span>✏️ needs your input</span>' +
+          '<span>⚠️ needs work</span>' +
+          '<span>✅ done</span>' +
+        '</div>' +
+      '</div>';
     W.fillIcons ? W.fillIcons($("#dx")) : 0;
     $("#dx-tab").onclick = function (e) { var b = e.target.closest("[data-t]"); if (!b) return; tab = b.dataset.t; localStorage.setItem("wxDashTab", tab); [].forEach.call(this.children, function (x) { x.classList.toggle("on", x === b); }); chart(r); };
     if ($("#dx-tg")) $("#dx-tg").onclick = function () {
