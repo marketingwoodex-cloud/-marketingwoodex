@@ -8,8 +8,23 @@
   var S = { token: sessionStorage.getItem("wxaTok") || "", user: null, btoken: null, pages: null, charts: [] };
 
   // ---------------------------------------------------------------- helpers
-  function ic(n) { var s = (window.WXA_ICONS || {})[n]; return '<i data-i="' + n + '">' + (s ? '<svg viewBox="0 0 24 24" aria-hidden="true">' + s + "</svg>" : "") + "</i>"; }
-  function fillIcons(root) { $$("i[data-i]", root).forEach(function (i) { if (!i.firstChild) { var s = (window.WXA_ICONS || {})[i.dataset.i]; if (s) i.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true">' + s + "</svg>"; } }); }
+  function ic(n) {
+    var I = window.WXA_ICONS || {};
+    var alias = { mail: "email", chat: "message-circle", users: "user", lead: "inbox", quote: "receipt", leads: "inbox", "table-view": "table", "compact-view": "minimize-2" };
+    var s = I[n] || I[alias[n]] || I["square"] || '<rect width="18" height="18" x="3" y="3" rx="2"/>';
+    return '<i data-i="' + n + '"><svg viewBox="0 0 24 24" aria-hidden="true">' + s + "</svg></i>";
+  }
+  function fillIcons(root) {
+    $$("i[data-i]", root).forEach(function (i) {
+      if (!i.firstChild) {
+        var I = window.WXA_ICONS || {};
+        var n = i.dataset.i;
+        var alias = { mail: "email", chat: "message-circle", users: "user", lead: "inbox", quote: "receipt", leads: "inbox", "table-view": "table", "compact-view": "minimize-2" };
+        var s = I[n] || I[alias[n]] || I["square"] || '<rect width="18" height="18" x="3" y="3" rx="2"/>';
+        i.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true">' + s + "</svg>";
+      }
+    });
+  }
   function toast(m, bad) { var t = $("#toast"); t.textContent = m; t.className = "toast on" + (bad ? " bad" : ""); clearTimeout(toast.t); toast.t = setTimeout(function () { t.className = "toast"; }, bad ? 8000 : 3200); }
   // P16 3.9: a late reply to a read-only request for a screen the user already left is dropped, so it can't write into a
   // screen that no longer exists ("Cannot set properties of null"). Saves/sends/deletes and background polls always complete.
