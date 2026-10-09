@@ -17,7 +17,7 @@
    "permissions": [
     "all"
    ],
-   "last_login": "2026-10-09 10:57:28",
+   "last_login": "2026-10-09 11:20:20",
    "known": [
     "ed34de0d44d58e17",
     "daffdafbccd0f0c8"
@@ -54,9 +54,25 @@
      "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
      "created": "2026-10-09 10:57:28",
      "seen": "2026-10-09 11:11:35"
+    },
+    {
+     "sid": "d6bf9e6c133641f0",
+     "exp": 1791588006,
+     "ip": "127.0.0.1",
+     "ua": "Python-urllib/3.11",
+     "created": "2026-10-09 11:20:06",
+     "seen": "2026-10-09 11:20:06"
+    },
+    {
+     "sid": "3c7fc545afb8ec16",
+     "exp": 1791588020,
+     "ip": "127.0.0.1",
+     "ua": "Python-urllib/3.11",
+     "created": "2026-10-09 11:20:20",
+     "seen": "2026-10-09 11:20:20"
     }
    ],
-   "_sid": "d430aa731facc9e7"
+   "_sid": "3c7fc545afb8ec16"
   },
   {
    "id": 2,
@@ -602,10 +618,28 @@
    "target": "post: Minimal",
    "ip": "10.12.0.128",
    "created_at": "2026-10-09 11:00:50"
+  },
+  {
+   "id": 34,
+   "user_id": 1,
+   "user_name": "Kamran Tariq",
+   "action": "login",
+   "target": "",
+   "ip": "127.0.0.1",
+   "created_at": "2026-10-09 11:20:06"
+  },
+  {
+   "id": 35,
+   "user_id": 1,
+   "user_name": "Kamran Tariq",
+   "action": "login",
+   "target": "",
+   "ip": "127.0.0.1",
+   "created_at": "2026-10-09 11:20:20"
   }
  ],
  "seqU": 3,
- "seqA": 33,
+ "seqA": 35,
  "leads": [
   {
    "id": 1,
@@ -1098,5 +1132,10 @@
     "Site Transformation Shorts"
    ]
   }
- }
+ },
+ "tpls": [],
+ "projects": [],
+ "seqT": 0,
+ "seqP": 0,
+ "seqPay": 0
 }
