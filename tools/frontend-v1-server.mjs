@@ -376,7 +376,7 @@ http.createServer(async (req, res) => {
       return res.end(JSON.stringify(out));
     }
 
-    if (!/^\/(admin|builder|api|assets)\//.test(p)) {
+    if (!/^\/(admin|admin-v2\.1|admin-v3|builder|api|assets)\//.test(p)) {
       const rel = (p.endsWith("/") ? p + "index.html" : /\.[a-z0-9]+$/i.test(p) ? p : p + "/index.html").replace(/^\/+/, "");
       const g = adminApi.publicGuard(rel, req);
       if (g && g.maint) { res.writeHead(503, { "Content-Type": MIME[".html"], "Retry-After": "3600" }); return fs.createReadStream(path.join(ROOT, g.maint)).pipe(res); }
@@ -391,7 +391,7 @@ http.createServer(async (req, res) => {
     }
     if (!fs.existsSync(file)) { res.writeHead(404, { "Content-Type": MIME[".html"] }); return fs.createReadStream(path.join(ROOT, "404.html")).pipe(res); }
     const ext = path.extname(file).toLowerCase();
-    if (ext === ".html" && !/^\/(builder|admin)/.test(p)) {
+    if (ext === ".html" && !/^\/(builder|admin|admin-v2\.1|admin-v3)/.test(p)) {
       // Preview-only "Edit this page" shortcut (never written into the site files).
       // Hidden unless THIS browser is signed into Woodex Admin (sessionStorage
       // "wxaTok"), so ordinary visitors never see it — exactly like Hostinger.
