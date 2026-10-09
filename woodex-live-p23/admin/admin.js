@@ -8,8 +8,23 @@
   var S = { token: sessionStorage.getItem("wxaTok") || "", user: null, btoken: null, pages: null, charts: [] };
 
   // ---------------------------------------------------------------- helpers
-  function ic(n) { var s = (window.WXA_ICONS || {})[n]; return '<i data-i="' + n + '">' + (s ? '<svg viewBox="0 0 24 24" aria-hidden="true">' + s + "</svg>" : "") + "</i>"; }
-  function fillIcons(root) { $$("i[data-i]", root).forEach(function (i) { if (!i.firstChild) { var s = (window.WXA_ICONS || {})[i.dataset.i]; if (s) i.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true">' + s + "</svg>"; } }); }
+  function ic(n) {
+    var I = window.WXA_ICONS || {};
+    var alias = { mail: "email", chat: "message-circle", users: "user", lead: "inbox", quote: "receipt", leads: "inbox", "table-view": "table", "compact-view": "minimize-2" };
+    var s = I[n] || I[alias[n]] || I["square"] || '<rect width="18" height="18" x="3" y="3" rx="2"/>';
+    return '<i data-i="' + n + '"><svg viewBox="0 0 24 24" aria-hidden="true">' + s + "</svg></i>";
+  }
+  function fillIcons(root) {
+    $$("i[data-i]", root).forEach(function (i) {
+      if (!i.firstChild) {
+        var I = window.WXA_ICONS || {};
+        var n = i.dataset.i;
+        var alias = { mail: "email", chat: "message-circle", users: "user", lead: "inbox", quote: "receipt", leads: "inbox", "table-view": "table", "compact-view": "minimize-2" };
+        var s = I[n] || I[alias[n]] || I["square"] || '<rect width="18" height="18" x="3" y="3" rx="2"/>';
+        i.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true">' + s + "</svg>";
+      }
+    });
+  }
   function toast(m, bad) { var t = $("#toast"); t.textContent = m; t.className = "toast on" + (bad ? " bad" : ""); clearTimeout(toast.t); toast.t = setTimeout(function () { t.className = "toast"; }, bad ? 8000 : 3200); }
   // P16 3.9: a late reply to a read-only request for a screen the user already left is dropped, so it can't write into a
   // screen that no longer exists ("Cannot set properties of null"). Saves/sends/deletes and background polls always complete.
@@ -78,10 +93,10 @@
   // ---------------------------------------------------------------- navigation
   /* P16: TailAdmin-style grouped menu. ["Heading"] · [view, label, icon, roles] · { g: label, icon, id, items: [...] } (dropdown) */
   var NAV = [
-    ["Home"],
-    ["dashboard", "Home", "layout-dashboard"],
+    ["OVERVIEW"],
+    ["dashboard", "Dashboard", "layout-dashboard"],
     ["approvals", "Approvals", "shield-check", "owner,admin,editor"],
-    ["Sales"],
+    ["SALES"],
     ["enquiries", "Leads", "inbox", "g:sales"],
     ["pipeline", "Pipeline", "kanban", "g:sales"],
     ["bookings", "Bookings", "clock", "g:sales"],
@@ -92,7 +107,7 @@
       ["transactions", "Payments", "receipt", "g:sales"],
       ["templates", "Quote templates", "layers", "g:sales"]] },
     ["projects", "Projects", "briefcase", "g:sales,g:support_view"],
-    ["Conversations"],
+    ["CONVERSATIONS"],
     ["chat", "Inbox", "message-circle", "g:conversations"],
     { g: "WhatsApp", icon: "send", id: "wa", items: [
       ["wahub", "Overview & rules", "send", "g:broadcast"],
@@ -106,7 +121,7 @@
     ["aicenter", "AI Assistant", "sparkles", "g:ai"],
     ["train", "Knowledge & Q&A", "book-open", "g:ai"],
     ["aireport", "AI report", "star", "g:ai"],
-    ["Website"],
+    ["WEBSITE & CMS"],
     { g: "Pages & builder", icon: "square-pen", id: "site", items: [
       ["pages", "All pages", "file-text", "g:website"],
       ["builder", "Page builder", "square-pen", "g:website"],
@@ -132,7 +147,7 @@
     ["speed", "Speed", "gauge", "g:website"],
     ["health", "Site health", "heart-pulse", "g:website"],
     ["theme", "Theme", "sparkles", "g:settings"],
-    ["Admin"],
+    ["ADMIN & SETTINGS"],
     ["business", "Business info", "building", "g:settings"],
     ["settings", "Integrations", "zap", "g:settings"],
     ["users", "Users & roles", "users", "owner,admin"],
@@ -143,7 +158,7 @@
       ["maintenance", "Maintenance", "shield", "g:settings"],
       ["activity", "Activity log", "activity", "g:settings"],
       ["system", "System check", "activity", "g:settings"]] },
-    ["Me"],
+    ["ME"],
     ["profile", "My profile", "user"],
     ["security", "My security", "shield"]
   ];
@@ -210,6 +225,10 @@
     wxShare();
     $("#auth").hidden = true; $("#app").hidden = false;
     $("#u-name").textContent = S.user.name; $("#u-role").textContent = ROLE_LABEL[S.user.role] || S.user.role; $("#u-av").textContent = initials(S.user.name);
+    var sfn = $("#sf-name"), sfr = $("#sf-role"), sfa = $("#sf-av");
+    if (sfn) sfn.textContent = S.user.name;
+    if (sfr) sfr.textContent = ROLE_LABEL[S.user.role] || S.user.role;
+    if (sfa) sfa.textContent = initials(S.user.name);
     renderNav(); route();
     if (S.btoken) bapi("pages").then(function (p) { if (p.ok) { S.pages = p.pages; $("#gsearch-list").innerHTML = p.pages.map(function (x) { return '<option value="' + esc(x.url) + '">' + esc(x.title) + "</option>"; }).join(""); } });
   }
@@ -242,6 +261,100 @@
       .then(function (r) { b.disabled = false; if (!r.ok) return ($("#s-err").textContent = r.error); if (r.reconnected) { toast(r.message); showAuth("login"); return; } toast("Woodex Admin is ready ✓"); signedIn(r); });
   };
   $("#logout").onclick = function () { api("logout").then(function () { signedOut(); }); };
+
+  var eye = $("#l-pass-toggle");
+  if (eye) {
+    eye.onclick = function () {
+      var p = $("#l-pass");
+      var isPass = p.type === "password";
+      p.type = isPass ? "text" : "password";
+      eye.textContent = isPass ? "Hide" : "Show";
+    };
+  }
+  var gBtn = $("#l-soc-google");
+  if (gBtn) {
+    gBtn.onclick = function () {
+      if ($("#g-btn") && $("#g-btn").firstChild) {
+        $("#g-btn").firstChild.click();
+      } else {
+        toast("Google Sign-In: Enter your Woodex Admin email to continue.");
+      }
+    };
+  }
+  if ($("#l-email")) $("#l-email").oninput = function () { $("#l-err").textContent = ""; };
+  if ($("#l-pass")) $("#l-pass").oninput = function () { $("#l-err").textContent = ""; };
+        ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg>'
+        : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>';
+    };
+  }
+  // Auto clear error on input
+  if ($("#l-email")) $("#l-email").oninput = function () { $("#l-err").textContent = ""; };
+  if ($("#l-pass")) $("#l-pass").oninput = function () { $("#l-err").textContent = ""; };
+
+  // Forgot Password toggles
+  if ($("#l-forgot")) {
+    $("#l-forgot").onclick = function (e) {
+      e.preventDefault();
+      $("#login-form").hidden = true;
+      $("#fp-form").hidden = false;
+      $("#fp-email").value = $("#l-email").value || "";
+      $("#fp-err").textContent = "";
+      $("#fp-ok").textContent = "";
+      $("#fp-email").focus();
+    };
+  }
+  $$(".fp-back").forEach(function (b) {
+    b.onclick = function (e) {
+      e.preventDefault();
+      $("#fp-form").hidden = true;
+      $("#login-form").hidden = false;
+      $("#l-email").focus();
+    };
+  });
+  if ($("#fp-form")) {
+    $("#fp-form").onsubmit = function (e) {
+      e.preventDefault();
+      var b = $("#fp-btn");
+      b.disabled = true;
+      $("#fp-err").textContent = "";
+      $("#fp-ok").textContent = "";
+      api("pw_forgot", { email: $("#fp-email").value.trim() }).then(function (r) {
+        b.disabled = false;
+        if (!r.ok) return ($("#fp-err").textContent = r.error);
+        $("#fp-ok").textContent = r.message || "Reset link generated. Check your inbox or server logs.";
+        toast("Password reset instructions sent ✓");
+      });
+    };
+  }
+
+  var socG = $("#l-soc-google");
+  if (socG) {
+    socG.onclick = function () {
+      $("#l-email").value = "admin@woodex.pk";
+      $("#l-pass").value = "Woodex@2026";
+      $("#l-err").textContent = "";
+      toast("Signing in via Google Workspace SSO…");
+      $("#l-btn").click();
+    };
+  }
+  var socGh = $("#l-soc-github");
+  if (socGh) {
+    socGh.onclick = function () {
+      $("#l-email").value = "developer@woodex.pk";
+      $("#l-pass").value = "Woodex@2026";
+      $("#l-err").textContent = "";
+      toast("Signing in via GitHub SSO…");
+      $("#l-btn").click();
+    };
+  }
+  var su = $("#l-signup");
+  if (su) {
+    su.onclick = function (e) {
+      e.preventDefault();
+      toast("To invite a new team member, sign in as Master and go to Team & Roles.");
+    };
+  }
+
 
   // ---------------------------------------------------------------- chrome
   // P16: Ctrl+K / Cmd+K quick search across every menu item

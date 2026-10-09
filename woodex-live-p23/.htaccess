@@ -23,7 +23,7 @@ RewriteRule (^|/)\.(?!well-known) - [F,L]
 </IfModule>
 
 # Block internal PHP libraries, logs and dev files from direct web access
-<FilesMatch "(-lib\.php|^router\.php|^error_log|\.log|\.sql|\.bak|\.md|^chat-rules\.json|^redirect-plan\.json)$">
+<FilesMatch "(-lib\.php|^router\.php|^error_log|\.log|\.sql|\.bak|\.md|\.env|^chat-rules\.json|^redirect-plan\.json)$">
 Require all denied
 </FilesMatch>
 
