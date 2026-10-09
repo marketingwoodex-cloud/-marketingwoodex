@@ -1,0 +1,949 @@
+diff -ruN a/.env b/.env
+--- a/.env	2026-10-09 16:20:58.000000000 +0000
++++ b/.env	2026-10-09 16:36:28.225053943 +0000
+@@ -1,23 +1,20 @@
+-<<<<<<< HEAD
+-<<<<<<< HEAD
+-APP_NAME="Woodex Interior Design Studio"
++# ============================================================================
++# Woodex Architecture & Luxury Interior — production environment
++# Domain: woodex.com.pk   Host: Hostinger (hPanel)
++#
++# This file is blocked from web access by .htaccess (dotfile rule + FilesMatch).
++# PHP reads it only through config.php / getenv(); edit the DB block after you
++# create the MySQL database in hPanel -> Databases -> Management.
++# ============================================================================
++
++APP_NAME="Woodex Architecture & Luxury Interior"
+ APP_ENV=production
+ APP_DEBUG=false
+ APP_URL=https://woodex.com.pk
+ DOMAIN=woodex.com.pk
+-DB_DRIVER=json
+ ADMIN_EMAIL=master@woodex.pk
+-=======
+-=======
+->>>>>>> 7c4e980 (Deploy woodex-live-p23 folder and woodex-live-p23.zip with full Hostinger recognition structure and luxury sign-in)
+-# Woodex Architecture & Luxury Interior - Production Environment
+-# Domain: woodex.com.pk
+-APP_NAME="Woodex Architecture & Luxury Interior"
+-APP_ENV=production
+-APP_DEBUG=false
+-APP_URL=https://woodex.com.pk
+ 
+-# Hostinger MySQL Database Settings
++# ---- Hostinger MySQL database ---------------------------------------------
+ DB_CONNECTION=mysql
+ DB_HOST=localhost
+ DB_PORT=3306
+@@ -25,11 +22,7 @@
+ DB_USERNAME=u128159657_woodex
+ DB_PASSWORD=
+ 
+-# Contact & Notifications
++# ---- Contact & notifications ----------------------------------------------
+ MAIL_FROM_ADDRESS="info@woodex.com.pk"
+ MAIL_FROM_NAME="Woodex Studio"
+ WHATSAPP_NUMBER="+923001234567"
+-<<<<<<< HEAD
+->>>>>>> d21c542 (Fix Hostinger website recognition, flat folder structure, centered luxury login, demo pills, and deploy woodex-live-p23.zip)
+-=======
+->>>>>>> 7c4e980 (Deploy woodex-live-p23 folder and woodex-live-p23.zip with full Hostinger recognition structure and luxury sign-in)
+diff -ruN a/.htaccess b/.htaccess
+--- a/.htaccess	2026-10-09 16:20:58.000000000 +0000
++++ b/.htaccess	2026-10-09 16:38:37.009704445 +0000
+@@ -1,31 +1,58 @@
++# ============================================================================
++#  Woodex Architecture & Luxury Interior — production server rules
++#  Host : Hostinger (Apache 2.4 / LiteSpeed, PHP-FPM)
++#  Pack : woodex-diploy 23
++#
++#  Everything ABOVE the managed admin block at the bottom of this file is
++#  hand-maintained. api/admin.php (publish_rules) deletes and rewrites only the
++#  managed block, matched by its two marker lines, so never move those markers
++#  and never repeat their text anywhere else in this file.
++# ============================================================================
++
++# Pass the Authorization header (Bearer / Basic) through to PHP — admin API + MCP
+ <IfModule mod_setenvif.c>
+ SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1
+ </IfModule>
+-# Woodex frontend-v1 — Hostinger (Apache/LiteSpeed)
++
++# Hostinger website recognition: PHP entry point first, static fallback second
+ DirectoryIndex index.php index.html
+ Options -Indexes
++ServerSignature Off
+ ErrorDocument 404 /404.html
++ErrorDocument 500 /500.html
++ErrorDocument 503 /503.html
+ 
+-# Force HTTPS
+ <IfModule mod_rewrite.c>
+ RewriteEngine On
+-# Pass the Bearer token to PHP (AI Agent / MCP endpoint)
++
++# Bearer token for /api/mcp.php and the AI agent endpoints
+ RewriteCond %{HTTP:Authorization} .
+ RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+-# one hop to the official address: https + no www
++
++# One canonical address: https + no www
+ RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
+ RewriteRule ^ https://%1%{REQUEST_URI} [L,R=301]
+ RewriteCond %{HTTPS} !=on
+ RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+-# Block private data and dotfiles
++
++# Internal folders and dotfiles are never web-readable
+ RewriteRule ^_private(/|$) - [F,L]
++RewriteRule ^_database(/|$) - [F,L]
++RewriteRule ^_templates(/|$) - [F,L]
++RewriteRule ^_DO-NOT-UPLOAD_database(/|$) - [F,L]
+ RewriteRule (^|/)\.(?!well-known) - [F,L]
+ </IfModule>
+ 
+-# Block internal PHP libraries, logs and dev files from direct web access
+-<FilesMatch "(-lib\.php|^router\.php|^error_log|\.log|\.sql|\.bak|\.md|\.env|^chat-rules\.json|^redirect-plan\.json)$">
++# Block source, dumps, archives, logs and dev files from direct web access
++<FilesMatch "(-lib\.php$|^router\.php$|^error_log|\.log$|\.sql$|\.sql\.zip$|\.zip$|\.tar$|\.gz$|\.bak$|\.old$|\.md$|\.env$|^db\.example\.json$|^chat-rules\.json$|^redirect-plan\.json$)">
+ Require all denied
+ </FilesMatch>
++<IfModule !mod_authz_core.c>
++<FilesMatch "(-lib\.php$|^router\.php$|^error_log|\.log$|\.sql$|\.sql\.zip$|\.zip$|\.tar$|\.gz$|\.bak$|\.old$|\.md$|\.env$|^db\.example\.json$|^chat-rules\.json$|^redirect-plan\.json$)">
++Order allow,deny
++Deny from all
++</FilesMatch>
++</IfModule>
+ 
+ <IfModule mod_headers.c>
+ Header always set X-Content-Type-Options "nosniff"
+@@ -33,13 +60,27 @@
+ Header always set Referrer-Policy "strict-origin-when-cross-origin"
+ Header always set Strict-Transport-Security "max-age=31536000"
+ Header always set Permissions-Policy "camera=(), microphone=(self), geolocation=()"
+-<FilesMatch "\.(css|js|webp|jpg|jpeg|png|gif|svg|woff2)$">
++Header unset X-Powered-By
++<FilesMatch "\.(css|js|webp|jpg|jpeg|png|gif|svg|woff2|ico)$">
+ Header set Cache-Control "public, max-age=2592000"
+ </FilesMatch>
++<FilesMatch "\.(html|htm|php)$">
++Header set Cache-Control "no-cache"
++</FilesMatch>
+ </IfModule>
+ 
+ <IfModule mod_deflate.c>
+-AddOutputFilterByType DEFLATE text/html text/css text/javascript application/javascript application/json image/svg+xml
++AddOutputFilterByType DEFLATE text/html text/css text/javascript application/javascript application/json image/svg+xml application/xml text/plain
++</IfModule>
++
++<IfModule mod_expires.c>
++ExpiresActive On
++ExpiresByType image/webp "access plus 30 days"
++ExpiresByType image/jpeg "access plus 30 days"
++ExpiresByType image/png "access plus 30 days"
++ExpiresByType font/woff2 "access plus 30 days"
++ExpiresByType text/css "access plus 30 days"
++ExpiresByType application/javascript "access plus 30 days"
+ </IfModule>
+ 
+ # BEGIN WOODEX-ADMIN (managed by /admin — do not edit by hand)
+diff -ruN a/_database/woodex-database.sql b/_database/woodex-database.sql
+--- a/_database/woodex-database.sql	2026-10-09 16:20:58.000000000 +0000
++++ b/_database/woodex-database.sql	2026-10-09 16:38:53.881789640 +0000
+@@ -269,8 +269,9 @@
+ ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+ 
+ -- =====================================================================
+--- PRE-SEEDED DATA: TEAM MEMBERS & DEMO ACCESS
+--- Password for all accounts: Woodex@2026
++-- PRE-SEEDED DATA: TEAM MEMBERS & ACCESS ACCOUNTS
++-- SECURITY: change every password below straight after the first sign-in
++-- (admin -> My security). Only password hashes are stored here.
+ -- =====================================================================
+ 
+ INSERT INTO `wx_users` (`id`, `name`, `email`, `role`, `pass_hash`, `active`, `pw_ver`, `created_at`) VALUES
+@@ -280,7 +281,7 @@
+ (4, 'Usman Ali', 'sales@woodex.pk', 'sales', '$2y$10$.xP9p.h.R3H7AaDj/wW1P.pB25YEM0qx07xus/3GmFkI4QCygXGw2', 1, 1, NOW()),
+ (5, 'Dr. Sarah Mansoor', 'support@woodex.pk', 'support', '$2y$10$.xP9p.h.R3H7AaDj/wW1P.pB25YEM0qx07xus/3GmFkI4QCygXGw2', 1, 1, NOW()),
+ (6, 'Woodex Owner', 'admin@woodex.pk', 'owner', '$2y$10$.xP9p.h.R3H7AaDj/wW1P.pB25YEM0qx07xus/3GmFkI4QCygXGw2', 1, 1, NOW())
+-ON DUPLICATE KEY UPDATE `pass_hash`=VALUES(`pass_hash`), `active`=1;
++ON DUPLICATE KEY UPDATE `active`=1;  -- P23: never overwrite an existing password hash on re-import
+ 
+ -- =====================================================================
+ -- PRE-SEEDED DATA: SYSTEM SETTINGS
+diff -ruN a/_database/woodex-v20.sql b/_database/woodex-v20.sql
+--- a/_database/woodex-v20.sql	2026-10-09 16:20:58.000000000 +0000
++++ b/_database/woodex-v20.sql	2026-10-09 16:39:25.345948588 +0000
+@@ -48,4 +48,4 @@
+ CREATE TABLE IF NOT EXISTS wx_tg_seen (uid BIGINT PRIMARY KEY, t DATETIME NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+ CREATE TABLE IF NOT EXISTS wx_tg_map (msg_id BIGINT NOT NULL, chat_id INT NOT NULL, t DATETIME NOT NULL, PRIMARY KEY(msg_id)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+ 
+-INSERT INTO wx_users (name,email,role,pass_hash,active,pw_ver,created_at) VALUES ('Admin','admin','owner','$2y$10$.xP9p.h.R3H7AaDj/wW1P.pB25YEM0qx07xus/3GmFkI4QCygXGw2',1,1,NOW()) ON DUPLICATE KEY UPDATE pass_hash=VALUES(pass_hash), role='owner', active=1;
++INSERT INTO wx_users (name,email,role,pass_hash,active,pw_ver,created_at) VALUES ('Admin','admin','owner','$2y$10$.xP9p.h.R3H7AaDj/wW1P.pB25YEM0qx07xus/3GmFkI4QCygXGw2',1,1,NOW()) ON DUPLICATE KEY UPDATE role='owner', active=1;  -- P23: never overwrite an existing password hash on re-import
+diff -ruN a/admin/admin.css b/admin/admin.css
+--- a/admin/admin.css	2026-10-09 16:20:58.000000000 +0000
++++ b/admin/admin.css	2026-10-09 16:36:43.461130905 +0000
+@@ -516,10 +516,7 @@
+ .auth a{color:#b89258}
+ .btn-sso-google{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;height:46px;background:#192233;border:1px solid #29354d;border-radius:10px;color:#e2e8f0;font-size:14px;font-weight:600;cursor:pointer;transition:all .15s ease}
+ .btn-sso-google:hover{background:#222d44;border-color:#3b4b6b}
+-<<<<<<< HEAD
+-=======
+ .auth-divider{display:flex;align-items:center;gap:12px;margin:20px 0 16px;color:#64748b;font-size:12px}
+->>>>>>> 7c4e980 (Deploy woodex-live-p23 folder and woodex-live-p23.zip with full Hostinger recognition structure and luxury sign-in)
+ /* ===== P16 3.4 list-page pattern ===== */
+ #view .grid.kpis+.card,#view .grid.kpis+div>.card:first-child{margin-top:18px}
+ #view .card>.tbl-wrap{max-height:none}
+diff -ruN a/admin/admin.js b/admin/admin.js
+--- a/admin/admin.js	2026-10-09 16:20:58.000000000 +0000
++++ b/admin/admin.js	2026-10-09 16:37:18.721309029 +0000
+@@ -281,12 +281,6 @@
+       }
+     };
+   }
+-  if ($("#l-email")) $("#l-email").oninput = function () { $("#l-err").textContent = ""; };
+-  if ($("#l-pass")) $("#l-pass").oninput = function () { $("#l-err").textContent = ""; };
+-        ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg>'
+-        : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>';
+-    };
+-  }
+   // Auto clear error on input
+   if ($("#l-email")) $("#l-email").oninput = function () { $("#l-err").textContent = ""; };
+   if ($("#l-pass")) $("#l-pass").oninput = function () { $("#l-err").textContent = ""; };
+@@ -327,26 +321,10 @@
+     };
+   }
+ 
+-  var socG = $("#l-soc-google");
+-  if (socG) {
+-    socG.onclick = function () {
+-      $("#l-email").value = "admin@woodex.pk";
+-      $("#l-pass").value = "Woodex@2026";
+-      $("#l-err").textContent = "";
+-      toast("Signing in via Google Workspace SSO…");
+-      $("#l-btn").click();
+-    };
+-  }
+-  var socGh = $("#l-soc-github");
+-  if (socGh) {
+-    socGh.onclick = function () {
+-      $("#l-email").value = "developer@woodex.pk";
+-      $("#l-pass").value = "Woodex@2026";
+-      $("#l-err").textContent = "";
+-      toast("Signing in via GitHub SSO…");
+-      $("#l-btn").click();
+-    };
+-  }
++  /* SECURITY FIX (P23 deploy): the Google / GitHub buttons used to auto-fill a
++     hard-coded admin e-mail + password that anyone could read in this public JS file.
++     They now hand over to the real Google Identity Services button rendered in #g-btn
++     (see the #l-soc-google handler above). Never put credentials in client-side code. */
+   var su = $("#l-signup");
+   if (su) {
+     su.onclick = function (e) {
+diff -ruN a/admin/index.html b/admin/index.html
+--- a/admin/index.html	2026-10-09 16:20:58.000000000 +0000
++++ b/admin/index.html	2026-10-09 16:38:53.881789640 +0000
+@@ -18,10 +18,9 @@
+       <span class="logo">W</span>
+       <div><b>Woodex</b><small>ADMIN</small></div>
+     </div>
+-<<<<<<< HEAD
+ 
+-    <!-- Login Form -->
+-    <form id="login-form">
++    <!-- Login Form (admin.js showAuth() un-hides it; #l-pass-toggle is wired in admin.js) -->
++    <form id="login-form" hidden>
+       <h1>Sign in</h1>
+       <p class="muted">Welcome back. Sign in to manage the website.</p>
+ 
+@@ -42,35 +41,17 @@
+ 
+       <p style="text-align:center;margin:12px 0 0;font-size:13px"><a href="#" id="l-forgot">Forgot password?</a></p>
+ 
+-=======
+-
+-    <form id="login-form" hidden>
+-      <h1>Sign in</h1>
+-      <p class="muted">Welcome back. Sign in to manage the website.</p>
+-      <label>Email<input type="text" inputmode="email" id="l-email" autocomplete="username" autocapitalize="none" required placeholder="master@woodex.pk"></label>
+-      <label>Password<span class="pw-wrap"><input type="password" id="l-pass" autocomplete="current-password" required placeholder="Enter password"><button type="button" class="pw-eye" aria-label="Show password" onclick="var i=this.previousElementSibling;i.type=i.type==='password'?'text':'password';this.textContent=i.type==='password'?'Show':'Hide';">Show</button></span></label>
+-      <p class="err" id="l-err"></p>
+-      <button class="btn pri block" id="l-btn">Sign in</button>
+-      <p style="text-align:center;margin:12px 0 0;font-size:13px"><a href="#" id="l-forgot">Forgot password?</a></p>
+->>>>>>> 7c4e980 (Deploy woodex-live-p23 folder and woodex-live-p23.zip with full Hostinger recognition structure and luxury sign-in)
+       <div class="auth-divider" style="display:flex;align-items:center;gap:12px;margin:20px 0 16px;color:#64748b;font-size:12px;">
+         <span style="flex:1;height:1px;background:#28334a;"></span>
+         <span>or</span>
+         <span style="flex:1;height:1px;background:#28334a;"></span>
+       </div>
+-<<<<<<< HEAD
+ 
+       <button type="button" class="btn-sso-google" id="l-soc-google">
+         <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.66v3.05h3.9c2.28-2.1 3.645-5.2 3.645-9.15z"/><path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.9-3.05c-1.08.72-2.45 1.16-4.03 1.16-3.1 0-5.74-2.09-6.68-4.91H1.21v3.13C3.25 21.43 7.33 24 12 24z"/><path fill="#FBBC05" d="M5.32 14.29c-.24-.72-.38-1.49-.38-2.29s.14-1.57.38-2.29V6.58H1.21C.44 8.11 0 9.99 0 12s.44 3.89 1.21 5.42l4.11-3.13z"/><path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.25 2.57 1.21 6.58l4.11 3.13c.94-2.82 3.58-4.96 6.68-4.96z"/></svg>
+         <span>Continue with Google</span>
+       </button>
+ 
+-=======
+-      <button type="button" class="btn-sso-google" id="l-soc-google" onclick="if(window.gButtonTrigger){window.gButtonTrigger()}else{var g=document.querySelector('#g-btn iframe')||document.querySelector('#g-btn div');if(g)g.click();}">
+-        <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.66v3.05h3.9c2.28-2.1 3.645-5.2 3.645-9.15z"/><path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.9-3.05c-1.08.72-2.45 1.16-4.03 1.16-3.1 0-5.74-2.09-6.68-4.91H1.21v3.13C3.25 21.43 7.33 24 12 24z"/><path fill="#FBBC05" d="M5.32 14.29c-.24-.72-.38-1.49-.38-2.29s.14-1.57.38-2.29V6.58H1.21C.44 8.11 0 9.99 0 12s.44 3.89 1.21 5.42l4.11-3.13z"/><path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.25 2.57 1.21 6.58l4.11 3.13c.94-2.82 3.58-4.96 6.68-4.96z"/></svg>
+-        <span>Continue with Google</span>
+-      </button>
+->>>>>>> 7c4e980 (Deploy woodex-live-p23 folder and woodex-live-p23.zip with full Hostinger recognition structure and luxury sign-in)
+       <div id="g-login" hidden><div class="g-or"><span>or</span></div><div id="g-btn"></div><p class="muted" style="font-size:12px;text-align:center;margin:6px 0 0">Only for existing Admin users.</p></div>
+     </form>
+ 
+@@ -112,7 +93,7 @@
+       <div class="auth-field"><label>Your Name</label><div class="auth-input-pill"><input id="s-uname" placeholder="Admin Name"></div></div>
+       <div class="auth-field"><label>Email</label><div class="auth-input-pill"><input type="email" id="s-email" placeholder="admin@woodex.pk"></div></div>
+       <div class="auth-field"><label>Password</label><div class="auth-input-pill"><input type="password" id="s-pass" minlength="8" placeholder="Password (8+ chars)"></div></div>
+-      <div class="auth-field"><label>Page-Builder Password</label><div class="auth-input-pill"><input type="password" id="s-bpass" placeholder="Woodex@2026"></div></div>
++      <div class="auth-field"><label>Page-Builder Password</label><div class="auth-input-pill"><input type="password" id="s-bpass" placeholder="Page-builder password"></div></div>
+       <p class="err" id="s-err"></p>
+       <button type="submit" class="btn-auth-main" id="s-btn">Install &amp; Create Owner</button>
+     </form>
+@@ -124,7 +105,7 @@
+       <div class="auth-field"><label>Database Name</label><div class="auth-input-pill"><input id="d-name" placeholder="u128159657_woodex"></div></div>
+       <div class="auth-field"><label>Database User</label><div class="auth-input-pill"><input id="d-user" placeholder="u128159657_woodex"></div></div>
+       <div class="auth-field"><label>Database Password</label><div class="auth-input-pill"><input type="password" id="d-dpass"></div></div>
+-      <div class="auth-field"><label>Page-Builder Password</label><div class="auth-input-pill"><input type="password" id="d-bpass" placeholder="Woodex@2026"></div></div>
++      <div class="auth-field"><label>Page-Builder Password</label><div class="auth-input-pill"><input type="password" id="d-bpass" placeholder="Page-builder password"></div></div>
+       <p class="err" id="d-err"></p>
+       <button type="submit" class="btn-auth-main" id="d-btn">Test &amp; Reconnect</button>
+     </form>
+diff -ruN a/assets/uploads/.htaccess b/assets/uploads/.htaccess
+--- a/assets/uploads/.htaccess	2026-10-09 16:20:58.000000000 +0000
++++ b/assets/uploads/.htaccess	2026-10-09 16:39:02.685834138 +0000
+@@ -1,4 +1,38 @@
++# ============================================================================
++#  Woodex uploads folder — stored media only. Nothing here may ever execute.
++#
++#  Hostinger runs PHP through PHP-FPM / LiteSpeed. A bare `php_flag` in
++#  .htaccess makes those servers answer every request in this folder with
++#  "500 Internal Server Error", so the directive is wrapped in <IfModule>
++#  and only applies when PHP really runs as an Apache module.
++# ============================================================================
++
++Options -Indexes -ExecCGI
++
++<IfModule mod_php.c>
+ php_flag engine off
+-<FilesMatch "\.(php|phtml|phar|html?|js|svg)$">
++</IfModule>
++<IfModule mod_php7.c>
++php_flag engine off
++</IfModule>
++
++RemoveHandler .php .phtml .php3 .php4 .php5 .php7 .php8 .phar .pl .py .cgi .sh
++RemoveType .php .phtml .php3 .php4 .php5 .php7 .php8 .phar
++
++# Scripts must never run, even if one gets uploaded
++<FilesMatch "\.(php|phtml|php[0-9]|phar|pl|py|cgi|sh|asp|aspx|jsp)$">
++Require all denied
++</FilesMatch>
++
++# Stored-XSS guard: uploaded HTML / SVG / JS is never rendered back
++<FilesMatch "\.(html?|svg|js|mjs|xml|htc)$">
+ Require all denied
+ </FilesMatch>
++
++# Apache 2.2 fallback (mod_authz_core missing)
++<IfModule !mod_authz_core.c>
++<FilesMatch "\.(php|phtml|php[0-9]|phar|pl|py|cgi|sh|html?|svg|js|mjs|xml|htc)$">
++Order allow,deny
++Deny from all
++</FilesMatch>
++</IfModule>
+diff -ruN a/blocks.html b/blocks.html
+--- a/blocks.html	2026-10-09 16:20:58.000000000 +0000
++++ b/blocks.html	2026-10-09 16:37:29.025361048 +0000
+@@ -25,8 +25,8 @@
+       <b style="font-size:16px;letter-spacing:0.05em">WOODEX V3 BLOCKS</b>
+     </div>
+     <div style="display:flex;gap:10px">
+-      <a href="/admin-v3/#/builder" class="v3-btn-pill-sec" style="height:38px;padding:0 16px;font-size:12px">Open Visual Builder →</a>
+-      <a href="/admin-v3/" class="v3-btn-pill-pri" style="height:38px;padding:0 18px;font-size:12px">Admin Control Room →</a>
++      <a href="/builder/" class="v3-btn-pill-sec" style="height:38px;padding:0 16px;font-size:12px">Open Visual Builder →</a>
++      <a href="/admin/" class="v3-btn-pill-pri" style="height:38px;padding:0 18px;font-size:12px">Admin Control Room →</a>
+     </div>
+   </div>
+ </header>
+diff -ruN a/config.php b/config.php
+--- a/config.php	2026-10-09 16:20:58.000000000 +0000
++++ b/config.php	2026-10-09 16:36:39.017108488 +0000
+@@ -1,125 +1,120 @@
+ <?php
+ /**
+-<<<<<<< HEAD
+-<<<<<<< HEAD
+- * Woodex Interior Platform Configuration (Hostinger Production)
+- * Domain: woodex.com.pk
++ * Woodex Architecture & Luxury Interior — Master Configuration
++ * Domain : woodex.com.pk
++ * Host   : Hostinger hPanel (PHP 7.4 – 8.3 + MySQL / MariaDB)
++ *
++ * ══════════════════════════════════════════════════════════════════════════
++ *  HOW TO CONNECT THIS SITE TO YOUR HOSTINGER DATABASE
++ * ══════════════════════════════════════════════════════════════════════════
++ *  1. hPanel -> Websites -> Dashboard -> Databases -> Management
++ *     Create a new MySQL database, database user and password.
++ *  2. phpMyAdmin -> select that database -> Import -> upload
++ *     woodex-database.sql  (it is in the _DO-NOT-UPLOAD_database folder of the ZIP)
++ *  3. Put the four values in the "Hostinger MySQL credentials" block below.
++ *
++ *  EASIER ALTERNATIVE (recommended): open https://your-domain/wx-install.php once,
++ *  type the database password there and click Install. It writes the credentials to
++ *  _private/db.json (blocked from the web) and this file picks them up automatically,
++ *  so no password ever has to be saved in a file inside public_html.
++ *
++ *  This file is never sent to the browser: .htaccess denies *.php source, *.md, *.env,
++ *  *.sql and the whole _private / _database folders.
++ * ══════════════════════════════════════════════════════════════════════════
+  */
+-defined('WOODEX_CONFIG') or define('WOODEX_CONFIG', true);
+ 
+-define('SITE_NAME', 'Woodex Interior Design Studio');
+-define('SITE_DOMAIN', 'woodex.com.pk');
+-define('SITE_URL', 'https://woodex.com.pk');
+-define('ADMIN_EMAIL', 'master@woodex.pk');
+-
+-// Hostinger Database Settings (Default JSON storage active; MySQL compatible)
+-define('DB_DRIVER', 'json'); // 'json' or 'mysql'
+-define('DB_HOST', 'localhost');
+-define('DB_NAME', 'u128159657_woodex');
+-define('DB_USER', 'u128159657_woodex');
+-define('DB_PASS', '');
+-
+-// File directories
+-define('ROOT_DIR', __DIR__);
+-define('PRIVATE_DIR', __DIR__ . '/_private');
+-define('UPLOADS_DIR', __DIR__ . '/assets/uploads');
+-define('LOGS_DIR', __DIR__ . '/_private/logs');
+-
+-return [
+-    'site_name'   => SITE_NAME,
+-    'domain'      => SITE_DOMAIN,
+-    'url'         => SITE_URL,
+-    'admin_email' => ADMIN_EMAIL,
+-    'db_driver'   => DB_DRIVER,
+-    'db_host'     => DB_HOST,
+-    'db_name'     => DB_NAME,
+-    'db_user'     => DB_USER,
+-];
+-=======
+-=======
+->>>>>>> 7c4e980 (Deploy woodex-live-p23 folder and woodex-live-p23.zip with full Hostinger recognition structure and luxury sign-in)
+- * Woodex Architecture & Luxury Interior - Master Configuration
+- * Hostinger hPanel Database & Domain Settings
+- * Domain: woodex.com.pk
+- */
+-
+-<<<<<<< HEAD
+-// Environment settings
+-define('APP_NAME', 'Woodex Architecture & Luxury Interior');
+-define('APP_ENV', 'production');
+-define('SITE_URL', 'https://woodex.com.pk');
+-define('ADMIN_URL', 'https://woodex.com.pk/admin/');
+-
+-// Hostinger MySQL Database Credentials (auto-read from _private/db.json if available)
+-$dbJson = __DIR__ . '/_private/db.json';
+-$dbHost = 'localhost';
+-$dbName = 'u128159657_woodex';
+-$dbUser = 'u128159657_woodex';
+-$dbPass = '';
+-
+-if (file_exists($dbJson)) {
+-    $dbData = @json_decode(file_get_contents($dbJson), true);
+-    if (!empty($dbData['host'])) $dbHost = $dbData['host'];
+-    if (!empty($dbData['name'])) $dbName = $dbData['name'];
+-    if (!empty($dbData['user'])) $dbUser = $dbData['user'];
+-    if (isset($dbData['pass'])) $dbPass = $dbData['pass'];
++if (defined('WOODEX_CONFIG')) {
++    return;                                  // already loaded by another entry point
+ }
++define('WOODEX_CONFIG', true);
+ 
+-// Global DB constants
+-define('DB_HOST', getenv('DB_HOST') ?: $dbHost);
+-define('DB_NAME', getenv('DB_NAME') ?: $dbName);
+-define('DB_USER', getenv('DB_USER') ?: $dbUser);
+-define('DB_PASS', getenv('DB_PASS') !== false ? getenv('DB_PASS') : $dbPass);
+-
+-// Database PDO Connection Helper
+-function getWoodexDB() {
+-=======
+-// Hostinger Standard PHP Database Variables (for Hostinger scanner recognition)
+-$db_host = "localhost";
+-$db_name = "u128159657_woodex";
+-$db_user = "u128159657_woodex";
+-$db_pass = "";
+-
+-// Auto-read from _private/db.json if saved by installer/admin
+-$dbJson = __DIR__ . '/_private/db.json';
+-if (file_exists($dbJson)) {
+-    $dbData = @json_decode((string)file_get_contents($dbJson), true);
+-    if (!empty($dbData['host'])) $db_host = $dbData['host'];
+-    if (!empty($dbData['name'])) $db_name = $dbData['name'];
+-    if (!empty($dbData['user'])) $db_user = $dbData['user'];
+-    if (isset($dbData['pass']))  $db_pass = $dbData['pass'];
++// ── Hostinger MySQL credentials (standard variable names) ────────────────────
++// Replace these with the EXACT values shown in hPanel -> Databases -> Management.
++$db_host = 'localhost';
++$db_name = 'u128159657_woodex';
++$db_user = 'u128159657_woodex';
++$db_pass = '';
++
++// ── Override from _private/db.json (written by wx-install.php / admin panel) ──
++$wxDbFile = __DIR__ . '/_private/db.json';
++if (is_file($wxDbFile)) {
++    $wxDb = json_decode((string) file_get_contents($wxDbFile), true);
++    if (is_array($wxDb)) {
++        if (!empty($wxDb['host'])) { $db_host = $wxDb['host']; }
++        if (!empty($wxDb['name'])) { $db_name = $wxDb['name']; }
++        if (!empty($wxDb['user'])) { $db_user = $wxDb['user']; }
++        if (isset($wxDb['pass']))  { $db_pass = (string) $wxDb['pass']; }
++    }
++    unset($wxDb);
+ }
+ 
+-// Global System Constants
+-if (!defined('DB_HOST')) define('DB_HOST', getenv('DB_HOST') ?: $db_host);
+-if (!defined('DB_NAME')) define('DB_NAME', getenv('DB_NAME') ?: $db_name);
+-if (!defined('DB_USER')) define('DB_USER', getenv('DB_USER') ?: $db_user);
+-if (!defined('DB_PASS')) define('DB_PASS', getenv('DB_PASS') !== false ? getenv('DB_PASS') : $db_pass);
+-
+-if (!defined('SITE_URL'))   define('SITE_URL', 'https://woodex.com.pk');
+-if (!defined('SITE_NAME'))  define('SITE_NAME', 'Woodex Architecture & Luxury Interior');
+-if (!defined('ADMIN_URL'))  define('ADMIN_URL', 'https://woodex.com.pk/admin/');
+-
+-// Global PDO Connection Function
+-function getWoodexDB(): ?PDO {
+->>>>>>> 7c4e980 (Deploy woodex-live-p23 folder and woodex-live-p23.zip with full Hostinger recognition structure and luxury sign-in)
+-    static $pdo = null;
+-    if ($pdo === null) {
++// ── Environment variables (hPanel -> Advanced -> Environment variables) win ──
++$wxEnv = static function (string $key, string $fallback): string {
++    $v = getenv($key);
++    return ($v === false || $v === '') ? $fallback : (string) $v;
++};
++
++if (!defined('DB_HOST'))   { define('DB_HOST', $wxEnv('DB_HOST', $db_host)); }
++if (!defined('DB_NAME'))   { define('DB_NAME', $wxEnv('DB_DATABASE', $wxEnv('DB_NAME', $db_name))); }
++if (!defined('DB_USER'))   { define('DB_USER', $wxEnv('DB_USERNAME', $wxEnv('DB_USER', $db_user))); }
++if (!defined('DB_PASS'))   { define('DB_PASS', $wxEnv('DB_PASSWORD', $wxEnv('DB_PASS', $db_pass))); }
++if (!defined('DB_DRIVER')) { define('DB_DRIVER', $wxEnv('DB_CONNECTION', 'mysql')); }
++if (!defined('DB_PORT'))   { define('DB_PORT', $wxEnv('DB_PORT', '3306')); }
++
++// ── Site identity ────────────────────────────────────────────────────────────
++if (!defined('SITE_URL'))    { define('SITE_URL', rtrim($wxEnv('APP_URL', 'https://woodex.com.pk'), '/')); }
++if (!defined('SITE_NAME'))   { define('SITE_NAME', 'Woodex Architecture & Luxury Interior'); }
++if (!defined('SITE_DOMAIN')) { define('SITE_DOMAIN', preg_replace('~^https?://~', '', SITE_URL)); }
++if (!defined('ADMIN_URL'))   { define('ADMIN_URL', SITE_URL . '/admin/'); }
++if (!defined('ADMIN_EMAIL')) { define('ADMIN_EMAIL', $wxEnv('ADMIN_EMAIL', 'master@woodex.pk')); }
++if (!defined('APP_ENV'))     { define('APP_ENV', $wxEnv('APP_ENV', 'production')); }
++if (!defined('APP_DEBUG'))   { define('APP_DEBUG', $wxEnv('APP_DEBUG', 'false') === 'true'); }
++
++// ── Folder locations (guarded: api/*.php declare their own constants) ────────
++if (!defined('ROOT_DIR'))    { define('ROOT_DIR', __DIR__); }
++if (!defined('PRIVATE_DIR')) { define('PRIVATE_DIR', ROOT_DIR . '/_private'); }
++if (!defined('UPLOADS_DIR')) { define('UPLOADS_DIR', ROOT_DIR . '/assets/uploads'); }
++if (!defined('LOGS_DIR'))    { define('LOGS_DIR', PRIVATE_DIR . '/logs'); }
++
++// ── Maintenance switch (create _private/maintenance.flag to enable) ──────────
++if (!defined('MAINTENANCE_MODE')) { define('MAINTENANCE_MODE', is_file(PRIVATE_DIR . '/maintenance.flag')); }
++
++/**
++ * Shared PDO connection (lazy, one per request).
++ * Returns null instead of throwing so a page can still render if MySQL is down.
++ */
++if (!function_exists('getWoodexDB')) {
++    function getWoodexDB(): ?PDO
++    {
++        static $pdo = null;
++        static $tried = false;
++        if ($pdo !== null || $tried) {
++            return $pdo;
++        }
++        $tried = true;
+         try {
+-            $dsn = 'mysql:host=' . DB_HOST . ';dbname=' . DB_NAME . ';charset=utf8mb4';
++            $dsn = 'mysql:host=' . DB_HOST . ';port=' . DB_PORT . ';dbname=' . DB_NAME . ';charset=utf8mb4';
+             $pdo = new PDO($dsn, DB_USER, DB_PASS, [
+-                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
++                PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+                 PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+-                PDO::ATTR_EMULATE_PREPARES => false,
++                PDO::ATTR_EMULATE_PREPARES   => false,
+             ]);
+         } catch (PDOException $e) {
+-            error_log('Database Connection Error: ' . $e->getMessage());
+-            return null;
++            error_log('[Woodex] Database connection failed: ' . $e->getMessage());
++            $pdo = null;
+         }
++        return $pdo;
++    }
++}
++
++/** True when MySQL is reachable — used by wx-check.php and the admin status API. */
++if (!function_exists('woodexDbOnline')) {
++    function woodexDbOnline(): bool
++    {
++        return getWoodexDB() instanceof PDO;
+     }
+-    return $pdo;
+ }
+-<<<<<<< HEAD
+->>>>>>> d21c542 (Fix Hostinger website recognition, flat folder structure, centered luxury login, demo pills, and deploy woodex-live-p23.zip)
+-=======
+->>>>>>> 7c4e980 (Deploy woodex-live-p23 folder and woodex-live-p23.zip with full Hostinger recognition structure and luxury sign-in)
++
++// $db_host / $db_name / $db_user / $db_pass stay in scope on purpose: some Hostinger
++// migrations and the installer read those plain variables after including this file.
++unset($wxDbFile, $wxEnv);
+diff -ruN a/downloads.html b/downloads.html
+--- a/downloads.html	2026-10-09 16:20:58.000000000 +0000
++++ b/downloads.html	2026-10-09 16:38:07.893557376 +0000
+@@ -5,7 +5,7 @@
+ <meta name="viewport" content="width=device-width,initial-scale=1">
+ <title>Woodex Live v3 — Package Downloads</title>
+ <link rel="icon" href="/favicon.ico">
+-<link rel="stylesheet" href="/admin-v3/v3.css">
++<link rel="stylesheet" href="/assets/v3-blocks.css">
+ <style>
+   body { background: #050608; color: #e5e7eb; font-family: "Inter", sans-serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px 16px; margin: 0; }
+   .dl-glow { position: fixed; width: 700px; height: 700px; background: radial-gradient(circle, rgba(0, 184, 219, 0.14) 0%, rgba(0, 117, 255, 0.05) 50%, transparent 70%); border-radius: 50%; pointer-events: none; filter: blur(60px); z-index: 1; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+@@ -65,10 +65,13 @@
+   <div class="guide-box">
+     <b style="color:#fff">💡 Quick Hostinger Deployment Guide:</b>
+     <ol style="margin:8px 0 0;padding-left:18px">
+-      <li>Upload <code>woodex-live-p23.zip</code> to your Hostinger <code>public_html/</code> folder.</li>
+-      <li>Extract it directly using cPanel File Manager.</li>
+-      <li>Sign in at <code>/admin/</code> with <code>master@woodex.pk</code> / <code>Woodex@2026</code>.</li>
++      <li>Upload <code>woodex-diploy 23.zip</code> into your Hostinger <code>public_html/</code> folder (hPanel &rarr; Files &rarr; File Manager).</li>
++      <li>Extract it there &mdash; <code>index.php</code> must land <b>directly</b> inside <code>public_html</code>, never inside a sub-folder.</li>
++      <li>hPanel &rarr; Databases &rarr; Management: create the MySQL database, then import <code>woodex-database.sql</code> in phpMyAdmin.</li>
++      <li>Open <code>/wx-install.php</code> once, enter the database password, create your owner login, then delete that file.</li>
++      <li>Sign in at <code>/admin/</code> and change the password under <b>My security</b>.</li>
+     </ol>
++    <p class="pkg-desc" style="margin:12px 0 0">Admin credentials are never published on a web page &mdash; the installer creates them privately and the database dump keeps only password hashes.</p>
+   </div>
+ </div>
+ </body>
+diff -ruN a/google0b104c3cfb7a4943.html b/google0b104c3cfb7a4943.html
+--- a/google0b104c3cfb7a4943.html	2026-10-09 16:20:58.000000000 +0000
++++ b/google0b104c3cfb7a4943.html	2026-10-09 16:36:28.229053964 +0000
+@@ -1,9 +1 @@
+-<<<<<<< HEAD
+-<<<<<<< HEAD
+ google-site-verification: google0b104c3cfb7a4943.html
+-=======
+-google-site-verification: google0b104c3cfb7a4943.html
+->>>>>>> d21c542 (Fix Hostinger website recognition, flat folder structure, centered luxury login, demo pills, and deploy woodex-live-p23.zip)
+-=======
+-google-site-verification: google0b104c3cfb7a4943.html
+->>>>>>> 7c4e980 (Deploy woodex-live-p23 folder and woodex-live-p23.zip with full Hostinger recognition structure and luxury sign-in)
+diff -ruN a/images/.htaccess b/images/.htaccess
+--- a/images/.htaccess	1970-01-01 00:00:00.000000000 +0000
++++ b/images/.htaccess	2026-10-09 16:39:02.693834178 +0000
+@@ -0,0 +1,13 @@
++# Compatibility folder for the Hostinger upload checklist.
++# All website images live in /assets/img/ (and uploads in /assets/uploads/),
++# so this folder only forwards requests — nothing is stored here.
++Options -Indexes -ExecCGI
++
++<IfModule mod_rewrite.c>
++RewriteEngine On
++RewriteRule ^(.*)$ /assets/img/$1 [L]
++</IfModule>
++
++<FilesMatch "\.(php|phtml|php[0-9]|phar|pl|py|cgi|sh)$">
++Require all denied
++</FilesMatch>
+diff -ruN a/index.php b/index.php
+--- a/index.php	2026-10-09 16:20:58.000000000 +0000
++++ b/index.php	2026-10-09 16:35:55.348887907 +0000
+@@ -1,143 +1,149 @@
+ <?php
+ /**
+-<<<<<<< HEAD
+-<<<<<<< HEAD
+- * Woodex Interior Architecture — Main Entry Point (Hostinger Certified)
+- * Production Domain: woodex.com.pk / woodex.pk
++ * Woodex Architecture & Luxury Interior — Production Web Gateway
++ * Domain : woodex.com.pk
++ * Host   : Hostinger (Apache / LiteSpeed) — PHP 7.4, 8.0, 8.1, 8.2, 8.3 + MySQL
++ *
++ * WHY THIS FILE EXISTS
++ * --------------------
++ * Hostinger recognises a website as "PHP / database driven" when the entry file in
++ * public_html is index.php (see .htaccess -> DirectoryIndex index.php index.html).
++ * Apache/LiteSpeed still serves every static file and folder directly; this gateway
++ * only runs when a request lands on the directory index, so it must stay cheap.
++ *
++ * Order of work: config -> maintenance mode -> security headers -> /api/ -> page -> 404
+  */
+-declare(strict_types=1);
+ 
+-// Handle direct API routing
+-$uri = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
+-if (is_string($uri) && str_starts_with($uri, '/api/')) {
+-    $apiFile = __DIR__ . $uri;
+-    if (is_file($apiFile)) {
+-        require $apiFile;
+-=======
+- * Woodex Architecture & Luxury Interior - Production Web Gateway
+- * Domain: woodex.com.pk
+- * Hostinger PHP 8.x / MySQL Compatible
+- */
+-
+-// Load Master Configuration if available
+-=======
+- * Woodex Architecture & Luxury Interior - Production Web Engine Gateway
+- * Domain: woodex.com.pk
+- * Hostinger PHP 7.4 / 8.0 / 8.1 / 8.2 / 8.3 + MySQL Compatible
+- */
++// ---------------------------------------------------------------- PHP 7.4 shim
++// The admin API uses PHP 8 string helpers; define them only when the host is older.
++if (!function_exists('str_starts_with')) {
++    function str_starts_with(string $haystack, string $needle): bool
++    {
++        return $needle === '' || strncmp($haystack, $needle, strlen($needle)) === 0;
++    }
++}
++if (!function_exists('str_ends_with')) {
++    function str_ends_with(string $haystack, string $needle): bool
++    {
++        return $needle === '' || substr($haystack, -strlen($needle)) === $needle;
++    }
++}
++if (!function_exists('str_contains')) {
++    function str_contains(string $haystack, string $needle): bool
++    {
++        return $needle === '' || strpos($haystack, $needle) !== false;
++    }
++}
+ 
+-declare(strict_types=1);
++ini_set('display_errors', '0');
++error_reporting(E_ALL);
+ 
+-// Load Master Configuration
+->>>>>>> 7c4e980 (Deploy woodex-live-p23 folder and woodex-live-p23.zip with full Hostinger recognition structure and luxury sign-in)
+-if (file_exists(__DIR__ . '/config.php')) {
++// ------------------------------------------------------- master configuration
++// config.php holds the Hostinger MySQL values ($db_host / $db_name / $db_user / $db_pass)
++// and reads _private/db.json when the installer or the admin panel saved it.
++if (is_file(__DIR__ . '/config.php')) {
+     require_once __DIR__ . '/config.php';
+-} elseif (file_exists(__DIR__ . '/includes/config.php')) {
++} elseif (is_file(__DIR__ . '/includes/config.php')) {
+     require_once __DIR__ . '/includes/config.php';
+ }
+ 
+-<<<<<<< HEAD
+-// Check for Maintenance Mode
+-if (file_exists(__DIR__ . '/_private/maintenance.flag') || (defined('MAINTENANCE_MODE') && MAINTENANCE_MODE === true)) {
+-    if (file_exists(__DIR__ . '/coming-soon.html')) {
+-        include __DIR__ . '/coming-soon.html';
+->>>>>>> d21c542 (Fix Hostinger website recognition, flat folder structure, centered luxury login, demo pills, and deploy woodex-live-p23.zip)
+-=======
+-// Maintenance Mode Check
+-if (file_exists(__DIR__ . '/_private/maintenance.flag') || (defined('MAINTENANCE_MODE') && MAINTENANCE_MODE === true)) {
+-    if (file_exists(__DIR__ . '/coming-soon.html')) {
+-        header('HTTP/1.1 503 Service Temporarily Unavailable');
+-        header('Status: 503 Service Temporarily Unavailable');
++// ------------------------------------------------------------- maintenance mode
++if (is_file(__DIR__ . '/_private/maintenance.flag')
++    || (defined('MAINTENANCE_MODE') && MAINTENANCE_MODE === true)) {
++    if (is_file(__DIR__ . '/coming-soon.html')) {
++        http_response_code(503);
+         header('Retry-After: 3600');
+-        include __DIR__ . '/coming-soon.html';
+->>>>>>> 7c4e980 (Deploy woodex-live-p23 folder and woodex-live-p23.zip with full Hostinger recognition structure and luxury sign-in)
++        header('Cache-Control: no-store');
++        header('Content-Type: text/html; charset=UTF-8');
++        readfile(__DIR__ . '/coming-soon.html');
+         exit;
+     }
+ }
+ 
+-<<<<<<< HEAD
+-<<<<<<< HEAD
+-// Serve root index.html
+-if (file_exists(__DIR__ . '/index.html')) {
+-    readfile(__DIR__ . '/index.html');
+-    exit;
+-}
+-
+-echo "Woodex Interior Architecture Studio Platform is Live.";
+-=======
+-// Check for static index.html or render home
+-$htmlFile = __DIR__ . '/index.html';
+-if (file_exists($htmlFile)) {
+-    // Send standard performance headers
+-    header('X-Powered-By: Woodex-Engine/2.5');
+-    header('X-Content-Type-Options: nosniff');
+-    header('Content-Type: text/html; charset=UTF-8');
+-    readfile($htmlFile);
+-    exit;
+-} else {
+-    // Fallback if index.html is missing
+-    echo '<!DOCTYPE html><html><head><title>Woodex Architecture</title></head><body><h1>Woodex Architecture & Luxury Interior</h1><p>Visit <a href="/admin/">Admin Dashboard</a> or upload your pages.</p></body></html>';
+-    exit;
+-}
+->>>>>>> d21c542 (Fix Hostinger website recognition, flat folder structure, centered luxury login, demo pills, and deploy woodex-live-p23.zip)
+-=======
+-// Security & Performance Headers
++// ------------------------------------------------- security / caching headers
+ header('X-Powered-By: Woodex-Engine/2.5');
+ header('X-Content-Type-Options: nosniff');
+ header('X-Frame-Options: SAMEORIGIN');
+ header('Referrer-Policy: strict-origin-when-cross-origin');
+ 
+-// Routing: Determine requested path
+-$requestUri = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
+-$requestUri = trim((string)$requestUri, '/');
+-
+-// Serve Homepage if root requested
+-if ($requestUri === '' || $requestUri === 'index.php') {
+-    $homeHtml = __DIR__ . '/index.html';
+-    if (file_exists($homeHtml)) {
++// ------------------------------------------------------------------- routing
++$requestUri = (string) parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
++$requestUri = rawurldecode($requestUri);
++
++/** Reject anything that tries to walk out of the document root. */
++$wxSafe = function (string $path): bool {
++    if ($path === '' || strpos($path, "\0") !== false) {
++        return false;
++    }
++    if (strpos($path, '..') !== false || preg_match('~^/(_private|_database|_templates)(/|$)~', $path)) {
++        return false;
++    }
++    return !preg_match('~/\.(?!well-known)~', $path);   // dotfiles stay blocked
++};
++
++// 1) API pass-through (only used when the panel rewrites everything to index.php)
++if (str_starts_with($requestUri, '/api/') && $wxSafe($requestUri)) {
++    $apiFile = __DIR__ . $requestUri;
++    if (is_file($apiFile) && strtolower((string) pathinfo($apiFile, PATHINFO_EXTENSION)) === 'php') {
++        require $apiFile;
++        exit;
++    }
++}
++
++// 2) Homepage
++$wxPath = trim($requestUri, '/');
++if ($wxPath === '' || $wxPath === 'index.php' || $wxPath === 'index.html') {
++    $home = __DIR__ . '/index.html';
++    if (is_file($home)) {
+         header('Content-Type: text/html; charset=UTF-8');
+-        readfile($homeHtml);
++        readfile($home);
+         exit;
+     }
+ }
+ 
+-// Check for subdirectory index.html (e.g. /interior-design/ -> interior-design/index.html)
+-if ($requestUri !== '') {
+-    $subHtml = __DIR__ . '/' . $requestUri . '/index.html';
+-    $directHtml = __DIR__ . '/' . $requestUri . '.html';
+-    $directFile = __DIR__ . '/' . $requestUri;
++// 3) Pretty URLs: /interior-design/ -> interior-design/index.html, /page.html -> page.html
++if ($wxPath !== '' && $wxSafe($requestUri)) {
++    $dirIndex  = __DIR__ . '/' . $wxPath . '/index.html';
++    $plainHtml = __DIR__ . '/' . $wxPath . '.html';
++    $direct    = __DIR__ . '/' . $wxPath;
+ 
+-    if (is_dir(__DIR__ . '/' . $requestUri) && file_exists($subHtml)) {
++    if (is_dir($direct) && is_file($dirIndex)) {
+         header('Content-Type: text/html; charset=UTF-8');
+-        readfile($subHtml);
++        readfile($dirIndex);
+         exit;
+-    } elseif (file_exists($directHtml)) {
++    }
++    if (is_file($plainHtml)) {
+         header('Content-Type: text/html; charset=UTF-8');
+-        readfile($directHtml);
++        readfile($plainHtml);
+         exit;
+-    } elseif (file_exists($directFile) && !is_dir($directFile)) {
+-        // Static file requested
+-        $ext = pathinfo($directFile, PATHINFO_EXTENSION);
++    }
++    if (is_file($direct)) {
+         $mimes = [
+             'css' => 'text/css', 'js' => 'application/javascript', 'json' => 'application/json',
+             'png' => 'image/png', 'jpg' => 'image/jpeg', 'jpeg' => 'image/jpeg',
+-            'webp' => 'image/webp', 'svg' => 'image/svg+xml', 'ico' => 'image/x-icon',
+-            'woff2' => 'font/woff2', 'xml' => 'application/xml', 'txt' => 'text/plain'
++            'webp' => 'image/webp', 'gif' => 'image/gif', 'svg' => 'image/svg+xml',
++            'ico' => 'image/x-icon', 'woff' => 'font/woff', 'woff2' => 'font/woff2',
++            'xml' => 'application/xml', 'txt' => 'text/plain', 'pdf' => 'application/pdf',
+         ];
+-        if (isset($mimes[$ext])) header('Content-Type: ' . $mimes[$ext]);
+-        readfile($directFile);
++        $ext = strtolower((string) pathinfo($direct, PATHINFO_EXTENSION));
++        if (isset($mimes[$ext])) {
++            header('Content-Type: ' . $mimes[$ext]);
++        }
++        readfile($direct);
+         exit;
+     }
+ }
+ 
+-// 404 Fallback
+-if (file_exists(__DIR__ . '/404.html')) {
+-    header('HTTP/1.1 404 Not Found');
++// 4) 404 fallback
++if (is_file(__DIR__ . '/404.html')) {
++    http_response_code(404);
+     header('Content-Type: text/html; charset=UTF-8');
+     readfile(__DIR__ . '/404.html');
+     exit;
+ }
+ 
+-echo '<!DOCTYPE html><html><head><title>Woodex Architecture</title></head><body><h1>Woodex Architecture & Luxury Interior</h1><p>Visit <a href="/admin/">Admin Dashboard</a></p></body></html>';
++http_response_code(404);
++echo '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>Woodex Architecture &amp; Luxury Interior</title></head>'
++   . '<body><h1>Woodex Architecture &amp; Luxury Interior</h1>'
++   . '<p>Page not found. Visit the <a href="/">homepage</a> or the <a href="/admin/">admin dashboard</a>.</p></body></html>';
+ exit;
+->>>>>>> 7c4e980 (Deploy woodex-live-p23 folder and woodex-live-p23.zip with full Hostinger recognition structure and luxury sign-in)
+diff -ruN a/js/main.js b/js/main.js
+--- a/js/main.js	2026-10-09 16:20:58.000000000 +0000
++++ b/js/main.js	2026-10-09 16:36:28.229053964 +0000
+@@ -1,9 +1,6 @@
+-<<<<<<< HEAD
+-// Woodex Architecture & Luxury Interior - Main JavaScript Runtime
+-// Loads core site functionality
++// Woodex Architecture & Luxury Interior — production runtime
++// Core site behaviour (forms, WhatsApp widget, chat, UI helpers) lives in /assets/site.js
++// and /assets/js/*.js; this file is the entry point listed by the page templates.
+ if (typeof document !== 'undefined') {
+   console.log('Woodex Luxury Architecture & Interior Engine loaded.');
+ }
+-=======
+-// Woodex Production Architecture & Luxury Interior Runtime
+->>>>>>> 7c4e980 (Deploy woodex-live-p23 folder and woodex-live-p23.zip with full Hostinger recognition structure and luxury sign-in)
+diff -ruN a/uploads/.htaccess b/uploads/.htaccess
+--- a/uploads/.htaccess	1970-01-01 00:00:00.000000000 +0000
++++ b/uploads/.htaccess	2026-10-09 16:39:02.693834178 +0000
+@@ -0,0 +1,14 @@
++# Compatibility folder for the Hostinger upload checklist.
++# Woodex stores every uploaded file in /assets/uploads/ (api/builder.php,
++# api/media-lib.php and api/chat-lib.php all write there), so this folder only
++# forwards requests to it — nothing is stored here and nothing may execute.
++Options -Indexes -ExecCGI
++
++<IfModule mod_rewrite.c>
++RewriteEngine On
++RewriteRule ^(.*)$ /assets/uploads/$1 [L]
++</IfModule>
++
++<FilesMatch "\.(php|phtml|php[0-9]|phar|pl|py|cgi|sh)$">
++Require all denied
++</FilesMatch>
