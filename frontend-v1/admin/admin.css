@@ -516,10 +516,7 @@ small.bad{color:var(--bad)}small.warnc{color:var(--warn)}
 .auth a{color:#b89258}
 .btn-sso-google{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;height:46px;background:#192233;border:1px solid #29354d;border-radius:10px;color:#e2e8f0;font-size:14px;font-weight:600;cursor:pointer;transition:all .15s ease}
 .btn-sso-google:hover{background:#222d44;border-color:#3b4b6b}
-<<<<<<< HEAD
-=======
 .auth-divider{display:flex;align-items:center;gap:12px;margin:20px 0 16px;color:#64748b;font-size:12px}
->>>>>>> 7c4e980 (Deploy woodex-live-p23 folder and woodex-live-p23.zip with full Hostinger recognition structure and luxury sign-in)
 /* ===== P16 3.4 list-page pattern ===== */
 #view .grid.kpis+.card,#view .grid.kpis+div>.card:first-child{margin-top:18px}
 #view .card>.tbl-wrap{max-height:none}
