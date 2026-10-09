@@ -73,6 +73,20 @@ Open **`https://woodex.com.pk/wx-install.php`** once:
 | Owner name / email / password | your name, your email, 8+ characters |
 
 It writes `public_html/_private/db.json` (never web-readable) and creates the tables + your login.
+
+> **DO THIS NOW — the SQL dump ships weak logins.** `woodex-database.sql` seeds three accounts
+> (`master@woodex.pk`, `manager@woodex.pk`, `developer@woodex.pk`) whose bcrypt password is the word
+> `admin`. If you import that dump and then publish the site, anyone can sign in as owner. Either set
+> your own owner login through this installer (it updates/creates your account, but the other two stay
+> usable), or run this in phpMyAdmin → SQL right after the import:
+>
+>     DELETE FROM wx_users;                    -- no login at all yet, then use /wx-install.php
+>     -- or keep the rows but switch them off until you set real passwords:
+>     UPDATE wx_users SET active = 0;
+>
+> After go-live: Admin → Team & Roles → remove what you do not need, and change every password in
+> Admin → My security. `wx-install.php` on an *empty* user table creates `admin` / `admin`, so never
+> leave the installer on the server.
 Prefer to do it in the UI instead? Sign in at `/admin/` — the **Setup** screen asks for exactly the
 same four values and stores them in the same place.
 
@@ -103,6 +117,18 @@ hPanel → **Advanced → PHP Configuration**: PHP **8.2**, extensions
 `?action=cron` is a GET by design (it only runs tasks that are due and answers with counts),
 so no login or key is needed for it.
 
+
+## 5b. What this build already did for you (nothing to change)
+
+- the login screen no longer contains the "SSO demo" shortcut that typed the owner email +
+  password into the form — that password was readable in `admin/admin.js` by any visitor
+- `admin/index.html` no longer prints a suggested builder password in its placeholders
+- `config.php` and `/includes/` return **403** if anyone requests them over HTTP
+  (`.env`, `*.sql`, `*.log`, `*.md`, dotfiles and `_private/ _database/ _templates/` were already blocked)
+- an uploaded file can never execute: `assets/uploads/.htaccess` and `uploads/.htaccess` deny
+  `php|phtml|phar|pl|py|cgi|sh|html|svg` (written without `php_flag`, which LiteSpeed rejects with HTTP 500)
+- no leftover media from the old server is shipped (the `assets/uploads/avatars/` test photo is gone;
+  the folder is recreated on demand by Admin → My profile)
 
 ## 6. Lock the site down after setup (do not skip)
 
