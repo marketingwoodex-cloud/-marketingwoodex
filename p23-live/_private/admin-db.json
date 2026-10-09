@@ -1,514 +1,608 @@
 {
-  "users": [
+ "users": [
+  {
+   "id": 1,
+   "name": "Woodex Master",
+   "email": "master@woodex.pk",
+   "role": "owner",
+   "pass_hash": "scrypt$9357233b8804162531705480fb4ed1e6$19370e41dacd7af39349e3684e6fa00fc33fbf606600fc2f860c7ea0fe56d7f8",
+   "active": 1,
+   "pw_ver": 1,
+   "created_at": "2026-10-09 08:16:10",
+   "last_login": "2026-10-09 09:24:25",
+   "known": [
+    "ed34de0d44d58e17",
+    "f90a54d45695fee1"
+   ],
+   "sessions": [
     {
-      "id": 1,
-      "name": "Woodex Master",
-      "email": "master@woodex.pk",
-      "role": "owner",
-      "pass_hash": "scrypt$9357233b8804162531705480fb4ed1e6$19370e41dacd7af39349e3684e6fa00fc33fbf606600fc2f860c7ea0fe56d7f8",
-      "active": 1,
-      "pw_ver": 1,
-      "created_at": "2026-10-09 08:16:10",
-      "last_login": "2026-10-09 08:29:51",
-      "known": [
-        "ed34de0d44d58e17",
-        "f90a54d45695fee1"
-      ],
-      "sessions": [
-        {
-          "sid": "ca0439fcbc86f1d4",
-          "exp": 1791577190,
-          "ip": "127.0.0.1",
-          "ua": "Python-urllib/3.11",
-          "created": "2026-10-09 08:19:50",
-          "seen": "2026-10-09 08:19:50"
-        },
-        {
-          "sid": "0642358697417de2",
-          "exp": 1791577309,
-          "ip": "127.0.0.1",
-          "ua": "Python-urllib/3.11",
-          "created": "2026-10-09 08:21:49",
-          "seen": "2026-10-09 08:21:49"
-        },
-        {
-          "sid": "5eb5c7e06ca74954",
-          "exp": 1791577433,
-          "ip": "10.12.0.230",
-          "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
-          "created": "2026-10-09 08:23:53",
-          "seen": "2026-10-09 08:32:50"
-        },
-        {
-          "sid": "ea5173357234bbf0",
-          "exp": 1791577538,
-          "ip": "127.0.0.1",
-          "ua": "Python-urllib/3.11",
-          "created": "2026-10-09 08:25:38",
-          "seen": "2026-10-09 08:25:38"
-        },
-        {
-          "sid": "6feb02db9364924b",
-          "exp": 1791577791,
-          "ip": "127.0.0.1",
-          "ua": "Python-urllib/3.11",
-          "created": "2026-10-09 08:29:51",
-          "seen": "2026-10-09 08:29:51"
-        }
-      ],
-      "_sid": "5eb5c7e06ca74954"
+     "sid": "ca0439fcbc86f1d4",
+     "exp": 1791577190,
+     "ip": "127.0.0.1",
+     "ua": "Python-urllib/3.11",
+     "created": "2026-10-09 08:19:50",
+     "seen": "2026-10-09 08:19:50"
     },
     {
-      "id": 2,
-      "name": "Woodex Admin",
-      "email": "admin@woodex.pk",
-      "role": "owner",
-      "pass_hash": "scrypt$0eb1592f762f4be22c88298c4d0e733c$73b35ed63be006e1ed02057cf3463dfed2db834fb973ba8ca346e4ecc14c8ea8",
-      "active": 1,
-      "pw_ver": 1,
-      "created_at": "2026-10-09 08:16:10",
-      "last_login": "2026-10-09 08:29:51",
-      "known": [
-        "ed34de0d44d58e17"
-      ],
-      "sessions": [
-        {
-          "sid": "37755f77e3966d1b",
-          "exp": 1791577190,
-          "ip": "127.0.0.1",
-          "ua": "Python-urllib/3.11",
-          "created": "2026-10-09 08:19:50",
-          "seen": "2026-10-09 08:19:50"
-        },
-        {
-          "sid": "5d50102ca4d45da7",
-          "exp": 1791577309,
-          "ip": "127.0.0.1",
-          "ua": "Python-urllib/3.11",
-          "created": "2026-10-09 08:21:49",
-          "seen": "2026-10-09 08:21:49"
-        },
-        {
-          "sid": "9948313cfb3d06b5",
-          "exp": 1791577791,
-          "ip": "127.0.0.1",
-          "ua": "Python-urllib/3.11",
-          "created": "2026-10-09 08:29:51",
-          "seen": "2026-10-09 08:29:51"
-        }
-      ]
+     "sid": "0642358697417de2",
+     "exp": 1791577309,
+     "ip": "127.0.0.1",
+     "ua": "Python-urllib/3.11",
+     "created": "2026-10-09 08:21:49",
+     "seen": "2026-10-09 08:21:49"
     },
     {
-      "id": 3,
-      "name": "Woodex Sales",
-      "email": "sales@woodex.pk",
-      "role": "sales",
-      "pass_hash": "scrypt$8dbd51cd23fd61f7591b68259f5d7750$2b20bd27c7277b534fee45b55712597f930382931c3c878b1f20911809991e2d",
-      "active": 1,
-      "pw_ver": 1,
-      "created_at": "2026-10-09 08:16:10",
-      "last_login": null
+     "sid": "5eb5c7e06ca74954",
+     "exp": 1791577433,
+     "ip": "10.12.0.230",
+     "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+     "created": "2026-10-09 08:23:53",
+     "seen": "2026-10-09 09:21:56"
+    },
+    {
+     "sid": "ea5173357234bbf0",
+     "exp": 1791577538,
+     "ip": "127.0.0.1",
+     "ua": "Python-urllib/3.11",
+     "created": "2026-10-09 08:25:38",
+     "seen": "2026-10-09 08:25:38"
+    },
+    {
+     "sid": "6feb02db9364924b",
+     "exp": 1791577791,
+     "ip": "127.0.0.1",
+     "ua": "Python-urllib/3.11",
+     "created": "2026-10-09 08:29:51",
+     "seen": "2026-10-09 08:29:51"
+    },
+    {
+     "sid": "5a4e1f48924e2d18",
+     "exp": 1791579497,
+     "ip": "127.0.0.1",
+     "ua": "Python-urllib/3.11",
+     "created": "2026-10-09 08:58:17",
+     "seen": "2026-10-09 08:58:17"
+    },
+    {
+     "sid": "755876aacb55bf51",
+     "exp": 1791581048,
+     "ip": "127.0.0.1",
+     "ua": "Python-urllib/3.11",
+     "created": "2026-10-09 09:24:08",
+     "seen": "2026-10-09 09:24:08"
+    },
+    {
+     "sid": "1741b67e5cfc1a85",
+     "exp": 1791581057,
+     "ip": "127.0.0.1",
+     "ua": "Python-urllib/3.11",
+     "created": "2026-10-09 09:24:17",
+     "seen": "2026-10-09 09:24:17"
+    },
+    {
+     "sid": "bd46b68aef0b1ed8",
+     "exp": 1791581061,
+     "ip": "127.0.0.1",
+     "ua": "Python-urllib/3.11",
+     "created": "2026-10-09 09:24:21",
+     "seen": "2026-10-09 09:24:21"
+    },
+    {
+     "sid": "017659ab4bc9f75b",
+     "exp": 1791581065,
+     "ip": "127.0.0.1",
+     "ua": "Python-urllib/3.11",
+     "created": "2026-10-09 09:24:25",
+     "seen": "2026-10-09 09:24:25"
     }
-  ],
-  "activity": [
+   ],
+   "_sid": "5eb5c7e06ca74954"
+  },
+  {
+   "id": 2,
+   "name": "Woodex Admin",
+   "email": "admin@woodex.pk",
+   "role": "owner",
+   "pass_hash": "scrypt$0eb1592f762f4be22c88298c4d0e733c$73b35ed63be006e1ed02057cf3463dfed2db834fb973ba8ca346e4ecc14c8ea8",
+   "active": 1,
+   "pw_ver": 1,
+   "created_at": "2026-10-09 08:16:10",
+   "last_login": "2026-10-09 08:29:51",
+   "known": [
+    "ed34de0d44d58e17"
+   ],
+   "sessions": [
     {
-      "id": 1,
-      "user_id": 1,
-      "user_name": "Woodex Master",
-      "action": "login",
-      "target": "",
-      "ip": "127.0.0.1",
-      "created_at": "2026-10-09 08:19:50"
+     "sid": "37755f77e3966d1b",
+     "exp": 1791577190,
+     "ip": "127.0.0.1",
+     "ua": "Python-urllib/3.11",
+     "created": "2026-10-09 08:19:50",
+     "seen": "2026-10-09 08:19:50"
     },
     {
-      "id": 2,
-      "user_id": 2,
-      "user_name": "Woodex Admin",
-      "action": "login",
-      "target": "",
-      "ip": "127.0.0.1",
-      "created_at": "2026-10-09 08:19:50"
+     "sid": "5d50102ca4d45da7",
+     "exp": 1791577309,
+     "ip": "127.0.0.1",
+     "ua": "Python-urllib/3.11",
+     "created": "2026-10-09 08:21:49",
+     "seen": "2026-10-09 08:21:49"
     },
     {
-      "id": 3,
-      "user_id": 1,
-      "user_name": "Woodex Master",
-      "action": "login",
-      "target": "",
-      "ip": "127.0.0.1",
-      "created_at": "2026-10-09 08:21:49"
-    },
-    {
-      "id": 4,
-      "user_id": 2,
-      "user_name": "Woodex Admin",
-      "action": "login",
-      "target": "",
-      "ip": "127.0.0.1",
-      "created_at": "2026-10-09 08:21:49"
-    },
-    {
-      "id": 5,
-      "user_id": 1,
-      "user_name": "Woodex Master",
-      "action": "login",
-      "target": "",
-      "ip": "10.12.0.230",
-      "created_at": "2026-10-09 08:23:53"
-    },
-    {
-      "id": 6,
-      "user_id": 1,
-      "user_name": "Woodex Master",
-      "action": "login",
-      "target": "",
-      "ip": "127.0.0.1",
-      "created_at": "2026-10-09 08:25:38"
-    },
-    {
-      "id": 7,
-      "user_id": 1,
-      "user_name": "Woodex Master",
-      "action": "login",
-      "target": "",
-      "ip": "127.0.0.1",
-      "created_at": "2026-10-09 08:29:51"
-    },
-    {
-      "id": 8,
-      "user_id": 2,
-      "user_name": "Woodex Admin",
-      "action": "login",
-      "target": "",
-      "ip": "127.0.0.1",
-      "created_at": "2026-10-09 08:29:51"
+     "sid": "9948313cfb3d06b5",
+     "exp": 1791577791,
+     "ip": "127.0.0.1",
+     "ua": "Python-urllib/3.11",
+     "created": "2026-10-09 08:29:51",
+     "seen": "2026-10-09 08:29:51"
     }
-  ],
-  "seqU": 3,
-  "seqA": 8,
-  "leads": [
+   ]
+  },
+  {
+   "id": 3,
+   "name": "Woodex Sales",
+   "email": "sales@woodex.pk",
+   "role": "sales",
+   "pass_hash": "scrypt$8dbd51cd23fd61f7591b68259f5d7750$2b20bd27c7277b534fee45b55712597f930382931c3c878b1f20911809991e2d",
+   "active": 1,
+   "pw_ver": 1,
+   "created_at": "2026-10-09 08:16:10",
+   "last_login": null
+  }
+ ],
+ "activity": [
+  {
+   "id": 1,
+   "user_id": 1,
+   "user_name": "Woodex Master",
+   "action": "login",
+   "target": "",
+   "ip": "127.0.0.1",
+   "created_at": "2026-10-09 08:19:50"
+  },
+  {
+   "id": 2,
+   "user_id": 2,
+   "user_name": "Woodex Admin",
+   "action": "login",
+   "target": "",
+   "ip": "127.0.0.1",
+   "created_at": "2026-10-09 08:19:50"
+  },
+  {
+   "id": 3,
+   "user_id": 1,
+   "user_name": "Woodex Master",
+   "action": "login",
+   "target": "",
+   "ip": "127.0.0.1",
+   "created_at": "2026-10-09 08:21:49"
+  },
+  {
+   "id": 4,
+   "user_id": 2,
+   "user_name": "Woodex Admin",
+   "action": "login",
+   "target": "",
+   "ip": "127.0.0.1",
+   "created_at": "2026-10-09 08:21:49"
+  },
+  {
+   "id": 5,
+   "user_id": 1,
+   "user_name": "Woodex Master",
+   "action": "login",
+   "target": "",
+   "ip": "10.12.0.230",
+   "created_at": "2026-10-09 08:23:53"
+  },
+  {
+   "id": 6,
+   "user_id": 1,
+   "user_name": "Woodex Master",
+   "action": "login",
+   "target": "",
+   "ip": "127.0.0.1",
+   "created_at": "2026-10-09 08:25:38"
+  },
+  {
+   "id": 7,
+   "user_id": 1,
+   "user_name": "Woodex Master",
+   "action": "login",
+   "target": "",
+   "ip": "127.0.0.1",
+   "created_at": "2026-10-09 08:29:51"
+  },
+  {
+   "id": 8,
+   "user_id": 2,
+   "user_name": "Woodex Admin",
+   "action": "login",
+   "target": "",
+   "ip": "127.0.0.1",
+   "created_at": "2026-10-09 08:29:51"
+  },
+  {
+   "id": 9,
+   "user_id": 1,
+   "user_name": "Woodex Master",
+   "action": "login",
+   "target": "",
+   "ip": "127.0.0.1",
+   "created_at": "2026-10-09 08:58:17"
+  },
+  {
+   "id": 10,
+   "user_id": 1,
+   "user_name": "Woodex Master",
+   "action": "health.scan",
+   "target": "64/100",
+   "ip": "10.12.0.28",
+   "created_at": "2026-10-09 09:02:25"
+  },
+  {
+   "id": 11,
+   "user_id": 1,
+   "user_name": "Woodex Master",
+   "action": "login",
+   "target": "",
+   "ip": "127.0.0.1",
+   "created_at": "2026-10-09 09:24:08"
+  },
+  {
+   "id": 12,
+   "user_id": 1,
+   "user_name": "Woodex Master",
+   "action": "login",
+   "target": "",
+   "ip": "127.0.0.1",
+   "created_at": "2026-10-09 09:24:17"
+  },
+  {
+   "id": 13,
+   "user_id": 1,
+   "user_name": "Woodex Master",
+   "action": "login",
+   "target": "",
+   "ip": "127.0.0.1",
+   "created_at": "2026-10-09 09:24:21"
+  },
+  {
+   "id": 14,
+   "user_id": 1,
+   "user_name": "Woodex Master",
+   "action": "login",
+   "target": "",
+   "ip": "127.0.0.1",
+   "created_at": "2026-10-09 09:24:25"
+  }
+ ],
+ "seqU": 3,
+ "seqA": 14,
+ "leads": [
+  {
+   "id": 1,
+   "created_at": "2026-10-09 08:16:10",
+   "source": "estimator",
+   "page": "/estimator/",
+   "name": "Kamran Ashraf",
+   "company": "Ashraf Holdings",
+   "phone": "+923004455667",
+   "email": "kamran.ashraf@example.com",
+   "service": "Turnkey Design-Build",
+   "location": "Bahria Town Sector C, Lahore",
+   "message": "Interested in turnkey construction and luxury interior for 10 Marla residence.",
+   "fields": {
+    "city": "Lahore (Bahria Town Sector C)",
+    "budget": "PKR 12,000,000",
+    "address": "Plot 142, Sector C, Bahria Town, Lahore"
+   },
+   "stage": "new",
+   "assigned_to": 1,
+   "assigned_name": "Woodex Master",
+   "quote_status": "draft",
+   "followup": "2026-10-10 11:00",
+   "next_at": "2026-10-10 11:00",
+   "next_type": "call",
+   "value": 12000000,
+   "lost_reason": "",
+   "client_id": null,
+   "tags": [
+    "estimator",
+    "turnkey",
+    "bahria-town"
+   ],
+   "notes": [
     {
-      "id": 1,
-      "created_at": "2026-10-09 08:16:10",
-      "source": "estimator",
-      "page": "/estimator/",
-      "name": "Kamran Ashraf",
-      "company": "Ashraf Holdings",
-      "phone": "+923004455667",
-      "email": "kamran.ashraf@example.com",
-      "service": "Turnkey Design-Build",
-      "location": "Bahria Town Sector C, Lahore",
-      "message": "Interested in turnkey construction and luxury interior for 10 Marla residence.",
-      "fields": {
-        "city": "Lahore (Bahria Town Sector C)",
-        "budget": "PKR 12,000,000",
-        "address": "Plot 142, Sector C, Bahria Town, Lahore"
-      },
-      "stage": "new",
-      "assigned_to": 1,
-      "assigned_name": "Woodex Master",
-      "quote_status": "draft",
-      "followup": "2026-10-10 11:00",
-      "next_at": "2026-10-10 11:00",
-      "next_type": "call",
-      "value": 12000000,
-      "lost_reason": "",
-      "client_id": null,
-      "tags": [
-        "estimator",
-        "turnkey",
-        "bahria-town"
-      ],
-      "notes": [
-        {
-          "t": "2026-10-09 08:20:00",
-          "u": "Woodex Master",
-          "txt": "Client requested initial floor plan meeting."
-        }
-      ],
-      "read": true
+     "t": "2026-10-09 08:20:00",
+     "u": "Woodex Master",
+     "txt": "Client requested initial floor plan meeting."
+    }
+   ],
+   "read": true
+  },
+  {
+   "id": 2,
+   "created_at": "2026-10-08 14:30:22",
+   "source": "booking",
+   "page": "/book-a-visit/",
+   "name": "Dr. Sarah Mansoor",
+   "company": "Apex Wellness Center",
+   "phone": "+923215551234",
+   "email": "sarah.m@apexwellness.pk",
+   "service": "Clinic Fit-Out Consultation",
+   "location": "DHA Phase 5, Lahore",
+   "message": "Renovating a 3,000 sq ft dental clinic & wellness center.",
+   "fields": {
+    "city": "Lahore",
+    "address": "Plaza 42, Sector CCA, DHA Phase 5, Lahore"
+   },
+   "stage": "visit",
+   "assigned_to": 2,
+   "assigned_name": "Woodex Admin",
+   "quote_status": "proposal",
+   "followup": "2026-10-12 15:00",
+   "next_at": "2026-10-12 15:00",
+   "next_type": "visit",
+   "value": 6500000,
+   "lost_reason": "",
+   "client_id": null,
+   "tags": [
+    "booking",
+    "clinic",
+    "dha-5"
+   ],
+   "notes": [
+    {
+     "t": "2026-10-08 15:00:00",
+     "u": "Woodex Admin",
+     "txt": "Site measurement scheduled for Monday."
+    }
+   ],
+   "read": true
+  },
+  {
+   "id": 3,
+   "created_at": "2026-10-07 10:15:00",
+   "source": "contact",
+   "page": "/contact/",
+   "name": "Tariq Mahmood",
+   "company": "Mahmood Textiles",
+   "phone": "+923334889900",
+   "email": "tariq@mahmoodtextiles.com",
+   "service": "Executive Boardroom & Director Office",
+   "location": "Gulberg III, Lahore",
+   "message": "Complete solid wood executive boardroom table, wall panelling, and soundproof doors.",
+   "fields": {
+    "city": "Lahore",
+    "address": "Main Boulevard, Gulberg III, Lahore"
+   },
+   "stage": "quote",
+   "assigned_to": 3,
+   "assigned_name": "Woodex Sales",
+   "quote_status": "done",
+   "followup": "2026-10-11 16:30",
+   "next_at": "2026-10-11 16:30",
+   "next_type": "quote",
+   "value": 4800000,
+   "lost_reason": "",
+   "client_id": "CLI-104",
+   "lead_type": "returning",
+   "tags": [
+    "corporate",
+    "gulberg",
+    "solid-wood"
+   ],
+   "notes": [],
+   "read": true
+  },
+  {
+   "id": 4,
+   "created_at": "2026-10-06 18:45:10",
+   "source": "whatsapp",
+   "page": "/kitchens/",
+   "name": "Ayesha Farooq",
+   "company": "",
+   "phone": "+923129876543",
+   "email": "ayesha.f@gmail.com",
+   "service": "Luxury Acrylic Kitchen & Island",
+   "location": "Lake City, Lahore",
+   "message": "Custom island with Blum soft-close fittings and Spanish quartz countertop.",
+   "fields": {
+    "city": "Lahore",
+    "address": "Sector M-7, Lake City, Lahore"
+   },
+   "stage": "won",
+   "assigned_to": 2,
+   "assigned_name": "Woodex Admin",
+   "quote_status": "done",
+   "followup": "",
+   "next_at": "",
+   "next_type": "",
+   "value": 2950000,
+   "lost_reason": "",
+   "client_id": "CLI-105",
+   "lead_type": "client",
+   "tags": [
+    "kitchen",
+    "lake-city",
+    "won"
+   ],
+   "notes": [
+    {
+     "t": "2026-10-07 11:00:00",
+     "u": "Woodex Admin",
+     "txt": "Advance received (50%). Production kicked off."
+    }
+   ],
+   "read": true
+  },
+  {
+   "id": 5,
+   "created_at": "2026-10-05 12:20:40",
+   "source": "website-chat",
+   "page": "/wardrobes/",
+   "name": "Zubair Hashmi",
+   "company": "Hashmi Architects",
+   "phone": "+923018223344",
+   "email": "z.hashmi@hashmiarchitects.com",
+   "service": "Walk-in Closet & Wardrobes",
+   "location": "Model Town, Lahore",
+   "message": "Floor-to-ceiling glass-door walk-in closet with integrated LED warm-white lighting.",
+   "fields": {
+    "city": "Lahore",
+    "address": "Block C, Model Town, Lahore"
+   },
+   "stage": "hold",
+   "assigned_to": 3,
+   "assigned_name": "Woodex Sales",
+   "quote_status": "proposal",
+   "followup": "2026-10-15 14:00",
+   "next_at": "2026-10-15 14:00",
+   "next_type": "call",
+   "value": 3400000,
+   "lost_reason": "",
+   "client_id": null,
+   "tags": [
+    "architect",
+    "model-town",
+    "walk-in-closet"
+   ],
+   "notes": [],
+   "read": true
+  }
+ ],
+ "clients": [
+  {
+   "id": 1,
+   "name": "Kamran Ashraf",
+   "phone": "+923004455667",
+   "email": "kamran.ashraf@example.com",
+   "company": "",
+   "city": "Lahore",
+   "address": "House 142, Sector C, Bahria Town Lahore",
+   "notes": "Turnkey 10 Marla Project",
+   "created_at": "2026-10-09 08:16:10"
+  }
+ ],
+ "seqL": 2,
+ "seqC": 1,
+ "bookings": [
+  {
+   "id": 1,
+   "created_at": "2026-10-09 08:16:10",
+   "lead_id": 2,
+   "name": "Dr. Sarah Mansoor",
+   "phone": "+923215551234",
+   "email": "sarah.m@example.com",
+   "type": "visit",
+   "city": "Lahore",
+   "address": "Plaza 42, Sector CCA, DHA Phase 5, Lahore",
+   "d": "2026-10-12",
+   "tm": "10:00",
+   "dur": 60,
+   "status": "pending",
+   "staff_id": 0,
+   "note": "Renovating a 3,000 sq ft dental clinic & wellness center.",
+   "src": "web",
+   "reminded": 0
+  }
+ ],
+ "seqB": 1,
+ "quotes": [
+  {
+   "id": 1,
+   "no": "WI-10101",
+   "version": 1,
+   "option": "",
+   "status": "draft",
+   "created_by": "Woodex Master",
+   "created_at": "2026-10-09 08:16:10",
+   "client": {
+    "name": "Kamran Ashraf",
+    "phone": "+923004455667",
+    "email": "kamran.ashraf@example.com",
+    "address": "House 142, Sector C, Bahria Town Lahore"
+   },
+   "client_id": 1,
+   "lead_id": 1,
+   "project": "10 Marla Luxury Modern Residence",
+   "site": "Bahria Town Lahore",
+   "kind": "residential",
+   "date": "2026-10-09",
+   "valid_days": 15,
+   "sections": [
+    {
+     "name": "Architectural & 3D Design",
+     "items": [
+      {
+       "desc": "Bespoke 3D Layout Planning & Mood Boards",
+       "qty": 1,
+       "unit": "job",
+       "rate": 350000,
+       "amount": 350000,
+       "kind": ""
+      }
+     ]
     },
     {
-      "id": 2,
-      "created_at": "2026-10-08 14:30:22",
-      "source": "booking",
-      "page": "/book-a-visit/",
-      "name": "Dr. Sarah Mansoor",
-      "company": "Apex Wellness Center",
-      "phone": "+923215551234",
-      "email": "sarah.m@apexwellness.pk",
-      "service": "Clinic Fit-Out Consultation",
-      "location": "DHA Phase 5, Lahore",
-      "message": "Renovating a 3,000 sq ft dental clinic & wellness center.",
-      "fields": {
-        "city": "Lahore",
-        "address": "Plaza 42, Sector CCA, DHA Phase 5, Lahore"
+     "name": "Custom Joinery & Millwork",
+     "items": [
+      {
+       "desc": "German Modular Kitchen (UV Acrylic + Soft-close Blum)",
+       "qty": 1,
+       "unit": "job",
+       "rate": 2200000,
+       "amount": 2200000,
+       "kind": ""
       },
-      "stage": "visit",
-      "assigned_to": 2,
-      "assigned_name": "Woodex Admin",
-      "quote_status": "proposal",
-      "followup": "2026-10-12 15:00",
-      "next_at": "2026-10-12 15:00",
-      "next_type": "visit",
-      "value": 6500000,
-      "lost_reason": "",
-      "client_id": null,
-      "tags": [
-        "booking",
-        "clinic",
-        "dha-5"
-      ],
-      "notes": [
-        {
-          "t": "2026-10-08 15:00:00",
-          "u": "Woodex Admin",
-          "txt": "Site measurement scheduled for Monday."
-        }
-      ],
-      "read": true
+      {
+       "desc": "Floor-to-Ceiling Master Wardrobes & Dressing Units",
+       "qty": 4,
+       "unit": "unit",
+       "rate": 650000,
+       "amount": 2600000,
+       "kind": ""
+      }
+     ]
     },
     {
-      "id": 3,
-      "created_at": "2026-10-07 10:15:00",
-      "source": "contact",
-      "page": "/contact/",
-      "name": "Tariq Mahmood",
-      "company": "Mahmood Textiles",
-      "phone": "+923334889900",
-      "email": "tariq@mahmoodtextiles.com",
-      "service": "Executive Boardroom & Director Office",
-      "location": "Gulberg III, Lahore",
-      "message": "Complete solid wood executive boardroom table, wall panelling, and soundproof doors.",
-      "fields": {
-        "city": "Lahore",
-        "address": "Main Boulevard, Gulberg III, Lahore"
-      },
-      "stage": "quote",
-      "assigned_to": 3,
-      "assigned_name": "Woodex Sales",
-      "quote_status": "done",
-      "followup": "2026-10-11 16:30",
-      "next_at": "2026-10-11 16:30",
-      "next_type": "quote",
-      "value": 4800000,
-      "lost_reason": "",
-      "client_id": "CLI-104",
-      "lead_type": "returning",
-      "tags": [
-        "corporate",
-        "gulberg",
-        "solid-wood"
-      ],
-      "notes": [],
-      "read": true
-    },
-    {
-      "id": 4,
-      "created_at": "2026-10-06 18:45:10",
-      "source": "whatsapp",
-      "page": "/kitchens/",
-      "name": "Ayesha Farooq",
-      "company": "",
-      "phone": "+923129876543",
-      "email": "ayesha.f@gmail.com",
-      "service": "Luxury Acrylic Kitchen & Island",
-      "location": "Lake City, Lahore",
-      "message": "Custom island with Blum soft-close fittings and Spanish quartz countertop.",
-      "fields": {
-        "city": "Lahore",
-        "address": "Sector M-7, Lake City, Lahore"
-      },
-      "stage": "won",
-      "assigned_to": 2,
-      "assigned_name": "Woodex Admin",
-      "quote_status": "done",
-      "followup": "",
-      "next_at": "",
-      "next_type": "",
-      "value": 2950000,
-      "lost_reason": "",
-      "client_id": "CLI-105",
-      "lead_type": "client",
-      "tags": [
-        "kitchen",
-        "lake-city",
-        "won"
-      ],
-      "notes": [
-        {
-          "t": "2026-10-07 11:00:00",
-          "u": "Woodex Admin",
-          "txt": "Advance received (50%). Production kicked off."
-        }
-      ],
-      "read": true
-    },
-    {
-      "id": 5,
-      "created_at": "2026-10-05 12:20:40",
-      "source": "website-chat",
-      "page": "/wardrobes/",
-      "name": "Zubair Hashmi",
-      "company": "Hashmi Architects",
-      "phone": "+923018223344",
-      "email": "z.hashmi@hashmiarchitects.com",
-      "service": "Walk-in Closet & Wardrobes",
-      "location": "Model Town, Lahore",
-      "message": "Floor-to-ceiling glass-door walk-in closet with integrated LED warm-white lighting.",
-      "fields": {
-        "city": "Lahore",
-        "address": "Block C, Model Town, Lahore"
-      },
-      "stage": "hold",
-      "assigned_to": 3,
-      "assigned_name": "Woodex Sales",
-      "quote_status": "proposal",
-      "followup": "2026-10-15 14:00",
-      "next_at": "2026-10-15 14:00",
-      "next_type": "call",
-      "value": 3400000,
-      "lost_reason": "",
-      "client_id": null,
-      "tags": [
-        "architect",
-        "model-town",
-        "walk-in-closet"
-      ],
-      "notes": [],
-      "read": true
+     "name": "Ceiling & Illumination",
+     "items": [
+      {
+       "desc": "Gypsum Bulkheads with Cove LED Strips & Magnetic Tracks",
+       "qty": 1,
+       "unit": "job",
+       "rate": 850000,
+       "amount": 850000,
+       "kind": ""
+      }
+     ]
     }
-  ],
-  "clients": [
+   ],
+   "subtotal": 6000000,
+   "discount": 0,
+   "taxPct": 0,
+   "total": 6000000,
+   "terms": "50% Advance on contract, 30% on Joinery Carcass, 20% on Final Handover.",
+   "history": [
     {
-      "id": 1,
-      "name": "Kamran Ashraf",
-      "phone": "+923004455667",
-      "email": "kamran.ashraf@example.com",
-      "company": "",
-      "city": "Lahore",
-      "address": "House 142, Sector C, Bahria Town Lahore",
-      "notes": "Turnkey 10 Marla Project",
-      "created_at": "2026-10-09 08:16:10"
+     "t": "2026-10-09 08:16:10",
+     "user": "Woodex Master",
+     "text": "Created proposal"
     }
-  ],
-  "seqL": 2,
-  "seqC": 1,
-  "bookings": [
-    {
-      "id": 1,
-      "created_at": "2026-10-09 08:16:10",
-      "lead_id": 2,
-      "name": "Dr. Sarah Mansoor",
-      "phone": "+923215551234",
-      "email": "sarah.m@example.com",
-      "type": "visit",
-      "city": "Lahore",
-      "address": "Plaza 42, Sector CCA, DHA Phase 5, Lahore",
-      "d": "2026-10-12",
-      "tm": "10:00",
-      "dur": 60,
-      "status": "pending",
-      "staff_id": 0,
-      "note": "Renovating a 3,000 sq ft dental clinic & wellness center.",
-      "src": "web",
-      "reminded": 0
-    }
-  ],
-  "seqB": 1,
-  "quotes": [
-    {
-      "id": 1,
-      "no": "WI-10101",
-      "version": 1,
-      "option": "",
-      "status": "draft",
-      "created_by": "Woodex Master",
-      "created_at": "2026-10-09 08:16:10",
-      "client": {
-        "name": "Kamran Ashraf",
-        "phone": "+923004455667",
-        "email": "kamran.ashraf@example.com",
-        "address": "House 142, Sector C, Bahria Town Lahore"
-      },
-      "client_id": 1,
-      "lead_id": 1,
-      "project": "10 Marla Luxury Modern Residence",
-      "site": "Bahria Town Lahore",
-      "kind": "residential",
-      "date": "2026-10-09",
-      "valid_days": 15,
-      "sections": [
-        {
-          "name": "Architectural & 3D Design",
-          "items": [
-            {
-              "desc": "Bespoke 3D Layout Planning & Mood Boards",
-              "qty": 1,
-              "unit": "job",
-              "rate": 350000,
-              "amount": 350000,
-              "kind": ""
-            }
-          ]
-        },
-        {
-          "name": "Custom Joinery & Millwork",
-          "items": [
-            {
-              "desc": "German Modular Kitchen (UV Acrylic + Soft-close Blum)",
-              "qty": 1,
-              "unit": "job",
-              "rate": 2200000,
-              "amount": 2200000,
-              "kind": ""
-            },
-            {
-              "desc": "Floor-to-Ceiling Master Wardrobes & Dressing Units",
-              "qty": 4,
-              "unit": "unit",
-              "rate": 650000,
-              "amount": 2600000,
-              "kind": ""
-            }
-          ]
-        },
-        {
-          "name": "Ceiling & Illumination",
-          "items": [
-            {
-              "desc": "Gypsum Bulkheads with Cove LED Strips & Magnetic Tracks",
-              "qty": 1,
-              "unit": "job",
-              "rate": 850000,
-              "amount": 850000,
-              "kind": ""
-            }
-          ]
-        }
-      ],
-      "subtotal": 6000000,
-      "discount": 0,
-      "taxPct": 0,
-      "total": 6000000,
-      "terms": "50% Advance on contract, 30% on Joinery Carcass, 20% on Final Handover.",
-      "history": [
-        {
-          "t": "2026-10-09 08:16:10",
-          "user": "Woodex Master",
-          "text": "Created proposal"
-        }
-      ]
-    }
-  ],
-  "seqQ": 1,
-  "invoices": [],
-  "seqI": 0,
-  "chats": [],
-  "chatMsgs": [],
-  "seqCh": 0,
-  "seqCm": 0,
-  "aiEv": [],
-  "aiUn": [],
-  "seqUn": 0
+   ]
+  }
+ ],
+ "seqQ": 1,
+ "invoices": [],
+ "seqI": 0,
+ "chats": [],
+ "chatMsgs": [],
+ "seqCh": 0,
+ "seqCm": 0,
+ "aiEv": [],
+ "aiUn": [],
+ "seqUn": 0
 }
