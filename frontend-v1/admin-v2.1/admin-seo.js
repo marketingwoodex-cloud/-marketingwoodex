@@ -16,7 +16,7 @@
   // ------------------------------------------------------------------ list
   W.VIEWS.seo = function (el, parts) {
     if (parts && parts.length) return editor(el, decodeURIComponent(parts.join("/")));
-    el.innerHTML = W.head("SEO & AI Agent Hub", "Website / SEO", '<input type="search" id="so-q" placeholder="Search pages…"><a class="btn pri btn-preline-cyan" href="#/seoagent">' + ic("sparkles") + "AI SEO Agent</a><button class="btn" id="so-all">' + ic("refresh-cw") + "Analyse all</button>") +
+    el.innerHTML = W.head("SEO & AI Agent Hub", "Website / SEO", '<input type="search" id="so-q" placeholder="Search pages…"><a class="btn pri btn-preline-cyan" href="#/seoagent">' + ic("sparkles") + 'AI SEO Agent</a><button class="btn" id="so-all">' + ic("refresh-cw") + 'Analyse all</button>') +
       '<div class="seg" style="margin-bottom:16px"><a class="on" href="#/seo">Overview &amp; Scores</a><a href="#/seoagent">' + ic("sparkles") + 'AI SEO Agent (Multi-Model)</a><a href="#/redirects">Redirects</a><a href="/sitemap.xml" target="_blank">Sitemap.xml ↗</a></div>' +
       '<div class="card" style="padding:18px">Loading…</div>';
     W.fillIcons(el);
