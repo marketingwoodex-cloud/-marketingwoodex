@@ -68,8 +68,9 @@
 
 | Package | Direct Download Link | Size | Description |
 |---|---|---|---|
-| **Woodex Live P23 Master ZIP** | [Download woodex-live-p23.zip](https://github.com/marketingwoodex-cloud/-marketingwoodex/raw/arena/8a776c65-marketingwoodex/woodex-live-P23/woodex-live-p23.zip) | 27.28 MB | Full flat root structure, all 147 pages, Admin v2.5, 70 Section Suite, CRM upgrades, and installer. |
-| **Woodex Master P22.1 Production Suite** | [Download woodex-master-P22.1.zip](https://github.com/marketingwoodex-cloud/-marketingwoodex/raw/arena/8a776c65-marketingwoodex/woodex-master-P22/woodex-master-P22.1.zip) | 27.28 MB | Production release with database schema, assets, and complete backend suite. |
+| **Woodex Live P23 Master ZIP** | [Download woodex-live-p23.zip](https://github.com/marketingwoodex-cloud/-marketingwoodex/raw/arena/8a776c65-marketingwoodex/woodex-live-P23/woodex-live-p23.zip) | 27.3 MB | Full flat root structure, all 147 pages, Admin v2.5, 70 Section Suite, CRM upgrades, and installer. |
+| **Woodex Master P22.2 Production Suite** | [Download woodex-master-P22.2.zip](https://github.com/marketingwoodex-cloud/-marketingwoodex/raw/arena/8a776c65-marketingwoodex/woodex-master-P22/woodex-master-P22.2.zip) | 27.3 MB | Production release with database schema, assets, and complete backend suite. |
+| **Woodex Master P22.1 Suite** | [Download woodex-master-P22.1.zip](https://github.com/marketingwoodex-cloud/-marketingwoodex/raw/arena/8a776c65-marketingwoodex/woodex-master-P22/woodex-master-P22.1.zip) | 27.3 MB | Production package copy. |
 | **Full Repository Archive (.zip)** | [Download GitHub Archive](https://github.com/marketingwoodex-cloud/-marketingwoodex/archive/refs/heads/arena/8a776c65-marketingwoodex.zip) | ~30 MB | Complete repository snapshot. |
 
 ---
