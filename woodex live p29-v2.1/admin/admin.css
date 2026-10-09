@@ -88,10 +88,14 @@ html.dark .nav-a.on i{color:var(--gold)}
 @media(min-width:1025px){
 .app.mini .side{width:84px}
 .app.mini .main{margin-left:84px}
-.app.mini .side-top{padding:0;justify-content:center}.app.mini .side-top .brand>div{display:none}
+.app.mini .side-top{padding:0 8px;justify-content:center}
+.app.mini .side-top .brand{display:none!important}
+.app.mini .side-top #rail{margin:0 auto!important}
 .app.mini #nav{padding:8px 12px}
 .app.mini .nav-a{justify-content:center;padding:11px 0}.app.mini .nav-a>span,.app.mini .nav-a .pill{display:none}
 .app.mini .side-foot a{justify-content:center}.app.mini .side-foot span{display:none}
+.app.mini .side-user-row>div,.app.mini .side-user-row a{display:none!important}
+.app.mini .side-user-row{justify-content:center!important}
 .app.mini .nav-h{font-size:0;margin:14px 0 6px;text-align:center}.app.mini .nav-h::after{content:"•••";font-size:12px;letter-spacing:2px;color:var(--mut2)}
 }
 .top{position:sticky;top:0;z-index:30;height:var(--top);display:flex;align-items:center;gap:14px;padding:0 24px;background:var(--card);border-bottom:1px solid var(--line)}

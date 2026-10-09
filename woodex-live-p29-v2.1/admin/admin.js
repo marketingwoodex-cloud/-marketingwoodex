@@ -214,6 +214,7 @@
     if (sfn) sfn.textContent = S.user.name;
     if (sfr) sfr.textContent = ROLE_LABEL[S.user.role] || S.user.role;
     if (sfa) sfa.textContent = initials(S.user.name);
+    try { if (localStorage.getItem("wxSideMini") === "1" && innerWidth > 1024) $("#app").classList.add("mini"); } catch(e){}
     renderNav(); route();
     if (S.btoken) bapi("pages").then(function (p) { if (p.ok) { S.pages = p.pages; $("#gsearch-list").innerHTML = p.pages.map(function (x) { return '<option value="' + esc(x.url) + '">' + esc(x.title) + "</option>"; }).join(""); } });
   }
@@ -310,15 +311,28 @@
   document.addEventListener("keydown", function (e) { if ((e.ctrlKey || e.metaKey) && (e.key === "k" || e.key === "K")) { e.preventDefault(); palette(); } });
   window.WXA_palette = palette;
   if ($("#pk-btn")) $("#pk-btn").onclick = palette;
-  $("#menu-btn").onclick = function () { innerWidth <= 1024 ? $("#app").classList.toggle("open") : $("#app").classList.toggle("mini"); };
-  $("#side-x").onclick = $("#side-shade").onclick = function () { $("#app").classList.remove("open"); };
-  $("#dark-btn").onclick = function () { var d = document.documentElement.classList.toggle("dark"); localStorage.setItem("wxaTheme", d ? "dark" : "light"); if (S.view === "dashboard") route(); };
-  $("#user-btn").onclick = function (e) { e.stopPropagation(); $("#user-menu").hidden = !$("#user-menu").hidden; };
-  document.addEventListener("click", function () { $("#user-menu").hidden = true; });
-  $("#gsearch").addEventListener("change", function () {
-    var v = this.value.trim(), p = (S.pages || []).find(function (x) { return x.url === v; }); if (!p) return;
-    this.value = ""; location.hash = "#/builder/" + encodeURIComponent(p.path);
-  });
+  if ($("#rail")) {
+    $("#rail").onclick = function () {
+      if (innerWidth <= 1024) {
+        $("#app").classList.toggle("open");
+      } else {
+        $("#app").classList.toggle("mini");
+        try { localStorage.setItem("wxSideMini", $("#app").classList.contains("mini") ? "1" : "0"); } catch (e) {}
+      }
+    };
+  }
+  if ($("#menu-btn")) $("#menu-btn").onclick = function () { innerWidth <= 1024 ? $("#app").classList.toggle("open") : $("#app").classList.toggle("mini"); };
+  if ($("#side-x")) $("#side-x").onclick = function () { $("#app").classList.remove("open"); };
+  if ($("#side-shade")) $("#side-shade").onclick = function () { $("#app").classList.remove("open"); };
+  if ($("#dark-btn")) $("#dark-btn").onclick = function () { var d = document.documentElement.classList.toggle("dark"); localStorage.setItem("wxaTheme", d ? "dark" : "light"); if (S.view === "dashboard") route(); };
+  if ($("#user-btn")) $("#user-btn").onclick = function (e) { e.stopPropagation(); $("#user-menu").hidden = !$("#user-menu").hidden; };
+  document.addEventListener("click", function () { if ($("#user-menu")) $("#user-menu").hidden = true; });
+  if ($("#gsearch")) {
+    $("#gsearch").addEventListener("change", function () {
+      var v = this.value.trim(), p = (S.pages || []).find(function (x) { return x.url === v; }); if (!p) return;
+      this.value = ""; location.hash = "#/builder/" + encodeURIComponent(p.path);
+    });
+  }
 
   // ---------------------------------------------------------------- router
   window.addEventListener("hashchange", route);
