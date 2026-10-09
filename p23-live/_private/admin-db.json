@@ -1,617 +1,720 @@
 {
- "users": [
-  {
-   "id": 1,
-   "name": "Woodex Master",
-   "email": "master@woodex.pk",
-   "role": "owner",
-   "pass_hash": "scrypt$9357233b8804162531705480fb4ed1e6$19370e41dacd7af39349e3684e6fa00fc33fbf606600fc2f860c7ea0fe56d7f8",
-   "active": 1,
-   "pw_ver": 1,
-   "created_at": "2026-10-09 08:16:10",
-   "last_login": "2026-10-09 09:29:14",
-   "known": [
-    "ed34de0d44d58e17",
-    "f90a54d45695fee1"
-   ],
-   "sessions": [
+  "users": [
     {
-     "sid": "0642358697417de2",
-     "exp": 1791577309,
-     "ip": "127.0.0.1",
-     "ua": "Python-urllib/3.11",
-     "created": "2026-10-09 08:21:49",
-     "seen": "2026-10-09 08:21:49"
+      "id": 1,
+      "name": "Kamran Tariq",
+      "email": "master@woodex.pk",
+      "role": "owner",
+      "role_label": "Master Admin & Managing Director",
+      "department": "Executive Leadership",
+      "phone": "+923001234567",
+      "active": true,
+      "pw_hash": "$2y$10$e0MYzXyjpJS7Pd0RVvHwHe9yL1O0vY2K8z1Q.j7Yq4q7Pz0U2wG9a",
+      "pw_ver": 1,
+      "avatar": "KT",
+      "bio": "Founding director overseeing luxury interior architecture, turnkey construction, and joinery manufacturing.",
+      "permissions": [
+        "all"
+      ]
     },
     {
-     "sid": "5eb5c7e06ca74954",
-     "exp": 1791577433,
-     "ip": "10.12.0.230",
-     "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
-     "created": "2026-10-09 08:23:53",
-     "seen": "2026-10-09 09:52:18"
+      "id": 2,
+      "name": "Ar. Bilal Ahmed",
+      "email": "admin@woodex.pk",
+      "role": "admin",
+      "role_label": "Lead Architect & Design Director",
+      "department": "Architecture & 3D Visualization",
+      "phone": "+923214567890",
+      "active": true,
+      "pw_hash": "$2y$10$e0MYzXyjpJS7Pd0RVvHwHe9yL1O0vY2K8z1Q.j7Yq4q7Pz0U2wG9a",
+      "pw_ver": 1,
+      "avatar": "BA",
+      "bio": "PCATP registered architect specializing in high-end modern residential layouts, spatial planning, and interior detailing.",
+      "permissions": [
+        "website",
+        "sales",
+        "conversations",
+        "settings"
+      ]
     },
     {
-     "sid": "ea5173357234bbf0",
-     "exp": 1791577538,
-     "ip": "127.0.0.1",
-     "ua": "Python-urllib/3.11",
-     "created": "2026-10-09 08:25:38",
-     "seen": "2026-10-09 08:25:38"
+      "id": 3,
+      "name": "Usman Ali",
+      "email": "sales@woodex.pk",
+      "role": "sales",
+      "role_label": "Head of Sales & Estimations",
+      "department": "Sales & Client Relations",
+      "phone": "+923338901234",
+      "active": true,
+      "pw_hash": "$2y$10$e0MYzXyjpJS7Pd0RVvHwHe9yL1O0vY2K8z1Q.j7Yq4q7Pz0U2wG9a",
+      "pw_ver": 1,
+      "avatar": "UA",
+      "bio": "Lead sales consultant for luxury residences, commercial fit-outs, and customized woodwork quotations.",
+      "permissions": [
+        "sales",
+        "conversations"
+      ]
     },
     {
-     "sid": "6feb02db9364924b",
-     "exp": 1791577791,
-     "ip": "127.0.0.1",
-     "ua": "Python-urllib/3.11",
-     "created": "2026-10-09 08:29:51",
-     "seen": "2026-10-09 08:29:51"
+      "id": 4,
+      "name": "Engr. Hamza Farooq",
+      "email": "hamza.farooq@woodex.pk",
+      "role": "editor",
+      "role_label": "Senior Project & Site Manager",
+      "department": "Site Execution & Fit-Out",
+      "phone": "+923126789012",
+      "active": true,
+      "pw_hash": "$2y$10$e0MYzXyjpJS7Pd0RVvHwHe9yL1O0vY2K8z1Q.j7Yq4q7Pz0U2wG9a",
+      "pw_ver": 1,
+      "avatar": "HF",
+      "bio": "Project engineer overseeing on-site joinery installations, MEP coordination, and turnkey timeline adherence.",
+      "permissions": [
+        "sales",
+        "website"
+      ]
     },
     {
-     "sid": "5a4e1f48924e2d18",
-     "exp": 1791579497,
-     "ip": "127.0.0.1",
-     "ua": "Python-urllib/3.11",
-     "created": "2026-10-09 08:58:17",
-     "seen": "2026-10-09 08:58:17"
-    },
-    {
-     "sid": "755876aacb55bf51",
-     "exp": 1791581048,
-     "ip": "127.0.0.1",
-     "ua": "Python-urllib/3.11",
-     "created": "2026-10-09 09:24:08",
-     "seen": "2026-10-09 09:24:08"
-    },
-    {
-     "sid": "1741b67e5cfc1a85",
-     "exp": 1791581057,
-     "ip": "127.0.0.1",
-     "ua": "Python-urllib/3.11",
-     "created": "2026-10-09 09:24:17",
-     "seen": "2026-10-09 09:24:17"
-    },
-    {
-     "sid": "bd46b68aef0b1ed8",
-     "exp": 1791581061,
-     "ip": "127.0.0.1",
-     "ua": "Python-urllib/3.11",
-     "created": "2026-10-09 09:24:21",
-     "seen": "2026-10-09 09:24:21"
-    },
-    {
-     "sid": "017659ab4bc9f75b",
-     "exp": 1791581065,
-     "ip": "127.0.0.1",
-     "ua": "Python-urllib/3.11",
-     "created": "2026-10-09 09:24:25",
-     "seen": "2026-10-09 09:24:25"
-    },
-    {
-     "sid": "f9fc31932b18afca",
-     "exp": 1791581354,
-     "ip": "127.0.0.1",
-     "ua": "Python-urllib/3.11",
-     "created": "2026-10-09 09:29:14",
-     "seen": "2026-10-09 09:29:14"
+      "id": 5,
+      "name": "Dr. Sarah Mansoor",
+      "email": "sarah.mansoor@woodex.pk",
+      "role": "editor",
+      "role_label": "Senior Interior Stylist",
+      "department": "Interior Styling & Finishes",
+      "phone": "+923451239876",
+      "active": true,
+      "pw_hash": "$2y$10$e0MYzXyjpJS7Pd0RVvHwHe9yL1O0vY2K8z1Q.j7Yq4q7Pz0U2wG9a",
+      "pw_ver": 1,
+      "avatar": "SM",
+      "bio": "Specialist in material palettes, bespoke fabric selection, lighting moods, and modern luxury finishes.",
+      "permissions": [
+        "website",
+        "conversations"
+      ]
     }
-   ],
-   "_sid": "5eb5c7e06ca74954"
-  },
-  {
-   "id": 2,
-   "name": "Woodex Admin",
-   "email": "admin@woodex.pk",
-   "role": "owner",
-   "pass_hash": "scrypt$0eb1592f762f4be22c88298c4d0e733c$73b35ed63be006e1ed02057cf3463dfed2db834fb973ba8ca346e4ecc14c8ea8",
-   "active": 1,
-   "pw_ver": 1,
-   "created_at": "2026-10-09 08:16:10",
-   "last_login": "2026-10-09 08:29:51",
-   "known": [
-    "ed34de0d44d58e17"
-   ],
-   "sessions": [
+  ],
+  "activity": [
     {
-     "sid": "37755f77e3966d1b",
-     "exp": 1791577190,
-     "ip": "127.0.0.1",
-     "ua": "Python-urllib/3.11",
-     "created": "2026-10-09 08:19:50",
-     "seen": "2026-10-09 08:19:50"
+      "id": 1,
+      "user_id": 1,
+      "user_name": "Woodex Master",
+      "action": "login",
+      "target": "",
+      "ip": "127.0.0.1",
+      "created_at": "2026-10-09 08:19:50"
     },
     {
-     "sid": "5d50102ca4d45da7",
-     "exp": 1791577309,
-     "ip": "127.0.0.1",
-     "ua": "Python-urllib/3.11",
-     "created": "2026-10-09 08:21:49",
-     "seen": "2026-10-09 08:21:49"
+      "id": 2,
+      "user_id": 2,
+      "user_name": "Woodex Admin",
+      "action": "login",
+      "target": "",
+      "ip": "127.0.0.1",
+      "created_at": "2026-10-09 08:19:50"
     },
     {
-     "sid": "9948313cfb3d06b5",
-     "exp": 1791577791,
-     "ip": "127.0.0.1",
-     "ua": "Python-urllib/3.11",
-     "created": "2026-10-09 08:29:51",
-     "seen": "2026-10-09 08:29:51"
-    }
-   ]
-  },
-  {
-   "id": 3,
-   "name": "Woodex Sales",
-   "email": "sales@woodex.pk",
-   "role": "sales",
-   "pass_hash": "scrypt$8dbd51cd23fd61f7591b68259f5d7750$2b20bd27c7277b534fee45b55712597f930382931c3c878b1f20911809991e2d",
-   "active": 1,
-   "pw_ver": 1,
-   "created_at": "2026-10-09 08:16:10",
-   "last_login": null
-  }
- ],
- "activity": [
-  {
-   "id": 1,
-   "user_id": 1,
-   "user_name": "Woodex Master",
-   "action": "login",
-   "target": "",
-   "ip": "127.0.0.1",
-   "created_at": "2026-10-09 08:19:50"
-  },
-  {
-   "id": 2,
-   "user_id": 2,
-   "user_name": "Woodex Admin",
-   "action": "login",
-   "target": "",
-   "ip": "127.0.0.1",
-   "created_at": "2026-10-09 08:19:50"
-  },
-  {
-   "id": 3,
-   "user_id": 1,
-   "user_name": "Woodex Master",
-   "action": "login",
-   "target": "",
-   "ip": "127.0.0.1",
-   "created_at": "2026-10-09 08:21:49"
-  },
-  {
-   "id": 4,
-   "user_id": 2,
-   "user_name": "Woodex Admin",
-   "action": "login",
-   "target": "",
-   "ip": "127.0.0.1",
-   "created_at": "2026-10-09 08:21:49"
-  },
-  {
-   "id": 5,
-   "user_id": 1,
-   "user_name": "Woodex Master",
-   "action": "login",
-   "target": "",
-   "ip": "10.12.0.230",
-   "created_at": "2026-10-09 08:23:53"
-  },
-  {
-   "id": 6,
-   "user_id": 1,
-   "user_name": "Woodex Master",
-   "action": "login",
-   "target": "",
-   "ip": "127.0.0.1",
-   "created_at": "2026-10-09 08:25:38"
-  },
-  {
-   "id": 7,
-   "user_id": 1,
-   "user_name": "Woodex Master",
-   "action": "login",
-   "target": "",
-   "ip": "127.0.0.1",
-   "created_at": "2026-10-09 08:29:51"
-  },
-  {
-   "id": 8,
-   "user_id": 2,
-   "user_name": "Woodex Admin",
-   "action": "login",
-   "target": "",
-   "ip": "127.0.0.1",
-   "created_at": "2026-10-09 08:29:51"
-  },
-  {
-   "id": 9,
-   "user_id": 1,
-   "user_name": "Woodex Master",
-   "action": "login",
-   "target": "",
-   "ip": "127.0.0.1",
-   "created_at": "2026-10-09 08:58:17"
-  },
-  {
-   "id": 10,
-   "user_id": 1,
-   "user_name": "Woodex Master",
-   "action": "health.scan",
-   "target": "64/100",
-   "ip": "10.12.0.28",
-   "created_at": "2026-10-09 09:02:25"
-  },
-  {
-   "id": 11,
-   "user_id": 1,
-   "user_name": "Woodex Master",
-   "action": "login",
-   "target": "",
-   "ip": "127.0.0.1",
-   "created_at": "2026-10-09 09:24:08"
-  },
-  {
-   "id": 12,
-   "user_id": 1,
-   "user_name": "Woodex Master",
-   "action": "login",
-   "target": "",
-   "ip": "127.0.0.1",
-   "created_at": "2026-10-09 09:24:17"
-  },
-  {
-   "id": 13,
-   "user_id": 1,
-   "user_name": "Woodex Master",
-   "action": "login",
-   "target": "",
-   "ip": "127.0.0.1",
-   "created_at": "2026-10-09 09:24:21"
-  },
-  {
-   "id": 14,
-   "user_id": 1,
-   "user_name": "Woodex Master",
-   "action": "login",
-   "target": "",
-   "ip": "127.0.0.1",
-   "created_at": "2026-10-09 09:24:25"
-  },
-  {
-   "id": 15,
-   "user_id": 1,
-   "user_name": "Woodex Master",
-   "action": "login",
-   "target": "",
-   "ip": "127.0.0.1",
-   "created_at": "2026-10-09 09:29:14"
-  }
- ],
- "seqU": 3,
- "seqA": 15,
- "leads": [
-  {
-   "id": 1,
-   "created_at": "2026-10-09 08:16:10",
-   "source": "estimator",
-   "page": "/estimator/",
-   "name": "Kamran Ashraf",
-   "company": "Ashraf Holdings",
-   "phone": "+923004455667",
-   "email": "kamran.ashraf@example.com",
-   "service": "Turnkey Design-Build",
-   "location": "Bahria Town Sector C, Lahore",
-   "message": "Interested in turnkey construction and luxury interior for 10 Marla residence.",
-   "fields": {
-    "city": "Lahore (Bahria Town Sector C)",
-    "budget": "PKR 12,000,000",
-    "address": "Plot 142, Sector C, Bahria Town, Lahore"
-   },
-   "stage": "new",
-   "assigned_to": 1,
-   "assigned_name": "Woodex Master",
-   "quote_status": "draft",
-   "followup": "2026-10-10 11:00",
-   "next_at": "2026-10-10 11:00",
-   "next_type": "call",
-   "value": 12000000,
-   "lost_reason": "",
-   "client_id": null,
-   "tags": [
-    "estimator",
-    "turnkey",
-    "bahria-town"
-   ],
-   "notes": [
-    {
-     "t": "2026-10-09 08:20:00",
-     "u": "Woodex Master",
-     "txt": "Client requested initial floor plan meeting."
-    }
-   ],
-   "read": true
-  },
-  {
-   "id": 2,
-   "created_at": "2026-10-08 14:30:22",
-   "source": "booking",
-   "page": "/book-a-visit/",
-   "name": "Dr. Sarah Mansoor",
-   "company": "Apex Wellness Center",
-   "phone": "+923215551234",
-   "email": "sarah.m@apexwellness.pk",
-   "service": "Clinic Fit-Out Consultation",
-   "location": "DHA Phase 5, Lahore",
-   "message": "Renovating a 3,000 sq ft dental clinic & wellness center.",
-   "fields": {
-    "city": "Lahore",
-    "address": "Plaza 42, Sector CCA, DHA Phase 5, Lahore"
-   },
-   "stage": "visit",
-   "assigned_to": 2,
-   "assigned_name": "Woodex Admin",
-   "quote_status": "proposal",
-   "followup": "2026-10-12 15:00",
-   "next_at": "2026-10-12 15:00",
-   "next_type": "visit",
-   "value": 6500000,
-   "lost_reason": "",
-   "client_id": null,
-   "tags": [
-    "booking",
-    "clinic",
-    "dha-5"
-   ],
-   "notes": [
-    {
-     "t": "2026-10-08 15:00:00",
-     "u": "Woodex Admin",
-     "txt": "Site measurement scheduled for Monday."
-    }
-   ],
-   "read": true
-  },
-  {
-   "id": 3,
-   "created_at": "2026-10-07 10:15:00",
-   "source": "contact",
-   "page": "/contact/",
-   "name": "Tariq Mahmood",
-   "company": "Mahmood Textiles",
-   "phone": "+923334889900",
-   "email": "tariq@mahmoodtextiles.com",
-   "service": "Executive Boardroom & Director Office",
-   "location": "Gulberg III, Lahore",
-   "message": "Complete solid wood executive boardroom table, wall panelling, and soundproof doors.",
-   "fields": {
-    "city": "Lahore",
-    "address": "Main Boulevard, Gulberg III, Lahore"
-   },
-   "stage": "quote",
-   "assigned_to": 3,
-   "assigned_name": "Woodex Sales",
-   "quote_status": "done",
-   "followup": "2026-10-11 16:30",
-   "next_at": "2026-10-11 16:30",
-   "next_type": "quote",
-   "value": 4800000,
-   "lost_reason": "",
-   "client_id": "CLI-104",
-   "lead_type": "returning",
-   "tags": [
-    "corporate",
-    "gulberg",
-    "solid-wood"
-   ],
-   "notes": [],
-   "read": true
-  },
-  {
-   "id": 4,
-   "created_at": "2026-10-06 18:45:10",
-   "source": "whatsapp",
-   "page": "/kitchens/",
-   "name": "Ayesha Farooq",
-   "company": "",
-   "phone": "+923129876543",
-   "email": "ayesha.f@gmail.com",
-   "service": "Luxury Acrylic Kitchen & Island",
-   "location": "Lake City, Lahore",
-   "message": "Custom island with Blum soft-close fittings and Spanish quartz countertop.",
-   "fields": {
-    "city": "Lahore",
-    "address": "Sector M-7, Lake City, Lahore"
-   },
-   "stage": "won",
-   "assigned_to": 2,
-   "assigned_name": "Woodex Admin",
-   "quote_status": "done",
-   "followup": "",
-   "next_at": "",
-   "next_type": "",
-   "value": 2950000,
-   "lost_reason": "",
-   "client_id": "CLI-105",
-   "lead_type": "client",
-   "tags": [
-    "kitchen",
-    "lake-city",
-    "won"
-   ],
-   "notes": [
-    {
-     "t": "2026-10-07 11:00:00",
-     "u": "Woodex Admin",
-     "txt": "Advance received (50%). Production kicked off."
-    }
-   ],
-   "read": true
-  },
-  {
-   "id": 5,
-   "created_at": "2026-10-05 12:20:40",
-   "source": "website-chat",
-   "page": "/wardrobes/",
-   "name": "Zubair Hashmi",
-   "company": "Hashmi Architects",
-   "phone": "+923018223344",
-   "email": "z.hashmi@hashmiarchitects.com",
-   "service": "Walk-in Closet & Wardrobes",
-   "location": "Model Town, Lahore",
-   "message": "Floor-to-ceiling glass-door walk-in closet with integrated LED warm-white lighting.",
-   "fields": {
-    "city": "Lahore",
-    "address": "Block C, Model Town, Lahore"
-   },
-   "stage": "hold",
-   "assigned_to": 3,
-   "assigned_name": "Woodex Sales",
-   "quote_status": "proposal",
-   "followup": "2026-10-15 14:00",
-   "next_at": "2026-10-15 14:00",
-   "next_type": "call",
-   "value": 3400000,
-   "lost_reason": "",
-   "client_id": null,
-   "tags": [
-    "architect",
-    "model-town",
-    "walk-in-closet"
-   ],
-   "notes": [],
-   "read": true
-  }
- ],
- "clients": [
-  {
-   "id": 1,
-   "name": "Kamran Ashraf",
-   "phone": "+923004455667",
-   "email": "kamran.ashraf@example.com",
-   "company": "",
-   "city": "Lahore",
-   "address": "House 142, Sector C, Bahria Town Lahore",
-   "notes": "Turnkey 10 Marla Project",
-   "created_at": "2026-10-09 08:16:10"
-  }
- ],
- "seqL": 2,
- "seqC": 1,
- "bookings": [
-  {
-   "id": 1,
-   "created_at": "2026-10-09 08:16:10",
-   "lead_id": 2,
-   "name": "Dr. Sarah Mansoor",
-   "phone": "+923215551234",
-   "email": "sarah.m@example.com",
-   "type": "visit",
-   "city": "Lahore",
-   "address": "Plaza 42, Sector CCA, DHA Phase 5, Lahore",
-   "d": "2026-10-12",
-   "tm": "10:00",
-   "dur": 60,
-   "status": "pending",
-   "staff_id": 0,
-   "note": "Renovating a 3,000 sq ft dental clinic & wellness center.",
-   "src": "web",
-   "reminded": 0
-  }
- ],
- "seqB": 1,
- "quotes": [
-  {
-   "id": 1,
-   "no": "WI-10101",
-   "version": 1,
-   "option": "",
-   "status": "draft",
-   "created_by": "Woodex Master",
-   "created_at": "2026-10-09 08:16:10",
-   "client": {
-    "name": "Kamran Ashraf",
-    "phone": "+923004455667",
-    "email": "kamran.ashraf@example.com",
-    "address": "House 142, Sector C, Bahria Town Lahore"
-   },
-   "client_id": 1,
-   "lead_id": 1,
-   "project": "10 Marla Luxury Modern Residence",
-   "site": "Bahria Town Lahore",
-   "kind": "residential",
-   "date": "2026-10-09",
-   "valid_days": 15,
-   "sections": [
-    {
-     "name": "Architectural & 3D Design",
-     "items": [
-      {
-       "desc": "Bespoke 3D Layout Planning & Mood Boards",
-       "qty": 1,
-       "unit": "job",
-       "rate": 350000,
-       "amount": 350000,
-       "kind": ""
-      }
-     ]
+      "id": 3,
+      "user_id": 1,
+      "user_name": "Woodex Master",
+      "action": "login",
+      "target": "",
+      "ip": "127.0.0.1",
+      "created_at": "2026-10-09 08:21:49"
     },
     {
-     "name": "Custom Joinery & Millwork",
-     "items": [
-      {
-       "desc": "German Modular Kitchen (UV Acrylic + Soft-close Blum)",
-       "qty": 1,
-       "unit": "job",
-       "rate": 2200000,
-       "amount": 2200000,
-       "kind": ""
+      "id": 4,
+      "user_id": 2,
+      "user_name": "Woodex Admin",
+      "action": "login",
+      "target": "",
+      "ip": "127.0.0.1",
+      "created_at": "2026-10-09 08:21:49"
+    },
+    {
+      "id": 5,
+      "user_id": 1,
+      "user_name": "Woodex Master",
+      "action": "login",
+      "target": "",
+      "ip": "10.12.0.230",
+      "created_at": "2026-10-09 08:23:53"
+    },
+    {
+      "id": 6,
+      "user_id": 1,
+      "user_name": "Woodex Master",
+      "action": "login",
+      "target": "",
+      "ip": "127.0.0.1",
+      "created_at": "2026-10-09 08:25:38"
+    },
+    {
+      "id": 7,
+      "user_id": 1,
+      "user_name": "Woodex Master",
+      "action": "login",
+      "target": "",
+      "ip": "127.0.0.1",
+      "created_at": "2026-10-09 08:29:51"
+    },
+    {
+      "id": 8,
+      "user_id": 2,
+      "user_name": "Woodex Admin",
+      "action": "login",
+      "target": "",
+      "ip": "127.0.0.1",
+      "created_at": "2026-10-09 08:29:51"
+    },
+    {
+      "id": 9,
+      "user_id": 1,
+      "user_name": "Woodex Master",
+      "action": "login",
+      "target": "",
+      "ip": "127.0.0.1",
+      "created_at": "2026-10-09 08:58:17"
+    },
+    {
+      "id": 10,
+      "user_id": 1,
+      "user_name": "Woodex Master",
+      "action": "health.scan",
+      "target": "64/100",
+      "ip": "10.12.0.28",
+      "created_at": "2026-10-09 09:02:25"
+    },
+    {
+      "id": 11,
+      "user_id": 1,
+      "user_name": "Woodex Master",
+      "action": "login",
+      "target": "",
+      "ip": "127.0.0.1",
+      "created_at": "2026-10-09 09:24:08"
+    },
+    {
+      "id": 12,
+      "user_id": 1,
+      "user_name": "Woodex Master",
+      "action": "login",
+      "target": "",
+      "ip": "127.0.0.1",
+      "created_at": "2026-10-09 09:24:17"
+    },
+    {
+      "id": 13,
+      "user_id": 1,
+      "user_name": "Woodex Master",
+      "action": "login",
+      "target": "",
+      "ip": "127.0.0.1",
+      "created_at": "2026-10-09 09:24:21"
+    },
+    {
+      "id": 14,
+      "user_id": 1,
+      "user_name": "Woodex Master",
+      "action": "login",
+      "target": "",
+      "ip": "127.0.0.1",
+      "created_at": "2026-10-09 09:24:25"
+    },
+    {
+      "id": 15,
+      "user_id": 1,
+      "user_name": "Woodex Master",
+      "action": "login",
+      "target": "",
+      "ip": "127.0.0.1",
+      "created_at": "2026-10-09 09:29:14"
+    }
+  ],
+  "seqU": 3,
+  "seqA": 15,
+  "leads": [
+    {
+      "id": 1,
+      "created_at": "2026-10-09 08:16:10",
+      "source": "estimator",
+      "page": "/estimator/",
+      "name": "Kamran Ashraf",
+      "company": "Ashraf Holdings",
+      "phone": "+923004455667",
+      "email": "kamran.ashraf@example.com",
+      "service": "Turnkey Design-Build",
+      "location": "Bahria Town Sector C, Lahore",
+      "message": "Interested in turnkey construction and luxury interior for 10 Marla residence.",
+      "fields": {
+        "city": "Lahore (Bahria Town Sector C)",
+        "budget": "PKR 12,000,000",
+        "address": "Plot 142, Sector C, Bahria Town, Lahore"
       },
-      {
-       "desc": "Floor-to-Ceiling Master Wardrobes & Dressing Units",
-       "qty": 4,
-       "unit": "unit",
-       "rate": 650000,
-       "amount": 2600000,
-       "kind": ""
-      }
-     ]
+      "stage": "new",
+      "assigned_to": 1,
+      "assigned_name": "Woodex Master",
+      "quote_status": "draft",
+      "followup": "2026-10-10 11:00",
+      "next_at": "2026-10-10 11:00",
+      "next_type": "call",
+      "value": 12000000,
+      "lost_reason": "",
+      "client_id": null,
+      "tags": [
+        "estimator",
+        "turnkey",
+        "bahria-town"
+      ],
+      "notes": [
+        {
+          "t": "2026-10-09 08:20:00",
+          "u": "Woodex Master",
+          "txt": "Client requested initial floor plan meeting."
+        }
+      ],
+      "read": true
     },
     {
-     "name": "Ceiling & Illumination",
-     "items": [
-      {
-       "desc": "Gypsum Bulkheads with Cove LED Strips & Magnetic Tracks",
-       "qty": 1,
-       "unit": "job",
-       "rate": 850000,
-       "amount": 850000,
-       "kind": ""
-      }
-     ]
-    }
-   ],
-   "subtotal": 6000000,
-   "discount": 0,
-   "taxPct": 0,
-   "total": 6000000,
-   "terms": "50% Advance on contract, 30% on Joinery Carcass, 20% on Final Handover.",
-   "history": [
+      "id": 2,
+      "created_at": "2026-10-08 14:30:22",
+      "source": "booking",
+      "page": "/book-a-visit/",
+      "name": "Dr. Sarah Mansoor",
+      "company": "Apex Wellness Center",
+      "phone": "+923215551234",
+      "email": "sarah.m@apexwellness.pk",
+      "service": "Clinic Fit-Out Consultation",
+      "location": "DHA Phase 5, Lahore",
+      "message": "Renovating a 3,000 sq ft dental clinic & wellness center.",
+      "fields": {
+        "city": "Lahore",
+        "address": "Plaza 42, Sector CCA, DHA Phase 5, Lahore"
+      },
+      "stage": "visit",
+      "assigned_to": 2,
+      "assigned_name": "Woodex Admin",
+      "quote_status": "proposal",
+      "followup": "2026-10-12 15:00",
+      "next_at": "2026-10-12 15:00",
+      "next_type": "visit",
+      "value": 6500000,
+      "lost_reason": "",
+      "client_id": null,
+      "tags": [
+        "booking",
+        "clinic",
+        "dha-5"
+      ],
+      "notes": [
+        {
+          "t": "2026-10-08 15:00:00",
+          "u": "Woodex Admin",
+          "txt": "Site measurement scheduled for Monday."
+        }
+      ],
+      "read": true
+    },
     {
-     "t": "2026-10-09 08:16:10",
-     "user": "Woodex Master",
-     "text": "Created proposal"
+      "id": 3,
+      "created_at": "2026-10-07 10:15:00",
+      "source": "contact",
+      "page": "/contact/",
+      "name": "Tariq Mahmood",
+      "company": "Mahmood Textiles",
+      "phone": "+923334889900",
+      "email": "tariq@mahmoodtextiles.com",
+      "service": "Executive Boardroom & Director Office",
+      "location": "Gulberg III, Lahore",
+      "message": "Complete solid wood executive boardroom table, wall panelling, and soundproof doors.",
+      "fields": {
+        "city": "Lahore",
+        "address": "Main Boulevard, Gulberg III, Lahore"
+      },
+      "stage": "quote",
+      "assigned_to": 3,
+      "assigned_name": "Woodex Sales",
+      "quote_status": "done",
+      "followup": "2026-10-11 16:30",
+      "next_at": "2026-10-11 16:30",
+      "next_type": "quote",
+      "value": 4800000,
+      "lost_reason": "",
+      "client_id": "CLI-104",
+      "lead_type": "returning",
+      "tags": [
+        "corporate",
+        "gulberg",
+        "solid-wood"
+      ],
+      "notes": [],
+      "read": true
+    },
+    {
+      "id": 4,
+      "created_at": "2026-10-06 18:45:10",
+      "source": "whatsapp",
+      "page": "/kitchens/",
+      "name": "Ayesha Farooq",
+      "company": "",
+      "phone": "+923129876543",
+      "email": "ayesha.f@gmail.com",
+      "service": "Luxury Acrylic Kitchen & Island",
+      "location": "Lake City, Lahore",
+      "message": "Custom island with Blum soft-close fittings and Spanish quartz countertop.",
+      "fields": {
+        "city": "Lahore",
+        "address": "Sector M-7, Lake City, Lahore"
+      },
+      "stage": "won",
+      "assigned_to": 2,
+      "assigned_name": "Woodex Admin",
+      "quote_status": "done",
+      "followup": "",
+      "next_at": "",
+      "next_type": "",
+      "value": 2950000,
+      "lost_reason": "",
+      "client_id": "CLI-105",
+      "lead_type": "client",
+      "tags": [
+        "kitchen",
+        "lake-city",
+        "won"
+      ],
+      "notes": [
+        {
+          "t": "2026-10-07 11:00:00",
+          "u": "Woodex Admin",
+          "txt": "Advance received (50%). Production kicked off."
+        }
+      ],
+      "read": true
+    },
+    {
+      "id": 5,
+      "created_at": "2026-10-05 12:20:40",
+      "source": "website-chat",
+      "page": "/wardrobes/",
+      "name": "Zubair Hashmi",
+      "company": "Hashmi Architects",
+      "phone": "+923018223344",
+      "email": "z.hashmi@hashmiarchitects.com",
+      "service": "Walk-in Closet & Wardrobes",
+      "location": "Model Town, Lahore",
+      "message": "Floor-to-ceiling glass-door walk-in closet with integrated LED warm-white lighting.",
+      "fields": {
+        "city": "Lahore",
+        "address": "Block C, Model Town, Lahore"
+      },
+      "stage": "hold",
+      "assigned_to": 3,
+      "assigned_name": "Woodex Sales",
+      "quote_status": "proposal",
+      "followup": "2026-10-15 14:00",
+      "next_at": "2026-10-15 14:00",
+      "next_type": "call",
+      "value": 3400000,
+      "lost_reason": "",
+      "client_id": null,
+      "tags": [
+        "architect",
+        "model-town",
+        "walk-in-closet"
+      ],
+      "notes": [],
+      "read": true
     }
-   ]
+  ],
+  "clients": [
+    {
+      "id": 1,
+      "name": "Kamran Ashraf",
+      "phone": "+923004455667",
+      "email": "kamran.ashraf@example.com",
+      "company": "",
+      "city": "Lahore",
+      "address": "House 142, Sector C, Bahria Town Lahore",
+      "notes": "Turnkey 10 Marla Project",
+      "created_at": "2026-10-09 08:16:10"
+    }
+  ],
+  "seqL": 2,
+  "seqC": 1,
+  "bookings": [
+    {
+      "id": 1,
+      "created_at": "2026-10-09 08:16:10",
+      "lead_id": 2,
+      "name": "Dr. Sarah Mansoor",
+      "phone": "+923215551234",
+      "email": "sarah.m@example.com",
+      "type": "visit",
+      "city": "Lahore",
+      "address": "Plaza 42, Sector CCA, DHA Phase 5, Lahore",
+      "d": "2026-10-12",
+      "tm": "10:00",
+      "dur": 60,
+      "status": "pending",
+      "staff_id": 0,
+      "note": "Renovating a 3,000 sq ft dental clinic & wellness center.",
+      "src": "web",
+      "reminded": 0
+    }
+  ],
+  "seqB": 1,
+  "quotes": [
+    {
+      "id": 1,
+      "no": "WI-10101",
+      "version": 1,
+      "option": "",
+      "status": "draft",
+      "created_by": "Woodex Master",
+      "created_at": "2026-10-09 08:16:10",
+      "client": {
+        "name": "Kamran Ashraf",
+        "phone": "+923004455667",
+        "email": "kamran.ashraf@example.com",
+        "address": "House 142, Sector C, Bahria Town Lahore"
+      },
+      "client_id": 1,
+      "lead_id": 1,
+      "project": "10 Marla Luxury Modern Residence",
+      "site": "Bahria Town Lahore",
+      "kind": "residential",
+      "date": "2026-10-09",
+      "valid_days": 15,
+      "sections": [
+        {
+          "name": "Architectural & 3D Design",
+          "items": [
+            {
+              "desc": "Bespoke 3D Layout Planning & Mood Boards",
+              "qty": 1,
+              "unit": "job",
+              "rate": 350000,
+              "amount": 350000,
+              "kind": ""
+            }
+          ]
+        },
+        {
+          "name": "Custom Joinery & Millwork",
+          "items": [
+            {
+              "desc": "German Modular Kitchen (UV Acrylic + Soft-close Blum)",
+              "qty": 1,
+              "unit": "job",
+              "rate": 2200000,
+              "amount": 2200000,
+              "kind": ""
+            },
+            {
+              "desc": "Floor-to-Ceiling Master Wardrobes & Dressing Units",
+              "qty": 4,
+              "unit": "unit",
+              "rate": 650000,
+              "amount": 2600000,
+              "kind": ""
+            }
+          ]
+        },
+        {
+          "name": "Ceiling & Illumination",
+          "items": [
+            {
+              "desc": "Gypsum Bulkheads with Cove LED Strips & Magnetic Tracks",
+              "qty": 1,
+              "unit": "job",
+              "rate": 850000,
+              "amount": 850000,
+              "kind": ""
+            }
+          ]
+        }
+      ],
+      "subtotal": 6000000,
+      "discount": 0,
+      "taxPct": 0,
+      "total": 6000000,
+      "terms": "50% Advance on contract, 30% on Joinery Carcass, 20% on Final Handover.",
+      "history": [
+        {
+          "t": "2026-10-09 08:16:10",
+          "user": "Woodex Master",
+          "text": "Created proposal"
+        }
+      ]
+    }
+  ],
+  "seqQ": 1,
+  "invoices": [],
+  "seqI": 0,
+  "chats": [],
+  "chatMsgs": [],
+  "seqCh": 0,
+  "seqCm": 0,
+  "aiEv": [],
+  "aiUn": [],
+  "seqUn": 0,
+  "testimonials": [
+    {
+      "id": 1,
+      "name": "Malik Riaz Hussain",
+      "company": "1 Kanal Luxury Villa Owner",
+      "location": "DHA Phase 6, Lahore",
+      "rating": 5,
+      "date": "2026-09-28",
+      "avatar": "MR",
+      "tag": "Turnkey Residential",
+      "title": "Exceptional craftsmanship and seamless execution",
+      "text": "Woodex Interior executed our complete 1 Kanal residence in DHA Phase 6 from architecture to final furniture handover. The Spanish quartz kitchen island and seamless floor-to-ceiling closets are absolutely world-class.",
+      "featured": true,
+      "published": true
+    },
+    {
+      "id": 2,
+      "name": "Mrs. Naveen Sheikh",
+      "company": "Residence",
+      "location": "Bahria Town Sector C, Lahore",
+      "rating": 5,
+      "date": "2026-09-15",
+      "avatar": "NS",
+      "tag": "Modular Kitchen & Wardrobes",
+      "title": "German acrylic finish with flawless soft-close hardware",
+      "text": "Our modular acrylic kitchen with Blum fittings was delivered right on time. The 3D render matched the finished kitchen down to the exact LED warm-white lighting tone.",
+      "featured": true,
+      "published": true
+    },
+    {
+      "id": 3,
+      "name": "Dr. Asadullah Khan",
+      "company": "Apex Dental & Wellness Clinic",
+      "location": "Gulberg III, Lahore",
+      "rating": 5,
+      "date": "2026-08-20",
+      "avatar": "AK",
+      "tag": "Commercial Fit-Out",
+      "title": "Professional medical clinic design & acoustic panelling",
+      "text": "The Woodex team transformed our 3,000 sq ft clinic with soundproof executive doors, acoustic wall panelling, and a striking modern reception desk. Outstanding durability and finish.",
+      "featured": true,
+      "published": true
+    },
+    {
+      "id": 4,
+      "name": "Tariq Mahmood",
+      "company": "Mahmood Textiles",
+      "location": "Main Boulevard, Gulberg, Lahore",
+      "rating": 5,
+      "date": "2026-08-04",
+      "avatar": "TM",
+      "tag": "Corporate Boardroom",
+      "title": "Solid wood boardroom table & executive interior",
+      "text": "We commissioned a custom solid wood 18-seater boardroom table and director suite. The joinery precision and wood polish quality exceeded our highest expectations.",
+      "featured": true,
+      "published": true
+    },
+    {
+      "id": 5,
+      "name": "Ayesha Farooq",
+      "company": "Lake City Villa",
+      "location": "Lake City, Lahore",
+      "rating": 5,
+      "date": "2026-07-19",
+      "avatar": "AF",
+      "tag": "Kitchen & Island",
+      "title": "Modern matte charcoal kitchen island",
+      "text": "The team was courteous, organized, and delivered impeccable finishing. Every visitor compliments our kitchen island and custom breakfast counter.",
+      "featured": false,
+      "published": true
+    },
+    {
+      "id": 6,
+      "name": "Zubair Hashmi",
+      "company": "Hashmi Architects",
+      "location": "Model Town, Lahore",
+      "rating": 5,
+      "date": "2026-07-02",
+      "avatar": "ZH",
+      "tag": "Walk-in Closet",
+      "title": "Architect-grade glass walk-in wardrobe",
+      "text": "As an architect, I am very particular about tolerances. Woodex demonstrated flawless edge banding, glass door framing, and concealed sensor lighting.",
+      "featured": false,
+      "published": true
+    }
+  ],
+  "social": {
+    "google": {
+      "connected": true,
+      "account": "woodexinterior.pk@gmail.com",
+      "name": "Google Workspace & Analytics",
+      "services": [
+        "Google Analytics 4 (GA4)",
+        "Google Search Console",
+        "Google Business Profile"
+      ],
+      "last_sync": "2026-10-09 09:30:00"
+    },
+    "meta": {
+      "connected": true,
+      "account": "Woodex Interior Pakistan",
+      "name": "Meta / Facebook Business",
+      "services": [
+        "Facebook Page",
+        "Lead Generation Ads",
+        "Messenger Sync"
+      ],
+      "last_sync": "2026-10-09 09:00:00"
+    },
+    "instagram": {
+      "connected": true,
+      "account": "@woodexinterior",
+      "name": "Instagram Professional",
+      "services": [
+        "Instagram Direct Chat",
+        "Feed Showcase",
+        "Story Highlights"
+      ],
+      "last_sync": "2026-10-09 08:45:00"
+    },
+    "whatsapp": {
+      "connected": true,
+      "account": "+92 300 4455667",
+      "name": "WhatsApp Cloud API",
+      "services": [
+        "Direct wa.me link",
+        "Lead alerts",
+        "Quick template launcher"
+      ],
+      "last_sync": "2026-10-09 09:40:00"
+    },
+    "linkedin": {
+      "connected": true,
+      "account": "Woodex Interior Studio",
+      "name": "LinkedIn Business Page",
+      "services": [
+        "Corporate Commercial Inquiries",
+        "Recruitment & Talent"
+      ],
+      "last_sync": "2026-10-08 18:00:00"
+    },
+    "tiktok": {
+      "connected": false,
+      "account": "",
+      "name": "TikTok Creator Hub",
+      "services": [
+        "Site Videos & Reels"
+      ],
+      "last_sync": ""
+    },
+    "youtube": {
+      "connected": true,
+      "account": "Woodex Interior Architecture",
+      "name": "YouTube Channel",
+      "services": [
+        "3D Walkthrough Tours",
+        "Project Videos"
+      ],
+      "last_sync": "2026-10-05 12:00:00"
+    }
   }
- ],
- "seqQ": 1,
- "invoices": [],
- "seqI": 0,
- "chats": [],
- "chatMsgs": [],
- "seqCh": 0,
- "seqCm": 0,
- "aiEv": [],
- "aiUn": [],
- "seqUn": 0
 }
