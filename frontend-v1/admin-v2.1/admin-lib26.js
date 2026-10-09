@@ -1,17 +1,17 @@
 /* Woodex Admin — Master Section Library (70 Templates Suite)
-   Preline Ocean Pure Styling, Scaled Iframe Previews, 1-Click Copy HTML, Builder Insertion, and JSON Starter Pack */
+   Preline Ocean Pure Styling, Scaled Iframe Previews, Responsive Device Switcher,
+   1-Click Copy HTML, Builder Insertion, and JSON Starter Pack Engine */
 (function () {
   "use strict";
   var W = window.WXA; if (!W) return;
   var esc = W.esc, ic = W.ic, bapi = W.bapi, toast = W.toast, $ = W.$, $$ = W.$$;
-  var curCat = "All", curQ = "", curSkin = "", activeTab = "templates";
+  var curCat = "All", curQ = "", curSkin = "";
 
   var SKINS = [["", "Original"], ["white", "White"], ["cream", "Cream"], ["navy", "Navy"]];
   var CSS = '<link rel="stylesheet" href="/assets/v1-p21.css"><link rel="stylesheet" href="/assets/theme.css"><link rel="stylesheet" href="/assets/site-p21.css"><style>html,body{margin:0;overflow:hidden;pointer-events:none;background:#fff}.t6-hero{min-height:720px}</style>';
 
   function loadTemplates() {
     return new Promise(function (resolve) {
-      var all = [];
       var p1 = window.WX_TEMPLATES ? Promise.resolve(window.WX_TEMPLATES) : new Promise(function (ok) {
         var s = document.createElement("script"); s.src = "/builder/templates-v26.js";
         s.onload = function () { ok(window.WX_TEMPLATES || []); };
@@ -28,16 +28,27 @@
       Promise.all([p1, p2]).then(function (results) {
         var t26 = results[0] || [];
         var blk = (results[1] || []).map(function (b) {
+          var autoCat = "Services";
+          var id = b.id || "";
+          if (/hero|banner/i.test(id + " " + b.name)) autoCat = "Hero";
+          else if (/kitchen|cabinet/i.test(id + " " + b.name)) autoCat = "Kitchens";
+          else if (/wardrobe|closet/i.test(id + " " + b.name)) autoCat = "Wardrobes";
+          else if (/office|boardroom|commercial/i.test(id + " " + b.name)) autoCat = "Commercial";
+          else if (/cta|action/i.test(id + " " + b.name)) autoCat = "CTA";
+          else if (/split|card|grid|feature/i.test(id + " " + b.name)) autoCat = "Features";
+          else if (/quote|testi/i.test(id + " " + b.name)) autoCat = "Testimonials";
+          else if (/faq|accordion/i.test(id + " " + b.name)) autoCat = "FAQ";
+          else if (/stat|counter|number/i.test(id + " " + b.name)) autoCat = "Stats";
+
           return {
             id: b.id || "blk-" + Math.random().toString(36).slice(2, 7),
             name: b.name || "Block",
-            cat: b.cat || (b.id && (b.id.indexOf("cta") >= 0 ? "CTA" : b.id.indexOf("split") >= 0 ? "Features" : b.id.indexOf("faq") >= 0 ? "FAQ" : "Services")) || "Services",
+            cat: b.cat || autoCat,
             icon: b.icon || "🧱",
             html: b.html || ""
           };
         });
-        all = t26.concat(blk);
-        resolve(all);
+        resolve(t26.concat(blk));
       });
     });
   }
@@ -78,11 +89,17 @@
   function previewModal(t, html) {
     var m = document.createElement("div");
     m.className = "modal-overlay";
-    m.innerHTML = '<div class="modal-card" style="max-width:1200px;width:95vw;height:90vh;display:flex;flex-direction:column;padding:0;overflow:hidden;background:#0b0d13;border:1px solid #20242f">' +
-      '<div style="padding:14px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #1e2430;background:#111318">' +
+    m.innerHTML = '<div class="modal-card" style="max-width:1280px;width:96vw;height:92vh;display:flex;flex-direction:column;padding:0;overflow:hidden;background:#0b0d13;border:1px solid #20242f;box-shadow:0 24px 80px rgba(0,0,0,0.85)">' +
+      '<div style="padding:12px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #1e2430;background:#111318;flex-wrap:wrap;gap:10px">' +
         '<div style="display:flex;align-items:center;gap:10px">' +
-          '<span style="font-size:20px">' + esc(t.icon || "🧱") + '</span>' +
+          '<span style="font-size:22px">' + esc(t.icon || "🧱") + '</span>' +
           '<div><b style="color:#f9fafb;font-size:15px">' + esc(t.name) + '</b><small style="display:block;color:#00d3f2;font-size:11.5px">' + esc(t.cat) + '</small></div>' +
+        '</div>' +
+        '<!-- Device Breakpoint Switcher -->' +
+        '<div class="seg" id="pm-dev-bar" style="background:#0b0d13;border-color:#1e2430">' +
+          '<button class="on" data-w="100%">' + ic("monitor") + 'Desktop</button>' +
+          '<button data-w="768px">' + ic("smartphone") + 'Tablet</button>' +
+          '<button data-w="375px">' + ic("smartphone") + 'Mobile</button>' +
         '</div>' +
         '<div style="display:flex;align-items:center;gap:8px">' +
           '<button class="btn sm" id="pm-copy">' + ic("copy") + 'Copy HTML</button>' +
@@ -90,8 +107,10 @@
           '<button class="icon-btn" id="pm-x">' + ic("x") + '</button>' +
         '</div>' +
       '</div>' +
-      '<div style="flex:1;position:relative;background:#fff">' +
-        '<iframe style="width:100%;height:100%;border:0" srcdoc="' + esc(frameDoc(html)) + '"></iframe>' +
+      '<div style="flex:1;position:relative;background:#1e2430;display:flex;justify-content:center;align-items:stretch;overflow:hidden;padding:12px">' +
+        '<div id="pm-frame-wrap" style="width:100%;height:100%;transition:width 0.25s ease;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 8px 30px rgba(0,0,0,0.5)">' +
+          '<iframe id="pm-frame" style="width:100%;height:100%;border:0" srcdoc="' + esc(frameDoc(html)) + '"></iframe>' +
+        '</div>' +
       '</div>' +
     '</div>';
     document.body.appendChild(m);
@@ -100,6 +119,15 @@
     m.querySelector("#pm-x").onclick = close;
     m.onclick = function (e) { if (e.target === m) close(); };
     m.querySelector("#pm-copy").onclick = function () { copyText(html, "Section HTML copied!"); };
+
+    // Device switcher listeners
+    $$("#pm-dev-bar button").forEach(function (btn) {
+      btn.onclick = function () {
+        $$("#pm-dev-bar button").forEach(function (b) { b.classList.remove("on"); });
+        btn.classList.add("on");
+        $("#pm-frame-wrap").style.width = btn.dataset.w;
+      };
+    });
   }
 
   W.VIEWS.library = function (el) {
@@ -178,7 +206,7 @@
               '</div>' +
               '<span class="badge" style="background:#1e293b;color:#38bdf8;font-size:11px;flex:none">' + esc(t.cat || "Section") + '</span>' +
             '</div>' +
-            '<div class="lib-preview-box" data-idx="' + i + '" style="position:relative;height:220px;background:#fff;cursor:pointer;overflow:hidden" title="Click to view full preview">' +
+            '<div class="lib-preview-box" data-idx="' + i + '" style="position:relative;height:220px;background:#fff;cursor:pointer;overflow:hidden" title="Click to view responsive preview">' +
               '<iframe loading="lazy" tabindex="-1" style="width:312.5%;height:687px;border:0;transform:scale(0.32);transform-origin:0 0;pointer-events:none" srcdoc="' + esc(frameDoc(skinned)) + '"></iframe>' +
             '</div>' +
             '<div style="padding:10px 12px;border-top:1px solid #1a1e27;display:flex;gap:8px;align-items:center;background:#111318;margin-top:auto">' +
