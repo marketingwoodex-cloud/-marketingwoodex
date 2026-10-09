@@ -21,9 +21,9 @@
     ".cx-emo button{border:0;background:none;font-size:19px;width:32px;height:32px;border-radius:8px;cursor:pointer}.cx-emo button:hover{background:var(--bg,#f4f4f5)}" +
     ".cx-typing{font-size:12px;color:var(--mut,#6b7280);padding:2px 16px 6px;min-height:20px;font-style:italic}" +
     "#cx-btn{position:relative}#cx-btn .nt-n{background:#16a34a}" +
-    "#cx-dock{position:fixed;right:20px;bottom:20px;width:370px;max-width:calc(100vw - 24px);height:520px;max-height:calc(100vh - 90px);z-index:900;background:var(--card,#fff);border:1px solid var(--line,#e5e7eb);border-radius:16px;box-shadow:0 24px 60px rgba(12,22,40,.25);display:flex;flex-direction:column;overflow:hidden;animation:cxIn .18s ease-out}" +
+    "#cx-dock{position:fixed;right:20px;bottom:20px;width:380px;max-width:calc(100vw - 24px);height:540px;max-height:calc(100vh - 90px);z-index:900;background:#111318;border:1px solid #20242f;border-radius:16px;box-shadow:0 24px 60px rgba(0,0,0,0.6);display:flex;flex-direction:column;overflow:hidden;animation:cxIn .18s ease-out}" +
     "@keyframes cxIn{from{transform:translateY(16px);opacity:0}to{transform:none;opacity:1}}" +
-    "#cx-dock[hidden]{display:none}.cx-h{display:flex;align-items:center;gap:8px;padding:10px 12px;background:#0c1628;color:#fff}.cx-h b{font-size:14px;display:block}.cx-h small{font-size:11.5px;opacity:.75}.cx-h .sp{flex:1;min-width:0}" +
+    "#cx-dock[hidden]{display:none}.cx-h{display:flex;align-items:center;gap:8px;padding:12px 14px;background:#0a0c10;border-bottom:1px solid #1a1e27;color:#fff}.cx-h b{font-size:14px;display:block}.cx-h small{font-size:11.5px;opacity:.75}.cx-h .sp{flex:1;min-width:0}" +
     ".cx-h button,.cx-h a{background:rgba(255,255,255,.1);border:0;color:#fff;width:30px;height:30px;border-radius:8px;display:grid;place-items:center;cursor:pointer;text-decoration:none;font-size:16px;line-height:1}.cx-h button:hover,.cx-h a:hover{background:rgba(255,255,255,.2)}.cx-h svg{width:16px;height:16px}" +
     ".cx-av{width:32px;height:32px;border-radius:50%;background:#b8956a;color:#0c1628;display:grid;place-items:center;font-weight:700;font-size:13px;flex:none}" +
     "#cx-dock .lc-msgs{padding:12px}#cx-dock .lm{max-width:84%;font-size:13.5px}#cx-dock .lc-in{padding:8px;gap:6px}#cx-dock .lc-in textarea{min-height:40px}#cx-dock .lc-in .btn.pri{padding:0 12px}" +
@@ -60,6 +60,10 @@
     var t = document.createElement("div"); t.className = "cx-tools";
     t.innerHTML = '<button type="button" class="btn ghost" data-cx="emo" title="Emoji">🙂</button><button type="button" class="btn ghost" data-cx="file" title="Send a photo or PDF">' + ic("paperclip") + '</button><button type="button" class="btn ghost" data-cx="rec" title="Record a voice note">' + ic("mic") + "</button>";
     form.insertBefore(t, ta); W.fillIcons && W.fillIcons(t);
+    // P39 Phase 5: AI-drafted reply for staff to edit before sending
+    var sg = document.createElement("button"); sg.type = "button"; sg.className = "btn ghost"; sg.title = "Suggest a reply (AI draft — you can edit before sending)"; sg.textContent = "✨ Suggest"; sg.style.whiteSpace = "nowrap"; t.appendChild(sg);
+    sg.onclick = function () { var id = getId(); if (!id) return; sg.disabled = true; sg.textContent = "✨ Writing…";
+      api("chat_suggest", { id: id }).then(function (r) { sg.disabled = false; sg.textContent = "✨ Suggest"; if (!r.ok) return toast(r.error || "Could not suggest a reply", true); ta.value = r.text || ""; ta.focus(); ta.dispatchEvent(new Event("input")); }); };
     var fi = document.createElement("input"); fi.type = "file"; fi.accept = "image/jpeg,image/png,image/webp,image/gif,application/pdf"; fi.hidden = true; form.appendChild(fi);
     var send = function (blob, name, voice) {
       var id = getId(); if (!id) return;
@@ -105,8 +109,8 @@
     return d;
   }
   function stop() { clearInterval(D.timer); D.timer = null; }
-  function hide() { var d = dockEl(); d.hidden = true; $("#cx-bub").hidden = true; stop(); if (D.id) D.hiddenFor[D.id] = D.lastSeen || 0; }
-  function minimise() { var d = dockEl(); d.hidden = true; stop(); if (D.id) D.hiddenFor[D.id] = D.lastSeen || 0; } // P19 B2: minimise = hide; reopen from the top-bar chat icon
+  function hide() { var d = dockEl(); d.hidden = true; var b = $("#cx-bub"); if (b) b.hidden = false; stop(); if (D.id) D.hiddenFor[D.id] = D.lastSeen || 0; }
+  function minimise() { var d = dockEl(); d.hidden = true; var b = $("#cx-bub"); if (b) b.hidden = false; stop(); if (D.id) D.hiddenFor[D.id] = D.lastSeen || 0; } // P19 B2: minimise = hide; reopen from the top-bar chat icon
   function head(title, sub, av, extra) {
     return '<div class="cx-h"><span class="cx-av">' + esc(av) + '</span><span class="sp"><b>' + esc(title) + "</b><small>" + esc(sub) + "</small></span>" + (extra || "") +
       '<button type="button" data-d="min" title="Minimise">–</button><button type="button" data-d="x" title="Hide (opens again on the next message)">×</button></div>';

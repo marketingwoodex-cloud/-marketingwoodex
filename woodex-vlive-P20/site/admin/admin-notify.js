@@ -10,12 +10,12 @@
   document.head.appendChild(css);
 
   W.VIEWS.updates = function (el) {
-    el.innerHTML = W.head("Client updates", "Client updates", '<button class="btn pri" id="nt-save">' + ic("check") + "Save</button>") + '<div class="card" style="padding:18px">Loading…</div>';
+    el.innerHTML = W.head("Client updates", "Client updates", '<button class="btn pri" id="nt-save">' + ic("check") + "Save</button>") + '<div class="card" id="ld-card" style="padding:18px">Loading…</div>';
     W.fillIcons(el);
     api("notify_get").then(function (r) {
-      if (!r.ok) { el.querySelector(".card").textContent = r.error; return; }
+      if (!r.ok) { (el.querySelector("#ld-card") || el.querySelector(".card")).textContent = r.error; return; }
       var c = r.cfg;
-      el.querySelector(".card").outerHTML =
+      (el.querySelector("#ld-card") || el.querySelector(".card")).outerHTML =
         ((!r.waReady || !r.emailReady) ? '<div class="banner" style="margin-bottom:12px">' + (!r.waReady ? "WhatsApp is not connected. " : "") + (!r.emailReady ? "Email (SMTP) is not set up. " : "") + 'Add them in <a href="#/settings">Settings → Integrations</a>.</div>' : "") +
         '<div class="card" style="padding:18px;margin-bottom:16px"><p style="margin-top:0">Clients get a message automatically at these steps, in <b>English + Urdu</b>. Each step is sent once per project.</p>' +
         "<label class='check'><input type='checkbox' id='nt-wa'" + (c.wa ? " checked" : "") + "> Send by WhatsApp</label><label class='check'><input type='checkbox' id='nt-em'" + (c.email ? " checked" : "") + "> Send by email</label>" +

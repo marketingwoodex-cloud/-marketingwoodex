@@ -5,7 +5,7 @@
   var W = window.WXA, S = W.S, bapi = W.bapi, esc = W.esc, ic = W.ic, $ = W.$, $$ = W.$$, toast = W.toast, modal = W.modal, closeModal = W.closeModal, ago = W.ago, head = W.head;
   var CATS = ["Hero", "Services", "Features", "Projects", "Testimonials", "CTA", "FAQ", "Contact", "Content", "Footer", "Custom"];
   var STARTER = { cta: "CTA", split: "Content", "split-rev": "Content", cards: "Features", stats: "Features", process: "Services", gallery: "Projects", quotes: "Testimonials", faq: "FAQ", prose: "Content", logos: "Content", trust: "Features" };
-  var CSSLINKS = '<link rel="stylesheet" href="/assets/site.css"><link rel="stylesheet" href="/assets/v1.css"><link rel="stylesheet" href="/assets/theme.css">';
+  var CSSLINKS = '<link rel="stylesheet" href="/assets/site-p21.css"><link rel="stylesheet" href="/assets/v1-p21.css"><link rel="stylesheet" href="/assets/theme.css">';
 
   function previewDoc(html) {
     var p = window.WXCSS ? WXCSS.split(html) : { styles: {}, html: html };
@@ -170,7 +170,7 @@
   };
 
   // =========================================================== Phase 5: v26 templates + safe import with preview
-  var CSSL = '<link rel="stylesheet" href="/assets/site.css"><link rel="stylesheet" href="/assets/v1.css"><link rel="stylesheet" href="/assets/theme.css"><style>html,body{margin:0;overflow:hidden;pointer-events:none}.t6-hero{min-height:720px}</style>';
+  var CSSL = '<link rel="stylesheet" href="/assets/site-p21.css"><link rel="stylesheet" href="/assets/v1-p21.css"><link rel="stylesheet" href="/assets/theme.css"><style>html,body{margin:0;overflow:hidden;pointer-events:none}.t6-hero{min-height:720px}</style>';
   function thumb(html, h) { h = h || 170; var d = "<!doctype html><html><head><meta charset='utf-8'>" + CSSL + "</head><body><main>" + html + "</main></body></html>"; return "<div style='position:relative;height:" + h + "px;overflow:hidden;border-radius:10px;background:#f4efe7'><iframe loading='lazy' tabindex='-1' srcdoc=\"" + d.replace(/&/g, "&amp;").replace(/"/g, "&quot;") + "\" style='position:absolute;inset:0 auto auto 0;width:1280px;height:" + h * 4 + "px;border:0;transform:scale(.25);transform-origin:0 0'></iframe></div>"; }
   function clean(html) { var t = document.createElement("template"), n = 0; t.innerHTML = html; t.content.querySelectorAll("script,object,embed,base,meta,link,iframe[srcdoc]").forEach(function (x) { x.remove(); n++; }); t.content.querySelectorAll("*").forEach(function (x) { Array.prototype.slice.call(x.attributes).forEach(function (a) { if (/^on/i.test(a.name) || (/^(href|src|action|formaction)$/i.test(a.name) && /^\s*(javascript|vbscript|data:text)/i.test(a.value))) { x.removeAttribute(a.name); n++; } }); }); return { html: t.innerHTML.trim(), n: n }; }
   function loadTemplates() { return window.WX_TEMPLATES ? Promise.resolve(window.WX_TEMPLATES) : new Promise(function (ok, no) { var sc = document.createElement("script"); sc.src = "/builder/templates-v26.js"; sc.onload = function () { ok(window.WX_TEMPLATES || []); }; sc.onerror = no; document.head.appendChild(sc); }); }

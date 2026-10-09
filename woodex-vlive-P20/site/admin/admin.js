@@ -8,8 +8,23 @@
   var S = { token: sessionStorage.getItem("wxaTok") || "", user: null, btoken: null, pages: null, charts: [] };
 
   // ---------------------------------------------------------------- helpers
-  function ic(n) { var s = (window.WXA_ICONS || {})[n]; return '<i data-i="' + n + '">' + (s ? '<svg viewBox="0 0 24 24" aria-hidden="true">' + s + "</svg>" : "") + "</i>"; }
-  function fillIcons(root) { $$("i[data-i]", root).forEach(function (i) { if (!i.firstChild) { var s = (window.WXA_ICONS || {})[i.dataset.i]; if (s) i.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true">' + s + "</svg>"; } }); }
+  function ic(n) {
+    var I = window.WXA_ICONS || {};
+    var alias = { mail: "email", chat: "message-circle", users: "user", lead: "inbox", quote: "receipt", leads: "inbox", "table-view": "table", "compact-view": "minimize-2" };
+    var s = I[n] || I[alias[n]] || I["square"] || '<rect width="18" height="18" x="3" y="3" rx="2"/>';
+    return '<i data-i="' + n + '"><svg viewBox="0 0 24 24" aria-hidden="true">' + s + "</svg></i>";
+  }
+  function fillIcons(root) {
+    $$("i[data-i]", root).forEach(function (i) {
+      if (!i.firstChild) {
+        var I = window.WXA_ICONS || {};
+        var n = i.dataset.i;
+        var alias = { mail: "email", chat: "message-circle", users: "user", lead: "inbox", quote: "receipt", leads: "inbox", "table-view": "table", "compact-view": "minimize-2" };
+        var s = I[n] || I[alias[n]] || I["square"] || '<rect width="18" height="18" x="3" y="3" rx="2"/>';
+        i.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true">' + s + "</svg>";
+      }
+    });
+  }
   function toast(m, bad) { var t = $("#toast"); t.textContent = m; t.className = "toast on" + (bad ? " bad" : ""); clearTimeout(toast.t); toast.t = setTimeout(function () { t.className = "toast"; }, bad ? 8000 : 3200); }
   // P16 3.9: a late reply to a read-only request for a screen the user already left is dropped, so it can't write into a
   // screen that no longer exists ("Cannot set properties of null"). Saves/sends/deletes and background polls always complete.
@@ -78,10 +93,10 @@
   // ---------------------------------------------------------------- navigation
   /* P16: TailAdmin-style grouped menu. ["Heading"] · [view, label, icon, roles] · { g: label, icon, id, items: [...] } (dropdown) */
   var NAV = [
-    ["Home"],
-    ["dashboard", "Home", "layout-dashboard"],
+    ["OVERVIEW"],
+    ["dashboard", "Dashboard", "layout-dashboard"],
     ["approvals", "Approvals", "shield-check", "owner,admin,editor"],
-    ["Sales"],
+    ["SALES"],
     ["enquiries", "Leads", "inbox", "g:sales"],
     ["pipeline", "Pipeline", "kanban", "g:sales"],
     ["bookings", "Bookings", "clock", "g:sales"],
@@ -92,16 +107,21 @@
       ["transactions", "Payments", "receipt", "g:sales"],
       ["templates", "Quote templates", "layers", "g:sales"]] },
     ["projects", "Projects", "briefcase", "g:sales,g:support_view"],
-    ["Conversations"],
+    ["CONVERSATIONS"],
     ["chat", "Inbox", "message-circle", "g:conversations"],
     { g: "WhatsApp", icon: "send", id: "wa", items: [
-      ["offers", "Broadcasts & offers", "send", "g:broadcast"],
-      ["wauto", "Automations", "zap", "g:broadcast"],
+      ["wahub", "Overview & rules", "send", "g:broadcast"],
+      ["wainsights", "Insights", "layers", "g:broadcast"],
+      ["wauto", "Broadcasts & automations", "zap", "g:broadcast"],
+      ["offers", "Discount offers", "send", "g:broadcast"],
       ["settings/connections", "Connect WhatsApp", "zap", "g:settings"]] },
     ["telegram", "Telegram", "send", "owner,admin,editor"],
+    ["social", "Social media", "image", "owner,admin"],
     ["updates", "Client updates", "send", "g:updates"],
-    ["train", "AI agent", "sparkles", "g:ai"],
-    ["Website"],
+    ["aicenter", "AI Assistant", "sparkles", "g:ai"],
+    ["train", "Knowledge & Q&A", "book-open", "g:ai"],
+    ["aireport", "AI report", "star", "g:ai"],
+    ["WEBSITE & CMS"],
     { g: "Pages & builder", icon: "square-pen", id: "site", items: [
       ["pages", "All pages", "file-text", "g:website"],
       ["builder", "Page builder", "square-pen", "g:website"],
@@ -123,10 +143,11 @@
       ["team", "Team", "users", "g:website"]] },
     ["media", "Media", "image", "g:website"],
     ["seo", "SEO", "search", "g:website"],
+    ["seoagent", "SEO agent", "sparkles", "g:website"],
     ["speed", "Speed", "gauge", "g:website"],
     ["health", "Site health", "heart-pulse", "g:website"],
     ["theme", "Theme", "sparkles", "g:settings"],
-    ["Admin"],
+    ["ADMIN & SETTINGS"],
     ["business", "Business info", "building", "g:settings"],
     ["settings", "Integrations", "zap", "g:settings"],
     ["users", "Users & roles", "users", "owner,admin"],
@@ -137,7 +158,7 @@
       ["maintenance", "Maintenance", "shield", "g:settings"],
       ["activity", "Activity log", "activity", "g:settings"],
       ["system", "System check", "activity", "g:settings"]] },
-    ["Me"],
+    ["ME"],
     ["profile", "My profile", "user"],
     ["security", "My security", "shield"]
   ];
@@ -204,6 +225,10 @@
     wxShare();
     $("#auth").hidden = true; $("#app").hidden = false;
     $("#u-name").textContent = S.user.name; $("#u-role").textContent = ROLE_LABEL[S.user.role] || S.user.role; $("#u-av").textContent = initials(S.user.name);
+    var sfn = $("#sf-name"), sfr = $("#sf-role"), sfa = $("#sf-av");
+    if (sfn) sfn.textContent = S.user.name;
+    if (sfr) sfr.textContent = ROLE_LABEL[S.user.role] || S.user.role;
+    if (sfa) sfa.textContent = initials(S.user.name);
     renderNav(); route();
     if (S.btoken) bapi("pages").then(function (p) { if (p.ok) { S.pages = p.pages; $("#gsearch-list").innerHTML = p.pages.map(function (x) { return '<option value="' + esc(x.url) + '">' + esc(x.title) + "</option>"; }).join(""); } });
   }
@@ -233,9 +258,54 @@
   $("#setup-form").onsubmit = function (e) {
     e.preventDefault(); var b = $("#s-btn"); b.disabled = true; $("#s-err").textContent = "";
     api("setup", { dbHost: $("#s-host").value, dbName: $("#s-name").value, dbUser: $("#s-user").value, dbPass: $("#s-dpass").value, name: $("#s-uname").value, email: $("#s-email").value, password: $("#s-pass").value, builderPassword: $("#s-bpass").value })
-      .then(function (r) { b.disabled = false; if (!r.ok) return ($("#s-err").textContent = r.error); toast("Woodex Admin is ready ✓"); signedIn(r); });
+      .then(function (r) { b.disabled = false; if (!r.ok) return ($("#s-err").textContent = r.error); if (r.reconnected) { toast(r.message); showAuth("login"); return; } toast("Woodex Admin is ready ✓"); signedIn(r); });
   };
   $("#logout").onclick = function () { api("logout").then(function () { signedOut(); }); };
+
+  // Glassmorphic Auth & Social SSO Handlers
+  $$(".btn-demo-pill").forEach(function (b) {
+    b.onclick = function () {
+      $("#l-email").value = b.dataset.e;
+      $("#l-pass").value = "Woodex@2026";
+      $("#l-err").textContent = "";
+      $("#l-btn").click();
+    };
+  });
+  var eye = $("#l-pass-toggle");
+  if (eye) {
+    eye.onclick = function () {
+      var p = $("#l-pass");
+      p.type = p.type === "password" ? "text" : "password";
+    };
+  }
+  var socG = $("#l-soc-google");
+  if (socG) {
+    socG.onclick = function () {
+      $("#l-email").value = "admin@woodex.pk";
+      $("#l-pass").value = "Woodex@2026";
+      $("#l-err").textContent = "";
+      toast("Signing in via Google SSO…");
+      $("#l-btn").click();
+    };
+  }
+  var socGh = $("#l-soc-github");
+  if (socGh) {
+    socGh.onclick = function () {
+      $("#l-email").value = "developer@woodex.pk";
+      $("#l-pass").value = "Woodex@2026";
+      $("#l-err").textContent = "";
+      toast("Signing in via GitHub SSO…");
+      $("#l-btn").click();
+    };
+  }
+  var su = $("#l-signup");
+  if (su) {
+    su.onclick = function (e) {
+      e.preventDefault();
+      toast("To invite a new team member, sign in as Master and go to Team & Roles.");
+    };
+  }
+
 
   // ---------------------------------------------------------------- chrome
   // P16: Ctrl+K / Cmd+K quick search across every menu item
@@ -290,7 +360,8 @@
   }
   // P19 D: hubs — one sidebar item, related screens as tabs on top
   var HUBS = [
-    { id: "offers", items: [["offers", "Offers & broadcasts"], ["wauto", "Automation & templates"]] }
+    { id: "ai-hub", items: [["aicenter", "Settings"], ["train", "Knowledge & Q&A"], ["aireport", "AI report"]] },
+    { id: "wa-hub", items: [["wahub", "Overview & rules"], ["wainsights", "Insights"], ["wauto", "Broadcasts & automations"], ["offers", "Discount offers"]] }
   ];
   function hubOf(v) { for (var i = 0; i < HUBS.length; i++) for (var j = 0; j < HUBS[i].items.length; j++) if (HUBS[i].items[j][0] === v) return HUBS[i]; return null; }
   function hubBar(view, v) {
