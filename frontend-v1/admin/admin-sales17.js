@@ -30,18 +30,27 @@
 
   // ================================================================ ENQUIRIES TRACKER
     // ================================================================ ENQUIRIES TRACKER (PRELINE PRO V3 HYBRID)
+    // ================================================================ ENQUIRIES TRACKER (PRELINE PRO V3 HYBRID + DYNAMIC STATS + BULK ACTIONS + TABBED DRAWER)
   W.VIEWS.enquiries = function (el, parts) {
     if (parts && parts[0] === "classic") return OLD.enquiries(el, []);
-    var st = S.s17q || (S.s17q = { month: today().slice(0, 7), line: "", who: "", stage: "", q: "", tab: "all" });
+    var st = S.s17q || (S.s17q = { month: today().slice(0, 7), line: "", who: "", stage: "", q: "", tab: "all", compact: false });
     var admin = can("owner,admin");
+    var selectedIds = new Set();
 
     var sparkSvg = function (pts, color) {
       color = color || "#00d3f2";
       return '<svg viewBox="0 0 100 28" class="crm-kpi-spark" preserveAspectRatio="none"><path d="' + pts + '" fill="none" stroke="' + color + '" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path d="' + pts + ' L100,28 L0,28 Z" fill="' + color + '" opacity="0.12"/></svg>';
     };
 
-    var gaugeSvg = function () {
-      return '<svg viewBox="0 0 200 110" style="width:100%;max-width:240px;height:110px"><path d="M 20 100 A 80 80 0 0 1 70 32" fill="none" stroke="#00d3f2" stroke-width="16" stroke-linecap="round"/><path d="M 78 28 A 80 80 0 0 1 125 28" fill="none" stroke="#2563eb" stroke-width="16"/><path d="M 133 32 A 80 80 0 0 1 180 100" fill="none" stroke="#38bdf8" stroke-width="16" stroke-linecap="round"/></svg>';
+    var gaugeSvg = function (pct) {
+      pct = Math.max(0, Math.min(100, +pct || 0));
+      var rot = (pct / 100) * 180;
+      return '<svg viewBox="0 0 200 110" style="width:100%;max-width:240px;height:110px">' +
+        '<path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="#1e293b" stroke-width="16" stroke-linecap="round"/>' +
+        '<path d="M 20 100 A 80 80 0 0 1 70 32" fill="none" stroke="#00d3f2" stroke-width="16" stroke-linecap="round"/>' +
+        '<path d="M 78 28 A 80 80 0 0 1 125 28" fill="none" stroke="#2563eb" stroke-width="16"/>' +
+        '<path d="M 133 32 A 80 80 0 0 1 180 100" fill="none" stroke="#38bdf8" stroke-width="16" stroke-linecap="round"/>' +
+      '</svg>';
     };
 
     var avatarInitial = function (name) {
@@ -51,21 +60,24 @@
     };
 
     el.innerHTML = head("Leads", "Leads",
-        '<a class="btn" href="#/enquiries/classic">' + ic("layers") + 'Classic list</a>' +
-        '<a class="btn" href="#/pipeline">' + ic("kanban") + 'Pipeline</a>' +
+        '<div class="crm-view-switch">' +
+          '<button class="crm-view-btn on" id="crm-v-tbl">' + ic("table") + 'Table</button>' +
+          '<button class="crm-view-btn" id="crm-v-compact" title="Toggle compact row spacing">' + ic("minimize-2") + 'Compact</button>' +
+          '<a class="crm-view-btn" href="#/pipeline">' + ic("kanban") + 'Pipeline</a>' +
+        '</div>' +
         (admin ? '<button class="btn" id="s17-imp">' + ic("upload") + 'Import sheet</button>' : "") +
         '<button class="btn" id="s17-exp">' + ic("download") + 'Export</button>' +
         '<button class="btn pri btn-preline-cyan" id="s17-add">' + ic("plus") + 'Add lead</button>') +
 
-      '<!-- 1. Top Sparkline Metric Cards (Image 2 Match) -->' +
+      '<!-- 1. Top Sparkline Metric Cards (Dynamic Real-Time Calculation) -->' +
       '<div class="crm-p3-top">' +
-        '<div class="crm-kpi-card"><div class="crm-kpi-head"><span class="crm-kpi-lbl">OPEN DEALS</span><span class="crm-kpi-badge up">↗ 37.3% <small>up from 142</small></span></div><div class="crm-kpi-val" id="kpi-open">482</div>' + sparkSvg("M0,20 Q20,16 35,22 T65,8 T85,12 T100,4") + '</div>' +
-        '<div class="crm-kpi-card"><div class="crm-kpi-head"><span class="crm-kpi-lbl">UNTOUCHED DEALS</span><span class="crm-kpi-badge up">↗ 14.5% <small>up from 503</small></span></div><div class="crm-kpi-val" id="kpi-untouched">639</div>' + sparkSvg("M0,24 Q25,20 45,23 T75,14 T90,16 T100,10") + '</div>' +
-        '<div class="crm-kpi-card"><div class="crm-kpi-head"><span class="crm-kpi-lbl">CALLS TODAY</span><span class="crm-kpi-badge down">↘ 4.1% <small>down from 39</small></span></div><div class="crm-kpi-val" id="kpi-calls">36</div>' + sparkSvg("M0,18 Q15,10 35,16 T65,12 T85,18 T100,14", "#38bdf8") + '</div>' +
-        '<div class="crm-kpi-card"><div class="crm-kpi-head"><span class="crm-kpi-lbl">LEADS</span><span class="crm-kpi-badge neutral">0.0% 510</span></div><div class="crm-kpi-val" id="kpi-leads">510</div>' + sparkSvg("M0,16 Q20,24 40,8 T70,18 T85,6 T100,8") + '</div>' +
+        '<div class="crm-kpi-card"><div class="crm-kpi-head"><span class="crm-kpi-lbl">OPEN DEALS</span><span class="crm-kpi-badge up" id="kpi-open-pct">↗ Active</span></div><div class="crm-kpi-val" id="kpi-open">…</div>' + sparkSvg("M0,20 Q20,16 35,22 T65,8 T85,12 T100,4") + '</div>' +
+        '<div class="crm-kpi-card"><div class="crm-kpi-head"><span class="crm-kpi-lbl">UNTOUCHED DEALS</span><span class="crm-kpi-badge neutral" id="kpi-untouched-pct">New leads</span></div><div class="crm-kpi-val" id="kpi-untouched">…</div>' + sparkSvg("M0,24 Q25,20 45,23 T75,14 T90,16 T100,10") + '</div>' +
+        '<div class="crm-kpi-card"><div class="crm-kpi-head"><span class="crm-kpi-lbl">CALLS TODAY</span><span class="crm-kpi-badge up" id="kpi-calls-pct">Scheduled</span></div><div class="crm-kpi-val" id="kpi-calls">…</div>' + sparkSvg("M0,18 Q15,10 35,16 T65,12 T85,18 T100,14", "#38bdf8") + '</div>' +
+        '<div class="crm-kpi-card"><div class="crm-kpi-head"><span class="crm-kpi-lbl">TOTAL LEADS</span><span class="crm-kpi-badge neutral" id="kpi-leads-pct">All Time</span></div><div class="crm-kpi-val" id="kpi-leads">…</div>' + sparkSvg("M0,16 Q20,24 40,8 T70,18 T85,6 T100,8") + '</div>' +
       '</div>' +
 
-      '<!-- 2. Middle 3-Column Glassmorphic Feature Blocks (Image 2 Match) -->' +
+      '<!-- 2. Middle 3-Column Glassmorphic Feature Blocks (Live Computation) -->' +
       '<div class="crm-trio-grid">' +
         '<div class="crm-block-card"><div class="crm-block-h"><h3>Import data</h3><button class="icon-btn" style="opacity:0.6">⋮</button></div>' +
           '<p class="crm-block-sub">See and talk to your users and leads immediately by importing your data into the Preline platform.</p>' +
@@ -78,40 +90,40 @@
         '</div>' +
 
         '<div class="crm-block-card"><div class="crm-block-h"><h3>Lead funnel status</h3><button class="icon-btn" style="opacity:0.6">⋮</button></div>' +
-          '<div style="margin-top:10px">' +
-            '<div class="crm-funnel-row"><div class="crm-funnel-meta"><span><i style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#38bdf8;margin-right:6px"></i>Spam/blocked</span><span style="color:#94a3b8">12 (9.9%)</span></div>' +
-              '<div class="crm-funnel-meta"><span><i style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#00d3f2;margin-right:6px"></i>Valid leads</span><span style="color:#94a3b8">28 (25.6%)</span></div>' +
-              '<div class="crm-funnel-track"><div class="crm-funnel-fill-cyan" style="width:35%"></div><div class="crm-funnel-fill-gray" style="width:65%"></div></div></div>' +
-            '<div class="crm-funnel-row"><div class="crm-funnel-meta"><span><i style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#818cf8;margin-right:6px"></i>Qualified leads</span><span style="color:#94a3b8">38 (29.5%)</span></div>' +
-              '<div class="crm-funnel-meta"><span><i style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#6366f1;margin-right:6px"></i>Cold leads</span><span style="color:#94a3b8">31 (20.5%)</span></div>' +
-              '<div class="crm-funnel-track"><div class="crm-funnel-fill-indigo" style="width:50%"></div><div class="crm-funnel-fill-gray" style="width:50%"></div></div></div>' +
-            '<div class="crm-funnel-row"><div class="crm-funnel-meta"><span><i style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#00d3f2;margin-right:6px"></i>Converted to deal</span><span style="color:#94a3b8">22 (17.0%)</span></div>' +
-              '<div class="crm-funnel-meta"><span><i style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#38bdf8;margin-right:6px"></i>Still in pipeline</span><span style="color:#94a3b8">44 (43.0%)</span></div>' +
-              '<div class="crm-funnel-track"><div class="crm-funnel-fill-cyan" style="width:60%"></div><div class="crm-funnel-fill-gray" style="width:40%"></div></div></div>' +
+          '<div style="margin-top:10px" id="crm-funnel-dyn">' +
+            '<div class="crm-funnel-row"><div class="crm-funnel-meta"><span><i style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#38bdf8;margin-right:6px"></i>Spam/Lost</span><span id="fn-lost-cnt" style="color:#94a3b8">0 (0%)</span></div>' +
+              '<div class="crm-funnel-meta"><span><i style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#00d3f2;margin-right:6px"></i>Valid leads</span><span id="fn-valid-cnt" style="color:#94a3b8">0 (0%)</span></div>' +
+              '<div class="crm-funnel-track"><div id="fn-bar-valid" class="crm-funnel-fill-cyan" style="width:50%"></div><div class="crm-funnel-fill-gray" style="width:50%"></div></div></div>' +
+            '<div class="crm-funnel-row"><div class="crm-funnel-meta"><span><i style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#818cf8;margin-right:6px"></i>Qualified / Visits</span><span id="fn-qual-cnt" style="color:#94a3b8">0 (0%)</span></div>' +
+              '<div class="crm-funnel-meta"><span><i style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#6366f1;margin-right:6px"></i>Cold leads</span><span id="fn-cold-cnt" style="color:#94a3b8">0 (0%)</span></div>' +
+              '<div class="crm-funnel-track"><div id="fn-bar-qual" class="crm-funnel-fill-indigo" style="width:50%"></div><div class="crm-funnel-fill-gray" style="width:50%"></div></div></div>' +
+            '<div class="crm-funnel-row"><div class="crm-funnel-meta"><span><i style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#00d3f2;margin-right:6px"></i>Converted to deal</span><span id="fn-won-cnt" style="color:#94a3b8">0 (0%)</span></div>' +
+              '<div class="crm-funnel-meta"><span><i style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#38bdf8;margin-right:6px"></i>Still in pipeline</span><span id="fn-pipe-cnt" style="color:#94a3b8">0 (0%)</span></div>' +
+              '<div class="crm-funnel-track"><div id="fn-bar-won" class="crm-funnel-fill-cyan" style="width:50%"></div><div class="crm-funnel-fill-gray" style="width:50%"></div></div></div>' +
           '</div>' +
-          '<small style="color:var(--mut);font-size:12px;margin-top:auto">High cold lead count may indicate a need to adjust targeting or messaging.</small>' +
+          '<small style="color:var(--mut);font-size:12px;margin-top:auto" id="fn-summary-lbl">Conversion tracking active.</small>' +
         '</div>' +
 
         '<div class="crm-block-card"><div class="crm-block-h"><h3>Lead nurturing &amp; filtering</h3><button class="icon-btn" style="opacity:0.6">⋮</button></div>' +
-          '<div style="display:flex;align-items:baseline;gap:8px;margin-top:4px"><span style="font-size:30px;font-weight:800;color:#f3f4f6">44%</span><span class="crm-kpi-badge down">↘ down from 56.8%</span></div>' +
-          '<div class="crm-gauge-wrap">' + gaugeSvg() + '</div>' +
+          '<div style="display:flex;align-items:baseline;gap:8px;margin-top:4px"><span id="crm-nurture-val" style="font-size:30px;font-weight:800;color:#f3f4f6">0%</span><span class="crm-kpi-badge up" id="crm-nurture-badge">↗ Active rate</span></div>' +
+          '<div class="crm-gauge-wrap" id="crm-gauge-box">' + gaugeSvg(0) + '</div>' +
           '<div class="crm-gauge-legend">' +
-            '<div class="crm-leg-item"><span class="crm-leg-dot" style="background:#00d3f2"></span><div><div class="crm-leg-title">47</div><div class="crm-leg-desc">Nurtured successfully</div></div></div>' +
-            '<div class="crm-leg-item"><span class="crm-leg-dot" style="background:#2563eb"></span><div><div class="crm-leg-title">23</div><div class="crm-leg-desc">Sent to sales review</div></div></div>' +
-            '<div class="crm-leg-item"><span class="crm-leg-dot" style="background:#475569"></span><div><div class="crm-leg-title">30</div><div class="crm-leg-desc">Blocked</div></div></div>' +
-            '<div class="crm-leg-item"><span class="crm-leg-dot" style="background:#94a3b8"></span><div><div class="crm-leg-title">30</div><div class="crm-leg-desc">Disqualified by team</div></div></div>' +
+            '<div class="crm-leg-item"><span class="crm-leg-dot" style="background:#00d3f2"></span><div><div class="crm-leg-title" id="crm-nurt-won">0</div><div class="crm-leg-desc">Won / Closed</div></div></div>' +
+            '<div class="crm-leg-item"><span class="crm-leg-dot" style="background:#2563eb"></span><div><div class="crm-leg-title" id="crm-nurt-rev">0</div><div class="crm-leg-desc">Proposal / Review</div></div></div>' +
+            '<div class="crm-leg-item"><span class="crm-leg-dot" style="background:#475569"></span><div><div class="crm-leg-title" id="crm-nurt-lost">0</div><div class="crm-leg-desc">Lost / Dropped</div></div></div>' +
+            '<div class="crm-leg-item"><span class="crm-leg-dot" style="background:#94a3b8"></span><div><div class="crm-leg-title" id="crm-nurt-pipe">0</div><div class="crm-leg-desc">Active in pipeline</div></div></div>' +
           '</div>' +
         '</div>' +
       '</div>' +
 
-      '<!-- 3. Bottom Customers & Leads Table (Image 2 Match) -->' +
+      '<!-- 3. Bottom Customers & Leads Table -->' +
       '<div class="s17-bar"><div class="s17-month"><button class="icon-btn" id="s17-prev" title="Previous month">‹</button><select id="s17-m"></select><button class="icon-btn" id="s17-next" title="Next month">›</button></div>' +
       '<div class="seg" id="s17-lines"></div></div>' +
       '<div class="s17-counters" id="s17-c"></div>' +
 
-      '<div class="preline-tbl-card">' +
+      '<div class="preline-tbl-card" id="crm-tbl-card">' +
         '<div class="preline-tbl-head-bar">' +
-          '<div><h3 style="margin:0;font-size:16px;font-weight:700">New customers</h3><small class="muted" id="s17-count-lbl">2 leads</small></div>' +
+          '<div><h3 style="margin:0;font-size:16px;font-weight:700">New customers</h3><small class="muted" id="s17-count-lbl">0 leads</small></div>' +
           '<div class="preline-tbl-actions">' +
             '<div class="s17-filters" style="border:0;padding:0"><input type="search" id="s17-qs" placeholder="Search name, company, email, phone…" style="min-width:260px">' +
             '<select id="s17-who"></select><select id="s17-stage"></select></div>' +
@@ -119,17 +131,94 @@
           '</div>' +
         '</div>' +
         '<div class="tbl-wrap"><table class="tbl s17-tbl"><thead><tr>' +
-          '<th style="width:32px"><input type="checkbox" style="width:16px;height:16px;accent-color:#00b8db"></th>' +
+          '<th style="width:36px"><input type="checkbox" id="s17-chk-all" style="width:16px;height:16px;accent-color:#00b8db" title="Select all"></th>' +
           '<th>Name</th><th>Company</th><th>Location / Address</th><th>Email</th><th>Phone</th><th>Quotation</th><th>Stage</th><th>Date</th>' +
         '</tr></thead><tbody id="s17-rows"><tr><td colspan="9" class="empty">Loading…</td></tr></tbody></table></div>' +
       '</div>' +
 
+      '<!-- Floating Bulk Action Toolbar -->' +
+      '<div class="crm-bulk-bar" id="crm-bulk-bar">' +
+        '<div class="crm-bulk-count">' + ic("check-circle") + ' <span id="crm-bulk-n">0</span> selected</div>' +
+        '<div class="crm-bulk-actions">' +
+          '<select id="crm-bulk-stage"><option value="">Change stage…</option>' + ORDER.map(function(s){ return '<option value="' + s + '">' + STAGE[s][0] + '</option>'; }).join('') + '</select>' +
+          '<select id="crm-bulk-who"><option value="">Assign to…</option><option value="none">Nobody</option></select>' +
+          '<button class="crm-bulk-btn pri" id="crm-bulk-apply">' + ic("check") + 'Apply</button>' +
+          '<button class="crm-bulk-btn" id="crm-bulk-exp">' + ic("download") + 'Export</button>' +
+          '<button class="crm-bulk-btn" id="crm-bulk-clear">Deselect</button>' +
+        '</div>' +
+      '</div>' +
+
       '<div style="margin-top:20px"><aside class="card s17-fu" id="s17-fu"></aside></div>';
 
-    var stats = null;
+    var updateMetrics = function () {
+      var all = C.leads || [];
+      var openList = all.filter(open);
+      var untouched = all.filter(function (l) { return !l.read || !l.notes || !l.notes.length; });
+      var calls = all.filter(dueToday);
+      var wonList = all.filter(function (l) { return l.stage === "won"; });
+      var lostList = all.filter(function (l) { return l.stage === "lost"; });
+      var qualList = all.filter(function (l) { return l.stage === "visit" || l.stage === "quote"; });
+      var coldList = all.filter(function (l) { return l.stage === "hold" || (!l.read && l.stage === "new"); });
+      var revList = all.filter(function (l) { return l.stage === "quote" || l.quote_status === "proposal"; });
+
+      if ($("#kpi-open")) $("#kpi-open").textContent = openList.length;
+      if ($("#kpi-untouched")) $("#kpi-untouched").textContent = untouched.length;
+      if ($("#kpi-calls")) $("#kpi-calls").textContent = calls.length;
+      if ($("#kpi-leads")) $("#kpi-leads").textContent = all.length;
+
+      var total = all.length || 1;
+      var lostPct = Math.round((lostList.length / total) * 100);
+      var validPct = Math.round(((total - lostList.length) / total) * 100);
+      var qualPct = Math.round((qualList.length / total) * 100);
+      var coldPct = Math.round((coldList.length / total) * 100);
+      var wonPct = Math.round((wonList.length / total) * 100);
+      var pipePct = Math.round((openList.length / total) * 100);
+
+      if ($("#fn-lost-cnt")) $("#fn-lost-cnt").textContent = lostList.length + " (" + lostPct + "%)";
+      if ($("#fn-valid-cnt")) $("#fn-valid-cnt").textContent = (total - lostList.length) + " (" + validPct + "%)";
+      if ($("#fn-bar-valid")) $("#fn-bar-valid").style.width = validPct + "%";
+
+      if ($("#fn-qual-cnt")) $("#fn-qual-cnt").textContent = qualList.length + " (" + qualPct + "%)";
+      if ($("#fn-cold-cnt")) $("#fn-cold-cnt").textContent = coldList.length + " (" + coldPct + "%)";
+      if ($("#fn-bar-qual")) $("#fn-bar-qual").style.width = qualPct + "%";
+
+      if ($("#fn-won-cnt")) $("#fn-won-cnt").textContent = wonList.length + " (" + wonPct + "%)";
+      if ($("#fn-pipe-cnt")) $("#fn-pipe-cnt").textContent = openList.length + " (" + pipePct + "%)";
+      if ($("#fn-bar-won")) $("#fn-bar-won").style.width = wonPct + "%";
+
+      var nurtureRate = Math.round(((wonList.length + revList.length) / total) * 100);
+      if ($("#crm-nurture-val")) $("#crm-nurture-val").textContent = nurtureRate + "%";
+      if ($("#crm-gauge-box")) $("#crm-gauge-box").innerHTML = gaugeSvg(nurtureRate);
+
+      if ($("#crm-nurt-won")) $("#crm-nurt-won").textContent = wonList.length;
+      if ($("#crm-nurt-rev")) $("#crm-nurt-rev").textContent = revList.length;
+      if ($("#crm-nurt-lost")) $("#crm-nurt-lost").textContent = lostList.length;
+      if ($("#crm-nurt-pipe")) $("#crm-nurt-pipe").textContent = openList.length;
+    };
+
     var mlist = function () { var s = {}; s[today().slice(0, 7)] = 1; if (st.month) s[st.month] = 1; C.leads.forEach(function (l) { s[String(l.created_at).slice(0, 7)] = 1; }); return Object.keys(s).sort().reverse(); };
     var inMonth = function (l) { return !st.month || String(l.created_at).slice(0, 7) === st.month; };
     var base = function () { return C.leads.filter(function (l) { return inMonth(l) && (!st.line || l.line === st.line); }); };
+
+    function syncBulkBar() {
+      var n = selectedIds.size;
+      var bar = $("#crm-bulk-bar");
+      if (!bar) return;
+      if (n > 0) {
+        bar.classList.add("show");
+        if ($("#crm-bulk-n")) $("#crm-bulk-n").textContent = n;
+      } else {
+        bar.classList.remove("show");
+      }
+      var chkAll = $("#s17-chk-all");
+      if (chkAll) {
+        var visibleRows = $$("#s17-rows tr[data-id]");
+        var allChecked = visibleRows.length > 0 && visibleRows.every(function(tr){ return selectedIds.has(+tr.dataset.id); });
+        chkAll.checked = allChecked;
+        chkAll.indeterminate = !allChecked && n > 0;
+      }
+    }
+
     function counters() {
       var L = base(), n = function (f) { return L.filter(f).length; };
       var cs = [["all", "Total", L.length, ""], ["newlead", "New lead", n(function (l) { return l.lead_type !== "returning" && !l.client_id; }), "info"], ["client", "Client", n(function (l) { return l.lead_type === "returning" || l.client_id; }), "navy"],
@@ -149,12 +238,13 @@
       if ($("#s17-count-lbl")) $("#s17-count-lbl").textContent = L.length + " customer" + (L.length === 1 ? "" : "s") + " · " + (st.month ? mlabel(st.month) : "All months");
       var QS = (M && M.quoteStatus) || {};
       $("#s17-rows").innerHTML = L.length ? L.map(function (l) {
-        var od = overdue(l), td = dueToday(l), title = l.name || l.company, sub = l.company ? l.company : (l.service || "Residential");
+        var od = overdue(l), title = l.name || l.company, sub = l.company ? l.company : (l.service || "Residential");
         var ini = avatarInitial(title);
         var emailStr = l.email ? '<a href="mailto:' + esc(l.email) + '" style="color:inherit;text-decoration:none">' + esc(l.email) + '</a>' : '<span class="muted">—</span>';
         var phoneStr = l.phone ? '<span style="display:inline-flex;align-items:center;gap:6px">' + esc(l.phone) + ' <a class="s17-wa" data-stop title="WhatsApp" target="_blank" rel="noopener" href="https://wa.me/' + waNum(l.phone) + '">' + ic("message-circle") + '</a></span>' : '<span class="muted">—</span>';
-        return '<tr data-id="' + l.id + '" class="' + (od ? "s17-od " : "") + (l.read ? "" : "unread") + '">' +
-          '<td><input type="checkbox" style="width:16px;height:16px;accent-color:#00b8db" data-stop></td>' +
+        var isChk = selectedIds.has(l.id);
+        return '<tr data-id="' + l.id + '" class="' + (od ? "s17-od " : "") + (l.read ? "" : "unread ") + (isChk ? "selected " : "") + '">' +
+          '<td><input type="checkbox" class="s17-row-chk" data-id="' + l.id + '" style="width:16px;height:16px;accent-color:#00b8db" ' + (isChk ? "checked" : "") + ' data-stop></td>' +
           '<td><div style="display:flex;align-items:center;gap:10px"><span class="preline-avatar">' + esc(ini) + '</span><div><b>' + esc(title) + '</b>' + (l.lead_type === "returning" || l.client_id ? " <span class='badge navy sm'>Client</span>" : "") + '</div></div></td>' +
           '<td>' + (l.company ? '<span class="badge" style="background:#1e293b;color:#94a3b8">' + esc(l.company) + '</span>' : '<span class="muted">' + esc(sub) + '</span>') + '</td>' +
           '<td>' + esc(l.location || (l.fields && l.fields.city) || (l.fields && l.fields.address) || "Lahore") + '</td>' +
@@ -166,7 +256,22 @@
           '</tr>';
       }).join("") : '<tr><td colspan="9" class="empty">No leads here yet. Add one, or import your sheet.</td></tr>';
       W.fillIcons($("#s17-rows"));
-      $$("#s17-rows tr[data-id]").forEach(function (tr) { tr.onclick = function (e) { if (e.target.closest("[data-stop]")) return; drawer(+tr.dataset.id, refresh); }; });
+      $$("#s17-rows tr[data-id]").forEach(function (tr) {
+        tr.onclick = function (e) {
+          if (e.target.closest("[data-stop]")) return;
+          drawer(+tr.dataset.id, refresh);
+        };
+      });
+      $$(".s17-row-chk").forEach(function (chk) {
+        chk.onchange = function () {
+          var id = +chk.dataset.id;
+          if (chk.checked) selectedIds.add(id); else selectedIds.delete(id);
+          var tr = chk.closest("tr");
+          if (tr) tr.classList.toggle("selected", chk.checked);
+          syncBulkBar();
+        };
+      });
+      syncBulkBar();
     }
     function followups() {
       var L = C.leads.filter(function (l) { return open(l) && l.next_at; }).sort(function (a, b) { return a.next_at < b.next_at ? -1 : 1; });
@@ -181,9 +286,10 @@
       $("#s17-lines").innerHTML = [["", "All lines"]].concat(Object.keys(M.lines).map(function (k) { return [k, M.lines[k]]; })).map(function (x) { return "<button data-l='" + x[0] + "' class='" + (st.line === x[0] ? "on" : "") + "'>" + x[1] + "</button>"; }).join("");
       $("#s17-who").innerHTML = "<option value=''>Everyone</option><option value='none'>Unassigned</option>" + C.team.map(function (u) { return "<option value='" + u.id + "'" + (String(u.id) === st.who ? " selected" : "") + ">" + esc(u.name) + "</option>"; }).join("");
       $("#s17-stage").innerHTML = "<option value=''>All stages</option>" + ORDER.map(function (s) { return "<option value='" + s + "'" + (s === st.stage ? " selected" : "") + ">" + STAGE[s][0] + "</option>"; }).join("");
+      if ($("#crm-bulk-who")) $("#crm-bulk-who").innerHTML = "<option value=''>Assign to…</option><option value='none'>Unassigned</option>" + C.team.map(function (u) { return "<option value='" + u.id + "'>" + esc(u.name) + "</option>"; }).join("");
       $$("#s17-lines button").forEach(function (b) { b.onclick = function () { st.line = b.dataset.l; filters(); counters(); rows(); }; });
     }
-    function draw() { filters(); counters(); rows(); followups(); }
+    function draw() { updateMetrics(); filters(); counters(); rows(); followups(); }
     function refresh() { return loadLeads().then(function (ok) { if (ok && $("#s17-rows")) draw(); }); }
     var step = function (d) { var ms = mlist(), i = ms.indexOf(st.month); if (i < 0) { st.month = ms[0]; } else if (ms[i - d]) st.month = ms[i - d]; draw(); };
     $("#s17-m").onchange = function () { st.month = this.value; draw(); };
@@ -197,69 +303,227 @@
     if ($("#imp-csv")) $("#imp-csv").onclick = function () { importSheet(refresh); };
     if ($("#imp-gmail")) $("#imp-gmail").onclick = function () { location.hash = "#/settings"; toast("Gmail importer connected under Settings -> Connectors"); };
     if ($("#imp-notion")) $("#imp-notion").onclick = function () { location.hash = "#/settings"; toast("Notion sync connected under Settings -> Connectors"); };
+
+    // Select all / Bulk actions
+    $("#s17-chk-all").onchange = function () {
+      var chked = this.checked;
+      $$("#s17-rows .s17-row-chk").forEach(function (chk) {
+        chk.checked = chked;
+        var id = +chk.dataset.id;
+        if (chked) selectedIds.add(id); else selectedIds.delete(id);
+      });
+      $$("#s17-rows tr[data-id]").forEach(function (tr) { tr.classList.toggle("selected", chked); });
+      syncBulkBar();
+    };
+    $("#crm-bulk-clear").onclick = function () {
+      selectedIds.clear();
+      $$("#s17-rows .s17-row-chk").forEach(function (chk) { chk.checked = false; });
+      $$("#s17-rows tr[data-id]").forEach(function (tr) { tr.classList.remove("selected"); });
+      syncBulkBar();
+    };
+    $("#crm-bulk-exp").onclick = function () {
+      var sel = C.leads.filter(function (l) { return selectedIds.has(l.id); });
+      exportCsv(sel.length ? sel : C.leads);
+    };
+    $("#crm-bulk-apply").onclick = function () {
+      var newStage = $("#crm-bulk-stage").value;
+      var newWho = $("#crm-bulk-who").value;
+      if (!newStage && !newWho) return toast("Select a stage or assignee to apply", true);
+      var ids = Array.from(selectedIds);
+      var proms = ids.map(function (id) {
+        var payload = { action: "lead_save", id: id };
+        if (newStage) payload.stage = newStage;
+        if (newWho) payload.assigned_to = newWho === "none" ? null : +newWho;
+        return api("lead_save", payload);
+      });
+      Promise.all(proms).then(function () {
+        toast("Updated " + ids.length + " leads successfully!");
+        selectedIds.clear();
+        refresh();
+      });
+    };
+
+    // Compact mode switcher
+    var compBtn = $("#crm-v-compact");
+    if (compBtn) {
+      compBtn.onclick = function () {
+        st.compact = !st.compact;
+        compBtn.classList.toggle("on", st.compact);
+        $("#crm-tbl-card").classList.toggle("crm-density-compact", st.compact);
+        toast(st.compact ? "Compact density enabled" : "Comfortable density enabled");
+      };
+    }
+
     Promise.all([meta(), loadLeads()]).then(function (r) { if (r[1] && $("#s17-rows")) draw(); });
   };
+
+
 
 
 
   // ================================================================ LEAD SIDE DRAWER
   function closeDrawer() { var d = $("#s17-dr"); if (d) { d.classList.remove("on"); setTimeout(function () { d.remove(); }, 200); } document.removeEventListener("keydown", escKey); }
   function escKey(e) { if (e.key === "Escape") closeDrawer(); }
+    // ================================================================ TABBED MULTI-PANE LEAD SIDE DRAWER
   function drawer(id, after) {
     var go = function () {
       var l = C.leads.find(function (x) { return x.id === id; }); if (!l) return toast("Enquiry not found", true);
       closeDrawer(); var d = document.createElement("div"); d.id = "s17-dr"; d.className = "s17-dr"; document.body.appendChild(d);
       var f = l.fields || {}, fx = Object.keys(f).map(function (k) { return "<div class='kv'><small>" + esc(k.replace(/[_-]/g, " ")) + "</small><span>" + esc(f[k]) + "</span></div>"; }).join("");
-      var tl = l.notes.slice().reverse().map(function (n) { var k = KIND[n.kind] || (n.sys ? ["activity", "System"] : KIND.note); return "<li class='" + (n.sys ? "sys" : "k-" + esc(n.kind || "note")) + "'><span class='s17-tli'>" + ic(k[0]) + "</span><div><small>" + esc(k[1]) + " · " + esc(n.user || "") + " · " + dd(n.t, true) + "</small><p>" + esc(n.text) + "</p>" + (n.outcome && n.outcome !== n.text ? "<small class='s17-out'>Outcome: " + esc(n.outcome) + "</small>" : "") + "</div></li>"; }).join("");
+      var tl = (l.notes || []).slice().reverse().map(function (n) { var k = KIND[n.kind] || (n.sys ? ["activity", "System"] : KIND.note); return "<li class='" + (n.sys ? "sys" : "k-" + esc(n.kind || "note")) + "'><span class='s17-tli'>" + ic(k[0]) + "</span><div><small>" + esc(k[1]) + " · " + esc(n.user || "") + " · " + dd(n.t, true) + "</small><p>" + esc(n.text) + "</p>" + (n.outcome && n.outcome !== n.text ? "<small class='s17-out'>Outcome: " + esc(n.outcome) + "</small>" : "") + "</div></li>"; }).join("");
       var inp = function (id2, lab, v, t) { return "<label>" + lab + "<input id='" + id2 + "' type='" + (t || "text") + "' value='" + esc(v || "") + "'></label>"; };
       var sel = function (id2, lab, h) { return "<label>" + lab + "<select id='" + id2 + "'>" + h + "</select></label>"; };
       var nx = l.next_at ? l.next_at.replace(" ", "T").slice(0, 16) : "";
+
+      var waTemplates = [
+        { title: "Introduction & Greeting", text: "Assalam-o-Alaikum " + (l.name || "Customer") + ", thank you for reaching out to Woodex Interior! We received your inquiry regarding " + (l.service || "interior design") + ". When would be a convenient time for a brief consultation call?" },
+        { title: "Site Visit Confirmation", text: "Dear " + (l.name || "Customer") + ", this is from Woodex Interior confirming our site visit and measurement session for your project. Our lead architect is scheduled to visit your site in " + (l.location || "Lahore") + "." },
+        { title: "Quotation & Scope Follow-up", text: "Dear " + (l.name || "Customer") + ", your customized Woodex estimate and specifications are ready. Let us know if you would like to review the layout and material samples together." }
+      ];
+
       d.innerHTML = "<div class='s17-dr-bg'></div><section class='s17-dr-p' role='dialog' aria-label='Lead details'>" +
         "<header><div><small class='muted'>#" + l.id + " · " + esc(C.sources[l.source] || l.source) + " · " + dd(l.created_at, true) + "</small><h2>" + esc(l.company || l.name) + "</h2>" + (l.company ? "<p class='muted'>" + esc(l.name) + (l.designation ? " · " + esc(l.designation) : "") + "</p>" : "") +
         "<div class='s17-hb'>" + badge(l.stage) + lineTag(l.line) + (overdue(l) ? "<span class='badge bad'>Follow-up overdue</span>" : "") + "</div></div><button class='icon-btn' id='dr-x' title='Close (Esc)'>" + ic("x") + "</button></header>" +
+        
         "<div class='s17-acts'>" + (l.phone ? "<a class='btn sm' href='tel:" + esc(l.phone.replace(/[^\d+]/g, "")) + "'>" + ic("phone") + esc(l.phone) + "</a><a class='btn sm wa' target='_blank' rel='noopener' href='https://wa.me/" + waNum(l.phone) + "'>" + ic("message-circle") + "WhatsApp</a>" : "") +
           (l.email ? "<a class='btn sm' href='mailto:" + esc(l.email) + "'>" + ic("mail") + "Email</a>" : "") + (l.client_id ? "<a class='btn sm' href='#/clients/" + l.client_id + "'>" + ic("contact") + "Client 360</a>" : "") + "<a class='btn sm' href='#/quote/new?lead=" + l.id + "'>" + ic("receipt") + "New quotation</a></div>" +
-        "<div class='s17-next'><b>" + ic("clock") + " Next follow-up</b><span>" + (l.next_at && open(l) ? dd(l.next_at, true) + " · " + esc(M.nextTypes[l.next_type] || "Follow-up") : "Not set") + "</span><small class='muted'>Last contact: " + (l.last_contact ? dd(l.last_contact, true) + " (" + ago(l.last_contact) + ")" : "never") + "</small></div>" +
-        "<div class='s17-tabsb'><button class='on' data-p='act'>Log activity</button><button data-p='det'>Details</button><button data-p='tl'>Timeline (" + l.notes.length + ")</button></div>" +
-        "<div class='s17-pane' data-p='act'><div class='s17-kinds'>" + Object.keys(KIND).map(function (k, i) { return "<button data-k='" + k + "' class='" + (i === 0 ? "on" : "") + "'>" + ic(KIND[k][0]) + KIND[k][1] + "</button>"; }).join("") + "</div>" +
-          "<label>What happened?<textarea id='dr-txt' rows='3' placeholder='e.g. Called, client wants 3D before quotation. Site visit agreed.'></textarea></label>" +
-          "<div class='s17-g2'><label>Outcome<select id='dr-out'><option value=''>—</option><option>Interested</option><option>Visit booked</option><option>Meeting booked</option><option>Wants quotation</option><option>Negotiating</option><option>No answer</option><option>Call back later</option><option>Not interested</option></select></label>" +
-          sel("dr-st2", "Move stage to", "<option value=''>Keep: " + STAGE[l.stage][0] + "</option>" + ORDER.map(function (s) { return s === l.stage ? "" : "<option value='" + s + "'>" + STAGE[s][0] + "</option>"; }).join("")) + "</div>" +
-          "<div class='s17-g2'><label>Next follow-up<input id='dr-nx' type='datetime-local' value='" + esc(nx) + "'></label>" + sel("dr-nt", "Type", opts(M.nextTypes, l.next_type || "call")) + "</div>" +
-          "<div class='s17-quick'><small class='muted'>Quick:</small>" + [["Tomorrow 11am", 1, 11], ["In 3 days", 3, 11], ["Next week", 7, 11]].map(function (q) { return "<button class='btn sm ghost' data-d='" + q[1] + "' data-h='" + q[2] + "'>" + q[0] + "</button>"; }).join("") + "<button class='btn sm ghost' data-d='x'>Clear</button></div>" +
-          "<div class='modal-actions'><button class='btn pri' id='dr-log'>" + ic("check") + "Save activity</button></div></div>" +
-        "<div class='s17-pane' data-p='det' hidden><div class='s17-g2'>" + inp("dr-co", "Company", l.company) + inp("dr-n", "Contact name", l.name) + inp("dr-ds", "Designation", l.designation) + inp("dr-p", "Phone", l.phone) + inp("dr-e", "Email", l.email, "email") + inp("dr-lo", "Location", l.location) +
+        
+        "<div class='crm-drawer-tabs' id='dr-tab-bar'>" +
+          "<button class='crm-dr-tab on' data-tab='det'>" + ic("user") + "Overview</button>" +
+          "<button class='crm-dr-tab' data-tab='wa'>" + ic("message-circle") + "WhatsApp Hub</button>" +
+          "<button class='crm-dr-tab' data-tab='quote'>" + ic("receipt") + "Quotation</button>" +
+          "<button class='crm-dr-tab' data-tab='act'>" + ic("activity") + "Log Activity</button>" +
+          "<button class='crm-dr-tab' data-tab='tl'>" + ic("clock") + "Timeline (" + (l.notes ? l.notes.length : 0) + ")</button>" +
+        "</div>" +
+
+        "<!-- TAB 1: DETAILS -->" +
+        "<div class='s17-pane' id='dr-p-det'><div class='s17-g2'>" + inp("dr-co", "Company", l.company) + inp("dr-n", "Contact name", l.name) + inp("dr-ds", "Designation", l.designation) + inp("dr-p", "Phone", l.phone) + inp("dr-e", "Email", l.email, "email") + inp("dr-lo", "Location", l.location) +
           sel("dr-li", "Business line", opts(M.lines, l.line, "—")) + sel("dr-lt", "Lead source", opts(M.leadTypes, l.lead_type || "new")) + srcSel("dr-src", l.source) +
           "<label>Project type<input id='dr-pt' list='dr-ptl' value='" + esc(l.project_type || l.service || "") + "'><datalist id='dr-ptl'>" + M.projectTypes.map(function (p) { return "<option>" + esc(p) + "</option>"; }).join("") + "</datalist></label>" +
           inp("dr-ar", "Area (sq ft)", l.area) + inp("dr-bu", "Budget", l.budget) + inp("dr-v", "Deal value (Rs)", l.value || "", "number") +
           sel("dr-qs", "Quotation", opts(M.quoteStatus, l.quote_status, "—")) + sel("dr-pr", "Priority", opts({ low: "Low", normal: "Normal", high: "High" }, l.priority || "normal")) +
           sel("dr-as", "Assigned to", "<option value=''>Nobody</option>" + C.team.map(function (u) { return "<option value='" + u.id + "'" + (u.id === l.assigned_to ? " selected" : "") + ">" + esc(u.name) + "</option>"; }).join("")) +
           sel("dr-st", "Stage", ORDER.map(function (s) { return "<option value='" + s + "'" + (s === l.stage ? " selected" : "") + ">" + STAGE[s][0] + "</option>"; }).join("")) + "</div>" +
-          "<label id='dr-lrw'" + (l.stage === "lost" ? "" : " hidden") + ">Reason closed / lost<input id='dr-lr' value='" + esc(l.lost_reason || "") + "'></label>" +
-          (l.message ? "<div class='kv'><small>Message</small><span style='white-space:pre-wrap'>" + esc(l.message) + "</span></div>" : "") + fx +
-          "<div class='modal-actions' style='justify-content:space-between'><span>" + (!l.client_id ? "<button class='btn sm' id='dr-cv'>" + ic("user") + "Make client</button>" : "") + (can("owner,admin") ? " <button class='btn sm ghost' id='dr-del' style='color:var(--bad)'>Delete</button>" : "") + "</span><button class='btn pri' id='dr-sv'>Save details</button></div></div>" +
-        "<div class='s17-pane' data-p='tl' hidden><ul class='s17-tl'>" + (tl || "<p class='muted'>No history yet.</p>") + "</ul></div>" +
-        "<p class='err' id='dr-err'></p></section>";
-      W.fillIcons(d); requestAnimationFrame(function () { d.classList.add("on"); }); document.addEventListener("keydown", escKey);
-      var kind = "call", err = function (m) { $("#dr-err").textContent = m || ""; };
-      var done = function (r, msg) { if (!r.ok) { err(r.error); return; } var i = C.leads.findIndex(function (x) { return x.id === id; }); if (r.lead && i >= 0) C.leads[i] = r.lead; toast(msg); closeDrawer(); if (after) after(); };
-      $("#dr-x").onclick = closeDrawer; d.querySelector(".s17-dr-bg").onclick = closeDrawer;
-      $$(".s17-tabsb button", d).forEach(function (b) { b.onclick = function () { $$(".s17-tabsb button", d).forEach(function (x) { x.classList.toggle("on", x === b); }); $$(".s17-pane", d).forEach(function (p) { p.hidden = p.dataset.p !== b.dataset.p; }); }; });
-      $$(".s17-kinds button", d).forEach(function (b) { b.onclick = function () { kind = b.dataset.k; $$(".s17-kinds button", d).forEach(function (x) { x.classList.toggle("on", x === b); }); }; });
-      $$(".s17-quick [data-d]", d).forEach(function (b) { b.onclick = function () { if (b.dataset.d === "x") { $("#dr-nx").value = ""; return; } var t = new Date(Date.now() + b.dataset.d * 864e5); t.setHours(+b.dataset.h, 0, 0, 0); $("#dr-nx").value = ymd(t) + "T" + two(t.getHours()) + ":00"; }; });
-      $("#dr-st").onchange = function () { $("#dr-lrw").hidden = this.value !== "lost"; };
-      $("#dr-log").onclick = function () { api("lead_activity", { id: id, kind: kind, text: $("#dr-txt").value, outcome: $("#dr-out").value, stage: $("#dr-st2").value, next_at: $("#dr-nx").value, next_type: $("#dr-nt").value }).then(function (r) { done(r, "Activity saved ✓"); }); };
-      $("#dr-sv").onclick = function () {
-        api("lead_save", { id: id, source: $("#dr-src").disabled ? undefined : $("#dr-src").value, company: $("#dr-co").value, name: $("#dr-n").value, designation: $("#dr-ds").value, phone: $("#dr-p").value, email: $("#dr-e").value, location: $("#dr-lo").value, line: $("#dr-li").value, lead_type: $("#dr-lt").value,
-          project_type: $("#dr-pt").value, area: $("#dr-ar").value, budget: $("#dr-bu").value, value: $("#dr-v").value, quote_status: $("#dr-qs").value, priority: $("#dr-pr").value, assigned_to: $("#dr-as").value, stage: $("#dr-st").value, lost_reason: $("#dr-lr").value }).then(function (r) { done(r, "Saved ✓"); });
+          "<label id='dr-lrw'" + (l.stage === "lost" ? "" : " hidden") + ">Reason closed / lost<input id='dr-lr' value='" + esc(l.lost_reason || "") + "' placeholder='e.g. Price too high, chosen competitor'></label>" +
+          inp("dr-tg", "Tags (comma-separated)", (l.tags || []).join(", ")) +
+          (fx ? "<div class='s17-fx'><h4>Custom form fields</h4><div class='kv-grid'>" + fx + "</div></div>" : "") +
+          (l.message ? "<label>Original message<textarea readonly rows='3'>" + esc(l.message) + "</textarea></label>" : "") +
+          "<div class='modal-actions' style='margin-top:16px'><button class='btn pri' id='dr-save'>" + ic("check") + "Save changes</button></div>" +
+        "</div>" +
+
+        "<!-- TAB 2: WHATSAPP HUB -->" +
+        "<div class='s17-pane' id='dr-p-wa' hidden>" +
+          "<h4>" + ic("message-circle") + " 1-Click WhatsApp Quick Templates</h4>" +
+          "<div class='crm-wa-grid'>" +
+            waTemplates.map(function(t, idx) {
+              return "<div class='crm-wa-card'><div class='crm-wa-head'><span class='crm-wa-title'>" + ic("send") + esc(t.title) + "</span>" +
+                "<a class='btn sm wa' target='_blank' rel='noopener' href='https://wa.me/" + waNum(l.phone) + "?text=" + encodeURIComponent(t.text) + "'>" + ic("external-link") + "Send on WhatsApp</a></div>" +
+                "<div class='crm-wa-body'>" + esc(t.text) + "</div></div>";
+            }).join("") +
+          "</div>" +
+          "<div style='margin-top:14px'><label>Custom WhatsApp Message<textarea id='dr-wa-custom' rows='3' placeholder='Type a personalized message to " + esc(l.name || "customer") + "…'></textarea></label>" +
+          "<button class='btn wa' id='dr-wa-launch' style='margin-top:8px'>" + ic("send") + "Launch Custom WhatsApp</button></div>" +
+        "</div>" +
+
+        "<!-- TAB 3: QUOTATION & SCOPE -->" +
+        "<div class='s17-pane' id='dr-p-quote' hidden>" +
+          "<h4>" + ic("receipt") + " Quotation & Estimate Details</h4>" +
+          "<div class='s17-g2' style='margin-top:10px'>" +
+            "<label>Deal Estimate Value (PKR)<input id='dr-q-val' type='number' value='" + esc(l.value || 0) + "'></label>" +
+            sel("dr-q-stat", "Quotation Status", opts(M.quoteStatus, l.quote_status, "Draft")) +
+          "</div>" +
+          "<div style='display:flex;gap:10px;margin-top:14px'>" +
+            "<a class='btn pri' href='#/quote/new?lead=" + l.id + "'>" + ic("plus") + "Generate Full PDF Quotation</a>" +
+            "<button class='btn' id='dr-q-update'>" + ic("check") + "Update Estimate Value</button>" +
+          "</div>" +
+        "</div>" +
+
+        "<!-- TAB 4: LOG ACTIVITY -->" +
+        "<div class='s17-pane' id='dr-p-act' hidden>" +
+          "<div class='s17-kinds'>" + Object.keys(KIND).map(function (k, i) { return "<button data-k='" + k + "' class='" + (i === 0 ? "on" : "") + "'>" + ic(KIND[k][0]) + KIND[k][1] + "</button>"; }).join("") + "</div>" +
+          "<label>What happened?<textarea id='dr-txt' rows='3' placeholder='e.g. Called, client wants 3D before quotation. Site visit agreed.'></textarea></label>" +
+          "<div class='s17-g2'><label>Outcome<select id='dr-out'><option value=''>—</option><option>Interested</option><option>Visit booked</option><option>Meeting booked</option><option>Wants quotation</option><option>Negotiating</option><option>No answer</option><option>Call back later</option><option>Not interested</option></select></label>" +
+          sel("dr-st2", "Move stage to", "<option value=''>Keep: " + STAGE[l.stage][0] + "</option>" + ORDER.map(function (s) { return s === l.stage ? "" : "<option value='" + s + "'>" + STAGE[s][0] + "</option>"; }).join("")) + "</div>" +
+          "<div class='s17-g2'><label>Next follow-up<input id='dr-nx' type='datetime-local' value='" + esc(nx) + "'></label>" + sel("dr-nt", "Type", opts(M.nextTypes, l.next_type || "call")) + "</div>" +
+          "<div class='s17-quick'><small class='muted'>Quick:</small>" + [["Tomorrow 11am", 1, 11], ["In 3 days", 3, 11], ["Next week", 7, 11]].map(function (q) { return "<button class='btn sm ghost' data-d='" + q[1] + "' data-h='" + q[2] + "'>" + q[0] + "</button>"; }).join("") + "<button class='btn sm ghost' data-d='x'>Clear</button></div>" +
+          "<div class='modal-actions' style='margin-top:16px'><button class='btn pri' id='dr-log'>" + ic("check") + "Save activity</button></div>" +
+        "</div>" +
+
+        "<!-- TAB 5: TIMELINE -->" +
+        "<div class='s17-pane' id='dr-p-tl' hidden>" +
+          "<ul class='s17-tl'>" + (tl || "<li class='empty'>No activity logged yet.</li>") + "</ul>" +
+        "</div>" +
+
+        "</section>";
+
+      W.fillIcons(d);
+      var close = function () { closeDrawer(); };
+      d.querySelector(".s17-dr-bg").onclick = close; $("#dr-x").onclick = close;
+      var escClose = function (e) { if (e.key === "Escape") { close(); document.removeEventListener("keydown", escClose); } };
+      document.addEventListener("keydown", escClose);
+
+      // Tab switching
+      $$("#dr-tab-bar .crm-dr-tab").forEach(function (btn) {
+        btn.onclick = function () {
+          $$("#dr-tab-bar .crm-dr-tab").forEach(function (b) { b.classList.remove("on"); });
+          btn.classList.add("on");
+          var tab = btn.dataset.tab;
+          ["det", "wa", "quote", "act", "tl"].forEach(function (t) {
+            var p = $("#dr-p-" + t);
+            if (p) p.hidden = (t !== tab);
+          });
+        };
+      });
+
+      // WhatsApp launch custom
+      var waCustomBtn = $("#dr-wa-launch");
+      if (waCustomBtn) {
+        waCustomBtn.onclick = function () {
+          var txt = $("#dr-wa-custom").value.trim();
+          if (!txt) return toast("Type a message to send", true);
+          window.open("https://wa.me/" + waNum(l.phone) + "?text=" + encodeURIComponent(txt), "_blank");
+        };
+      }
+
+      // Quick estimate update
+      var qUpdateBtn = $("#dr-q-update");
+      if (qUpdateBtn) {
+        qUpdateBtn.onclick = function () {
+          var val = +$("#dr-q-val").value || 0;
+          var stat = $("#dr-q-stat").value;
+          api("lead_save", { id: l.id, value: val, quote_status: stat }).then(function (r) {
+            if (r.ok) { toast("Quotation details updated"); after && after(); } else toast(r.error || "Save failed", true);
+          });
+        };
+      }
+
+      // Activity logging
+      var kind = "call";
+      $$(".s17-kinds button").forEach(function (b) { b.onclick = function () { $$(".s17-kinds button").forEach(function (x) { x.classList.remove("on"); }); b.classList.add("on"); kind = b.dataset.k; }; });
+      $$(".s17-quick button").forEach(function (b) { b.onclick = function () { if (b.dataset.d === "x") { $("#dr-nx").value = ""; return; } var dt = new Date(Date.now() + (+b.dataset.d) * 864e5); dt.setHours(+b.dataset.h, 0, 0, 0); $("#dr-nx").value = dt.getFullYear() + "-" + two(dt.getMonth() + 1) + "-" + two(dt.getDate()) + "T" + two(dt.getHours()) + ":00"; }; });
+      
+      $("#dr-log").onclick = function () {
+        var text = $("#dr-txt").value.trim(); if (!text) return toast("Write what happened", true);
+        var payload = { id: l.id, kind: kind, text: text, outcome: $("#dr-out").value, next_at: $("#dr-nx").value.replace("T", " "), next_type: $("#dr-nt").value };
+        if ($("#dr-st2").value) payload.stage = $("#dr-st2").value;
+        api("lead_act", payload).then(function (r) {
+          if (r.ok) { toast("Activity logged"); close(); after && after(); } else toast(r.error || "Failed", true);
+        });
       };
-      if ($("#dr-cv")) $("#dr-cv").onclick = function () { if (!confirm("Create a client record for " + (l.company || l.name) + " and mark this enquiry as won?")) return; api("lead_convert", { id: id }).then(function (r) { if (!r.ok) return err(r.error); closeDrawer(); location.hash = "#/clients/" + r.client_id; }); };
-      if ($("#dr-del")) $("#dr-del").onclick = function () { if (!confirm("Delete enquiry #" + id + "? This cannot be undone.")) return; api("lead_delete", { id: id }).then(function (r) { if (!r.ok) return err(r.error); C.leads = C.leads.filter(function (x) { return x.id !== id; }); toast("Deleted"); closeDrawer(); if (after) after(); }); };
-      if (!l.read) api("lead_save", { id: id, read: true });
+
+      // Details saving
+      $("#dr-st").onchange = function () { $("#dr-lrw").hidden = this.value !== "lost"; };
+      $("#dr-save").onclick = function () {
+        var payload = { id: l.id, company: $("#dr-co").value.trim(), name: $("#dr-n").value.trim(), designation: $("#dr-ds").value.trim(), phone: $("#dr-p").value.trim(), email: $("#dr-e").value.trim(), location: $("#dr-lo").value.trim(), line: $("#dr-li").value, lead_type: $("#dr-lt").value, source: $("#dr-src").value, project_type: $("#dr-pt").value, area: $("#dr-ar").value, budget: $("#dr-bu").value, value: +$("#dr-v").value || 0, quote_status: $("#dr-qs").value, priority: $("#dr-pr").value, assigned_to: $("#dr-as").value ? +$("#dr-as").value : null, stage: $("#dr-st").value, lost_reason: $("#dr-st").value === "lost" ? $("#dr-lr").value : "", tags: $("#dr-tg").value.split(",").map(function (s) { return s.trim(); }).filter(Boolean) };
+        api("lead_save", payload).then(function (r) {
+          if (r.ok) { toast("Saved"); close(); after && after(); } else toast(r.error || "Save failed", true);
+        });
+      };
     };
-    Promise.all([meta(), C.leads.some(function (x) { return x.id === id; }) ? true : loadLeads()]).then(go);
+    if (C.leads) go(); else loadLeads().then(function (ok) { if (ok) go(); });
   }
-  W.leadDrawer = drawer;
+
+
 
   function addLead(after) {
     W.modal("<h2>Add lead</h2><div class='s17-g2'><label>Company<input id='al-co'></label><label>Contact name *<input id='al-n'></label><label>Phone<input id='al-p'></label><label>Location<input id='al-lo'></label>" +

@@ -2297,3 +2297,210 @@ html.dark .lm.v small, .lm.v small {
   background: #00d3f2 !important;
   transform: translateY(-1px) !important;
 }
+
+/* ==========================================================================
+   PRELINE PRO V3 HYBRID CRM ENHANCEMENTS: BULK ACTIONS, TABS, DENSITY
+   ========================================================================== */
+
+/* Floating Bulk Action Bar */
+.crm-bulk-bar {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(100px);
+  background: rgba(17, 19, 24, 0.95);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(0, 184, 219, 0.4);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6), 0 0 20px rgba(0, 184, 219, 0.2);
+  border-radius: 999px;
+  padding: 8px 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  z-index: 1000;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
+  opacity: 0;
+  pointer-events: none;
+}
+.crm-bulk-bar.show {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+.crm-bulk-count {
+  font-size: 13px;
+  font-weight: 700;
+  color: #00d3f2;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.crm-bulk-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.crm-bulk-actions select,
+.crm-bulk-actions input {
+  background: #1c2333;
+  color: #f3f4f6;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 5px 10px;
+  font-size: 12.5px;
+}
+.crm-bulk-btn {
+  background: #1e293b;
+  color: #f1f5f9;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+}
+.crm-bulk-btn:hover {
+  background: #334155;
+  color: #fff;
+}
+.crm-bulk-btn.pri {
+  background: #00b8db;
+  color: #04222b;
+  border-color: #00b8db;
+  font-weight: 700;
+}
+.crm-bulk-btn.pri:hover {
+  background: #00d3f2;
+}
+
+/* Compact Table Density Mode */
+.crm-density-compact .s17-tbl th,
+.crm-density-compact .s17-tbl td {
+  padding: 6px 10px !important;
+  font-size: 12.5px !important;
+}
+.crm-density-compact .preline-avatar {
+  width: 26px !important;
+  height: 26px !important;
+  font-size: 10.5px !important;
+}
+
+/* View Switcher Controls */
+.crm-view-switch {
+  display: inline-flex;
+  align-items: center;
+  background: #111318;
+  border: 1px solid #262a33;
+  border-radius: 10px;
+  padding: 3px;
+  gap: 2px;
+}
+.crm-view-btn {
+  background: transparent;
+  border: 0;
+  color: #94a3b8;
+  padding: 6px 12px;
+  border-radius: 7px;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+}
+.crm-view-btn:hover {
+  color: #f3f4f6;
+  background: rgba(255, 255, 255, 0.04);
+}
+.crm-view-btn.on {
+  background: #1e293b;
+  color: #00d3f2;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Tabbed Drawer Styles */
+.crm-drawer-tabs {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: #0f131a;
+  padding: 6px;
+  border-radius: 10px;
+  border: 1px solid #1e2430;
+  margin: 14px 0 16px;
+}
+.crm-dr-tab {
+  flex: 1;
+  background: transparent;
+  border: 0;
+  color: #8e95a5;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+}
+.crm-dr-tab:hover {
+  color: #f3f4f6;
+  background: rgba(255, 255, 255, 0.04);
+}
+.crm-dr-tab.on {
+  background: #1c2333;
+  color: #00d3f2;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* WhatsApp Template Cards */
+.crm-wa-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 10px;
+}
+.crm-wa-card {
+  background: #111318;
+  border: 1px solid #20242f;
+  border-radius: 10px;
+  padding: 12px 14px;
+  transition: border-color 0.15s ease;
+}
+.crm-wa-card:hover {
+  border-color: #22c55e;
+}
+.crm-wa-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+.crm-wa-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #f1f5f9;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.crm-wa-body {
+  font-size: 12px;
+  color: #94a3b8;
+  line-height: 1.45;
+  background: #0b0d13;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid #1a1e27;
+  margin-bottom: 8px;
+  white-space: pre-wrap;
+}
