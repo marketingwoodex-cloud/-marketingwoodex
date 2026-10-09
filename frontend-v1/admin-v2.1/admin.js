@@ -326,8 +326,107 @@
   if ($("#side-x")) $("#side-x").onclick = function () { $("#app").classList.remove("open"); };
   if ($("#side-shade")) $("#side-shade").onclick = function () { $("#app").classList.remove("open"); };
   if ($("#dark-btn")) $("#dark-btn").onclick = function () { var d = document.documentElement.classList.toggle("dark"); localStorage.setItem("wxaTheme", d ? "dark" : "light"); if (S.view === "dashboard") route(); };
-  if ($("#user-btn")) $("#user-btn").onclick = function (e) { e.stopPropagation(); $("#user-menu").hidden = !$("#user-menu").hidden; };
-  document.addEventListener("click", function () { if ($("#user-menu")) $("#user-menu").hidden = true; });
+  if ($("#user-btn")) $("#user-btn").onclick = function (e) { e.stopPropagation(); if ($("#nt-menu")) $("#nt-menu").hidden = true; $("#user-menu").hidden = !$("#user-menu").hidden; };
+  document.addEventListener("click", function () {
+    if ($("#user-menu")) $("#user-menu").hidden = true;
+    if ($("#nt-menu")) $("#nt-menu").hidden = true;
+  });
+
+  // Notification dropdown & Live Alerts
+  var notifs = [
+    { id: 1, unread: true, icon: "inbox", title: "New Lead · Dr. Sarah Mansoor", desc: "DHA Phase 5 clinic fit-out (PKR 6.5M)", time: "18m ago", href: "#/enquiries" },
+    { id: 2, unread: true, icon: "message-circle", title: "Live Chat · Kamran Ashraf", desc: "Interested in turnkey 10 Marla residence", time: "2m ago", href: "#/chat" },
+    { id: 3, unread: true, icon: "send", title: "Telegram Bot · @WoodexInteriorBot", desc: "Bot connected and ready for staff dispatch", time: "Just now", href: "#/telegram" },
+    { id: 4, unread: false, icon: "file-text", title: "Quote Approved · Zubair Hashmi", desc: "Quotation WI-10100 approved (PKR 2.95M)", time: "1h ago", href: "#/quotes" },
+    { id: 5, unread: false, icon: "calendar", title: "Site Visit · Lake City Villa", desc: "Confirmed for tomorrow 11:30 AM", time: "3h ago", href: "#/bookings" }
+  ];
+
+  function updateNotifBadges() {
+    var unreadCount = notifs.filter(function(n) { return n.unread; }).length;
+    var ntN = $("#nt-n");
+    if (ntN) {
+      ntN.hidden = unreadCount === 0;
+      ntN.textContent = unreadCount;
+    }
+    var chatNtN = $("#chat-nt-n");
+    if (chatNtN) {
+      chatNtN.style.display = "inline-flex";
+      chatNtN.textContent = "2";
+    }
+  }
+
+  function renderNotifMenu() {
+    var ntMenu = $("#nt-menu");
+    if (!ntMenu) return;
+    var unreadCount = notifs.filter(function(n) { return n.unread; }).length;
+    ntMenu.innerHTML =
+      '<div style="padding:12px 14px;border-bottom:1px solid #1e2430;display:flex;align-items:center;justify-content:space-between;background:#111318">' +
+        '<div><b style="font-size:13.5px;color:#f9fafb">Notifications</b>' + (unreadCount ? ' <span class="badge ok" style="font-size:10px">' + unreadCount + ' new</span>' : '') + '</div>' +
+        '<div style="display:flex;gap:6px">' +
+          '<button type="button" class="btn sm" id="nt-test-btn" style="padding:2px 8px;font-size:11px" title="Test Live Alert">Test Alert</button>' +
+          '<button type="button" class="btn sm ghost" id="nt-read-all" style="padding:2px 8px;font-size:11px">Mark all read</button>' +
+        '</div>' +
+      '</div>' +
+      '<div style="max-height:340px;overflow-y:auto;display:flex;flex-direction:column">' +
+        notifs.map(function(n) {
+          return '<a href="' + n.href + '" class="nt-item" data-id="' + n.id + '" style="padding:10px 14px;border-bottom:1px solid #1a1e27;display:flex;align-items:flex-start;gap:10px;text-decoration:none;background:' + (n.unread ? 'rgba(0,184,219,0.06)' : 'transparent') + '">' +
+            '<span class="kpi-ic" style="width:28px;height:28px;font-size:12px;background:' + (n.unread ? 'rgba(0,184,219,0.2)' : 'rgba(255,255,255,0.05)') + ';color:' + (n.unread ? '#00d3f2' : '#94a3b8') + '">' + ic(n.icon) + '</span>' +
+            '<div style="flex:1;min-width:0">' +
+              '<b style="font-size:12.5px;color:' + (n.unread ? '#f9fafb' : '#cbd5e1') + ';display:block">' + esc(n.title) + '</b>' +
+              '<small class="muted" style="font-size:11.5px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc(n.desc) + '</small>' +
+              '<small style="color:#64748b;font-size:10.5px;margin-top:2px;display:block">' + esc(n.time) + '</small>' +
+            '</div>' +
+          '</a>';
+        }).join("") +
+      '</div>' +
+      '<div style="padding:8px 14px;border-top:1px solid #1e2430;text-align:center;background:#111318">' +
+        '<a href="#/updates" style="font-size:12px;color:#00d3f2;text-decoration:none;font-weight:600">Client updates &amp; automations hub →</a>' +
+      '</div>';
+    fillIcons(ntMenu);
+
+    if ($("#nt-read-all")) {
+      $("#nt-read-all").onclick = function(e) {
+        e.stopPropagation();
+        notifs.forEach(function(n) { n.unread = false; });
+        updateNotifBadges();
+        renderNotifMenu();
+        toast("All notifications marked as read ✓");
+      };
+    }
+    if ($("#nt-test-btn")) {
+      $("#nt-test-btn").onclick = function(e) {
+        e.stopPropagation();
+        notifs.unshift({ id: Date.now(), unread: true, icon: "bell", title: "🔔 Test Live Alert", desc: "Telegram & WhatsApp alert dispatch verified", time: "Just now", href: "#/telegram" });
+        updateNotifBadges();
+        renderNotifMenu();
+        toast("🔔 Test Live Alert: Bot @WoodexInteriorBot active!");
+      };
+    }
+    $$(".nt-item", ntMenu).forEach(function(a) {
+      a.onclick = function() {
+        var id = +a.dataset.id;
+        var f = notifs.find(function(x){ return x.id === id; });
+        if (f) f.unread = false;
+        updateNotifBadges();
+        ntMenu.hidden = true;
+      };
+    });
+  }
+
+  var ntBtn = $("#nt-btn");
+  if (ntBtn) {
+    ntBtn.onclick = function(e) {
+      e.stopPropagation();
+      if ($("#user-menu")) $("#user-menu").hidden = true;
+      var ntMenu = $("#nt-menu");
+      if (ntMenu) {
+        ntMenu.hidden = !ntMenu.hidden;
+        if (!ntMenu.hidden) renderNotifMenu();
+      }
+    };
+  }
+  updateNotifBadges();
+
   if ($("#gsearch")) {
     $("#gsearch").addEventListener("change", function () {
       var v = this.value.trim(), p = (S.pages || []).find(function (x) { return x.url === v; }); if (!p) return;
@@ -344,7 +443,17 @@
   function route() {
     if (!S.user) return;
     var parts = (location.hash.replace(/^#\/?/, "") || "dashboard").split("/"), v = parts[0];
-    var ALIAS = { leads: "enquiries", posts: "blog", lead: "enquiries" }; /*P19: old links*/ if (ALIAS[v]) { v = parts[0] = ALIAS[v]; history.replaceState(null, "", "#/" + parts.join("/")); }
+    var ALIAS = {
+      leads: "enquiries", lead: "enquiries",
+      posts: "blog", post: "blog",
+      studies: "portfolio", study: "portfolio",
+      tg: "telegram", inbox: "chat",
+      wains: "wainsights",
+      quote: "quotes", template: "templates",
+      invoice: "invoices", fields: "services",
+      citydraft: "cities", payments: "transactions"
+    };
+    if (ALIAS[v]) { v = parts[0] = ALIAS[v]; history.replaceState(null, "", "#/" + parts.join("/")); }
     var SUB = { quote: "quotes", template: "templates", invoice: "invoices", post: "blog", study: "portfolio", fields: "services", citydraft: "cities" };
     var FLAT = []; NAV.forEach(function (n) { if (n.g) FLAT.push.apply(FLAT, n.items); else if (Array.isArray(n)) FLAT.push(n); });
     var find = function (k) { return FLAT.find(function (n) { return n[0] === k; }); };

@@ -16,9 +16,11 @@
     if (u.role === "editor" || u.role === "support") return classic(el);
     kill();
     var h = new Date().getHours(), hi = h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening";
-    el.innerHTML = '<div class="ph"><div><h1>' + hi + ", " + esc((u.name || "").split(" ")[0]) + '</h1><div class="crumb">Here is how Woodex is doing</div></div><div class="toolbar">' +
+    el.innerHTML = '<div class="ph"><div><h1>' + hi + ", " + esc((u.name || "").split(" ")[0]) + '</h1><div class="crumb">Here is how Woodex is doing</div></div><div class="toolbar" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">' +
       '<div class="seg" id="dx-days">' + [7, 28, 90].map(function (d) { return '<button data-d="' + d + '"' + (d === days ? ' class="on"' : "") + ">" + d + " days</button>"; }).join("") + "</div>" +
-      '<a class="btn pri" href="#/quotes/new">' + ic("plus") + "New quotation</a></div></div>" +
+      '<a class="btn" href="/" target="_blank" rel="noopener">' + ic("eye") + 'View site</a>' +
+      '<a class="btn" href="#/enquiries">' + ic("plus") + 'New lead</a>' +
+      '<a class="btn pri btn-preline-cyan" href="#/quote/new">' + ic("receipt") + "New quotation</a></div></div>" +
       '<div id="dx"><div class="card"><div class="empty">Loading dashboard…</div></div></div>';
     $("#dx-days").onclick = function (e) { var b = e.target.closest("[data-d]"); if (!b) return; days = +b.dataset.d; localStorage.setItem("wxDashDays", days); VIEWS.dashboard(el); };
     Promise.all([api("dash_data", { days: days }), api("gdata_report", { days: days }).catch(function () { return {}; })]).then(function (res) {
