@@ -171,8 +171,13 @@ table.tbl{width:100%;border-collapse:collapse}
 .toast{position:fixed;right:24px;bottom:24px;z-index:100;background:var(--navy);color:#fff;padding:12px 18px;border-radius:12px;box-shadow:0 12px 30px rgba(0,0,0,.25);transform:translateY(20px);opacity:0;pointer-events:none;transition:.2s;font-weight:500}
 .toast.on{transform:none;opacity:1}.toast.bad{background:var(--bad)}
 .modal{position:fixed;inset:0;z-index:90;background:rgba(10,15,30,.55);display:grid;place-items:center;padding:20px;backdrop-filter:blur(3px)}
+/* Modals built by individual screens (Add lead, template preview) use .modal-overlay. Without this rule they sat in page flow, under the sidebar. */
+.modal-overlay{position:fixed;inset:0;z-index:90;background:rgba(10,15,30,.55);display:grid;place-items:center;padding:20px;backdrop-filter:blur(3px);overflow:auto}
 .modal-card{background:var(--card);border-radius:18px;width:100%;max-width:520px;padding:28px;max-height:90vh;overflow:auto;box-shadow:0 30px 80px rgba(0,0,0,.3)}
 .modal-card h2{font-size:20px;margin-bottom:18px}
+.modal-h{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+.modal-h h3{font-size:18px;margin:0;display:flex;align-items:center;gap:8px}
+.modal-actions{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap}
 .modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:8px}
 
 /* ---------- responsive ---------- */
@@ -1856,6 +1861,7 @@ html.dark .lm.v small, .lm.v small {
   justify-content: center !important;
   padding: 10px 0 !important;
 }
+#app.rail #rail { display: none !important; } /* the top-bar toggle (#menu-btn) expands it again */
 #app.rail .side-top {
   padding: 14px 10px !important;
   justify-content: center !important;

@@ -198,7 +198,7 @@
     $$(".nav-hb").forEach(function (h) { h.onclick = function () { var x = h.parentNode; x.classList.toggle("shut"); navSec[x.dataset.s] = x.classList.contains("shut"); localStorage.setItem("wxNavSec", JSON.stringify(navSec)); }; });
     $$(".nav-pin").forEach(function (p) { p.onclick = function (e) { e.preventDefault(); e.stopPropagation(); var l = pins(), v = p.dataset.pin, i = l.indexOf(v); if (i > -1) l.splice(i, 1); else l.push(v); localStorage.setItem(pinKey(), JSON.stringify(l.slice(-8))); renderNav(); route0Mark(); }; });
     setTimeout(navBadges, 400);
-    $$(".nav-gb").forEach(function (b) { b.onclick = function () { var g = b.parentNode; if ($("#app").classList.contains("mini")) { $("#app").classList.remove("mini"); g.classList.add("open"); } else g.classList.toggle("open"); navOpen[g.dataset.g] = g.classList.contains("open"); try { localStorage.setItem("wxNavOpen", JSON.stringify(navOpen)); } catch (e) {} }; });
+    $$(".nav-gb").forEach(function (b) { b.onclick = function () { var g = b.parentNode; if ($("#app").classList.contains("rail")) { try { localStorage.setItem("wxRail", "0"); } catch (e) {} syncRail(); g.classList.add("open"); } else g.classList.toggle("open"); navOpen[g.dataset.g] = g.classList.contains("open"); try { localStorage.setItem("wxNavOpen", JSON.stringify(navOpen)); } catch (e) {} }; });
     $$("[data-roles]").forEach(function (a) { a.hidden = !can(a.dataset.roles); });
   }
 
@@ -346,7 +346,24 @@
   document.addEventListener("keydown", function (e) { if ((e.ctrlKey || e.metaKey) && (e.key === "k" || e.key === "K")) { e.preventDefault(); palette(); } });
   window.WXA_palette = palette;
   if ($("#pk-btn")) $("#pk-btn").onclick = palette;
-  $("#menu-btn").onclick = function () { innerWidth <= 1024 ? $("#app").classList.toggle("open") : $("#app").classList.toggle("mini"); };
+  // Sidebar collapse: one toggle for both buttons (#menu-btn in the top bar, #rail in the sidebar header).
+  // Desktop: icon rail (class "rail", remembered). Phone/tablet: slide-in drawer (class "open").
+  function syncRail() {
+    var app = $("#app"), desk = innerWidth > 1024, on = desk && localStorage.getItem("wxRail") === "1";
+    app.classList.remove("mini");
+    app.classList.toggle("rail", on);
+    $$("#rail, #menu-btn").forEach(function (b) { b.setAttribute("aria-expanded", String(!on)); b.title = on ? "Expand sidebar" : "Collapse sidebar"; b.setAttribute("aria-label", b.title); });
+    if (!desk) app.classList.remove("open");
+  }
+  function toggleSide() {
+    if (innerWidth <= 1024) { $("#app").classList.toggle("open"); return; }
+    try { localStorage.setItem("wxRail", $("#app").classList.contains("rail") ? "0" : "1"); } catch (e) {}
+    syncRail();
+  }
+  $("#menu-btn").onclick = toggleSide;
+  if ($("#rail")) $("#rail").onclick = toggleSide;
+  window.addEventListener("resize", syncRail);
+  syncRail();
   $("#side-x").onclick = $("#side-shade").onclick = function () { $("#app").classList.remove("open"); };
   $("#dark-btn").onclick = function () { var d = document.documentElement.classList.toggle("dark"); localStorage.setItem("wxaTheme", d ? "dark" : "light"); if (S.view === "dashboard") route(); };
   $("#user-btn").onclick = function (e) { e.stopPropagation(); $("#user-menu").hidden = !$("#user-menu").hidden; };

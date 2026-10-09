@@ -5,6 +5,21 @@
   "use strict";
   var W = window.WXA; if (!W) return;
   var api = W.api, esc = W.esc, V = W.VIEWS;
+  // Visitor messages by weekday x hour (Asia/Karachi), from the server's wah_insights "heat" grid.
+  function heatCard(h) {
+    var days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"], max = 0, tot = 0;
+    (h || []).forEach(function (row) { row.forEach(function (v) { if (v > max) max = v; tot += v; }); });
+    var head = '<h3>When visitors write (Karachi time)</h3><span class="muted" style="font-size:12px">visitor messages, last 14 days · darker = busier</span>';
+    if (!h || !tot) return '<div class="card"><div class="card-h">' + head + '</div><div class="card-b"><p class="muted" style="margin:0">No visitor messages in this period yet.</p></div></div>';
+    var axis = '<div class="wi-hm-r"><span></span>' + Array.from({ length: 24 }, function (_, i) { return "<span>" + (i % 3 === 0 ? i : "") + "</span>"; }).join("") + "</div>";
+    var rows = h.map(function (row, d) {
+      return '<div class="wi-hm-r"><span>' + days[d] + "</span>" + row.map(function (v, i) {
+        var a = max ? v / max : 0;
+        return '<i title="' + days[d] + " " + i + ":00 — " + v + ' message(s)" style="background:' + (v ? "rgba(0,184,219," + (0.12 + a * 0.88).toFixed(2) + ")" : "rgba(148,163,184,.12)") + '"></i>';
+      }).join("") + "</div>";
+    }).join("");
+    return '<div class="card"><div class="card-h">' + head + '</div><div class="card-b">' + axis + rows + "</div></div>";
+  }
   function $(s, r) { return (r || document).querySelector(s); }
   var css = document.createElement("style");
   css.textContent = ".wi-k{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:14px}.wi-k .card-b b{display:block;font-size:24px;line-height:1.15}.wi-k small{color:var(--mut);font-size:12px}" +
@@ -12,6 +27,7 @@
     ".wi-ch{display:flex;align-items:flex-end;gap:4px;height:170px;padding:8px 0 0}.wi-ch .c{flex:1;display:flex;flex-direction:column-reverse;min-width:0;height:100%;position:relative}.wi-ch .c i{display:block;width:100%}.wi-ch .c:hover{outline:1px solid var(--line)}" +
     ".wi-ax{display:flex;gap:4px;font-size:10.5px;color:var(--mut);margin-top:4px}.wi-ax span{flex:1;text-align:center;min-width:0;overflow:hidden}" +
     ".wi-lg{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;margin-top:10px}.wi-lg b{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}" +
+    ".wi-hm-r{display:grid;grid-template-columns:40px repeat(24,minmax(0,1fr));gap:3px;align-items:center;margin:3px 0;font-size:11px;color:#94a3b8}.wi-hm-r i{display:block;height:18px;border-radius:3px}.wi-hm-r span{text-align:center}" +
     ".wi-f{display:grid;grid-template-columns:110px 1fr 44px;gap:10px;align-items:center;font-size:13px;margin:7px 0}.wi-f .bar{height:10px;border-radius:99px;background:var(--bg,#f2f4f7);overflow:hidden}.wi-f .bar i{display:block;height:100%;background:#0c1628;border-radius:99px}.wi-f.won .bar i{background:#16a34a}.wi-f.lost .bar i{background:#b8956a}";
   document.head.appendChild(css);
   var COL = { web: "#0c1628", wa: "#16a34a", tg: "#2aabee", leads: "#b8956a" };
@@ -67,6 +83,7 @@
       '<div class="card"><div class="card-h"><h3>Where leads come from</h3></div><div class="card-b">' +
       (srcK.length ? srcK.map(function (s) { return '<div class="wi-f"><span>' + esc(SRC[s] || s) + '</span><div class="bar"><i style="width:' + (r.sources[s] / smax * 100) + '%;background:#b8956a"></i></div><b style="text-align:right">' + r.sources[s] + "</b></div>"; }).join("") : '<p class="muted" style="margin:0">No leads in this period.</p>') +
       "</div></div></div>" +
+      heatCard(r.heat) +
       '<div class="card"><div class="card-h"><h3>Recent campaigns</h3><span class="muted" style="font-size:12px">' + r.optout + " opted out (STOP)</span></div><div class=\"card-b\">" +
       (r.camps.length ? '<table class="tbl"><thead><tr><th>Campaign</th><th>Status</th><th style="text-align:right">Sent</th><th style="text-align:right">Delivered</th><th style="text-align:right">Read</th><th style="text-align:right">Replied</th></tr></thead><tbody>' +
         r.camps.map(function (c) { var p = function (x) { return c.sent ? " <small class=\"muted\">" + Math.round(x * 100 / c.sent) + "%</small>" : ""; }; return "<tr><td>" + esc(c.name) + "</td><td>" + esc(c.status) + '</td><td style="text-align:right">' + n(c.sent) + '</td><td style="text-align:right">' + n(c.delivered) + p(c.delivered) + '</td><td style="text-align:right">' + n(c.read) + p(c.read) + '</td><td style="text-align:right">' + n(c.replied) + p(c.replied) + "</td></tr>"; }).join("") + "</tbody></table>"

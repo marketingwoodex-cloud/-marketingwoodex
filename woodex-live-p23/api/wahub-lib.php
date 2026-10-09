@@ -156,9 +156,10 @@ function wah_actions(string $action, array $in): bool {
             $fun = array_fill_keys(array_keys(WAH_STAGES), 0);
             foreach (q("SELECT stage, COUNT(*) n FROM wx_leads WHERE created_at>=? GROUP BY stage", [date('Y-m-d H:i:s', time() - 90 * 86400)])->fetchAll() as $r) if (isset($fun[$r['stage']])) $fun[$r['stage']] = (int)$r['n'];
             $rt = ['ai' => [], 'team' => []];
+            $heat = array_fill(0, 7, array_fill(0, 24, 0)); // visitor messages by weekday (0=Sun) x hour, Asia/Karachi
             try {
                 $rows = q("SELECT m.chat_id, m.who, m.t FROM wx_chat_msgs m JOIN wx_chats c ON c.id=m.chat_id WHERE c.created_at>=? ORDER BY m.chat_id, m.id LIMIT 20000", [$from . ' 00:00:00'])->fetchAll();
-                $st = []; foreach ($rows as $r) { $c = (int)$r['chat_id']; if (!isset($st[$c])) $st[$c] = []; $x = &$st[$c]; if (!isset($x['v']) && $r['who'] === 'visitor') $x['v'] = strtotime($r['t']);
+                $st = []; foreach ($rows as $r) { if ($r['who'] === 'visitor') { $hz = (new DateTime($r['t'], new DateTimeZone(date_default_timezone_get())))->setTimezone(new DateTimeZone('Asia/Karachi')); $heat[(int)$hz->format('w')][(int)$hz->format('G')]++; } $c = (int)$r['chat_id']; if (!isset($st[$c])) $st[$c] = []; $x = &$st[$c]; if (!isset($x['v']) && $r['who'] === 'visitor') $x['v'] = strtotime($r['t']);
                     elseif (isset($x['v']) && in_array($r['who'], ['ai', 'agent'], true)) { $w = $r['who'] === 'ai' ? 'ai' : 'team'; if (!isset($x[$w])) { $x[$w] = 1; $rt[$w][] = max(0, strtotime($r['t']) - $x['v']); } } unset($x); }
             } catch (Throwable $e) {}
             $med = function (array $a) { if (!$a) return null; sort($a); return $a[intdiv(count($a), 2)]; };
@@ -166,7 +167,7 @@ function wah_actions(string $action, array $in): bool {
             $camps = array_map(fn($c) => ['name' => $c['name'], 'when' => $c['when'] ?? '', 'status' => $c['status']] + wag_stats($c), array_slice(array_reverse($d['camps']), 0, 6));
             $won = $fun['won']; $closed = $won + $fun['lost'];
             out(['ok' => true, 'days' => $days, 'series' => array_values($ser), 'sources' => $src, 'funnel' => $fun, 'stages' => WAH_STAGES, 'winRate' => $closed ? round($won * 100 / $closed) : null,
-                'reply' => ['ai' => $med($rt['ai']), 'team' => $med($rt['team']), 'aiN' => count($rt['ai']), 'teamN' => count($rt['team'])], 'flows' => $flows, 'camps' => $camps, 'optout' => count($d['optout'])]);
+                'heat' => $heat, 'reply' => ['ai' => $med($rt['ai']), 'team' => $med($rt['team']), 'aiN' => count($rt['ai']), 'teamN' => count($rt['team'])], 'flows' => $flows, 'camps' => $camps, 'optout' => count($d['optout'])]);
         case 'wah_tpl_submit': // P40 C: send a template to Meta for approval
             $u = need($OA); $d = wag_load(); $t = wag_tpl($d, (string)($in['id'] ?? '')); if (!$t) fail('Template not found');
             $c = wah_cfg($d); $crm = crm_cfg(); $waba = preg_replace('~\D~', '', (string)$c['waba']);

@@ -485,7 +485,8 @@
 
   function closeDrawer() { var o = $("#s17-dr"); if (o) o.remove(); }
   function addLead(after) {
-    var d = document.createElement("div"); d.className = "modal-overlay";
+    var prev = document.getElementById("s17-addlead"); if (prev) prev.remove(); /* never stack two copies */
+    var d = document.createElement("div"); d.className = "modal-overlay"; d.id = "s17-addlead";
     d.innerHTML = "<div class='modal-card' style='max-width:540px'><div class='modal-h'><h3>" + ic("plus") + " Add new lead</h3><button class='icon-btn' id='m-x'>" + ic("x") + "</button></div>" +
       "<div class='modal-b'><div class='s17-g2'><label>Name *<input id='al-n' required placeholder='e.g. Tariq Mahmood'></label><label>Company<input id='al-co' placeholder='e.g. Mahmood Textiles'></label></div>" +
       "<div class='s17-g2'><label>Phone *<input id='al-p' type='tel' placeholder='+923001234567'></label><label>Email<input id='al-e' type='email' placeholder='name@company.com'></label></div>" +
