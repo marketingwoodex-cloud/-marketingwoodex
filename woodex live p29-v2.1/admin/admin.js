@@ -135,17 +135,17 @@
     ["ADMIN & SETTINGS"],
     ["business", "Business info", "building", "g:settings"],
     ["settings", "Integrations", "zap", "g:settings"],
+    ["connections", "Connections & MCP", "zap", "owner,admin"],
     ["users", "Users & roles", "users", "owner,admin"],
+    ["profile", "My profile", "user"],
+    ["security", "My security", "shield"],
     { g: "System", icon: "settings", id: "settings", items: [
       ["backups", "Backups", "hard-drive", "owner,admin"],
       ["database", "Database", "database", "owner,admin"],
       ["files", "File manager", "folder", "g:website"],
       ["maintenance", "Maintenance", "shield", "g:settings"],
       ["activity", "Activity log", "activity", "g:settings"],
-      ["system", "System check", "activity", "g:settings"]] },
-    ["ME"],
-    ["profile", "My profile", "user"],
-    ["security", "My security", "shield"]
+      ["system", "System check", "activity", "g:settings"]] }
   ];
   /* P39 Phase 3: collapsible sections + per-user pinned screens */
   var navSec = (function () { try { return JSON.parse(localStorage.getItem("wxNavSec") || "{}"); } catch (e) { return {}; } })();
