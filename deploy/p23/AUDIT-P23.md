@@ -149,7 +149,7 @@ over 8 MB · the only external URLs are `https://woodexfurniture.pk` nav links, 
 vendored xlsx/jspdf libraries, never fetched) · `/api/contact` in `assets/site.js` is only a CSS
 selector (the real submit target `/api/forms.php` exists).
 
-### `public_html` readiness checklist — 70/70 PASS
+### `public_html` readiness checklist — 70/70 PASS (re-run after the database pass: still 70/70)
 
 The checker is committed as `deploy/p23/hostinger-check.js` (pure Node, no PHP or zip tool needed):
 `node hostinger-check.js <unzipped-package>`. Exit code = number of failures, so it can gate a release.
@@ -177,6 +177,25 @@ size  .   640 files · 27.3 MB zip · 0 files > 8 MB · modes 644/755 · 0 symli
 clean .   0 conflict markers · 47/47 PHP parse · 87/87 JS parse ·
           13,941 references resolve (0 missing) · 142/142 sitemap URLs exist
 ```
+
+### Database package — audited separately (`woodex-diploy 23-database.zip`, 5 files)
+
+| Check | Result |
+|---|---|
+| Tables in `woodex-database.sql` (full dump) | **20** — `wx_users wx_activity wx_settings wx_throttle wx_leads wx_lead_notes wx_clients wx_notify_log wx_wa_seen wx_templates wx_quotes wx_invoices wx_projects wx_chats wx_chat_msgs wx_bookings wx_ai_events wx_ai_unans wx_tg_seen wx_tg_map` |
+| Tables in `woodex-v20.sql` (what `/wx-install.php` runs) | **the same 20** → installer-only route builds the full schema |
+| Columns the PHP writes (`INSERT/UPDATE` in `api/*.php`, 15 tables) | **all covered** by the dump, or added by the app's own runtime migrations (`wx_chats.handoff/assigned_to/tags/ext/channel/vtype/atype`, `wx_chat_msgs.att`) |
+| Only real drift found | `wx_users.totp_on` / `totp_secret` exist in the full dump but not in `woodex-v20.sql` — **harmless**: 2FA state is kept in `_private/*.json`, no SQL statement reads those two columns |
+| Safety for phpMyAdmin | no `CREATE DATABASE`, no `USE`, no `DROP TABLE` in either file → importing into the DB you created in hPanel cannot wipe anything else |
+| Login seeded | ⚠ `master@woodex.pk`, `manager@woodex.pk`, `developer@woodex.pk` all hash to the password `admin` (verified with bcryptjs) → `01-security-cleanup.sql` ships the three fixes |
+| Added helper files | `00-verify-import.sql` (must answer **20**, plus per-table row counts) · `01-security-cleanup.sql` (`DELETE FROM wx_users;` / `UPDATE wx_users SET active=0;` / keep-owner-only) |
+| Formats | `woodex-diploy 23-database.zip` (everything + README) and `woodex-database.sql.zip` (single file — phpMyAdmin also accepts `.sql.zip`, which is the exact shape Hostinger's own instructions ask for) |
+
+`_database/` stays inside the website zip because `wx-install.php` reads
+`_database/woodex-v20.sql` from the docroot — it is double-blocked there (`Require all denied`
+in the folder + `RewriteRule ^_database(/|$) - [F,L]` in the root `.htaccess`), and the deploy note
+tells you to delete the folder after the install. The loose `.sql` that used to sit at the web root —
+the exact thing Hostinger's message warned about — is gone.
 
 ## 5. Verification run on the package (not on faith)
 

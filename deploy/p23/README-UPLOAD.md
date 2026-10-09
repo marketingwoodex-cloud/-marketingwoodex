@@ -1,6 +1,9 @@
 # WOODEX — Hostinger upload instructions (build P23.1 · flat `public_html` layout)
 
-**ZIP:** `woodex-diploy 23.zip` (≈28 MB, 640 files) · **DB ZIP:** `woodex-diploy 23-database.zip`
+**Website:** `woodex-diploy 23.zip` (27.3 MB · 640 files · extracts straight into `public_html`)
+**Database:** `woodex-diploy 23-database.zip` — `woodex-database.sql` (20 tables + starter data),
+`woodex-v20.sql` (tables only), `00-verify-import.sql`, `01-security-cleanup.sql`, `README-IMPORT.txt`.
+Single-file variant `woodex-database.sql.zip` is also fine for phpMyAdmin (it unzips on import).
 **Site:** https://woodex.com.pk · **Stack:** PHP 8.2 + MySQL + Apache/LiteSpeed (no Node, no Vercel, no Supabase)
 
 ---
@@ -56,7 +59,10 @@ hPanel → **Websites → Databases → Management**:
    - **phpMyAdmin** → select the database → **Import** → upload `woodex-database.sql`
      from `woodex-diploy 23-database.zip` (kept **outside** `public_html`).
    - **no import needed** if you use `/wx-install.php` in step 3 — it creates all tables itself
-     from `_database/woodex-v20.sql` and is the recommended route.
+     from `_database/woodex-v20.sql` (verified: the same 20 tables as the full dump) and is the
+     recommended route.
+4. In phpMyAdmin → SQL, run `00-verify-import.sql` → the first answer must be **20**.
+5. Then run `01-security-cleanup.sql` (see the red box in step 3 — the dump seeds `admin`).
    - Larger than 256 MB → import over SSH: `mysql -u u128159657_woodex -p u128159657_woodex < woodex-database.sql`
      (hPanel → Advanced → SSH Access, then `sftp` the file in).
 
