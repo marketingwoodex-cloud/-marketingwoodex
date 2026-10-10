@@ -3,9 +3,8 @@
   "target": "woodex-live-p29-v2.1-pro",
   "evidence_revision": "24157f6",
   "branch": "arena/4ba510f0-marketingwoodex",
-  "recorded_head_at_generation": "b8083f1dcc615014d0b121ef413aa19c8bea5bcf",
   "generated": "2026-10-10",
-  "note": "Hashes of files as written in the commit that adds this manifest. manifest.json itself is excluded. No secret values, no personal data.",
+  "note": "SHA-256 of each file as committed in the commit that last changed this manifest. manifest.json is excluded. No secret values, no personal data.",
   "release_recommendation": "BLOCK",
   "files": [
     {
@@ -120,8 +119,8 @@
     },
     {
       "path": "woodex-audit/18-test-and-validation-report.md",
-      "sha256": "0c94860a501b2283b9c8cf6f650e65ce7f6e844ec8dc5d35a31414d5c6e7fa35",
-      "bytes": 6683
+      "sha256": "ac2e66afff70aa1281b93eaba1eced36db2461d78260b88af5a0ff4c364d499e",
+      "bytes": 6764
     },
     {
       "path": "woodex-audit/19-qa-checklists.md",
