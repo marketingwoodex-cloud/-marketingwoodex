@@ -271,3 +271,34 @@ html.dark .ib-chips button:not(.on), html.dark .l6-chips button:not(.on) {
 html .p19-k span, html .p19-cf .v em { color: var(--ui-muted) !important; }
 /* Estimator navy panel keeps its navy fill: its small text must be light */
 html .sk-navy small, html .sk-navy .muted, html .sk-navy p { color: #cbd5e1 !important; }
+
+/* ---------- Page layout (U1): page header, KPI row, card header, tables ---------- */
+/* Page header: title, breadcrumb, actions. Same markup on every screen (admin.js head() and p18 head()). */
+html .ph { margin-bottom: 20px; align-items: flex-start; }
+html .ph h1 { font-size: 24px; font-weight: 600; line-height: 1.25; letter-spacing: -0.01em; color: var(--ui-text); margin: 0; }
+html .ph .crumb { margin-top: 4px; font-size: 13px; color: var(--ui-muted); }
+html .ph .toolbar { gap: 8px; align-items: center; }
+html .ph .toolbar .btn { padding: 0 14px; min-height: 36px; font-size: 14px; }
+
+/* KPI row: even tiles, consistent padding, tabular numbers */
+html .kpis, html .grid.kpis { gap: 16px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+html .kpi, html .card.kpi { padding: 18px 20px; }
+html .kpi b { font-size: 26px; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--ui-text); }
+html .kpi small { font-size: 13px; font-weight: 500; color: var(--ui-muted); }
+html .kpi .kpi-ic { width: 36px; height: 36px; margin: 0 0 12px; border-radius: 10px; background: var(--ui-brand-soft); color: var(--ui-brand-text); }
+html .grid.kpis .kpi-ic { display: grid; }
+html .kpi .kpi-ic svg { width: 18px; height: 18px; }
+
+/* Card header: 16px rhythm, quiet divider */
+html .card-h { padding: 16px 20px; border-bottom: 1px solid var(--ui-border); margin: 0; align-items: center; }
+html .card-h h3 { font-size: 15px; font-weight: 600; margin: 0; }
+html .card-b { padding: 16px 20px; }
+
+/* Tables: header row and cell rhythm */
+html .tbl { font-size: 14px; }
+html .tbl thead th { padding: 10px 16px; white-space: nowrap; }
+html .tbl td { padding: 12px 16px; vertical-align: middle; }
+html .tbl tbody tr { transition: background-color 0.12s ease; }
+
+/* Grid gaps between cards */
+html .grid { gap: 16px; }
