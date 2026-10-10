@@ -4,7 +4,7 @@
   "evidence_revision": "24157f6",
   "branch": "arena/4ba510f0-marketingwoodex",
   "generated": "2026-10-10",
-  "note": "SHA-256 of each file as committed in the commit that last changed this manifest. manifest.json is excluded. No secret values, no personal data.",
+  "note": "SHA-256 of each file as committed in the commit that last changed this manifest. manifest.json is excluded. PNG screenshots are listed in the evidence index, not hashed here. No secret values, no personal data.",
   "release_recommendation": "BLOCK",
   "files": [
     {
@@ -19,8 +19,8 @@
     },
     {
       "path": "tools/qa-p29/README.md",
-      "sha256": "cdfcc76038471cbe8474cd0d7e85174369d9bb39cb81e091119d51b2a2d47bf4",
-      "bytes": 1787
+      "sha256": "d8d3575de1f8f42fbc4f2e8d99fb3ba6d66d463ca6e84c9c34c7190d681f3167",
+      "bytes": 2702
     },
     {
       "path": "tools/qa-p29/approvals-race.js",
@@ -41,6 +41,16 @@
       "path": "tools/qa-p29/package.json",
       "sha256": "e8eec3b00da05117c49eeafff96f9a61f5ce13cf715684d4a2a37469ede802da",
       "bytes": 325
+    },
+    {
+      "path": "tools/qa-p29/preview-login-test.mjs",
+      "sha256": "15753b7261c70de2f0b67744e7fd5259a90523bf065f432e1a60c1ce494bd7e9",
+      "bytes": 3797
+    },
+    {
+      "path": "tools/qa-p29/preview-server.py",
+      "sha256": "32dd379116689be46f34c105d39ad384ec1cc00e91ad581301d2c86a14513fb9",
+      "bytes": 4329
     },
     {
       "path": "tools/qa-p29/run-browser-evidence.sh",
@@ -178,6 +188,11 @@
       "bytes": 3365
     },
     {
+      "path": "woodex-audit/25-status-and-todo.md",
+      "sha256": "129c679e51858e88b58ec16295a2b11b45a10da2c34215b51655421333dceb7c",
+      "bytes": 6251
+    },
+    {
       "path": "woodex-audit/README.md",
       "sha256": "72ff0dfea41463fea4683ae3ef35c319e5625ebd8368f80374c398d6fffa6b20",
       "bytes": 4084
@@ -186,21 +201,6 @@
       "path": "woodex-audit/evidence/README.md",
       "sha256": "18b12459b4f0cb87db4feb047fd098c4854b53d55931583907e3311d82fb5bcb",
       "bytes": 1119
-    },
-    {
-      "path": "woodex-audit/evidence/browser/approvals.png",
-      "sha256": "994b232e3e8b4571341c4acc95c65e3686677c94514bef2c1bba5f807ea562c9",
-      "bytes": 100550
-    },
-    {
-      "path": "woodex-audit/evidence/browser/editor-dash.png",
-      "sha256": "2427d568b3557633d00e4fe17c3990e729c9a3c63d0ebe994bd1686b17e45e7d",
-      "bytes": 90358
-    },
-    {
-      "path": "woodex-audit/evidence/browser/security.png",
-      "sha256": "164c0d446df53b5fd68ef5969b6aa4409b7eaf8b37314be25ff75d23c31fb47a",
-      "bytes": 182063
     },
     {
       "path": "woodex-audit/evidence/sanitized-command-output/ad10-t16-t18-2026-10-11.txt",
