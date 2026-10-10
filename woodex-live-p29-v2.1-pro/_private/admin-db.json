@@ -20,9 +20,10 @@
    "active": 1,
    "pw_ver": 1,
    "created_at": "2026-10-10 12:00:00",
-   "last_login": "2026-10-10 15:33:59",
+   "last_login": "2026-10-10 15:37:43",
    "known": [
-    "84c8cf929f246cad"
+    "84c8cf929f246cad",
+    "b07a760ab58004d3"
    ],
    "sessions": [
     {
@@ -32,8 +33,57 @@
      "ua": "curl/7.88.1",
      "created": "2026-10-10 15:33:59",
      "seen": "2026-10-10 15:33:59"
+    },
+    {
+     "sid": "6d79cae2c37b1bf3",
+     "exp": 1791689768,
+     "ip": "127.0.0.1",
+     "ua": "",
+     "created": "2026-10-10 15:36:08",
+     "seen": "2026-10-10 15:36:08"
+    },
+    {
+     "sid": "fc2eb529d062b7ec",
+     "exp": 1791689786,
+     "ip": "127.0.0.1",
+     "ua": "",
+     "created": "2026-10-10 15:36:26",
+     "seen": "2026-10-10 15:36:26"
+    },
+    {
+     "sid": "993e1a0fc912f24a",
+     "exp": 1791689798,
+     "ip": "127.0.0.1",
+     "ua": "",
+     "created": "2026-10-10 15:36:38",
+     "seen": "2026-10-10 15:36:38"
+    },
+    {
+     "sid": "b60b53d08ffd5863",
+     "exp": 1791689817,
+     "ip": "127.0.0.1",
+     "ua": "",
+     "created": "2026-10-10 15:36:57",
+     "seen": "2026-10-10 15:36:57"
+    },
+    {
+     "sid": "7a1ae4bac015839a",
+     "exp": 1791689838,
+     "ip": "127.0.0.1",
+     "ua": "",
+     "created": "2026-10-10 15:37:18",
+     "seen": "2026-10-10 15:37:18"
+    },
+    {
+     "sid": "973f83d155dbb35e",
+     "exp": 1791689863,
+     "ip": "127.0.0.1",
+     "ua": "curl/7.88.1",
+     "created": "2026-10-10 15:37:43",
+     "seen": "2026-10-10 15:37:43"
     }
-   ]
+   ],
+   "_sid": "7a1ae4bac015839a"
   },
   {
    "id": 2,
@@ -167,10 +217,64 @@
    "target": "",
    "ip": "127.0.0.1",
    "created_at": "2026-10-10 15:33:59"
+  },
+  {
+   "id": 3,
+   "user_id": 1,
+   "user_name": "Master Admin",
+   "action": "login",
+   "target": "",
+   "ip": "127.0.0.1",
+   "created_at": "2026-10-10 15:36:08"
+  },
+  {
+   "id": 4,
+   "user_id": 1,
+   "user_name": "Master Admin",
+   "action": "login",
+   "target": "",
+   "ip": "127.0.0.1",
+   "created_at": "2026-10-10 15:36:26"
+  },
+  {
+   "id": 5,
+   "user_id": 1,
+   "user_name": "Master Admin",
+   "action": "login",
+   "target": "",
+   "ip": "127.0.0.1",
+   "created_at": "2026-10-10 15:36:38"
+  },
+  {
+   "id": 6,
+   "user_id": 1,
+   "user_name": "Master Admin",
+   "action": "login",
+   "target": "",
+   "ip": "127.0.0.1",
+   "created_at": "2026-10-10 15:36:57"
+  },
+  {
+   "id": 7,
+   "user_id": 1,
+   "user_name": "Master Admin",
+   "action": "login",
+   "target": "",
+   "ip": "127.0.0.1",
+   "created_at": "2026-10-10 15:37:18"
+  },
+  {
+   "id": 8,
+   "user_id": 1,
+   "user_name": "Master Admin",
+   "action": "login",
+   "target": "",
+   "ip": "127.0.0.1",
+   "created_at": "2026-10-10 15:37:43"
   }
  ],
  "seqU": 7,
- "seqA": 2,
+ "seqA": 8,
  "leads": [
   {
    "id": 1,
@@ -310,5 +414,10 @@
    "target_date": "2027-01-20"
   }
  ],
- "seqP": 3
+ "seqP": 3,
+ "clients": [],
+ "seqC": 0,
+ "tpls": [],
+ "seqT": 0,
+ "seqPay": 0
 }

@@ -615,7 +615,7 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
   const qViewTok = (q) => hmac("qv|" + q.id + "|" + q.no).slice(0, 32);
   const qViewUrl = (q, host) => (host ? "https://" + String(host).replace(/[^a-z0-9.\-:]/gi, "") : "") + "/api/quote-view.php?id=" + q.id + "&t=" + qViewTok(q);
   const qLabel = (q) => q.no + (q.version > 1 ? " · V" + q.version : "") + (q.option ? " · " + q.option : "");
-  const invPub = (i) => { const paid = i.payments.reduce((a, p) => a + p.amount, 0); return { ...i, paid, balance: Math.max(0, i.total - paid), payStatus: paid <= 0 ? "unpaid" : paid >= i.total ? "paid" : "partial", overdue: paid < i.total && i.due_date && i.due_date < now().slice(0, 10) }; };
+  const invPub = (i) => { const paid = (Array.isArray(i.payments) ? i.payments : []).reduce((a, p) => a + (p.amount || 0), (typeof i.paid === "number" ? i.paid : 0)); return { ...i, paid, balance: Math.max(0, (i.total || 0) - paid), payStatus: paid <= 0 ? "unpaid" : paid >= i.total ? "paid" : "partial", overdue: paid < i.total && i.due_date && i.due_date < now().slice(0, 10) }; };
   // ---- P17 S1+S2 mirror of api/sales17-lib.php
   const S17 = { lines: { furniture: "Furniture", interior: "Interior", project: "Project" }, leadTypes: { new: "New lead", returning: "Returning client", referral: "Referral" },
     quoteStatus: { "": "—", pending: "Pending", proposal: "Proposal / Quotation", done: "Done" }, nextTypes: { call: "Call", whatsapp: "WhatsApp", visit: "Site visit", meeting: "Meeting", email: "Email" },
@@ -1321,7 +1321,7 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
           chips: { new: db.leads.filter((l) => !l.is_read).length, overdue: overdue.length, follow: follow.length }, target: { target: db.dashTarget || 0, month: mp, monthLabel: new Date().toLocaleString("en", { month: "long", year: "numeric" }) } };
         return o;
       }
-      case "quotes_list": { need(SALES); return { ok: true, quotes: db.quotes.slice().reverse().map(({ sections, ...q }) => ({ ...q, label: qLabel(q), sectionCount: sections.length })) }; }
+      case "quotes_list": { need(SALES); return { ok: true, quotes: db.quotes.slice().reverse().map(({ sections, ...q }) => ({ ...q, no: q.no || q.number || ("WX-" + q.id), label: qLabel({ no: q.no || q.number || ("WX-" + q.id), version: q.version || 1, option: q.option || "" }), sectionCount: (Array.isArray(sections) ? sections.length : (Array.isArray(q.items) ? q.items.length : 0)) })) }; }
       case "quote_get": { need(SALES); const q = findQ(inp.id); return { ok: true, quote: { ...q, label: qLabel(q) }, family: db.quotes.filter((x) => x.no === q.no).map((x) => ({ id: x.id, label: qLabel(x), status: x.status, total: x.total, version: x.version, option: x.option })), company: companyCfg(), invoice: db.invoices.find((i) => i.quote_id === q.id) ? invPub(db.invoices.find((i) => i.quote_id === q.id)) : null }; }
       case "quote_save": {
         const u = need(SALES); let q;
@@ -2341,7 +2341,7 @@ export function createAdmin({ ROOT, secret, builderPassword }) {
     return null;
   }
   const adminApi = async function (req, inp) {
-    const action = String(inp.action || "status"), ip = req.socket.remoteAddress || "";
+    const action = String(inp.action || "status"), ip = (req && req.socket && req.socket.remoteAddress) || (req && req.headers && req.headers["x-forwarded-for"]) || "127.0.0.1";
     let db = load(); if (db) { try { if (cmsTick(db)) save(db); } catch (e) { console.error("cmsTick", e.message); } }
     const need = (roles) => { const u = current(db, req); if (!u) throw new Fail("Not signed in", 401); const ok = wxAllowed(u, action, roles); if (ok === false || (ok === null && roles && !roles.includes(u.role))) throw new Fail("Your role (" + (ROLE_LABELS[u.role] || u.role) + ") does not have permission for this", 403); return u; };
     const done = (o) => { save(db); return o; };
