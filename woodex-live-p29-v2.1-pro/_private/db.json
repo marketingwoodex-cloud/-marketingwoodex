@@ -1,0 +1,317 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "name": "Master Admin",
+      "email": "master@woodex.pk",
+      "role": "owner",
+      "perms": [
+        "settings",
+        "crm",
+        "quotes",
+        "invoices",
+        "projects",
+        "chats",
+        "users",
+        "pages",
+        "media",
+        "seo",
+        "speed"
+      ],
+      "pass_hash": "scrypt$960ced3469b5aa54ae2115226f4b3867$c4f62f7ca17057a01b11a416b6561565bc61cc32b86c497d87ce39abeb1940ed",
+      "active": 1,
+      "pw_ver": 1,
+      "created_at": "2026-10-10 12:00:00",
+      "last_login": null
+    },
+    {
+      "id": 2,
+      "name": "Woodex Owner",
+      "email": "admin@woodex.pk",
+      "role": "owner",
+      "perms": [
+        "settings",
+        "crm",
+        "quotes",
+        "invoices",
+        "projects",
+        "chats",
+        "users",
+        "pages",
+        "media",
+        "seo",
+        "speed"
+      ],
+      "pass_hash": "scrypt$3cf6da40173d33a5ec03884a6aaaaff2$f63702072af0b41f3294c277bc2d7e75d89346c28422d5ade5e626ca5c74142f",
+      "active": 1,
+      "pw_ver": 1,
+      "created_at": "2026-10-10 12:00:00",
+      "last_login": null
+    },
+    {
+      "id": 3,
+      "name": "Admin",
+      "email": "admin",
+      "role": "owner",
+      "perms": [
+        "settings",
+        "crm",
+        "quotes",
+        "invoices",
+        "projects",
+        "chats",
+        "users",
+        "pages",
+        "media",
+        "seo",
+        "speed"
+      ],
+      "pass_hash": "scrypt$d274f001c63c61a20a69b5dbb4b0af2d$23bc6353049e421e22bf2300d1778bde776e7ced912df2ac22a63ac6118f0da7",
+      "active": 1,
+      "pw_ver": 1,
+      "created_at": "2026-10-10 12:00:00",
+      "last_login": null
+    },
+    {
+      "id": 4,
+      "name": "Ar. Bilal Ahmed",
+      "email": "manager@woodex.pk",
+      "role": "admin",
+      "perms": [
+        "crm",
+        "quotes",
+        "invoices",
+        "projects",
+        "chats",
+        "pages",
+        "media",
+        "seo"
+      ],
+      "pass_hash": "scrypt$841297b353539ea71227199d296d1d75$d0a00e3898ad722ac071f6c02fb60ae7338569836de4ccfccdab45d467f3e60a",
+      "active": 1,
+      "pw_ver": 1,
+      "created_at": "2026-10-10 12:00:00",
+      "last_login": null
+    },
+    {
+      "id": 5,
+      "name": "Engr. Hamza Farooq",
+      "email": "developer@woodex.pk",
+      "role": "editor",
+      "perms": [
+        "pages",
+        "media",
+        "seo",
+        "speed"
+      ],
+      "pass_hash": "scrypt$4a7ef403cc71aa84bdd3cc25fc034d93$b6af281b177e5074335905a23fe193a55cfe1caaab5b11faf4460257e0eb41a2",
+      "active": 1,
+      "pw_ver": 1,
+      "created_at": "2026-10-10 12:00:00",
+      "last_login": null
+    },
+    {
+      "id": 6,
+      "name": "Usman Ali",
+      "email": "sales@woodex.pk",
+      "role": "sales",
+      "perms": [
+        "forms",
+        "crm",
+        "quotes",
+        "invoices"
+      ],
+      "pass_hash": "scrypt$12f54803f6ca41a68516c4f2ab25fc16$5b3b7b4793a7232eb24144fc845255358ad88d4d34a7de74bfc76270462026b2",
+      "active": 1,
+      "pw_ver": 1,
+      "created_at": "2026-10-10 12:00:00",
+      "last_login": null
+    },
+    {
+      "id": 7,
+      "name": "Dr. Sarah Mansoor",
+      "email": "support@woodex.pk",
+      "role": "support",
+      "perms": [
+        "forms",
+        "chats"
+      ],
+      "pass_hash": "scrypt$d4b94ddacf69cda081f8d2e31e369616$b008368c8c1fd88869d8b4cc1fd9b43db30751f3fe0104cbb9c84e5ddbe98be1",
+      "active": 1,
+      "pw_ver": 1,
+      "created_at": "2026-10-10 12:00:00",
+      "last_login": null
+    }
+  ],
+  "activity": [
+    {
+      "id": 1,
+      "user_id": 1,
+      "user_name": "Master Admin",
+      "action": "system.init",
+      "target": "Woodex Live P29 v2.1 Pro initialized",
+      "ip": "127.0.0.1",
+      "created_at": "2026-10-10 12:00:00"
+    }
+  ],
+  "seqU": 7,
+  "seqA": 1,
+  "leads": [
+    {
+      "id": 1,
+      "name": "Malik Tariq",
+      "email": "malik.tariq@estatecorp.pk",
+      "phone": "+92 300 8472910",
+      "service": "Full Luxury Villa Architecture & Interior",
+      "source": "Website Consultation Form",
+      "stage": "proposal",
+      "value": 4500000,
+      "unread": false,
+      "read": true,
+      "created_at": "2026-10-08 14:20:00",
+      "notes": []
+    },
+    {
+      "id": 2,
+      "name": "Ayesha Jahangir",
+      "email": "ayesha.j@nexusfin.pk",
+      "phone": "+92 321 9988112",
+      "service": "Corporate Headquarters Turnkey Fit-out",
+      "source": "WhatsApp Live Chat",
+      "stage": "qualified",
+      "value": 8200000,
+      "unread": false,
+      "read": true,
+      "created_at": "2026-10-09 11:15:00",
+      "notes": []
+    },
+    {
+      "id": 3,
+      "name": "Dr. Omair Rasheed",
+      "email": "omair.rasheed@gmail.com",
+      "phone": "+92 333 4455667",
+      "service": "Penthouse Renovation & Custom Joinery",
+      "source": "Website Quote Calculator",
+      "stage": "new",
+      "value": 3100000,
+      "unread": true,
+      "read": false,
+      "created_at": "2026-10-10 09:30:00",
+      "notes": []
+    }
+  ],
+  "seqL": 3,
+  "quotes": [
+    {
+      "id": 101,
+      "no": "WX-EST-2026-089",
+      "number": "WX-EST-2026-089",
+      "title": "DHA Phase 6 Villa Modern Interior & Joinery",
+      "client": {
+        "name": "Malik Tariq",
+        "email": "malik.tariq@estatecorp.pk",
+        "phone": "+92 300 8472910"
+      },
+      "status": "sent",
+      "total": 4500000,
+      "advance": 1350000,
+      "date": "2026-10-08",
+      "sections": [
+        {
+          "title": "Scope & Itemized Deliverables",
+          "items": [
+            {
+              "desc": "Architectural Layout & 3D Spatial Rendering",
+              "qty": 1,
+              "rate": 450000,
+              "amount": 450000
+            },
+            {
+              "desc": "Master Bedroom & Living Bespoke Italian Joinery",
+              "qty": 1,
+              "rate": 2150000,
+              "amount": 2150000
+            },
+            {
+              "desc": "False Ceiling, Ambient Lighting & Electrical Fixtures",
+              "qty": 1,
+              "rate": 850000,
+              "amount": 850000
+            },
+            {
+              "desc": "Custom Italian Kitchen with Quartz Countertops",
+              "qty": 1,
+              "rate": 1050000,
+              "amount": 1050000
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "seqQ": 101,
+  "invoices": [
+    {
+      "id": 201,
+      "no": "WX-INV-2026-042",
+      "number": "WX-INV-2026-042",
+      "title": "Mobilization Advance - DHA Villa Project",
+      "quote_id": 101,
+      "client": {
+        "name": "Malik Tariq",
+        "email": "malik.tariq@estatecorp.pk",
+        "phone": "+92 300 8472910"
+      },
+      "status": "paid",
+      "total": 1350000,
+      "paid": 1350000,
+      "balance": 0,
+      "date": "2026-10-09",
+      "bank": "Bank Alfalah Islamic - Principal Collection Account (PK36 ALFH 0042 0100 8829 1102)",
+      "payments": [
+        {
+          "id": 1,
+          "amount": 1350000,
+          "t": "2026-10-09 16:30:00"
+        }
+      ]
+    }
+  ],
+  "seqI": 201,
+  "projects": [
+    {
+      "id": 1,
+      "title": "DHA Phase 6 Luxury Residence",
+      "client": "Malik Tariq",
+      "stage": "3d_design",
+      "progress": 40,
+      "budget": 4500000,
+      "lead_architect": "Ar. Bilal Ahmed",
+      "start_date": "2026-10-01",
+      "target_date": "2026-12-15"
+    },
+    {
+      "id": 2,
+      "title": "Nexus Fintech Corporate HQ Fit-out",
+      "client": "Ayesha Jahangir",
+      "stage": "civil_work",
+      "progress": 25,
+      "budget": 8200000,
+      "lead_architect": "Ar. Bilal Ahmed",
+      "start_date": "2026-09-20",
+      "target_date": "2026-11-30"
+    },
+    {
+      "id": 3,
+      "title": "Gulberg Executive Penthouse Redesign",
+      "client": "Dr. Omair Rasheed",
+      "stage": "consultation",
+      "progress": 10,
+      "budget": 3100000,
+      "lead_architect": "Kamran Tariq",
+      "start_date": "2026-10-10",
+      "target_date": "2027-01-20"
+    }
+  ],
+  "seqP": 3
+}
