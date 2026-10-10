@@ -19,16 +19,25 @@
   function fresh(action, p) { var h = scr(); if (isWrite(action)) return p; return p.then(function (j) { return scr() !== h ? new Promise(function () {}) : j; }); }
   /* P39: a Manager's change comes back {ok, pending}: tell them it is waiting for the Master (after the screen's own "Saved" toast). */
   function pendingNote(j) { if (j && j.pending) { setTimeout(function () { toast((j.message || "Sent to the Master for approval")); }, 80); setTimeout(navBadges, 300); } return j; }
+  /* A static file server (python3 -m http.server, a stock nginx without PHP-FPM) answers every
+     POST with 501/405 and never returns JSON. Say that plainly instead of blaming the app — the
+     old text ("Open /wx-check.php") sent people to a page that cannot execute in that situation. */
+  function serverMsg(r, what) {
+    var p = what ? what + " API error (" + r.status + ")" : "Server error (" + r.status + ")";
+    if (r.status === 501 || r.status === 405) return "This admin copy is served by a static file server, so PHP never runs and no sign-in can succeed. Serve the folder with PHP (php -S 0.0.0.0:8080) or open the site on its real host, then sign in again.";
+    if (r.status === 500 || r.status === 502 || r.status === 503) return p + ". Open /wx-check.php to see why.";
+    return p + " — the request was not answered. Open /wx-check.php to check the host.";
+  }
   function api(action, data) { return fresh(action, api0(action, data)); }
   function api0(action, data) {
     return fetch(API, { method: "POST", headers: { "Content-Type": "application/json", "X-WX-ADM": S.token }, body: JSON.stringify(Object.assign({ action: action }, data || {})) })
-      .then(function (r) { return r.json().catch(function () { return { ok: false, error: "Server error (" + r.status + "). Open /wx-check.php to see why." }; }).then(function (j) { if (r.status === 401 && S.user) signedOut("Your session expired. Please sign in again."); return j; }); })
+      .then(function (r) { return r.json().catch(function () { return { ok: false, error: serverMsg(r) }; }).then(function (j) { if (r.status === 401 && S.user) signedOut("Your session expired. Please sign in again."); return j; }); })
       .then(pendingNote).catch(function () { return { ok: false, error: "Network error — check your connection" }; });
   }
   function bapi(action, data) { return fresh(action, bapi0(action, data)); }
   function bapi0(action, data) {
     return fetch(BAPI, { method: "POST", headers: { "Content-Type": "application/json", "X-WX-CSRF": S.btoken || "", "X-WX-ADM": S.token || "" }, body: JSON.stringify(Object.assign({ action: action }, data || {})) })
-      .then(function (r) { return r.json().catch(function () { return { ok: false, error: "Page-builder API error (" + r.status + ")" }; }).then(function (j) {
+      .then(function (r) { return r.json().catch(function () { return { ok: false, error: serverMsg(r, "Page builder") }; }).then(function (j) {
         if (!j.ok && r.status === 401 && !bapi.warned) { bapi.warned = 1; toast((j.error || "Page builder: not signed in") + " — see Settings → System check", true); setTimeout(function () { bapi.warned = 0; }, 15000); }
         return j; }); })
       .then(pendingNote).catch(function () { return { ok: false, error: "Network error — check your connection" }; });
