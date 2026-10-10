@@ -149,3 +149,51 @@ refresh, primary "New regional quote"), Block 2 the four KPI cards with spark ch
   estimator field the UI sends is read by `rgn_calc()`.
 * Board-foot math spot-checked: 18 × 600 × 2400 mm → 10.984 bf; 25 × 450 × 720 mm → 3.433 bf;
   default eight-panel set → 113.554 bf net, 127.180 bf gross at 12 % waste.
+
+### 8.1 Headless render run (61 checks, 0 failures)
+
+`admin/regions-preview.html` mounts the **real** `admin/admin-regions.js` against a stubbed
+`WXA.api()` whose fixtures are derived from `_templates/region-nodes.json` and
+`_templates/region-variants.json`; `_tests/regions-render.test.js` drives it with jsdom and
+asserts the DOM after every interaction.
+
+```bash
+cd woodex-live-p23 && python3 -m http.server 8102 --bind 0.0.0.0     # or the WX preview shell
+mkdir -p /tmp/pvtest && cd /tmp/pvtest && npm install jsdom --no-audit --no-fund
+node /path/to/woodex-live-p23/_tests/regions-render.test.js 8102      # exit 0 = green
+```
+
+Covered: registry boot, ten-tab tour, KPI values + four spark canvases, alerts, funnel, node cards,
+zone swimlanes with six kanban lanes, lead table with search/facets/pagination, project register with
+stage filter, approval approve → refresh, ledger kind/status filters, estimator recalculation
+(21-row quotation, 13 formula basis strings, totals and advance), node switch LHR → ISB
+(PKR 1.12 Cr → 1.18 Cr, index 1.12 badge), quotation creation with project + 6-milestone plan,
+rate book (21 rows, 8 species overrides, inline saves), 12-month report matrix, 15-point health
+audit, CSV export, refresh re-boot, tab clicks after re-render, node multi-select, chart canvas
+hygiene and a clean console.
+
+Delete `admin/regions-preview.html` + `_tests/` before shipping if the fixture page should not be
+web-reachable — neither contains credentials and both are marked `noindex`.
+
+### 8.2 Defects found and fixed by that run
+
+| Defect | Effect | Fix |
+| --- | --- | --- |
+| Tab clicks bound to the first `#rg-tabs` element | After the first `load()` the tab bar is re-rendered, so tabs 2–10 went dead on a first visit | `wireShell()` now delegates `[data-tab]` clicks on the route host (`admin-regions.js`) |
+| Block-1 buttons bound with the shell | *Export CSV / Refresh / New regional quote* live in the filter bar, which is replaced on every load — they never bound on a first visit | the three handlers moved into `wireFilters()`, which re-binds after each `filterBar()` regeneration |
+| `rgn_nodes()` ignored the registry `index` | Every node resolved `labour_index = 1`, so 12 nodes quoted identical labour rates and the index multiplier was inert | `labour_index` now falls back to the template `index`; `tax_pct` / `advance_pct` default from the template top level |
+| `rgn_node_save()` hard-coded 1 / 12 / 18 / 40 / 14 | Saving one field silently reset the untouched ones | defaults now inherit the node's effective values |
+| Rate-book save cells shipped placeholder text | `Em!` on first paint before the icon fix-up loop ran | cells emit the icon + label directly |
+
+## 9. Files shipped with this module
+
+| Path | Role |
+| --- | --- |
+| `admin/admin-regions.js` | ten-tab module, delegated shell wiring, 20 `rgn_*` calls |
+| `admin/regional.css` | `.rgn-*` stylesheet (light + `html.dark` tokens) |
+| `admin/regions-preview.html` | fixture harness — real module, stubbed API, no DB needed |
+| `_tests/regions-render.test.js` | jsdom run of the harness, 61 assertions |
+| `admin/REGIONAL-OPS.md` | this reference |
+| `api/regions-lib.php` | registry, specification engine, 23 actions, CSV export |
+| `_database/woodex-regions.sql` | 6 regional tables, `wx_leads.node` / `area_code`, 252 rate seeds |
+| `_templates/region-nodes.json`, `_templates/region-variants.json` | verified node directories + timber variant matrix |

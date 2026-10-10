@@ -199,16 +199,6 @@
       LEAD.sort = b.dataset.sort === "value" ? "value" : "created_at"; LEAD.page = 1;
       if (visibleTab() === "configs") drawConfigs($("#rg-canvas"));
     });
-  }
-
-  function wireShell(el) {
-    var tabs = $("#rg-tabs", el); if (tabs) tabs.addEventListener("click", function (e) {
-      var b = e.target.closest("[data-tab]"); if (!b) return;
-      TAB = b.dataset.tab;
-      history.replaceState(null, "", "#/regional/" + TAB);
-      $$("button", tabs).forEach(function (x) { x.classList.toggle("on", x === b); });
-      killCharts(); drawTab($("#rg-canvas"));
-    });
     var ex = $("#rg-export", el); if (ex) ex.addEventListener("click", function () {
       var kind = visibleTab() === "ledger" ? "ledger" : visibleTab() === "projects" || visibleTab() === "pipeline" ? "projects" : visibleTab() === "approvals" ? "milestones" : "leads";
       ex.disabled = true;
@@ -223,6 +213,20 @@
     });
     var rf = $("#rg-refresh", el); if (rf) rf.addEventListener("click", function () { BOOTP = null; BOOT = null; VIEWS.regional($("#view"), [TAB]); });
     var nq = $("#rg-newquote", el); if (nq) nq.addEventListener("click", function () { TAB = "estimator"; history.replaceState(null, "", "#/regional/estimator"); $$("#rg-tabs button").forEach(function (x) { x.classList.toggle("on", x.dataset.tab === "estimator"); }); drawTab($("#rg-canvas")); });
+  }
+  function wireShell(el) {
+    /* Delegated on the route host. The tab bar, the KPI row and the canvas are all
+       re-generated on every load, so a listener bound to the old #rg-tabs element would
+       stop firing after the first paint — tabs 2..10 would appear dead. The Block-1
+       action buttons live inside the filter bar, which is re-generated with it, so they
+       are (re)bound in wireFilters() instead. */
+    el.addEventListener("click", function (e) {
+      var b = e.target.closest("[data-tab]"); if (!b) return;
+      TAB = b.dataset.tab;
+      history.replaceState(null, "", "#/regional/" + TAB);
+      $$("#rg-tabs button").forEach(function (x) { x.classList.toggle("on", x === b); });
+      killCharts(); drawTab($("#rg-canvas"));
+    });
   }
 
   function load(el, full) {
@@ -934,7 +938,7 @@
               '<td class="num"><input data-k="labour_pct" type="number" min="0" max="60" step="0.5" value="' + x.labour_pct + '" style="width:90px;text-align:right"></td>' +
               '<td class="num"><input data-k="waste_pct" type="number" min="0" max="30" step="0.5" value="' + x.waste_pct + '" style="width:90px;text-align:right"></td>' +
               "<td>" + (x.stored ? badge("db", "ok") : badge("template", "warn")) + "</td>" +
-              '<td><button class="btn sm" data-save>Em!</button></td></tr>';
+              '<td><button class="btn sm" data-save>' + ic("save") + 'Save</button></td></tr>';
           }).join("");
         }).join("") + "</tbody></table></div>" +
         '<div class="rgn-block" style="margin-top:18px"><div class="rgn-block-h"><h4>Timber variant overrides for ' + esc(node(code).city) + "</h4><span class=\"muted\" style=\"font-size:12.5px\">a stored override replaces the template rate book for this node only</span></div>" +
@@ -946,13 +950,12 @@
               '<td><input data-k="rate_bf" type="number" min="0" step="10" placeholder="' + s.rate_bf + '" value="' + (ov && ov.rate_bf != null ? ov.rate_bf : "") + '" style="width:120px"></td>' +
               '<td><input data-k="labour_pct" type="number" min="0" max="60" placeholder="' + (22 * n.index).toFixed(1) + '" value="' + (ov && ov.labour_pct != null ? ov.labour_pct : "") + '" style="width:90px"></td>' +
               '<td><input data-k="waste_pct" type="number" min="0" max="30" placeholder="' + n.waste_pct + '" value="' + (ov && ov.waste_pct != null ? ov.waste_pct : "") + '" style="width:90px"></td>' +
-              '<td><button class="btn sm" data-vsave>' + (ov ? "Save" : "Save") + '</button></td></tr>';
+              '<td><button class="btn sm" data-vsave>' + ic("save") + (ov ? "Update" : "Save") + '</button></td></tr>';
           }).join("") + "</tbody></table></div></div></div>" +
         '<div class="rgn-block" style="margin-top:18px"><div class="rgn-block-h"><h4>Formula reference (bound to /estimator + /builder parameters)</h4></div><div class="rgn-block-b"><div class="rgn-recon">' +
           Object.keys(BOOT.formulas || {}).map(function (k) { return "<div><span>" + esc(k) + "</span><b><code>" + esc(BOOT.formulas[k]) + "</code></b></div>"; }).join("") +
         "</div></div></div>";
       W.fillIcons(cv);
-      $$("[data-save]", cv).forEach(function (b) { b.innerHTML = ic("save") + "Save"; });
       cv.addEventListener("click", function (e) {
         var nb = e.target.closest("#rg-rnode [data-node]");
         if (nb) { F.nodes = [nb.dataset.node]; save("wxRgnNodes", F.nodes); DRAW = {}; return drawRates(cv); }

@@ -40,6 +40,8 @@ function rgn_nodes(bool $activeOnly = false): array {
     if ($cache === null) {
         $tpl = jread(RGN_NODES_TPL);
         $ovr = jread(RGN_OVR_FILE);
+        $tplTax = max(0, min(30, (float)($tpl['tax_pct'] ?? 18)));
+        $tplAdv = max(0, min(100, (float)($tpl['advance_pct'] ?? 40)));
         $list = [];
         foreach ((array)($tpl['nodes'] ?? []) as $n) {
             if (!is_array($n) || empty($n['code']) || empty($n['dir'])) continue;
@@ -48,10 +50,10 @@ function rgn_nodes(bool $activeOnly = false): array {
             $list[$code] = $n + ['code' => $code];
             foreach (['labour_index', 'waste_pct', 'lead_time_days', 'tax_pct', 'advance_pct', 'active', 'sort'] as $k)
                 if (array_key_exists($k, $o)) $list[$code][$k] = $o[$k];
-            $list[$code]['tax_pct']      = max(0, min(30, (float)($list[$code]['tax_pct'] ?? 18)));
-            $list[$code]['advance_pct']  = max(0, min(100, (float)($list[$code]['advance_pct'] ?? 40)));
+            $list[$code]['tax_pct']      = max(0, min(30, (float)($list[$code]['tax_pct'] ?? $tplTax)));
+            $list[$code]['advance_pct']  = max(0, min(100, (float)($list[$code]['advance_pct'] ?? $tplAdv)));
             $list[$code]['waste_pct']    = max(0, min(30, (float)($list[$code]['waste_pct'] ?? 12)));
-            $list[$code]['labour_index'] = max(0.5, min(2.0, (float)($list[$code]['labour_index'] ?? 1)));
+            $list[$code]['labour_index'] = max(0.5, min(2.0, (float)($list[$code]['labour_index'] ?? $list[$code]['index'] ?? 1)));
             $list[$code]['active']       = (int)($list[$code]['active'] ?? 1) === 1 ? 1 : 0;
         }
         uasort($list, function ($a, $b) { return ((int)$a['sort']) <=> ((int)$b['sort']); });
@@ -1140,11 +1142,12 @@ function rgn_actions(string $action, array $in): bool {
             $u = need($OA);
             $code = rgn_node((string)($in['node'] ?? ''))['code'];
             $ovr = jread(RGN_OVR_FILE);
-            $ovr[$code] = ['labour_index' => max(0.5, min(2.0, (float)($in['labour_index'] ?? 1))),
-                'waste_pct' => max(0, min(30, (float)($in['waste_pct'] ?? 12))),
-                'tax_pct' => max(0, min(30, (float)($in['tax_pct'] ?? 18))),
-                'advance_pct' => max(0, min(100, (float)($in['advance_pct'] ?? 40))),
-                'lead_time_days' => rgn_int($in['lead_time_days'] ?? 14, 1, 180),
+            $cur = rgn_node($code);
+            $ovr[$code] = ['labour_index' => max(0.5, min(2.0, (float)($in['labour_index'] ?? $cur['labour_index']))),
+                'waste_pct' => max(0, min(30, (float)($in['waste_pct'] ?? $cur['waste_pct']))),
+                'tax_pct' => max(0, min(30, (float)($in['tax_pct'] ?? $cur['tax_pct']))),
+                'advance_pct' => max(0, min(100, (float)($in['advance_pct'] ?? $cur['advance_pct']))),
+                'lead_time_days' => rgn_int($in['lead_time_days'] ?? $cur['lead_time_days'], 1, 180),
                 'active' => !empty($in['active']) ? 1 : 0, 'updated_at' => now(), 'by' => (string)$u['name']];
             jwrite(RGN_OVR_FILE, $ovr);
             log_act($u, 'regional.node.save', $code . ' index ' . $ovr[$code]['labour_index'] . ' · waste ' . $ovr[$code]['waste_pct'] . '%');
