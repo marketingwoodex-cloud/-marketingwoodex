@@ -42,7 +42,7 @@ Not run. Harness is jsdom only (no layout, no real canvas, `var()` unresolved).
 
 ## Security negative tests
 - SEC-002: negative control in bcrypt check (wrong password rejected).
-- T-09 negative control: against the `HEAD` extract the script reports 0/14 PASS. This is not a clean control because that extract has no `frontend-v1` tree; treat as a sanity check only.
+- T-09 negative control: against the `HEAD` extract the script reports 0/15 PASS (re-run this revision; the 14-check count was before the mirror check was added). This is not a clean control because that extract has no `frontend-v1` tree; treat as a sanity check only.
 - No live negative tests (authorisation; no live target).
 
 ## Persistence/concurrency tests
