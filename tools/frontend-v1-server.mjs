@@ -1,7 +1,7 @@
 // Local PREVIEW server for frontend-v1 (NOT deployed — Hostinger uses api/builder.php).
 // Zero dependencies: starts instantly. Implements the same JSON API as
 // frontend-v1/api/builder.php so /builder/ works identically in the preview.
-//   run: node tools/frontend-v1-server.mjs      (PORT=8080, WX_DEV_PASSWORD=Woodex@2026)
+//   run: node too../woodex-live-p29-v2.1-pro-server.mjs      (PORT=8080, WX_DEV_PASSWORD=Woodex@2026)
 import http from "node:http";
 import zlib from "node:zlib";
 import fs from "node:fs";
@@ -10,7 +10,7 @@ import crypto from "node:crypto";
 import { fileURLToPath } from "node:url";
 import { createAdmin } from "./frontend-v1-admin.mjs";
 
-const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../frontend-v1");
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../woodex-live-p29-v2.1-pro");
 const PRIV = path.join(ROOT, "_private");
 const BACKUPS = path.join(PRIV, "backups");
 const UPLOADS = path.join(ROOT, "assets/uploads");
