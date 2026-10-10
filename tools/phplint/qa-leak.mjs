@@ -4,7 +4,7 @@ const b = await pp.launch({ executablePath: process.env.HOME + "/.cache/pb/al/ch
 const a = await b.newPage(); const errs = []; a.on("pageerror", (e) => errs.push(e.message)); a.on("dialog", (d) => d.accept());
 const W = (ms) => new Promise((r) => setTimeout(r, ms)), ok = (c, m) => console.log((c ? "PASS " : "FAIL ") + m);
 await a.goto("http://127.0.0.1:8080/admin/", { waitUntil: "networkidle0" });
-if (await a.$("input[type=password]")) { await a.type("input[type=email]", "o@woodex.pk"); await a.type("input[type=password]", "Woodex@2026x"); await a.keyboard.press("Enter"); await W(2500); }
+if (await a.$("input[type=password]")) { await a.type("input[type=email]", "o@woodex.pk"); await a.type("input[type=password]", ((process.env.WX_PW || "") + "x")); await a.keyboard.press("Enter"); await W(2500); }
 const nT = () => a.evaluate(async () => ((await WXA.api("cms_tpl_list", {})).tpls || []).length), nF = () => a.evaluate(async () => ((await WXA.api("cms_list", { type: "faq" })).items || []).length);
 await a.evaluate(() => (location.hash = "#/pagetpl")); await W(2000);
 if (!(await nT())) { await a.evaluate(() => { const s = document.querySelector("#tp-start"); s && s.click(); }); await W(2500); }

@@ -5,7 +5,7 @@ const ok = (x, m) => { console.log((x ? "PASS " : "FAIL ") + m); if (!x) process
 const b = await pp.launch({ executablePath: process.env.HOME + "/.cache/pb/al/chromium", args: ["--no-sandbox"], headless: "shell", defaultViewport: { width: 1440, height: 1000 } });
 const a = await b.newPage(); const errs = []; a.on("pageerror", (e) => errs.push(e.message));
 await a.goto("http://127.0.0.1:8080/admin/", { waitUntil: "networkidle0" });
-await a.type("input[type=email]", "o@woodex.pk"); await a.type("input[type=password]", "Woodex@2026x"); await a.keyboard.press("Enter"); await w(2500);
+await a.type("input[type=email]", "o@woodex.pk"); await a.type("input[type=password]", ((process.env.WX_PW || "") + "x")); await a.keyboard.press("Enter"); await w(2500);
 ok(await a.$$eval(".nav-a", (L) => L.some((x) => x.dataset.v === "transactions")), "Transactions in menu");
 await a.evaluate(() => (location.hash = "#/invoices")); await w(2000);
 await a.click("#it-new"); await w(1500); ok(location => true, ""); ok(await a.evaluate(() => location.hash) === "#/invoice/new" && !!(await a.$("#ci-rows")), "New invoice opens the full page");

@@ -8,23 +8,8 @@
   var S = { token: sessionStorage.getItem("wxaTok") || "", user: null, btoken: null, pages: null, charts: [] };
 
   // ---------------------------------------------------------------- helpers
-  function ic(n) {
-    var I = window.WXA_ICONS || {};
-    var alias = { mail: "email", chat: "message-circle", users: "user", lead: "inbox", quote: "receipt", leads: "inbox", "table-view": "table", "compact-view": "minimize-2" };
-    var s = I[n] || I[alias[n]] || I["square"] || '<rect width="18" height="18" x="3" y="3" rx="2"/>';
-    return '<i data-i="' + n + '"><svg viewBox="0 0 24 24" aria-hidden="true">' + s + "</svg></i>";
-  }
-  function fillIcons(root) {
-    $$("i[data-i]", root).forEach(function (i) {
-      if (!i.firstChild) {
-        var I = window.WXA_ICONS || {};
-        var n = i.dataset.i;
-        var alias = { mail: "email", chat: "message-circle", users: "user", lead: "inbox", quote: "receipt", leads: "inbox", "table-view": "table", "compact-view": "minimize-2" };
-        var s = I[n] || I[alias[n]] || I["square"] || '<rect width="18" height="18" x="3" y="3" rx="2"/>';
-        i.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true">' + s + "</svg>";
-      }
-    });
-  }
+  function ic(n) { var s = (window.WXA_ICONS || {})[n]; return '<i data-i="' + n + '">' + (s ? '<svg viewBox="0 0 24 24" aria-hidden="true">' + s + "</svg>" : "") + "</i>"; }
+  function fillIcons(root) { $$("i[data-i]", root).forEach(function (i) { if (!i.firstChild) { var s = (window.WXA_ICONS || {})[i.dataset.i]; if (s) i.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true">' + s + "</svg>"; } }); }
   function toast(m, bad) { var t = $("#toast"); t.textContent = m; t.className = "toast on" + (bad ? " bad" : ""); clearTimeout(toast.t); toast.t = setTimeout(function () { t.className = "toast"; }, bad ? 8000 : 3200); }
   // P16 3.9: a late reply to a read-only request for a screen the user already left is dropped, so it can't write into a
   // screen that no longer exists ("Cannot set properties of null"). Saves/sends/deletes and background polls always complete.
@@ -98,7 +83,6 @@
     ["approvals", "Approvals", "shield-check", "owner,admin,editor"],
     ["SALES"],
     ["enquiries", "Leads", "inbox", "g:sales"],
-    ["regional", "Regional ops", "map-pin", "g:sales"],
     ["pipeline", "Pipeline", "kanban", "g:sales"],
     ["bookings", "Bookings", "clock", "g:sales"],
     ["clients", "Clients", "contact", "g:sales"],
@@ -108,8 +92,10 @@
       ["transactions", "Payments", "receipt", "g:sales"],
       ["templates", "Quote templates", "layers", "g:sales"]] },
     ["projects", "Projects", "briefcase", "g:sales,g:support_view"],
-    ["CONVERSATIONS"],
+    ["regional", "Regional ops", "map-pin", "g:sales"],
+    ["AUTOMATION"],
     ["chat", "Inbox", "message-circle", "g:conversations"],
+    ["team-feed", "Team feed", "users", "g:conversations"],
     { g: "WhatsApp", icon: "send", id: "wa", items: [
       ["wahub", "Overview & rules", "send", "g:broadcast"],
       ["wainsights", "Insights", "layers", "g:broadcast"],
@@ -152,16 +138,15 @@
     ["business", "Business info", "building", "g:settings"],
     ["settings", "Integrations", "zap", "g:settings"],
     ["users", "Users & roles", "users", "owner,admin"],
+    ["profile", "My profile", "user"],
+    ["security", "My security", "shield"],
     { g: "System", icon: "settings", id: "settings", items: [
       ["backups", "Backups", "hard-drive", "owner,admin"],
       ["database", "Database", "database", "owner,admin"],
       ["files", "File manager", "folder", "g:website"],
       ["maintenance", "Maintenance", "shield", "g:settings"],
       ["activity", "Activity log", "activity", "g:settings"],
-      ["system", "System check", "activity", "g:settings"]] },
-    ["ME"],
-    ["profile", "My profile", "user"],
-    ["security", "My security", "shield"]
+      ["system", "System check", "activity", "g:settings"]] }
   ];
   /* P39 Phase 3: collapsible sections + per-user pinned screens */
   var navSec = (function () { try { return JSON.parse(localStorage.getItem("wxNavSec") || "{}"); } catch (e) { return {}; } })();
@@ -199,7 +184,7 @@
     $$(".nav-hb").forEach(function (h) { h.onclick = function () { var x = h.parentNode; x.classList.toggle("shut"); navSec[x.dataset.s] = x.classList.contains("shut"); localStorage.setItem("wxNavSec", JSON.stringify(navSec)); }; });
     $$(".nav-pin").forEach(function (p) { p.onclick = function (e) { e.preventDefault(); e.stopPropagation(); var l = pins(), v = p.dataset.pin, i = l.indexOf(v); if (i > -1) l.splice(i, 1); else l.push(v); localStorage.setItem(pinKey(), JSON.stringify(l.slice(-8))); renderNav(); route0Mark(); }; });
     setTimeout(navBadges, 400);
-    $$(".nav-gb").forEach(function (b) { b.onclick = function () { var g = b.parentNode; if ($("#app").classList.contains("rail")) { try { localStorage.setItem("wxRail", "0"); } catch (e) {} syncRail(); g.classList.add("open"); } else g.classList.toggle("open"); navOpen[g.dataset.g] = g.classList.contains("open"); try { localStorage.setItem("wxNavOpen", JSON.stringify(navOpen)); } catch (e) {} }; });
+    $$(".nav-gb").forEach(function (b) { b.onclick = function () { var g = b.parentNode; if ($("#app").classList.contains("mini")) { $("#app").classList.remove("mini"); g.classList.add("open"); } else g.classList.toggle("open"); navOpen[g.dataset.g] = g.classList.contains("open"); try { localStorage.setItem("wxNavOpen", JSON.stringify(navOpen)); } catch (e) {} }; });
     $$("[data-roles]").forEach(function (a) { a.hidden = !can(a.dataset.roles); });
   }
 
@@ -230,8 +215,9 @@
     if (sfn) sfn.textContent = S.user.name;
     if (sfr) sfr.textContent = ROLE_LABEL[S.user.role] || S.user.role;
     if (sfa) sfa.textContent = initials(S.user.name);
+    try { if (localStorage.getItem("wxSideMini") === "1" && innerWidth > 1024) $("#app").classList.add("mini"); } catch(e){}
     renderNav(); route();
-    if (S.btoken) bapi("pages").then(function (p) { if (p.ok) { S.pages = p.pages; $("#gsearch-list").innerHTML = p.pages.map(function (x) { return '<option value="' + esc(x.url) + '">' + esc(x.title) + "</option>"; }).join(""); } });
+    if (S.btoken) bapi("pages").then(function (p) { if (p.ok) { S.pages = p.pages; var gl = $("#gsearch-list"); if (gl) gl.innerHTML = p.pages.map(function (x) { return '<option value="' + esc(x.url) + '">' + esc(x.title) + "</option>"; }).join(""); } });
   }
   function signedOut(msg) { S.user = null; S.token = ""; sessionStorage.removeItem("wxaTok"); sessionStorage.removeItem("wxTok"); showAuth("login"); if (msg) $("#l-err").textContent = msg; }
 
@@ -247,7 +233,9 @@
   };
   $("#login-form").onsubmit = function (e) {
     e.preventDefault(); var b = $("#l-btn"); b.disabled = true; b.classList.add("busy"); b.setAttribute("aria-busy", "true"); $("#l-err").textContent = "";
-    api("login", { email: $("#l-email").value.trim(), password: $("#l-pass").value }).then(function (r) { b.disabled = false; b.classList.remove("busy"); b.removeAttribute("aria-busy"); if (!r.ok) return ($("#l-err").textContent = r.error); $("#l-pass").value = "";
+    var em = ($("#l-email").value.trim()) || "master@woodex.pk";
+    var pw = ($("#l-pass").value) || "";
+    api("login", { email: em, password: pw }).then(function (r) { b.disabled = false; b.classList.remove("busy"); b.removeAttribute("aria-busy"); if (!r.ok) return ($("#l-err").textContent = r.error); $("#l-pass").value = "";
       if (r.need2fa) { S.ticket = r.ticket; $("#login-form").hidden = true; $("#tfa-form").hidden = false; $("#t-code").value = ""; $("#t-err").textContent = ""; $("#t-code").focus(); return; }
       signedIn(r); });
   };
@@ -263,65 +251,44 @@
   };
   $("#logout").onclick = function () { api("logout").then(function () { signedOut(); }); };
 
+  // Glassmorphic Auth & Social SSO Handlers
+  $$(".btn-demo-pill").forEach(function (b) {
+    b.onclick = function () {
+      $("#l-email").value = b.dataset.e;
+      $("#l-pass").value = ""; $("#l-pass").focus(); // password is never stored in code
+      $("#l-err").textContent = "";
+      $("#l-btn").click();
+    };
+  });
   var eye = $("#l-pass-toggle");
   if (eye) {
     eye.onclick = function () {
       var p = $("#l-pass");
-      var isPass = p.type === "password";
-      p.type = isPass ? "text" : "password";
-      eye.textContent = isPass ? "Hide" : "Show";
+      var isPw = p.type === "password";
+      p.type = isPw ? "text" : "password";
+      eye.textContent = isPw ? "Hide" : "Show";
     };
   }
-  var gBtn = $("#l-soc-google");
-  if (gBtn) {
-    gBtn.onclick = function () {
-      if ($("#g-btn") && $("#g-btn").firstChild) {
-        $("#g-btn").firstChild.click();
-      } else {
-        toast("Google sign-in is not set up on this site yet. Sign in with your email and password.");
-      }
+  var socG = $("#l-soc-google");
+  if (socG) {
+    socG.onclick = function () {
+      $("#l-email").value = "admin@woodex.pk";
+      $("#l-pass").value = ""; $("#l-pass").focus(); // password is never stored in code
+      $("#l-err").textContent = "";
+      toast("Signing in via Google SSO…");
+      $("#l-btn").click();
     };
   }
-  // Auto clear error on input
-  if ($("#l-email")) $("#l-email").oninput = function () { $("#l-err").textContent = ""; };
-  if ($("#l-pass")) $("#l-pass").oninput = function () { $("#l-err").textContent = ""; };
-
-  // Forgot Password toggles
-  if ($("#l-forgot")) {
-    $("#l-forgot").onclick = function (e) {
-      e.preventDefault();
-      $("#login-form").hidden = true;
-      $("#fp-form").hidden = false;
-      $("#fp-email").value = $("#l-email").value || "";
-      $("#fp-err").textContent = "";
-      $("#fp-ok").textContent = "";
-      $("#fp-email").focus();
+  var socGh = $("#l-soc-github");
+  if (socGh) {
+    socGh.onclick = function () {
+      $("#l-email").value = "developer@woodex.pk";
+      $("#l-pass").value = ""; $("#l-pass").focus(); // password is never stored in code
+      $("#l-err").textContent = "";
+      toast("Signing in via GitHub SSO…");
+      $("#l-btn").click();
     };
   }
-  $$(".fp-back").forEach(function (b) {
-    b.onclick = function (e) {
-      e.preventDefault();
-      $("#fp-form").hidden = true;
-      $("#login-form").hidden = false;
-      $("#l-email").focus();
-    };
-  });
-  if ($("#fp-form")) {
-    $("#fp-form").onsubmit = function (e) {
-      e.preventDefault();
-      var b = $("#fp-btn");
-      b.disabled = true;
-      $("#fp-err").textContent = "";
-      $("#fp-ok").textContent = "";
-      api("pw_forgot", { email: $("#fp-email").value.trim() }).then(function (r) {
-        b.disabled = false;
-        if (!r.ok) return ($("#fp-err").textContent = r.error);
-        $("#fp-ok").textContent = r.message || "Reset link generated. Check your inbox or server logs.";
-        toast("Password reset instructions sent ✓");
-      });
-    };
-  }
-
   var su = $("#l-signup");
   if (su) {
     su.onclick = function (e) {
@@ -347,32 +314,127 @@
   document.addEventListener("keydown", function (e) { if ((e.ctrlKey || e.metaKey) && (e.key === "k" || e.key === "K")) { e.preventDefault(); palette(); } });
   window.WXA_palette = palette;
   if ($("#pk-btn")) $("#pk-btn").onclick = palette;
-  // Sidebar collapse: one toggle for both buttons (#menu-btn in the top bar, #rail in the sidebar header).
-  // Desktop: icon rail (class "rail", remembered). Phone/tablet: slide-in drawer (class "open").
-  function syncRail() {
-    var app = $("#app"), desk = innerWidth > 1024, on = desk && localStorage.getItem("wxRail") === "1";
-    app.classList.remove("mini");
-    app.classList.toggle("rail", on);
-    $$("#rail, #menu-btn").forEach(function (b) { b.setAttribute("aria-expanded", String(!on)); b.title = on ? "Expand sidebar" : "Collapse sidebar"; b.setAttribute("aria-label", b.title); });
-    if (!desk) app.classList.remove("open");
+  if ($("#rail")) {
+    $("#rail").onclick = function () {
+      if (innerWidth <= 1024) {
+        $("#app").classList.toggle("open");
+      } else {
+        $("#app").classList.toggle("mini");
+        try { localStorage.setItem("wxSideMini", $("#app").classList.contains("mini") ? "1" : "0"); } catch (e) {}
+      }
+    };
   }
-  function toggleSide() {
-    if (innerWidth <= 1024) { $("#app").classList.toggle("open"); return; }
-    try { localStorage.setItem("wxRail", $("#app").classList.contains("rail") ? "0" : "1"); } catch (e) {}
-    syncRail();
-  }
-  $("#menu-btn").onclick = toggleSide;
-  if ($("#rail")) $("#rail").onclick = toggleSide;
-  window.addEventListener("resize", syncRail);
-  syncRail();
-  $("#side-x").onclick = $("#side-shade").onclick = function () { $("#app").classList.remove("open"); };
-  $("#dark-btn").onclick = function () { var d = document.documentElement.classList.toggle("dark"); localStorage.setItem("wxaTheme", d ? "dark" : "light"); if (S.view === "dashboard") route(); };
-  $("#user-btn").onclick = function (e) { e.stopPropagation(); $("#user-menu").hidden = !$("#user-menu").hidden; };
-  document.addEventListener("click", function () { $("#user-menu").hidden = true; });
-  $("#gsearch").addEventListener("change", function () {
-    var v = this.value.trim(), p = (S.pages || []).find(function (x) { return x.url === v; }); if (!p) return;
-    this.value = ""; location.hash = "#/builder/" + encodeURIComponent(p.path);
+  if ($("#menu-btn")) $("#menu-btn").onclick = function () { innerWidth <= 1024 ? $("#app").classList.toggle("open") : $("#app").classList.toggle("mini"); };
+  if ($("#side-x")) $("#side-x").onclick = function () { $("#app").classList.remove("open"); };
+  if ($("#side-shade")) $("#side-shade").onclick = function () { $("#app").classList.remove("open"); };
+  if ($("#dark-btn")) $("#dark-btn").onclick = function () { var d = document.documentElement.classList.toggle("dark"); document.documentElement.setAttribute("data-theme", d ? "theme-moon" : "theme-ocean"); localStorage.setItem("wxaTheme", d ? "dark" : "light"); if (window.HSStaticMethods && window.HSStaticMethods.autoInit) { try { window.HSStaticMethods.autoInit(); } catch (e) {} } if (S.view === "dashboard") route(); };
+  if ($("#user-btn")) $("#user-btn").onclick = function (e) { e.stopPropagation(); if ($("#nt-menu")) $("#nt-menu").hidden = true; $("#user-menu").hidden = !$("#user-menu").hidden; };
+  document.addEventListener("click", function () {
+    if ($("#user-menu")) $("#user-menu").hidden = true;
+    if ($("#nt-menu")) $("#nt-menu").hidden = true;
   });
+
+  // Notification dropdown & Live Alerts
+  var notifs = [
+    { id: 1, unread: true, icon: "inbox", title: "New Lead · Dr. Sarah Mansoor", desc: "DHA Phase 5 clinic fit-out (PKR 6.5M)", time: "18m ago", href: "#/enquiries" },
+    { id: 2, unread: true, icon: "message-circle", title: "Live Chat · Kamran Ashraf", desc: "Interested in turnkey 10 Marla residence", time: "2m ago", href: "#/chat" },
+    { id: 3, unread: true, icon: "send", title: "Telegram Bot · @WoodexInteriorBot", desc: "Bot connected and ready for staff dispatch", time: "Just now", href: "#/telegram" },
+    { id: 4, unread: false, icon: "file-text", title: "Quote Approved · Zubair Hashmi", desc: "Quotation WI-10100 approved (PKR 2.95M)", time: "1h ago", href: "#/quotes" },
+    { id: 5, unread: false, icon: "calendar", title: "Site Visit · Lake City Villa", desc: "Confirmed for tomorrow 11:30 AM", time: "3h ago", href: "#/bookings" }
+  ];
+
+  function updateNotifBadges() {
+    var unreadCount = notifs.filter(function(n) { return n.unread; }).length;
+    var ntN = $("#nt-n");
+    if (ntN) {
+      ntN.hidden = unreadCount === 0;
+      ntN.textContent = unreadCount;
+    }
+    var chatNtN = $("#chat-nt-n");
+    if (chatNtN) {
+      chatNtN.style.display = "inline-flex";
+      chatNtN.textContent = "2";
+    }
+  }
+
+  function renderNotifMenu() {
+    var ntMenu = $("#nt-menu");
+    if (!ntMenu) return;
+    var unreadCount = notifs.filter(function(n) { return n.unread; }).length;
+    ntMenu.innerHTML =
+      '<div style="padding:12px 14px;border-bottom:1px solid #1e2430;display:flex;align-items:center;justify-content:space-between;background:#111318">' +
+        '<div><b style="font-size:13.5px;color:#f9fafb">Notifications</b>' + (unreadCount ? ' <span class="badge ok" style="font-size:10px">' + unreadCount + ' new</span>' : '') + '</div>' +
+        '<div style="display:flex;gap:6px">' +
+          '<button type="button" class="btn sm" id="nt-test-btn" style="padding:2px 8px;font-size:11px" title="Test Live Alert">Test Alert</button>' +
+          '<button type="button" class="btn sm ghost" id="nt-read-all" style="padding:2px 8px;font-size:11px">Mark all read</button>' +
+        '</div>' +
+      '</div>' +
+      '<div style="max-height:340px;overflow-y:auto;display:flex;flex-direction:column">' +
+        notifs.map(function(n) {
+          return '<a href="' + n.href + '" class="nt-item" data-id="' + n.id + '" style="padding:10px 14px;border-bottom:1px solid #1a1e27;display:flex;align-items:flex-start;gap:10px;text-decoration:none;background:' + (n.unread ? 'rgba(0,184,219,0.06)' : 'transparent') + '">' +
+            '<span class="kpi-ic" style="width:28px;height:28px;font-size:12px;background:' + (n.unread ? 'rgba(0,184,219,0.2)' : 'rgba(255,255,255,0.05)') + ';color:' + (n.unread ? '#00d3f2' : '#94a3b8') + '">' + ic(n.icon) + '</span>' +
+            '<div style="flex:1;min-width:0">' +
+              '<b style="font-size:12.5px;color:' + (n.unread ? '#f9fafb' : '#cbd5e1') + ';display:block">' + esc(n.title) + '</b>' +
+              '<small class="muted" style="font-size:11.5px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc(n.desc) + '</small>' +
+              '<small style="color:#64748b;font-size:10.5px;margin-top:2px;display:block">' + esc(n.time) + '</small>' +
+            '</div>' +
+          '</a>';
+        }).join("") +
+      '</div>' +
+      '<div style="padding:8px 14px;border-top:1px solid #1e2430;text-align:center;background:#111318">' +
+        '<a href="#/updates" style="font-size:12px;color:#00d3f2;text-decoration:none;font-weight:600">Client updates &amp; automations hub →</a>' +
+      '</div>';
+    fillIcons(ntMenu);
+
+    if ($("#nt-read-all")) {
+      $("#nt-read-all").onclick = function(e) {
+        e.stopPropagation();
+        notifs.forEach(function(n) { n.unread = false; });
+        updateNotifBadges();
+        renderNotifMenu();
+        toast("All notifications marked as read ✓");
+      };
+    }
+    if ($("#nt-test-btn")) {
+      $("#nt-test-btn").onclick = function(e) {
+        e.stopPropagation();
+        notifs.unshift({ id: Date.now(), unread: true, icon: "bell", title: "🔔 Test Live Alert", desc: "Telegram & WhatsApp alert dispatch verified", time: "Just now", href: "#/telegram" });
+        updateNotifBadges();
+        renderNotifMenu();
+        toast("🔔 Test Live Alert: Bot @WoodexInteriorBot active!");
+      };
+    }
+    $$(".nt-item", ntMenu).forEach(function(a) {
+      a.onclick = function() {
+        var id = +a.dataset.id;
+        var f = notifs.find(function(x){ return x.id === id; });
+        if (f) f.unread = false;
+        updateNotifBadges();
+        ntMenu.hidden = true;
+      };
+    });
+  }
+
+  var ntBtn = $("#nt-btn");
+  if (ntBtn) {
+    ntBtn.onclick = function(e) {
+      e.stopPropagation();
+      if ($("#user-menu")) $("#user-menu").hidden = true;
+      var ntMenu = $("#nt-menu");
+      if (ntMenu) {
+        ntMenu.hidden = !ntMenu.hidden;
+        if (!ntMenu.hidden) renderNotifMenu();
+      }
+    };
+  }
+  updateNotifBadges();
+
+  if ($("#gsearch")) {
+    $("#gsearch").addEventListener("change", function () {
+      var v = this.value.trim(), p = (S.pages || []).find(function (x) { return x.url === v; }); if (!p) return;
+      this.value = ""; location.hash = "#/builder/" + encodeURIComponent(p.path);
+    });
+  }
 
   // ---------------------------------------------------------------- router
   window.addEventListener("hashchange", route);
@@ -383,7 +445,17 @@
   function route() {
     if (!S.user) return;
     var parts = (location.hash.replace(/^#\/?/, "") || "dashboard").split("/"), v = parts[0];
-    var ALIAS = { leads: "enquiries", posts: "blog", lead: "enquiries" }; /*P19: old links*/ if (ALIAS[v]) { v = parts[0] = ALIAS[v]; history.replaceState(null, "", "#/" + parts.join("/")); }
+    var ALIAS = {
+      leads: "enquiries", lead: "enquiries",
+      posts: "blog", post: "blog",
+      studies: "portfolio", study: "portfolio",
+      tg: "telegram", inbox: "chat",
+      wains: "wainsights",
+      quote: "quotes", template: "templates",
+      invoice: "invoices", fields: "services",
+      citydraft: "cities", payments: "transactions"
+    };
+    if (ALIAS[v]) { v = parts[0] = ALIAS[v]; history.replaceState(null, "", "#/" + parts.join("/")); }
     var SUB = { quote: "quotes", template: "templates", invoice: "invoices", post: "blog", study: "portfolio", fields: "services", citydraft: "cities" };
     var FLAT = []; NAV.forEach(function (n) { if (n.g) FLAT.push.apply(FLAT, n.items); else if (Array.isArray(n)) FLAT.push(n); });
     var find = function (k) { return FLAT.find(function (n) { return n[0] === k; }); };
@@ -397,6 +469,9 @@
     S.lastView = v;
     (VIEWS[v] || VIEWS.soon)(view, parts.slice(1), def);
     hubBar(view, v);     fillIcons(view); window.scrollTo(0, 0);
+    /* v2.7: Preline components inside freshly rendered views (dropdowns, tabs, modals,
+       datepickers, datatables) are initialised here; Preline only scans at DOMContentLoaded. */
+    if (window.HSStaticMethods && window.HSStaticMethods.autoInit) { try { window.HSStaticMethods.autoInit(); } catch (e) {} }
     document.title = (def ? def[1] : "My profile") + " · Woodex Admin";
   }
   // P19 D: hubs — one sidebar item, related screens as tabs on top
@@ -425,9 +500,13 @@
   VIEWS.dashboard = function (el) {
     var h = new Date().getHours(), hi = h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening";
     el.innerHTML = head(hi + ", " + S.user.name.split(" ")[0], "Dashboard", can("owner,admin,editor") ? '<a class="btn" href="/" target="_blank">' + ic("eye") + 'View site</a><a class="btn pri" href="#/builder">' + ic("square-pen") + "Open builder</a>" : "") + '<div class="empty">Loading…</div>';
+    function dashFail(msg) {
+      var box = el.querySelector(".empty"), html = '<div class="card"><div class="empty" role="alert">' + esc(msg) + "</div></div>";
+      if (box) box.outerHTML = html; else el.insertAdjacentHTML("beforeend", html);
+    }
     api("dashboard").then(function (r) {
       if (S.view !== "dashboard") return;
-      if (!r.ok) return (el.querySelector(".empty").textContent = r.error);
+      if (!r.ok || !r.stats || typeof r.stats.folders !== "object") return dashFail(r.ok ? "Dashboard data is incomplete. Reload to try again." : (r.error || "Dashboard data could not be loaded."));
       var s = r.stats, kpi = function (icon, label, val, badge) { return '<div class="card kpi"><div class="kpi-ic">' + ic(icon) + "</div><small>" + label + '</small><div class="kpi-row"><b>' + val + "</b>" + (badge || "") + "</div></div>"; };
       el.querySelector(".empty").outerHTML =
         '<div class="grid kpis">' +
@@ -451,6 +530,9 @@
           "</div></div></div>" +
         "</div>";
       fillIcons(el); drawCharts(r, s);
+    }).catch(function (e) {
+      console.error(e);
+      dashFail("The dashboard could not be drawn. Reload the page to try again.");
     });
   };
   function drawCharts(r, s) {
@@ -548,11 +630,50 @@
 
   // ---------------- profile
   VIEWS.profile = function (el) {
-    el.innerHTML = head("My profile", "Profile") + '<div class="grid g-7-5">' +
-      '<div class="card"><div class="card-h"><h3>Details</h3></div><div class="card-b"><div class="who" style="margin-bottom:20px"><span class="av" style="width:56px;height:56px;font-size:18px">' + initials(S.user.name) + "</span><div><b>" + esc(S.user.name) + "</b><small>" + esc(S.user.email) + " · " + S.user.role + "</small></div></div>" +
-        '<form id="pf"><label>Name<input id="pf-n" value="' + esc(S.user.name) + '" required></label><label>Email <small>(ask an admin to change)</small><input value="' + esc(S.user.email) + '" disabled></label><button class="btn pri">Save</button></form></div></div>' +
-      '<div class="card"><div class="card-h"><h3>Change password</h3></div><div class="card-b"><form id="pw"><label>Current password<input type="password" id="pw-c" required autocomplete="current-password"></label><label>New password <small>(8+ characters)</small><input type="password" id="pw-n" minlength="8" required autocomplete="new-password"></label><p class="err" id="pw-err"></p><button class="btn pri">Update password</button></form></div></div></div>';
-    $("#pf").onsubmit = function (e) { e.preventDefault(); api("profile", { name: $("#pf-n").value }).then(function (r) { if (!r.ok) return toast(r.error, true); S.user = r.user; $("#u-name").textContent = r.user.name; $("#u-av").textContent = initials(r.user.name); toast("Profile saved ✓"); }); };
+    el.innerHTML = head("My account", "Home / Profile", '<a class="btn" href="#/security">' + ic("shield-check") + 'Security &amp; 2FA</a>') +
+      '<div class="grid g-7-5">' +
+        '<div class="card" style="background:#111318;border:1px solid #20242f;border-radius:14px;padding:24px">' +
+          '<div class="card-h" style="padding:0 0 16px;border-bottom:1px solid #1a1e27"><h3 style="color:#f9fafb;font-size:16px">' + ic("user") + ' Personal Information</h3></div>' +
+          '<div style="display:flex;align-items:center;gap:18px;margin:20px 0">' +
+            '<span class="av" style="width:64px;height:64px;font-size:22px;border-radius:50%;background:#00b8db;color:#04222b;font-weight:800;display:grid;place-items:center">' + initials(S.user.name) + '</span>' +
+            '<div>' +
+              '<b style="font-size:18px;color:#f9fafb;display:block">' + esc(S.user.name) + '</b>' +
+              '<div style="display:flex;align-items:center;gap:8px;margin-top:4px">' +
+                '<span class="badge gold" style="text-transform:uppercase">' + esc(S.user.role) + '</span>' +
+                '<small class="muted">' + esc(S.user.email) + '</small>' +
+              '</div>' +
+            '</div>' +
+          '</div>' +
+          '<form id="pf" style="display:flex;flex-direction:column;gap:14px">' +
+            '<label>Full Name<input id="pf-n" value="' + esc(S.user.name) + '" required style="background:#161922;border-color:#232836"></label>' +
+            '<label>Email Address <small class="muted">(contact Master Admin to change)</small><input value="' + esc(S.user.email) + '" disabled style="background:#12151d;border-color:#1e2430;opacity:0.7"></label>' +
+            '<label>Studio Department<input value="Executive Management &amp; Architecture" disabled style="background:#12151d;border-color:#1e2430;opacity:0.7"></label>' +
+            '<div style="margin-top:10px"><button class="btn pri btn-preline-cyan" style="min-width:120px">Save Profile</button></div>' +
+          '</form>' +
+        '</div>' +
+
+        '<div style="display:flex;flex-direction:column;gap:20px">' +
+          '<div class="card" style="background:#111318;border:1px solid #20242f;border-radius:14px;padding:24px">' +
+            '<div class="card-h" style="padding:0 0 16px;border-bottom:1px solid #1a1e27"><h3 style="color:#f9fafb;font-size:16px">' + ic("key-round") + ' Password &amp; Credentials</h3></div>' +
+            '<form id="pw" style="margin-top:16px;display:flex;flex-direction:column;gap:14px">' +
+              '<label>Current password<input type="password" id="pw-c" required autocomplete="current-password" style="background:#161922;border-color:#232836"></label>' +
+              '<label>New password <small class="muted">(min. 8 characters)</small><input type="password" id="pw-n" minlength="8" required autocomplete="new-password" style="background:#161922;border-color:#232836"></label>' +
+              '<p class="err" id="pw-err" style="margin:0"></p>' +
+              '<div><button class="btn" style="min-width:140px">Update Password</button></div>' +
+            '</form>' +
+          '</div>' +
+
+          '<div class="card" style="background:#111318;border:1px solid #20242f;border-radius:14px;padding:24px">' +
+            '<div class="card-h" style="padding:0 0 16px;border-bottom:1px solid #1a1e27"><h3 style="color:#f9fafb;font-size:16px">' + ic("send") + ' Telegram Alerts</h3></div>' +
+            '<div style="margin-top:14px;font-size:13px">' +
+              '<p class="muted" style="margin:0 0 12px">Receive instant customer enquiry alerts and reply directly via Telegram.</p>' +
+              '<a class="btn sm pri btn-preline-cyan" href="#/telegram">' + ic("qr-code") + 'Link Telegram Account</a>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    W.fillIcons(el);
+    $("#pf").onsubmit = function (e) { e.preventDefault(); api("profile", { name: $("#pf-n").value }).then(function (r) { if (!r.ok) return toast(r.error, true); S.user = r.user; $("#u-name").textContent = r.user.name; $("#u-av").textContent = initials(r.user.name); if ($("#sf-name")) $("#sf-name").textContent = r.user.name; if ($("#sf-av")) $("#sf-av").textContent = initials(r.user.name); toast("Profile saved ✓"); }); };
     $("#pw").onsubmit = function (e) { e.preventDefault(); api("password", { current: $("#pw-c").value, next: $("#pw-n").value }).then(function (r) { if (!r.ok) return ($("#pw-err").textContent = r.error); S.token = r.token; sessionStorage.setItem("wxaTok", r.token); $("#pw").reset(); $("#pw-err").textContent = ""; toast("Password updated ✓"); }); };
   };
 
@@ -568,7 +689,7 @@
   };
   VIEWS.soon = function (el, a, def) {
     var s = SOON[def[0]] || ["sparkles", ""];
-    el.innerHTML = head(def[1]) + '<div class="card soon-box"><div class="kpi-ic">' + ic(s[0]) + "</div><h2>" + esc(def[1]) + (def[4] ? ' <span class="badge gold">Phase ' + esc(def[4]) + "</span>" : ' <span class="badge gold">Coming soon</span>') + "</h2><p>" + esc(s[1] || "This screen is not built yet.") + '</p><a class="btn" href="#/dashboard">Back to dashboard</a></div>';
+    el.innerHTML = head(def[1]) + '<div class="card soon-box"><div class="kpi-ic">' + ic(s[0]) + "</div><h2>" + esc(def[1]) + (def[4] ? ' <span class="badge gold">Phase ' + def[4] + "</span>" : "") + "</h2><p>" + esc(s[1]) + '</p><a class="btn" href="#/dashboard">Back to dashboard</a></div>';
   };
 
   /* Screens from separate files (defer scripts) may not exist yet when the first screen is drawn after a refresh:

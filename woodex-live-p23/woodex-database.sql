@@ -270,16 +270,20 @@ CREATE TABLE IF NOT EXISTS `wx_tg_map` (
 
 -- =====================================================================
 -- PRE-SEEDED DATA: TEAM MEMBERS & DEMO ACCESS
--- Password for all accounts: Woodex@2026
+-- Seeded rows are LOCKED: pass_hash above is deliberately not a valid bcrypt digest,
+-- so no account can be signed into until a real password is set.
+-- On a fresh server open /wx-install.php once: it creates the owner account and writes
+-- _private/db.json. On an existing server use Admin -> Users -> Reset password,
+-- or run /wx-demo.php on a throwaway database to load the demo team accounts.
 -- =====================================================================
 
 INSERT INTO `wx_users` (`id`, `name`, `email`, `role`, `pass_hash`, `active`, `pw_ver`, `created_at`) VALUES
-(1, 'Master Admin', 'master@woodex.pk', 'owner', '$2y$10$.xP9p.h.R3H7AaDj/wW1P.pB25YEM0qx07xus/3GmFkI4QCygXGw2', 1, 1, NOW()),
-(2, 'Ar. Bilal Ahmed', 'manager@woodex.pk', 'admin', '$2y$10$.xP9p.h.R3H7AaDj/wW1P.pB25YEM0qx07xus/3GmFkI4QCygXGw2', 1, 1, NOW()),
-(3, 'Engr. Hamza Farooq', 'developer@woodex.pk', 'editor', '$2y$10$.xP9p.h.R3H7AaDj/wW1P.pB25YEM0qx07xus/3GmFkI4QCygXGw2', 1, 1, NOW()),
-(4, 'Usman Ali', 'sales@woodex.pk', 'sales', '$2y$10$.xP9p.h.R3H7AaDj/wW1P.pB25YEM0qx07xus/3GmFkI4QCygXGw2', 1, 1, NOW()),
-(5, 'Dr. Sarah Mansoor', 'support@woodex.pk', 'support', '$2y$10$.xP9p.h.R3H7AaDj/wW1P.pB25YEM0qx07xus/3GmFkI4QCygXGw2', 1, 1, NOW()),
-(6, 'Woodex Owner', 'admin@woodex.pk', 'owner', '$2y$10$.xP9p.h.R3H7AaDj/wW1P.pB25YEM0qx07xus/3GmFkI4QCygXGw2', 1, 1, NOW())
+(1, 'Master Admin', 'master@woodex.pk', 'owner', '$2y$10$LOCKED.SEED.THIS.HASH.IS.NOT.A.LOGIN.SET.A.PASSWORD.THROUGH.THE.ADMIN.000000', 1, 1, NOW()),
+(2, 'Ar. Bilal Ahmed', 'manager@woodex.pk', 'admin', '$2y$10$LOCKED.SEED.THIS.HASH.IS.NOT.A.LOGIN.SET.A.PASSWORD.THROUGH.THE.ADMIN.000000', 1, 1, NOW()),
+(3, 'Engr. Hamza Farooq', 'developer@woodex.pk', 'editor', '$2y$10$LOCKED.SEED.THIS.HASH.IS.NOT.A.LOGIN.SET.A.PASSWORD.THROUGH.THE.ADMIN.000000', 1, 1, NOW()),
+(4, 'Usman Ali', 'sales@woodex.pk', 'sales', '$2y$10$LOCKED.SEED.THIS.HASH.IS.NOT.A.LOGIN.SET.A.PASSWORD.THROUGH.THE.ADMIN.000000', 1, 1, NOW()),
+(5, 'Dr. Sarah Mansoor', 'support@woodex.pk', 'support', '$2y$10$LOCKED.SEED.THIS.HASH.IS.NOT.A.LOGIN.SET.A.PASSWORD.THROUGH.THE.ADMIN.000000', 1, 1, NOW()),
+(6, 'Woodex Owner', 'admin@woodex.pk', 'owner', '$2y$10$LOCKED.SEED.THIS.HASH.IS.NOT.A.LOGIN.SET.A.PASSWORD.THROUGH.THE.ADMIN.000000', 1, 1, NOW())
 ON DUPLICATE KEY UPDATE `pass_hash`=VALUES(`pass_hash`), `active`=1;
 
 -- =====================================================================

@@ -1,5 +1,5 @@
 /* Woodex Admin — Conversations & Live Chat Inbox (Preline Pro Ocean Architecture)
-   High-contrast split chat, channel filters (Website/WhatsApp), AI suggestions, and lead quick-converter */
+   Theme-adaptive split chat, channel filters (Website/WhatsApp), AI suggestions, and lead quick-converter */
 (function () {
   "use strict";
   var W = window.WXA; if (!W) return;
@@ -11,66 +11,66 @@
       '<button class="btn" id="ch-ai-btn">' + ic("sparkles") + 'AI Settings</button>' +
       '<a class="btn pri btn-preline-cyan" href="#/enquiries">' + ic("inbox") + 'View CRM Leads</a>') +
 
-      '<div class="card" style="height:calc(100vh - 190px);min-height:580px;display:grid;grid-template-columns:320px 1fr 280px;overflow:hidden;background:#0e1117;border:1px solid #20242f;border-radius:14px;box-shadow:0 8px 32px rgba(0,0,0,0.4)">' +
+      '<div class="chat-shell card">' +
         '<!-- Left Pane: Conversations List -->' +
-        '<div style="border-right:1px solid #1e2430;display:flex;flex-direction:column;background:#111318">' +
-          '<div style="padding:14px;border-bottom:1px solid #1e2430">' +
-            '<input type="search" id="chat-q" placeholder="Search conversations…" style="margin:0;width:100%;background:#181c24;border-color:#262a33">' +
+        '<div class="chat-left-pane">' +
+          '<div class="chat-search-wrap">' +
+            '<input type="search" id="chat-q" placeholder="Search conversations…" style="margin:0;width:100%">' +
             '<div class="seg" style="margin-top:10px;width:100%">' +
               '<button class="on" data-chan="all" style="flex:1">All (4)</button>' +
               '<button data-chan="wa" style="flex:1">WhatsApp (2)</button>' +
               '<button data-chan="web" style="flex:1">Website (2)</button>' +
             '</div>' +
           '</div>' +
-          '<div id="chat-threads" style="flex:1;overflow-y:auto;display:flex;flex-direction:column"></div>' +
+          '<div id="chat-threads" class="chat-thread-list"></div>' +
         '</div>' +
 
         '<!-- Middle Pane: Active Conversation -->' +
-        '<div style="display:flex;flex-direction:column;background:#0b0d13">' +
-          '<div style="padding:14px 20px;border-bottom:1px solid #1e2430;display:flex;align-items:center;justify-content:space-between;background:#111318">' +
+        '<div class="chat-center-pane">' +
+          '<div class="chat-header-bar">' +
             '<div style="display:flex;align-items:center;gap:12px">' +
-              '<span class="preline-avatar" id="active-av" style="background:#1e293b;color:#00d3f2">KA</span>' +
+              '<span class="preline-avatar" id="active-av">KA</span>' +
               '<div>' +
-                '<b id="active-name" style="color:#f9fafb;font-size:15px;display:block">Kamran Ashraf</b>' +
+                '<b id="active-name" style="font-size:15px;display:block;color:var(--txt)">Kamran Ashraf</b>' +
                 '<small style="color:#10b981;font-size:11.5px;font-weight:600">● Online via Website Chat</small>' +
               '</div>' +
             '</div>' +
-            '<div style="display:flex;gap:8px">' +
+            '<div style="display:flex;gap:8px;flex-wrap:wrap">' +
               '<button class="btn sm" id="chat-takeover">' + ic("user") + 'Take over from AI</button>' +
               '<a class="btn sm wa" target="_blank" rel="noopener" id="chat-wa-btn" href="https://wa.me/923004455667">' + ic("message-circle") + 'Open WhatsApp</a>' +
             '</div>' +
           '</div>' +
 
           '<!-- Message History -->' +
-          '<div id="chat-history" style="flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:12px;background:#0b0d13"></div>' +
+          '<div id="chat-history" class="chat-history-box"></div>' +
 
           '<!-- Quick AI Suggestion Chips -->' +
-          '<div style="padding:8px 16px;background:#111318;border-top:1px solid #1a1e27;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none">' +
-            '<small style="color:#00d3f2;font-weight:700;display:flex;align-items:center;gap:4px;white-space:nowrap">' + ic("sparkles") + 'AI Suggestions:</small>' +
-            '<button class="btn sm ghost" data-chip="1" style="font-size:11.5px;white-space:nowrap">"Schedule 3D Design Session"</button>' +
-            '<button class="btn sm ghost" data-chip="2" style="font-size:11.5px;white-space:nowrap">"Send Modular Kitchen Catalog"</button>' +
-            '<button class="btn sm ghost" data-chip="3" style="font-size:11.5px;white-space:nowrap">"Confirm Site Measurement"</button>' +
+          '<div class="chat-suggestions-bar">' +
+            '<small style="color:var(--pri);font-weight:700;display:flex;align-items:center;gap:4px;white-space:nowrap">' + ic("sparkles") + 'AI Suggestions:</small>' +
+            '<button class="btn sm" data-chip="1" style="font-size:11.5px;white-space:nowrap">"Schedule 3D Design Session"</button>' +
+            '<button class="btn sm" data-chip="2" style="font-size:11.5px;white-space:nowrap">"Send Modular Kitchen Catalog"</button>' +
+            '<button class="btn sm" data-chip="3" style="font-size:11.5px;white-space:nowrap">"Confirm Site Measurement"</button>' +
           '</div>' +
 
           '<!-- Message Composer -->' +
-          '<div style="padding:14px;border-top:1px solid #1e2430;display:flex;gap:10px;background:#111318;align-items:center">' +
-            '<textarea id="chat-input" rows="2" placeholder="Type a response (press Enter to send, Shift+Enter for newline)…" style="flex:1;margin:0;background:#181c24;border-color:#262a33;resize:none;font-size:13px"></textarea>' +
+          '<div class="chat-composer-bar">' +
+            '<textarea id="chat-input" rows="2" placeholder="Type a response (press Enter to send, Shift+Enter for newline)…" style="flex:1;margin:0;resize:none;font-size:13px"></textarea>' +
             '<button class="btn pri btn-preline-cyan" id="chat-send-btn" style="height:44px;padding:0 18px">' + ic("send") + 'Send</button>' +
           '</div>' +
         '</div>' +
 
         '<!-- Right Pane: Customer Lead Profile -->' +
-        '<div style="border-left:1px solid #1e2430;padding:18px;display:flex;flex-direction:column;gap:14px;background:#111318;overflow-y:auto">' +
-          '<b style="font-size:14px;color:#f9fafb;border-bottom:1px solid #1e2430;padding-bottom:8px">Customer Lead 360</b>' +
-          '<div style="display:flex;flex-direction:column;gap:8px;font-size:12.5px;color:#cbd5e1">' +
-            '<div><small class="muted" style="display:block">Full Name</small><b id="p-name" style="color:#f1f5f9">Kamran Ashraf</b></div>' +
+        '<div class="chat-right-drawer">' +
+          '<b style="font-size:14px;color:var(--txt);border-bottom:1px solid var(--line);padding-bottom:8px">Customer Lead 360</b>' +
+          '<div style="display:flex;flex-direction:column;gap:10px;font-size:12.5px;color:var(--txt2)">' +
+            '<div><small class="muted" style="display:block">Full Name</small><b id="p-name" style="color:var(--txt)">Kamran Ashraf</b></div>' +
             '<div><small class="muted" style="display:block">Company</small><span id="p-co">Ashraf Holdings</span></div>' +
             '<div><small class="muted" style="display:block">Phone</small><span id="p-ph">+92 300 4455667</span></div>' +
             '<div><small class="muted" style="display:block">Location</small><span id="p-loc">Bahria Town Sector C, Lahore</span></div>' +
             '<div><small class="muted" style="display:block">Service Brief</small><span id="p-srv">Turnkey Design-Build · 10 Marla</span></div>' +
-            '<div><small class="muted" style="display:block">Estimated Budget</small><b id="p-val" style="color:#00d3f2">PKR 12,000,000</b></div>' +
+            '<div><small class="muted" style="display:block">Estimated Budget</small><b id="p-val" style="color:var(--pri)">PKR 12,000,000</b></div>' +
           '</div>' +
-          '<div style="border-top:1px solid #1e2430;padding-top:14px;display:flex;flex-direction:column;gap:8px;margin-top:auto">' +
+          '<div style="border-top:1px solid var(--line);padding-top:14px;display:flex;flex-direction:column;gap:8px;margin-top:auto">' +
             '<a class="btn pri btn-preline-cyan" href="#/enquiries" style="font-size:12px">' + ic("inbox") + 'Open Full CRM Record</a>' +
             '<a class="btn sm" href="#/quote/new" style="font-size:12px">' + ic("receipt") + 'Create Quotation</a>' +
           '</div>' +
@@ -95,23 +95,23 @@
       box.innerHTML = threads.map(function (t) {
         var ini = t.name.split(" ").map(function (n) { return n[0]; }).join("").slice(0, 2).toUpperCase();
         var isAct = t.id === activeThread.id;
-        var chanBadge = t.channel === "wa" ? '<span class="badge" style="background:#052e16;color:#4ade80;font-size:10px">WhatsApp</span>' : '<span class="badge" style="background:#082f49;color:#38bdf8;font-size:10px">Website</span>';
+        var chanBadge = t.channel === "wa" ? '<span class="badge ok" style="font-size:10px">WhatsApp</span>' : '<span class="badge info" style="font-size:10px">Website</span>';
 
-        return '<div class="chat-thread-item" data-id="' + t.id + '" style="padding:14px 16px;border-bottom:1px solid #1a1e27;cursor:pointer;background:' + (isAct ? '#181c24' : 'transparent') + ';border-left:3px solid ' + (isAct ? '#00b8db' : 'transparent') + ';transition:all 0.15s ease">' +
+        return '<div class="chat-thread-item' + (isAct ? ' active' : '') + '" data-id="' + t.id + '">' +
           '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">' +
             '<div style="display:flex;align-items:center;gap:10px">' +
-              '<span class="preline-avatar" style="width:34px;height:34px;font-size:12px;background:#1e293b;color:#00d3f2">' + esc(ini) + '</span>' +
+              '<span class="preline-avatar" style="width:34px;height:34px;font-size:12px">' + esc(ini) + '</span>' +
               '<div>' +
-                '<b style="font-size:13.5px;color:#f9fafb;display:block">' + esc(t.name) + '</b>' +
-                '<small style="color:#94a3b8;font-size:11px">' + esc(t.co) + '</small>' +
+                '<b style="font-size:13.5px;color:var(--txt);display:block">' + esc(t.name) + '</b>' +
+                '<small style="color:var(--mut);font-size:11px">' + esc(t.co) + '</small>' +
               '</div>' +
             '</div>' +
             '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px">' +
-              '<small style="color:#64748b;font-size:10.5px">' + esc(t.time) + '</small>' +
+              '<small style="color:var(--mut2);font-size:10.5px">' + esc(t.time) + '</small>' +
               chanBadge +
             '</div>' +
           '</div>' +
-          '<p style="font-size:12px;color:' + (t.unread ? '#f1f5f9' : '#8e95a5') + ';font-weight:' + (t.unread ? '600' : '400') + ';margin:6px 0 0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(t.snippet) + '</p>' +
+          '<p style="font-size:12px;color:' + (t.unread ? 'var(--txt)' : 'var(--mut)') + ';font-weight:' + (t.unread ? '600' : '400') + ';margin:6px 0 0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(t.snippet) + '</p>' +
         '</div>';
       }).join("");
 
@@ -151,10 +151,10 @@
       box.innerHTML = msgs.map(function (m) {
         var isU = m.from === "user";
         return '<div style="display:flex;flex-direction:column;align-items:' + (isU ? 'flex-start' : 'flex-end') + ';max-width:80%;align-self:' + (isU ? 'flex-start' : 'flex-end') + '">' +
-          '<div style="background:' + (isU ? '#1c2333' : '#00b8db') + ';color:' + (isU ? '#f9fafb' : '#04222b') + ';padding:10px 14px;border-radius:12px;font-size:13.5px;line-height:1.45;border:' + (isU ? '1px solid rgba(255,255,255,0.08)' : '0') + ';font-weight:' + (isU ? '400' : '500') + '">' +
+          '<div class="' + (isU ? 'chat-msg-user' : 'chat-msg-ai') + '">' +
             esc(m.text) +
           '</div>' +
-          '<small style="color:#64748b;font-size:10.5px;margin-top:3px">' + esc(m.time) + ' · ' + (isU ? 'Customer' : 'AI Assistant') + '</small>' +
+          '<small style="color:var(--mut);font-size:10.5px;margin-top:3px">' + esc(m.time) + ' · ' + (isU ? 'Customer' : 'AI Assistant') + '</small>' +
         '</div>';
       }).join("");
 
@@ -174,7 +174,7 @@
         var box = $("#chat-history");
         var bubble = document.createElement("div");
         bubble.style.cssText = "display:flex;flex-direction:column;align-items:flex-end;max-width:80%;align-self:flex-end";
-        bubble.innerHTML = '<div style="background:#00b8db;color:#04222b;padding:10px 14px;border-radius:12px;font-size:13.5px;line-height:1.45;font-weight:500">' + esc(txt) + '</div><small style="color:#64748b;font-size:10.5px;margin-top:3px">Just now · Agent</small>';
+        bubble.innerHTML = '<div class="chat-msg-ai">' + esc(txt) + '</div><small style="color:var(--mut);font-size:10.5px;margin-top:3px">Just now · Agent</small>';
         box.appendChild(bubble);
         inp.value = "";
         box.scrollTop = box.scrollHeight;
@@ -203,4 +203,5 @@
       };
     }
   };
+  W.VIEWS.inbox = W.VIEWS.chat;
 })();

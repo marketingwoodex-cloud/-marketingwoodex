@@ -8,7 +8,7 @@ await a.evaluate(() => document.documentElement.classList.add("dark")); await w(
 const c = await a.$eval("#l-btn", (x) => { const s = getComputedStyle(x); return s.backgroundColor + " / " + s.color; }); ok(/184, 149, 106/.test(c), "dark-mode Sign in button is gold: " + c);
 await a.type("input[type=email]", "dev@woodex.local"); await a.screenshot({ path: OUT + "p18-ds-login-dark.png" });
 await a.evaluate(() => document.documentElement.classList.remove("dark"));
-await a.$eval("input[type=email]", (x) => (x.value = "")); await a.type("input[type=email]", "o@woodex.pk"); await a.type("input[type=password]", "Woodex@2026x"); await a.keyboard.press("Enter"); await w(2500);
+await a.$eval("input[type=email]", (x) => (x.value = "")); await a.type("input[type=email]", "o@woodex.pk"); await a.type("input[type=password]", ((process.env.WX_PW || "") + "x")); await a.keyboard.press("Enter"); await w(2500);
 await a.evaluate(() => (location.hash = "#/invoices")); await w(2500);
 ok(await a.$$eval("#view table.tbl th.srt", (x) => x.length) > 2, "invoice table headers sortable");
 ok(!!(await a.$(".lp-per select")), "Show N entries selector");

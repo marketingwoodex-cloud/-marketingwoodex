@@ -2,7 +2,7 @@
 const B = "http://127.0.0.1:8080/api/admin.php"; let T = "";
 const c = async (a, o = {}) => (await fetch(B, { method: "POST", headers: { "content-type": "application/json", ...(T ? { "X-WX-ADM": T } : {}) }, body: JSON.stringify({ action: a, ...o }) })).json();
 const ok = (x, m) => { console.log((x ? "PASS " : "FAIL ") + m); if (!x) process.exitCode = 1; };
-T = (await c("login", { email: "o@woodex.pk", password: "Woodex@2026x" })).token;
+T = (await c("login", { email: "o@woodex.pk", password: ((process.env.WX_PW || "") + "x") })).token;
 // add fresh activity inside the window
 const today = new Date().toISOString().slice(0, 10), nx = new Date(Date.now() - 864e5).toISOString().slice(0, 10) + "T10:00";
 const L0 = await c("lead_save", { name: "QA Dash Lead", phone: "0300 5550001", service: "Office fit-out", value: 1200000, stage: "contacted" }); const lid = (L0.lead || {}).id;

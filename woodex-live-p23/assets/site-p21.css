@@ -2591,7 +2591,7 @@ html:not(.js) .ih-faq-a,html:not(.js) .in-faq-a,html:not(.js) .ph-faq-a,html:not
 #about-story .ab-stat span{font-size:.82rem;line-height:1.45;color:#5b6472;transition:color .4s}
 #about-story .ab-stat:hover strong{color:#d9bf98}#about-story .ab-stat:hover span{color:rgba(255,255,255,.75)}
 @media(max-width:900px){#about-story{padding:80px 0}#about-story .ab-story-grid{grid-template-columns:1fr}#about-story .ab-story-media{aspect-ratio:4/3;margin:0 14px 56px 0}#about-story .ab-story-inset{right:-14px;width:40%}#about-story .ab-story-badge{left:12px;top:12px}}
-@media(max-width:560px){#about-story .ab-stats{grid-template-columns:1fr;gap:8px}#about-story .ab-stat{padding:16px 12px}#about-story .ab-stat strong{font-size:1.6rem}}
+@media(max-width:560px){#about-story .ab-stats{grid-template-columns:1fr 1fr 1fr;gap:8px}#about-story .ab-stat{padding:16px 12px}#about-story .ab-stat strong{font-size:1.6rem}}
 .about-motion-ready #about-page #about-story .ab-story-media{clip-path:none;opacity:0;transform:translateY(30px);transition:opacity .8s,transform 1s cubic-bezier(.22,1,.36,1)}
 .about-motion-ready #about-page #about-story .ab-story-media.is-visible,#about-story.wx-in .ab-story-media{opacity:1!important;transform:none}
 #about-story .ab-story-media{height:auto}

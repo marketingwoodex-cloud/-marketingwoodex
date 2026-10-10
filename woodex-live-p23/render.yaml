@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: woodex-studio-live
+    env: docker
+    plan: free
+    region: oregon
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: DB_HOST
+        value: localhost
+      - key: DB_DATABASE
+        value: u128159657_woodex
+      - key: DB_USERNAME
+        value: u128159657_woodex

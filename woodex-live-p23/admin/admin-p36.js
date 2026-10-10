@@ -92,7 +92,7 @@
         [seoOpen === 0 ? "ok" : "warn", "SEO fixes on published pages", seoOpen == null ? "Could not check" : seoOpen ? seoOpen + " page issue(s) to fix" : "All clear", "#/seo", "Open SEO"],
         [authors ? "you" : "ok", "Named author on insights articles", authors ? authors.pages.length + " articles need a designer name + credentials" : "Done", "#/team", "Team"],
         [claims ? "you" : "ok", "Approve or remove unconfirmed claims (free visit, PKR prices, 4K, revisions)", claims ? "Waiting for the owner’s answers on the claims sheet" : "Done", "#/pages", "Pages"],
-        [wa.connected ? "ok" : "you", "WhatsApp Cloud API", wa.connected ? "Connected" : "Not connected: needs Meta Business setup", "#/settings", "WhatsApp"],
+        [wa.connected ? "ok" : "you", "WhatsApp Cloud API", wa.connected ? "Connected" : "Not connected: needs Meta Business setup", "#/offers", "WhatsApp"],
         [g.connected ? "ok" : "you", "Google Analytics + Search Console", g.connected ? "Connected" + (g.email ? " (" + esc(g.email) + ")" : "") : "Not connected: needs a service-account JSON key", "#/settings", "Integrations"],
         [/design stud/i.test(proj) ? "you" : "ok", "Real project photos", /design stud/i.test(proj) ? "Projects still show design studies; send real photos" : "Done", "#/portfolio", "Portfolio"],
         ["you", "Real Google reviews", "Slider now links to Google; paste real reviews to replace the sample cards", "#/testimonials", "Testimonials"]
@@ -130,7 +130,7 @@
     dashOrig(el);
     var u = W.S && W.S.user || {}; if (u.role && !/owner|admin/.test(u.role)) return;
     waitFor(el, ".ph", function () { setTimeout(function () {
-      if (el.querySelector("#p36-tasks")) return;
+      if (el.querySelector("#p36-tasks") || el.querySelector("#dx-tasks-card")) return;
       var dx = el.querySelector("#dx");
       if (dx && dx.querySelector(".dx-chips")) { p21Cards(dx); return pendingCard(dx); }
       var host = document.createElement("div"), ph = el.querySelector(".ph"); ph.parentNode.insertBefore(host, ph.nextSibling); pendingCard(host);

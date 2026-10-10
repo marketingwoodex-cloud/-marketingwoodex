@@ -4,9 +4,9 @@ const b = await pp.launch({ executablePath: process.env.HOME + "/.cache/pb/al/ch
 const a = await b.newPage(); const errs = []; a.on("pageerror", (e) => errs.push(e.message)); a.on("dialog", (d) => d.accept());
 const W = (ms) => new Promise((r) => setTimeout(r, ms)), S = "/home/user/-marketingwoodex/tools/shot-c9-", ok = (c, m) => console.log((c ? "PASS " : "FAIL ") + m);
 const API = (o) => fetch("http://127.0.0.1:8080/api/admin.php", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(o) }).then((r) => r.json());
-const st = await API({ action: "status" }); if (st.needsSetup) await API({ action: "setup", builderPassword: "Woodex@2026", name: "Owner", email: "o@woodex.pk", password: "Woodex@2026x" });
+const st = await API({ action: "status" }); if (st.needsSetup) await API({ action: "setup", builderPassword: (process.env.WX_PW || ""), name: "Owner", email: "o@woodex.pk", password: ((process.env.WX_PW || "") + "x") });
 await a.goto("http://127.0.0.1:8080/admin/", { waitUntil: "networkidle0" });
-if (await a.$("input[type=password]")) { await a.type("input[type=email]", "o@woodex.pk"); await a.type("input[type=password]", "Woodex@2026x"); await a.keyboard.press("Enter"); await W(2500); }
+if (await a.$("input[type=password]")) { await a.type("input[type=email]", "o@woodex.pk"); await a.type("input[type=password]", ((process.env.WX_PW || "") + "x")); await a.keyboard.press("Enter"); await W(2500); }
 // seed: one unused upload from an existing site image
 const up = await a.evaluate(async () => { const bl = await (await fetch("/assets/img/img-00e6912a64f2-480.webp")).blob(); const b64 = await new Promise((r) => { const fr = new FileReader(); fr.onload = () => r(String(fr.result).split(",")[1]); fr.readAsDataURL(bl); });
   await WXA.api("media_folder", { name: "kitchens" }); return WXA.api("media_upload", { data: b64, name: "test-kitchen.webp", folder: "" }); });

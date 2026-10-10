@@ -22,8 +22,8 @@ Registration points that were patched:
 * `api/roles-lib.php` — `rgn_[a-z0-9_]+` added to the **sales** action group; `SHARED` grants
   `rgn_boot / rgn_nodes / rgn_variants / rgn_rates / rgn_health` to the **website** group too
   (Developer can read the registry and rate book, never a ledger).
-* `admin/index.html` — `<link rel="stylesheet" href="regional.css?v=2.6.0">` in `<head>`,
-  `<script src="admin-regions.js?v=2.6.0" defer></script>` last in the script stack.
+* `admin/index.html` — `<link rel="stylesheet" href="regional.css?v=2.7.0">` (after `assets/preline-theme.css`) in `<head>`,
+  `<script src="admin-regions.js?v=2.7.0" defer></script>` last in the script stack.
 * `admin/admin.js` — navigation entry `["regional", "Regional ops", "map-pin", "g:sales"]`
   under the **SALES** heading.
 

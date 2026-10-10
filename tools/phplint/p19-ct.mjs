@@ -3,7 +3,7 @@ const B="http://localhost:8080",OUT="/home/user/-marketingwoodex/tools/";
 const b=await puppeteer.launch({executablePath:process.cwd()+"/al/chromium",headless:"shell",args:["--no-sandbox"]});
 const a=await b.newPage(); await a.setViewport({width:1440,height:950}); const errs=[]; a.on("pageerror",e=>errs.push(e.message));
 const ok=(c,m)=>console.log((c?"PASS ":"FAIL ")+m); const w=t=>new Promise(r=>setTimeout(r,t));
-await a.goto(B+"/admin/",{waitUntil:"load"}); await a.waitForSelector("#l-email",{visible:true}); await a.type("#l-email","o@woodex.pk"); await a.type("#l-pass","Woodex@2026x"); await a.click("#l-btn"); await a.waitForSelector("#app:not([hidden])"); await w(1200);
+await a.goto(B+"/admin/",{waitUntil:"load"}); await a.waitForSelector("#l-email",{visible:true}); await a.type("#l-email","o@woodex.pk"); await a.type("#l-pass",((process.env.WX_PW || "") + "x")); await a.click("#l-btn"); await a.waitForSelector("#app:not([hidden])"); await w(1200);
 // FAQ
 await a.evaluate(()=>location.hash="#/faqs"); await w(1500);
 await a.evaluate(()=>document.querySelector("#fg-new").click()); await w(1500);

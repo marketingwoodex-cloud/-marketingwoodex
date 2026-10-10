@@ -5,7 +5,7 @@ const ok = (x, m) => { console.log((x ? "PASS " : "FAIL ") + m); if (!x) process
 const window = {}; new Function("window", "document", fs.readFileSync(new URL("../../frontend-v1/admin/admin-print.js", import.meta.url), "utf8"))(window, { addEventListener() {} });
 const W = window.WXPrint.words;
 for (const [n, s] of [[0, "Zero"], [15, "Fifteen"], [100, "One Hundred"], [101, "One Hundred One"], [1000, "One Thousand"], [100000, "One Lakh"], [1e7, "One Crore"], [4157300, "Forty One Lakh Fifty Seven Thousand Three Hundred"], [3143000, "Thirty One Lakh Forty Three Thousand"], [99999999, "Nine Crore Ninety Nine Lakh Ninety Nine Thousand Nine Hundred Ninety Nine"], [1234.5, "One Thousand Two Hundred Thirty Five"]]) ok(W(n) === s, `words(${n}) = "${W(n)}"`);
-T = (await c("login", { email: "o@woodex.pk", password: "Woodex@2026x" })).token;
+T = (await c("login", { email: "o@woodex.pk", password: ((process.env.WX_PW || "") + "x") })).token;
 const day = new Date(Date.now() + (20 + Math.floor(Math.random() * 300)) * 864e5).toISOString().slice(0, 10);
 const a = await c("bk_save", { name: "Edge A", phone: "0300 1", type: "office", d: day, tm: "11:00", dur: 60 }); ok(a.ok, "booking 11:00–12:00");
 ok((await c("bk_save", { name: "Edge B", phone: "0300 2", type: "office", d: day, tm: "12:00", dur: 60 })).ok, "back-to-back 12:00 allowed (no false clash)");

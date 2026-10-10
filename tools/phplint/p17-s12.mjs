@@ -2,8 +2,8 @@
 const B = "http://127.0.0.1:8080/api/admin.php"; let T = "";
 const call = async (action, o = {}) => { const r = await fetch(B, { method: "POST", headers: { "content-type": "application/json", ...(T ? { "X-WX-ADM": T } : {}) }, body: JSON.stringify({ action, ...o }) }); return r.json(); };
 const ok = (c, m) => { console.log((c ? "PASS " : "FAIL ") + m); if (!c) process.exitCode = 1; };
-let st = await call("status"); if (st.needsSetup) await call("setup", { builderPassword: "Woodex@2026", name: "Owner", email: "o@woodex.pk", password: "Woodex@2026x" });
-const lg = await call("login", { email: "o@woodex.pk", password: "Woodex@2026x" }); T = lg.token || lg.csrf || ""; ok(lg.ok, "login " + (lg.error || ""));
+let st = await call("status"); if (st.needsSetup) await call("setup", { builderPassword: (process.env.WX_PW || ""), name: "Owner", email: "o@woodex.pk", password: ((process.env.WX_PW || "") + "x") });
+const lg = await call("login", { email: "o@woodex.pk", password: ((process.env.WX_PW || "") + "x") }); T = lg.token || lg.csrf || ""; ok(lg.ok, "login " + (lg.error || ""));
 for (const n of ["Abdullah Khan", "Nabeel Ahmed", "Imtiaz Ali", "Amir Raza"]) await call("user_save", { name: n, email: n.split(" ")[0].toLowerCase() + "@woodex.pk", role: "sales", password: "Sales@2026xx", active: true });
 const meta = await call("s17_meta"); ok(meta.ok && meta.lines.furniture, "s17_meta");
 const csvRows = [

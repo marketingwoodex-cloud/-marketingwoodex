@@ -16,7 +16,7 @@ await a.type("#l-email", "o@woodex.pk"); await a.type("#l-pass", "wrong-pass");
 await a.click("#l-btn"); const busy = await a.evaluate(() => document.querySelector("#l-btn").classList.contains("busy")); await w(1200);
 ok(busy, "button shows spinner while signing in"); ok(await a.evaluate(() => /./.test(document.querySelector("#l-err").textContent) && getComputedStyle(document.querySelector("#l-err")).display !== "none"), "wrong password → visible error");
 await a.screenshot({ path: OUT + "p18-i-login.png" });
-await a.evaluate(() => { document.querySelector("#l-pass").value = ""; }); await a.type("#l-pass", "Woodex@2026x"); await a.click("#l-btn"); await a.waitForSelector("#app:not([hidden])");
+await a.evaluate(() => { document.querySelector("#l-pass").value = ""; }); await a.type("#l-pass", ((process.env.WX_PW || "") + "x")); await a.click("#l-btn"); await a.waitForSelector("#app:not([hidden])");
 ok(await a.evaluate(() => !document.querySelector("#l-btn").classList.contains("busy")), "spinner cleared after sign in");
 // ---- blog editor
 const SL = "qa-p18i-post", REL = "insights/" + SL + "/index.html";

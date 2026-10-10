@@ -2,7 +2,6 @@
 SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1
 </IfModule>
 # Woodex frontend-v1 — Hostinger (Apache/LiteSpeed)
-DirectoryIndex index.php index.html
 Options -Indexes
 ErrorDocument 404 /404.html
 
@@ -23,7 +22,7 @@ RewriteRule (^|/)\.(?!well-known) - [F,L]
 </IfModule>
 
 # Block internal PHP libraries, logs and dev files from direct web access
-<FilesMatch "(-lib\.php|^router\.php|^error_log|\.log|\.sql|\.bak|\.md|\.env|^chat-rules\.json|^redirect-plan\.json)$">
+<FilesMatch "(-lib\.php|^router\.php|^error_log|\.log|\.sql|\.bak|\.md|^chat-rules\.json|^redirect-plan\.json)$">
 Require all denied
 </FilesMatch>
 
@@ -44,7 +43,7 @@ AddOutputFilterByType DEFLATE text/html text/css text/javascript application/jav
 
 # BEGIN WOODEX-ADMIN (managed by /admin — do not edit by hand)
 ErrorDocument 500 /500.html
-ErrorDocument 503 /coming-soon.html
+ErrorDocument 503 /503.html
 <IfModule mod_rewrite.c>
 RewriteEngine On
 # one official address: no www
@@ -64,26 +63,26 @@ RewriteRule ^studio/?$ /about/ [R=301,L]
 RewriteRule ^portfolio/?$ /projects/ [R=301,L]
 RewriteRule ^journal/?$ /insights/ [R=301,L]
 RewriteRule ^free\-consultation/?$ /contact/ [R=301,L]
-RewriteRule ^interior\-design/bedroom/?$ /residential-bedroom-design/ [R=301,L]
-RewriteRule ^interior\-design/home\-office/?$ /residential-home-office-design/ [R=301,L]
-RewriteRule ^interior\-design/kitchen/?$ /kitchen-design/ [R=301,L]
-RewriteRule ^architecture/educational/?$ /educational-buildings-design/ [R=301,L]
-RewriteRule ^architecture/master\-planning/?$ /master-planning/ [R=301,L]
-RewriteRule ^renovation/residential/?$ /residential-renovation/ [R=301,L]
-RewriteRule ^renovation/office/?$ /office-renovation/ [R=301,L]
-RewriteRule ^renovation/commercial/?$ /commercial-renovation/ [R=301,L]
-RewriteRule ^renovation/retail/?$ /retail-showroom-renovation/ [R=301,L]
-RewriteRule ^commercial/restaurant/?$ /restaurant-interior-design/ [R=301,L]
-RewriteRule ^commercial/beauty\-salon/?$ /beauty-salon-design/ [R=301,L]
+RewriteRule ^interior\-design\/bedroom/?$ /residential-bedroom-design/ [R=301,L]
+RewriteRule ^interior\-design\/home\-office/?$ /residential-home-office-design/ [R=301,L]
+RewriteRule ^interior\-design\/kitchen/?$ /kitchen-design/ [R=301,L]
+RewriteRule ^architecture\/educational/?$ /educational-buildings-design/ [R=301,L]
+RewriteRule ^architecture\/master\-planning/?$ /master-planning/ [R=301,L]
+RewriteRule ^renovation\/residential/?$ /residential-renovation/ [R=301,L]
+RewriteRule ^renovation\/office/?$ /office-renovation/ [R=301,L]
+RewriteRule ^renovation\/commercial/?$ /commercial-renovation/ [R=301,L]
+RewriteRule ^renovation\/retail/?$ /retail-showroom-renovation/ [R=301,L]
+RewriteRule ^commercial\/restaurant/?$ /restaurant-interior-design/ [R=301,L]
+RewriteRule ^commercial\/beauty\-salon/?$ /beauty-salon-design/ [R=301,L]
 RewriteRule ^3d\-studio/?$ /3d-visualization/ [R=301,L]
 RewriteRule ^project\-the\-open\-house/?$ /projects/ [R=301,L]
 RewriteRule ^insight\-layering\-light/?$ /insights/ [R=301,L]
-RewriteRule ^insights/small\-rooms/?$ /insights/small-space-ideas/ [R=301,L]
-RewriteRule ^insights/costs\-in\-pakistan/?$ /insights/interior-design-cost-pakistan/ [R=301,L]
+RewriteRule ^insights\/small\-rooms/?$ /insights/small-space-ideas/ [R=301,L]
+RewriteRule ^insights\/costs\-in\-pakistan/?$ /insights/interior-design-cost-pakistan/ [R=301,L]
 RewriteRule ^gratis\-gokkasten\-spelen\-netent/?$ - [G,L]
 RewriteRule ^777\-nl\-casino\-nl\-2025\-review/?$ - [G,L]
 RewriteRule ^He&/?$ - [G,L]
-RewriteRule ^cgi\-sys/suspendedpage\.cgi/?$ - [G,L]
+RewriteRule ^cgi\-sys\/suspendedpage\.cgi/?$ - [G,L]
 RewriteRule ^Figuren\-itm\-60842(/.*)?$ - [G,L]
 RewriteRule ^wp\-admin(/.*)?$ - [G,L]
 RewriteRule ^wp\-content(/.*)?$ - [G,L]

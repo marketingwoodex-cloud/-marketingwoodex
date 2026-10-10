@@ -104,4 +104,5 @@
       toast("Role permissions: Owner (Full Access), Admin (Operations), Sales (Leads & CRM), Editor (Content).");
     };
   };
+  W.VIEWS.team = W.VIEWS.users;
 })();

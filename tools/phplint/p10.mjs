@@ -15,7 +15,7 @@ await v.type(".wx-ch-form textarea", "My number is 0300 1234567"); await v.keybo
 const a = await b.newPage(); await a.setViewport({ width: 1366, height: 860 }); a.on("pageerror", (e) => errs.push("admin: " + e.message)); a.on("dialog", (d) => d.accept());
 await a.goto(B + "/admin/", { waitUntil: "load" });
 const st = await a.evaluate(() => fetch("/api/admin.php", { method: "POST", body: JSON.stringify({ action: "status" }) }).then((r) => r.json()));
-if (st.needsSetup) { await a.evaluate(() => fetch("/api/admin.php", { method: "POST", body: JSON.stringify({ action: "setup", builderPassword: "Woodex@2026", name: "Owner", email: "o@woodex.pk", password: "Woodex@2026x" }) })); await a.reload({ waitUntil: "load" }); }
+if (st.needsSetup) { await a.evaluate(() => fetch("/api/admin.php", { method: "POST", body: JSON.stringify({ action: "setup", builderPassword: (process.env.WX_PW || ""), name: "Owner", email: "o@woodex.pk", password: ((process.env.WX_PW || "") + "x") }) })); await a.reload({ waitUntil: "load" }); }
 await a.waitForSelector("#l-email", { visible: true });
 // forgot password flow
 await a.click("#l-forgot"); await a.type("#fp-email", "o@woodex.pk"); await a.click("#fp-btn"); await new Promise((r) => setTimeout(r, 600));
@@ -23,9 +23,9 @@ console.log("forgot:", await a.$eval("#fp-ok", (e) => e.textContent));
 const ob = "/home/user/-marketingwoodex/frontend-v1/_private/outbox/", rf = fs.readdirSync(ob).filter((f) => f.endsWith("-reset.txt")).sort().pop();
 const tok = fs.readFileSync(ob + rf, "utf8").split("#reset=")[1].trim();
 await a.goto(B + "/admin/#reset=" + tok, { waitUntil: "load" }); await a.waitForSelector("#rp-form:not([hidden])", { timeout: 8000 });
-await a.type("#rp-pass", "Woodex@2026x"); await a.type("#rp-pass2", "Woodex@2026x"); await a.click("#rp-btn"); await new Promise((r) => setTimeout(r, 700));
+await a.type("#rp-pass", ((process.env.WX_PW || "") + "x")); await a.type("#rp-pass2", ((process.env.WX_PW || "") + "x")); await a.click("#rp-btn"); await new Promise((r) => setTimeout(r, 700));
 console.log("reset → login visible:", await a.$eval("#login-form", (e) => !e.hidden));
-await a.type("#l-email", "o@woodex.pk"); await a.type("#l-pass", "Woodex@2026x"); await a.click("#l-btn"); await a.waitForSelector("#app:not([hidden])");
+await a.type("#l-email", "o@woodex.pk"); await a.type("#l-pass", ((process.env.WX_PW || "") + "x")); await a.click("#l-btn"); await a.waitForSelector("#app:not([hidden])");
 await new Promise((r) => setTimeout(r, 2500));
 console.log("bell count:", await a.$eval("#nt-n", (e) => (e.hidden ? 0 : e.textContent)));
 await a.click("#nt-btn"); await new Promise((r) => setTimeout(r, 300)); await a.screenshot({ path: OUT + "p10-bell.png" }); await a.click("#nt-btn");

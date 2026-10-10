@@ -8,8 +8,8 @@ const ok = (c, m) => { console.log((c ? "PASS " : "FAIL ") + m); if (!c) process
 const w = (ms) => new Promise((r) => setTimeout(r, ms));
 await a.goto(B + "/admin/", { waitUntil: "load" });
 const st = await a.evaluate(() => fetch("/api/admin.php", { method: "POST", body: JSON.stringify({ action: "status" }) }).then((r) => r.json()));
-if (st.needsSetup) { await a.evaluate(() => fetch("/api/admin.php", { method: "POST", body: JSON.stringify({ action: "setup", builderPassword: "Woodex@2026", name: "Owner", email: "o@woodex.pk", password: "Woodex@2026x" }) })); await a.reload({ waitUntil: "load" }); }
-await a.waitForSelector("#l-email", { visible: true }); await a.type("#l-email", "o@woodex.pk"); await a.type("#l-pass", "Woodex@2026x"); await a.click("#l-btn"); await a.waitForSelector("#app:not([hidden])");
+if (st.needsSetup) { await a.evaluate(() => fetch("/api/admin.php", { method: "POST", body: JSON.stringify({ action: "setup", builderPassword: (process.env.WX_PW || ""), name: "Owner", email: "o@woodex.pk", password: ((process.env.WX_PW || "") + "x") }) })); await a.reload({ waitUntil: "load" }); }
+await a.waitForSelector("#l-email", { visible: true }); await a.type("#l-email", "o@woodex.pk"); await a.type("#l-pass", ((process.env.WX_PW || "") + "x")); await a.click("#l-btn"); await a.waitForSelector("#app:not([hidden])");
 import fs from "node:fs";
 const call = (act, o = {}) => a.evaluate((act, o) => WXA.api(act, o), act, o);
 await a.evaluate(() => (location.hash = "#/profile")); await a.waitForSelector("#pr .pr-cover", { timeout: 8000 });
@@ -36,11 +36,11 @@ await a.setViewport({ width: 390, height: 844 }); await w(600); await a.screensh
 // reload keeps the new screen (direct load)
 await a.reload({ waitUntil: "load" }); await w(3000); ok(!!(await a.$("#pr .pr-cover")), "direct load of #/profile shows new page");
 // password modal
-await a.click("#pr-pw"); await a.waitForSelector("#pp-c"); await a.type("#pp-c", "Woodex@2026x"); await a.type("#pp-n", "Woodex@2026y"); await a.type("#pp-r", "Woodex@2026z"); await a.click("#pp button.pri"); await w(500);
+await a.click("#pr-pw"); await a.waitForSelector("#pp-c"); await a.type("#pp-c", ((process.env.WX_PW || "") + "x")); await a.type("#pp-n", ((process.env.WX_PW || "") + "y")); await a.type("#pp-r", ((process.env.WX_PW || "") + "z")); await a.click("#pp button.pri"); await w(500);
 ok(/do not match/.test(await a.$eval("#pp-err", (e) => e.textContent)), "password mismatch caught");
-await a.evaluate(() => { document.querySelector("#pp-r").value = "Woodex@2026y"; }); await a.click("#pp button.pri"); await w(1500);
+await a.evaluate(() => { document.querySelector("#pp-r").value = ((process.env.WX_PW || "") + "y"); }); await a.click("#pp button.pri"); await w(1500);
 ok((await call("me_get")).ok, "still signed in after password change");
-const back = await call("password", { current: "Woodex@2026y", next: "Woodex@2026x" }); ok(back.ok, "password changed back"); await a.evaluate((t) => { WXA.S.token = t; sessionStorage.setItem("wxaTok", t); }, back.token);
+const back = await call("password", { current: ((process.env.WX_PW || "") + "y"), next: ((process.env.WX_PW || "") + "x") }); ok(back.ok, "password changed back"); await a.evaluate((t) => { WXA.S.token = t; sessionStorage.setItem("wxaTok", t); }, back.token);
 // remove photo
 await a.evaluate(() => (location.hash = "#/dashboard")); await w(500); await a.evaluate(() => (location.hash = "#/profile")); await a.waitForSelector("#pr-rm"); await a.click("#pr-rm"); await w(1200);
 ok(!(await a.$(".pr-av img")) && !fs.existsSync("/home/user/-marketingwoodex/frontend-v1" + av), "photo removed + file deleted");

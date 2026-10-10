@@ -42,8 +42,6 @@
   function wrap(name, after) { var base = W.VIEWS[name]; if (!base) return; W.VIEWS[name] = function (el, parts) { var r = base(el, parts); try { after(el, parts || []); } catch (e) { console.error(e); } return r; }; }
 
   // ---------------------------------------------------------------- My security → Sign in with Google
-  // admin.js has no base "security" screen, so wrap() would silently do nothing and the Google card never showed.
-  if (!W.VIEWS.security) W.VIEWS.security = function (el) { el.innerHTML = W.head("My security", "Account", ""); };
   wrap("security", function (el) {
     var box = document.createElement("div"); box.className = "card"; box.style.marginTop = "16px"; el.appendChild(box);
     function draw() {
@@ -117,7 +115,7 @@
       X.innerHTML = '<div class="p8-kpis"><div><b>' + r.today + '</b><small>Clicks today</small></div><div><b>' + r.d7 + '</b><small>Last 7 days</small></div><div><b>' + r.d30 + '</b><small>Last 30 days</small></div><div><b>' + r.leads30 + '</b><small>Leads saved (30 d)</small></div></div>' +
         '<div class="p8-bars" title="Clicks per day, last 30 days">' + days.map(function (x) { return '<i style="height:' + Math.round(100 * x[1] / mx) + '%" title="' + x[0] + ": " + x[1] + '"></i>'; }).join("") + "</div>" +
         (r.d30 ? '<div class="g2">' + top(r.pages, "Page") + top(r.services, "Service") + "</div>" : '<p class="muted">No clicks yet. They appear here as visitors use the WhatsApp button.</p>') +
-        '<p class="muted" style="font-size:12px;margin-bottom:0">Visitors who add their name and phone in the WhatsApp box are saved in <a href="#/enquiries">Enquiries</a> with the source “WhatsApp widget”. Counts are anonymous. The number comes from <a href="#/business">Business info</a>.</p>';
+        '<p class="muted" style="font-size:12px;margin-bottom:0">Visitors who add their name and phone in the WhatsApp box are saved in <a href="#/leads">Enquiries</a> with the source “WhatsApp widget”. Counts are anonymous. The number comes from <a href="#/business">Business info</a>.</p>';
     });
 
     if (!oa) return;

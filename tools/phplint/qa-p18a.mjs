@@ -2,7 +2,7 @@
 const B = "http://127.0.0.1:8080/api/admin.php"; let T = "";
 const c = async (a, o = {}) => (await fetch(B, { method: "POST", headers: { "content-type": "application/json", ...(T ? { "X-WX-ADM": T } : {}) }, body: JSON.stringify({ action: a, ...o }) })).json();
 const ok = (x, m) => { console.log((x ? "PASS " : "FAIL ") + m); if (!x) process.exitCode = 1; };
-T = (await c("login", { email: "o@woodex.pk", password: "Woodex@2026x" })).token;
+T = (await c("login", { email: "o@woodex.pk", password: ((process.env.WX_PW || "") + "x") })).token;
 const qs = (await c("quotes_list")).quotes; const src = qs.find((q) => q.layout === "project" && q.status === "draft") || qs.find((q) => q.status === "draft");
 const g = (await c("quote_get", { id: src.id })).quote;
 const r = await c("quote_save", { ...g, rent: 50000, advance: 1000000, taxPct: 0, discount: 0, blocks: ["items", "-bank", "summary", "bogus", "-items"] });

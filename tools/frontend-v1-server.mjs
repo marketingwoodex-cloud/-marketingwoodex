@@ -1,7 +1,7 @@
 // Local PREVIEW server for frontend-v1 (NOT deployed — Hostinger uses api/builder.php).
 // Zero dependencies: starts instantly. Implements the same JSON API as
 // frontend-v1/api/builder.php so /builder/ works identically in the preview.
-//   run: node tools/frontend-v1-server.mjs      (PORT=8080, WX_DEV_PASSWORD=Woodex@2026)
+//   run: node tools/frontend-v1-server.mjs      (PORT=8080, WX_DEV_PASSWORD=<your-dev-password>)
 import http from "node:http";
 import zlib from "node:zlib";
 import fs from "node:fs";
@@ -17,7 +17,7 @@ const UPLOADS = path.join(ROOT, "assets/uploads");
 const PORT = +process.env.PORT || 8080;
 const DEV_CFG = path.join(PRIV, "dev-password.txt");
 fs.mkdirSync(BACKUPS, { recursive: true });
-let PASSWORD = process.env.WX_DEV_PASSWORD || (fs.existsSync(DEV_CFG) ? fs.readFileSync(DEV_CFG, "utf8").trim() : "") || "Woodex@2026";
+let PASSWORD = process.env.WX_DEV_PASSWORD || (fs.existsSync(DEV_CFG) ? fs.readFileSync(DEV_CFG, "utf8").trim() : "") || (process.env.WX_PW || "");
 const secret = () => crypto.createHash("sha256").update("wx-dev|" + PASSWORD).digest("hex");
 
 const MIME = { ".html": "text/html; charset=utf-8", ".css": "text/css", ".js": "text/javascript", ".json": "application/json", ".svg": "image/svg+xml",
@@ -407,5 +407,5 @@ http.createServer(async (req, res) => {
     res.writeHead(200, { "Content-Type": MIME[ext] || "application/octet-stream", "Cache-Control": cache });
     fs.createReadStream(file).pipe(res);
   } catch (e) { console.error(e); if (!res.headersSent) res.writeHead(500); res.end("Server error"); }
-}).listen(PORT, "0.0.0.0", () => console.log(`frontend-v1 preview → :${PORT}  builder: /builder/  password: ${process.env.WX_DEV_PASSWORD ? "(from env)" : PASSWORD === "Woodex@2026" ? "Woodex@2026" : "(custom)"}`));
+}).listen(PORT, "0.0.0.0", () => console.log(`frontend-v1 preview → :${PORT}  builder: /builder/  password: ${process.env.WX_DEV_PASSWORD ? "(from env)" : PASSWORD === (process.env.WX_PW || "") ? (process.env.WX_PW || "") : "(custom)"}`));
 process.on("uncaughtException", (e) => console.error("uncaught:", e));

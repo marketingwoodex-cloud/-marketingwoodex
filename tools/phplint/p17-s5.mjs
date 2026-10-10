@@ -2,7 +2,7 @@
 const B = "http://127.0.0.1:8080/api/admin.php"; let T = "";
 const call = async (action, o = {}) => (await fetch(B, { method: "POST", headers: { "content-type": "application/json", ...(T ? { "X-WX-ADM": T } : {}) }, body: JSON.stringify({ action, ...o }) })).json();
 const ok = (c, m) => { console.log((c ? "PASS " : "FAIL ") + m); if (!c) process.exitCode = 1; };
-T = (await call("login", { email: "o@woodex.pk", password: "Woodex@2026x" })).token;
+T = (await call("login", { email: "o@woodex.pk", password: ((process.env.WX_PW || "") + "x") })).token;
 const q = (await call("quote_save", { client: { name: "Mr. Faisal Rehman", company: "Interior Arch (Pvt) Ltd", phone: "0300 4441122" }, project: "Corporate office interior", site: "DHA Phase 6", layout: "project", qtype: "interior",
   sections: [{ name: "Wood work", items: [{ desc: "Media wall", qty: 1, unit: "job", rate: 1000000 }] }] })).quote;
 await call("quote_status", { id: q.id, status: "approved" }); const qi = await call("quote_invoice", { id: q.id });

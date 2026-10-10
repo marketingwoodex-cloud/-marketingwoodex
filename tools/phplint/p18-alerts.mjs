@@ -5,7 +5,7 @@ const ok = (x, m) => { console.log((x ? "PASS " : "FAIL ") + m); if (!x) process
 const b = await pp.launch({ executablePath: process.env.HOME + "/.cache/pb/al/chromium", args: ["--no-sandbox"], headless: "shell", defaultViewport: { width: 1440, height: 950 } });
 const a = await b.newPage(); const errs = []; a.on("pageerror", (e) => errs.push(e.message));
 await a.goto("http://127.0.0.1:8080/admin/", { waitUntil: "networkidle0" });
-await a.type("input[type=email]", "o@woodex.pk"); await a.type("input[type=password]", "Woodex@2026x"); await a.keyboard.press("Enter"); await w(3000);
+await a.type("input[type=email]", "o@woodex.pk"); await a.type("input[type=password]", ((process.env.WX_PW || "") + "x")); await a.keyboard.press("Enter"); await w(3000);
 // a visit booking (unique future weekday) + a payment on an open invoice
 const bk = await a.evaluate(async () => { const call = (o) => fetch("/api/forms.php", { method: "POST", body: JSON.stringify(o) }).then((r) => r.json());
   for (let k = 3 + Math.floor(Math.random() * 40); k < 80; k++) { const d = new Date(Date.now() + k * 864e5); if (d.getDay() === 0) continue; const day = d.toISOString().slice(0, 10); const s = await call({ action: "book_slots", type: "visit", date: day }); if (s.ok && s.slots && s.slots.length) return call({ action: "book_create", type: "visit", date: day, time: s.slots[0], name: "Alert Test " + k, phone: "0300" + String(1000000 + k), address: "House 1, DHA" }); } return { ok: false }; });

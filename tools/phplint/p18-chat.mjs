@@ -7,7 +7,7 @@ const errs = [];
 // admin first, sitting on the dashboard
 const a = await b.newPage(); a.on("pageerror", (e) => errs.push("admin: " + e.message));
 await a.goto("http://127.0.0.1:8080/admin/", { waitUntil: "networkidle0" });
-await a.type("input[type=email]", "o@woodex.pk"); await a.type("input[type=password]", "Woodex@2026x"); await a.keyboard.press("Enter"); await w(3500);
+await a.type("input[type=email]", "o@woodex.pk"); await a.type("input[type=password]", ((process.env.WX_PW || "") + "x")); await a.keyboard.press("Enter"); await w(3500);
 ok(!!(await a.$("#cx-btn")), "header chat button next to the bell");
 // visitor
 const v = await b.newPage(); v.on("pageerror", (e) => errs.push("visitor: " + e.message));

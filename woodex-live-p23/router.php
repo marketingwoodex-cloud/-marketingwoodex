@@ -9,11 +9,6 @@ if (PHP_SAPI !== 'cli-server') { http_response_code(404); exit; }
 $root = __DIR__;
 $uri = rawurldecode(parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/');
 if (strpos($uri, '..') !== false || preg_match('~^/_private(/|$)~', $uri) || preg_match('~/\.(?!well-known)~', $uri)) { http_response_code(403); echo 'Forbidden'; return true; }
-// Same blocks as the production .htaccess / folder .htaccess files, so the preview never exposes them:
-// private + database + template folders, PHP libraries, SQL dumps, logs, markdown, env files, uploads that could run code.
-if (preg_match('~^/(_private|_database|_templates|includes)(/|$)~', $uri)
-    || preg_match('~(^|/)[^/]*-lib\.php$|(^|/)router\.php$|(^|/)error_log|\.(log|sql|bak|md|env)$|(^|/)(chat-rules|redirect-plan)\.json$~i', $uri)
-    || preg_match('~^/assets/uploads/.*\.(php|phtml|phar|html?|js|svg)$~i', $uri)) { http_response_code(403); echo 'Forbidden'; return true; }
 
 // maintenance / coming soon (same rules as the .htaccess block written by Admin)
 $sys = is_file("$root/_private/system.json") ? (json_decode((string)file_get_contents("$root/_private/system.json"), true) ?: []) : [];

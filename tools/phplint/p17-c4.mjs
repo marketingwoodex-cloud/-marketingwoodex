@@ -2,8 +2,8 @@
 const B = "http://127.0.0.1:8080/api/admin.php"; let T = "";
 const call = async (action, o = {}) => (await fetch(B, { method: "POST", headers: { "content-type": "application/json", ...(T ? { "X-WX-ADM": T } : {}) }, body: JSON.stringify({ action, ...o }) })).json();
 const ok = (c, m) => { console.log((c ? "PASS " : "FAIL ") + m); if (!c) process.exitCode = 1; };
-let st = await call("status"); if (st.needsSetup) await call("setup", { builderPassword: "Woodex@2026", name: "Owner", email: "o@woodex.pk", password: "Woodex@2026x" });
-const lg = await call("login", { email: "o@woodex.pk", password: "Woodex@2026x" }); T = lg.token || lg.csrf || ""; ok(lg.ok, "login");
+let st = await call("status"); if (st.needsSetup) await call("setup", { builderPassword: (process.env.WX_PW || ""), name: "Owner", email: "o@woodex.pk", password: ((process.env.WX_PW || "") + "x") });
+const lg = await call("login", { email: "o@woodex.pk", password: ((process.env.WX_PW || "") + "x") }); T = lg.token || lg.csrf || ""; ok(lg.ok, "login");
 const t1 = await call("cms_tpl_save", { tpl: { type: "post", name: "Long guide", hero: "navy", toc: true, sections: [{ id: "summary", on: true }, { id: "body", on: true }, { id: "faqs", on: true }], default: true } });
 ok(t1.ok && t1.tpl && t1.tpl.id, "tpl save " + (t1.error || ""));
 ok(!(await call("cms_tpl_save", { tpl: { type: "cars", name: "x" } })).ok, "bad type rejected");

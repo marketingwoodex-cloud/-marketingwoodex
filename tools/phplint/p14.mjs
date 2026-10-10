@@ -19,8 +19,8 @@ a.on("request", async (r) => {
 });
 await a.goto(B + "/admin/", { waitUntil: "load" });
 const st = await a.evaluate(() => fetch("/api/admin.php", { method: "POST", body: JSON.stringify({ action: "status" }) }).then((r) => r.json()));
-if (st.needsSetup) { await a.evaluate(() => fetch("/api/admin.php", { method: "POST", body: JSON.stringify({ action: "setup", builderPassword: "Woodex@2026", name: "Owner", email: "o@woodex.pk", password: "Woodex@2026x" }) })); await a.reload({ waitUntil: "load" }); }
-await a.waitForSelector("#l-email", { visible: true }); await a.type("#l-email", "o@woodex.pk"); await a.type("#l-pass", "Woodex@2026x"); await a.click("#l-btn"); await a.waitForSelector("#app:not([hidden])");
+if (st.needsSetup) { await a.evaluate(() => fetch("/api/admin.php", { method: "POST", body: JSON.stringify({ action: "setup", builderPassword: (process.env.WX_PW || ""), name: "Owner", email: "o@woodex.pk", password: ((process.env.WX_PW || "") + "x") }) })); await a.reload({ waitUntil: "load" }); }
+await a.waitForSelector("#l-email", { visible: true }); await a.type("#l-email", "o@woodex.pk"); await a.type("#l-pass", ((process.env.WX_PW || "") + "x")); await a.click("#l-btn"); await a.waitForSelector("#app:not([hidden])");
 await a.evaluate(() => (location.hash = "#/post/new")); await a.waitForSelector("[data-tp]", { timeout: 15000 });
 await a.screenshot({ path: OUT + "p14-templates.png" });
 await a.$eval("#tp-ai", (e) => e.click()); await a.waitForSelector("#aw-go");

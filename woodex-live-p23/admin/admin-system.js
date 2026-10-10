@@ -56,19 +56,19 @@
           '<div style="display:flex;flex-direction:column;gap:12px;margin-top:16px">' +
             '<div style="padding:12px;background:#0b0d13;border:1px solid #1e2430;border-radius:10px">' +
               '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">' +
-                '<b style="color:#f9fafb;font-size:13px">woodex-live-p23.zip (27.3 MB)</b>' +
-                '<span class="badge ok">Ready</span>' +
+                '<b style="color:#f9fafb;font-size:13px">Woodex Live P29-v2.1.zip (29.0 MB)</b>' +
+                '<span class="badge ok">Latest Live</span>' +
               '</div>' +
-              '<small class="muted" style="display:block;margin-bottom:8px">Full 147 pages + Preline Pro Admin suite + 70 Section library</small>' +
-              '<a class="btn sm pri btn-preline-cyan" href="https://github.com/marketingwoodex-cloud/-marketingwoodex/raw/arena/8a776c65-marketingwoodex/woodex-live-P23/woodex-live-p23.zip" target="_blank">' + ic("download") + 'Direct Download Link</a>' +
+              '<small class="muted" style="display:block;margin-bottom:8px">Full 147 pages + Admin v2.1 Pro Suite + Preline Dark Obsidian &amp; Cyan + Flat Hostinger root</small>' +
+              '<a class="btn sm pri btn-preline-cyan" href="https://github.com/marketingwoodex-cloud/-marketingwoodex/raw/arena/8a776c65-marketingwoodex/woodex-live-p29-v2.1/Woodex%20Live%20P29-v2.1.zip" target="_blank">' + ic("download") + 'Direct Download Link (29 MB)</a>' +
             '</div>' +
             '<div style="padding:12px;background:#0b0d13;border:1px solid #1e2430;border-radius:10px">' +
               '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">' +
-                '<b style="color:#f9fafb;font-size:13px">woodex-master-P22.1.zip (27.3 MB)</b>' +
-                '<span class="badge navy">Archive</span>' +
+                '<b style="color:#f9fafb;font-size:13px">woodex-live-p23.zip (27.3 MB)</b>' +
+                '<span class="badge navy">Archive Baseline</span>' +
               '</div>' +
-              '<small class="muted" style="display:block;margin-bottom:8px">Previous verified production baseline</small>' +
-              '<a class="btn sm" href="https://github.com/marketingwoodex-cloud/-marketingwoodex/raw/arena/8a776c65-marketingwoodex/woodex-master-P22/woodex-master-P22.1.zip" target="_blank">' + ic("download") + 'Download P22.1</a>' +
+              '<small class="muted" style="display:block;margin-bottom:8px">Previous verified production baseline archive</small>' +
+              '<a class="btn sm" href="https://github.com/marketingwoodex-cloud/-marketingwoodex/raw/arena/8a776c65-marketingwoodex/woodex-live-P23/woodex-live-p23.zip" target="_blank">' + ic("download") + 'Download P23 Baseline</a>' +
             '</div>' +
           '</div>' +
         '</div>' +
@@ -78,7 +78,7 @@
 
     $("#sys-backup-btn").onclick = function () {
       toast("Generating live database snapshot...");
-      window.open("https://github.com/marketingwoodex-cloud/-marketingwoodex/raw/arena/8a776c65-marketingwoodex/woodex-live-P23/woodex-live-p23.zip", "_blank");
+      window.open("https://github.com/marketingwoodex-cloud/-marketingwoodex/raw/arena/8a776c65-marketingwoodex/woodex-live-p29-v2.1/Woodex%20Live%20P29-v2.1.zip", "_blank");
     };
     $("#sys-optimize-btn").onclick = function () { toast("JSON storage tables compacted & optimized."); };
     $("#btn-purge-cache").onclick = function () { toast("Static render cache purged successfully."); };
@@ -87,4 +87,5 @@
       toast(e.target.checked ? "Maintenance mode activated for public visitors." : "Maintenance mode disabled. Site is live.");
     };
   };
+  W.VIEWS.backups = W.VIEWS.system;
 })();

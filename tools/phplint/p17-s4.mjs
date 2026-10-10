@@ -2,7 +2,7 @@
 const B = "http://127.0.0.1:8080/api/admin.php"; let T = "";
 const call = async (action, o = {}) => (await fetch(B, { method: "POST", headers: { "content-type": "application/json", ...(T ? { "X-WX-ADM": T } : {}) }, body: JSON.stringify({ action, ...o }) })).json();
 const ok = (c, m) => { console.log((c ? "PASS " : "FAIL ") + m); if (!c) process.exitCode = 1; };
-T = (await call("login", { email: "o@woodex.pk", password: "Woodex@2026x" })).token;
+T = (await call("login", { email: "o@woodex.pk", password: ((process.env.WX_PW || "") + "x") })).token;
 const co = (await call("company_get")).company;
 ok(co.banks.length === 2 && co.banks[0].iban === "PK06ALFH0293001007869105" && co.wallets.length === 2 && co.signers[0].name === "Imtiaz Ahmad", "default banks / wallets / signers");
 await call("company_save", { company: { payTerms: "50% advance with work order\n40% on completion of wood work\n10% on handover", signers: [...co.signers, { name: "  ", title: "" }], banks: [...co.banks, { bank: "Test", use: "hack" }] } });

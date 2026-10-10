@@ -2,7 +2,7 @@
 const B = "http://127.0.0.1:8080/api/admin.php"; let T = "";
 const call = async (action, o = {}) => (await fetch(B, { method: "POST", headers: { "content-type": "application/json", ...(T ? { "X-WX-ADM": T } : {}) }, body: JSON.stringify({ action, ...o }) })).json();
 const ok = (c, m) => { console.log((c ? "PASS " : "FAIL ") + m); if (!c) process.exitCode = 1; };
-T = (await call("login", { email: "o@woodex.pk", password: "Woodex@2026x" })).token;
+T = (await call("login", { email: "o@woodex.pk", password: ((process.env.WX_PW || "") + "x") })).token;
 // 13 rows = Jan 2025 sheet totals 3,143,000 / 2,345,000 / 798,000
 const tot = [450000, 380000, 320000, 290000, 260000, 240000, 230000, 210000, 200000, 190000, 160000, 113000, 100000];
 const rec = [450000, 380000, 320000, 290000, 0, 240000, 115000, 210000, 0, 190000, 50000, 0, 100000];

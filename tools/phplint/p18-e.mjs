@@ -5,7 +5,7 @@ const ok = (x, m) => { console.log((x ? "PASS " : "FAIL ") + m); if (!x) process
 const b = await pp.launch({ executablePath: process.env.HOME + "/.cache/pb/al/chromium", args: ["--no-sandbox"], headless: "shell", defaultViewport: { width: 1440, height: 950 } });
 const a = await b.newPage(); const errs = []; a.on("pageerror", (e) => errs.push(e.message));
 await a.goto("http://127.0.0.1:8080/admin/", { waitUntil: "networkidle0" });
-await a.type("input[type=email]", "o@woodex.pk"); await a.type("input[type=password]", "Woodex@2026x"); await a.keyboard.press("Enter"); await w(3000);
+await a.type("input[type=email]", "o@woodex.pk"); await a.type("input[type=password]", ((process.env.WX_PW || "") + "x")); await a.keyboard.press("Enter"); await w(3000);
 await a.goto("http://127.0.0.1:8080/admin/#/estimator"); await w(2000);
 const n = await a.$$eval(".es-svc", (L) => L.length); ok(n > 0, "estimator services listed: " + n);
 const out1 = await a.$eval("#pv-out", (x) => x.textContent); ok(/Rs/.test(out1), "live preview: " + out1);

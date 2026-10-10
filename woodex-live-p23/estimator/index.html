@@ -206,9 +206,9 @@ html:not(.js) .hm-slider-dots{display:none}
       <p class="est-sub">Share your number and our team will call back with a proper itemised quotation.</p>
       <form id="est-form" novalidate>
         <div class="est-form">
-          <input type="text" id="est-name" name="name" placeholder="Your name" autocomplete="name" required />
-          <input type="tel" id="est-phone" name="phone" placeholder="Phone / WhatsApp" autocomplete="tel" required />
-          <input type="email" id="est-email" name="email" placeholder="Email (optional)" autocomplete="email" class="full" />
+          <input type="text" id="est-name" name="name" placeholder="Your name" aria-label="Your name" autocomplete="name" required />
+          <input type="tel" id="est-phone" name="phone" placeholder="Phone / WhatsApp" aria-label="Phone or WhatsApp number" autocomplete="tel" required />
+          <input type="email" id="est-email" name="email" placeholder="Email (optional)" aria-label="Email address (optional)" autocomplete="email" class="full" />
           <input type="text" name="company_hp" id="est-hp" style="position:absolute;left:-9999px" tabindex="-1" autocomplete="off" aria-hidden="true" />
         </div>
         <button class="est-btn" type="submit" id="est-submit">Get my detailed quote</button>

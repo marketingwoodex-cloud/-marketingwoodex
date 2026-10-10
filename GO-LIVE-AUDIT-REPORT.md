@@ -29,7 +29,7 @@ All of these are small fixes, about 1–2 hours of work in total.
 | M2 | 🟡 Medium | No Content-Security-Policy header | `.htaccess` | 20 min |
 | M3 | 🟡 Medium | Heavy pages, up to 1.7 MB | 5 pages, listed below | 30 min |
 | M4 | 🟡 Medium | Backup zips include `_private` secrets such as SMTP and API keys | Media → Backups | Process |
-| M5 | 🟡 Medium | Default development passwords (`Woodex@2026`) | Deploy | 5 min |
+| M5 | 🟡 Medium | Default development passwords (literal was committed — now scrubbed from the tree and replaced with locked seeds) | Deploy | 5 min |
 | L1 | 🟢 Low | Leftover Netlify form script | `privacy/index.html` | 2 min |
 | L2 | 🟢 Low | About 21 tap targets under 24px per page (footer and breadcrumb links) | Global CSS | 20 min |
 | L3 | 🟢 Low | 6 titles over 60 characters, 2 under 30; 5 descriptions over 160 characters | Admin → SEO | 15 min |

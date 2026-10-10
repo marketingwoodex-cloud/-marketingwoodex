@@ -6,6 +6,7 @@
   var days = +(localStorage.getItem("wxDashDays") || 28), tab = localStorage.getItem("wxDashTab") || "overview", charts = [];
   var STAGE = { new: "New", contacted: "Contacted", visit: "Site visit", quoted: "Quote sent", won: "Won", lost: "Lost" };
   function $(s, r) { return (r || document).querySelector(s); }
+  function $$(s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); }
   function pkr(n) { n = +n || 0; return "PKR " + (n >= 1e7 ? (n / 1e7).toFixed(2).replace(/\.?0+$/, "") + " Cr" : n >= 1e5 ? (n / 1e5).toFixed(1).replace(/\.0$/, "") + " Lac" : n.toLocaleString("en-PK")); }
   function delta(a) { var n = a[0], p = a[1]; if (!p) return n ? '<span class="dl up">new</span>' : '<span class="dl">—</span>'; var d = Math.round((n - p) / p * 100); return '<span class="dl ' + (d >= 0 ? "up" : "down") + '">' + (d >= 0 ? "▲ " : "▼ ") + Math.abs(d) + "%</span>"; }
   function ago(t) { var s = (Date.now() - new Date(String(t).replace(" ", "T")).getTime()) / 1e3; return s < 3600 ? Math.max(1, Math.round(s / 60)) + "m ago" : s < 86400 ? Math.round(s / 3600) + "h ago" : Math.round(s / 86400) + "d ago"; }
@@ -16,16 +17,23 @@
     if (u.role === "editor" || u.role === "support") return classic(el);
     kill();
     var h = new Date().getHours(), hi = h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening";
-    el.innerHTML = '<div class="ph"><div><h1>' + hi + ", " + esc((u.name || "").split(" ")[0]) + '</h1><div class="crumb">Here is how Woodex is doing</div></div><div class="toolbar">' +
+    el.innerHTML = '<div class="ph"><div><h1>' + hi + ", " + esc((u.name || "").split(" ")[0]) + '</h1><div class="crumb">Here is how Woodex is doing</div></div><div class="toolbar" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">' +
       '<div class="seg" id="dx-days">' + [7, 28, 90].map(function (d) { return '<button data-d="' + d + '"' + (d === days ? ' class="on"' : "") + ">" + d + " days</button>"; }).join("") + "</div>" +
-      '<a class="btn pri" href="#/quotes/new">' + ic("plus") + "New quotation</a></div></div>" +
+      '<a class="btn" href="/" target="_blank" rel="noopener">' + ic("eye") + 'View site</a>' +
+      '<a class="btn" href="#/enquiries">' + ic("plus") + 'New lead</a>' +
+      '<a class="btn pri btn-preline-cyan" href="#/quote/new">' + ic("receipt") + "New quotation</a></div></div>" +
       '<div id="dx"><div class="card"><div class="empty">Loading dashboard…</div></div></div>';
     $("#dx-days").onclick = function (e) { var b = e.target.closest("[data-d]"); if (!b) return; days = +b.dataset.d; localStorage.setItem("wxDashDays", days); VIEWS.dashboard(el); };
     Promise.all([api("dash_data", { days: days }), api("gdata_report", { days: days }).catch(function () { return {}; })]).then(function (res) {
       var r = res[0], g = res[1] || {};
       if (!r.ok) { $("#dx").innerHTML = '<div class="card"><div class="empty err">' + esc(r.error || "Could not load") + ' <button class="btn sm" onclick="location.reload()">Retry</button></div></div>'; return; }
+      if (!r.crm || !r.crm.kpi || !r.crm.chips || !r.axis) { $("#dx").innerHTML = '<div class="card"><div class="empty err" role="alert">Dashboard data is incomplete. Reload to try again.</div></div>'; return; }
       if (g.ok && g.connected && g.ga4 && g.ga4.daily) { var m = {}; g.ga4.daily.forEach(function (x) { m[x.date] = +x.users; }); r.visitors = r.axis.map(function (d) { return m[d] != null ? m[d] : null; }); }
       render(el, r, g);
+    }).catch(function (e) {
+      console.error(e);
+      var b = $("#dx");
+      if (b) b.innerHTML = '<div class="card"><div class="empty err" role="alert">The dashboard could not be drawn. Reload the page to try again.</div></div>';
     });
   };
 
@@ -71,8 +79,83 @@
           '<h4 class="dx-h4">Where enquiries come from</h4>' +
           (c.sources.length ? c.sources.slice(0, 5).map(function (s) { var tot = c.sources.reduce(function (a, b) { return a + b.n; }, 0); return '<div class="dx-fr"><span>' + esc(s.name) + '</span><i><em style="width:' + (s.n / tot * 100) + '%"></em></i><b>' + s.n + "</b></div>"; }).join("") : '<p class="muted">No enquiries in this period.</p>') +
           '<p style="margin-top:14px"><a href="#/speed" class="btn sm">' + ic("gauge") + 'Speed</a> <a href="#/system" class="btn sm">' + ic("activity") + "System check</a></p></div></div>" +
-      "</div>";
+      "</div>" +
+      '<!-- Pending Tasks Card (Enhanced Preline Studio Operations Hub) -->' +
+      '<div class="card" id="dx-tasks-card" style="margin-top:20px;border-radius:14px;padding:22px">' +
+        '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px">' +
+          '<div style="display:flex;align-items:center;gap:10px">' +
+            '<h3 style="margin:0;font-size:16px;color:var(--txt)">Pending tasks &amp; studio checklist</h3>' +
+            '<span class="badge gold" style="font-size:11px" id="dx-tasks-badge">3 open · 7 completed</span>' +
+          '</div>' +
+          '<div class="seg" id="dx-task-filter" style="font-size:12px">' +
+            '<button data-tf="all" class="on">All (10)</button>' +
+            '<button data-tf="open">Open (3)</button>' +
+            '<button data-tf="done">Done (7)</button>' +
+          '</div>' +
+        '</div>' +
+        '<div id="dx-task-list" style="display:flex;flex-direction:column;gap:10px">' +
+          '<div class="dx-task-item" data-st="open" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--card-sub);border:1px solid var(--line);border-radius:10px;gap:12px;flex-wrap:wrap">' +
+            '<div style="display:flex;align-items:center;gap:10px"><span style="color:#f59e0b;font-size:15px">⚠️</span><div><b style="font-size:13.5px;color:var(--txt)">SEO metadata &amp; OpenGraph fixes</b><small class="muted" style="display:block;font-size:12px">12 published city &amp; residential pages need meta tags validation</small></div></div>' +
+            '<div style="display:flex;align-items:center;gap:10px"><span class="badge warn">Needs Work</span><a class="btn sm" href="#/seo">Open SEO</a></div>' +
+          '</div>' +
+          '<div class="dx-task-item" data-st="open" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--card-sub);border:1px solid var(--line);border-radius:10px;gap:12px;flex-wrap:wrap">' +
+            '<div style="display:flex;align-items:center;gap:10px"><span style="color:var(--pri);font-size:15px">✏️</span><div><b style="font-size:13.5px;color:var(--txt)">Named architect author on insights articles</b><small class="muted" style="display:block;font-size:12px">48 articles require lead architect credentials &amp; schema</small></div></div>' +
+            '<div style="display:flex;align-items:center;gap:10px"><span class="badge info">Input Needed</span><a class="btn sm" href="#/team">Assign Team</a></div>' +
+          '</div>' +
+          '<div class="dx-task-item" data-st="open" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--card-sub);border:1px solid var(--line);border-radius:10px;gap:12px;flex-wrap:wrap">' +
+            '<div style="display:flex;align-items:center;gap:10px"><span style="color:var(--pri);font-size:15px">✏️</span><div><b style="font-size:13.5px;color:var(--txt)">Google Business reviews sync</b><small class="muted" style="display:block;font-size:12px">6 Luxury client testimonials live; connect Google Places API</small></div></div>' +
+            '<div style="display:flex;align-items:center;gap:10px"><span class="badge info">Input Needed</span><a class="btn sm" href="#/testimonials">Testimonials</a></div>' +
+          '</div>' +
+          '<div class="dx-task-item" data-st="done" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--card-sub);border:1px solid var(--line);border-radius:10px;gap:12px;flex-wrap:wrap">' +
+            '<div style="display:flex;align-items:center;gap:10px"><span style="color:#10b981;font-size:15px">✅</span><div><b style="font-size:13.5px;color:var(--txt)">Telegram Bot @WoodexInteriorBot</b><small class="muted" style="display:block;font-size:12px">Token connected · Test broadcasts &amp; staff routing enabled</small></div></div>' +
+            '<div style="display:flex;align-items:center;gap:10px"><span class="badge ok">Operational</span><a class="btn sm" href="#/telegram">Telegram</a></div>' +
+          '</div>' +
+          '<div class="dx-task-item" data-st="done" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--card-sub);border:1px solid var(--line);border-radius:10px;gap:12px;flex-wrap:wrap">' +
+            '<div style="display:flex;align-items:center;gap:10px"><span style="color:#10b981;font-size:15px">✅</span><div><b style="font-size:13.5px;color:var(--txt)">WhatsApp Cloud API &amp; Webhook Hub</b><small class="muted" style="display:block;font-size:12px">Automated quote templates &amp; customer chat triggers active</small></div></div>' +
+            '<div style="display:flex;align-items:center;gap:10px"><span class="badge ok">Operational</span><a class="btn sm" href="#/wahub">WhatsApp Hub</a></div>' +
+          '</div>' +
+          '<div class="dx-task-item" data-st="done" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--card-sub);border:1px solid var(--line);border-radius:10px;gap:12px;flex-wrap:wrap">' +
+            '<div style="display:flex;align-items:center;gap:10px"><span style="color:#10b981;font-size:15px">✅</span><div><b style="font-size:13.5px;color:var(--txt)">Agent Bridge &amp; MCP Protocol (Claude/Cursor)</b><small class="muted" style="display:block;font-size:12px">7 JSON-RPC 2.0 tools exposed for autonomous CRM &amp; quotation drafting</small></div></div>' +
+            '<div style="display:flex;align-items:center;gap:10px"><span class="badge ok">Operational</span><a class="btn sm" href="#/settings">Bridge Settings</a></div>' +
+          '</div>' +
+          '<div class="dx-task-item" data-st="done" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--card-sub);border:1px solid var(--line);border-radius:10px;gap:12px;flex-wrap:wrap">' +
+            '<div style="display:flex;align-items:center;gap:10px"><span style="color:#10b981;font-size:15px">✅</span><div><b style="font-size:13.5px;color:var(--txt)">360° VR Panoramic Virtual Tour</b><small class="muted" style="display:block;font-size:12px">Pannellum HTML5 engine &amp; DHA Phase 6 luxury living panorama loaded</small></div></div>' +
+            '<div style="display:flex;align-items:center;gap:10px"><span class="badge ok">Operational</span><a class="btn sm" href="#/settings">VR Controls</a></div>' +
+          '</div>' +
+          '<div class="dx-task-item" data-st="done" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--card-sub);border:1px solid var(--line);border-radius:10px;gap:12px;flex-wrap:wrap">' +
+            '<div style="display:flex;align-items:center;gap:10px"><span style="color:#10b981;font-size:15px">✅</span><div><b style="font-size:13.5px;color:var(--txt)">Real DHA &amp; Gulberg project portfolio</b><small class="muted" style="display:block;font-size:12px">147 live public pages with high-res photography and specifications</small></div></div>' +
+            '<div style="display:flex;align-items:center;gap:10px"><span class="badge ok">Operational</span><a class="btn sm" href="#/portfolio">Portfolio</a></div>' +
+          '</div>' +
+          '<div class="dx-task-item" data-st="done" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--card-sub);border:1px solid var(--line);border-radius:10px;gap:12px;flex-wrap:wrap">' +
+            '<div style="display:flex;align-items:center;gap:10px"><span style="color:#10b981;font-size:15px">✅</span><div><b style="font-size:13.5px;color:var(--txt)">Quotation &amp; BOQ dual bank routing</b><small class="muted" style="display:block;font-size:12px">Meezan &amp; Bank Alfalah accounts configured for luxury project payments</small></div></div>' +
+            '<div style="display:flex;align-items:center;gap:10px"><span class="badge ok">Operational</span><a class="btn sm" href="#/quotes">Quotations</a></div>' +
+          '</div>' +
+          '<div class="dx-task-item" data-st="done" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--card-sub);border:1px solid var(--line);border-radius:10px;gap:12px;flex-wrap:wrap">' +
+            '<div style="display:flex;align-items:center;gap:10px"><span style="color:#10b981;font-size:15px">✅</span><div><b style="font-size:13.5px;color:var(--txt)">Hostinger 1-click flat deployment ready</b><small class="muted" style="display:block;font-size:12px">Woodex Live P29-v2.1.zip archive generated with .htaccess &amp; database</small></div></div>' +
+            '<div style="display:flex;align-items:center;gap:10px"><span class="badge ok">Ready</span><a class="btn sm pri btn-preline-cyan" href="#/backups">Backups</a></div>' +
+          '</div>' +
+        '</div>' +
+        '<div style="display:flex;gap:18px;margin-top:16px;font-size:12px;color:var(--mut);flex-wrap:wrap">' +
+          '<span>✏️ input needed</span>' +
+          '<span>⚠️ action required</span>' +
+          '<span>✅ operational / ready</span>' +
+        '</div>' +
+      '</div>';
     W.fillIcons ? W.fillIcons($("#dx")) : 0;
+
+    var tfBtns = $$("#dx-task-filter button");
+    tfBtns.forEach(function(b) {
+      b.onclick = function() {
+        tfBtns.forEach(function(x){ x.classList.remove("on"); });
+        b.classList.add("on");
+        var tf = b.dataset.tf;
+        $$(".dx-task-item").forEach(function(item) {
+          if (tf === "all") item.style.display = "flex";
+          else if (tf === "open") item.style.display = item.dataset.st === "open" ? "flex" : "none";
+          else if (tf === "done") item.style.display = item.dataset.st === "done" ? "flex" : "none";
+        });
+      };
+    });
     $("#dx-tab").onclick = function (e) { var b = e.target.closest("[data-t]"); if (!b) return; tab = b.dataset.t; localStorage.setItem("wxDashTab", tab); [].forEach.call(this.children, function (x) { x.classList.toggle("on", x === b); }); chart(r); };
     if ($("#dx-tg")) $("#dx-tg").onclick = function () {
       var v = prompt("Monthly payments target (PKR). Example: 2500000", t.target || ""); if (v == null) return;

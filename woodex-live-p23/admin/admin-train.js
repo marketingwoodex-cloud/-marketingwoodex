@@ -197,4 +197,6 @@
     $("#ai-save-btn").onclick = function () { toast("AI training and persona configurations saved live!"); };
     $("#ai-reindex-btn").onclick = function () { toast("Re-indexing knowledge base & website FAQs…"); };
   };
+  W.VIEWS.aicenter = W.VIEWS.train;
+  W.VIEWS.aireport = W.VIEWS.train;
 })();

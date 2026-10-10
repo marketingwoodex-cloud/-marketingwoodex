@@ -5,7 +5,7 @@ const ok = (x, m) => { console.log((x ? "PASS " : "FAIL ") + m); if (!x) process
 const b = await pp.launch({ executablePath: process.env.HOME + "/.cache/pb/al/chromium", args: ["--no-sandbox"], headless: "shell", defaultViewport: { width: 1440, height: 1000 } });
 const a = await b.newPage(); const errs = []; a.on("pageerror", (e) => errs.push(e.message));
 await a.goto("http://127.0.0.1:8080/admin/", { waitUntil: "networkidle0" });
-await a.type("input[type=email]", "o@woodex.pk"); await a.type("input[type=password]", "Woodex@2026x"); await a.keyboard.press("Enter"); await w(2500);
+await a.type("input[type=email]", "o@woodex.pk"); await a.type("input[type=password]", ((process.env.WX_PW || "") + "x")); await a.keyboard.press("Enter"); await w(2500);
 await a.evaluate(() => (location.hash = "#/global")); await w(3000);
 const labels = () => a.$$eval("#hf-body [data-p^='menu.items.'][data-p$='.label']", (L) => L.map((x) => x.value));
 const drag = (from, to) => a.evaluate((f, t) => { const F = document.querySelector(`[data-dp='${f}']`), T = document.querySelector(`[data-dp='${t}']`); F.querySelector(".hf-grip").dispatchEvent(new MouseEvent("mousedown", { bubbles: true })); const dt = new DataTransfer(); F.dispatchEvent(new DragEvent("dragstart", { bubbles: true, dataTransfer: dt })); T.dispatchEvent(new DragEvent("dragover", { bubbles: true, cancelable: true, dataTransfer: dt })); T.dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer: dt })); F.dispatchEvent(new DragEvent("dragend", { bubbles: true, dataTransfer: dt })); }, from, to);

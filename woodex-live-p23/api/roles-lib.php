@@ -34,8 +34,7 @@ const EXPAND = ['website' => ['editor'], 'settings' => ['editor'], 'conversation
 
 /** Actions used by screens of more than one group: allowed when the user has ANY of these groups. */
 const SHARED = ['est_tpls' => ['sales', 'website'], 'est_tpl_save' => ['sales', 'website'], 'est_save' => ['sales', 'website'], 'crm_wa_status' => ['conversations', 'settings', 'broadcast'], 'gdata_report' => ['sales', 'website'], 's17_meta' => ['sales', 'support_view'], 'projs_table' => ['sales', 'support_view'], 'notify_get' => ['settings', 'updates'],
-    // v2.6 regional operations: the website group may inspect the node registry and rate book,
-    // only the sales group may read leads / projects / the ledger.
+    // v2.7 regional operations: the website group (Developer) may READ the node registry, rate book and audit
     'rgn_boot' => ['sales', 'website'], 'rgn_nodes' => ['sales', 'website'], 'rgn_variants' => ['sales', 'website'], 'rgn_rates' => ['sales', 'website'], 'rgn_health' => ['sales', 'website']];
 
 function wx_action_group(string $a): ?string {

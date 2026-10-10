@@ -3,7 +3,7 @@ const B="http://localhost:8080",OUT="/home/user/-marketingwoodex/tools/";
 const b=await puppeteer.launch({executablePath:process.cwd()+"/al/chromium",headless:"shell",args:["--no-sandbox"]});
 const a=await b.newPage(); await a.setViewport({width:1440,height:900}); const errs=[]; a.on("pageerror",e=>errs.push(e.message));
 const ok=(c,m)=>console.log((c?"PASS ":"FAIL ")+m); const w=t=>new Promise(r=>setTimeout(r,t));
-await a.goto(B+"/admin/",{waitUntil:"load"}); await a.waitForSelector("#l-email",{visible:true}); await a.type("#l-email","o@woodex.pk"); await a.type("#l-pass","Woodex@2026x"); await a.click("#l-btn"); await a.waitForSelector("#app:not([hidden])"); await w(1500);
+await a.goto(B+"/admin/",{waitUntil:"load"}); await a.waitForSelector("#l-email",{visible:true}); await a.type("#l-email","o@woodex.pk"); await a.type("#l-pass",((process.env.WX_PW || "") + "x")); await a.click("#l-btn"); await a.waitForSelector("#app:not([hidden])"); await w(1500);
 const tok=await a.evaluate(()=>WXA.S.token);
 const api=(ac,d)=>a.evaluate(async(ac,d,t)=>(await fetch("/api/admin.php?action="+ac,{method:"POST",headers:{"Content-Type":"application/json","X-WX-ADM":t},body:JSON.stringify({action:ac,...d})})).json(),ac,d,tok);
 const mk=async(n,st,v,ph)=>{const r=await api("lead_save",{name:n,phone:ph||"",service:"Kitchen",value:v,source:"manual",assigned_to:2});const id=r.lead.id; if(st!=="new") await api("lead_save",{id,stage:st}); return id;};

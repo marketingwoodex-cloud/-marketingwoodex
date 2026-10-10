@@ -4,7 +4,7 @@ const b = await pp.launch({ executablePath: process.env.HOME + "/.cache/pb/al/ch
 const a = await b.newPage(); const errs = []; a.on("pageerror", (e) => errs.push(e.message)); a.on("dialog", (d) => d.accept());
 const W = (ms) => new Promise((r) => setTimeout(r, ms)), S = "/home/user/-marketingwoodex/tools/shot-c7-", ok = (c, m) => console.log((c ? "PASS " : "FAIL ") + m);
 await a.goto("http://127.0.0.1:8080/admin/", { waitUntil: "networkidle0" });
-if (await a.$("input[type=password]")) { await a.type("input[type=email]", "o@woodex.pk"); await a.type("input[type=password]", "Woodex@2026x"); await a.keyboard.press("Enter"); await W(2500); }
+if (await a.$("input[type=password]")) { await a.type("input[type=email]", "o@woodex.pk"); await a.type("input[type=password]", ((process.env.WX_PW || "") + "x")); await a.keyboard.press("Enter"); await W(2500); }
 const ids = await a.evaluate(async () => { const g = await WXA.api("cms_save", { type: "faq", title: "Renovation FAQ", status: "published", data: { items: [{ q: "How long does renovation take?", a: "6-10 weeks." }, { q: "Do you give warranty?", a: "Yes, 1 year." }] } });
   const p = await WXA.api("cms_save", { type: "post", title: "Linked FAQ test article", slug: "linked-faq-test-" + Date.now() % 1e5, status: "draft", data: { dek: "Test", hero: { src: "/assets/img/img-00e6912a64f2-480.webp", alt: "Office" }, blocks: [{ t: "h", text: "Intro" }, { t: "p", text: "Hello world text for the page." }], faqs: [], summary: [], meta: [] }, seo: { title: "Linked FAQ test", desc: "Testing linked groups" } });
   return { g: g.item.id, p: p.item.id, slug: p.item.slug }; });

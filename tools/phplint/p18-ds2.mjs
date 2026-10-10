@@ -2,7 +2,7 @@ import pp from "puppeteer-core";
 const w = (t) => new Promise((r) => setTimeout(r, t)), ok = (x, m) => { console.log((x ? "PASS " : "FAIL ") + m); if (!x) process.exitCode = 1; };
 const b = await pp.launch({ executablePath: process.env.HOME + "/.cache/pb/al/chromium", args: ["--no-sandbox"], headless: "shell", defaultViewport: { width: 1440, height: 900 } });
 const a = await b.newPage(); await a.goto("http://127.0.0.1:8080/admin/", { waitUntil: "networkidle0" });
-await a.type("input[type=email]", "o@woodex.pk"); await a.type("input[type=password]", "Woodex@2026x"); await a.keyboard.press("Enter"); await w(2500);
+await a.type("input[type=email]", "o@woodex.pk"); await a.type("input[type=password]", ((process.env.WX_PW || "") + "x")); await a.keyboard.press("Enter"); await w(2500);
 await a.evaluate(() => (location.hash = "#/clients")); await w(1500);
 await a.evaluate(() => { const d = document.createElement("div"); d.className = "card"; d.innerHTML = "<div class='tbl-wrap'><table class='tbl'><thead><tr><th>Name</th><th>Amount</th><th>Date</th></tr></thead><tbody>" + Array.from({ length: 30 }, (_, i) => `<tr><td>Row ${i + 1}</td><td>${((i * 7919) % 30 + 1) * 1000}</td><td>2026-0${(i % 9) + 1}-1${i % 9}</td></tr>`).join("") + "</tbody></table></div>"; document.getElementById("view").appendChild(d); });
 await w(800);

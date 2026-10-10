@@ -5,7 +5,7 @@ const ok = (x, m) => { console.log((x ? "PASS " : "FAIL ") + m); if (!x) process
 const b = await pp.launch({ executablePath: process.env.HOME + "/.cache/pb/al/chromium", args: ["--no-sandbox"], headless: "shell", defaultViewport: { width: 1440, height: 1000 } });
 const a = await b.newPage(); const errs = []; a.on("pageerror", (e) => errs.push(e.message));
 await a.goto("http://127.0.0.1:8080/admin/", { waitUntil: "networkidle0" });
-await a.type("input[type=email]", "o@woodex.pk"); await a.type("input[type=password]", "Woodex@2026x"); await a.keyboard.press("Enter"); await w(2500);
+await a.type("input[type=email]", "o@woodex.pk"); await a.type("input[type=password]", ((process.env.WX_PW || "") + "x")); await a.keyboard.press("Enter"); await w(2500);
 const cases = [["white text, auto", { hText: "#ffffff" }], ["navy bar, auto", { hBg: "#0c1628", hText: "#ffffff" }], ["light", { hText: "#ffffff", mStyle: "light" }], ["dark", { mStyle: "dark" }], ["custom", { mStyle: "custom", mBg: "#f4efe7", mText: "#3a2a1a" }]];
 await a.evaluate(() => (location.hash = "#/global")); await w(2500);
 const css = await a.evaluate((C) => C.map(([n, g]) => window.WXA.__wxChrome.designCss(window.WXA.__wxChrome.dfix(g))), cases);
