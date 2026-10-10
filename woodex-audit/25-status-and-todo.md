@@ -18,14 +18,29 @@ Release recommendation: **BLOCK** (credential exposure is not contained; live si
 
 ## B. What is still pending
 
-### B1. Design and UI/UX (contrast layer done; Preline-style replica not started)
-- Done (working tree, `?v=ui-1`): `admin/woodex-ui.css` override layer loaded after `admin.css`. Headless rendered check (`tools/qa-p29/theme-contrast.mjs`, 4 screens x 2 themes): 0 text elements below AA on dashboard, settings, security, approvals in light and dark.
-- Done: integration tile label ink chosen by luminance (`admin-settings.js` `tileInk`, white or black, whichever has the higher contrast on the brand colour).
-- Not done: Preline-style layout, Tailwind static build, Inter font face (`admin.css` @font-face family Inter points to DM Sans files), Lucide icon set, mirror to `frontend-v1/admin`, manifest refresh after these edits.
-- Known limit: the connector grid is cut off horizontally at 1280 px (existing layout).
-- Split theme: dark sidebar in both themes, light workspace in light mode, low contrast (matrix AD-13; `admin.css:74`, `:439`, `:1284`, `:1391`, `:1614`; 73 unscoped light rules).
-- Chart colours do not follow the theme toggle; the toggle redraws only the dashboard (AD-18).
-- Preline-style replica: colours, typography, radius, buttons, cards, tables, badges, inputs, icons, dark and light. Blocked on the questions in section D.
+### B1. Design and UI/UX (replica in progress)
+Done (working tree; preview on 8080 serves it):
+- Blue brand replaces the cyan/teal/gold accents: admin tokens (`--gold`, `--pri`, `--cyan`, `--chat-bubble-ai`) bridged in `admin/woodex-ui.css`; inline and class literals mapped by selector.
+- Neutral surfaces in the Preline style: light page `#f3f4f6`, cards white; dark page `#171717`, cards `#262626`, borders `#404040`.
+- Inter self-hosted (`admin/assets/fonts/inter-latin-{400,500,600,700}.woff2`, OFL licence file alongside). Applied with `!important` over the DM Sans and Plus Jakarta Sans names in `admin.css`.
+- Tailwind static build (`tools/ui-build`, `npm run build:css` -> `admin/assets/woodex-tw.css`, no preflight). Used for the sidebar user row and brand block in `index.html`.
+- Lucide icons: already in `vendor/icons.js` (no change needed).
+- Sidebar, top bar, cards, tables, buttons, inputs, badges, tabs, modal, toast, auth card restyled in both themes.
+- Rendered contrast sweep over all 56 NAV routes, light and dark (`ALL=1 node tools/qa-p29/theme-contrast.mjs <url> <outDir>`): 0 text elements below 4.5:1 on every route. Results: `/tmp/shots-all/results.json` (not committed).
+- Integration tile label ink chosen by luminance (`admin-settings.js` `tileInk`).
+- Fixed contrast items: sidebar footer and avatar, breadcrumb, revoke-all red, info callouts (`.p19-how`), library filter chips in dark, WhatsApp green, hub-bar active tab, muted greys in light.
+
+Pending (UI to-do, in order):
+- U1. Preline-style layout pass: page header (title, breadcrumb, actions) and KPI cards on every screen. Current pages keep their old internal layout (only colours, type, and surfaces changed).
+- U2. Source cleanup: replace literal `#00b8db`, `#00d3f2`, `#b8956a`, `#0c1628` in `admin/*.js` and `admin.css` with tokens (about 60 occurrences). The overrides now do this at runtime.
+- U3. Chart colours: `#b8956a` gold in dashboard charts and rings still follows the old palette; Chart.js does not re-theme on toggle (AD-18).
+- U4. Preview stub limitation: dashboard, enquiries, bookings, clients, quotes, team and others show "data incomplete" or throw `Object.keys`/`split` on undefined. The same errors occur on HEAD (checked for 4 routes), so they are stub gaps, not UI faults. Real visual check of data-heavy screens needs a seeded stub.
+- U5. Brand tiles (integrations) keep brand colours; ink is chosen per tile (black or white).
+- U6. `frontend-v1/admin` mirror not updated (still old theme).
+- U7. Inter font: check for `Plus Jakarta Sans` usages that need removing.
+- U8. Audit manifest refresh after these UI edits (`manifest.json`).
+- U9. Mobile widths (grid cut-off at 1280 px on Settings > Integrations is pre-existing; not checked on mobile).
+- U10. Owner approval needed before any change to login (pre-filled password) or untracking secrets (unchanged; see D).
 
 ### B2. Integrations and settings
 - The connector list is hard-coded: "14 of 22 marked connected (not verified)" (`admin-settings.js`, static `APPS`). Status should come from the server or say "not configured".

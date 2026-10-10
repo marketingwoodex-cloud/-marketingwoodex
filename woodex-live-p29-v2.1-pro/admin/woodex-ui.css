@@ -1,97 +1,191 @@
-/* Woodex Admin — UI layer (shell, tokens, dark and light). Loaded after admin.css.
-   Purpose: one colour system for both themes. The sidebar follows the theme (it was always dark),
-   the workspace and cards follow the theme, and text meets contrast on both. Built by hand;
-   no template code is copied. Remove a rule here only after its screen is checked in both themes. */
+/* Woodex Admin — design layer (loaded after admin.css and assets/woodex-tw.css).
+   Replica direction: Preline CRM dashboard look (neutral surfaces, blue primary, Inter, Lucide icons),
+   rebuilt by hand. No template code is copied.
+   Rules are scoped with `html` to beat the older `!important` rules in admin.css.
+   Remove a rule here only after its screen is checked in both themes (tools/qa-p29/theme-contrast.mjs). */
 
+@font-face { font-family: "Inter"; font-style: normal; font-weight: 400; font-display: swap; src: url("assets/fonts/inter-latin-400.woff2") format("woff2"); }
+@font-face { font-family: "Inter"; font-style: normal; font-weight: 500; font-display: swap; src: url("assets/fonts/inter-latin-500.woff2") format("woff2"); }
+@font-face { font-family: "Inter"; font-style: normal; font-weight: 600; font-display: swap; src: url("assets/fonts/inter-latin-600.woff2") format("woff2"); }
+@font-face { font-family: "Inter"; font-style: normal; font-weight: 700; font-display: swap; src: url("assets/fonts/inter-latin-700.woff2") format("woff2"); }
+
+/* ---------- Tokens ---------- */
 :root {
-  --ui-bg: #f5f7fa;
-  --ui-surface: #ffffff;
-  --ui-surface-2: #f1f5f9;
-  --ui-border: #e2e8f0;
-  --ui-text: #0f172a;      /* 17.9:1 on --ui-surface */
-  --ui-text-2: #334155;    /* 10.3:1 */
-  --ui-muted: #475569;     /* 7.6:1 */
-  --ui-accent: #00708a;    /* 5.7:1 with white text */
-  --ui-accent-fg: #ffffff;
-  --ui-accent-soft: rgba(0, 112, 138, 0.10);
-  --ui-side: #f8fafc;
-  --ui-side-text: #1e293b; /* 14.6:1 on --ui-side */
-  --ui-side-muted: #475569;
-  --ui-side-active: #e2e8f0;
-  --ui-side-border: #e2e8f0;
-  --ui-focus: #00708a;
+  --ui-font: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --ui-bg: #f3f4f6;          /* neutral-100 page */
+  --ui-surface: #ffffff;     /* cards, top bar */
+  --ui-surface-2: #f9fafb;   /* table heads, wells, inputs */
+  --ui-border: #e5e7eb;      /* neutral-200 */
+  --ui-text: #111827;        /* 17.9:1 on surface */
+  --ui-text-2: #374151;      /* 10.3:1 */
+  --ui-muted: #4b5563;       /* 7.6:1 on surface, 6.6:1 on page */
+  --ui-brand: #2563eb;       /* blue-600: button fill, white text 5.2:1 */
+  --ui-brand-hover: #1d4ed8; /* blue-700: white text 6.7:1 */
+  --ui-brand-text: #1d4ed8;  /* links and accent text on light surfaces 6.7:1 */
+  --ui-brand-soft: #eff6ff;  /* blue-50 active fills */
+  --ui-brand-fg: #ffffff;
+  --ui-side: #ffffff;
+  --ui-side-text: #374151;
+  --ui-side-muted: #4b5563;
+  --ui-side-active: #eff6ff;
+  --ui-side-active-text: #1d4ed8;
+  --ui-side-border: #e5e7eb;
+  --ui-focus: #2563eb;
+  --ui-radius: 10px;
+  --ui-radius-lg: 14px;
+  --ui-shadow: 0 1px 2px rgba(17, 24, 39, 0.06);
 }
 
 html.dark {
-  --ui-bg: #0b1220;
-  --ui-surface: #111827;
-  --ui-surface-2: #1b2535;
-  --ui-border: #263244;
-  --ui-text: #f1f5f9;      /* 16.3:1 on --ui-surface */
-  --ui-text-2: #cbd5e1;    /* 11.4:1 */
-  --ui-muted: #94a3b8;     /* 6.9:1 */
-  --ui-accent: #22c7e6;    /* 9.8:1 with --ui-accent-fg */
-  --ui-accent-fg: #06202a;
-  --ui-accent-soft: rgba(34, 199, 230, 0.14);
-  --ui-side: #0b1220;
-  --ui-side-text: #cbd5e1; /* 12.2:1 on --ui-side */
-  --ui-side-muted: #94a3b8;
-  --ui-side-active: #1b2535;
-  --ui-side-border: #1e293b;
-  --ui-focus: #22c7e6;
+  --ui-bg: #171717;          /* neutral-900 page */
+  --ui-surface: #262626;     /* neutral-800 cards */
+  --ui-surface-2: #2f2f2f;   /* wells, inputs */
+  --ui-border: #404040;      /* neutral-700 */
+  --ui-text: #f5f5f5;        /* 13.9:1 on surface */
+  --ui-text-2: #d4d4d4;      /* 10.1:1 */
+  --ui-muted: #a3a3a3;       /* 6.0:1 on surface, 7.1:1 on page */
+  --ui-brand: #2563eb;       /* same fill in both themes */
+  --ui-brand-hover: #1d4ed8;
+  --ui-brand-text: #60a5fa;  /* blue-400 text 5.4:1 on surface */
+  --ui-brand-soft: rgba(37, 99, 235, 0.18);
+  --ui-brand-fg: #ffffff;
+  --ui-side: #171717;
+  --ui-side-text: #d4d4d4;
+  --ui-side-muted: #a3a3a3;
+  --ui-side-active: #262626;
+  --ui-side-active-text: #f5f5f5;
+  --ui-side-border: #2f2f2f;
+  --ui-focus: #60a5fa;
+  --ui-shadow: none;
 }
 
-/* Page */
-html body { background: var(--ui-bg); color: var(--ui-text); }
+/* ---------- Bridge to admin.css tokens: the admin reads these, so the brand and neutrals change on every page ---------- */
+:root {
+  --bg: #f3f4f6; --card: #ffffff; --card-elevated: #ffffff; --card-sub: #f9fafb; --bg2: #f3f4f6;
+  --line: #e5e7eb; --line2: #d1d5db; --txt: #111827; --txt2: #374151; --mut: #4b5563; --mut2: #566374;
+  --navy: #111827; --gold: #1d4ed8; --gold-d: #1e40af; --pri: #2563eb; --pri-fg: #ffffff; --pri-soft: #eff6ff;
+  --cyan: #2563eb; --cyan-glow: rgba(37, 99, 235, 0.2);
+  --chat-bubble-ai: #2563eb; --chat-bubble-ai-txt: #ffffff;
+}
+html.dark {
+  --bg: #171717; --card: #262626; --card-elevated: #2f2f2f; --card-sub: #2f2f2f; --bg2: #1f1f1f;
+  --line: #404040; --line2: #525252; --txt: #f5f5f5; --txt2: #d4d4d4; --mut: #a3a3a3; --mut2: #a3a3a3;
+  --navy: #0a0a0a; --gold: #60a5fa; --gold-d: #93c5fd; --pri: #60a5fa; --pri-fg: #0a0a0a; --pri-soft: rgba(37, 99, 235, 0.18);
+  --cyan: #60a5fa; --cyan-glow: rgba(96, 165, 250, 0.3);
+  --chat-bubble-ai: #2563eb; --chat-bubble-ai-txt: #ffffff;
+}
+
+/* ---------- Typography ---------- */
+html, html body, html input, html button, html select, html textarea, html .btn, html .pk-btn {
+  font-family: var(--ui-font) !important;
+}
+html body { background: var(--ui-bg); color: var(--ui-text); -webkit-font-smoothing: antialiased; }
+html .content h1, html .page-h h1 { font-size: 24px; font-weight: 600; letter-spacing: -0.01em; color: var(--ui-text); }
+html .card h3, html .card-h h3, html .card h4 { font-size: 15px; font-weight: 600; color: var(--ui-text); }
+html .muted, html .card small, html .card .muted { color: var(--ui-muted); }
+html .crumb { color: var(--ui-muted) !important; font-size: 13px; }
+html .content a:not(.btn):not(.nav-a) { color: var(--ui-brand-text); }
+html .content a:not(.btn):not(.nav-a):hover { text-decoration: underline; }
+
+/* ---------- Page and sidebar ---------- */
 html .main { background: var(--ui-bg); }
 html .content { color: var(--ui-text); }
-
-/* Sidebar — specificity beats the old `.side { background:#0a0c10 !important }` */
 html .side {
   background: var(--ui-side) !important;
   color: var(--ui-side-text) !important;
   border-right: 1px solid var(--ui-side-border);
 }
-html .side .nav-a { color: var(--ui-side-text); }
+html .side .nav-a {
+  color: var(--ui-side-text);
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+}
 html .side .nav-a:hover { background: var(--ui-side-active); color: var(--ui-text); }
-html .side .nav-a.on { background: var(--ui-side-active); color: var(--ui-text); }
-html .side .nav-a.on i, html .side .nav-a:hover i { color: var(--ui-accent); }
-html .side .nav-g, html .side .nav-h, html .side small, html .side .muted { color: var(--ui-side-muted) !important; }
+html .side .nav-a.on { background: var(--ui-side-active); color: var(--ui-side-active-text); font-weight: 600; }
+html .side .nav-a.on i, html .side .nav-a:hover i, html .side .nav-a.on svg { color: var(--ui-brand-text); }
+html .side .nav-g, html .side .nav-h { color: var(--ui-side-muted) !important; font-size: 12px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
+html .side small, html .side .muted { color: var(--ui-side-muted) !important; }
+html .side b, html .side strong { color: var(--ui-text) !important; }
+html .side span:not(.badge):not(.nt-n):not(.nt-b):not(.pill):not(.nav-bdg):not(.nav-new):not(.nav-pin) { color: var(--ui-side-muted) !important; }
+html .side .side-foot { background: var(--ui-side); border-top: 1px solid var(--ui-side-border); }
+html .side-foot a { color: var(--ui-side-text) !important; }
+html .side-foot a:hover, html .side-foot button:hover { color: var(--ui-text) !important; }
 
-/* Top bar */
-html .top { background: var(--ui-surface) !important; border-bottom: 1px solid var(--ui-border); color: var(--ui-text); }
-html .top .icon-btn { color: var(--ui-text-2); border-color: var(--ui-border); background: var(--ui-surface); }
+/* Shell pieces added in index.html (Tailwind utilities do the layout) */
+html .wx-logo { background: var(--ui-brand) !important; color: #ffffff !important; font-weight: 700; border-radius: 10px; }
+html .wx-brand-sub { color: var(--ui-brand-text) !important; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; font-size: 11px; }
+html .wx-av, html #sf-av, html #u-av, html .side-foot .av {
+  background: var(--ui-brand) !important; color: #ffffff !important;
+  width: 34px; height: 34px; border-radius: 999px; display: grid; place-items: center; font-size: 13px; font-weight: 600; flex-shrink: 0;
+}
+html .wx-muted-sm { color: var(--ui-side-muted) !important; }
+html .wx-foot-btn {
+  display: grid; place-items: center; padding: 6px; border-radius: 8px; background: none; border: none; cursor: pointer;
+  color: var(--ui-side-muted) !important;
+}
+html .wx-foot-btn:hover { background: var(--ui-side-active); color: var(--ui-text) !important; }
+html #sf-name { color: var(--ui-text) !important; }
+
+/* ---------- Top bar ---------- */
+html .top {
+  background: var(--ui-surface) !important; color: var(--ui-text);
+  border-bottom: 1px solid var(--ui-border); height: 64px;
+}
+html .top .icon-btn { color: var(--ui-text-2); border: 1px solid var(--ui-border); background: var(--ui-surface); border-radius: 10px; }
 html .top .icon-btn:hover { background: var(--ui-surface-2); color: var(--ui-text); }
+html .pk-btn { background: var(--ui-surface-2) !important; border: 1px solid var(--ui-border) !important; border-radius: 10px; color: var(--ui-muted) !important; }
 html .top-search input { background: var(--ui-surface-2) !important; color: var(--ui-text) !important; border-color: var(--ui-border) !important; }
+html .user-btn { border-radius: 10px; }
+html .user-btn b { color: var(--ui-text); font-weight: 600; }
+html .user-btn small { color: var(--ui-muted); }
+html .dd-menu { background: var(--ui-surface); border: 1px solid var(--ui-border); border-radius: var(--ui-radius); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12); }
+html .dd-menu a, html .dd-menu button { color: var(--ui-text); }
+html .dd-menu a:hover, html .dd-menu button:hover { background: var(--ui-surface-2); }
 
-/* Cards, tables, panels */
-html .card { background: var(--ui-surface); border-color: var(--ui-border); color: var(--ui-text); }
-html .card-h h3, html .card h3, html .card h4 { color: var(--ui-text); }
-html .muted, html .card small, html .card .muted { color: var(--ui-muted); }
-html .tbl thead th { background: var(--ui-surface-2); color: var(--ui-muted); border-color: var(--ui-border); }
+/* ---------- Cards, panels, tables ---------- */
+html .card {
+  background: var(--ui-surface); border: 1px solid var(--ui-border); border-radius: var(--ui-radius-lg);
+  box-shadow: var(--ui-shadow); color: var(--ui-text);
+}
+html .card-h { border-bottom: 1px solid var(--ui-border); }
+html .kpi .v, html .kpi b { font-variant-numeric: tabular-nums; font-weight: 600; color: var(--ui-text); }
+html .tbl thead th {
+  background: var(--ui-surface-2); color: var(--ui-muted); border-color: var(--ui-border);
+  font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em;
+}
 html .tbl td, html .tbl tbody tr { border-color: var(--ui-border); color: var(--ui-text); }
 html .tbl tbody tr:hover { background: var(--ui-surface-2); }
+html .modal-card, html .auth-card {
+  background: var(--ui-surface); border: 1px solid var(--ui-border); border-radius: var(--ui-radius-lg); color: var(--ui-text);
+}
+html .toast { border-radius: var(--ui-radius); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14); }
 
-/* Buttons */
-html .btn { background: var(--ui-surface); color: var(--ui-text); border-color: var(--ui-border); }
+/* ---------- Buttons ---------- */
+html .btn {
+  background: var(--ui-surface); color: var(--ui-text); border: 1px solid var(--ui-border);
+  border-radius: 8px; font-weight: 500; font-size: 14px; min-height: 36px;
+}
 html .btn:hover { background: var(--ui-surface-2); }
-html .btn.pri { background: var(--ui-accent); border-color: var(--ui-accent); color: var(--ui-accent-fg); }
-html .btn.pri:hover { filter: brightness(1.08); }
+html .btn.pri, html .btn.pri:hover, html .btn-auth-main {
+  background: var(--ui-brand) !important; border-color: var(--ui-brand) !important; color: var(--ui-brand-fg) !important;
+}
+html .btn.pri:hover, html .btn-auth-main:hover { background: var(--ui-brand-hover) !important; border-color: var(--ui-brand-hover) !important; }
+html .btn-auth-main { border-radius: 8px; font-weight: 600; }
 
-/* Inputs */
+/* ---------- Inputs, segmented controls, tabs, badges ---------- */
 html input:not([type=checkbox]):not([type=radio]), html select, html textarea {
-  background: var(--ui-surface-2); color: var(--ui-text); border-color: var(--ui-border);
+  background: var(--ui-surface-2); color: var(--ui-text); border: 1px solid var(--ui-border); border-radius: 8px;
 }
 html input::placeholder, html textarea::placeholder { color: var(--ui-muted); opacity: 1; }
+html input:focus, html select:focus, html textarea:focus { border-color: var(--ui-focus); outline: none; box-shadow: 0 0 0 3px var(--ui-brand-soft); }
 html :focus-visible { outline: 2px solid var(--ui-focus); outline-offset: 2px; }
-
-/* Segmented controls and chips */
-html .seg { background: var(--ui-surface-2); border-color: var(--ui-border); }
-html .seg button { color: var(--ui-text-2); }
-html .seg button.on { background: var(--ui-surface); color: var(--ui-text); }
-html.dark .seg button.on { background: var(--ui-accent-soft); color: var(--ui-text); }
-
-/* Badges: keep their meaning, make text readable on each theme */
+html .seg { background: var(--ui-surface-2); border: 1px solid var(--ui-border); border-radius: 8px; }
+html .seg button { color: var(--ui-text-2); border-radius: 6px; }
+html .seg button.on { background: var(--ui-surface); color: var(--ui-text); box-shadow: var(--ui-shadow); }
+html.dark .seg button.on { background: var(--ui-surface-2); }
+html .tabs { border-bottom: 1px solid var(--ui-border); }
+html .badge { border-radius: 999px; font-size: 12px; font-weight: 500; padding: 2px 10px; }
 html .badge.ok { color: #047857; background: #ecfdf5; }
 html .badge.warn { color: #92400e; background: #fffbeb; }
 html .badge.bad { color: #b91c1c; background: #fef2f2; }
@@ -99,59 +193,81 @@ html.dark .badge.ok { color: #6ee7b7; background: rgba(16, 185, 129, 0.16); }
 html.dark .badge.warn { color: #fcd34d; background: rgba(245, 158, 11, 0.16); }
 html.dark .badge.bad { color: #fca5a5; background: rgba(239, 68, 68, 0.16); }
 
-/* Top-level page headings */
-html .page-h h1, html .content > h1, html .content h1 { color: var(--ui-text); }
-
-/* ---- Light theme fixes found by rendered-contrast check (tools/qa-p29/theme-contrast.mjs) ---- */
-/* Sidebar footer: name and labels were hard-coded white or light grey */
-html .side-foot, html #side-foot { background: var(--ui-side); }
-html .side-foot b, html #sf-name, html #side-foot b { color: var(--ui-text) !important; }
-html .side-foot span, html .side-foot small, html #side-foot span { color: var(--ui-side-muted) !important; }
-html .side-foot a { color: var(--ui-side-text) !important; }
-html .side-foot a:hover { color: var(--ui-text) !important; }
-html .side .side-foot { border-top-color: var(--ui-side-border); }
-
-/* Breadcrumb and text links: 4.5:1 or better on the page background */
-html .crumb { color: var(--ui-muted) !important; }
-html .content a:not(.btn):not(.nav-a) { color: var(--ui-accent); }
-
-/* Primary button: one accent for both themes, white text in light mode */
-html .btn.pri { background: var(--ui-accent) !important; border-color: var(--ui-accent) !important; color: var(--ui-accent-fg) !important; }
-html .btn.pri:hover { background: var(--ui-accent) !important; filter: brightness(1.06); }
-
-/* Settings and integration cards drawn with inline dark backgrounds: follow the theme in light mode */
-html:not(.dark) [style*="background:#111318"],
-html:not(.dark) [style*="background: #111318"],
-html:not(.dark) [style*="background:#111622"],
-html:not(.dark) [style*="background:#0c1628"],
-html:not(.dark) [style*="background:#0a0c10"] {
-  background: var(--ui-surface) !important;
-  color: var(--ui-text) !important;
+/* ---------- Brand colour: cyan/teal/gold inline styles in the JS and HTML become the blue token ---------- */
+html [style*="background:#00b8db"], html [style*="background: #00b8db"], html [style*="background:#00d3f2"], html [style*="background:#22c7e6"],
+html [style*="background:#c59b27"], html [style*="background:#d4af6a"], html [style*="background:#00708a"] {
+  background: var(--ui-brand) !important; color: var(--ui-brand-fg) !important; border-color: var(--ui-brand) !important;
 }
-html:not(.dark) [style*="background:#111318"] p.muted, html:not(.dark) [style*="background:#111318"] .muted { color: var(--ui-muted) !important; }
+html [style*="color:#00d3f2"], html [style*="color: #00d3f2"], html [style*="color:#00b8db"], html [style*="color: #00b8db"],
+html [style*="color:#c59b27"], html [style*="color: #c59b27"], html [style*="color:#22c7e6"] { color: var(--ui-brand-text) !important; }
+html [style*="border-color:#00b8db"], html [style*="border-color: #00b8db"] { border-color: var(--ui-brand) !important; }
 
-/* Sidebar: bold labels and plain spans follow the sidebar text colour (badges keep their own colour) */
-html .side b, html .side strong { color: var(--ui-text) !important; }
-html .side span:not(.badge):not(.nt-n):not(.nt-b) { color: var(--ui-side-muted) !important; }
-/* Avatars: accent background with the matching text colour in both themes */
-html #sf-av, html #u-av, html .side-foot .av { background: var(--ui-accent) !important; color: var(--ui-accent-fg) !important; }
-/* Headings and labels inside cards that carry light inline colours (light mode only) */
-html:not(.dark) .card :is(h1, h2, h3, h4, h5, b, strong, p, label)[style*="color:#f9fafb"],
-html:not(.dark) .card :is(h1, h2, h3, h4, h5, b, strong, p, label)[style*="color:#fff;"],
-html:not(.dark) .card :is(h1, h2, h3, h4, h5, b, strong, p, label)[style*="color: #fff"] { color: var(--ui-text) !important; }
+/* ---------- Inline dark surfaces from the JS: neutral cards in both themes ---------- */
+html [style*="background:#111318"], html [style*="background: #111318"], html [style*="background:#111622"],
+html [style*="background:#161922"], html [style*="background: #161922"], html [style*="background:#0c1628"], html [style*="background:#0a0c10"],
+html [style*="background:#181c24"] {
+  background: var(--ui-surface) !important;
+  color: var(--ui-text);
+}
+html [style*="background:#0b0d13"], html [style*="background:#12151d"] { background: var(--ui-surface-2) !important; color: var(--ui-text); }
+html [style*="background:#111318"] p.muted, html [style*="background:#111318"] .muted,
+html [style*="background:#161922"] p.muted, html [style*="background:#161922"] .muted, html [style*="background:#161922"] small,
+html [style*="background:#0c1628"] p.muted, html [style*="background:#0c1628"] .muted { color: var(--ui-muted) !important; }
 
-/* Avatar: literal pairs per theme (accent background + matching text) */
-html:not(.dark) #sf-av, html:not(.dark) #u-av { background: #00708a !important; color: #ffffff !important; }
-html.dark #sf-av, html.dark #u-av { background: #22c7e6 !important; color: #06202a !important; }
-/* Light mode: status and muted text used on white cards (inline colours from the dark theme) */
-html:not(.dark) .card [style*="color:#00d3f2"], html:not(.dark) .card [style*="color: #00d3f2"] { color: #00616f !important; }
+/* Light-theme text inside cards that carries dark-theme inline colours */
+html:not(.dark) .card [style*="color:#00d3f2"], html:not(.dark) .card [style*="color: #00d3f2"] { color: #1d4ed8 !important; }
 html:not(.dark) .card [style*="color:#10b981"], html:not(.dark) .card [style*="color: #10b981"] { color: #047857 !important; }
 html:not(.dark) .card [style*="color:#a78bfa"], html:not(.dark) .card [style*="color: #a78bfa"] { color: #6d28d9 !important; }
 html:not(.dark) .card [style*="color:#cbd5e1"], html:not(.dark) .card [style*="color: #cbd5e1"],
 html:not(.dark) .card [style*="color:#94a3b8"], html:not(.dark) .card [style*="color: #94a3b8"],
-html:not(.dark) .card [style*="color:#9ca3af"], html:not(.dark) .card [style*="color: #9ca3af"] { color: #475569 !important; }
-html:not(.dark) .card :is(h1, h2, h3, h4, h5, b, strong, p, label, span)[style*="color:#f9fafb"] { color: var(--ui-text) !important; }
+html:not(.dark) .card [style*="color:#9ca3af"], html:not(.dark) .card [style*="color: #9ca3af"] { color: var(--ui-muted) !important; }
+html:not(.dark) .card :is(h1, h2, h3, h4, h5, b, strong, p, label, span)[style*="color:#f9fafb"],
+html:not(.dark) .card :is(h1, h2, h3, h4, h5, b, strong, p, label)[style*="color:#fff;"],
+html:not(.dark) .card :is(h1, h2, h3, h4, h5, b, strong, p, label)[style*="color: #fff"] { color: var(--ui-text) !important; }
 html:not(.dark) #sec-revoke-all { color: #b91c1c !important; }
-html:not(.dark) [style*="background:#161922"], html:not(.dark) [style*="background: #161922"] { background: var(--ui-surface) !important; }
-html:not(.dark) [style*="background:#161922"] p.muted, html:not(.dark) [style*="background:#161922"] .muted,
-html:not(.dark) [style*="background:#161922"] small { color: #475569 !important; }
+html.dark #sec-revoke-all { color: #fca5a5 !important; }
+
+html:not(.dark) .content [style*="color:#e5e7eb"], html:not(.dark) .content [style*="color: #e5e7eb"] { color: var(--ui-text-2) !important; }
+
+/* ---------- Auth screen ---------- */
+html .auth { background: var(--ui-bg); }
+html .auth-card { padding: 32px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08); }
+html .auth-title { color: var(--ui-text) !important; font-weight: 600; }
+html .auth-sub { color: var(--ui-muted) !important; }
+html .auth-link-cyan { color: var(--ui-brand-text) !important; }
+
+/* ---------- Active states and tabs: blue fill with white text (the old dark-navy and gold fills failed contrast) ---------- */
+html .hub-bar a.on, html.dark .hub-bar a.on, html .seg button.on, html .lp-bar button.on, html .ib-chips button.on {
+  background: var(--ui-brand) !important; border-color: var(--ui-brand) !important; color: #ffffff !important;
+}
+html .us-tabs a.on { border-bottom-color: var(--ui-brand) !important; }
+
+/* ---------- Muted greys from inline styles: one readable muted tone per theme ---------- */
+html:not(.dark) [style*="color:#94a3b8"], html:not(.dark) [style*="color: #94a3b8"], html:not(.dark) [style*="color:#64748b"],
+html:not(.dark) [style*="color: #64748b"], html:not(.dark) [style*="color:#98a2b3"], html:not(.dark) [style*="color:#9ca3af"] { color: var(--ui-muted) !important; }
+html.dark [style*="color:#667085"], html.dark [style*="color: #667085"], html.dark [style*="color:#475569"] { color: var(--ui-muted) !important; }
+html.dark [style*="color:#344054"], html.dark [style*="color: #344054"], html.dark [style*="color:#0c1628"], html.dark [style*="color: #0c1628"] { color: var(--ui-text) !important; }
+
+/* Avatars drawn on dark slate: white text in both themes */
+html [style*="background:#1e293b"], html [style*="background: #1e293b"] { color: #ffffff !important; }
+
+/* WhatsApp action: readable green on dark surfaces */
+html .btn.wa, html #chat-wa-btn { color: #0f7a40 !important; }
+html.dark .btn.wa, html.dark #chat-wa-btn { color: #86efac !important; border-color: #166534 !important; }
+
+/* Classes whose colour is set in admin.css or in page scripts (not inline) */
+html .p19-empty, html .md-folders button small, html .bz-pairs s, html .bk-leg { color: var(--ui-muted) !important; }
+html.dark .p19-empty { border-color: var(--ui-border); }
+/* Avatars on slate: white text (must come after the card rule above) */
+html:not(.dark) .card [style*="background:#1e293b"], html.dark [style*="background:#1e293b"] { color: #ffffff !important; }
+/* Info callouts (admin.css .p19-how used a cream fill and navy text, unreadable in dark mode) */
+html .p19-how { background: var(--pri-soft); border: 1px solid var(--ui-border); border-radius: var(--ui-radius-lg); color: var(--ui-text); }
+html .p19-how > b, html .p19-how ol, html .p19-how li, html .p19-how li b, html .p19-how ol b { color: var(--ui-text) !important; }
+/* Library filter chips: white pills with light text in dark mode (unreadable) */
+html.dark .ib-chips button:not(.on), html.dark .l6-chips button:not(.on) {
+  background: var(--ui-surface-2) !important; color: var(--ui-text) !important; border-color: var(--ui-border) !important;
+}
+/* Pipeline and estimator muted text (set in class rules inside page scripts) */
+html .p19-k span, html .p19-cf .v em { color: var(--ui-muted) !important; }
+/* Estimator navy panel keeps its navy fill: its small text must be light */
+html .sk-navy small, html .sk-navy .muted, html .sk-navy p { color: #cbd5e1 !important; }

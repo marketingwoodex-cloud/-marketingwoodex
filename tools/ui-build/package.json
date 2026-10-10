@@ -1,0 +1,13 @@
+{
+  "name": "woodex-ui-build",
+  "private": true,
+  "description": "Builds the admin design layer (Tailwind utilities + self-hosted Inter). Build tooling only; not shipped to the site.",
+  "scripts": {
+    "build:css": "tailwindcss -i ./src/woodex-tw.src.css -o ../../woodex-live-p29-v2.1-pro/admin/assets/woodex-tw.css --minify"
+  },
+  "devDependencies": {
+    "@fontsource/inter": "5",
+    "@tailwindcss/cli": "4",
+    "tailwindcss": "4"
+  }
+}

@@ -8,7 +8,8 @@
 <base href="/admin/">
 <link rel="icon" href="/favicon.ico">
 <link rel="stylesheet" href="admin.css">
-<link rel="stylesheet" href="woodex-ui.css?v=ui-1">
+<link rel="stylesheet" href="assets/woodex-tw.css?v=ui-2">
+<link rel="stylesheet" href="woodex-ui.css?v=ui-2">
 <script>try{if(localStorage.getItem("wxaTheme")==="dark"||(!localStorage.getItem("wxaTheme")&&matchMedia("(prefers-color-scheme: dark)").matches))document.documentElement.classList.add("dark")}catch(e){}</script>
 </head>
 <body>
@@ -130,22 +131,22 @@
   <aside class="side" id="side">
     <div class="side-top">
       <a href="#/dashboard" class="brand">
-        <span class="logo" style="background:#00b8db;color:#04222b;font-weight:800;border-radius:10px;">W</span>
-        <div><b>Woodex</b><small style="color: #00d3f2; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;">ADMIN V2.1</small></div>
+        <span class="logo wx-logo">W</span>
+        <div><b>Woodex</b><small class="wx-brand-sub">ADMIN V2.1</small></div>
       </a>
       <button class="icon-btn" id="rail" title="Collapse sidebar" aria-label="Collapse sidebar" style="margin-left:auto"><i data-i="panel-left"></i></button>
       <button class="icon-btn side-x" id="side-x" aria-label="Close menu"><i data-i="x"></i></button>
     </div>
     <nav id="nav"></nav>
     <div class="side-foot" id="side-foot">
-      <div class="side-user-row" style="display:flex;align-items:center;gap:10px;padding:8px 0;width:100%;">
-        <span class="av" id="sf-av" style="width:34px;height:34px;border-radius:50%;background:#00b8db;color:#04222b;font-weight:700;display:grid;place-items:center;font-size:13px;flex-shrink:0;">MA</span>
-        <div style="flex:1;min-width:0;overflow:hidden;">
-          <b id="sf-name" style="display:block;font-size:13px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Master Admin</b>
-          <small id="sf-role" style="color:#9ca3af;font-size:11px;">Master</small>
+      <div class="side-user-row flex w-full items-center gap-2.5 py-2">
+        <span class="av wx-av" id="sf-av">MA</span>
+        <div class="min-w-0 flex-1 overflow-hidden">
+          <b id="sf-name" class="block truncate text-[13px] font-semibold">Master Admin</b>
+          <small id="sf-role" class="wx-muted-sm text-[12px]">Master</small>
         </div>
-        <a href="/" target="_blank" rel="noopener" title="View website" style="color:#9ca3af;display:grid;place-items:center;padding:4px;"><i data-i="external-link"></i></a>
-        <button id="sf-logout" title="Sign out" style="background:none;border:none;color:#9ca3af;cursor:pointer;display:grid;place-items:center;padding:4px;"><i data-i="log-out"></i></button>
+        <a href="/" target="_blank" rel="noopener" title="View website" class="wx-foot-btn"><i data-i="external-link"></i></a>
+        <button id="sf-logout" title="Sign out" class="wx-foot-btn" type="button"><i data-i="log-out"></i></button>
       </div>
     </div>
   </aside>

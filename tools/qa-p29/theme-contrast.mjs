@@ -17,7 +17,16 @@ const outDir = process.argv[3] || '/tmp/theme-shots';
 const PREVIEW_PASS = process.env.PREVIEW_PASS || '';
 const PREVIEW_EMAIL = process.env.PREVIEW_EMAIL || 'preview@woodex.test';
 const sleep = ms => new Promise(r => setTimeout(r, ms));
-const SCREENS = [['dashboard', '#/dashboard'], ['settings', '#/settings/integrations'], ['security', '#/security'], ['approvals', '#/approvals']];
+let SCREENS = [['dashboard', '#/dashboard'], ['settings', '#/settings/integrations'], ['security', '#/security'], ['approvals', '#/approvals']];
+// ALL=1: every route id listed in the admin NAV (read from admin.js), in both themes.
+// ADMIN_JS overrides the admin.js path. Writes per-screen JSON to <outDir>/results.json.
+if (process.env.ALL === '1') {
+  const adminJs = process.env.ADMIN_JS || path.join(path.dirname(new URL(import.meta.url).pathname), '../../woodex-live-p29-v2.1-pro/admin/admin.js');
+  const src = fs.readFileSync(adminJs, 'utf8');
+  const i = src.indexOf('var NAV = ['); const j = src.indexOf('];', i);
+  const ids = [...new Set([...src.slice(i, j).matchAll(/\["([a-z][a-z0-9_-]*)", "[^"]*"/g)].map(m => m[1]))];
+  SCREENS = ids.map(id => [id, '#/' + id]);
+}
 
 const libDir = await inflate(path.join(ROOT, '@sparticuz/chromium/bin/al2023.tar.br'));
 process.env.LD_LIBRARY_PATH = [path.join(libDir, 'lib'), process.env.LD_LIBRARY_PATH || ''].filter(Boolean).join(':');
@@ -74,6 +83,16 @@ for (const theme of ['light', 'dark']) {
   }
   await page.close();
 }
+fs.writeFileSync(path.join(outDir, 'results.json'), JSON.stringify(results, null, 1));
 for (const r of results) console.log(JSON.stringify(r));
+if (process.env.ALL === '1') {
+  for (const t of ['light', 'dark']) {
+    const rs = results.filter(r => r.theme === t);
+    const bad = rs.filter(r => r.belowAA > 0).map(r => r.screen + ':' + r.belowAA);
+    const errs = rs.filter(r => r.pageErrors > 0).map(r => r.screen);
+    const thin = rs.filter(r => r.textElements < 5).map(r => r.screen);
+    console.log(`SUMMARY ${t}: screens=${rs.length} belowAA_screens=${bad.length} [${bad.join(' ')}] pageError_screens=${errs.length} [${errs.join(' ')}] thin_screens=${thin.length} [${thin.join(' ')}]`);
+  }
+}
 await browser.close();
 process.exit(0);
