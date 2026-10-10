@@ -20,7 +20,7 @@
    "active": 1,
    "pw_ver": 1,
    "created_at": "2026-10-10 12:00:00",
-   "last_login": "2026-10-10 17:34:13",
+   "last_login": "2026-10-10 19:12:40",
    "known": [
     "84c8cf929f246cad",
     "b07a760ab58004d3"
@@ -97,6 +97,14 @@
      "ua": "curl/7.88.1",
      "created": "2026-10-10 17:34:13",
      "seen": "2026-10-10 17:34:13"
+    },
+    {
+     "sid": "891646ec51edd9e0",
+     "exp": 1791702760,
+     "ip": "127.0.0.1",
+     "ua": "curl/7.88.1",
+     "created": "2026-10-10 19:12:40",
+     "seen": "2026-10-10 19:12:40"
     }
    ],
    "_sid": "7a1ae4bac015839a"
@@ -121,9 +129,10 @@
    "active": 1,
    "pw_ver": 1,
    "created_at": "2026-10-10 12:00:00",
-   "last_login": "2026-10-10 17:35:18",
+   "last_login": "2026-10-10 19:13:02",
    "known": [
-    "23df8ba24de691cf"
+    "23df8ba24de691cf",
+    "56ed171ceb14b99d"
    ],
    "sessions": [
     {
@@ -133,9 +142,17 @@
      "ua": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Mobile Safari/537.36",
      "created": "2026-10-10 17:35:18",
      "seen": "2026-10-10 17:35:47"
+    },
+    {
+     "sid": "08d635fd0589990e",
+     "exp": 1791702782,
+     "ip": "127.0.0.1",
+     "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+     "created": "2026-10-10 19:13:02",
+     "seen": "2026-10-10 19:37:02"
     }
    ],
-   "_sid": "7db75c51597bb6dc"
+   "_sid": "08d635fd0589990e"
   },
   {
    "id": 3,
@@ -328,10 +345,73 @@
    "target": "",
    "ip": "127.0.0.1",
    "created_at": "2026-10-10 17:35:18"
+  },
+  {
+   "id": 12,
+   "user_id": 1,
+   "user_name": "Master Admin",
+   "action": "login",
+   "target": "",
+   "ip": "127.0.0.1",
+   "created_at": "2026-10-10 19:12:40"
+  },
+  {
+   "id": 13,
+   "user_id": 2,
+   "user_name": "Woodex Owner",
+   "action": "login",
+   "target": "",
+   "ip": "127.0.0.1",
+   "created_at": "2026-10-10 19:13:02"
+  },
+  {
+   "id": 14,
+   "user_id": 2,
+   "user_name": "Woodex Owner",
+   "action": "health.scan",
+   "target": "68/100",
+   "ip": "127.0.0.1",
+   "created_at": "2026-10-10 19:16:41"
+  },
+  {
+   "id": 15,
+   "user_id": 2,
+   "user_name": "Woodex Owner",
+   "action": "lead.update",
+   "target": "#3 Dr. Omair Rasheed → contacted",
+   "ip": "127.0.0.1",
+   "created_at": "2026-10-10 19:36:35"
+  },
+  {
+   "id": 16,
+   "user_id": 2,
+   "user_name": "Woodex Owner",
+   "action": "lead.update",
+   "target": "#3 Dr. Omair Rasheed → visit",
+   "ip": "127.0.0.1",
+   "created_at": "2026-10-10 19:36:38"
+  },
+  {
+   "id": 17,
+   "user_id": 2,
+   "user_name": "Woodex Owner",
+   "action": "lead.update",
+   "target": "#3 Dr. Omair Rasheed → quote",
+   "ip": "127.0.0.1",
+   "created_at": "2026-10-10 19:36:40"
+  },
+  {
+   "id": 18,
+   "user_id": 2,
+   "user_name": "Woodex Owner",
+   "action": "quote.create",
+   "target": "WI-10100 Zubair Hashmi",
+   "ip": "127.0.0.1",
+   "created_at": "2026-10-10 19:37:02"
   }
  ],
  "seqU": 7,
- "seqA": 11,
+ "seqA": 18,
  "leads": [
   {
    "id": 1,
@@ -368,12 +448,31 @@
    "phone": "+92 333 4455667",
    "service": "Penthouse Renovation & Custom Joinery",
    "source": "Website Quote Calculator",
-   "stage": "new",
+   "stage": "quote",
    "value": 3100000,
    "unread": true,
    "read": false,
    "created_at": "2026-10-10 09:30:00",
-   "notes": []
+   "notes": [
+    {
+     "t": "2026-10-10 19:36:35",
+     "user": "Woodex Owner",
+     "text": "Stage: new → contacted",
+     "sys": true
+    },
+    {
+     "t": "2026-10-10 19:36:38",
+     "user": "Woodex Owner",
+     "text": "Stage: contacted → visit",
+     "sys": true
+    },
+    {
+     "t": "2026-10-10 19:36:40",
+     "user": "Woodex Owner",
+     "text": "Stage: visit → quote",
+     "sys": true
+    }
+   ]
   }
  ],
  "seqL": 3,
@@ -415,9 +514,75 @@
      "amount": 1050000
     }
    ]
+  },
+  {
+   "id": 102,
+   "no": "WI-10100",
+   "version": 1,
+   "option": "",
+   "status": "draft",
+   "created_by": "Woodex Owner",
+   "created_at": "2026-10-10 19:37:02",
+   "history": [
+    {
+     "t": "2026-10-10 19:37:02",
+     "user": "Woodex Owner",
+     "text": "Created"
+    }
+   ],
+   "client": {
+    "name": "Zubair Hashmi",
+    "phone": "",
+    "email": "",
+    "address": "",
+    "company": ""
+   },
+   "client_id": null,
+   "project": "",
+   "site": "",
+   "kind": "other",
+   "date": "2026-10-10",
+   "valid_days": 15,
+   "sections": [
+    {
+     "name": "Scope of work",
+     "note": "",
+     "items": [
+      {
+       "desc": "Describe the work",
+       "qty": 1,
+       "unit": "job",
+       "rate": 0,
+       "amount": 0,
+       "kind": "",
+       "code": ""
+      }
+     ],
+     "area": 0,
+     "subtotal": 0
+    }
+   ],
+   "discount": 0,
+   "taxPct": 0,
+   "terms": "50% advance payment with work order.\nPayment will be charged on the actual dimension / size of area.\nRates are valid for 15 days as per market rates.",
+   "notes": "",
+   "intro": "",
+   "design": "classic",
+   "layout": "classic",
+   "qtype": "",
+   "scope": "",
+   "sign_name": "",
+   "sign_title": "",
+   "rent": 0,
+   "advance": 0,
+   "blocks": [],
+   "updated_at": "2026-10-10 19:37:02",
+   "subtotal": 0,
+   "tax": 0,
+   "total": 0
   }
  ],
- "seqQ": 101,
+ "seqQ": 102,
  "invoices": [
   {
    "id": 201,

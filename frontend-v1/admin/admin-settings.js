@@ -542,30 +542,6 @@
       };
     }
 
-      W.fillIcons(cont);
-
-      function updateClientView(key) {
-        currentClient = key;
-        var info = CLIENT_CONFIGS[key] || CLIENT_CONFIGS.claude;
-        var t = $("#mcp-client-title"); if (t) t.innerHTML = ic("code") + " " + esc(info.title);
-        var d = $("#mcp-client-desc"); if (d) d.innerHTML = esc(info.desc) + ' Target: <code>' + esc(info.file) + '</code>';
-        var p = $("#mcp-client-pre"); if (p) p.textContent = info.code;
-        $$("#mcp-client-seg button").forEach(function(b){ b.classList.toggle("on", b.dataset.client === key); });
-      }
-
-      $$("#mcp-client-seg button").forEach(function(b) {
-        b.onclick = function() {
-          updateClientView(b.dataset.client);
-        };
-      });
-
-      if ($("#mcp-copy-cfg-btn")) $("#mcp-copy-cfg-btn").onclick = function () {
-        var info = CLIENT_CONFIGS[currentClient] || CLIENT_CONFIGS.claude;
-        try { navigator.clipboard.writeText(info.code); } catch (e) {}
-        toast((info.title || "Config") + " copied to clipboard ✓");
-      };
-    }
-
     function renderSystemTab() {
       var cont = $("#st-tab-content");
       if (!cont) return;
