@@ -23,8 +23,8 @@ Environment: ______ · Revision/hash: ______ · Tester: ______ · Browser: _____
 | S-15 | WEBSITE & CMS | No 404 for images on the pages checked | None | NOT RUN (WC-04 open) | — |
 | S-16 | ADMIN | `#/integrations` shows Settings, not "Phase undefined" | Settings | NOT RUN (AD-03/04 open) | — |
 | S-17 | ADMIN | Integrations status matches server for one configured and one unconfigured provider | Matches | NOT RUN (AD-05 open) | — |
-| S-18 | ADMIN | Save on Integrations: no success toast without a request | "Not saved" shown | jsdom PASS (T-16); browser NOT RUN | `ad10-t16-t18-2026-10-11.txt` |
-| S-19 | ADMIN | `#/approvals` renders the approvals queue after in-app navigation | Queue | jsdom PASS (C-008 pending browser) | `ad10-t16-t18-2026-10-11.txt` |
+| S-18 | ADMIN | Save on Integrations: no success toast without a request | "Not saved" shown | Headless browser PASS (T-16, stub API); live NOT RUN | `browser-regression-2026-10-11.txt` |
+| S-19 | ADMIN | `#/approvals` renders the approvals queue after in-app navigation | Queue | Headless browser PASS (stub API); live NOT RUN | `browser-regression-2026-10-11.txt` |
 | S-20 | ADMIN | Sidebar and workspace both follow the theme | Consistent | NOT RUN (AD-13 open) | — |
 | S-21 | ADMIN | `#/security` cards readable in light and dark | Contrast OK | NOT RUN (AD-15 open) | — |
 | S-22 | DevOps | `admin/*.js` and `admin/*.css` cache headers | `no-cache` | NOT RUN (AD-26 open) | — |

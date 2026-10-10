@@ -10,7 +10,7 @@ A release cannot be recommended while SEC-001, SEC-002, SEC-003 and AD-24 are op
 | B. Baseline integrity | Partly met | Revision recorded; baseline tests run except runtime; backups not verified. |
 | C. Finding quality | Met for this pack | 60 unique IDs, evidence labels, hypotheses marked. |
 | D. Fix quality | Partly met | Three narrow fixes with tests; no rollback test in production. |
-| E. Functional/technical verification | **Not met** | jsdom only; no browser; no PHP runtime; settings edit not re-tested. |
+| E. Functional/technical verification | **Partly met** | jsdom and headless Chromium (stub API, local copy) pass for T-16, T-17, T-18. Not met: live site, real API, PHP runtime. |
 | F. Deployment | **Blocked** | No live access. Private-path protection unverified (AD-25). |
 | G. Packaging | **Blocked** | Secrets still tracked; QA results do not yet match a packaged artifact. |
 

@@ -13,7 +13,7 @@
 2. **SEC-003 (Critical) — one Telegram bot token is in 36 tracked locations** across 9 trees, including browser-served `admin/admin-tg.js`, both SQL dumps, `.env`, `.env.example`, `config.php`, and a root Markdown breakdown document. One value, one fingerprint.
 3. **AD-24 (Critical) — the repository is public** and the secret-bearing files are tracked, with no `.gitignore` coverage for them. Visibility, rotation, and history rewrite are waiting on owner decisions. The owner deferred visibility ("later").
 4. **AD-19 / AD-21 (Critical) — persistence can fail closed into a broken state.** `jwrite` truncates before locking; `jread` takes no lock; `bsecret` regenerates the signing secret on an empty read, invalidating every admin and builder token. Not reproduced live (STATIC).
-5. **AD-05 / AD-06 / AD-07 (High) — the Integrations screen reports success it does not have.** Wording is now honest ("Not verified", "Not saved"), verified by static check. The underlying hard-coded `connected:true` entries remain (In progress).
+5. **AD-05 / AD-06 / AD-07 (High) — the Integrations screen reports success it does not have.** Wording is now honest ("Not verified", "Not saved"), verified by static check, jsdom, and headless Chromium with a stub API (no request sent; no false claim). Live site not checked. The underlying hard-coded `connected:true` entries remain (In progress).
 
 ## Findings by severity
 Counts computed from the 60 rows of `06-defect-verification-matrix.md`. "Verified" = Fixed pending verification or Verified fixed; "Blocked" = needs live or runtime access.
@@ -60,5 +60,5 @@ Counts are computed per label, so a row can carry two labels (AD-25 is both a hy
 ## Confidence and limitations
 - **Verified in this pass (RUNTIME, jsdom):** owner dashboard no longer crashes on a bad payload; happy path unchanged; estimator labels 3 → 0.
 - **Verified in this pass (STATIC):** overstated status wording removed in both trees; mirrors byte-identical; 14/14 regression checks at the time of the C-001 fix; 15/15 after the mirror check was added and C-008 applied; re-verification 56 PASS / 10 INFO / 0 FAIL after the AD-10 expectation update.
-- **Not verified:** any live behaviour; whether published credentials are active; browser behaviour after the settings edit; approvals race (AD-10); PHP runtime behaviour of AD-20.
+- **Not verified:** any live behaviour; whether published credentials are active; live-site browser behaviour (headless runs used a stub API and the local copy); PHP runtime behaviour of AD-20.
 - **Withdrawn:** AD-22 (cited counter `seqL` is data-only, not code).

@@ -14,7 +14,9 @@ All files are sanitised: no credential values, no hash values, no bank details, 
 | `remediation-verification-2026-10-11.txt` | jsdom before/after for OV-01/OV-03 and A11Y-001 | `tools/qa-p29/test-dashboard-error.js`, `happy-dash.js`, `a11y-labels.js` | Current (jsdom only) |
 | `secret-scan-tracked-2026-10-11.txt` | Per-hit type, line, path, fingerprint for all 7,286 tracked files (no values) | `detect-secrets` 1.5.0 | Current |
 | `bcrypt-literal-check-2026-10-11.txt` | Boolean: literal matches committed hashes (0); controls pass | `scripts/bcrypt_literal_check.py` | Current |
-| `ad10-t16-t18-2026-10-11.txt` | AD-10 navigation and initial-load results (pre-fix and post-fix); T-16 HEAD vs working tree; T-18 editor role | `tools/qa-p29/approvals-race.js`, `ui-regression.js`, `harness.js` | Current (jsdom only) |
+| `ad10-t16-t18-2026-10-11.txt` | AD-10 navigation and initial-load results (jsdom, pre-fix and post-fix); T-16 HEAD vs working tree; T-18 editor role | `tools/qa-p29/approvals-race.js`, `ui-regression.js`, `harness.js` | Current (jsdom only; superseded by browser run for same checks) |
+| `browser-regression-2026-10-11.txt` | Headless Chromium 153 runs: T-16 (HEAD vs working tree), T-18 (HEAD vs working tree), AD-10 navigation (pre-fix vs working tree), fresh-load seeds 1-8 (pre-fix vs working tree), `#/security` | `tools/qa-p29/run-browser-evidence.sh` -> `browser-regression.mjs` (stub API; controls from `git archive` extracts) | Current (local copy, stub API; not live) |
+| `evidence/browser/*.png` | Screenshots from the QA browser runs (approvals, editor dashboard, security). Stub data only (QA user); no credentials | `browser-regression.mjs <dir> <check> <role> <shotdir>` | Current |
 | `triage-2026-10-11.txt` | html2pdf AWS false positive; visibility; plain Phase path | This pass | Current |
 | `php-runtime-attempt-2026-10-11.txt` | `@php-wasm/node` attempt, Node version error | This pass | BLOCKED |
 | `harness-pro-settings-integrations.txt`, `harness-plain-settings-integrations.txt` | Integrations screen on pro and plain | Earlier session | Prior run; not re-run after edits |

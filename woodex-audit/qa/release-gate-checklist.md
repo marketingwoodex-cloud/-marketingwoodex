@@ -24,7 +24,7 @@ Current recommendation: **BLOCK.** Gates are marked MET, PARTLY MET, NOT MET, or
 
 ## Gate E — Functional and technical verification: NOT MET
 - [x] Syntax checks pass for the pro tree.
-- [ ] Browser tests for changed behaviour (T-16, T-18): NOT RUN.
+- [x] Browser tests for changed behaviour (T-16, T-17, T-18): PASS in headless Chromium with a stub API on the local copy (`browser-regression-2026-10-11.txt`). Live-site browser run: NOT RUN (needs owner approval).
 - [ ] Negative and failure cases tested in the live system: BLOCKED.
 - [ ] Data persists after reload or restart: NOT RUN.
 - [ ] Concurrency and stale-response tests: BLOCKED (PHP runtime; L-8).

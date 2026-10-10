@@ -13,3 +13,11 @@ Notes:
 - jsdom does not resolve `var()` or run layout. Judge canvas colour from the CSS source, not from computed style.
 - `harness-db.js` is a copy that returns `dbError:true` from `status` and tags navigation errors.
 - `bad.php` is a deliberate syntax error used as a negative control for `phplint.js`.
+
+## Browser checks (headless Chromium, QA only)
+
+- **Install (approved 2026-10-11, decision D-12):** `npm install @sparticuz/chromium puppeteer-core` inside `tools/qa-p29` only. Not part of the shipped app. `node_modules/` is gitignored.
+- **Runtime notes:** the sandbox has no system Chromium libraries, so `browser-regression.mjs` extracts the bundled `al2023.tar.br` and sets `LD_LIBRARY_PATH` before launch.
+- **Scope:** serves a local copy of the admin folder and stubs `/api/*` with fixtures. Every other non-local request is blocked. It never talks to a live site, database, or real API.
+- **Checks:** `t16`, `editor-dash`, `approvals`, `approvals-initial` (add `JITTER=<seed>` for seeded script delay), `security`.
+- **Full evidence run:** `bash run-browser-evidence.sh`, with `PREFIX` and `HEADT` pointing at `git archive` extracts of the pre-fix and HEAD trees (outside the repo).
