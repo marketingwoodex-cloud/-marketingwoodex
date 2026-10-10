@@ -2,7 +2,6 @@
 SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1
 </IfModule>
 # Woodex frontend-v1 — Hostinger (Apache/LiteSpeed)
-DirectoryIndex index.php index.html
 Options -Indexes
 ErrorDocument 404 /404.html
 
@@ -23,7 +22,7 @@ RewriteRule (^|/)\.(?!well-known) - [F,L]
 </IfModule>
 
 # Block internal PHP libraries, logs and dev files from direct web access
-<FilesMatch "(-lib\.php|^router\.php|^error_log|\.log|\.sql|\.bak|\.md|\.env|^chat-rules\.json|^redirect-plan\.json)$">
+<FilesMatch "(-lib\.php|^router\.php|^error_log|\.log|\.sql|\.bak|\.md|^chat-rules\.json|^redirect-plan\.json)$">
 Require all denied
 </FilesMatch>
 

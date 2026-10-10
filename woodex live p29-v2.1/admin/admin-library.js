@@ -52,10 +52,9 @@
       g.innerHTML = list.map(function (b) {
         var u = usage[b.id] || [];
         return '<div class="card lib-card"><div class="lib-prev" data-id="' + b.id + '"></div><div class="lib-meta"><div style="min-width:0"><b title="' + esc(b.name) + '">' + esc(b.name) + '</b><div class="lib-tags"><span class="badge gold">' + esc(b.cat || "Custom") + "</span>" + (b.global ? '<span class="badge info">🔗 global · ' + u.length + " page" + (u.length === 1 ? "" : "s") + "</span>" : "") + (b.kind === "element" ? '<span class="badge">element</span>' : "") + (b.tags || []).slice(0, 3).map(function (t) { return '<span class="badge">#' + esc(t) + "</span>"; }).join("") + "</div></div>" +
-          '<div style="display:flex;gap:4px;flex:none"><button class="btn sm" data-cp="' + b.id + '" title="Copy section HTML">' + ic("copy") + 'Copy</button><button class="btn sm" data-ed="' + b.id + '">Edit</button><button class="btn sm" data-mo="' + b.id + '">⋯</button></div></div></div>';
+          '<div style="display:flex;gap:4px;flex:none"><button class="btn sm" data-ed="' + b.id + '">Edit</button><button class="btn sm" data-mo="' + b.id + '">⋯</button></div></div></div>';
       }).join("") || '<div class="empty" style="grid-column:1/-1">No sections match.</div>';
       $$(".lib-prev", g).forEach(function (p) { p._html = (blocks.find(function (b) { return b.id === p.dataset.id; }) || {}).html || ""; io.observe(p); p.onclick = function () { editor(blocks.find(function (b) { return b.id === p.dataset.id; })); }; });
-      $$("[data-cp]", g).forEach(function (b) { b.onclick = function (e) { e.stopPropagation(); var blk = blocks.find(function (x) { return x.id === b.dataset.cp; }); if (blk && blk.html) { try { navigator.clipboard.writeText(blk.html); } catch(err){} toast("Section HTML copied to clipboard ✓"); } }; });
       $$("[data-ed]", g).forEach(function (b) { b.onclick = function () { editor(blocks.find(function (x) { return x.id === b.dataset.ed; })); }; });
       $$("[data-mo]", g).forEach(function (b) { b.onclick = function (e) { e.stopPropagation(); more(b, blocks.find(function (x) { return x.id === b.dataset.mo; })); }; });
     };

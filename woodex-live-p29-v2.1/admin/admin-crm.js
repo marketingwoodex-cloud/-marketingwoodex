@@ -145,229 +145,43 @@
     load().then(function (ok) { if (ok) { fill(); draw(); } });
   };
 
-  // =========================================================== PIPELINE (Preline Pro Kanban View Matching Image 2 & 3)
+  // =========================================================== PIPELINE
   W.VIEWS.pipeline = function (el) {
-    el.innerHTML = head("Pipeline", "Home / Pipeline", '<button class="btn" id="pl-hide">Hide won & lost</button><button class="btn pri btn-preline-cyan" id="pl-add">' + ic("plus") + "Add enquiry</button>") +
-      '<div id="pl-content">Loading pipeline…</div>';
-
+    el.innerHTML = head("Pipeline", "Pipeline", '<button class="btn" id="pl-hide">Hide won & lost</button><button class="btn pri" id="pl-add">' + ic("plus") + "Add enquiry</button>") + '<div class="kb" id="kb"><div class="empty">Loading…</div></div>';
     var hide = S.plHide || false;
-    var lineFilter = "all", ownerFilter = "", q = "";
-
     var draw = function () {
-      var L = C.leads.length ? C.leads : [
-        { id: 101, name: "Ashraf Holdings", service: "Turnkey Design-Build", stage: "new", value: 12000000, followup: "2026-10-10", assigned_name: "Kamran Tariq", phone: "+92 300 8421199", company: "Ashraf Holdings", line: "Project" },
-        { id: 102, name: "Apex Wellness Center", service: "Clinic Fit-Out Consultation", stage: "visit", value: 6500000, followup: "2026-10-12", assigned_name: "Dr. Sarah Mansoor", phone: "+92 321 4455667", company: "Apex Health", line: "Interior" },
-        { id: 103, name: "Mahmood Textiles", service: "Executive Boardroom & Decor", stage: "quote", value: 4800000, followup: "2026-10-11", assigned_name: "Usman Ali", phone: "+92 333 9988771", company: "Mahmood Mills", line: "Furniture" },
-        { id: 104, name: "Hashmi Architects", service: "Walk-in Closet & Wardrobe", stage: "visit", stageAlt: "hold", value: 3400000, followup: "2026-10-15", assigned_name: "Hamza Farooq", phone: "+92 322 1122334", company: "Hashmi Studio", line: "Interior" },
-        { id: 105, name: "Ayesha Farooq", service: "Luxury Acrylic Kitchen & Island", stage: "won", value: 2950000, followup: "", assigned_name: "Kamran Tariq", phone: "+92 301 7766554", company: "", line: "Interior" }
-      ];
-
-      var totalWonVal = L.filter(function (l) { return l.stage === "won"; }).reduce(function (a, b) { return a + (b.value || 0); }, 0);
-      var openDeals = L.filter(function (l) { return l.stage !== "won" && l.stage !== "lost"; });
-      var totalOpenVal = openDeals.reduce(function (a, b) { return a + (b.value || 0); }, 0);
-      var wonThisMon = L.filter(function (l) { return l.stage === "won"; });
-
-      var countNew = L.filter(function (l) { return l.stage === "new"; }).length;
-      var countVisit = L.filter(function (l) { return l.stage === "visit"; }).length;
-      var countQuote = L.filter(function (l) { return l.stage === "quote"; }).length;
-      var countWon = wonThisMon.length;
-
-      var html =
-        '<!-- October 2026 Deal Stage Summary Bar (From Image 2) -->' +
-        '<div style="background:#111318;border:1px solid #20242f;border-radius:14px;padding:16px 20px;margin-bottom:18px">' +
-          '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:14px">' +
-            '<div style="display:flex;align-items:center;gap:10px">' +
-              '<button class="icon-btn sm" style="width:28px;height:28px;border-radius:6px;background:#181c24;border:1px solid #262a33;color:#9ca3af">&lt;</button>' +
-              '<b style="font-size:14px;color:#f9fafb">October 2026</b>' +
-              '<button class="icon-btn sm" style="width:28px;height:28px;border-radius:6px;background:#181c24;border:1px solid #262a33;color:#9ca3af">&gt;</button>' +
-            '</div>' +
-            '<div class="seg" id="pl-lines" style="margin:0">' +
-              '<button class="' + (lineFilter === "all" ? "on" : "") + '" data-line="all">All lines</button>' +
-              '<button class="' + (lineFilter === "furniture" ? "on" : "") + '" data-line="furniture">Furniture</button>' +
-              '<button class="' + (lineFilter === "interior" ? "on" : "") + '" data-line="interior">Interior</button>' +
-              '<button class="' + (lineFilter === "project" ? "on" : "") + '" data-line="project">Project</button>' +
-            '</div>' +
-          '</div>' +
-          '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:10px">' +
-            '<div style="background:#161922;border:1px solid #232836;border-radius:10px;padding:10px 12px;border-left:3px solid #00b8db">' +
-              '<small class="muted" style="font-size:11px;display:block">Total</small><b style="font-size:18px;color:#f9fafb">' + L.length + '</b>' +
-            '</div>' +
-            '<div style="background:#161922;border:1px solid #232836;border-radius:10px;padding:10px 12px;border-left:3px solid #3b82f6">' +
-              '<small class="muted" style="font-size:11px;display:block">New lead</small><b style="font-size:18px;color:#f9fafb">' + countNew + '</b>' +
-            '</div>' +
-            '<div style="background:#161922;border:1px solid #232836;border-radius:10px;padding:10px 12px;border-left:3px solid #6366f1">' +
-              '<small class="muted" style="font-size:11px;display:block">Client</small><b style="font-size:18px;color:#f9fafb">3</b>' +
-            '</div>' +
-            '<div style="background:#161922;border:1px solid #232836;border-radius:10px;padding:10px 12px;border-left:3px solid #f59e0b">' +
-              '<small class="muted" style="font-size:11px;display:block">Meeting</small><b style="font-size:18px;color:#f9fafb">' + countVisit + '</b>' +
-            '</div>' +
-            '<div style="background:#161922;border:1px solid #232836;border-radius:10px;padding:10px 12px;border-left:3px solid #d97706">' +
-              '<small class="muted" style="font-size:11px;display:block">Proposal</small><b style="font-size:18px;color:#f9fafb">' + countQuote + '</b>' +
-            '</div>' +
-            '<div style="background:#161922;border:1px solid #232836;border-radius:10px;padding:10px 12px;border-left:3px solid #64748b">' +
-              '<small class="muted" style="font-size:11px;display:block">Hold</small><b style="font-size:18px;color:#f9fafb">1</b>' +
-            '</div>' +
-            '<div style="background:#161922;border:1px solid #232836;border-radius:10px;padding:10px 12px;border-left:3px solid #00d3f2">' +
-              '<small class="muted" style="font-size:11px;display:block">Quote done</small><b style="font-size:18px;color:#f9fafb">' + countQuote + '</b>' +
-            '</div>' +
-            '<div style="background:#161922;border:1px solid #232836;border-radius:10px;padding:10px 12px;border-left:3px solid #10b981">' +
-              '<small class="muted" style="font-size:11px;display:block">Won</small><b style="font-size:18px;color:#10b981">' + countWon + '</b>' +
-            '</div>' +
-            '<div style="background:#161922;border:1px solid #232836;border-radius:10px;padding:10px 12px;border-left:3px solid #ef4444">' +
-              '<small class="muted" style="font-size:11px;display:block">Overdue</small><b style="font-size:18px;color:#f9fafb">0</b>' +
-            '</div>' +
-            '<div style="background:#161922;border:1px solid #232836;border-radius:10px;padding:10px 12px;border-left:3px solid #d4af6a;grid-column:span 2">' +
-              '<small class="muted" style="font-size:11px;display:block">Won value</small><b style="font-size:17px;color:#d4af6a">' + (totalWonVal ? "Rs " + (totalWonVal / 1000000).toFixed(2) + "M" : "Rs 2.95M") + '</b>' +
-            '</div>' +
-          '</div>' +
-        '</div>' +
-
-        '<!-- 5 KPI Cards (From Image 3) -->' +
-        '<div style="display:grid;grid-template-columns:repeat(5, 1fr);gap:14px;margin-bottom:18px">' +
-          '<div class="card" style="background:#111318;border:1px solid #20242f;border-radius:12px;padding:18px">' +
-            '<small class="muted" style="font-size:12px">Open deals</small>' +
-            '<b style="font-size:24px;color:#f9fafb;display:block;margin:4px 0 2px">' + openDeals.length + '</b>' +
-            '<small class="muted" style="font-size:11.5px">nothing overdue</small>' +
-          '</div>' +
-          '<div class="card" style="background:#111318;border:1px solid #20242f;border-radius:12px;padding:18px">' +
-            '<small class="muted" style="font-size:12px">Pipeline value</small>' +
-            '<b style="font-size:24px;color:#f9fafb;display:block;margin:4px 0 2px">Rs ' + (totalOpenVal ? (totalOpenVal / 1000000).toFixed(0) : "27") + 'M</b>' +
-            '<small class="muted" style="font-size:11.5px">' + openDeals.length + ' open deals</small>' +
-          '</div>' +
-          '<div class="card" style="background:#111318;border:1px solid #20242f;border-radius:12px;padding:18px">' +
-            '<small class="muted" style="font-size:12px">Forecast</small>' +
-            '<b style="font-size:24px;color:#00d3f2;display:block;margin:4px 0 2px">Rs 7.2M</b>' +
-            '<small class="muted" style="font-size:11.5px">weighted by stage</small>' +
-          '</div>' +
-          '<div class="card" style="background:#111318;border:1px solid #20242f;border-radius:12px;padding:18px">' +
-            '<small class="muted" style="font-size:12px">Won this month</small>' +
-            '<b style="font-size:24px;color:#10b981;display:block;margin:4px 0 2px">Rs ' + (totalWonVal ? (totalWonVal / 1000000).toFixed(1) : "3.0") + 'M</b>' +
-            '<small class="muted" style="font-size:11.5px">' + countWon + ' won in total</small>' +
-          '</div>' +
-          '<div class="card" style="background:#111318;border:1px solid #20242f;border-radius:12px;padding:18px">' +
-            '<small class="muted" style="font-size:12px">Win rate</small>' +
-            '<b style="font-size:24px;color:#f9fafb;display:block;margin:4px 0 2px">100%</b>' +
-            '<small class="muted" style="font-size:11.5px">1 won · 0 lost</small>' +
-          '</div>' +
-        '</div>' +
-
-        '<!-- Filters and Search Bar -->' +
-        '<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px;flex-wrap:wrap">' +
-          '<div style="display:flex;align-items:center;gap:10px;flex:1;max-width:560px">' +
-            '<input type="search" id="pl-q" placeholder="Search name, company, phone…" value="' + esc(q) + '" style="margin:0;background:#111318;border-color:#20242f;border-radius:10px;padding:8px 14px;font-size:13px;flex:1">' +
-            '<select id="pl-own" style="margin:0;width:140px;background:#111318;border-color:#20242f;border-radius:10px;padding:8px 12px;font-size:13px">' +
-              '<option value="">All owners</option>' +
-              '<option value="Kamran Tariq">Kamran Tariq</option>' +
-              '<option value="Dr. Sarah Mansoor">Dr. Sarah Mansoor</option>' +
-              '<option value="Usman Ali">Usman Ali</option>' +
-            '</select>' +
-          '</div>' +
-          '<small class="muted" style="font-size:12px">Drag cards between stages · click to open</small>' +
-        '</div>' +
-
-        '<!-- Kanban Columns Grid -->' +
-        '<div class="kb" id="kb" style="display:grid;grid-template-columns:repeat(7, minmax(210px, 1fr));gap:14px;overflow-x:auto;padding-bottom:12px"></div>';
-
-      $("#pl-content").innerHTML = html;
-      W.fillIcons($("#pl-content"));
-
-      var cols = [
-        { id: "new", title: "New", dot: "blue", sum: "Rs 12M" },
-        { id: "contacted", title: "Contacted", dot: "amber", sum: "" },
-        { id: "visit", title: "Site visit", dot: "amber", sum: "Rs 6.5M" },
-        { id: "quote", title: "Quote sent", dot: "purple", sum: "Rs 4.8M" },
-        { id: "hold", title: "On hold", dot: "gray", sum: "Rs 3.4M" },
-        { id: "won", title: "Won", dot: "green", sum: "Rs 3.0M" },
-        { id: "lost", title: "Lost", dot: "red", sum: "" }
-      ].filter(function (col) {
-        return !hide || (col.id !== "won" && col.id !== "lost");
-      });
-
-      var kbEl = $("#kb");
-      kbEl.innerHTML = cols.map(function (col) {
-        var items = L.filter(function (l) {
-          if (col.id === "hold") return l.stageAlt === "hold";
-          return l.stage === col.id;
-        }).filter(function (l) {
-          if (q && (l.name + " " + (l.company || "") + " " + (l.phone || "") + " " + l.service).toLowerCase().indexOf(q) === -1) return false;
-          if (ownerFilter && l.assigned_name !== ownerFilter) return false;
-          return true;
-        });
-
-        var cardList = items.map(function (l) {
-          var initials = l.assigned_name ? l.assigned_name.split(" ").map(function (w) { return w[0]; }).join("").slice(0, 2) : "KT";
-          return '<div class="kb-card" draggable="true" data-id="' + l.id + '" style="background:#161922;border:1px solid #232836;border-radius:10px;padding:14px;margin-bottom:10px;cursor:pointer">' +
-            '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">' +
-              '<b style="color:#f9fafb;font-size:13.5px">' + esc(l.name) + '</b>' +
-              '<small class="muted" style="font-size:11px">0d</small>' +
-            '</div>' +
-            (l.company ? '<small class="muted" style="display:block;font-size:12px;margin-bottom:6px">' + esc(l.company) + '</small>' : "") +
-            '<div style="background:#10131a;border-radius:6px;padding:6px 8px;margin-bottom:10px;font-size:12px;color:#9ca3af">' + esc(l.service) + '</div>' +
-            '<div style="display:flex;align-items:center;justify-content:space-between">' +
-              '<b style="color:#00d3f2;font-size:13.5px">' + (l.value ? "Rs " + l.value.toLocaleString("en-PK") : "—") + '</b>' +
-              '<div style="display:flex;align-items:center;gap:6px">' +
-                (l.followup ? '<small class="muted" style="font-size:11px">' + ic("clock") + ' ' + esc(l.followup.slice(5)) + '</small>' : "") +
-                '<span style="width:24px;height:24px;border-radius:50%;background:#00b8db;color:#04222b;font-weight:700;font-size:10px;display:grid;place-items:center">' + initials + '</span>' +
-              '</div>' +
-            '</div>' +
-          '</div>';
-        }).join("");
-
-        return '<div class="kb-col" data-st="' + col.id + '" style="background:#111318;border:1px solid #20242f;border-radius:12px;padding:14px;min-height:360px;display:flex;flex-direction:column">' +
-          '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">' +
-            '<div style="display:flex;align-items:center;gap:8px">' +
-              '<span class="kb-dot" style="width:8px;height:8px;border-radius:50%;background:' + (col.dot === "blue" ? "#3b82f6" : col.dot === "amber" ? "#f59e0b" : col.dot === "purple" ? "#a855f7" : col.dot === "green" ? "#10b981" : col.dot === "red" ? "#ef4444" : "#64748b") + '"></span>' +
-              '<b style="font-size:13px;color:#f9fafb">' + col.title + '</b>' +
-              '<span class="pill" style="font-size:11px;padding:2px 6px">' + items.length + '</span>' +
-            '</div>' +
-            (col.sum ? '<small class="muted" style="font-size:11.5px">' + col.sum + '</small>' : "") +
-          '</div>' +
-          '<div class="kb-list" style="flex:1">' + (cardList || '<div style="border:1px dashed #232836;border-radius:8px;padding:32px 12px;text-align:center;color:#64748b;font-size:12px">Drop a lead here</div>') + '</div>' +
-        '</div>';
+      $("#pl-hide").textContent = hide ? "Show won & lost" : "Hide won & lost";
+      var cols = ORDER.filter(function (s) { return !hide || ORDER.indexOf(s) < 4; });
+      $("#kb").innerHTML = cols.map(function (s) {
+        var items = C.leads.filter(function (l) { return l.stage === s; }), v = items.reduce(function (a, l) { return a + (l.value || 0); }, 0);
+        return '<div class="kb-col" data-st="' + s + '"><div class="kb-h"><span class="kb-dot ' + STAGE[s][1] + '"></span><b>' + STAGE[s][0] + '</b><span class="pill">' + items.length + "</span>" + (v ? '<small class="muted" style="margin-left:auto">' + pkr(v) + "</small>" : "") + '</div><div class="kb-list">' +
+          items.map(function (l) {
+            return '<div class="kb-card" draggable="true" data-id="' + l.id + '">' + (l.read ? "" : '<span class="kb-new">new</span>') + "<b>" + esc(l.name) + "</b><small>" + esc(l.service || C.sources[l.source] || "") + "</small>" +
+              '<div class="kb-foot">' + (l.value ? "<span>" + pkr(l.value) + "</span>" : "<span></span>") + (l.followup ? '<span class="' + (due(l) ? "due" : "") + '">' + ic("clock") + dshort(l.followup) + "</span>" : "") + (l.assigned_name ? '<span class="av" title="' + esc(l.assigned_name) + '">' + esc(l.assigned_name.charAt(0)) + "</span>" : "") + "</div></div>";
+          }).join("") + "</div></div>";
       }).join("");
-
-      W.fillIcons(kbEl);
-
+      W.fillIcons($("#kb"));
       $$(".kb-card").forEach(function (c) {
         c.onclick = function () { W.leadDrawer(+c.dataset.id, draw); };
-        c.ondragstart = function (e) { e.dataTransfer.setData("text/plain", c.dataset.id); };
+        c.ondragstart = function (e) { e.dataTransfer.setData("text/plain", c.dataset.id); e.dataTransfer.effectAllowed = "move"; c.classList.add("drag"); };
+        c.ondragend = function () { c.classList.remove("drag"); };
       });
-
       $$(".kb-col").forEach(function (col) {
-        col.ondragover = function (e) { e.preventDefault(); col.style.borderColor = "#00b8db"; };
-        col.ondragleave = function () { col.style.borderColor = "#20242f"; };
+        col.ondragover = function (e) { e.preventDefault(); col.classList.add("over"); };
+        col.ondragleave = function () { col.classList.remove("over"); };
         col.ondrop = function (e) {
-          e.preventDefault();
-          col.style.borderColor = "#20242f";
-          var id = +e.dataTransfer.getData("text/plain");
-          var to = col.dataset.st;
-          var lead = L.find(function (x) { return x.id === id; });
-          if (lead) {
-            lead.stage = to === "hold" ? "visit" : to;
-            if (to === "hold") lead.stageAlt = "hold";
-            toast(lead.name + " moved to " + to.toUpperCase() + " ✓");
-            draw();
-          }
-        };
-      });
-
-      $("#pl-q").oninput = function () { q = this.value.trim().toLowerCase(); draw(); };
-      $("#pl-own").onchange = function () { ownerFilter = this.value; draw(); };
-      $$("#pl-lines button").forEach(function (b) {
-        b.onclick = function () {
-          lineFilter = b.dataset.line;
-          draw();
+          e.preventDefault(); col.classList.remove("over");
+          var id = +e.dataTransfer.getData("text/plain"), l = C.leads.find(function (x) { return x.id === id; }), to = col.dataset.st; if (!l || l.stage === to) return;
+          var data = { id: id, stage: to };
+          if (to === "lost") { var why = prompt("Why was this lead lost? (optional)", l.lost_reason || ""); if (why === null) return; data.lost_reason = why; }
+          l.stage = to; draw();
+          api("lead_save", data).then(function (r) { if (!r.ok) { toast(r.error, true); return load().then(draw); } var i = C.leads.findIndex(function (x) { return x.id === id; }); C.leads[i] = r.lead; toast(esc(l.name) + " → " + STAGE[to][0]); });
         };
       });
     };
-
-    $("#pl-hide").onclick = function () {
-      hide = S.plHide = !hide;
-      this.textContent = hide ? "Show won & lost" : "Hide won & lost";
-      draw();
-    };
+    $("#pl-hide").onclick = function () { hide = S.plHide = !hide; draw(); };
     $("#pl-add").onclick = function () { addLead(function () { load().then(draw); }); };
-    load().then(function () { draw(); });
+    load().then(function (ok) { if (ok) draw(); });
   };
 
   // =========================================================== CLIENTS

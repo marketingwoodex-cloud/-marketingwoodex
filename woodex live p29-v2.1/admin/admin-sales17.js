@@ -29,103 +29,19 @@
   var lineTag = function (k) { return k ? "<span class='s17-line s17-l-" + esc(k) + "'>" + esc((M && M.lines[k]) || k) + "</span>" : ""; };
 
   // ================================================================ ENQUIRIES TRACKER
-    // ================================================================ ENQUIRIES TRACKER (PRELINE PRO V3 HYBRID)
   W.VIEWS.enquiries = function (el, parts) {
     if (parts && parts[0] === "classic") return OLD.enquiries(el, []);
     var st = S.s17q || (S.s17q = { month: today().slice(0, 7), line: "", who: "", stage: "", q: "", tab: "all" });
     var admin = can("owner,admin");
-
-    var sparkSvg = function (pts, color) {
-      color = color || "#00d3f2";
-      return '<svg viewBox="0 0 100 28" class="crm-kpi-spark" preserveAspectRatio="none"><path d="' + pts + '" fill="none" stroke="' + color + '" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path d="' + pts + ' L100,28 L0,28 Z" fill="' + color + '" opacity="0.12"/></svg>';
-    };
-
-    var gaugeSvg = function () {
-      return '<svg viewBox="0 0 200 110" style="width:100%;max-width:240px;height:110px"><path d="M 20 100 A 80 80 0 0 1 70 32" fill="none" stroke="#00d3f2" stroke-width="16" stroke-linecap="round"/><path d="M 78 28 A 80 80 0 0 1 125 28" fill="none" stroke="#2563eb" stroke-width="16"/><path d="M 133 32 A 80 80 0 0 1 180 100" fill="none" stroke="#38bdf8" stroke-width="16" stroke-linecap="round"/></svg>';
-    };
-
-    var avatarInitial = function (name) {
-      var parts = String(name || "Customer").trim().split(/\s+/);
-      var ini = (parts[0] ? parts[0][0] : "") + (parts[1] ? parts[1][0] : "");
-      return ini.toUpperCase().slice(0, 2) || "WX";
-    };
-
-    el.innerHTML = head("Leads", "Leads",
-        '<a class="btn" href="#/enquiries/classic">' + ic("layers") + 'Classic list</a>' +
-        '<a class="btn" href="#/pipeline">' + ic("kanban") + 'Pipeline</a>' +
-        (admin ? '<button class="btn" id="s17-imp">' + ic("upload") + 'Import sheet</button>' : "") +
-        '<button class="btn" id="s17-exp">' + ic("download") + 'Export</button>' +
-        '<button class="btn pri btn-preline-cyan" id="s17-add">' + ic("plus") + 'Add lead</button>') +
-
-      '<!-- 1. Top Sparkline Metric Cards (Image 2 Match) -->' +
-      '<div class="crm-p3-top">' +
-        '<div class="crm-kpi-card"><div class="crm-kpi-head"><span class="crm-kpi-lbl">OPEN DEALS</span><span class="crm-kpi-badge up">↗ 37.3% <small>up from 142</small></span></div><div class="crm-kpi-val" id="kpi-open">482</div>' + sparkSvg("M0,20 Q20,16 35,22 T65,8 T85,12 T100,4") + '</div>' +
-        '<div class="crm-kpi-card"><div class="crm-kpi-head"><span class="crm-kpi-lbl">UNTOUCHED DEALS</span><span class="crm-kpi-badge up">↗ 14.5% <small>up from 503</small></span></div><div class="crm-kpi-val" id="kpi-untouched">639</div>' + sparkSvg("M0,24 Q25,20 45,23 T75,14 T90,16 T100,10") + '</div>' +
-        '<div class="crm-kpi-card"><div class="crm-kpi-head"><span class="crm-kpi-lbl">CALLS TODAY</span><span class="crm-kpi-badge down">↘ 4.1% <small>down from 39</small></span></div><div class="crm-kpi-val" id="kpi-calls">36</div>' + sparkSvg("M0,18 Q15,10 35,16 T65,12 T85,18 T100,14", "#38bdf8") + '</div>' +
-        '<div class="crm-kpi-card"><div class="crm-kpi-head"><span class="crm-kpi-lbl">LEADS</span><span class="crm-kpi-badge neutral">0.0% 510</span></div><div class="crm-kpi-val" id="kpi-leads">510</div>' + sparkSvg("M0,16 Q20,24 40,8 T70,18 T85,6 T100,8") + '</div>' +
-      '</div>' +
-
-      '<!-- 2. Middle 3-Column Glassmorphic Feature Blocks (Image 2 Match) -->' +
-      '<div class="crm-trio-grid">' +
-        '<div class="crm-block-card"><div class="crm-block-h"><h3>Import data</h3><button class="icon-btn" style="opacity:0.6">⋮</button></div>' +
-          '<p class="crm-block-sub">See and talk to your users and leads immediately by importing your data into the Preline platform.</p>' +
-          '<div class="crm-imp-list">' +
-            '<div class="crm-imp-item"><div class="crm-imp-left"><div class="crm-imp-ic">' + ic("mail") + '</div><div><div class="crm-imp-title">Gmail</div><div class="crm-imp-desc">Users</div></div></div><button class="crm-imp-btn" id="imp-gmail">Launch importer ↗</button></div>' +
-            '<div class="crm-imp-item"><div class="crm-imp-left"><div class="crm-imp-ic">' + ic("file-text") + '</div><div><div class="crm-imp-title">Notion</div><div class="crm-imp-desc">Users</div></div></div><button class="crm-imp-btn" id="imp-notion">Launch importer ↗</button></div>' +
-            '<div class="crm-imp-item"><div class="crm-imp-left"><div class="crm-imp-ic">' + ic("file") + '</div><div><div class="crm-imp-title">CSV</div><div class="crm-imp-desc">Users</div></div></div><button class="crm-imp-btn" id="imp-csv">Launch importer ↗</button></div>' +
-          '</div>' +
-          '<small style="color:var(--mut);font-size:12px;margin-top:auto">Or you can <a href="#/settings" style="color:#00d3f2;text-decoration:none;font-weight:600">sync data to Preline</a> to ensure your data is always up-to-date.</small>' +
-        '</div>' +
-
-        '<div class="crm-block-card"><div class="crm-block-h"><h3>Lead funnel status</h3><button class="icon-btn" style="opacity:0.6">⋮</button></div>' +
-          '<div style="margin-top:10px">' +
-            '<div class="crm-funnel-row"><div class="crm-funnel-meta"><span><i style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#38bdf8;margin-right:6px"></i>Spam/blocked</span><span style="color:#94a3b8">12 (9.9%)</span></div>' +
-              '<div class="crm-funnel-meta"><span><i style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#00d3f2;margin-right:6px"></i>Valid leads</span><span style="color:#94a3b8">28 (25.6%)</span></div>' +
-              '<div class="crm-funnel-track"><div class="crm-funnel-fill-cyan" style="width:35%"></div><div class="crm-funnel-fill-gray" style="width:65%"></div></div></div>' +
-            '<div class="crm-funnel-row"><div class="crm-funnel-meta"><span><i style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#818cf8;margin-right:6px"></i>Qualified leads</span><span style="color:#94a3b8">38 (29.5%)</span></div>' +
-              '<div class="crm-funnel-meta"><span><i style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#6366f1;margin-right:6px"></i>Cold leads</span><span style="color:#94a3b8">31 (20.5%)</span></div>' +
-              '<div class="crm-funnel-track"><div class="crm-funnel-fill-indigo" style="width:50%"></div><div class="crm-funnel-fill-gray" style="width:50%"></div></div></div>' +
-            '<div class="crm-funnel-row"><div class="crm-funnel-meta"><span><i style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#00d3f2;margin-right:6px"></i>Converted to deal</span><span style="color:#94a3b8">22 (17.0%)</span></div>' +
-              '<div class="crm-funnel-meta"><span><i style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#38bdf8;margin-right:6px"></i>Still in pipeline</span><span style="color:#94a3b8">44 (43.0%)</span></div>' +
-              '<div class="crm-funnel-track"><div class="crm-funnel-fill-cyan" style="width:60%"></div><div class="crm-funnel-fill-gray" style="width:40%"></div></div></div>' +
-          '</div>' +
-          '<small style="color:var(--mut);font-size:12px;margin-top:auto">High cold lead count may indicate a need to adjust targeting or messaging.</small>' +
-        '</div>' +
-
-        '<div class="crm-block-card"><div class="crm-block-h"><h3>Lead nurturing &amp; filtering</h3><button class="icon-btn" style="opacity:0.6">⋮</button></div>' +
-          '<div style="display:flex;align-items:baseline;gap:8px;margin-top:4px"><span style="font-size:30px;font-weight:800;color:var(--txt)">44%</span><span class="crm-kpi-badge down">↘ down from 56.8%</span></div>' +
-          '<div class="crm-gauge-wrap">' + gaugeSvg() + '</div>' +
-          '<div class="crm-gauge-legend">' +
-            '<div class="crm-leg-item"><span class="crm-leg-dot" style="background:#00d3f2"></span><div><div class="crm-leg-title" style="color:var(--txt)">47</div><div class="crm-leg-desc">Nurtured successfully</div></div></div>' +
-            '<div class="crm-leg-item"><span class="crm-leg-dot" style="background:#2563eb"></span><div><div class="crm-leg-title" style="color:var(--txt)">23</div><div class="crm-leg-desc">Sent to sales review</div></div></div>' +
-            '<div class="crm-leg-item"><span class="crm-leg-dot" style="background:#475569"></span><div><div class="crm-leg-title" style="color:var(--txt)">30</div><div class="crm-leg-desc">Blocked</div></div></div>' +
-            '<div class="crm-leg-item"><span class="crm-leg-dot" style="background:#94a3b8"></span><div><div class="crm-leg-title" style="color:var(--txt)">30</div><div class="crm-leg-desc">Disqualified by team</div></div></div>' +
-          '</div>' +
-        '</div>' +
-      '</div>' +
-
-      '<!-- 3. Bottom Customers & Leads Table (Image 2 Match) -->' +
+    el.innerHTML = head("Leads", "Leads", '<a class="btn" href="#/enquiries/classic">' + ic("layers") + 'Classic list</a><a class="btn" href="#/pipeline">' + ic("kanban") + "Pipeline</a>" +
+        (admin ? '<button class="btn" id="s17-imp">' + ic("upload") + "Import sheet</button>" : "") + '<button class="btn" id="s17-exp">' + ic("download") + 'Export</button><button class="btn pri" id="s17-add">' + ic("plus") + "Add lead</button>") +
       '<div class="s17-bar"><div class="s17-month"><button class="icon-btn" id="s17-prev" title="Previous month">‹</button><select id="s17-m"></select><button class="icon-btn" id="s17-next" title="Next month">›</button></div>' +
       '<div class="seg" id="s17-lines"></div></div>' +
       '<div class="s17-counters" id="s17-c"></div>' +
-
-      '<div class="preline-tbl-card">' +
-        '<div class="preline-tbl-head-bar">' +
-          '<div><h3 style="margin:0;font-size:16px;font-weight:700">New customers</h3><small class="muted" id="s17-count-lbl">2 leads</small></div>' +
-          '<div class="preline-tbl-actions">' +
-            '<div class="s17-filters" style="border:0;padding:0"><input type="search" id="s17-qs" placeholder="Search name, company, email, phone…" style="min-width:260px">' +
-            '<select id="s17-who"></select><select id="s17-stage"></select></div>' +
-            '<button class="btn pri btn-preline-cyan" id="s17-add-sub">' + ic("plus") + 'New customer</button>' +
-          '</div>' +
-        '</div>' +
-        '<div class="tbl-wrap"><table class="tbl s17-tbl"><thead><tr>' +
-          '<th style="width:32px"><input type="checkbox" style="width:16px;height:16px;accent-color:#00b8db"></th>' +
-          '<th>Name</th><th>Company</th><th>Location / Address</th><th>Email</th><th>Phone</th><th>Quotation</th><th>Stage</th><th>Date</th>' +
-        '</tr></thead><tbody id="s17-rows"><tr><td colspan="9" class="empty">Loading…</td></tr></tbody></table></div>' +
-      '</div>' +
-
-      '<div style="margin-top:20px"><aside class="card s17-fu" id="s17-fu"></aside></div>';
-
+      '<div class="s17-wrap"><div class="card s17-main"><div class="s17-tabs" id="s17-tabs"></div><div class="s17-filters"><input type="search" id="s17-qs" placeholder="Search company, name, phone, location…">' +
+      '<select id="s17-who"></select><select id="s17-stage"></select></div>' +
+      '<div class="tbl-wrap"><table class="tbl s17-tbl"><thead><tr><th>Date</th><th>Company / name</th><th>Contact</th><th>Location</th><th>Line</th><th>Assigned</th><th>Quotation</th><th>Last contact</th><th>Stage</th><th>Next follow-up</th></tr></thead><tbody id="s17-rows"><tr><td colspan="10" class="empty">Loading…</td></tr></tbody></table></div></div>' +
+      '<aside class="card s17-fu" id="s17-fu"></aside></div>';
     var stats = null;
     var mlist = function () { var s = {}; s[today().slice(0, 7)] = 1; if (st.month) s[st.month] = 1; C.leads.forEach(function (l) { s[String(l.created_at).slice(0, 7)] = 1; }); return Object.keys(s).sort().reverse(); };
     var inMonth = function (l) { return !st.month || String(l.created_at).slice(0, 7) === st.month; };
@@ -146,25 +62,19 @@
     function rows() {
       var q = st.q.toLowerCase(), L = (st.tab === "overdue" ? C.leads.filter(overdue) : base().filter(TABF[st.tab] || TABF.all)).filter(function (l) {
         return (!st.who || String(l.assigned_to || "none") === st.who) && (!st.stage || l.stage === st.stage) && (!q || [l.company, l.name, l.phone, l.email, l.location, l.designation, l.message, "#" + l.id].join(" ").toLowerCase().indexOf(q) >= 0); });
-      if ($("#s17-count-lbl")) $("#s17-count-lbl").textContent = L.length + " customer" + (L.length === 1 ? "" : "s") + " · " + (st.month ? mlabel(st.month) : "All months");
+      $("#s17-tabs").innerHTML = "<b>" + (st.tab === "overdue" ? "Overdue follow-ups (all months)" : (st.month ? mlabel(st.month) : "All months")) + "</b><small class='muted'>" + L.length + " lead" + (L.length === 1 ? "" : "s") + (st.tab !== "all" ? " · filter: " + esc(st.tab) + " <a href='#' id='s17-clr'>clear</a>" : "") + "</small>";
+      if ($("#s17-clr")) $("#s17-clr").onclick = function (e) { e.preventDefault(); st.tab = "all"; counters(); rows(); };
       var QS = (M && M.quoteStatus) || {};
       $("#s17-rows").innerHTML = L.length ? L.map(function (l) {
-        var od = overdue(l), td = dueToday(l), title = l.name || l.company, sub = l.company ? l.company : (l.service || "Residential");
-        var ini = avatarInitial(title);
-        var emailStr = l.email ? '<a href="mailto:' + esc(l.email) + '" style="color:inherit;text-decoration:none">' + esc(l.email) + '</a>' : '<span class="muted">—</span>';
-        var phoneStr = l.phone ? '<span style="display:inline-flex;align-items:center;gap:6px">' + esc(l.phone) + ' <a class="s17-wa" data-stop title="WhatsApp" target="_blank" rel="noopener" href="https://wa.me/' + waNum(l.phone) + '">' + ic("message-circle") + '</a></span>' : '<span class="muted">—</span>';
-        return '<tr data-id="' + l.id + '" class="' + (od ? "s17-od " : "") + (l.read ? "" : "unread") + '">' +
-          '<td><input type="checkbox" style="width:16px;height:16px;accent-color:#00b8db" data-stop></td>' +
-          '<td><div style="display:flex;align-items:center;gap:10px"><span class="preline-avatar">' + esc(ini) + '</span><div><b>' + esc(title) + '</b>' + (l.lead_type === "returning" || l.client_id ? " <span class='badge navy sm'>Client</span>" : "") + '</div></div></td>' +
-          '<td>' + (l.company ? '<span class="badge" style="background:#1e293b;color:#94a3b8">' + esc(l.company) + '</span>' : '<span class="muted">' + esc(sub) + '</span>') + '</td>' +
-          '<td>' + esc(l.location || (l.fields && l.fields.city) || (l.fields && l.fields.address) || "Lahore") + '</td>' +
-          '<td>' + emailStr + '</td>' +
-          '<td class="nw">' + phoneStr + '</td>' +
-          '<td>' + (l.quote_status ? "<span class='s17-q s17-q-" + esc(l.quote_status) + "'>" + esc(QS[l.quote_status] || l.quote_status) + "</span>" : "<span class='muted'>—</span>") + '</td>' +
-          '<td>' + badge(l.stage) + '</td>' +
-          '<td class="nw muted">' + dd(l.created_at) + '</td>' +
-          '</tr>';
-      }).join("") : '<tr><td colspan="9" class="empty">No leads here yet. Add one, or import your sheet.</td></tr>';
+        var od = overdue(l), td = dueToday(l), title = l.company || l.name, sub = l.company ? l.name + (l.designation ? " · " + l.designation : "") : (l.designation || "");
+        return '<tr data-id="' + l.id + '" class="' + (od ? "s17-od " : "") + (l.read ? "" : "unread") + '"><td class="nw">' + dd(l.created_at) + "</td>" +
+          "<td><b>" + esc(title) + "</b>" + (sub ? "<small class='muted d'>" + esc(sub) + "</small>" : "") + (l.lead_type === "returning" || l.client_id ? " <span class='badge navy sm'>Client</span>" : "") + "</td>" +
+          "<td class='nw'>" + (l.phone ? esc(l.phone) + ' <a class="s17-wa" data-stop title="WhatsApp" target="_blank" rel="noopener" href="https://wa.me/' + waNum(l.phone) + '">' + ic("message-circle") + "</a>" : "<span class='muted'>—</span>") + "</td>" +
+          "<td>" + esc(l.location || "—") + "</td><td>" + (lineTag(l.line) || "<span class='muted'>—</span>") + "</td><td>" + esc(l.assigned_name || "—") + "</td>" +
+          "<td>" + (l.quote_status ? "<span class='s17-q s17-q-" + esc(l.quote_status) + "'>" + esc(QS[l.quote_status] || l.quote_status) + "</span>" : "<span class='muted'>—</span>") + "</td>" +
+          "<td class='nw'>" + (l.last_contact ? dd(l.last_contact) + "<small class='muted d'>" + ago(l.last_contact) + "</small>" : "<span class='muted'>never</span>") + "</td><td>" + badge(l.stage) + "</td>" +
+          "<td class='nw" + (od ? " s17-red" : td ? " s17-amber" : "") + "'>" + (l.next_at && open(l) ? (od ? "⚠ " : "") + dd(l.next_at, true) + "<small class='d'>" + esc(((M && M.nextTypes[l.next_type]) || l.next_type || "")) + "</small>" : "<span class='muted'>—</span>") + "</td></tr>";
+      }).join("") : '<tr><td colspan="10" class="empty">No leads here yet. Add one, or import your sheet.</td></tr>';
       W.fillIcons($("#s17-rows"));
       $$("#s17-rows tr[data-id]").forEach(function (tr) { tr.onclick = function (e) { if (e.target.closest("[data-stop]")) return; drawer(+tr.dataset.id, refresh); }; });
     }
@@ -191,16 +101,10 @@
     $("#s17-qs").value = st.q; $("#s17-qs").oninput = function () { st.q = this.value; rows(); };
     $("#s17-who").onchange = function () { st.who = this.value; rows(); }; $("#s17-stage").onchange = function () { st.stage = this.value; rows(); };
     $("#s17-add").onclick = function () { addLead(refresh); };
-    if ($("#s17-add-sub")) $("#s17-add-sub").onclick = function () { addLead(refresh); };
     $("#s17-exp").onclick = function () { exportCsv(C.leads.filter(inMonth)); };
     if ($("#s17-imp")) $("#s17-imp").onclick = function () { importSheet(refresh); };
-    if ($("#imp-csv")) $("#imp-csv").onclick = function () { importSheet(refresh); };
-    if ($("#imp-gmail")) $("#imp-gmail").onclick = function () { location.hash = "#/settings"; toast("Gmail importer connected under Settings -> Connectors"); };
-    if ($("#imp-notion")) $("#imp-notion").onclick = function () { location.hash = "#/settings"; toast("Notion sync connected under Settings -> Connectors"); };
     Promise.all([meta(), loadLeads()]).then(function (r) { if (r[1] && $("#s17-rows")) draw(); });
   };
-
-
 
   // ================================================================ LEAD SIDE DRAWER
   function closeDrawer() { var d = $("#s17-dr"); if (d) { d.classList.remove("on"); setTimeout(function () { d.remove(); }, 200); } document.removeEventListener("keydown", escKey); }

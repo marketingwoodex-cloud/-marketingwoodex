@@ -130,7 +130,7 @@
     dashOrig(el);
     var u = W.S && W.S.user || {}; if (u.role && !/owner|admin/.test(u.role)) return;
     waitFor(el, ".ph", function () { setTimeout(function () {
-      if (el.querySelector("#p36-tasks") || el.querySelector("#dx-tasks-card")) return;
+      if (el.querySelector("#p36-tasks")) return;
       var dx = el.querySelector("#dx");
       if (dx && dx.querySelector(".dx-chips")) { p21Cards(dx); return pendingCard(dx); }
       var host = document.createElement("div"), ph = el.querySelector(".ph"); ph.parentNode.insertBefore(host, ph.nextSibling); pendingCard(host);

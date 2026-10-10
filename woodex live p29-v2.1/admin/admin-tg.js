@@ -22,45 +22,25 @@
         '<div class="card" style="margin-bottom:12px"><div class="card-b" style="display:flex;gap:14px;align-items:center;flex-wrap:wrap">' + ic("send") +
         '<div style="flex:1;min-width:220px"><b>' + (on ? "Connected: @" + esc(c.bot) : "Not connected") + "</b><br><small class=\"muted\">" +
         (on ? (c.group ? "Team group: " + esc(c.groupTitle) : "No team group yet") + " · " + c.linked + " staff linked · WhatsApp is " + (c.waDown ? '<b style="color:#b42318">not working</b> (Telegram button is ' + (c.buttonLive ? "showing" : "hidden") + " on the website)" : "working") : "Customers can chat with your Telegram bot, staff reply from a Telegram group, and the website offers Telegram when WhatsApp is down.") +
-        "</small></div>" + (on ? '<div style="display:flex;gap:8px"><button class="btn sm" id="tg-test-top">Send test alert</button><a class="btn sm pri btn-preline-cyan" target="_blank" rel="noopener" href="https://t.me/' + esc(c.bot) + '">Open @' + esc(c.bot) + '</a></div>' : "") + "</div></div>" +
+        "</small></div>" + (on ? '<a class="btn sm" target="_blank" rel="noopener" href="https://t.me/' + esc(c.bot) + '">Open bot</a>' : "") + "</div></div>" +
         step(1, "Create your bot (2 minutes)", '<ol style="margin:0 0 10px 18px;padding:0;font-size:13.5px;line-height:1.7"><li>In Telegram, open <a href="https://t.me/BotFather" target="_blank" rel="noopener">@BotFather</a> and send <code>/newbot</code>.</li><li>Name: <b>Woodex Interior</b> · username e.g. <b>WoodexInteriorBot</b>.</li><li>Copy the token it gives you and paste it here.</li></ol>' +
-          '<div style="display:flex;gap:8px;flex-wrap:wrap"><input id="tg-tok" type="password" autocomplete="off" value="8946347004:AAFqpMe7fZ7EVuLDMKQ_J4_jcCUuqrbPn7A" placeholder="' + (c.tokenSet ? "Token saved (paste a new one to change)" : "123456789:AA…") + '" style="flex:1;min-width:240px;margin:0"><button class="btn pri" id="tg-con">' + (on ? "Reconnect" : "Connect") + "</button>" + (on ? '<button class="btn" id="tg-off">Disconnect</button>' : "") + "</div>" +
+          '<div style="display:flex;gap:8px;flex-wrap:wrap"><input id="tg-tok" type="password" autocomplete="off" placeholder="' + (c.tokenSet ? "Token saved (paste a new one to change)" : "123456789:AA…") + '" style="flex:1;min-width:240px;margin:0"><button class="btn pri" id="tg-con">' + (on ? "Reconnect" : "Connect") + "</button>" + (on ? '<button class="btn" id="tg-off">Disconnect</button>' : "") + "</div>" +
           '<small class="muted">The webhook is set for you: ' + esc(c.webhook) + "</small>", on) +
         step(2, "Connect my Telegram (scan QR)", '<p style="margin:0 0 8px;font-size:13.5px">Scan the QR code with your phone camera or Telegram and tap <b>Start</b>. New clients, leads and chats then arrive in your Telegram, and you <b>reply to a message there</b> to answer the customer. Each staff member can do this from <b>My profile</b>.</p>' +
           '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><button class="btn' + (r.me ? "" : " pri") + '" id="tg-me"' + (on ? "" : " disabled") + ">" + ic("send") + (r.me ? "✓ Connected · scan again" : "Scan QR to connect") + "</button>" +
-          (r.me ? '<button class="btn" id="tg-tme">Send test text to my Telegram</button><label class="check" style="margin:0"><input type="checkbox" id="tg-dm"' + (r.meDm ? " checked" : "") + "><span>Send new clients &amp; chats to my Telegram</span></label>" : '<button class="btn" id="tg-tme">Send test text to my Telegram</button>') + "</div>", r.me) +
+          (r.me ? '<button class="btn" id="tg-tme">Send test text to my Telegram</button><label class="check" style="margin:0"><input type="checkbox" id="tg-dm"' + (r.meDm ? " checked" : "") + "><span>Send new clients &amp; chats to my Telegram</span></label>" : "") + "</div>", r.me) +
         step(3, "Connect your team group", '<ol style="margin:0 0 8px 18px;padding:0;font-size:13.5px;line-height:1.7"><li>Create a Telegram group (e.g. <b>Woodex Team</b>) and add your staff.</li><li>Add <b>@' + esc(c.bot || "yourbot") + "</b> to the group and make it an <b>admin</b> (so it can read replies).</li><li>In the group, the Master or a Manager sends <code>/connect</code>.</li></ol>" +
           '<p class="muted" style="margin:0 0 8px;font-size:13px">Then every customer message appears in the group. Staff <b>reply to that message</b> to answer the customer on their channel (website, WhatsApp or Telegram). <code>/ai</code> hands back to the assistant, <code>/close</code> closes the chat.</p>' +
-          '<button class="btn" id="tg-test">Send a test message</button>', !!c.group) +
-        '<div class="card" style="margin-bottom:12px"><div class="card-h"><h3>Staff Bot Commands (Telegram Group &amp; DMs)</h3></div><div class="card-b">' +
-          '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;font-size:13px">' +
-            '<div style="background:var(--card-sub);padding:14px;border-radius:10px;border:1px solid var(--line)"><code style="color:var(--pri);font-weight:700;font-size:13px">Reply to message</code><p class="muted" style="margin:4px 0 0">Sends your text directly to the customer on WhatsApp, Telegram, or Web.</p></div>' +
-            '<div style="background:var(--card-sub);padding:14px;border-radius:10px;border:1px solid var(--line)"><code style="color:var(--pri);font-weight:700;font-size:13px">/status</code><p class="muted" style="margin:4px 0 0">Live lead count, pending replies, and studio operations status.</p></div>' +
-            '<div style="background:var(--card-sub);padding:14px;border-radius:10px;border:1px solid var(--line)"><code style="color:var(--pri);font-weight:700;font-size:13px">/leads</code><p class="muted" style="margin:4px 0 0">View the 5 latest project enquiries with direct contact info.</p></div>' +
-            '<div style="background:var(--card-sub);padding:14px;border-radius:10px;border:1px solid var(--line)"><code style="color:var(--pri);font-weight:700;font-size:13px">/takeover</code><p class="muted" style="margin:4px 0 0">Pauses AI assistant and assigns the chat to you.</p></div>' +
-            '<div style="background:var(--card-sub);padding:14px;border-radius:10px;border:1px solid var(--line)"><code style="color:var(--pri);font-weight:700;font-size:13px">/ai</code><p class="muted" style="margin:4px 0 0">Hands the conversation back to the automated AI assistant.</p></div>' +
-            '<div style="background:var(--card-sub);padding:14px;border-radius:10px;border:1px solid var(--line)"><code style="color:var(--pri);font-weight:700;font-size:13px">/close</code><p class="muted" style="margin:4px 0 0">Marks conversation resolved and updates CRM status.</p></div>' +
-          '</div>' +
-        '</div></div>' +
+          (c.group ? '<button class="btn" id="tg-test">Send a test message</button>' : ""), !!c.group) +
         '<div class="card"><div class="card-h"><h3>Settings</h3></div><div class="card-b">' +
           sw("tg-cus", c.customers, "Customers can chat with the bot", "Same AI agent and Inbox as the website chat and WhatsApp.") +
           '<label style="margin:10px 0 4px;display:block"><b>"Continue on Telegram" option inside the live chat</b></label><div class="seg" id="tg-btn">' + [["auto", "Only when WhatsApp is down"], ["always", "Always"], ["off", "Never"]].map(function (x) { return '<button data-v="' + x[0] + '"' + (c.button === x[0] ? ' class="on"' : "") + ">" + x[1] + "</button>"; }).join("") + "</div>" +
           '<h4 style="margin:16px 0 4px">Team group alerts</h4>' + sw("tg-ac", c.alertChats, "Customer messages", "Post every customer message so staff can reply from Telegram.") + sw("tg-al", c.alertLeads, "New leads") + sw("tg-aa", c.alertAppr, "Changes waiting for Master approval") +
         "</div></div>";
       W.fillIcons($("#tg-b"));
-      $("#tg-con").onclick = function () {
-        var b = this; b.disabled = true;
-        var tok = $("#tg-tok").value.trim() || "8946347004:AAFqpMe7fZ7EVuLDMKQ_J4_jcCUuqrbPn7A";
-        api("tg_connect", { token: tok }).then(function (x) {
-          b.disabled = false;
-          if (!x.ok) return toast(x.error, true);
-          toast("Connected to @" + x.cfg.bot + " ✓");
-          V.telegram(el);
-        });
-      };
+      $("#tg-con").onclick = function () { var b = this; b.disabled = true; api("tg_connect", { token: $("#tg-tok").value.trim() }).then(function (x) { b.disabled = false; if (!x.ok) return toast(x.error, true); toast("Connected to @" + x.cfg.bot + " ✓"); V.telegram(el); }); };
       if ($("#tg-off")) $("#tg-off").onclick = function () { if (confirm("Disconnect Telegram? Customers will no longer reach you there.")) api("tg_disconnect").then(function () { V.telegram(el); }); };
       if ($("#tg-test")) $("#tg-test").onclick = function () { api("tg_test").then(function (x) { toast(x.ok ? "Test sent to the team group ✓" : x.error, !x.ok); }); };
-      if ($("#tg-test-top")) $("#tg-test-top").onclick = function () { api("tg_test").then(function (x) { toast(x.ok ? "Test alert broadcast sent to team group ✓" : x.error, !x.ok); }); };
       $("#tg-me").onclick = function () { linkMe(function () { V.telegram(el); }); };
       if ($("#tg-tme")) $("#tg-tme").onclick = testMe;
       if ($("#tg-dm")) $("#tg-dm").onchange = function () { var x = this; api("tg_dm_set", { on: x.checked }).then(function (y) { if (!y.ok) { x.checked = !x.checked; return toast(y.error, true); } toast(x.checked ? "Alerts will come to your Telegram ✓" : "Personal alerts off"); }); };

@@ -1,202 +1,90 @@
-/* Woodex Admin — AI Assistant & Training Suite (Preline Pro Ocean Architecture)
-   Modular Sub-Nav AI Suite (Persona & Voice, Knowledge & Q&A, Live Simulator, Rules & WhatsApp, Health Check) */
+/* Phase 11: Train AI (shared brain for website live chat + WhatsApp agent) */
 (function () {
-  "use strict";
   var W = window.WXA; if (!W) return;
-  var api = W.api, esc = W.esc, ic = W.ic, toast = W.toast, $ = W.$, $$ = W.$$, head = W.head;
+  var api = W.api, esc = W.esc, ic = W.ic, $ = W.$, $$ = W.$$, toast = W.toast;
+  var DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  var TONES = { designer: "Professional designer (recommended)", friendly: "Friendly", professional: "Professional", sales: "Sales-focused", simple: "Very simple" };
+  var css = document.createElement("style");
+  css.textContent = ".tr{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:18px;align-items:start}@media(max-width:1100px){.tr{grid-template-columns:1fr}}" +
+    ".tr-tabs{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:14px}.tr-tabs button{border:1px solid var(--line,#e5e7eb);background:var(--card,#fff);color:inherit;border-radius:999px;padding:7px 14px;font:inherit;font-size:13px;cursor:pointer}.tr-tabs button.on{background:#0c1628;color:#fff;border-color:#0c1628}" +
+    ".tr-p{display:none}.tr-p.on{display:block}.tr-p label{display:block;margin-bottom:12px}.tr-qa{border:1px solid var(--line,#e5e7eb);border-radius:10px;padding:10px;margin-bottom:8px;display:grid;grid-template-columns:1fr auto;gap:6px}.tr-qa input,.tr-qa textarea{width:100%}.tr-qa .x{align-self:start}" +
+    ".tr-days{display:flex;gap:6px;flex-wrap:wrap}.tr-days label{display:flex;gap:4px;align-items:center;margin:0;border:1px solid var(--line,#e5e7eb);border-radius:8px;padding:5px 9px;font-size:13px}" +
+    ".tr-t{position:sticky;top:84px;border:1px solid var(--line,#e5e7eb);border-radius:14px;background:var(--card,#fff);display:flex;flex-direction:column;height:560px;overflow:hidden}.tr-t h4{margin:0;padding:12px 14px;border-bottom:1px solid var(--line,#e5e7eb);display:flex;gap:8px;align-items:center;font-size:14px}.tr-t h4 select{margin-left:auto;width:auto;font-size:12px;padding:4px 6px}" +
+    ".tr-m{flex:1;overflow:auto;padding:14px;background:#efeae2;display:flex;flex-direction:column;gap:8px}.tr-b{max-width:85%;padding:9px 12px;border-radius:12px;font:400 14.5px/1.55 Inter,system-ui,sans-serif;white-space:pre-wrap;word-break:break-word;color:#111b21;box-shadow:0 1px 1px rgba(0,0,0,.08);position:relative}.tr-b.u{align-self:flex-end;background:#d9fdd3;border-bottom-right-radius:4px}.tr-b.a{align-self:flex-start;background:#fff;border-bottom-left-radius:4px}.tr-b.s{align-self:center;background:#fff3c4;color:#5b4a00;font-size:12.5px;box-shadow:none}.tr-b.err{align-self:center;background:#fee4e2;color:#912018;font-size:13px}.tr-b .cp{display:block;margin-top:6px;font-size:11.5px;color:#667085;background:none;border:0;padding:0;cursor:pointer}.tr-b .cp:hover{color:#111b21}html.dark .tr-m{background:#0b141a}html.dark .tr-b{color:#e9edef}html.dark .tr-b.u{background:#005c4b}html.dark .tr-b.a{background:#202c33}html.dark .tr-b.s{background:#3a3212;color:#f5e6a8}html.dark .tr-b.err{background:#55160c;color:#fecdca}html.dark .tr-b .cp{color:#8696a0}" +
+    ".tr-in{display:flex;gap:6px;padding:10px;border-top:1px solid var(--line,#e5e7eb)}.tr-in input{flex:1}.tr-code{font-family:monospace;background:var(--soft,#f3f4f6);padding:8px 10px;border-radius:8px;word-break:break-all;display:flex;gap:8px;align-items:center;justify-content:space-between;font-size:12.5px}.tr-steps li{margin-bottom:6px}";
+  document.head.appendChild(css);
 
   W.VIEWS.train = function (el) {
-    el.innerHTML = head("AI Assistant & Knowledge Training", "AI Assistant",
-      '<button class="btn" id="ai-reindex-btn">' + ic("refresh-cw") + 'Re-index knowledge base</button>' +
-      '<button class="btn pri btn-preline-cyan" id="ai-save-btn">' + ic("check") + 'Save AI training</button>') +
-
-      '<!-- Modular Sub-Navigation Bar -->' +
-      '<div class="card" style="margin-bottom:20px;background:#111318;border:1px solid #20242f">' +
-        '<div class="card-b" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:12px 18px">' +
-          '<div class="seg" id="ai-subnav" style="background:#0b0d13;border-color:#1e2430">' +
-            '<button class="on" data-tab="persona">' + ic("user") + 'Persona & Voice</button>' +
-            '<button data-tab="knowledge">' + ic("book-open") + 'Knowledge & FAQs</button>' +
-            '<button data-tab="simulator">' + ic("sparkles") + 'Test Simulator</button>' +
-            '<button data-tab="rules">' + ic("send") + 'Rules & WhatsApp</button>' +
-            '<button data-tab="health">' + ic("heart-pulse") + 'Health Check</button>' +
-          '</div>' +
-          '<div style="display:flex;align-items:center;gap:8px">' +
-            '<span class="badge ok" style="font-size:11px">● AI Agent Active</span>' +
-            '<span class="badge navy" style="font-size:11px">GPT-4o Mini · Fine-Tuned</span>' +
-          '</div>' +
-        '</div>' +
-      '</div>' +
-
-      '<div id="ai-tab-content"></div>';
-
+    el.innerHTML = W.head("AI agent", "AI agent · training", '<button class="btn pri" id="tr-save">' + ic("check") + "Save training</button>") + '<div class="card" id="ld-card" style="padding:18px">Loading…</div>';
     W.fillIcons(el);
-
-    var curTab = "persona";
-
-    var faqs = [
-      { q: "What is your turnkey interior design rate per sq ft?", a: "Our premium turnkey interior design and execution in Lahore typically ranges from PKR 2,800 to 4,500 per sq ft, covering complete 3D design, custom cabinetry, false ceiling, lighting moods, and joinery." },
-      { q: "Do you offer free on-site measurements?", a: "Yes, we provide complimentary on-site measurement consultations across Lahore, Islamabad, and Rawalpindi." },
-      { q: "What materials do you use for kitchen cabinetry?", a: "We exclusively utilize high-density moisture-resistant MDF, imported German UV acrylic sheets, Blum soft-close European hardware, and Spanish quartz/granite countertops." },
-      { q: "What is the warranty on custom joinery & wardrobes?", a: "All Woodex customized joinery, sliding wardrobes, and cabinetry come with a 5-year structural warranty and lifetime hardware warranty on Blum fittings." }
-    ];
-
-    function drawTab() {
-      var box = $("#ai-tab-content");
-      if (!box) return;
-
-      if (curTab === "persona") {
-        box.innerHTML = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">' +
-          '<div class="card" style="background:#111318;border:1px solid #20242f;border-radius:14px;padding:20px">' +
-            '<div class="card-h" style="padding:0 0 14px;border-bottom:1px solid #1a1e27"><h3>' + ic("user") + ' Tone & Personality</h3></div>' +
-            '<div style="display:flex;flex-direction:column;gap:14px;margin-top:16px">' +
-              '<label>Tone of Voice<select id="ai-tone">' +
-                '<option selected>Professional & Elegant Luxury Designer</option>' +
-                '<option>Friendly & Approachable Consultant</option>' +
-                '<option>Direct Technical Architectural Advisor</option>' +
-              '</select></label>' +
-              '<label>Language Mode<select id="ai-lang">' +
-                '<option selected>Auto-Detect: English, Urdu & Roman Urdu</option>' +
-                '<option>Strict English Only</option>' +
-                '<option>Bilingual Urdu & English</option>' +
-              '</select></label>' +
-              '<label>Custom Greeting Template<textarea id="ai-greet" rows="3">Assalam-o-Alaikum! Welcome to Woodex Interior Studio. How may I assist you with your residential or commercial space today?</textarea></label>' +
-            '</div>' +
-          '</div>' +
-
-          '<div class="card" style="background:#111318;border:1px solid #20242f;border-radius:14px;padding:20px">' +
-            '<div class="card-h" style="padding:0 0 14px;border-bottom:1px solid #1a1e27"><h3>' + ic("shield") + ' Safety & Boundaries</h3></div>' +
-            '<div style="display:flex;flex-direction:column;gap:14px;margin-top:16px">' +
-              '<label>Topics to Avoid<textarea rows="3" placeholder="e.g. Do not commit to unverified fixed discounts without site survey."></textarea></label>' +
-              '<label>Lead Handover Trigger<textarea rows="2">When customer asks for exact quote, phone call, or site measurement -> prompt for phone number and name.</textarea></label>' +
-              '<div style="display:flex;align-items:center;gap:10px;margin-top:8px">' +
-                '<input type="checkbox" id="ai-auto-crm" checked style="width:16px;height:16px;accent-color:#00b8db">' +
-                '<label for="ai-auto-crm" style="margin:0;font-size:13px;color:#f9fafb;cursor:pointer">Automatically create new CRM lead on phone number capture</label>' +
-              '</div>' +
-            '</div>' +
-          '</div>' +
-        '</div>';
-      } else if (curTab === "knowledge") {
-        box.innerHTML = '<div class="card" style="background:#111318;border:1px solid #20242f;border-radius:14px;padding:20px">' +
-          '<div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #1a1e27;padding-bottom:14px;margin-bottom:16px">' +
-            '<div><b style="font-size:16px;color:#f9fafb">Trained FAQs & Studio Facts</b><small class="muted" style="display:block">The AI automatically references these answers when answering inquiries</small></div>' +
-            '<button class="btn sm pri btn-preline-cyan" id="ai-add-faq">' + ic("plus") + 'Add Q&A Pair</button>' +
-          '</div>' +
-          '<div style="display:flex;flex-direction:column;gap:12px">' +
-            faqs.map(function(f, idx) {
-              return '<div style="background:#0b0d13;border:1px solid #1e2430;border-radius:10px;padding:14px 16px">' +
-                '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">' +
-                  '<b style="color:#00d3f2;font-size:13.5px">Q: ' + esc(f.q) + '</b>' +
-                  '<button class="btn sm ghost" style="color:#ef4444">' + ic("trash") + '</button>' +
-                '</div>' +
-                '<p style="color:#cbd5e1;font-size:12.5px;margin:0;line-height:1.5">A: ' + esc(f.a) + '</p>' +
-              '</div>';
-            }).join("") +
-          '</div>' +
-        '</div>';
-      } else if (curTab === "simulator") {
-        box.innerHTML = '<div class="card" style="background:#111318;border:1px solid #20242f;border-radius:14px;padding:20px;max-width:800px;margin:0 auto">' +
-          '<div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #1a1e27;padding-bottom:14px;margin-bottom:16px">' +
-            '<div style="display:flex;align-items:center;gap:10px">' +
-              '<span class="kpi-ic" style="background:rgba(0,184,219,0.15);color:#00d3f2">' + ic("sparkles") + '</span>' +
-              '<div><b style="font-size:15px;color:#f9fafb">Live AI Chat Simulator</b><small class="muted" style="display:block">Test responses before deploying to the public website & WhatsApp</small></div>' +
-            '</div>' +
-            '<button class="btn sm" id="sim-clear">' + ic("refresh-cw") + 'Clear chat</button>' +
-          '</div>' +
-          '<div id="sim-history" style="height:360px;overflow-y:auto;background:#0b0d13;border:1px solid #1e2430;border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:12px;margin-bottom:14px">' +
-            '<div style="display:flex;flex-direction:column;align-items:flex-end;max-width:80%;align-self:flex-end">' +
-              '<div style="background:#00b8db;color:#04222b;padding:10px 14px;border-radius:12px;font-size:13.5px;font-weight:500">' +
-                'Assalam-o-Alaikum! Welcome to Woodex Interior Studio. How may I assist you with your residential or commercial space today?' +
-              '</div>' +
-              '<small style="color:#64748b;font-size:10.5px;margin-top:3px">AI Assistant</small>' +
-            '</div>' +
-          '</div>' +
-          '<div style="display:flex;gap:10px">' +
-            '<input type="text" id="sim-input" placeholder="Ask a question (e.g. 10 Marla residence interior price?)..." style="flex:1;margin:0;background:#181c24;border-color:#262a33">' +
-            '<button class="btn pri btn-preline-cyan" id="sim-send-btn">' + ic("send") + 'Test Ask</button>' +
-          '</div>' +
-        '</div>';
-      } else if (curTab === "rules") {
-        box.innerHTML = '<div class="card" style="background:#111318;border:1px solid #20242f;border-radius:14px;padding:20px">' +
-          '<div class="card-h" style="padding:0 0 14px;border-bottom:1px solid #1a1e27"><h3>' + ic("send") + ' Automated Follow-up Rules</h3></div>' +
-          '<p class="muted" style="font-size:13px;margin:12px 0 16px">Configure automatic notification sequences for inbound leads across WhatsApp and Email.</p>' +
-          '<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">' +
-            '<div style="background:#0b0d13;border:1px solid #1e2430;border-radius:10px;padding:16px">' +
-              '<b style="color:#f9fafb;font-size:14px;display:block;margin-bottom:4px">Instant Lead Welcome (Day 0)</b>' +
-              '<small class="muted">Sends 2 minutes after form submission on public website.</small>' +
-              '<div style="margin-top:10px"><span class="badge ok">Active</span></div>' +
-            '</div>' +
-            '<div style="background:#0b0d13;border:1px solid #1e2430;border-radius:10px;padding:16px">' +
-              '<b style="color:#f9fafb;font-size:14px;display:block;margin-bottom:4px">Quotation Follow-up (Day 3)</b>' +
-              '<small class="muted">Checks in if quotation is viewed without client response.</small>' +
-              '<div style="margin-top:10px"><span class="badge ok">Active</span></div>' +
-            '</div>' +
-          '</div>' +
-        '</div>';
-      } else if (curTab === "health") {
-        box.innerHTML = '<div class="card" style="background:#111318;border:1px solid #20242f;border-radius:14px;padding:20px">' +
-          '<div class="card-h" style="padding:0 0 14px;border-bottom:1px solid #1a1e27"><h3>' + ic("heart-pulse") + ' AI Model Health & Latency Diagnostics</h3></div>' +
-          '<div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:16px;margin:18px 0">' +
-            '<div style="background:#0b0d13;border:1px solid #1e2430;border-radius:10px;padding:16px"><small class="muted">Average Response Time</small><b style="font-size:24px;color:#10b981;display:block;margin-top:4px">620 ms</b></div>' +
-            '<div style="background:#0b0d13;border:1px solid #1e2430;border-radius:10px;padding:16px"><small class="muted">Knowledge Retrieval Accuracy</small><b style="font-size:24px;color:#00d3f2;display:block;margin-top:4px">98.4%</b></div>' +
-            '<div style="background:#0b0d13;border:1px solid #1e2430;border-radius:10px;padding:16px"><small class="muted">Monthly Token Usage</small><b style="font-size:24px;color:#f9fafb;display:block;margin-top:4px">42,850</b></div>' +
-          '</div>' +
-          '<span class="badge ok">All 8 AI Knowledge Channels Operational</span>' +
-        '</div>';
+    api("chat_cfg_get").then(function (r) {
+      if (!r.ok) { (el.querySelector("#ld-card") || el.querySelector(".card")).textContent = r.error; return; }
+      var c = r.cfg, qa = (c.qa || []).slice(), hook = location.origin + "/api/whatsapp.php";
+      (el.querySelector("#ld-card") || el.querySelector(".card")).outerHTML = (r.aiReady ? "" : '<div class="banner" style="margin-bottom:12px">Add an AI key first in <a href="#/posts">Blog &amp; insights → AI settings</a>. Without it the assistant cannot answer.</div>') +
+        '<div class="tr"><div class="card" style="padding:18px"><div class="tr-tabs">' +
+        ["Knowledge & tone", "Q&A pairs", "Prices", "Do not answer", "Hours", "WhatsApp"].map(function (t, i) { return '<button data-i="' + i + '"' + (i ? "" : ' class="on"') + ">" + t + "</button>"; }).join("") + "</div>" +
+        // 0 knowledge
+        '<div class="tr-p on"><label>Tone<select id="t-tone">' + Object.keys(TONES).map(function (k) { return '<option value="' + k + '"' + (c.tone === k ? " selected" : "") + ">" + TONES[k] + "</option>"; }).join("") + "</select></label>" +
+        '<label>Extra style note <small class="muted">(optional, e.g. "Call the customer Sir/Madam")</small><input id="t-tn" value="' + esc(c.toneNote || "") + '"></label>' +
+        '<label>What the AI should know <small class="muted">(services, areas, process, policies)</small><textarea id="t-k" rows="12">' + esc(c.knowledge) + "</textarea></label>" +
+        '<p class="muted" style="font-size:12.5px">It replies in the customer\'s language (English, Urdu or Roman Urdu). Published FAQs are added automatically.</p></div>' +
+        // 1 qa
+        '<div class="tr-p"><p class="muted" style="margin-top:0">Add common questions with your exact answer. The AI uses these first.</p><div id="t-qa"></div><button class="btn sm" id="t-qa-add">' + ic("plus") + "Add Q&amp;A</button></div>" +
+        // 2 prices
+        '<label class="check" style="margin-bottom:10px"><input type="checkbox" id="t-np"' + (c.noPrices !== false ? " checked" : "") + '> <b>Never quote prices</b> — the AI offers a site visit or a detailed quotation instead (rates below are ignored while this is on)</label>' +
+        '<div class="tr-p"><label>Starting rates the AI may share <small class="muted">(one per line; it always adds "final quote after site visit")</small><textarea id="t-pr" rows="10" placeholder="Interior design (home): from Rs 150 per sq ft&#10;Office fit-out: from Rs 2,500 per sq ft&#10;3D views: from Rs 25,000 per room">' + esc(c.prices || "") + '</textarea></label><p class="muted" style="font-size:12.5px">Leave empty and the AI will never quote numbers.</p></div>' +
+        // 3 avoid
+        '<div class="tr-p"><label>Topics the AI must not answer <small class="muted">(one per line; it hands these to the team)</small><textarea id="t-av" rows="8">' + esc(c.avoid || "") + "</textarea></label></div>" +
+        // 4 hours
+        '<div class="tr-p"><label>Working days</label><div class="tr-days" style="margin:-6px 0 12px">' + DAYS.map(function (d, i) { return '<label><input type="checkbox" class="t-d" value="' + i + '"' + ((c.days || []).indexOf(i) > -1 ? " checked" : "") + ">" + d + "</label>"; }).join("") + "</div>" +
+        '<div style="display:flex;gap:12px"><label style="flex:1">Opens<input type="time" id="t-of" value="' + esc(c.openFrom) + '"></label><label style="flex:1">Closes<input type="time" id="t-ot" value="' + esc(c.openTo) + '"></label></div>' +
+        '<label>Hours text shown to customers<input id="t-h" value="' + esc(c.hours) + '"></label>' +
+        '<label>After-hours reply <small class="muted">(used when no AI answer is available)</small><textarea id="t-ah" rows="3">' + esc(c.afterHours) + "</textarea></label></div>" +
+        // 5 whatsapp
+        '<div class="tr-p"><label class="check"><input type="checkbox" id="t-wa"' + (c.waAgent ? " checked" : "") + "> Turn on the WhatsApp AI agent</label>" +
+        '<label>First reply when AI is not available<textarea id="t-wg" rows="2">' + esc(c.waGreeting) + "</textarea></label>" +
+        "<h4 style='margin:14px 0 6px'>Connect in Meta (one time)</h4><ol class='tr-steps' style='padding-left:18px;font-size:13.5px'>" +
+        "<li>Open <b>developers.facebook.com</b> → your app → <b>WhatsApp → API Setup</b>. Copy the <b>Phone number ID</b> and a <b>permanent access token</b> into Admin → Settings → Integrations → WhatsApp.</li>" +
+        "<li>Go to <b>WhatsApp → Configuration → Webhook → Edit</b> and paste:<div class='tr-code' style='margin:6px 0'><span>" + esc(hook) + "</span><button class='btn sm' data-cp='" + esc(hook) + "'>Copy</button></div>Verify token:<div class='tr-code' style='margin:6px 0'><span>" + esc(c.waVerify || "(save once to create)") + "</span>" + (c.waVerify ? "<button class='btn sm' data-cp='" + esc(c.waVerify) + "'>Copy</button>" : "") + "</div></li>" +
+        "<li>Click <b>Verify and save</b>, then under Webhook fields <b>Subscribe</b> to <b>messages</b>.</li>" +
+        "<li>Copy the <b>App secret</b> (App settings → Basic) here for security:</li></ol>" +
+        '<label>App secret<input id="t-ws" type="password" autocomplete="off" value="' + esc(c.waSecret || "") + '" placeholder="Required — webhook refused without it"></label>' +
+        '<p class="muted" style="font-size:12.5px">WhatsApp chats appear in Live chat with a green WA tag. Reply there to take over. WhatsApp only allows free replies within 24 hours of the customer\'s last message.</p></div>' +
+        "</div>" +
+        // test box
+        '<div class="tr-t"><h4>' + ic("sparkles") + 'Test the AI<select id="t-ch"><option value="web">Website chat</option><option value="wa">WhatsApp</option></select></h4><div class="tr-m" id="t-m"><div class="tr-b s">Ask what a customer would ask. <b>Save first</b>: the test uses your saved training. Nothing here is stored.</div></div>' +
+        '<form class="tr-in" id="t-f"><input placeholder="e.g. 10 marla ghar ka interior kitne ka?" id="t-i"><button class="btn pri sm">' + ic("send") + '</button></form><div style="padding:0 10px 10px"><button class="btn sm" id="t-clr">Clear</button></div></div></div>';
+      W.fillIcons(el);
+      var tabs = $$(".tr-tabs button", el), panes = $$(".tr-p", el);
+      tabs.forEach(function (b) { b.onclick = function () { tabs.forEach(function (x, i) { x.classList.toggle("on", x === b); panes[i].classList.toggle("on", x === b); }); }; });
+      $$("[data-cp]", el).forEach(function (b) { b.onclick = function () { navigator.clipboard.writeText(b.dataset.cp).then(function () { toast("Copied ✓"); }); }; });
+      function drawQa() {
+        $("#t-qa").innerHTML = qa.length ? qa.map(function (x, i) { return '<div class="tr-qa" data-i="' + i + '"><div><input class="q" placeholder="Question" value="' + esc(x.q) + '"><textarea class="a" rows="2" placeholder="Answer" style="margin-top:6px">' + esc(x.a) + '</textarea></div><button class="btn sm x" title="Remove">' + ic("x") + "</button></div>"; }).join("") : '<p class="muted">No Q&amp;A yet.</p>';
+        W.fillIcons($("#t-qa"));
+        $$(".tr-qa", el).forEach(function (row) { var i = +row.dataset.i; row.querySelector(".q").oninput = function () { qa[i].q = this.value; }; row.querySelector(".a").oninput = function () { qa[i].a = this.value; }; row.querySelector(".x").onclick = function () { qa.splice(i, 1); drawQa(); }; });
       }
-
-      W.fillIcons(box);
-
-      // Simulator interactive send
-      var simSend = $("#sim-send-btn");
-      var simInp = $("#sim-input");
-      if (simSend && simInp) {
-        var doSim = function () {
-          var q = simInp.value.trim();
-          if (!q) return;
-          var h = $("#sim-history");
-          var uMsg = document.createElement("div");
-          uMsg.style.cssText = "display:flex;flex-direction:column;align-items:flex-start;max-width:80%;align-self:flex-start";
-          uMsg.innerHTML = '<div style="background:#1c2333;color:#f9fafb;padding:10px 14px;border-radius:12px;font-size:13.5px;border:1px solid rgba(255,255,255,0.08)">' + esc(q) + '</div><small style="color:#64748b;font-size:10.5px;margin-top:3px">You (Customer)</small>';
-          h.appendChild(uMsg);
-          simInp.value = "";
-          h.scrollTop = h.scrollHeight;
-
-          setTimeout(function () {
-            var aiReply = "Our premium turnkey interior design and execution in Lahore typically ranges from PKR 2,800 to 4,500 per sq ft, covering complete 3D design, custom cabinetry, false ceiling, lighting moods, and joinery. Would you like to schedule a site visit?";
-            var aMsg = document.createElement("div");
-            aMsg.style.cssText = "display:flex;flex-direction:column;align-items:flex-end;max-width:80%;align-self:flex-end";
-            aMsg.innerHTML = '<div style="background:#00b8db;color:#04222b;padding:10px 14px;border-radius:12px;font-size:13.5px;font-weight:500">' + esc(aiReply) + '</div><small style="color:#64748b;font-size:10.5px;margin-top:3px">AI Assistant (99% confidence)</small>';
-            h.appendChild(aMsg);
-            h.scrollTop = h.scrollHeight;
-          }, 400);
-        };
-        simSend.onclick = doSim;
-        simInp.onkeydown = function (e) { if (e.key === "Enter") doSim(); };
-      }
-
-      if ($("#sim-clear")) {
-        $("#sim-clear").onclick = function () {
-          $("#sim-history").innerHTML = "";
-          toast("Chat simulator cleared.");
-        };
-      }
-    }
-
-    drawTab();
-
-    // Tab switching
-    $$("#ai-subnav button").forEach(function (b) {
-      b.onclick = function () {
-        $$("#ai-subnav button").forEach(function (x) { x.classList.remove("on"); });
-        b.classList.add("on");
-        curTab = b.dataset.tab;
-        drawTab();
+      drawQa();
+      $("#t-qa-add").onclick = function () { qa.push({ q: "", a: "" }); drawQa(); var r = $$(".tr-qa .q", el); r[r.length - 1].focus(); };
+      $("#tr-save").onclick = function () {
+        var b = this; b.disabled = true;
+        api("chat_cfg_save", { cfg: { noPrices: $("#t-np").checked, tone: $("#t-tone").value, toneNote: $("#t-tn").value, knowledge: $("#t-k").value, qa: qa, prices: $("#t-pr").value, avoid: $("#t-av").value,
+          days: $$(".t-d:checked", el).map(function (x) { return +x.value; }), openFrom: $("#t-of").value, openTo: $("#t-ot").value, hours: $("#t-h").value, afterHours: $("#t-ah").value,
+          waAgent: $("#t-wa").checked, waGreeting: $("#t-wg").value, waSecret: $("#t-ws").value } })
+          .then(function (x) { b.disabled = false; if (!x.ok) return toast(x.error, true); toast("Training saved ✓"); if (!c.waVerify && x.cfg.waVerify) W.VIEWS.train(el); c = x.cfg; });
+      };
+      var turns = [];
+      function bub(cls, t) { var d = document.createElement("div"); d.className = "tr-b " + cls; d.textContent = t; $("#t-m").appendChild(d); $("#t-m").scrollTop = 1e6; return d; }
+      $("#t-clr").onclick = function () { turns = []; $("#t-m").innerHTML = ""; };
+      $("#t-f").onsubmit = function (e) {
+        e.preventDefault(); var t = $("#t-i").value.trim(); if (!t) return; $("#t-i").value = ""; bub("u", t); turns.push({ who: "user", text: t });
+        var w = bub("s", "typing…");
+        api("chat_test", { turns: turns, channel: $("#t-ch").value }).then(function (x) {
+          w.remove(); if (!x.ok) return bub("err", "⚠ " + (x.error || "AI did not answer") + " — check Settings → System check");
+          var d = bub("a", x.reply); if (x.lead || x.human) { var lc = document.createElement("div"); lc.className = "tr-lead"; lc.textContent = (x.lead ? "Saved to CRM → " + Object.keys(x.lead).filter(function (k) { return x.lead[k]; }).map(function (k) { return ({ name: "Name", area: "Area", type: "Project", budget: "Budget" })[k] + ": " + x.lead[k]; }).join(" · ") : "") + (x.human ? (x.lead ? "   " : "") + "⚑ Hands over to the team" : ""); $("#t-m").appendChild(lc); }
+          var cp = document.createElement("button"); cp.className = "cp"; cp.type = "button"; cp.textContent = "Copy reply"; cp.onclick = function () { navigator.clipboard.writeText(x.reply).then(function () { toast("Copied ✓"); }); }; d.appendChild(cp); turns.push({ who: "ai", text: x.reply }); if (x.human) bub("s", "→ This chat would be flagged “needs you” for the team");
+        });
       };
     });
-
-    $("#ai-save-btn").onclick = function () { toast("AI training and persona configurations saved live!"); };
-    $("#ai-reindex-btn").onclick = function () { toast("Re-indexing knowledge base & website FAQs…"); };
   };
-  W.VIEWS.aicenter = W.VIEWS.train;
-  W.VIEWS.aireport = W.VIEWS.train;
+  var st = document.createElement("style"); st.textContent = ".tr-lead{align-self:flex-start;font-size:11.5px;background:#ecfdf3;color:#05603a;border:1px dashed #6ce9a6;border-radius:8px;padding:4px 9px;margin:-2px 0 6px;max-width:85%}"; document.head.appendChild(st);
 })();

@@ -11,9 +11,7 @@
   function url(rel) { return "/" + rel.replace(/index\.html$/, ""); }
 
   V.seoagent = function (el) {
-    el.innerHTML = W.head("AI SEO Agent", "Website / SEO Agent", '<button class="btn pri btn-preline-cyan" id="sa-scan">' + ic("search") + "Scan all pages</button>") +
-      '<div class="seg" style="margin-bottom:16px"><a href="#/seo">Overview &amp; Scores</a><a class="on" href="#/seoagent">' + ic("sparkles") + 'AI SEO Agent (Multi-Model)</a><a href="#/redirects">Redirects</a><a href="/sitemap.xml" target="_blank">Sitemap.xml ↗</a></div>' +
-      '<div id="sa-b"><div class="card"><div class="empty">Loading…</div></div></div>';
+    el.innerHTML = W.head("SEO agent", "Website / SEO agent", '<button class="btn pri" id="sa-scan">' + ic("search") + "Scan all pages</button>") + '<div id="sa-b"><div class="card"><div class="empty">Loading…</div></div></div>';
     $("#sa-scan").onclick = scan; W.fillIcons(el);
     api("sag_get").then(function (r) { if (!r.ok) { $("#sa-b").innerHTML = '<div class="card"><div class="empty">' + esc(r.error) + "</div></div>"; return; } D = r; draw(); });
   };

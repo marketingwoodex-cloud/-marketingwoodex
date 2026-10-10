@@ -1,91 +1,30 @@
-/* Woodex Admin — System Utilities & Backups (Preline Pro Ocean Architecture)
-   v3 Backups, Database Inspector, File Explorer, Maintenance Mode, Health Diagnostics */
+/* Woodex Admin — P16 System check: finds live-server problems (PHP, DB, SSL, sign-in). */
 (function () {
   "use strict";
-  var W = window.WXA; if (!W) return;
-  var api = W.api, esc = W.esc, ic = W.ic, toast = W.toast, $ = W.$, $$ = W.$$, head = W.head;
-
+  var W = window.WXA, api = W.api, bapi = W.bapi, esc = W.esc, ic = W.ic, $ = W.$, head = W.head;
+  function row(c) {
+    return '<tr><td style="width:34px">' + (c.ok ? '<span style="color:#16a34a;font-weight:700">✓</span>' : '<span style="color:#dc2626;font-weight:700">✗</span>') +
+      "</td><td><b>" + esc(c.name) + '</b><div class="muted" style="font-size:12px">' + esc(c.detail || "") + "</div></td><td>" +
+      (c.ok ? '<span class="muted">OK</span>' : '<span style="color:#b45309;font-size:13px">' + esc(c.fix || "") + "</span>") + "</td></tr>";
+  }
   W.VIEWS.system = function (el) {
-    el.innerHTML = head("System Utilities & Maintenance", "System",
-      '<button class="btn" id="sys-backup-btn">' + ic("download") + 'Download Full v3 Backup (.zip)</button>' +
-      '<button class="btn pri btn-preline-cyan" id="sys-optimize-btn">' + ic("zap") + 'Optimize Database</button>') +
-
-      '<!-- System Health Header -->' +
-      '<div style="display:grid;grid-template-columns:repeat(4, 1fr);gap:16px;margin-bottom:20px">' +
-        '<div class="card" style="background:#111318;border:1px solid #20242f;border-radius:12px;padding:16px">' +
-          '<small class="muted" style="display:block">System Status</small>' +
-          '<b style="font-size:18px;color:#10b981;display:flex;align-items:center;gap:6px;margin-top:4px">' + ic("check-circle") + 'Operational</b>' +
-        '</div>' +
-        '<div class="card" style="background:#111318;border:1px solid #20242f;border-radius:12px;padding:16px">' +
-          '<small class="muted" style="display:block">PHP Version</small>' +
-          '<b style="font-size:18px;color:#f9fafb;margin-top:4px;display:block">8.2.18 / FastCGI</b>' +
-        '</div>' +
-        '<div class="card" style="background:#111318;border:1px solid #20242f;border-radius:12px;padding:16px">' +
-          '<small class="muted" style="display:block">Database Size</small>' +
-          '<b style="font-size:18px;color:#00d3f2;margin-top:4px;display:block">1.24 MB (JSON Storage)</b>' +
-        '</div>' +
-        '<div class="card" style="background:#111318;border:1px solid #20242f;border-radius:12px;padding:16px">' +
-          '<small class="muted" style="display:block">Total Public Pages</small>' +
-          '<b style="font-size:18px;color:#f9fafb;margin-top:4px;display:block">147 Live Pages</b>' +
-        '</div>' +
-      '</div>' +
-
-      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">' +
-        '<!-- Database & Cache Maintenance -->' +
-        '<div class="card" style="background:#111318;border:1px solid #20242f;border-radius:14px;padding:20px">' +
-          '<div class="card-h" style="padding:0 0 14px;border-bottom:1px solid #1a1e27"><h3>' + ic("database") + ' Database & Cache Controls</h3></div>' +
-          '<div style="display:flex;flex-direction:column;gap:14px;margin-top:16px">' +
-            '<div style="display:flex;align-items:center;justify-content:space-between;padding:12px;background:#0b0d13;border:1px solid #1e2430;border-radius:10px">' +
-              '<div><b style="color:#f9fafb;font-size:13.5px">Flush Static Cache</b><small class="muted" style="display:block">Purges temporary browser render caches</small></div>' +
-              '<button class="btn sm" id="btn-purge-cache">' + ic("refresh-cw") + 'Purge</button>' +
-            '</div>' +
-            '<div style="display:flex;align-items:center;justify-content:space-between;padding:12px;background:#0b0d13;border:1px solid #1e2430;border-radius:10px">' +
-              '<div><b style="color:#f9fafb;font-size:13.5px">Re-index Audit Trail</b><small class="muted" style="display:block">Compact and verify audit log integrity</small></div>' +
-              '<button class="btn sm" id="btn-reindex">' + ic("shield") + 'Re-index</button>' +
-            '</div>' +
-            '<div style="display:flex;align-items:center;justify-content:space-between;padding:12px;background:#0b0d13;border:1px solid #1e2430;border-radius:10px">' +
-              '<div><b style="color:#f9fafb;font-size:13.5px">Maintenance Mode</b><small class="muted" style="display:block">Displays temporary maintenance splash to visitors</small></div>' +
-              '<input type="checkbox" id="sys-maint" style="width:20px;height:20px;accent-color:#00b8db">' +
-            '</div>' +
-          '</div>' +
-        '</div>' +
-
-        '<!-- Hostinger & Production Packages -->' +
-        '<div class="card" style="background:#111318;border:1px solid #20242f;border-radius:14px;padding:20px">' +
-          '<div class="card-h" style="padding:0 0 14px;border-bottom:1px solid #1a1e27"><h3>' + ic("archive") + ' Master Production Packages</h3></div>' +
-          '<div style="display:flex;flex-direction:column;gap:12px;margin-top:16px">' +
-            '<div style="padding:12px;background:#0b0d13;border:1px solid #1e2430;border-radius:10px">' +
-              '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">' +
-                '<b style="color:#f9fafb;font-size:13px">Woodex Live P29-v2.1.zip (29.0 MB)</b>' +
-                '<span class="badge ok">Latest Live</span>' +
-              '</div>' +
-              '<small class="muted" style="display:block;margin-bottom:8px">Full 147 pages + Admin v2.1 Pro Suite + Preline Dark Obsidian &amp; Cyan + Flat Hostinger root</small>' +
-              '<a class="btn sm pri btn-preline-cyan" href="https://github.com/marketingwoodex-cloud/-marketingwoodex/raw/arena/8a776c65-marketingwoodex/woodex-live-p29-v2.1/Woodex%20Live%20P29-v2.1.zip" target="_blank">' + ic("download") + 'Direct Download Link (29 MB)</a>' +
-            '</div>' +
-            '<div style="padding:12px;background:#0b0d13;border:1px solid #1e2430;border-radius:10px">' +
-              '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">' +
-                '<b style="color:#f9fafb;font-size:13px">woodex-live-p23.zip (27.3 MB)</b>' +
-                '<span class="badge navy">Archive Baseline</span>' +
-              '</div>' +
-              '<small class="muted" style="display:block;margin-bottom:8px">Previous verified production baseline archive</small>' +
-              '<a class="btn sm" href="https://github.com/marketingwoodex-cloud/-marketingwoodex/raw/arena/8a776c65-marketingwoodex/woodex-live-P23/woodex-live-p23.zip" target="_blank">' + ic("download") + 'Download P23 Baseline</a>' +
-            '</div>' +
-          '</div>' +
-        '</div>' +
-      '</div>';
-
-    W.fillIcons(el);
-
-    $("#sys-backup-btn").onclick = function () {
-      toast("Generating live database snapshot...");
-      window.open("https://github.com/marketingwoodex-cloud/-marketingwoodex/raw/arena/8a776c65-marketingwoodex/woodex-live-p29-v2.1/Woodex%20Live%20P29-v2.1.zip", "_blank");
-    };
-    $("#sys-optimize-btn").onclick = function () { toast("JSON storage tables compacted & optimized."); };
-    $("#btn-purge-cache").onclick = function () { toast("Static render cache purged successfully."); };
-    $("#btn-reindex").onclick = function () { toast("Security audit trail verified and re-indexed."); };
-    $("#sys-maint").onchange = function (e) {
-      toast(e.target.checked ? "Maintenance mode activated for public visitors." : "Maintenance mode disabled. Site is live.");
-    };
+    el.innerHTML = head("System check", "Settings / System check", '<button class="btn" id="sc-run">' + ic("refresh-cw") + " Run again</button>") +
+      '<div class="card" id="sc-sum" style="margin-bottom:16px">Checking the server…</div><div id="sc-out"></div>';
+    function run() {
+      $("#sc-out").innerHTML = ""; $("#sc-sum").textContent = "Checking the server… (about 10 seconds)";
+      Promise.all([api("sys_check"), bapi("status")]).then(function (r) {
+        var s = r[0], b = r[1];
+        if (!s.ok) { $("#sc-sum").innerHTML = '<b style="color:#dc2626">System check failed:</b> ' + esc(s.error || "no answer") + ' <button class="btn" id="sc-retry">Retry</button>'; $("#sc-retry").onclick = run; return; }
+        var checks = s.checks.concat([{ group: "Sign-in", name: "Page-builder sign-in", ok: !!b.loggedIn, detail: b.loggedIn ? "signed in" : (b.why || b.error || "not signed in"), fix: "Sign out and sign in again. If it still fails, send this screen to support." }]);
+        var bad = checks.filter(function (c) { return !c.ok; }).length, groups = {};
+        checks.forEach(function (c) { (groups[c.group] = groups[c.group] || []).push(c); });
+        $("#sc-sum").innerHTML = bad ? '<b style="color:#dc2626">' + bad + " problem" + (bad > 1 ? "s" : "") + " found.</b> Fix the red items (instructions on the right)." : '<b style="color:#16a34a">All good.</b> The server is ready.';
+        $("#sc-sum").innerHTML += '<div class="muted" style="font-size:12px;margin-top:6px">Version ' + esc(s.version) + " · " + esc(s.server) + " · " + esc(s.time) + "</div>";
+        $("#sc-out").innerHTML = Object.keys(groups).map(function (g) {
+          return '<div class="card" style="margin-bottom:16px"><h3 style="margin:0 0 8px">' + esc(g) + '</h3><table class="tbl" style="width:100%">' + groups[g].map(row).join("") + "</table></div>";
+        }).join("");
+      });
+    }
+    $("#sc-run").onclick = run; run();
   };
-  W.VIEWS.backups = W.VIEWS.system;
 })();
