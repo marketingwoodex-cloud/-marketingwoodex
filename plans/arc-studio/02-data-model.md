@@ -50,3 +50,8 @@ Both use the existing approvals queue (`APPR_EXTRA_WRITE` pattern). No new queue
 2. Runtime (needs PHP ≥8.2 with pdo_mysql, from a suitable runtime or CI): create tables, insert 3 revisions, verify chain, tamper one row, confirm `arc_verify_chain` fails.
 3. API permission tests for each role in the table above.
 4. Browser checks and the contrast sweep for each new route, both themes.
+
+## Decision log
+- 2026-10-11: PHP runtime for QA: **not approved** (user chose "no, keep syntax checks only").
+  Effect: arc-lib.php and every later API change are verified by syntax only. Runtime tests (step 2 verification, step 3 approvals, route permissions) are blocked until a runtime is approved.
+  Still possible without a runtime: browser checks of the admin UI against the stub API (Chromium is approved), and documentation.
