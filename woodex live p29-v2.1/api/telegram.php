@@ -29,16 +29,12 @@ try {
 exit;
 
 function tg_update(array $j, array $tg): void {
-    // Quick-answer or interactive button tapped by a customer
+    // Quick-answer button tapped by a customer
     if (isset($j['callback_query'])) {
         $cq = $j['callback_query']; tg_api('answerCallbackQuery', ['callback_query_id' => (string)$cq['id']]);
         $chat = (string)($cq['message']['chat']['id'] ?? ''); $data = (string)($cq['data'] ?? '');
-        $senderName = trim(($cq['from']['first_name'] ?? '') . ' ' . ($cq['from']['last_name'] ?? ''));
-        $senderUser = (string)($cq['from']['username'] ?? '');
-        if ($chat !== '' && ($cq['message']['chat']['type'] ?? '') === 'private' && $tg['customers']) {
-            $msgText = str_starts_with($data, 'q:') ? substr($data, 2) : $data;
-            tg_incoming($chat, $senderName, $msgText, $senderUser);
-        }
+        if ($chat !== '' && str_starts_with($data, 'q:') && ($cq['message']['chat']['type'] ?? '') === 'private' && $tg['customers'])
+            tg_incoming($chat, trim(($cq['from']['first_name'] ?? '') . ' ' . ($cq['from']['last_name'] ?? '')), substr($data, 2), (string)($cq['from']['username'] ?? ''));
         return;
     }
     // Bot removed from the team group

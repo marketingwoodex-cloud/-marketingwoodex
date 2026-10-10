@@ -51,14 +51,10 @@ function wa_incoming(array $m, string $pname, array $cfg): void {
     if ($mid === '' || $from === '') return;
     try { q('INSERT INTO wx_wa_seen (mid,t) VALUES (?,?)', [mb_substr($mid, 0, 190), now()]); } catch (Throwable $e) { return; } // Meta retries: handle once
     $type = (string)($m['type'] ?? 'text');
-    $btnId = '';
     switch ($type) { // (switch, not match: also runs on PHP 7.4)
         case 'text': $text = (string)($m['text']['body'] ?? ''); break;
-        case 'button': $text = (string)($m['button']['text'] ?? ''); $btnId = (string)($m['button']['payload'] ?? ''); break;
-        case 'interactive':
-            $text = (string)($m['interactive']['button_reply']['title'] ?? $m['interactive']['list_reply']['title'] ?? '');
-            $btnId = (string)($m['interactive']['button_reply']['id'] ?? $m['interactive']['list_reply']['id'] ?? '');
-            break;
+        case 'button': $text = (string)($m['button']['text'] ?? ''); break;
+        case 'interactive': $text = (string)($m['interactive']['button_reply']['title'] ?? $m['interactive']['list_reply']['title'] ?? ''); break;
         case 'location': $text = 'Location: ' . ($m['location']['name'] ?? '') . ' ' . ($m['location']['latitude'] ?? '') . ',' . ($m['location']['longitude'] ?? ''); break;
         default: $text = '[' . $type . ' received: open WhatsApp to view]';
     }
@@ -75,16 +71,6 @@ function wa_incoming(array $m, string $pname, array $cfg): void {
     if ($new && $c['lead_id']) try { q("UPDATE wx_leads SET source='whatsapp' WHERE id=?", [$c['lead_id']]); } catch (Throwable $e) {}
     if (!(int)$c['alerted']) { q('UPDATE wx_chats SET alerted=1 WHERE id=?', [$c['id']]); try { chat_email_alert($c, 'WhatsApp from ' . $phone . ': ' . $text); } catch (Throwable $e) {} }
     if ($c['mode'] !== 'ai' || $type !== 'text' && $type !== 'button' && $type !== 'interactive') { if ($c['mode'] === 'ai') q('UPDATE wx_chats SET needs=1 WHERE id=?', [$c['id']]); return; }
-
-    // Check autonomous bot state machine (Estimator, Room Quiz, Site Visit, Portfolio)
-    if (file_exists(__DIR__ . '/bot-flow-lib.php')) {
-        require_once __DIR__ . '/bot-flow-lib.php';
-        $trigger = $btnId !== '' ? $btnId : $text;
-        if (bot_flow_handle('wa', $phone, $trigger, $c)) {
-            return;
-        }
-    }
-
     $cnt = (int)q("SELECT COUNT(*) FROM wx_chat_msgs WHERE chat_id=? AND who='ai' AND t > ?", [$c['id'], date('Y-m-d H:i:s', time() - 86400)])->fetchColumn();
     $r = ($cfg['ai'] && $cnt < 40) ? chat_ai_reply($c) : '';
     if ($r !== '') {

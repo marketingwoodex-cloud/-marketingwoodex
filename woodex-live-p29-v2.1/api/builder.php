@@ -73,18 +73,7 @@ function logged_in(): bool {
     if (!$uid && preg_match('~^(\d+)\.(\d{10})\.([a-f0-9]{16})\.([a-f0-9]{64})$~', $adm, $m) && (int)$m[2] >= time() && $live($m[1], $m[3])) { $uid = (int)$m[1]; $pwv = [$m[2], $m[3], $m[4]]; }
     if (!$uid) return $ok = false;
     try {
-        $c = json_decode((string)@file_get_contents(PRIVATE_DIR . '/db.json'), true) ?: [];
-        if (!$c && is_file(ROOT_DIR . '/config.php')) {
-            require_once ROOT_DIR . '/config.php';
-            if (defined('DB_NAME') && defined('DB_USER') && DB_NAME !== '' && DB_USER !== '') {
-                $c = [
-                    'host' => defined('DB_HOST') ? DB_HOST : 'localhost',
-                    'name' => DB_NAME,
-                    'user' => DB_USER,
-                    'pass' => defined('DB_PASS') ? DB_PASS : ''
-                ];
-            }
-        }
+        $c = json_decode((string)file_get_contents(PRIVATE_DIR . '/db.json'), true) ?: [];
         $pdo = new PDO('mysql:host=' . (($c['host'] ?? '') ?: 'localhost') . ';dbname=' . ($c['name'] ?? '') . ';charset=utf8mb4', (string)($c['user'] ?? ''), (string)($c['pass'] ?? ''), [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
         $st = $pdo->prepare('SELECT id, role, active, pw_ver FROM wx_users WHERE id=?'); $st->execute([$uid]); $u = $st->fetch(PDO::FETCH_ASSOC);
     } catch (Throwable $e) { error_log('builder auth: ' . $e->getMessage()); return $ok = $why('database error: ' . substr($e->getMessage(), 0, 120)); }

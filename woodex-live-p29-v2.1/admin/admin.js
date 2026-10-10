@@ -227,9 +227,7 @@
   };
   $("#login-form").onsubmit = function (e) {
     e.preventDefault(); var b = $("#l-btn"); b.disabled = true; b.classList.add("busy"); b.setAttribute("aria-busy", "true"); $("#l-err").textContent = "";
-    var em = ($("#l-email").value.trim()) || "master@woodex.pk";
-    var pw = ($("#l-pass").value) || "Woodex@2026";
-    api("login", { email: em, password: pw }).then(function (r) { b.disabled = false; b.classList.remove("busy"); b.removeAttribute("aria-busy"); if (!r.ok) return ($("#l-err").textContent = r.error); $("#l-pass").value = "";
+    api("login", { email: $("#l-email").value.trim(), password: $("#l-pass").value }).then(function (r) { b.disabled = false; b.classList.remove("busy"); b.removeAttribute("aria-busy"); if (!r.ok) return ($("#l-err").textContent = r.error); $("#l-pass").value = "";
       if (r.need2fa) { S.ticket = r.ticket; $("#login-form").hidden = true; $("#tfa-form").hidden = false; $("#t-code").value = ""; $("#t-err").textContent = ""; $("#t-code").focus(); return; }
       signedIn(r); });
   };

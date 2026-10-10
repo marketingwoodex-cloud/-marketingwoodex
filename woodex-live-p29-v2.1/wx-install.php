@@ -5,7 +5,8 @@
    Nothing is ever deleted. Delete this file after installing. */
 error_reporting(E_ALL); ini_set('display_errors', '0');
 header('Content-Type: text/html; charset=utf-8'); header('X-Robots-Tag: noindex'); header('Cache-Control: no-store');
-$root = __DIR__; $priv = $root . '/_private'; $dbf = $priv . '/db.json'; $sqlf = $root . '/_database/woodex-v20.sql';
+$root = __DIR__; $priv = $root . '/_private'; $dbf = $priv . '/db.json';
+$sqlf = is_file($root . '/woodex-database.sql') ? $root . '/woodex-database.sql' : (is_file($root . '/_database/woodex-v20.sql') ? $root . '/_database/woodex-v20.sql' : $root . '/_database/woodex-database.sql');
 $cur = is_file($dbf) ? (json_decode((string)file_get_contents($dbf), true) ?: array()) : array();
 $v = array('host' => 'localhost', 'name' => 'u128159657_woodex', 'user' => 'u128159657_woodex');
 foreach ($v as $k => $d) if (!empty($cur[$k])) $v[$k] = $cur[$k];

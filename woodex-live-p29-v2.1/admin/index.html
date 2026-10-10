@@ -24,8 +24,8 @@
 
     <form id="login-form" hidden>
       <h1>Sign in</h1><p class="muted">Welcome back. Sign in to manage the website.</p>
-      <label>Email<input type="text" inputmode="email" id="l-email" autocomplete="username" autocapitalize="none" value="master@woodex.pk" required></label>
-      <label>Password<span class="pw-wrap"><input type="password" id="l-pass" autocomplete="current-password" value="Woodex@2026" required><button type="button" class="pw-eye" aria-label="Show password" onclick="var i=this.previousElementSibling;i.type=i.type==='password'?'text':'password';this.classList.toggle('on')">Show</button></span></label>
+      <label>Email<input type="text" inputmode="email" id="l-email" autocomplete="username" autocapitalize="none" required></label>
+      <label>Password<span class="pw-wrap"><input type="password" id="l-pass" autocomplete="current-password" required><button type="button" class="pw-eye" aria-label="Show password" onclick="var i=this.previousElementSibling;i.type=i.type==='password'?'text':'password';this.classList.toggle('on')">Show</button></span></label>
       <p class="err" id="l-err"></p>
       <button class="btn pri block" id="l-btn">Sign in</button>
       <p style="text-align:center;margin:10px 0 0;font-size:13px"><a href="#" id="l-forgot">Forgot password?</a></p>
