@@ -1,0 +1,5 @@
+THEME=dark html.class="dark"
+  sidebar  #side background : rgb(10, 12, 16) | color: rgb(201, 209, 220)
+  .main    background       : rgba(0, 0, 0, 0)
+  #view    background       : rgba(0, 0, 0, 0)
+  brand text color          : rgb(255, 255, 255) | sf-role color: rgb(156, 163, 175)

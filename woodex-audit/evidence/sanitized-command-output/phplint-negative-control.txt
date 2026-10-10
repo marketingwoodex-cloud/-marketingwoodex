@@ -1,0 +1,4 @@
+# negative control (bad.php must FAIL)
+parsed OK: 0/1
+  FAIL /tmp/negdir/bad.php:2 Parse Error : syntax error, unexpected '{', expecting T_VARIABLE on line 2
+exit=0

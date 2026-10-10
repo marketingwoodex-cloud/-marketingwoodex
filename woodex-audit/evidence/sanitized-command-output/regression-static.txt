@@ -1,0 +1,16 @@
+PASS [woodex-live-p29-v2.1-pro] overstated status wording absent  | hits=[]
+PASS [frontend-v1] overstated status wording absent  | hits=[]
+PASS [pro] honest status wording present  | missing=[]
+PASS [pro] admin-dash: payload-shape guard present
+PASS [pro] admin-dash: promise .catch renders error card
+PASS [pro] admin.js: dashFail helper present
+PASS [pro] admin.js: stats.folders shape guard present
+PASS [pro] estimator input has aria-label="Your name"
+PASS [pro] estimator input has aria-label="Phone or WhatsApp number"
+PASS [pro] estimator input has aria-label="Email address (optional)"
+PASS mirror identical: admin/admin-settings.js
+PASS mirror identical: admin/admin.js
+PASS mirror identical: admin/admin-dash.js
+PASS mirror identical: estimator/index.html
+
+SUMMARY: 14 PASS / 0 FAIL of 14

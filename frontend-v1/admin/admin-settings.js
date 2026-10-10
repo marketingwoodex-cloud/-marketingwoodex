@@ -66,7 +66,7 @@
           '<span style="width:44px;height:44px;border-radius:10px;background:' + app.color + ';color:#fff;font-weight:700;font-size:16px;display:grid;place-items:center">' + app.tag + '</span>' +
           '<div>' +
             '<h2 style="margin:0;font-size:17px;color:#f9fafb">' + esc(app.name) + ' Integration</h2>' +
-            '<span class="badge ' + (isConn ? 'ok' : 'ghost') + '" style="font-size:11px;margin-top:2px">' + (isConn ? '● Live Connected' : 'Not Connected') + '</span>' +
+            '<span class="badge ' + (isConn ? 'warn' : 'ghost') + '" style="font-size:11px;margin-top:2px">' + (isConn ? 'Not verified' : 'Not connected') + '</span>' +
           '</div>' +
         '</div>' +
         '<p class="muted" style="font-size:13px;margin:0 0 16px">' + esc(app.desc) + '</p>' +
@@ -75,7 +75,7 @@
           '<div style="background:#0b0d13;border:1px solid #1e2430;border-radius:10px;padding:12px;margin:16px 0">' +
             '<label class="check" style="color:#cbd5e1;font-size:12.5px;margin:0"><input type="checkbox" checked style="accent-color:#00b8db"> <b>24/7 Real-Time Webhook Synchronization Active</b></label>' +
           '</div>' +
-          '<div id="conn-ping-res" style="display:none;padding:10px;border-radius:8px;background:#052e16;border:1px solid #166534;color:#4ade80;font-size:12.5px;margin-bottom:14px">✓ Ping successful: 200 OK · Latency 142 ms</div>' +
+          '<div id="conn-ping-res" style="display:none;padding:10px;border-radius:8px;background:#052e16;border:1px solid #166534;color:#4ade80;font-size:12.5px;margin-bottom:14px">Not verified: no live health check was run. No request was sent.</div>' +
           '<div class="modal-actions" style="margin-top:20px;display:flex;gap:10px;justify-content:flex-end">' +
             '<button type="button" class="btn" id="conn-m-ping" style="background:#161922;color:#00d3f2;border-color:#232836">' + ic("activity") + ' Test Ping</button>' +
             (isConn ? '<button type="button" class="btn danger" id="conn-m-disc">' + ic("x") + ' Disconnect</button>' : '') +
@@ -93,8 +93,8 @@
           var p = $("#conn-ping-res");
           if (p) {
             p.style.display = "block";
-            p.innerHTML = "✓ Ping successful: 200 OK to " + esc(app.name) + " API endpoint · Response time 148 ms";
-            toast("Connection test passed ✓");
+            p.innerHTML = "Not verified: no live health check is implemented for " + esc(app.name) + ". No request was sent.";
+            toast("Connection not verified", true);
           }
         };
       }
@@ -112,7 +112,7 @@
           e.preventDefault();
           app.connected = true;
           closeModal();
-          toast(app.name + " authorized & connected successfully ✓");
+          toast(app.name + " marked connected in this browser only. Not verified with the provider.", true);
           renderGrid();
         };
       }
@@ -151,7 +151,7 @@
           '<div style="display:flex;align-items:center;justify-content:space-between;border-top:1px solid #1e2430;padding-top:18px;margin-top:20px">' +
             '<div>' +
               '<b style="color:#f9fafb;font-size:14px">Channel Connections</b>' +
-              '<small class="muted" style="display:block;margin-top:2px" id="conn-stat-txt">14 of ' + APPS.length + ' connected · 24/7 background webhook listeners active</small>' +
+              '<small class="muted" style="display:block;margin-top:2px" id="conn-stat-txt">' + APPS.filter(function(a){ return a.connected; }).length + ' of ' + APPS.length + ' marked connected (not verified) · no live health checks run</small>' +
             '</div>' +
             '<div class="seg" id="conn-status-filter" style="margin:0">' +
               '<button class="' + (curSt === "all" ? "on" : "") + '" data-st="all">All</button>' +
@@ -168,7 +168,7 @@
               '<h3 style="font-size:16px;color:#f9fafb;margin:0 0 4px">' + ic("bar-chart-2") + ' Google Services &amp; Tracking</h3>' +
               '<small class="muted">Live telemetry and domain verification hooks</small>' +
             '</div>' +
-            '<span class="badge ok">Connected &amp; Verified</span>' +
+            '<span class="badge warn">Not verified</span>' +
           '</div>' +
           '<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:18px">' +
             '<div>' +
@@ -297,7 +297,7 @@
 
       var connCount = APPS.filter(function(a){ return a.connected; }).length;
       var statTxt = $("#conn-stat-txt");
-      if (statTxt) statTxt.textContent = connCount + " of " + APPS.length + " connected · 24/7 background webhook listeners active";
+      if (statTxt) statTxt.textContent = connCount + " of " + APPS.length + " marked connected (not verified) · no live health checks run";
 
       grid.innerHTML = list.map(function (app) {
         return '<div style="background:var(--card-sub);border:1px solid var(--line);border-radius:12px;padding:16px;display:flex;align-items:center;justify-content:space-between;gap:14px">' +
@@ -306,7 +306,7 @@
             '<div style="flex:1;min-width:0">' +
               '<div style="display:flex;align-items:center;gap:6px">' +
                 '<b style="font-size:14px;color:var(--txt);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc(app.name) + '</b>' +
-                (app.connected ? '<span class="badge ok" style="font-size:9.5px;padding:1px 5px">Active</span>' : '') +
+                (app.connected ? '<span class="badge warn" style="font-size:9.5px;padding:1px 5px">Not verified</span>' : '') +
               '</div>' +
               '<small class="muted" style="display:block;font-size:12px;line-height:1.4;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc(app.desc) + '</small>' +
             '</div>' +
@@ -576,7 +576,7 @@
     });
 
     $("#st-save-btn").onclick = function () {
-      toast("Global settings and Google service configs saved live!");
+      toast("Not saved: this page does not store these settings yet. No changes were stored.", true);
     };
     $("#st-reset-btn").onclick = function () {
       toast("Settings restored to factory studio baseline.");

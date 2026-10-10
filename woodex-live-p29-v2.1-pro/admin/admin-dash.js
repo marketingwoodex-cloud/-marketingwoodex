@@ -27,8 +27,13 @@
     Promise.all([api("dash_data", { days: days }), api("gdata_report", { days: days }).catch(function () { return {}; })]).then(function (res) {
       var r = res[0], g = res[1] || {};
       if (!r.ok) { $("#dx").innerHTML = '<div class="card"><div class="empty err">' + esc(r.error || "Could not load") + ' <button class="btn sm" onclick="location.reload()">Retry</button></div></div>'; return; }
+      if (!r.crm || !r.crm.kpi || !r.crm.chips || !r.axis) { $("#dx").innerHTML = '<div class="card"><div class="empty err" role="alert">Dashboard data is incomplete. Reload to try again.</div></div>'; return; }
       if (g.ok && g.connected && g.ga4 && g.ga4.daily) { var m = {}; g.ga4.daily.forEach(function (x) { m[x.date] = +x.users; }); r.visitors = r.axis.map(function (d) { return m[d] != null ? m[d] : null; }); }
       render(el, r, g);
+    }).catch(function (e) {
+      console.error(e);
+      var b = $("#dx");
+      if (b) b.innerHTML = '<div class="card"><div class="empty err" role="alert">The dashboard could not be drawn. Reload the page to try again.</div></div>';
     });
   };
 

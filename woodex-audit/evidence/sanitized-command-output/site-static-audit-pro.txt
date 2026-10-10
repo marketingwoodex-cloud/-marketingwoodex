@@ -1,0 +1,33 @@
+STATS {'pages': 148, 'jsonld_blocks': 292, 'pages_with_jsonld': 142, 'pages_with_skip_link': 145, 'imgs': 1992, 'imgs_noalt': 0}
+input_without_accessible_name: 5
+    blocks.html (3: (no id), est-area, est-tier)
+    book-a-visit/index.html (1: (no id))
+    coming-soon.html (3: (no id))
+    contact/index.html (1: cf-hp)
+    estimator/index.html (4: est-email, est-hp, est-name, est-phone)
+multiple_h1: 1
+    blocks.html
+no_canonical: 6
+    404.html
+    500.html
+    503.html
+    blocks.html
+    coming-soon.html
+    downloads.html
+no_h1: 1
+    downloads.html
+no_meta_description: 3
+    blocks.html
+    coming-soon.html
+    downloads.html
+no_open_graph: 6
+    404.html
+    500.html
+    503.html
+    blocks.html
+    coming-soon.html
+    downloads.html
+FIRST_PARTY_BYTES {'js': 1906331, 'css': 1006845}
+IMAGES_OVER_400KB 2
+   623 KB  assets/img/img-469cf01b2548.jpg
+   623 KB  assets/img/_orig/img-469cf01b2548.jpg

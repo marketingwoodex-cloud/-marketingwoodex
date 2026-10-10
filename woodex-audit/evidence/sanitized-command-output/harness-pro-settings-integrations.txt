@@ -1,0 +1,10 @@
+VARIANT      : woodex-live-p29-v2.1-pro
+ROUTE        : #/settings/integrations | title: Integrations · Woodex Admin
+WXA loaded   : true | VIEWS.settings: function | VIEWS.soon: function
+#view has "Phase undefined": false
+soon-box shown: false | settings tabs: true | integ cards: 5
+view snippet : Integrations & APIsHome / SettingsReset defaultsSave changesIntegrationsSystem statusConnections & MCPAdd connector & integrationsLink social, business, productivity, 360 VR, and AI marketing channels. Secure token crede
+phase text   : "Phase 6, Lahore, Pakistan\">"
+probe approvals===security: true | appr-screen-marker present: false
+probe #st-tabs: false | .st-grid: false | #in-mail: false | #in-wa: false | .ig-tile: 0 | ig-keys: false
+errors (0):

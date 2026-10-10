@@ -1,0 +1,6 @@
+# node --check (node v22.22.3) over admin/*.js per tree; rev 27f5ef5
+woodex-live-p29-v2.1-pro: pass=62 fail=0
+woodex-live-p29-v2.1: pass=59 fail=3 failed: admin-chat.js admin-settings.js admin-social.js
+woodex live p29-v2.1 pro: pass=59 fail=3 failed: admin-chat.js admin-settings.js admin-social.js
+woodex live p29-v2.1: pass=59 fail=3 failed: admin-chat.js admin-settings.js admin-social.js
+frontend-v1: pass=62 fail=0

@@ -495,9 +495,13 @@
   VIEWS.dashboard = function (el) {
     var h = new Date().getHours(), hi = h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening";
     el.innerHTML = head(hi + ", " + S.user.name.split(" ")[0], "Dashboard", can("owner,admin,editor") ? '<a class="btn" href="/" target="_blank">' + ic("eye") + 'View site</a><a class="btn pri" href="#/builder">' + ic("square-pen") + "Open builder</a>" : "") + '<div class="empty">Loading…</div>';
+    function dashFail(msg) {
+      var box = el.querySelector(".empty"), html = '<div class="card"><div class="empty" role="alert">' + esc(msg) + "</div></div>";
+      if (box) box.outerHTML = html; else el.insertAdjacentHTML("beforeend", html);
+    }
     api("dashboard").then(function (r) {
       if (S.view !== "dashboard") return;
-      if (!r.ok) return (el.querySelector(".empty").textContent = r.error);
+      if (!r.ok || !r.stats || typeof r.stats.folders !== "object") return dashFail(r.ok ? "Dashboard data is incomplete. Reload to try again." : (r.error || "Dashboard data could not be loaded."));
       var s = r.stats, kpi = function (icon, label, val, badge) { return '<div class="card kpi"><div class="kpi-ic">' + ic(icon) + "</div><small>" + label + '</small><div class="kpi-row"><b>' + val + "</b>" + (badge || "") + "</div></div>"; };
       el.querySelector(".empty").outerHTML =
         '<div class="grid kpis">' +
@@ -521,6 +525,9 @@
           "</div></div></div>" +
         "</div>";
       fillIcons(el); drawCharts(r, s);
+    }).catch(function (e) {
+      console.error(e);
+      dashFail("The dashboard could not be drawn. Reload the page to try again.");
     });
   };
   function drawCharts(r, s) {
