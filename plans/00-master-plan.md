@@ -49,7 +49,7 @@ Rule for every family: one shared class set in `admin/woodex-ui.css` (tokens + c
 | U1.1 | Page title bar: H1 24px/600, breadcrumb, toolbar gap | screenshot: Approvals, Users, Pipeline | DONE (Approvals checked) |
 | U1.2 | KPI row: 4-up grid, 18px padding, tabular numbers, tinted icon | screenshot of a screen with KPIs (Dashboard shows stub "data incomplete") | PARTIAL: CSS in place; needs a screen with real KPI data |
 | U1.3 | Card headers and table rhythm | screenshot: Users, Clients, Quotations | PARTIAL |
-| U1.4 | Full sweep of 56 routes, both themes, 0 below AA | `ALL=1 node tools/qa-p29/theme-contrast.mjs` | PARTIAL: last full run was before the `.content` fix; 4 screens re-run after the fix (0 below AA) |
+| U1.4 | Full sweep of 56 routes, both themes, 0 below AA | `ALL=1 node tools/qa-p29/theme-contrast.mjs` | DONE 2026-10-11 on the final CSS: 0 below AA in light and dark (56/56 each). Page errors are stub gaps (same as HEAD) |
 | U1.5 | Regression fix: `.content` padding restored (was 4px) | Approvals screenshot | DONE |
 | U1.6 | Commit CSS and screenshots manifest | `git log` shows commit; manifest refreshed (U8) | TODO |
 
@@ -110,7 +110,7 @@ Known issue to decide: `proj_bill` deletes a finance invoice when replaced (`api
 5. Commit only exact paths (no `git add` of whole folders).
 
 ## 5. Next actions (in order)
-1. Full 56-route sweep after the `.content` fix; confirm 0 below AA (U1.4).
-2. Commit the U1 CSS and plan (U1.6); refresh manifest (U8).
+1. U1.4 done (sweep passed). Refresh manifest (U8).
+2. Refresh manifest and commit (U1.6 is committed as 418394f).
 3. ARC A3: approval kinds written as unwired code, syntax-checked (A3).
 4. Ask user to decide: support chat placement (U10), `proj_bill` soft-cancel (A-known), and the blocked items in section 3.
