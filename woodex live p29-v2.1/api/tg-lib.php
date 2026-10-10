@@ -35,6 +35,37 @@ function tg_send(string $chat, string $text, array $extra = []): array {
     $r = tg_api('sendMessage', ['chat_id' => $chat, 'text' => mb_substr($text, 0, 4000), 'disable_web_page_preview' => true] + $extra);
     return !empty($r['ok']) ? ['', (int)($r['result']['message_id'] ?? 0)] : [(string)($r['description'] ?? 'Telegram send failed'), 0];
 }
+/** Send Telegram message with inline keyboard. */
+function tg_send_keyboard(string $chat, string $text, array $keyboardRows, string $parseMode = 'HTML'): array {
+    $r = tg_api('sendMessage', [
+        'chat_id' => $chat,
+        'text' => mb_substr($text, 0, 4000),
+        'parse_mode' => $parseMode,
+        'reply_markup' => ['inline_keyboard' => $keyboardRows],
+        'disable_web_page_preview' => true
+    ]);
+    return !empty($r['ok']) ? ['', (int)($r['result']['message_id'] ?? 0)] : [(string)($r['description'] ?? 'Telegram send failed'), 0];
+}
+/** Send a PDF document directly to Telegram. */
+function tg_send_document(string $chat, string $docUrl, string $caption = '', string $filename = ''): array {
+    $r = tg_api('sendDocument', [
+        'chat_id' => $chat,
+        'document' => $docUrl,
+        'caption' => mb_substr($caption, 0, 1024),
+        'parse_mode' => 'HTML'
+    ]);
+    return !empty($r['ok']) ? ['', (int)($r['result']['message_id'] ?? 0)] : [(string)($r['description'] ?? 'Telegram send document failed'), 0];
+}
+/** Send a photo / render directly to Telegram. */
+function tg_send_photo(string $chat, string $photoUrl, string $caption = '', string $parseMode = 'HTML'): array {
+    $r = tg_api('sendPhoto', [
+        'chat_id' => $chat,
+        'photo' => $photoUrl,
+        'caption' => mb_substr($caption, 0, 1024),
+        'parse_mode' => $parseMode
+    ]);
+    return !empty($r['ok']) ? ['', (int)($r['result']['message_id'] ?? 0)] : [(string)($r['description'] ?? 'Telegram send photo failed'), 0];
+}
 /** Customer quick-answer buttons (same list as the website chat). */
 function tg_quick_kb(): array {
     $q = array_slice(chat_cfg()['quick'] ?? [], 0, 6); if (!$q) return [];
@@ -107,8 +138,37 @@ function tg_dm_post(string $msg, int $chatId): void {
 /** A staff member replied (team group or personal chat) to a customer message. */
 function tg_staff_reply(string $chat, array $m, array $u, int $cid, string $text, string $name): void {
     if (!tg_can_chat($u)) { tg_send($chat, '⚠️ Your role cannot reply to customers.', ['reply_to_message_id' => (int)$m['message_id']]); return; }
-    $c = chat_get($cid);
+    
+    // Global staff management commands
+    if (preg_match('~^/status\b~', $text)) {
+        $leadsCount = (int)q('SELECT COUNT(*) FROM wx_leads WHERE created_at >= ?', [date('Y-m-d 00:00:00')])->fetchColumn();
+        $chatsCount = (int)q("SELECT COUNT(*) FROM wx_chats WHERE status='open'")->fetchColumn();
+        $needsCount = (int)q("SELECT COUNT(*) FROM wx_chats WHERE needs=1 AND status='open'")->fetchColumn();
+        $msg = "📊 <b>Woodex Studio Live Status</b>\n\n" .
+            "• New Leads Today: <b>{$leadsCount}</b>\n" .
+            "• Open Active Chats: <b>{$chatsCount}</b>\n" .
+            "• Awaiting Staff Reply: <b>{$needsCount}</b>\n\n" .
+            "🔗 <a href=\"" . (isset($_SERVER['HTTP_HOST']) ? 'https://' . $_SERVER['HTTP_HOST'] : 'https://woodex.com.pk') . "/admin-v2.1/#/chat\">Open Admin Inbox</a>";
+        tg_send($chat, $msg, ['parse_mode' => 'HTML']);
+        return;
+    }
+
+    if (preg_match('~^/leads\b~', $text)) {
+        $rows = q('SELECT id, name, phone, service, stage, created_at FROM wx_leads ORDER BY id DESC LIMIT 5')->fetchAll();
+        $msg = "📥 <b>Latest 5 Studio Enquiries:</b>\n\n";
+        foreach ($rows as $r) {
+            $msg .= "• <b>#" . $r['id'] . " " . tg_h($r['name']) . "</b> (" . tg_h($r['phone']) . ")\n" .
+                "  Project: " . tg_h($r['service'] ?: 'Interior Design') . " · Stage: <code>" . tg_h($r['stage']) . "</code>\n";
+        }
+        tg_send($chat, $msg, ['parse_mode' => 'HTML']);
+        return;
+    }
+
+    $c = $cid ? chat_get($cid) : null;
+    if (!$c) return;
+
     if (preg_match('~^/ai\b~', $text)) { q("UPDATE wx_chats SET mode='ai', agent_name=NULL WHERE id=?", [$cid]); chat_add($cid, 'sys', '', 'The assistant is back in this chat'); tg_send($chat, '🤖 #' . $cid . ' is back with the assistant.'); return; }
+    if (preg_match('~^/takeover\b~', $text) || preg_match('~^/human\b~', $text)) { q("UPDATE wx_chats SET mode='human', agent_name=?, assigned_to=? WHERE id=?", [$u['name'], (int)$u['id'], $cid]); chat_add($cid, 'sys', '', $u['name'] . ' took over the conversation'); tg_send($chat, '👤 #' . $cid . ' assigned to ' . tg_h($u['name']) . ' (AI paused).'); return; }
     if (preg_match('~^/close\b~', $text)) { q("UPDATE wx_chats SET status='closed', unread=0, needs=0 WHERE id=?", [$cid]); log_act($u, 'chat.close', '#' . $cid . ' (Telegram)'); tg_send($chat, '✔️ #' . $cid . ' closed.'); return; }
     if (preg_match('~^/open\b~', $text)) { q("UPDATE wx_chats SET status='open' WHERE id=?", [$cid]); tg_send($chat, '#' . $cid . ' reopened.'); return; }
     if ($text === '' || $text[0] === '/') return;
@@ -149,6 +209,15 @@ function tg_incoming(string $tgChat, string $name, string $text, string $usernam
     if ($new && $c['lead_id']) try { q("UPDATE wx_leads SET source='telegram' WHERE id=?", [$c['lead_id']]); } catch (Throwable $e) {}
     if (!(int)$c['alerted']) { q('UPDATE wx_chats SET alerted=1 WHERE id=?', [$c['id']]); try { chat_email_alert($c, 'Telegram from ' . ($name ?: $tgChat) . ': ' . $text); } catch (Throwable $e) {} }
     if ($c['mode'] !== 'ai') return;
+
+    // Check autonomous bot flow (Estimator, Room Quiz, Site Visit, Portfolio)
+    if (file_exists(__DIR__ . '/bot-flow-lib.php')) {
+        require_once __DIR__ . '/bot-flow-lib.php';
+        if (bot_flow_handle('tg', $tgChat, $text, $c)) {
+            return;
+        }
+    }
+
     $cnt = (int)q("SELECT COUNT(*) FROM wx_chat_msgs WHERE chat_id=? AND who='ai' AND t > ?", [$c['id'], date('Y-m-d H:i:s', time() - 86400)])->fetchColumn();
     $r = ($cfg['ai'] && $cnt < 40) ? chat_ai_reply($c) : '';
     if ($r === '' && $cnt < 40) $r = chat_rule_reply($c, $text);

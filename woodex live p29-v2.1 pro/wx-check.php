@@ -17,7 +17,13 @@ row($rows, is_dir($priv) && is_writable($priv), '_private folder writable', is_d
 row($rows, is_file($priv . '/.htaccess'), '_private protected (.htaccess)', is_file($priv . '/.htaccess') ? 'yes' : 'MISSING', 'Re-upload the zip (turn on "Show hidden files").');
 row($rows, is_file($root . '/api/admin.php'), 'Admin files uploaded', is_file($root . '/api/admin.php') ? 'api/admin.php found' : 'api/admin.php NOT found', 'Extract woodex-site-files.zip directly inside public_html (index.html must be in public_html, not in a sub-folder).');
 $dbf = $priv . '/db.json'; $db = is_file($dbf) ? json_decode((string)file_get_contents($dbf), true) : null;
-row($rows, is_array($db), 'Database settings (_private/db.json)', is_array($db) ? 'found (database "' . htmlspecialchars(isset($db['name']) ? $db['name'] : '') . '", user "' . htmlspecialchars(isset($db['user']) ? $db['user'] : '') . '")' : 'not set yet', 'Open https://woodex.com.pk/admin/ — the Setup screen asks for database name, user and password. If you see a login form instead, delete _private/db.json and reload.');
+if (!is_array($db) && is_file($root . '/config.php')) {
+    require_once $root . '/config.php';
+    if (defined('DB_NAME') && defined('DB_USER') && DB_NAME !== '' && DB_USER !== '') {
+        $db = array('host' => defined('DB_HOST') ? DB_HOST : 'localhost', 'name' => DB_NAME, 'user' => DB_USER, 'pass' => defined('DB_PASS') ? DB_PASS : '');
+    }
+}
+row($rows, is_array($db), 'Database settings (_private/db.json or config.php)', is_array($db) ? 'found (database "' . htmlspecialchars(isset($db['name']) ? $db['name'] : '') . '", user "' . htmlspecialchars(isset($db['user']) ? $db['user'] : '') . '")' : 'not set yet', 'Open https://woodex.com.pk/admin/ — the Setup screen asks for database name, user and password. If you see a login form instead, delete _private/db.json and reload.');
 $tables = array(); $users = null;
 if (is_array($db) && extension_loaded('pdo_mysql')) {
     try {

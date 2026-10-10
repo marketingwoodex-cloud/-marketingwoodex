@@ -1,86 +1,94 @@
 <?php
 /**
- * Woodex Architecture & Luxury Interior - Production Web Engine Gateway
- * Domain: woodex.com.pk
- * Hostinger PHP 7.4 / 8.0 / 8.1 / 8.2 / 8.3 + MySQL Compatible
+ * Woodex Interior Design Studio — Hostinger Master Entry Point
+ * Domain: https://woodex.com.pk
  */
 
 declare(strict_types=1);
 
-// Load Master Configuration
-if (file_exists(__DIR__ . '/config.php')) {
+// Load configuration if available
+if (is_file(__DIR__ . '/config.php')) {
     require_once __DIR__ . '/config.php';
-} elseif (file_exists(__DIR__ . '/includes/config.php')) {
-    require_once __DIR__ . '/includes/config.php';
 }
 
-// Maintenance Mode Check
-if (file_exists(__DIR__ . '/_private/maintenance.flag') || (defined('MAINTENANCE_MODE') && MAINTENANCE_MODE === true)) {
-    if (file_exists(__DIR__ . '/coming-soon.html')) {
-        header('HTTP/1.1 503 Service Temporarily Unavailable');
-        header('Status: 503 Service Temporarily Unavailable');
-        header('Retry-After: 3600');
-        include __DIR__ . '/coming-soon.html';
-        exit;
-    }
-}
-
-// Security & Performance Headers
-header('X-Powered-By: Woodex-Engine/2.5');
+// Security Headers
 header('X-Content-Type-Options: nosniff');
 header('X-Frame-Options: SAMEORIGIN');
 header('Referrer-Policy: strict-origin-when-cross-origin');
 
-// Routing: Determine requested path
-$requestUri = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
-$requestUri = trim((string)$requestUri, '/');
+// Check Maintenance Mode
+$sysFile = __DIR__ . '/_private/system.json';
+if (is_file($sysFile)) {
+    $sysData = json_decode((string)file_get_contents($sysFile), true);
+    if (!empty($sysData['maint']['on'])) {
+        $token = (string)($sysData['maint']['token'] ?? '');
+        $cookieToken = (string)($_COOKIE['wx_mt'] ?? '');
+        if ($token === '' || $cookieToken !== $token) {
+            http_response_code(503);
+            $maintPage = ($sysData['maint']['mode'] ?? '') === 'soon' ? 'coming-soon.html' : '503.html';
+            if (is_file(__DIR__ . '/' . $maintPage)) {
+                readfile(__DIR__ . '/' . $maintPage);
+            } else {
+                echo '<h1>503 Service Unavailable</h1><p>Woodex Studio is currently undergoing scheduled maintenance. Please check back shortly.</p>';
+            }
+            exit;
+        }
+    }
+}
 
-// Serve Homepage if root requested
-if ($requestUri === '' || $requestUri === 'index.php') {
-    $homeHtml = __DIR__ . '/index.html';
-    if (file_exists($homeHtml)) {
-        header('Content-Type: text/html; charset=UTF-8');
-        readfile($homeHtml);
+// Request Path Routing
+$uri = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
+$uri = urldecode((string)$uri);
+
+// Normalize path
+if ($uri === '' || $uri === '/' || $uri === '/index.php' || $uri === '/index.html') {
+    if (is_file(__DIR__ . '/index.html')) {
+        header('Content-Type: text/html; charset=utf-8');
+        readfile(__DIR__ . '/index.html');
         exit;
     }
 }
 
-// Check for subdirectory index.html (e.g. /interior-design/ -> interior-design/index.html)
-if ($requestUri !== '') {
-    $subHtml = __DIR__ . '/' . $requestUri . '/index.html';
-    $directHtml = __DIR__ . '/' . $requestUri . '.html';
-    $directFile = __DIR__ . '/' . $requestUri;
-
-    if (is_dir(__DIR__ . '/' . $requestUri) && file_exists($subHtml)) {
-        header('Content-Type: text/html; charset=UTF-8');
-        readfile($subHtml);
+// Check for direct static pages in folders (e.g. /about/, /1-kanal-house-design/)
+$cleanPath = trim($uri, '/');
+if ($cleanPath !== '') {
+    $targetFile = __DIR__ . '/' . $cleanPath;
+    if (is_dir($targetFile) && is_file($targetFile . '/index.html')) {
+        header('Content-Type: text/html; charset=utf-8');
+        readfile($targetFile . '/index.html');
         exit;
-    } elseif (file_exists($directHtml)) {
-        header('Content-Type: text/html; charset=UTF-8');
-        readfile($directHtml);
-        exit;
-    } elseif (file_exists($directFile) && !is_dir($directFile)) {
-        // Static file requested
-        $ext = pathinfo($directFile, PATHINFO_EXTENSION);
+    }
+    if (is_file($targetFile)) {
+        $ext = strtolower(pathinfo($targetFile, PATHINFO_EXTENSION));
         $mimes = [
-            'css' => 'text/css', 'js' => 'application/javascript', 'json' => 'application/json',
-            'png' => 'image/png', 'jpg' => 'image/jpeg', 'jpeg' => 'image/jpeg',
-            'webp' => 'image/webp', 'svg' => 'image/svg+xml', 'ico' => 'image/x-icon',
-            'woff2' => 'font/woff2', 'xml' => 'application/xml', 'txt' => 'text/plain'
+            'html'  => 'text/html; charset=utf-8',
+            'css'   => 'text/css; charset=utf-8',
+            'js'    => 'application/javascript; charset=utf-8',
+            'json'  => 'application/json; charset=utf-8',
+            'png'   => 'image/png',
+            'jpg'   => 'image/jpeg',
+            'jpeg'  => 'image/jpeg',
+            'webp'  => 'image/webp',
+            'svg'   => 'image/svg+xml',
+            'woff2' => 'font/woff2',
+            'woff'  => 'font/woff',
+            'pdf'   => 'application/pdf',
+            'xml'   => 'application/xml; charset=utf-8',
+            'txt'   => 'text/plain; charset=utf-8',
         ];
-        if (isset($mimes[$ext])) header('Content-Type: ' . $mimes[$ext]);
-        readfile($directFile);
+        if (isset($mimes[$ext])) {
+            header('Content-Type: ' . $mimes[$ext]);
+        }
+        readfile($targetFile);
         exit;
     }
 }
 
-// 404 Fallback
-if (file_exists(__DIR__ . '/404.html')) {
-    header('HTTP/1.1 404 Not Found');
-    header('Content-Type: text/html; charset=UTF-8');
+// Fallback to 404
+http_response_code(404);
+if (is_file(__DIR__ . '/404.html')) {
+    header('Content-Type: text/html; charset=utf-8');
     readfile(__DIR__ . '/404.html');
-    exit;
+} else {
+    echo '<h1>404 Page Not Found</h1>';
 }
-
-echo '<!DOCTYPE html><html><head><title>Woodex Architecture</title></head><body><h1>Woodex Architecture & Luxury Interior</h1><p>Visit <a href="/admin/">Admin Dashboard</a></p></body></html>';
-exit;

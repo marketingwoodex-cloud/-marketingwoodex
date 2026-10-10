@@ -44,7 +44,19 @@ function builder_token(int $uid): string { $sid = (string)($GLOBALS['WX_SID'] ??
 // ---------- DB ----------
 function db(): PDO {
     static $pdo = null; if ($pdo) return $pdo;
-    $c = jread(DB_FILE); if (!$c) fail('Admin is not set up yet', 503);
+    $c = jread(DB_FILE);
+    if (!$c && is_file(ROOT_DIR . '/config.php')) {
+        require_once ROOT_DIR . '/config.php';
+        if (defined('DB_NAME') && defined('DB_USER') && DB_NAME !== '' && DB_USER !== '') {
+            $c = [
+                'host' => defined('DB_HOST') ? DB_HOST : 'localhost',
+                'name' => DB_NAME,
+                'user' => DB_USER,
+                'pass' => defined('DB_PASS') ? DB_PASS : ''
+            ];
+        }
+    }
+    if (!$c) fail('Admin is not set up yet', 503);
     $pdo = connect($c); return $pdo;
 }
 function connect(array $c): PDO {
