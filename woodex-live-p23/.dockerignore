@@ -1,0 +1,16 @@
+# --- never ship these into an image ---
+.git
+.gitignore
+.env
+node_modules
+_private/*
+!_private/.htaccess
+_private/db.example.json
+_bak
+_bak17
+uploads
+*.log
+error_log
+docs
+_tests
+node_modules

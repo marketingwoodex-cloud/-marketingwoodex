@@ -107,7 +107,7 @@ esc(JSON.stringify({
             '<div style="margin-top:14px;display:flex;flex-direction:column;gap:10px;font-size:13px">' +
               '<div style="display:flex;justify-content:space-between"><span>Protocol</span><b style="color:#00d3f2">JSON-RPC 2.0</b></div>' +
               '<div style="display:flex;justify-content:space-between"><span>Endpoint</span><b style="color:#cbd5e1">/api/mcp.php</b></div>' +
-              '<div style="display:flex;justify-content:space-between"><span>Authentication</span><b style="color:#10b981">Header: X-WX-ADM</b></div>' +
+              '<div style="display:flex;justify-content:space-between"><span>Authentication</span><b style="color:var(--ok)">Header: X-WX-ADM</b></div>' +
             '</div>' +
           '</div>' +
         '</div>' +

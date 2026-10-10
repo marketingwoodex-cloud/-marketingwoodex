@@ -1,17 +1,35 @@
+# =============================================================================
+# Woodex v2.7 — optional Render blueprint (preview / staging only)
+# -----------------------------------------------------------------------------
+# Production for woodex.com.pk runs on Hostinger (LiteSpeed + MySQL) — see
+# woodex-live-p23/docs/V2.7-PRELINE-UPGRADE-PLAN.md §9 for the deploy checklist.
+# This file exists so a preview instance can be spun up from the same Dockerfile.
+#
+# Secrets are NOT kept here: Render env vars are visible in the dashboard and in
+# this repository. Set DB_PASSWORD, TELEGRAM_BOT_TOKEN and APP_KEY in the Render
+# dashboard, or let the admin write _private/db.json on first visit to /wx-install.php.
+# =============================================================================
 services:
   - type: web
-    name: woodex-studio-live
+    name: woodex-admin-staging
     env: docker
-    plan: free
-    region: oregon
+    plan: starter
+    region: singapore          # closest Render region to Pakistan
     dockerfilePath: ./Dockerfile
     dockerContext: .
+    healthCheckPath: /wx-check.php
+    autoDeploy: false          # deploy deliberately: a push should not touch a MySQL schema
     envVars:
       - key: APP_ENV
-        value: production
+        value: staging
+      - key: APP_DEBUG
+        value: "true"
+      # The database lives outside Render (Hostinger / PlanetScale). Fill these in the dashboard.
       - key: DB_HOST
-        value: localhost
+        value: CHANGE_ME_external_mysql_host
       - key: DB_DATABASE
         value: u128159657_woodex
       - key: DB_USERNAME
         value: u128159657_woodex
+      - key: DB_PASSWORD
+        sync: false            # required in the dashboard, never in git

@@ -201,12 +201,11 @@
   };
 
   // =========================================================== HEADER & FOOTER
-  W.VIEWS.global = function (el) {
-    el.innerHTML = head("Header & footer", "Header & footer") +
-      '<div class="toolbar" style="margin-bottom:18px"><button class="btn pri" data-gt="menu">Main menu</button><button class="btn" data-gt="replace">Find & replace</button></div><div id="gl-body"></div>';
-    $$("[data-gt]").forEach(function (b) { b.onclick = function () { $$("[data-gt]").forEach(function (x) { x.classList.toggle("pri", x === b); }); (b.dataset.gt === "menu" ? menuEditor : replaceTool)($("#gl-body")); }; });
-    menuEditor($("#gl-body"));
-  };
+  /* The Header & footer screen is owned by admin/admin-chrome.js (it loads after this file and
+     registers W.VIEWS.global with the live header/footer editor). A second registration used to
+     live here — a menu editor plus find & replace — which was dead code: the later file always
+     won. Its two helpers that other screens do use, replaceTool and newPage, are exported at the
+     bottom of this file and the menu editor is now reached from the chrome screen. */
 
   // ---------------- menu editor (structured: rebuilds desktop nav + mobile menu on every page)
   function menuEditor(box) {
@@ -284,6 +283,9 @@
 
   // ---------------- find & replace (header / mobile menu / footer only)
   W.replaceTool = replaceTool; W.newPage = newPage; /*P19 F6*/
+  /* v2.7: the menu editor was reachable only from this file's old Header & footer view. That view
+     is gone (admin-chrome.js owns the route) and the editor is now a tab on the chrome screen. */
+  W.menuEditor = menuEditor;
   function replaceTool(box) {
     box.innerHTML = '<div class="card"><div class="card-b"><p class="muted" style="margin-top:0">Change text, a phone number, an email, a link or the logo file in the header, mobile menu and footer of <b>every page</b>, without touching page content. Preview first, then apply. Each changed page is backed up.</p>' +
       '<div class="g2"><label>Find<input id="fr-f" placeholder="e.g. 0322 4000768 or /assets/img/old-logo.png"></label><label>Replace with<input id="fr-r" placeholder="new text"></label></div>' +

@@ -14,7 +14,7 @@
       '<div style="display:grid;grid-template-columns:repeat(4, 1fr);gap:16px;margin-bottom:20px">' +
         '<div class="card" style="background:#111318;border:1px solid #20242f;border-radius:12px;padding:16px">' +
           '<small class="muted" style="display:block">System Status</small>' +
-          '<b style="font-size:18px;color:#10b981;display:flex;align-items:center;gap:6px;margin-top:4px">' + ic("check-circle") + 'Operational</b>' +
+          '<b style="font-size:18px;color:var(--ok);display:flex;align-items:center;gap:6px;margin-top:4px">' + ic("check-circle") + 'Operational</b>' +
         '</div>' +
         '<div class="card" style="background:#111318;border:1px solid #20242f;border-radius:12px;padding:16px">' +
           '<small class="muted" style="display:block">PHP Version</small>' +

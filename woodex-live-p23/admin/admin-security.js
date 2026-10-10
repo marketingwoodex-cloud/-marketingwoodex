@@ -22,7 +22,7 @@
         '</div>' +
         '<div class="card" style="background:#111318;border:1px solid #20242f;border-radius:12px;padding:16px">' +
           '<small class="muted">Pending Approvals</small>' +
-          '<b style="font-size:20px;color:#10b981;margin-top:4px;display:block">0 Waiting</b>' +
+          '<b style="font-size:20px;color:var(--ok);margin-top:4px;display:block">0 Waiting</b>' +
         '</div>' +
         '<div class="card" style="background:#111318;border:1px solid #20242f;border-radius:12px;padding:16px">' +
           '<small class="muted">CSRF / HMAC Protection</small>' +
@@ -58,7 +58,7 @@
                 '<h3 style="font-size:16px;color:#f9fafb;margin:0 0 4px">' + ic("monitor") + ' Active Sessions & Connected Devices</h3>' +
                 '<small class="muted">Devices currently logged into Woodex Admin with your token.</small>' +
               '</div>' +
-              '<button class="btn sm" id="sec-revoke-all" style="color:#ef4444">' + ic("log-out") + 'Revoke others</button>' +
+              '<button class="btn sm" id="sec-revoke-all" style="color:var(--bad)">' + ic("log-out") + 'Revoke others</button>' +
             '</div>' +
             '<div style="margin-top:16px;display:flex;flex-direction:column;gap:12px">' +
               '<div style="background:#161922;border:1px solid #232836;border-radius:10px;padding:14px;display:flex;align-items:center;justify-content:space-between">' +
@@ -109,7 +109,7 @@
                 'Confirm New Password' +
                 '<input type="password" id="sec-pw-new2" minlength="8" required placeholder="Repeat new password" style="background:#181c24;border-color:#262a33;padding:9px 12px;border-radius:8px">' +
               '</label>' +
-              '<p class="err" id="sec-pw-err" style="margin:0;font-size:12.5px;color:#ef4444"></p>' +
+              '<p class="err" id="sec-pw-err" style="margin:0;font-size:12.5px;color:var(--bad)"></p>' +
               '<button type="submit" class="btn pri btn-preline-cyan" style="margin-top:6px">' + ic("key") + 'Update Password</button>' +
             '</form>' +
           '</div>' +
@@ -119,11 +119,11 @@
             '<div class="card-h" style="padding:0 0 14px;border-bottom:1px solid #1a1e27">' +
               '<h3 style="font-size:16px;color:#f9fafb">' + ic("file-text") + ' Security Policy</h3>' +
             '</div>' +
-            '<div style="display:flex;flex-direction:column;gap:10px;margin-top:14px;font-size:12.5px;color:#94a3b8">' +
+            '<div style="display:flex;flex-direction:column;gap:10px;margin-top:14px;font-size:12.5px;color:var(--mut2)">' +
               '<div style="display:flex;justify-content:space-between"><span>Session Lifetime</span><b style="color:#cbd5e1">4 Hours</b></div>' +
               '<div style="display:flex;justify-content:space-between"><span>Password Hash</span><b style="color:#cbd5e1">Bcrypt / Scrypt</b></div>' +
               '<div style="display:flex;justify-content:space-between"><span>Failed Login Lockout</span><b style="color:#cbd5e1">5 Attempts (15m)</b></div>' +
-              '<div style="display:flex;justify-content:space-between"><span>HMAC Secret Signatures</span><b style="color:#10b981">Verified ✓</b></div>' +
+              '<div style="display:flex;justify-content:space-between"><span>HMAC Secret Signatures</span><b style="color:var(--ok)">Verified ✓</b></div>' +
             '</div>' +
           '</div>' +
         '</div>' +
@@ -163,7 +163,7 @@
           '<div style="background:#fff;padding:16px;border-radius:12px;display:inline-block;margin-bottom:14px">' +
             '<img src="/assets/img/qr-placeholder.png" alt="2FA QR" style="width:160px;height:160px;display:block" onerror="this.outerHTML=\'<div style=\\\'width:160px;height:160px;background:#0a0c10;color:#00d3f2;display:grid;place-items:center;font-weight:700\\\'>2FA TOTP ACTIVE</div>\'">' +
           '</div>' +
-          '<div style="font-family:monospace;font-size:13px;color:#94a3b8;margin-bottom:16px">Secret: <b>JBSWY3DPEHPK3PXP</b></div>' +
+          '<div style="font-family:monospace;font-size:13px;color:var(--mut2);margin-bottom:16px">Secret: <b>JBSWY3DPEHPK3PXP</b></div>' +
           '<button class="btn pri btn-preline-cyan" id="sec-qr-close">Done</button>' +
         '</div>'
       );

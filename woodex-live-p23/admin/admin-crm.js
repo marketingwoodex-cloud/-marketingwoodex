@@ -198,7 +198,7 @@
             '<div style="background:#161922;border:1px solid #232836;border-radius:10px;padding:10px 12px;border-left:3px solid #6366f1">' +
               '<small class="muted" style="font-size:11px;display:block">Client</small><b style="font-size:18px;color:#f9fafb">3</b>' +
             '</div>' +
-            '<div style="background:#161922;border:1px solid #232836;border-radius:10px;padding:10px 12px;border-left:3px solid #f59e0b">' +
+            '<div style="background:#161922;border:1px solid #232836;border-radius:10px;padding:10px 12px;border-left:3px solid var(--warn)">' +
               '<small class="muted" style="font-size:11px;display:block">Meeting</small><b style="font-size:18px;color:#f9fafb">' + countVisit + '</b>' +
             '</div>' +
             '<div style="background:#161922;border:1px solid #232836;border-radius:10px;padding:10px 12px;border-left:3px solid #d97706">' +
@@ -210,10 +210,10 @@
             '<div style="background:#161922;border:1px solid #232836;border-radius:10px;padding:10px 12px;border-left:3px solid #00d3f2">' +
               '<small class="muted" style="font-size:11px;display:block">Quote done</small><b style="font-size:18px;color:#f9fafb">' + countQuote + '</b>' +
             '</div>' +
-            '<div style="background:#161922;border:1px solid #232836;border-radius:10px;padding:10px 12px;border-left:3px solid #10b981">' +
-              '<small class="muted" style="font-size:11px;display:block">Won</small><b style="font-size:18px;color:#10b981">' + countWon + '</b>' +
+            '<div style="background:#161922;border:1px solid #232836;border-radius:10px;padding:10px 12px;border-left:3px solid var(--ok)">' +
+              '<small class="muted" style="font-size:11px;display:block">Won</small><b style="font-size:18px;color:var(--ok)">' + countWon + '</b>' +
             '</div>' +
-            '<div style="background:#161922;border:1px solid #232836;border-radius:10px;padding:10px 12px;border-left:3px solid #ef4444">' +
+            '<div style="background:#161922;border:1px solid #232836;border-radius:10px;padding:10px 12px;border-left:3px solid var(--bad)">' +
               '<small class="muted" style="font-size:11px;display:block">Overdue</small><b style="font-size:18px;color:#f9fafb">0</b>' +
             '</div>' +
             '<div style="background:#161922;border:1px solid #232836;border-radius:10px;padding:10px 12px;border-left:3px solid #d4af6a;grid-column:span 2">' +
@@ -241,7 +241,7 @@
           '</div>' +
           '<div class="card" style="background:#111318;border:1px solid #20242f;border-radius:12px;padding:18px">' +
             '<small class="muted" style="font-size:12px">Won this month</small>' +
-            '<b style="font-size:24px;color:#10b981;display:block;margin:4px 0 2px">Rs ' + (totalWonVal ? (totalWonVal / 1000000).toFixed(1) : "3.0") + 'M</b>' +
+            '<b style="font-size:24px;color:var(--ok);display:block;margin:4px 0 2px">Rs ' + (totalWonVal ? (totalWonVal / 1000000).toFixed(1) : "3.0") + 'M</b>' +
             '<small class="muted" style="font-size:11.5px">' + countWon + ' won in total</small>' +
           '</div>' +
           '<div class="card" style="background:#111318;border:1px solid #20242f;border-radius:12px;padding:18px">' +

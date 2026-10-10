@@ -131,7 +131,7 @@
             '<b style="color:#f9fafb;font-size:13.5px">' + esc(t.title) + '</b>' +
             '<span class="badge navy" style="font-size:11px">' + esc(t.stage) + '</span>' +
           '</div>' +
-          '<div style="display:flex;align-items:center;gap:12px;font-size:12px;color:#94a3b8">' +
+          '<div style="display:flex;align-items:center;gap:12px;font-size:12px;color:var(--mut2)">' +
             '<span>' + esc(t.lang) + '</span> · <span>' + esc(t.channel) + '</span>' +
           '</div>' +
         '</div>';

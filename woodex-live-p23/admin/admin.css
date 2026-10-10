@@ -5,17 +5,17 @@
 @font-face{font-family:"Inter", system-ui, -apple-system, sans-serif;src:url("/assets/fonts/dm-sans-700.woff2") format("woff2");font-weight:700;font-display:swap}
 
 :root{
-  --bg:#f8fafc;--card:#ffffff;--card-elevated:#ffffff;--card-sub:#f1f5f9;--line:#e2e8f0;--line2:#cbd5e1;--txt:#0f172a;--txt2:#334155;--mut:#64748b;--mut2:#94a3b8;
-  --navy:#0f172a;--gold:#0087a3;--gold-d:#005a74;--pri:#0087a3;--pri-fg:#ffffff;--pri-soft:rgba(0,135,163,0.1);
+  --bg:#f8fafc;--card:#ffffff;--card-elevated:#ffffff;--card-sub:#f1f5f9;--line:#e2e8f0;--line2:#cbd5e1;--txt:#0f172a;--txt2:#334155;--mut:#64748b;--mut2: #7c8ba1;
+  --navy:#0f172a;--gold: #007595;--gold-d:#005a74;--pri: #007595;--pri-fg:#ffffff;--pri-soft: rgba(0,117,149,0.1);
   --cyan:#0087a3;--cyan-glow:rgba(0,135,163,0.2);
-  --ok:#10b981;--ok-soft:#ecfdf5;--warn:#f59e0b;--warn-soft:#fffbeb;--bad:#ef4444;--bad-soft:#fef2f2;--info:#0284c7;--info-soft:#f0f9ff;
+  --ok: #0a7a46;--ok-soft:#ecfdf5;--warn: #b45309;--warn-soft:#fffbeb;--bad:#ef4444;--bad-soft:#fef2f2;--info:#0284c7;--info-soft:#f0f9ff;
   --code-bg:#0f172a;--code-fg:#38bdf8;
   --chat-bg:#ffffff;--chat-bubble-visitor:#f1f5f9;--chat-bubble-visitor-txt:#0f172a;--chat-bubble-ai:#0087a3;--chat-bubble-ai-txt:#ffffff;
   --side:280px;--top:68px;--r:12px;--sh:0 1px 3px rgba(0,0,0,0.06),0 1px 2px rgba(0,0,0,0.04);
   color-scheme:light
 }
 html.dark{
-  --bg:#07090e;--card:#111318;--card-elevated:#161922;--card-sub:#181c24;--line:#20242f;--line2:#2b3140;--txt:#f9fafb;--txt2:#d1d5db;--mut:#94a3b8;--mut2:#64748b;
+  --bg:#07090e;--card:#111318;--card-elevated:#161922;--card-sub:#181c24;--line: #262b38;--line2:#2b3140;--txt:#f9fafb;--txt2:#d1d5db;--mut:#94a3b8;--mut2:#64748b;
   --navy:#050608;--gold:#00b8db;--gold-d:#00d3f2;--pri:#00b8db;--pri-fg:#04222b;--pri-soft:rgba(0,184,219,0.12);
   --cyan:#00b8db;--cyan-glow:rgba(0,184,219,0.3);
   --ok:#10b981;--ok-soft:rgba(16,185,129,0.15);--warn:#f59e0b;--warn-soft:rgba(245,158,11,0.15);--bad:#ef4444;--bad-soft:rgba(239,68,68,0.15);--info:#00b8db;--info-soft:rgba(0,184,219,0.15);

@@ -32,7 +32,7 @@
               '<span class="preline-avatar" id="active-av">KA</span>' +
               '<div>' +
                 '<b id="active-name" style="font-size:15px;display:block;color:var(--txt)">Kamran Ashraf</b>' +
-                '<small style="color:#10b981;font-size:11.5px;font-weight:600">● Online via Website Chat</small>' +
+                '<small style="color:var(--ok);font-size:11.5px;font-weight:600">● Online via Website Chat</small>' +
               '</div>' +
             '</div>' +
             '<div style="display:flex;gap:8px;flex-wrap:wrap">' +

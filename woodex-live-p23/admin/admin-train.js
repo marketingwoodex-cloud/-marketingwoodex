@@ -86,7 +86,7 @@
               return '<div style="background:#0b0d13;border:1px solid #1e2430;border-radius:10px;padding:14px 16px">' +
                 '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">' +
                   '<b style="color:#00d3f2;font-size:13.5px">Q: ' + esc(f.q) + '</b>' +
-                  '<button class="btn sm ghost" style="color:#ef4444">' + ic("trash") + '</button>' +
+                  '<button class="btn sm ghost" style="color:var(--bad)">' + ic("trash") + '</button>' +
                 '</div>' +
                 '<p style="color:#cbd5e1;font-size:12.5px;margin:0;line-height:1.5">A: ' + esc(f.a) + '</p>' +
               '</div>';
@@ -136,7 +136,7 @@
         box.innerHTML = '<div class="card" style="background:#111318;border:1px solid #20242f;border-radius:14px;padding:20px">' +
           '<div class="card-h" style="padding:0 0 14px;border-bottom:1px solid #1a1e27"><h3>' + ic("heart-pulse") + ' AI Model Health & Latency Diagnostics</h3></div>' +
           '<div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:16px;margin:18px 0">' +
-            '<div style="background:#0b0d13;border:1px solid #1e2430;border-radius:10px;padding:16px"><small class="muted">Average Response Time</small><b style="font-size:24px;color:#10b981;display:block;margin-top:4px">620 ms</b></div>' +
+            '<div style="background:#0b0d13;border:1px solid #1e2430;border-radius:10px;padding:16px"><small class="muted">Average Response Time</small><b style="font-size:24px;color:var(--ok);display:block;margin-top:4px">620 ms</b></div>' +
             '<div style="background:#0b0d13;border:1px solid #1e2430;border-radius:10px;padding:16px"><small class="muted">Knowledge Retrieval Accuracy</small><b style="font-size:24px;color:#00d3f2;display:block;margin-top:4px">98.4%</b></div>' +
             '<div style="background:#0b0d13;border:1px solid #1e2430;border-radius:10px;padding:16px"><small class="muted">Monthly Token Usage</small><b style="font-size:24px;color:#f9fafb;display:block;margin-top:4px">42,850</b></div>' +
           '</div>' +

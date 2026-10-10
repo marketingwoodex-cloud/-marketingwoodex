@@ -66,6 +66,11 @@ function respond(action) {
   if (action === "me") return { ok: true, token: "qa-token", builderToken: "qa-builder", user: { name: "QA Sweep", email: "qa@woodex.pk", role: "owner" } };
   if (action === "login") return { ok: true, token: "qa-token", builderToken: "qa-builder", user: { name: "QA Sweep", email: "qa@woodex.pk", role: "owner" } };
   if (action === "pages") return { ok: true, pages: [], total: 0 };
+  /* Phase 3 fixture pack: the three screens that were stuck on their Loading… shell because these
+     payloads were missing. Shapes mirror api/builder.php:theme, api/admin.php:tg_get and :mt_get. */
+  if (action === "theme_get") return { ok: true, vars: { "--wx-preset": "woodex", "--wx-navy": "#0c1628", "--wx-font": "dm", "--wx-font-head": "jakarta", "--wx-r-lg": "16px", "--wx-btn-radius": "999px" } };
+  if (action === "tg_get") return { ok: true, cfg: { bot: "", site: "chat", tgUser: "", group: false, groupTitle: "", linked: 0, tokenSet: false, webhook: "", waDown: false, meDm: false, alertChats: false, alertLeads: true, alertChatsPhone: "" }, me: null, on: false };
+  if (action === "mt_get") return { ok: true, on: false, mode: "maintenance", until: "", text: "", token: "qa-staff-token", files: [{ name: "404.html", bytes: 8123 }, { name: "500.html", bytes: 6402 }, { name: "503.html", bytes: 7311 }], pages: [{ path: "404.html", title: "Page not found" }, { path: "500.html", title: "Server error" }, { path: "503.html", title: "Maintenance" }] };
   if (action === "notifications" || action === "notify_list") return { ok: true, items: [], unread: 0, total: 0 };
   return new Proxy({ ok: true }, {
     get(t, k) {

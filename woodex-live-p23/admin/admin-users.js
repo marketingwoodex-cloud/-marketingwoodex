@@ -71,7 +71,7 @@
               '</div>' +
               '<span class="badge ok" style="font-size:10.5px">Active</span>' +
             '</div>' +
-            '<p style="font-size:12.5px;color:#94a3b8;line-height:1.5;margin:0;min-height:38px">' + esc(u.bio || "Team member at Woodex Interior Studio.") + '</p>' +
+            '<p style="font-size:12.5px;color:var(--mut2);line-height:1.5;margin:0;min-height:38px">' + esc(u.bio || "Team member at Woodex Interior Studio.") + '</p>' +
             '<div style="border-top:1px solid #1a1e27;padding-top:12px;display:flex;flex-direction:column;gap:6px;font-size:12px;color:#cbd5e1">' +
               '<div style="display:flex;align-items:center;gap:8px">' + ic("mail") + '<a href="mailto:' + esc(u.email) + '" style="color:inherit;text-decoration:none">' + esc(u.email) + '</a></div>' +
               (u.phone ? '<div style="display:flex;align-items:center;gap:8px">' + ic("phone") + '<span>' + esc(u.phone) + '</span></div>' : '') +

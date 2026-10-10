@@ -216,10 +216,10 @@ html [style*="background:#0c1628"] p.muted, html [style*="background:#0c1628"] .
 
 /* Light-theme text inside cards that carries dark-theme inline colours */
 html:not(.dark) .card [style*="color:#00d3f2"], html:not(.dark) .card [style*="color: #00d3f2"] { color: #1d4ed8 !important; }
-html:not(.dark) .card [style*="color:#10b981"], html:not(.dark) .card [style*="color: #10b981"] { color: #047857 !important; }
+html:not(.dark) .card [style*="color:var(--ok)"], html:not(.dark) .card [style*="color: var(--ok)"] { color: #047857 !important; }
 html:not(.dark) .card [style*="color:#a78bfa"], html:not(.dark) .card [style*="color: #a78bfa"] { color: #6d28d9 !important; }
 html:not(.dark) .card [style*="color:#cbd5e1"], html:not(.dark) .card [style*="color: #cbd5e1"],
-html:not(.dark) .card [style*="color:#94a3b8"], html:not(.dark) .card [style*="color: #94a3b8"],
+html:not(.dark) .card [style*="color:var(--mut2)"], html:not(.dark) .card [style*="color: var(--mut2)"],
 html:not(.dark) .card [style*="color:#9ca3af"], html:not(.dark) .card [style*="color: #9ca3af"] { color: var(--ui-muted) !important; }
 html:not(.dark) .card :is(h1, h2, h3, h4, h5, b, strong, p, label, span)[style*="color:#f9fafb"],
 html:not(.dark) .card :is(h1, h2, h3, h4, h5, b, strong, p, label)[style*="color:#fff;"],
@@ -243,7 +243,7 @@ html .hub-bar a.on, html.dark .hub-bar a.on, html .seg button.on, html .lp-bar b
 html .us-tabs a.on { border-bottom-color: var(--ui-brand) !important; }
 
 /* ---------- Muted greys from inline styles: one readable muted tone per theme ---------- */
-html:not(.dark) [style*="color:#94a3b8"], html:not(.dark) [style*="color: #94a3b8"], html:not(.dark) [style*="color:#64748b"],
+html:not(.dark) [style*="color:var(--mut2)"], html:not(.dark) [style*="color: var(--mut2)"], html:not(.dark) [style*="color:#64748b"],
 html:not(.dark) [style*="color: #64748b"], html:not(.dark) [style*="color:#98a2b3"], html:not(.dark) [style*="color:#9ca3af"] { color: var(--ui-muted) !important; }
 html.dark [style*="color:#667085"], html.dark [style*="color: #667085"], html.dark [style*="color:#475569"] { color: var(--ui-muted) !important; }
 html.dark [style*="color:#344054"], html.dark [style*="color: #344054"], html.dark [style*="color:#0c1628"], html.dark [style*="color: #0c1628"] { color: var(--ui-text) !important; }

@@ -560,7 +560,7 @@
           '<div class="card-h" style="padding:0 0 16px;border-bottom:1px solid #1a1e27"><h3 style="color:#f9fafb;font-size:16px">' + ic("activity") + ' System &amp; Server Health</h3></div>' +
           '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-top:16px">' +
             '<div style="background:#161922;padding:14px;border-radius:10px;border:1px solid #232836"><small class="muted">PHP Version</small><b style="display:block;font-size:16px;color:#f9fafb;margin-top:4px">8.2.18 (Hostinger)</b></div>' +
-            '<div style="background:#161922;padding:14px;border-radius:10px;border:1px solid #232836"><small class="muted">Database Latency</small><b style="display:block;font-size:16px;color:#10b981;margin-top:4px">1.2 ms · Optimal</b></div>' +
+            '<div style="background:#161922;padding:14px;border-radius:10px;border:1px solid #232836"><small class="muted">Database Latency</small><b style="display:block;font-size:16px;color:var(--ok);margin-top:4px">1.2 ms · Optimal</b></div>' +
             '<div style="background:#161922;padding:14px;border-radius:10px;border:1px solid #232836"><small class="muted">Cron Daemon</small><b style="display:block;font-size:16px;color:#00d3f2;margin-top:4px">Active · 5 min tick</b></div>' +
             '<div style="background:#161922;padding:14px;border-radius:10px;border:1px solid #232836"><small class="muted">Memory Usage</small><b style="display:block;font-size:16px;color:#f9fafb;margin-top:4px">18.4 MB / 512 MB</b></div>' +
           '</div>' +

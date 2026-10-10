@@ -179,7 +179,7 @@
   // ------------------------------------------------------------------ view
   W.VIEWS.global = function (el) {
     el.innerHTML = head("Header & footer", "Header & footer") +
-      '<div class="toolbar" style="margin-bottom:18px;flex-wrap:wrap"><button class="btn pri" data-gt="header">Header</button><button class="btn" data-gt="mega">Mega menu</button><button class="btn" data-gt="footer">Footer</button><button class="btn" data-gt="design">' + ic("layers") + 'Design</button><button class="btn" data-gt="versions">' + ic("history") + 'Versions</button><button class="btn" data-gt="replace">Find & replace</button>' +
+      '<div class="toolbar" style="margin-bottom:18px;flex-wrap:wrap"><button class="btn pri" data-gt="header">Header</button><button class="btn" data-gt="mega">Mega menu</button><button class="btn" data-gt="footer">Footer</button><button class="btn" data-gt="design">' + ic("layers") + 'Design</button><button class="btn" data-gt="versions">' + ic("history") + 'Versions</button><button class="btn" data-gt="menu">Menu</button><button class="btn" data-gt="replace">Find & replace</button>' +
       '<span style="margin-left:auto;display:flex;gap:8px"><button class="btn" id="hf-export" title="Download header & footer as a file">' + ic("download") + 'Export</button><button class="btn" id="hf-import" title="Load a header & footer file">' + ic("upload") + 'Import</button><span class="badge gold" id="hf-dirty" hidden>Unpublished changes</span><button class="btn" id="hf-undo" title="Undo (Ctrl+Z)" disabled>↶ Undo</button><button class="btn" id="hf-discard">Discard changes</button><button class="btn pri" id="hf-publish">' + ic("upload") + 'Publish to all pages</button></span></div>' +
       '<div id="hf-wrap" style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:20px;align-items:start"><div id="hf-body" style="min-width:0"><div class="empty">Loading…</div></div>' +
       '<div class="card" id="hf-prev" style="position:sticky;top:12px"><div class="card-h"><h3>Live preview</h3><span class="toolbar"><button class="btn sm pri" data-dev="d">Desktop</button><button class="btn sm" data-dev="m">Mobile</button><button class="btn sm" id="hf-mega">Show mega menu</button><button class="btn sm" id="hf-foot">Jump to footer</button></span></div>' +
@@ -228,6 +228,7 @@
 
     var draw = function () {
       if (tab === "replace") { $("#hf-wrap").style.gridTemplateColumns = "1fr"; $("#hf-prev").style.display = "none"; return W.replaceTool ? W.replaceTool(body) : (body.innerHTML = '<div class="empty">Find & replace is unavailable.</div>'); }
+      if (tab === "menu") { $("#hf-wrap").style.gridTemplateColumns = "1fr"; $("#hf-prev").style.display = "none"; return W.menuEditor ? W.menuEditor(body) : (body.innerHTML = '<div class="empty">The menu editor is unavailable.</div>'); }
       $("#hf-wrap").style.gridTemplateColumns = "minmax(0,1fr) minmax(0,1.2fr)"; $("#hf-prev").style.display = "";
       if (!D) return;
       var h = pagesDl();
