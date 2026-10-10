@@ -386,7 +386,10 @@ switch ($action) {
              . (isset($vars['--wx-cream']) ? ":root{--cream:var(--wx-cream);--surface:var(--wx-cream);--beige:var(--wx-cream);--wx-surface:var(--wx-cream);--wx-beige:var(--wx-cream)}\n" : '')
              . "html{font-size:var(--wx-base-size,16px)}\nbody,button,input,select,textarea{font-family:var(--wx-font)!important}\nmain h1,main h2,main h3{font-family:var(--wx-font-head,var(--wx-font))}\n";
         if (is_file(THEME_FILE)) copy(THEME_FILE, BACKUP_DIR . '/theme-' . date('Ymd-His') . '.css');
-        file_put_contents(THEME_FILE, $faces . $css . $hs, LOCK_EX);
+        /* v2.7: every page links /assets/theme.css, so the section-suite stylesheet rides along
+           with it. The import must stay first in the file (CSS requires @import before rules). */
+        $suite = '@import url("/assets/sections-v27.css");\n';
+        file_put_contents(THEME_FILE, $suite . $faces . $css . $hs, LOCK_EX);
         file_put_contents(PRIVATE_DIR . '/theme.json', json_encode(array_intersect_key($vars, $allowed), JSON_PRETTY_PRINT), LOCK_EX);
         act('theme', '');
         out(['ok' => true]);

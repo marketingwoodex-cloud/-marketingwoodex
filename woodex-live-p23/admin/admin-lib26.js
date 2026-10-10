@@ -17,7 +17,7 @@
     return t.innerHTML;
   }
   function frame(html, h, scale) { scale = scale || 0.32; return '<div class="l6-th" style="height:' + h + 'px"><iframe loading="lazy" tabindex="-1" style="width:' + (100 / scale) + '%;height:' + (h / scale) + 'px;transform:scale(' + scale + ')" srcdoc="' + esc("<!doctype html><html><head><meta charset='utf-8'>" + CSS + "</head><body><main>" + html + "</main></body></html>") + '"></iframe></div>'; }
-  function tabs(nMine) { return '<div class="seg l6-tabs"><button data-l6="v26"' + (tab === "v26" ? ' class="on"' : "") + ">v26 library <b>50</b></button><button data-l6=\"mine\"" + (tab === "mine" ? ' class="on"' : "") + ">My sections" + (nMine != null ? " <b>" + nMine + "</b>" : "") + "</button></div>"; }
+  function tabs(nMine) { return '<div class="seg l6-tabs"><button data-l6="v26"' + (tab === "v26" ? ' class="on"' : "") + ">v26 library <b>50</b></button><button data-l6=\"mine\"" + (tab === "mine" ? ' class="on"' : "") + ">My sections &amp; suite" + (nMine != null ? " <b>" + nMine + "</b>" : "") + "</button></div>"; }
 
   W.VIEWS.library = function (el) {
     if (tab === "mine") {
@@ -71,6 +71,9 @@
       W.closeModal(); location.hash = "#/builder/" + encodeURIComponent(p.path);
     };
   }
+  /* v2.7: the starter-suite panel in admin-library.js reuses this flow so a suite block can be
+     dropped straight onto a page without going through a saved library copy first. */
+  W.ins = use;
   var st = document.createElement("style");
   st.textContent = ".l6-tabs{margin-top:4px}.l6-tabs b,.l6-chips b{opacity:.55;margin-left:3px;font-weight:600}.l6-bar{padding:14px 16px;margin-bottom:16px}.l6-row{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center}#l6-q{padding:8px 12px;border:1px solid var(--line,#e4e7ec);border-radius:10px;min-width:260px}" +
     ".l6-sk{display:flex;gap:5px;align-items:center;flex-wrap:wrap}.l6-sk small{font-weight:600;color:#667085;margin-right:4px}.l6-sk button,.l6-chips button{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line,#e4e7ec);background:#fff;border-radius:99px;padding:6px 12px;font:inherit;font-size:12.5px;cursor:pointer}.l6-sk button.on{box-shadow:0 0 0 1.5px #0c1628;border-color:#0c1628}.l6-chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}.l6-chips button.on{background:#0c1628;color:#fff;border-color:#0c1628}" +

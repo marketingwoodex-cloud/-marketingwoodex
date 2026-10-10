@@ -183,7 +183,11 @@ const iframeStub = requestInterceptor(request => {
     ok("  " + mark + " " + id.padEnd(16) + String(html.length).padStart(7) + " B  " + state + (err ? "  " + err.slice(0, 110) : ""));
     if (state === "ERROR" || state === "EMPTY") fails.push(id + " → " + state + " " + err.slice(0, 200));
     if (state === "STUB" || state === "SKIP") gaps.push(id + "(" + state + ")");
-    if ((process.env.WX_DUMP || "").split(",").indexOf(id) > -1) console.log("      └ " + html.slice(0, 420).replace(/\s+/g, " "));
+    if ((process.env.WX_DUMP || "").split(",").indexOf(id) > -1) {
+      console.log("      └ " + html.slice(0, 260).replace(/\s+/g, " "));
+      const marks = ["Starter suite", "Install all", "lb-sgrid", "sections-v27", "Your library"];
+      console.log("      marks: " + marks.map(m => m + "=" + (html.indexOf(m) > -1 ? "yes" : "no")).join("  "));
+    }
     if (state === "soon") gaps.push(id + "(soon)");
   }
 

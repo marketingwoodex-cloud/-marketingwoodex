@@ -458,7 +458,8 @@
       btn.ondragend = function () { S.drag = null; hideDrop(); };
     });
   }
-  libButtons(window.WX_BLOCKS || [], $("#lib-sections"), "section");
+  /* v2.7: the legacy element blocks plus the 70-section suite, one tray (suite first) */
+  libButtons((window.WX_SECTIONS || []).concat(window.WX_SECTIONS || []).concat(window.WX_BLOCKS || []), $("#lib-sections"), "section");
   libButtons(window.WX_ELEMENTS || [], $("#lib-elements"), "element");
   // P16: all 50 v26 templates listed directly in the Sections tab (click or drag), filter by category
   (function () {
@@ -498,7 +499,7 @@
     S.drag = null; hideDrop(); afterInsert(node, kind);
   }
   function pickSectionModal(after) {
-    modal("<h2>Add a section below</h2><div class='lib' style='grid-template-columns:repeat(3,1fr)'>" + (window.WX_BLOCKS || []).map(function (b) { return "<button data-id='" + b.id + "'><span>" + b.icon + "</span>" + esc(b.name) + "</button>"; }).join("") + "</div>");
+    modal("<h2>Add a section below</h2><div class='lib' style='grid-template-columns:repeat(3,1fr)'>" + (window.WX_SECTIONS || []).concat(window.WX_BLOCKS || []).map(function (b) { return "<button data-id='" + b.id + "'><span>" + b.icon + "</span>" + esc(b.name) + "</button>"; }).join("") + "</div>");
     $$("#modal-body .lib button").forEach(function (btn) { btn.onclick = function () { var b = WX_BLOCKS.find(function (x) { return x.id === btn.dataset.id; }); closeModal(); insertSection(b.html, after); }; });
   }
 
@@ -1267,7 +1268,7 @@
   function download(name, text, type) { var a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([text], { type: type || "text/html" })); a.download = name; document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 500); }
   function exportEl() { if (!S.sel) return; download((S.sel.getAttribute("data-wx-label") || S.sel.classList[0] || "section").replace(/[^\w-]+/g, "-") + ".html", packStyles(S.sel) + cleanOuter(S.sel)); }
   // ---- Phase 5: v26 templates gallery, JSON export, safer multi-section import with preview
-  var CSS_LINKS = '<link rel="stylesheet" href="/assets/site-p21.css"><link rel="stylesheet" href="/assets/v1-p21.css"><link rel="stylesheet" href="/assets/theme.css"><style>html,body{margin:0;overflow:hidden;pointer-events:none}.t6-hero{min-height:720px}</style>';
+  var CSS_LINKS = '<link rel="stylesheet" href="/assets/sections-v27.css"><link rel="stylesheet" href="/assets/site-p21.css"><link rel="stylesheet" href="/assets/v1-p21.css"><link rel="stylesheet" href="/assets/theme.css"><style>html,body{margin:0;overflow:hidden;pointer-events:none}.t6-hero{min-height:720px}</style>';
   function thumb(html, h) {
     var doc = "<!doctype html><html><head><meta charset='utf-8'>" + CSS_LINKS + "</head><body><main>" + html + "</main></body></html>";
     return "<div style='position:relative;width:100%;height:" + (h || 190) + "px;overflow:hidden;border-radius:8px;background:#f4efe7'><iframe loading='lazy' tabindex='-1' aria-hidden='true' srcdoc=\"" + doc.replace(/&/g, "&amp;").replace(/"/g, "&quot;") + "\" style='position:absolute;top:0;left:0;width:1280px;height:" + Math.round((h || 190) * 4) + "px;border:0;transform:scale(.25);transform-origin:0 0'></iframe></div>";

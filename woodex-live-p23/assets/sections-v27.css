@@ -1,0 +1,158 @@
+/* =============================================================================
+   Woodex v2.7 — section suite stylesheet
+   -----------------------------------------------------------------------------
+   Companion to assets/site-p21.css + assets/v1-p21.css, and the styling contract
+   for the 70 blocks in _templates/section-library.json (built by
+   tools/build-sections.mjs). Everything here is scoped to .s27-* so it can never
+   collide with the existing wx-* primitives, and every family reads the site
+   tokens, so the light sheet and the dark sheet stay in step.
+
+   Load order on any page that renders these sections:
+       site-p21.css  →  v1-p21.css  →  sections-v27.css
+   ========================================================================== */
+
+.s27 {
+  --s27-pad: clamp(48px, 7vw, 96px);
+  --s27-gap: 24px;
+  --s27-radius: var(--wx-r-lg, 20px);
+  --s27-line: var(--wx-line, #e2e8f0);
+  --s27-txt: var(--wx-txt, #0f172a);
+  --s27-mut: var(--wx-mut, #64748b);
+  --s27-card: var(--wx-card, #fff);
+  --s27-soft: var(--wx-soft, #f6f7f9);
+  --s27-ink: var(--wx-ink, #0b0d13);
+  --s27-pri: var(--wx-pri, #007595);
+  --s27-glow: var(--wx-pri-glow, #0090b8);
+  --s27-gold: var(--wx-gold, #c59b27);
+  --s27-max: 1200px;
+  color: var(--s27-txt);
+}
+.dark .s27, html[data-theme="theme-moon"] .s27 {
+  --s27-line: #20242f; --s27-txt: #f9fafb; --s27-mut: #94a3b8;
+  --s27-card: #111318; --s27-soft: #181c24; --s27-ink: #0b0d13;
+  --s27-pri: #00b8db; --s27-glow: #00d3f2;
+}
+.s27-wrap { max-width: var(--s27-max); margin: 0 auto; padding: 0 20px; }
+.s27-sec { padding: var(--s27-pad) 0; }
+.s27-sec--soft { background: var(--s27-soft); }
+.s27-sec--ink { background: var(--s27-ink); color: #f9fafb; }
+.s27-sec--ink .s27-lead, .s27-sec--ink .s27-mut { color: #cbd5e1; }
+.s27-head { max-width: 62ch; margin: 0 0 32px; }
+.s27-head--center { margin-inline: auto; text-align: center; }
+.s27-kicker { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--s27-pri); margin: 0 0 10px; }
+.s27-h2 { font-size: clamp(26px, 3.4vw, 42px); line-height: 1.14; margin: 0 0 12px; letter-spacing: -.01em; }
+.s27-lead { font-size: clamp(15px, 1.5vw, 18px); line-height: 1.7; color: var(--s27-mut); margin: 0; }
+.s27-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 22px; }
+
+/* ---------- hero family ---------- */
+.s27-hero { position: relative; padding: clamp(56px, 9vw, 120px) 0; overflow: hidden; }
+.s27-hero--split .s27-hero-grid { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: clamp(24px, 4vw, 56px); align-items: center; }
+.s27-hero--full { min-height: min(78vh, 720px); display: flex; align-items: flex-end; }
+.s27-hero-media { position: absolute; inset: 0; z-index: 0; }
+.s27-hero-media img { width: 100%; height: 100%; object-fit: cover; }
+.s27-hero--full .s27-hero-copy { position: relative; z-index: 1; background: linear-gradient(180deg, rgba(11,13,19,0) 0%, rgba(11,13,19,.82) 62%); color: #f9fafb; padding-top: 40px; margin: 0 -20px; padding-inline: 20px; border-radius: var(--s27-radius) var(--s27-radius) 0 0; }
+.s27-hero--full .s27-lead, .s27-hero--full .s27-kicker { color: #e2e8f0; }
+.s27-hero-figure { border-radius: var(--s27-radius); overflow: hidden; }
+.s27-hero-figure img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.s27-hero--band { background: var(--s27-ink); color: #f9fafb; }
+.s27-hero--band .s27-lead { color: #cbd5e1; }
+.s27-hero--grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s27-gap); }
+.s27-hero--grid .s27-hero-copy { grid-column: 1 / -1; }
+.s27-hero-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: var(--s27-gap); margin-top: 34px; }
+.s27-hero-stat { border-left: 2px solid var(--s27-pri); padding-left: 14px; }
+.s27-hero-stat b { display: block; font-size: 26px; }
+.s27-hero-stat span { color: var(--s27-mut); font-size: 13px; }
+
+/* ---------- catalogue family (kitchens / wardrobes / office) ---------- */
+.s27-grid { display: grid; gap: var(--s27-gap); }
+.s27-grid--2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.s27-grid--3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.s27-grid--4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.s27-card { background: var(--s27-card); border: 1px solid var(--s27-line); border-radius: var(--s27-radius); overflow: hidden; display: flex; flex-direction: column; }
+.s27-card-b { padding: 20px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
+.s27-card img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; }
+.s27-card h3 { margin: 0; font-size: 18px; }
+.s27-card p { margin: 0; color: var(--s27-mut); font-size: 14px; line-height: 1.65; }
+.s27-spec { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; font-size: 13.5px; }
+.s27-spec li { display: flex; justify-content: space-between; gap: 12px; border-bottom: 1px dashed var(--s27-line); padding-bottom: 6px; }
+.s27-spec b { font-variant-numeric: tabular-nums; }
+.s27-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.s27-tag { font-size: 11.5px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--s27-pri); background: color-mix(in srgb, var(--s27-pri) 12%, transparent); border-radius: 999px; padding: 4px 10px; }
+.s27-price { display: flex; align-items: baseline; gap: 8px; font-size: 15px; }
+.s27-price b { font-size: 20px; }
+.s27-price small { color: var(--s27-mut); }
+
+/* configuration rows used by the kitchen/wardrobe/office blocks */
+.s27-rows { display: grid; gap: 14px; }
+.s27-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); gap: var(--s27-gap); align-items: center; padding: 18px; border: 1px solid var(--s27-line); border-radius: var(--s27-radius); background: var(--s27-card); }
+.s27-row--rev > :first-child { order: 2; }
+.s27-row h3 { margin: 0 0 6px; font-size: 18px; }
+.s27-row p { margin: 0 0 10px; color: var(--s27-mut); font-size: 14px; line-height: 1.65; }
+.s27-row figure { margin: 0; border-radius: calc(var(--s27-radius) - 6px); overflow: hidden; }
+.s27-row img { display: block; width: 100%; aspect-ratio: 16 / 10; object-fit: cover; }
+
+/* ---------- specification table family ---------- */
+.s27-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.s27-table caption { text-align: left; font-weight: 700; padding: 0 0 10px; }
+.s27-table th, .s27-table td { text-align: left; padding: 11px 14px; border-bottom: 1px solid var(--s27-line); }
+.s27-table thead th { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--s27-mut); }
+.s27-table tbody tr:hover { background: color-mix(in srgb, var(--s27-pri) 5%, transparent); }
+.s27-table td b { font-variant-numeric: tabular-nums; }
+
+/* ---------- estimator / quote family ---------- */
+.s27-est { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(300px, .85fr); gap: var(--s27-gap); align-items: start; }
+.s27-est-form { display: grid; gap: 14px; }
+.s27-field { display: grid; gap: 6px; }
+.s27-field label { font-size: 13px; font-weight: 600; }
+.s27-field input, .s27-field select, .s27-field textarea {
+  font: inherit; color: inherit; background: var(--s27-card); border: 1px solid var(--s27-line);
+  border-radius: 10px; padding: 11px 13px; width: 100%;
+}
+.s27-field input:focus, .s27-field select:focus, .s27-field textarea:focus { outline: 2px solid var(--s27-glow); outline-offset: 1px; border-color: var(--s27-glow); }
+.s27-est-out { position: sticky; top: 16px; background: var(--s27-card); border: 1px solid var(--s27-line); border-radius: var(--s27-radius); padding: 20px; display: grid; gap: 12px; }
+.s27-est-out .s27-line { display: flex; justify-content: space-between; gap: 12px; font-size: 14px; }
+.s27-est-out .s27-line b { font-variant-numeric: tabular-nums; }
+.s27-est-out .s27-total { border-top: 2px solid var(--s27-pri); padding-top: 12px; font-size: 18px; }
+
+/* ---------- testimonial / proof family ---------- */
+.s27-quote { background: var(--s27-card); border: 1px solid var(--s27-line); border-radius: var(--s27-radius); padding: 24px; display: grid; gap: 14px; }
+.s27-quote blockquote { margin: 0; font-size: 16.5px; line-height: 1.68; }
+.s27-quote figcaption { display: flex; align-items: center; gap: 12px; font-size: 13.5px; color: var(--s27-mut); }
+.s27-quote figcaption img { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; }
+.s27-quote--lead { padding: clamp(24px, 4vw, 40px); }
+.s27-quote--lead blockquote { font-size: clamp(19px, 2.2vw, 26px); }
+.s27-logos { display: flex; flex-wrap: wrap; align-items: center; gap: clamp(18px, 4vw, 44px); }
+.s27-logos span { font-weight: 700; letter-spacing: .04em; color: var(--s27-mut); }
+
+/* ---------- FAQ family ---------- */
+.s27-faq { display: grid; gap: 10px; }
+.s27-faq details { background: var(--s27-card); border: 1px solid var(--s27-line); border-radius: 14px; padding: 16px 18px; }
+.s27-faq summary { cursor: pointer; font-weight: 600; font-size: 15.5px; }
+.s27-faq details[open] summary { color: var(--s27-pri); }
+.s27-faq p { margin: 10px 0 0; color: var(--s27-mut); line-height: 1.7; font-size: 14.5px; }
+.s27-faq--2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+/* ---------- misc utility blocks in the suite ---------- */
+.s27-steps { counter-reset: s27; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--s27-gap); }
+.s27-step { counter-increment: s27; display: grid; gap: 8px; }
+.s27-step::before { content: counter(s27, decimal-leading-zero); font-weight: 800; color: var(--s27-pri); font-size: 13px; letter-spacing: .1em; }
+.s27-band { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 18px; background: var(--s27-ink); color: #f9fafb; border-radius: var(--s27-radius); padding: clamp(22px, 3vw, 34px); }
+.s27-note { border-left: 3px solid var(--s27-gold); background: color-mix(in srgb, var(--s27-gold) 10%, transparent); padding: 14px 16px; border-radius: 0 12px 12px 0; font-size: 14px; }
+.s27-media-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.s27-media-pair img { border-radius: 14px; aspect-ratio: 1 / 1; object-fit: cover; width: 100%; }
+
+@media (max-width: 900px) {
+  .s27-hero--split .s27-hero-grid, .s27-est, .s27-grid--3, .s27-grid--4, .s27-faq--2, .s27-media-pair { grid-template-columns: minmax(0, 1fr); }
+  .s27-grid--2 { grid-template-columns: minmax(0, 1fr); }
+  .s27-row { grid-template-columns: minmax(0, 1fr); }
+  .s27-row--rev > :first-child { order: 0; }
+  .s27-est-out { position: static; }
+}
+@media (min-width: 901px) and (max-width: 1100px) {
+  .s27-grid--4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .s27-grid--3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media print {
+  .s27-actions, .s27-est-out { display: none; }
+  .s27-sec { padding: 18px 0; }
+}

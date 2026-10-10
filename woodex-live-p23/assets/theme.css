@@ -1,2 +1,6 @@
+/* v2.7 section suite — every page links this file, so the suite stylesheet rides along.
+   The import must stay first (CSS requires @import before any rule); api/builder.php writes it back
+   on every theme save. */
+@import url("/assets/sections-v27.css");
 /* Woodex theme — edit via /builder/ → Theme. Values here override v1.css tokens. */
 :root{}

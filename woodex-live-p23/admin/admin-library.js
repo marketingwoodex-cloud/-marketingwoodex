@@ -5,17 +5,19 @@
   var W = window.WXA, S = W.S, bapi = W.bapi, esc = W.esc, ic = W.ic, $ = W.$, $$ = W.$$, toast = W.toast, modal = W.modal, closeModal = W.closeModal, ago = W.ago, head = W.head;
   var CATS = ["Hero", "Services", "Features", "Projects", "Testimonials", "CTA", "FAQ", "Contact", "Content", "Footer", "Custom"];
   var STARTER = { cta: "CTA", split: "Content", "split-rev": "Content", cards: "Features", stats: "Features", process: "Services", gallery: "Projects", quotes: "Testimonials", faq: "FAQ", prose: "Content", logos: "Content", trust: "Features" };
-  var CSSLINKS = '<link rel="stylesheet" href="/assets/site-p21.css"><link rel="stylesheet" href="/assets/v1-p21.css"><link rel="stylesheet" href="/assets/theme.css">';
+  var CSSLINKS = '<link rel="stylesheet" href="/assets/site-p21.css"><link rel="stylesheet" href="/assets/v1-p21.css"><link rel="stylesheet" href="/assets/theme.css"><link rel="stylesheet" href="/assets/sections-v27.css">';
 
   function previewDoc(html) {
     var p = window.WXCSS ? WXCSS.split(html) : { styles: {}, html: html };
     return "<!doctype html><html><head><meta charset='utf-8'><base href='/'>" + CSSLINKS + "<style>html,body{margin:0;background:#fff;overflow:hidden}body *{pointer-events:none}" + (window.WXCSS ? WXCSS.compile(p.styles) : "") + "</style></head><body><main id='main-content'>" + p.html + "</main></body></html>";
   }
-  /** scaled live preview: iframe rendered at 1280px wide and scaled down to the card */
-  function mountPreview(box, html) {
+  /** scaled live preview: the iframe renders at a real device width and is scaled to the card */
+  var DEVICE = 1280;                       /* 375 (phone) · 768 (tablet) · 1280 (desktop) */
+  function mountPreview(box, html, w) {
+    var vw = w || DEVICE;
     var f = document.createElement("iframe"); f.setAttribute("sandbox", "allow-same-origin"); f.setAttribute("loading", "lazy"); f.setAttribute("tabindex", "-1"); f.title = "Preview";
-    f.style.cssText = "width:1280px;height:900px;border:0;transform-origin:0 0;position:absolute;left:0;top:0";
-    var fit = function () { var s = box.clientWidth / 1280; f.style.transform = "scale(" + s + ")"; };
+    f.style.cssText = "width:" + vw + "px;height:900px;border:0;transform-origin:0 0;position:absolute;left:0;top:0";
+    var fit = function () { var s = box.clientWidth / vw; f.style.transform = "scale(" + s + ")"; };
     f.srcdoc = previewDoc(html); box.appendChild(f); fit();
     f.onload = function () { try { var h = f.contentDocument.querySelector("main").scrollHeight; f.style.height = Math.max(300, Math.min(h, 1400)) + "px"; } catch (e) {} };
     new ResizeObserver(fit).observe(box);
@@ -30,12 +32,14 @@
     var st = S.libState || (S.libState = { q: "", cat: "" });
     el.innerHTML = head("Section library", "Section library", '<button class="btn" id="lb-imp">' + ic("file-plus") + 'Import</button><button class="btn" id="lb-exp">Export all</button><button class="btn pri" id="lb-new">' + ic("plus") + "New section</button>") +
       '<div class="card" style="margin-bottom:20px"><div class="card-b" style="display:flex;gap:12px;align-items:center;flex-wrap:wrap"><input type="search" id="lb-q" placeholder="Search name or tag…" value="' + esc(st.q) + '" style="margin:0;max-width:280px"><div class="toolbar" id="lb-cats"></div></div></div>' +
+      '<div id="lb-suite"></div>' +
+      '<h2 class="side-h" style="margin:8px 0 10px">Your library</h2>' +
       '<div id="lb-grid" class="lib-grid"><div class="empty">Loading…</div></div><input type="file" id="lb-file" accept=".json" hidden>';
     var blocks = [], usage = {};
     var load = function () {
       return Promise.all([bapi("blocks_list"), bapi("blocks_usage")]).then(function (r) {
         if (!r[0].ok) { $("#lb-grid").innerHTML = '<div class="empty"><b style="color:#d92d20">' + esc(r[0].error || "Could not load the library") + '</b><p><button class="btn" id="lb-retry">Retry</button> <a class="btn" href="#/system">System check</a></p></div>'; $("#lb-retry").onclick = load; return; }
-        blocks = r[0].blocks || []; usage = (r[1] && r[1].usage) || {}; draw();
+        blocks = r[0].blocks || []; usage = (r[1] && r[1].usage) || {}; suitePanel(); draw();
       });
     };
     var draw = function () {
@@ -83,9 +87,79 @@
       if (!confirm("Update \"" + b.name + "\" on " + used.length + " page(s)? Each page is backed up first.")) return;
       bapi("blocks_sync", { id: b.id }).then(function (x) { if (!x.ok) return toast(x.error, true); toast("Updated on " + x.changed + " page(s) ✓"); load(); });
     };
-    var starter = function () {
-      var list = (window.WX_BLOCKS || []).map(function (b) { return { name: b.name, kind: "section", cat: STARTER[b.id] || "Content", tags: ["starter"], html: b.html.trim() }; });
-      bapi("blocks_import", { blocks: list }).then(function (x) { if (!x.ok) return toast(x.error, true); toast(list.length + " starter sections added ✓"); load(); });
+    /* ---- v2.7 starter suite (70 sections) ----
+       Built by tools/build-sections.mjs and shipped as builder/sections-v27.js, so the admin reads
+       exactly the bytes the builder tray and the exported starter pack use. */
+    var SUITE = window.WX_SECTIONS || null, META = window.WX_SECTIONS_META || null;
+    var st2 = S.libState.suite || (S.libState.suite = { cat: "", q: "" });
+    var suitePanel = function () {
+      var box = $("#lb-suite"); if (!box) return;
+      if (!SUITE || !SUITE.length) {
+        box.innerHTML = '<div class="card"><div class="card-b"><b>Starter suite not found</b><p class="muted" style="margin:6px 0 0">builder/sections-v27.js is missing from this deployment. Run <code>node tools/build-sections.mjs</code> and redeploy that file.</p></div></div>';
+        return;
+      }
+      var cats = META ? META.categories : [];
+      var counts = {}; SUITE.forEach(function (b) { counts[b.cat] = (counts[b.cat] || 0) + 1; });
+      var q = st2.q.toLowerCase();
+      var list = SUITE.filter(function (b) {
+        return (!st2.cat || b.cat === st2.cat) && (!q || (b.name + " " + b.cat + " " + (b.tags || []).join(" ")).toLowerCase().indexOf(q) > -1);
+      });
+      box.innerHTML =
+        '<div class="card" style="margin-bottom:16px"><div class="card-h"><h3>Starter suite <span class="pill">' + SUITE.length + ' sections · v' + ((META && META.version) || "2.7.0") + '</span></h3>' +
+        '<span class="toolbar"><span class="seg" id="lb-dev">' + (CATDEV).map(function (d) { return '<button class="btn sm' + (d === DEVICE ? " pri" : "") + '" data-dev="' + d + '">' + (d === 375 ? "Phone" : d === 768 ? "Tablet" : "Desktop") + '</button>'; }).join("") + '</span>' +
+        '<button class="btn pri sm" id="lb-install">' + ic("download") + 'Install all ' + SUITE.length + '</button></span></div>' +
+        '<div class="card-b"><div class="toolbar" style="flex-wrap:wrap;gap:6px"><input type="search" id="lb-sq" class="toolbar" placeholder="Search the suite…" value="' + esc(st2.q) + '" style="min-width:220px">' +
+        '<button class="btn sm' + (!st2.cat ? " pri" : "") + '" data-sc="">All <span class="pill">' + SUITE.length + '</span></button>' +
+        cats.map(function (c) { return '<button class="btn sm' + (st2.cat === c.key ? " pri" : "") + '" data-sc="' + esc(c.key) + '">' + esc(c.label) + ' <span class="pill">' + (counts[c.key] || 0) + '</span></button>'; }).join("") +
+        '</div><p class="muted" style="margin:8px 0 0;font-size:12.5px">' + (cats.filter(function (c) { return c.key === st2.cat; })[0] || {}).note || "Heroes · kitchens · wardrobes · office fit-out · features · proof · CTA/estimator · FAQ — every block is real markup with Punjab rates, millimetre sizes and named hardware." + '</p></div>' +
+        '<div class="card-b" style="border-top:1px solid var(--line)"><div class="lib-grid" id="lb-sgrid">' +
+        (list.map(function (b) {
+          return '<div class="card lib-card" data-sid="' + esc(b.id) + '"><div class="lib-prev" data-suite="' + esc(b.id) + '"></div>' +
+            '<div class="lib-meta"><div style="min-width:0"><b title="' + esc(b.name) + '">' + esc(b.icon) + " " + esc(b.name) + '</b><div class="muted" style="font-size:12.5px">' + esc(b.cat) + " · " + ((b.html.length / 1024).toFixed(1)) + ' KB</div></div>' +
+            '<div style="display:flex;gap:4px;flex:none"><button class="btn sm" data-scp="' + esc(b.id) + '" title="Copy section HTML">' + ic("copy") + 'Copy</button>' +
+            '<button class="btn sm pri" data-sadd="' + esc(b.id) + '" title="Add to the library">' + ic("file-plus") + 'Add</button>' +
+            '<button class="btn sm" data-suse="' + esc(b.id) + '" title="Insert on a page (opens the builder)">' + ic("square-pen") + 'Page</button></div></div></div>';
+        }).join("") || '<div class="empty" style="grid-column:1/-1">Nothing matches that search.</div>') +
+        '</div></div></div>';
+      $$("[data-sc]", box).forEach(function (b) { b.onclick = function () { st2.cat = b.dataset.sc; suitePanel(); }; });
+      $$("#lb-dev [data-dev]", box).forEach(function (b) { b.onclick = function () { DEVICE = Number(b.dataset.dev); suitePanel(); }; });
+      var sq = $("#lb-sq"); if (sq) sq.oninput = function () { st2.q = sq.value.trim(); var p2 = sq.selectionStart; suitePanel(); var n = $("#lb-sq"); n.focus(); n.setSelectionRange(p2, p2); };
+      $$("[data-suite]", box).forEach(function (p3) {
+        var b = SUITE.filter(function (x) { return x.id === p3.dataset.suite; })[0]; if (!b) return;
+        p3._html = b.html; io.observe(p3);
+      });
+      $$("[data-scp]", box).forEach(function (b) {
+        b.onclick = function (e) { e.stopPropagation(); var blk = SUITE.filter(function (x) { return x.id === b.dataset.scp; })[0]; if (!blk) return;
+          try { navigator.clipboard.writeText(blk.html); toast("Section HTML copied"); } catch (err) { var ta = document.createElement("textarea"); ta.value = blk.html; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); ta.remove(); toast("Section HTML copied"); } };
+      });
+      $$("[data-sadd]", box).forEach(function (b) {
+        b.onclick = function (e) { e.stopPropagation(); var blk = SUITE.filter(function (x) { return x.id === b.dataset.sadd; })[0]; if (!blk) return;
+          b.disabled = true;
+          bapi("blocks_save", { name: blk.name, cat: blk.cat, tags: (blk.tags || []).join(","), kind: "section", global: false, html: blk.html }).then(function (x) {
+            b.disabled = false; if (!x.ok) return toast(x.error, true); toast("Added to your library ✓"); load();
+          }); };
+      });
+      $$("[data-suse]", box).forEach(function (b) {
+        b.onclick = function (e) { e.stopPropagation(); var blk = SUITE.filter(function (x) { return x.id === b.dataset.suse; })[0]; if (!blk) return;
+          if (!W.ins) return toast("Open the page builder once, then try again", true);
+          W.ins({ name: blk.name, html: blk.html, cat: blk.cat, id: blk.id }); };
+      });
+      var inst = $("#lb-install");
+      if (inst) inst.onclick = function () {
+        if (!confirm("Add all " + SUITE.length + " starter sections to your library?\n\nThe library holds 200 blocks and user blocks stay untouched.")) return;
+        inst.disabled = true;
+        bapi("blocks_import", { blocks: SUITE.map(function (b) { return { name: b.name, cat: b.cat, tags: (b.tags || []).join(","), kind: "section", global: false, html: b.html }; }) }).then(function (x) {
+          inst.disabled = false; if (!x.ok) return toast(x.error, true);
+          toast(SUITE.length + " starter sections installed ✓"); load();
+        });
+      };
+    };
+    var CATDEV = [375, 768, 1280];
+    var starter = function () {                  /* called by the empty-library state */
+      if (!SUITE || !SUITE.length) return toast("Starter suite not found — run tools/build-sections.mjs", true);
+      bapi("blocks_import", { blocks: SUITE.map(function (b) { return { name: b.name, cat: b.cat, tags: (b.tags || []).join(","), kind: "section", global: false, html: b.html }; }) }).then(function (x) {
+        if (!x.ok) return toast(x.error, true); toast(SUITE.length + " starter sections added ✓"); load();
+      });
     };
     // ---------------- editor
     var editor = function (b) {
