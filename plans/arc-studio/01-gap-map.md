@@ -15,7 +15,7 @@ Code references are from the pro tree `woodex-live-p29-v2.1-pro/` (checked 2026-
 | Dashboard (finance + project health) | EXTEND | `api/dash-lib.php`, `admin/admin-dash.js` | Project health panel: stage, budget used, next milestone |
 | Approvals (budgets + blueprint revisions) | EXTEND | `api/approvals-lib.php`, `admin/admin-appr.js` | New approval kinds: budget and drawing revision |
 | Unified Team Feed (architects, contractors, fabricators) | EXTEND | `api/chat-lib.php`, `admin/admin-chat*.js` (Inbox) | Project threads; ARC roles as participants |
-| Activity and timelines (Gantt) | PARTIAL + NEW | Activity view exists; projects have stages (`SALES_PSTAGES`, `api/sales-lib.php`) | Gantt view from design to installation (NEW) |
+| Activity and timelines (Gantt) | PARTIAL + NEW | Activity view exists; projects have stages (`SALES_PSTAGES`, `api/sales-lib.php`); milestones already stored on projects (`proj_milestones`, `api/sales17-lib.php:312`) | Gantt view from design to installation (NEW), reading the existing milestones |
 
 ## Architectural plans and schematics
 | Site layout and zoning | NEW | none | Project attributes (zone, access, constraints) as fields |
