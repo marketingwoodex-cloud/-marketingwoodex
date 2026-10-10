@@ -230,6 +230,7 @@ require __DIR__ . '/phase8-lib.php';
 require __DIR__ . '/chat-lib.php';
 require __DIR__ . '/tg-lib.php';
 require __DIR__ . '/ai-agent-lib.php';
+require __DIR__ . '/arc-feed-lib.php';
 require __DIR__ . '/notify-lib.php';
 require __DIR__ . '/booking-lib.php';
 require __DIR__ . '/seo-lib.php';
@@ -586,6 +587,6 @@ switch ($action) {
         if (!$dry && $total) log_act($u, 'global.replace', '"' . mb_substr($find, 0, 60) . '" → "' . mb_substr($rep, 0, 60) . '" (' . count($res) . ' pages)');
         out(['ok' => true, 'pages' => $res, 'total' => $total, 'dry' => $dry]);
 
-    default: if (!soc_actions($action, $in) && !sag_actions($action, $in) && !aic_actions($action, $in) && !aia_actions($action, $in) && !wah_actions($action, $in) && !tg_actions($action, $in) && !sheets_actions($action, $in) && !conn_actions($action, $in) && !logos_actions($action, $in) && !p19c_actions($action, $in) && !p18j_actions($action, $in) && !sales17_actions($action, $in) && !booking_actions($action, $in) && !crm_actions($action, $in) && !sales_actions($action, $in) && !content_actions($action, $in) && !media_actions($action, $in) && !security_actions($action, $in) && !gdata_actions($action, $in) && !dash_actions($action, $in) && !p8_actions($action, $in) && !chat_actions($action, $in) && !notify_actions($action, $in) && !seo_actions($action, $in) && !redirects_actions($action, $in) && !p18e_actions($action, $in) && !p18g_actions($action, $in) && !p18h_actions($action, $in)) fail('Unknown action', 404);
+    default: if (!arc_feed_actions($action, $in) && !soc_actions($action, $in) && !sag_actions($action, $in) && !aic_actions($action, $in) && !aia_actions($action, $in) && !wah_actions($action, $in) && !tg_actions($action, $in) && !sheets_actions($action, $in) && !conn_actions($action, $in) && !logos_actions($action, $in) && !p19c_actions($action, $in) && !p18j_actions($action, $in) && !sales17_actions($action, $in) && !booking_actions($action, $in) && !crm_actions($action, $in) && !sales_actions($action, $in) && !content_actions($action, $in) && !media_actions($action, $in) && !security_actions($action, $in) && !gdata_actions($action, $in) && !dash_actions($action, $in) && !p8_actions($action, $in) && !chat_actions($action, $in) && !notify_actions($action, $in) && !seo_actions($action, $in) && !redirects_actions($action, $in) && !p18e_actions($action, $in) && !p18g_actions($action, $in) && !p18h_actions($action, $in)) fail('Unknown action', 404);
 }
 } catch (PDOException $e) { error_log('admin.php: ' . $e->getMessage()); fail('Database error', 500); }

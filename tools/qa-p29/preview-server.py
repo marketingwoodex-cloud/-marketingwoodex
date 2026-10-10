@@ -2,7 +2,7 @@
 # - Serves public front-end files only (blocks PHP source, api/, private/db/template folders, SQL, env, dotfiles, docs).
 # - POST /api/admin.php and /api/builder.php are answered by this stub (no PHP, no database, no real accounts).
 #   Login accepts ONE preview test account from env PREVIEW_EMAIL / PREVIEW_PASS. Everything else is rejected.
-import http.server, os, sys, json, urllib.parse
+import http.server, os, sys, json, urllib.parse, time
 ROOT = sys.argv[1]
 PORT = int(sys.argv[2])
 PREVIEW_EMAIL = os.environ.get('PREVIEW_EMAIL', 'preview@woodex.test')
@@ -12,6 +12,8 @@ BLOCK_DIRS = {'api', '_private', '_database', '_templates', '_scripts', 'tools',
 BLOCK_EXT = {'.php', '.sql', '.env', '.md', '.json', '.lock', '.yaml', '.yml', '.ini', '.bak', '.log', '.dist', '.sh', '.bat', '.tar', '.zip'}
 BLOCK_NAMES = {'admin-tg.js'}  # contains a token literal (SEC-003); not for preview
 OWNER = {'id': 1, 'name': 'Preview Owner', 'role': 'owner', 'email': PREVIEW_EMAIL}
+PREVIEW_PROJECT = {'id': 1, 'name': 'Preview project (stub)', 'stage': 'design', 'photos': [], 'value': 0, 'paid': 0, 'target': '', 'no': 'P-1', 'client': ''}
+FEED = []  # in-memory team feed for preview only
 API_PATHS = {'/api/admin.php', '/api/builder.php'}
 
 def empty(extra=None):
@@ -58,6 +60,22 @@ class H(http.server.SimpleHTTPRequestHandler):
             return self._json(200, {'ok': False, 'error': 'Not signed in'})
         if self.headers.get('X-WX-ADM') != TOKEN and action not in ('password',):
             return self._json(200, {'ok': False, 'error': 'Not signed in'})
+        if action == 'projs_list':
+            return self._json(200, {'ok': True, 'projects': [dict(PREVIEW_PROJECT)]})
+        if action == 'arc_feed_list':
+            pid = int(data.get('project_id') or 0)
+            since = int(data.get('since') or 0)
+            if pid != PREVIEW_PROJECT['id']: return self._json(200, {'ok': False, 'error': 'Project not found'})
+            items = [m for m in FEED if m['id'] > since] if since else FEED[-100:]
+            return self._json(200, {'ok': True, 'items': items, 'me': OWNER['id']})
+        if action == 'arc_feed_post':
+            pid = int(data.get('project_id') or 0)
+            text = str(data.get('text') or '').strip()
+            if pid != PREVIEW_PROJECT['id']: return self._json(200, {'ok': False, 'error': 'Project not found'})
+            if not text or len(text) > 2000: return self._json(200, {'ok': False, 'error': 'Message must be 1 to 2000 characters'})
+            m = {'id': len(FEED) + 1, 'author_id': OWNER['id'], 'author': OWNER['name'], 'role': OWNER['role'], 'text': text, 'at': int(time.time())}
+            FEED.append(m)
+            return self._json(200, {'ok': True, 'item': m})
         return self._json(200, empty())
     def do_GET(self):
         if self._blocked(urllib.parse.urlsplit(self.path).path):

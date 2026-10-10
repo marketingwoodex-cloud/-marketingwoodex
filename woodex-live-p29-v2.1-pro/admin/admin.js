@@ -94,6 +94,7 @@
     ["projects", "Projects", "briefcase", "g:sales,g:support_view"],
     ["AUTOMATION"],
     ["chat", "Inbox", "message-circle", "g:conversations"],
+    ["team-feed", "Team feed", "users", "g:conversations"],
     { g: "WhatsApp", icon: "send", id: "wa", items: [
       ["wahub", "Overview & rules", "send", "g:broadcast"],
       ["wainsights", "Insights", "layers", "g:broadcast"],
