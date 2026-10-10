@@ -139,8 +139,8 @@
     },
     {
       "path": "woodex-audit/22-open-questions-and-limitations.md",
-      "sha256": "cc5b7fb0ee9627b54637a3a54d11c074a6712f9490fffecb76fd14e17fc82ceb",
-      "bytes": 3948
+      "sha256": "f30af45b33ee77bc510ea831f5adf024aa8345fcea534eacb6301915cf5615e7",
+      "bytes": 4293
     },
     {
       "path": "woodex-audit/23-evidence-index.md",
@@ -149,8 +149,8 @@
     },
     {
       "path": "woodex-audit/24-decision-log.md",
-      "sha256": "f91cfbf0cfad0bd437866f1d4a49665ac40319f907d3d0fb4eddbb845e20aa12",
-      "bytes": 2464
+      "sha256": "3e37668bf9b15a8e4c7217a4164a4b0337fe1499554d9ebf37951c68eaf4ad14",
+      "bytes": 2897
     },
     {
       "path": "woodex-audit/README.md",
