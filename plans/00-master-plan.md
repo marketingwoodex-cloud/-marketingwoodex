@@ -71,8 +71,8 @@ Order set by user: layout pass (section 1) first, then step 3 as unwired code.
 |---|---|---|---|
 | A0 | Gap map (30 items) | DONE `plans/arc-studio/01-gap-map.md` | read-only |
 | A1 | Data model spec | DONE `plans/arc-studio/02-data-model.md` | review |
-| A2 | Append-only revision log library `api/arc-lib.php` | PARTIAL: written, syntax-checked; hash chain not run | needs a runtime (declined) |
-| A3 | Approvals for budget and drawing sign-offs (`budget_change`, `drawing_revision`) on the existing queue | TODO (unwired code first, next step) | syntax only until a runtime is approved |
+| A2 | Append-only revision log library `api/arc-lib.php` (per-scope chain) | PARTIAL: written, syntax-checked; hash chain not run | needs a runtime (declined) |
+| A3 | Approvals for budget and drawing sign-offs (`arc_budget_change`, `arc_drawing_revision`) on the existing queue | PARTIAL: unwired code written (`api/arc-approvals-lib.php`), revision log changed to per-scope; syntax-checked only | runtime tests (blocked by decision) and route wiring with permission tests |
 | A4 | Team Feed: project threads in Inbox | TODO | browser check with stub |
 | A5 | Gantt timeline from existing milestones (`proj_milestones`) | TODO | browser check with stub |
 | A6 | Material schedules, vendor cost, markup; PO drafts behind approval (no auto-send) | TODO | syntax only |

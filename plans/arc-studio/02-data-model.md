@@ -10,7 +10,7 @@ Same as the existing modules (`api/sales-lib.php`): tables with a JSON `data` co
 | Table | Purpose | Key columns | Notes |
 |---|---|---|---|
 | `wx_arc_drawings` | Drawing or model record: floor plan, elevation, render, structural sheet, site plan | id, project_id, kind, title | `data`: link (URL or path, not uploaded), scale, sheet no., current rev label |
-| `wx_arc_revisions` | Append-only revision log for drawings and line-item costs | id, drawing_id, prev_hash, hash, by_user, created_at | Hash chain. Rows are never updated or deleted by code |
+| `wx_arc_revisions` | Append-only revision log per scope: `drawing`, `line` (material line cost), `project` (contract value) | id, scope, scope_id, prev_hash, hash, by_user, created_at | Hash chain per scope. Rows are never updated or deleted by code |
 | `wx_arc_material_lines` | Material and finish schedule lines | id, project_id, drawing_id, species, qty, unit | `data`: finish, supplier, vendor cost, markup %. Cost fields hidden from architect and contractor roles |
 | `wx_arc_po` | Purchase order drafts | id, project_id, status, no | Status: draft → pending approval → approved (manual send only) |
 | `wx_arc_field_reports` | Contractor field reports | id, project_id, author_id, report_date | `data`: moisture %, delivery snags, progress %, photo ids (from Media) |
@@ -21,8 +21,8 @@ Existing, reused, not duplicated: projects (`wx_projects`), clients (`wx_clients
 
 ## Revision log rules (append-only)
 1. One insert per change, never update or delete. Correction = new revision that references the old one.
-2. `hash = sha256(prev_hash . '|' . canonical_json(payload))`. The first row has `prev_hash = ''`. Chain is per drawing.
-3. Insert runs in a transaction with `SELECT ... FOR UPDATE` on the last row of that drawing, so two saves cannot both take the same `prev_hash`.
+2. `hash = sha256(prev_hash . '|' . canonical_json(payload))`. The first row has `prev_hash = ''`. Chain is per scope (`drawing`, `line`, `project`).
+3. Insert runs in a transaction with `SELECT ... FOR UPDATE` on the last row of that scope, so two saves cannot both take the same `prev_hash`.
 4. `arc_verify_chain()` recomputes every hash. Any mismatch = tampering or a bad write.
 5. Recommended DB grant (owner decision, not applied): the app user gets INSERT and SELECT on `wx_arc_revisions` only.
 
@@ -40,10 +40,10 @@ Existing, reused, not duplicated: projects (`wx_projects`), clients (`wx_clients
 
 "per setting" = owner decides in Users & Roles. Roles are new (`architect`, `contractor`, `fabricator`) and are added in step 5. Until then nothing new is exposed.
 
-## Approval kinds (step 3)
-- `budget_change`: changes to a project's contract value or to a material line's cost.
-- `drawing_revision`: a new revision on a drawing that has a sign-off.
-Both use the existing approvals queue (`APPR_EXTRA_WRITE` pattern). No new queue.
+## Approval kinds (step 3, written as unwired code in `api/arc-approvals-lib.php`)
+- `arc_budget_change`: changes a project's contract value (`wx_projects.value`). Needs project, old and new value, reason. Apply refuses if the current value no longer equals the requested old value (409).
+- `arc_drawing_revision`: a new revision on a drawing (state, revision label, note). Apply writes a `drawing` revision.
+Both use the existing approvals queue (`appr_queue`) and replay (`appr_begin_replay`). No new queue.
 
 ## Verification plan (before wiring)
 1. `php-parser` syntax check on every changed PHP file (done for arc-lib in this step).
