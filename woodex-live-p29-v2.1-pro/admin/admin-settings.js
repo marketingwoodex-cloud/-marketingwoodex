@@ -4,6 +4,15 @@
   "use strict";
   var W = window.WXA; if (!W) return;
   var api = W.api, esc = W.esc, ic = W.ic, toast = W.toast, modal = W.modal, closeModal = W.closeModal, $ = W.$, $$ = W.$$, head = W.head;
+  // Tile label ink: whichever of white or black gives the higher contrast on the brand colour (WCAG >= 4.5 for most brands)
+  function tileInk(hex) {
+    var n = parseInt(String(hex).replace("#", ""), 16);
+    var c = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map(function (v) {
+      v = v / 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+    });
+    var L = 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+    return (1.05 / (L + 0.05)) >= ((L + 0.05) / 0.05) ? "#fff" : "#000";
+  }
 
   var APPS = [
     { id: "facebook", name: "Facebook Pages", tag: "FP", cat: "social", color: "#1877f2", desc: "Post updates, sync reviews and read comments on your Facebook Business Page.", connected: true, fields: ["Page ID", "Page Access Token", "App Secret"] },
@@ -63,7 +72,7 @@
 
       var h = '<div style="padding:4px">' +
         '<div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;border-bottom:1px solid #1e2430;padding-bottom:14px">' +
-          '<span style="width:44px;height:44px;border-radius:10px;background:' + app.color + ';color:#fff;font-weight:700;font-size:16px;display:grid;place-items:center">' + app.tag + '</span>' +
+          '<span style="width:44px;height:44px;border-radius:10px;background:' + app.color + ';color:' + tileInk(app.color) + ';font-weight:700;font-size:16px;display:grid;place-items:center">' + app.tag + '</span>' +
           '<div>' +
             '<h2 style="margin:0;font-size:17px;color:#f9fafb">' + esc(app.name) + ' Integration</h2>' +
             '<span class="badge ' + (isConn ? 'warn' : 'ghost') + '" style="font-size:11px;margin-top:2px">' + (isConn ? 'Not verified' : 'Not connected') + '</span>' +
@@ -302,7 +311,7 @@
       grid.innerHTML = list.map(function (app) {
         return '<div style="background:var(--card-sub);border:1px solid var(--line);border-radius:12px;padding:16px;display:flex;align-items:center;justify-content:space-between;gap:14px">' +
           '<div style="display:flex;align-items:center;gap:12px;flex:1;min-width:0">' +
-            '<span style="width:42px;height:42px;border-radius:10px;background:' + app.color + ';color:#fff;font-weight:700;font-size:14px;display:grid;place-items:center;flex-shrink:0">' + app.tag + '</span>' +
+            '<span style="width:42px;height:42px;border-radius:10px;background:' + app.color + ';color:' + tileInk(app.color) + ';font-weight:700;font-size:14px;display:grid;place-items:center;flex-shrink:0">' + app.tag + '</span>' +
             '<div style="flex:1;min-width:0">' +
               '<div style="display:flex;align-items:center;gap:6px">' +
                 '<b style="font-size:14px;color:var(--txt);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc(app.name) + '</b>' +

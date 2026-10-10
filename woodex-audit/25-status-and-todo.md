@@ -18,7 +18,11 @@ Release recommendation: **BLOCK** (credential exposure is not contained; live si
 
 ## B. What is still pending
 
-### B1. Design and UI/UX (not started)
+### B1. Design and UI/UX (contrast layer done; Preline-style replica not started)
+- Done (working tree, `?v=ui-1`): `admin/woodex-ui.css` override layer loaded after `admin.css`. Headless rendered check (`tools/qa-p29/theme-contrast.mjs`, 4 screens x 2 themes): 0 text elements below AA on dashboard, settings, security, approvals in light and dark.
+- Done: integration tile label ink chosen by luminance (`admin-settings.js` `tileInk`, white or black, whichever has the higher contrast on the brand colour).
+- Not done: Preline-style layout, Tailwind static build, Inter font face (`admin.css` @font-face family Inter points to DM Sans files), Lucide icon set, mirror to `frontend-v1/admin`, manifest refresh after these edits.
+- Known limit: the connector grid is cut off horizontally at 1280 px (existing layout).
 - Split theme: dark sidebar in both themes, light workspace in light mode, low contrast (matrix AD-13; `admin.css:74`, `:439`, `:1284`, `:1391`, `:1614`; 73 unscoped light rules).
 - Chart colours do not follow the theme toggle; the toggle redraws only the dashboard (AD-18).
 - Preline-style replica: colours, typography, radius, buttons, cards, tables, badges, inputs, icons, dark and light. Blocked on the questions in section D.
@@ -55,7 +59,7 @@ Release recommendation: **BLOCK** (credential exposure is not contained; live si
 ## C. To-do list (in order, to start after the questions are answered)
 
 1. Confirm design direction and licence (section D, Q1–Q3).
-2. Build the design tokens: dark and light colour sets, font, icon set, radius, shadows, and button/badge/input styles. Verify contrast on rendered pixels (not jsdom).
+2. Build the design tokens: dark and light colour sets, font, icon set, radius, shadows, and button/badge/input styles. Verify contrast on rendered pixels (not jsdom). Contrast check passes; the replica is still open.
 3. Replace the admin shell (sidebar, topbar, theme switch, persisted per user). Fix the split theme in one place.
 4. Apply the shell to Admin & Settings first (the screen in your screenshot), then Overview, Sales, Automation, and Website & CMS.
 5. Integrations page: real status from the server; no hard-coded "connected".

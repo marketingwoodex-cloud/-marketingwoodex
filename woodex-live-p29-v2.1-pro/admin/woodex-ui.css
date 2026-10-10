@@ -1,0 +1,157 @@
+/* Woodex Admin — UI layer (shell, tokens, dark and light). Loaded after admin.css.
+   Purpose: one colour system for both themes. The sidebar follows the theme (it was always dark),
+   the workspace and cards follow the theme, and text meets contrast on both. Built by hand;
+   no template code is copied. Remove a rule here only after its screen is checked in both themes. */
+
+:root {
+  --ui-bg: #f5f7fa;
+  --ui-surface: #ffffff;
+  --ui-surface-2: #f1f5f9;
+  --ui-border: #e2e8f0;
+  --ui-text: #0f172a;      /* 17.9:1 on --ui-surface */
+  --ui-text-2: #334155;    /* 10.3:1 */
+  --ui-muted: #475569;     /* 7.6:1 */
+  --ui-accent: #00708a;    /* 5.7:1 with white text */
+  --ui-accent-fg: #ffffff;
+  --ui-accent-soft: rgba(0, 112, 138, 0.10);
+  --ui-side: #f8fafc;
+  --ui-side-text: #1e293b; /* 14.6:1 on --ui-side */
+  --ui-side-muted: #475569;
+  --ui-side-active: #e2e8f0;
+  --ui-side-border: #e2e8f0;
+  --ui-focus: #00708a;
+}
+
+html.dark {
+  --ui-bg: #0b1220;
+  --ui-surface: #111827;
+  --ui-surface-2: #1b2535;
+  --ui-border: #263244;
+  --ui-text: #f1f5f9;      /* 16.3:1 on --ui-surface */
+  --ui-text-2: #cbd5e1;    /* 11.4:1 */
+  --ui-muted: #94a3b8;     /* 6.9:1 */
+  --ui-accent: #22c7e6;    /* 9.8:1 with --ui-accent-fg */
+  --ui-accent-fg: #06202a;
+  --ui-accent-soft: rgba(34, 199, 230, 0.14);
+  --ui-side: #0b1220;
+  --ui-side-text: #cbd5e1; /* 12.2:1 on --ui-side */
+  --ui-side-muted: #94a3b8;
+  --ui-side-active: #1b2535;
+  --ui-side-border: #1e293b;
+  --ui-focus: #22c7e6;
+}
+
+/* Page */
+html body { background: var(--ui-bg); color: var(--ui-text); }
+html .main { background: var(--ui-bg); }
+html .content { color: var(--ui-text); }
+
+/* Sidebar — specificity beats the old `.side { background:#0a0c10 !important }` */
+html .side {
+  background: var(--ui-side) !important;
+  color: var(--ui-side-text) !important;
+  border-right: 1px solid var(--ui-side-border);
+}
+html .side .nav-a { color: var(--ui-side-text); }
+html .side .nav-a:hover { background: var(--ui-side-active); color: var(--ui-text); }
+html .side .nav-a.on { background: var(--ui-side-active); color: var(--ui-text); }
+html .side .nav-a.on i, html .side .nav-a:hover i { color: var(--ui-accent); }
+html .side .nav-g, html .side .nav-h, html .side small, html .side .muted { color: var(--ui-side-muted) !important; }
+
+/* Top bar */
+html .top { background: var(--ui-surface) !important; border-bottom: 1px solid var(--ui-border); color: var(--ui-text); }
+html .top .icon-btn { color: var(--ui-text-2); border-color: var(--ui-border); background: var(--ui-surface); }
+html .top .icon-btn:hover { background: var(--ui-surface-2); color: var(--ui-text); }
+html .top-search input { background: var(--ui-surface-2) !important; color: var(--ui-text) !important; border-color: var(--ui-border) !important; }
+
+/* Cards, tables, panels */
+html .card { background: var(--ui-surface); border-color: var(--ui-border); color: var(--ui-text); }
+html .card-h h3, html .card h3, html .card h4 { color: var(--ui-text); }
+html .muted, html .card small, html .card .muted { color: var(--ui-muted); }
+html .tbl thead th { background: var(--ui-surface-2); color: var(--ui-muted); border-color: var(--ui-border); }
+html .tbl td, html .tbl tbody tr { border-color: var(--ui-border); color: var(--ui-text); }
+html .tbl tbody tr:hover { background: var(--ui-surface-2); }
+
+/* Buttons */
+html .btn { background: var(--ui-surface); color: var(--ui-text); border-color: var(--ui-border); }
+html .btn:hover { background: var(--ui-surface-2); }
+html .btn.pri { background: var(--ui-accent); border-color: var(--ui-accent); color: var(--ui-accent-fg); }
+html .btn.pri:hover { filter: brightness(1.08); }
+
+/* Inputs */
+html input:not([type=checkbox]):not([type=radio]), html select, html textarea {
+  background: var(--ui-surface-2); color: var(--ui-text); border-color: var(--ui-border);
+}
+html input::placeholder, html textarea::placeholder { color: var(--ui-muted); opacity: 1; }
+html :focus-visible { outline: 2px solid var(--ui-focus); outline-offset: 2px; }
+
+/* Segmented controls and chips */
+html .seg { background: var(--ui-surface-2); border-color: var(--ui-border); }
+html .seg button { color: var(--ui-text-2); }
+html .seg button.on { background: var(--ui-surface); color: var(--ui-text); }
+html.dark .seg button.on { background: var(--ui-accent-soft); color: var(--ui-text); }
+
+/* Badges: keep their meaning, make text readable on each theme */
+html .badge.ok { color: #047857; background: #ecfdf5; }
+html .badge.warn { color: #92400e; background: #fffbeb; }
+html .badge.bad { color: #b91c1c; background: #fef2f2; }
+html.dark .badge.ok { color: #6ee7b7; background: rgba(16, 185, 129, 0.16); }
+html.dark .badge.warn { color: #fcd34d; background: rgba(245, 158, 11, 0.16); }
+html.dark .badge.bad { color: #fca5a5; background: rgba(239, 68, 68, 0.16); }
+
+/* Top-level page headings */
+html .page-h h1, html .content > h1, html .content h1 { color: var(--ui-text); }
+
+/* ---- Light theme fixes found by rendered-contrast check (tools/qa-p29/theme-contrast.mjs) ---- */
+/* Sidebar footer: name and labels were hard-coded white or light grey */
+html .side-foot, html #side-foot { background: var(--ui-side); }
+html .side-foot b, html #sf-name, html #side-foot b { color: var(--ui-text) !important; }
+html .side-foot span, html .side-foot small, html #side-foot span { color: var(--ui-side-muted) !important; }
+html .side-foot a { color: var(--ui-side-text) !important; }
+html .side-foot a:hover { color: var(--ui-text) !important; }
+html .side .side-foot { border-top-color: var(--ui-side-border); }
+
+/* Breadcrumb and text links: 4.5:1 or better on the page background */
+html .crumb { color: var(--ui-muted) !important; }
+html .content a:not(.btn):not(.nav-a) { color: var(--ui-accent); }
+
+/* Primary button: one accent for both themes, white text in light mode */
+html .btn.pri { background: var(--ui-accent) !important; border-color: var(--ui-accent) !important; color: var(--ui-accent-fg) !important; }
+html .btn.pri:hover { background: var(--ui-accent) !important; filter: brightness(1.06); }
+
+/* Settings and integration cards drawn with inline dark backgrounds: follow the theme in light mode */
+html:not(.dark) [style*="background:#111318"],
+html:not(.dark) [style*="background: #111318"],
+html:not(.dark) [style*="background:#111622"],
+html:not(.dark) [style*="background:#0c1628"],
+html:not(.dark) [style*="background:#0a0c10"] {
+  background: var(--ui-surface) !important;
+  color: var(--ui-text) !important;
+}
+html:not(.dark) [style*="background:#111318"] p.muted, html:not(.dark) [style*="background:#111318"] .muted { color: var(--ui-muted) !important; }
+
+/* Sidebar: bold labels and plain spans follow the sidebar text colour (badges keep their own colour) */
+html .side b, html .side strong { color: var(--ui-text) !important; }
+html .side span:not(.badge):not(.nt-n):not(.nt-b) { color: var(--ui-side-muted) !important; }
+/* Avatars: accent background with the matching text colour in both themes */
+html #sf-av, html #u-av, html .side-foot .av { background: var(--ui-accent) !important; color: var(--ui-accent-fg) !important; }
+/* Headings and labels inside cards that carry light inline colours (light mode only) */
+html:not(.dark) .card :is(h1, h2, h3, h4, h5, b, strong, p, label)[style*="color:#f9fafb"],
+html:not(.dark) .card :is(h1, h2, h3, h4, h5, b, strong, p, label)[style*="color:#fff;"],
+html:not(.dark) .card :is(h1, h2, h3, h4, h5, b, strong, p, label)[style*="color: #fff"] { color: var(--ui-text) !important; }
+
+/* Avatar: literal pairs per theme (accent background + matching text) */
+html:not(.dark) #sf-av, html:not(.dark) #u-av { background: #00708a !important; color: #ffffff !important; }
+html.dark #sf-av, html.dark #u-av { background: #22c7e6 !important; color: #06202a !important; }
+/* Light mode: status and muted text used on white cards (inline colours from the dark theme) */
+html:not(.dark) .card [style*="color:#00d3f2"], html:not(.dark) .card [style*="color: #00d3f2"] { color: #00616f !important; }
+html:not(.dark) .card [style*="color:#10b981"], html:not(.dark) .card [style*="color: #10b981"] { color: #047857 !important; }
+html:not(.dark) .card [style*="color:#a78bfa"], html:not(.dark) .card [style*="color: #a78bfa"] { color: #6d28d9 !important; }
+html:not(.dark) .card [style*="color:#cbd5e1"], html:not(.dark) .card [style*="color: #cbd5e1"],
+html:not(.dark) .card [style*="color:#94a3b8"], html:not(.dark) .card [style*="color: #94a3b8"],
+html:not(.dark) .card [style*="color:#9ca3af"], html:not(.dark) .card [style*="color: #9ca3af"] { color: #475569 !important; }
+html:not(.dark) .card :is(h1, h2, h3, h4, h5, b, strong, p, label, span)[style*="color:#f9fafb"] { color: var(--ui-text) !important; }
+html:not(.dark) #sec-revoke-all { color: #b91c1c !important; }
+html:not(.dark) [style*="background:#161922"], html:not(.dark) [style*="background: #161922"] { background: var(--ui-surface) !important; }
+html:not(.dark) [style*="background:#161922"] p.muted, html:not(.dark) [style*="background:#161922"] .muted,
+html:not(.dark) [style*="background:#161922"] small { color: #475569 !important; }
