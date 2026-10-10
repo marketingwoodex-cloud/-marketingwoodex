@@ -200,5 +200,5 @@
     };
   };
 
-  W.VIEWS.approvals = W.VIEWS.security;
+  // AD-10 fix: do not overwrite the approvals view. admin-appr.js owns VIEWS.approvals (queue).
 })();

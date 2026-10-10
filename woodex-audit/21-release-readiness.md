@@ -16,7 +16,7 @@ A release cannot be recommended while SEC-001, SEC-002, SEC-003 and AD-24 are op
 
 ## Release criteria (§11.10) — checkboxes
 - [ ] No unresolved Critical issue (**8 open**).
-- [ ] High issues fixed or accepted by the owner in writing (**28 High; 4 fixed pending verification**).
+- [ ] High issues fixed or accepted by the owner in writing (**28 High; 5 fixed pending verification**).
 - [ ] Build, syntax, security, regression and smoke tests pass (**syntax and regression pass; smoke not run**).
 - [ ] Production access controls verified (**BLOCKED**).
 - [ ] Backups and rollback documented and tested (**documented in `20`; not tested**).

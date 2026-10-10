@@ -18,16 +18,16 @@
 ## Findings by severity
 Counts computed from the 60 rows of `06-defect-verification-matrix.md`. "Verified" = Fixed pending verification or Verified fixed; "Blocked" = needs live or runtime access.
 
-| Severity | Count | Fixed pending verification | Hypothesis | Blocked (needs live/runtime access) |
+| Severity | Count | Fixed pending verification | Hypothesis | Blocked (status says BLOCKED) |
 |---|---:|---:|---:|---:|
 | Critical | 8 | 0 | 0 | 0 |
-| High | 28 | 4 | 3 | 4 |
+| High | 28 | 5 | 2 | 3 |
 | Medium | 17 | 1 | 2 | 0 |
 | Low | 3 | 0 | 0 | 0 |
 | Informational | 3 | 0 | 0 | 0 |
 | Withdrawn | 1 | 0 | 0 | 0 |
 
-"Fixed pending verification" rows: AD-06, AD-07, OV-01, OV-03 (High) and A11Y-001 (Medium). None is closed. Blocked High rows: AD-20, AD-25, SA-03, WC-05. No Critical row is fixed pending verification.
+Counts are computed per label, so a row can carry two labels (AD-25 is both a hypothesis and blocked). "Fixed pending verification" rows: AD-06, AD-07, AD-10, OV-01, OV-03 (High) and A11Y-001 (Medium). None is closed. Hypothesis High rows: AD-25, WC-05. Blocked High rows: AD-20, AD-25, SA-03. No Critical row is fixed pending verification.
 
 ## Category status
 | Category | Status | Coverage | Main risk | Limitation |
@@ -59,6 +59,6 @@ Counts computed from the 60 rows of `06-defect-verification-matrix.md`. "Verifie
 
 ## Confidence and limitations
 - **Verified in this pass (RUNTIME, jsdom):** owner dashboard no longer crashes on a bad payload; happy path unchanged; estimator labels 3 → 0.
-- **Verified in this pass (STATIC):** overstated status wording removed in both trees; mirrors byte-identical; 14/14 regression checks; 56 PASS / 10 INFO / 0 FAIL re-verification.
+- **Verified in this pass (STATIC):** overstated status wording removed in both trees; mirrors byte-identical; 14/14 regression checks at the time of the C-001 fix; 15/15 after the mirror check was added and C-008 applied; re-verification 56 PASS / 10 INFO / 0 FAIL after the AD-10 expectation update.
 - **Not verified:** any live behaviour; whether published credentials are active; browser behaviour after the settings edit; approvals race (AD-10); PHP runtime behaviour of AD-20.
 - **Withdrawn:** AD-22 (cited counter `seqL` is data-only, not code).

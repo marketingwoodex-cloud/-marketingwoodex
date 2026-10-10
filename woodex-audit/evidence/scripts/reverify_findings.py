@@ -51,7 +51,7 @@ CHECKS = [
     ('AD-03','admin.js:680 soon-view: plain UNGUARDED, -pro guarded','phase', lambda: (lambda a,b: ('PASS' if ('def[4] ?' not in a and 'def[4] ?' in b) else 'FAIL', f"plain guarded={'def[4] ?' in a} | pro guarded={'def[4] ?' in b} (expected plain=False, pro=True)"))(open(os.path.join(PL,'admin/admin.js'),encoding='utf-8').read(), open(os.path.join(P,'admin/admin.js'),encoding='utf-8').read())),
  ('AD-04','#/integrations absent from NAV', 'route', lambda: find(P,'admin/admin.js', r'\["integrations",', 0)),
  ('AD-04','admin-settings.js alias integrations', 'route', lambda: find(P,'admin/admin-settings.js', r'integrations', None)),
- ('AD-10','admin-security.js:203 overwrites approvals', 'registry', lambda: find(P,'admin/admin-security.js', r'W\.VIEWS\.approvals = W\.VIEWS\.security;', 1)),
+ ('AD-10','admin-security.js no longer overwrites approvals (AD-10 fix, fixed pending verification)', 'registry', lambda: find(P,'admin/admin-security.js', r'W\.VIEWS\.approvals = W\.VIEWS\.security;', 0)),
  ('AD-10','admin-appr.js:21 defines approvals view', 'registry', lambda: find(P,'admin/admin-appr.js', r'VIEWS\.approvals = function', 1)),
  ('AD-11','admin-settings.js:588 connections alias', 'registry', lambda: find(P,'admin/admin-settings.js', r'W\.VIEWS\.connections = W\.VIEWS\.settings', 1)),
  ('AD-12','view keys defined by 2+ modules', 'registry', None),
@@ -136,7 +136,7 @@ for cid, label, cat, fn in CHECKS:
                 for m in re.finditer(r'(?:W\.)?VIEWS\.([a-zA-Z0-9_]+)\s*=(?!=)', open(os.path.join(admin,f),encoding='utf-8',errors='ignore').read()):
                     owners.setdefault(m.group(1), set()).add(f)
             multi = {k: sorted(v) for k, v in owners.items() if len(v) > 1}
-            res = ('PASS' if len(multi) == 20 else 'FAIL', f'{len(multi)} keys with 2+ owners (expected 20)')
+            res = ('PASS' if len(multi) == 19 else 'FAIL', f'{len(multi)} keys with 2+ owners (expected 19 after AD-10 fix; was 20)')
         elif cid == 'AD-24':
             tracked = subprocess.run(['git','-C',R,'ls-files','woodex-live-p29-v2.1-pro/.env','woodex-live-p29-v2.1-pro/config.php','woodex-live-p29-v2.1-pro/_private/db.json','woodex-live-p29-v2.1-pro/_private/admin-db.json','woodex-live-p29-v2.1-pro/_private/system.json','woodex-live-p29-v2.1-pro/_private/company.json'], capture_output=True, text=True).stdout.split()
             res = ('PASS' if len(tracked) == 6 else 'FAIL', f'{len(tracked)} of 6 secret-bearing files tracked (expected 6)')

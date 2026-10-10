@@ -10,10 +10,11 @@ All files are sanitised: no credential values, no hash values, no bank details, 
 | `phplint-negative-control.txt` | Lint catches a known-bad file (`bad.php`) | same | Control |
 | `phplint-pro-after-fix.txt` | Pro tree 48/48 parse after edits | same | Current |
 | `reverify-findings.txt` | 56 PASS / 10 INFO / 0 FAIL on anchored findings | `scripts/reverify_findings.py` | Current |
-| `regression-static.txt` | 14/14 static regression checks | `scripts/regression_static.py` | Current |
+| `regression-static.txt` | 15/15 static regression checks (includes `admin-security.js` mirror) | `scripts/regression_static.py` | Current |
 | `remediation-verification-2026-10-11.txt` | jsdom before/after for OV-01/OV-03 and A11Y-001 | `tools/qa-p29/test-dashboard-error.js`, `happy-dash.js`, `a11y-labels.js` | Current (jsdom only) |
 | `secret-scan-tracked-2026-10-11.txt` | Per-hit type, line, path, fingerprint for all 7,286 tracked files (no values) | `detect-secrets` 1.5.0 | Current |
 | `bcrypt-literal-check-2026-10-11.txt` | Boolean: literal matches committed hashes (0); controls pass | `scripts/bcrypt_literal_check.py` | Current |
+| `ad10-t16-t18-2026-10-11.txt` | AD-10 navigation and initial-load results (pre-fix and post-fix); T-16 HEAD vs working tree; T-18 editor role | `tools/qa-p29/approvals-race.js`, `ui-regression.js`, `harness.js` | Current (jsdom only) |
 | `triage-2026-10-11.txt` | html2pdf AWS false positive; visibility; plain Phase path | This pass | Current |
 | `php-runtime-attempt-2026-10-11.txt` | `@php-wasm/node` attempt, Node version error | This pass | BLOCKED |
 | `harness-pro-settings-integrations.txt`, `harness-plain-settings-integrations.txt` | Integrations screen on pro and plain | Earlier session | Prior run; not re-run after edits |
@@ -26,8 +27,8 @@ All files are sanitised: no credential values, no hash values, no bank details, 
 ## scripts/
 | File | Purpose | Network | Writes |
 |---|---|---|---|
-| `reverify_findings.py` | Re-checks anchored findings against the tree | none | stdout only |
-| `regression_static.py` | Static regression checks for this pass | none | stdout only |
+| `reverify_findings.py` | Re-checks anchored findings against the tree (AD-10 and AD-12 expectations updated to the post-fix state) | none | stdout only |
+| `regression_static.py` | Static regression checks for this pass (15 checks, includes `admin-security.js` mirror) | none | stdout only |
 | `site_static_audit.py` | Static site metadata | none | stdout only |
 | `bcrypt_literal_check.py` | Boolean-only hash check with controls | none | stdout only |
 

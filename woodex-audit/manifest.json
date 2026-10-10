@@ -3,20 +3,35 @@
   "target": "woodex-live-p29-v2.1-pro",
   "evidence_revision": "24157f6",
   "branch": "arena/4ba510f0-marketingwoodex",
-  "recorded_head_at_generation": "24157f6dd9bf4da078544695232df4a8e043da7b",
+  "recorded_head_at_generation": "b8083f1dcc615014d0b121ef413aa19c8bea5bcf",
   "generated": "2026-10-10",
-  "note": "Hashes cover pack files as written in this commit. manifest.json itself is excluded. No secret values, no personal data.",
+  "note": "Hashes of files as written in the commit that adds this manifest. manifest.json itself is excluded. No secret values, no personal data.",
   "release_recommendation": "BLOCK",
   "files": [
     {
       "path": "QA-MASTER-REPORT-P29-V2.1-PRO.md",
-      "sha256": "66e86a28afa432e0d7a7f4bafcf04d00435156006b0536877659d3e97374818f",
-      "bytes": 67054
+      "sha256": "7fa8d4edd949717311c2857450faf876fb55e89a68d6763d534a82059c855e40",
+      "bytes": 68894
+    },
+    {
+      "path": "frontend-v1/admin/admin-security.js",
+      "sha256": "9407efef55de3d21a5ee993327828eb6e3552906a7a8ff07cde3d7a136bcf709",
+      "bytes": 13525
+    },
+    {
+      "path": "tools/qa-p29/approvals-race.js",
+      "sha256": "583c2a5620a6f8386829febec60e740ef3b79fa79b44dae4a5e9c8b9231b29ec",
+      "bytes": 6267
+    },
+    {
+      "path": "tools/qa-p29/ui-regression.js",
+      "sha256": "611928103be103478fef19f315ddb0500dd3ef79c89167588a789444c63622e7",
+      "bytes": 5639
     },
     {
       "path": "woodex-audit/00-executive-summary.md",
-      "sha256": "acd04cc1a4c304becf2d89ad77493fc2f29f32344a6ed804f7918c0563e038ba",
-      "bytes": 7380
+      "sha256": "dc255b67cc00bb83d13bae5497361b2e60c15f60d1dfb11be4e7210f706ebf48",
+      "bytes": 7635
     },
     {
       "path": "woodex-audit/01-scope-and-methodology.md",
@@ -45,8 +60,8 @@
     },
     {
       "path": "woodex-audit/06-defect-verification-matrix.md",
-      "sha256": "515b65fbf489739ae37f5b2075e479c2be7d42187c4697eac6bef620ff8ffb92",
-      "bytes": 28220
+      "sha256": "4e9c677f58bf6d8c93425d2e4957385299d81d4d75214d0f810d4b060b0ce304",
+      "bytes": 29525
     },
     {
       "path": "woodex-audit/07-root-cause-analysis.md",
@@ -100,13 +115,13 @@
     },
     {
       "path": "woodex-audit/17-safe-autofix-log.md",
-      "sha256": "d820fce9326d1a2201d91240fd5bf0506f7f78e40aed109c3a2e8cdc4280ef67",
-      "bytes": 3695
+      "sha256": "957881f98b4f03746d650cf10884d7c4c8a04515fefe8f479aa77878ede99280",
+      "bytes": 4502
     },
     {
       "path": "woodex-audit/18-test-and-validation-report.md",
-      "sha256": "126874f0327018eefa66308b31956cd57aa95676a4e923a3d69ef53429ee079d",
-      "bytes": 5738
+      "sha256": "0c94860a501b2283b9c8cf6f650e65ce7f6e844ec8dc5d35a31414d5c6e7fa35",
+      "bytes": 6683
     },
     {
       "path": "woodex-audit/19-qa-checklists.md",
@@ -120,23 +135,23 @@
     },
     {
       "path": "woodex-audit/21-release-readiness.md",
-      "sha256": "47eab1ae2c1021740c530452697a7db38674c69780c13830e475bc40ff0e7add",
+      "sha256": "79daa5f8e12c20528c70a0439759a45ab43631fc6fed3bb6c6e07b6b608d50e7",
       "bytes": 2173
     },
     {
       "path": "woodex-audit/22-open-questions-and-limitations.md",
-      "sha256": "a94e11c37c0d56dfdbed75ba30a9e2b8d953c0804fcdfde3d4a9d1588e11e524",
-      "bytes": 3754
+      "sha256": "cc5b7fb0ee9627b54637a3a54d11c074a6712f9490fffecb76fd14e17fc82ceb",
+      "bytes": 3948
     },
     {
       "path": "woodex-audit/23-evidence-index.md",
-      "sha256": "713fa20d4cde7e867ed8ae091a09f2ed207820179b071eb3bdc3428426ea66b1",
-      "bytes": 3411
+      "sha256": "5429d28e34c10d490717d2e5e36666fab20dc46335d16fd66d47198e7f74c2ca",
+      "bytes": 3797
     },
     {
       "path": "woodex-audit/24-decision-log.md",
-      "sha256": "dcf8a2793494dcd0e9e493676c03168340fb7b95755bebfba9e86d23b38633e9",
-      "bytes": 2108
+      "sha256": "f91cfbf0cfad0bd437866f1d4a49665ac40319f907d3d0fb4eddbb845e20aa12",
+      "bytes": 2464
     },
     {
       "path": "woodex-audit/README.md",
@@ -147,6 +162,11 @@
       "path": "woodex-audit/evidence/README.md",
       "sha256": "18b12459b4f0cb87db4feb047fd098c4854b53d55931583907e3311d82fb5bcb",
       "bytes": 1119
+    },
+    {
+      "path": "woodex-audit/evidence/sanitized-command-output/ad10-t16-t18-2026-10-11.txt",
+      "sha256": "ceaaa61121bf712220c1dcd5df26ad0ba17c435cd5f765f15a35d2ad38f07226",
+      "bytes": 4665
     },
     {
       "path": "woodex-audit/evidence/sanitized-command-output/bcrypt-literal-check-2026-10-11.txt",
@@ -200,8 +220,8 @@
     },
     {
       "path": "woodex-audit/evidence/sanitized-command-output/regression-static.txt",
-      "sha256": "29b68490a15aeb6067e18a17528e46a0c9d91d46eedb885b8ffcd5fd681ec141",
-      "bytes": 799
+      "sha256": "c75bab345ebf28fc306bec56f8e426adf43ef39dd0256d208c2a6b5b3e23fad8",
+      "bytes": 846
     },
     {
       "path": "woodex-audit/evidence/sanitized-command-output/remediation-verification-2026-10-11.txt",
@@ -210,8 +230,8 @@
     },
     {
       "path": "woodex-audit/evidence/sanitized-command-output/reverify-findings.txt",
-      "sha256": "077513548890e9ae25dfa07ccbee77e448bb439147e455c21b042a2a8f628a97",
-      "bytes": 6939
+      "sha256": "ea29b5747f4f54c34c2f62faa79742cdee4f230ba787e673e87191e3e0f603b4",
+      "bytes": 7006
     },
     {
       "path": "woodex-audit/evidence/sanitized-command-output/secret-scan-tracked-2026-10-11.txt",
@@ -255,13 +275,13 @@
     },
     {
       "path": "woodex-audit/evidence/scripts/regression_static.py",
-      "sha256": "78895f105e0938676934be712f6908785fe899d1d0a7ff9dd8dbe0515430850f",
-      "bytes": 3204
+      "sha256": "71f14542627ab6b4ac11fdcdca82a3b15d685e70cf7c147726b1d32d66288a61",
+      "bytes": 3235
     },
     {
       "path": "woodex-audit/evidence/scripts/reverify_findings.py",
-      "sha256": "35b77fec375c5228ce84536804033a1ec8f15942b66f8aabbcca424467d8272a",
-      "bytes": 14160
+      "sha256": "83deb5666f488988c0275680053aed58c5f014f7a6d97be9b42f1649bf73f5f0",
+      "bytes": 14230
     },
     {
       "path": "woodex-audit/evidence/scripts/site_static_audit.py",
@@ -270,8 +290,8 @@
     },
     {
       "path": "woodex-audit/qa/regression-test-matrix.md",
-      "sha256": "e012f489803d7d69fd072abba003b6bf63197084f016d2540f244271d37e5746",
-      "bytes": 2339
+      "sha256": "828b5e683b3c0411e7d177afe27095f5eaa84893af451f7356d7028cc4406524",
+      "bytes": 2584
     },
     {
       "path": "woodex-audit/qa/release-gate-checklist.md",
@@ -280,8 +300,13 @@
     },
     {
       "path": "woodex-audit/qa/smoke-test-checklist.md",
-      "sha256": "84ea24ee9c06049df65fc52a39b76c405a99874706f4a97e317814aa978c560d",
-      "bytes": 3144
+      "sha256": "90a35c8435db7b59141c404caf8c4b870fc3fad101da1b970bcf561073e47557",
+      "bytes": 3245
+    },
+    {
+      "path": "woodex-live-p29-v2.1-pro/admin/admin-security.js",
+      "sha256": "9407efef55de3d21a5ee993327828eb6e3552906a7a8ff07cde3d7a136bcf709",
+      "bytes": 13525
     }
   ]
 }

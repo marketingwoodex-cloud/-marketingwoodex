@@ -11,6 +11,7 @@ PASS [pro] estimator input has aria-label="Email address (optional)"
 PASS mirror identical: admin/admin-settings.js
 PASS mirror identical: admin/admin.js
 PASS mirror identical: admin/admin-dash.js
+PASS mirror identical: admin/admin-security.js
 PASS mirror identical: estimator/index.html
 
-SUMMARY: 14 PASS / 0 FAIL of 14
+SUMMARY: 15 PASS / 0 FAIL of 15

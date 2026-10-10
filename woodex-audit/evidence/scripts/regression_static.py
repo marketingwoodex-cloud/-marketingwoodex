@@ -23,6 +23,7 @@ MIRRORED = [
     'admin/admin-settings.js',
     'admin/admin.js',
     'admin/admin-dash.js',
+    'admin/admin-security.js',
     'estimator/index.html',
 ]
 

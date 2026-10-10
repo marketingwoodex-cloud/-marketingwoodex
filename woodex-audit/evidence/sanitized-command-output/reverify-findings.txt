@@ -14,14 +14,14 @@ PASS AD-04    #/integrations absent from NAV
          0 match(es) at lines [] (expected 0)
 INFO AD-04    admin-settings.js alias integrations
          4 match(es) at lines [34, 43, 130, 587]
-PASS AD-10    admin-security.js:203 overwrites approvals
-         1 match(es) at lines [203] (expected 1)
+PASS AD-10    admin-security.js no longer overwrites approvals (AD-10 fix, fixed pending verification)
+         0 match(es) at lines [] (expected 0)
 PASS AD-10    admin-appr.js:21 defines approvals view
          1 match(es) at lines [21] (expected 1)
 PASS AD-11    admin-settings.js:588 connections alias
          1 match(es) at lines [588] (expected 1)
 PASS AD-12    view keys defined by 2+ modules
-         20 keys with 2+ owners (expected 20)
+         19 keys with 2+ owners (expected 19 after AD-10 fix; was 20)
 PASS AD-05    APPS entries with connected:true
          14 match(es) at lines [9, 10, 11, 12, 18, 19, 20, 21, 22, 23, 24, 27] (expected 14)
 PASS AD-05    no Claude AI-key card (Claude Desktop MCP snippet is separate)

@@ -8,9 +8,9 @@
 | L-4 | Live host deny rules (AD-25) | Critical if rules ignored | Static only | Curl checks in `20` §2 | Operator |
 | L-5 | Which tree is deployed (D-3) | Decides whether AD-01/02 are Critical | Unknown | Owner confirms | Owner |
 | L-6 | Non-P29 projects (`wf-admin`, `p23-live`, `woodex-vlive-P20`, `netlify`, `supabase`, …) | Unknown secrets beyond the scan; unknown deploy | Secret scan only | Owner confirms which are live; audit each | Owner / auditor |
-| L-7 | Approvals race (AD-10) | Approvals screen may be unreachable | Identity check only | Harness with delayed `admin-security.js` (T-17) | Auditor |
+| L-7 | Approvals (AD-10) | Fixed in pro and mirror (C-008); the navigation path showed the Security page before the fix | jsdom: navigation pre-fix 3/3 security; post-fix 4/4 queue; initial-load race not reproduced | Browser check of the Approvals link; owner confirms `#/approvals` should show the queue | Owner / auditor |
 | L-8 | PHP runtime (AD-20, AD-21, AU-01, AU-03, SA-03, CC-02) | Behaviour of error paths and locks unverified | Parse only | Node 24 runtime, or approved alternative (T-12) | Owner decision, then auditor |
-| L-9 | Settings and dashboard in browser | Fixes unverified in real browser | jsdom only | Browser run (T-16, T-18) | Auditor |
+| L-9 | Settings and dashboard in browser | Fixes verified in jsdom only (T-16, T-17, T-18) | jsdom only | Browser run of the same checks | Auditor |
 | L-10 | `content-lib.php:50` caller handles `0` return? | WC-02 severity | Not traced | Trace caller | Auditor |
 | L-11 | `wa-cron.php` empty-key path | AU-03 hypothesis | Static | Runtime test once PHP available | Auditor |
 | L-12 | Identity of the five integration cards on `#/settings/integrations` | AD-05 scope | Static `APPS` likely source | Confirm against DOM | Auditor |
