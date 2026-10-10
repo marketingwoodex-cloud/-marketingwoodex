@@ -114,3 +114,17 @@ Known issue to decide: `proj_bill` deletes a finance invoice when replaced (`api
 2. Refresh manifest and commit (U1.6 is committed as 418394f).
 3. ARC A3: approval kinds written as unwired code, syntax-checked (A3).
 4. Ask user to decide: support chat placement (U10), `proj_bill` soft-cancel (A-known), and the blocked items in section 3.
+
+## 9. Design system pass (phase "reface") — status 2026-10-11
+
+Decisions from the user: both themes together, every screen with shared components first, brand blue `#2563eb`, subtle motion (150–200 ms hover and focus; honours reduced motion).
+
+| Item | Status | Verification |
+|---|---|---|
+| DS1 Shared components in `admin/woodex-ds.css` (buttons, inputs, cards, badges, tables, tabs, modals, toasts), one focus ring, reduced-motion rule | DONE | 58-route contrast sweep, both themes: 0 below AA |
+| DS2 Small-screen rules (390 px): page header wraps, KPI grid 2 columns then 1, inline grids stack, tab strips scroll | DONE | `tools/qa-p29/responsive-sweep.mjs` at 390 px: 0 of 58 routes overflow |
+| DS3 Dark muted text raised to `#b3b3b3` (was 4.1:1 on the navy Estimator panel) | DONE | sweep |
+| DS4 Estimator result panel uses theme surface (class-set navy removed) | DONE (rate book does not load in the preview, so the panel itself was not seen rendering) | sweep |
+| DS5 Client updates: a failed settings load shows an error instead of "Loading…" forever | DONE | browser probe; stub returns no settings |
+| DS6 Per-page visual redesign of every screen (layouts, card and chart rhythm, empty and loading states) | TODO — the components are shared, but each page still needs its own pass | screenshots per page, both themes, 390 px and 1280 px |
+| DS7 Preline-style chat and invite components (Inbox list, invite modal) | TODO | screenshot comparison |

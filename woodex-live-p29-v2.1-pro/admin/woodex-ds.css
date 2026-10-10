@@ -1,0 +1,126 @@
+/* Woodex Admin — design system layer (loaded last, after admin.css, assets/woodex-tw.css and woodex-ui.css).
+   Scope: shared components only (buttons, inputs, cards, badges, tables, tabs, modals, toasts), focus ring,
+   motion, and small-screen rules. Page layouts stay in woodex-ui.css. Colours come from the --ui-* tokens
+   (light and dark), so no component uses a hard-coded theme colour.
+   Rules use the `html` prefix to beat the older !important rules in admin.css.
+   Verify changes with tools/qa-p29/theme-contrast.mjs (both themes) and tools/qa-p29/responsive-sweep.mjs (390 px). */
+
+:root {
+  --ds-ease: cubic-bezier(0.2, 0, 0, 1);
+  --ds-fast: 150ms;
+  --ds-base: 200ms;
+  --ds-ring: rgba(37, 99, 235, 0.35);
+  --ds-danger: #b91c1c;
+  --ds-danger-soft: #fef2f2;
+  --ds-lift: 0 8px 24px rgba(17, 24, 39, 0.08);
+}
+html.dark {
+  /* Muted text: #a3a3a3 measured 4.1:1 on the Estimator's navy panel. #b3b3b3 is 8.6:1 there and 7.4:1 on cards. */
+  --ui-muted: #b3b3b3;
+  --ds-ring: rgba(96, 165, 250, 0.45);
+  --ds-danger: #fca5a5;
+  --ds-danger-soft: rgba(239, 68, 68, 0.14);
+  --ds-lift: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+/* ---------- Focus: one visible ring for every interactive element ---------- */
+html :focus { outline: none; }
+html :focus-visible { outline: 2px solid var(--ui-focus); outline-offset: 2px; border-radius: 6px; }
+html .btn:focus-visible, html input:focus-visible, html select:focus-visible, html textarea:focus-visible { outline: none; }
+
+/* ---------- Buttons ---------- */
+html .btn {
+  height: 40px; padding: 0 16px; border-radius: var(--ui-radius);
+  font-size: 14px; font-weight: 600; letter-spacing: 0;
+  background: var(--ui-surface); color: var(--ui-text); border: 1px solid var(--ui-border);
+  transition: background-color var(--ds-fast) var(--ds-ease), border-color var(--ds-fast) var(--ds-ease),
+              color var(--ds-fast) var(--ds-ease), box-shadow var(--ds-fast) var(--ds-ease), transform 120ms var(--ds-ease);
+}
+html .btn:hover:not(:disabled) { background: var(--ui-surface-2); border-color: var(--ui-muted); }
+html .btn:active:not(:disabled) { transform: translateY(1px); }
+html .btn:focus-visible { box-shadow: 0 0 0 3px var(--ds-ring); }
+html .btn.sm { height: 34px; padding: 0 12px; font-size: 13px; border-radius: 8px; }
+html .btn.pri, html .btn.btn-preline-cyan { background: var(--ui-brand); border-color: var(--ui-brand); color: var(--ui-brand-fg); }
+html .btn.pri:hover:not(:disabled), html .btn.btn-preline-cyan:hover:not(:disabled) { background: var(--ui-brand-hover); border-color: var(--ui-brand-hover); filter: none; }
+html .btn.danger { color: var(--ds-danger); border-color: var(--ds-danger); background: var(--ui-surface); }
+html .btn.danger:hover:not(:disabled) { background: var(--ds-danger-soft); }
+html .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ---------- Inputs ---------- */
+html input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color]):not([type=file]),
+html select, html textarea {
+  background: var(--ui-surface); color: var(--ui-text); border: 1px solid var(--ui-border); border-radius: var(--ui-radius);
+  transition: border-color var(--ds-fast) var(--ds-ease), box-shadow var(--ds-fast) var(--ds-ease);
+}
+html input::placeholder, html textarea::placeholder { color: var(--ui-muted); opacity: 1; }
+html input:focus, html select:focus, html textarea:focus { outline: none; border-color: var(--ui-brand); box-shadow: 0 0 0 3px var(--ds-ring); }
+html input:disabled, html select:disabled, html textarea:disabled { background: var(--ui-surface-2); }
+
+/* ---------- Cards ---------- */
+html .card { background: var(--ui-surface); border: 1px solid var(--ui-border); border-radius: var(--ui-radius-lg); box-shadow: var(--ui-shadow); }
+html a.card, html .card[role=button], html .card.is-link { transition: box-shadow var(--ds-base) var(--ds-ease), transform var(--ds-base) var(--ds-ease), border-color var(--ds-base) var(--ds-ease); }
+html a.card:hover, html .card[role=button]:hover, html .card.is-link:hover { box-shadow: var(--ds-lift); transform: translateY(-1px); border-color: var(--ui-muted); }
+
+/* ---------- Badges ---------- */
+html .badge { border-radius: 999px; font-size: 12px; font-weight: 600; line-height: 1.5; padding: 2px 10px; }
+
+/* ---------- Tables ---------- */
+html table.tbl tbody tr { transition: background-color var(--ds-fast) var(--ds-ease); }
+html table.tbl tbody tr:hover { background: var(--ui-surface-2); }
+html .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+/* ---------- Tabs (segmented control) ---------- */
+html .seg button { transition: background-color var(--ds-fast) var(--ds-ease), color var(--ds-fast) var(--ds-ease); }
+html .seg button:focus-visible { outline: 2px solid var(--ui-focus); outline-offset: -2px; }
+
+/* ---------- Modals, drawers, toasts ---------- */
+@keyframes ds-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes ds-rise { from { opacity: 0; transform: translateY(8px) scale(0.985); } to { opacity: 1; transform: none; } }
+html .modal { animation: ds-fade var(--ds-base) var(--ds-ease); }
+html .modal-card {
+  background: var(--ui-surface); color: var(--ui-text); border: 1px solid var(--ui-border);
+  border-radius: 16px; box-shadow: 0 24px 60px rgba(0, 0, 0, 0.25); animation: ds-rise var(--ds-base) var(--ds-ease);
+}
+html .toast { background: #111827; color: #ffffff; border-radius: var(--ui-radius); box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25); }
+html.dark .toast { background: #f5f5f5; color: #111827; }
+
+/* ---------- Estimator result panel: its class sets a fixed navy background, so give it the theme surface in both modes ---------- */
+html .es-out { background: var(--ui-surface-2); color: var(--ui-text); border: 1px solid var(--ui-border); }
+html .es-out small { opacity: 1; color: var(--ui-muted); }
+
+/* ---------- Page header ---------- */
+html .page-h { flex-wrap: wrap; gap: 12px; }
+
+/* ---------- Motion: keep it to hover and focus. Honour reduced-motion. ---------- */
+@media (prefers-reduced-motion: reduce) {
+  html *, html *::before, html *::after {
+    animation-duration: 0.01ms !important; animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important; scroll-behavior: auto !important;
+  }
+}
+
+/* ---------- Small screens ---------- */
+@media (max-width: 1024px) {
+  html .content { padding-left: 20px; padding-right: 20px; }
+}
+@media (max-width: 640px) {
+  html .content { padding: 16px 14px 32px; }
+  html .card-h { flex-wrap: wrap; padding: 16px 16px 0; }
+  html .card-b { padding: 16px; }
+  html .page-h h1 { font-size: 20px; line-height: 1.25; }
+  html .kpis, html .grid.kpis { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 10px; }
+  html .btn { height: 40px; }
+  html .modal { padding: 10px; align-items: end; }
+  html .modal-card { max-height: 92vh; border-radius: 16px 16px 0 0; padding: 20px; }
+}
+/* Inline layouts from older screens: stack grids and let flex rows wrap on phones. */
+@media (max-width: 640px) {
+  html [style*="grid-template-columns"]:not(.kpis) { grid-template-columns: minmax(0, 1fr) !important; }
+  html [style*="display:flex"], html [style*="display: flex"] { flex-wrap: wrap; }
+  html [style*="min-width"] { max-width: 100%; }
+  html .card { max-width: 100%; }
+  html .seg, html #wg-tabs, html .tabs { max-width: 100%; overflow-x: auto; scrollbar-width: none; }
+}
+@media (max-width: 400px) {
+  html .kpis, html .grid.kpis { grid-template-columns: minmax(0, 1fr) !important; }
+}

@@ -49,6 +49,9 @@
           });
         };
       });
+    }).catch(function () {
+      var c = el.querySelector("#ld-card") || el.querySelector(".card");
+      if (c) c.textContent = "Could not load client update settings. Check the connection and reload.";
     });
   };
 })();
