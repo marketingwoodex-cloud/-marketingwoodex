@@ -1,0 +1,191 @@
+<!doctype html>
+<!-- ============================================================================
+     WOODEX ADMIN V2.1 + ARC.STUDIO
+     MODULE 25 — USERS & ACCESS ROLES
+     Blocks: 1 Role Filter Bar · 2 KPI Cards · 3 Access Profile Ledger
+     ============================================================================ -->
+<html lang="en" class="h-full">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>M25 Users &amp; Access Roles — WOODEX ADMIN V2.1</title>
+<link rel="stylesheet" href="../assets/arc-kit.css">
+<script>try{var t=localStorage.getItem("wxaTheme");if(t==="dark"||(!t&&matchMedia("(prefers-color-scheme: dark)").matches)){document.documentElement.classList.add("dark");document.documentElement.setAttribute("data-theme","dark")}}catch(e){}</script>
+</head>
+<body class="min-h-full bg-stone-100 text-stone-950 antialiased dark:bg-stone-950 dark:text-stone-50">
+<div class="mx-auto flex w-full max-w-canvas flex-col gap-8 px-6 py-8">
+
+  <!-- ===== BLOCK 1 — HEADER / ROLE FILTERS ===== -->
+  <header class="flex flex-col gap-6 border-b border-stone-200 pb-6 dark:border-stone-800">
+    <div class="flex flex-col gap-2">
+      <nav class="flex items-center gap-2 text-2xs uppercase tracking-widest text-stone-500 dark:text-stone-400">
+        <span>Module VII</span><span class="text-stone-300 dark:text-stone-600">/</span><span class="text-stone-900 dark:text-stone-50">Users &amp; Access Roles</span>
+      </nav>
+      <h1 class="text-xl font-semibold tracking-tight">Users &amp; Access Roles</h1>
+      <p class="max-w-3xl text-sm text-stone-500 dark:text-stone-400">Access profile ledger mapping system rights to named roles, protecting financial records and drawing control.</p>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-2">
+      <div data-arc-tabs class="flex flex-wrap items-center gap-2 rounded-lg border border-stone-200 bg-white p-2 dark:border-stone-800 dark:bg-stone-950">
+        <button data-arc-tab="all" aria-selected="true" class="rounded-lg px-4 py-2 text-sm font-medium">All roles</button>
+        <button data-arc-tab="arch" aria-selected="false" class="rounded-lg px-4 py-2 text-sm font-medium">Architect</button>
+        <button data-arc-tab="acct" aria-selected="false" class="rounded-lg px-4 py-2 text-sm font-medium">Accountant</button>
+        <button data-arc-tab="fab" aria-selected="false" class="rounded-lg px-4 py-2 text-sm font-medium">Fabricator</button>
+        <button data-arc-tab="sales" aria-selected="false" class="rounded-lg px-4 py-2 text-sm font-medium">Sales</button>
+      </div>
+      <label class="flex min-w-[220px] flex-1 items-center gap-2 rounded-lg border border-stone-200 bg-white px-2 py-2 focus-within:ring-1 focus-within:ring-stone-400 dark:border-stone-800 dark:bg-stone-950 dark:focus-within:ring-stone-500">
+        <svg class="h-4 w-4 text-stone-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="7"/><path d="m20 20-4.3-4.3"/></svg>
+        <input data-arc-filter data-arc-target="#access-rows" type="search" placeholder="Name, email or seat ID…" class="w-full bg-transparent text-sm outline-none placeholder:text-stone-400 dark:placeholder:text-stone-500">
+      </label>
+      <button class="rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm font-medium hover:bg-stone-100 dark:border-stone-800 dark:bg-stone-950 dark:hover:bg-stone-800">Permission matrix</button>
+      <button class="rounded-lg bg-stone-800 px-4 py-2 text-sm font-medium text-stone-50 hover:bg-stone-700 dark:bg-stone-200 dark:text-stone-900 dark:hover:bg-stone-300">＋ Invite operator</button>
+    </div>
+  </header>
+
+  <!-- ===== BLOCK 2 — 4-COLUMN KPI CARDS ===== -->
+  <section class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Seat Allocations</p>
+      <p class="arc-numeric mt-2 text-2xl font-bold tracking-tight">19<span class="text-sm font-medium text-stone-400"> / 24</span></p>
+      <div class="mt-4 flex flex-col gap-2">
+        <span class="block h-2 w-full overflow-hidden rounded-sm bg-stone-200 dark:bg-stone-800"><span data-arc-value="79" class="block h-full w-0 bg-stone-800 transition-all duration-700 dark:bg-stone-200"></span></span>
+        <p class="text-sm text-stone-500 dark:text-stone-400">5 seats free before the next licence step</p>
+      </div>
+    </article>
+    <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Operators Online</p>
+      <p class="arc-numeric mt-2 text-2xl font-bold tracking-tight">12</p>
+      <p class="mt-2 text-sm text-stone-500 dark:text-stone-400">9 studio · 3 workshop terminals</p>
+    </article>
+    <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Permission Alerts</p>
+      <p class="arc-numeric mt-2 text-2xl font-bold tracking-tight">03</p>
+      <div class="mt-4 flex flex-wrap gap-2">
+        <span class="rounded-lg border border-dashed border-stone-400 px-2 py-2 text-2xs font-semibold uppercase tracking-widest text-stone-500 dark:border-stone-600 dark:text-stone-400">2 stale access</span>
+        <span class="rounded-lg border border-stone-300 px-2 py-2 text-2xs font-semibold uppercase tracking-widest text-stone-600 dark:border-stone-700 dark:text-stone-300">1 shared login</span>
+      </div>
+    </article>
+    <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">MFA Coverage</p>
+      <p class="arc-numeric mt-2 text-2xl font-bold tracking-tight">84%</p>
+      <div class="mt-4 flex flex-col gap-2">
+        <span class="block h-2 w-full overflow-hidden rounded-sm bg-stone-200 dark:bg-stone-800"><span data-arc-value="84" class="block h-full w-0 bg-stone-500 transition-all duration-700 dark:bg-stone-400"></span></span>
+        <p class="text-sm text-stone-500 dark:text-stone-400">3 owner-level accounts outstanding</p>
+      </div>
+    </article>
+  </section>
+
+  <!-- ===== BLOCK 3 — MAIN ACTION CANVAS (User & Contact Table) ===== -->
+  <section class="grid grid-cols-1 gap-6 xl:grid-cols-12">
+    <article class="rounded-xl border border-stone-200 bg-stone-50 shadow-panel xl:col-span-9 dark:border-stone-800 dark:bg-stone-900">
+      <header class="flex flex-wrap items-center justify-between gap-4 border-b border-stone-200 px-6 py-4 dark:border-stone-800">
+        <div>
+          <h2 class="text-sm font-semibold">Access profile ledger</h2>
+          <p class="text-sm text-stone-500 dark:text-stone-400">Named rights per operator · finance modules locked to owner and accountant</p>
+        </div>
+        <button class="rounded-lg border border-stone-200 px-4 py-2 text-sm font-medium hover:bg-stone-100 dark:border-stone-800 dark:hover:bg-stone-800">Audit log</button>
+      </header>
+
+      <div class="p-6">
+        <div class="w-full overflow-x-auto overflow-y-hidden rounded-xl border border-stone-200 dark:border-stone-800">
+          <table class="w-full text-left text-sm">
+            <thead class="bg-stone-100/50 text-xs font-semibold uppercase tracking-wider text-stone-500 dark:bg-stone-900/50 dark:text-stone-400">
+              <tr>
+                <th class="px-4 py-2">Operator</th><th class="px-4 py-2">Role</th><th class="px-4 py-2">Modules</th>
+                <th class="px-4 py-2">MFA</th><th class="px-4 py-2">Last seen</th><th class="px-4 py-2 text-right">Seat</th>
+              </tr>
+            </thead>
+            <tbody id="access-rows" class="divide-y divide-stone-200 dark:divide-stone-800">
+              <tr data-arc-filter-item class="hover:bg-stone-100/40 dark:hover:bg-stone-900/40">
+                <td class="px-4 py-2"><div class="flex items-center gap-4"><span class="flex h-8 w-8 items-center justify-center rounded-lg bg-stone-800 text-2xs font-semibold text-stone-50 dark:bg-stone-200 dark:text-stone-900">AB</span><span><span class="block font-medium">Ahmed B.</span><span class="arc-numeric block text-2xs uppercase tracking-widest text-stone-400">owner@woodex.pk</span></span></div></td>
+                <td class="px-4 py-2"><span class="rounded-lg bg-stone-800 px-2 py-2 text-2xs font-semibold uppercase tracking-widest text-stone-50 dark:bg-stone-200 dark:text-stone-900">Owner</span></td>
+                <td class="px-4 py-2 text-stone-500 dark:text-stone-400">All 26 modules</td>
+                <td class="px-4 py-2"><span class="rounded-lg border border-stone-300 px-2 py-2 text-2xs font-semibold uppercase tracking-widest text-stone-600 dark:border-stone-700 dark:text-stone-300">Not set</span></td>
+                <td class="arc-numeric px-4 py-2 text-stone-500 dark:text-stone-400">3 min ago</td>
+                <td class="arc-numeric px-4 py-2 text-right font-semibold">01</td>
+              </tr>
+              <tr data-arc-filter-item class="hover:bg-stone-100/40 dark:hover:bg-stone-900/40">
+                <td class="px-4 py-2"><div class="flex items-center gap-4"><span class="flex h-8 w-8 items-center justify-center rounded-lg bg-stone-600 text-2xs font-semibold text-stone-50 dark:bg-stone-400 dark:text-stone-900">SH</span><span><span class="block font-medium">Sana Haq</span><span class="arc-numeric block text-2xs uppercase tracking-widest text-stone-400">sana@woodex.pk</span></span></div></td>
+                <td class="px-4 py-2 text-stone-500 dark:text-stone-400">Architect</td>
+                <td class="px-4 py-2 text-stone-500 dark:text-stone-400">Design · drawings · schedules</td>
+                <td class="px-4 py-2"><span class="rounded-lg bg-stone-800 px-2 py-2 text-2xs font-semibold uppercase tracking-widest text-stone-50 dark:bg-stone-200 dark:text-stone-900">Enabled</span></td>
+                <td class="arc-numeric px-4 py-2 text-stone-500 dark:text-stone-400">12 min ago</td>
+                <td class="arc-numeric px-4 py-2 text-right font-semibold">02</td>
+              </tr>
+              <tr data-arc-filter-item class="hover:bg-stone-100/40 dark:hover:bg-stone-900/40">
+                <td class="px-4 py-2"><div class="flex items-center gap-4"><span class="flex h-8 w-8 items-center justify-center rounded-lg bg-stone-400 text-2xs font-semibold text-stone-900 dark:bg-stone-600 dark:text-stone-50">AK</span><span><span class="block font-medium">Ayesha K.</span><span class="arc-numeric block text-2xs uppercase tracking-widest text-stone-400">accounts@woodex.pk</span></span></div></td>
+                <td class="px-4 py-2 text-stone-500 dark:text-stone-400">Accountant</td>
+                <td class="px-4 py-2 text-stone-500 dark:text-stone-400">Finance · POs · approvals</td>
+                <td class="px-4 py-2"><span class="rounded-lg bg-stone-800 px-2 py-2 text-2xs font-semibold uppercase tracking-widest text-stone-50 dark:bg-stone-200 dark:text-stone-900">Enabled</span></td>
+                <td class="arc-numeric px-4 py-2 text-stone-500 dark:text-stone-400">1 h ago</td>
+                <td class="arc-numeric px-4 py-2 text-right font-semibold">05</td>
+              </tr>
+              <tr data-arc-filter-item class="hover:bg-stone-100/40 dark:hover:bg-stone-900/40">
+                <td class="px-4 py-2"><div class="flex items-center gap-4"><span class="flex h-8 w-8 items-center justify-center rounded-lg bg-stone-600 text-2xs font-semibold text-stone-50 dark:bg-stone-400 dark:text-stone-900">RQ</span><span><span class="block font-medium">Rafiq Qureshi</span><span class="arc-numeric block text-2xs uppercase tracking-widest text-stone-400">shop@woodex.pk</span></span></div></td>
+                <td class="px-4 py-2 text-stone-500 dark:text-stone-400">Fabricator</td>
+                <td class="px-4 py-2 text-stone-500 dark:text-stone-400">Cutting lists · stock read</td>
+                <td class="px-4 py-2"><span class="rounded-lg bg-stone-800 px-2 py-2 text-2xs font-semibold uppercase tracking-widest text-stone-50 dark:bg-stone-200 dark:text-stone-900">Enabled</span></td>
+                <td class="arc-numeric px-4 py-2 text-stone-500 dark:text-stone-400">26 min ago</td>
+                <td class="arc-numeric px-4 py-2 text-right font-semibold">08</td>
+              </tr>
+              <tr data-arc-filter-item class="hover:bg-stone-100/40 dark:hover:bg-stone-900/40">
+                <td class="px-4 py-2"><div class="flex items-center gap-4"><span class="flex h-8 w-8 items-center justify-center rounded-lg bg-stone-800 text-2xs font-semibold text-stone-50 dark:bg-stone-200 dark:text-stone-900">HR</span><span><span class="block font-medium">Hamza R.</span><span class="arc-numeric block text-2xs uppercase tracking-widest text-stone-400">sales@woodex.pk</span></span></div></td>
+                <td class="px-4 py-2 text-stone-500 dark:text-stone-400">Sales</td>
+                <td class="px-4 py-2 text-stone-500 dark:text-stone-400">Pipeline · clients · quotes</td>
+                <td class="px-4 py-2"><span class="rounded-lg bg-stone-800 px-2 py-2 text-2xs font-semibold uppercase tracking-widest text-stone-50 dark:bg-stone-200 dark:text-stone-900">Enabled</span></td>
+                <td class="arc-numeric px-4 py-2 text-stone-500 dark:text-stone-400">2 h ago</td>
+                <td class="arc-numeric px-4 py-2 text-right font-semibold">11</td>
+              </tr>
+              <tr data-arc-filter-item class="hover:bg-stone-100/40 dark:hover:bg-stone-900/40">
+                <td class="px-4 py-2"><div class="flex items-center gap-4"><span class="flex h-8 w-8 items-center justify-center rounded-lg border border-dashed border-stone-400 text-2xs font-semibold text-stone-400 dark:border-stone-600">—</span><span><span class="block font-medium">Shop terminal 02</span><span class="arc-numeric block text-2xs uppercase tracking-widest text-stone-400">shared device login</span></span></div></td>
+                <td class="px-4 py-2 text-stone-500 dark:text-stone-400">Fabricator</td>
+                <td class="px-4 py-2 text-stone-500 dark:text-stone-400">Cutting lists only</td>
+                <td class="px-4 py-2"><span class="rounded-lg border border-dashed border-stone-400 px-2 py-2 text-2xs font-semibold uppercase tracking-widest text-stone-500 dark:border-stone-600 dark:text-stone-400">Shared · flag</span></td>
+                <td class="arc-numeric px-4 py-2 text-stone-500 dark:text-stone-400">Today 07:02</td>
+                <td class="arc-numeric px-4 py-2 text-right font-semibold">17</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p data-arc-filter-empty hidden class="mt-6 rounded-lg border border-dashed border-stone-300 px-4 py-2 text-sm text-stone-500 dark:border-stone-700 dark:text-stone-400">No operator matches that filter.</p>
+      </div>
+    </article>
+
+    <!-- permission matrix -->
+    <aside class="flex flex-col gap-6 xl:col-span-3">
+      <article class="rounded-xl border border-stone-200 bg-stone-50 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+        <header class="border-b border-stone-200 px-6 py-4 dark:border-stone-800">
+          <h2 class="text-sm font-semibold">Permission matrix</h2>
+        </header>
+        <div class="arc-scroll overflow-x-auto p-6">
+          <table class="w-full text-left text-sm">
+            <thead class="text-2xs uppercase tracking-widest text-stone-500 dark:text-stone-400">
+              <tr><th class="px-2 py-2">Right</th><th class="px-2 py-2 text-center">Arch</th><th class="px-2 py-2 text-center">Acct</th><th class="px-2 py-2 text-center">Fab</th></tr>
+            </thead>
+            <tbody class="divide-y divide-stone-200 dark:divide-stone-800">
+              <tr><td class="px-2 py-2">Drawings</td><td class="px-2 py-2 text-center"><span class="inline-block h-2 w-2 rounded-full bg-stone-800 dark:bg-stone-200"></span></td><td class="px-2 py-2 text-center"><span class="inline-block h-2 w-2 rounded-full bg-stone-300 dark:bg-stone-700"></span></td><td class="px-2 py-2 text-center"><span class="inline-block h-2 w-2 rounded-full bg-stone-800 dark:bg-stone-200"></span></td></tr>
+              <tr><td class="px-2 py-2">Finance</td><td class="px-2 py-2 text-center"><span class="inline-block h-2 w-2 rounded-full bg-stone-300 dark:bg-stone-700"></span></td><td class="px-2 py-2 text-center"><span class="inline-block h-2 w-2 rounded-full bg-stone-800 dark:bg-stone-200"></span></td><td class="px-2 py-2 text-center"><span class="inline-block h-2 w-2 rounded-full bg-stone-300 dark:bg-stone-700"></span></td></tr>
+              <tr><td class="px-2 py-2">Stock write</td><td class="px-2 py-2 text-center"><span class="inline-block h-2 w-2 rounded-full bg-stone-300 dark:bg-stone-700"></span></td><td class="px-2 py-2 text-center"><span class="inline-block h-2 w-2 rounded-full bg-stone-800 dark:bg-stone-200"></span></td><td class="px-2 py-2 text-center"><span class="inline-block h-2 w-2 rounded-full bg-stone-800 dark:bg-stone-200"></span></td></tr>
+              <tr><td class="px-2 py-2">Client portal</td><td class="px-2 py-2 text-center"><span class="inline-block h-2 w-2 rounded-full bg-stone-800 dark:bg-stone-200"></span></td><td class="px-2 py-2 text-center"><span class="inline-block h-2 w-2 rounded-full bg-stone-800 dark:bg-stone-200"></span></td><td class="px-2 py-2 text-center"><span class="inline-block h-2 w-2 rounded-full bg-stone-300 dark:bg-stone-700"></span></td></tr>
+              <tr><td class="px-2 py-2">System config</td><td class="px-2 py-2 text-center"><span class="inline-block h-2 w-2 rounded-full bg-stone-300 dark:bg-stone-700"></span></td><td class="px-2 py-2 text-center"><span class="inline-block h-2 w-2 rounded-full bg-stone-300 dark:bg-stone-700"></span></td><td class="px-2 py-2 text-center"><span class="inline-block h-2 w-2 rounded-full bg-stone-300 dark:bg-stone-700"></span></td></tr>
+            </tbody>
+          </table>
+          <p class="mt-4 text-2xs uppercase tracking-widest text-stone-400">● granted ○ withheld</p>
+        </div>
+      </article>
+
+      <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+        <h2 class="text-sm font-semibold">Security actions</h2>
+        <div class="mt-4 flex flex-col gap-2">
+          <button class="rounded-lg bg-stone-800 px-4 py-2 text-sm font-medium text-stone-50 dark:bg-stone-200 dark:text-stone-900">Force MFA enrolment</button>
+          <button class="rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm font-medium hover:bg-stone-100 dark:border-stone-800 dark:bg-stone-950 dark:hover:bg-stone-800">Revoke stale sessions</button>
+          <button class="rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm font-medium hover:bg-stone-100 dark:border-stone-800 dark:bg-stone-950 dark:hover:bg-stone-800">Export access report</button>
+        </div>
+      </article>
+    </aside>
+  </section>
+</div>
+<script src="../assets/arc-kit.js" defer></script>
+</body>
+</html>

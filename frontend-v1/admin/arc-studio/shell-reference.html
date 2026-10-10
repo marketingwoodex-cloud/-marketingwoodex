@@ -1,0 +1,203 @@
+<!doctype html>
+<!-- ============================================================================
+     WOODEX ADMIN V2.1 + ARC.STUDIO — Fixed Frame Shell Reference
+     Anatomy of the shell every module mounts into: global top bar, w-64 rail,
+     floating content viewport with the 3-block stack marked.
+     ============================================================================ -->
+<html lang="en" class="h-full">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Frame Shell Reference — WOODEX ADMIN V2.1</title>
+<link rel="stylesheet" href="assets/arc-kit.css">
+<script>try{var t=localStorage.getItem("wxaTheme");if(t==="dark"||(!t&&matchMedia("(prefers-color-scheme: dark)").matches)){document.documentElement.classList.add("dark");document.documentElement.setAttribute("data-theme","dark")}}catch(e){}</script>
+</head>
+<body class="h-full bg-stone-100 text-stone-950 antialiased dark:bg-stone-950 dark:text-stone-50">
+
+<!-- ==========================================================================
+     SHELL — rail + top bar + content mount
+     ========================================================================== -->
+<div id="shell" class="flex min-h-full">
+
+  <!-- ---------- Left Sidebar Anchor (256px) : Dashboard Sidebar Block ---------- -->
+  <aside id="rail" class="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-stone-200 bg-stone-50 md:flex dark:border-stone-800 dark:bg-stone-900">
+
+    <div class="flex items-center gap-2 border-b border-stone-200 px-4 py-4 dark:border-stone-800">
+      <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-stone-800 text-sm font-bold tracking-tight text-stone-50 dark:bg-stone-200 dark:text-stone-900">W</span>
+      <span class="min-w-0 flex-1" data-rail-label>
+        <span class="block truncate text-sm font-semibold tracking-tight">Woodex Admin</span>
+        <span class="block truncate text-2xs font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">V2.1 · ARC.STUDIO</span>
+      </span>
+      <button id="rail-toggle" title="Collapse rail" class="rounded-lg border border-stone-200 p-2 text-stone-500 hover:bg-stone-100 dark:border-stone-800 dark:text-stone-400 dark:hover:bg-stone-800">
+        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+      </button>
+    </div>
+
+    <nav class="arc-scroll flex-1 overflow-y-auto p-4">
+      <!-- Sidebar Navigation Block — hubs and groups -->
+      <p class="px-2 py-2 text-3xs font-semibold uppercase tracking-widest text-stone-400 dark:text-stone-500" data-rail-label>Overview</p>
+      <a href="#mount" class="flex items-center gap-2 rounded-lg bg-stone-100 px-2 py-2 text-sm font-semibold text-stone-900 dark:bg-stone-800 dark:text-stone-50">
+        <span class="h-4 w-4 shrink-0 rounded-sm border border-stone-400 dark:border-stone-500"></span><span class="truncate" data-rail-label>Dashboard Portal</span>
+      </a>
+      <a href="#mount" class="flex items-center gap-2 rounded-lg px-2 py-2 text-sm text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800">
+        <span class="h-4 w-4 shrink-0 rounded-sm border border-stone-300 dark:border-stone-600"></span><span class="truncate" data-rail-label>Approvals Gate</span>
+        <span class="ml-auto rounded-lg border border-stone-300 px-2 py-2 text-3xs font-semibold arc-numeric dark:border-stone-600" data-rail-label>14</span>
+      </a>
+      <a href="#mount" class="flex items-center gap-2 rounded-lg px-2 py-2 text-sm text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800">
+        <span class="h-4 w-4 shrink-0 rounded-sm border border-stone-300 dark:border-stone-600"></span><span class="truncate" data-rail-label>Team Feed</span>
+      </a>
+      <a href="#mount" class="flex items-center gap-2 rounded-lg px-2 py-2 text-sm text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800">
+        <span class="h-4 w-4 shrink-0 rounded-sm border border-stone-300 dark:border-stone-600"></span><span class="truncate" data-rail-label>Activity & Timelines</span>
+      </a>
+
+      <p class="mt-4 px-2 py-2 text-3xs font-semibold uppercase tracking-widest text-stone-400 dark:text-stone-500" data-rail-label>Architecture</p>
+      <a href="#mount" class="flex items-center gap-2 rounded-lg px-2 py-2 text-sm text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800">
+        <span class="h-4 w-4 shrink-0 rounded-sm border border-stone-300 dark:border-stone-600"></span><span class="truncate" data-rail-label>Site Layout & Zoning</span>
+      </a>
+      <a href="#mount" class="flex items-center gap-2 rounded-lg px-2 py-2 text-sm text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800">
+        <span class="h-4 w-4 shrink-0 rounded-sm border border-stone-300 dark:border-stone-600"></span><span class="truncate" data-rail-label>Floor Plan Shells</span>
+      </a>
+      <a href="#mount" class="flex items-center gap-2 rounded-lg px-2 py-2 text-sm text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800">
+        <span class="h-4 w-4 shrink-0 rounded-sm border border-stone-300 dark:border-stone-600"></span><span class="truncate" data-rail-label>3D Elevations</span>
+      </a>
+      <a href="#mount" class="flex items-center gap-2 rounded-lg px-2 py-2 text-sm text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800">
+        <span class="h-4 w-4 shrink-0 rounded-sm border border-stone-300 dark:border-stone-600"></span><span class="truncate" data-rail-label>Structural Engineering</span>
+      </a>
+
+      <p class="mt-4 px-2 py-2 text-3xs font-semibold uppercase tracking-widest text-stone-400 dark:text-stone-500" data-rail-label>Sales & Finance</p>
+      <a href="#mount" class="flex items-center gap-2 rounded-lg px-2 py-2 text-sm text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800">
+        <span class="h-4 w-4 shrink-0 rounded-sm border border-stone-300 dark:border-stone-600"></span><span class="truncate" data-rail-label>Leads & Pipeline</span>
+      </a>
+      <a href="#mount" class="flex items-center gap-2 rounded-lg px-2 py-2 text-sm text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800">
+        <span class="h-4 w-4 shrink-0 rounded-sm border border-stone-300 dark:border-stone-600"></span><span class="truncate" data-rail-label>Document Builder</span>
+      </a>
+      <a href="#mount" class="flex items-center gap-2 rounded-lg px-2 py-2 text-sm text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800">
+        <span class="h-4 w-4 shrink-0 rounded-sm border border-stone-300 dark:border-stone-600"></span><span class="truncate" data-rail-label>Financial Accounts</span>
+      </a>
+      <!-- Sidebar accordion group -->
+      <details class="group" open>
+        <summary class="flex cursor-pointer items-center justify-between rounded-lg px-2 py-2 text-sm font-medium text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800">
+          <span class="truncate" data-rail-label>System & Security</span>
+          <svg class="h-4 w-4 shrink-0 text-stone-400 transition-transform group-open:rotate-90" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m9 6 6 6-6 6"/></svg>
+        </summary>
+        <div class="mt-2 flex flex-col gap-2 pl-4" data-rail-label>
+          <a href="#mount" class="rounded-lg px-2 py-2 text-sm text-stone-500 hover:bg-stone-100 dark:text-stone-400 dark:hover:bg-stone-800">Users & Access Roles</a>
+          <a href="#mount" class="rounded-lg px-2 py-2 text-sm text-stone-500 hover:bg-stone-100 dark:text-stone-400 dark:hover:bg-stone-800">Database & Logs</a>
+          <a href="#mount" class="rounded-lg px-2 py-2 text-sm text-stone-500 hover:bg-stone-100 dark:text-stone-400 dark:hover:bg-stone-800">Configurations</a>
+        </div>
+      </details>
+    </nav>
+
+    <div class="border-t border-stone-200 p-4 dark:border-stone-800">
+      <div class="flex items-center gap-2 rounded-lg border border-stone-200 bg-white p-2 dark:border-stone-800 dark:bg-stone-950">
+        <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-stone-200 text-2xs font-semibold dark:bg-stone-800">AB</span>
+        <span class="min-w-0 flex-1" data-rail-label>
+          <span class="block truncate text-sm font-medium">Ahmed B.</span>
+          <span class="block truncate text-2xs uppercase tracking-widest text-stone-500 dark:text-stone-400">Owner</span>
+        </span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ---------- Right-hand floating content viewport ---------- -->
+  <div class="flex min-w-0 flex-1 flex-col">
+
+    <!-- GLOBAL TOP BAR : Workspace Headers Block -->
+    <header class="sticky top-0 z-40 border-b border-stone-200 bg-stone-50/90 backdrop-blur dark:border-stone-800 dark:bg-stone-900/90">
+      <div class="flex flex-wrap items-center justify-between gap-4 px-6 py-4">
+        <div class="flex min-w-0 items-center gap-2">
+          <nav class="flex items-center gap-2 text-2xs uppercase tracking-widest text-stone-500 dark:text-stone-400">
+            <span>Woodex</span><span class="text-stone-300 dark:text-stone-600">/</span><span class="text-stone-900 dark:text-stone-50">Shell Reference</span>
+          </nav>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+          <label class="flex items-center gap-2 rounded-lg border border-stone-200 bg-white px-2 py-2 focus-within:ring-1 focus-within:ring-stone-400 dark:border-stone-800 dark:bg-stone-950 dark:focus-within:ring-stone-500">
+            <svg class="h-4 w-4 text-stone-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="7"/><path d="m20 20-4.3-4.3"/></svg>
+            <input type="search" placeholder="Search modules, orders, clients…" class="w-56 bg-transparent text-sm outline-none placeholder:text-stone-400 dark:placeholder:text-stone-500">
+            <span class="arc-numeric rounded-lg border border-stone-200 px-2 py-2 text-3xs uppercase tracking-widest text-stone-400 dark:border-stone-800">⌘K</span>
+          </label>
+          <button class="relative rounded-lg border border-stone-200 bg-white px-2 py-2 hover:bg-stone-100 dark:border-stone-800 dark:bg-stone-950 dark:hover:bg-stone-800">
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 8-3 8h18s-3-1-3-8M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+            <span class="absolute right-2 top-2 h-2 w-2 rounded-full bg-stone-800 dark:bg-stone-200"></span>
+          </button>
+          <button data-arc-theme class="rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm font-medium hover:bg-stone-100 dark:border-stone-800 dark:bg-stone-950 dark:hover:bg-stone-800"><span data-arc-theme-label>Dark</span></button>
+          <button class="rounded-lg bg-stone-800 px-4 py-2 text-sm font-medium text-stone-50 hover:bg-stone-700 dark:bg-stone-200 dark:text-stone-900 dark:hover:bg-stone-300">New blueprint</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- ================== CONTENT MOUNT : the 3-block stack ================== -->
+    <main id="mount" class="flex-1 p-6 lg:p-8">
+      <div class="mx-auto flex w-full max-w-canvas flex-col gap-8">
+
+        <!-- BLOCK 1 -->
+        <section class="rounded-xl border border-dashed border-stone-300 p-6 dark:border-stone-700">
+          <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Mount point · Block 1 — Title / Filter Bar</p>
+          <p class="mt-2 text-sm text-stone-500 dark:text-stone-400">System title, breadcrumb, date selector, view switches and page-level filters. Height is content-driven; the block closes with a <span class="arc-numeric">border-b border-stone-200 dark:border-stone-800 pb-6</span> rule.</p>
+        </section>
+
+        <!-- BLOCK 2 -->
+        <section class="rounded-xl border border-dashed border-stone-300 p-6 dark:border-stone-700">
+          <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Mount point · Block 2 — 4-Column KPI Summary Row</p>
+          <div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <div class="h-24 rounded-xl border border-stone-200 bg-stone-50 dark:border-stone-800 dark:bg-stone-900"></div>
+            <div class="h-24 rounded-xl border border-stone-200 bg-stone-50 dark:border-stone-800 dark:bg-stone-900"></div>
+            <div class="h-24 rounded-xl border border-stone-200 bg-stone-50 dark:border-stone-800 dark:bg-stone-900"></div>
+            <div class="h-24 rounded-xl border border-stone-200 bg-stone-50 dark:border-stone-800 dark:bg-stone-900"></div>
+          </div>
+        </section>
+
+        <!-- BLOCK 3 -->
+        <section class="rounded-xl border border-dashed border-stone-300 p-6 dark:border-stone-700">
+          <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Mount point · Block 3 — Main Functional Action Canvas</p>
+          <p class="mt-2 text-sm text-stone-500 dark:text-stone-400">Data tables, kanban boards, chat workspaces, document builders, maps or gallery canvases. One module file per screen lives in <a href="modules/m01-dashboard-portal.html" class="font-medium underline decoration-dotted underline-offset-4">modules/</a>.</p>
+        </section>
+
+        <!-- Shell specification ------------------------------------------------ -->
+        <section class="grid grid-cols-1 gap-6 lg:grid-cols-12">
+          <div class="overflow-hidden rounded-xl border border-stone-200 bg-stone-50 shadow-panel lg:col-span-7 dark:border-stone-800 dark:bg-stone-900">
+            <table class="w-full text-left text-sm">
+              <thead class="bg-stone-100/50 text-xs font-semibold uppercase tracking-wider text-stone-500 dark:bg-stone-900/50 dark:text-stone-400">
+                <tr><th class="px-4 py-2">Shell region</th><th class="px-4 py-2">Token</th><th class="px-4 py-2">Behaviour</th></tr>
+              </thead>
+              <tbody class="divide-y divide-stone-200 dark:divide-stone-800">
+                <tr><td class="px-4 py-2 font-medium">Left rail</td><td class="arc-numeric px-4 py-2 text-stone-500 dark:text-stone-400">w-64 · w-20 collapsed</td><td class="px-4 py-2 text-stone-500 dark:text-stone-400">Sticky, 100vh, collapsible below xl</td></tr>
+                <tr><td class="px-4 py-2 font-medium">Global top bar</td><td class="arc-numeric px-4 py-2 text-stone-500 dark:text-stone-400">px-6 py-4</td><td class="px-4 py-2 text-stone-500 dark:text-stone-400">Sticky, backdrop blur, z-40</td></tr>
+                <tr><td class="px-4 py-2 font-medium">Content viewport</td><td class="arc-numeric px-4 py-2 text-stone-500 dark:text-stone-400">p-6 · lg:p-8</td><td class="px-4 py-2 text-stone-500 dark:text-stone-400">Canvas capped at max-w-canvas (1600px)</td></tr>
+                <tr><td class="px-4 py-2 font-medium">Block stack gap</td><td class="arc-numeric px-4 py-2 text-stone-500 dark:text-stone-400">gap-8</td><td class="px-4 py-2 text-stone-500 dark:text-stone-400">Half the mobile gap on phones</td></tr>
+                <tr><td class="px-4 py-2 font-medium">Mobile rail</td><td class="arc-numeric px-4 py-2 text-stone-500 dark:text-stone-400">hidden md:flex</td><td class="px-4 py-2 text-stone-500 dark:text-stone-400">Slide-in drawer hosting the same nav</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel lg:col-span-5 dark:border-stone-800 dark:bg-stone-900">
+            <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Mount contract</p>
+            <ul class="mt-4 flex flex-col gap-2 text-sm text-stone-600 dark:text-stone-300">
+              <li class="rounded-lg border border-stone-200 bg-white px-4 py-2 dark:border-stone-800 dark:bg-stone-950"><span class="arc-numeric mr-2 text-xs text-stone-400">01</span>Module files render Blocks 1 → 2 → 3 only; the shell supplies rail, top bar and page padding.</li>
+              <li class="rounded-lg border border-stone-200 bg-white px-4 py-2 dark:border-stone-800 dark:bg-stone-950"><span class="arc-numeric mr-2 text-xs text-stone-400">02</span>Both documents load <span class="arc-numeric">assets/arc-kit.css</span>; behaviour comes from <span class="arc-numeric">assets/arc-kit.js</span>.</li>
+              <li class="rounded-lg border border-stone-200 bg-white px-4 py-2 dark:border-stone-800 dark:bg-stone-950"><span class="arc-numeric mr-2 text-xs text-stone-400">03</span>Theme mode is class-driven: <span class="arc-numeric">.dark</span> or <span class="arc-numeric">[data-theme="dark"]</span> on <span class="arc-numeric">&lt;html&gt;</span>.</li>
+              <li class="rounded-lg border border-stone-200 bg-white px-4 py-2 dark:border-stone-800 dark:bg-stone-950"><span class="arc-numeric mr-2 text-xs text-stone-400">04</span>No inline styles, no arbitrary spacing floats — utilities resolve to the 8px ladder.</li>
+            </ul>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script src="assets/arc-kit.js" defer></script>
+<script>
+(function () {
+  var rail = document.getElementById("rail"), toggle = document.getElementById("rail-toggle");
+  toggle.addEventListener("click", function () {
+    var mini = rail.classList.toggle("w-20");
+    rail.classList.toggle("w-64", !mini);
+    document.querySelectorAll("[data-rail-label]").forEach(function (el) { el.classList.toggle("hidden", mini); });
+    toggle.setAttribute("title", mini ? "Expand rail" : "Collapse rail");
+    try { localStorage.setItem("wxaRail", mini ? "mini" : "full"); } catch (e) {}
+  });
+  try { if (localStorage.getItem("wxaRail") === "mini") toggle.click(); } catch (e) {}
+})();
+</script>
+</body>
+</html>

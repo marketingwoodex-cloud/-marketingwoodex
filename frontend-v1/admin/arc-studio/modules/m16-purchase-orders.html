@@ -1,0 +1,151 @@
+<!doctype html>
+<!-- ============================================================================
+     WOODEX ADMIN V2.1 + ARC.STUDIO
+     MODULE 16 — PURCHASE ORDERS
+     Blocks: 1 Supplier Tracking Bar · 2 KPI Cards · 3 Order Table tied to Blueprints
+     ============================================================================ -->
+<html lang="en" class="h-full">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>M16 Purchase Orders — WOODEX ADMIN V2.1</title>
+<link rel="stylesheet" href="../assets/arc-kit.css">
+<script>try{var t=localStorage.getItem("wxaTheme");if(t==="dark"||(!t&&matchMedia("(prefers-color-scheme: dark)").matches)){document.documentElement.classList.add("dark");document.documentElement.setAttribute("data-theme","dark")}}catch(e){}</script>
+</head>
+<body class="min-h-full bg-stone-100 text-stone-950 antialiased dark:bg-stone-950 dark:text-stone-50">
+<div class="mx-auto flex w-full max-w-canvas flex-col gap-8 px-6 py-8">
+
+  <!-- ===== BLOCK 1 — HEADER / SUPPLIER TRACKING ===== -->
+  <header class="flex flex-col gap-6 border-b border-stone-200 pb-6 lg:flex-row lg:items-start lg:justify-between dark:border-stone-800">
+    <div class="flex flex-col gap-2">
+      <nav class="flex items-center gap-2 text-2xs uppercase tracking-widest text-stone-500 dark:text-stone-400">
+        <span>Module IV</span><span class="text-stone-300 dark:text-stone-600">/</span><span class="text-stone-900 dark:text-stone-50">Purchase Orders</span>
+      </nav>
+      <h1 class="text-xl font-semibold tracking-tight">Purchase Orders</h1>
+      <p class="max-w-3xl text-sm text-stone-500 dark:text-stone-400">Vendor contracts connected to blueprint requirements: what was promised, what the workshop needs, and when it lands.</p>
+    </div>
+    <div class="flex flex-wrap items-center gap-2">
+      <div class="flex items-center gap-2 rounded-lg border border-stone-200 bg-white px-4 py-2 dark:border-stone-800 dark:bg-stone-950">
+        <span class="text-sm font-medium">Only awaiting authorisation</span>
+        <button role="switch" aria-checked="false" data-arc-switch="Authorisation filter" class="relative h-6 w-10 shrink-0 rounded-sm bg-stone-200 transition-colors dark:bg-stone-800">
+          <span class="absolute left-2 top-2 h-4 w-4 translate-x-0 rounded-sm bg-white transition-transform dark:bg-stone-950"></span>
+        </button>
+      </div>
+      <button class="rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm font-medium hover:bg-stone-100 dark:border-stone-800 dark:bg-stone-950 dark:hover:bg-stone-800">Supplier list</button>
+      <button class="rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm font-medium hover:bg-stone-100 dark:border-stone-800 dark:bg-stone-950 dark:hover:bg-stone-800">Receive goods</button>
+      <button class="rounded-lg bg-stone-800 px-4 py-2 text-sm font-medium text-stone-50 hover:bg-stone-700 dark:bg-stone-200 dark:text-stone-900 dark:hover:bg-stone-300">＋ New PO</button>
+    </div>
+  </header>
+
+  <!-- ===== BLOCK 2 — 4-COLUMN KPI CARDS ===== -->
+  <section class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Capital Committed This Month</p>
+      <p class="arc-numeric mt-2 text-2xl font-bold tracking-tight">₨ 6.84M</p>
+      <p class="mt-2 text-sm text-stone-500 dark:text-stone-400">14 purchase orders · 3 currencies</p>
+    </article>
+    <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Supplier Lead Times</p>
+      <p class="arc-numeric mt-2 text-2xl font-bold tracking-tight">14<span class="text-sm font-medium text-stone-400"> days</span></p>
+      <p class="mt-2 text-sm text-stone-500 dark:text-stone-400">Longest: teak A · 18 days</p>
+    </article>
+    <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Open Material Requests</p>
+      <p class="arc-numeric mt-2 text-2xl font-bold tracking-tight">21</p>
+      <div class="mt-4 flex flex-col gap-2">
+        <span class="block h-2 w-full overflow-hidden rounded-sm bg-stone-200 dark:bg-stone-800"><span data-arc-value="62" class="block h-full w-0 bg-stone-800 transition-all duration-700 dark:bg-stone-200"></span></span>
+        <p class="text-sm text-stone-500 dark:text-stone-400">13 covered by live POs</p>
+      </div>
+    </article>
+    <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">On-time Delivery</p>
+      <p class="arc-numeric mt-2 text-2xl font-bold tracking-tight">91%</p>
+      <div class="mt-4 flex flex-col gap-2">
+        <span class="block h-2 w-full overflow-hidden rounded-sm bg-stone-200 dark:bg-stone-800"><span data-arc-value="91" class="block h-full w-0 bg-stone-500 transition-all duration-700 dark:bg-stone-400"></span></span>
+        <p class="text-sm text-stone-500 dark:text-stone-400">2 late lines in the last quarter</p>
+      </div>
+    </article>
+  </section>
+
+  <!-- ===== BLOCK 3 — MAIN ACTION CANVAS (Order & Billing Table) ===== -->
+  <section class="grid grid-cols-1 gap-6 xl:grid-cols-12">
+    <article class="rounded-xl border border-stone-200 bg-stone-50 shadow-panel xl:col-span-9 dark:border-stone-800 dark:bg-stone-900">
+      <header class="flex flex-wrap items-center justify-between gap-4 border-b border-stone-200 px-6 py-4 dark:border-stone-800">
+        <div>
+          <h2 class="text-sm font-semibold">PO register</h2>
+          <p class="text-sm text-stone-500 dark:text-stone-400">Administrative log linking vendor contracts to blueprint requirements</p>
+        </div>
+        <label class="flex items-center gap-2 rounded-lg border border-stone-200 bg-white px-2 py-2 focus-within:ring-1 focus-within:ring-stone-400 dark:border-stone-800 dark:bg-stone-950 dark:focus-within:ring-stone-500">
+          <svg class="h-4 w-4 text-stone-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="7"/><path d="m20 20-4.3-4.3"/></svg>
+          <input data-arc-filter data-arc-target="#po-rows" type="search" placeholder="PO, supplier or drawing…" class="w-48 bg-transparent text-sm outline-none placeholder:text-stone-400 dark:placeholder:text-stone-500">
+        </label>
+      </header>
+
+      <div class="p-6">
+        <div class="w-full overflow-x-auto overflow-y-hidden rounded-xl border border-stone-200 dark:border-stone-800">
+          <table class="w-full text-left text-sm">
+            <thead class="bg-stone-100/50 text-xs font-semibold uppercase tracking-wider text-stone-500 dark:bg-stone-900/50 dark:text-stone-400">
+              <tr>
+                <th class="px-4 py-2">PO</th><th class="px-4 py-2">Supplier</th><th class="px-4 py-2">Requirement</th>
+                <th class="px-4 py-2">Drawing link</th><th class="px-4 py-2 text-right">Value</th><th class="px-4 py-2">ETA</th><th class="px-4 py-2">Authorisation</th>
+              </tr>
+            </thead>
+            <tbody class="arc-numeric divide-y divide-stone-200 dark:divide-stone-800">
+              <tr data-arc-filter-item class="hover:bg-stone-100/40 dark:hover:bg-stone-900/40">
+                <td class="px-4 py-2 font-medium">WX-PO-4471</td><td class="px-4 py-2">Timber Mart</td><td class="px-4 py-2 text-stone-500 dark:text-stone-400">340 bf American walnut FAS</td>
+                <td class="px-4 py-2 text-stone-500 dark:text-stone-400">MS-14 / MW-11</td><td class="px-4 py-2 text-right">1,180,000</td><td class="px-4 py-2">16 Oct</td>
+                <td class="px-4 py-2"><span class="rounded-lg bg-stone-800 px-2 py-2 text-2xs font-semibold uppercase tracking-widest text-stone-50 dark:bg-stone-200 dark:text-stone-900">Authorised</span></td>
+              </tr>
+              <tr data-arc-filter-item class="hover:bg-stone-100/40 dark:hover:bg-stone-900/40">
+                <td class="px-4 py-2 font-medium">WX-PO-4472</td><td class="px-4 py-2">Burma Hardwoods</td><td class="px-4 py-2 text-stone-500 dark:text-stone-400">180 bf Burmese teak A</td>
+                <td class="px-4 py-2 text-stone-500 dark:text-stone-400">MS-14 / CL-01</td><td class="px-4 py-2 text-right">1,123,200</td><td class="px-4 py-2">21 Oct</td>
+                <td class="px-4 py-2"><span class="flex items-center gap-2 rounded-lg border border-stone-300 px-2 py-2 text-2xs font-semibold uppercase tracking-widest text-stone-600 dark:border-stone-700 dark:text-stone-300"><span class="h-2 w-2 animate-arc-pulse rounded-full bg-stone-400"></span>In review</span></td>
+              </tr>
+              <tr data-arc-filter-item class="hover:bg-stone-100/40 dark:hover:bg-stone-900/40">
+                <td class="px-4 py-2 font-medium">WX-PO-4473</td><td class="px-4 py-2">Nordic Pine Co.</td><td class="px-4 py-2 text-stone-500 dark:text-stone-400">620 bf pine C24 structural</td>
+                <td class="px-4 py-2 text-stone-500 dark:text-stone-400">ST-02 / BW-09</td><td class="px-4 py-2 text-right">731,600</td><td class="px-4 py-2">14 Oct</td>
+                <td class="px-4 py-2"><span class="rounded-lg bg-stone-800 px-2 py-2 text-2xs font-semibold uppercase tracking-widest text-stone-50 dark:bg-stone-200 dark:text-stone-900">Authorised</span></td>
+              </tr>
+              <tr data-arc-filter-item class="hover:bg-stone-100/40 dark:hover:bg-stone-900/40">
+                <td class="px-4 py-2 font-medium">WX-PO-4474</td><td class="px-4 py-2">Coatings House</td><td class="px-4 py-2 text-stone-500 dark:text-stone-400">8 drums matte PU 12%</td>
+                <td class="px-4 py-2 text-stone-500 dark:text-stone-400">FIN-03 spec</td><td class="px-4 py-2 text-right">340,000</td><td class="px-4 py-2">19 Oct</td>
+                <td class="px-4 py-2"><span class="rounded-lg border border-dashed border-stone-400 px-2 py-2 text-2xs font-semibold uppercase tracking-widest text-stone-500 dark:border-stone-600 dark:text-stone-400">Blocked · VOC check</span></td>
+              </tr>
+              <tr data-arc-filter-item class="hover:bg-stone-100/40 dark:hover:bg-stone-900/40">
+                <td class="px-4 py-2 font-medium">WX-PO-4475</td><td class="px-4 py-2">Fixings Direct</td><td class="px-4 py-2 text-stone-500 dark:text-stone-400">1,500 pcs concealed clips</td>
+                <td class="px-4 py-2 text-stone-500 dark:text-stone-400">CL-01 detail 04</td><td class="px-4 py-2 text-right">144,000</td><td class="px-4 py-2">12 Oct</td>
+                <td class="px-4 py-2"><span class="rounded-lg bg-stone-800 px-2 py-2 text-2xs font-semibold uppercase tracking-widest text-stone-50 dark:bg-stone-200 dark:text-stone-900">Received</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p data-arc-filter-empty hidden class="mt-6 rounded-lg border border-dashed border-stone-300 px-4 py-2 text-sm text-stone-500 dark:border-stone-700 dark:text-stone-400">No purchase order matches that filter.</p>
+      </div>
+    </article>
+
+    <aside class="flex flex-col gap-6 xl:col-span-3">
+      <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+        <h2 class="text-sm font-semibold">Delivery stepper · PO-4473</h2>
+        <ol class="mt-4 flex flex-col gap-2">
+          <li class="flex items-center gap-2"><span class="flex h-8 w-8 items-center justify-center rounded-lg bg-stone-800 text-2xs font-semibold text-stone-50 dark:bg-stone-200 dark:text-stone-900">1</span><span class="text-sm">Raised &amp; authorised</span></li>
+          <li class="flex items-center gap-2"><span class="flex h-8 w-8 items-center justify-center rounded-lg bg-stone-800 text-2xs font-semibold text-stone-50 dark:bg-stone-200 dark:text-stone-900">2</span><span class="text-sm">Supplier confirmed</span></li>
+          <li class="flex items-center gap-2"><span class="flex h-8 w-8 items-center justify-center rounded-lg border border-stone-300 text-2xs font-semibold text-stone-500 dark:border-stone-700 dark:text-stone-400">3</span><span class="text-sm text-stone-500 dark:text-stone-400">In transit · 14 Oct</span></li>
+          <li class="flex items-center gap-2"><span class="flex h-8 w-8 items-center justify-center rounded-lg border border-dashed border-stone-400 text-2xs font-semibold text-stone-400 dark:border-stone-600">4</span><span class="text-sm text-stone-400">Goods received</span></li>
+        </ol>
+      </article>
+
+      <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+        <h2 class="text-sm font-semibold">Three-way match</h2>
+        <ul class="mt-4 flex flex-col gap-2 text-sm">
+          <li class="flex items-center justify-between gap-4 rounded-lg border border-stone-200 bg-white px-4 py-2 dark:border-stone-800 dark:bg-stone-950"><span>PO ↔ invoice</span><span class="rounded-lg bg-stone-800 px-2 py-2 text-2xs font-semibold uppercase tracking-widest text-stone-50 dark:bg-stone-200 dark:text-stone-900">Match</span></li>
+          <li class="flex items-center justify-between gap-4 rounded-lg border border-stone-200 bg-white px-4 py-2 dark:border-stone-800 dark:bg-stone-950"><span>Invoice ↔ goods</span><span class="rounded-lg bg-stone-800 px-2 py-2 text-2xs font-semibold uppercase tracking-widest text-stone-50 dark:bg-stone-200 dark:text-stone-900">Match</span></li>
+          <li class="flex items-center justify-between gap-4 rounded-lg border border-dashed border-stone-300 px-4 py-2 dark:border-stone-700"><span class="text-stone-500 dark:text-stone-400">Goods ↔ schedule</span><span class="text-2xs uppercase tracking-widest text-stone-400">Pending</span></li>
+        </ul>
+      </article>
+    </aside>
+  </section>
+</div>
+<script src="../assets/arc-kit.js" defer></script>
+</body>
+</html>

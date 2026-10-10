@@ -1,0 +1,224 @@
+<!doctype html>
+<!-- ============================================================================
+     WOODEX ADMIN V2.1 + ARC.STUDIO
+     MODULE 03 — UNIFIED TEAM FEED
+     Blocks: 1 Workspace Header · 2 Status Badges + Progress · 3 Chat Workspace
+     ============================================================================ -->
+<html lang="en" class="h-full">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>M03 Unified Team Feed — WOODEX ADMIN V2.1</title>
+<link rel="stylesheet" href="../assets/arc-kit.css">
+<script>try{var t=localStorage.getItem("wxaTheme");if(t==="dark"||(!t&&matchMedia("(prefers-color-scheme: dark)").matches)){document.documentElement.classList.add("dark");document.documentElement.setAttribute("data-theme","dark")}}catch(e){}</script>
+</head>
+<body class="min-h-full bg-stone-100 text-stone-950 antialiased dark:bg-stone-950 dark:text-stone-50">
+<div class="mx-auto flex w-full max-w-canvas flex-col gap-8 px-6 py-8">
+
+  <!-- ===== BLOCK 1 — WORKSPACE HEADER ===== -->
+  <header class="flex flex-col gap-6 border-b border-stone-200 pb-6 dark:border-stone-800">
+    <div class="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+      <div class="flex flex-col gap-2">
+        <nav class="flex items-center gap-2 text-2xs uppercase tracking-widest text-stone-500 dark:text-stone-400">
+          <span>Module I</span><span class="text-stone-300 dark:text-stone-600">/</span><span class="text-stone-900 dark:text-stone-50">Team Feed</span>
+        </nav>
+        <h1 class="text-xl font-semibold tracking-tight">Unified Team Feed</h1>
+        <p class="max-w-3xl text-sm text-stone-500 dark:text-stone-400">One thread per project across design, workshop and site. Fabricators, architects and accounts read the same record.</p>
+      </div>
+      <div class="flex flex-wrap items-center gap-2">
+        <button class="rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm font-medium hover:bg-stone-100 dark:border-stone-800 dark:bg-stone-950 dark:hover:bg-stone-800">Mute thread</button>
+        <button class="rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm font-medium hover:bg-stone-100 dark:border-stone-800 dark:bg-stone-950 dark:hover:bg-stone-800">Add member</button>
+        <button class="rounded-lg bg-stone-800 px-4 py-2 text-sm font-medium text-stone-50 hover:bg-stone-700 dark:bg-stone-200 dark:text-stone-900 dark:hover:bg-stone-300">Start broadcast</button>
+      </div>
+    </div>
+
+    <!-- member tracking strip -->
+    <div class="flex flex-wrap items-center gap-2">
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Tracking</p>
+      <span class="flex items-center gap-2 rounded-lg border border-stone-200 bg-white px-2 py-2 dark:border-stone-800 dark:bg-stone-950">
+        <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-stone-800 text-2xs font-semibold text-stone-50 dark:bg-stone-200 dark:text-stone-900">SH</span>
+        <span class="text-sm">Sana H.</span><span class="h-2 w-2 rounded-full bg-stone-800 dark:bg-stone-200"></span>
+      </span>
+      <span class="flex items-center gap-2 rounded-lg border border-stone-200 bg-white px-2 py-2 dark:border-stone-800 dark:bg-stone-950">
+        <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-stone-600 text-2xs font-semibold text-stone-50 dark:bg-stone-400 dark:text-stone-900">RQ</span>
+        <span class="text-sm">Rafiq Q.</span><span class="h-2 w-2 rounded-full bg-stone-800 dark:bg-stone-200"></span>
+      </span>
+      <span class="flex items-center gap-2 rounded-lg border border-stone-200 bg-white px-2 py-2 dark:border-stone-800 dark:bg-stone-950">
+        <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-stone-400 text-2xs font-semibold text-stone-900 dark:bg-stone-600 dark:text-stone-50">AK</span>
+        <span class="text-sm">Ayesha K.</span><span class="h-2 w-2 rounded-full bg-stone-400"></span>
+      </span>
+      <span class="flex items-center gap-2 rounded-lg border border-dashed border-stone-300 px-2 py-2 text-2xs uppercase tracking-widest text-stone-500 dark:border-stone-700 dark:text-stone-400">+ 11 members</span>
+      <div class="ml-auto flex flex-wrap items-center gap-2">
+        <button class="rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm font-medium hover:bg-stone-100 dark:border-stone-800 dark:bg-stone-950 dark:hover:bg-stone-800">Unread only</button>
+        <button class="rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm font-medium hover:bg-stone-100 dark:border-stone-800 dark:bg-stone-950 dark:hover:bg-stone-800">Attachments</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== BLOCK 2 — STATUS BADGES + PROGRESS INDICATORS ===== -->
+  <section class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Active Workshop Fabricators</p>
+      <p class="arc-numeric mt-2 text-2xl font-bold tracking-tight">12<span class="text-sm font-medium text-stone-400"> / 16</span></p>
+      <div class="mt-4 flex flex-col gap-2">
+        <span class="block h-2 w-full overflow-hidden rounded-sm bg-stone-200 dark:bg-stone-800"><span data-arc-value="75" class="block h-full w-0 bg-stone-800 transition-all duration-700 dark:bg-stone-200"></span></span>
+        <p class="text-sm text-stone-500 dark:text-stone-400">Day shift · 4 on leave</p>
+      </div>
+    </article>
+    <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Open Field RFIs</p>
+      <p class="arc-numeric mt-2 text-2xl font-bold tracking-tight">07</p>
+      <div class="mt-4 flex flex-wrap gap-2">
+        <span class="rounded-lg border border-stone-300 px-2 py-2 text-2xs font-semibold uppercase tracking-widest text-stone-600 dark:border-stone-700 dark:text-stone-300">3 &gt; 24 h</span>
+        <span class="rounded-lg border border-dashed border-stone-400 px-2 py-2 text-2xs font-semibold uppercase tracking-widest text-stone-500 dark:border-stone-600 dark:text-stone-400">2 escalated</span>
+      </div>
+    </article>
+    <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Design Submittal Rate</p>
+      <p class="arc-numeric mt-2 text-2xl font-bold tracking-tight">92%</p>
+      <div class="mt-4 flex flex-col gap-2">
+        <span class="block h-2 w-full overflow-hidden rounded-sm bg-stone-200 dark:bg-stone-800"><span data-arc-value="92" class="block h-full w-0 bg-stone-500 transition-all duration-700 dark:bg-stone-400"></span></span>
+        <p class="text-sm text-stone-500 dark:text-stone-400">On-time against the weekly board</p>
+      </div>
+    </article>
+    <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Median Reply Time</p>
+      <p class="arc-numeric mt-2 text-2xl font-bold tracking-tight">46<span class="text-sm font-medium text-stone-400"> min</span></p>
+      <p class="mt-4 text-sm text-stone-500 dark:text-stone-400">Studio target under 60 min</p>
+    </article>
+  </section>
+
+  <!-- ===== BLOCK 3 — MAIN ACTION CANVAS (Chat Workspace Layout) ===== -->
+  <section class="grid grid-cols-1 gap-6 xl:grid-cols-12">
+
+    <!-- channel rail -->
+    <aside class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel xl:col-span-3 dark:border-stone-800 dark:bg-stone-900">
+      <div class="flex items-center justify-between gap-4">
+        <h2 class="text-sm font-semibold">Channels</h2>
+        <button class="rounded-lg border border-stone-200 px-2 py-2 text-2xs font-medium uppercase tracking-widest text-stone-500 hover:bg-stone-100 dark:border-stone-800 dark:text-stone-400 dark:hover:bg-stone-800">＋</button>
+      </div>
+      <nav class="mt-4 flex flex-col gap-2">
+        <a href="#feed" class="flex items-center justify-between rounded-lg border border-stone-800 bg-white px-4 py-2 text-sm font-medium dark:border-stone-200 dark:bg-stone-950"><span class="flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-stone-800 dark:bg-stone-200"></span>#hafeez-villa</span><span class="arc-numeric text-2xs uppercase tracking-widest text-stone-400">18</span></a>
+        <a href="#feed" class="flex items-center justify-between rounded-lg px-4 py-2 text-sm hover:bg-stone-100 dark:hover:bg-stone-800"><span class="flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-stone-400"></span>#workshop-floor</span><span class="arc-numeric text-2xs uppercase tracking-widest text-stone-400">07</span></a>
+        <a href="#feed" class="flex items-center justify-between rounded-lg px-4 py-2 text-sm hover:bg-stone-100 dark:hover:bg-stone-800"><span class="flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-stone-400"></span>#site-coordination</span><span class="arc-numeric text-2xs uppercase tracking-widest text-stone-400">03</span></a>
+        <a href="#feed" class="flex items-center justify-between rounded-lg px-4 py-2 text-sm hover:bg-stone-100 dark:hover:bg-stone-800"><span class="flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-stone-300 dark:bg-stone-700"></span>#rfis</span><span class="arc-numeric text-2xs uppercase tracking-widest text-stone-400">12</span></a>
+        <a href="#feed" class="flex items-center justify-between rounded-lg px-4 py-2 text-sm hover:bg-stone-100 dark:hover:bg-stone-800"><span class="flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-stone-300 dark:bg-stone-700"></span>#accounts</span><span class="arc-numeric text-2xs uppercase tracking-widest text-stone-400">02</span></a>
+      </nav>
+
+      <div class="mt-6 border-t border-stone-200 pt-6 dark:border-stone-800">
+        <h2 class="text-sm font-semibold">Team tags</h2>
+        <div class="mt-4 flex flex-wrap gap-2">
+          <span class="rounded-lg border border-stone-200 bg-white px-2 py-2 text-2xs uppercase tracking-widest text-stone-500 dark:border-stone-800 dark:bg-stone-950 dark:text-stone-400">@design</span>
+          <span class="rounded-lg border border-stone-200 bg-white px-2 py-2 text-2xs uppercase tracking-widest text-stone-500 dark:border-stone-800 dark:bg-stone-950 dark:text-stone-400">@fabrication</span>
+          <span class="rounded-lg border border-stone-200 bg-white px-2 py-2 text-2xs uppercase tracking-widest text-stone-500 dark:border-stone-800 dark:bg-stone-950 dark:text-stone-400">@site</span>
+          <span class="rounded-lg border border-stone-200 bg-white px-2 py-2 text-2xs uppercase tracking-widest text-stone-500 dark:border-stone-800 dark:bg-stone-950 dark:text-stone-400">@accounts</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- thread -->
+    <article id="feed" class="flex flex-col rounded-xl border border-stone-200 bg-stone-50 shadow-panel xl:col-span-6 dark:border-stone-800 dark:bg-stone-900">
+      <header class="flex flex-wrap items-center justify-between gap-4 border-b border-stone-200 px-6 py-4 dark:border-stone-800">
+        <div>
+          <h2 class="text-sm font-semibold">#hafeez-villa · millwork package</h2>
+          <p class="text-sm text-stone-500 dark:text-stone-400">18 messages · 4 pinned drawings</p>
+        </div>
+        <button class="rounded-lg border border-stone-200 px-2 py-2 text-2xs font-medium uppercase tracking-widest text-stone-500 hover:bg-stone-100 dark:border-stone-800 dark:text-stone-400 dark:hover:bg-stone-800">Pins</button>
+      </header>
+
+      <div class="arc-scroll flex max-h-[560px] flex-col gap-6 overflow-y-auto p-6">
+        <div class="flex gap-2">
+          <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-stone-800 text-2xs font-semibold text-stone-50 dark:bg-stone-200 dark:text-stone-900">SH</span>
+          <div class="max-w-[85%] rounded-xl rounded-tl-none border border-stone-200 bg-white px-4 py-2 dark:border-stone-800 dark:bg-stone-950">
+            <p class="text-sm">Column grid corrected on FL-02. Store wall moves 400 mm east so the wardrobe run clears the riser.</p>
+            <p class="arc-numeric mt-2 text-2xs uppercase tracking-widest text-stone-400">08:14 · Sana Haq · @design</p>
+          </div>
+        </div>
+
+        <div class="flex gap-2">
+          <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-stone-600 text-2xs font-semibold text-stone-50 dark:bg-stone-400 dark:text-stone-900">RQ</span>
+          <div class="max-w-[85%] rounded-xl rounded-tl-none border border-stone-200 bg-white px-4 py-2 dark:border-stone-800 dark:bg-stone-950">
+            <p class="text-sm">Noted. Cutting list for the store carcass is on hold until the new span is signed off.</p>
+            <p class="arc-numeric mt-2 text-2xs uppercase tracking-widest text-stone-400">08:22 · Rafiq Qureshi · @fabrication</p>
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-2">
+          <div class="max-w-[85%] rounded-xl rounded-tr-none bg-stone-800 px-4 py-2 text-stone-50 dark:bg-stone-200 dark:text-stone-900">
+            <p class="text-sm">Structural re-check requested. Release both the drawing revision and the PO once BW-02 clears.</p>
+            <p class="arc-numeric mt-2 text-2xs uppercase tracking-widest text-stone-400 dark:text-stone-500">08:31 · You · @design</p>
+          </div>
+        </div>
+
+        <!-- attachment message -->
+        <div class="flex gap-2">
+          <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-stone-400 text-2xs font-semibold text-stone-900 dark:bg-stone-600 dark:text-stone-50">AK</span>
+          <div class="max-w-[85%] rounded-xl rounded-tl-none border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-950">
+            <div class="flex items-center gap-4 rounded-lg border border-stone-200 p-4 dark:border-stone-800">
+              <span class="flex h-8 w-8 items-center justify-center rounded-lg border border-stone-300 text-2xs font-semibold text-stone-500 dark:border-stone-700 dark:text-stone-400">PDF</span>
+              <span class="min-w-0"><span class="block truncate text-sm font-medium">FL-02 rev B.05 — store wall shift</span><span class="arc-numeric block text-2xs uppercase tracking-widest text-stone-400">1.8 MB · 6 pages</span></span>
+            </div>
+            <p class="mt-4 text-sm">Attaching the revised shell drawing and the cost delta memo for the gate.</p>
+            <p class="arc-numeric mt-2 text-2xs uppercase tracking-widest text-stone-400">09:05 · Ayesha K. · @accounts</p>
+          </div>
+        </div>
+
+        <div class="flex gap-2">
+          <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-stone-300 text-2xs font-semibold text-stone-500 dark:border-stone-600 dark:text-stone-400">AI</span>
+          <div class="max-w-[85%] rounded-xl rounded-tl-none border border-dashed border-stone-300 bg-stone-100/60 px-4 py-2 dark:border-stone-700 dark:bg-stone-950/60">
+            <p class="text-sm">Cost delta memo and the material schedule agree at ₨ 84,000. Teak substitution on MW-07 offsets ₨ 21,500 of it.</p>
+            <div class="mt-2 flex flex-wrap gap-2">
+              <span class="rounded-lg border border-stone-200 px-2 py-2 text-2xs uppercase tracking-widest text-stone-500 dark:border-stone-800 dark:text-stone-400">MS-14 schedule</span>
+              <span class="rounded-lg border border-stone-200 px-2 py-2 text-2xs uppercase tracking-widest text-stone-500 dark:border-stone-800 dark:text-stone-400">Gate rule ±2%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer class="border-t border-stone-200 p-6 dark:border-stone-800">
+        <div class="flex items-center gap-2 rounded-lg border border-stone-200 bg-white p-2 dark:border-stone-800 dark:bg-stone-950">
+          <button class="rounded-lg px-2 py-2 text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800">＋</button>
+          <input type="text" placeholder="Reply to #hafeez-villa…" class="w-full bg-transparent text-sm outline-none placeholder:text-stone-400 dark:placeholder:text-stone-500">
+          <button class="rounded-lg bg-stone-800 px-4 py-2 text-sm font-medium text-stone-50 dark:bg-stone-200 dark:text-stone-900">Send</button>
+        </div>
+      </footer>
+    </article>
+
+    <!-- attachment / context rail -->
+    <aside class="flex flex-col gap-6 xl:col-span-3">
+      <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+        <h2 class="text-sm font-semibold">Attachment shortcuts</h2>
+        <div class="mt-4 grid grid-cols-2 gap-2">
+          <button class="rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm font-medium hover:bg-stone-100 dark:border-stone-800 dark:bg-stone-950 dark:hover:bg-stone-800">Drawing</button>
+          <button class="rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm font-medium hover:bg-stone-100 dark:border-stone-800 dark:bg-stone-950 dark:hover:bg-stone-800">Photo</button>
+          <button class="rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm font-medium hover:bg-stone-100 dark:border-stone-800 dark:bg-stone-950 dark:hover:bg-stone-800">Quote</button>
+          <button class="rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm font-medium hover:bg-stone-100 dark:border-stone-800 dark:bg-stone-950 dark:hover:bg-stone-800">Invoice</button>
+        </div>
+      </article>
+
+      <article class="rounded-xl border border-stone-200 bg-stone-50 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+        <header class="border-b border-stone-200 px-6 py-4 dark:border-stone-800">
+          <h2 class="text-sm font-semibold">Pinned to channel</h2>
+        </header>
+        <ul class="divide-y divide-stone-200 dark:divide-stone-800">
+          <li class="flex items-center justify-between gap-4 px-6 py-4"><span class="text-sm">FL-02 rev B.05</span><span class="arc-numeric text-2xs uppercase tracking-widest text-stone-400">2 h</span></li>
+          <li class="flex items-center justify-between gap-4 px-6 py-4"><span class="text-sm">Material schedule MS-14</span><span class="arc-numeric text-2xs uppercase tracking-widest text-stone-400">1 d</span></li>
+          <li class="flex items-center justify-between gap-4 px-6 py-4"><span class="text-sm">Cost delta memo</span><span class="arc-numeric text-2xs uppercase tracking-widest text-stone-400">1 d</span></li>
+        </ul>
+      </article>
+
+      <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+        <h2 class="text-sm font-semibold">Open items owned by you</h2>
+        <ul class="mt-4 flex flex-col gap-2">
+          <li class="flex items-center gap-2 rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm dark:border-stone-800 dark:bg-stone-950"><input type="checkbox" class="h-4 w-4 rounded-sm accent-stone-800 dark:accent-stone-200">Sign FL-02 rev B.05</li>
+          <li class="flex items-center gap-2 rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm dark:border-stone-800 dark:bg-stone-950"><input type="checkbox" class="h-4 w-4 rounded-sm accent-stone-800 dark:accent-stone-200">Answer RFI 22 on louvre pitch</li>
+          <li class="flex items-center gap-2 rounded-lg border border-dashed border-stone-300 px-4 py-2 text-sm text-stone-500 dark:border-stone-700 dark:text-stone-400"><input type="checkbox" disabled class="h-4 w-4 rounded-sm">Await site survey window</li>
+        </ul>
+      </article>
+    </aside>
+  </section>
+</div>
+<script src="../assets/arc-kit.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,210 @@
+<!doctype html>
+<!-- ============================================================================
+     WOODEX ADMIN V2.1 + ARC.STUDIO
+     MODULE 13 — SMART DOCUMENT BUILDER
+     Blocks: 1 Template Processing Bar · 2 Utility Link KPIs · 3 12-Column Form + Live Sheet
+     ============================================================================ -->
+<html lang="en" class="h-full">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>M13 Smart Document Builder — WOODEX ADMIN V2.1</title>
+<link rel="stylesheet" href="../assets/arc-kit.css">
+<script>try{var t=localStorage.getItem("wxaTheme");if(t==="dark"||(!t&&matchMedia("(prefers-color-scheme: dark)").matches)){document.documentElement.classList.add("dark");document.documentElement.setAttribute("data-theme","dark")}}catch(e){}</script>
+</head>
+<body class="min-h-full bg-stone-100 text-stone-950 antialiased dark:bg-stone-950 dark:text-stone-50">
+<div class="mx-auto flex w-full max-w-canvas flex-col gap-8 px-6 py-8">
+
+  <!-- ===== BLOCK 1 — HEADER / TEMPLATE PROCESSING BAR ===== -->
+  <header class="flex flex-col gap-6 border-b border-stone-200 pb-6 dark:border-stone-800">
+    <div class="flex flex-col gap-2">
+      <nav class="flex items-center gap-2 text-2xs uppercase tracking-widest text-stone-500 dark:text-stone-400">
+        <span>Module IV</span><span class="text-stone-300 dark:text-stone-600">/</span><span class="text-stone-900 dark:text-stone-50">Smart Document Builder</span>
+      </nav>
+      <h1 class="text-xl font-semibold tracking-tight">Smart Document Builder</h1>
+      <p class="max-w-3xl text-sm text-stone-500 dark:text-stone-400">Blueprint variables resolve directly into commercial worksheets. One composition canvas for quotations, invoices and variation orders.</p>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-2">
+      <div class="flex items-center gap-2 rounded-lg border border-stone-200 bg-white px-4 py-2 dark:border-stone-800 dark:bg-stone-950">
+        <span class="text-sm font-medium">Bulk item generation</span>
+        <button role="switch" aria-checked="true" data-arc-switch="Bulk item generation" class="relative h-6 w-10 shrink-0 rounded-sm bg-stone-200 transition-colors dark:bg-stone-800">
+          <span class="absolute left-2 top-2 h-4 w-4 translate-x-0 rounded-sm bg-white transition-transform dark:bg-stone-950"></span>
+        </button>
+      </div>
+      <div class="flex items-center gap-2 rounded-lg border border-stone-200 bg-white px-4 py-2 dark:border-stone-800 dark:bg-stone-950">
+        <span class="text-sm font-medium">Round to nearest 100</span>
+        <button role="switch" aria-checked="false" data-arc-switch="Rounding" class="relative h-6 w-10 shrink-0 rounded-sm bg-stone-200 transition-colors dark:bg-stone-800">
+          <span class="absolute left-2 top-2 h-4 w-4 translate-x-0 rounded-sm bg-white transition-transform dark:bg-stone-950"></span>
+        </button>
+      </div>
+      <button class="rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm font-medium hover:bg-stone-100 dark:border-stone-800 dark:bg-stone-950 dark:hover:bg-stone-800">Load template</button>
+      <button class="rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm font-medium hover:bg-stone-100 dark:border-stone-800 dark:bg-stone-950 dark:hover:bg-stone-800">Preview PDF</button>
+      <button class="rounded-lg bg-stone-800 px-4 py-2 text-sm font-medium text-stone-50 hover:bg-stone-700 dark:bg-stone-200 dark:text-stone-900 dark:hover:bg-stone-300">Generate batch</button>
+    </div>
+  </header>
+
+  <!-- ===== BLOCK 2 — 4-COLUMN UTILITY LINK KPIs ===== -->
+  <section class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Queued Draft Batches</p>
+      <p class="arc-numeric mt-2 text-2xl font-bold tracking-tight">06</p>
+      <a href="#composer" class="mt-4 inline-flex text-sm font-medium underline decoration-dotted underline-offset-4">Open batch queue →</a>
+    </article>
+    <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Blueprint Verification</p>
+      <p class="arc-numeric mt-2 text-2xl font-bold tracking-tight">14 / 14</p>
+      <a href="#composer" class="mt-4 inline-flex text-sm font-medium underline decoration-dotted underline-offset-4">Review variable map →</a>
+    </article>
+    <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Tax Formula State</p>
+      <p class="arc-numeric mt-2 text-2xl font-bold tracking-tight">18% GST</p>
+      <a href="#composer" class="mt-4 inline-flex text-sm font-medium underline decoration-dotted underline-offset-4">Open tax rules →</a>
+    </article>
+    <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">AI Token Budget</p>
+      <p class="arc-numeric mt-2 text-2xl font-bold tracking-tight">42k</p>
+      <a href="#composer" class="mt-4 inline-flex text-sm font-medium underline decoration-dotted underline-offset-4">Spend limit 150k</a>
+    </article>
+  </section>
+
+  <!-- ===== BLOCK 3 — MAIN ACTION CANVAS (Advanced Form + Composer) ===== -->
+  <section id="composer" class="grid grid-cols-1 gap-6 xl:grid-cols-12">
+
+    <article class="rounded-xl border border-stone-200 bg-stone-50 shadow-panel xl:col-span-7 dark:border-stone-800 dark:bg-stone-900">
+      <header class="border-b border-stone-200 px-6 py-4 dark:border-stone-800">
+        <h2 class="text-sm font-semibold">Composition form</h2>
+        <p class="text-sm text-stone-500 dark:text-stone-400">12-column responsive grid · md breakpoint splits into 6 / 6</p>
+      </header>
+
+      <form class="grid grid-cols-1 gap-6 p-6 md:grid-cols-12">
+        <div class="flex flex-col gap-y-2 md:col-span-6">
+          <label class="text-2xs font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Document title</label>
+          <input type="text" value="Quotation · Hafeez Villa millwork package" class="w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-stone-400 dark:border-stone-800 dark:bg-stone-950 dark:focus:ring-stone-500">
+        </div>
+        <div class="flex flex-col gap-y-2 md:col-span-3">
+          <label class="text-2xs font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Document type</label>
+          <select class="w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-stone-400 dark:border-stone-800 dark:bg-stone-950 dark:focus:ring-stone-500">
+            <option>Quotation</option><option>Tax invoice</option><option>Variation order</option><option>Delivery note</option>
+          </select>
+        </div>
+        <div class="flex flex-col gap-y-2 md:col-span-3">
+          <label class="text-2xs font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Client account</label>
+          <select class="w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-stone-400 dark:border-stone-800 dark:bg-stone-950 dark:focus:ring-stone-500">
+            <option>Al-Noor Residence · CRM-0142</option><option>Gulberg Office · CRM-0088</option><option>Hafeez Villa · CRM-0203</option>
+          </select>
+        </div>
+
+        <div class="flex flex-col gap-y-2 md:col-span-4">
+          <label class="text-2xs font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Blueprint variable · area</label>
+          <div class="flex items-center gap-2 rounded-lg border border-stone-200 bg-white px-3 py-2 focus-within:ring-1 focus-within:ring-stone-400 dark:border-stone-800 dark:bg-stone-950 dark:focus-within:ring-stone-500">
+            <span class="rounded-lg border border-stone-200 px-2 py-2 text-2xs font-semibold uppercase tracking-widest text-stone-500 dark:border-stone-800 dark:text-stone-400">&#123;&#123;</span>
+            <input type="text" value="FL-02.interior_area" class="arc-numeric w-full bg-transparent text-sm outline-none">
+          </div>
+        </div>
+        <div class="flex flex-col gap-y-2 md:col-span-4">
+          <label class="text-2xs font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Blueprint variable · millwork run</label>
+          <div class="flex items-center gap-2 rounded-lg border border-stone-200 bg-white px-3 py-2 focus-within:ring-1 focus-within:ring-stone-400 dark:border-stone-800 dark:bg-stone-950 dark:focus-within:ring-stone-500">
+            <span class="rounded-lg border border-stone-200 px-2 py-2 text-2xs font-semibold uppercase tracking-widest text-stone-500 dark:border-stone-800 dark:text-stone-400">&#123;&#123;</span>
+            <input type="text" value="MW-11.run_length_lm" class="arc-numeric w-full bg-transparent text-sm outline-none">
+          </div>
+        </div>
+        <div class="flex flex-col gap-y-2 md:col-span-4">
+          <label class="text-2xs font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Rate model</label>
+          <select class="w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-stone-400 dark:border-stone-800 dark:bg-stone-950 dark:focus:ring-stone-500">
+            <option>Per linear metre · walnut FAS</option><option>Per linear metre · teak A</option><option>Per panel · 18 mm veneer</option>
+          </select>
+        </div>
+
+        <div class="md:col-span-12">
+          <div class="grid grid-cols-1 gap-6 rounded-xl border border-stone-200 bg-white p-6 md:grid-cols-12 dark:border-stone-800 dark:bg-stone-950">
+            <div class="md:col-span-5">
+              <p class="text-2xs font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Option picker · finish specification</p>
+              <div class="mt-4 flex flex-col gap-2">
+                <label class="flex cursor-pointer items-start gap-2 rounded-lg border border-stone-800 p-4 dark:border-stone-200">
+                  <input type="radio" name="finish" checked class="mt-2 h-4 w-4 accent-stone-800 dark:accent-stone-200">
+                  <span><span class="block text-sm font-medium">Matte PU · 12% sheen</span><span class="block text-sm text-stone-500 dark:text-stone-400">Interior joinery default</span></span>
+                </label>
+                <label class="flex cursor-pointer items-start gap-2 rounded-lg border border-stone-200 p-4 hover:bg-stone-100 dark:border-stone-800 dark:hover:bg-stone-800">
+                  <input type="radio" name="finish" class="mt-2 h-4 w-4 accent-stone-800 dark:accent-stone-200">
+                  <span><span class="block text-sm font-medium">Satin PU · 30% sheen</span><span class="block text-sm text-stone-500 dark:text-stone-400">Wet areas and worktops</span></span>
+                </label>
+                <label class="flex cursor-pointer items-start gap-2 rounded-lg border border-stone-200 p-4 hover:bg-stone-100 dark:border-stone-800 dark:hover:bg-stone-800">
+                  <input type="radio" name="finish" class="mt-2 h-4 w-4 accent-stone-800 dark:accent-stone-200">
+                  <span><span class="block text-sm font-medium">Hardwax oil</span><span class="block text-sm text-stone-500 dark:text-stone-400">Solid timber fronts</span></span>
+                </label>
+              </div>
+            </div>
+            <div class="flex flex-col gap-y-2 md:col-span-7">
+              <label class="text-2xs font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Composer notes · commercial worksheet</label>
+              <textarea rows="8" class="w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-stone-400 dark:border-stone-800 dark:bg-stone-950 dark:focus:ring-stone-500">Supply and install the full millwork package per FL-02 rev B.05.
+Interior area resolves at 456 m²; millwork run at 184 lm.
+Finish: matte PU 12% sheen, sample approved 04 Oct.
+Excludes: stone tops, sanitary ware, electrical works.</textarea>
+              <p class="text-2xs uppercase tracking-widest text-stone-500 dark:text-stone-400">Placeholders resolve on generate. Batch of 6 drafts queued.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap items-center justify-between gap-4 border-t border-stone-200 pt-6 md:col-span-12 dark:border-stone-800">
+          <div class="flex items-center gap-2">
+            <button type="button" class="rounded-lg bg-stone-800 px-4 py-2 text-sm font-medium text-stone-50 dark:bg-stone-200 dark:text-stone-900">Resolve variables</button>
+            <button type="button" class="rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm font-medium hover:bg-stone-100 dark:border-stone-800 dark:bg-stone-950 dark:hover:bg-stone-800">Save as template</button>
+          </div>
+          <p class="arc-numeric text-2xs uppercase tracking-widest text-stone-400">Autosaved 09:42 · revision 12</p>
+        </div>
+      </form>
+    </article>
+
+    <!-- live sheet -->
+    <aside class="flex flex-col gap-6 xl:col-span-5">
+      <article class="rounded-xl border border-stone-200 bg-stone-50 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+        <header class="flex items-center justify-between gap-4 border-b border-stone-200 px-6 py-4 dark:border-stone-800">
+          <h2 class="text-sm font-semibold">Live worksheet</h2>
+          <span class="arc-numeric rounded-lg border border-stone-200 px-2 py-2 text-2xs uppercase tracking-widest text-stone-500 dark:border-stone-800 dark:text-stone-400">Draft</span>
+        </header>
+        <div class="p-6">
+          <div class="w-full overflow-x-auto overflow-y-hidden rounded-xl border border-stone-200 dark:border-stone-800">
+            <table class="w-full text-left text-sm">
+              <thead class="bg-stone-100/50 text-xs font-semibold uppercase tracking-wider text-stone-500 dark:bg-stone-900/50 dark:text-stone-400">
+                <tr><th class="px-4 py-2">#</th><th class="px-4 py-2">Description</th><th class="px-4 py-2 text-right">Qty</th><th class="px-4 py-2 text-right">Amount</th></tr>
+              </thead>
+              <tbody class="arc-numeric divide-y divide-stone-200 dark:divide-stone-800">
+                <tr><td class="px-4 py-2">01</td><td class="px-4 py-2">Wardrobe wall · MW-11</td><td class="px-4 py-2 text-right">46 lm</td><td class="px-4 py-2 text-right">₨ 1,932,000</td></tr>
+                <tr><td class="px-4 py-2">02</td><td class="px-4 py-2">Kitchen run · MW-07</td><td class="px-4 py-2 text-right">42 lm</td><td class="px-4 py-2 text-right">₨ 2,478,000</td></tr>
+                <tr><td class="px-4 py-2">03</td><td class="px-4 py-2">Library shelving · MW-14</td><td class="px-4 py-2 text-right">28 lm</td><td class="px-4 py-2 text-right">₨ 1,064,000</td></tr>
+                <tr><td class="px-4 py-2">04</td><td class="px-4 py-2">Louvre screen · CL-01</td><td class="px-4 py-2 text-right">218 bf</td><td class="px-4 py-2 text-right">₨ 1,050,000</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <dl class="mt-6 divide-y divide-stone-200 text-sm dark:divide-stone-800">
+            <div class="flex items-center justify-between py-2"><dt class="text-stone-500 dark:text-stone-400">Subtotal</dt><dd class="arc-numeric font-medium">₨ 6,524,000</dd></div>
+            <div class="flex items-center justify-between py-2"><dt class="text-stone-500 dark:text-stone-400">GST 18%</dt><dd class="arc-numeric font-medium">₨ 1,174,320</dd></div>
+            <div class="flex items-center justify-between py-2"><dt class="text-stone-500 dark:text-stone-400">Advance 40%</dt><dd class="arc-numeric font-medium">₨ 3,079,328</dd></div>
+            <div class="flex items-center justify-between py-2 text-base"><dt class="font-semibold">Total</dt><dd class="arc-numeric text-2xl font-bold tracking-tight">₨ 7,698,320</dd></div>
+          </dl>
+
+          <div class="mt-6 flex flex-col gap-2">
+            <button class="rounded-lg bg-stone-800 px-4 py-2 text-sm font-medium text-stone-50 dark:bg-stone-200 dark:text-stone-900">Send to client portal</button>
+            <button class="rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm font-medium hover:bg-stone-100 dark:border-stone-800 dark:bg-stone-950 dark:hover:bg-stone-800">Download PDF</button>
+          </div>
+        </div>
+      </article>
+
+      <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+        <h2 class="text-sm font-semibold">Variable resolution log</h2>
+        <ul class="mt-4 flex flex-col gap-2 text-sm">
+          <li class="flex items-center justify-between gap-4 rounded-lg border border-stone-200 bg-white px-4 py-2 dark:border-stone-800 dark:bg-stone-950"><span class="arc-numeric text-stone-500 dark:text-stone-400">FL-02.interior_area</span><span class="arc-numeric font-medium">456 m²</span></li>
+          <li class="flex items-center justify-between gap-4 rounded-lg border border-stone-200 bg-white px-4 py-2 dark:border-stone-800 dark:bg-stone-950"><span class="arc-numeric text-stone-500 dark:text-stone-400">MW-11.run_length_lm</span><span class="arc-numeric font-medium">46 lm</span></li>
+          <li class="flex items-center justify-between gap-4 rounded-lg border border-stone-200 bg-white px-4 py-2 dark:border-stone-800 dark:bg-stone-950"><span class="arc-numeric text-stone-500 dark:text-stone-400">CL-01.board_feet</span><span class="arc-numeric font-medium">218 bf</span></li>
+          <li class="flex items-center justify-between gap-4 rounded-lg border border-dashed border-stone-300 px-4 py-2 dark:border-stone-700"><span class="arc-numeric text-stone-500 dark:text-stone-400">ST-03.stone_area</span><span class="arc-numeric font-medium text-stone-400">excluded</span></li>
+        </ul>
+      </article>
+    </aside>
+  </section>
+</div>
+<script src="../assets/arc-kit.js" defer></script>
+</body>
+</html>

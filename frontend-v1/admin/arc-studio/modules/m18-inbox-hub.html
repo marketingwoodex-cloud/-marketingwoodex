@@ -1,0 +1,212 @@
+<!doctype html>
+<!-- ============================================================================
+     WOODEX ADMIN V2.1 + ARC.STUDIO
+     MODULE 18 — INBOX & MESSAGING HUB
+     Blocks: 1 Channel Filter Header · 2 Status Badge KPIs · 3 Inbox Layout + Thread
+     ============================================================================ -->
+<html lang="en" class="h-full">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>M18 Inbox &amp; Messaging Hub — WOODEX ADMIN V2.1</title>
+<link rel="stylesheet" href="../assets/arc-kit.css">
+<script>try{var t=localStorage.getItem("wxaTheme");if(t==="dark"||(!t&&matchMedia("(prefers-color-scheme: dark)").matches)){document.documentElement.classList.add("dark");document.documentElement.setAttribute("data-theme","dark")}}catch(e){}</script>
+</head>
+<body class="min-h-full bg-stone-100 text-stone-950 antialiased dark:bg-stone-950 dark:text-stone-50">
+<div class="mx-auto flex w-full max-w-canvas flex-col gap-8 px-6 py-8">
+
+  <!-- ===== BLOCK 1 — WORKSPACE HEADER / CHANNEL FILTERS ===== -->
+  <header class="flex flex-col gap-6 border-b border-stone-200 pb-6 dark:border-stone-800">
+    <div class="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+      <div class="flex flex-col gap-2">
+        <nav class="flex items-center gap-2 text-2xs uppercase tracking-widest text-stone-500 dark:text-stone-400">
+          <span>Module V</span><span class="text-stone-300 dark:text-stone-600">/</span><span class="text-stone-900 dark:text-stone-50">Inbox &amp; Messaging</span>
+        </nav>
+        <h1 class="text-xl font-semibold tracking-tight">Inbox &amp; Messaging Hub</h1>
+        <p class="max-w-3xl text-sm text-stone-500 dark:text-stone-400">Client queries arrive by email, in-app message or feedback form and stay attached to the design files they belong to.</p>
+      </div>
+      <div class="flex flex-wrap items-center gap-2">
+        <label class="flex items-center gap-2 rounded-lg border border-stone-200 bg-white px-2 py-2 focus-within:ring-1 focus-within:ring-stone-400 dark:border-stone-800 dark:bg-stone-950 dark:focus-within:ring-stone-500">
+          <svg class="h-4 w-4 text-stone-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="7"/><path d="m20 20-4.3-4.3"/></svg>
+          <input data-arc-filter data-arc-target="#thread-list" type="search" placeholder="Sender, subject or file…" class="w-56 bg-transparent text-sm outline-none placeholder:text-stone-400 dark:placeholder:text-stone-500">
+        </label>
+        <button class="rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm font-medium hover:bg-stone-100 dark:border-stone-800 dark:bg-stone-950 dark:hover:bg-stone-800">Assign</button>
+        <button class="rounded-lg bg-stone-800 px-4 py-2 text-sm font-medium text-stone-50 hover:bg-stone-700 dark:bg-stone-200 dark:text-stone-900 dark:hover:bg-stone-300">Compose</button>
+      </div>
+    </div>
+
+    <div data-arc-tabs class="flex flex-wrap items-center gap-2 rounded-lg border border-stone-200 bg-white p-2 dark:border-stone-800 dark:bg-stone-950">
+      <button data-arc-tab="all" aria-selected="true" class="rounded-lg px-4 py-2 text-sm font-medium">All channels</button>
+      <button data-arc-tab="email" aria-selected="false" class="rounded-lg px-4 py-2 text-sm font-medium">Email</button>
+      <button data-arc-tab="app" aria-selected="false" class="rounded-lg px-4 py-2 text-sm font-medium">In-app messages</button>
+      <button data-arc-tab="form" aria-selected="false" class="rounded-lg px-4 py-2 text-sm font-medium">Feedback forms</button>
+      <button data-arc-tab="mine" aria-selected="false" class="rounded-lg px-4 py-2 text-sm font-medium">Assigned to me</button>
+    </div>
+  </header>
+
+  <!-- ===== BLOCK 2 — 4-COLUMN STATUS BADGE KPIs ===== -->
+  <section class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Unread Messages</p>
+      <p class="arc-numeric mt-2 text-2xl font-bold tracking-tight">23</p>
+      <span class="mt-4 inline-flex rounded-lg bg-stone-800 px-2 py-2 text-2xs font-semibold uppercase tracking-widest text-stone-50 dark:bg-stone-200 dark:text-stone-900">6 marked priority</span>
+    </article>
+    <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Average Wait Time</p>
+      <p class="arc-numeric mt-2 text-2xl font-bold tracking-tight">3.4<span class="text-sm font-medium text-stone-400"> h</span></p>
+      <span class="mt-4 inline-flex rounded-lg border border-stone-300 px-2 py-2 text-2xs font-semibold uppercase tracking-widest text-stone-600 dark:border-stone-700 dark:text-stone-300">Target 4.0 h</span>
+    </article>
+    <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Resolution Velocity</p>
+      <p class="arc-numeric mt-2 text-2xl font-bold tracking-tight">1.8<span class="text-sm font-medium text-stone-400"> d</span></p>
+      <div class="mt-4 flex flex-col gap-2">
+        <span class="block h-2 w-full overflow-hidden rounded-sm bg-stone-200 dark:bg-stone-800"><span data-arc-value="76" class="block h-full w-0 bg-stone-800 transition-all duration-700 dark:bg-stone-200"></span></span>
+        <p class="text-sm text-stone-500 dark:text-stone-400">76% closed without escalation</p>
+      </div>
+    </article>
+    <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Client Satisfaction</p>
+      <p class="arc-numeric mt-2 text-2xl font-bold tracking-tight">4.6<span class="text-sm font-medium text-stone-400"> / 5</span></p>
+      <p class="mt-4 text-sm text-stone-500 dark:text-stone-400">From 82 post-handover surveys</p>
+    </article>
+  </section>
+
+  <!-- ===== BLOCK 3 — MAIN ACTION CANVAS (Inbox Layout) ===== -->
+  <section class="grid grid-cols-1 gap-6 xl:grid-cols-12">
+
+    <!-- thread list -->
+    <article class="rounded-xl border border-stone-200 bg-stone-50 shadow-panel xl:col-span-4 dark:border-stone-800 dark:bg-stone-900">
+      <header class="flex items-center justify-between gap-4 border-b border-stone-200 px-6 py-4 dark:border-stone-800">
+        <h2 class="text-sm font-semibold">Threads</h2>
+        <span class="arc-numeric text-2xs uppercase tracking-widest text-stone-400">23 unread · 186 total</span>
+      </header>
+      <div id="thread-list" class="arc-scroll max-h-[620px] divide-y divide-stone-200 overflow-y-auto dark:divide-stone-800">
+        <button data-arc-filter-item class="flex w-full items-start gap-4 border-l-2 border-stone-800 bg-white px-6 py-4 text-left dark:border-stone-200 dark:bg-stone-950">
+          <span class="mt-2 h-2 w-2 shrink-0 rounded-full bg-stone-800 dark:bg-stone-200"></span>
+          <span class="min-w-0 flex-1">
+            <span class="flex items-center justify-between gap-2"><span class="truncate text-sm font-semibold">Kitchen quote revision</span><span class="arc-numeric text-2xs uppercase tracking-widest text-stone-400">12m</span></span>
+            <span class="mt-2 block truncate text-sm text-stone-500 dark:text-stone-400">DHA Phase 6 · swap shutter veneer to teak and re-price</span>
+            <span class="mt-2 flex flex-wrap gap-2">
+              <span class="rounded-lg border border-stone-200 px-2 py-2 text-2xs uppercase tracking-widest text-stone-500 dark:border-stone-800 dark:text-stone-400">Email</span>
+              <span class="rounded-lg border border-stone-200 px-2 py-2 text-2xs uppercase tracking-widest text-stone-500 dark:border-stone-800 dark:text-stone-400">MW-07</span>
+            </span>
+          </span>
+        </button>
+
+        <button data-arc-filter-item class="flex w-full items-start gap-4 px-6 py-4 text-left hover:bg-stone-100/60 dark:hover:bg-stone-800/60">
+          <span class="mt-2 h-2 w-2 shrink-0 rounded-full bg-stone-400"></span>
+          <span class="min-w-0 flex-1">
+            <span class="flex items-center justify-between gap-2"><span class="truncate text-sm font-medium">Delivery window confirmation</span><span class="arc-numeric text-2xs uppercase tracking-widest text-stone-400">48m</span></span>
+            <span class="mt-2 block truncate text-sm text-stone-500 dark:text-stone-400">Hafeez Villa · asking to move hoisting to 16 Oct 08:00</span>
+            <span class="mt-2 flex flex-wrap gap-2">
+              <span class="rounded-lg border border-stone-200 px-2 py-2 text-2xs uppercase tracking-widest text-stone-500 dark:border-stone-800 dark:text-stone-400">In-app</span>
+              <span class="rounded-lg border border-stone-200 px-2 py-2 text-2xs uppercase tracking-widest text-stone-500 dark:border-stone-800 dark:text-stone-400">EL-A</span>
+            </span>
+          </span>
+        </button>
+
+        <button data-arc-filter-item class="flex w-full items-start gap-4 px-6 py-4 text-left hover:bg-stone-100/60 dark:hover:bg-stone-800/60">
+          <span class="mt-2 h-2 w-2 shrink-0 rounded-full bg-stone-400"></span>
+          <span class="min-w-0 flex-1">
+            <span class="flex items-center justify-between gap-2"><span class="truncate text-sm font-medium">Snagging list · round 2</span><span class="arc-numeric text-2xs uppercase tracking-widest text-stone-400">2h</span></span>
+            <span class="mt-2 block truncate text-sm text-stone-500 dark:text-stone-400">Gulberg Office · 6 minor items, 2 need shop return</span>
+            <span class="mt-2 flex flex-wrap gap-2">
+              <span class="rounded-lg border border-stone-200 px-2 py-2 text-2xs uppercase tracking-widest text-stone-500 dark:border-stone-800 dark:text-stone-400">Feedback form</span>
+            </span>
+          </span>
+        </button>
+
+        <button data-arc-filter-item class="flex w-full items-start gap-4 px-6 py-4 text-left hover:bg-stone-100/60 dark:hover:bg-stone-800/60">
+          <span class="mt-2 h-2 w-2 shrink-0 rounded-full bg-stone-300 dark:bg-stone-700"></span>
+          <span class="min-w-0 flex-1">
+            <span class="flex items-center justify-between gap-2"><span class="truncate text-sm font-medium">Payment confirmation</span><span class="arc-numeric text-2xs uppercase tracking-widest text-stone-400">1d</span></span>
+            <span class="mt-2 block truncate text-sm text-stone-500 dark:text-stone-400">Bahria Townhouse · 50% cheque cleared against INV-2846</span>
+            <span class="mt-2 flex flex-wrap gap-2">
+              <span class="rounded-lg border border-stone-200 px-2 py-2 text-2xs uppercase tracking-widest text-stone-500 dark:border-stone-800 dark:text-stone-400">Email</span>
+              <span class="rounded-lg border border-stone-200 px-2 py-2 text-2xs uppercase tracking-widest text-stone-500 dark:border-stone-800 dark:text-stone-400">INV-2846</span>
+            </span>
+          </span>
+        </button>
+      </div>
+    </article>
+
+    <!-- reader -->
+    <article class="flex flex-col rounded-xl border border-stone-200 bg-stone-50 shadow-panel xl:col-span-5 dark:border-stone-800 dark:bg-stone-900">
+      <header class="flex flex-wrap items-center justify-between gap-4 border-b border-stone-200 px-6 py-4 dark:border-stone-800">
+        <div class="min-w-0">
+          <h2 class="truncate text-sm font-semibold">Kitchen quote revision — DHA Phase 6</h2>
+          <p class="text-sm text-stone-500 dark:text-stone-400">Ayesha Khan · client · 3 messages</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button class="rounded-lg border border-stone-200 px-2 py-2 text-2xs font-medium uppercase tracking-widest text-stone-500 hover:bg-stone-100 dark:border-stone-800 dark:text-stone-400 dark:hover:bg-stone-800">Assign</button>
+          <button class="rounded-lg border border-stone-200 px-2 py-2 text-2xs font-medium uppercase tracking-widest text-stone-500 hover:bg-stone-100 dark:border-stone-800 dark:text-stone-400 dark:hover:bg-stone-800">Close</button>
+        </div>
+      </header>
+
+      <div class="arc-scroll flex max-h-[440px] flex-col gap-6 overflow-y-auto p-6">
+        <div class="flex gap-2">
+          <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-stone-600 text-2xs font-semibold text-stone-50 dark:bg-stone-400 dark:text-stone-900">AK</span>
+          <div class="max-w-[85%] rounded-xl rounded-tl-none border border-stone-200 bg-white px-4 py-2 dark:border-stone-800 dark:bg-stone-950">
+            <p class="text-sm">We would like the shutter veneer changed from walnut to teak and the carcass re-priced. Can you confirm the difference before we sign?</p>
+            <p class="arc-numeric mt-2 text-2xs uppercase tracking-widest text-stone-400">10:02 · 3 h ago</p>
+          </div>
+        </div>
+        <div class="flex justify-end gap-2">
+          <div class="max-w-[85%] rounded-xl rounded-tr-none bg-stone-800 px-4 py-2 text-stone-50 dark:bg-stone-200 dark:text-stone-900">
+            <p class="text-sm">Teak A is in stock at 940 bf. Re-priced carcass and veneer comes to ₨ 2.86M, a reduction of ₨ 21,500 from the walnut specification.</p>
+            <p class="arc-numeric mt-2 text-2xs uppercase tracking-widest text-stone-400 dark:text-stone-500">10:14 · Sana H.</p>
+          </div>
+        </div>
+        <div class="flex gap-2">
+          <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-stone-300 text-2xs font-semibold text-stone-500 dark:border-stone-600 dark:text-stone-400">AI</span>
+          <div class="max-w-[85%] rounded-xl rounded-tl-none border border-dashed border-stone-300 bg-stone-100/60 px-4 py-2 dark:border-stone-700 dark:bg-stone-950/60">
+            <p class="text-sm">Revision C.02 drafted and attached. Gate rule ±2% is satisfied, so the change can be approved without a second sign-off.</p>
+            <div class="mt-2 flex flex-wrap gap-2">
+              <span class="rounded-lg border border-stone-200 px-2 py-2 text-2xs uppercase tracking-widest text-stone-500 dark:border-stone-800 dark:text-stone-400">MW-07 rev C.02</span>
+              <span class="rounded-lg border border-stone-200 px-2 py-2 text-2xs uppercase tracking-widest text-stone-500 dark:border-stone-800 dark:text-stone-400">Gate rules</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer class="border-t border-stone-200 p-6 dark:border-stone-800">
+        <div class="flex flex-wrap items-center gap-2">
+          <button class="rounded-lg border border-stone-200 bg-white px-2 py-2 text-2xs font-medium uppercase tracking-widest hover:bg-stone-100 dark:border-stone-800 dark:bg-stone-950 dark:hover:bg-stone-800">Insert quote</button>
+          <button class="rounded-lg border border-stone-200 bg-white px-2 py-2 text-2xs font-medium uppercase tracking-widest hover:bg-stone-100 dark:border-stone-800 dark:bg-stone-950 dark:hover:bg-stone-800">Attach drawing</button>
+          <button class="rounded-lg border border-stone-200 bg-white px-2 py-2 text-2xs font-medium uppercase tracking-widest hover:bg-stone-100 dark:border-stone-800 dark:bg-stone-950 dark:hover:bg-stone-800">Canned reply</button>
+        </div>
+        <div class="mt-4 flex items-center gap-2 rounded-lg border border-stone-200 bg-white p-2 dark:border-stone-800 dark:bg-stone-950">
+          <textarea rows="2" placeholder="Reply to Ayesha Khan…" class="w-full resize-none bg-transparent px-2 py-2 text-sm outline-none placeholder:text-stone-400 dark:placeholder:text-stone-500"></textarea>
+          <button class="rounded-lg bg-stone-800 px-4 py-2 text-sm font-medium text-stone-50 dark:bg-stone-200 dark:text-stone-900">Send</button>
+        </div>
+      </footer>
+    </article>
+
+    <!-- linked design files -->
+    <aside class="flex flex-col gap-6 xl:col-span-3">
+      <article class="rounded-xl border border-stone-200 bg-stone-50 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+        <header class="border-b border-stone-200 px-6 py-4 dark:border-stone-800">
+          <h2 class="text-sm font-semibold">Linked design files</h2>
+        </header>
+        <ul class="divide-y divide-stone-200 dark:divide-stone-800">
+          <li class="flex items-center justify-between gap-4 px-6 py-4"><span class="min-w-0"><span class="block truncate text-sm font-medium">MW-07 kitchen run</span><span class="arc-numeric block text-2xs uppercase tracking-widest text-stone-400">rev C.02 · updated today</span></span><button class="rounded-lg border border-stone-200 px-2 py-2 text-2xs uppercase tracking-widest text-stone-500 hover:bg-stone-100 dark:border-stone-800 dark:text-stone-400 dark:hover:bg-stone-800">Open</button></li>
+          <li class="flex items-center justify-between gap-4 px-6 py-4"><span class="min-w-0"><span class="block truncate text-sm font-medium">MS-11 material schedule</span><span class="arc-numeric block text-2xs uppercase tracking-widest text-stone-400">teak substitution noted</span></span><button class="rounded-lg border border-stone-200 px-2 py-2 text-2xs uppercase tracking-widest text-stone-500 hover:bg-stone-100 dark:border-stone-800 dark:text-stone-400 dark:hover:bg-stone-800">Open</button></li>
+          <li class="flex items-center justify-between gap-4 px-6 py-4"><span class="min-w-0"><span class="block truncate text-sm font-medium">WX-QT-0918 quote</span><span class="arc-numeric block text-2xs uppercase tracking-widest text-stone-400">signature pending</span></span><button class="rounded-lg border border-stone-200 px-2 py-2 text-2xs uppercase tracking-widest text-stone-500 hover:bg-stone-100 dark:border-stone-800 dark:text-stone-400 dark:hover:bg-stone-800">Open</button></li>
+        </ul>
+      </article>
+
+      <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+        <h2 class="text-sm font-semibold">Canned replies</h2>
+        <ul class="mt-4 flex flex-col gap-2">
+          <li><button class="w-full rounded-lg border border-stone-200 bg-white px-4 py-2 text-left text-sm hover:bg-stone-100 dark:border-stone-800 dark:bg-stone-950 dark:hover:bg-stone-800">Quote acknowledgement</button></li>
+          <li><button class="w-full rounded-lg border border-stone-200 bg-white px-4 py-2 text-left text-sm hover:bg-stone-100 dark:border-stone-800 dark:bg-stone-950 dark:hover:bg-stone-800">Survey scheduling</button></li>
+          <li><button class="w-full rounded-lg border border-stone-200 bg-white px-4 py-2 text-left text-sm hover:bg-stone-100 dark:border-stone-800 dark:bg-stone-950 dark:hover:bg-stone-800">Delay notice + revised ETA</button></li>
+        </ul>
+      </article>
+    </aside>
+  </section>
+</div>
+<script src="../assets/arc-kit.js" defer></script>
+</body>
+</html>

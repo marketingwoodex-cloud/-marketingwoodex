@@ -1,0 +1,205 @@
+<!doctype html>
+<!-- ============================================================================
+     WOODEX ADMIN V2.1 + ARC.STUDIO
+     MODULE 22 — CLIENT PORTAL ENGINE
+     Blocks: 1 Workspace Header · 2 Progress Card KPIs · 3 Portal Dashboard + Sign-off
+     ============================================================================ -->
+<html lang="en" class="h-full">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>M22 Client Portal Engine — WOODEX ADMIN V2.1</title>
+<link rel="stylesheet" href="../assets/arc-kit.css">
+<script>try{var t=localStorage.getItem("wxaTheme");if(t==="dark"||(!t&&matchMedia("(prefers-color-scheme: dark)").matches)){document.documentElement.classList.add("dark");document.documentElement.setAttribute("data-theme","dark")}}catch(e){}</script>
+</head>
+<body class="min-h-full bg-stone-100 text-stone-950 antialiased dark:bg-stone-950 dark:text-stone-50">
+<div class="mx-auto flex w-full max-w-canvas flex-col gap-8 px-6 py-8">
+
+  <!-- ===== BLOCK 1 — WORKSPACE HEADER ===== -->
+  <header class="flex flex-col gap-6 border-b border-stone-200 pb-6 lg:flex-row lg:items-start lg:justify-between dark:border-stone-800">
+    <div class="flex flex-col gap-2">
+      <nav class="flex items-center gap-2 text-2xs uppercase tracking-widest text-stone-500 dark:text-stone-400">
+        <span>Module VI</span><span class="text-stone-300 dark:text-stone-600">/</span><span class="text-stone-900 dark:text-stone-50">Client Portal Engine</span>
+      </nav>
+      <h1 class="text-xl font-semibold tracking-tight">Client Portal Engine</h1>
+      <p class="max-w-3xl text-sm text-stone-500 dark:text-stone-400">Preview of the customer-facing view: renderings, quote sign-off and staged payment submission for Hafeez Villa.</p>
+    </div>
+    <div class="flex flex-wrap items-center gap-2">
+      <div data-arc-tabs class="flex items-center gap-2 rounded-lg border border-stone-200 bg-white p-2 dark:border-stone-800 dark:bg-stone-950">
+        <button data-arc-tab="client" aria-selected="true" class="rounded-lg px-4 py-2 text-sm font-medium">Client view</button>
+        <button data-arc-tab="owner" aria-selected="false" class="rounded-lg px-4 py-2 text-sm font-medium">Owner view</button>
+      </div>
+      <div class="flex items-center gap-2 rounded-lg border border-stone-200 bg-white px-4 py-2 dark:border-stone-800 dark:bg-stone-950">
+        <span class="text-sm font-medium">Account level tracking</span>
+        <button role="switch" aria-checked="true" data-arc-switch="Account tracking" class="relative h-6 w-10 shrink-0 rounded-sm bg-stone-200 transition-colors dark:bg-stone-800">
+          <span class="absolute left-2 top-2 h-4 w-4 translate-x-0 rounded-sm bg-white transition-transform dark:bg-stone-950"></span>
+        </button>
+      </div>
+      <button class="rounded-lg bg-stone-800 px-4 py-2 text-sm font-medium text-stone-50 hover:bg-stone-700 dark:bg-stone-200 dark:text-stone-900 dark:hover:bg-stone-300">Send portal invite</button>
+    </div>
+  </header>
+
+  <!-- ===== BLOCK 2 — 4-COLUMN PROGRESS CARD KPIs ===== -->
+  <section class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Project Funding Ratio</p>
+      <p class="arc-numeric mt-2 text-2xl font-bold tracking-tight">40%</p>
+      <div class="mt-4 flex flex-col gap-2">
+        <span class="block h-2 w-full overflow-hidden rounded-sm bg-stone-200 dark:bg-stone-800"><span data-arc-value="40" class="block h-full w-0 bg-stone-800 transition-all duration-700 dark:bg-stone-200"></span></span>
+        <p class="text-sm text-stone-500 dark:text-stone-400">₨ 3.08M of ₨ 7.70M received</p>
+      </div>
+    </article>
+    <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Drawing Approvals Logged</p>
+      <p class="arc-numeric mt-2 text-2xl font-bold tracking-tight">09<span class="text-sm font-medium text-stone-400"> / 11</span></p>
+      <div class="mt-4 flex flex-col gap-2">
+        <span class="block h-2 w-full overflow-hidden rounded-sm bg-stone-200 dark:bg-stone-800"><span data-arc-value="82" class="block h-full w-0 bg-stone-500 transition-all duration-700 dark:bg-stone-400"></span></span>
+        <p class="text-sm text-stone-500 dark:text-stone-400">Elevation B and MW-14 awaiting client</p>
+      </div>
+    </article>
+    <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Milestone Progress</p>
+      <p class="arc-numeric mt-2 text-2xl font-bold tracking-tight">17<span class="text-sm font-medium text-stone-400"> / 24</span></p>
+      <div class="mt-4 flex flex-col gap-2">
+        <span class="block h-2 w-full overflow-hidden rounded-sm bg-stone-200 dark:bg-stone-800"><span data-arc-value="71" class="block h-full w-0 bg-stone-800 transition-all duration-700 dark:bg-stone-200"></span></span>
+        <p class="text-sm text-stone-500 dark:text-stone-400">Next: installation start 16 Oct</p>
+      </div>
+    </article>
+    <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Open Client Requests</p>
+      <p class="arc-numeric mt-2 text-2xl font-bold tracking-tight">03</p>
+      <p class="mt-4 text-sm text-stone-500 dark:text-stone-400">1 change order · 2 clarifications</p>
+    </article>
+  </section>
+
+  <!-- ===== BLOCK 3 — MAIN ACTION CANVAS (Form Pages & Settings) ===== -->
+  <section data-arc-pane="client" class="grid grid-cols-1 gap-6 xl:grid-cols-12">
+
+    <article class="rounded-xl border border-stone-200 bg-stone-50 shadow-panel xl:col-span-8 dark:border-stone-800 dark:bg-stone-900">
+      <header class="flex flex-wrap items-center justify-between gap-4 border-b border-stone-200 px-6 py-4 dark:border-stone-800">
+        <div>
+          <h2 class="text-sm font-semibold">Portal dashboard · Hafeez Villa</h2>
+          <p class="text-sm text-stone-500 dark:text-stone-400">Reviewed as the client sees it</p>
+        </div>
+        <span class="arc-numeric rounded-lg border border-stone-200 px-2 py-2 text-2xs uppercase tracking-widest text-stone-500 dark:border-stone-800 dark:text-stone-400">Last visit 2 h ago</span>
+      </header>
+
+      <div class="flex flex-col gap-6 p-6">
+        <!-- rendering approvals -->
+        <div class="grid grid-cols-1 gap-6 lg:grid-cols-12">
+          <div class="lg:col-span-7">
+            <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Latest rendering · elevation B</p>
+            <div class="arc-grid-paper mt-4 flex h-64 items-center justify-center rounded-xl border border-stone-200 bg-white dark:border-stone-800 dark:bg-stone-950">
+              <span class="arc-numeric text-2xs uppercase tracking-widest text-stone-400">Render · rev B.05 · 4K</span>
+            </div>
+          </div>
+          <div class="flex flex-col gap-2 lg:col-span-5">
+            <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Approve or comment</p>
+            <div class="flex flex-col gap-2">
+              <label class="flex cursor-pointer items-start gap-2 rounded-lg border border-stone-800 p-4 dark:border-stone-200">
+                <input type="radio" name="approval" checked class="mt-2 h-4 w-4 accent-stone-800 dark:accent-stone-200">
+                <span><span class="block text-sm font-medium">Approve as drawn</span><span class="block text-sm text-stone-500 dark:text-stone-400">Carpentry release can proceed.</span></span>
+              </label>
+              <label class="flex cursor-pointer items-start gap-2 rounded-lg border border-stone-200 p-4 hover:bg-stone-100 dark:border-stone-800 dark:hover:bg-stone-800">
+                <input type="radio" name="approval" class="mt-2 h-4 w-4 accent-stone-800 dark:accent-stone-200">
+                <span><span class="block text-sm font-medium">Approve with comments</span><span class="block text-sm text-stone-500 dark:text-stone-400">Studio reviews notes before release.</span></span>
+              </label>
+              <label class="flex cursor-pointer items-start gap-2 rounded-lg border border-stone-200 p-4 hover:bg-stone-100 dark:border-stone-800 dark:hover:bg-stone-800">
+                <input type="radio" name="approval" class="mt-2 h-4 w-4 accent-stone-800 dark:accent-stone-200">
+                <span><span class="block text-sm font-medium">Request revision</span><span class="block text-sm text-stone-500 dark:text-stone-400">Returns to the studio queue.</span></span>
+              </label>
+            </div>
+            <textarea rows="3" placeholder="Comments for the studio…" class="mt-2 w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm placeholder:text-stone-400 focus:outline-none focus:ring-1 focus:ring-stone-400 dark:border-stone-800 dark:bg-stone-950 dark:placeholder:text-stone-500 dark:focus:ring-stone-500"></textarea>
+            <button class="rounded-lg bg-stone-800 px-4 py-2 text-sm font-medium text-stone-50 dark:bg-stone-200 dark:text-stone-900">Submit decision</button>
+          </div>
+        </div>
+
+        <!-- quote sign-off -->
+        <div class="rounded-xl border border-stone-200 bg-white p-6 dark:border-stone-800 dark:bg-stone-950">
+          <div class="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Quote sign-off</p>
+              <p class="mt-2 text-sm font-semibold">WX-QT-0918 · ₨ 7,698,320 inclusive of GST</p>
+            </div>
+            <span class="rounded-lg border border-dashed border-stone-400 px-2 py-2 text-2xs font-semibold uppercase tracking-widest text-stone-500 dark:border-stone-600 dark:text-stone-400">Signature pending</span>
+          </div>
+          <div class="mt-4 flex flex-wrap items-center gap-2">
+            <label class="flex items-center gap-2 text-sm"><input type="checkbox" class="h-4 w-4 rounded-sm accent-stone-800 dark:accent-stone-200">I have read the specification and the payment schedule</label>
+          </div>
+          <div class="mt-4 flex flex-wrap items-center gap-2">
+            <button class="rounded-lg bg-stone-800 px-4 py-2 text-sm font-medium text-stone-50 dark:bg-stone-200 dark:text-stone-900">Sign &amp; accept</button>
+            <button class="rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm font-medium hover:bg-stone-100 dark:border-stone-800 dark:bg-stone-950 dark:hover:bg-stone-800">Download PDF</button>
+            <button class="rounded-lg px-4 py-2 text-sm font-medium text-stone-500 hover:bg-stone-100 dark:text-stone-400 dark:hover:bg-stone-800">Request change</button>
+          </div>
+        </div>
+
+        <!-- payment submission -->
+        <div class="rounded-xl border border-stone-200 bg-white p-6 dark:border-stone-800 dark:bg-stone-950">
+          <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Staged payment submission</p>
+          <dl class="mt-4 divide-y divide-stone-200 text-sm dark:divide-stone-800">
+            <div class="flex items-center justify-between py-2"><dt class="text-stone-500 dark:text-stone-400">Advance 40%</dt><dd class="arc-numeric font-medium">₨ 3,079,328 · received</dd></div>
+            <div class="flex items-center justify-between py-2"><dt class="text-stone-500 dark:text-stone-400">Fabrication 35%</dt><dd class="arc-numeric font-medium">₨ 2,694,412 · due 20 Oct</dd></div>
+            <div class="flex items-center justify-between py-2"><dt class="text-stone-500 dark:text-stone-400">Handover 25%</dt><dd class="arc-numeric font-medium">₨ 1,924,580 · due on completion</dd></div>
+          </dl>
+          <div class="mt-4 flex flex-wrap items-center gap-2">
+            <button class="rounded-lg bg-stone-800 px-4 py-2 text-sm font-medium text-stone-50 dark:bg-stone-200 dark:text-stone-900">Pay fabrication stage</button>
+            <button class="rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm font-medium hover:bg-stone-100 dark:border-stone-800 dark:bg-stone-950 dark:hover:bg-stone-800">Upload bank transfer slip</button>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <aside class="flex flex-col gap-6 xl:col-span-4">
+      <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+        <h2 class="text-sm font-semibold">Portal settings</h2>
+        <div class="mt-4 flex flex-col gap-2">
+          <div class="flex items-center justify-between gap-4 rounded-lg border border-stone-200 bg-white px-4 py-2 dark:border-stone-800 dark:bg-stone-950"><span class="text-sm">Show pricing detail</span>
+            <button role="switch" aria-checked="true" data-arc-switch="Pricing detail" class="relative h-6 w-10 shrink-0 rounded-sm bg-stone-200 transition-colors dark:bg-stone-800"><span class="absolute left-2 top-2 h-4 w-4 translate-x-0 rounded-sm bg-white transition-transform dark:bg-stone-950"></span></button>
+          </div>
+          <div class="flex items-center justify-between gap-4 rounded-lg border border-stone-200 bg-white px-4 py-2 dark:border-stone-800 dark:bg-stone-950"><span class="text-sm">Allow comments on drawings</span>
+            <button role="switch" aria-checked="true" data-arc-switch="Drawing comments" class="relative h-6 w-10 shrink-0 rounded-sm bg-stone-200 transition-colors dark:bg-stone-800"><span class="absolute left-2 top-2 h-4 w-4 translate-x-0 rounded-sm bg-white transition-transform dark:bg-stone-950"></span></button>
+          </div>
+          <div class="flex items-center justify-between gap-4 rounded-lg border border-stone-200 bg-white px-4 py-2 dark:border-stone-800 dark:bg-stone-950"><span class="text-sm">Progress photo digest</span>
+            <button role="switch" aria-checked="false" data-arc-switch="Photo digest" class="relative h-6 w-10 shrink-0 rounded-sm bg-stone-200 transition-colors dark:bg-stone-800"><span class="absolute left-2 top-2 h-4 w-4 translate-x-0 rounded-sm bg-white transition-transform dark:bg-stone-950"></span></button>
+          </div>
+        </div>
+      </article>
+
+      <article class="rounded-xl border border-stone-200 bg-stone-50 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+        <header class="border-b border-stone-200 px-6 py-4 dark:border-stone-800">
+          <h2 class="text-sm font-semibold">Client activity</h2>
+        </header>
+        <ol class="divide-y divide-stone-200 dark:divide-stone-800">
+          <li class="px-6 py-4"><p class="text-sm font-medium">Viewed elevation B rendering</p><p class="arc-numeric text-2xs uppercase tracking-widest text-stone-400">2 h ago · 3 min 12 s</p></li>
+          <li class="px-6 py-4"><p class="text-sm font-medium">Downloaded quote PDF</p><p class="arc-numeric text-2xs uppercase tracking-widest text-stone-400">Yesterday · 1 open</p></li>
+          <li class="px-6 py-4"><p class="text-sm font-medium">Commented on MW-14 shelving depth</p><p class="arc-numeric text-2xs uppercase tracking-widest text-stone-400">2 d ago · resolved</p></li>
+        </ol>
+      </article>
+    </aside>
+  </section>
+
+  <!-- owner view -->
+  <section data-arc-pane="owner" hidden class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+    <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Portal engagement</p>
+      <p class="arc-numeric mt-2 text-2xl font-bold tracking-tight">18<span class="text-sm font-medium text-stone-400"> sessions</span></p>
+      <p class="mt-4 text-sm text-stone-500 dark:text-stone-400">Median 2 min 40 s · 4 documents opened</p>
+    </article>
+    <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Sign-off latency</p>
+      <p class="arc-numeric mt-2 text-2xl font-bold tracking-tight">3.2<span class="text-sm font-medium text-stone-400"> days</span></p>
+      <p class="mt-4 text-sm text-stone-500 dark:text-stone-400">Slower than the 2-day studio target</p>
+    </article>
+    <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Access controls</p>
+      <div class="mt-4 flex flex-col gap-2">
+        <button class="rounded-lg bg-stone-800 px-4 py-2 text-sm font-medium text-stone-50 dark:bg-stone-200 dark:text-stone-900">Reset client link</button>
+        <button class="rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm font-medium hover:bg-stone-100 dark:border-stone-800 dark:bg-stone-950 dark:hover:bg-stone-800">Revoke portal access</button>
+      </div>
+    </article>
+  </section>
+</div>
+<script src="../assets/arc-kit.js" defer></script>
+</body>
+</html>

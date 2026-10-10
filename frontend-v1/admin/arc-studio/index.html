@@ -1,0 +1,362 @@
+<!doctype html>
+<!-- ============================================================================
+     WOODEX ADMIN V2.1 + ARC.STUDIO — Design System Kit Index
+     Preline-style block catalogue: searchable rail menu, live module preview,
+     block-mapping table, source viewer. No app shell, no server, no build step.
+     ============================================================================ -->
+<html lang="en" class="h-full">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>WOODEX ADMIN V2.1 + ARC.STUDIO — Block Kit</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231c1917'/%3E%3Cpath d='M8 22V10l4 7 4-7v12' stroke='%23fafaf9' stroke-width='2' fill='none'/%3E%3Cpath d='M20 10v12h4' stroke='%23a8a29e' stroke-width='2' fill='none'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/arc-kit.css">
+<script>try{var t=localStorage.getItem("wxaTheme");if(t==="dark"||(!t&&matchMedia("(prefers-color-scheme: dark)").matches)){document.documentElement.classList.add("dark");document.documentElement.setAttribute("data-theme","dark")}}catch(e){}</script>
+</head>
+<body class="h-full bg-stone-100 text-stone-950 antialiased dark:bg-stone-950 dark:text-stone-50">
+
+<div class="flex min-h-full">
+
+  <!-- ======================================================================
+       SIDE RAIL — catalogue navigation (Block: Sidebar Navigation Block)
+       ====================================================================== -->
+  <aside class="sticky top-0 hidden h-screen w-72 shrink-0 flex-col border-r border-stone-200 bg-stone-50 lg:flex dark:border-stone-800 dark:bg-stone-900">
+    <div class="flex items-center gap-2 border-b border-stone-200 px-6 py-4 dark:border-stone-800">
+      <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-stone-800 text-sm font-bold tracking-tight text-stone-50 dark:bg-stone-200 dark:text-stone-900">W</span>
+      <div class="min-w-0">
+        <p class="truncate text-sm font-semibold tracking-tight">WOODEX ADMIN <span class="text-stone-400 dark:text-stone-500">V2.1</span></p>
+        <p class="truncate text-2xs font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">ARC.STUDIO Block Kit</p>
+      </div>
+    </div>
+
+    <div class="border-b border-stone-200 p-4 dark:border-stone-800">
+      <label class="flex items-center gap-2 rounded-lg border border-stone-200 bg-white px-2 py-2 focus-within:ring-1 focus-within:ring-stone-400 dark:border-stone-800 dark:bg-stone-950 dark:focus-within:ring-stone-500">
+        <svg class="h-4 w-4 shrink-0 text-stone-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="7"/><path d="m20 20-4.3-4.3"/></svg>
+        <input id="kit-search" type="search" placeholder="Filter 26 modules…" class="w-full bg-transparent text-sm outline-none placeholder:text-stone-400 dark:placeholder:text-stone-500">
+      </label>
+    </div>
+
+    <nav id="kit-nav" class="arc-scroll flex-1 overflow-y-auto px-2 py-4"></nav>
+
+    <div class="border-t border-stone-200 p-4 dark:border-stone-800">
+      <a href="blocks.html" class="flex items-center justify-between rounded-lg px-2 py-2 text-sm font-medium text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800">
+        Block catalogue
+        <span class="text-2xs uppercase tracking-widest text-stone-400">Kit</span>
+      </a>
+      <a href="shell-reference.html" class="flex items-center justify-between rounded-lg px-2 py-2 text-sm font-medium text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800">
+        Frame shell reference
+        <span class="text-2xs uppercase tracking-widest text-stone-400">W-64</span>
+      </a>
+      <button data-arc-theme class="mt-2 flex w-full items-center justify-between rounded-lg border border-stone-200 px-2 py-2 text-sm font-medium hover:bg-stone-100 dark:border-stone-800 dark:hover:bg-stone-800">
+        <span>Theme mode</span><span data-arc-theme-label class="text-2xs uppercase tracking-widest text-stone-500 dark:text-stone-400">Dark</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- ======================================================================
+       MAIN COLUMN — kit documentation canvas
+       ====================================================================== -->
+  <div class="flex min-w-0 flex-1 flex-col">
+
+    <header class="sticky top-0 z-40 border-b border-stone-200 bg-stone-50/90 backdrop-blur dark:border-stone-800 dark:bg-stone-900/90">
+      <div class="mx-auto flex max-w-canvas flex-wrap items-center justify-between gap-4 px-6 py-4">
+        <div class="flex items-center gap-2 lg:hidden">
+          <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-stone-800 text-sm font-bold text-stone-50 dark:bg-stone-200 dark:text-stone-900">W</span>
+          <p class="text-sm font-semibold tracking-tight">ARC.STUDIO Kit</p>
+        </div>
+        <div class="hidden items-center gap-6 lg:flex">
+          <nav class="flex items-center gap-2 text-2xs uppercase tracking-widest text-stone-500 dark:text-stone-400">
+            <span>System</span><span class="text-stone-300 dark:text-stone-600">/</span>
+            <span>Block Kit</span><span class="text-stone-300 dark:text-stone-600">/</span>
+            <span id="crumb-module" class="text-stone-900 dark:text-stone-50">28 Blocks · 26 Modules</span>
+          </nav>
+        </div>
+        <div class="flex items-center gap-2">
+          <a href="blocks.html" class="rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm font-medium hover:bg-stone-100 dark:border-stone-800 dark:bg-stone-950 dark:hover:bg-stone-800">Blocks</a>
+          <a href="#foundations" class="rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm font-medium hover:bg-stone-100 dark:border-stone-800 dark:bg-stone-950 dark:hover:bg-stone-800">Foundations</a>
+          <button data-arc-theme class="hidden rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm font-medium hover:bg-stone-100 lg:block dark:border-stone-800 dark:bg-stone-950 dark:hover:bg-stone-800"><span data-arc-theme-label>Dark</span></button>
+        </div>
+      </div>
+    </header>
+
+    <main class="mx-auto w-full max-w-canvas flex-1 px-6 py-8">
+
+      <!-- ================================================================
+           BLOCK 1 — Title bar of the kit
+           ================================================================ -->
+      <section class="mb-8 border-b border-stone-200 pb-6 dark:border-stone-800">
+        <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">High-density enterprise framework · Preline 972-block system architecture</p>
+        <div class="mt-2 flex flex-wrap items-end justify-between gap-4">
+          <div class="max-w-3xl">
+            <h1 class="text-xl font-semibold tracking-tight">WOODEX ADMIN V2.1 + ARC.STUDIO</h1>
+            <p class="mt-2 text-sm text-stone-500 dark:text-stone-400">Every screen in the platform is assembled from the same three stacked blocks: Header / Filter Bar, the four-column KPI summary row, and the main functional action canvas. Pick a module from the rail to load its production layout in the preview frame.</p>
+          </div>
+          <dl class="grid grid-cols-2 gap-4 sm:grid-cols-4">
+            <div class="rounded-xl border border-stone-200 bg-stone-50 px-4 py-2 dark:border-stone-800 dark:bg-stone-900">
+              <dt class="text-2xs font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Modules</dt>
+              <dd class="arc-numeric text-2xl font-bold tracking-tight">26</dd>
+            </div>
+            <div class="rounded-xl border border-stone-200 bg-stone-50 px-4 py-2 dark:border-stone-800 dark:bg-stone-900">
+              <dt class="text-2xs font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Blocks</dt>
+              <dd class="arc-numeric text-2xl font-bold tracking-tight">28</dd>
+            </div>
+            <div class="rounded-xl border border-stone-200 bg-stone-50 px-4 py-2 dark:border-stone-800 dark:bg-stone-900">
+              <dt class="text-2xs font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Grid base</dt>
+              <dd class="arc-numeric text-2xl font-bold tracking-tight">8<span class="text-sm font-medium text-stone-400">px</span></dd>
+            </div>
+            <div class="rounded-xl border border-stone-200 bg-stone-50 px-4 py-2 dark:border-stone-800 dark:bg-stone-900">
+              <dt class="text-2xs font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Palette</dt>
+              <dd class="arc-numeric text-2xl font-bold tracking-tight">Stone</dd>
+            </div>
+          </dl>
+        </div>
+      </section>
+
+      <!-- ================================================================
+           BLOCK 2 — Module preview + block mapping (main action canvas)
+           ================================================================ -->
+      <section class="mb-8 grid grid-cols-1 gap-6 xl:grid-cols-12">
+
+        <div class="xl:col-span-9">
+          <div class="overflow-hidden rounded-xl border border-stone-200 bg-stone-50 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+            <!-- panel header — Title Bars Block -->
+            <div class="flex flex-wrap items-center justify-between gap-4 border-b border-stone-200 px-6 py-4 dark:border-stone-800">
+              <div class="min-w-0">
+                <p id="mod-kicker" class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Module I · Overview & Central Operations</p>
+                <h2 id="mod-title" class="mt-2 truncate text-xl font-semibold tracking-tight">Dashboard Portal</h2>
+              </div>
+              <div class="flex items-center gap-2">
+                <div data-arc-tabs class="flex items-center gap-2 rounded-lg border border-stone-200 bg-white p-2 dark:border-stone-800 dark:bg-stone-950">
+                  <button data-arc-tab="preview" aria-selected="true" class="rounded-lg px-2 py-2 text-sm font-medium">Preview</button>
+                  <button data-arc-tab="source" aria-selected="false" class="rounded-lg px-2 py-2 text-sm font-medium">Source</button>
+                </div>
+                <a id="mod-open" href="modules/m01-dashboard-portal.html" target="_blank" rel="noopener" class="rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm font-medium hover:bg-stone-100 dark:border-stone-800 dark:bg-stone-950 dark:hover:bg-stone-800">Open</a>
+                <button data-arc-copy="#mod-code" class="rounded-lg bg-stone-800 px-4 py-2 text-sm font-medium text-stone-50 hover:bg-stone-700 dark:bg-stone-200 dark:text-stone-900 dark:hover:bg-stone-300">Copy</button>
+              </div>
+            </div>
+
+            <!-- preview pane -->
+            <div data-arc-pane="preview" class="bg-stone-100 dark:bg-stone-950">
+              <iframe id="mod-frame" title="Module preview" class="h-[820px] w-full border-0 bg-stone-100 dark:bg-stone-950" src="modules/m01-dashboard-portal.html"></iframe>
+            </div>
+            <!-- source pane -->
+            <div data-arc-pane="source" hidden class="arc-scroll max-h-[820px] overflow-auto bg-stone-950 dark:bg-stone-950">
+              <pre id="mod-code" class="arc-numeric w-full p-6 text-xs leading-6 text-stone-300"></pre>
+            </div>
+          </div>
+        </div>
+
+        <!-- mapping rail -->
+        <aside class="flex flex-col gap-6 xl:col-span-3">
+          <div class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+            <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">3-Block Layering Rule</p>
+            <ol id="mod-blocks" class="mt-4 flex flex-col gap-2"></ol>
+          </div>
+          <div class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+            <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Preline engines mapped</p>
+            <div id="mod-engines" class="mt-4 flex flex-wrap gap-2"></div>
+            <p class="mt-4 border-t border-stone-200 pt-4 text-sm text-stone-500 dark:border-stone-800 dark:text-stone-400">Canvas pattern</p>
+            <p id="mod-canvas" class="text-sm font-medium"></p>
+          </div>
+          <div class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+            <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">File contract</p>
+            <p id="mod-file" class="arc-numeric mt-4 break-all rounded-lg bg-stone-100 px-2 py-2 text-xs text-stone-600 dark:bg-stone-950 dark:text-stone-300">modules/m01-dashboard-portal.html</p>
+            <p class="mt-4 text-sm text-stone-500 dark:text-stone-400">Standalone document — Tailwind utilities only, links <span class="arc-numeric">../assets/arc-kit.css</span> and <span class="arc-numeric">../assets/arc-kit.js</span>.</p>
+          </div>
+        </aside>
+      </section>
+
+      <!-- ================================================================
+           BLOCK 3 — Foundations (system specifications)
+           ================================================================ -->
+      <section id="foundations" class="grid grid-cols-1 gap-6 xl:grid-cols-12">
+        <div class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel xl:col-span-7 dark:border-stone-800 dark:bg-stone-900">
+          <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Palette Matrix</p>
+          <div class="mt-4 overflow-hidden rounded-xl border border-stone-200 dark:border-stone-800">
+            <table class="w-full text-left text-sm">
+              <thead class="bg-stone-100/50 text-xs font-semibold uppercase tracking-wider text-stone-500 dark:bg-stone-900/50 dark:text-stone-400">
+                <tr>
+                  <th class="px-4 py-2">Theme role</th><th class="px-4 py-2">Light</th><th class="px-4 py-2">Dark</th><th class="px-4 py-2">Material reference</th>
+                </tr>
+              </thead>
+              <tbody id="palette-body" class="divide-y divide-stone-200 dark:divide-stone-800"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-6 xl:col-span-5">
+          <div class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+            <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">8px Spacing Matrix</p>
+            <ul id="spacing-list" class="mt-4 flex flex-col gap-2"></ul>
+          </div>
+          <div class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+            <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Typography Scale</p>
+            <ul id="type-list" class="mt-4 flex flex-col gap-2"></ul>
+          </div>
+        </div>
+      </section>
+
+      <footer class="mt-8 flex flex-wrap items-center justify-between gap-4 border-t border-stone-200 py-6 text-2xs uppercase tracking-widest text-stone-500 dark:border-stone-800 dark:text-stone-400">
+        <span>Woodex Interior · Admin V2.1 + ARC.STUDIO</span>
+        <span id="kit-build">Build</span>
+      </footer>
+    </main>
+  </div>
+</div>
+
+<script src="assets/arc-manifest.js"></script>
+<script src="assets/arc-kit.js" defer></script>
+<script>
+(function () {
+  var M = window.ARC_MANIFEST, mods = M.modules, current = "m01";
+
+  /* ---- rail menu: Foundations → Blocks → Modules by hub -------------- */
+  function navGroup(label) {
+    var el = document.createElement("p");
+    el.className = "px-2 py-2 text-3xs font-semibold uppercase tracking-widest text-stone-400 dark:text-stone-500";
+    el.textContent = label;
+    return el;
+  }
+  function navLink(key, num, title, group) {
+    var a = document.createElement("button");
+    a.type = "button";
+    a.setAttribute("data-kit-link", key);
+    a.setAttribute("data-arc-filter-item", "");
+    a.className = "group flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-sm text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800";
+    a.innerHTML = '<span class="arc-numeric w-6 shrink-0 text-2xs font-semibold uppercase tracking-widest text-stone-400 dark:text-stone-500">' + num + '</span>' +
+      '<span class="min-w-0 flex-1 truncate">' + title + '</span>' +
+      '<span class="hidden shrink-0 text-3xs uppercase tracking-widest text-stone-400 group-hover:inline">' + group + '</span>';
+    return a;
+  }
+  var nav = document.getElementById("kit-nav");
+  nav.appendChild(navGroup("Foundations"));
+  M.foundations.forEach(function (f) {
+    var a = document.createElement("a");
+    a.href = "#foundations";
+    a.setAttribute("data-arc-filter-item", "");
+    a.className = "flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-sm text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800";
+    a.innerHTML = '<span class="w-6 shrink-0 text-2xs uppercase tracking-widest text-stone-400">§</span><span class="min-w-0 flex-1 truncate">' + f.title + "</span>";
+    nav.appendChild(a);
+  });
+  nav.appendChild(navGroup("Block catalogue"));
+  [["blocks.html", "Blocks", "28 engines"], ["shell-reference.html", "Frame shell", "w-64 rail"]].forEach(function (row) {
+    var a = document.createElement("a");
+    a.href = row[0];
+    a.setAttribute("data-arc-filter-item", "");
+    a.className = "flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-sm text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800";
+    a.innerHTML = '<span class="w-6 shrink-0 text-2xs uppercase tracking-widest text-stone-400">▣</span><span class="min-w-0 flex-1 truncate">' + row[1] + '</span><span class="shrink-0 text-3xs uppercase tracking-widest text-stone-400">' + row[2] + "</span>";
+    nav.appendChild(a);
+  });
+  M.groups.forEach(function (g) {
+    nav.appendChild(navGroup("Module " + g.key + " · " + g.name));
+    g.modules.forEach(function (key) {
+      nav.appendChild(navLink(key, "M" + String(mods[key].n).padStart(2, "0"), mods[key].title, g.key));
+    });
+  });
+
+  var empty = document.createElement("p");
+  empty.setAttribute("data-arc-filter-empty", "");
+  empty.hidden = true;
+  empty.className = "px-2 py-4 text-sm text-stone-500 dark:text-stone-400";
+  empty.textContent = "No module matches that filter.";
+  nav.appendChild(empty);
+
+  /* ---- module panel wiring ------------------------------------------- */
+  var frame = document.getElementById("mod-frame");
+  var code = document.getElementById("mod-code");
+  var cache = {};
+
+  function paint(key) {
+    var m = mods[key]; if (!m) return;
+    current = key;
+    var group = M.groups.filter(function (g) { return g.modules.indexOf(key) > -1; })[0];
+    document.getElementById("mod-kicker").textContent = "Module " + group.key + " · " + group.name;
+    document.getElementById("mod-title").textContent = "M" + String(m.n).padStart(2, "0") + " — " + m.title;
+    document.getElementById("crumb-module").textContent = "M" + String(m.n).padStart(2, "0") + " · " + m.title;
+    document.getElementById("mod-file").textContent = m.file;
+    document.getElementById("mod-open").href = m.file;
+    document.getElementById("mod-canvas").textContent = m.canvas;
+    frame.src = m.file;
+
+    var blocks = [m.block1, m.block2, m.block3];
+    document.getElementById("mod-blocks").innerHTML = blocks.map(function (b, i) {
+      return '<li class="flex gap-2 rounded-lg border border-stone-200 bg-white p-2 dark:border-stone-800 dark:bg-stone-950">' +
+        '<span class="arc-numeric shrink-0 rounded-lg bg-stone-800 px-2 py-2 text-2xs font-semibold text-stone-50 dark:bg-stone-200 dark:text-stone-900">B' + (i + 1) + "</span>" +
+        '<span class="text-sm text-stone-600 dark:text-stone-300">' + b + "</span></li>";
+    }).join("");
+
+    document.getElementById("mod-engines").innerHTML = m.engines.map(function (e) {
+      return '<span class="rounded-lg border border-stone-200 bg-white px-2 py-2 text-2xs font-medium uppercase tracking-widest text-stone-500 dark:border-stone-800 dark:bg-stone-950 dark:text-stone-400">' + e + "</span>";
+    }).join("");
+
+    document.querySelectorAll("[data-kit-link]").forEach(function (b) {
+      var on = b.getAttribute("data-kit-link") === key;
+      b.classList.toggle("bg-stone-100", on);
+      b.classList.toggle("dark:bg-stone-800", on);
+      b.classList.toggle("font-semibold", on);
+      b.classList.toggle("text-stone-900", on);
+      b.classList.toggle("dark:text-stone-50", on);
+    });
+
+    if (cache[key]) { code.textContent = cache[key]; return; }
+    code.textContent = "Loading source…";
+    fetch(m.file).then(function (r) { return r.text(); }).then(function (txt) {
+      cache[key] = txt; code.textContent = txt;
+    }).catch(function () {
+      code.textContent = "Source viewer needs an HTTP origin (open the kit through a local server or /admin/arc-studio/).";
+    });
+    history.replaceState(null, "", "#" + key);
+  }
+
+  document.addEventListener("click", function (e) {
+    var btn = e.target.closest("[data-kit-link]");
+    if (btn) paint(btn.getAttribute("data-kit-link"));
+  });
+
+  /* ---- foundations data ---------------------------------------------- */
+  var palette = [
+    ["System Backdrop", "bg-stone-100", "#F5F5F4", "bg-stone-950", "#0C0A09", "Dry concrete / raw iron"],
+    ["Component Panel", "bg-stone-50", "#FAFAF9", "bg-stone-900", "#1C1917", "Limestone block / slate sheet"],
+    ["Active Accent", "bg-stone-800", "#292524", "bg-stone-200", "#E7E5E4", "Polished walnut / matte aluminium"],
+    ["Subtle Framing", "bg-stone-200", "#E7E5E4", "bg-stone-800", "#292524", "Structural joinery line"],
+    ["Primary Text", "bg-stone-950", "#0C0A09", "bg-stone-50", "#FAFAF9", "Blueprint ink"],
+    ["Secondary Muted", "bg-stone-500", "#78716C", "bg-stone-400", "#A8A29E", "Raw timber markup"]
+  ];
+  document.getElementById("palette-body").innerHTML = palette.map(function (p) {
+    return "<tr>" +
+      '<td class="px-4 py-2 font-medium">' + p[0] + "</td>" +
+      '<td class="px-4 py-2"><span class="mr-2 inline-block h-4 w-4 rounded-sm border border-stone-300 align-middle dark:border-stone-700 ' + p[1] + '"></span><span class="arc-numeric text-xs text-stone-500 dark:text-stone-400">' + p[2] + "</span></td>" +
+      '<td class="px-4 py-2"><span class="mr-2 inline-block h-4 w-4 rounded-sm border border-stone-300 align-middle dark:border-stone-700 ' + p[3] + '"></span><span class="arc-numeric text-xs text-stone-500 dark:text-stone-400">' + p[4] + "</span></td>" +
+      '<td class="px-4 py-2 text-stone-500 dark:text-stone-400">' + p[5] + "</td></tr>";
+  }).join("");
+
+  var spacing = [["gap-2 / p-2", "8px", "w-2"], ["gap-4 / p-4", "16px", "w-4"], ["gap-6 / p-6", "24px", "w-6"], ["gap-8 / mb-8", "32px", "w-8"], ["p-10 · section", "40px", "w-10"]];
+  document.getElementById("spacing-list").innerHTML = spacing.map(function (s) {
+    return '<li class="flex items-center gap-4 rounded-lg border border-stone-200 bg-white px-4 py-2 dark:border-stone-800 dark:bg-stone-950">' +
+      '<span class="arc-numeric w-24 shrink-0 text-xs text-stone-500 dark:text-stone-400">' + s[0] + "</span>" +
+      '<span class="h-2 rounded-sm bg-stone-800 dark:bg-stone-200 ' + s[2] + '"></span>' +
+      '<span class="arc-numeric ml-auto text-xs font-semibold">' + s[1] + "</span></li>";
+  }).join("");
+
+  var type = [
+    ["Brand Identification", "text-xl font-semibold tracking-tight", "Woodex Admin"],
+    ["System Header Label", "text-[11px] font-medium uppercase tracking-widest", "BLOCK 2 · KPI SUMMARY"],
+    ["Body Item Readout", "text-sm font-normal", "Timber specification and cost model rows"],
+    ["Financial KPI Readout", "text-2xl font-bold tracking-tight", "12.4M"]
+  ];
+  document.getElementById("type-list").innerHTML = type.map(function (t) {
+    return '<li class="rounded-lg border border-stone-200 bg-white px-4 py-2 dark:border-stone-800 dark:bg-stone-950">' +
+      '<p class="arc-numeric text-2xs uppercase tracking-widest text-stone-400">' + t[1] + "</p>" +
+      '<p class="mt-2 ' + t[1] + '">' + t[2] + "</p></li>";
+  }).join("");
+
+  document.getElementById("kit-build").textContent = "Build " + M.brand.build + " · " + M.brand.name + " " + M.brand.version + " " + M.brand.studio;
+
+  /* ---- deep link + search ------------------------------------------- */
+  var hash = (location.hash || "").replace("#", "");
+  paint(mods[hash] ? hash : "m01");
+})();
+</script>
+</body>
+</html>

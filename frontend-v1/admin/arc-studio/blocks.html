@@ -1,0 +1,874 @@
+<!doctype html>
+<!-- ============================================================================
+     WOODEX ADMIN V2.1 + ARC.STUDIO — Block Catalogue
+     Every Preline-derived engine used across the 26 modules, rendered with the
+     stone monochrome tokens and the 8px spacing ladder. Demos are copy-ready.
+     ============================================================================ -->
+<html lang="en" class="h-full">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Block Catalogue — WOODEX ADMIN V2.1 + ARC.STUDIO</title>
+<link rel="stylesheet" href="assets/arc-kit.css">
+<script>try{var t=localStorage.getItem("wxaTheme");if(t==="dark"||(!t&&matchMedia("(prefers-color-scheme: dark)").matches)){document.documentElement.classList.add("dark");document.documentElement.setAttribute("data-theme","dark")}}catch(e){}</script>
+</head>
+<body class="min-h-full bg-stone-100 text-stone-950 antialiased dark:bg-stone-950 dark:text-stone-50">
+
+<!-- ============ BLOCK 1 — catalogue title / filter bar ============ -->
+<header class="sticky top-0 z-40 border-b border-stone-200 bg-stone-50/90 backdrop-blur dark:border-stone-800 dark:bg-stone-900/90">
+  <div class="mx-auto flex max-w-canvas flex-wrap items-center justify-between gap-4 px-6 py-4">
+    <div class="flex min-w-0 items-center gap-2">
+      <a href="index.html" class="flex h-8 w-8 items-center justify-center rounded-lg bg-stone-800 text-sm font-bold text-stone-50 dark:bg-stone-200 dark:text-stone-900">W</a>
+      <div class="min-w-0">
+        <p class="truncate text-sm font-semibold tracking-tight">Block Catalogue</p>
+        <p class="truncate text-2xs font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">28 engines · stone monochrome · 8px grid</p>
+      </div>
+    </div>
+    <div class="flex flex-wrap items-center gap-2">
+      <label class="flex items-center gap-2 rounded-lg border border-stone-200 bg-white px-2 py-2 focus-within:ring-1 focus-within:ring-stone-400 dark:border-stone-800 dark:bg-stone-950 dark:focus-within:ring-stone-500">
+        <svg class="h-4 w-4 text-stone-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="7"/><path d="m20 20-4.3-4.3"/></svg>
+        <input data-arc-filter data-arc-target="#catalogue" type="search" placeholder="Filter blocks…" class="w-48 bg-transparent text-sm outline-none placeholder:text-stone-400 dark:placeholder:text-stone-500">
+      </label>
+      <a href="index.html" class="rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm font-medium hover:bg-stone-100 dark:border-stone-800 dark:bg-stone-950 dark:hover:bg-stone-800">← Kit index</a>
+      <button data-arc-theme class="rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm font-medium hover:bg-stone-100 dark:border-stone-800 dark:bg-stone-950 dark:hover:bg-stone-800"><span data-arc-theme-label>Dark</span></button>
+    </div>
+  </div>
+</header>
+
+<main id="catalogue" class="mx-auto flex w-full max-w-canvas flex-col gap-8 px-6 py-8">
+
+  <section class="border-b border-stone-200 pb-6 dark:border-stone-800">
+    <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Preline 972-block system architecture · mapped to WOODEX V2.1</p>
+    <h1 class="mt-2 text-xl font-semibold tracking-tight">Component &amp; Block Engine Library</h1>
+    <p class="mt-2 max-w-4xl text-sm text-stone-500 dark:text-stone-400">Copy any demo with the button in its header. Status is never colour-coded — hierarchy is carried by fill weight, edge weight and dot treatment so the palette stays inside the stone range.</p>
+  </section>
+
+  <p data-arc-filter-empty hidden class="rounded-xl border border-stone-200 bg-stone-50 p-6 text-sm text-stone-500 dark:border-stone-800 dark:bg-stone-900 dark:text-stone-400">No block matches that filter.</p>
+
+  <!-- ================================================================
+       SECTION A — Buttons & Action Groups
+       ================================================================ -->
+  <section data-arc-filter-item class="flex flex-col gap-6">
+    <div class="flex items-end justify-between gap-4 border-b border-stone-200 pb-6 dark:border-stone-800">
+      <div>
+        <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Section A</p>
+        <h2 class="mt-2 text-xl font-semibold tracking-tight">Buttons &amp; Action Groups</h2>
+      </div>
+      <p class="text-sm text-stone-500 dark:text-stone-400">Preline: Buttons · Button Group · Dropdown</p>
+    </div>
+
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+
+      <article data-arc-filter-item class="rounded-xl border border-stone-200 bg-stone-50 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+        <header class="flex items-center justify-between gap-4 border-b border-stone-200 px-6 py-4 dark:border-stone-800">
+          <p class="text-sm font-semibold">Button</p>
+          <button data-arc-copy="demo" class="rounded-lg border border-stone-200 px-2 py-2 text-2xs font-medium uppercase tracking-widest text-stone-500 hover:bg-stone-100 dark:border-stone-800 dark:text-stone-400 dark:hover:bg-stone-800">Copy</button>
+        </header>
+        <div data-arc-demo class="flex flex-wrap items-center gap-2 p-6">
+          <button class="rounded-lg bg-stone-800 px-4 py-2 text-sm font-medium text-stone-50 transition-colors hover:bg-stone-700 dark:bg-stone-200 dark:text-stone-900 dark:hover:bg-stone-300">Approve</button>
+          <button class="rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm font-medium text-stone-900 transition-colors hover:bg-stone-100 dark:border-stone-800 dark:bg-stone-950 dark:text-stone-50 dark:hover:bg-stone-800">Review</button>
+          <button class="rounded-lg px-4 py-2 text-sm font-medium text-stone-500 transition-colors hover:bg-stone-100 hover:text-stone-900 dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-stone-50">Dismiss</button>
+          <button class="rounded-lg border border-dashed border-stone-300 px-4 py-2 text-sm font-medium text-stone-500 transition-colors hover:border-stone-400 hover:text-stone-900 dark:border-stone-700 dark:text-stone-400 dark:hover:text-stone-50">Flag</button>
+          <button disabled class="cursor-not-allowed rounded-lg bg-stone-300 px-4 py-2 text-sm font-medium text-stone-50 dark:bg-stone-800 dark:text-stone-500">Locked</button>
+          <button class="flex items-center gap-2 rounded-lg bg-stone-800 px-4 py-2 text-sm font-medium text-stone-50 dark:bg-stone-200 dark:text-stone-900">
+            <span class="h-2 w-2 animate-arc-pulse rounded-full bg-stone-50 dark:bg-stone-900"></span>Releasing…
+          </button>
+          <button class="rounded-lg border border-stone-200 bg-white p-2 text-stone-500 hover:bg-stone-100 dark:border-stone-800 dark:bg-stone-950 dark:text-stone-400 dark:hover:bg-stone-800">
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 5v14M5 12h14"/></svg>
+          </button>
+          <button class="rounded-lg bg-stone-800 px-2 py-2 text-2xs font-medium uppercase tracking-widest text-stone-50 dark:bg-stone-200 dark:text-stone-900">sm</button>
+          <button class="rounded-lg bg-stone-800 px-6 py-4 text-sm font-medium text-stone-50 dark:bg-stone-200 dark:text-stone-900">lg</button>
+        </div>
+      </article>
+
+      <article data-arc-filter-item class="rounded-xl border border-stone-200 bg-stone-50 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+        <header class="flex items-center justify-between gap-4 border-b border-stone-200 px-6 py-4 dark:border-stone-800">
+          <p class="text-sm font-semibold">Button Group &amp; Segmented</p>
+          <button data-arc-copy="demo" class="rounded-lg border border-stone-200 px-2 py-2 text-2xs font-medium uppercase tracking-widest text-stone-500 hover:bg-stone-100 dark:border-stone-800 dark:text-stone-400 dark:hover:bg-stone-800">Copy</button>
+        </header>
+        <div data-arc-demo class="flex flex-col gap-4 p-6">
+          <div class="inline-flex overflow-hidden rounded-lg border border-stone-200 dark:border-stone-800">
+            <button class="border-r border-stone-200 bg-stone-800 px-4 py-2 text-sm font-medium text-stone-50 dark:border-stone-800 dark:bg-stone-200 dark:text-stone-900">Approve</button>
+            <button class="border-r border-stone-200 px-4 py-2 text-sm font-medium hover:bg-stone-100 dark:border-stone-800 dark:hover:bg-stone-800">Request change</button>
+            <button class="px-4 py-2 text-sm font-medium hover:bg-stone-100 dark:hover:bg-stone-800">Reject</button>
+          </div>
+          <div data-arc-tabs class="inline-flex rounded-lg border border-stone-200 bg-white p-2 dark:border-stone-800 dark:bg-stone-950">
+            <button data-arc-tab="fin" aria-selected="true" class="rounded-lg px-4 py-2 text-sm font-medium">Financial</button>
+            <button data-arc-tab="bp" aria-selected="false" class="rounded-lg px-4 py-2 text-sm font-medium">Blueprint</button>
+            <button data-arc-tab="all" aria-selected="false" class="rounded-lg px-4 py-2 text-sm font-medium">All</button>
+          </div>
+          <p data-arc-pane="fin" class="text-sm text-stone-500 dark:text-stone-400">Pane: financial requests.</p>
+          <p data-arc-pane="bp" hidden class="text-sm text-stone-500 dark:text-stone-400">Pane: blueprint modifications.</p>
+          <p data-arc-pane="all" hidden class="text-sm text-stone-500 dark:text-stone-400">Pane: every request in queue.</p>
+        </div>
+      </article>
+
+      <article data-arc-filter-item class="rounded-xl border border-stone-200 bg-stone-50 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+        <header class="flex items-center justify-between gap-4 border-b border-stone-200 px-6 py-4 dark:border-stone-800">
+          <p class="text-sm font-semibold">Dropdown Menu</p>
+          <button data-arc-copy="demo" class="rounded-lg border border-stone-200 px-2 py-2 text-2xs font-medium uppercase tracking-widest text-stone-500 hover:bg-stone-100 dark:border-stone-800 dark:text-stone-400 dark:hover:bg-stone-800">Copy</button>
+        </header>
+        <div data-arc-demo class="flex flex-wrap items-center gap-2 p-6">
+          <div class="relative">
+            <button data-arc-dd="dd-1" aria-expanded="false" class="flex items-center gap-2 rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm font-medium hover:bg-stone-100 dark:border-stone-800 dark:bg-stone-950 dark:hover:bg-stone-800">
+              Fiscal Q3 · 2026
+              <svg class="h-4 w-4 text-stone-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+            <div data-arc-menu="dd-1" class="absolute left-0 z-30 mt-2 hidden w-56 overflow-hidden rounded-xl border border-stone-200 bg-white p-2 shadow-lift dark:border-stone-800 dark:bg-stone-900">
+              <button class="flex w-full items-center justify-between rounded-lg px-2 py-2 text-left text-sm hover:bg-stone-100 dark:hover:bg-stone-800">Q3 2026 <span class="text-2xs uppercase tracking-widest text-stone-400">Now</span></button>
+              <button class="w-full rounded-lg px-2 py-2 text-left text-sm hover:bg-stone-100 dark:hover:bg-stone-800">Q2 2026</button>
+              <button class="w-full rounded-lg px-2 py-2 text-left text-sm hover:bg-stone-100 dark:hover:bg-stone-800">Q1 2026</button>
+              <div class="my-2 border-t border-stone-200 dark:border-stone-800"></div>
+              <button class="w-full rounded-lg px-2 py-2 text-left text-sm text-stone-500 hover:bg-stone-100 dark:text-stone-400 dark:hover:bg-stone-800">Custom range…</button>
+            </div>
+          </div>
+          <button data-arc-open="block-drawer" class="rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm font-medium hover:bg-stone-100 dark:border-stone-800 dark:bg-stone-950 dark:hover:bg-stone-800">Open drawer</button>
+          <button data-arc-open="block-modal" class="rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm font-medium hover:bg-stone-100 dark:border-stone-800 dark:bg-stone-950 dark:hover:bg-stone-800">Open modal</button>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- ================================================================
+       SECTION B — Status Law, Badges, Avatars
+       ================================================================ -->
+  <section data-arc-filter-item class="flex flex-col gap-6">
+    <div class="flex items-end justify-between gap-4 border-b border-stone-200 pb-6 dark:border-stone-800">
+      <div>
+        <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Section B</p>
+        <h2 class="mt-2 text-xl font-semibold tracking-tight">Status Law, Badges &amp; Identity</h2>
+      </div>
+      <p class="text-sm text-stone-500 dark:text-stone-400">Preline: Badges · Avatar · Chip</p>
+    </div>
+
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+      <article data-arc-filter-item class="rounded-xl border border-stone-200 bg-stone-50 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+        <header class="flex items-center justify-between gap-4 border-b border-stone-200 px-6 py-4 dark:border-stone-800">
+          <p class="text-sm font-semibold">Monochrome Status Law</p>
+          <button data-arc-copy="demo" class="rounded-lg border border-stone-200 px-2 py-2 text-2xs font-medium uppercase tracking-widest text-stone-500 hover:bg-stone-100 dark:border-stone-800 dark:text-stone-400 dark:hover:bg-stone-800">Copy</button>
+        </header>
+        <div data-arc-demo class="flex flex-wrap items-center gap-2 p-6">
+          <span class="rounded-lg bg-stone-800 px-2 py-2 text-2xs font-semibold uppercase tracking-widest text-stone-50 dark:bg-stone-200 dark:text-stone-900">Approved</span>
+          <span class="rounded-lg border border-stone-300 px-2 py-2 text-2xs font-semibold uppercase tracking-widest text-stone-600 dark:border-stone-700 dark:text-stone-300">Pending</span>
+          <span class="flex items-center gap-2 rounded-lg border border-stone-300 px-2 py-2 text-2xs font-semibold uppercase tracking-widest text-stone-600 dark:border-stone-700 dark:text-stone-300">
+            <span class="h-2 w-2 animate-arc-pulse rounded-full bg-stone-400"></span>In progress
+          </span>
+          <span class="rounded-lg border border-dashed border-stone-400 px-2 py-2 text-2xs font-semibold uppercase tracking-widest text-stone-500 dark:border-stone-600 dark:text-stone-400">Blocked</span>
+          <span class="rounded-lg bg-stone-100 px-2 py-2 text-2xs font-semibold uppercase tracking-widest text-stone-400 dark:bg-stone-800 dark:text-stone-500">Archived</span>
+        </div>
+      </article>
+
+      <article data-arc-filter-item class="rounded-xl border border-stone-200 bg-stone-50 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+        <header class="flex items-center justify-between gap-4 border-b border-stone-200 px-6 py-4 dark:border-stone-800">
+          <p class="text-sm font-semibold">Badges, Counts &amp; Tags</p>
+          <button data-arc-copy="demo" class="rounded-lg border border-stone-200 px-2 py-2 text-2xs font-medium uppercase tracking-widest text-stone-500 hover:bg-stone-100 dark:border-stone-800 dark:text-stone-400 dark:hover:bg-stone-800">Copy</button>
+        </header>
+        <div data-arc-demo class="flex flex-wrap items-center gap-2 p-6">
+          <span class="arc-numeric rounded-lg bg-stone-800 px-2 py-2 text-2xs font-semibold text-stone-50 dark:bg-stone-200 dark:text-stone-900">14</span>
+          <span class="arc-numeric rounded-lg border border-stone-300 px-2 py-2 text-2xs font-semibold text-stone-600 dark:border-stone-700 dark:text-stone-300">03</span>
+          <span class="rounded-lg border border-stone-200 bg-white px-2 py-2 text-2xs font-medium uppercase tracking-widest text-stone-500 dark:border-stone-800 dark:bg-stone-950 dark:text-stone-400">Walnut FAS</span>
+          <span class="rounded-lg border border-stone-200 bg-white px-2 py-2 text-2xs font-medium uppercase tracking-widest text-stone-500 dark:border-stone-800 dark:bg-stone-950 dark:text-stone-400">Teak A</span>
+          <span class="flex items-center gap-2 rounded-lg border border-stone-200 bg-white px-2 py-2 text-2xs font-medium uppercase tracking-widest text-stone-500 dark:border-stone-800 dark:bg-stone-950 dark:text-stone-400">
+            <span class="h-2 w-2 rounded-full bg-stone-800 dark:bg-stone-200"></span>Millwork
+          </span>
+        </div>
+      </article>
+
+      <article data-arc-filter-item class="rounded-xl border border-stone-200 bg-stone-50 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+        <header class="flex items-center justify-between gap-4 border-b border-stone-200 px-6 py-4 dark:border-stone-800">
+          <p class="text-sm font-semibold">Avatar &amp; Presence Stack</p>
+          <button data-arc-copy="demo" class="rounded-lg border border-stone-200 px-2 py-2 text-2xs font-medium uppercase tracking-widest text-stone-500 hover:bg-stone-100 dark:border-stone-800 dark:text-stone-400 dark:hover:bg-stone-800">Copy</button>
+        </header>
+        <div data-arc-demo class="flex flex-wrap items-center gap-4 p-6">
+          <span class="flex h-10 w-10 items-center justify-center rounded-lg bg-stone-800 text-sm font-semibold text-stone-50 dark:bg-stone-200 dark:text-stone-900">AB</span>
+          <span class="relative flex h-10 w-10 items-center justify-center rounded-lg border border-stone-200 bg-white text-sm font-semibold text-stone-500 dark:border-stone-800 dark:bg-stone-950 dark:text-stone-400">
+            MK<span class="absolute -bottom-2 -right-2 h-2 w-2 rounded-full bg-stone-800 ring-2 ring-stone-50 dark:bg-stone-200 dark:ring-stone-900"></span>
+          </span>
+          <div class="flex -space-x-2">
+            <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-stone-800 text-2xs font-semibold text-stone-50 ring-2 ring-stone-50 dark:bg-stone-200 dark:text-stone-900 dark:ring-stone-900">AB</span>
+            <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-stone-600 text-2xs font-semibold text-stone-50 ring-2 ring-stone-50 dark:bg-stone-400 dark:text-stone-900 dark:ring-stone-900">SH</span>
+            <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-stone-400 text-2xs font-semibold text-stone-900 ring-2 ring-stone-50 dark:bg-stone-600 dark:text-stone-50 dark:ring-stone-900">RQ</span>
+            <span class="arc-numeric flex h-8 w-8 items-center justify-center rounded-lg border border-stone-200 bg-white text-2xs font-semibold text-stone-500 ring-2 ring-stone-50 dark:border-stone-800 dark:bg-stone-950 dark:text-stone-400 dark:ring-stone-900">+9</span>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- ================================================================
+       SECTION C — KPI, Cards, Progress Engines
+       ================================================================ -->
+  <section data-arc-filter-item class="flex flex-col gap-6">
+    <div class="flex items-end justify-between gap-4 border-b border-stone-200 pb-6 dark:border-stone-800">
+      <div>
+        <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Section C</p>
+        <h2 class="mt-2 text-xl font-semibold tracking-tight">KPI &amp; Card Engines</h2>
+      </div>
+      <p class="text-sm text-stone-500 dark:text-stone-400">Preline: KPI Cards · Progress Cards · Ranking Cards · Description Lists</p>
+    </div>
+
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <article data-arc-filter-item data-arc-demo class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+        <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Gross Sales</p>
+        <p class="arc-numeric mt-2 text-2xl font-bold tracking-tight">₨ 41.8M</p>
+        <p class="mt-2 flex items-center gap-2 text-sm text-stone-500 dark:text-stone-400">
+          <span class="rounded-lg bg-stone-800 px-2 py-2 text-2xs font-semibold uppercase tracking-widest text-stone-50 dark:bg-stone-200 dark:text-stone-900">+12.4%</span>vs last quarter
+        </p>
+      </article>
+
+      <article data-arc-filter-item data-arc-demo class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Live Projects</p>
+            <p class="arc-numeric mt-2 text-2xl font-bold tracking-tight">37</p>
+          </div>
+          <svg class="h-8 w-24 text-stone-400 dark:text-stone-500" viewBox="0 0 96 32" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 26 16 20l14 4 14-12 14 6 14-10 18 4"/></svg>
+        </div>
+        <p class="mt-2 text-sm text-stone-500 dark:text-stone-400">9 in fabrication · 28 on site</p>
+      </article>
+
+      <article data-arc-filter-item data-arc-demo class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+        <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Collection Rate</p>
+        <p class="arc-numeric mt-2 text-2xl font-bold tracking-tight">86%</p>
+        <span class="mt-4 block h-2 w-full overflow-hidden rounded-sm bg-stone-200 dark:bg-stone-800">
+          <span data-arc-value="86" class="block h-full w-0 rounded-sm bg-stone-800 transition-all duration-700 dark:bg-stone-200"></span>
+        </span>
+        <p class="mt-2 text-sm text-stone-500 dark:text-stone-400">Overdue ₨ 3.2M</p>
+      </article>
+
+      <article data-arc-filter-item data-arc-demo class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+        <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Top Channel</p>
+        <ol class="mt-2 flex flex-col gap-2">
+          <li class="flex items-center justify-between gap-2 text-sm"><span class="text-stone-500 dark:text-stone-400">01 · Referral</span><span class="arc-numeric font-semibold">42%</span></li>
+          <li class="flex items-center justify-between gap-2 text-sm"><span class="text-stone-500 dark:text-stone-400">02 · Google</span><span class="arc-numeric font-semibold">31%</span></li>
+          <li class="flex items-center justify-between gap-2 text-sm"><span class="text-stone-500 dark:text-stone-400">03 · WhatsApp</span><span class="arc-numeric font-semibold">18%</span></li>
+        </ol>
+      </article>
+    </div>
+
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+      <article data-arc-filter-item class="rounded-xl border border-stone-200 bg-stone-50 shadow-panel lg:col-span-2 dark:border-stone-800 dark:bg-stone-900">
+        <header class="flex items-center justify-between gap-4 border-b border-stone-200 px-6 py-4 dark:border-stone-800">
+          <p class="text-sm font-semibold">Description List &amp; Utility Links</p>
+          <button data-arc-copy="demo" class="rounded-lg border border-stone-200 px-2 py-2 text-2xs font-medium uppercase tracking-widest text-stone-500 hover:bg-stone-100 dark:border-stone-800 dark:text-stone-400 dark:hover:bg-stone-800">Copy</button>
+        </header>
+        <div data-arc-demo class="grid grid-cols-1 gap-6 p-6 md:grid-cols-12">
+          <dl class="md:col-span-7 divide-y divide-stone-200 dark:divide-stone-800">
+            <div class="flex items-center justify-between gap-4 py-2"><dt class="text-sm text-stone-500 dark:text-stone-400">Total boundary</dt><dd class="arc-numeric text-sm font-semibold">1,842 m²</dd></div>
+            <div class="flex items-center justify-between gap-4 py-2"><dt class="text-sm text-stone-500 dark:text-stone-400">Allowable F.A.R.</dt><dd class="arc-numeric text-sm font-semibold">1 : 3.5</dd></div>
+            <div class="flex items-center justify-between gap-4 py-2"><dt class="text-sm text-stone-500 dark:text-stone-400">Front setback</dt><dd class="arc-numeric text-sm font-semibold">6.0 m</dd></div>
+            <div class="flex items-center justify-between gap-4 py-2"><dt class="text-sm text-stone-500 dark:text-stone-400">Coverage limit</dt><dd class="arc-numeric text-sm font-semibold">62%</dd></div>
+          </dl>
+          <div class="flex flex-col gap-2 md:col-span-5">
+            <a href="#catalogue" class="flex items-center justify-between rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm font-medium hover:bg-stone-100 dark:border-stone-800 dark:bg-stone-950 dark:hover:bg-stone-800">Land registry PDF <span class="text-2xs uppercase tracking-widest text-stone-400">2.4 MB</span></a>
+            <a href="#catalogue" class="flex items-center justify-between rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm font-medium hover:bg-stone-100 dark:border-stone-800 dark:bg-stone-950 dark:hover:bg-stone-800">Site verification scans <span class="text-2xs uppercase tracking-widest text-stone-400">12 files</span></a>
+            <a href="#catalogue" class="flex items-center justify-between rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm font-medium hover:bg-stone-100 dark:border-stone-800 dark:bg-stone-950 dark:hover:bg-stone-800">Zoning certificate <span class="text-2xs uppercase tracking-widest text-stone-400">Valid</span></a>
+          </div>
+        </div>
+      </article>
+
+      <article data-arc-filter-item class="rounded-xl border border-stone-200 bg-stone-50 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+        <header class="flex items-center justify-between gap-4 border-b border-stone-200 px-6 py-4 dark:border-stone-800">
+          <p class="text-sm font-semibold">Progress Ring &amp; Meters</p>
+          <button data-arc-copy="demo" class="rounded-lg border border-stone-200 px-2 py-2 text-2xs font-medium uppercase tracking-widest text-stone-500 hover:bg-stone-100 dark:border-stone-800 dark:text-stone-400 dark:hover:bg-stone-800">Copy</button>
+        </header>
+        <div data-arc-demo class="flex items-center gap-6 p-6">
+          <svg viewBox="0 0 36 36" class="h-20 w-20 -rotate-90 text-stone-800 dark:text-stone-200">
+            <circle cx="18" cy="18" r="15.9" fill="none" stroke="currentColor" stroke-opacity="0.15" stroke-width="3"/>
+            <circle cx="18" cy="18" r="15.9" fill="none" stroke="currentColor" stroke-width="3" stroke-dasharray="68 100" stroke-linecap="round"/>
+          </svg>
+          <div class="flex-1 flex flex-col gap-2">
+            <div>
+              <p class="flex items-center justify-between text-2xs uppercase tracking-widest text-stone-500 dark:text-stone-400"><span>Millwork</span><span class="arc-numeric">72%</span></p>
+              <span class="mt-2 block h-2 w-full overflow-hidden rounded-sm bg-stone-200 dark:bg-stone-800"><span data-arc-value="72" class="block h-full w-0 bg-stone-800 transition-all duration-700 dark:bg-stone-200"></span></span>
+            </div>
+            <div>
+              <p class="flex items-center justify-between text-2xs uppercase tracking-widest text-stone-500 dark:text-stone-400"><span>Joinery</span><span class="arc-numeric">48%</span></p>
+              <span class="mt-2 block h-2 w-full overflow-hidden rounded-sm bg-stone-200 dark:bg-stone-800"><span data-arc-value="48" class="block h-full w-0 bg-stone-500 transition-all duration-700 dark:bg-stone-400"></span></span>
+            </div>
+            <div>
+              <p class="flex items-center justify-between text-2xs uppercase tracking-widest text-stone-500 dark:text-stone-400"><span>Finishing</span><span class="arc-numeric">31%</span></p>
+              <span class="mt-2 block h-2 w-full overflow-hidden rounded-sm bg-stone-200 dark:bg-stone-800"><span data-arc-value="31" class="block h-full w-0 bg-stone-400 transition-all duration-700 dark:bg-stone-600"></span></span>
+            </div>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- ================================================================
+       SECTION D — Form & Input Engines
+       ================================================================ -->
+  <section data-arc-filter-item class="flex flex-col gap-6">
+    <div class="flex items-end justify-between gap-4 border-b border-stone-200 pb-6 dark:border-stone-800">
+      <div>
+        <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Section D</p>
+        <h2 class="mt-2 text-xl font-semibold tracking-tight">Form &amp; Input Engines</h2>
+      </div>
+      <p class="text-sm text-stone-500 dark:text-stone-400">Preline: Advanced Forms · Option Pickers · Switches · Input Groups</p>
+    </div>
+
+    <article data-arc-filter-item class="rounded-xl border border-stone-200 bg-stone-50 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+      <header class="flex items-center justify-between gap-4 border-b border-stone-200 px-6 py-4 dark:border-stone-800">
+        <p class="text-sm font-semibold">12-Column Advanced Form Grid</p>
+        <button data-arc-copy="demo" class="rounded-lg border border-stone-200 px-2 py-2 text-2xs font-medium uppercase tracking-widest text-stone-500 hover:bg-stone-100 dark:border-stone-800 dark:text-stone-400 dark:hover:bg-stone-800">Copy</button>
+      </header>
+      <div data-arc-demo class="grid grid-cols-1 gap-6 p-6 md:grid-cols-12">
+        <div class="flex flex-col gap-y-2 md:col-span-6">
+          <label class="text-2xs font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Material selection grade</label>
+          <input type="text" placeholder="e.g. FAS Premium Walnut" class="w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm text-stone-900 transition-all placeholder:text-stone-400 focus:outline-none focus:ring-1 focus:ring-stone-400 dark:border-stone-800 dark:bg-stone-950 dark:text-stone-50 dark:placeholder:text-stone-500 dark:focus:ring-stone-500">
+        </div>
+        <div class="flex flex-col gap-y-2 md:col-span-3">
+          <label class="text-2xs font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Board-foot volume</label>
+          <input type="number" placeholder="0" class="arc-numeric w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm transition-all focus:outline-none focus:ring-1 focus:ring-stone-400 dark:border-stone-800 dark:bg-stone-950 dark:focus:ring-stone-500">
+        </div>
+        <div class="flex flex-col gap-y-2 md:col-span-3">
+          <label class="text-2xs font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Unit</label>
+          <select class="w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-stone-400 dark:border-stone-800 dark:bg-stone-950 dark:focus:ring-stone-500">
+            <option>Board-foot</option><option>Cubic metre</option><option>Linear metre</option>
+          </select>
+        </div>
+        <div class="flex flex-col gap-y-2 md:col-span-4">
+          <label class="text-2xs font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Source supplier</label>
+          <div class="flex items-center gap-2 rounded-lg border border-stone-200 bg-white px-3 py-2 focus-within:ring-1 focus-within:ring-stone-400 dark:border-stone-800 dark:bg-stone-950 dark:focus-within:ring-stone-500">
+            <span class="text-sm text-stone-400">@</span>
+            <input type="text" placeholder="Timber mart" class="w-full bg-transparent text-sm outline-none placeholder:text-stone-400 dark:placeholder:text-stone-500">
+          </div>
+        </div>
+        <div class="flex flex-col gap-y-2 md:col-span-4">
+          <label class="text-2xs font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Field validation</label>
+          <input type="text" value="Moisture 12% exceeded" class="w-full rounded-lg border border-stone-800 bg-white px-3 py-2 text-sm dark:border-stone-200 dark:bg-stone-950">
+          <p class="text-2xs uppercase tracking-widest text-stone-500 dark:text-stone-400">Target band 8 – 10% for interior joinery.</p>
+        </div>
+        <div class="flex flex-col gap-y-2 md:col-span-4">
+          <label class="text-2xs font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Workshop notes</label>
+          <textarea rows="3" placeholder="Cutting sequence, grain direction, edge banding…" class="w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm placeholder:text-stone-400 focus:outline-none focus:ring-1 focus:ring-stone-400 dark:border-stone-800 dark:bg-stone-950 dark:placeholder:text-stone-500 dark:focus:ring-stone-500"></textarea>
+        </div>
+      </div>
+    </article>
+
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+      <article data-arc-filter-item class="rounded-xl border border-stone-200 bg-stone-50 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+        <header class="flex items-center justify-between gap-4 border-b border-stone-200 px-6 py-4 dark:border-stone-800">
+          <p class="text-sm font-semibold">Option Picker Cards</p>
+          <button data-arc-copy="demo" class="rounded-lg border border-stone-200 px-2 py-2 text-2xs font-medium uppercase tracking-widest text-stone-500 hover:bg-stone-100 dark:border-stone-800 dark:text-stone-400 dark:hover:bg-stone-800">Copy</button>
+        </header>
+        <div data-arc-demo class="grid grid-cols-1 gap-2 p-6">
+          <label class="flex cursor-pointer items-start gap-2 rounded-lg border border-stone-800 bg-white p-4 dark:border-stone-200 dark:bg-stone-950">
+            <input type="radio" name="unit" checked class="mt-2 h-4 w-4 accent-stone-800 dark:accent-stone-200">
+            <span><span class="block text-sm font-medium">Metric system</span><span class="block text-sm text-stone-500 dark:text-stone-400">Millimetres, cubic metres, Celsius.</span></span>
+          </label>
+          <label class="flex cursor-pointer items-start gap-2 rounded-lg border border-stone-200 p-4 hover:bg-stone-100 dark:border-stone-800 dark:hover:bg-stone-800">
+            <input type="radio" name="unit" class="mt-2 h-4 w-4 accent-stone-800 dark:accent-stone-200">
+            <span><span class="block text-sm font-medium">Imperial system</span><span class="block text-sm text-stone-500 dark:text-stone-400">Inches, board-feet, Fahrenheit.</span></span>
+          </label>
+        </div>
+      </article>
+
+      <article data-arc-filter-item class="rounded-xl border border-stone-200 bg-stone-50 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+        <header class="flex items-center justify-between gap-4 border-b border-stone-200 px-6 py-4 dark:border-stone-800">
+          <p class="text-sm font-semibold">Switch Rows</p>
+          <button data-arc-copy="demo" class="rounded-lg border border-stone-200 px-2 py-2 text-2xs font-medium uppercase tracking-widest text-stone-500 hover:bg-stone-100 dark:border-stone-800 dark:text-stone-400 dark:hover:bg-stone-800">Copy</button>
+        </header>
+        <div data-arc-demo class="flex flex-col gap-2 p-6">
+          <div class="flex items-center justify-between gap-4 rounded-lg border border-stone-200 bg-white px-4 py-2 dark:border-stone-800 dark:bg-stone-950">
+            <span><span class="block text-sm font-medium">Auto-number invoices</span><span class="block text-sm text-stone-500 dark:text-stone-400">WX-INV-2026-####</span></span>
+            <button role="switch" aria-checked="true" data-arc-switch="Auto numbering" class="relative h-6 w-10 shrink-0 rounded-sm transition-colors">
+              <span class="absolute left-2 top-2 h-4 w-4 rounded-sm bg-white transition-transform dark:bg-stone-950"></span>
+            </button>
+          </div>
+          <div class="flex items-center justify-between gap-4 rounded-lg border border-stone-200 bg-white px-4 py-2 dark:border-stone-800 dark:bg-stone-950">
+            <span><span class="block text-sm font-medium">WhatsApp alerts</span><span class="block text-sm text-stone-500 dark:text-stone-400">Notify sales on new enquiry.</span></span>
+            <button role="switch" aria-checked="false" data-arc-switch="WhatsApp alerts" class="relative h-6 w-10 shrink-0 rounded-sm transition-colors">
+              <span class="absolute left-2 top-2 h-4 w-4 rounded-sm bg-white transition-transform dark:bg-stone-950"></span>
+            </button>
+          </div>
+        </div>
+      </article>
+
+      <article data-arc-filter-item class="rounded-xl border border-stone-200 bg-stone-50 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+        <header class="flex items-center justify-between gap-4 border-b border-stone-200 px-6 py-4 dark:border-stone-800">
+          <p class="text-sm font-semibold">Checkboxes, Radios &amp; Upload</p>
+          <button data-arc-copy="demo" class="rounded-lg border border-stone-200 px-2 py-2 text-2xs font-medium uppercase tracking-widest text-stone-500 hover:bg-stone-100 dark:border-stone-800 dark:text-stone-400 dark:hover:bg-stone-800">Copy</button>
+        </header>
+        <div data-arc-demo class="flex flex-col gap-2 p-6">
+          <label class="flex items-center gap-2 text-sm"><input type="checkbox" checked class="h-4 w-4 rounded-sm accent-stone-800 dark:accent-stone-200">Structural drawings signed</label>
+          <label class="flex items-center gap-2 text-sm"><input type="checkbox" class="h-4 w-4 rounded-sm accent-stone-800 dark:accent-stone-200">Site survey attached</label>
+          <div class="mt-2 flex items-center justify-between gap-4 rounded-lg border border-dashed border-stone-300 p-4 dark:border-stone-700">
+            <span class="text-sm text-stone-500 dark:text-stone-400">Drop workshop photographs or browse</span>
+            <button class="rounded-lg border border-stone-200 bg-white px-2 py-2 text-2xs font-medium uppercase tracking-widest dark:border-stone-800 dark:bg-stone-950">Browse</button>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- ================================================================
+       SECTION E — Data Ledger Engines
+       ================================================================ -->
+  <section data-arc-filter-item class="flex flex-col gap-6">
+    <div class="flex items-end justify-between gap-4 border-b border-stone-200 pb-6 dark:border-stone-800">
+      <div>
+        <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Section E</p>
+        <h2 class="mt-2 text-xl font-semibold tracking-tight">Data Ledger Engines</h2>
+      </div>
+      <p class="text-sm text-stone-500 dark:text-stone-400">Preline: Order &amp; Billing Tables · Contact Tables · Admin Utility Tables</p>
+    </div>
+
+    <article data-arc-filter-item class="rounded-xl border border-stone-200 bg-stone-50 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+      <header class="flex flex-wrap items-center justify-between gap-4 border-b border-stone-200 px-6 py-4 dark:border-stone-800">
+        <div>
+          <p class="text-sm font-semibold">Order &amp; Billing Table + Selection Bar</p>
+          <p class="text-sm text-stone-500 dark:text-stone-400">Batch actions appear once a row is selected.</p>
+        </div>
+        <button data-arc-copy="demo" class="rounded-lg border border-stone-200 px-2 py-2 text-2xs font-medium uppercase tracking-widest text-stone-500 hover:bg-stone-100 dark:border-stone-800 dark:text-stone-400 dark:hover:bg-stone-800">Copy</button>
+      </header>
+      <div data-arc-demo class="p-6">
+        <div data-arc-count-bar hidden class="mb-4 flex flex-wrap items-center justify-between gap-4 rounded-lg border border-stone-800 bg-stone-800 px-4 py-2 text-stone-50 dark:border-stone-200 dark:bg-stone-200 dark:text-stone-900">
+          <p class="text-sm font-medium"><span data-arc-count class="arc-numeric">00</span> rows selected</p>
+          <div class="flex items-center gap-2">
+            <button class="rounded-lg border border-stone-600 px-2 py-2 text-2xs font-medium uppercase tracking-widest hover:bg-stone-700 dark:border-stone-400 dark:hover:bg-stone-300">Mark paid</button>
+            <button class="rounded-lg border border-stone-600 px-2 py-2 text-2xs font-medium uppercase tracking-widest hover:bg-stone-700 dark:border-stone-400 dark:hover:bg-stone-300">Export</button>
+          </div>
+        </div>
+        <div class="w-full overflow-x-auto overflow-y-hidden rounded-xl border border-stone-200 dark:border-stone-800">
+          <table class="w-full text-left text-sm">
+            <thead class="bg-stone-100/50 text-xs font-semibold uppercase tracking-wider text-stone-500 dark:bg-stone-900/50 dark:text-stone-400">
+              <tr>
+                <th class="px-4 py-2"><input type="checkbox" data-arc-check-all class="h-4 w-4 rounded-sm accent-stone-800 dark:accent-stone-200"></th>
+                <th class="px-4 py-2">Invoice</th><th class="px-4 py-2">Client</th><th class="px-4 py-2">Due</th><th class="px-4 py-2 text-right">Amount</th><th class="px-4 py-2">Status</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-stone-200 dark:divide-stone-800">
+              <tr data-arc-row class="transition-colors hover:bg-stone-100/40 dark:hover:bg-stone-900/40">
+                <td class="px-4 py-2"><input type="checkbox" class="h-4 w-4 rounded-sm accent-stone-800 dark:accent-stone-200"></td>
+                <td class="arc-numeric px-4 py-2 font-medium">WX-INV-2841</td>
+                <td class="px-4 py-2">Al-Noor Residence</td>
+                <td class="arc-numeric px-4 py-2 text-stone-500 dark:text-stone-400">12 Oct 2026</td>
+                <td class="arc-numeric px-4 py-2 text-right font-semibold">₨ 1,240,000</td>
+                <td class="px-4 py-2"><span class="rounded-lg bg-stone-800 px-2 py-2 text-2xs font-semibold uppercase tracking-widest text-stone-50 dark:bg-stone-200 dark:text-stone-900">Paid</span></td>
+              </tr>
+              <tr data-arc-row class="transition-colors hover:bg-stone-100/40 dark:hover:bg-stone-900/40">
+                <td class="px-4 py-2"><input type="checkbox" class="h-4 w-4 rounded-sm accent-stone-800 dark:accent-stone-200"></td>
+                <td class="arc-numeric px-4 py-2 font-medium">WX-INV-2842</td>
+                <td class="px-4 py-2">Gulberg Office Fit-out</td>
+                <td class="arc-numeric px-4 py-2 text-stone-500 dark:text-stone-400">28 Oct 2026</td>
+                <td class="arc-numeric px-4 py-2 text-right font-semibold">₨ 3,876,500</td>
+                <td class="px-4 py-2"><span class="rounded-lg border border-stone-300 px-2 py-2 text-2xs font-semibold uppercase tracking-widest text-stone-600 dark:border-stone-700 dark:text-stone-300">Due</span></td>
+              </tr>
+              <tr data-arc-row class="transition-colors hover:bg-stone-100/40 dark:hover:bg-stone-900/40">
+                <td class="px-4 py-2"><input type="checkbox" class="h-4 w-4 rounded-sm accent-stone-800 dark:accent-stone-200"></td>
+                <td class="arc-numeric px-4 py-2 font-medium">WX-INV-2843</td>
+                <td class="px-4 py-2">DHA Phase 6 Kitchen</td>
+                <td class="arc-numeric px-4 py-2 text-stone-500 dark:text-stone-400">04 Sep 2026</td>
+                <td class="arc-numeric px-4 py-2 text-right font-semibold">₨ 642,000</td>
+                <td class="px-4 py-2"><span class="rounded-lg border border-dashed border-stone-400 px-2 py-2 text-2xs font-semibold uppercase tracking-widest text-stone-500 dark:border-stone-600 dark:text-stone-400">Overdue</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </article>
+
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+      <article data-arc-filter-item class="rounded-xl border border-stone-200 bg-stone-50 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+        <header class="flex items-center justify-between gap-4 border-b border-stone-200 px-6 py-4 dark:border-stone-800">
+          <p class="text-sm font-semibold">User &amp; Contact Table</p>
+          <button data-arc-copy="demo" class="rounded-lg border border-stone-200 px-2 py-2 text-2xs font-medium uppercase tracking-widest text-stone-500 hover:bg-stone-100 dark:border-stone-800 dark:text-stone-400 dark:hover:bg-stone-800">Copy</button>
+        </header>
+        <div data-arc-demo class="p-6">
+          <div class="w-full overflow-x-auto overflow-y-hidden rounded-xl border border-stone-200 dark:border-stone-800">
+            <table class="w-full text-left text-sm">
+              <thead class="bg-stone-100/50 text-xs font-semibold uppercase tracking-wider text-stone-500 dark:bg-stone-900/50 dark:text-stone-400">
+                <tr><th class="px-4 py-2">Operator</th><th class="px-4 py-2">Role</th><th class="px-4 py-2">Materials</th><th class="px-4 py-2 text-right">Projects</th></tr>
+              </thead>
+              <tbody class="divide-y divide-stone-200 dark:divide-stone-800">
+                <tr class="hover:bg-stone-100/40 dark:hover:bg-stone-900/40">
+                  <td class="px-4 py-2"><div class="flex items-center gap-2"><span class="flex h-8 w-8 items-center justify-center rounded-lg bg-stone-800 text-2xs font-semibold text-stone-50 dark:bg-stone-200 dark:text-stone-900">SH</span><span><span class="block font-medium">Sana Haq</span><span class="block text-2xs uppercase tracking-widest text-stone-400">sana@woodex.pk</span></span></div></td>
+                  <td class="px-4 py-2 text-stone-500 dark:text-stone-400">Architect</td>
+                  <td class="px-4 py-2"><span class="rounded-lg border border-stone-200 px-2 py-2 text-2xs uppercase tracking-widest text-stone-500 dark:border-stone-800 dark:text-stone-400">Walnut</span></td>
+                  <td class="arc-numeric px-4 py-2 text-right font-semibold">14</td>
+                </tr>
+                <tr class="hover:bg-stone-100/40 dark:hover:bg-stone-900/40">
+                  <td class="px-4 py-2"><div class="flex items-center gap-2"><span class="flex h-8 w-8 items-center justify-center rounded-lg bg-stone-600 text-2xs font-semibold text-stone-50 dark:bg-stone-400 dark:text-stone-900">RQ</span><span><span class="block font-medium">Rafiq Qureshi</span><span class="block text-2xs uppercase tracking-widest text-stone-400">rafiq@woodex.pk</span></span></div></td>
+                  <td class="px-4 py-2 text-stone-500 dark:text-stone-400">Fabricator</td>
+                  <td class="px-4 py-2"><span class="rounded-lg border border-stone-200 px-2 py-2 text-2xs uppercase tracking-widest text-stone-500 dark:border-stone-800 dark:text-stone-400">Teak</span></td>
+                  <td class="arc-numeric px-4 py-2 text-right font-semibold">09</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </article>
+
+      <article data-arc-filter-item class="rounded-xl border border-stone-200 bg-stone-50 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+        <header class="flex items-center justify-between gap-4 border-b border-stone-200 px-6 py-4 dark:border-stone-800">
+          <p class="text-sm font-semibold">Admin Utility Table — Numeric Grid</p>
+          <button data-arc-copy="demo" class="rounded-lg border border-stone-200 px-2 py-2 text-2xs font-medium uppercase tracking-widest text-stone-500 hover:bg-stone-100 dark:border-stone-800 dark:text-stone-400 dark:hover:bg-stone-800">Copy</button>
+        </header>
+        <div data-arc-demo class="p-6">
+          <div class="w-full overflow-x-auto overflow-y-hidden rounded-xl border border-stone-200 dark:border-stone-800">
+            <table class="w-full text-left text-sm">
+              <thead class="bg-stone-100/50 text-xs font-semibold uppercase tracking-wider text-stone-500 dark:bg-stone-900/50 dark:text-stone-400">
+                <tr><th class="px-4 py-2">Beam ID</th><th class="px-4 py-2 text-right">Span</th><th class="px-4 py-2 text-right">Deflection</th><th class="px-4 py-2">Stress profile</th></tr>
+              </thead>
+              <tbody class="arc-numeric divide-y divide-stone-200 dark:divide-stone-800">
+                <tr class="hover:bg-stone-100/40 dark:hover:bg-stone-900/40">
+                  <td class="px-4 py-2 font-medium">BW-01</td><td class="px-4 py-2 text-right">6.4 m</td><td class="px-4 py-2 text-right">L/410</td>
+                  <td class="px-4 py-2"><span class="block h-2 w-32 overflow-hidden rounded-sm bg-stone-200 dark:bg-stone-800"><span class="block h-full w-3/4 bg-stone-800 dark:bg-stone-200"></span></span></td>
+                </tr>
+                <tr class="hover:bg-stone-100/40 dark:hover:bg-stone-900/40">
+                  <td class="px-4 py-2 font-medium">BW-02</td><td class="px-4 py-2 text-right">4.8 m</td><td class="px-4 py-2 text-right">L/560</td>
+                  <td class="px-4 py-2"><span class="block h-2 w-32 overflow-hidden rounded-sm bg-stone-200 dark:bg-stone-800"><span class="block h-full w-2/5 bg-stone-500 dark:bg-stone-400"></span></span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- ================================================================
+       SECTION F — Kanban, Chat & Communication Engines
+       ================================================================ -->
+  <section data-arc-filter-item class="flex flex-col gap-6">
+    <div class="flex items-end justify-between gap-4 border-b border-stone-200 pb-6 dark:border-stone-800">
+      <div>
+        <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Section F</p>
+        <h2 class="mt-2 text-xl font-semibold tracking-tight">Kanban, Chat &amp; Communication Engines</h2>
+      </div>
+      <p class="text-sm text-stone-500 dark:text-stone-400">Preline: Kanban Board · Chat Workspace · Inbox Layouts · AI Bubbles</p>
+    </div>
+
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+      <article data-arc-filter-item class="rounded-xl border border-stone-200 bg-stone-50 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+        <header class="flex items-center justify-between gap-4 border-b border-stone-200 px-6 py-4 dark:border-stone-800">
+          <p class="text-sm font-semibold">Kanban Group Heading &amp; Card</p>
+          <button data-arc-copy="demo" class="rounded-lg border border-stone-200 px-2 py-2 text-2xs font-medium uppercase tracking-widest text-stone-500 hover:bg-stone-100 dark:border-stone-800 dark:text-stone-400 dark:hover:bg-stone-800">Copy</button>
+        </header>
+        <div data-arc-demo data-arc-kanban class="flex flex-col gap-4 p-6">
+          <div data-arc-lane class="rounded-xl border border-stone-200 bg-stone-100/60 p-4 dark:border-stone-800 dark:bg-stone-950/60">
+            <div class="mb-4 flex items-center justify-between gap-2">
+              <p data-arc-lane-title class="text-2xs font-semibold uppercase tracking-widest text-stone-500 dark:text-stone-400">Measured</p>
+              <span data-arc-lane-count class="arc-numeric rounded-lg border border-stone-200 bg-white px-2 py-2 text-2xs font-semibold dark:border-stone-800 dark:bg-stone-900">02</span>
+            </div>
+            <div data-arc-lane-body class="flex flex-col gap-2">
+              <div data-arc-card data-value="4800000" class="cursor-grab rounded-lg border border-stone-200 bg-stone-50 p-4 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+                <p class="text-sm font-medium">Hafeez Villa — full millwork</p>
+                <p class="arc-numeric mt-2 text-sm text-stone-500 dark:text-stone-400">₨ 4.8M · Site survey 14 Oct</p>
+                <div class="mt-4 flex items-center justify-between gap-2">
+                  <span class="rounded-lg border border-stone-200 px-2 py-2 text-2xs uppercase tracking-widest text-stone-500 dark:border-stone-800 dark:text-stone-400">Walnut</span>
+                  <span class="arc-numeric text-2xs uppercase tracking-widest text-stone-400">3d in stage</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <article data-arc-filter-item class="rounded-xl border border-stone-200 bg-stone-50 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+        <header class="flex items-center justify-between gap-4 border-b border-stone-200 px-6 py-4 dark:border-stone-800">
+          <p class="text-sm font-semibold">Message Bubbles &amp; Composer</p>
+          <button data-arc-copy="demo" class="rounded-lg border border-stone-200 px-2 py-2 text-2xs font-medium uppercase tracking-widest text-stone-500 hover:bg-stone-100 dark:border-stone-800 dark:text-stone-400 dark:hover:bg-stone-800">Copy</button>
+        </header>
+        <div data-arc-demo class="flex flex-col gap-4 p-6">
+          <div class="flex gap-2">
+            <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-stone-600 text-2xs font-semibold text-stone-50 dark:bg-stone-400 dark:text-stone-900">SH</span>
+            <div class="max-w-[85%] rounded-xl rounded-tl-none border border-stone-200 bg-white px-4 py-2 dark:border-stone-800 dark:bg-stone-950">
+              <p class="text-sm">Shop drawings for elevation B are ready. Grain direction matches the approved sample.</p>
+              <p class="arc-numeric mt-2 text-2xs uppercase tracking-widest text-stone-400">09:42 · Sana</p>
+            </div>
+          </div>
+          <div class="flex justify-end gap-2">
+            <div class="max-w-[85%] rounded-xl rounded-tr-none bg-stone-800 px-4 py-2 text-stone-50 dark:bg-stone-200 dark:text-stone-900">
+              <p class="text-sm">Approved. Release cutting list to fabricators.</p>
+              <p class="arc-numeric mt-2 text-2xs uppercase tracking-widest text-stone-400 dark:text-stone-500">09:44 · You</p>
+            </div>
+          </div>
+          <div class="flex gap-2">
+            <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-stone-300 text-2xs font-semibold text-stone-500 dark:border-stone-600 dark:text-stone-400">AI</span>
+            <div class="max-w-[85%] rounded-xl rounded-tl-none border border-dashed border-stone-300 bg-stone-100/60 px-4 py-2 dark:border-stone-700 dark:bg-stone-950/60">
+              <p class="text-sm">Cross-checked against the moisture target: batch 14 reads 11.2%, above the 10% interior band.</p>
+              <div class="mt-2 flex flex-wrap gap-2">
+                <span class="rounded-lg border border-stone-200 px-2 py-2 text-2xs uppercase tracking-widest text-stone-500 dark:border-stone-800 dark:text-stone-400">§4.2 timber code</span>
+                <span class="rounded-lg border border-stone-200 px-2 py-2 text-2xs uppercase tracking-widest text-stone-500 dark:border-stone-800 dark:text-stone-400">Batch 14 log</span>
+              </div>
+            </div>
+          </div>
+          <div class="flex items-center gap-2 rounded-lg border border-stone-200 bg-white p-2 dark:border-stone-800 dark:bg-stone-950">
+            <button class="rounded-lg px-2 py-2 text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800">＋</button>
+            <input type="text" placeholder="Reply to Sana…" class="w-full bg-transparent text-sm outline-none placeholder:text-stone-400 dark:placeholder:text-stone-500">
+            <button class="rounded-lg bg-stone-800 px-4 py-2 text-sm font-medium text-stone-50 dark:bg-stone-200 dark:text-stone-900">Send</button>
+          </div>
+        </div>
+      </article>
+
+      <article data-arc-filter-item class="rounded-xl border border-stone-200 bg-stone-50 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+        <header class="flex items-center justify-between gap-4 border-b border-stone-200 px-6 py-4 dark:border-stone-800">
+          <p class="text-sm font-semibold">Inbox Thread Row &amp; Channels</p>
+          <button data-arc-copy="demo" class="rounded-lg border border-stone-200 px-2 py-2 text-2xs font-medium uppercase tracking-widest text-stone-500 hover:bg-stone-100 dark:border-stone-800 dark:text-stone-400 dark:hover:bg-stone-800">Copy</button>
+        </header>
+        <div data-arc-demo class="flex flex-col gap-2 p-6">
+          <button class="flex items-start gap-2 rounded-lg border border-stone-800 bg-white p-4 text-left dark:border-stone-200 dark:bg-stone-950">
+            <span class="mt-2 h-2 w-2 shrink-0 rounded-full bg-stone-800 dark:bg-stone-200"></span>
+            <span class="min-w-0 flex-1">
+              <span class="flex items-center justify-between gap-2"><span class="truncate text-sm font-semibold">Kitchen quote revision — DHA Phase 6</span><span class="arc-numeric text-2xs uppercase tracking-widest text-stone-400">12m</span></span>
+              <span class="mt-2 block truncate text-sm text-stone-500 dark:text-stone-400">Client asks to swap shutter veneer to teak and re-price the carcass.</span>
+              <span class="mt-2 flex gap-2"><span class="rounded-lg border border-stone-200 px-2 py-2 text-2xs uppercase tracking-widest text-stone-500 dark:border-stone-800 dark:text-stone-400">Quote sheet</span><span class="rounded-lg border border-stone-200 px-2 py-2 text-2xs uppercase tracking-widest text-stone-500 dark:border-stone-800 dark:text-stone-400">Email</span></span>
+            </span>
+          </button>
+          <div class="flex flex-col gap-2">
+            <a href="#catalogue" class="flex items-center justify-between rounded-lg px-4 py-2 text-sm hover:bg-stone-100 dark:hover:bg-stone-800"><span class="flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-stone-800 dark:bg-stone-200"></span>#workshop-floor</span><span class="arc-numeric text-2xs uppercase tracking-widest text-stone-400">18</span></a>
+            <a href="#catalogue" class="flex items-center justify-between rounded-lg px-4 py-2 text-sm hover:bg-stone-100 dark:hover:bg-stone-800"><span class="flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-stone-400"></span>#site-coordination</span><span class="arc-numeric text-2xs uppercase tracking-widest text-stone-400">07</span></a>
+            <a href="#catalogue" class="flex items-center justify-between rounded-lg px-4 py-2 text-sm hover:bg-stone-100 dark:hover:bg-stone-800"><span class="flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-stone-300 dark:bg-stone-700"></span>#client-portal</span><span class="arc-numeric text-2xs uppercase tracking-widest text-stone-400">03</span></a>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- ================================================================
+       SECTION G — Navigation, Overlays & Feedback
+       ================================================================ -->
+  <section data-arc-filter-item class="flex flex-col gap-6">
+    <div class="flex items-end justify-between gap-4 border-b border-stone-200 pb-6 dark:border-stone-800">
+      <div>
+        <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Section G</p>
+        <h2 class="mt-2 text-xl font-semibold tracking-tight">Navigation, Overlays &amp; Feedback</h2>
+      </div>
+      <p class="text-sm text-stone-500 dark:text-stone-400">Preline: Tabs · Breadcrumb · Pagination · Stepper · Modal · Drawer · Alerts</p>
+    </div>
+
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+      <article data-arc-filter-item class="rounded-xl border border-stone-200 bg-stone-50 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+        <header class="flex items-center justify-between gap-4 border-b border-stone-200 px-6 py-4 dark:border-stone-800">
+          <p class="text-sm font-semibold">Tabs, Breadcrumb, Pagination</p>
+          <button data-arc-copy="demo" class="rounded-lg border border-stone-200 px-2 py-2 text-2xs font-medium uppercase tracking-widest text-stone-500 hover:bg-stone-100 dark:border-stone-800 dark:text-stone-400 dark:hover:bg-stone-800">Copy</button>
+        </header>
+        <div data-arc-demo class="flex flex-col gap-4 p-6">
+          <nav class="flex items-center gap-2 text-2xs uppercase tracking-widest text-stone-500 dark:text-stone-400">
+            <span>Studio</span><span class="text-stone-300 dark:text-stone-600">/</span><span>Billing</span><span class="text-stone-300 dark:text-stone-600">/</span><span class="text-stone-900 dark:text-stone-50">Invoice 2842</span>
+          </nav>
+          <div class="flex items-center gap-2 border-b border-stone-200 dark:border-stone-800">
+            <button class="border-b border-stone-800 px-4 py-2 text-sm font-semibold dark:border-stone-200">Overview</button>
+            <button class="border-b border-transparent px-4 py-2 text-sm text-stone-500 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-50">Line items</button>
+            <button class="border-b border-transparent px-4 py-2 text-sm text-stone-500 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-50">History</button>
+          </div>
+          <div class="flex items-center justify-between gap-2">
+            <button class="rounded-lg border border-stone-200 bg-white px-2 py-2 text-2xs font-medium uppercase tracking-widest hover:bg-stone-100 dark:border-stone-800 dark:bg-stone-950 dark:hover:bg-stone-800">Prev</button>
+            <div class="flex items-center gap-2">
+              <button class="arc-numeric h-8 w-8 rounded-lg bg-stone-800 text-2xs font-semibold text-stone-50 dark:bg-stone-200 dark:text-stone-900">1</button>
+              <button class="arc-numeric h-8 w-8 rounded-lg border border-stone-200 text-2xs font-semibold hover:bg-stone-100 dark:border-stone-800 dark:hover:bg-stone-800">2</button>
+              <button class="arc-numeric h-8 w-8 rounded-lg border border-stone-200 text-2xs font-semibold hover:bg-stone-100 dark:border-stone-800 dark:hover:bg-stone-800">3</button>
+            </div>
+            <button class="rounded-lg border border-stone-200 bg-white px-2 py-2 text-2xs font-medium uppercase tracking-widest hover:bg-stone-100 dark:border-stone-800 dark:bg-stone-950 dark:hover:bg-stone-800">Next</button>
+          </div>
+        </div>
+      </article>
+
+      <article data-arc-filter-item class="rounded-xl border border-stone-200 bg-stone-50 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+        <header class="flex items-center justify-between gap-4 border-b border-stone-200 px-6 py-4 dark:border-stone-800">
+          <p class="text-sm font-semibold">Stepper &amp; Timeline</p>
+          <button data-arc-copy="demo" class="rounded-lg border border-stone-200 px-2 py-2 text-2xs font-medium uppercase tracking-widest text-stone-500 hover:bg-stone-100 dark:border-stone-800 dark:text-stone-400 dark:hover:bg-stone-800">Copy</button>
+        </header>
+        <div data-arc-demo class="flex flex-col gap-6 p-6">
+          <ol class="flex items-center gap-2">
+            <li class="flex items-center gap-2"><span class="flex h-8 w-8 items-center justify-center rounded-lg bg-stone-800 text-2xs font-semibold text-stone-50 dark:bg-stone-200 dark:text-stone-900">1</span><span class="text-sm">Draft</span></li>
+            <li class="h-px flex-1 bg-stone-300 dark:bg-stone-700"></li>
+            <li class="flex items-center gap-2"><span class="flex h-8 w-8 items-center justify-center rounded-lg bg-stone-800 text-2xs font-semibold text-stone-50 dark:bg-stone-200 dark:text-stone-900">2</span><span class="text-sm">Verified</span></li>
+            <li class="h-px flex-1 bg-stone-200 dark:bg-stone-800"></li>
+            <li class="flex items-center gap-2"><span class="flex h-8 w-8 items-center justify-center rounded-lg border border-stone-300 text-2xs font-semibold text-stone-400 dark:border-stone-700 dark:text-stone-500">3</span><span class="text-sm text-stone-400 dark:text-stone-500">Sent</span></li>
+          </ol>
+          <ol class="flex flex-col gap-2">
+            <li class="flex gap-2"><span class="mt-2 h-2 w-2 shrink-0 rounded-full bg-stone-800 dark:bg-stone-200"></span><span><span class="block text-sm font-medium">Cutting list released</span><span class="arc-numeric block text-2xs uppercase tracking-widest text-stone-400">Today · 08:12 · Rafiq Q.</span></span></li>
+            <li class="flex gap-2"><span class="mt-2 h-2 w-2 shrink-0 rounded-full bg-stone-400"></span><span><span class="block text-sm font-medium">Edge banding completed</span><span class="arc-numeric block text-2xs uppercase tracking-widest text-stone-400">Yesterday · 17:40 · Shop floor</span></span></li>
+            <li class="flex gap-2"><span class="mt-2 h-2 w-2 shrink-0 rounded-full bg-stone-300 dark:bg-stone-700"></span><span><span class="block text-sm font-medium">Site delivery scheduled</span><span class="arc-numeric block text-2xs uppercase tracking-widest text-stone-400">16 Oct · 09:00 · Logistics</span></span></li>
+          </ol>
+        </div>
+      </article>
+
+      <article data-arc-filter-item class="rounded-xl border border-stone-200 bg-stone-50 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+        <header class="flex items-center justify-between gap-4 border-b border-stone-200 px-6 py-4 dark:border-stone-800">
+          <p class="text-sm font-semibold">Alerts, Skeleton, Empty, Tooltip</p>
+          <button data-arc-copy="demo" class="rounded-lg border border-stone-200 px-2 py-2 text-2xs font-medium uppercase tracking-widest text-stone-500 hover:bg-stone-100 dark:border-stone-800 dark:text-stone-400 dark:hover:bg-stone-800">Copy</button>
+        </header>
+        <div data-arc-demo class="flex flex-col gap-4 p-6">
+          <div class="flex items-start justify-between gap-4 rounded-lg border border-stone-800 bg-stone-800 px-4 py-2 text-stone-50 dark:border-stone-200 dark:bg-stone-200 dark:text-stone-900">
+            <p class="text-sm">Backup completed — 214 pages, 1.8 GB archive.</p><button class="text-2xs uppercase tracking-widest opacity-70">Dismiss</button>
+          </div>
+          <div class="flex items-start gap-2 rounded-lg border border-dashed border-stone-300 px-4 py-2 dark:border-stone-700">
+            <span class="mt-2 h-2 w-2 shrink-0 rounded-full bg-stone-500"></span>
+            <p class="text-sm text-stone-500 dark:text-stone-400">Two supplier quotes are still unsigned; approvals gate is blocked.</p>
+          </div>
+          <div class="flex flex-col gap-2">
+            <span class="block h-4 w-2/3 animate-arc-pulse rounded-sm bg-stone-200 dark:bg-stone-800"></span>
+            <span class="block h-4 w-1/3 animate-arc-pulse rounded-sm bg-stone-200 dark:bg-stone-800"></span>
+          </div>
+          <div class="group relative inline-flex">
+            <span class="rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm dark:border-stone-800 dark:bg-stone-950">Hover target</span>
+            <span class="pointer-events-none absolute -top-2 left-1/2 hidden -translate-x-1/2 -translate-y-full whitespace-nowrap rounded-lg bg-stone-900 px-2 py-2 text-2xs uppercase tracking-widest text-stone-50 group-hover:block dark:bg-stone-100 dark:text-stone-900">Tooltip · 8px offset</span>
+          </div>
+          <div class="rounded-lg border border-stone-200 bg-white p-6 text-center dark:border-stone-800 dark:bg-stone-950">
+            <p class="text-sm font-medium">No fabrication orders in queue</p>
+            <p class="mt-2 text-sm text-stone-500 dark:text-stone-400">Release a cutting list to populate this canvas.</p>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- ================================================================
+       SECTION H — Chart & Media Engines
+       ================================================================ -->
+  <section data-arc-filter-item class="flex flex-col gap-6">
+    <div class="flex items-end justify-between gap-4 border-b border-stone-200 pb-6 dark:border-stone-800">
+      <div>
+        <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Section H</p>
+        <h2 class="mt-2 text-xl font-semibold tracking-tight">Chart, Map &amp; Media Engines</h2>
+      </div>
+      <p class="text-sm text-stone-500 dark:text-stone-400">Preline: Chart Compositions · Gallery Grids · File Views · Data Maps</p>
+    </div>
+
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+      <article data-arc-filter-item class="rounded-xl border border-stone-200 bg-stone-50 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+        <header class="flex items-center justify-between gap-4 border-b border-stone-200 px-6 py-4 dark:border-stone-800">
+          <p class="text-sm font-semibold">Bar Chart — quarterly realisation</p>
+          <button data-arc-copy="demo" class="rounded-lg border border-stone-200 px-2 py-2 text-2xs font-medium uppercase tracking-widest text-stone-500 hover:bg-stone-100 dark:border-stone-800 dark:text-stone-400 dark:hover:bg-stone-800">Copy</button>
+        </header>
+        <div data-arc-demo class="p-6"><canvas id="chart-bars" height="180"></canvas></div>
+      </article>
+
+      <article data-arc-filter-item class="rounded-xl border border-stone-200 bg-stone-50 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+        <header class="flex items-center justify-between gap-4 border-b border-stone-200 px-6 py-4 dark:border-stone-800">
+          <p class="text-sm font-semibold">Plot Map &amp; File Views</p>
+          <button data-arc-copy="demo" class="rounded-lg border border-stone-200 px-2 py-2 text-2xs font-medium uppercase tracking-widest text-stone-500 hover:bg-stone-100 dark:border-stone-800 dark:text-stone-400 dark:hover:bg-stone-800">Copy</button>
+        </header>
+        <div data-arc-demo class="grid grid-cols-1 gap-6 p-6 md:grid-cols-12">
+          <div class="arc-grid-paper relative h-48 overflow-hidden rounded-xl border border-stone-200 bg-white md:col-span-7 dark:border-stone-800 dark:bg-stone-950">
+            <span class="absolute left-8 top-8 h-24 w-32 border border-stone-800 dark:border-stone-200"></span>
+            <span class="absolute left-8 top-8 h-24 w-32 arc-grid-paper"></span>
+            <span class="absolute right-8 bottom-8 h-12 w-16 border border-dashed border-stone-400"></span>
+          </div>
+          <div class="flex flex-col gap-2 md:col-span-5">
+            <div class="flex items-center justify-between rounded-lg border border-stone-200 bg-white px-4 py-2 dark:border-stone-800 dark:bg-stone-950">
+              <span class="text-sm font-medium">Registry PDF</span><span class="text-2xs uppercase tracking-widest text-stone-400">Valid</span>
+            </div>
+            <div class="flex items-center justify-between rounded-lg border border-stone-200 bg-white px-4 py-2 dark:border-stone-800 dark:bg-stone-950">
+              <span class="text-sm font-medium">Survey scan 03</span><span class="text-2xs uppercase tracking-widest text-stone-400">2.1 MB</span>
+            </div>
+            <div class="flex items-center justify-between rounded-lg border border-dashed border-stone-300 px-4 py-2 dark:border-stone-700">
+              <span class="text-sm text-stone-500 dark:text-stone-400">Elevation set</span><span class="text-2xs uppercase tracking-widest text-stone-400">Missing</span>
+            </div>
+          </div>
+        </div>
+      </article>
+    </div>
+
+    <article data-arc-filter-item class="rounded-xl border border-stone-200 bg-stone-50 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+      <header class="flex items-center justify-between gap-4 border-b border-stone-200 px-6 py-4 dark:border-stone-800">
+        <p class="text-sm font-semibold">Gallery Grid &amp; Detail Drawer</p>
+        <button data-arc-copy="demo" class="rounded-lg border border-stone-200 px-2 py-2 text-2xs font-medium uppercase tracking-widest text-stone-500 hover:bg-stone-100 dark:border-stone-800 dark:text-stone-400 dark:hover:bg-stone-800">Copy</button>
+      </header>
+      <div data-arc-demo class="grid grid-cols-2 gap-4 p-6 lg:grid-cols-4">
+        <button data-arc-open="block-drawer" class="arc-grid-paper flex h-40 flex-col justify-end rounded-xl border border-stone-200 bg-stone-100 p-4 text-left hover:border-stone-400 dark:border-stone-800 dark:bg-stone-950">
+          <span class="text-sm font-medium">Elevation A</span><span class="text-2xs uppercase tracking-widest text-stone-400">Perspective · 4K</span>
+        </button>
+        <button data-arc-open="block-drawer" class="arc-grid-paper flex h-40 flex-col justify-end rounded-xl border border-stone-200 bg-stone-100 p-4 text-left hover:border-stone-400 dark:border-stone-800 dark:bg-stone-950">
+          <span class="text-sm font-medium">Elevation B</span><span class="text-2xs uppercase tracking-widest text-stone-400">Orthographic</span>
+        </button>
+        <button data-arc-open="block-drawer" class="arc-grid-paper flex h-40 flex-col justify-end rounded-xl border border-stone-200 bg-stone-100 p-4 text-left hover:border-stone-400 dark:border-stone-800 dark:bg-stone-950">
+          <span class="text-sm font-medium">Millwork run</span><span class="text-2xs uppercase tracking-widest text-stone-400">Detail sheet</span>
+        </button>
+        <label class="flex h-40 flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-stone-300 text-stone-500 hover:border-stone-400 dark:border-stone-700 dark:text-stone-400">
+          <span class="text-2xl leading-none">＋</span><span class="text-2xs uppercase tracking-widest">Upload asset</span>
+          <input type="file" class="hidden">
+        </label>
+      </div>
+    </article>
+  </section>
+
+  <footer class="flex flex-wrap items-center justify-between gap-4 border-t border-stone-200 py-6 text-2xs uppercase tracking-widest text-stone-500 dark:border-stone-800 dark:text-stone-400">
+    <span>Woodex Interior · Block catalogue</span>
+    <a href="index.html" class="underline decoration-dotted underline-offset-4">Back to kit index</a>
+  </footer>
+</main>
+
+<!-- ============ OVERLAY LAYER — modal + drawer ============ -->
+<div data-arc-modal="block-modal" hidden class="fixed inset-0 z-50 flex items-center justify-center bg-stone-950/60 p-4 opacity-0 transition-opacity data-[open]:opacity-100">
+  <div class="w-full max-w-lg rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-lift dark:border-stone-800 dark:bg-stone-900">
+    <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Approve financial request</p>
+    <h3 class="mt-2 text-xl font-semibold tracking-tight">WX-INV-2842 · ₨ 3,876,500</h3>
+    <p class="mt-2 text-sm text-stone-500 dark:text-stone-400">Approving releases the invoice to the client portal and notifies the accounts team.</p>
+    <div class="mt-6 flex items-center justify-end gap-2">
+      <button data-arc-close class="rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm font-medium hover:bg-stone-100 dark:border-stone-800 dark:bg-stone-950 dark:hover:bg-stone-800">Cancel</button>
+      <button data-arc-close class="rounded-lg bg-stone-800 px-4 py-2 text-sm font-medium text-stone-50 dark:bg-stone-200 dark:text-stone-900">Approve</button>
+    </div>
+  </div>
+</div>
+
+<div data-arc-drawer="block-drawer" hidden class="fixed inset-y-0 right-0 z-50 w-full max-w-md translate-x-6 border-l border-stone-200 bg-stone-50 opacity-0 transition-all data-[open]:translate-x-0 data-[open]:opacity-100 dark:border-stone-800 dark:bg-stone-900">
+  <div class="flex items-center justify-between gap-4 border-b border-stone-200 px-6 py-4 dark:border-stone-800">
+    <div>
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Asset detail</p>
+      <p class="mt-2 text-sm font-semibold">Elevation A · millwork trim spec</p>
+    </div>
+    <button data-arc-close class="rounded-lg border border-stone-200 px-2 py-2 text-2xs uppercase tracking-widest hover:bg-stone-100 dark:border-stone-800 dark:hover:bg-stone-800">Close</button>
+  </div>
+  <div class="flex flex-col gap-4 p-6">
+    <div class="arc-grid-paper h-40 rounded-xl border border-stone-200 bg-white dark:border-stone-800 dark:bg-stone-950"></div>
+    <dl class="divide-y divide-stone-200 dark:divide-stone-800">
+      <div class="flex items-center justify-between py-2"><dt class="text-sm text-stone-500 dark:text-stone-400">Species</dt><dd class="text-sm font-medium">American Walnut</dd></div>
+      <div class="flex items-center justify-between py-2"><dt class="text-sm text-stone-500 dark:text-stone-400">Trim profile</dt><dd class="arc-numeric text-sm font-medium">25 × 6 mm shadow</dd></div>
+      <div class="flex items-center justify-between py-2"><dt class="text-sm text-stone-500 dark:text-stone-400">Finish</dt><dd class="text-sm font-medium">Matte PU 12%</dd></div>
+    </dl>
+    <button class="rounded-lg bg-stone-800 px-4 py-2 text-sm font-medium text-stone-50 dark:bg-stone-200 dark:text-stone-900">Attach to schedule</button>
+  </div>
+</div>
+
+<script src="assets/arc-kit.js" defer></script>
+<script src="../vendor/chart.umd.js" defer></script>
+<script>
+(function () {
+  function stone() {
+    var dark = document.documentElement.classList.contains("dark");
+    return {
+      ink: dark ? "#e7e5e4" : "#292524",
+      mid: dark ? "#78716c" : "#a8a29e",
+      soft: dark ? "#292524" : "#e7e5e4",
+      grid: dark ? "#292524" : "#e7e5e4",
+      label: dark ? "#a8a29e" : "#78716c"
+    };
+  }
+  function paint() {
+    var el = document.getElementById("chart-bars");
+    if (!el || !window.Chart) return;
+    var c = stone();
+    if (el.__c) el.__c.destroy();
+    el.__c = new Chart(el, {
+      type: "bar",
+      data: {
+        labels: ["Apr", "May", "Jun", "Jul", "Aug", "Sep"],
+        datasets: [
+          { label: "Realised", data: [5.2, 6.8, 7.4, 6.1, 8.9, 9.6], backgroundColor: c.ink, borderRadius: 2, barThickness: 18 },
+          { label: "Pipeline", data: [3.1, 4.2, 5.5, 4.9, 6.2, 7.1], backgroundColor: c.mid, borderRadius: 2, barThickness: 18 }
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { labels: { color: c.label, boxWidth: 8, boxHeight: 8, font: { size: 11 } } } },
+        scales: {
+          x: { grid: { display: false }, ticks: { color: c.label, font: { size: 11 } }, border: { color: c.grid } },
+          y: { grid: { color: c.grid }, ticks: { color: c.label, font: { size: 11 }, callback: function (v) { return "₨" + v + "M"; } }, border: { display: false } }
+        }
+      }
+    });
+  }
+  document.addEventListener("arc:theme", paint);
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", paint); else paint();
+  window.addEventListener("load", paint);
+})();
+</script>
+</body>
+</html>

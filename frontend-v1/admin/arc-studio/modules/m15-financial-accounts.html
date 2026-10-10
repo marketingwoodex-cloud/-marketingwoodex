@@ -1,0 +1,185 @@
+<!doctype html>
+<!-- ============================================================================
+     WOODEX ADMIN V2.1 + ARC.STUDIO
+     MODULE 15 — FINANCIAL ACCOUNTS & INCOME
+     Blocks: 1 Fiscal Filter Bar · 2 Progress Card KPIs · 3 Order & Billing Ledger
+     ============================================================================ -->
+<html lang="en" class="h-full">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>M15 Financial Accounts &amp; Income — WOODEX ADMIN V2.1</title>
+<link rel="stylesheet" href="../assets/arc-kit.css">
+<script>try{var t=localStorage.getItem("wxaTheme");if(t==="dark"||(!t&&matchMedia("(prefers-color-scheme: dark)").matches)){document.documentElement.classList.add("dark");document.documentElement.setAttribute("data-theme","dark")}}catch(e){}</script>
+</head>
+<body class="min-h-full bg-stone-100 text-stone-950 antialiased dark:bg-stone-950 dark:text-stone-50">
+<div class="mx-auto flex w-full max-w-canvas flex-col gap-8 px-6 py-8">
+
+  <!-- ===== BLOCK 1 — HEADER / FILTER BAR ===== -->
+  <header class="flex flex-col gap-6 border-b border-stone-200 pb-6 lg:flex-row lg:items-start lg:justify-between dark:border-stone-800">
+    <div class="flex flex-col gap-2">
+      <nav class="flex items-center gap-2 text-2xs uppercase tracking-widest text-stone-500 dark:text-stone-400">
+        <span>Module IV</span><span class="text-stone-300 dark:text-stone-600">/</span><span class="text-stone-900 dark:text-stone-50">Financial Accounts &amp; Income</span>
+      </nav>
+      <h1 class="text-xl font-semibold tracking-tight">Financial Accounts &amp; Income</h1>
+      <p class="max-w-3xl text-sm text-stone-500 dark:text-stone-400">Revenue realisation, overdue exposure and collection performance across all studio and workshop accounts.</p>
+    </div>
+    <div class="flex flex-wrap items-center gap-2">
+      <div class="relative">
+        <button data-arc-dd="fiscal" aria-expanded="false" class="flex items-center gap-2 rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm font-medium hover:bg-stone-100 dark:border-stone-800 dark:bg-stone-950 dark:hover:bg-stone-800">
+          Fiscal month · Sep 2026
+          <svg class="h-4 w-4 text-stone-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m6 9 6 6 6-6"/></svg>
+        </button>
+        <div data-arc-menu="fiscal" class="absolute right-0 z-30 mt-2 hidden w-56 overflow-hidden rounded-xl border border-stone-200 bg-white p-2 shadow-lift dark:border-stone-800 dark:bg-stone-900">
+          <button class="w-full rounded-lg px-2 py-2 text-left text-sm hover:bg-stone-100 dark:hover:bg-stone-800">Fiscal month · Sep 2026</button>
+          <button class="w-full rounded-lg px-2 py-2 text-left text-sm hover:bg-stone-100 dark:hover:bg-stone-800">Fiscal month · Aug 2026</button>
+          <button class="w-full rounded-lg px-2 py-2 text-left text-sm hover:bg-stone-100 dark:hover:bg-stone-800">Fiscal quarter · Q3</button>
+        </div>
+      </div>
+      <button class="rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm font-medium hover:bg-stone-100 dark:border-stone-800 dark:bg-stone-950 dark:hover:bg-stone-800">Reconcile</button>
+      <button class="rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm font-medium hover:bg-stone-100 dark:border-stone-800 dark:bg-stone-950 dark:hover:bg-stone-800">Aging report</button>
+      <button class="rounded-lg bg-stone-800 px-4 py-2 text-sm font-medium text-stone-50 hover:bg-stone-700 dark:bg-stone-200 dark:text-stone-900 dark:hover:bg-stone-300">Record payment</button>
+    </div>
+  </header>
+
+  <!-- ===== BLOCK 2 — 4-COLUMN PROGRESS CARDS ===== -->
+  <section class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Monthly Revenue Realisation</p>
+      <p class="arc-numeric mt-2 text-2xl font-bold tracking-tight">₨ 9.62M</p>
+      <div class="mt-4 flex flex-col gap-2">
+        <span class="block h-2 w-full overflow-hidden rounded-sm bg-stone-200 dark:bg-stone-800"><span data-arc-value="88" class="block h-full w-0 bg-stone-800 transition-all duration-700 dark:bg-stone-200"></span></span>
+        <p class="text-sm text-stone-500 dark:text-stone-400">88% of the ₨ 10.9M monthly target</p>
+      </div>
+    </article>
+    <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Overdue Balances</p>
+      <p class="arc-numeric mt-2 text-2xl font-bold tracking-tight">₨ 3.21M</p>
+      <div class="mt-4 flex flex-col gap-2">
+        <span class="block h-2 w-full overflow-hidden rounded-sm bg-stone-200 dark:bg-stone-800"><span data-arc-value="34" class="block h-full w-0 bg-stone-500 transition-all duration-700 dark:bg-stone-400"></span></span>
+        <p class="text-sm text-stone-500 dark:text-stone-400">₨ 1.08M aged beyond 60 days</p>
+      </div>
+    </article>
+    <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Active Collection Rate</p>
+      <p class="arc-numeric mt-2 text-2xl font-bold tracking-tight">86%</p>
+      <div class="mt-4 flex flex-col gap-2">
+        <span class="block h-2 w-full overflow-hidden rounded-sm bg-stone-200 dark:bg-stone-800"><span data-arc-value="86" class="block h-full w-0 bg-stone-800 transition-all duration-700 dark:bg-stone-200"></span></span>
+        <p class="text-sm text-stone-500 dark:text-stone-400">Target 90% by fiscal year end</p>
+      </div>
+    </article>
+    <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Net Margin</p>
+      <p class="arc-numeric mt-2 text-2xl font-bold tracking-tight">29.4%</p>
+      <div class="mt-4 flex flex-col gap-2">
+        <span class="block h-2 w-full overflow-hidden rounded-sm bg-stone-200 dark:bg-stone-800"><span data-arc-value="29" class="block h-full w-0 bg-stone-500 transition-all duration-700 dark:bg-stone-400"></span></span>
+        <p class="text-sm text-stone-500 dark:text-stone-400">Floor set at 24% by the approvals gate</p>
+      </div>
+    </article>
+  </section>
+
+  <!-- ===== BLOCK 3 — MAIN ACTION CANVAS (Order & Billing Table) ===== -->
+  <section class="grid grid-cols-1 gap-6 xl:grid-cols-12">
+    <article class="rounded-xl border border-stone-200 bg-stone-50 shadow-panel xl:col-span-8 dark:border-stone-800 dark:bg-stone-900">
+      <header class="flex flex-wrap items-center justify-between gap-4 border-b border-stone-200 px-6 py-4 dark:border-stone-800">
+        <div>
+          <h2 class="text-sm font-semibold">Accounting ledger</h2>
+          <p class="text-sm text-stone-500 dark:text-stone-400">Transaction status, due schedule and incoming balances</p>
+        </div>
+        <div data-arc-tabs class="flex items-center gap-2 rounded-lg border border-stone-200 bg-white p-2 dark:border-stone-800 dark:bg-stone-950">
+          <button data-arc-tab="open" aria-selected="true" class="rounded-lg px-2 py-2 text-sm font-medium">Open</button>
+          <button data-arc-tab="settled" aria-selected="false" class="rounded-lg px-2 py-2 text-sm font-medium">Settled</button>
+        </div>
+      </header>
+
+      <div class="p-6">
+        <div class="w-full overflow-x-auto overflow-y-hidden rounded-xl border border-stone-200 dark:border-stone-800">
+          <table class="w-full text-left text-sm">
+            <thead class="bg-stone-100/50 text-xs font-semibold uppercase tracking-wider text-stone-500 dark:bg-stone-900/50 dark:text-stone-400">
+              <tr>
+                <th class="px-4 py-2">Reference</th><th class="px-4 py-2">Account</th><th class="px-4 py-2">Issued</th>
+                <th class="px-4 py-2">Due</th><th class="px-4 py-2 text-right">Amount</th><th class="px-4 py-2 text-right">Balance</th><th class="px-4 py-2">Status</th>
+              </tr>
+            </thead>
+            <tbody class="arc-numeric divide-y divide-stone-200 dark:divide-stone-800">
+              <tr class="hover:bg-stone-100/40 dark:hover:bg-stone-900/40">
+                <td class="px-4 py-2 font-medium">WX-INV-2842</td><td class="px-4 py-2">Gulberg Office</td><td class="px-4 py-2 text-stone-500 dark:text-stone-400">02 Oct</td>
+                <td class="px-4 py-2 text-stone-500 dark:text-stone-400">28 Oct</td><td class="px-4 py-2 text-right">3,876,500</td><td class="px-4 py-2 text-right">3,876,500</td>
+                <td class="px-4 py-2"><span class="rounded-lg border border-stone-300 px-2 py-2 text-2xs font-semibold uppercase tracking-widest text-stone-600 dark:border-stone-700 dark:text-stone-300">Due</span></td>
+              </tr>
+              <tr class="hover:bg-stone-100/40 dark:hover:bg-stone-900/40">
+                <td class="px-4 py-2 font-medium">WX-INV-2843</td><td class="px-4 py-2">DHA Phase 6</td><td class="px-4 py-2 text-stone-500 dark:text-stone-400">04 Aug</td>
+                <td class="px-4 py-2 text-stone-500 dark:text-stone-400">04 Sep</td><td class="px-4 py-2 text-right">642,000</td><td class="px-4 py-2 text-right">642,000</td>
+                <td class="px-4 py-2"><span class="rounded-lg border border-dashed border-stone-400 px-2 py-2 text-2xs font-semibold uppercase tracking-widest text-stone-500 dark:border-stone-600 dark:text-stone-400">Overdue 37 d</span></td>
+              </tr>
+              <tr class="hover:bg-stone-100/40 dark:hover:bg-stone-900/40">
+                <td class="px-4 py-2 font-medium">WX-INV-2844</td><td class="px-4 py-2">Al-Noor Residence</td><td class="px-4 py-2 text-stone-500 dark:text-stone-400">06 Oct</td>
+                <td class="px-4 py-2 text-stone-500 dark:text-stone-400">06 Nov</td><td class="px-4 py-2 text-right">1,240,000</td><td class="px-4 py-2 text-right">1,240,000</td>
+                <td class="px-4 py-2"><span class="rounded-lg border border-stone-300 px-2 py-2 text-2xs font-semibold uppercase tracking-widest text-stone-600 dark:border-stone-700 dark:text-stone-300">Due</span></td>
+              </tr>
+              <tr class="hover:bg-stone-100/40 dark:hover:bg-stone-900/40">
+                <td class="px-4 py-2 font-medium">WX-INV-2839</td><td class="px-4 py-2">Model Town</td><td class="px-4 py-2 text-stone-500 dark:text-stone-400">18 Sep</td>
+                <td class="px-4 py-2 text-stone-500 dark:text-stone-400">18 Sep</td><td class="px-4 py-2 text-right">918,000</td><td class="px-4 py-2 text-right">0</td>
+                <td class="px-4 py-2"><span class="rounded-lg bg-stone-800 px-2 py-2 text-2xs font-semibold uppercase tracking-widest text-stone-50 dark:bg-stone-200 dark:text-stone-900">Settled</span></td>
+              </tr>
+              <tr class="hover:bg-stone-100/40 dark:hover:bg-stone-900/40">
+                <td class="px-4 py-2 font-medium">WX-INV-2846</td><td class="px-4 py-2">Bahria Townhouse</td><td class="px-4 py-2 text-stone-500 dark:text-stone-400">09 Oct</td>
+                <td class="px-4 py-2 text-stone-500 dark:text-stone-400">09 Nov</td><td class="px-4 py-2 text-right">480,000</td><td class="px-4 py-2 text-right">240,000</td>
+                <td class="px-4 py-2"><span class="flex items-center gap-2 rounded-lg border border-stone-300 px-2 py-2 text-2xs font-semibold uppercase tracking-widest text-stone-600 dark:border-stone-700 dark:text-stone-300"><span class="h-2 w-2 animate-arc-pulse rounded-full bg-stone-400"></span>Partly paid</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </article>
+
+    <aside class="flex flex-col gap-6 xl:col-span-4">
+      <article class="rounded-xl border border-stone-200 bg-stone-50 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+        <header class="border-b border-stone-200 px-6 py-4 dark:border-stone-800">
+          <h2 class="text-sm font-semibold">Realisation curve · 6 months</h2>
+        </header>
+        <div class="p-6"><canvas id="finance-bars" height="220"></canvas></div>
+      </article>
+
+      <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+        <h2 class="text-sm font-semibold">Aging buckets</h2>
+        <ul class="mt-4 flex flex-col gap-2">
+          <li class="flex items-center justify-between gap-4 rounded-lg border border-stone-200 bg-white px-4 py-2 dark:border-stone-800 dark:bg-stone-950"><span class="text-sm">1 – 30 days</span><span class="arc-numeric text-sm font-semibold">₨ 1.42M</span></li>
+          <li class="flex items-center justify-between gap-4 rounded-lg border border-stone-200 bg-white px-4 py-2 dark:border-stone-800 dark:bg-stone-950"><span class="text-sm">31 – 60 days</span><span class="arc-numeric text-sm font-semibold">₨ 0.71M</span></li>
+          <li class="flex items-center justify-between gap-4 rounded-lg border border-dashed border-stone-400 px-4 py-2 dark:border-stone-600"><span class="text-sm">61 – 90 days</span><span class="arc-numeric text-sm font-semibold">₨ 0.66M</span></li>
+          <li class="flex items-center justify-between gap-4 rounded-lg border border-dashed border-stone-400 px-4 py-2 dark:border-stone-600"><span class="text-sm">90+ days</span><span class="arc-numeric text-sm font-semibold">₨ 0.42M</span></li>
+        </ul>
+      </article>
+    </aside>
+  </section>
+</div>
+
+<script src="../vendor/chart.umd.js" defer></script>
+<script src="../assets/arc-kit.js" defer></script>
+<script>
+(function () {
+  function draw() {
+    var el = document.getElementById("finance-bars");
+    if (!el || !window.Chart) return;
+    var dark = document.documentElement.classList.contains("dark");
+    var ink = dark ? "#e7e5e4" : "#292524", mid = dark ? "#78716c" : "#a8a29e", grid = dark ? "#292524" : "#e7e5e4", label = dark ? "#a8a29e" : "#78716c";
+    if (el.__c) el.__c.destroy();
+    el.__c = new Chart(el, {
+      type: "bar",
+      data: { labels: ["Apr", "May", "Jun", "Jul", "Aug", "Sep"], datasets: [
+        { label: "Invoiced", data: [6.1, 6.8, 7.2, 6.4, 8.1, 10.9], backgroundColor: mid, borderRadius: 2, barThickness: 16 },
+        { label: "Collected", data: [4.9, 5.6, 6.1, 5.8, 7.2, 9.6], backgroundColor: ink, borderRadius: 2, barThickness: 16 }
+      ] },
+      options: { responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { labels: { color: label, boxWidth: 8, boxHeight: 8, font: { size: 11 } } } },
+        scales: { x: { grid: { display: false }, ticks: { color: label, font: { size: 11 } }, border: { color: grid } },
+                  y: { grid: { color: grid }, ticks: { color: label, font: { size: 11 }, callback: function (v) { return "₨" + v + "M"; } }, border: { display: false } } } }
+    });
+  }
+  document.addEventListener("arc:theme", draw);
+  window.addEventListener("load", draw);
+})();
+</script>
+</body>
+</html>

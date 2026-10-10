@@ -1,0 +1,178 @@
+<!doctype html>
+<!-- ============================================================================
+     WOODEX ADMIN V2.1 + ARC.STUDIO
+     MODULE 19 — WHATSAPP & TELEGRAM INTEGRATIONS
+     Blocks: 1 API Route Toggles · 2 Progress Card KPIs · 3 Chat Workspace + Templates
+     ============================================================================ -->
+<html lang="en" class="h-full">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>M19 WhatsApp &amp; Telegram Integrations — WOODEX ADMIN V2.1</title>
+<link rel="stylesheet" href="../assets/arc-kit.css">
+<script>try{var t=localStorage.getItem("wxaTheme");if(t==="dark"||(!t&&matchMedia("(prefers-color-scheme: dark)").matches)){document.documentElement.classList.add("dark");document.documentElement.setAttribute("data-theme","dark")}}catch(e){}</script>
+</head>
+<body class="min-h-full bg-stone-100 text-stone-950 antialiased dark:bg-stone-950 dark:text-stone-50">
+<div class="mx-auto flex w-full max-w-canvas flex-col gap-8 px-6 py-8">
+
+  <!-- ===== BLOCK 1 — HEADER / API ROUTE TOGGLES ===== -->
+  <header class="flex flex-col gap-6 border-b border-stone-200 pb-6 dark:border-stone-800">
+    <div class="flex flex-col gap-2">
+      <nav class="flex items-center gap-2 text-2xs uppercase tracking-widest text-stone-500 dark:text-stone-400">
+        <span>Module V</span><span class="text-stone-300 dark:text-stone-600">/</span><span class="text-stone-900 dark:text-stone-50">Messaging Integrations</span>
+      </nav>
+      <h1 class="text-xl font-semibold tracking-tight">WhatsApp &amp; Telegram Integrations</h1>
+      <p class="max-w-3xl text-sm text-stone-500 dark:text-stone-400">Delivery routes, template registry and response automation for the two outbound messaging channels.</p>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-2">
+      <div class="flex items-center gap-2 rounded-lg border border-stone-200 bg-white px-4 py-2 dark:border-stone-800 dark:bg-stone-950">
+        <span class="text-sm font-medium">WhatsApp Cloud API</span>
+        <span class="flex items-center gap-2 rounded-lg border border-stone-300 px-2 py-2 text-2xs font-semibold uppercase tracking-widest text-stone-600 dark:border-stone-700 dark:text-stone-300"><span class="h-2 w-2 rounded-full bg-stone-800 dark:bg-stone-200"></span>Connected</span>
+        <button role="switch" aria-checked="true" data-arc-switch="WhatsApp route" class="relative h-6 w-10 shrink-0 rounded-sm bg-stone-200 transition-colors dark:bg-stone-800">
+          <span class="absolute left-2 top-2 h-4 w-4 translate-x-0 rounded-sm bg-white transition-transform dark:bg-stone-950"></span>
+        </button>
+      </div>
+      <div class="flex items-center gap-2 rounded-lg border border-stone-200 bg-white px-4 py-2 dark:border-stone-800 dark:bg-stone-950">
+        <span class="text-sm font-medium">Telegram Bot API</span>
+        <span class="flex items-center gap-2 rounded-lg border border-stone-300 px-2 py-2 text-2xs font-semibold uppercase tracking-widest text-stone-600 dark:border-stone-700 dark:text-stone-300"><span class="h-2 w-2 rounded-full bg-stone-800 dark:bg-stone-200"></span>Connected</span>
+        <button role="switch" aria-checked="false" data-arc-switch="Telegram route" class="relative h-6 w-10 shrink-0 rounded-sm bg-stone-200 transition-colors dark:bg-stone-800">
+          <span class="absolute left-2 top-2 h-4 w-4 translate-x-0 rounded-sm bg-white transition-transform dark:bg-stone-950"></span>
+        </button>
+      </div>
+      <button class="rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm font-medium hover:bg-stone-100 dark:border-stone-800 dark:bg-stone-950 dark:hover:bg-stone-800">Test webhook</button>
+      <button class="rounded-lg bg-stone-800 px-4 py-2 text-sm font-medium text-stone-50 hover:bg-stone-700 dark:bg-stone-200 dark:text-stone-900 dark:hover:bg-stone-300">Send broadcast</button>
+    </div>
+  </header>
+
+  <!-- ===== BLOCK 2 — 4-COLUMN PROGRESS CARDS ===== -->
+  <section class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">API Request Volume</p>
+      <p class="arc-numeric mt-2 text-2xl font-bold tracking-tight">14,206</p>
+      <div class="mt-4 flex flex-col gap-2">
+        <span class="block h-2 w-full overflow-hidden rounded-sm bg-stone-200 dark:bg-stone-800"><span data-arc-value="72" class="block h-full w-0 bg-stone-800 transition-all duration-700 dark:bg-stone-200"></span></span>
+        <p class="text-sm text-stone-500 dark:text-stone-400">72% of the monthly allowance</p>
+      </div>
+    </article>
+    <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Automated Response Rate</p>
+      <p class="arc-numeric mt-2 text-2xl font-bold tracking-tight">64%</p>
+      <div class="mt-4 flex flex-col gap-2">
+        <span class="block h-2 w-full overflow-hidden rounded-sm bg-stone-200 dark:bg-stone-800"><span data-arc-value="64" class="block h-full w-0 bg-stone-500 transition-all duration-700 dark:bg-stone-400"></span></span>
+        <p class="text-sm text-stone-500 dark:text-stone-400">Template replies inside the 24 h window</p>
+      </div>
+    </article>
+    <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Notification Delivery Rate</p>
+      <p class="arc-numeric mt-2 text-2xl font-bold tracking-tight">98.2%</p>
+      <div class="mt-4 flex flex-col gap-2">
+        <span class="block h-2 w-full overflow-hidden rounded-sm bg-stone-200 dark:bg-stone-800"><span data-arc-value="98" class="block h-full w-0 bg-stone-800 transition-all duration-700 dark:bg-stone-200"></span></span>
+        <p class="text-sm text-stone-500 dark:text-stone-400">42 failed handset deliveries held in retry</p>
+      </div>
+    </article>
+    <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Approved Templates</p>
+      <p class="arc-numeric mt-2 text-2xl font-bold tracking-tight">12</p>
+      <p class="mt-4 text-sm text-stone-500 dark:text-stone-400">2 in Meta review · 1 rejected for wording</p>
+    </article>
+  </section>
+
+  <!-- ===== BLOCK 3 — MAIN ACTION CANVAS (Chat Workspace Layout) ===== -->
+  <section class="grid grid-cols-1 gap-6 xl:grid-cols-12">
+
+    <!-- WhatsApp column -->
+    <article class="flex flex-col rounded-xl border border-stone-200 bg-stone-50 shadow-panel xl:col-span-4 dark:border-stone-800 dark:bg-stone-900">
+      <header class="flex items-center justify-between gap-4 border-b border-stone-200 px-6 py-4 dark:border-stone-800">
+        <div>
+          <h2 class="text-sm font-semibold">WhatsApp · client thread</h2>
+          <p class="arc-numeric text-2xs uppercase tracking-widest text-stone-400">+92 300 0000 000 · Al-Noor Residence</p>
+        </div>
+        <span class="rounded-lg bg-stone-800 px-2 py-2 text-2xs font-semibold uppercase tracking-widest text-stone-50 dark:bg-stone-200 dark:text-stone-900">Live</span>
+      </header>
+      <div class="arc-scroll flex max-h-[420px] flex-col gap-4 overflow-y-auto p-6">
+        <div class="max-w-[90%] rounded-xl rounded-tr-none bg-stone-800 px-4 py-2 text-stone-50 dark:bg-stone-200 dark:text-stone-900">
+          <p class="text-sm">Your quote WX-QT-0918 is ready for signature.</p>
+          <p class="arc-numeric mt-2 text-2xs uppercase tracking-widest text-stone-400 dark:text-stone-500">09:12 · delivered</p>
+        </div>
+        <div class="max-w-[90%] self-end rounded-xl rounded-tl-none border border-stone-200 bg-white px-4 py-2 dark:border-stone-800 dark:bg-stone-950">
+          <p class="text-sm">Received. Can we visit the workshop on Friday before signing?</p>
+          <p class="arc-numeric mt-2 text-2xs uppercase tracking-widest text-stone-400">09:31 · read</p>
+        </div>
+        <div class="max-w-[90%] rounded-xl rounded-tr-none bg-stone-800 px-4 py-2 text-stone-50 dark:bg-stone-200 dark:text-stone-900">
+          <p class="text-sm">Certainly. Friday 10:00 at the Model Town workshop, bay C. I will send the location pin.</p>
+          <p class="arc-numeric mt-2 text-2xs uppercase tracking-widest text-stone-400 dark:text-stone-500">09:33 · read</p>
+        </div>
+        <div class="flex items-center gap-2 text-sm text-stone-500 dark:text-stone-400">
+          <span class="h-2 w-2 animate-arc-pulse rounded-full bg-stone-400"></span>Client is typing…
+        </div>
+      </div>
+      <footer class="border-t border-stone-200 p-6 dark:border-stone-800">
+        <div class="flex items-center gap-2 rounded-lg border border-stone-200 bg-white p-2 dark:border-stone-800 dark:bg-stone-950">
+          <input type="text" placeholder="Reply on WhatsApp…" class="w-full bg-transparent px-2 py-2 text-sm outline-none placeholder:text-stone-400 dark:placeholder:text-stone-500">
+          <button class="rounded-lg bg-stone-800 px-4 py-2 text-sm font-medium text-stone-50 dark:bg-stone-200 dark:text-stone-900">Send</button>
+        </div>
+      </footer>
+    </article>
+
+    <!-- Telegram column -->
+    <article class="flex flex-col rounded-xl border border-stone-200 bg-stone-50 shadow-panel xl:col-span-4 dark:border-stone-800 dark:bg-stone-900">
+      <header class="flex items-center justify-between gap-4 border-b border-stone-200 px-6 py-4 dark:border-stone-800">
+        <div>
+          <h2 class="text-sm font-semibold">Telegram · supplier channel</h2>
+          <p class="arc-numeric text-2xs uppercase tracking-widest text-stone-400">@timber_mart_ops · PO-4471</p>
+        </div>
+        <span class="rounded-lg border border-dashed border-stone-400 px-2 py-2 text-2xs font-semibold uppercase tracking-widest text-stone-500 dark:border-stone-600 dark:text-stone-400">Route paused</span>
+      </header>
+      <div class="arc-scroll flex max-h-[420px] flex-col gap-4 overflow-y-auto p-6">
+        <div class="max-w-[90%] rounded-xl rounded-tr-none bg-stone-800 px-4 py-2 text-stone-50 dark:bg-stone-200 dark:text-stone-900">
+          <p class="text-sm">PO-4471 confirmed: 340 bf American walnut FAS, dispatch 14 Oct.</p>
+          <p class="arc-numeric mt-2 text-2xs uppercase tracking-widest text-stone-400 dark:text-stone-500">Yesterday · 16:40</p>
+        </div>
+        <div class="max-w-[90%] self-end rounded-xl rounded-tl-none border border-stone-200 bg-white px-4 py-2 dark:border-stone-800 dark:bg-stone-950">
+          <p class="text-sm">Understood. Please include the moisture certificate with the dispatch note.</p>
+          <p class="arc-numeric mt-2 text-2xs uppercase tracking-widest text-stone-400">Yesterday · 16:44</p>
+        </div>
+        <div class="rounded-xl border border-dashed border-stone-300 px-4 py-2 text-sm text-stone-500 dark:border-stone-700 dark:text-stone-400">
+          Automated replies are paused for this channel while the teak tariff change is reviewed.
+        </div>
+      </div>
+      <footer class="border-t border-stone-200 p-6 dark:border-stone-800">
+        <div class="flex items-center gap-2 rounded-lg border border-stone-200 bg-white p-2 dark:border-stone-800 dark:bg-stone-950">
+          <input type="text" placeholder="Reply on Telegram…" class="w-full bg-transparent px-2 py-2 text-sm outline-none placeholder:text-stone-400 dark:placeholder:text-stone-500">
+          <button class="rounded-lg bg-stone-800 px-4 py-2 text-sm font-medium text-stone-50 dark:bg-stone-200 dark:text-stone-900">Send</button>
+        </div>
+      </footer>
+    </article>
+
+    <!-- quick templates + delivery console -->
+    <aside class="flex flex-col gap-6 xl:col-span-4">
+      <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+        <h2 class="text-sm font-semibold">Quick communication templates</h2>
+        <div class="mt-4 grid grid-cols-2 gap-2">
+          <button class="rounded-lg border border-stone-200 bg-white px-4 py-2 text-left text-sm hover:bg-stone-100 dark:border-stone-800 dark:bg-stone-950 dark:hover:bg-stone-800">Quote ready</button>
+          <button class="rounded-lg border border-stone-200 bg-white px-4 py-2 text-left text-sm hover:bg-stone-100 dark:border-stone-800 dark:bg-stone-950 dark:hover:bg-stone-800">Survey booked</button>
+          <button class="rounded-lg border border-stone-200 bg-white px-4 py-2 text-left text-sm hover:bg-stone-100 dark:border-stone-800 dark:bg-stone-950 dark:hover:bg-stone-800">Delivery window</button>
+          <button class="rounded-lg border border-stone-200 bg-white px-4 py-2 text-left text-sm hover:bg-stone-100 dark:border-stone-800 dark:bg-stone-950 dark:hover:bg-stone-800">Payment reminder</button>
+          <button class="rounded-lg border border-stone-200 bg-white px-4 py-2 text-left text-sm hover:bg-stone-100 dark:border-stone-800 dark:bg-stone-950 dark:hover:bg-stone-800">Snagging follow-up</button>
+          <button class="rounded-lg border border-stone-200 bg-white px-4 py-2 text-left text-sm hover:bg-stone-100 dark:border-stone-800 dark:bg-stone-950 dark:hover:bg-stone-800">Handover pack</button>
+        </div>
+      </article>
+
+      <article class="rounded-xl border border-stone-200 bg-stone-50 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+        <header class="border-b border-stone-200 px-6 py-4 dark:border-stone-800">
+          <h2 class="text-sm font-semibold">Delivery console · last 24 h</h2>
+        </header>
+        <ul class="divide-y divide-stone-200 dark:divide-stone-800">
+          <li class="flex items-center justify-between gap-4 px-6 py-4"><span class="min-w-0"><span class="block truncate text-sm font-medium">Quote ready · 42 recipients</span><span class="arc-numeric block text-2xs uppercase tracking-widest text-stone-400">08:00 · 100% delivered</span></span><span class="arc-numeric text-sm font-semibold">42</span></li>
+          <li class="flex items-center justify-between gap-4 px-6 py-4"><span class="min-w-0"><span class="block truncate text-sm font-medium">Delivery window · 18 recipients</span><span class="arc-numeric block text-2xs uppercase tracking-widest text-stone-400">11:30 · 2 retries queued</span></span><span class="arc-numeric text-sm font-semibold">16</span></li>
+          <li class="flex items-center justify-between gap-4 px-6 py-4"><span class="min-w-0"><span class="block truncate text-sm font-medium">Payment reminder · 6 recipients</span><span class="arc-numeric block text-2xs uppercase tracking-widest text-stone-400">14:00 · 1 opted out</span></span><span class="arc-numeric text-sm font-semibold">05</span></li>
+        </ul>
+      </article>
+    </aside>
+  </section>
+</div>
+<script src="../assets/arc-kit.js" defer></script>
+</body>
+</html>

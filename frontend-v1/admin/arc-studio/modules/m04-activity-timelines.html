@@ -1,0 +1,237 @@
+<!doctype html>
+<!-- ============================================================================
+     WOODEX ADMIN V2.1 + ARC.STUDIO
+     MODULE 04 — ACTIVITY & TIMELINES
+     Blocks: 1 Title Bar · 2 Progress Cards · 3 Chronological Roadmap
+     ============================================================================ -->
+<html lang="en" class="h-full">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>M04 Activity &amp; Timelines — WOODEX ADMIN V2.1</title>
+<link rel="stylesheet" href="../assets/arc-kit.css">
+<script>try{var t=localStorage.getItem("wxaTheme");if(t==="dark"||(!t&&matchMedia("(prefers-color-scheme: dark)").matches)){document.documentElement.classList.add("dark");document.documentElement.setAttribute("data-theme","dark")}}catch(e){}</script>
+</head>
+<body class="min-h-full bg-stone-100 text-stone-950 antialiased dark:bg-stone-950 dark:text-stone-50">
+<div class="mx-auto flex w-full max-w-canvas flex-col gap-8 px-6 py-8">
+
+  <!-- ===== BLOCK 1 — HEADER / FILTER BAR ===== -->
+  <header class="flex flex-col gap-6 border-b border-stone-200 pb-6 lg:flex-row lg:items-start lg:justify-between dark:border-stone-800">
+    <div class="flex flex-col gap-2">
+      <nav class="flex items-center gap-2 text-2xs uppercase tracking-widest text-stone-500 dark:text-stone-400">
+        <span>Module I</span><span class="text-stone-300 dark:text-stone-600">/</span><span class="text-stone-900 dark:text-stone-50">Activity &amp; Timelines</span>
+      </nav>
+      <h1 class="text-xl font-semibold tracking-tight">Activity &amp; Timelines</h1>
+      <p class="max-w-3xl text-sm text-stone-500 dark:text-stone-400">Workshop fabrication cycles and site preparation phases mapped on one roadmap, measured against the baseline programme.</p>
+    </div>
+    <div class="flex flex-wrap items-center gap-2">
+      <div class="relative">
+        <button data-arc-dd="project" aria-expanded="false" class="flex items-center gap-2 rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm font-medium hover:bg-stone-100 dark:border-stone-800 dark:bg-stone-950 dark:hover:bg-stone-800">
+          Hafeez Villa · full millwork
+          <svg class="h-4 w-4 text-stone-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m6 9 6 6 6-6"/></svg>
+        </button>
+        <div data-arc-menu="project" class="absolute right-0 z-30 mt-2 hidden w-64 overflow-hidden rounded-xl border border-stone-200 bg-white p-2 shadow-lift dark:border-stone-800 dark:bg-stone-900">
+          <button class="w-full rounded-lg px-2 py-2 text-left text-sm hover:bg-stone-100 dark:hover:bg-stone-800">Hafeez Villa · full millwork</button>
+          <button class="w-full rounded-lg px-2 py-2 text-left text-sm hover:bg-stone-100 dark:hover:bg-stone-800">Gulberg Office · fit-out stage 2</button>
+          <button class="w-full rounded-lg px-2 py-2 text-left text-sm hover:bg-stone-100 dark:hover:bg-stone-800">DHA Phase 6 · kitchen</button>
+        </div>
+      </div>
+      <div data-arc-tabs class="flex items-center gap-2 rounded-lg border border-stone-200 bg-white p-2 dark:border-stone-800 dark:bg-stone-950">
+        <button data-arc-tab="all" aria-selected="true" class="rounded-lg px-2 py-2 text-sm font-medium">All phases</button>
+        <button data-arc-tab="shop" aria-selected="false" class="rounded-lg px-2 py-2 text-sm font-medium">Shop</button>
+        <button data-arc-tab="site" aria-selected="false" class="rounded-lg px-2 py-2 text-sm font-medium">Site</button>
+      </div>
+      <button class="rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm font-medium hover:bg-stone-100 dark:border-stone-800 dark:bg-stone-950 dark:hover:bg-stone-800">Baseline</button>
+    </div>
+  </header>
+
+  <!-- ===== BLOCK 2 — 4-COLUMN PROGRESS CARDS ===== -->
+  <section class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Target Timeline Variance</p>
+      <p class="arc-numeric mt-2 text-2xl font-bold tracking-tight">+6<span class="text-sm font-medium text-stone-400"> days</span></p>
+      <div class="mt-4 flex flex-col gap-2">
+        <span class="block h-2 w-full overflow-hidden rounded-sm bg-stone-200 dark:bg-stone-800"><span data-arc-value="64" class="block h-full w-0 bg-stone-500 transition-all duration-700 dark:bg-stone-400"></span></span>
+        <p class="text-sm text-stone-500 dark:text-stone-400">Critical path: veneer press queue</p>
+      </div>
+    </article>
+    <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Phase Milestones Achieved</p>
+      <p class="arc-numeric mt-2 text-2xl font-bold tracking-tight">17<span class="text-sm font-medium text-stone-400"> / 24</span></p>
+      <div class="mt-4 flex flex-col gap-2">
+        <span class="block h-2 w-full overflow-hidden rounded-sm bg-stone-200 dark:bg-stone-800"><span data-arc-value="71" class="block h-full w-0 bg-stone-800 transition-all duration-700 dark:bg-stone-200"></span></span>
+        <p class="text-sm text-stone-500 dark:text-stone-400">Next gate: site delivery 16 Oct</p>
+      </div>
+    </article>
+    <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Resource Usage Rate</p>
+      <p class="arc-numeric mt-2 text-2xl font-bold tracking-tight">88%</p>
+      <div class="mt-4 flex flex-col gap-2">
+        <span class="block h-2 w-full overflow-hidden rounded-sm bg-stone-200 dark:bg-stone-800"><span data-arc-value="88" class="block h-full w-0 bg-stone-800 transition-all duration-700 dark:bg-stone-200"></span></span>
+        <p class="text-sm text-stone-500 dark:text-stone-400">12 of 16 benches committed</p>
+      </div>
+    </article>
+    <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Idle Days Logged</p>
+      <p class="arc-numeric mt-2 text-2xl font-bold tracking-tight">03</p>
+      <p class="mt-4 text-sm text-stone-500 dark:text-stone-400">2 power outages · 1 material hold</p>
+    </article>
+  </section>
+
+  <!-- ===== BLOCK 3 — MAIN ACTION CANVAS (Timeline) ===== -->
+  <section data-arc-pane="all" class="grid grid-cols-1 gap-6 xl:grid-cols-12">
+    <article class="rounded-xl border border-stone-200 bg-stone-50 shadow-panel xl:col-span-8 dark:border-stone-800 dark:bg-stone-900">
+      <header class="flex flex-wrap items-center justify-between gap-4 border-b border-stone-200 px-6 py-4 dark:border-stone-800">
+        <div>
+          <h2 class="text-sm font-semibold">Roadmap · Oct – Dec 2026</h2>
+          <p class="text-sm text-stone-500 dark:text-stone-400">Solid bars are actual, dashed bars are baseline</p>
+        </div>
+        <div class="flex flex-wrap items-center gap-2 text-2xs uppercase tracking-widest text-stone-500 dark:text-stone-400">
+          <span class="flex items-center gap-2"><span class="h-2 w-4 rounded-sm bg-stone-800 dark:bg-stone-200"></span>Actual</span>
+          <span class="flex items-center gap-2"><span class="h-2 w-4 rounded-sm border border-dashed border-stone-400"></span>Baseline</span>
+        </div>
+      </header>
+
+      <div class="overflow-x-auto arc-scroll">
+        <div class="min-w-[720px]">
+          <!-- month ruler -->
+          <div class="flex border-b border-stone-200 dark:border-stone-800">
+            <div class="w-56 shrink-0 px-6 py-2 text-2xs font-semibold uppercase tracking-widest text-stone-500 dark:text-stone-400">Phase</div>
+            <div class="grid flex-1 grid-cols-3">
+              <div class="border-l border-stone-200 px-4 py-2 text-2xs font-semibold uppercase tracking-widest text-stone-500 dark:border-stone-800 dark:text-stone-400">Oct 2026</div>
+              <div class="border-l border-stone-200 px-4 py-2 text-2xs font-semibold uppercase tracking-widest text-stone-500 dark:border-stone-800 dark:text-stone-400">Nov 2026</div>
+              <div class="border-l border-stone-200 px-4 py-2 text-2xs font-semibold uppercase tracking-widest text-stone-500 dark:border-stone-800 dark:text-stone-400">Dec 2026</div>
+            </div>
+          </div>
+
+          <!-- rows -->
+          <div class="divide-y divide-stone-200 dark:divide-stone-800">
+            <div class="flex items-center">
+              <div class="w-56 shrink-0 px-6 py-4">
+                <p class="text-sm font-medium">Timber procurement</p><p class="arc-numeric text-2xs uppercase tracking-widest text-stone-400">Complete · 14 d</p>
+              </div>
+              <div class="relative grid flex-1 grid-cols-12 gap-2 px-6 py-4">
+                <span class="col-span-3 h-4 rounded-sm bg-stone-800 dark:bg-stone-200"></span>
+                <span class="col-span-2 col-start-4 h-4 rounded-sm border border-dashed border-stone-400"></span>
+              </div>
+            </div>
+            <div class="flex items-center">
+              <div class="w-56 shrink-0 px-6 py-4">
+                <p class="text-sm font-medium">Kiln drying &amp; grading</p><p class="arc-numeric text-2xs uppercase tracking-widest text-stone-400">Complete · 9 d</p>
+              </div>
+              <div class="relative grid flex-1 grid-cols-12 gap-2 px-6 py-4">
+                <span class="col-span-2 col-start-4 h-4 rounded-sm bg-stone-800 dark:bg-stone-200"></span>
+                <span class="col-span-2 col-start-4 h-4 rounded-sm border border-dashed border-stone-400"></span>
+              </div>
+            </div>
+            <div class="flex items-center">
+              <div class="w-56 shrink-0 px-6 py-4">
+                <p class="text-sm font-medium">Carcass fabrication</p><p class="arc-numeric text-2xs uppercase tracking-widest text-stone-400">Active · +3 d slip</p>
+              </div>
+              <div class="relative grid flex-1 grid-cols-12 gap-2 px-6 py-4">
+                <span class="col-span-4 col-start-5 h-4 rounded-sm bg-stone-500 dark:bg-stone-400"></span>
+                <span class="col-span-3 col-start-5 h-4 rounded-sm border border-dashed border-stone-400"></span>
+              </div>
+            </div>
+            <div class="flex items-center">
+              <div class="w-56 shrink-0 px-6 py-4">
+                <p class="text-sm font-medium">Veneer press &amp; edge banding</p><p class="arc-numeric text-2xs uppercase tracking-widest text-stone-400">Queued · 5 d</p>
+              </div>
+              <div class="relative grid flex-1 grid-cols-12 gap-2 px-6 py-4">
+                <span class="col-span-3 col-start-7 h-4 rounded-sm bg-stone-300 dark:bg-stone-700"></span>
+                <span class="col-span-3 col-start-7 h-4 rounded-sm border border-dashed border-stone-400"></span>
+              </div>
+            </div>
+            <div class="flex items-center">
+              <div class="w-56 shrink-0 px-6 py-4">
+                <p class="text-sm font-medium">Site preparation</p><p class="arc-numeric text-2xs uppercase tracking-widest text-stone-400">Active · on baseline</p>
+              </div>
+              <div class="relative grid flex-1 grid-cols-12 gap-2 px-6 py-4">
+                <span class="col-span-4 col-start-6 h-4 rounded-sm bg-stone-800 dark:bg-stone-200"></span>
+                <span class="col-span-4 col-start-6 h-4 rounded-sm border border-dashed border-stone-400"></span>
+              </div>
+            </div>
+            <div class="flex items-center">
+              <div class="w-56 shrink-0 px-6 py-4">
+                <p class="text-sm font-medium">Installation &amp; snagging</p><p class="arc-numeric text-2xs uppercase tracking-widest text-stone-400">Scheduled · 11 d</p>
+              </div>
+              <div class="relative grid flex-1 grid-cols-12 gap-2 px-6 py-4">
+                <span class="col-span-3 col-start-10 h-4 rounded-sm bg-stone-300 dark:bg-stone-700"></span>
+                <span class="col-span-2 col-start-10 h-4 rounded-sm border border-dashed border-stone-400"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <aside class="flex flex-col gap-6 xl:col-span-4">
+      <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+        <h2 class="text-sm font-semibold">Variance drivers</h2>
+        <ul class="mt-4 flex flex-col gap-2">
+          <li class="flex items-center justify-between gap-4 rounded-lg border border-stone-200 bg-white px-4 py-2 dark:border-stone-800 dark:bg-stone-950"><span class="text-sm">Veneer press queue</span><span class="arc-numeric text-sm font-semibold">+3 d</span></li>
+          <li class="flex items-center justify-between gap-4 rounded-lg border border-stone-200 bg-white px-4 py-2 dark:border-stone-800 dark:bg-stone-950"><span class="text-sm">Moisture re-drying batch 14</span><span class="arc-numeric text-sm font-semibold">+2 d</span></li>
+          <li class="flex items-center justify-between gap-4 rounded-lg border border-stone-200 bg-white px-4 py-2 dark:border-stone-800 dark:bg-stone-950"><span class="text-sm">Client change · store wall</span><span class="arc-numeric text-sm font-semibold">+1 d</span></li>
+          <li class="flex items-center justify-between gap-4 rounded-lg border border-dashed border-stone-300 px-4 py-2 dark:border-stone-700"><span class="text-sm text-stone-500 dark:text-stone-400">Recovery: second shift on press</span><span class="arc-numeric text-sm font-semibold">−4 d</span></li>
+        </ul>
+      </article>
+
+      <article class="rounded-xl border border-stone-200 bg-stone-50 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+        <header class="border-b border-stone-200 px-6 py-4 dark:border-stone-800">
+          <h2 class="text-sm font-semibold">Chronological event log</h2>
+        </header>
+        <ol class="divide-y divide-stone-200 dark:divide-stone-800">
+          <li class="flex gap-2 px-6 py-4"><span class="mt-2 h-2 w-2 shrink-0 rounded-full bg-stone-800 dark:bg-stone-200"></span><span><span class="block text-sm font-medium">Cutting list released</span><span class="arc-numeric block text-2xs uppercase tracking-widest text-stone-400">Today · 08:12</span></span></li>
+          <li class="flex gap-2 px-6 py-4"><span class="mt-2 h-2 w-2 shrink-0 rounded-full bg-stone-600 dark:bg-stone-400"></span><span><span class="block text-sm font-medium">Site preparation started</span><span class="arc-numeric block text-2xs uppercase tracking-widest text-stone-400">Today · 07:30</span></span></li>
+          <li class="flex gap-2 px-6 py-4"><span class="mt-2 h-2 w-2 shrink-0 rounded-full bg-stone-400"></span><span><span class="block text-sm font-medium">Drawing rev B.05 signed</span><span class="arc-numeric block text-2xs uppercase tracking-widest text-stone-400">Yesterday · 16:20</span></span></li>
+          <li class="flex gap-2 px-6 py-4"><span class="mt-2 h-2 w-2 shrink-0 rounded-full bg-stone-300 dark:bg-stone-700"></span><span><span class="block text-sm font-medium">Moisture deviation flagged</span><span class="arc-numeric block text-2xs uppercase tracking-widest text-stone-400">Yesterday · 18:05</span></span></li>
+        </ol>
+      </article>
+    </aside>
+  </section>
+
+  <!-- shop-only view -->
+  <section data-arc-pane="shop" hidden class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+    <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Bench allocation · week 42</p>
+      <ul class="mt-4 flex flex-col gap-2">
+        <li class="flex items-center justify-between gap-4 rounded-lg border border-stone-200 bg-white px-4 py-2 dark:border-stone-800 dark:bg-stone-950"><span class="text-sm">Bench 01 · carcass</span><span class="arc-numeric text-sm font-semibold">100%</span></li>
+        <li class="flex items-center justify-between gap-4 rounded-lg border border-stone-200 bg-white px-4 py-2 dark:border-stone-800 dark:bg-stone-950"><span class="text-sm">Bench 04 · veneer press</span><span class="arc-numeric text-sm font-semibold">92%</span></li>
+        <li class="flex items-center justify-between gap-4 rounded-lg border border-stone-200 bg-white px-4 py-2 dark:border-stone-800 dark:bg-stone-950"><span class="text-sm">Bench 09 · finishing</span><span class="arc-numeric text-sm font-semibold">54%</span></li>
+      </ul>
+    </article>
+    <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel lg:col-span-2 dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Shop cycle durations</p>
+      <div class="mt-4 grid grid-cols-2 gap-4 md:grid-cols-4">
+        <div><dt class="text-2xs uppercase tracking-widest text-stone-500 dark:text-stone-400">Saw &amp; plane</dt><dd class="arc-numeric text-2xl font-bold tracking-tight">3.2 d</dd></div>
+        <div><dt class="text-2xs uppercase tracking-widest text-stone-500 dark:text-stone-400">Carcass</dt><dd class="arc-numeric text-2xl font-bold tracking-tight">6.0 d</dd></div>
+        <div><dt class="text-2xs uppercase tracking-widest text-stone-500 dark:text-stone-400">Veneer</dt><dd class="arc-numeric text-2xl font-bold tracking-tight">2.4 d</dd></div>
+        <div><dt class="text-2xs uppercase tracking-widest text-stone-500 dark:text-stone-400">Finishing</dt><dd class="arc-numeric text-2xl font-bold tracking-tight">4.1 d</dd></div>
+      </div>
+    </article>
+  </section>
+
+  <!-- site-only view -->
+  <section data-arc-pane="site" hidden class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+    <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel lg:col-span-2 dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Site preparation phases</p>
+      <ol class="mt-4 flex flex-col gap-2">
+        <li class="flex items-center justify-between gap-4 rounded-lg border border-stone-200 bg-white px-4 py-2 dark:border-stone-800 dark:bg-stone-950"><span class="text-sm">Protection &amp; floor masking</span><span class="rounded-lg bg-stone-800 px-2 py-2 text-2xs font-semibold uppercase tracking-widest text-stone-50 dark:bg-stone-200 dark:text-stone-900">Done</span></li>
+        <li class="flex items-center justify-between gap-4 rounded-lg border border-stone-200 bg-white px-4 py-2 dark:border-stone-800 dark:bg-stone-950"><span class="text-sm">Service rough-in check</span><span class="rounded-lg border border-stone-300 px-2 py-2 text-2xs font-semibold uppercase tracking-widest text-stone-600 dark:border-stone-700 dark:text-stone-300">Active</span></li>
+        <li class="flex items-center justify-between gap-4 rounded-lg border border-stone-200 bg-white px-4 py-2 dark:border-stone-800 dark:bg-stone-950"><span class="text-sm">Delivery &amp; hoisting window</span><span class="rounded-lg border border-dashed border-stone-400 px-2 py-2 text-2xs font-semibold uppercase tracking-widest text-stone-500 dark:border-stone-600 dark:text-stone-400">16 Oct</span></li>
+      </ol>
+    </article>
+    <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Site conditions</p>
+      <dl class="mt-4 divide-y divide-stone-200 dark:divide-stone-800">
+        <div class="flex items-center justify-between py-2"><dt class="text-sm text-stone-500 dark:text-stone-400">Ambient humidity</dt><dd class="arc-numeric text-sm font-semibold">54%</dd></div>
+        <div class="flex items-center justify-between py-2"><dt class="text-sm text-stone-500 dark:text-stone-400">Access window</dt><dd class="arc-numeric text-sm font-semibold">08:00 – 17:00</dd></div>
+        <div class="flex items-center justify-between py-2"><dt class="text-sm text-stone-500 dark:text-stone-400">Hoist availability</dt><dd class="arc-numeric text-sm font-semibold">16 Oct</dd></div>
+      </dl>
+    </article>
+  </section>
+</div>
+<script src="../assets/arc-kit.js" defer></script>
+</body>
+</html>

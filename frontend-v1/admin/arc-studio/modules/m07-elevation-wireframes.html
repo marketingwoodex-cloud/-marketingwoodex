@@ -1,0 +1,191 @@
+<!doctype html>
+<!-- ============================================================================
+     WOODEX ADMIN V2.1 + ARC.STUDIO
+     MODULE 07 — 3D ELEVATION WIREFRAMES
+     Blocks: 1 Render Options Header · 2 Utility Link KPIs · 3 Gallery Grid + Drawer
+     ============================================================================ -->
+<html lang="en" class="h-full">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>M07 3D Elevation Wireframes — WOODEX ADMIN V2.1</title>
+<link rel="stylesheet" href="../assets/arc-kit.css">
+<script>try{var t=localStorage.getItem("wxaTheme");if(t==="dark"||(!t&&matchMedia("(prefers-color-scheme: dark)").matches)){document.documentElement.classList.add("dark");document.documentElement.setAttribute("data-theme","dark")}}catch(e){}</script>
+</head>
+<body class="min-h-full bg-stone-100 text-stone-950 antialiased dark:bg-stone-950 dark:text-stone-50">
+<div class="mx-auto flex w-full max-w-canvas flex-col gap-8 px-6 py-8">
+
+  <!-- ===== BLOCK 1 — HEADER / FILTER BAR ===== -->
+  <header class="flex flex-col gap-6 border-b border-stone-200 pb-6 dark:border-stone-800">
+    <div class="flex flex-col gap-2">
+      <nav class="flex items-center gap-2 text-2xs uppercase tracking-widest text-stone-500 dark:text-stone-400">
+        <span>Module II</span><span class="text-stone-300 dark:text-stone-600">/</span><span class="text-stone-900 dark:text-stone-50">3D Elevation Wireframes</span>
+      </nav>
+      <h1 class="text-xl font-semibold tracking-tight">3D Elevation Wireframes</h1>
+      <p class="max-w-3xl text-sm text-stone-500 dark:text-stone-400">Envelope studies and millwork interface renders for the front and side elevations, kept in wireframe until the cladding pitch is signed off.</p>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-2">
+      <div data-arc-tabs class="flex items-center gap-2 rounded-lg border border-stone-200 bg-white p-2 dark:border-stone-800 dark:bg-stone-950">
+        <button data-arc-tab="ortho" aria-selected="true" class="rounded-lg px-4 py-2 text-sm font-medium">Orthographic</button>
+        <button data-arc-tab="persp" aria-selected="false" class="rounded-lg px-4 py-2 text-sm font-medium">Perspective</button>
+        <button data-arc-tab="section" aria-selected="false" class="rounded-lg px-4 py-2 text-sm font-medium">Section cut</button>
+      </div>
+      <div class="relative">
+        <button data-arc-dd="mesh" aria-expanded="false" class="flex items-center gap-2 rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm font-medium hover:bg-stone-100 dark:border-stone-800 dark:bg-stone-950 dark:hover:bg-stone-800">
+          Mesh: 45% density
+          <svg class="h-4 w-4 text-stone-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m6 9 6 6 6-6"/></svg>
+        </button>
+        <div data-arc-menu="mesh" class="absolute right-0 z-30 mt-2 hidden w-56 overflow-hidden rounded-xl border border-stone-200 bg-white p-2 shadow-lift dark:border-stone-800 dark:bg-stone-900">
+          <button class="w-full rounded-lg px-2 py-2 text-left text-sm hover:bg-stone-100 dark:hover:bg-stone-800">20% density · fast</button>
+          <button class="w-full rounded-lg px-2 py-2 text-left text-sm hover:bg-stone-100 dark:hover:bg-stone-800">45% density · review</button>
+          <button class="w-full rounded-lg px-2 py-2 text-left text-sm hover:bg-stone-100 dark:hover:bg-stone-800">90% density · presentation</button>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 rounded-lg border border-stone-200 bg-white px-4 py-2 dark:border-stone-800 dark:bg-stone-950">
+        <span class="text-sm font-medium">Hidden lines</span>
+        <button role="switch" aria-checked="true" data-arc-switch="Hidden line removal" class="relative h-6 w-10 shrink-0 rounded-sm bg-stone-200 transition-colors dark:bg-stone-800">
+          <span class="absolute left-2 top-2 h-4 w-4 translate-x-0 rounded-sm bg-white transition-transform dark:bg-stone-950"></span>
+        </button>
+      </div>
+      <button class="rounded-lg bg-stone-800 px-4 py-2 text-sm font-medium text-stone-50 hover:bg-stone-700 dark:bg-stone-200 dark:text-stone-900 dark:hover:bg-stone-300">Queue render</button>
+    </div>
+  </header>
+
+  <!-- ===== BLOCK 2 — 4-COLUMN UTILITY LINK KPIs ===== -->
+  <section class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">External Envelope Area</p>
+      <p class="arc-numeric mt-2 text-2xl font-bold tracking-tight">842<span class="text-sm font-medium text-stone-400"> m²</span></p>
+      <a href="#gallery" class="mt-4 inline-flex items-center gap-2 text-sm font-medium underline decoration-dotted underline-offset-4">Open cladding schedule →</a>
+    </article>
+    <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Interface Node Counts</p>
+      <p class="arc-numeric mt-2 text-2xl font-bold tracking-tight">186</p>
+      <a href="#gallery" class="mt-4 inline-flex items-center gap-2 text-sm font-medium underline decoration-dotted underline-offset-4">Review joint details →</a>
+    </article>
+    <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Material Attachment Codes</p>
+      <p class="arc-numeric mt-2 text-2xl font-bold tracking-tight">09</p>
+      <a href="#gallery" class="mt-4 inline-flex items-center gap-2 text-sm font-medium underline decoration-dotted underline-offset-4">Open code library →</a>
+    </article>
+    <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Last Render Queue</p>
+      <p class="arc-numeric mt-2 text-2xl font-bold tracking-tight">4.2<span class="text-sm font-medium text-stone-400"> min</span></p>
+      <a href="#gallery" class="mt-4 inline-flex items-center gap-2 text-sm font-medium underline decoration-dotted underline-offset-4">Render settings →</a>
+    </article>
+  </section>
+
+  <!-- ===== BLOCK 3 — MAIN ACTION CANVAS (Gallery Grid + Detail Drawer) ===== -->
+  <section id="gallery" data-arc-pane="ortho" class="rounded-xl border border-stone-200 bg-stone-50 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+    <header class="flex flex-wrap items-center justify-between gap-4 border-b border-stone-200 px-6 py-4 dark:border-stone-800">
+      <div>
+        <h2 class="text-sm font-semibold">Render matrix</h2>
+        <p class="text-sm text-stone-500 dark:text-stone-400">Select an aspect to open the asset drawer with its millwork trim specification</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <button class="rounded-lg border border-stone-200 px-4 py-2 text-sm font-medium hover:bg-stone-100 dark:border-stone-800 dark:hover:bg-stone-800">Filter: all codes</button>
+        <button class="rounded-lg border border-stone-200 px-4 py-2 text-sm font-medium hover:bg-stone-100 dark:border-stone-800 dark:hover:bg-stone-800">Select</button>
+      </div>
+    </header>
+
+    <div class="grid grid-cols-1 gap-6 p-6 sm:grid-cols-2 xl:grid-cols-4">
+      <button data-arc-open="asset" class="arc-grid-paper group flex h-56 flex-col justify-end rounded-xl border border-stone-200 bg-white p-4 text-left transition-colors hover:border-stone-400 dark:border-stone-800 dark:bg-stone-950 dark:hover:border-stone-600">
+        <span class="text-sm font-semibold">Elevation A · front</span>
+        <span class="arc-numeric text-2xs uppercase tracking-widest text-stone-400">Code CL-01 · louvre 45 mm</span>
+        <span class="mt-4 h-2 w-full rounded-sm bg-stone-200 dark:bg-stone-800"><span class="block h-full w-4/5 rounded-sm bg-stone-800 dark:bg-stone-200"></span></span>
+      </button>
+      <button data-arc-open="asset" class="arc-grid-paper group flex h-56 flex-col justify-end rounded-xl border border-stone-200 bg-white p-4 text-left transition-colors hover:border-stone-400 dark:border-stone-800 dark:bg-stone-950 dark:hover:border-stone-600">
+        <span class="text-sm font-semibold">Elevation B · side</span>
+        <span class="arc-numeric text-2xs uppercase tracking-widest text-stone-400">Code CL-04 · rainscreen</span>
+        <span class="mt-4 h-2 w-full rounded-sm bg-stone-200 dark:bg-stone-800"><span class="block h-full w-3/5 rounded-sm bg-stone-500 dark:bg-stone-400"></span></span>
+      </button>
+      <button data-arc-open="asset" class="arc-grid-paper group flex h-56 flex-col justify-end rounded-xl border border-stone-200 bg-white p-4 text-left transition-colors hover:border-stone-400 dark:border-stone-800 dark:bg-stone-950 dark:hover:border-stone-600">
+        <span class="text-sm font-semibold">Entrance portal</span>
+        <span class="arc-numeric text-2xs uppercase tracking-widest text-stone-400">Code WD-11 · solid walnut</span>
+        <span class="mt-4 h-2 w-full rounded-sm bg-stone-200 dark:bg-stone-800"><span class="block h-full w-2/5 rounded-sm bg-stone-800 dark:bg-stone-200"></span></span>
+      </button>
+      <button data-arc-open="asset" class="arc-grid-paper group flex h-56 flex-col justify-end rounded-xl border border-stone-200 bg-white p-4 text-left transition-colors hover:border-stone-400 dark:border-stone-800 dark:bg-stone-950 dark:hover:border-stone-600">
+        <span class="text-sm font-semibold">Terrace screening</span>
+        <span class="arc-numeric text-2xs uppercase tracking-widest text-stone-400">Code SC-02 · slatted teak</span>
+        <span class="mt-4 h-2 w-full rounded-sm bg-stone-200 dark:bg-stone-800"><span class="block h-full w-1/2 rounded-sm bg-stone-500 dark:bg-stone-400"></span></span>
+      </button>
+      <button data-arc-open="asset" class="arc-grid-paper group flex h-56 flex-col justify-end rounded-xl border border-stone-200 bg-white p-4 text-left transition-colors hover:border-stone-400 dark:border-stone-800 dark:bg-stone-950 dark:hover:border-stone-600">
+        <span class="text-sm font-semibold">Kitchen millwork run</span>
+        <span class="arc-numeric text-2xs uppercase tracking-widest text-stone-400">Code MW-07 · veneer</span>
+        <span class="mt-4 h-2 w-full rounded-sm bg-stone-200 dark:bg-stone-800"><span class="block h-full w-3/4 rounded-sm bg-stone-800 dark:bg-stone-200"></span></span>
+      </button>
+      <button data-arc-open="asset" class="arc-grid-paper group flex h-56 flex-col justify-end rounded-xl border border-stone-200 bg-white p-4 text-left transition-colors hover:border-stone-400 dark:border-stone-800 dark:bg-stone-950 dark:hover:border-stone-600">
+        <span class="text-sm font-semibold">Stair balustrade</span>
+        <span class="arc-numeric text-2xs uppercase tracking-widest text-stone-400">Code BR-03 · steel + oak</span>
+        <span class="mt-4 h-2 w-full rounded-sm bg-stone-200 dark:bg-stone-800"><span class="block h-full w-1/3 rounded-sm bg-stone-500 dark:bg-stone-400"></span></span>
+      </button>
+      <button data-arc-open="asset" class="arc-grid-paper group flex h-56 flex-col justify-end rounded-xl border border-stone-200 bg-white p-4 text-left transition-colors hover:border-stone-400 dark:border-stone-800 dark:bg-stone-950 dark:hover:border-stone-600">
+        <span class="text-sm font-semibold">Wardrobe interface</span>
+        <span class="arc-numeric text-2xs uppercase tracking-widest text-stone-400">Code MW-11 · flush</span>
+        <span class="mt-4 h-2 w-full rounded-sm bg-stone-200 dark:bg-stone-800"><span class="block h-full w-2/3 rounded-sm bg-stone-800 dark:bg-stone-200"></span></span>
+      </button>
+      <label class="flex h-56 flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-stone-300 text-stone-500 transition-colors hover:border-stone-400 dark:border-stone-700 dark:text-stone-400">
+        <span class="text-2xl leading-none">＋</span><span class="text-2xs uppercase tracking-widest">Upload render</span>
+        <input type="file" class="hidden">
+      </label>
+    </div>
+  </section>
+
+  <!-- perspective + section variants keep the same frame, different framing -->
+  <section data-arc-pane="persp" hidden class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+    <article class="arc-grid-paper h-72 rounded-xl border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-950"><p class="text-sm font-semibold">Corner perspective · NE</p><p class="arc-numeric text-2xs uppercase tracking-widest text-stone-400">f 35 mm · eye 1.6 m</p></article>
+    <article class="arc-grid-paper h-72 rounded-xl border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-950"><p class="text-sm font-semibold">Approach view · street</p><p class="arc-numeric text-2xs uppercase tracking-widest text-stone-400">f 50 mm · eye 1.6 m</p></article>
+    <article class="arc-grid-paper h-72 rounded-xl border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-950"><p class="text-sm font-semibold">Courtyard perspective</p><p class="arc-numeric text-2xs uppercase tracking-widest text-stone-400">f 24 mm · eye 1.5 m</p></article>
+  </section>
+
+  <section data-arc-pane="section" hidden class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+    <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Section A-A · wall build-up</p>
+      <ol class="mt-4 divide-y divide-stone-200 text-sm dark:divide-stone-800">
+        <li class="flex items-center justify-between py-2"><span>Timber louvre screen 45 mm</span><span class="arc-numeric text-stone-500 dark:text-stone-400">CL-01</span></li>
+        <li class="flex items-center justify-between py-2"><span>Ventilated cavity 50 mm</span><span class="arc-numeric text-stone-500 dark:text-stone-400">—</span></li>
+        <li class="flex items-center justify-between py-2"><span>Insulation 50 mm</span><span class="arc-numeric text-stone-500 dark:text-stone-400">IN-02</span></li>
+        <li class="flex items-center justify-between py-2"><span>Blockwork 230 mm</span><span class="arc-numeric text-stone-500 dark:text-stone-400">—</span></li>
+      </ol>
+    </article>
+    <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Section B-B · millwork interface</p>
+      <ol class="mt-4 divide-y divide-stone-200 text-sm dark:divide-stone-800">
+        <li class="flex items-center justify-between py-2"><span>Shadow gap 12 mm</span><span class="arc-numeric text-stone-500 dark:text-stone-400">MW-11</span></li>
+        <li class="flex items-center justify-between py-2"><span>Panel thickness 18 mm</span><span class="arc-numeric text-stone-500 dark:text-stone-400">PL-18</span></li>
+        <li class="flex items-center justify-between py-2"><span>Batten frame 25 × 50 mm</span><span class="arc-numeric text-stone-500 dark:text-stone-400">FR-25</span></li>
+      </ol>
+    </article>
+  </section>
+</div>
+
+<!-- ============ DETAIL DRAWER — millwork trim specification ============ -->
+<div data-arc-drawer="asset" hidden class="fixed inset-y-0 right-0 z-50 w-full max-w-md translate-x-6 border-l border-stone-200 bg-stone-50 opacity-0 transition-all data-[open]:translate-x-0 data-[open]:opacity-100 dark:border-stone-800 dark:bg-stone-900">
+  <div class="flex items-center justify-between gap-4 border-b border-stone-200 px-6 py-4 dark:border-stone-800">
+    <div>
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Asset detail</p>
+      <p class="mt-2 text-sm font-semibold">Elevation A · CL-01 louvre screen</p>
+    </div>
+    <button data-arc-close class="rounded-lg border border-stone-200 px-2 py-2 text-2xs uppercase tracking-widest hover:bg-stone-100 dark:border-stone-800 dark:hover:bg-stone-800">Close</button>
+  </div>
+  <div class="arc-scroll flex max-h-[calc(100vh-88px)] flex-col gap-6 overflow-y-auto p-6">
+    <div class="arc-grid-paper h-40 rounded-xl border border-stone-200 bg-white dark:border-stone-800 dark:bg-stone-950"></div>
+    <dl class="divide-y divide-stone-200 dark:divide-stone-800">
+      <div class="flex items-center justify-between py-2"><dt class="text-sm text-stone-500 dark:text-stone-400">Species</dt><dd class="text-sm font-medium">Burmese teak</dd></div>
+      <div class="flex items-center justify-between py-2"><dt class="text-sm text-stone-500 dark:text-stone-400">Profile</dt><dd class="arc-numeric text-sm font-medium">45 × 25 mm, 20 mm gap</dd></div>
+      <div class="flex items-center justify-between py-2"><dt class="text-sm text-stone-500 dark:text-stone-400">Fixing</dt><dd class="text-sm font-medium">Stainless clip, concealed</dd></div>
+      <div class="flex items-center justify-between py-2"><dt class="text-sm text-stone-500 dark:text-stone-400">Finish</dt><dd class="text-sm font-medium">Matte exterior oil</dd></div>
+      <div class="flex items-center justify-between py-2"><dt class="text-sm text-stone-500 dark:text-stone-400">Board-feet</dt><dd class="arc-numeric text-sm font-medium">218 bf</dd></div>
+    </dl>
+    <div class="flex flex-col gap-2">
+      <button class="rounded-lg bg-stone-800 px-4 py-2 text-sm font-medium text-stone-50 dark:bg-stone-200 dark:text-stone-900">Attach to material schedule</button>
+      <button class="rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm font-medium hover:bg-stone-100 dark:border-stone-800 dark:bg-stone-950 dark:hover:bg-stone-800">Send to client portal</button>
+    </div>
+  </div>
+</div>
+
+<script src="../assets/arc-kit.js" defer></script>
+</body>
+</html>

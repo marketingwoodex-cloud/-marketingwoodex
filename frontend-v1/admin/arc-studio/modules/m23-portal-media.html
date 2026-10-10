@@ -1,0 +1,205 @@
+<!doctype html>
+<!-- ============================================================================
+     WOODEX ADMIN V2.1 + ARC.STUDIO
+     MODULE 23 — PORTAL CONTENT & MEDIA
+     Blocks: 1 Compression / Gallery Parameters · 2 Utility Link KPIs · 3 Gallery + Upload
+     ============================================================================ -->
+<html lang="en" class="h-full">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>M23 Portal Content &amp; Media — WOODEX ADMIN V2.1</title>
+<link rel="stylesheet" href="../assets/arc-kit.css">
+<script>try{var t=localStorage.getItem("wxaTheme");if(t==="dark"||(!t&&matchMedia("(prefers-color-scheme: dark)").matches)){document.documentElement.classList.add("dark");document.documentElement.setAttribute("data-theme","dark")}}catch(e){}</script>
+</head>
+<body class="min-h-full bg-stone-100 text-stone-950 antialiased dark:bg-stone-950 dark:text-stone-50">
+<div class="mx-auto flex w-full max-w-canvas flex-col gap-8 px-6 py-8">
+
+  <!-- ===== BLOCK 1 — HEADER / MEDIA PARAMETERS ===== -->
+  <header class="flex flex-col gap-6 border-b border-stone-200 pb-6 dark:border-stone-800">
+    <div class="flex flex-col gap-2">
+      <nav class="flex items-center gap-2 text-2xs uppercase tracking-widest text-stone-500 dark:text-stone-400">
+        <span>Module VI</span><span class="text-stone-300 dark:text-stone-600">/</span><span class="text-stone-900 dark:text-stone-50">Portal Content &amp; Media</span>
+      </nav>
+      <h1 class="text-xl font-semibold tracking-tight">Portal Content &amp; Media</h1>
+      <p class="max-w-3xl text-sm text-stone-500 dark:text-stone-400">Workshop progress photography and structural rendering assets published to the client portal gallery.</p>
+    </div>
+
+    <div class="flex flex-wrap items-end gap-2">
+      <div class="flex flex-col gap-y-2">
+        <label class="text-2xs font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Compression profile</label>
+        <select class="rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-stone-400 dark:border-stone-800 dark:bg-stone-950 dark:focus:ring-stone-500">
+          <option>WebP · quality 82</option><option>WebP · quality 68</option><option>Original files only</option>
+        </select>
+      </div>
+      <div class="flex flex-col gap-y-2">
+        <label class="text-2xs font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Gallery display</label>
+        <select class="rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-stone-400 dark:border-stone-800 dark:bg-stone-950 dark:focus:ring-stone-500">
+          <option>Grid · 4 per row</option><option>Slider · full width</option><option>Masonry</option>
+        </select>
+      </div>
+      <div class="flex items-center gap-2 rounded-lg border border-stone-200 bg-white px-4 py-2 dark:border-stone-800 dark:bg-stone-950">
+        <span class="text-sm font-medium">Strip EXIF on publish</span>
+        <button role="switch" aria-checked="true" data-arc-switch="EXIF stripping" class="relative h-6 w-10 shrink-0 rounded-sm bg-stone-200 transition-colors dark:bg-stone-800">
+          <span class="absolute left-2 top-2 h-4 w-4 translate-x-0 rounded-sm bg-white transition-transform dark:bg-stone-950"></span>
+        </button>
+      </div>
+      <button class="rounded-lg bg-stone-800 px-4 py-2 text-sm font-medium text-stone-50 hover:bg-stone-700 dark:bg-stone-200 dark:text-stone-900 dark:hover:bg-stone-300">Reprocess library</button>
+    </div>
+  </header>
+
+  <!-- ===== BLOCK 2 — 4-COLUMN UTILITY LINK KPIs ===== -->
+  <section class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">File Storage Capacity</p>
+      <p class="arc-numeric mt-2 text-2xl font-bold tracking-tight">42.6<span class="text-sm font-medium text-stone-400"> / 80 GB</span></p>
+      <div class="mt-4 flex flex-col gap-2">
+        <span class="block h-2 w-full overflow-hidden rounded-sm bg-stone-200 dark:bg-stone-800"><span data-arc-value="53" class="block h-full w-0 bg-stone-800 transition-all duration-700 dark:bg-stone-200"></span></span>
+        <a href="#gallery" class="text-sm font-medium underline decoration-dotted underline-offset-4">Storage policy →</a>
+      </div>
+    </article>
+    <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Active Shared Links</p>
+      <p class="arc-numeric mt-2 text-2xl font-bold tracking-tight">18</p>
+      <a href="#gallery" class="mt-4 inline-flex text-sm font-medium underline decoration-dotted underline-offset-4">Manage links →</a>
+    </article>
+    <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Digital Asset Count</p>
+      <p class="arc-numeric mt-2 text-2xl font-bold tracking-tight">1,284</p>
+      <a href="#gallery" class="mt-4 inline-flex text-sm font-medium underline decoration-dotted underline-offset-4">Unused asset finder →</a>
+    </article>
+    <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Responsive Variants</p>
+      <p class="arc-numeric mt-2 text-2xl font-bold tracking-tight">03</p>
+      <a href="#gallery" class="mt-4 inline-flex text-sm font-medium underline decoration-dotted underline-offset-4">Variant settings →</a>
+    </article>
+  </section>
+
+  <!-- ===== BLOCK 3 — MAIN ACTION CANVAS (Gallery Grid + Upload) ===== -->
+  <section id="gallery" class="grid grid-cols-1 gap-6 xl:grid-cols-12">
+
+    <article class="rounded-xl border border-stone-200 bg-stone-50 shadow-panel xl:col-span-9 dark:border-stone-800 dark:bg-stone-900">
+      <header class="flex flex-wrap items-center justify-between gap-4 border-b border-stone-200 px-6 py-4 dark:border-stone-800">
+        <div>
+          <h2 class="text-sm font-semibold">Hafeez Villa · progress gallery</h2>
+          <p class="text-sm text-stone-500 dark:text-stone-400">24 published · 6 pending review</p>
+        </div>
+        <div data-arc-tabs class="flex items-center gap-2 rounded-lg border border-stone-200 bg-white p-2 dark:border-stone-800 dark:bg-stone-950">
+          <button data-arc-tab="grid" aria-selected="true" class="rounded-lg px-2 py-2 text-sm font-medium">Grid</button>
+          <button data-arc-tab="slider" aria-selected="false" class="rounded-lg px-2 py-2 text-sm font-medium">Slider</button>
+          <button data-arc-tab="review" aria-selected="false" class="rounded-lg px-2 py-2 text-sm font-medium">Pending</button>
+        </div>
+      </header>
+
+      <div data-arc-pane="grid" class="grid grid-cols-2 gap-4 p-6 lg:grid-cols-4">
+        <figure class="arc-grid-paper flex h-44 flex-col justify-end rounded-xl border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-950">
+          <figcaption class="text-sm font-medium">Carcass assembly</figcaption>
+          <span class="arc-numeric text-2xs uppercase tracking-widest text-stone-400">Workshop · 09 Oct</span>
+        </figure>
+        <figure class="arc-grid-paper flex h-44 flex-col justify-end rounded-xl border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-950">
+          <figcaption class="text-sm font-medium">Veneer press</figcaption>
+          <span class="arc-numeric text-2xs uppercase tracking-widest text-stone-400">Workshop · 10 Oct</span>
+        </figure>
+        <figure class="arc-grid-paper flex h-44 flex-col justify-end rounded-xl border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-950">
+          <figcaption class="text-sm font-medium">Edge banding</figcaption>
+          <span class="arc-numeric text-2xs uppercase tracking-widest text-stone-400">Workshop · 11 Oct</span>
+        </figure>
+        <figure class="arc-grid-paper flex h-44 flex-col justify-end rounded-xl border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-950">
+          <figcaption class="text-sm font-medium">Site protection</figcaption>
+          <span class="arc-numeric text-2xs uppercase tracking-widest text-stone-400">Site · 11 Oct</span>
+        </figure>
+        <figure class="arc-grid-paper flex h-44 flex-col justify-end rounded-xl border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-950">
+          <figcaption class="text-sm font-medium">Elevation B render</figcaption>
+          <span class="arc-numeric text-2xs uppercase tracking-widest text-stone-400">3D · rev B.05</span>
+        </figure>
+        <figure class="arc-grid-paper flex h-44 flex-col justify-end rounded-xl border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-950">
+          <figcaption class="text-sm font-medium">Kitchen run render</figcaption>
+          <span class="arc-numeric text-2xs uppercase tracking-widest text-stone-400">3D · MW-07</span>
+        </figure>
+        <figure class="arc-grid-paper flex h-44 flex-col justify-end rounded-xl border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-950">
+          <figcaption class="text-sm font-medium">Wardrobe detail</figcaption>
+          <span class="arc-numeric text-2xs uppercase tracking-widest text-stone-400">3D · MW-11</span>
+        </figure>
+        <label class="flex h-44 flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-stone-300 text-stone-500 transition-colors hover:border-stone-400 dark:border-stone-700 dark:text-stone-400">
+          <span class="text-2xl leading-none">＋</span><span class="text-2xs uppercase tracking-widest">Upload</span>
+          <input type="file" multiple class="hidden">
+        </label>
+      </div>
+
+      <!-- slider view -->
+      <div data-arc-pane="slider" hidden class="p-6">
+        <div class="arc-grid-paper relative flex h-[420px] items-end rounded-xl border border-stone-200 bg-white p-6 dark:border-stone-800 dark:bg-stone-950">
+          <div class="w-full rounded-xl border border-stone-200 bg-stone-50/90 p-4 backdrop-blur dark:border-stone-800 dark:bg-stone-900/90">
+            <p class="text-sm font-semibold">Veneer press · walnut batch 14</p>
+            <p class="arc-numeric text-2xs uppercase tracking-widest text-stone-400">3 of 24 · shot 10 Oct 2026 · 12 mm press load</p>
+            <div class="mt-4 flex items-center gap-2">
+              <button class="rounded-lg border border-stone-200 px-2 py-2 text-2xs font-medium uppercase tracking-widest hover:bg-stone-100 dark:border-stone-800 dark:hover:bg-stone-800">Prev</button>
+              <div class="flex flex-1 gap-2">
+                <span class="h-2 flex-1 rounded-sm bg-stone-800 dark:bg-stone-200"></span>
+                <span class="h-2 flex-1 rounded-sm bg-stone-300 dark:bg-stone-700"></span>
+                <span class="h-2 flex-1 rounded-sm bg-stone-300 dark:bg-stone-700"></span>
+                <span class="h-2 flex-1 rounded-sm bg-stone-300 dark:bg-stone-700"></span>
+              </div>
+              <button class="rounded-lg border border-stone-200 px-2 py-2 text-2xs font-medium uppercase tracking-widest hover:bg-stone-100 dark:border-stone-800 dark:hover:bg-stone-800">Next</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- pending review -->
+      <div data-arc-pane="review" hidden class="p-6">
+        <div class="w-full overflow-x-auto overflow-y-hidden rounded-xl border border-stone-200 dark:border-stone-800">
+          <table class="w-full text-left text-sm">
+            <thead class="bg-stone-100/50 text-xs font-semibold uppercase tracking-wider text-stone-500 dark:bg-stone-900/50 dark:text-stone-400">
+              <tr><th class="px-4 py-2">Asset</th><th class="px-4 py-2">Source</th><th class="px-4 py-2 text-right">Weight</th><th class="px-4 py-2">Alt text</th><th class="px-4 py-2 text-right">Publish</th></tr>
+            </thead>
+            <tbody class="divide-y divide-stone-200 dark:divide-stone-800">
+              <tr><td class="px-4 py-2 font-medium">press-batch-14.jpg</td><td class="px-4 py-2 text-stone-500 dark:text-stone-400">Workshop</td><td class="arc-numeric px-4 py-2 text-right">4.2 MB</td><td class="px-4 py-2"><span class="rounded-lg border border-stone-300 px-2 py-2 text-2xs uppercase tracking-widest text-stone-600 dark:border-stone-700 dark:text-stone-300">Missing</span></td><td class="px-4 py-2 text-right"><button class="rounded-lg bg-stone-800 px-2 py-2 text-2xs font-semibold uppercase tracking-widest text-stone-50 dark:bg-stone-200 dark:text-stone-900">Publish</button></td></tr>
+              <tr><td class="px-4 py-2 font-medium">site-protection-02.jpg</td><td class="px-4 py-2 text-stone-500 dark:text-stone-400">Site</td><td class="arc-numeric px-4 py-2 text-right">3.1 MB</td><td class="px-4 py-2"><span class="rounded-lg bg-stone-800 px-2 py-2 text-2xs uppercase tracking-widest text-stone-50 dark:bg-stone-200 dark:text-stone-900">Ready</span></td><td class="px-4 py-2 text-right"><button class="rounded-lg bg-stone-800 px-2 py-2 text-2xs font-semibold uppercase tracking-widest text-stone-50 dark:bg-stone-200 dark:text-stone-900">Publish</button></td></tr>
+              <tr><td class="px-4 py-2 font-medium">elevation-b-05.png</td><td class="px-4 py-2 text-stone-500 dark:text-stone-400">3D</td><td class="arc-numeric px-4 py-2 text-right">8.9 MB</td><td class="px-4 py-2"><span class="rounded-lg bg-stone-800 px-2 py-2 text-2xs uppercase tracking-widest text-stone-50 dark:bg-stone-200 dark:text-stone-900">Ready</span></td><td class="px-4 py-2 text-right"><button class="rounded-lg bg-stone-800 px-2 py-2 text-2xs font-semibold uppercase tracking-widest text-stone-50 dark:bg-stone-200 dark:text-stone-900">Publish</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </article>
+
+    <!-- upload form -->
+    <aside class="flex flex-col gap-6 xl:col-span-3">
+      <article class="rounded-xl border border-stone-200 bg-stone-50 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+        <header class="border-b border-stone-200 px-6 py-4 dark:border-stone-800">
+          <h2 class="text-sm font-semibold">Upload assets</h2>
+        </header>
+        <form class="flex flex-col gap-6 p-6">
+          <div class="flex flex-col gap-y-2">
+            <label class="text-2xs font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Project</label>
+            <select class="w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-stone-400 dark:border-stone-800 dark:bg-stone-950 dark:focus:ring-stone-500">
+              <option>Hafeez Villa</option><option>Gulberg Office</option><option>DHA Phase 6</option>
+            </select>
+          </div>
+          <div class="flex flex-col gap-y-2">
+            <label class="text-2xs font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Stage</label>
+            <select class="w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-stone-400 dark:border-stone-800 dark:bg-stone-950 dark:focus:ring-stone-500">
+              <option>Carcass fabrication</option><option>Veneer press</option><option>Finishing</option><option>Installation</option>
+            </select>
+          </div>
+          <div class="flex flex-col gap-y-2">
+            <label class="text-2xs font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Alt text (required)</label>
+            <textarea rows="3" placeholder="Describe the asset for accessibility and SEO…" class="w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm placeholder:text-stone-400 focus:outline-none focus:ring-1 focus:ring-stone-400 dark:border-stone-800 dark:bg-stone-950 dark:placeholder:text-stone-500 dark:focus:ring-stone-500"></textarea>
+          </div>
+          <div class="rounded-lg border border-dashed border-stone-300 p-4 text-center dark:border-stone-700">
+            <p class="text-sm text-stone-500 dark:text-stone-400">Drop files here · JPG, PNG, MP4 up to 200 MB</p>
+            <input type="file" multiple class="mt-4 w-full text-sm">
+          </div>
+          <div class="flex flex-col gap-2">
+            <button type="button" class="rounded-lg bg-stone-800 px-4 py-2 text-sm font-medium text-stone-50 dark:bg-stone-200 dark:text-stone-900">Publish to portal</button>
+            <button type="button" class="rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm font-medium hover:bg-stone-100 dark:border-stone-800 dark:bg-stone-950 dark:hover:bg-stone-800">Save as draft</button>
+          </div>
+        </form>
+      </article>
+    </aside>
+  </section>
+</div>
+<script src="../assets/arc-kit.js" defer></script>
+</body>
+</html>

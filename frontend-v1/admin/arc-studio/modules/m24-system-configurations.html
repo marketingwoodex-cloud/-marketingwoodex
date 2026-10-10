@@ -1,0 +1,199 @@
+<!doctype html>
+<!-- ============================================================================
+     WOODEX ADMIN V2.1 + ARC.STUDIO
+     MODULE 24 — SYSTEM CONFIGURATIONS
+     Blocks: 1 Global Variables Header · 2 Badge Style KPIs · 3 Option Pickers + Switches
+     ============================================================================ -->
+<html lang="en" class="h-full">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>M24 System Configurations — WOODEX ADMIN V2.1</title>
+<link rel="stylesheet" href="../assets/arc-kit.css">
+<script>try{var t=localStorage.getItem("wxaTheme");if(t==="dark"||(!t&&matchMedia("(prefers-color-scheme: dark)").matches)){document.documentElement.classList.add("dark");document.documentElement.setAttribute("data-theme","dark")}}catch(e){}</script>
+</head>
+<body class="min-h-full bg-stone-100 text-stone-950 antialiased dark:bg-stone-950 dark:text-stone-50">
+<div class="mx-auto flex w-full max-w-canvas flex-col gap-8 px-6 py-8">
+
+  <!-- ===== BLOCK 1 — HEADER / GLOBAL VARIABLES ===== -->
+  <header class="flex flex-col gap-6 border-b border-stone-200 pb-6 dark:border-stone-800">
+    <div class="flex flex-col gap-2">
+      <nav class="flex items-center gap-2 text-2xs uppercase tracking-widest text-stone-500 dark:text-stone-400">
+        <span>Module VII</span><span class="text-stone-300 dark:text-stone-600">/</span><span class="text-stone-900 dark:text-stone-50">System Configurations</span>
+      </nav>
+      <h1 class="text-xl font-semibold tracking-tight">System Configurations</h1>
+      <p class="max-w-3xl text-sm text-stone-500 dark:text-stone-400">Regional parameters, tax rules, structural margins and API links applied globally across the studio and the workshop floor.</p>
+    </div>
+
+    <div class="grid grid-cols-1 gap-4 lg:grid-cols-12">
+      <div class="flex flex-col gap-y-2 lg:col-span-4">
+        <label class="text-2xs font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Company legal name</label>
+        <input type="text" value="Woodex Interior (Pvt) Ltd" class="w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-stone-400 dark:border-stone-800 dark:bg-stone-950 dark:focus:ring-stone-500">
+      </div>
+      <div class="flex flex-col gap-y-2 lg:col-span-4">
+        <label class="text-2xs font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Regional location</label>
+        <select class="w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-stone-400 dark:border-stone-800 dark:bg-stone-950 dark:focus:ring-stone-500">
+          <option>Punjab · Pakistan (PK)</option><option>Sindh · Pakistan (PK)</option><option>Federal · Pakistan (PK)</option>
+        </select>
+      </div>
+      <div class="flex flex-col gap-y-2 lg:col-span-4">
+        <label class="text-2xs font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Fiscal year start</label>
+        <select class="w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-stone-400 dark:border-stone-800 dark:bg-stone-950 dark:focus:ring-stone-500">
+          <option>1 July</option><option>1 January</option>
+        </select>
+      </div>
+      <div class="flex flex-wrap items-center justify-between gap-2 lg:col-span-12">
+        <p class="arc-numeric text-2xs uppercase tracking-widest text-stone-400">Config revision 41 · last saved 12 Oct 2026 09:12 by owner</p>
+        <div class="flex items-center gap-2">
+          <button class="rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm font-medium hover:bg-stone-100 dark:border-stone-800 dark:bg-stone-950 dark:hover:bg-stone-800">Discard</button>
+          <button class="rounded-lg bg-stone-800 px-4 py-2 text-sm font-medium text-stone-50 dark:bg-stone-200 dark:text-stone-900">Save configuration</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== BLOCK 2 — 4-COLUMN BADGE STYLE KPIs ===== -->
+  <section class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Connected Plugins</p>
+      <p class="arc-numeric mt-2 text-2xl font-bold tracking-tight">07<span class="text-sm font-medium text-stone-400"> / 09</span></p>
+      <span class="mt-4 inline-flex rounded-lg border border-stone-300 px-2 py-2 text-2xs font-semibold uppercase tracking-widest text-stone-600 dark:border-stone-700 dark:text-stone-300">2 disconnected</span>
+    </article>
+    <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Unit System</p>
+      <p class="arc-numeric mt-2 text-2xl font-bold tracking-tight">Metric</p>
+      <span class="mt-4 inline-flex rounded-lg bg-stone-800 px-2 py-2 text-2xs font-semibold uppercase tracking-widest text-stone-50 dark:bg-stone-200 dark:text-stone-900">mm · m² · °C</span>
+    </article>
+    <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Base Currency</p>
+      <p class="arc-numeric mt-2 text-2xl font-bold tracking-tight">PKR ₨</p>
+      <span class="mt-4 inline-flex rounded-lg border border-stone-300 px-2 py-2 text-2xs font-semibold uppercase tracking-widest text-stone-600 dark:border-stone-700 dark:text-stone-300">Rate locked 12 Oct</span>
+    </article>
+    <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Structural Margin Default</p>
+      <p class="arc-numeric mt-2 text-2xl font-bold tracking-tight">1.24</p>
+      <span class="mt-4 inline-flex items-center gap-2 rounded-lg border border-dashed border-stone-400 px-2 py-2 text-2xs font-semibold uppercase tracking-widest text-stone-500 dark:border-stone-600 dark:text-stone-400"><span class="h-2 w-2 animate-arc-pulse rounded-full bg-stone-400"></span>Review with engineer</span>
+    </article>
+  </section>
+
+  <!-- ===== BLOCK 3 — MAIN ACTION CANVAS (Option Pickers + Switches) ===== -->
+  <section class="grid grid-cols-1 gap-6 xl:grid-cols-12">
+
+    <!-- commercial rules -->
+    <article class="rounded-xl border border-stone-200 bg-stone-50 shadow-panel xl:col-span-4 dark:border-stone-800 dark:bg-stone-900">
+      <header class="border-b border-stone-200 px-6 py-4 dark:border-stone-800">
+        <h2 class="text-sm font-semibold">Commercial &amp; tax rules</h2>
+        <p class="text-sm text-stone-500 dark:text-stone-400">Applied to every quotation and invoice</p>
+      </header>
+      <div class="flex flex-col gap-2 p-6">
+        <label class="flex cursor-pointer items-start gap-2 rounded-lg border border-stone-800 p-4 dark:border-stone-200">
+          <input type="radio" name="tax" checked class="mt-2 h-4 w-4 accent-stone-800 dark:accent-stone-200">
+          <span><span class="block text-sm font-medium">18% GST · standard</span><span class="block text-sm text-stone-500 dark:text-stone-400">Applied to joinery and installation.</span></span>
+        </label>
+        <label class="flex cursor-pointer items-start gap-2 rounded-lg border border-stone-200 p-4 hover:bg-stone-100 dark:border-stone-800 dark:hover:bg-stone-800">
+          <input type="radio" name="tax" class="mt-2 h-4 w-4 accent-stone-800 dark:accent-stone-200">
+          <span><span class="block text-sm font-medium">12% GST · reduced</span><span class="block text-sm text-stone-500 dark:text-stone-400">For registered trade accounts.</span></span>
+        </label>
+        <label class="flex cursor-pointer items-start gap-2 rounded-lg border border-stone-200 p-4 hover:bg-stone-100 dark:border-stone-800 dark:hover:bg-stone-800">
+          <input type="radio" name="tax" class="mt-2 h-4 w-4 accent-stone-800 dark:accent-stone-200">
+          <span><span class="block text-sm font-medium">Zero-rated · export</span><span class="block text-sm text-stone-500 dark:text-stone-400">Requires a filed export declaration.</span></span>
+        </label>
+
+        <div class="mt-4 flex flex-col gap-2 border-t border-stone-200 pt-6 dark:border-stone-800">
+          <div class="flex items-center justify-between gap-4 rounded-lg border border-stone-200 bg-white px-4 py-2 dark:border-stone-800 dark:bg-stone-950">
+            <span class="text-sm">Withholding tax on POs</span>
+            <button role="switch" aria-checked="false" data-arc-switch="Withholding tax" class="relative h-6 w-10 shrink-0 rounded-sm bg-stone-200 transition-colors dark:bg-stone-800"><span class="absolute left-2 top-2 h-4 w-4 translate-x-0 rounded-sm bg-white transition-transform dark:bg-stone-950"></span></button>
+          </div>
+          <div class="flex items-center justify-between gap-4 rounded-lg border border-stone-200 bg-white px-4 py-2 dark:border-stone-800 dark:bg-stone-950">
+            <span class="text-sm">Auto-number invoices</span>
+            <button role="switch" aria-checked="true" data-arc-switch="Auto numbering" class="relative h-6 w-10 shrink-0 rounded-sm bg-stone-200 transition-colors dark:bg-stone-800"><span class="absolute left-2 top-2 h-4 w-4 translate-x-0 rounded-sm bg-white transition-transform dark:bg-stone-950"></span></button>
+          </div>
+          <div class="flex items-center justify-between gap-4 rounded-lg border border-stone-200 bg-white px-4 py-2 dark:border-stone-800 dark:bg-stone-950">
+            <span class="text-sm">Round totals to nearest 100</span>
+            <button role="switch" aria-checked="true" data-arc-switch="Rounding" class="relative h-6 w-10 shrink-0 rounded-sm bg-stone-200 transition-colors dark:bg-stone-800"><span class="absolute left-2 top-2 h-4 w-4 translate-x-0 rounded-sm bg-white transition-transform dark:bg-stone-950"></span></button>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- production rules -->
+    <article class="rounded-xl border border-stone-200 bg-stone-50 shadow-panel xl:col-span-4 dark:border-stone-800 dark:bg-stone-900">
+      <header class="border-b border-stone-200 px-6 py-4 dark:border-stone-800">
+        <h2 class="text-sm font-semibold">Production &amp; structural margins</h2>
+        <p class="text-sm text-stone-500 dark:text-stone-400">Default tolerances used by the cutting list</p>
+      </header>
+      <div class="flex flex-col gap-2 p-6">
+        <div class="flex flex-col gap-y-2">
+          <label class="text-2xs font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Cutting tolerance</label>
+          <select class="w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-stone-400 dark:border-stone-800 dark:bg-stone-950 dark:focus:ring-stone-500">
+            <option>± 0.5 mm · panel saw</option><option>± 1.0 mm · site cut</option>
+          </select>
+        </div>
+        <div class="flex flex-col gap-y-2">
+          <label class="text-2xs font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Waste allowance</label>
+          <select class="w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-stone-400 dark:border-stone-800 dark:bg-stone-950 dark:focus:ring-stone-500">
+            <option>12% · walnut and teak</option><option>9% · softwoods</option><option>15% · figured grain</option>
+          </select>
+        </div>
+        <div class="flex flex-col gap-y-2">
+          <label class="text-2xs font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Moisture tolerance band</label>
+          <input type="text" value="8 – 10%" class="arc-numeric w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-stone-400 dark:border-stone-800 dark:bg-stone-950 dark:focus:ring-stone-500">
+        </div>
+        <div class="mt-4 flex flex-col gap-2 border-t border-stone-200 pt-6 dark:border-stone-800">
+          <div class="flex items-center justify-between gap-4 rounded-lg border border-stone-200 bg-white px-4 py-2 dark:border-stone-800 dark:bg-stone-950">
+            <span class="text-sm">Block release on moisture fail</span>
+            <button role="switch" aria-checked="true" data-arc-switch="Moisture gate" class="relative h-6 w-10 shrink-0 rounded-sm bg-stone-200 transition-colors dark:bg-stone-800"><span class="absolute left-2 top-2 h-4 w-4 translate-x-0 rounded-sm bg-white transition-transform dark:bg-stone-950"></span></button>
+          </div>
+          <div class="flex items-center justify-between gap-4 rounded-lg border border-stone-200 bg-white px-4 py-2 dark:border-stone-800 dark:bg-stone-950">
+            <span class="text-sm">Require engineer sign-off above 5 m</span>
+            <button role="switch" aria-checked="true" data-arc-switch="Span gate" class="relative h-6 w-10 shrink-0 rounded-sm bg-stone-200 transition-colors dark:bg-stone-800"><span class="absolute left-2 top-2 h-4 w-4 translate-x-0 rounded-sm bg-white transition-transform dark:bg-stone-950"></span></button>
+          </div>
+          <div class="flex items-center justify-between gap-4 rounded-lg border border-dashed border-stone-300 px-4 py-2 dark:border-stone-700">
+            <span class="text-sm text-stone-500 dark:text-stone-400">Auto-order below safety stock</span>
+            <button role="switch" aria-checked="false" data-arc-switch="Auto order" class="relative h-6 w-10 shrink-0 rounded-sm bg-stone-200 transition-colors dark:bg-stone-800"><span class="absolute left-2 top-2 h-4 w-4 translate-x-0 rounded-sm bg-white transition-transform dark:bg-stone-950"></span></button>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- integrations -->
+    <article class="rounded-xl border border-stone-200 bg-stone-50 shadow-panel xl:col-span-4 dark:border-stone-800 dark:bg-stone-900">
+      <header class="border-b border-stone-200 px-6 py-4 dark:border-stone-800">
+        <h2 class="text-sm font-semibold">API links &amp; integrations</h2>
+        <p class="text-sm text-stone-500 dark:text-stone-400">Keys are stored server-side only</p>
+      </header>
+      <ul class="divide-y divide-stone-200 dark:divide-stone-800">
+        <li class="flex items-center justify-between gap-4 px-6 py-4">
+          <span class="min-w-0"><span class="block truncate text-sm font-medium">WhatsApp Cloud API</span><span class="arc-numeric block text-2xs uppercase tracking-widest text-stone-400">Webhook verified 11 Oct</span></span>
+          <button role="switch" aria-checked="true" data-arc-switch="WhatsApp integration" class="relative h-6 w-10 shrink-0 rounded-sm bg-stone-200 transition-colors dark:bg-stone-800"><span class="absolute left-2 top-2 h-4 w-4 translate-x-0 rounded-sm bg-white transition-transform dark:bg-stone-950"></span></button>
+        </li>
+        <li class="flex items-center justify-between gap-4 px-6 py-4">
+          <span class="min-w-0"><span class="block truncate text-sm font-medium">SMTP · Hostinger mail</span><span class="arc-numeric block text-2xs uppercase tracking-widest text-stone-400">Last send 09:42 today</span></span>
+          <button role="switch" aria-checked="true" data-arc-switch="SMTP" class="relative h-6 w-10 shrink-0 rounded-sm bg-stone-200 transition-colors dark:bg-stone-800"><span class="absolute left-2 top-2 h-4 w-4 translate-x-0 rounded-sm bg-white transition-transform dark:bg-stone-950"></span></button>
+        </li>
+        <li class="flex items-center justify-between gap-4 px-6 py-4">
+          <span class="min-w-0"><span class="block truncate text-sm font-medium">AI assistant · analysis model</span><span class="arc-numeric block text-2xs uppercase tracking-widest text-stone-400">42k of 150k tokens used</span></span>
+          <button role="switch" aria-checked="true" data-arc-switch="AI assistant" class="relative h-6 w-10 shrink-0 rounded-sm bg-stone-200 transition-colors dark:bg-stone-800"><span class="absolute left-2 top-2 h-4 w-4 translate-x-0 rounded-sm bg-white transition-transform dark:bg-stone-950"></span></button>
+        </li>
+        <li class="flex items-center justify-between gap-4 px-6 py-4">
+          <span class="min-w-0"><span class="block truncate text-sm font-medium">Cloudflare Turnstile</span><span class="arc-numeric block text-2xs uppercase tracking-widest text-stone-400">Form spam protection</span></span>
+          <button role="switch" aria-checked="true" data-arc-switch="Turnstile" class="relative h-6 w-10 shrink-0 rounded-sm bg-stone-200 transition-colors dark:bg-stone-800"><span class="absolute left-2 top-2 h-4 w-4 translate-x-0 rounded-sm bg-white transition-transform dark:bg-stone-950"></span></button>
+        </li>
+        <li class="flex items-center justify-between gap-4 px-6 py-4">
+          <span class="min-w-0"><span class="block truncate text-sm font-medium">Analytics 4 + Search Console</span><span class="arc-numeric block text-2xs uppercase tracking-widest text-stone-400">Token expires in 12 days</span></span>
+          <button role="switch" aria-checked="false" data-arc-switch="Analytics" class="relative h-6 w-10 shrink-0 rounded-sm bg-stone-200 transition-colors dark:bg-stone-800"><span class="absolute left-2 top-2 h-4 w-4 translate-x-0 rounded-sm bg-white transition-transform dark:bg-stone-950"></span></button>
+        </li>
+      </ul>
+      <div class="border-t border-stone-200 p-6 dark:border-stone-800">
+        <div class="flex flex-wrap items-center gap-2">
+          <button class="rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm font-medium hover:bg-stone-100 dark:border-stone-800 dark:bg-stone-950 dark:hover:bg-stone-800">Test connections</button>
+          <button class="rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm font-medium hover:bg-stone-100 dark:border-stone-800 dark:bg-stone-950 dark:hover:bg-stone-800">Rotate keys</button>
+        </div>
+      </div>
+    </article>
+  </section>
+</div>
+<script src="../assets/arc-kit.js" defer></script>
+</body>
+</html>

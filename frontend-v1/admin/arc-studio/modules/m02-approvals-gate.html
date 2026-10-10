@@ -1,0 +1,221 @@
+<!doctype html>
+<!-- ============================================================================
+     WOODEX ADMIN V2.1 + ARC.STUDIO
+     MODULE 02 — SYSTEM APPROVALS GATE
+     Blocks: 1 Segmented Filter Bar · 2 KPI Row · 3 Cross-Comparison Decision Rows
+     ============================================================================ -->
+<html lang="en" class="h-full">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>M02 System Approvals Gate — WOODEX ADMIN V2.1</title>
+<link rel="stylesheet" href="../assets/arc-kit.css">
+<script>try{var t=localStorage.getItem("wxaTheme");if(t==="dark"||(!t&&matchMedia("(prefers-color-scheme: dark)").matches)){document.documentElement.classList.add("dark");document.documentElement.setAttribute("data-theme","dark")}}catch(e){}</script>
+</head>
+<body class="min-h-full bg-stone-100 text-stone-950 antialiased dark:bg-stone-950 dark:text-stone-50">
+<div class="mx-auto flex w-full max-w-canvas flex-col gap-8 px-6 py-8">
+
+  <!-- ===== BLOCK 1 — HEADER / FILTER BAR ===== -->
+  <header class="flex flex-col gap-6 border-b border-stone-200 pb-6 lg:flex-row lg:items-start lg:justify-between dark:border-stone-800">
+    <div class="flex flex-col gap-2">
+      <nav class="flex items-center gap-2 text-2xs uppercase tracking-widest text-stone-500 dark:text-stone-400">
+        <span>Module I</span><span class="text-stone-300 dark:text-stone-600">/</span><span class="text-stone-900 dark:text-stone-50">Approvals Gate</span>
+      </nav>
+      <h1 class="text-xl font-semibold tracking-tight">System Approvals Gate</h1>
+      <p class="max-w-3xl text-sm text-stone-500 dark:text-stone-400">Financial requests and blueprint modifications land in one queue. Compare the commercial figure against the drawing revision before releasing either.</p>
+    </div>
+    <div class="flex flex-col items-start gap-2 lg:items-end">
+      <div data-arc-tabs class="flex items-center gap-2 rounded-lg border border-stone-200 bg-white p-2 dark:border-stone-800 dark:bg-stone-950">
+        <button data-arc-tab="fin" aria-selected="true" class="rounded-lg px-4 py-2 text-sm font-medium">Financial Requests</button>
+        <button data-arc-tab="bp" aria-selected="false" class="rounded-lg px-4 py-2 text-sm font-medium">Blueprint Modifications</button>
+      </div>
+      <div class="flex flex-wrap items-center gap-2">
+        <label class="flex items-center gap-2 rounded-lg border border-stone-200 bg-white px-2 py-2 focus-within:ring-1 focus-within:ring-stone-400 dark:border-stone-800 dark:bg-stone-950 dark:focus-within:ring-stone-500">
+          <svg class="h-4 w-4 text-stone-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="7"/><path d="m20 20-4.3-4.3"/></svg>
+          <input data-arc-filter data-arc-target="#approval-queue" type="search" placeholder="Filter by client or reference…" class="w-56 bg-transparent text-sm outline-none placeholder:text-stone-400 dark:placeholder:text-stone-500">
+        </label>
+        <button class="rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm font-medium hover:bg-stone-100 dark:border-stone-800 dark:bg-stone-950 dark:hover:bg-stone-800">Sort: value</button>
+        <button class="rounded-lg bg-stone-800 px-4 py-2 text-sm font-medium text-stone-50 hover:bg-stone-700 dark:bg-stone-200 dark:text-stone-900 dark:hover:bg-stone-300">Bulk approve</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== BLOCK 2 — 4-COLUMN KPI SUMMARY ROW ===== -->
+  <section class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Pending Invoices</p>
+      <p class="arc-numeric mt-2 text-2xl font-bold tracking-tight">14</p>
+      <p class="mt-2 text-sm text-stone-500 dark:text-stone-400">₨ 9.62M awaiting release</p>
+    </article>
+    <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Unsigned Quotes</p>
+      <p class="arc-numeric mt-2 text-2xl font-bold tracking-tight">08</p>
+      <p class="mt-2 text-sm text-stone-500 dark:text-stone-400">₨ 4.18M holds expiring in 7 days</p>
+    </article>
+    <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Plans Awaiting Field Approval</p>
+      <p class="arc-numeric mt-2 text-2xl font-bold tracking-tight">05</p>
+      <p class="mt-2 text-sm text-stone-500 dark:text-stone-400">3 elevations · 2 millwork runs</p>
+    </article>
+    <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">SLA Breaches</p>
+      <p class="arc-numeric mt-2 text-2xl font-bold tracking-tight">02</p>
+      <div class="mt-4 flex flex-col gap-2">
+        <span class="block h-2 w-full overflow-hidden rounded-sm bg-stone-200 dark:bg-stone-800"><span data-arc-value="14" class="block h-full w-0 bg-stone-800 transition-all duration-700 dark:bg-stone-200"></span></span>
+        <p class="text-sm text-stone-500 dark:text-stone-400">Target: under 5% of queue age above 72 h</p>
+      </div>
+    </article>
+  </section>
+
+  <!-- ===== BLOCK 3 — MAIN ACTION CANVAS ===== -->
+  <section data-arc-pane="fin" class="grid grid-cols-1 gap-6 xl:grid-cols-12">
+    <div id="approval-queue" class="flex flex-col gap-4 xl:col-span-8">
+
+      <article data-arc-filter-item class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+        <div class="flex flex-wrap items-start justify-between gap-4">
+          <div class="flex flex-col gap-2">
+            <div class="flex items-center gap-2">
+              <span class="arc-numeric text-sm font-semibold">WX-INV-2842</span>
+              <span class="flex items-center gap-2 rounded-lg border border-stone-300 px-2 py-2 text-2xs font-semibold uppercase tracking-widest text-stone-600 dark:border-stone-700 dark:text-stone-300">
+                <span class="h-2 w-2 animate-arc-pulse rounded-full bg-stone-400"></span>Awaiting release
+              </span>
+            </div>
+            <p class="text-sm text-stone-500 dark:text-stone-400">Gulberg Office Fit-out · stage 2 joinery, 42 line items</p>
+          </div>
+          <p class="arc-numeric text-2xl font-bold tracking-tight">₨ 3,876,500</p>
+        </div>
+        <dl class="mt-6 grid grid-cols-2 gap-4 border-t border-stone-200 pt-4 md:grid-cols-4 dark:border-stone-800">
+          <div><dt class="text-2xs uppercase tracking-widest text-stone-500 dark:text-stone-400">Quoted</dt><dd class="arc-numeric text-sm font-semibold">₨ 3,940,000</dd></div>
+          <div><dt class="text-2xs uppercase tracking-widest text-stone-500 dark:text-stone-400">Variance</dt><dd class="arc-numeric text-sm font-semibold">−1.6%</dd></div>
+          <div><dt class="text-2xs uppercase tracking-widest text-stone-500 dark:text-stone-400">Drawing rev</dt><dd class="arc-numeric text-sm font-semibold">B.04</dd></div>
+          <div><dt class="text-2xs uppercase tracking-widest text-stone-500 dark:text-stone-400">Margin</dt><dd class="arc-numeric text-sm font-semibold">31.2%</dd></div>
+        </dl>
+        <div class="mt-6 flex flex-wrap items-center justify-between gap-2">
+          <span class="rounded-lg border border-stone-200 px-2 py-2 text-2xs uppercase tracking-widest text-stone-500 dark:border-stone-800 dark:text-stone-400">Accounts · Ayesha K.</span>
+          <div class="inline-flex overflow-hidden rounded-lg border border-stone-200 dark:border-stone-800">
+            <button class="border-r border-stone-200 px-4 py-2 text-sm font-medium hover:bg-stone-100 dark:border-stone-800 dark:hover:bg-stone-800">Request change</button>
+            <button class="border-r border-stone-200 px-4 py-2 text-sm font-medium hover:bg-stone-100 dark:border-stone-800 dark:hover:bg-stone-800">Reject</button>
+            <button class="bg-stone-800 px-4 py-2 text-sm font-medium text-stone-50 hover:bg-stone-700 dark:bg-stone-200 dark:text-stone-900 dark:hover:bg-stone-300">Approve &amp; send</button>
+          </div>
+        </div>
+      </article>
+
+      <article data-arc-filter-item class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+        <div class="flex flex-wrap items-start justify-between gap-4">
+          <div class="flex flex-col gap-2">
+            <div class="flex items-center gap-2">
+              <span class="arc-numeric text-sm font-semibold">WX-QT-0918</span>
+              <span class="rounded-lg border border-dashed border-stone-400 px-2 py-2 text-2xs font-semibold uppercase tracking-widest text-stone-500 dark:border-stone-600 dark:text-stone-400">Signature pending 11 d</span>
+            </div>
+            <p class="text-sm text-stone-500 dark:text-stone-400">Al-Noor Residence · full internal joinery package</p>
+          </div>
+          <p class="arc-numeric text-2xl font-bold tracking-tight">₨ 2,140,000</p>
+        </div>
+        <dl class="mt-6 grid grid-cols-2 gap-4 border-t border-stone-200 pt-4 md:grid-cols-4 dark:border-stone-800">
+          <div><dt class="text-2xs uppercase tracking-widest text-stone-500 dark:text-stone-400">Quoted</dt><dd class="arc-numeric text-sm font-semibold">₨ 2,140,000</dd></div>
+          <div><dt class="text-2xs uppercase tracking-widest text-stone-500 dark:text-stone-400">Variance</dt><dd class="arc-numeric text-sm font-semibold">0.0%</dd></div>
+          <div><dt class="text-2xs uppercase tracking-widest text-stone-500 dark:text-stone-400">Drawing rev</dt><dd class="arc-numeric text-sm font-semibold">C.01</dd></div>
+          <div><dt class="text-2xs uppercase tracking-widest text-stone-500 dark:text-stone-400">Margin</dt><dd class="arc-numeric text-sm font-semibold">27.8%</dd></div>
+        </dl>
+        <div class="mt-6 flex flex-wrap items-center justify-between gap-2">
+          <span class="rounded-lg border border-stone-200 px-2 py-2 text-2xs uppercase tracking-widest text-stone-500 dark:border-stone-800 dark:text-stone-400">Sales · Hamza R.</span>
+          <div class="inline-flex overflow-hidden rounded-lg border border-stone-200 dark:border-stone-800">
+            <button class="border-r border-stone-200 px-4 py-2 text-sm font-medium hover:bg-stone-100 dark:border-stone-800 dark:hover:bg-stone-800">Send reminder</button>
+            <button class="bg-stone-800 px-4 py-2 text-sm font-medium text-stone-50 hover:bg-stone-700 dark:bg-stone-200 dark:text-stone-900 dark:hover:bg-stone-300">Release to client portal</button>
+          </div>
+        </div>
+      </article>
+
+      <article data-arc-filter-item class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+        <div class="flex flex-wrap items-start justify-between gap-4">
+          <div class="flex flex-col gap-2">
+            <div class="flex items-center gap-2">
+              <span class="arc-numeric text-sm font-semibold">WX-PO-4471</span>
+              <span class="rounded-lg bg-stone-100 px-2 py-2 text-2xs font-semibold uppercase tracking-widest text-stone-400 dark:bg-stone-800 dark:text-stone-500">Auto-verified</span>
+            </div>
+            <p class="text-sm text-stone-500 dark:text-stone-400">Timber Mart · 340 board-feet American walnut, FAS grade</p>
+          </div>
+          <p class="arc-numeric text-2xl font-bold tracking-tight">₨ 1,180,000</p>
+        </div>
+        <div class="mt-6 flex items-center justify-between gap-4 rounded-lg border border-stone-200 bg-white px-4 py-2 dark:border-stone-800 dark:bg-stone-950">
+          <p class="text-sm text-stone-500 dark:text-stone-400">Matched against material schedule MS-14 — no deviation.</p>
+          <span class="arc-numeric text-2xs uppercase tracking-widest text-stone-400">3-way match OK</span>
+        </div>
+      </article>
+    </div>
+
+    <!-- decision rail -->
+    <aside class="flex flex-col gap-6 xl:col-span-4">
+      <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+        <h2 class="text-sm font-semibold">Gate rules in force</h2>
+        <ul class="mt-4 flex flex-col gap-2">
+          <li class="flex items-center justify-between gap-4 rounded-lg border border-stone-200 bg-white px-4 py-2 dark:border-stone-800 dark:bg-stone-950"><span class="text-sm">Variance tolerance</span><span class="arc-numeric text-sm font-semibold">±2.0%</span></li>
+          <li class="flex items-center justify-between gap-4 rounded-lg border border-stone-200 bg-white px-4 py-2 dark:border-stone-800 dark:bg-stone-950"><span class="text-sm">Minimum margin</span><span class="arc-numeric text-sm font-semibold">24.0%</span></li>
+          <li class="flex items-center justify-between gap-4 rounded-lg border border-stone-200 bg-white px-4 py-2 dark:border-stone-800 dark:bg-stone-950"><span class="text-sm">Dual sign-off above</span><span class="arc-numeric text-sm font-semibold">₨ 2.5M</span></li>
+          <li class="flex items-center justify-between gap-4 rounded-lg border border-stone-200 bg-white px-4 py-2 dark:border-stone-800 dark:bg-stone-950"><span class="text-sm">Auto-escalate after</span><span class="arc-numeric text-sm font-semibold">72 h</span></li>
+        </ul>
+      </article>
+
+      <article class="rounded-xl border border-stone-200 bg-stone-50 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+        <header class="border-b border-stone-200 px-6 py-4 dark:border-stone-800">
+          <h2 class="text-sm font-semibold">Decision log · today</h2>
+        </header>
+        <ol class="divide-y divide-stone-200 dark:divide-stone-800">
+          <li class="flex items-center justify-between gap-4 px-6 py-4"><span class="min-w-0"><span class="block truncate text-sm font-medium">WX-INV-2839 · approved</span><span class="arc-numeric block text-2xs uppercase tracking-widest text-stone-400">09:12 · Owner</span></span><span class="arc-numeric text-sm font-semibold">₨ 918k</span></li>
+          <li class="flex items-center justify-between gap-4 px-6 py-4"><span class="min-w-0"><span class="block truncate text-sm font-medium">WX-QT-0912 · rejected</span><span class="arc-numeric block text-2xs uppercase tracking-widest text-stone-400">10:38 · Owner</span></span><span class="arc-numeric text-sm font-semibold">₨ 402k</span></li>
+          <li class="flex items-center justify-between gap-4 px-6 py-4"><span class="min-w-0"><span class="block truncate text-sm font-medium">WX-PO-4468 · approved</span><span class="arc-numeric block text-2xs uppercase tracking-widest text-stone-400">11:05 · Admin</span></span><span class="arc-numeric text-sm font-semibold">₨ 265k</span></li>
+        </ol>
+      </article>
+    </aside>
+  </section>
+
+  <!-- blueprint modification queue -->
+  <section data-arc-pane="bp" hidden class="grid grid-cols-1 gap-6 xl:grid-cols-12">
+    <div class="xl:col-span-8">
+      <div class="w-full overflow-x-auto overflow-y-hidden rounded-xl border border-stone-200 bg-stone-50 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+        <table class="w-full text-left text-sm">
+          <thead class="bg-stone-100/50 text-xs font-semibold uppercase tracking-wider text-stone-500 dark:bg-stone-900/50 dark:text-stone-400">
+            <tr>
+              <th class="px-4 py-2">Drawing</th><th class="px-4 py-2">Change</th><th class="px-4 py-2">Revision</th><th class="px-4 py-2 text-right">Cost impact</th><th class="px-4 py-2 text-right">Action</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-stone-200 dark:divide-stone-800">
+            <tr class="hover:bg-stone-100/40 dark:hover:bg-stone-900/40">
+              <td class="px-4 py-2 font-medium">FL-02 · first floor shell</td>
+              <td class="px-4 py-2 text-stone-500 dark:text-stone-400">Store wall shifted 400 mm east</td>
+              <td class="arc-numeric px-4 py-2">B.04 → B.05</td>
+              <td class="arc-numeric px-4 py-2 text-right font-semibold">+₨ 84,000</td>
+              <td class="px-4 py-2 text-right"><button class="rounded-lg bg-stone-800 px-2 py-2 text-2xs font-semibold uppercase tracking-widest text-stone-50 dark:bg-stone-200 dark:text-stone-900">Approve</button></td>
+            </tr>
+            <tr class="hover:bg-stone-100/40 dark:hover:bg-stone-900/40">
+              <td class="px-4 py-2 font-medium">MW-07 · kitchen run</td>
+              <td class="px-4 py-2 text-stone-500 dark:text-stone-400">Shutter veneer walnut → teak</td>
+              <td class="arc-numeric px-4 py-2">C.01 → C.02</td>
+              <td class="arc-numeric px-4 py-2 text-right font-semibold">−₨ 21,500</td>
+              <td class="px-4 py-2 text-right"><button class="rounded-lg bg-stone-800 px-2 py-2 text-2xs font-semibold uppercase tracking-widest text-stone-50 dark:bg-stone-200 dark:text-stone-900">Approve</button></td>
+            </tr>
+            <tr class="hover:bg-stone-100/40 dark:hover:bg-stone-900/40">
+              <td class="px-4 py-2 font-medium">EL-A · front elevation</td>
+              <td class="px-4 py-2 text-stone-500 dark:text-stone-400">Louvre pitch 60 → 45 mm</td>
+              <td class="arc-numeric px-4 py-2">A.11 → A.12</td>
+              <td class="arc-numeric px-4 py-2 text-right font-semibold">+₨ 12,900</td>
+              <td class="px-4 py-2 text-right"><button class="rounded-lg border border-stone-200 px-2 py-2 text-2xs font-semibold uppercase tracking-widest hover:bg-stone-100 dark:border-stone-800 dark:hover:bg-stone-800">Defer</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <aside class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel xl:col-span-4 dark:border-stone-800 dark:bg-stone-900">
+      <h2 class="text-sm font-semibold">Field verification notes</h2>
+      <ul class="mt-4 flex flex-col gap-2">
+        <li class="rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm dark:border-stone-800 dark:bg-stone-950">Site team confirms 400 mm shift clears the services riser.</li>
+        <li class="rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm dark:border-stone-800 dark:bg-stone-950">Teak batch 09 must be moisture-tested before release.</li>
+        <li class="rounded-lg border border-dashed border-stone-300 px-4 py-2 text-sm text-stone-500 dark:border-stone-700 dark:text-stone-400">Structural re-check pending for FL-02 revision.</li>
+      </ul>
+    </aside>
+  </section>
+</div>
+<script src="../assets/arc-kit.js" defer></script>
+</body>
+</html>

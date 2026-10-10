@@ -1,0 +1,175 @@
+<!doctype html>
+<!-- ============================================================================
+     WOODEX ADMIN V2.1 + ARC.STUDIO
+     MODULE 21 — KNOWLEDGE BASE VAULT
+     Blocks: 1 Global Search Bar · 2 Description List KPIs · 3 List Groups + Reader
+     ============================================================================ -->
+<html lang="en" class="h-full">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>M21 Knowledge Base Vault — WOODEX ADMIN V2.1</title>
+<link rel="stylesheet" href="../assets/arc-kit.css">
+<script>try{var t=localStorage.getItem("wxaTheme");if(t==="dark"||(!t&&matchMedia("(prefers-color-scheme: dark)").matches)){document.documentElement.classList.add("dark");document.documentElement.setAttribute("data-theme","dark")}}catch(e){}</script>
+</head>
+<body class="min-h-full bg-stone-100 text-stone-950 antialiased dark:bg-stone-950 dark:text-stone-50">
+<div class="mx-auto flex w-full max-w-canvas flex-col gap-8 px-6 py-8">
+
+  <!-- ===== BLOCK 1 — HEADER / GLOBAL SEARCH ===== -->
+  <header class="flex flex-col gap-6 border-b border-stone-200 pb-6 dark:border-stone-800">
+    <div class="flex flex-col gap-2">
+      <nav class="flex items-center gap-2 text-2xs uppercase tracking-widest text-stone-500 dark:text-stone-400">
+        <span>Module V</span><span class="text-stone-300 dark:text-stone-600">/</span><span class="text-stone-900 dark:text-stone-50">Knowledge Base Vault</span>
+      </nav>
+      <h1 class="text-xl font-semibold tracking-tight">Knowledge Base Vault</h1>
+      <p class="max-w-3xl text-sm text-stone-500 dark:text-stone-400">Technical wood properties, hardware data sheets and installation manuals held in one reference index for the studio and the workshop.</p>
+    </div>
+
+    <div class="flex flex-col gap-2 lg:flex-row lg:items-center lg:gap-2">
+      <label class="flex flex-1 items-center gap-2 rounded-lg border border-stone-200 bg-white px-4 py-2 focus-within:ring-1 focus-within:ring-stone-400 dark:border-stone-800 dark:bg-stone-950 dark:focus-within:ring-stone-500">
+        <svg class="h-4 w-4 text-stone-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="7"/><path d="m20 20-4.3-4.3"/></svg>
+        <input data-arc-filter data-arc-target="#vault-list" type="search" placeholder="Search species, load tables or installation guides…" class="w-full bg-transparent text-sm outline-none placeholder:text-stone-400 dark:placeholder:text-stone-500">
+        <span class="arc-numeric hidden rounded-lg border border-stone-200 px-2 py-2 text-3xs uppercase tracking-widest text-stone-400 sm:block dark:border-stone-800">⌘K</span>
+      </label>
+      <div class="flex items-center gap-2">
+        <button class="rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm font-medium hover:bg-stone-100 dark:border-stone-800 dark:bg-stone-950 dark:hover:bg-stone-800">Category</button>
+        <button class="rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm font-medium hover:bg-stone-100 dark:border-stone-800 dark:bg-stone-950 dark:hover:bg-stone-800">Recently updated</button>
+        <button class="rounded-lg bg-stone-800 px-4 py-2 text-sm font-medium text-stone-50 hover:bg-stone-700 dark:bg-stone-200 dark:text-stone-900 dark:hover:bg-stone-300">＋ New article</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== BLOCK 2 — 4-COLUMN DESCRIPTION LIST KPIs ===== -->
+  <section class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Indexed Material Profiles</p>
+      <p class="arc-numeric mt-2 text-2xl font-bold tracking-tight">64</p>
+      <dl class="mt-4 divide-y divide-stone-200 text-sm dark:divide-stone-800">
+        <div class="flex items-center justify-between py-2"><dt class="text-stone-500 dark:text-stone-400">Hardwoods</dt><dd class="arc-numeric font-medium">28</dd></div>
+        <div class="flex items-center justify-between py-2"><dt class="text-stone-500 dark:text-stone-400">Softwoods</dt><dd class="arc-numeric font-medium">18</dd></div>
+      </dl>
+    </article>
+    <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Hardware Data Specifications</p>
+      <p class="arc-numeric mt-2 text-2xl font-bold tracking-tight">112</p>
+      <dl class="mt-4 divide-y divide-stone-200 text-sm dark:divide-stone-800">
+        <div class="flex items-center justify-between py-2"><dt class="text-stone-500 dark:text-stone-400">Load rated</dt><dd class="arc-numeric font-medium">86</dd></div>
+        <div class="flex items-center justify-between py-2"><dt class="text-stone-500 dark:text-stone-400">Awaiting sheet</dt><dd class="arc-numeric font-medium">07</dd></div>
+      </dl>
+    </article>
+    <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Training Article References</p>
+      <p class="arc-numeric mt-2 text-2xl font-bold tracking-tight">38</p>
+      <dl class="mt-4 divide-y divide-stone-200 text-sm dark:divide-stone-800">
+        <div class="flex items-center justify-between py-2"><dt class="text-stone-500 dark:text-stone-400">Shop induction</dt><dd class="arc-numeric font-medium">14</dd></div>
+        <div class="flex items-center justify-between py-2"><dt class="text-stone-500 dark:text-stone-400">Site safety</dt><dd class="arc-numeric font-medium">09</dd></div>
+      </dl>
+    </article>
+    <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Last Review Cycle</p>
+      <p class="arc-numeric mt-2 text-2xl font-bold tracking-tight">21<span class="text-sm font-medium text-stone-400"> days ago</span></p>
+      <p class="mt-4 text-sm text-stone-500 dark:text-stone-400">6 articles past their review date</p>
+    </article>
+  </section>
+
+  <!-- ===== BLOCK 3 — MAIN ACTION CANVAS (List Groups + Reader) ===== -->
+  <section class="grid grid-cols-1 gap-6 xl:grid-cols-12">
+
+    <article class="rounded-xl border border-stone-200 bg-stone-50 shadow-panel xl:col-span-7 dark:border-stone-800 dark:bg-stone-900">
+      <header class="flex flex-wrap items-center justify-between gap-4 border-b border-stone-200 px-6 py-4 dark:border-stone-800">
+        <div>
+          <h2 class="text-sm font-semibold">Reference index</h2>
+          <p class="text-sm text-stone-500 dark:text-stone-400">Categorised by species profiles, structural load tables and installation instructions</p>
+        </div>
+        <span class="arc-numeric text-2xs uppercase tracking-widest text-stone-400">214 entries</span>
+      </header>
+
+      <div id="vault-list" class="divide-y divide-stone-200 dark:divide-stone-800">
+        <div class="px-6 py-4">
+          <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Species profiles</p>
+          <ul class="mt-4 flex flex-col gap-2">
+            <li data-arc-filter-item class="flex items-center justify-between gap-4 rounded-lg border border-stone-200 bg-white px-4 py-2 dark:border-stone-800 dark:bg-stone-950">
+              <span class="min-w-0"><span class="block truncate text-sm font-medium">American walnut · FAS</span><span class="arc-numeric block text-2xs uppercase tracking-widest text-stone-400">Janka 4.5 kN · moves 8.2% · interior</span></span>
+              <button class="rounded-lg border border-stone-200 px-2 py-2 text-2xs uppercase tracking-widest text-stone-500 hover:bg-stone-100 dark:border-stone-800 dark:text-stone-400 dark:hover:bg-stone-800">Read</button>
+            </li>
+            <li data-arc-filter-item class="flex items-center justify-between gap-4 rounded-lg border border-stone-200 bg-white px-4 py-2 dark:border-stone-800 dark:bg-stone-950">
+              <span class="min-w-0"><span class="block truncate text-sm font-medium">Burmese teak · A</span><span class="arc-numeric block text-2xs uppercase tracking-widest text-stone-400">Janka 6.0 kN · moves 4.1% · exterior</span></span>
+              <button class="rounded-lg border border-stone-200 px-2 py-2 text-2xs uppercase tracking-widest text-stone-500 hover:bg-stone-100 dark:border-stone-800 dark:text-stone-400 dark:hover:bg-stone-800">Read</button>
+            </li>
+            <li data-arc-filter-item class="flex items-center justify-between gap-4 rounded-lg border border-stone-200 bg-white px-4 py-2 dark:border-stone-800 dark:bg-stone-950">
+              <span class="min-w-0"><span class="block truncate text-sm font-medium">Hard maple · select</span><span class="arc-numeric block text-2xs uppercase tracking-widest text-stone-400">Janka 6.4 kN · moves 9.8% · interior</span></span>
+              <button class="rounded-lg border border-stone-200 px-2 py-2 text-2xs uppercase tracking-widest text-stone-500 hover:bg-stone-100 dark:border-stone-800 dark:text-stone-400 dark:hover:bg-stone-800">Read</button>
+            </li>
+          </ul>
+        </div>
+
+        <div class="px-6 py-4">
+          <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Structural load tables</p>
+          <ul class="mt-4 flex flex-col gap-2">
+            <li data-arc-filter-item class="flex items-center justify-between gap-4 rounded-lg border border-stone-200 bg-white px-4 py-2 dark:border-stone-800 dark:bg-stone-950">
+              <span class="min-w-0"><span class="block truncate text-sm font-medium">Solid timber spans · 75 × 225 C24</span><span class="arc-numeric block text-2xs uppercase tracking-widest text-stone-400">Max 5.2 m at 400 mm centres</span></span>
+              <button class="rounded-lg border border-stone-200 px-2 py-2 text-2xs uppercase tracking-widest text-stone-500 hover:bg-stone-100 dark:border-stone-800 dark:text-stone-400 dark:hover:bg-stone-800">Read</button>
+            </li>
+            <li data-arc-filter-item class="flex items-center justify-between gap-4 rounded-lg border border-stone-200 bg-white px-4 py-2 dark:border-stone-800 dark:bg-stone-950">
+              <span class="min-w-0"><span class="block truncate text-sm font-medium">Glulam section properties</span><span class="arc-numeric block text-2xs uppercase tracking-widest text-stone-400">E 12.4 kN/mm² · interior</span></span>
+              <button class="rounded-lg border border-stone-200 px-2 py-2 text-2xs uppercase tracking-widest text-stone-500 hover:bg-stone-100 dark:border-stone-800 dark:text-stone-400 dark:hover:bg-stone-800">Read</button>
+            </li>
+          </ul>
+        </div>
+
+        <div class="px-6 py-4">
+          <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Installation instructions</p>
+          <ul class="mt-4 flex flex-col gap-2">
+            <li data-arc-filter-item class="flex items-center justify-between gap-4 rounded-lg border border-stone-200 bg-white px-4 py-2 dark:border-stone-800 dark:bg-stone-950">
+              <span class="min-w-0"><span class="block truncate text-sm font-medium">Ventilated screen fixing · clips</span><span class="arc-numeric block text-2xs uppercase tracking-widest text-stone-400">400 mm max centres · wind zone II</span></span>
+              <button class="rounded-lg border border-stone-200 px-2 py-2 text-2xs uppercase tracking-widest text-stone-500 hover:bg-stone-100 dark:border-stone-800 dark:text-stone-400 dark:hover:bg-stone-800">Read</button>
+            </li>
+            <li data-arc-filter-item class="flex items-center justify-between gap-4 rounded-lg border border-stone-200 bg-white px-4 py-2 dark:border-stone-800 dark:bg-stone-950">
+              <span class="min-w-0"><span class="block truncate text-sm font-medium">Concealed hinge setting · 35 mm cup</span><span class="arc-numeric block text-2xs uppercase tracking-widest text-stone-400">Door weight limit 9 kg per pair</span></span>
+              <button class="rounded-lg border border-stone-200 px-2 py-2 text-2xs uppercase tracking-widest text-stone-500 hover:bg-stone-100 dark:border-stone-800 dark:text-stone-400 dark:hover:bg-stone-800">Read</button>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <p data-arc-filter-empty hidden class="border-t border-stone-200 px-6 py-4 text-sm text-stone-500 dark:border-stone-800 dark:text-stone-400">No reference entry matches that search.</p>
+    </article>
+
+    <aside class="flex flex-col gap-6 xl:col-span-5">
+      <article class="rounded-xl border border-stone-200 bg-stone-50 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+        <header class="flex items-center justify-between gap-4 border-b border-stone-200 px-6 py-4 dark:border-stone-800">
+          <h2 class="text-sm font-semibold">Reader · American walnut FAS</h2>
+          <span class="arc-numeric rounded-lg border border-stone-200 px-2 py-2 text-2xs uppercase tracking-widest text-stone-500 dark:border-stone-800 dark:text-stone-400">Rev 04</span>
+        </header>
+        <div class="arc-scroll max-h-[460px] overflow-y-auto p-6">
+          <dl class="divide-y divide-stone-200 text-sm dark:divide-stone-800">
+            <div class="flex items-center justify-between py-2"><dt class="text-stone-500 dark:text-stone-400">Janka hardness</dt><dd class="arc-numeric font-medium">4.5 kN</dd></div>
+            <div class="flex items-center justify-between py-2"><dt class="text-stone-500 dark:text-stone-400">Dimensional movement</dt><dd class="arc-numeric font-medium">8.2%</dd></div>
+            <div class="flex items-center justify-between py-2"><dt class="text-stone-500 dark:text-stone-400">Target moisture</dt><dd class="arc-numeric font-medium">8 – 10%</dd></div>
+            <div class="flex items-center justify-between py-2"><dt class="text-stone-500 dark:text-stone-400">Machining</dt><dd class="font-medium">Excellent, low tear-out</dd></div>
+            <div class="flex items-center justify-between py-2"><dt class="text-stone-500 dark:text-stone-400">Finish systems</dt><dd class="font-medium">PU matte · oil</dd></div>
+            <div class="flex items-center justify-between py-2"><dt class="text-stone-500 dark:text-stone-400">Use class</dt><dd class="font-medium">Interior only</dd></div>
+          </dl>
+          <p class="mt-6 text-sm text-stone-600 dark:text-stone-300">Walnut machines cleanly and finishes well, but its movement across the grain means wide solid panels should be avoided. Veneer on a stable core is the preferred route for shutter fronts, with solid timber reserved for rails, stiles and exposed edges.</p>
+          <p class="mt-4 text-sm text-stone-600 dark:text-stone-300">Store at 8 – 10% moisture content. Acclimatise on site for 72 hours before machining in the workshop, and re-check the moisture meter reading on every board before the cutting list is released.</p>
+          <div class="mt-6 flex flex-wrap gap-2">
+            <span class="rounded-lg border border-stone-200 bg-white px-2 py-2 text-2xs uppercase tracking-widest text-stone-500 dark:border-stone-800 dark:bg-stone-950 dark:text-stone-400">MS-14</span>
+            <span class="rounded-lg border border-stone-200 bg-white px-2 py-2 text-2xs uppercase tracking-widest text-stone-500 dark:border-stone-800 dark:bg-stone-950 dark:text-stone-400">MW-11</span>
+            <span class="rounded-lg border border-stone-200 bg-white px-2 py-2 text-2xs uppercase tracking-widest text-stone-500 dark:border-stone-800 dark:bg-stone-950 dark:text-stone-400">Workshop induction 02</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+        <h2 class="text-sm font-semibold">Review queue</h2>
+        <ul class="mt-4 flex flex-col gap-2">
+          <li class="flex items-center justify-between gap-4 rounded-lg border border-dashed border-stone-400 px-4 py-2 dark:border-stone-600"><span class="min-w-0"><span class="block truncate text-sm">Ventilated screen fixing</span><span class="arc-numeric block text-2xs uppercase tracking-widest text-stone-400">Past review date by 14 d</span></span><button class="rounded-lg bg-stone-800 px-2 py-2 text-2xs font-semibold uppercase tracking-widest text-stone-50 dark:bg-stone-200 dark:text-stone-900">Review</button></li>
+          <li class="flex items-center justify-between gap-4 rounded-lg border border-stone-200 bg-white px-4 py-2 dark:border-stone-800 dark:bg-stone-950"><span class="min-w-0"><span class="block truncate text-sm">Adhesive selection guide</span><span class="arc-numeric block text-2xs uppercase tracking-widest text-stone-400">Due in 6 d</span></span><button class="rounded-lg border border-stone-200 px-2 py-2 text-2xs font-semibold uppercase tracking-widest hover:bg-stone-100 dark:border-stone-800 dark:hover:bg-stone-800">Open</button></li>
+        </ul>
+      </article>
+    </aside>
+  </section>
+</div>
+<script src="../assets/arc-kit.js" defer></script>
+</body>
+</html>

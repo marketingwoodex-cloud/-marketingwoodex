@@ -1,0 +1,145 @@
+<!doctype html>
+<!-- ============================================================================
+     WOODEX ADMIN V2.1 + ARC.STUDIO
+     MODULE 14 — MATERIAL & FINISH SCHEDULES
+     Blocks: 1 Export Parameters Bar · 2 List Group KPIs · 3 Quantified Schedule Table
+     ============================================================================ -->
+<html lang="en" class="h-full">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>M14 Material &amp; Finish Schedules — WOODEX ADMIN V2.1</title>
+<link rel="stylesheet" href="../assets/arc-kit.css">
+<script>try{var t=localStorage.getItem("wxaTheme");if(t==="dark"||(!t&&matchMedia("(prefers-color-scheme: dark)").matches)){document.documentElement.classList.add("dark");document.documentElement.setAttribute("data-theme","dark")}}catch(e){}</script>
+</head>
+<body class="min-h-full bg-stone-100 text-stone-950 antialiased dark:bg-stone-950 dark:text-stone-50">
+<div class="mx-auto flex w-full max-w-canvas flex-col gap-8 px-6 py-8">
+
+  <!-- ===== BLOCK 1 — HEADER / EXPORT PARAMETERS ===== -->
+  <header class="flex flex-col gap-6 border-b border-stone-200 pb-6 dark:border-stone-800">
+    <div class="flex flex-col gap-2">
+      <nav class="flex items-center gap-2 text-2xs uppercase tracking-widest text-stone-500 dark:text-stone-400">
+        <span>Module IV</span><span class="text-stone-300 dark:text-stone-600">/</span><span class="text-stone-900 dark:text-stone-50">Material &amp; Finish Schedules</span>
+      </nav>
+      <h1 class="text-xl font-semibold tracking-tight">Material &amp; Finish Schedules</h1>
+      <p class="max-w-3xl text-sm text-stone-500 dark:text-stone-400">Quantified panel lengths, surface processing styles and delivery codes prepared for the workshop cutting list and the timber preparation log.</p>
+    </div>
+
+    <div class="flex flex-wrap items-end gap-2">
+      <div class="flex flex-col gap-y-2">
+        <label class="text-2xs font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Schedule</label>
+        <select class="rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-stone-400 dark:border-stone-800 dark:bg-stone-950 dark:focus:ring-stone-500">
+          <option>MS-14 · Hafeez Villa millwork</option><option>MS-11 · DHA kitchen</option><option>MS-09 · Gulberg office</option>
+        </select>
+      </div>
+      <div class="flex flex-col gap-y-2">
+        <label class="text-2xs font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Length unit</label>
+        <select class="rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-stone-400 dark:border-stone-800 dark:bg-stone-950 dark:focus:ring-stone-500">
+          <option>Millimetres</option><option>Inches</option>
+        </select>
+      </div>
+      <button class="rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm font-medium hover:bg-stone-100 dark:border-stone-800 dark:bg-stone-950 dark:hover:bg-stone-800">Cutting list</button>
+      <button class="rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm font-medium hover:bg-stone-100 dark:border-stone-800 dark:bg-stone-950 dark:hover:bg-stone-800">Preparation log</button>
+      <button class="rounded-lg bg-stone-800 px-4 py-2 text-sm font-medium text-stone-50 hover:bg-stone-700 dark:bg-stone-200 dark:text-stone-900 dark:hover:bg-stone-300">Export CSV</button>
+    </div>
+  </header>
+
+  <!-- ===== BLOCK 2 — 4-COLUMN LIST GROUP KPIs ===== -->
+  <section class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Net Lumber Requirement</p>
+      <p class="arc-numeric mt-2 text-2xl font-bold tracking-tight">1,842<span class="text-sm font-medium text-stone-400"> bf</span></p>
+      <ul class="mt-4 divide-y divide-stone-200 text-sm dark:divide-stone-800">
+        <li class="flex items-center justify-between py-2"><span class="text-stone-500 dark:text-stone-400">Walnut</span><span class="arc-numeric font-medium">1,190 bf</span></li>
+        <li class="flex items-center justify-between py-2"><span class="text-stone-500 dark:text-stone-400">Teak</span><span class="arc-numeric font-medium">652 bf</span></li>
+      </ul>
+    </article>
+    <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Waste Allowance</p>
+      <p class="arc-numeric mt-2 text-2xl font-bold tracking-tight">12<span class="text-sm font-medium text-stone-400">%</span></p>
+      <ul class="mt-4 divide-y divide-stone-200 text-sm dark:divide-stone-800">
+        <li class="flex items-center justify-between py-2"><span class="text-stone-500 dark:text-stone-400">Saw kerf</span><span class="arc-numeric font-medium">4.2%</span></li>
+        <li class="flex items-center justify-between py-2"><span class="text-stone-500 dark:text-stone-400">Defect trim</span><span class="arc-numeric font-medium">7.8%</span></li>
+      </ul>
+    </article>
+    <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Finishing Processing Time</p>
+      <p class="arc-numeric mt-2 text-2xl font-bold tracking-tight">4.1<span class="text-sm font-medium text-stone-400"> days</span></p>
+      <ul class="mt-4 divide-y divide-stone-200 text-sm dark:divide-stone-800">
+        <li class="flex items-center justify-between py-2"><span class="text-stone-500 dark:text-stone-400">Sanding</span><span class="arc-numeric font-medium">1.2 d</span></li>
+        <li class="flex items-center justify-between py-2"><span class="text-stone-500 dark:text-stone-400">Coating × 3</span><span class="arc-numeric font-medium">2.9 d</span></li>
+      </ul>
+    </article>
+    <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Schedule Value</p>
+      <p class="arc-numeric mt-2 text-2xl font-bold tracking-tight">₨ 8.42M</p>
+      <p class="mt-4 text-sm text-stone-500 dark:text-stone-400">Material 61% · labour 27% · finishing 12%</p>
+    </article>
+  </section>
+
+  <!-- ===== BLOCK 3 — MAIN ACTION CANVAS (Content Table) ===== -->
+  <section class="rounded-xl border border-stone-200 bg-stone-50 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+    <header class="flex flex-wrap items-center justify-between gap-4 border-b border-stone-200 px-6 py-4 dark:border-stone-800">
+      <div>
+        <h2 class="text-sm font-semibold">Quantified engineering schedule</h2>
+        <p class="text-sm text-stone-500 dark:text-stone-400">42 line items · panel lengths nominal before trim</p>
+      </div>
+      <label class="flex items-center gap-2 rounded-lg border border-stone-200 bg-white px-2 py-2 focus-within:ring-1 focus-within:ring-stone-400 dark:border-stone-800 dark:bg-stone-950 dark:focus-within:ring-stone-500">
+        <svg class="h-4 w-4 text-stone-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="7"/><path d="m20 20-4.3-4.3"/></svg>
+        <input data-arc-filter data-arc-target="#sched-rows" type="search" placeholder="Filter code or finish…" class="w-48 bg-transparent text-sm outline-none placeholder:text-stone-400 dark:placeholder:text-stone-500">
+      </label>
+    </header>
+
+    <div class="p-6">
+      <div class="w-full overflow-x-auto overflow-y-hidden rounded-xl border border-stone-200 dark:border-stone-800">
+        <table class="w-full text-left text-sm">
+          <thead class="bg-stone-100/50 text-xs font-semibold uppercase tracking-wider text-stone-500 dark:bg-stone-900/50 dark:text-stone-400">
+            <tr>
+              <th class="px-4 py-2">Code</th><th class="px-4 py-2">Component</th><th class="px-4 py-2 text-right">Panel length</th>
+              <th class="px-4 py-2 text-right">Width / thickness</th><th class="px-4 py-2">Surface processing</th>
+              <th class="px-4 py-2 text-right">Pieces</th><th class="px-4 py-2">Delivery code</th>
+            </tr>
+          </thead>
+          <tbody id="sched-rows" class="arc-numeric divide-y divide-stone-200 dark:divide-stone-800">
+            <tr data-arc-filter-item class="hover:bg-stone-100/40 dark:hover:bg-stone-900/40">
+              <td class="px-4 py-2 font-medium">MW-11-A</td><td class="px-4 py-2">Wardrobe side panel</td><td class="px-4 py-2 text-right">2,440</td><td class="px-4 py-2 text-right">600 / 18</td>
+              <td class="px-4 py-2 text-stone-500 dark:text-stone-400">Veneer walnut, edge band 1 mm</td><td class="px-4 py-2 text-right">12</td><td class="px-4 py-2">D1 · 16 Oct</td>
+            </tr>
+            <tr data-arc-filter-item class="hover:bg-stone-100/40 dark:hover:bg-stone-900/40">
+              <td class="px-4 py-2 font-medium">MW-11-B</td><td class="px-4 py-2">Wardrobe shelf</td><td class="px-4 py-2 text-right">1,180</td><td class="px-4 py-2 text-right">560 / 18</td>
+              <td class="px-4 py-2 text-stone-500 dark:text-stone-400">Veneer, clear coat</td><td class="px-4 py-2 text-right">42</td><td class="px-4 py-2">D1 · 16 Oct</td>
+            </tr>
+            <tr data-arc-filter-item class="hover:bg-stone-100/40 dark:hover:bg-stone-900/40">
+              <td class="px-4 py-2 font-medium">MW-07-C</td><td class="px-4 py-2">Kitchen door front</td><td class="px-4 py-2 text-right">720</td><td class="px-4 py-2 text-right">450 / 20</td>
+              <td class="px-4 py-2 text-stone-500 dark:text-stone-400">Solid teak, matte PU</td><td class="px-4 py-2 text-right">28</td><td class="px-4 py-2">D2 · 18 Oct</td>
+            </tr>
+            <tr data-arc-filter-item class="hover:bg-stone-100/40 dark:hover:bg-stone-900/40">
+              <td class="px-4 py-2 font-medium">CL-01-A</td><td class="px-4 py-2">Louvre blade</td><td class="px-4 py-2 text-right">2,900</td><td class="px-4 py-2 text-right">45 / 25</td>
+              <td class="px-4 py-2 text-stone-500 dark:text-stone-400">Exterior oil, end-sealed</td><td class="px-4 py-2 text-right">96</td><td class="px-4 py-2">D3 · 21 Oct</td>
+            </tr>
+            <tr data-arc-filter-item class="hover:bg-stone-100/40 dark:hover:bg-stone-900/40">
+              <td class="px-4 py-2 font-medium">MW-14-A</td><td class="px-4 py-2">Library upright</td><td class="px-4 py-2 text-right">2,100</td><td class="px-4 py-2 text-right">300 / 18</td>
+              <td class="px-4 py-2 text-stone-500 dark:text-stone-400">Veneer, brushed grain</td><td class="px-4 py-2 text-right">18</td><td class="px-4 py-2">D2 · 18 Oct</td>
+            </tr>
+            <tr data-arc-filter-item class="hover:bg-stone-100/40 dark:hover:bg-stone-900/40">
+              <td class="px-4 py-2 font-medium">MW-14-B</td><td class="px-4 py-2">Library back rail</td><td class="px-4 py-2 text-right">2,100</td><td class="px-4 py-2 text-right">80 / 25</td>
+              <td class="px-4 py-2 text-stone-500 dark:text-stone-400">Solid walnut, oiled</td><td class="px-4 py-2 text-right">08</td><td class="px-4 py-2">D2 · 18 Oct</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p data-arc-filter-empty hidden class="mt-6 rounded-lg border border-dashed border-stone-300 px-4 py-2 text-sm text-stone-500 dark:border-stone-700 dark:text-stone-400">No schedule line matches that filter.</p>
+
+      <div class="mt-6 grid grid-cols-1 gap-4 border-t border-stone-200 pt-6 md:grid-cols-4 dark:border-stone-800">
+        <div><p class="text-2xs uppercase tracking-widest text-stone-500 dark:text-stone-400">Delivery D1</p><p class="arc-numeric text-sm font-semibold">16 Oct · 34 pieces</p></div>
+        <div><p class="text-2xs uppercase tracking-widest text-stone-500 dark:text-stone-400">Delivery D2</p><p class="arc-numeric text-sm font-semibold">18 Oct · 54 pieces</p></div>
+        <div><p class="text-2xs uppercase tracking-widest text-stone-500 dark:text-stone-400">Delivery D3</p><p class="arc-numeric text-sm font-semibold">21 Oct · 96 pieces</p></div>
+        <div><p class="text-2xs uppercase tracking-widest text-stone-500 dark:text-stone-400">Grain continuity</p><p class="text-sm font-semibold">Batches matched 6 / 6</p></div>
+      </div>
+    </div>
+  </section>
+</div>
+<script src="../assets/arc-kit.js" defer></script>
+</body>
+</html>

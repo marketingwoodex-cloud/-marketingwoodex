@@ -1,0 +1,214 @@
+<!doctype html>
+<!-- ============================================================================
+     WOODEX ADMIN V2.1 + ARC.STUDIO
+     MODULE 26 — DATABASE & SYSTEM LOGS
+     Blocks: 1 Lookup / Transaction Filters · 2 Progress Card KPIs · 3 Utility Log Table
+     ============================================================================ -->
+<html lang="en" class="h-full">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>M26 Database &amp; System Logs — WOODEX ADMIN V2.1</title>
+<link rel="stylesheet" href="../assets/arc-kit.css">
+<script>try{var t=localStorage.getItem("wxaTheme");if(t==="dark"||(!t&&matchMedia("(prefers-color-scheme: dark)").matches)){document.documentElement.classList.add("dark");document.documentElement.setAttribute("data-theme","dark")}}catch(e){}</script>
+</head>
+<body class="min-h-full bg-stone-100 text-stone-950 antialiased dark:bg-stone-950 dark:text-stone-50">
+<div class="mx-auto flex w-full max-w-canvas flex-col gap-8 px-6 py-8">
+
+  <!-- ===== BLOCK 1 — HEADER / LOOKUP INDICES ===== -->
+  <header class="flex flex-col gap-6 border-b border-stone-200 pb-6 dark:border-stone-800">
+    <div class="flex flex-col gap-2">
+      <nav class="flex items-center gap-2 text-2xs uppercase tracking-widest text-stone-500 dark:text-stone-400">
+        <span>Module VII</span><span class="text-stone-300 dark:text-stone-600">/</span><span class="text-stone-900 dark:text-stone-50">Database &amp; System Logs</span>
+      </nav>
+      <h1 class="text-xl font-semibold tracking-tight">Database &amp; System Logs</h1>
+      <p class="max-w-3xl text-sm text-stone-500 dark:text-stone-400">Chronological ledger of database modifications, error tracking parameters and code execution histories across the studio stack.</p>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-2">
+      <div data-arc-tabs class="flex flex-wrap items-center gap-2 rounded-lg border border-stone-200 bg-white p-2 dark:border-stone-800 dark:bg-stone-950">
+        <button data-arc-tab="all" aria-selected="true" class="rounded-lg px-4 py-2 text-sm font-medium">All transactions</button>
+        <button data-arc-tab="write" aria-selected="false" class="rounded-lg px-4 py-2 text-sm font-medium">Writes</button>
+        <button data-arc-tab="error" aria-selected="false" class="rounded-lg px-4 py-2 text-sm font-medium">Errors</button>
+        <button data-arc-tab="api" aria-selected="false" class="rounded-lg px-4 py-2 text-sm font-medium">API calls</button>
+      </div>
+      <label class="flex min-w-[240px] flex-1 items-center gap-2 rounded-lg border border-stone-200 bg-white px-2 py-2 focus-within:ring-1 focus-within:ring-stone-400 dark:border-stone-800 dark:bg-stone-950 dark:focus-within:ring-stone-500">
+        <svg class="h-4 w-4 text-stone-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="7"/><path d="m20 20-4.3-4.3"/></svg>
+        <input data-arc-filter data-arc-target="#log-rows" type="search" placeholder="Table, actor or trace ID…" class="w-full bg-transparent text-sm outline-none placeholder:text-stone-400 dark:placeholder:text-stone-500">
+      </label>
+      <div class="relative">
+        <button data-arc-dd="index" aria-expanded="false" class="flex items-center gap-2 rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm font-medium hover:bg-stone-100 dark:border-stone-800 dark:bg-stone-950 dark:hover:bg-stone-800">
+          Index: wx_invoices
+          <svg class="h-4 w-4 text-stone-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m6 9 6 6 6-6"/></svg>
+        </button>
+        <div data-arc-menu="index" class="absolute right-0 z-30 mt-2 hidden w-64 overflow-hidden rounded-xl border border-stone-200 bg-white p-2 shadow-lift dark:border-stone-800 dark:bg-stone-900">
+          <button class="w-full rounded-lg px-2 py-2 text-left text-sm hover:bg-stone-100 dark:hover:bg-stone-800">wx_invoices</button>
+          <button class="w-full rounded-lg px-2 py-2 text-left text-sm hover:bg-stone-100 dark:hover:bg-stone-800">wx_pages</button>
+          <button class="w-full rounded-lg px-2 py-2 text-left text-sm hover:bg-stone-100 dark:hover:bg-stone-800">wx_leads</button>
+          <button class="w-full rounded-lg px-2 py-2 text-left text-sm hover:bg-stone-100 dark:hover:bg-stone-800">wx_stock</button>
+        </div>
+      </div>
+      <button class="rounded-lg bg-stone-800 px-4 py-2 text-sm font-medium text-stone-50 hover:bg-stone-700 dark:bg-stone-200 dark:text-stone-900 dark:hover:bg-stone-300">Run query</button>
+    </div>
+  </header>
+
+  <!-- ===== BLOCK 2 — 4-COLUMN PROGRESS CARD KPIs ===== -->
+  <section class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Storage Cluster Load</p>
+      <p class="arc-numeric mt-2 text-2xl font-bold tracking-tight">62%</p>
+      <div class="mt-4 flex flex-col gap-2">
+        <span class="block h-2 w-full overflow-hidden rounded-sm bg-stone-200 dark:bg-stone-800"><span data-arc-value="62" class="block h-full w-0 bg-stone-800 transition-all duration-700 dark:bg-stone-200"></span></span>
+        <p class="text-sm text-stone-500 dark:text-stone-400">18.4 GB of 30 GB allocated</p>
+      </div>
+    </article>
+    <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Operational Uptime</p>
+      <p class="arc-numeric mt-2 text-2xl font-bold tracking-tight">99.94%</p>
+      <div class="mt-4 flex flex-col gap-2">
+        <span class="block h-2 w-full overflow-hidden rounded-sm bg-stone-200 dark:bg-stone-800"><span data-arc-value="99" class="block h-full w-0 bg-stone-500 transition-all duration-700 dark:bg-stone-400"></span></span>
+        <p class="text-sm text-stone-500 dark:text-stone-400">1 restart · 42 min total downtime in 90 days</p>
+      </div>
+    </article>
+    <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Query Execution Profile</p>
+      <p class="arc-numeric mt-2 text-2xl font-bold tracking-tight">38<span class="text-sm font-medium text-stone-400"> ms</span></p>
+      <p class="mt-2 text-sm text-stone-500 dark:text-stone-400">P95 across 142k queries in 24 h</p>
+    </article>
+    <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Error Rate</p>
+      <p class="arc-numeric mt-2 text-2xl font-bold tracking-tight">0.14%</p>
+      <div class="mt-4 flex flex-wrap gap-2">
+        <span class="rounded-lg border border-stone-300 px-2 py-2 text-2xs font-semibold uppercase tracking-widest text-stone-600 dark:border-stone-700 dark:text-stone-300">6 warnings</span>
+        <span class="rounded-lg border border-dashed border-stone-400 px-2 py-2 text-2xs font-semibold uppercase tracking-widest text-stone-500 dark:border-stone-600 dark:text-stone-400">1 blocker</span>
+      </div>
+    </article>
+  </section>
+
+  <!-- ===== BLOCK 3 — MAIN ACTION CANVAS (Admin Utility Table) ===== -->
+  <section class="grid grid-cols-1 gap-6 xl:grid-cols-12">
+    <article class="rounded-xl border border-stone-200 bg-stone-50 shadow-panel xl:col-span-9 dark:border-stone-800 dark:bg-stone-900">
+      <header class="flex flex-wrap items-center justify-between gap-4 border-b border-stone-200 px-6 py-4 dark:border-stone-800">
+        <div>
+          <h2 class="text-sm font-semibold">Transaction ledger</h2>
+          <p class="text-sm text-stone-500 dark:text-stone-400">Append-only · retained 180 days · export requires owner role</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="arc-numeric rounded-lg border border-stone-200 px-2 py-2 text-2xs uppercase tracking-widest text-stone-500 dark:border-stone-800 dark:text-stone-400">142,318 rows</span>
+          <button class="rounded-lg border border-stone-200 px-4 py-2 text-sm font-medium hover:bg-stone-100 dark:border-stone-800 dark:hover:bg-stone-800">Export</button>
+        </div>
+      </header>
+
+      <div class="p-6">
+        <div class="w-full overflow-x-auto overflow-y-hidden rounded-xl border border-stone-200 dark:border-stone-800">
+          <table class="w-full text-left text-sm">
+            <thead class="bg-stone-100/50 text-xs font-semibold uppercase tracking-wider text-stone-500 dark:bg-stone-900/50 dark:text-stone-400">
+              <tr>
+                <th class="px-4 py-2">Timestamp</th><th class="px-4 py-2">Actor</th><th class="px-4 py-2">Operation</th>
+                <th class="px-4 py-2">Table / route</th><th class="px-4 py-2 text-right">Rows</th><th class="px-4 py-2 text-right">Duration</th>
+                <th class="px-4 py-2">Trace</th><th class="px-4 py-2 text-right">Detail</th>
+              </tr>
+            </thead>
+            <tbody id="log-rows" class="arc-numeric divide-y divide-stone-200 dark:divide-stone-800">
+              <tr data-arc-filter-item class="hover:bg-stone-100/40 dark:hover:bg-stone-900/40">
+                <td class="px-4 py-2">09:42:18</td><td class="px-4 py-2">sana@woodex.pk</td><td class="px-4 py-2">UPDATE</td>
+                <td class="px-4 py-2 text-stone-500 dark:text-stone-400">wx_pages</td><td class="px-4 py-2 text-right">1</td><td class="px-4 py-2 text-right">24 ms</td>
+                <td class="px-4 py-2 text-stone-500 dark:text-stone-400">tr_8fa2c1</td>
+                <td class="px-4 py-2 text-right"><button data-arc-open="trace" class="rounded-lg border border-stone-200 px-2 py-2 text-2xs uppercase tracking-widest text-stone-500 hover:bg-stone-100 dark:border-stone-800 dark:text-stone-400 dark:hover:bg-stone-800">View</button></td>
+              </tr>
+              <tr data-arc-filter-item class="hover:bg-stone-100/40 dark:hover:bg-stone-900/40">
+                <td class="px-4 py-2">09:40:02</td><td class="px-4 py-2">shop@woodex.pk</td><td class="px-4 py-2">SELECT</td>
+                <td class="px-4 py-2 text-stone-500 dark:text-stone-400">wx_stock</td><td class="px-4 py-2 text-right">186</td><td class="px-4 py-2 text-right">38 ms</td>
+                <td class="px-4 py-2 text-stone-500 dark:text-stone-400">tr_8fa1b7</td>
+                <td class="px-4 py-2 text-right"><button data-arc-open="trace" class="rounded-lg border border-stone-200 px-2 py-2 text-2xs uppercase tracking-widest text-stone-500 hover:bg-stone-100 dark:border-stone-800 dark:text-stone-400 dark:hover:bg-stone-800">View</button></td>
+              </tr>
+              <tr data-arc-filter-item class="hover:bg-stone-100/40 dark:hover:bg-stone-900/40">
+                <td class="px-4 py-2">09:31:44</td><td class="px-4 py-2">system</td><td class="px-4 py-2">INSERT</td>
+                <td class="px-4 py-2 text-stone-500 dark:text-stone-400">wx_activity</td><td class="px-4 py-2 text-right">1</td><td class="px-4 py-2 text-right">11 ms</td>
+                <td class="px-4 py-2 text-stone-500 dark:text-stone-400">tr_8f9d10</td>
+                <td class="px-4 py-2 text-right"><button data-arc-open="trace" class="rounded-lg border border-stone-200 px-2 py-2 text-2xs uppercase tracking-widest text-stone-500 hover:bg-stone-100 dark:border-stone-800 dark:text-stone-400 dark:hover:bg-stone-800">View</button></td>
+              </tr>
+              <tr data-arc-filter-item class="hover:bg-stone-100/40 dark:hover:bg-stone-900/40">
+                <td class="px-4 py-2">09:12:09</td><td class="px-4 py-2">accounts@woodex.pk</td><td class="px-4 py-2">UPDATE</td>
+                <td class="px-4 py-2 text-stone-500 dark:text-stone-400">wx_invoices</td><td class="px-4 py-2 text-right">1</td><td class="px-4 py-2 text-right">27 ms</td>
+                <td class="px-4 py-2 text-stone-500 dark:text-stone-400">tr_8f8a44</td>
+                <td class="px-4 py-2 text-right"><button data-arc-open="trace" class="rounded-lg border border-stone-200 px-2 py-2 text-2xs uppercase tracking-widest text-stone-500 hover:bg-stone-100 dark:border-stone-800 dark:text-stone-400 dark:hover:bg-stone-800">View</button></td>
+              </tr>
+              <tr data-arc-filter-item class="hover:bg-stone-100/40 dark:hover:bg-stone-900/40">
+                <td class="px-4 py-2">08:55:31</td><td class="px-4 py-2">api</td><td class="px-4 py-2">POST</td>
+                <td class="px-4 py-2 text-stone-500 dark:text-stone-400">/api/forms.php</td><td class="px-4 py-2 text-right">1</td><td class="px-4 py-2 text-right">142 ms</td>
+                <td class="px-4 py-2 text-stone-500 dark:text-stone-400">tr_8f7c02</td>
+                <td class="px-4 py-2 text-right"><button data-arc-open="trace" class="rounded-lg border border-stone-200 px-2 py-2 text-2xs uppercase tracking-widest text-stone-500 hover:bg-stone-100 dark:border-stone-800 dark:text-stone-400 dark:hover:bg-stone-800">View</button></td>
+              </tr>
+              <tr data-arc-filter-item class="bg-stone-100 hover:bg-stone-100 dark:bg-stone-800 dark:hover:bg-stone-800">
+                <td class="px-4 py-2">08:41:07</td><td class="px-4 py-2">api</td><td class="px-4 py-2">ERROR</td>
+                <td class="px-4 py-2 text-stone-500 dark:text-stone-400">/api/blocks.php</td><td class="px-4 py-2 text-right">0</td><td class="px-4 py-2 text-right">512 ms</td>
+                <td class="px-4 py-2 text-stone-500 dark:text-stone-400">tr_8f7109</td>
+                <td class="px-4 py-2 text-right"><button data-arc-open="trace" class="rounded-lg bg-stone-800 px-2 py-2 text-2xs uppercase tracking-widest text-stone-50 dark:bg-stone-200 dark:text-stone-900">Diagnose</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p data-arc-filter-empty hidden class="mt-6 rounded-lg border border-dashed border-stone-300 px-4 py-2 text-sm text-stone-500 dark:border-stone-700 dark:text-stone-400">No log entry matches that filter.</p>
+      </div>
+    </article>
+
+    <aside class="flex flex-col gap-6 xl:col-span-3">
+      <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+        <h2 class="text-sm font-semibold">Slowest statements · 24 h</h2>
+        <ul class="mt-4 flex flex-col gap-2">
+          <li class="rounded-lg border border-stone-200 bg-white px-4 py-2 dark:border-stone-800 dark:bg-stone-950"><p class="arc-numeric text-sm font-medium">SELECT wx_stock JOIN wx_bins</p><p class="arc-numeric text-2xs uppercase tracking-widest text-stone-400">P95 184 ms · index suggestion</p></li>
+          <li class="rounded-lg border border-stone-200 bg-white px-4 py-2 dark:border-stone-800 dark:bg-stone-950"><p class="arc-numeric text-sm font-medium">SELECT wx_activity ORDER BY t</p><p class="arc-numeric text-2xs uppercase tracking-widest text-stone-400">P95 96 ms · partition stale</p></li>
+          <li class="rounded-lg border border-dashed border-stone-300 px-4 py-2 dark:border-stone-700"><p class="arc-numeric text-sm font-medium text-stone-500 dark:text-stone-400">UPDATE wx_pages SET body</p><p class="arc-numeric text-2xs uppercase tracking-widest text-stone-400">P95 74 ms · within budget</p></li>
+        </ul>
+      </article>
+
+      <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+        <h2 class="text-sm font-semibold">Maintenance</h2>
+        <dl class="mt-4 divide-y divide-stone-200 text-sm dark:divide-stone-800">
+          <div class="flex items-center justify-between py-2"><dt class="text-stone-500 dark:text-stone-400">Last backup</dt><dd class="arc-numeric font-medium">Today 02:00</dd></div>
+          <div class="flex items-center justify-between py-2"><dt class="text-stone-500 dark:text-stone-400">Next integrity check</dt><dd class="arc-numeric font-medium">18 Oct 02:00</dd></div>
+          <div class="flex items-center justify-between py-2"><dt class="text-stone-500 dark:text-stone-400">Log retention</dt><dd class="arc-numeric font-medium">180 days</dd></div>
+        </dl>
+        <div class="mt-4 flex flex-col gap-2">
+          <button class="rounded-lg bg-stone-800 px-4 py-2 text-sm font-medium text-stone-50 dark:bg-stone-200 dark:text-stone-900">Backup now</button>
+          <button class="rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm font-medium hover:bg-stone-100 dark:border-stone-800 dark:bg-stone-950 dark:hover:bg-stone-800">Optimise indexes</button>
+        </div>
+      </article>
+    </aside>
+  </section>
+</div>
+
+<!-- ============ TRACE DRAWER ============ -->
+<div data-arc-drawer="trace" hidden class="fixed inset-y-0 right-0 z-50 w-full max-w-lg translate-x-6 border-l border-stone-200 bg-stone-50 opacity-0 transition-all data-[open]:translate-x-0 data-[open]:opacity-100 dark:border-stone-800 dark:bg-stone-900">
+  <div class="flex items-center justify-between gap-4 border-b border-stone-200 px-6 py-4 dark:border-stone-800">
+    <div>
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Query trace</p>
+      <p class="arc-numeric mt-2 text-sm font-semibold">tr_8f7109 · /api/blocks.php</p>
+    </div>
+    <button data-arc-close class="rounded-lg border border-stone-200 px-2 py-2 text-2xs uppercase tracking-widest hover:bg-stone-100 dark:border-stone-800 dark:hover:bg-stone-800">Close</button>
+  </div>
+  <div class="arc-scroll flex max-h-[calc(100vh-88px)] flex-col gap-6 overflow-y-auto p-6">
+    <dl class="divide-y divide-stone-200 text-sm dark:divide-stone-800">
+      <div class="flex items-center justify-between py-2"><dt class="text-stone-500 dark:text-stone-400">Started</dt><dd class="arc-numeric font-medium">08:41:07.114</dd></div>
+      <div class="flex items-center justify-between py-2"><dt class="text-stone-500 dark:text-stone-400">Duration</dt><dd class="arc-numeric font-medium">512 ms</dd></div>
+      <div class="flex items-center justify-between py-2"><dt class="text-stone-500 dark:text-stone-400">Actor</dt><dd class="font-medium">api · builder token</dd></div>
+      <div class="flex items-center justify-between py-2"><dt class="text-stone-500 dark:text-stone-400">Outcome</dt><dd class="font-medium">SQLSTATE 23000 duplicate key</dd></div>
+    </dl>
+    <div class="rounded-xl bg-stone-950 p-6">
+      <pre class="arc-numeric text-xs leading-6 text-stone-300">UPDATE wx_blocks
+   SET html = :payload, t = :now
+ WHERE id = :id;
+-- duplicate key on (site, id) after a retry burst</pre>
+    </div>
+    <div class="flex flex-col gap-2">
+      <button class="rounded-lg bg-stone-800 px-4 py-2 text-sm font-medium text-stone-50 dark:bg-stone-200 dark:text-stone-900">Open in editor</button>
+      <button class="rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm font-medium hover:bg-stone-100 dark:border-stone-800 dark:bg-stone-950 dark:hover:bg-stone-800">Copy trace JSON</button>
+    </div>
+  </div>
+</div>
+
+<script src="../assets/arc-kit.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,169 @@
+<!doctype html>
+<!-- ============================================================================
+     WOODEX ADMIN V2.1 + ARC.STUDIO
+     MODULE 06 — FLOOR PLAN SHELLS
+     Blocks: 1 Title Bar · 2 Label & Feedback Group KPIs · 3 Multi-Panel Schematic
+     ============================================================================ -->
+<html lang="en" class="h-full">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>M06 Floor Plan Shells — WOODEX ADMIN V2.1</title>
+<link rel="stylesheet" href="../assets/arc-kit.css">
+<script>try{var t=localStorage.getItem("wxaTheme");if(t==="dark"||(!t&&matchMedia("(prefers-color-scheme: dark)").matches)){document.documentElement.classList.add("dark");document.documentElement.setAttribute("data-theme","dark")}}catch(e){}</script>
+</head>
+<body class="min-h-full bg-stone-100 text-stone-950 antialiased dark:bg-stone-950 dark:text-stone-50">
+<div class="mx-auto flex w-full max-w-canvas flex-col gap-8 px-6 py-8">
+
+  <!-- ===== BLOCK 1 — HEADER / FILTER BAR ===== -->
+  <header class="flex flex-col gap-6 border-b border-stone-200 pb-6 lg:flex-row lg:items-start lg:justify-between dark:border-stone-800">
+    <div class="flex flex-col gap-2">
+      <nav class="flex items-center gap-2 text-2xs uppercase tracking-widest text-stone-500 dark:text-stone-400">
+        <span>Module II</span><span class="text-stone-300 dark:text-stone-600">/</span><span class="text-stone-900 dark:text-stone-50">Floor Plan Shells</span>
+      </nav>
+      <h1 class="text-xl font-semibold tracking-tight">Floor Plan Shells</h1>
+      <p class="max-w-3xl text-sm text-stone-500 dark:text-stone-400">Shell geometry, millwork runs and clearances for Hafeez Villa, ground floor and first floor revisions.</p>
+    </div>
+    <div class="flex flex-wrap items-center gap-2">
+      <div class="relative">
+        <button data-arc-dd="rev" aria-expanded="false" class="flex items-center gap-2 rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm font-medium hover:bg-stone-100 dark:border-stone-800 dark:bg-stone-950 dark:hover:bg-stone-800">
+          Revision B.05 · 11 Oct 2026
+          <svg class="h-4 w-4 text-stone-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m6 9 6 6 6-6"/></svg>
+        </button>
+        <div data-arc-menu="rev" class="absolute right-0 z-30 mt-2 hidden w-72 overflow-hidden rounded-xl border border-stone-200 bg-white p-2 shadow-lift dark:border-stone-800 dark:bg-stone-900">
+          <button class="flex w-full items-center justify-between rounded-lg px-2 py-2 text-left text-sm hover:bg-stone-100 dark:hover:bg-stone-800">B.05 · 11 Oct 2026 <span class="text-2xs uppercase tracking-widest text-stone-400">Current</span></button>
+          <button class="w-full rounded-lg px-2 py-2 text-left text-sm hover:bg-stone-100 dark:hover:bg-stone-800">B.04 · 28 Sep 2026</button>
+          <button class="w-full rounded-lg px-2 py-2 text-left text-sm hover:bg-stone-100 dark:hover:bg-stone-800">A.11 · 14 Sep 2026</button>
+        </div>
+      </div>
+      <button class="rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm font-medium hover:bg-stone-100 dark:border-stone-800 dark:bg-stone-950 dark:hover:bg-stone-800">Export DXF</button>
+      <button class="rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm font-medium hover:bg-stone-100 dark:border-stone-800 dark:bg-stone-950 dark:hover:bg-stone-800">Print set</button>
+      <button class="rounded-lg bg-stone-800 px-4 py-2 text-sm font-medium text-stone-50 hover:bg-stone-700 dark:bg-stone-200 dark:text-stone-900 dark:hover:bg-stone-300">Issue for construction</button>
+    </div>
+  </header>
+
+  <!-- ===== BLOCK 2 — 4-COLUMN LABEL & FEEDBACK KPIs ===== -->
+  <section class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Interior Area Total</p>
+      <p class="arc-numeric mt-2 text-2xl font-bold tracking-tight">1,068<span class="text-sm font-medium text-stone-400"> m²</span></p>
+      <p class="mt-2 text-sm text-stone-500 dark:text-stone-400">Ground 612 · First 456</p>
+    </article>
+    <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Millwork Run Boundaries</p>
+      <p class="arc-numeric mt-2 text-2xl font-bold tracking-tight">184<span class="text-sm font-medium text-stone-400"> lm</span></p>
+      <div class="mt-4 flex flex-col gap-2">
+        <span class="block h-2 w-full overflow-hidden rounded-sm bg-stone-200 dark:bg-stone-800"><span data-arc-value="74" class="block h-full w-0 bg-stone-800 transition-all duration-700 dark:bg-stone-200"></span></span>
+        <p class="text-sm text-stone-500 dark:text-stone-400">Kitchen 42 · wardrobes 96 · library 46</p>
+      </div>
+    </article>
+    <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Fabrication Clearances</p>
+      <p class="arc-numeric mt-2 text-2xl font-bold tracking-tight">03<span class="text-sm font-medium text-stone-400"> flagged</span></p>
+      <div class="mt-4 flex flex-wrap gap-2">
+        <span class="rounded-lg border border-stone-300 px-2 py-2 text-2xs font-semibold uppercase tracking-widest text-stone-600 dark:border-stone-700 dark:text-stone-300">Door swing</span>
+        <span class="rounded-lg border border-dashed border-stone-400 px-2 py-2 text-2xs font-semibold uppercase tracking-widest text-stone-500 dark:border-stone-600 dark:text-stone-400">Skirting return</span>
+      </div>
+    </article>
+    <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Revision Age</p>
+      <p class="arc-numeric mt-2 text-2xl font-bold tracking-tight">02<span class="text-sm font-medium text-stone-400"> days</span></p>
+      <p class="mt-2 text-sm text-stone-500 dark:text-stone-400">Superseded sheets: 14</p>
+    </article>
+  </section>
+
+  <!-- ===== BLOCK 3 — MAIN ACTION CANVAS (Multi-Panel Layout) ===== -->
+  <section class="grid grid-cols-1 gap-6 xl:grid-cols-12">
+
+    <!-- left: spatial layers -->
+    <aside class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel xl:col-span-3 dark:border-stone-800 dark:bg-stone-900">
+      <h2 class="text-sm font-semibold">Spatial layers</h2>
+      <div class="mt-4 flex flex-col gap-2">
+        <label class="flex items-center justify-between gap-2 rounded-lg border border-stone-200 bg-white px-4 py-2 dark:border-stone-800 dark:bg-stone-950"><span class="flex items-center gap-2 text-sm"><input type="checkbox" checked class="h-4 w-4 rounded-sm accent-stone-800 dark:accent-stone-200">Structural shell</span><span class="arc-numeric text-2xs uppercase tracking-widest text-stone-400">Walls</span></label>
+        <label class="flex items-center justify-between gap-2 rounded-lg border border-stone-200 bg-white px-4 py-2 dark:border-stone-800 dark:bg-stone-950"><span class="flex items-center gap-2 text-sm"><input type="checkbox" checked class="h-4 w-4 rounded-sm accent-stone-800 dark:accent-stone-200">Millwork runs</span><span class="arc-numeric text-2xs uppercase tracking-widest text-stone-400">184 lm</span></label>
+        <label class="flex items-center justify-between gap-2 rounded-lg border border-stone-200 bg-white px-4 py-2 dark:border-stone-800 dark:bg-stone-950"><span class="flex items-center gap-2 text-sm"><input type="checkbox" checked class="h-4 w-4 rounded-sm accent-stone-800 dark:accent-stone-200">Services riser</span><span class="arc-numeric text-2xs uppercase tracking-widest text-stone-400">MEP</span></label>
+        <label class="flex items-center justify-between gap-2 rounded-lg border border-stone-200 bg-white px-4 py-2 dark:border-stone-800 dark:bg-stone-950"><span class="flex items-center gap-2 text-sm"><input type="checkbox" class="h-4 w-4 rounded-sm accent-stone-800 dark:accent-stone-200">Furniture layout</span><span class="arc-numeric text-2xs uppercase tracking-widest text-stone-400">FF&amp;E</span></label>
+        <label class="flex items-center justify-between gap-2 rounded-lg border border-dashed border-stone-300 px-4 py-2 dark:border-stone-700"><span class="flex items-center gap-2 text-sm text-stone-500 dark:text-stone-400"><input type="checkbox" class="h-4 w-4 rounded-sm">Site boundary</span><span class="arc-numeric text-2xs uppercase tracking-widest text-stone-400">Off</span></label>
+      </div>
+
+      <div class="mt-6 border-t border-stone-200 pt-6 dark:border-stone-800">
+        <h2 class="text-sm font-semibold">Sheets in set</h2>
+        <ul class="mt-4 flex flex-col gap-2 text-sm">
+          <li class="flex items-center justify-between gap-2 rounded-lg px-4 py-2 text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800"><span class="arc-numeric">FL-01</span><span>Ground shell</span></li>
+          <li class="flex items-center justify-between gap-2 rounded-lg border border-stone-800 bg-white px-4 py-2 font-medium dark:border-stone-200 dark:bg-stone-950"><span class="arc-numeric">FL-02</span><span>First floor</span></li>
+          <li class="flex items-center justify-between gap-2 rounded-lg px-4 py-2 text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800"><span class="arc-numeric">MW-07</span><span>Kitchen run</span></li>
+          <li class="flex items-center justify-between gap-2 rounded-lg px-4 py-2 text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800"><span class="arc-numeric">MW-11</span><span>Wardrobe wall</span></li>
+        </ul>
+      </div>
+    </aside>
+
+    <!-- centre: schematic viewport -->
+    <article class="rounded-xl border border-stone-200 bg-stone-50 shadow-panel xl:col-span-6 dark:border-stone-800 dark:bg-stone-900">
+      <header class="flex flex-wrap items-center justify-between gap-4 border-b border-stone-200 px-6 py-4 dark:border-stone-800">
+        <div>
+          <h2 class="text-sm font-semibold">FL-02 · first floor shell</h2>
+          <p class="text-sm text-stone-500 dark:text-stone-400">Scale 1 : 50 at 100% zoom · grid 600 mm</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button class="rounded-lg border border-stone-200 px-2 py-2 text-2xs font-medium uppercase tracking-widest text-stone-500 hover:bg-stone-100 dark:border-stone-800 dark:text-stone-400 dark:hover:bg-stone-800">−</button>
+          <span class="arc-numeric text-sm font-medium">100%</span>
+          <button class="rounded-lg border border-stone-200 px-2 py-2 text-2xs font-medium uppercase tracking-widest text-stone-500 hover:bg-stone-100 dark:border-stone-800 dark:text-stone-400 dark:hover:bg-stone-800">＋</button>
+        </div>
+      </header>
+      <div class="p-6">
+        <div class="arc-grid-paper relative h-[520px] overflow-hidden rounded-xl border border-stone-200 bg-white dark:border-stone-800 dark:bg-stone-950">
+          <svg viewBox="0 0 600 480" class="h-full w-full text-stone-800 dark:text-stone-200" fill="none" stroke="currentColor" stroke-width="2">
+            <!-- outer shell -->
+            <path d="M40 40h520v400H40z" />
+            <!-- interior partitions -->
+            <path d="M40 220h300M340 40v180M340 260v180M420 260h140" stroke-width="1.5" />
+            <!-- millwork run hatching -->
+            <path d="M60 60h260v40H60z" stroke-width="1.5" stroke-dasharray="6 4" />
+            <path d="M60 120h260v40H60z" stroke-width="1.5" stroke-dasharray="6 4" />
+            <!-- opening -->
+            <path d="M340 220a60 60 0 0 1 60 60" stroke-width="1.5" stroke-dasharray="4 4" />
+            <!-- column markers -->
+            <circle cx="340" cy="220" r="6" stroke-width="1.5" />
+            <circle cx="340" cy="260" r="6" stroke-width="1.5" />
+          </svg>
+          <span class="arc-numeric absolute left-6 top-6 text-2xs uppercase tracking-widest text-stone-500 dark:text-stone-400">12.6 m</span>
+          <span class="arc-numeric absolute bottom-6 right-6 text-2xs uppercase tracking-widest text-stone-500 dark:text-stone-400">9.4 m</span>
+          <span class="absolute right-6 top-6 flex h-8 w-8 items-center justify-center rounded-lg border border-stone-300 text-2xs font-semibold dark:border-stone-700">N</span>
+        </div>
+        <div class="mt-6 flex flex-wrap items-center justify-between gap-4 border-t border-stone-200 pt-6 text-sm dark:border-stone-800">
+          <p class="text-stone-500 dark:text-stone-400">Clearance check: wardrobe doors hold 800 mm swing against wall W-06.</p>
+          <div class="flex items-center gap-2">
+            <span class="rounded-lg border border-stone-300 px-2 py-2 text-2xs font-semibold uppercase tracking-widest text-stone-600 dark:border-stone-700 dark:text-stone-300">Updated 6 h ago</span>
+            <button class="rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm font-medium hover:bg-stone-100 dark:border-stone-800 dark:bg-stone-950 dark:hover:bg-stone-800">Mark up</button>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- right: specs and feedback -->
+    <aside class="flex flex-col gap-6 xl:col-span-3">
+      <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+        <h2 class="text-sm font-semibold">Room readout</h2>
+        <dl class="mt-4 divide-y divide-stone-200 text-sm dark:divide-stone-800">
+          <div class="flex items-center justify-between py-2"><dt class="text-stone-500 dark:text-stone-400">Master bedroom</dt><dd class="arc-numeric font-medium">34.2 m²</dd></div>
+          <div class="flex items-center justify-between py-2"><dt class="text-stone-500 dark:text-stone-400">Wardrobe wall</dt><dd class="arc-numeric font-medium">46.0 lm</dd></div>
+          <div class="flex items-center justify-between py-2"><dt class="text-stone-500 dark:text-stone-400">Ceiling height</dt><dd class="arc-numeric font-medium">3.05 m</dd></div>
+          <div class="flex items-center justify-between py-2"><dt class="text-stone-500 dark:text-stone-400">Wall thickness</dt><dd class="arc-numeric font-medium">230 mm</dd></div>
+        </dl>
+      </article>
+
+      <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+        <h2 class="text-sm font-semibold">Reviewer feedback</h2>
+        <ul class="mt-4 flex flex-col gap-2">
+          <li class="rounded-lg border border-stone-200 bg-white px-4 py-2 dark:border-stone-800 dark:bg-stone-950"><p class="text-sm">Shift store wall 400 mm east to clear the riser.</p><p class="arc-numeric mt-2 text-2xs uppercase tracking-widest text-stone-400">Sana H. · resolved in B.05</p></li>
+          <li class="rounded-lg border border-stone-200 bg-white px-4 py-2 dark:border-stone-800 dark:bg-stone-950"><p class="text-sm">Confirm skirting return at the column.</p><p class="arc-numeric mt-2 text-2xs uppercase tracking-widest text-stone-400">Rafiq Q. · open</p></li>
+          <li class="rounded-lg border border-dashed border-stone-300 px-4 py-2 text-sm text-stone-500 dark:border-stone-700 dark:text-stone-400">Awaiting client comment on wardrobe depth.</li>
+        </ul>
+      </article>
+    </aside>
+  </section>
+</div>
+<script src="../assets/arc-kit.js" defer></script>
+</body>
+</html>

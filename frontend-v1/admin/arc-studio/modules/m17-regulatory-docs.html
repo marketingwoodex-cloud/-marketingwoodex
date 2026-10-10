@@ -1,0 +1,198 @@
+<!doctype html>
+<!-- ============================================================================
+     WOODEX ADMIN V2.1 + ARC.STUDIO
+     MODULE 17 — REGULATORY & COMPLIANCE DOCS
+     Blocks: 1 Regulatory Portal Filters · 2 Status Badge KPIs · 3 Authority File Views
+     ============================================================================ -->
+<html lang="en" class="h-full">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>M17 Regulatory &amp; Compliance Docs — WOODEX ADMIN V2.1</title>
+<link rel="stylesheet" href="../assets/arc-kit.css">
+<script>try{var t=localStorage.getItem("wxaTheme");if(t==="dark"||(!t&&matchMedia("(prefers-color-scheme: dark)").matches)){document.documentElement.classList.add("dark");document.documentElement.setAttribute("data-theme","dark")}}catch(e){}</script>
+</head>
+<body class="min-h-full bg-stone-100 text-stone-950 antialiased dark:bg-stone-950 dark:text-stone-50">
+<div class="mx-auto flex w-full max-w-canvas flex-col gap-8 px-6 py-8">
+
+  <!-- ===== BLOCK 1 — HEADER / PORTAL SEARCH FILTERS ===== -->
+  <header class="flex flex-col gap-6 border-b border-stone-200 pb-6 dark:border-stone-800">
+    <div class="flex flex-col gap-2">
+      <nav class="flex items-center gap-2 text-2xs uppercase tracking-widest text-stone-500 dark:text-stone-400">
+        <span>Module IV</span><span class="text-stone-300 dark:text-stone-600">/</span><span class="text-stone-900 dark:text-stone-50">Regulatory &amp; Compliance</span>
+      </nav>
+      <h1 class="text-xl font-semibold tracking-tight">Regulatory &amp; Compliance Docs</h1>
+      <p class="max-w-3xl text-sm text-stone-500 dark:text-stone-400">Permits, environmental certificates and safety clearances grouped by issuing authority with expiry tracking.</p>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-2">
+      <label class="flex min-w-[260px] flex-1 items-center gap-2 rounded-lg border border-stone-200 bg-white px-2 py-2 focus-within:ring-1 focus-within:ring-stone-400 dark:border-stone-800 dark:bg-stone-950 dark:focus-within:ring-stone-500">
+        <svg class="h-4 w-4 text-stone-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="7"/><path d="m20 20-4.3-4.3"/></svg>
+        <input data-arc-filter data-arc-target="#doc-files" type="search" placeholder="Authority, permit number or project…" class="w-full bg-transparent text-sm outline-none placeholder:text-stone-400 dark:placeholder:text-stone-500">
+      </label>
+      <div data-arc-tabs class="flex items-center gap-2 rounded-lg border border-stone-200 bg-white p-2 dark:border-stone-800 dark:bg-stone-950">
+        <button data-arc-tab="live" aria-selected="true" class="rounded-lg px-2 py-2 text-sm font-medium">Live</button>
+        <button data-arc-tab="expiring" aria-selected="false" class="rounded-lg px-2 py-2 text-sm font-medium">Expiring</button>
+        <button data-arc-tab="archive" aria-selected="false" class="rounded-lg px-2 py-2 text-sm font-medium">Archive</button>
+      </div>
+      <button class="rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm font-medium hover:bg-stone-100 dark:border-stone-800 dark:bg-stone-950 dark:hover:bg-stone-800">Authority filter</button>
+      <button class="rounded-lg bg-stone-800 px-4 py-2 text-sm font-medium text-stone-50 hover:bg-stone-700 dark:bg-stone-200 dark:text-stone-900 dark:hover:bg-stone-300">＋ Upload document</button>
+    </div>
+  </header>
+
+  <!-- ===== BLOCK 2 — 4-COLUMN STATUS BADGE KPIs ===== -->
+  <section class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Active Building Permits</p>
+      <p class="arc-numeric mt-2 text-2xl font-bold tracking-tight">09</p>
+      <span class="mt-4 inline-flex rounded-lg bg-stone-800 px-2 py-2 text-2xs font-semibold uppercase tracking-widest text-stone-50 dark:bg-stone-200 dark:text-stone-900">All within validity</span>
+    </article>
+    <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Environmental Certification</p>
+      <p class="arc-numeric mt-2 text-2xl font-bold tracking-tight">A+</p>
+      <span class="mt-4 inline-flex rounded-lg border border-stone-300 px-2 py-2 text-2xs font-semibold uppercase tracking-widest text-stone-600 dark:border-stone-700 dark:text-stone-300">Low-VOC finishes verified</span>
+    </article>
+    <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Safety Clearances</p>
+      <p class="arc-numeric mt-2 text-2xl font-bold tracking-tight">14 / 16</p>
+      <div class="mt-4 flex flex-col gap-2">
+        <span class="block h-2 w-full overflow-hidden rounded-sm bg-stone-200 dark:bg-stone-800"><span data-arc-value="88" class="block h-full w-0 bg-stone-800 transition-all duration-700 dark:bg-stone-200"></span></span>
+        <p class="text-sm text-stone-500 dark:text-stone-400">2 sites awaiting fire access sign-off</p>
+      </div>
+    </article>
+    <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Expiring in 60 Days</p>
+      <p class="arc-numeric mt-2 text-2xl font-bold tracking-tight">04</p>
+      <span class="mt-4 inline-flex items-center gap-2 rounded-lg border border-dashed border-stone-400 px-2 py-2 text-2xs font-semibold uppercase tracking-widest text-stone-500 dark:border-stone-600 dark:text-stone-400"><span class="h-2 w-2 animate-arc-pulse rounded-full bg-stone-400"></span>2 need renewal this month</span>
+    </article>
+  </section>
+
+  <!-- ===== BLOCK 3 — MAIN ACTION CANVAS (File Views) ===== -->
+  <section id="doc-files" class="grid grid-cols-1 gap-6 xl:grid-cols-12">
+
+    <article class="rounded-xl border border-stone-200 bg-stone-50 shadow-panel xl:col-span-8 dark:border-stone-800 dark:bg-stone-900">
+      <header class="flex flex-wrap items-center justify-between gap-4 border-b border-stone-200 px-6 py-4 dark:border-stone-800">
+        <div>
+          <h2 class="text-sm font-semibold">Compliance cabinet · grouped by authority</h2>
+          <p class="text-sm text-stone-500 dark:text-stone-400">18 documents · 3 operational criteria</p>
+        </div>
+        <button class="rounded-lg border border-stone-200 px-4 py-2 text-sm font-medium hover:bg-stone-100 dark:border-stone-800 dark:hover:bg-stone-800">List view</button>
+      </header>
+
+      <div class="divide-y divide-stone-200 dark:divide-stone-800">
+        <!-- authority group 1 -->
+        <div class="px-6 py-4">
+          <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Lahore Development Authority</p>
+          <ul class="mt-4 flex flex-col gap-2">
+            <li data-arc-filter-item class="flex flex-wrap items-center justify-between gap-4 rounded-lg border border-stone-200 bg-white px-4 py-2 dark:border-stone-800 dark:bg-stone-950">
+              <span class="flex items-center gap-4">
+                <span class="flex h-8 w-8 items-center justify-center rounded-lg border border-stone-300 text-2xs font-semibold text-stone-500 dark:border-stone-700 dark:text-stone-400">PDF</span>
+                <span class="min-w-0"><span class="block truncate text-sm font-medium">Building permit · Hafeez Villa</span><span class="arc-numeric block text-2xs uppercase tracking-widest text-stone-400">LDA/2026/4471 · expires 12 Mar 2028</span></span>
+              </span>
+              <span class="flex items-center gap-2">
+                <span class="rounded-lg bg-stone-800 px-2 py-2 text-2xs font-semibold uppercase tracking-widest text-stone-50 dark:bg-stone-200 dark:text-stone-900">Active</span>
+                <button class="rounded-lg border border-stone-200 px-2 py-2 text-2xs uppercase tracking-widest text-stone-500 hover:bg-stone-100 dark:border-stone-800 dark:text-stone-400 dark:hover:bg-stone-800">Open</button>
+              </span>
+            </li>
+            <li data-arc-filter-item class="flex flex-wrap items-center justify-between gap-4 rounded-lg border border-stone-200 bg-white px-4 py-2 dark:border-stone-800 dark:bg-stone-950">
+              <span class="flex items-center gap-4">
+                <span class="flex h-8 w-8 items-center justify-center rounded-lg border border-stone-300 text-2xs font-semibold text-stone-500 dark:border-stone-700 dark:text-stone-400">PDF</span>
+                <span class="min-w-0"><span class="block truncate text-sm font-medium">Zoning certificate · Plot 42</span><span class="arc-numeric block text-2xs uppercase tracking-widest text-stone-400">LDA/Z/1029 · expires 31 Dec 2026</span></span>
+              </span>
+              <span class="flex items-center gap-2">
+                <span class="rounded-lg border border-stone-300 px-2 py-2 text-2xs font-semibold uppercase tracking-widest text-stone-600 dark:border-stone-700 dark:text-stone-300">Renew soon</span>
+                <button class="rounded-lg border border-stone-200 px-2 py-2 text-2xs uppercase tracking-widest text-stone-500 hover:bg-stone-100 dark:border-stone-800 dark:text-stone-400 dark:hover:bg-stone-800">Open</button>
+              </span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- authority group 2 -->
+        <div class="px-6 py-4">
+          <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Environment Protection Department</p>
+          <ul class="mt-4 flex flex-col gap-2">
+            <li data-arc-filter-item class="flex flex-wrap items-center justify-between gap-4 rounded-lg border border-stone-200 bg-white px-4 py-2 dark:border-stone-800 dark:bg-stone-950">
+              <span class="flex items-center gap-4">
+                <span class="flex h-8 w-8 items-center justify-center rounded-lg border border-stone-300 text-2xs font-semibold text-stone-500 dark:border-stone-700 dark:text-stone-400">PDF</span>
+                <span class="min-w-0"><span class="block truncate text-sm font-medium">Low-VOC finish declaration</span><span class="arc-numeric block text-2xs uppercase tracking-widest text-stone-400">EPD/F/2214 · expires 30 Jun 2027</span></span>
+              </span>
+              <span class="flex items-center gap-2">
+                <span class="rounded-lg bg-stone-800 px-2 py-2 text-2xs font-semibold uppercase tracking-widest text-stone-50 dark:bg-stone-200 dark:text-stone-900">Active</span>
+                <button class="rounded-lg border border-stone-200 px-2 py-2 text-2xs uppercase tracking-widest text-stone-500 hover:bg-stone-100 dark:border-stone-800 dark:text-stone-400 dark:hover:bg-stone-800">Open</button>
+              </span>
+            </li>
+            <li data-arc-filter-item class="flex flex-wrap items-center justify-between gap-4 rounded-lg border border-dashed border-stone-300 px-4 py-2 dark:border-stone-700">
+              <span class="flex items-center gap-4">
+                <span class="flex h-8 w-8 items-center justify-center rounded-lg border border-dashed border-stone-400 text-2xs font-semibold text-stone-400 dark:border-stone-600">PEND</span>
+                <span class="min-w-0"><span class="block truncate text-sm font-medium">Workshop dust extraction report</span><span class="arc-numeric block text-2xs uppercase tracking-widest text-stone-400">Submitted 02 Oct · awaiting reply</span></span>
+              </span>
+              <span class="text-2xs uppercase tracking-widest text-stone-400">In review</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- authority group 3 -->
+        <div class="px-6 py-4">
+          <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Rescue 1122 · Fire Safety</p>
+          <ul class="mt-4 flex flex-col gap-2">
+            <li data-arc-filter-item class="flex flex-wrap items-center justify-between gap-4 rounded-lg border border-stone-200 bg-white px-4 py-2 dark:border-stone-800 dark:bg-stone-950">
+              <span class="flex items-center gap-4">
+                <span class="flex h-8 w-8 items-center justify-center rounded-lg border border-stone-300 text-2xs font-semibold text-stone-500 dark:border-stone-700 dark:text-stone-400">PDF</span>
+                <span class="min-w-0"><span class="block truncate text-sm font-medium">Fire access clearance · Gulberg</span><span class="arc-numeric block text-2xs uppercase tracking-widest text-stone-400">FS/2026/0148 · expires 04 Nov 2026</span></span>
+              </span>
+              <span class="flex items-center gap-2">
+                <span class="flex items-center gap-2 rounded-lg border border-dashed border-stone-400 px-2 py-2 text-2xs font-semibold uppercase tracking-widest text-stone-500 dark:border-stone-600 dark:text-stone-400"><span class="h-2 w-2 animate-arc-pulse rounded-full bg-stone-400"></span>Expiring 24 d</span>
+                <button class="rounded-lg border border-stone-200 px-2 py-2 text-2xs uppercase tracking-widest text-stone-500 hover:bg-stone-100 dark:border-stone-800 dark:text-stone-400 dark:hover:bg-stone-800">Open</button>
+              </span>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <p data-arc-filter-empty hidden class="border-t border-stone-200 px-6 py-4 text-sm text-stone-500 dark:border-stone-800 dark:text-stone-400">No compliance document matches that filter.</p>
+    </article>
+
+    <aside class="flex flex-col gap-6 xl:col-span-4">
+      <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+        <h2 class="text-sm font-semibold">Renewal calendar</h2>
+        <ul class="mt-4 flex flex-col gap-2">
+          <li class="flex items-center justify-between gap-4 rounded-lg border border-stone-200 bg-white px-4 py-2 dark:border-stone-800 dark:bg-stone-950"><span class="min-w-0"><span class="block truncate text-sm">Fire access · Gulberg</span><span class="arc-numeric block text-2xs uppercase tracking-widest text-stone-400">04 Nov 2026</span></span><span class="arc-numeric text-sm font-semibold">24 d</span></li>
+          <li class="flex items-center justify-between gap-4 rounded-lg border border-stone-200 bg-white px-4 py-2 dark:border-stone-800 dark:bg-stone-950"><span class="min-w-0"><span class="block truncate text-sm">Zoning certificate · Plot 42</span><span class="arc-numeric block text-2xs uppercase tracking-widest text-stone-400">31 Dec 2026</span></span><span class="arc-numeric text-sm font-semibold">81 d</span></li>
+          <li class="flex items-center justify-between gap-4 rounded-lg border border-stone-200 bg-white px-4 py-2 dark:border-stone-800 dark:bg-stone-950"><span class="min-w-0"><span class="block truncate text-sm">Site safety induction</span><span class="arc-numeric block text-2xs uppercase tracking-widest text-stone-400">15 Jan 2027</span></span><span class="arc-numeric text-sm font-semibold">96 d</span></li>
+        </ul>
+      </article>
+
+      <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+        <h2 class="text-sm font-semibold">Operational criteria</h2>
+        <div class="mt-4 flex flex-wrap gap-2">
+          <span class="rounded-lg border border-stone-200 bg-white px-2 py-2 text-2xs uppercase tracking-widest text-stone-500 dark:border-stone-800 dark:bg-stone-950 dark:text-stone-400">Site access</span>
+          <span class="rounded-lg border border-stone-200 bg-white px-2 py-2 text-2xs uppercase tracking-widest text-stone-500 dark:border-stone-800 dark:bg-stone-950 dark:text-stone-400">Workshop safety</span>
+          <span class="rounded-lg border border-stone-200 bg-white px-2 py-2 text-2xs uppercase tracking-widest text-stone-500 dark:border-stone-800 dark:bg-stone-950 dark:text-stone-400">Material import</span>
+          <span class="rounded-lg border border-stone-200 bg-white px-2 py-2 text-2xs uppercase tracking-widest text-stone-500 dark:border-stone-800 dark:bg-stone-950 dark:text-stone-400">Waste handling</span>
+        </div>
+        <button class="mt-4 w-full rounded-lg bg-stone-800 px-4 py-2 text-sm font-medium text-stone-50 dark:bg-stone-200 dark:text-stone-900">Request renewal pack</button>
+      </article>
+    </aside>
+  </section>
+
+  <!-- expiring + archive panes -->
+  <section data-arc-pane="expiring" hidden class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+    <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Expiring within 60 days</p>
+    <ol class="mt-4 divide-y divide-stone-200 text-sm dark:divide-stone-800">
+      <li class="flex items-center justify-between gap-4 py-2"><span>Fire access clearance · Gulberg</span><span class="arc-numeric text-stone-500 dark:text-stone-400">24 days</span></li>
+      <li class="flex items-center justify-between gap-4 py-2"><span>Zoning certificate · Plot 42</span><span class="arc-numeric text-stone-500 dark:text-stone-400">81 days</span></li>
+      <li class="flex items-center justify-between gap-4 py-2"><span>Site safety induction · Model Town</span><span class="arc-numeric text-stone-500 dark:text-stone-400">96 days</span></li>
+    </ol>
+  </section>
+
+  <section data-arc-pane="archive" hidden class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+    <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Superseded documents · read only</p>
+    <ol class="mt-4 divide-y divide-stone-200 text-sm dark:divide-stone-800">
+      <li class="flex items-center justify-between gap-4 py-2"><span>Building permit rev A · Model Town</span><span class="arc-numeric text-stone-500 dark:text-stone-400">Superseded 12 Sep 2026</span></li>
+      <li class="flex items-center justify-between gap-4 py-2"><span>Finish VOC declaration 2025</span><span class="arc-numeric text-stone-500 dark:text-stone-400">Superseded 30 Jun 2026</span></li>
+    </ol>
+  </section>
+</div>
+<script src="../assets/arc-kit.js" defer></script>
+</body>
+</html>

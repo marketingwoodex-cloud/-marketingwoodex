@@ -1,0 +1,181 @@
+<!doctype html>
+<!-- ============================================================================
+     WOODEX ADMIN V2.1 + ARC.STUDIO
+     MODULE 20 — AI ARCHITECTURAL ASSISTANT
+     Blocks: 1 Prompt Selector Header · 2 Utility Link KPIs · 3 AI Chat Layout
+     ============================================================================ -->
+<html lang="en" class="h-full">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>M20 AI Architectural Assistant — WOODEX ADMIN V2.1</title>
+<link rel="stylesheet" href="../assets/arc-kit.css">
+<script>try{var t=localStorage.getItem("wxaTheme");if(t==="dark"||(!t&&matchMedia("(prefers-color-scheme: dark)").matches)){document.documentElement.classList.add("dark");document.documentElement.setAttribute("data-theme","dark")}}catch(e){}</script>
+</head>
+<body class="min-h-full bg-stone-100 text-stone-950 antialiased dark:bg-stone-950 dark:text-stone-50">
+<div class="mx-auto flex w-full max-w-canvas flex-col gap-8 px-6 py-8">
+
+  <!-- ===== BLOCK 1 — HEADER / PROMPT SELECTOR ===== -->
+  <header class="flex flex-col gap-6 border-b border-stone-200 pb-6 lg:flex-row lg:items-start lg:justify-between dark:border-stone-800">
+    <div class="flex flex-col gap-2">
+      <nav class="flex items-center gap-2 text-2xs uppercase tracking-widest text-stone-500 dark:text-stone-400">
+        <span>Module V</span><span class="text-stone-300 dark:text-stone-600">/</span><span class="text-stone-900 dark:text-stone-50">AI Architectural Assistant</span>
+      </nav>
+      <h1 class="text-xl font-semibold tracking-tight">AI Architectural Assistant</h1>
+      <p class="max-w-3xl text-sm text-stone-500 dark:text-stone-400">Query the drawing set and material schedules for timber code compliance, structural spans and detailing precedent. Answers cite the source sheet.</p>
+    </div>
+    <div class="flex flex-wrap items-center gap-2">
+      <div class="relative">
+        <button data-arc-dd="prompt" aria-expanded="false" class="flex items-center gap-2 rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm font-medium hover:bg-stone-100 dark:border-stone-800 dark:bg-stone-950 dark:hover:bg-stone-800">
+          Prompt: timber code compliance
+          <svg class="h-4 w-4 text-stone-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m6 9 6 6 6-6"/></svg>
+        </button>
+        <div data-arc-menu="prompt" class="absolute right-0 z-30 mt-2 hidden w-72 overflow-hidden rounded-xl border border-stone-200 bg-white p-2 shadow-lift dark:border-stone-800 dark:bg-stone-900">
+          <button class="w-full rounded-lg px-2 py-2 text-left text-sm hover:bg-stone-100 dark:hover:bg-stone-800">Timber code compliance</button>
+          <button class="w-full rounded-lg px-2 py-2 text-left text-sm hover:bg-stone-100 dark:hover:bg-stone-800">Structural span check</button>
+          <button class="w-full rounded-lg px-2 py-2 text-left text-sm hover:bg-stone-100 dark:hover:bg-stone-800">Moisture deviation scan</button>
+          <button class="w-full rounded-lg px-2 py-2 text-left text-sm hover:bg-stone-100 dark:hover:bg-stone-800">Drawing set consistency</button>
+        </div>
+      </div>
+      <div class="relative">
+        <button data-arc-dd="model" aria-expanded="false" class="flex items-center gap-2 rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm font-medium hover:bg-stone-100 dark:border-stone-800 dark:bg-stone-950 dark:hover:bg-stone-800">
+          Model: analysis · deep
+          <svg class="h-4 w-4 text-stone-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m6 9 6 6 6-6"/></svg>
+        </button>
+        <div data-arc-menu="model" class="absolute right-0 z-30 mt-2 hidden w-64 overflow-hidden rounded-xl border border-stone-200 bg-white p-2 shadow-lift dark:border-stone-800 dark:bg-stone-900">
+          <button class="w-full rounded-lg px-2 py-2 text-left text-sm hover:bg-stone-100 dark:hover:bg-stone-800">Fast · drafting notes</button>
+          <button class="w-full rounded-lg px-2 py-2 text-left text-sm hover:bg-stone-100 dark:hover:bg-stone-800">Analysis · deep</button>
+          <button class="w-full rounded-lg px-2 py-2 text-left text-sm hover:bg-stone-100 dark:hover:bg-stone-800">Compliance · cite-first</button>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 rounded-lg border border-stone-200 bg-white px-4 py-2 dark:border-stone-800 dark:bg-stone-950">
+        <span class="text-sm font-medium">Include schedules</span>
+        <button role="switch" aria-checked="true" data-arc-switch="Schedule context" class="relative h-6 w-10 shrink-0 rounded-sm bg-stone-200 transition-colors dark:bg-stone-800">
+          <span class="absolute left-2 top-2 h-4 w-4 translate-x-0 rounded-sm bg-white transition-transform dark:bg-stone-950"></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== BLOCK 2 — 4-COLUMN UTILITY LINK KPIs ===== -->
+  <section class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Blueprint Code Scans</p>
+      <p class="arc-numeric mt-2 text-2xl font-bold tracking-tight">1,284</p>
+      <a href="#thread" class="mt-4 inline-flex text-sm font-medium underline decoration-dotted underline-offset-4">Scan history →</a>
+    </article>
+    <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Compliance Deviation Alerts</p>
+      <p class="arc-numeric mt-2 text-2xl font-bold tracking-tight">09</p>
+      <a href="#thread" class="mt-4 inline-flex text-sm font-medium underline decoration-dotted underline-offset-4">Open deviation log →</a>
+    </article>
+    <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Token Usage</p>
+      <p class="arc-numeric mt-2 text-2xl font-bold tracking-tight">42k<span class="text-sm font-medium text-stone-400"> / 150k</span></p>
+      <a href="#thread" class="mt-4 inline-flex text-sm font-medium underline decoration-dotted underline-offset-4">Spend settings →</a>
+    </article>
+    <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-[11px] font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400">Median Latency</p>
+      <p class="arc-numeric mt-2 text-2xl font-bold tracking-tight">3.1<span class="text-sm font-medium text-stone-400"> s</span></p>
+      <a href="#thread" class="mt-4 inline-flex text-sm font-medium underline decoration-dotted underline-offset-4">Model routing →</a>
+    </article>
+  </section>
+
+  <!-- ===== BLOCK 3 — MAIN ACTION CANVAS (AI Chat Layout) ===== -->
+  <section class="grid grid-cols-1 gap-6 xl:grid-cols-12">
+
+    <article id="thread" class="flex flex-col rounded-xl border border-stone-200 bg-stone-50 shadow-panel xl:col-span-8 dark:border-stone-800 dark:bg-stone-900">
+      <header class="flex flex-wrap items-center justify-between gap-4 border-b border-stone-200 px-6 py-4 dark:border-stone-800">
+        <div>
+          <h2 class="text-sm font-semibold">Conversation · Hafeez Villa drawing set</h2>
+          <p class="text-sm text-stone-500 dark:text-stone-400">Context: 14 sheets · MS-14 schedule · 2 structural reports</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button class="rounded-lg border border-stone-200 px-2 py-2 text-2xs font-medium uppercase tracking-widest text-stone-500 hover:bg-stone-100 dark:border-stone-800 dark:text-stone-400 dark:hover:bg-stone-800">New thread</button>
+          <button class="rounded-lg border border-stone-200 px-2 py-2 text-2xs font-medium uppercase tracking-widest text-stone-500 hover:bg-stone-100 dark:border-stone-800 dark:text-stone-400 dark:hover:bg-stone-800">Export</button>
+        </div>
+      </header>
+
+      <div class="arc-scroll flex max-h-[520px] flex-col gap-6 overflow-y-auto p-6">
+        <div class="flex justify-end gap-2">
+          <div class="max-w-[80%] rounded-xl rounded-tr-none bg-stone-800 px-4 py-2 text-stone-50 dark:bg-stone-200 dark:text-stone-900">
+            <p class="text-sm">Check the louvre screen against the timber durability code for an exterior application in Lahore, and tell me if the fixing detail holds.</p>
+            <p class="arc-numeric mt-2 text-2xs uppercase tracking-widest text-stone-400 dark:text-stone-500">Asked · 09:40</p>
+          </div>
+        </div>
+
+        <div class="flex gap-2">
+          <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-stone-300 text-2xs font-semibold text-stone-500 dark:border-stone-600 dark:text-stone-400">AI</span>
+          <div class="max-w-[85%] rounded-xl rounded-tl-none border border-dashed border-stone-300 bg-stone-100/60 px-4 py-2 dark:border-stone-700 dark:bg-stone-950/60">
+            <p class="text-sm font-medium">Result — 2 findings, 1 blocking</p>
+            <ol class="mt-4 flex flex-col gap-2">
+              <li class="rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm dark:border-stone-800 dark:bg-stone-950"><span class="arc-numeric mr-2 text-2xs uppercase tracking-widest text-stone-400">01</span>Teak at 45 × 25 mm with a 20 mm gap satisfies the durability class for a ventilated exterior screen. End grain must be sealed — currently unspecified on CL-01.</li>
+              <li class="rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm dark:border-stone-800 dark:bg-stone-950"><span class="arc-numeric mr-2 text-2xs uppercase tracking-widest text-stone-400">02</span>Concealed stainless clips at 600 mm centres exceed the recommended 400 mm maximum for a 2.9 m blade in this wind zone.</li>
+            </ol>
+            <div class="mt-4 flex flex-wrap gap-2">
+              <span class="rounded-lg border border-stone-200 bg-white px-2 py-2 text-2xs uppercase tracking-widest text-stone-500 dark:border-stone-800 dark:bg-stone-950 dark:text-stone-400">CL-01 detail 04</span>
+              <span class="rounded-lg border border-stone-200 bg-white px-2 py-2 text-2xs uppercase tracking-widest text-stone-500 dark:border-stone-800 dark:bg-stone-950 dark:text-stone-400">Timber code §4.2</span>
+              <span class="rounded-lg border border-stone-200 bg-white px-2 py-2 text-2xs uppercase tracking-widest text-stone-500 dark:border-stone-800 dark:bg-stone-950 dark:text-stone-400">Wind zone II</span>
+            </div>
+            <p class="arc-numeric mt-4 text-2xs uppercase tracking-widest text-stone-400">3.4 s · 2,140 tokens · model analysis-deep</p>
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-2">
+          <div class="max-w-[80%] rounded-xl rounded-tr-none bg-stone-800 px-4 py-2 text-stone-50 dark:bg-stone-200 dark:text-stone-900">
+            <p class="text-sm">Raise a revision note for the clip spacing and the end-seal specification.</p>
+            <p class="arc-numeric mt-2 text-2xs uppercase tracking-widest text-stone-400 dark:text-stone-500">Asked · 09:43</p>
+          </div>
+        </div>
+
+        <div class="flex gap-2">
+          <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-stone-300 text-2xs font-semibold text-stone-500 dark:border-stone-600 dark:text-stone-400">AI</span>
+          <div class="max-w-[85%] rounded-xl rounded-tl-none border border-dashed border-stone-300 bg-stone-100/60 px-4 py-2 dark:border-stone-700 dark:bg-stone-950/60">
+            <p class="text-sm">Draft revision note prepared for CL-01 rev A.12: clip centres reduced to 400 mm, end-seal added to the surface processing column, material schedule MS-14 updated with the extra 26 clips.</p>
+            <div class="mt-2 flex flex-wrap gap-2">
+              <button class="rounded-lg bg-stone-800 px-2 py-2 text-2xs font-semibold uppercase tracking-widest text-stone-50 dark:bg-stone-200 dark:text-stone-900">Issue to studio</button>
+              <button class="rounded-lg border border-stone-200 bg-white px-2 py-2 text-2xs font-semibold uppercase tracking-widest text-stone-500 hover:bg-stone-100 dark:border-stone-800 dark:bg-stone-950 dark:text-stone-400 dark:hover:bg-stone-800">Edit first</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer class="border-t border-stone-200 p-6 dark:border-stone-800">
+        <div class="flex flex-wrap items-center gap-2">
+          <button class="rounded-lg border border-stone-200 bg-white px-2 py-2 text-2xs font-medium uppercase tracking-widest hover:bg-stone-100 dark:border-stone-800 dark:bg-stone-950 dark:hover:bg-stone-800">Scope: drawing set</button>
+          <button class="rounded-lg border border-stone-200 bg-white px-2 py-2 text-2xs font-medium uppercase tracking-widest hover:bg-stone-100 dark:border-stone-800 dark:bg-stone-950 dark:hover:bg-stone-800">Scope: schedules</button>
+          <button class="rounded-lg border border-stone-200 bg-white px-2 py-2 text-2xs font-medium uppercase tracking-widest hover:bg-stone-100 dark:border-stone-800 dark:bg-stone-950 dark:hover:bg-stone-800">Scope: compliance archive</button>
+        </div>
+        <div class="mt-4 flex items-end gap-2 rounded-lg border border-stone-200 bg-white p-2 dark:border-stone-800 dark:bg-stone-950">
+          <textarea rows="2" placeholder="Ask about spans, moisture, detailing or code compliance…" class="w-full resize-none bg-transparent px-2 py-2 text-sm outline-none placeholder:text-stone-400 dark:placeholder:text-stone-500"></textarea>
+          <button class="rounded-lg bg-stone-800 px-4 py-2 text-sm font-medium text-stone-50 dark:bg-stone-200 dark:text-stone-900">Run</button>
+        </div>
+      </footer>
+    </article>
+
+    <aside class="flex flex-col gap-6 xl:col-span-4">
+      <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+        <h2 class="text-sm font-semibold">Deviation log</h2>
+        <ul class="mt-4 flex flex-col gap-2">
+          <li class="rounded-lg border border-dashed border-stone-400 px-4 py-2 dark:border-stone-600"><p class="text-sm font-medium">Clip spacing · CL-01</p><p class="arc-numeric text-2xs uppercase tracking-widest text-stone-400">Open · raised 09:40</p></li>
+          <li class="rounded-lg border border-stone-200 bg-white px-4 py-2 dark:border-stone-800 dark:bg-stone-950"><p class="text-sm font-medium">Moisture 11.2% · batch 14</p><p class="arc-numeric text-2xs uppercase tracking-widest text-stone-400">Re-drying scheduled</p></li>
+          <li class="rounded-lg border border-stone-200 bg-white px-4 py-2 dark:border-stone-800 dark:bg-stone-950"><p class="text-sm font-medium">Skirting return · column C2</p><p class="arc-numeric text-2xs uppercase tracking-widest text-stone-400">Resolved in B.05</p></li>
+        </ul>
+      </article>
+
+      <article class="rounded-xl border border-stone-200 bg-stone-50 p-6 shadow-panel dark:border-stone-800 dark:bg-stone-900">
+        <h2 class="text-sm font-semibold">Prompt library</h2>
+        <ul class="mt-4 flex flex-col gap-2">
+          <li><button class="w-full rounded-lg border border-stone-200 bg-white px-4 py-2 text-left text-sm hover:bg-stone-100 dark:border-stone-800 dark:bg-stone-950 dark:hover:bg-stone-800">Compare two finish specifications</button></li>
+          <li><button class="w-full rounded-lg border border-stone-200 bg-white px-4 py-2 text-left text-sm hover:bg-stone-100 dark:border-stone-800 dark:bg-stone-950 dark:hover:bg-stone-800">Summarise RFIs for the weekly board</button></li>
+          <li><button class="w-full rounded-lg border border-stone-200 bg-white px-4 py-2 text-left text-sm hover:bg-stone-100 dark:border-stone-800 dark:bg-stone-950 dark:hover:bg-stone-800">Draft client-facing change note</button></li>
+          <li><button class="w-full rounded-lg border border-stone-200 bg-white px-4 py-2 text-left text-sm hover:bg-stone-100 dark:border-stone-800 dark:bg-stone-950 dark:hover:bg-stone-800">Check schedule against drawing quantities</button></li>
+        </ul>
+      </article>
+    </aside>
+  </section>
+</div>
+<script src="../assets/arc-kit.js" defer></script>
+</body>
+</html>

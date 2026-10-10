@@ -1,0 +1,56 @@
+/* ============================================================================
+   WOODEX ADMIN V2.1 + ARC.STUDIO — Tailwind source layer
+   Rule: markup carries the utilities. This file only holds base reset facts and
+   the docs chrome that cannot be expressed as a single utility (scrollbars,
+   print, reduced motion). No visual component classes are defined here.
+   ========================================================================== */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: light;
+    --arc-ring: #e7e5e4;
+    --arc-shell-rail: 256px;
+  }
+  :root.dark,
+  [data-theme="dark"] {
+    color-scheme: dark;
+    --arc-ring: #292524;
+  }
+  html { -webkit-text-size-adjust: 100%; }
+  body { font-feature-settings: "cv02", "cv03", "cv04", "tnum"; }
+  [type="number"]::-webkit-outer-spin-button,
+  [type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  [type="number"] { -moz-appearance: textfield; }
+  [hidden] { display: none !important; }
+}
+
+@layer utilities {
+  /* High-density scrollbars for ledger and kanban canvases (base-8 geometry) */
+  .arc-scroll { scrollbar-width: thin; scrollbar-color: #d6d3d1 transparent; }
+  .dark .arc-scroll { scrollbar-color: #44403c transparent; }
+  .arc-scroll::-webkit-scrollbar { width: 8px; height: 8px; }
+  .arc-scroll::-webkit-scrollbar-track { background: transparent; }
+  .arc-scroll::-webkit-scrollbar-thumb { background: #d6d3d1; border-radius: 8px; }
+  .dark .arc-scroll::-webkit-scrollbar-thumb { background: #44403c; }
+  .arc-grid-paper {
+    background-image:
+      linear-gradient(to right, rgb(120 113 108 / 0.14) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(120 113 108 / 0.14) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+  .arc-hairline { background-image: linear-gradient(to bottom, transparent, currentColor, transparent); }
+  .arc-numeric { font-variant-numeric: tabular-nums; }
+  .arc-dragging { opacity: .45; outline: 1px dashed #78716c; outline-offset: -4px; }
+  .arc-drop-target { outline: 1px dashed #292524; outline-offset: -4px; background-color: rgb(231 229 228 / .5); }
+  .dark .arc-drop-target { outline-color: #e7e5e4; background-color: rgb(41 37 36 / .5); }
+}
+
+@media print {
+  .arc-no-print { display: none !important; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}
