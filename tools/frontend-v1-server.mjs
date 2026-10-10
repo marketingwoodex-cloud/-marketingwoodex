@@ -1,7 +1,7 @@
 // Local PREVIEW server for frontend-v1 (NOT deployed — Hostinger uses api/builder.php).
 // Zero dependencies: starts instantly. Implements the same JSON API as
 // frontend-v1/api/builder.php so /builder/ works identically in the preview.
-//   run: node tools/frontend-v1-server.mjs      (PORT=8080, WX_DEV_PASSWORD=Woodex@2026)
+//   run: node too../woodex-live-p29-v2.1-pro-server.mjs      (PORT=8080, WX_DEV_PASSWORD=Woodex@2026)
 import http from "node:http";
 import zlib from "node:zlib";
 import fs from "node:fs";
@@ -10,7 +10,7 @@ import crypto from "node:crypto";
 import { fileURLToPath } from "node:url";
 import { createAdmin } from "./frontend-v1-admin.mjs";
 
-const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../frontend-v1");
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../woodex-live-p29-v2.1-pro");
 const PRIV = path.join(ROOT, "_private");
 const BACKUPS = path.join(PRIV, "backups");
 const UPLOADS = path.join(ROOT, "assets/uploads");
@@ -21,7 +21,7 @@ let PASSWORD = process.env.WX_DEV_PASSWORD || (fs.existsSync(DEV_CFG) ? fs.readF
 const secret = () => crypto.createHash("sha256").update("wx-dev|" + PASSWORD).digest("hex");
 
 const MIME = { ".html": "text/html; charset=utf-8", ".css": "text/css", ".js": "text/javascript", ".json": "application/json", ".svg": "image/svg+xml",
-  ".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".webp": "image/webp", ".gif": "image/gif", ".woff2": "font/woff2", ".xml": "application/xml", ".txt": "text/plain" };
+  ".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".webp": "image/webp", ".gif": "image/gif", ".woff2": "font/woff2", ".xml": "application/xml", ".txt": "text/plain", ".zip": "application/zip" };
 
 // ---------------------------------------------------------------- auth
 const makeToken = () => { const exp = String(Math.floor(Date.now() / 1000) + 12 * 3600); return exp + "." + crypto.createHmac("sha256", secret()).update("wx|" + exp).digest("hex"); };
@@ -376,7 +376,7 @@ http.createServer(async (req, res) => {
       return res.end(JSON.stringify(out));
     }
 
-    if (!/^\/(admin|builder|api|assets)\//.test(p)) {
+    if (!/^\/(admin|admin-v2\.1|admin-v3|builder|api|assets)\//.test(p)) {
       const rel = (p.endsWith("/") ? p + "index.html" : /\.[a-z0-9]+$/i.test(p) ? p : p + "/index.html").replace(/^\/+/, "");
       const g = adminApi.publicGuard(rel, req);
       if (g && g.maint) { res.writeHead(503, { "Content-Type": MIME[".html"], "Retry-After": "3600" }); return fs.createReadStream(path.join(ROOT, g.maint)).pipe(res); }
@@ -391,10 +391,12 @@ http.createServer(async (req, res) => {
     }
     if (!fs.existsSync(file)) { res.writeHead(404, { "Content-Type": MIME[".html"] }); return fs.createReadStream(path.join(ROOT, "404.html")).pipe(res); }
     const ext = path.extname(file).toLowerCase();
-    if (ext === ".html" && !/^\/(builder|admin)/.test(p)) {
-      // Preview-only "Edit this page" button (never written into the site files)
+    if (ext === ".html" && !/^\/(builder|admin|admin-v2\.1|admin-v3)/.test(p)) {
+      // Preview-only "Edit this page" shortcut (never written into the site files).
+      // Hidden unless THIS browser is signed into Woodex Admin (sessionStorage
+      // "wxaTok"), so ordinary visitors never see it — exactly like Hostinger.
       const rel = path.relative(ROOT, file).split(path.sep).join("/");
-      const btn = `<a href="/builder/#${encodeURIComponent(rel)}" style="position:fixed;left:20px;bottom:20px;z-index:99999;background:#d4af6a;color:#0a0f1e;font:600 14px/1 system-ui,sans-serif;padding:14px 18px;border-radius:999px;text-decoration:none;box-shadow:0 10px 30px rgba(0,0,0,.35)">✏️ Edit this page</a>`;
+      const btn = `<a id="wx-prev-edit" href="/builder/#${encodeURIComponent(rel)}" hidden style="position:fixed;left:20px;bottom:20px;z-index:99999;background:#d4af6a;color:#0a0f1e;font:600 14px/1 system-ui,sans-serif;padding:14px 18px;border-radius:999px;text-decoration:none;box-shadow:0 10px 30px rgba(0,0,0,.35)">✏️ Edit this page</a><script>(function(){try{if(sessionStorage.getItem("wxaTok")){var b=document.getElementById("wx-prev-edit");if(b)b.hidden=false;}}catch(e){}})();</script>`;
       const lh = /Lighthouse|PageSpeed/i.test(req.headers["user-agent"] || ""); // speed tests see the page exactly as on Hostinger
       const body = fs.readFileSync(file, "utf8").replace(/<\/body>/i, (lh ? "" : btn) + "</body>");
       if (/gzip/.test(req.headers["accept-encoding"] || "")) { res.writeHead(200, { "Content-Type": MIME[".html"], "Cache-Control": "no-cache", "Content-Encoding": "gzip", Vary: "Accept-Encoding" }); return res.end(zlib.gzipSync(body)); }
@@ -402,6 +404,15 @@ http.createServer(async (req, res) => {
       return res.end(body);
     }
     // mirror Hostinger .htaccess: gzip text (mod_deflate) + 30-day cache for static assets
+    if (ext === ".zip") {
+      res.writeHead(200, {
+        "Content-Type": "application/zip",
+        "Content-Disposition": `attachment; filename="${path.basename(file)}"`,
+        "Content-Length": fs.statSync(file).size,
+        "Cache-Control": "no-cache"
+      });
+      return fs.createReadStream(file).pipe(res);
+    }
     const cache = /^\.(webp|jpe?g|png|gif|svg|woff2|avif)$/.test(ext) && !/^\/(builder|admin)/.test(p) ? "public, max-age=2592000" : "no-cache";
     if (/^\.(css|js|svg|json|txt|xml)$/.test(ext) && /gzip/.test(req.headers["accept-encoding"] || "")) { res.writeHead(200, { "Content-Type": MIME[ext] || "application/octet-stream", "Cache-Control": cache, "Content-Encoding": "gzip", Vary: "Accept-Encoding" }); return fs.createReadStream(file).pipe(zlib.createGzip()).pipe(res); }
     res.writeHead(200, { "Content-Type": MIME[ext] || "application/octet-stream", "Cache-Control": cache });

@@ -1,0 +1,645 @@
+{
+ "users": [
+  {
+   "id": 1,
+   "name": "Master Admin",
+   "email": "master@woodex.pk",
+   "role": "owner",
+   "perms": [
+    "settings",
+    "crm",
+    "quotes",
+    "invoices",
+    "projects",
+    "chats",
+    "users",
+    "pages",
+    "media"
+   ],
+   "pass_hash": "scrypt$6101e4f1b8bdb2284c984bb332c39b97$dd02173f75feaea1dc51c893329d257b96b319c4b460309984e376713fbe880b",
+   "active": 1,
+   "pw_ver": 1,
+   "created_at": "2026-10-10 12:00:00",
+   "last_login": "2026-10-10 19:12:40",
+   "known": [
+    "84c8cf929f246cad",
+    "b07a760ab58004d3"
+   ],
+   "sessions": [
+    {
+     "sid": "9e5eac5f7b3e0160",
+     "exp": 1791689639,
+     "ip": "127.0.0.1",
+     "ua": "curl/7.88.1",
+     "created": "2026-10-10 15:33:59",
+     "seen": "2026-10-10 15:33:59"
+    },
+    {
+     "sid": "6d79cae2c37b1bf3",
+     "exp": 1791689768,
+     "ip": "127.0.0.1",
+     "ua": "",
+     "created": "2026-10-10 15:36:08",
+     "seen": "2026-10-10 15:36:08"
+    },
+    {
+     "sid": "fc2eb529d062b7ec",
+     "exp": 1791689786,
+     "ip": "127.0.0.1",
+     "ua": "",
+     "created": "2026-10-10 15:36:26",
+     "seen": "2026-10-10 15:36:26"
+    },
+    {
+     "sid": "993e1a0fc912f24a",
+     "exp": 1791689798,
+     "ip": "127.0.0.1",
+     "ua": "",
+     "created": "2026-10-10 15:36:38",
+     "seen": "2026-10-10 15:36:38"
+    },
+    {
+     "sid": "b60b53d08ffd5863",
+     "exp": 1791689817,
+     "ip": "127.0.0.1",
+     "ua": "",
+     "created": "2026-10-10 15:36:57",
+     "seen": "2026-10-10 15:36:57"
+    },
+    {
+     "sid": "7a1ae4bac015839a",
+     "exp": 1791689838,
+     "ip": "127.0.0.1",
+     "ua": "",
+     "created": "2026-10-10 15:37:18",
+     "seen": "2026-10-10 15:37:18"
+    },
+    {
+     "sid": "973f83d155dbb35e",
+     "exp": 1791689863,
+     "ip": "127.0.0.1",
+     "ua": "curl/7.88.1",
+     "created": "2026-10-10 15:37:43",
+     "seen": "2026-10-10 15:37:43"
+    },
+    {
+     "sid": "59db5412429608ff",
+     "exp": 1791696757,
+     "ip": "127.0.0.1",
+     "ua": "",
+     "created": "2026-10-10 17:32:37",
+     "seen": "2026-10-10 17:32:37"
+    },
+    {
+     "sid": "0c7bc3bc07bf61ce",
+     "exp": 1791696853,
+     "ip": "127.0.0.1",
+     "ua": "curl/7.88.1",
+     "created": "2026-10-10 17:34:13",
+     "seen": "2026-10-10 17:34:13"
+    },
+    {
+     "sid": "891646ec51edd9e0",
+     "exp": 1791702760,
+     "ip": "127.0.0.1",
+     "ua": "curl/7.88.1",
+     "created": "2026-10-10 19:12:40",
+     "seen": "2026-10-10 19:12:40"
+    }
+   ],
+   "_sid": "7a1ae4bac015839a"
+  },
+  {
+   "id": 2,
+   "name": "Woodex Owner",
+   "email": "admin@woodex.pk",
+   "role": "owner",
+   "perms": [
+    "settings",
+    "crm",
+    "quotes",
+    "invoices",
+    "projects",
+    "chats",
+    "users",
+    "pages",
+    "media"
+   ],
+   "pass_hash": "scrypt$c9881c56750cc11dcc30deb9252cd7e0$a5d508565330a174d30941477bc3a617257401cfb74c65ad84f114c281fc1b0f",
+   "active": 1,
+   "pw_ver": 1,
+   "created_at": "2026-10-10 12:00:00",
+   "last_login": "2026-10-10 19:13:02",
+   "known": [
+    "23df8ba24de691cf",
+    "56ed171ceb14b99d"
+   ],
+   "sessions": [
+    {
+     "sid": "7db75c51597bb6dc",
+     "exp": 1791696918,
+     "ip": "127.0.0.1",
+     "ua": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Mobile Safari/537.36",
+     "created": "2026-10-10 17:35:18",
+     "seen": "2026-10-10 17:35:47"
+    },
+    {
+     "sid": "08d635fd0589990e",
+     "exp": 1791702782,
+     "ip": "127.0.0.1",
+     "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+     "created": "2026-10-10 19:13:02",
+     "seen": "2026-10-10 19:37:02"
+    }
+   ],
+   "_sid": "08d635fd0589990e"
+  },
+  {
+   "id": 3,
+   "name": "Admin",
+   "email": "admin",
+   "role": "owner",
+   "perms": [
+    "settings",
+    "crm",
+    "quotes",
+    "invoices",
+    "projects",
+    "chats",
+    "users",
+    "pages",
+    "media"
+   ],
+   "pass_hash": "scrypt$4e89b807ce0a8f33944681e26253d8e2$aad16066c2390288e3fb429e935a488b4bca35090e86888ae313b0e41645e4fe",
+   "active": 1,
+   "pw_ver": 1,
+   "created_at": "2026-10-10 12:00:00",
+   "last_login": null
+  },
+  {
+   "id": 4,
+   "name": "Ar. Bilal Ahmed",
+   "email": "manager@woodex.pk",
+   "role": "admin",
+   "perms": [
+    "crm",
+    "quotes",
+    "invoices",
+    "projects",
+    "chats",
+    "pages",
+    "media"
+   ],
+   "pass_hash": "scrypt$1d6eca075c3c36a232fc2916358408c7$fdd628ceb93a004052f56a3e6af53dfbd603cc415cba058127504ab1d16947de",
+   "active": 1,
+   "pw_ver": 1,
+   "created_at": "2026-10-10 12:00:00",
+   "last_login": null
+  },
+  {
+   "id": 5,
+   "name": "Engr. Hamza Farooq",
+   "email": "developer@woodex.pk",
+   "role": "editor",
+   "perms": [
+    "pages",
+    "media",
+    "seo",
+    "speed"
+   ],
+   "pass_hash": "scrypt$774e54be3837c4cddb8c244fb054594e$a84ea046d7affd60702f144771d7a1cc272a4e9bf07f0ff8295e0148affc7613",
+   "active": 1,
+   "pw_ver": 1,
+   "created_at": "2026-10-10 12:00:00",
+   "last_login": null
+  },
+  {
+   "id": 6,
+   "name": "Usman Ali",
+   "email": "sales@woodex.pk",
+   "role": "sales",
+   "perms": [
+    "forms",
+    "crm",
+    "quotes",
+    "invoices"
+   ],
+   "pass_hash": "scrypt$e1f6aaa2e238916170c9b11d9e68998d$9feb2f142fdd272b7b05b69219e74b9f7bde041c05e0241180bea5780003a561",
+   "active": 1,
+   "pw_ver": 1,
+   "created_at": "2026-10-10 12:00:00",
+   "last_login": null
+  },
+  {
+   "id": 7,
+   "name": "Dr. Sarah Mansoor",
+   "email": "support@woodex.pk",
+   "role": "support",
+   "perms": [
+    "forms",
+    "chats"
+   ],
+   "pass_hash": "scrypt$058ce19fae1f88d8739ac2e7d70472f4$17a31b88f440ccbd1d4b7faedef76421a417bda04c75f5681b0b5bb5c5c66326",
+   "active": 1,
+   "pw_ver": 1,
+   "created_at": "2026-10-10 12:00:00",
+   "last_login": null
+  }
+ ],
+ "activity": [
+  {
+   "id": 1,
+   "user_id": 1,
+   "user_name": "Master Admin",
+   "action": "system.init",
+   "target": "Woodex Live P29 v2.1 Pro initialized",
+   "ip": "127.0.0.1",
+   "created_at": "2026-10-10 12:00:00"
+  },
+  {
+   "id": 2,
+   "user_id": 1,
+   "user_name": "Master Admin",
+   "action": "login",
+   "target": "",
+   "ip": "127.0.0.1",
+   "created_at": "2026-10-10 15:33:59"
+  },
+  {
+   "id": 3,
+   "user_id": 1,
+   "user_name": "Master Admin",
+   "action": "login",
+   "target": "",
+   "ip": "127.0.0.1",
+   "created_at": "2026-10-10 15:36:08"
+  },
+  {
+   "id": 4,
+   "user_id": 1,
+   "user_name": "Master Admin",
+   "action": "login",
+   "target": "",
+   "ip": "127.0.0.1",
+   "created_at": "2026-10-10 15:36:26"
+  },
+  {
+   "id": 5,
+   "user_id": 1,
+   "user_name": "Master Admin",
+   "action": "login",
+   "target": "",
+   "ip": "127.0.0.1",
+   "created_at": "2026-10-10 15:36:38"
+  },
+  {
+   "id": 6,
+   "user_id": 1,
+   "user_name": "Master Admin",
+   "action": "login",
+   "target": "",
+   "ip": "127.0.0.1",
+   "created_at": "2026-10-10 15:36:57"
+  },
+  {
+   "id": 7,
+   "user_id": 1,
+   "user_name": "Master Admin",
+   "action": "login",
+   "target": "",
+   "ip": "127.0.0.1",
+   "created_at": "2026-10-10 15:37:18"
+  },
+  {
+   "id": 8,
+   "user_id": 1,
+   "user_name": "Master Admin",
+   "action": "login",
+   "target": "",
+   "ip": "127.0.0.1",
+   "created_at": "2026-10-10 15:37:43"
+  },
+  {
+   "id": 9,
+   "user_id": 1,
+   "user_name": "Master Admin",
+   "action": "login",
+   "target": "",
+   "ip": "127.0.0.1",
+   "created_at": "2026-10-10 17:32:37"
+  },
+  {
+   "id": 10,
+   "user_id": 1,
+   "user_name": "Master Admin",
+   "action": "login",
+   "target": "",
+   "ip": "127.0.0.1",
+   "created_at": "2026-10-10 17:34:13"
+  },
+  {
+   "id": 11,
+   "user_id": 2,
+   "user_name": "Woodex Owner",
+   "action": "login",
+   "target": "",
+   "ip": "127.0.0.1",
+   "created_at": "2026-10-10 17:35:18"
+  },
+  {
+   "id": 12,
+   "user_id": 1,
+   "user_name": "Master Admin",
+   "action": "login",
+   "target": "",
+   "ip": "127.0.0.1",
+   "created_at": "2026-10-10 19:12:40"
+  },
+  {
+   "id": 13,
+   "user_id": 2,
+   "user_name": "Woodex Owner",
+   "action": "login",
+   "target": "",
+   "ip": "127.0.0.1",
+   "created_at": "2026-10-10 19:13:02"
+  },
+  {
+   "id": 14,
+   "user_id": 2,
+   "user_name": "Woodex Owner",
+   "action": "health.scan",
+   "target": "68/100",
+   "ip": "127.0.0.1",
+   "created_at": "2026-10-10 19:16:41"
+  },
+  {
+   "id": 15,
+   "user_id": 2,
+   "user_name": "Woodex Owner",
+   "action": "lead.update",
+   "target": "#3 Dr. Omair Rasheed → contacted",
+   "ip": "127.0.0.1",
+   "created_at": "2026-10-10 19:36:35"
+  },
+  {
+   "id": 16,
+   "user_id": 2,
+   "user_name": "Woodex Owner",
+   "action": "lead.update",
+   "target": "#3 Dr. Omair Rasheed → visit",
+   "ip": "127.0.0.1",
+   "created_at": "2026-10-10 19:36:38"
+  },
+  {
+   "id": 17,
+   "user_id": 2,
+   "user_name": "Woodex Owner",
+   "action": "lead.update",
+   "target": "#3 Dr. Omair Rasheed → quote",
+   "ip": "127.0.0.1",
+   "created_at": "2026-10-10 19:36:40"
+  },
+  {
+   "id": 18,
+   "user_id": 2,
+   "user_name": "Woodex Owner",
+   "action": "quote.create",
+   "target": "WI-10100 Zubair Hashmi",
+   "ip": "127.0.0.1",
+   "created_at": "2026-10-10 19:37:02"
+  }
+ ],
+ "seqU": 7,
+ "seqA": 18,
+ "leads": [
+  {
+   "id": 1,
+   "name": "Malik Tariq",
+   "email": "malik.tariq@estatecorp.pk",
+   "phone": "+92 300 8472910",
+   "service": "Full Luxury Villa Architecture & Interior",
+   "source": "Website Consultation Form",
+   "stage": "proposal",
+   "value": 4500000,
+   "unread": false,
+   "read": true,
+   "created_at": "2026-10-08 14:20:00",
+   "notes": []
+  },
+  {
+   "id": 2,
+   "name": "Ayesha Jahangir",
+   "email": "ayesha.j@nexusfin.pk",
+   "phone": "+92 321 9988112",
+   "service": "Corporate Headquarters Turnkey Fit-out",
+   "source": "WhatsApp Live Chat",
+   "stage": "qualified",
+   "value": 8200000,
+   "unread": false,
+   "read": true,
+   "created_at": "2026-10-09 11:15:00",
+   "notes": []
+  },
+  {
+   "id": 3,
+   "name": "Dr. Omair Rasheed",
+   "email": "omair.rasheed@gmail.com",
+   "phone": "+92 333 4455667",
+   "service": "Penthouse Renovation & Custom Joinery",
+   "source": "Website Quote Calculator",
+   "stage": "quote",
+   "value": 3100000,
+   "unread": true,
+   "read": false,
+   "created_at": "2026-10-10 09:30:00",
+   "notes": [
+    {
+     "t": "2026-10-10 19:36:35",
+     "user": "Woodex Owner",
+     "text": "Stage: new → contacted",
+     "sys": true
+    },
+    {
+     "t": "2026-10-10 19:36:38",
+     "user": "Woodex Owner",
+     "text": "Stage: contacted → visit",
+     "sys": true
+    },
+    {
+     "t": "2026-10-10 19:36:40",
+     "user": "Woodex Owner",
+     "text": "Stage: visit → quote",
+     "sys": true
+    }
+   ]
+  }
+ ],
+ "seqL": 3,
+ "quotes": [
+  {
+   "id": 101,
+   "number": "WX-EST-2026-089",
+   "title": "DHA Phase 6 Villa Modern Interior & Joinery",
+   "client": "Malik Tariq",
+   "email": "malik.tariq@estatecorp.pk",
+   "phone": "+92 300 8472910",
+   "status": "sent",
+   "total": 4500000,
+   "advance": 1350000,
+   "date": "2026-10-08",
+   "items": [
+    {
+     "desc": "Architectural Layout & 3D Spatial Rendering",
+     "qty": 1,
+     "rate": 450000,
+     "amount": 450000
+    },
+    {
+     "desc": "Master Bedroom & Living Bespoke Italian Joinery",
+     "qty": 1,
+     "rate": 2150000,
+     "amount": 2150000
+    },
+    {
+     "desc": "False Ceiling, Ambient Lighting & Electrical Fixtures",
+     "qty": 1,
+     "rate": 850000,
+     "amount": 850000
+    },
+    {
+     "desc": "Custom Italian Kitchen with Quartz Countertops",
+     "qty": 1,
+     "rate": 1050000,
+     "amount": 1050000
+    }
+   ]
+  },
+  {
+   "id": 102,
+   "no": "WI-10100",
+   "version": 1,
+   "option": "",
+   "status": "draft",
+   "created_by": "Woodex Owner",
+   "created_at": "2026-10-10 19:37:02",
+   "history": [
+    {
+     "t": "2026-10-10 19:37:02",
+     "user": "Woodex Owner",
+     "text": "Created"
+    }
+   ],
+   "client": {
+    "name": "Zubair Hashmi",
+    "phone": "",
+    "email": "",
+    "address": "",
+    "company": ""
+   },
+   "client_id": null,
+   "project": "",
+   "site": "",
+   "kind": "other",
+   "date": "2026-10-10",
+   "valid_days": 15,
+   "sections": [
+    {
+     "name": "Scope of work",
+     "note": "",
+     "items": [
+      {
+       "desc": "Describe the work",
+       "qty": 1,
+       "unit": "job",
+       "rate": 0,
+       "amount": 0,
+       "kind": "",
+       "code": ""
+      }
+     ],
+     "area": 0,
+     "subtotal": 0
+    }
+   ],
+   "discount": 0,
+   "taxPct": 0,
+   "terms": "50% advance payment with work order.\nPayment will be charged on the actual dimension / size of area.\nRates are valid for 15 days as per market rates.",
+   "notes": "",
+   "intro": "",
+   "design": "classic",
+   "layout": "classic",
+   "qtype": "",
+   "scope": "",
+   "sign_name": "",
+   "sign_title": "",
+   "rent": 0,
+   "advance": 0,
+   "blocks": [],
+   "updated_at": "2026-10-10 19:37:02",
+   "subtotal": 0,
+   "tax": 0,
+   "total": 0
+  }
+ ],
+ "seqQ": 102,
+ "invoices": [
+  {
+   "id": 201,
+   "number": "WX-INV-2026-042",
+   "title": "Mobilization Advance - DHA Villa Project",
+   "quote_id": 101,
+   "client": "Malik Tariq",
+   "email": "malik.tariq@estatecorp.pk",
+   "phone": "+92 300 8472910",
+   "status": "paid",
+   "total": 1350000,
+   "paid": 1350000,
+   "balance": 0,
+   "date": "2026-10-09",
+   "bank": "Bank Alfalah Islamic - Principal Collection Account (PK36 ALFH 0042 0100 8829 1102)"
+  }
+ ],
+ "seqI": 201,
+ "projects": [
+  {
+   "id": 1,
+   "title": "DHA Phase 6 Luxury Residence",
+   "client": "Malik Tariq",
+   "stage": "3d_design",
+   "progress": 40,
+   "budget": 4500000,
+   "lead_architect": "Ar. Bilal Ahmed",
+   "start_date": "2026-10-01",
+   "target_date": "2026-12-15"
+  },
+  {
+   "id": 2,
+   "title": "Nexus Fintech Corporate HQ Fit-out",
+   "client": "Ayesha Jahangir",
+   "stage": "civil_work",
+   "progress": 25,
+   "budget": 8200000,
+   "lead_architect": "Ar. Bilal Ahmed",
+   "start_date": "2026-09-20",
+   "target_date": "2026-11-30"
+  },
+  {
+   "id": 3,
+   "title": "Gulberg Executive Penthouse Redesign",
+   "client": "Dr. Omair Rasheed",
+   "stage": "consultation",
+   "progress": 10,
+   "budget": 3100000,
+   "lead_architect": "Kamran Tariq",
+   "start_date": "2026-10-10",
+   "target_date": "2027-01-20"
+  }
+ ],
+ "seqP": 3,
+ "clients": [],
+ "seqC": 0,
+ "tpls": [],
+ "seqT": 0,
+ "seqPay": 0
+}
