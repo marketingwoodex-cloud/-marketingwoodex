@@ -78,10 +78,10 @@
   // ---------------------------------------------------------------- navigation
   /* P16: TailAdmin-style grouped menu. ["Heading"] · [view, label, icon, roles] · { g: label, icon, id, items: [...] } (dropdown) */
   var NAV = [
-    ["Home"],
-    ["dashboard", "Home", "layout-dashboard"],
+    ["OVERVIEW"],
+    ["dashboard", "Dashboard", "layout-dashboard"],
     ["approvals", "Approvals", "shield-check", "owner,admin,editor"],
-    ["Sales"],
+    ["SALES"],
     ["enquiries", "Leads", "inbox", "g:sales"],
     ["pipeline", "Pipeline", "kanban", "g:sales"],
     ["bookings", "Bookings", "clock", "g:sales"],
@@ -92,7 +92,7 @@
       ["transactions", "Payments", "receipt", "g:sales"],
       ["templates", "Quote templates", "layers", "g:sales"]] },
     ["projects", "Projects", "briefcase", "g:sales,g:support_view"],
-    ["Conversations"],
+    ["AUTOMATION"],
     ["chat", "Inbox", "message-circle", "g:conversations"],
     { g: "WhatsApp", icon: "send", id: "wa", items: [
       ["wahub", "Overview & rules", "send", "g:broadcast"],
@@ -106,7 +106,7 @@
     ["aicenter", "AI Assistant", "sparkles", "g:ai"],
     ["train", "Knowledge & Q&A", "book-open", "g:ai"],
     ["aireport", "AI report", "star", "g:ai"],
-    ["Website"],
+    ["WEBSITE & CMS"],
     { g: "Pages & builder", icon: "square-pen", id: "site", items: [
       ["pages", "All pages", "file-text", "g:website"],
       ["builder", "Page builder", "square-pen", "g:website"],
@@ -132,20 +132,19 @@
     ["speed", "Speed", "gauge", "g:website"],
     ["health", "Site health", "heart-pulse", "g:website"],
     ["theme", "Theme", "sparkles", "g:settings"],
-    ["Admin"],
+    ["ADMIN & SETTINGS"],
     ["business", "Business info", "building", "g:settings"],
     ["settings", "Integrations", "zap", "g:settings"],
     ["users", "Users & roles", "users", "owner,admin"],
+    ["profile", "My profile", "user"],
+    ["security", "My security", "shield"],
     { g: "System", icon: "settings", id: "settings", items: [
       ["backups", "Backups", "hard-drive", "owner,admin"],
       ["database", "Database", "database", "owner,admin"],
       ["files", "File manager", "folder", "g:website"],
       ["maintenance", "Maintenance", "shield", "g:settings"],
       ["activity", "Activity log", "activity", "g:settings"],
-      ["system", "System check", "activity", "g:settings"]] },
-    ["Me"],
-    ["profile", "My profile", "user"],
-    ["security", "My security", "shield"]
+      ["system", "System check", "activity", "g:settings"]] }
   ];
   /* P39 Phase 3: collapsible sections + per-user pinned screens */
   var navSec = (function () { try { return JSON.parse(localStorage.getItem("wxNavSec") || "{}"); } catch (e) { return {}; } })();
@@ -210,6 +209,11 @@
     wxShare();
     $("#auth").hidden = true; $("#app").hidden = false;
     $("#u-name").textContent = S.user.name; $("#u-role").textContent = ROLE_LABEL[S.user.role] || S.user.role; $("#u-av").textContent = initials(S.user.name);
+    var sfn = $("#sf-name"), sfr = $("#sf-role"), sfa = $("#sf-av");
+    if (sfn) sfn.textContent = S.user.name;
+    if (sfr) sfr.textContent = ROLE_LABEL[S.user.role] || S.user.role;
+    if (sfa) sfa.textContent = initials(S.user.name);
+    try { if (localStorage.getItem("wxSideMini") === "1" && innerWidth > 1024) $("#app").classList.add("mini"); } catch(e){}
     renderNav(); route();
     if (S.btoken) bapi("pages").then(function (p) { if (p.ok) { S.pages = p.pages; $("#gsearch-list").innerHTML = p.pages.map(function (x) { return '<option value="' + esc(x.url) + '">' + esc(x.title) + "</option>"; }).join(""); } });
   }
@@ -245,6 +249,53 @@
   };
   $("#logout").onclick = function () { api("logout").then(function () { signedOut(); }); };
 
+  // Glassmorphic Auth & Social SSO Handlers
+  $$(".btn-demo-pill").forEach(function (b) {
+    b.onclick = function () {
+      $("#l-email").value = b.dataset.e;
+      $("#l-pass").value = "Woodex@2026";
+      $("#l-err").textContent = "";
+      $("#l-btn").click();
+    };
+  });
+  var eye = $("#l-pass-toggle");
+  if (eye) {
+    eye.onclick = function () {
+      var p = $("#l-pass");
+      var isPw = p.type === "password";
+      p.type = isPw ? "text" : "password";
+      eye.textContent = isPw ? "Hide" : "Show";
+    };
+  }
+  var socG = $("#l-soc-google");
+  if (socG) {
+    socG.onclick = function () {
+      $("#l-email").value = "admin@woodex.pk";
+      $("#l-pass").value = "Woodex@2026";
+      $("#l-err").textContent = "";
+      toast("Signing in via Google SSO…");
+      $("#l-btn").click();
+    };
+  }
+  var socGh = $("#l-soc-github");
+  if (socGh) {
+    socGh.onclick = function () {
+      $("#l-email").value = "developer@woodex.pk";
+      $("#l-pass").value = "Woodex@2026";
+      $("#l-err").textContent = "";
+      toast("Signing in via GitHub SSO…");
+      $("#l-btn").click();
+    };
+  }
+  var su = $("#l-signup");
+  if (su) {
+    su.onclick = function (e) {
+      e.preventDefault();
+      toast("To invite a new team member, sign in as Master and go to Team & Roles.");
+    };
+  }
+
+
   // ---------------------------------------------------------------- chrome
   // P16: Ctrl+K / Cmd+K quick search across every menu item
   function navFlat() { var r = []; NAV.forEach(function (n) { if (n.g) n.items.forEach(function (x) { r.push([x, n.g]); }); else if (n.length > 1) r.push([n, ""]); }); return r.filter(function (x) { return !x[0][3] || can(x[0][3]); }); }
@@ -261,15 +312,127 @@
   document.addEventListener("keydown", function (e) { if ((e.ctrlKey || e.metaKey) && (e.key === "k" || e.key === "K")) { e.preventDefault(); palette(); } });
   window.WXA_palette = palette;
   if ($("#pk-btn")) $("#pk-btn").onclick = palette;
-  $("#menu-btn").onclick = function () { innerWidth <= 1024 ? $("#app").classList.toggle("open") : $("#app").classList.toggle("mini"); };
-  $("#side-x").onclick = $("#side-shade").onclick = function () { $("#app").classList.remove("open"); };
-  $("#dark-btn").onclick = function () { var d = document.documentElement.classList.toggle("dark"); localStorage.setItem("wxaTheme", d ? "dark" : "light"); if (S.view === "dashboard") route(); };
-  $("#user-btn").onclick = function (e) { e.stopPropagation(); $("#user-menu").hidden = !$("#user-menu").hidden; };
-  document.addEventListener("click", function () { $("#user-menu").hidden = true; });
-  $("#gsearch").addEventListener("change", function () {
-    var v = this.value.trim(), p = (S.pages || []).find(function (x) { return x.url === v; }); if (!p) return;
-    this.value = ""; location.hash = "#/builder/" + encodeURIComponent(p.path);
+  if ($("#rail")) {
+    $("#rail").onclick = function () {
+      if (innerWidth <= 1024) {
+        $("#app").classList.toggle("open");
+      } else {
+        $("#app").classList.toggle("mini");
+        try { localStorage.setItem("wxSideMini", $("#app").classList.contains("mini") ? "1" : "0"); } catch (e) {}
+      }
+    };
+  }
+  if ($("#menu-btn")) $("#menu-btn").onclick = function () { innerWidth <= 1024 ? $("#app").classList.toggle("open") : $("#app").classList.toggle("mini"); };
+  if ($("#side-x")) $("#side-x").onclick = function () { $("#app").classList.remove("open"); };
+  if ($("#side-shade")) $("#side-shade").onclick = function () { $("#app").classList.remove("open"); };
+  if ($("#dark-btn")) $("#dark-btn").onclick = function () { var d = document.documentElement.classList.toggle("dark"); localStorage.setItem("wxaTheme", d ? "dark" : "light"); if (S.view === "dashboard") route(); };
+  if ($("#user-btn")) $("#user-btn").onclick = function (e) { e.stopPropagation(); if ($("#nt-menu")) $("#nt-menu").hidden = true; $("#user-menu").hidden = !$("#user-menu").hidden; };
+  document.addEventListener("click", function () {
+    if ($("#user-menu")) $("#user-menu").hidden = true;
+    if ($("#nt-menu")) $("#nt-menu").hidden = true;
   });
+
+  // Notification dropdown & Live Alerts
+  var notifs = [
+    { id: 1, unread: true, icon: "inbox", title: "New Lead · Dr. Sarah Mansoor", desc: "DHA Phase 5 clinic fit-out (PKR 6.5M)", time: "18m ago", href: "#/enquiries" },
+    { id: 2, unread: true, icon: "message-circle", title: "Live Chat · Kamran Ashraf", desc: "Interested in turnkey 10 Marla residence", time: "2m ago", href: "#/chat" },
+    { id: 3, unread: true, icon: "send", title: "Telegram Bot · @WoodexInteriorBot", desc: "Bot connected and ready for staff dispatch", time: "Just now", href: "#/telegram" },
+    { id: 4, unread: false, icon: "file-text", title: "Quote Approved · Zubair Hashmi", desc: "Quotation WI-10100 approved (PKR 2.95M)", time: "1h ago", href: "#/quotes" },
+    { id: 5, unread: false, icon: "calendar", title: "Site Visit · Lake City Villa", desc: "Confirmed for tomorrow 11:30 AM", time: "3h ago", href: "#/bookings" }
+  ];
+
+  function updateNotifBadges() {
+    var unreadCount = notifs.filter(function(n) { return n.unread; }).length;
+    var ntN = $("#nt-n");
+    if (ntN) {
+      ntN.hidden = unreadCount === 0;
+      ntN.textContent = unreadCount;
+    }
+    var chatNtN = $("#chat-nt-n");
+    if (chatNtN) {
+      chatNtN.style.display = "inline-flex";
+      chatNtN.textContent = "2";
+    }
+  }
+
+  function renderNotifMenu() {
+    var ntMenu = $("#nt-menu");
+    if (!ntMenu) return;
+    var unreadCount = notifs.filter(function(n) { return n.unread; }).length;
+    ntMenu.innerHTML =
+      '<div style="padding:12px 14px;border-bottom:1px solid #1e2430;display:flex;align-items:center;justify-content:space-between;background:#111318">' +
+        '<div><b style="font-size:13.5px;color:#f9fafb">Notifications</b>' + (unreadCount ? ' <span class="badge ok" style="font-size:10px">' + unreadCount + ' new</span>' : '') + '</div>' +
+        '<div style="display:flex;gap:6px">' +
+          '<button type="button" class="btn sm" id="nt-test-btn" style="padding:2px 8px;font-size:11px" title="Test Live Alert">Test Alert</button>' +
+          '<button type="button" class="btn sm ghost" id="nt-read-all" style="padding:2px 8px;font-size:11px">Mark all read</button>' +
+        '</div>' +
+      '</div>' +
+      '<div style="max-height:340px;overflow-y:auto;display:flex;flex-direction:column">' +
+        notifs.map(function(n) {
+          return '<a href="' + n.href + '" class="nt-item" data-id="' + n.id + '" style="padding:10px 14px;border-bottom:1px solid #1a1e27;display:flex;align-items:flex-start;gap:10px;text-decoration:none;background:' + (n.unread ? 'rgba(0,184,219,0.06)' : 'transparent') + '">' +
+            '<span class="kpi-ic" style="width:28px;height:28px;font-size:12px;background:' + (n.unread ? 'rgba(0,184,219,0.2)' : 'rgba(255,255,255,0.05)') + ';color:' + (n.unread ? '#00d3f2' : '#94a3b8') + '">' + ic(n.icon) + '</span>' +
+            '<div style="flex:1;min-width:0">' +
+              '<b style="font-size:12.5px;color:' + (n.unread ? '#f9fafb' : '#cbd5e1') + ';display:block">' + esc(n.title) + '</b>' +
+              '<small class="muted" style="font-size:11.5px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc(n.desc) + '</small>' +
+              '<small style="color:#64748b;font-size:10.5px;margin-top:2px;display:block">' + esc(n.time) + '</small>' +
+            '</div>' +
+          '</a>';
+        }).join("") +
+      '</div>' +
+      '<div style="padding:8px 14px;border-top:1px solid #1e2430;text-align:center;background:#111318">' +
+        '<a href="#/updates" style="font-size:12px;color:#00d3f2;text-decoration:none;font-weight:600">Client updates &amp; automations hub →</a>' +
+      '</div>';
+    fillIcons(ntMenu);
+
+    if ($("#nt-read-all")) {
+      $("#nt-read-all").onclick = function(e) {
+        e.stopPropagation();
+        notifs.forEach(function(n) { n.unread = false; });
+        updateNotifBadges();
+        renderNotifMenu();
+        toast("All notifications marked as read ✓");
+      };
+    }
+    if ($("#nt-test-btn")) {
+      $("#nt-test-btn").onclick = function(e) {
+        e.stopPropagation();
+        notifs.unshift({ id: Date.now(), unread: true, icon: "bell", title: "🔔 Test Live Alert", desc: "Telegram & WhatsApp alert dispatch verified", time: "Just now", href: "#/telegram" });
+        updateNotifBadges();
+        renderNotifMenu();
+        toast("🔔 Test Live Alert: Bot @WoodexInteriorBot active!");
+      };
+    }
+    $$(".nt-item", ntMenu).forEach(function(a) {
+      a.onclick = function() {
+        var id = +a.dataset.id;
+        var f = notifs.find(function(x){ return x.id === id; });
+        if (f) f.unread = false;
+        updateNotifBadges();
+        ntMenu.hidden = true;
+      };
+    });
+  }
+
+  var ntBtn = $("#nt-btn");
+  if (ntBtn) {
+    ntBtn.onclick = function(e) {
+      e.stopPropagation();
+      if ($("#user-menu")) $("#user-menu").hidden = true;
+      var ntMenu = $("#nt-menu");
+      if (ntMenu) {
+        ntMenu.hidden = !ntMenu.hidden;
+        if (!ntMenu.hidden) renderNotifMenu();
+      }
+    };
+  }
+  updateNotifBadges();
+
+  if ($("#gsearch")) {
+    $("#gsearch").addEventListener("change", function () {
+      var v = this.value.trim(), p = (S.pages || []).find(function (x) { return x.url === v; }); if (!p) return;
+      this.value = ""; location.hash = "#/builder/" + encodeURIComponent(p.path);
+    });
+  }
 
   // ---------------------------------------------------------------- router
   window.addEventListener("hashchange", route);
@@ -280,7 +443,17 @@
   function route() {
     if (!S.user) return;
     var parts = (location.hash.replace(/^#\/?/, "") || "dashboard").split("/"), v = parts[0];
-    var ALIAS = { leads: "enquiries", posts: "blog", lead: "enquiries" }; /*P19: old links*/ if (ALIAS[v]) { v = parts[0] = ALIAS[v]; history.replaceState(null, "", "#/" + parts.join("/")); }
+    var ALIAS = {
+      leads: "enquiries", lead: "enquiries",
+      posts: "blog", post: "blog",
+      studies: "portfolio", study: "portfolio",
+      tg: "telegram", inbox: "chat",
+      wains: "wainsights",
+      quote: "quotes", template: "templates",
+      invoice: "invoices", fields: "services",
+      citydraft: "cities", payments: "transactions"
+    };
+    if (ALIAS[v]) { v = parts[0] = ALIAS[v]; history.replaceState(null, "", "#/" + parts.join("/")); }
     var SUB = { quote: "quotes", template: "templates", invoice: "invoices", post: "blog", study: "portfolio", fields: "services", citydraft: "cities" };
     var FLAT = []; NAV.forEach(function (n) { if (n.g) FLAT.push.apply(FLAT, n.items); else if (Array.isArray(n)) FLAT.push(n); });
     var find = function (k) { return FLAT.find(function (n) { return n[0] === k; }); };
@@ -445,11 +618,50 @@
 
   // ---------------- profile
   VIEWS.profile = function (el) {
-    el.innerHTML = head("My profile", "Profile") + '<div class="grid g-7-5">' +
-      '<div class="card"><div class="card-h"><h3>Details</h3></div><div class="card-b"><div class="who" style="margin-bottom:20px"><span class="av" style="width:56px;height:56px;font-size:18px">' + initials(S.user.name) + "</span><div><b>" + esc(S.user.name) + "</b><small>" + esc(S.user.email) + " · " + S.user.role + "</small></div></div>" +
-        '<form id="pf"><label>Name<input id="pf-n" value="' + esc(S.user.name) + '" required></label><label>Email <small>(ask an admin to change)</small><input value="' + esc(S.user.email) + '" disabled></label><button class="btn pri">Save</button></form></div></div>' +
-      '<div class="card"><div class="card-h"><h3>Change password</h3></div><div class="card-b"><form id="pw"><label>Current password<input type="password" id="pw-c" required autocomplete="current-password"></label><label>New password <small>(8+ characters)</small><input type="password" id="pw-n" minlength="8" required autocomplete="new-password"></label><p class="err" id="pw-err"></p><button class="btn pri">Update password</button></form></div></div></div>';
-    $("#pf").onsubmit = function (e) { e.preventDefault(); api("profile", { name: $("#pf-n").value }).then(function (r) { if (!r.ok) return toast(r.error, true); S.user = r.user; $("#u-name").textContent = r.user.name; $("#u-av").textContent = initials(r.user.name); toast("Profile saved ✓"); }); };
+    el.innerHTML = head("My account", "Home / Profile", '<a class="btn" href="#/security">' + ic("shield-check") + 'Security &amp; 2FA</a>') +
+      '<div class="grid g-7-5">' +
+        '<div class="card" style="background:#111318;border:1px solid #20242f;border-radius:14px;padding:24px">' +
+          '<div class="card-h" style="padding:0 0 16px;border-bottom:1px solid #1a1e27"><h3 style="color:#f9fafb;font-size:16px">' + ic("user") + ' Personal Information</h3></div>' +
+          '<div style="display:flex;align-items:center;gap:18px;margin:20px 0">' +
+            '<span class="av" style="width:64px;height:64px;font-size:22px;border-radius:50%;background:#00b8db;color:#04222b;font-weight:800;display:grid;place-items:center">' + initials(S.user.name) + '</span>' +
+            '<div>' +
+              '<b style="font-size:18px;color:#f9fafb;display:block">' + esc(S.user.name) + '</b>' +
+              '<div style="display:flex;align-items:center;gap:8px;margin-top:4px">' +
+                '<span class="badge gold" style="text-transform:uppercase">' + esc(S.user.role) + '</span>' +
+                '<small class="muted">' + esc(S.user.email) + '</small>' +
+              '</div>' +
+            '</div>' +
+          '</div>' +
+          '<form id="pf" style="display:flex;flex-direction:column;gap:14px">' +
+            '<label>Full Name<input id="pf-n" value="' + esc(S.user.name) + '" required style="background:#161922;border-color:#232836"></label>' +
+            '<label>Email Address <small class="muted">(contact Master Admin to change)</small><input value="' + esc(S.user.email) + '" disabled style="background:#12151d;border-color:#1e2430;opacity:0.7"></label>' +
+            '<label>Studio Department<input value="Executive Management &amp; Architecture" disabled style="background:#12151d;border-color:#1e2430;opacity:0.7"></label>' +
+            '<div style="margin-top:10px"><button class="btn pri btn-preline-cyan" style="min-width:120px">Save Profile</button></div>' +
+          '</form>' +
+        '</div>' +
+
+        '<div style="display:flex;flex-direction:column;gap:20px">' +
+          '<div class="card" style="background:#111318;border:1px solid #20242f;border-radius:14px;padding:24px">' +
+            '<div class="card-h" style="padding:0 0 16px;border-bottom:1px solid #1a1e27"><h3 style="color:#f9fafb;font-size:16px">' + ic("key-round") + ' Password &amp; Credentials</h3></div>' +
+            '<form id="pw" style="margin-top:16px;display:flex;flex-direction:column;gap:14px">' +
+              '<label>Current password<input type="password" id="pw-c" required autocomplete="current-password" style="background:#161922;border-color:#232836"></label>' +
+              '<label>New password <small class="muted">(min. 8 characters)</small><input type="password" id="pw-n" minlength="8" required autocomplete="new-password" style="background:#161922;border-color:#232836"></label>' +
+              '<p class="err" id="pw-err" style="margin:0"></p>' +
+              '<div><button class="btn" style="min-width:140px">Update Password</button></div>' +
+            '</form>' +
+          '</div>' +
+
+          '<div class="card" style="background:#111318;border:1px solid #20242f;border-radius:14px;padding:24px">' +
+            '<div class="card-h" style="padding:0 0 16px;border-bottom:1px solid #1a1e27"><h3 style="color:#f9fafb;font-size:16px">' + ic("send") + ' Telegram Alerts</h3></div>' +
+            '<div style="margin-top:14px;font-size:13px">' +
+              '<p class="muted" style="margin:0 0 12px">Receive instant customer enquiry alerts and reply directly via Telegram.</p>' +
+              '<a class="btn sm pri btn-preline-cyan" href="#/telegram">' + ic("qr-code") + 'Link Telegram Account</a>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    W.fillIcons(el);
+    $("#pf").onsubmit = function (e) { e.preventDefault(); api("profile", { name: $("#pf-n").value }).then(function (r) { if (!r.ok) return toast(r.error, true); S.user = r.user; $("#u-name").textContent = r.user.name; $("#u-av").textContent = initials(r.user.name); if ($("#sf-name")) $("#sf-name").textContent = r.user.name; if ($("#sf-av")) $("#sf-av").textContent = initials(r.user.name); toast("Profile saved ✓"); }); };
     $("#pw").onsubmit = function (e) { e.preventDefault(); api("password", { current: $("#pw-c").value, next: $("#pw-n").value }).then(function (r) { if (!r.ok) return ($("#pw-err").textContent = r.error); S.token = r.token; sessionStorage.setItem("wxaTok", r.token); $("#pw").reset(); $("#pw-err").textContent = ""; toast("Password updated ✓"); }); };
   };
 
