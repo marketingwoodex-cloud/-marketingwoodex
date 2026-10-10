@@ -58,7 +58,7 @@ Code references are from the pro tree `woodex-live-p29-v2.1-pro/` (checked 2026-
 | Backups and database | EXISTS | `backups`, `database` routes | Include drawing and file metadata |
 
 ## Counts
-- EXISTS: 7. EXTEND: 4. PARTIAL: 5 (includes Activity + Gantt, Catalog, Vendor cost, Compliance, Revision logs). NEW: 11. Gated: 1 (client portal).
+- Total: 30 items (your list). EXISTS 12. EXTEND 4. PARTIAL 5 (Activity and Gantt, Catalog, Vendor cost, Compliance, Revision logs). NEW 8 (site layout, floor plans, 3D elevations, structural data, material schedules, POs, client review notes, field reports). NEW and gated 1 (client portal).
 
 ## Risks found during the map
 1. The projects view (`admin/admin-sales.js`, `projs_list`) is built from invoices. ARC projects need a site, zone and drawing list, so the project record needs new fields rather than a new screen.
