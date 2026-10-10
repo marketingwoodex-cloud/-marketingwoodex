@@ -12,7 +12,9 @@ BLOCK_DIRS = {'api', '_private', '_database', '_templates', '_scripts', 'tools',
 BLOCK_EXT = {'.php', '.sql', '.env', '.md', '.json', '.lock', '.yaml', '.yml', '.ini', '.bak', '.log', '.dist', '.sh', '.bat', '.tar', '.zip'}
 BLOCK_NAMES = {'admin-tg.js'}  # contains a token literal (SEC-003); not for preview
 OWNER = {'id': 1, 'name': 'Preview Owner', 'role': 'owner', 'email': PREVIEW_EMAIL}
-PREVIEW_PROJECT = {'id': 1, 'name': 'Preview project (stub)', 'stage': 'design', 'photos': [], 'value': 0, 'paid': 0, 'target': '', 'no': 'P-1', 'client': ''}
+PREVIEW_PROJECT = {'id': 1, 'name': 'Preview project (stub)', 'stage': 'design', 'photos': [], 'value': 0, 'paid': 0, 'no': 'P-1', 'client': '',
+                    'start': '2026-09-01', 'target': '2026-12-15', 'milestones': [{'label': 'Deposit', 'pct': 30, 'inv_id': 1}, {'label': 'Installation', 'pct': 70, 'inv_id': None}]}
+PREVIEW_UNDATED = {'id': 2, 'name': 'Preview project without dates', 'stage': 'design', 'photos': [], 'value': 0, 'paid': 0, 'no': 'P-2', 'client': '', 'start': '', 'target': '', 'milestones': []}
 FEED = []  # in-memory team feed for preview only
 API_PATHS = {'/api/admin.php', '/api/builder.php'}
 
@@ -61,7 +63,7 @@ class H(http.server.SimpleHTTPRequestHandler):
         if self.headers.get('X-WX-ADM') != TOKEN and action not in ('password',):
             return self._json(200, {'ok': False, 'error': 'Not signed in'})
         if action == 'projs_list':
-            return self._json(200, {'ok': True, 'projects': [dict(PREVIEW_PROJECT)]})
+            return self._json(200, {'ok': True, 'projects': [dict(PREVIEW_PROJECT), dict(PREVIEW_UNDATED)]})
         if action == 'arc_feed_list':
             pid = int(data.get('project_id') or 0)
             since = int(data.get('since') or 0)

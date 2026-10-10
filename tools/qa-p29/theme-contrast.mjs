@@ -46,12 +46,17 @@ const AUDIT = () => {
   while ((el = walker.nextNode())) {
     const hasText = [...el.childNodes].some(n => n.nodeType === 3 && n.textContent.trim().length > 1);
     if (!hasText) continue;
+    // WCAG 1.4.3 exempts disabled controls, so skip them.
+    if (el.closest('[disabled], [aria-disabled="true"]')) continue;
     const cs = getComputedStyle(el);
     if (cs.display === 'none' || cs.visibility === 'hidden' || +cs.opacity === 0) continue;
     const r = el.getBoundingClientRect(); if (r.width < 2 || r.height < 2) continue;
     const fg = parse(cs.color); if (!fg) continue;
     const bg = bgOf(el);
     const fa = fg.a < 1 ? { ...fg, a: 1 } : fg;
+    // Effective opacity: product of opacity on the element and its ancestors. Blend the text colour over the background so dimmed text is measured as it appears.
+    let op = 1; for (let e = el; e && e !== document.documentElement; e = e.parentElement) { const o = parseFloat(getComputedStyle(e).opacity); if (!isNaN(o)) op *= o; }
+    if (op < 1) { fa.r = fa.r * op + bg.r * (1 - op); fa.g = fa.g * op + bg.g * (1 - op); fa.b = fa.b * op + bg.b * (1 - op); }
     pairs.push({ sel: sel(el), ratio: Math.round(ratio(fa, bg) * 100) / 100, fg: cs.color, bg: `rgb(${bg.r},${bg.g},${bg.b})`, size: parseFloat(cs.fontSize), weight: +cs.fontWeight });
   }
   const sideBg = getComputedStyle(document.querySelector('.side') || document.body).backgroundColor;

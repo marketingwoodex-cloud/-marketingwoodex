@@ -311,3 +311,35 @@ html .tf-meta { font-size: 12px; color: var(--ui-muted); margin-bottom: 4px; }
 html .tf-meta b { color: var(--ui-text); font-weight: 600; font-size: 13px; }
 html .tf-body { font-size: 14px; line-height: 1.5; color: var(--ui-text); white-space: normal; overflow-wrap: anywhere; }
 html .tf-form textarea { width: 100%; min-height: 84px; resize: vertical; padding: 10px 12px; border-radius: 10px; }
+
+/* ---------- Sidebar readability (design system pass) ---------- */
+/* "Coming soon" items were dimmed with opacity (55%), which dropped the text below AA. Keep them readable and mark them by colour only. */
+html .nav-a.soon { opacity: 1; color: var(--ui-muted); }
+/* Group headings used --mut2 (about 2.6:1 on white). Use the muted text token in both themes. */
+html .nav-h { color: var(--ui-muted); }
+
+/* ---------- Library tab counts: were dimmed to 55% opacity, so the count on the active blue tab fell to 2.6:1 ---------- */
+html .l6-tabs b, html .l6-chips b { opacity: 1; color: var(--ui-muted); margin-left: 3px; font-weight: 600; }
+html .l6-tabs .on b, html .l6-chips .on b { color: inherit; }
+
+/* ---------- Timeline (ARC.STUDIO A5) ---------- */
+html .gt-wrap { display: grid; min-width: 0; }
+html .gt-row { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 8px 16px; align-items: start; padding: 12px 0; border-top: 1px solid var(--ui-border); }
+html .gt-axis-row { border-top: 0; padding: 0 0 6px; }
+html .gt-label { display: grid; gap: 2px; min-width: 0; }
+html .gt-label b { color: var(--ui-text); font-weight: 600; overflow-wrap: anywhere; }
+html .gt-label small { font-size: 12px; }
+html .gt-past { color: var(--ui-bad, #b91c1c); font-weight: 600; }
+html.dark .gt-past { color: #fca5a5; }
+html .gt-track { position: relative; height: 26px; background: var(--ui-surface-2); border-radius: 6px; overflow: hidden; }
+html .gt-axis-track { position: relative; height: 22px; }
+html .gt-tick { position: absolute; top: 0; bottom: 0; border-left: 1px solid var(--ui-border); padding-left: 4px; }
+html .gt-tick span { font-size: 12px; color: var(--ui-muted); white-space: nowrap; }
+html .gt-bar { position: absolute; top: 4px; bottom: 4px; border-radius: 5px; background: var(--ui-brand); }
+html .gt-bar.past { background: #b91c1c; }
+html .gt-today { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--ui-text); opacity: .7; }
+html .gt-meta { display: grid; gap: 4px; min-width: 0; }
+html .gt-ms { margin: 2px 0 0; padding-left: 18px; font-size: 13px; color: var(--ui-text); }
+html .gt-ms li { margin: 2px 0; }
+html .gt-ms-none { margin: 0; font-size: 13px; }
+@media (max-width: 720px) { html .gt-row { grid-template-columns: 1fr; } html .gt-axis-row > div:first-child { display: none; } }

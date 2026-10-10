@@ -92,6 +92,7 @@
       ["transactions", "Payments", "receipt", "g:sales"],
       ["templates", "Quote templates", "layers", "g:sales"]] },
     ["projects", "Projects", "briefcase", "g:sales,g:support_view"],
+    ["gantt", "Timeline", "history", "g:sales,g:support_view"],
     ["AUTOMATION"],
     ["chat", "Inbox", "message-circle", "g:conversations"],
     ["team-feed", "Team feed", "users", "g:conversations"],
