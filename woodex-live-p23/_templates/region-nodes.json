@@ -1,0 +1,231 @@
+{
+  "version": "2.6.0",
+  "updated": "2026-10-11",
+  "note": "Regional operation node registry. Single source of truth for the admin REGIONAL OPERATIONS module, the estimator binding and the public city/layout links. Read by api/regions-lib.php (rgn_nodes) and pushed to admin/admin-regions.js through the rgn_boot action.",
+  "currency": "PKR",
+  "tax_pct": 18,
+  "advance_pct": 40,
+  "nodes": [
+    {
+      "code": "LHR",
+      "city": "Lahore",
+      "label": "Lahore Operation Node",
+      "dir": "/lahore/",
+      "index": 1.0,
+      "waste_pct": 12,
+      "zone": "A",
+      "lead_time_days": 14,
+      "active": true,
+      "sort": 10,
+      "areas": [
+        { "code": "DHA", "name": "DHA Lahore", "dir": "/lahore/dha/" },
+        { "code": "BT", "name": "Bahria Town Lahore", "dir": "/lahore/bahria-town/" },
+        { "code": "GLB", "name": "Gulberg", "dir": "/lahore/gulberg/" },
+        { "code": "MDT", "name": "Model Town", "dir": "/lahore/model-town/" },
+        { "code": "JHT", "name": "Johar Town", "dir": "/lahore/johar-town/" },
+        { "code": "WPT", "name": "Wapda Town", "dir": "/lahore/wapda-town/" },
+        { "code": "CNT", "name": "Lahore Cantt", "dir": "/lahore/cantt/" },
+        { "code": "LKC", "name": "Lake City", "dir": "/lahore/lake-city/" }
+      ]
+    },
+    {
+      "code": "ISB",
+      "city": "Islamabad",
+      "label": "Islamabad Operation Node",
+      "dir": "/islamabad/",
+      "index": 1.12,
+      "waste_pct": 12,
+      "zone": "A",
+      "lead_time_days": 16,
+      "active": true,
+      "sort": 20,
+      "areas": [
+        { "code": "F-SEC", "name": "Sectors F-6 to F-11", "dir": "/islamabad/" },
+        { "code": "DHA2", "name": "DHA Phase II Islamabad", "dir": "/islamabad/" },
+        { "code": "BHC", "name": "Bahria Town Rawalpindi/Islamabad", "dir": "/islamabad/" }
+      ]
+    },
+    {
+      "code": "KHI",
+      "city": "Karachi",
+      "label": "Karachi Operation Node",
+      "dir": "/karachi/",
+      "index": 1.08,
+      "waste_pct": 13,
+      "zone": "A",
+      "lead_time_days": 18,
+      "active": true,
+      "sort": 30,
+      "areas": [
+        { "code": "DHA-K", "name": "DHA Karachi", "dir": "/karachi/" },
+        { "code": "CLF", "name": "Clifton", "dir": "/karachi/" },
+        { "code": "PECHS", "name": "PECHS", "dir": "/karachi/" }
+      ]
+    },
+    {
+      "code": "RWP",
+      "city": "Rawalpindi",
+      "label": "Rawalpindi Operation Node",
+      "dir": "/rawalpindi/",
+      "index": 1.05,
+      "waste_pct": 12,
+      "zone": "A",
+      "lead_time_days": 14,
+      "active": true,
+      "sort": 40,
+      "areas": [
+        { "code": "BTR", "name": "Bahria Town Phase 8", "dir": "/rawalpindi/" },
+        { "code": "ADY", "name": "Adiala Road", "dir": "/rawalpindi/" }
+      ]
+    },
+    {
+      "code": "FSD",
+      "city": "Faisalabad",
+      "label": "Faisalabad Operation Node",
+      "dir": "/faisalabad/",
+      "index": 0.94,
+      "waste_pct": 11,
+      "zone": "B",
+      "lead_time_days": 12,
+      "active": true,
+      "sort": 50,
+      "areas": [
+        { "code": "PSH", "name": "Peoples Colony", "dir": "/faisalabad/" },
+        { "code": "EDN", "name": "Eden Valley", "dir": "/faisalabad/" }
+      ]
+    },
+    {
+      "code": "GRW",
+      "city": "Gujranwala",
+      "label": "Gujranwala Operation Node",
+      "dir": "/gujranwala/",
+      "index": 0.92,
+      "waste_pct": 11,
+      "zone": "B",
+      "lead_time_days": 12,
+      "active": true,
+      "sort": 60,
+      "areas": [
+        { "code": "SAT", "name": "Satellite Town", "dir": "/gujranwala/" }
+      ]
+    },
+    {
+      "code": "MUX",
+      "city": "Multan",
+      "label": "Multan Operation Node",
+      "dir": "/multan/",
+      "index": 0.93,
+      "waste_pct": 12,
+      "zone": "C",
+      "lead_time_days": 17,
+      "active": true,
+      "sort": 70,
+      "areas": [
+        { "code": "CVE", "name": "Cantt & Cavalry Ground", "dir": "/multan/" },
+        { "code": "BHM", "name": "Buch Villas", "dir": "/multan/" }
+      ]
+    },
+    {
+      "code": "PSH",
+      "city": "Peshawar",
+      "label": "Peshawar Operation Node",
+      "dir": "/peshawar/",
+      "index": 0.95,
+      "waste_pct": 12,
+      "zone": "C",
+      "lead_time_days": 18,
+      "active": true,
+      "sort": 80,
+      "areas": [
+        { "code": "HYT", "name": "Hayatabad", "dir": "/peshawar/" }
+      ]
+    },
+    {
+      "code": "SKT",
+      "city": "Sialkot",
+      "label": "Sialkot Operation Node",
+      "dir": "/sialkot/",
+      "index": 0.94,
+      "waste_pct": 11,
+      "zone": "B",
+      "lead_time_days": 13,
+      "active": true,
+      "sort": 90,
+      "areas": [
+        { "code": "CTL", "name": "Cantt Sialkot", "dir": "/sialkot/" }
+      ]
+    },
+    {
+      "code": "BWP",
+      "city": "Bahawalpur",
+      "label": "Bahawalpur Operation Node",
+      "dir": "/bahawalpur/",
+      "index": 0.9,
+      "waste_pct": 13,
+      "zone": "C",
+      "lead_time_days": 19,
+      "active": true,
+      "sort": 100,
+      "areas": [
+        { "code": "MDL", "name": "Model Town A", "dir": "/bahawalpur/" }
+      ]
+    },
+    {
+      "code": "QTA",
+      "city": "Quetta",
+      "label": "Quetta Operation Node",
+      "dir": "/quetta/",
+      "index": 1.02,
+      "waste_pct": 14,
+      "zone": "D",
+      "lead_time_days": 22,
+      "active": true,
+      "sort": 110,
+      "areas": [
+        { "code": "JNN", "name": "Jinnah Town", "dir": "/quetta/" }
+      ]
+    },
+    {
+      "code": "HYD",
+      "city": "Hyderabad",
+      "label": "Hyderabad Operation Node",
+      "dir": "/hyderabad/",
+      "index": 0.91,
+      "waste_pct": 13,
+      "zone": "D",
+      "lead_time_days": 20,
+      "active": true,
+      "sort": 120,
+      "areas": [
+        { "code": "LTR", "name": "Latifabad", "dir": "/hyderabad/" }
+      ]
+    }
+  ],
+  "layout_specs": [
+    { "code": "5M", "label": "5 Marla House", "dir": "/5-marla-house-design/", "covered_sqft": 1350, "default_service": "architecture", "default_finish": "standard" },
+    { "code": "10M", "label": "10 Marla House", "dir": "/10-marla-house-design/", "covered_sqft": 2400, "default_service": "architecture", "default_finish": "standard" },
+    { "code": "1K", "label": "1 Kanal House", "dir": "/1-kanal-house-design/", "covered_sqft": 4200, "default_service": "architecture", "default_finish": "premium" },
+    { "code": "2K", "label": "2 Kanal House", "dir": "/2-kanal-house-design/", "covered_sqft": 7800, "default_service": "turnkey", "default_finish": "premium" },
+    { "code": "FM", "label": "Farmhouse", "dir": "/farmhouse-design/", "covered_sqft": 5200, "default_service": "architecture", "default_finish": "standard" },
+    { "code": "OFC", "label": "Office / Commercial", "dir": "/office-interior-design/", "covered_sqft": 3000, "default_service": "fit-out", "default_finish": "standard" },
+    { "code": "RET", "label": "Retail / Showroom", "dir": "/retail-design/", "covered_sqft": 1800, "default_service": "fit-out", "default_finish": "premium" },
+    { "code": "RST", "label": "Restaurant / Cafe", "dir": "/restaurant-interior-design/", "covered_sqft": 2200, "default_service": "fit-out", "default_finish": "standard" }
+  ],
+  "categories": [
+    { "code": "ARC", "label": "Architecture", "dir": "/architecture/" },
+    { "code": "3DV", "label": "3D Visualization", "dir": "/3d-visualization/" },
+    { "code": "INT", "label": "Interior Design", "dir": "/interior-design/" },
+    { "code": "CMI", "label": "Commercial Interior", "dir": "/commercial-interior/" },
+    { "code": "FIT", "label": "Fit Out", "dir": "/fit-out/" },
+    { "code": "REN", "label": "Renovation", "dir": "/renovation/" },
+    { "code": "TKB", "label": "Turnkey Design & Build", "dir": "/turnkey-design-build/" }
+  ],
+  "stages": [
+    { "code": "survey", "label": "Survey & brief", "order": 10 },
+    { "code": "design", "label": "Design & drawings", "order": 20 },
+    { "code": "approval", "label": "Approvals", "order": 30 },
+    { "code": "fabrication", "label": "Workshop fabrication", "order": 40 },
+    { "code": "install", "label": "Site installation", "order": 50 },
+    { "code": "handover", "label": "Handover & snagging", "order": 60 }
+  ]
+}

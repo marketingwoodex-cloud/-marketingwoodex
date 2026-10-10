@@ -98,6 +98,7 @@
     ["approvals", "Approvals", "shield-check", "owner,admin,editor"],
     ["SALES"],
     ["enquiries", "Leads", "inbox", "g:sales"],
+    ["regional", "Regional ops", "map-pin", "g:sales"],
     ["pipeline", "Pipeline", "kanban", "g:sales"],
     ["bookings", "Bookings", "clock", "g:sales"],
     ["clients", "Clients", "contact", "g:sales"],

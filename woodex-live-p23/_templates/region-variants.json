@@ -1,0 +1,63 @@
+{
+  "version": "2.6.0",
+  "updated": "2026-10-11",
+  "note": "Timber / finish variant matrix used by the regional estimator. Species and coating keys are the same tokens used by the workshop cutting lists and the quotation line catalogue in /assets/js/estimator-rates.js. Board-foot rates are Lahore baselines (index 1.00); every other node multiplies by its node index from _templates/region-nodes.json.",
+  "formulas": {
+    "board_feet_metric": "(t_mm / 25.4) * (w_mm / 25.4) * (len_mm / 304.8) / 12",
+    "board_feet_imperial": "(t_in * w_in * len_ft) / 12",
+    "net_bf": "sum(panel BF) * qty",
+    "waste_bf": "net_bf * waste_pct / 100  (waste_pct from the node rate card)",
+    "gross_bf": "net_bf + waste_bf",
+    "material_cost": "gross_bf * species.rate_bf * node_index",
+    "coating_cost": "surface_sqft * coating.rate_sqft * faces_factor * node_index",
+    "labour_cost": "(material_cost + coating_cost) * node.labour_pct / 100",
+    "line_total": "material_cost + coating_cost + labour_cost + hardware + transport",
+    "quote_total": "sum(line_total) + GST(tax_pct) - discount",
+    "surface_sqft": "(2 * (w_mm * len_mm) / 92903.04) * faces"
+  },
+  "species": [
+    { "code": "walnut-us-fas", "label": "American Walnut FAS", "rate_bf": 4820, "class": "hardwood", "use": "interior", "moisture": "8-10", "janka_kN": 4.5, "movement_pct": 8.2 },
+    { "code": "teak-mm-a", "label": "Burmese Teak A", "rate_bf": 6240, "class": "hardwood", "use": "interior-exterior", "moisture": "8-10", "janka_kN": 6.0, "movement_pct": 4.1 },
+    { "code": "maple-ca-select", "label": "Hard Maple Select", "rate_bf": 3940, "class": "hardwood", "use": "interior", "moisture": "8-10", "janka_kN": 6.4, "movement_pct": 9.8 },
+    { "code": "ash-white", "label": "White Ash", "rate_bf": 2860, "class": "hardwood", "use": "interior", "moisture": "8-10", "janka_kN": 5.9, "movement_pct": 9.1 },
+    { "code": "oak-red", "label": "Red Oak", "rate_bf": 3120, "class": "hardwood", "use": "interior", "moisture": "8-10", "janka_kN": 5.4, "movement_pct": 8.9 },
+    { "code": "pine-c24", "label": "Pine C24 Structural", "rate_bf": 1180, "class": "softwood", "use": "structure", "moisture": "12-16", "janka_kN": 2.1, "movement_pct": 11.4 },
+    { "code": "deodar-struct", "label": "Deodar Structural", "rate_bf": 1620, "class": "softwood", "use": "structure-exterior", "moisture": "12-16", "janka_kN": 2.6, "movement_pct": 9.6 },
+    { "code": "mdf-hpl", "label": "MDF with HPL laminate", "rate_bf": 640, "class": "engineered", "use": "interior", "moisture": "6-8", "janka_kN": 0, "movement_pct": 3.2 }
+  ],
+  "coatings": [
+    { "code": "matte-pu-12", "label": "Matte PU · 12% sheen", "rate_sqft": 96, "coats": 3, "voc": "low", "use": "interior" },
+    { "code": "satin-pu-30", "label": "Satin PU · 30% sheen", "rate_sqft": 118, "coats": 3, "voc": "low", "use": "interior-wet" },
+    { "code": "hardwax-oil", "label": "Hardwax oil (solid fronts)", "rate_sqft": 142, "coats": 2, "voc": "very-low", "use": "interior" },
+    { "code": "duco-pu-white", "label": "Duco PU · spray white", "rate_sqft": 164, "coats": 4, "voc": "medium", "use": "interior" },
+    { "code": "exterior-oil-teak", "label": "Exterior oil · end-sealed teak", "rate_sqft": 188, "coats": 3, "voc": "low", "use": "exterior" },
+    { "code": "melamine-clear", "label": "Melamine clear", "rate_sqft": 68, "coats": 2, "voc": "medium", "use": "interior-budget" }
+  ],
+  "cores": [
+    { "code": "18-veneer", "label": "18 mm veneered board", "t_mm": 18, "w_mm": 1220, "len_mm": 2440, "weight_kg": 32, "use": "shutters, side panels" },
+    { "code": "18-ply", "label": "18 mm plywood", "t_mm": 18, "w_mm": 1220, "len_mm": 2440, "weight_kg": 29, "use": "carcass, structure" },
+    { "code": "25-solid-hd", "label": "25 mm solid hardwood", "t_mm": 25, "w_mm": 150, "len_mm": 2400, "weight_kg": 14, "use": "framing, edges, louvres" },
+    { "code": "20-solid-strip", "label": "20 mm solid strip", "t_mm": 20, "w_mm": 100, "len_mm": 1800, "weight_kg": 9, "use": "slats, screens" },
+    { "code": "12-mdf-lam", "label": "12 mm MDF laminated", "t_mm": 12, "w_mm": 1220, "len_mm": 2440, "weight_kg": 22, "use": "back panels, drawers" },
+    { "code": "19-block", "label": "19 mm block board", "t_mm": 19, "w_mm": 1220, "len_mm": 2440, "weight_kg": 34, "use": "wardrobe carcass" }
+  ],
+  "hardware_kits": [
+    { "code": "hw-softclose-set", "label": "Soft-close hinge & runner set", "unit": "set", "rate": 4200, "per": "per shutter pair" },
+    { "code": "hw-drawer-tandem", "label": "Tandem drawer box 500 mm", "unit": "nos", "rate": 7800, "per": "per drawer" },
+    { "code": "hw-lift-up", "label": "Lift-up flap fitting", "unit": "nos", "rate": 6400, "per": "per flap" },
+    { "code": "hw-concealed-clip", "label": "Concealed stainless clip (exterior)", "unit": "nos", "rate": 96, "per": "per clip" },
+    { "code": "hw-handle-gola", "label": "Gola profile handle", "unit": "rft", "rate": 540, "per": "per running foot" }
+  ],
+  "transport": [
+    { "zone": "A", "label": "Zone A · within 60 km of the workshop", "pct_of_material": 2.5, "min_pkr": 12000 },
+    { "zone": "B", "label": "Zone B · 60 to 250 km", "pct_of_material": 4.0, "min_pkr": 28000 },
+    { "zone": "C", "label": "Zone C · 250 to 600 km", "pct_of_material": 6.5, "min_pkr": 46000 },
+    { "zone": "D", "label": "Zone D · over 600 km / dedicated vehicle", "pct_of_material": 9.0, "min_pkr": 74000 }
+  ],
+  "labour_split": {
+    "note": "Share of the woodwork subtotal paid as workshop labour per node. Machine time is absorbed at 35% of the joinery share.",
+    "joinery_pct": 22,
+    "machine_pct": 35,
+    "on_site_pct": 12
+  }
+}
