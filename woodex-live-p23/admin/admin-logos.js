@@ -11,14 +11,14 @@
 
   W.VIEWS.logos = function (el) {
     el.innerHTML = W.head("Client logos", "Client logos", '<a class="btn" href="/#home-clients" target="_blank" rel="noopener">' + ic("eye") + 'View on website</a><button class="btn pri" id="lg-save">' + ic("save") + "Save</button>") +
-      '<div class="lg-wrap"><div class="card lg-set"><h3>Display</h3>' +
+      '<div class="lg-wrap"><div class="card"><h3>Display</h3>' +
       '<label class="lg-row"><span>Show section on home page</span><label class="switch"><input type="checkbox" id="lg-show"><span></span></label></label>' +
       '<label>Small title<input id="lg-kicker" maxlength="60"></label><label>Heading<input id="lg-title" maxlength="80"></label>' +
       '<div class="lg-lbl">Layout</div><div class="lg-seg"><button type="button" data-m="grid">Grid</button><button type="button" data-m="slider">Sliding row</button></div>' +
       '<label id="lg-speedw">Slide speed <b id="lg-speedv"></b><input type="range" id="lg-speed" min="10" max="90" step="5"><small>Lower = faster. Seconds for one full loop.</small></label>' +
       '<label class="lg-row"><span>Grey logos (colour on hover)</span><label class="switch"><input type="checkbox" id="lg-grey"><span></span></label></label>' +
       '<div class="lg-lbl">Preview</div><div class="lg-prev" id="lg-prev"></div></div>' +
-      '<div class="card lg-list"><div class="lg-lh"><h3>Logos <small id="lg-count"></small></h3><label class="btn pri">' + ic("upload") + 'Add logos<input type="file" id="lg-up" accept="image/png,image/jpeg,image/webp" multiple hidden></label></div>' +
+      '<div class="card"><div class="lg-lh"><h3>Logos <small id="lg-count"></small></h3><label class="btn pri">' + ic("upload") + 'Add logos<input type="file" id="lg-up" accept="image/png,image/jpeg,image/webp" multiple hidden></label></div>' +
       '<p class="muted">Use a logo on a white or transparent background (PNG/WebP, about 320 × 160). Drag the arrows to change the order.</p><div id="lg-items"></div></div></div>';
     api("logos_get").then(function (r) { if (!r.ok) return toast(r.error || "Could not load", "err"); D = r.data; fill(); });
 

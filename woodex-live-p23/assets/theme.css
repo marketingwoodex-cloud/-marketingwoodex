@@ -4,3 +4,8 @@
 @import url("/assets/sections-v27.css");
 /* Woodex theme — edit via /builder/ → Theme. Values here override v1.css tokens. */
 :root{}
+
+/* The builder's blank page and the library's "new section" stub both emit .wx-section wrapper
+   markup; every page links this sheet, so the class is guaranteed to resolve. Padding stays
+   inline in the generated markup (each stub picks its own rhythm). */
+.wx-section{position:relative}

@@ -36,7 +36,7 @@
           '<div><span>Extra discount (Rs)</span><input id="ci-xd" type="number" min="0" placeholder="0"></div>' +
           '<div><span>Rent / transport (Rs)</span><input id="ci-r" type="number" min="0" placeholder="0"></div>' +
           '<div><span>Tax %</span><input id="ci-tx" type="number" min="0" max="50" step="0.5" placeholder="0"></div>' +
-          '<div class="ci-tax"><span>Total tax</span><b id="ci-tax">0</b></div>' +
+          '<div><span>Total tax</span><b id="ci-tax">0</b></div>' +
           '<div class="g"><span>Grand total (Rs)</span><b id="ci-gt">0</b></div></div></div></div>' +
       '<p class="err" id="ci-e"></p></div>';
     W.fillIcons(el);

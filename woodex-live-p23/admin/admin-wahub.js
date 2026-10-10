@@ -45,7 +45,7 @@
         k(r.approved + " / " + r.tpls, "Approved templates", '<a href="#/wauto" data-tpl>Check status with Meta</a>') +
         k(r.optout, "Opted out (STOP)", "Never messaged again") +
       "</div>" +
-      '<div style="display:grid;grid-template-columns:minmax(0,1.6fr) minmax(280px,1fr);gap:14px;align-items:start" class="wh-grid">' +
+      '<div class="wh-grid">' +
         '<div>' +
           '<!-- Interactive Bot & Estimator Simulator Card -->' +
           '<div class="card" style="margin-bottom:14px;border:1px solid #1e2430;background:#111318">' +

@@ -19,8 +19,8 @@
   W.VIEWS.bookings = function (el) {
     var S = W.S.bk || (W.S.bk = { view: "month", cur: ymd(new Date()) }), D = null;
     el.innerHTML = head("Bookings", "Bookings", (can("owner,admin") ? '<button class="btn" id="bk-set">' + ic("settings") + "Settings</button>" : "") + '<button class="btn pri" id="bk-new">' + ic("plus") + "New booking</button>") +
-      '<div class="it-tot" id="bk-k"></div><div class="bk-wrap"><div class="card bk-main"><div class="bk-bar"><div class="seg" id="bk-v"></div><span class="bk-nav"><button class="btn sm" id="bk-prev" aria-label="Previous">‹</button><button class="btn sm" id="bk-today">Today</button><button class="btn sm" id="bk-next" aria-label="Next">›</button></span><b id="bk-title"></b><span class="bk-leg"><i class="warn"></i>Waiting <i class="ok"></i>Confirmed <i class="info"></i>Done</span></div><div id="bk-cal"><div class="empty">Loading…</div></div></div>' +
-      '<div class="card bk-side"><div class="card-h"><h3>Waiting for approval</h3><span class="badge warn" id="bk-pn">0</span></div><div class="card-b" id="bk-pend"></div></div></div>';
+      '<div class="it-tot" id="bk-k"></div><div class="bk-wrap"><div class="card"><div class="bk-bar"><div class="seg" id="bk-v"></div><span class="bk-nav"><button class="btn sm" id="bk-prev" aria-label="Previous">‹</button><button class="btn sm" id="bk-today">Today</button><button class="btn sm" id="bk-next" aria-label="Next">›</button></span><b id="bk-title"></b><span class="bk-leg"><i class="warn"></i>Waiting <i class="ok"></i>Confirmed <i class="info"></i>Done</span></div><div id="bk-cal"><div class="empty">Loading…</div></div></div>' +
+      '<div class="card"><div class="card-h"><h3>Waiting for approval</h3><span class="badge warn" id="bk-pn">0</span></div><div class="card-b" id="bk-pend"></div></div></div>';
     W.fillIcons && W.fillIcons(el);
 
     function range() {
@@ -76,7 +76,7 @@
       W.fillIcons && W.fillIcons(el);
     }
     function row(b) {
-      return "<div class='bk-row' data-b='" + b.id + "'><b class='bk-t'>" + t12(b.tm) + "</b><span class='bk-ti'>" + ic(TICON[b.type] || "clock") + "</span><div><b>" + A(b.name) + "</b> <small class='muted'>" + A(b.type_label) + " · " + b.dur + " min</small><small>" + A(b.address || b.city || "") + "</small></div>" +
+      return "<div class='bk-row' data-b='" + b.id + "'><b >" + t12(b.tm) + "</b><span class='bk-ti'>" + ic(TICON[b.type] || "clock") + "</span><div><b>" + A(b.name) + "</b> <small class='muted'>" + A(b.type_label) + " · " + b.dur + " min</small><small>" + A(b.address || b.city || "") + "</small></div>" +
         (b.staff ? "<span class='badge'>" + A(b.staff) + "</span>" : "") + "<span class='badge " + (ST[b.status] || [])[1] + "'>" + (ST[b.status] || [b.status])[0] + "</span></div>";
     }
     var find = function (id) { id = +id; return D.items.concat(D.pending).filter(function (b) { return b.id === id; })[0]; };

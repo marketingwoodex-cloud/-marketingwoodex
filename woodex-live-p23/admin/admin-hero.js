@@ -91,7 +91,7 @@
   W.VIEWS.heroes = function (el) {
     if (!W.S.btoken) { el.innerHTML = '<div class="content"><div class="card soon-box"><h2>No builder access</h2><p>Your role cannot edit pages.</p></div></div>'; return; }
     el.innerHTML = W.head("Hero slides", "Website / Hero slides", '<a class="btn" href="/" target="_blank" rel="noopener">' + ic("external-link") + "View website</a>") +
-      '<div class="content"><div class="hx-tabs seg" id="hx-tabs">' + [["home", "Home slider"], ["pages", "All page heroes"], ["tpl", "Templates"]].map(function (t) { return '<button data-t="' + t[0] + '"' + (tab === t[0] ? ' class="on"' : "") + ">" + t[1] + "</button>"; }).join("") + '</div><div id="hx-body" style="margin-top:16px"><div class="card" style="padding:24px">Loading…</div></div></div>';
+      '<div class="content"><div class="seg" id="hx-tabs">' + [["home", "Home slider"], ["pages", "All page heroes"], ["tpl", "Templates"]].map(function (t) { return '<button data-t="' + t[0] + '"' + (tab === t[0] ? ' class="on"' : "") + ">" + t[1] + "</button>"; }).join("") + '</div><div id="hx-body" style="margin-top:16px"><div class="card" style="padding:24px">Loading…</div></div></div>';
     W.fillIcons && W.fillIcons(el);
     $("#hx-tabs").onclick = function (e) { var b = e.target.closest("[data-t]"); if (b) { tab = b.dataset.t; W.VIEWS.heroes(el); } };
     ({ home: homeTab, pages: pagesTab, tpl: tplTab })[tab]($("#hx-body"));

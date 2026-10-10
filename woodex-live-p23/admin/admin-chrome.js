@@ -350,7 +350,7 @@
     var loadVersions = function () {
       api("chrome_versions", {}).then(function (r) {
         var v = (r && r.versions) || [], el2 = $("#hf-vers"); if (!el2) return;
-        el2.innerHTML = v.length ? v.map(function (x, i) { return "<div style='display:flex;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)'><div style='flex:1'><b>" + A(x.note || "Published") + "</b>" + (i === 0 ? " <span class='badge green'>live</span>" : "") + "<br><small class='muted'>" + new Date(x.t * 1000).toLocaleString() + (x.by ? " · " + A(x.by) : "") + "</small></div><button class='btn sm' data-restore='" + i + "'>Load into editor</button></div>"; }).join("") : '<div class="empty">No versions yet — the current header &amp; footer is saved as “Original” on your first publish.</div>';
+        el2.innerHTML = v.length ? v.map(function (x, i) { return "<div style='display:flex;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)'><div style='flex:1'><b>" + A(x.note || "Published") + "</b>" + (i === 0 ? " <span class='badge ok'>live</span>" : "") + "<br><small class='muted'>" + new Date(x.t * 1000).toLocaleString() + (x.by ? " · " + A(x.by) : "") + "</small></div><button class='btn sm' data-restore='" + i + "'>Load into editor</button></div>"; }).join("") : '<div class="empty">No versions yet — the current header &amp; footer is saved as “Original” on your first publish.</div>';
         $$("[data-restore]", el2).forEach(function (b) { b.onclick = function () { D = JSON.parse(JSON.stringify(v[+b.dataset.restore].data)); toast("Version loaded — check the preview, then press Publish to restore it"); setTab("header"); }; });
       });
     };

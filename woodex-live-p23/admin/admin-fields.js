@@ -113,7 +113,7 @@
     var dirty = false;
     function field(f) {
       if (f.kind === "img") return '<div class="sf sf-img" data-f="' + f.id + '"><div class="imf-p" style="background-image:url(\'' + esc(f.src) + '\')" data-pick></div><div class="sf-imgf"><span class="sf-l">' + (f.deco ? "Background image" : "Image") + '</span><button type="button" class="btn sm" data-pick>Change image</button>' + (f.deco ? "" : '<input data-k="alt" value="' + esc(f.alt) + '" placeholder="Alt text (describe the photo)">') + "</div></div>";
-      if (f.kind === "link") return '<div class="sf sf-link" data-f="' + f.id + '"><span class="sf-l">' + ic("link") + ' Link address</span><input data-k="href" value="' + esc(f.href) + '"></div>';
+      if (f.kind === "link") return '<div class="sf sf-href" data-f="' + f.id + '"><span class="sf-l">' + ic("link") + ' Link address</span><input data-k="href" value="' + esc(f.href) + '"></div>';
       var long = f.md.length > 90 || f.md.indexOf("\n") > -1 || f.label === "Text" || f.label === "Answer";
       return '<div class="sf" data-f="' + f.id + '"><span class="sf-l">' + esc(f.label) + "</span>" + (long ? '<textarea data-k="md" rows="' + Math.min(8, Math.max(2, Math.ceil(f.md.length / 90))) + '">' + esc(f.md) + "</textarea>" : '<input data-k="md" value="' + esc(f.md) + '">') + (f.href !== undefined ? '<div class="sf-href">' + ic("link") + '<input data-k="href" value="' + esc(f.href) + '"></div>' : "") + "</div>";
     }

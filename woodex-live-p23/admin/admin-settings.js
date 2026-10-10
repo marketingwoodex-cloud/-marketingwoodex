@@ -233,7 +233,7 @@
         '<div style="display:grid;grid-template-columns:2fr 1fr;gap:20px">' +
           '<div class="card" style="border-radius:14px;padding:20px">' +
             '<div class="card-h" style="padding:0 0 14px;border-bottom:1px solid var(--line)"><h3>' + ic("building") + ' Studio &amp; Brand Identity</h3></div>' +
-            '<div class="form-grid" style="margin-top:16px;display:grid;grid-template-columns:1fr 1fr;gap:14px">' +
+            '<div class="form-grid">' +
               '<label>Studio Name<input type="text" id="st-name" value="Woodex Interior Design Studio"></label>' +
               '<label>Tagline / Motto<input type="text" id="st-tag" value="Signature Residential &amp; Commercial Turnkey Architecture"></label>' +
               '<label>Primary Phone<input type="text" id="st-ph" value="+92 300 4455667"></label>' +

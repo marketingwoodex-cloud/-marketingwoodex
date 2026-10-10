@@ -131,7 +131,7 @@
     if (!L.length && !W.length) return "";
     return '<div class="keep"><h3>Payment details</h3><div class="banks">' + L.map(function (b) {
       return '<div class="bank1"><b class="bn">' + esc(b.bank || "Bank") + "</b>" + [["Account title", b.title], ["Account no.", b.account], ["IBAN", b.iban], ["Branch", b.branch ? b.branch + (b.code ? " (" + b.code + ")" : "") : ""]].filter(function (r) { return r[1]; }).map(function (r) { return "<small>" + r[0] + "</small><span>" + esc(r[1]) + "</span>"; }).join("") + "</div>"; }).join("") +
-      (W.length ? '<div class="bank1 wal"><b class="bn">Mobile wallets</b>' + W.map(function (w) { return "<small>" + esc(w.name) + "</small><span>" + esc(w.number) + "</span>"; }).join("") + "</div>" : "") + "</div></div>";
+      (W.length ? '<div class="bank1"><b class="bn">Mobile wallets</b>' + W.map(function (w) { return "<small>" + esc(w.name) + "</small><span>" + esc(w.number) + "</span>"; }).join("") + "</div>" : "") + "</div></div>";
   }
   function signBlock(left, right, mid) {
     var cell = function (x) { return "<div>" + esc(x[0]) + "<small>" + esc(x[1] || "") + "</small>" + (x[2] ? "<small>" + esc(x[2]) + "</small>" : "") + "</div>"; };
