@@ -8,7 +8,7 @@
    ========================================================================== */
 module.exports = {
   darkMode: ["class", '[data-theme="dark"]'],
-  content: ["./index.html", "./blocks.html", "./shell-reference.html", "./modules/**/*.html", "./assets/**/*.js"],
+  content: ["./index.html", "./blocks.html", "./shell-reference.html", "./modules/**/*.html", "./assets/arc-manifest.js", "./assets/arc-kit.js"],
   theme: {
     extend: {
       fontFamily: {
