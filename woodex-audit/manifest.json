@@ -1,0 +1,287 @@
+{
+  "pack": "woodex-audit",
+  "target": "woodex-live-p29-v2.1-pro",
+  "evidence_revision": "24157f6",
+  "branch": "arena/4ba510f0-marketingwoodex",
+  "recorded_head_at_generation": "24157f6dd9bf4da078544695232df4a8e043da7b",
+  "generated": "2026-10-10",
+  "note": "Hashes cover pack files as written in this commit. manifest.json itself is excluded. No secret values, no personal data.",
+  "release_recommendation": "BLOCK",
+  "files": [
+    {
+      "path": "QA-MASTER-REPORT-P29-V2.1-PRO.md",
+      "sha256": "66e86a28afa432e0d7a7f4bafcf04d00435156006b0536877659d3e97374818f",
+      "bytes": 67054
+    },
+    {
+      "path": "woodex-audit/00-executive-summary.md",
+      "sha256": "acd04cc1a4c304becf2d89ad77493fc2f29f32344a6ed804f7918c0563e038ba",
+      "bytes": 7380
+    },
+    {
+      "path": "woodex-audit/01-scope-and-methodology.md",
+      "sha256": "56793f367d059e1678259a871d24160efe0d8b6f7a1df491fb035c00f7231ebc",
+      "bytes": 3102
+    },
+    {
+      "path": "woodex-audit/02-resource-inventory.md",
+      "sha256": "ecc6c56ab7125706ec865013bbe1ef582a5df2e659c44e392c070685ae0309ac",
+      "bytes": 4876
+    },
+    {
+      "path": "woodex-audit/03-technology-and-architecture-map.md",
+      "sha256": "48c89e89fbdf19780861049a65f27d2a82c041c404bfd9b1adb2e19370b4c66b",
+      "bytes": 4156
+    },
+    {
+      "path": "woodex-audit/04-feature-and-user-journey-map.md",
+      "sha256": "e9a711b5a32cfba72073daf4db61bb712c0ae86e167829ae9aa42ddcbf3f790b",
+      "bytes": 3330
+    },
+    {
+      "path": "woodex-audit/05-risk-register.md",
+      "sha256": "95103d05a7df7a6d9bec7eeb7d341d88cece91a72592ea2250a8d12e961e29ff",
+      "bytes": 3508
+    },
+    {
+      "path": "woodex-audit/06-defect-verification-matrix.md",
+      "sha256": "515b65fbf489739ae37f5b2075e479c2be7d42187c4697eac6bef620ff8ffb92",
+      "bytes": 28220
+    },
+    {
+      "path": "woodex-audit/07-root-cause-analysis.md",
+      "sha256": "66d0866e29bb8dad91ffe956427fbfb44032bf99a1b5624297c355f4c9e1223a",
+      "bytes": 5891
+    },
+    {
+      "path": "woodex-audit/08-security-audit.md",
+      "sha256": "a4285e97a7a4ad24c1b09f97ce555e39a4c024105b80b049bdd9309fea198a18",
+      "bytes": 6522
+    },
+    {
+      "path": "woodex-audit/09-performance-reliability-audit.md",
+      "sha256": "31220114703327291ffc61b680953606c9be266b598a5f1637dad6f929ebb605",
+      "bytes": 2411
+    },
+    {
+      "path": "woodex-audit/10-seo-content-audit.md",
+      "sha256": "a6ded9e965f19abc86bc2016c9eb46306485d428713a615af0d71384648066a0",
+      "bytes": 1982
+    },
+    {
+      "path": "woodex-audit/11-accessibility-audit.md",
+      "sha256": "c9db356096d020d4fc04db9ae4828705d47c8a7e0588a7a31bc130b753b4feae",
+      "bytes": 2277
+    },
+    {
+      "path": "woodex-audit/12-ux-functional-audit.md",
+      "sha256": "c12d77bae4767af8d24ecb6830a0101b7f5229831c4afed6c7c319a0c380ec15",
+      "bytes": 2623
+    },
+    {
+      "path": "woodex-audit/13-backend-api-audit.md",
+      "sha256": "14a3422eee99eebce3729f197eec0ec2a661cb0e5edf18a61fe070b6c5fbcb01",
+      "bytes": 2644
+    },
+    {
+      "path": "woodex-audit/14-database-integrity-audit.md",
+      "sha256": "16878e34dd28fba25e7b1dd628f446ec6812f09d9fbe4358d94371408cb9556d",
+      "bytes": 2175
+    },
+    {
+      "path": "woodex-audit/15-deployment-devops-audit.md",
+      "sha256": "d9acbb9597b72c04a58a574553aaba8e6c4202028153db675b688982e1c2dec5",
+      "bytes": 2610
+    },
+    {
+      "path": "woodex-audit/16-remediation-roadmap.md",
+      "sha256": "65e3b071786b6b832d1436ca7bb4783bb1f9e9c2f257b81b5acae2141951ccd8",
+      "bytes": 6740
+    },
+    {
+      "path": "woodex-audit/17-safe-autofix-log.md",
+      "sha256": "d820fce9326d1a2201d91240fd5bf0506f7f78e40aed109c3a2e8cdc4280ef67",
+      "bytes": 3695
+    },
+    {
+      "path": "woodex-audit/18-test-and-validation-report.md",
+      "sha256": "126874f0327018eefa66308b31956cd57aa95676a4e923a3d69ef53429ee079d",
+      "bytes": 5738
+    },
+    {
+      "path": "woodex-audit/19-qa-checklists.md",
+      "sha256": "6a85505872d05216ab5f518c355cf2512f3be5bcad572a1c24eaac739ed0db7a",
+      "bytes": 423
+    },
+    {
+      "path": "woodex-audit/20-deployment-and-rollback-plan.md",
+      "sha256": "4e26ee57605dace46a988376a2c4a1a09da3fd4820d5780e308e5a6b12d716b2",
+      "bytes": 2119
+    },
+    {
+      "path": "woodex-audit/21-release-readiness.md",
+      "sha256": "47eab1ae2c1021740c530452697a7db38674c69780c13830e475bc40ff0e7add",
+      "bytes": 2173
+    },
+    {
+      "path": "woodex-audit/22-open-questions-and-limitations.md",
+      "sha256": "a94e11c37c0d56dfdbed75ba30a9e2b8d953c0804fcdfde3d4a9d1588e11e524",
+      "bytes": 3754
+    },
+    {
+      "path": "woodex-audit/23-evidence-index.md",
+      "sha256": "713fa20d4cde7e867ed8ae091a09f2ed207820179b071eb3bdc3428426ea66b1",
+      "bytes": 3411
+    },
+    {
+      "path": "woodex-audit/24-decision-log.md",
+      "sha256": "dcf8a2793494dcd0e9e493676c03168340fb7b95755bebfba9e86d23b38633e9",
+      "bytes": 2108
+    },
+    {
+      "path": "woodex-audit/README.md",
+      "sha256": "72ff0dfea41463fea4683ae3ef35c319e5625ebd8368f80374c398d6fffa6b20",
+      "bytes": 4084
+    },
+    {
+      "path": "woodex-audit/evidence/README.md",
+      "sha256": "18b12459b4f0cb87db4feb047fd098c4854b53d55931583907e3311d82fb5bcb",
+      "bytes": 1119
+    },
+    {
+      "path": "woodex-audit/evidence/sanitized-command-output/bcrypt-literal-check-2026-10-11.txt",
+      "sha256": "5c0f63543d0dad6aef4336d1ea9a6c7df73c3d03253b748f3175779ac6280221",
+      "bytes": 422
+    },
+    {
+      "path": "woodex-audit/evidence/sanitized-command-output/harness-db-dashboard.txt",
+      "sha256": "63300e721ebf9c58e9e8688f77943d179d524c691c70120cb9de83100d36238d",
+      "bytes": 552
+    },
+    {
+      "path": "woodex-audit/evidence/sanitized-command-output/harness-plain-settings-integrations.txt",
+      "sha256": "52c23ea521a11dc4a3743947f29090357053cd5ac32e2ca6623c5c6eed6522b4",
+      "bytes": 948
+    },
+    {
+      "path": "woodex-audit/evidence/sanitized-command-output/harness-pro-approvals.txt",
+      "sha256": "af59706a180eb8ef4bf97f1405b5e41089ca3f8dba14750724ffa5200fdceb2e",
+      "bytes": 709
+    },
+    {
+      "path": "woodex-audit/evidence/sanitized-command-output/harness-pro-settings-integrations.txt",
+      "sha256": "820944a5cf8fe20d24ce85e4f22b25110c50938e09cfa09d6e4fe7bace192661",
+      "bytes": 751
+    },
+    {
+      "path": "woodex-audit/evidence/sanitized-command-output/node-check-all-trees.txt",
+      "sha256": "9a7064f1a304d7180b2b496931074a421a613a8910747189c01b04ee5f27393e",
+      "bytes": 421
+    },
+    {
+      "path": "woodex-audit/evidence/sanitized-command-output/php-runtime-attempt-2026-10-11.txt",
+      "sha256": "c3fb940e87b76b0b27070d39bac42ce0e39cdcaba2b20468c2382476809fb028",
+      "bytes": 907
+    },
+    {
+      "path": "woodex-audit/evidence/sanitized-command-output/phplint-all-trees.txt",
+      "sha256": "b187f68d5b9480cf4d673176816c86505a63ee194006020fbc857263f45984fa",
+      "bytes": 191
+    },
+    {
+      "path": "woodex-audit/evidence/sanitized-command-output/phplint-negative-control.txt",
+      "sha256": "441f2db8a736e9af369b183399c8899cce3319ac5a8d0a68203cbffcf4e64361",
+      "bytes": 165
+    },
+    {
+      "path": "woodex-audit/evidence/sanitized-command-output/phplint-pro-after-fix.txt",
+      "sha256": "ce31670711f74eae8d7363f8af3b8b530e42e3be49922512fe6268a03dde006e",
+      "bytes": 17
+    },
+    {
+      "path": "woodex-audit/evidence/sanitized-command-output/regression-static.txt",
+      "sha256": "29b68490a15aeb6067e18a17528e46a0c9d91d46eedb885b8ffcd5fd681ec141",
+      "bytes": 799
+    },
+    {
+      "path": "woodex-audit/evidence/sanitized-command-output/remediation-verification-2026-10-11.txt",
+      "sha256": "1d7944c30f9b2afcd33a67ebeb52635ca725e912cb28c97cf9ae57bfc0998e88",
+      "bytes": 790
+    },
+    {
+      "path": "woodex-audit/evidence/sanitized-command-output/reverify-findings.txt",
+      "sha256": "077513548890e9ae25dfa07ccbee77e448bb439147e455c21b042a2a8f628a97",
+      "bytes": 6939
+    },
+    {
+      "path": "woodex-audit/evidence/sanitized-command-output/secret-scan-tracked-2026-10-11.txt",
+      "sha256": "44f5696490a5cdfae57b17c23199a8aed293563ad717209cff1b0cc2bd37a061",
+      "bytes": 34536
+    },
+    {
+      "path": "woodex-audit/evidence/sanitized-command-output/sidebar-probe-dark.txt",
+      "sha256": "461a530b6b416ea9a54576da8cecb4301040ce1fce14a2bf2d5c74f00c449179",
+      "bytes": 282
+    },
+    {
+      "path": "woodex-audit/evidence/sanitized-command-output/sidebar-probe-light.txt",
+      "sha256": "3a677e5704e7a96ccdcbe89389d860946e7ddfd5cf41af3983ba1e1cbec2a127",
+      "bytes": 279
+    },
+    {
+      "path": "woodex-audit/evidence/sanitized-command-output/site-static-audit-pro.txt",
+      "sha256": "cfa6b8d6cf68a16ee623bd696bebdc17874d1dec25bc40a631a8f39c5054d26b",
+      "bytes": 912
+    },
+    {
+      "path": "woodex-audit/evidence/sanitized-command-output/theme-probe-dark-security.txt",
+      "sha256": "14768597084523f15928f5230ddfe85c1982411f78345bf19920e427f2f90012",
+      "bytes": 211
+    },
+    {
+      "path": "woodex-audit/evidence/sanitized-command-output/theme-probe-light-security.txt",
+      "sha256": "28b275be42d6db7014b6846c1ae2b785f050d908ac90f579d4e3ca651d7690f8",
+      "bytes": 208
+    },
+    {
+      "path": "woodex-audit/evidence/sanitized-command-output/triage-2026-10-11.txt",
+      "sha256": "cd5691a14b165395aa4dabe77987342468b8a535b806a61b0d9dfaf3bee4759f",
+      "bytes": 1240
+    },
+    {
+      "path": "woodex-audit/evidence/scripts/bcrypt_literal_check.py",
+      "sha256": "88594120afaba6c00a0fa1504356595e6296c8c70fe6d0509e5aabb2c314c09a",
+      "bytes": 1596
+    },
+    {
+      "path": "woodex-audit/evidence/scripts/regression_static.py",
+      "sha256": "78895f105e0938676934be712f6908785fe899d1d0a7ff9dd8dbe0515430850f",
+      "bytes": 3204
+    },
+    {
+      "path": "woodex-audit/evidence/scripts/reverify_findings.py",
+      "sha256": "35b77fec375c5228ce84536804033a1ec8f15942b66f8aabbcca424467d8272a",
+      "bytes": 14160
+    },
+    {
+      "path": "woodex-audit/evidence/scripts/site_static_audit.py",
+      "sha256": "12d852b0bb13e816647696a876a70e6c908cb514182618f3cfd3b6534a1a9ce0",
+      "bytes": 6972
+    },
+    {
+      "path": "woodex-audit/qa/regression-test-matrix.md",
+      "sha256": "e012f489803d7d69fd072abba003b6bf63197084f016d2540f244271d37e5746",
+      "bytes": 2339
+    },
+    {
+      "path": "woodex-audit/qa/release-gate-checklist.md",
+      "sha256": "6cd9bb1c438f1a86ef5d5c6a92d26adc19483c65dc4eb6a9ba9814b6576f1769",
+      "bytes": 2438
+    },
+    {
+      "path": "woodex-audit/qa/smoke-test-checklist.md",
+      "sha256": "84ea24ee9c06049df65fc52a39b76c405a99874706f4a97e317814aa978c560d",
+      "bytes": 3144
+    }
+  ]
+}

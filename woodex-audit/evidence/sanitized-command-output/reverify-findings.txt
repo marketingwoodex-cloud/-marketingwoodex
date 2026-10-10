@@ -106,8 +106,8 @@ PASS WC-05    RewriteCond www repeated in .htaccess
          2 match(es) at lines [15, 50] (expected 2)
 PASS AD-25    Dockerfile chmod 777 on _private
          1 match(es) at lines [15] (expected 1)
-PASS AD-25    Dockerfile sets AllowOverride
-         AllowOverride in Dockerfile (expected 0)
+PASS AD-25    Dockerfile does NOT set AllowOverride (defect anchor: PASS = defect present)
+         AllowOverride in Dockerfile (expected 0 = defect present)
 PASS AD-26    30-day cache on css/js
          1 match(es) at lines [36] (expected 1)
 INFO AD-26    admin/index.html script tags without ?v=

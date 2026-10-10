@@ -1,0 +1,23 @@
+# Regression Test Matrix
+
+Each row maps a finding to its test, the last result, and what is still needed. "Fixed pending verification" is not closure.
+
+| Finding | Change | Test | Last result (this pass) | Needed for closure |
+|---|---|---|---|---|
+| AD-05 | Not started (static fake status remains) | Harness `#/settings/integrations` | Prior: 14 `connected:true` static | Phase 3 step 1–2; browser test |
+| AD-06 | C-001 wording (Save) | `regression_static.py`; `node --check` | 14/14 PASS; syntax PASS | Real Save action; browser test (T-16) |
+| AD-07 | C-001 wording (Ping) | `regression_static.py` | 14/14 PASS | Real health check, or permanent honest label; browser test |
+| OV-01 | C-002 base dashboard guard | jsdom `test-dashboard-error.js` (base and owner) | Owner path BEFORE: crash; AFTER: error card | Browser test with editor and support roles (T-18) |
+| OV-03 | C-003 owner dashboard guard | jsdom `test-dashboard-error.js` and `happy-dash.js` | AFTER: error card; happy path unchanged | Browser test (T-18) |
+| A11Y-001 | C-004 estimator labels | jsdom `a11y-labels.js` | HEAD 3 → WORKING 0 | Screen-reader check (not run) |
+| AD-01 / AD-02 | None (plain tree) | `node --check` on every tree | Plain: 3 SyntaxErrors; pro: 62/62 PASS | Phase 1 decision and removal |
+| AD-03 / AD-04 | None | Harness `#/integrations` | Prior pro run: no Phase text | Phase 2 |
+| AD-10 | None | Harness approvals with delayed `admin-security.js` | Not run | T-17 |
+| AD-13 / AD-14 | None | `sidebar-probe.js` | Sidebar `rgb(10,12,16)` in both themes | Phase 9 |
+| AD-15 / AD-16 | None | `theme-probe.js` `THEME=light` and `THEME=dark` | Prior: 15 light-text nodes on dark cards per mode | Phase 9 |
+| AD-20 | None | `phplint.js` (parse only) | 48/48 PASS (parse only) | Runtime test BLOCKED (D-10) |
+| AD-21 / AU-01 / WC-03 | None | Concurrency harness | Not run (PHP runtime BLOCKED) | Phase 4, Phase 5 |
+| WC-01 | None | Two-tab save test | Not run | Phase 7 step 2 |
+| SEC-001 / SEC-002 / SEC-003 | None | Secret scan (`detect-secrets`); bcrypt boolean check | Scan: 219 files / 395 hits; literal matches none of the committed hashes | Owner rotation; Phase 0 |
+| AD-24 | None | `gh repo view --json isPrivate` | Public (OBSERVED) | Owner decision |
+| AD-25 | None | `curl -I` on private paths | Not run | Phase 10 (live, read-only) |

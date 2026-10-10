@@ -1,0 +1,14 @@
+# Decision Log
+
+| ID | Date | Decision | By | Basis | Effect / status |
+|---|---|---|---|---|---|
+| D-1 | 2026-10-11 | Repository visibility change to private | **Owner: "later"** | Owner answer to ask_user | **Not changed.** AD-24 remains open. Re-ask before release. |
+| D-2 | 2026-10-11 | Credential rotation and history rewrite | **Owner: "as you recomend"** | Ambiguous: no explicit approval for a history rewrite | Agent did **not** rotate, rewrite history, or force-push. Rotation is owner action. Explicit "yes, rewrite history" required before any purge. |
+| D-3 | pending | Source of truth (pro vs plain vs space-named) | Owner (to decide) | Evidence: pro passes; plain fails | Recommended: pro (`woodex-live-p29-v2.1-pro`). Not applied. |
+| D-4 | 2026-10-11 | Install `@php-wasm/node` as QA-only tool | **Owner: approved** | ask_user | Installed in `tools/qa-p29/node_modules` (gitignored). Runtime **BLOCKED** (Node version). Manifest change reverted. |
+| D-5 | 2026-10-11 | Apply narrow honest-status and dashboard-guard fixes | Agent under §5.3 | Narrow, reversible, tested | Applied (C-001..C-004). Not closed; pending verification. |
+| D-6 | 2026-10-11 | Severity of AD-01 and AD-02 held at High, with a note that they become Critical if the plain tree is the deployed one. AD-05, AD-06 and AD-07 are High in the matrix. | Agent under prompt §5.1 | Matrix rows; deploy tree unknown (L-5) | Recorded in matrix. Executive summary item 5 previously said "Critical/High" for AD-05/06/07; corrected to High. Owner may override. |
+| D-7 | pending | Approve removal of login pre-fill and fallback literal (SEC-001) | Owner | Changes authentication UI (§5.3) | **Awaiting approval.** |
+| D-8 | pending | Approve removal of sign-in line from `downloads.html` (SEC-002) | Owner | Public content | **Awaiting approval.** |
+| D-9 | pending | Approve untracking of env, config secrets, `_private/*`, SQL dumps | Owner | Changes deploy surface | **Awaiting approval.** |
+| D-10 | pending | Approve Node 24 runtime or alternative for PHP tests | Owner | New runtime dependency | **Awaiting approval.** |

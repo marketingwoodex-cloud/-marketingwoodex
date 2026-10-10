@@ -105,7 +105,7 @@ CHECKS = [
  ('WC-05','RewriteCond www repeated in .htaccess', 'deploy', lambda: find(P,'.htaccess', r'RewriteCond %\{HTTP_HOST\} \^www', 2)),
  # ---- deployment / security
  ('AD-25','Dockerfile chmod 777 on _private', 'deploy', lambda: find(P,'Dockerfile', r'chmod -R 777 /var/www/html/_private', 1)),
- ('AD-25','Dockerfile sets AllowOverride', 'deploy', lambda: ('PASS' if count_file('Dockerfile', r'AllowOverride')==0 else 'FAIL', 'AllowOverride in Dockerfile (expected 0)')),
+ ('AD-25','Dockerfile does NOT set AllowOverride (defect anchor: PASS = defect present)', 'deploy', lambda: ('PASS' if count_file('Dockerfile', r'AllowOverride')==0 else 'FAIL', 'AllowOverride in Dockerfile (expected 0 = defect present)')),
  ('AD-26','30-day cache on css/js', 'cache', lambda: find(P,'.htaccess', r'max-age=2592000', 1)),
     ('AD-26','admin/index.html script tags without ?v=', 'cache', lambda: ('INFO', f"{count_file('admin/index.html', SCRIPT_JS)} script tags, {count_file('admin/index.html', JSV)} with ?v=")),
  ('AD-24','secret-bearing files tracked (6 expected)', 'secret', None),
