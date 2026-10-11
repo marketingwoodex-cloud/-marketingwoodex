@@ -396,6 +396,18 @@ class H(http.server.SimpleHTTPRequestHandler):
         if fx is not None:
             return self._json(200, fx)
         return self._json(200, empty())
+    def end_headers(self):
+        # SimpleHTTP sends Last-Modified only, so browsers may serve a stale admin bundle from their
+        # own cache (that is exactly how an updated admin keeps "looking old"). Force revalidation.
+        path = urllib.parse.urlsplit(self.path).path.lower()
+        if path.endswith(('.html', '.css', '.js', '.json', '.php')) or path.endswith('/'):
+            self.send_header('Cache-Control', 'no-store, must-revalidate')
+            self.send_header('Pragma', 'no-cache')
+            self.send_header('Expires', '0')
+        else:
+            self.send_header('Cache-Control', 'no-cache')
+        super().end_headers()
+
     def do_GET(self):
         if self._blocked(urllib.parse.urlsplit(self.path).path):
             self.send_error(404); return
