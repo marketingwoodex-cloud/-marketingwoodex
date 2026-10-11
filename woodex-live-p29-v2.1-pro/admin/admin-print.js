@@ -70,7 +70,7 @@
   }
   function terms(t) { var l = String(t || "").split("\n").map(function (x) { return x.trim(); }).filter(Boolean); return l.length ? "<h3>Terms & conditions</h3><ol class='terms'>" + l.map(function (x) { return "<li>" + esc(x) + "</li>"; }).join("") + "</ol>" : ""; }
   function clientCards(cl, d, extra) {
-    return '<div class="cards"><div class="card"><small>' + (extra || "Prepared for") + "</small><b>" + esc(cl.name) + "</b>" + (cl.company ? "<div>" + esc(cl.company) + "</div>" : "") + (cl.address ? "<div>" + esc(cl.address) + "</div>" : "") + "<div>" + esc([cl.phone, cl.email].filter(Boolean).join(" · ")) + "</div></div>" +
+    return '<div class="cards"><div class="card"><small>' + (extra || "Prepared for") + "</small><b>" + esc(cl.company || cl.name) + "</b>" + (cl.company && cl.name && cl.name !== cl.company ? "<div>Attn: " + esc(cl.name) + "</div>" : "") + (cl.address ? "<div>" + esc(cl.address) + "</div>" : "") + "<div>" + esc([cl.phone, cl.email].filter(Boolean).join(" · ")) + "</div></div>" +
       '<div class="card"><small>Project</small><b>' + esc(d.project || "—") + "</b>" + (d.site ? "<div>" + esc(d.site) + "</div>" : "") + "</div></div>";
   }
   function sectionTable(s, i) {
@@ -159,7 +159,7 @@
   };
   function clientCardsV2(q) {
     var cl = q.client;
-    return '<div class="cards"><div class="card"><small>Prepared for</small><b>' + esc(cl.name) + "</b>" + (cl.company ? "<div>" + esc(cl.company) + "</div>" : "") + (cl.address ? "<div>" + esc(cl.address) + "</div>" : "") + "<div>" + esc([cl.phone, cl.email].filter(Boolean).join(" · ")) + "</div></div>" +
+    return '<div class="cards"><div class="card"><small>Prepared for</small><b>' + esc(cl.company || cl.name) + "</b>" + (cl.company && cl.name && cl.name !== cl.company ? "<div>Attn: " + esc(cl.name) + "</div>" : "") + (cl.address ? "<div>" + esc(cl.address) + "</div>" : "") + "<div>" + esc([cl.phone, cl.email].filter(Boolean).join(" · ")) + "</div></div>" +
       '<div class="card"><small>Project</small><b>' + esc(q.project || "—") + "</b>" + (q.site ? "<div>" + esc(q.site) + "</div>" : "") + "</div></div>";
   }
   P.label = qlabel;
@@ -221,16 +221,16 @@
       "<h3>Payments " + st + "</h3>" + (inv.payments.length ? '<table><thead><tr><th>Receipt</th><th>Date</th><th>Method</th><th>Reference</th><th class="r">Amount (Rs)</th></tr></thead><tbody>' + inv.payments.map(function (p) { return "<tr><td>" + esc(p.rcpt) + "</td><td>" + dlong(p.date) + "</td><td style='text-transform:capitalize'>" + esc(p.method) + "</td><td>" + esc(p.ref || "-") + '</td><td class="r">' + money(p.amount) + "</td></tr>"; }).join("") + "</tbody></table>" : "<p class='intro'>No payments received yet.</p>") +
       '<div class="tot"><div><span>Received</span><span>' + money(inv.paid) + '</span></div><div class="g"><span>BALANCE DUE (Rs)</span><span>' + money(inv.balance) + "</span></div></div>" +
       (inv.schedule ? "<h3>Payment schedule</h3><p class='intro'>" + esc(inv.schedule) + "</p>" : "") + bank(c) + terms(inv.terms) + (inv.notes ? "<h3>Notes</h3><p class='intro'>" + esc(inv.notes) + "</p>" : "") +
-      '<div class="sign"><div>Prepared by<small>' + esc(c.name) + '</small></div><div>&nbsp;<small></small></div><div>Received by<small>' + esc(inv.client.name) + "</small></div></div>" + foot(c, "Invoice " + inv.no) + "</div>";
+      '<div class="sign"><div>Prepared by<small>' + esc(c.name) + '</small></div><div>&nbsp;<small></small></div><div>Received by<small>' + esc(inv.client.company || inv.client.name) + "</small></div></div>" + foot(c, "Invoice " + inv.no) + "</div>";
     return doc("Invoice " + inv.no + " - " + inv.client.name, body);
   };
   P.receipt = function (inv, p, c) {
     var before = inv.payments.slice(0, inv.payments.indexOf(p) + 1).reduce(function (a, x) { return a + x.amount; }, 0);
     var body = '<div class="sheet">' + letterhead(c) + '<div class="band"><h1>RECEIPT<span>.</span></h1><div class="meta"><small>Receipt no.</small><b>' + esc(p.rcpt) + "</b><small>Date</small><b>" + dlong(p.date) + "</b></div></div>" +
       '<div class="rc"><small style="color:#667085">Amount received</small><div class="big">Rs ' + money(p.amount) + '</div><div class="words" style="text-align:left">Rupees ' + words(p.amount) + " Only</div><dl>" +
-      "<dt>Received from</dt><dd>" + esc(inv.client.name) + "</dd><dt>Against invoice</dt><dd>" + esc(inv.no) + (inv.project ? " · " + esc(inv.project) : "") + "</dd><dt>Payment method</dt><dd style='text-transform:capitalize'>" + esc(p.method) + (p.ref ? " · " + esc(p.ref) : "") + "</dd>" +
+      "<dt>Received from</dt><dd>" + esc(inv.client.company || inv.client.name) + "</dd><dt>Against invoice</dt><dd>" + esc(inv.no) + (inv.project ? " · " + esc(inv.project) : "") + "</dd><dt>Payment method</dt><dd style='text-transform:capitalize'>" + esc(p.method) + (p.ref ? " · " + esc(p.ref) : "") + "</dd>" +
       "<dt>Invoice total</dt><dd>Rs " + money(inv.total) + "</dd><dt>Total received</dt><dd>Rs " + money(before) + "</dd><dt>Balance</dt><dd><b>Rs " + money(Math.max(0, inv.total - before)) + "</b></dd>" + (p.note ? "<dt>Note</dt><dd>" + esc(p.note) + "</dd>" : "") + "</dl></div>" +
-      '<div class="sign"><div>Received by<small>' + esc(c.name) + "</small></div><div>&nbsp;</div><div>Paid by<small>" + esc(inv.client.name) + "</small></div></div>" + foot(c, "Receipt " + p.rcpt) + "</div>";
+      '<div class="sign"><div>Received by<small>' + esc(c.name) + "</small></div><div>&nbsp;</div><div>Paid by<small>" + esc(inv.client.company || inv.client.name) + "</small></div></div>" + foot(c, "Receipt " + p.rcpt) + "</div>";
     return doc("Receipt " + p.rcpt, body);
   };
   /** Full-screen preview with Print / Save as PDF */

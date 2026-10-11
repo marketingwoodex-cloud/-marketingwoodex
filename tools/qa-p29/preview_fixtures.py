@@ -14,6 +14,7 @@ RULES
 
 Add a fixture whenever a screen shows "Loading…" forever in the preview.
 """
+import re
 import time
 
 DAY = 86400
@@ -846,6 +847,110 @@ def _sales_build(action, d):
     return None
 
 
+# ---------------------------------------------------------------------------
+# Telegram (admin/admin-tg.js -> api/tg-lib.php).
+# Mirrors the real rules so the whole screen is testable here: the BotFather token
+# is shape-checked before anything else, settings normalize exactly like the PHP
+# (phone -> 92..., username without @ or a t.me/ link), and an account that has not
+# scanned the QR cannot receive a test DM. Two deliberate preview shortcuts, both
+# noted so nobody mistakes them for production behaviour: a well-formed token is
+# accepted without calling api.telegram.org (no network here; on the host
+# tg_connect runs getMe + setWebhook), and scanning the QR links instantly because
+# there is no Telegram webhook to call back.
+# ---------------------------------------------------------------------------
+TG = {
+    'token': '', 'bot': '', 'botName': '', 'secret': '', 'group': '', 'groupTitle': '',
+    'customers': True, 'button': 'auto', 'alertChats': True, 'alertLeads': True, 'alertAppr': True,
+    'links': {}, 'codes': {}, 'dm': [], 'dmMap': {}, 'site': 'chat', 'tgUser': '',
+    'alertPhone': '923224200768',
+}
+TG_ME = 1  # the signed-in preview identity (owner account)
+
+
+def _tg_pub():
+    o = dict(TG)
+    o.pop('token', None); o.pop('secret', None); o.pop('codes', None)
+    o['tokenSet'] = TG['token'] != ''
+    o['linked'] = len(TG['links'])
+    o['dmCount'] = len(TG['dm'])
+    o['webhook'] = 'https://woodex.com.pk/api/telegram.php'
+    o['waDown'] = False
+    o['buttonLive'] = TG['site'] == 'telegram' or (TG['site'] == 'chat' and TG['token'] != '')
+    return o
+
+
+def _tg(action, d):
+    if action == 'tg_get':
+        return {'ok': True, 'cfg': _tg_pub(), 'me': str(TG_ME) in TG['links'],
+                'meDm': TG_ME in TG['dm'], 'log': []}
+    if action == 'tg_save':
+        for k in ('customers', 'alertChats', 'alertLeads', 'alertAppr'):
+            if k in d:
+                TG[k] = bool(d[k])
+        if d.get('button') in ('auto', 'always', 'off'):
+            TG['button'] = d['button']
+        if d.get('site') in ('chat', 'whatsapp', 'telegram'):
+            TG['site'] = d['site']
+        if 'alertPhone' in d:
+            ap = re.sub(r'\D', '', str(d.get('alertPhone') or ''))
+            if ap.startswith('0'):
+                ap = '92' + ap[1:]
+            if len(ap) < 10:
+                return {'ok': False, 'error': 'That phone number looks too short.'}
+            TG['alertPhone'] = ap
+        if 'tgUser' in d:
+            tu = str(d.get('tgUser') or '').strip().lstrip('@')
+            tu = re.sub(r'^https?://t\.me/', '', tu, flags=re.I)
+            if tu and not re.fullmatch(r'[A-Za-z0-9_]{4,32}', tu):
+                return {'ok': False, 'error': 'A Telegram username is 4-32 letters, numbers or underscores.'}
+            TG['tgUser'] = tu
+        return {'ok': True, 'cfg': _tg_pub()}
+    if action == 'tg_connect':
+        tok = str(d.get('token') or '').strip() or TG['token']
+        if not re.fullmatch(r'\d{5,15}:[A-Za-z0-9_-]{30,60}', tok):
+            return {'ok': False, 'error': 'That does not look like a bot token. Copy it from @BotFather (looks like 123456789:AA...).'}
+        TG['token'] = tok
+        TG['bot'] = TG['bot'] or 'WoodexStudioBot'
+        TG['botName'] = TG['botName'] or 'Woodex Interior'
+        TG['secret'] = TG['secret'] or 'preview-secret'
+        return {'ok': True, 'cfg': _tg_pub()}
+    if action == 'tg_disconnect':
+        for k in ('token', 'bot', 'botName', 'group', 'groupTitle'):
+            TG[k] = ''
+        TG['links'] = {}; TG['dm'] = []
+        return {'ok': True, 'cfg': _tg_pub()}
+    if action == 'tg_test':
+        if not TG['token']:
+            return {'ok': False, 'error': 'Connect the bot first (step 1).'}
+        if TG['group'] == '':
+            # Same rule as api/tg-lib.php: the group is connected from Telegram itself
+            # (add the bot to the group and send /connect), so the preview cannot fake it.
+            return {'ok': False, 'error': 'Connect a team group first: add the bot to your group and send /connect there.'}
+        return {'ok': True, 'sent': True}
+    if action == 'tg_test_me':
+        if str(TG_ME) not in TG['links']:
+            return {'ok': False, 'error': 'Scan the QR code first to link your Telegram'}
+        return {'ok': True, 'sent': True}
+    if action == 'tg_dm_set':
+        if d.get('on') and str(TG_ME) not in TG['links']:
+            return {'ok': False, 'error': 'Scan the QR code first to link your Telegram'}
+        TG['dm'] = [TG_ME] if d.get('on') else []
+        return {'ok': True, 'on': bool(d.get('on'))}
+    if action == 'tg_link_code':
+        if not (TG['token'] and TG['bot']):
+            return {'ok': False, 'error': 'Telegram is not connected yet (Integrations -> Telegram).'}
+        code = 'WX-4F2A-9C1B'
+        TG['codes'][code] = TG_ME
+        TG['links'][str(TG_ME)] = 'preview-chat'
+        return {'ok': True, 'code': code,
+                'link': 'https://t.me/' + (TG['bot'] or 'WoodexStudioBot') + '?start=' + code,
+                'linked': True}
+    if action == 'tg_unlink':
+        TG['links'] = {}; TG['dm'] = []
+        return {'ok': True}
+    return None
+
+
 def build(action, data):
     """Return a response dict for `action`, or None to fall through to the server default."""
     d = data or {}
@@ -1040,11 +1145,8 @@ def build(action, data):
                 'projectTypes': [{'id': 'interior', 'label': 'Interior'}, {'id': 'fitout', 'label': 'Fit-out'}],
                 'stages': ['new', 'contacted', 'visit', 'quoted', 'won', 'lost'],
                 'team': [{'id': t['id'], 'name': t['name']} for t in TEAM]}
-    if action == 'tg_link_code':
-        return {'ok': True, 'code': 'WX-4F2A-9C1B', 'link': 'https://t.me/WoodexStudioBot', 'linked': False}
-    if action == 'tg_get':
-        return {'ok': True, 'cfg': {'on': False, 'token': '', 'chat': '', 'username': 'WoodexStudioBot'},
-                'linked': False, 'ready': False, 'log': []}
+    if action.startswith('tg_'):
+        return _tg(action, d)
     if action == 'mt_get':
         return {'ok': True, 'on': False, 'message': 'Planned maintenance: Sunday 02:00–03:00', 'until': '',
                 'token': '', 'pages': [{'path': 'index.html', 'url': '/'}, {'path': 'portfolio.html', 'url': '/portfolio'},

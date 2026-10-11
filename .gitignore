@@ -21,3 +21,6 @@ woodex-live-p29-v2.1-pro/_private/health.json
 # Python bytecode from the QA tools
 __pycache__/
 *.pyc
+
+# local preview runtime state (redirect rules edited in the preview)
+tools/qa-p29/.preview-state/

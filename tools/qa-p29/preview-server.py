@@ -192,6 +192,115 @@ def real_media_list(root):
     return {'ok': True, 'files': files, 'folders': folders, 'trash': trash}
 
 
+# ---------------------------------------------------------------- redirects (real plan)
+# Mirrors api/redirects-lib.php: the shipped plan in api/redirect-plan.json is merged into the
+# saved rules on first use and whenever the plan file changes, deletions are remembered, and
+# every rule is checked against the files that actually exist in the site tree. The preview used
+# to answer with two sample rows, which is why the screen looked "not connected" to the complete
+# list. Runtime state is kept outside the app tree (tools/qa-p29/.preview-state).
+STATE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), '.preview-state')
+
+
+def _rd_path(name):
+    os.makedirs(STATE_DIR, exist_ok=True)
+    return os.path.join(STATE_DIR, name)
+
+
+def _rd_read(name, default):
+    try:
+        with open(_rd_path(name), encoding='utf-8') as fh:
+            return json.load(fh)
+    except (OSError, ValueError):
+        return default
+
+
+def _rd_write(name, obj):
+    with open(_rd_path(name), 'w', encoding='utf-8') as fh:
+        json.dump(obj, fh, indent=1)
+
+
+def _rd_plan(root):
+    try:
+        with open(os.path.join(root, 'api', 'redirect-plan.json'), encoding='utf-8') as fh:
+            rows = json.load(fh)
+        return rows if isinstance(rows, list) else []
+    except (OSError, ValueError):
+        return []
+
+
+def _rd_one(r):
+    r = r if isinstance(r, dict) else {}
+    return {'from': '/' + str(r.get('from') or '').strip().strip('/') + ('/' if str(r.get('from') or '').strip('/') else ''),
+            'to': str(r.get('to') or ''), 'type': int(r.get('type') or 301),
+            'match': 'prefix' if r.get('match') == 'prefix' else 'exact',
+            'src': str(r.get('src') or '')[:80], 'on': r.get('on', True) is not False}
+
+
+def _rd_merge(cur, add):
+    have = {str(r['from']).lower() for r in cur}
+    n = 0
+    for r in add:
+        x = _rd_one(r)
+        if x['from'].lower() in have or x['from'] == '/':
+            continue
+        cur.append(x)
+        have.add(x['from'].lower())
+        n += 1
+    return {'list': cur, 'added': n}
+
+
+def _rd_hash(root):
+    try:
+        import hashlib
+        with open(os.path.join(root, 'api', 'redirect-plan.json'), 'rb') as fh:
+            return hashlib.sha256(fh.read()).hexdigest()[:16]
+    except OSError:
+        return ''
+
+
+def _rd_list(root):
+    cur = [_rd_one(r) for r in _rd_read('redirects.json', [])]
+    cfg = _rd_read('redirects-cfg.json', {})
+    h = _rd_hash(root)
+    if not cfg.get('seeded') or cfg.get('planHash') != h:
+        skip = {str(s).lower() for s in (cfg.get('skip') or [])}
+        add = [r for r in _rd_plan(root) if _rd_one(r)['from'].lower() not in skip]
+        m = _rd_merge(cur, add)
+        cur = m['list']
+        cfg['seeded'] = True
+        cfg['planHash'] = h
+        _rd_write('redirects.json', cur)
+        _rd_write('redirects-cfg.json', cfg)
+    return cur, cfg
+
+
+def _rd_test(root, rules):
+    out = []
+    for r in rules:
+        st, msg = 'ok', ('Gone (410)' if r['type'] == 410 else 'Target page exists')
+        frm = os.path.join(root, r['from'].strip('/'))
+        live = os.path.isfile(os.path.join(frm, 'index.html')) or os.path.isfile(frm)
+        if not r['on']:
+            st, msg = 'off', 'Switched off'
+        elif live:
+            st, msg = 'warn', 'A live page exists at this address; the redirect hides it'
+        elif r['type'] != 410 and str(r['to']).startswith('/'):
+            path = str(r['to']).split('?')[0].split('#')[0].rstrip('/')
+            tgt = os.path.join(root, path.strip('/'))
+            ok = path == '/' or os.path.isfile(os.path.join(tgt, 'index.html')) or os.path.isfile(tgt)
+            if not ok:
+                st, msg = 'bad', 'Target page not found'
+        out.append({'i': rules.index(r), 'status': st, 'msg': msg})
+    return out
+
+
+def redirects_payload(root):
+    rules, cfg = _rd_list(root)
+    return {'ok': True, 'redirects': rules, 'cfg': {'www': cfg.get('www', True), 'spam': cfg.get('spam', True)},
+            'planCount': len(_rd_plan(root)), 'test': _rd_test(root, rules),
+            'missed': len(_rd_read('404.json', {}))}
+
+
 def empty(extra=None):
     d = {'ok': True, 'avatars': {}, 'rows': [], 'items': [], 'list': [], 'total': 0, 'per': 20, 'pages': [], 'cfg': {}, 'apps': [],
          'pending': 0, 'unread': 0, 'stats': {'pages': 0}, 'recent': [], 'kpi': {}, 'leads': [], 'chats': [], 'series': [],
@@ -469,6 +578,30 @@ class H(http.server.SimpleHTTPRequestHandler):
         if action == 'leads_count':
             return self._json(200, {'ok': True, 'total': len(PREVIEW_LEADS),
                                     'new': sum(1 for l in PREVIEW_LEADS if l['stage'] == 'new')})
+        if action == 'redirects':
+            return self._json(200, redirects_payload(ROOT))
+        if action == 'redirects_plan':
+            rules, cfg = _rd_list(ROOT)
+            m = _rd_merge(rules, _rd_plan(ROOT))
+            _rd_write('redirects.json', m['list'])
+            return self._json(200, {'ok': True, 'redirects': m['list'], 'added': m['added'],
+                                    'test': _rd_test(ROOT, m['list'])})
+        if action == 'redirects_save':
+            rules = [_rd_one(r) for r in (data.get('redirects') or [])]
+            _rd_write('redirects.json', rules)
+            cfg = _rd_read('redirects-cfg.json', {})
+            if isinstance(data.get('cfg'), dict):
+                cfg['www'] = bool(data['cfg'].get('www', cfg.get('www', True)))
+                cfg['spam'] = bool(data['cfg'].get('spam', cfg.get('spam', True)))
+            have = {str(r['from']).lower() for r in rules}
+            cfg['skip'] = sorted({_rd_one(r)['from'].lower() for r in _rd_plan(ROOT)} - have)
+            cfg['seeded'] = True
+            cfg['planHash'] = _rd_hash(ROOT)
+            _rd_write('redirects-cfg.json', cfg)
+            return self._json(200, dict(redirects_payload(ROOT), saved=True))
+        if action == 'r404_list':
+            rows = [{'path': k, **v} for k, v in (_rd_read('404.json', {}) or {}).items()]
+            return self._json(200, {'ok': True, 'rows': rows})
         if action == 'media_list':
             # The library must show the website's own images, not samples.
             return self._json(200, real_media_list(ROOT))
