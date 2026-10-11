@@ -1,4 +1,4 @@
-/* Woodex Admin — Phase 3: real Excel (.xlsx) downloads without libraries. W.xlsx(name, rows[, sheetName]); W.csvParse(text). */
+/* Woodex Admin — Phase 3: real Excel (.xlsx) downloads without libraries. W.xlsx(name, rows[, sheetName]); W.xlsxBook(name, [{name, rows}, ...]) for multi-sheet packs; W.csvParse(text). */
 (function () {
   "use strict";
   var W = window.WXA; if (!W) return;
@@ -37,6 +37,33 @@
       ["xl/worksheets/sheet1.xml", sheet(rows)]
     ]);
     var a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = /\.xlsx$/i.test(name) ? name : name + ".xlsx"; document.body.appendChild(a); a.click(); a.remove(); setTimeout(function () { URL.revokeObjectURL(a.href); }, 4000);
+  };
+  /* Multi-sheet workbook — W.xlsxBook("pack.xlsx", [{name:"Quotations", rows:[[...]]}, ...]).
+     Same OOXML parts as W.xlsx, one worksheet per entry with a matching workbook relationship and a
+     Content_Types override. Sheet names are de-duplicated and trimmed to Excel's 31-character rule. */
+  W.xlsxBook = function (name, sheets) {
+    sheets = (sheets || []).filter(function (s) { return s && s.rows && s.rows.length; });
+    if (!sheets.length) return;
+    if (sheets.length === 1) return W.xlsx(name, sheets[0].rows, sheets[0].name);
+    var used = {}, names = sheets.map(function (s, i) {
+      var base = String(s.name || ("Sheet" + (i + 1))).replace(/[\\\/?*\[\]:]/g, " ").trim().slice(0, 28) || ("Sheet" + (i + 1));
+      var key = base.toLowerCase(), n = 2, out = base;
+      while (used[key]) { out = base.slice(0, 26) + " " + n; key = out.toLowerCase(); n++; }
+      used[key] = 1; return out;
+    });
+    var R = function (i) { return "rId" + (i + 1); };
+    var files = [
+      ["[Content_Types].xml", '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>' + sheets.map(function (s, i) { return '<Override PartName="/xl/worksheets/sheet' + (i + 1) + '.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>'; }).join("") + '<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>'],
+      ["_rels/.rels", '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>'],
+      ["xl/workbook.xml", '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>' + sheets.map(function (s, i) { return '<sheet name="' + X(names[i]) + '" sheetId="' + (i + 1) + '" r:id="' + R(i) + '"/>'; }).join("") + "</sheets></workbook>"],
+      ["xl/_rels/workbook.xml.rels", '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' + sheets.map(function (s, i) { return '<Relationship Id="' + R(i) + '" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet' + (i + 1) + '.xml"/>'; }).join("") + '<Relationship Id="rId' + (sheets.length + 1) + '" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>'],
+      ["xl/styles.xml", '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="2"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><color rgb="FFFFFFFF"/><name val="Calibri"/></font></fonts><fills count="3"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FF0C1628"/></patternFill></fill></fills><borders count="1"><border/></borders><cellStyleXfs count="1"><xf/></cellStyleXfs><cellXfs count="2"><xf/><xf fontId="1" fillId="2" applyFont="1" applyFill="1"/></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>']
+    ];
+    sheets.forEach(function (s, i) { files.push(["xl/worksheets/sheet" + (i + 1) + ".xml", sheet(s.rows)]); });
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(zip(files));
+    a.download = /\.xlsx$/i.test(name) ? name : name + ".xlsx";
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(function () { URL.revokeObjectURL(a.href); }, 4000);
   };
   W.csvParse = function (t) {
     t = String(t || "").replace(/^\ufeff/, ""); var rows = [], row = [], f = "", q = false;

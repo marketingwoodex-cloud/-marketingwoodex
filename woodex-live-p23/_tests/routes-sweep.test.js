@@ -85,6 +85,23 @@ function respond(action) {
       pay: { cash: "Cash", bank: "Bank transfer", cheque: "Cheque", jazzcash: "JazzCash", easypaisa: "Easypaisa", card: "Card", credit: "On credit" },
       status: { paid: "Paid", pending: "Pending approval", credit: "On credit" },
       nodes: ["LHR", "ISB", "KHI", "RWP", "FSD", "GRW", "MUX", "PSH", "SKT", "BWP", "QTA", "HYD"] } };
+  /* v2.7 bulk document manager — shapes mirror api/bulkdoc-lib.php bd_types / bd_pack. */
+  if (action === "bd_types") return { ok: true,
+    period: { preset: "month", from: "2026-10-01", to: "2026-10-31", label: "1 Oct 2026 → 31 Oct 2026" },
+    types: [
+      { id: "quotes", label: "Quotations", icon: "file-text", note: "one row per revision", value_column: true, documents: 3, value: 314000, undated: 0, truncated: false },
+      { id: "invoices", label: "Invoices & receipts", icon: "receipt", note: "with paid, balance and overdue state", value_column: true, documents: 2, value: 96500, undated: 0, truncated: false },
+      { id: "milestones", label: "Progress certificates", icon: "shield-check", note: "regional milestones", value_column: true, documents: 1, value: 180000, undated: 1, truncated: false },
+      { id: "expenses", label: "Expense vouchers", icon: "table", note: "the cash book", value_column: true, documents: 3, value: 191495, undated: 0, truncated: false },
+      { id: "leads", label: "Enquiries", icon: "contact", note: "the enquiry book", value_column: true, documents: 4, value: 2500000, undated: 0, truncated: false }
+    ],
+    total: { documents: 13, value: 3281995 } };
+  if (action === "bd_pack") return { ok: true,
+    period: { preset: "month", from: "2026-10-01", to: "2026-10-31", label: "1 Oct 2026 → 31 Oct 2026" },
+    pack: { quotes: { label: "Quotations", icon: "file-text", columns: ["No", "Date", "Client", "Project", "Status", "Total (Rs)"],
+        rows: [["WDX-26-011", "2026-10-04", "Mr. Ahsan Raza", "Kitchen — DHA Phase 6", "proposal", 118000]],
+        documents: 1, value: 118000, undated: 0, truncated: false } },
+    total: { documents: 1, value: 118000, undated: 0, types: 1, generated_at: "2026-10-11 12:00:00", by: "Ar. Bilal Ahmed" } };
   if (action === "exp_kpis") return { ok: true, kpis: {
     month: "2026-10", from: "2026-10-01", to: "2026-10-31", days: 31, day: 11, count: 3,
     sum: 173000, tax: 18495, wht: 0, with_tax: 191495,
@@ -198,8 +215,15 @@ const iframeStub = requestInterceptor(request => {
      when a screen gains a structural element worth pinning down. */
   var MARKS = {
     expenses: ["Expense log", "Spent in ", "Waiting for approval", "On credit", "Projected month-end",
-               "By category", "Pak Boards, Gulberg", "Site labour (daily wages)", "Fixed monthly"]
+               "By category", "Pak Boards, Gulberg", "Site labour (daily wages)", "Fixed monthly"],
+    bulkdoc: ["Document packs", "Available documents", "Quotations", "Invoices & receipts", "Progress certificates",
+              "Expense vouchers", "Enquiries", "Value covered", "Selected for the pack", "Build the pack",
+              "WDX-26-011", "Rs 118,000"]
   };
+  /* Optional per-route interaction: selectors clicked in order after the screen renders, so a
+     screen whose value only appears after an action (build a pack, refresh a list) can still be
+     pinned down by markers instead of being taken on trust. */
+  var CLICKS = { bulkdoc: ["#bd-all", "#bd-build"] };
   var settle = Number(process.env.WX_WAIT || 0);
   console.log("\n  routes discovered in the sidebar: " + routes.length + "\n");
 
@@ -211,6 +235,10 @@ const iframeStub = requestInterceptor(request => {
     const view = q("#view");
     let html = view ? view.innerHTML : "";
     if (html.length <= 220) { await wait(900 + settle); errors = errors; html = view ? view.innerHTML : html; }
+    if (CLICKS[id]) {
+      for (const sel of CLICKS[id]) { const target = doc.querySelector(sel); if (target) { target.click(); await wait(320 + settle); } }
+      html = view ? view.innerHTML : html;
+    }
     const soon = !!doc.querySelector("#view .soon-box");
     const err = errors[0] || "";
     let state = err ? "ERROR" : soon ? "soon" : html.length > 220 ? "ok" : "EMPTY";
@@ -220,7 +248,10 @@ const iframeStub = requestInterceptor(request => {
          not fabricate; the fixture packs for those actions are added in Phase 3. */
     if (state !== "ok" && id === "builder") state = "SKIP";
     else if (state !== "ok" && /Loading…/.test(html)) state = "STUB";
-    var want = MARKS[id] || [], missing = want.filter(function (m) { return html.indexOf(m) < 0; });
+    /* Markers are written the way a human reads the screen, so compare against both the raw
+       innerHTML and an entity-decoded copy — "Invoices & receipts" is &amp; in the DOM. */
+    var plain = html.replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&#39;/g, "'");
+    var want = MARKS[id] || [], missing = want.filter(function (m) { return html.indexOf(m) < 0 && plain.indexOf(m) < 0; });
     if (state === "ok" && missing.length) state = "THIN";
     const mark = state === "ok" ? "✓" : state === "SKIP" ? "−" : state === "STUB" ? "~" : state === "soon" ? "•" : state === "THIN" ? "!" : "✗";
     ok("  " + mark + " " + id.padEnd(16) + String(html.length).padStart(7) + " B  " + state + (err ? "  " + err.slice(0, 110) : ""));

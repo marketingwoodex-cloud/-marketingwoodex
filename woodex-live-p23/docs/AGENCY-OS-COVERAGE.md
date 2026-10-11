@@ -55,7 +55,7 @@ Status: **✅** a live view renders it · **◐** partially covered by a neighbo
 | Smart Quote builder | `#/quote`, `#/quotes` | `admin-sales.js` | ✅ |
 | Invoice builder | `#/invoice`, `#/invoices` | `admin-sales.js`, `admin-sales17.js` | ✅ |
 | Interactive Page Designer | `#/builder` | `builder/` + `admin.js`, `admin-pages.js` | ✅ |
-| Bulk Document Manager | — | `admin-xlsx.js` (sheets), `admin-print.js` / `admin-print17.js` (print), media multi-select in `admin-media.js` | ◐ no single hub screen |
+| Bulk Document Manager | `#/bulkdoc` | `admin-bulkdoc.js` + `api/bulkdoc-lib.php`; `W.xlsxBook()` multi-sheet writer in `admin-xlsx.js` | **✅ built** (was ◐ — the plumbing existed, the hub did not) |
 | Template Library | `#/templates`, `#/pagetpl`, `#/library` | `admin-templates.js`, `admin-lib26.js` | ✅ |
 
 ### Money
@@ -157,7 +157,7 @@ exposing four actions. Two of them are **orphans**:
    stylesheet and its engine are already in the repo, so this is integration work, not design work.
 2. ~~**Expense Log** — genuinely absent from V2.1~~ — **built** (route `#/expenses`, backend
    `api/expense-lib.php`, tables `wx_expenses` / `wx_expense_budgets`; plan doc §8.6).
-3. **Bulk Document Manager** — a hub over the existing XLSX/print/bulk-select machinery. Next.
+3. ~~**Bulk Document Manager** — a hub over the existing XLSX/print/bulk-select machinery~~ — **built** (route `#/bulkdoc`, six document types, CSV / multi-sheet workbook / print packet; plan doc §8.7). Next: the ARC screens.
 4. **Two orphan ARC endpoints** (`arc_budget_change`, `arc_drawing_revision`) — backend exists, no UI.
 5. **Gantt view** for activity/timelines; **contractor field reports**; **client interactive portal**.
 
