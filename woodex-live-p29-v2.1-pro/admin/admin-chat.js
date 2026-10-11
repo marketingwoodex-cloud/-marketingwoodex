@@ -1,207 +1,220 @@
-/* Woodex Admin — Conversations & Live Chat Inbox (Preline Pro Ocean Architecture)
-   Theme-adaptive split chat, channel filters (Website/WhatsApp), AI suggestions, and lead quick-converter */
+/* Woodex Admin — Inbox (communication block). Live conversations from chat_list / chat_get / chat_reply.
+   Three panes: conversations (box + channel filters, search), the active chat, and lead details.
+   Routes: #/chat and #/chat/<id> (the pop-up dock links to #/chat/<id>). New visitor messages that arrive
+   while this view is open are marked "New". Polls the list every 15 s and the open chat every 3 s;
+   timers stop when the view leaves the DOM. */
 (function () {
   "use strict";
   var W = window.WXA; if (!W) return;
-  var api = W.api, esc = W.esc, ic = W.ic, toast = W.toast, $ = W.$, $$ = W.$$, head = W.head;
+  var api = W.api, esc = W.esc, ic = W.ic, toast = W.toast, $ = W.$, head = W.head;
+  var CH = { web: "Website", wa: "WhatsApp", tg: "Telegram" };
+  var BOX = [["all", "All"], ["mine", "Mine"], ["unassigned", "Unassigned"]];
+  var CHAN = [["all", "All"], ["web", "Website"], ["wa", "WhatsApp"], ["tg", "Telegram"]];
+  var st = { box: "all", chan: "all", q: "", chats: [], counts: {}, id: 0, chat: null, msgs: [], last: 0, sending: false, first: true, team: [] };
 
-  W.VIEWS.chat = function (el) {
-    el.innerHTML = head("Conversations & Inbox", "Inbox",
-      '<button class="btn" id="ch-canned-btn">' + ic("file-text") + 'Canned replies</button>' +
-      '<button class="btn" id="ch-ai-btn">' + ic("sparkles") + 'AI Settings</button>' +
-      '<a class="btn pri btn-preline-cyan" href="#/enquiries">' + ic("inbox") + 'View CRM Leads</a>') +
+  function alive() { return !!document.getElementById("cb-threads"); }
+  function stopTimers() { (W._cbTimers || []).forEach(clearInterval); W._cbTimers = []; }
+  function ini(n) { return String(n || "?").trim().split(/\s+/).map(function (x) { return x.charAt(0); }).join("").slice(0, 2).toUpperCase() || "?"; }
+  function when(s) {
+    if (!s) return "";
+    var d = new Date(String(s).replace(" ", "T")); if (isNaN(d)) return "";
+    return d.toDateString() === new Date().toDateString()
+      ? d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })
+      : d.toLocaleDateString("en-GB", { day: "2-digit", month: "short" });
+  }
+  function chanBadge(c) {
+    var k = c.channel || "web";
+    return '<span class="cb-chan-b ' + esc(k) + '">' + esc(CH[k] || k) + "</span>";
+  }
+  function who(c) { return c.name || "Visitor #" + c.id; }
 
-      '<div class="chat-shell card">' +
-        '<!-- Left Pane: Conversations List -->' +
-        '<div class="chat-left-pane">' +
-          '<div class="chat-search-wrap">' +
-            '<input type="search" id="chat-q" placeholder="Search conversations…" style="margin:0;width:100%">' +
-            '<div class="seg" style="margin-top:10px;width:100%">' +
-              '<button class="on" data-chan="all" style="flex:1">All (4)</button>' +
-              '<button data-chan="wa" style="flex:1">WhatsApp (2)</button>' +
-              '<button data-chan="web" style="flex:1">Website (2)</button>' +
-            '</div>' +
-          '</div>' +
-          '<div id="chat-threads" class="chat-thread-list"></div>' +
-        '</div>' +
-
-        '<!-- Middle Pane: Active Conversation -->' +
-        '<div class="chat-center-pane">' +
-          '<div class="chat-header-bar">' +
-            '<div style="display:flex;align-items:center;gap:12px">' +
-              '<span class="preline-avatar" id="active-av">KA</span>' +
-              '<div>' +
-                '<b id="active-name" style="font-size:15px;display:block;color:var(--txt)">Kamran Ashraf</b>' +
-                '<small style="color:#10b981;font-size:11.5px;font-weight:600">● Online via Website Chat</small>' +
-              '</div>' +
-            '</div>' +
-            '<div style="display:flex;gap:8px;flex-wrap:wrap">' +
-              '<button class="btn sm" id="chat-takeover">' + ic("user") + 'Take over from AI</button>' +
-              '<a class="btn sm wa" target="_blank" rel="noopener" id="chat-wa-btn" href="https://wa.me/923004455667">' + ic("message-circle") + 'Open WhatsApp</a>' +
-            '</div>' +
-          '</div>' +
-
-          '<!-- Message History -->' +
-          '<div id="chat-history" class="chat-history-box"></div>' +
-
-          '<!-- Quick AI Suggestion Chips -->' +
-          '<div class="chat-suggestions-bar">' +
-            '<small style="color:var(--pri);font-weight:700;display:flex;align-items:center;gap:4px;white-space:nowrap">' + ic("sparkles") + 'AI Suggestions:</small>' +
-            '<button class="btn sm" data-chip="1" style="font-size:11.5px;white-space:nowrap">"Schedule 3D Design Session"</button>' +
-            '<button class="btn sm" data-chip="2" style="font-size:11.5px;white-space:nowrap">"Send Modular Kitchen Catalog"</button>' +
-            '<button class="btn sm" data-chip="3" style="font-size:11.5px;white-space:nowrap">"Confirm Site Measurement"</button>' +
-          '</div>' +
-
-          '<!-- Message Composer -->' +
-          '<div class="chat-composer-bar">' +
-            '<textarea id="chat-input" rows="2" placeholder="Type a response (press Enter to send, Shift+Enter for newline)…" style="flex:1;margin:0;resize:none;font-size:13px"></textarea>' +
-            '<button class="btn pri btn-preline-cyan" id="chat-send-btn" style="height:44px;padding:0 18px">' + ic("send") + 'Send</button>' +
-          '</div>' +
-        '</div>' +
-
-        '<!-- Right Pane: Customer Lead Profile -->' +
-        '<div class="chat-right-drawer">' +
-          '<b style="font-size:14px;color:var(--txt);border-bottom:1px solid var(--line);padding-bottom:8px">Customer Lead 360</b>' +
-          '<div style="display:flex;flex-direction:column;gap:10px;font-size:12.5px;color:var(--txt2)">' +
-            '<div><small class="muted" style="display:block">Full Name</small><b id="p-name" style="color:var(--txt)">Kamran Ashraf</b></div>' +
-            '<div><small class="muted" style="display:block">Company</small><span id="p-co">Ashraf Holdings</span></div>' +
-            '<div><small class="muted" style="display:block">Phone</small><span id="p-ph">+92 300 4455667</span></div>' +
-            '<div><small class="muted" style="display:block">Location</small><span id="p-loc">Bahria Town Sector C, Lahore</span></div>' +
-            '<div><small class="muted" style="display:block">Service Brief</small><span id="p-srv">Turnkey Design-Build · 10 Marla</span></div>' +
-            '<div><small class="muted" style="display:block">Estimated Budget</small><b id="p-val" style="color:var(--pri)">PKR 12,000,000</b></div>' +
-          '</div>' +
-          '<div style="border-top:1px solid var(--line);padding-top:14px;display:flex;flex-direction:column;gap:8px;margin-top:auto">' +
-            '<a class="btn pri btn-preline-cyan" href="#/enquiries" style="font-size:12px">' + ic("inbox") + 'Open Full CRM Record</a>' +
-            '<a class="btn sm" href="#/quote/new" style="font-size:12px">' + ic("receipt") + 'Create Quotation</a>' +
-          '</div>' +
-        '</div>' +
-      '</div>';
-
-    W.fillIcons(el);
-
-    var threads = [
-      { id: 1, name: "Kamran Ashraf", co: "Ashraf Holdings", channel: "web", snippet: "Interested in turnkey construction and luxury interior for 10 Marla residence.", time: "2m ago", unread: true, phone: "+92 300 4455667", location: "Bahria Town Sector C, Lahore", service: "Turnkey Design-Build", value: "PKR 12,000,000" },
-      { id: 2, name: "Dr. Sarah Mansoor", co: "Apex Wellness", channel: "wa", snippet: "Renovating a 3,000 sq ft dental clinic & wellness center.", time: "18m ago", unread: false, phone: "+92 321 5551234", location: "DHA Phase 5, Lahore", service: "Clinic Fit-Out", value: "PKR 6,500,000" },
-      { id: 3, name: "Tariq Mahmood", co: "Mahmood Textiles", channel: "web", snippet: "Complete solid wood executive boardroom table & acoustic panelling.", time: "1h ago", unread: false, phone: "+92 333 4889900", location: "Gulberg III, Lahore", service: "Corporate Boardroom", value: "PKR 4,800,000" },
-      { id: 4, name: "Ayesha Farooq", co: "Lake City Villa", channel: "wa", snippet: "Custom island with Blum soft-close fittings and Spanish quartz.", time: "3h ago", unread: false, phone: "+92 312 9876543", location: "Lake City, Lahore", service: "Acrylic Kitchen Island", value: "PKR 2,950,000" }
-    ];
-
-    var activeThread = threads[0];
-
-    function drawThreads() {
-      var box = $("#chat-threads");
-      if (!box) return;
-
-      box.innerHTML = threads.map(function (t) {
-        var ini = t.name.split(" ").map(function (n) { return n[0]; }).join("").slice(0, 2).toUpperCase();
-        var isAct = t.id === activeThread.id;
-        var chanBadge = t.channel === "wa" ? '<span class="badge ok" style="font-size:10px">WhatsApp</span>' : '<span class="badge info" style="font-size:10px">Website</span>';
-
-        return '<div class="chat-thread-item' + (isAct ? ' active' : '') + '" data-id="' + t.id + '">' +
-          '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">' +
-            '<div style="display:flex;align-items:center;gap:10px">' +
-              '<span class="preline-avatar" style="width:34px;height:34px;font-size:12px">' + esc(ini) + '</span>' +
-              '<div>' +
-                '<b style="font-size:13.5px;color:var(--txt);display:block">' + esc(t.name) + '</b>' +
-                '<small style="color:var(--mut);font-size:11px">' + esc(t.co) + '</small>' +
-              '</div>' +
-            '</div>' +
-            '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px">' +
-              '<small style="color:var(--mut2);font-size:10.5px">' + esc(t.time) + '</small>' +
-              chanBadge +
-            '</div>' +
-          '</div>' +
-          '<p style="font-size:12px;color:' + (t.unread ? 'var(--txt)' : 'var(--mut)') + ';font-weight:' + (t.unread ? '600' : '400') + ';margin:6px 0 0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(t.snippet) + '</p>' +
-        '</div>';
-      }).join("");
-
-      $$('#chat-threads .chat-thread-item').forEach(function (row) {
-        row.onclick = function () {
-          var tid = +row.dataset.id;
-          activeThread = threads.find(function (t) { return t.id === tid; }) || threads[0];
-          drawThreads();
-          renderActiveChat();
-        };
-      });
-    }
-
-    function renderActiveChat() {
-      var t = activeThread;
-      var ini = t.name.split(" ").map(function (n) { return n[0]; }).join("").slice(0, 2).toUpperCase();
-
-      if ($("#active-av")) $("#active-av").textContent = ini;
-      if ($("#active-name")) $("#active-name").textContent = t.name;
-      if ($("#chat-wa-btn")) $("#chat-wa-btn").href = "https://wa.me/" + t.phone.replace(/\D/g, "");
-
-      if ($("#p-name")) $("#p-name").textContent = t.name;
-      if ($("#p-co")) $("#p-co").textContent = t.co;
-      if ($("#p-ph")) $("#p-ph").textContent = t.phone;
-      if ($("#p-loc")) $("#p-loc").textContent = t.location;
-      if ($("#p-srv")) $("#p-srv").textContent = t.service;
-      if ($("#p-val")) $("#p-val").textContent = t.value;
-
-      var msgs = [
-        { from: "user", text: t.snippet, time: "10:14 AM" },
-        { from: "ai", text: "Assalam-o-Alaikum " + t.name + "! Thank you for contacting Woodex Interior Studio. We have received your project details for " + t.service + " in " + t.location + ". Our lead architectural consultant will connect with you shortly.", time: "10:14 AM" }
-      ];
-
-      var box = $("#chat-history");
-      if (!box) return;
-
-      box.innerHTML = msgs.map(function (m) {
-        var isU = m.from === "user";
-        return '<div style="display:flex;flex-direction:column;align-items:' + (isU ? 'flex-start' : 'flex-end') + ';max-width:80%;align-self:' + (isU ? 'flex-start' : 'flex-end') + '">' +
-          '<div class="' + (isU ? 'chat-msg-user' : 'chat-msg-ai') + '">' +
-            esc(m.text) +
-          '</div>' +
-          '<small style="color:var(--mut);font-size:10.5px;margin-top:3px">' + esc(m.time) + ' · ' + (isU ? 'Customer' : 'AI Assistant') + '</small>' +
-        '</div>';
-      }).join("");
-
-      box.scrollTop = box.scrollHeight;
-    }
-
-    drawThreads();
-    renderActiveChat();
-
-    // Send handler
-    var sendBtn = $("#chat-send-btn");
-    var inp = $("#chat-input");
-    if (sendBtn && inp) {
-      var send = function () {
-        var txt = inp.value.trim();
-        if (!txt) return;
-        var box = $("#chat-history");
-        var bubble = document.createElement("div");
-        bubble.style.cssText = "display:flex;flex-direction:column;align-items:flex-end;max-width:80%;align-self:flex-end";
-        bubble.innerHTML = '<div class="chat-msg-ai">' + esc(txt) + '</div><small style="color:var(--mut);font-size:10.5px;margin-top:3px">Just now · Agent</small>';
-        box.appendChild(bubble);
-        inp.value = "";
-        box.scrollTop = box.scrollHeight;
-        toast("Message sent to " + activeThread.name);
-      };
-      sendBtn.onclick = send;
-      inp.onkeydown = function (e) {
-        if (e.key === "Enter" && !e.shiftKey) {
-          e.preventDefault();
-          send();
-        }
-      };
-    }
-
-    // AI suggestion chips
-    $$('[data-chip]').forEach(function (b) {
-      b.onclick = function () {
-        var txt = b.textContent.replace(/^"|"$/g, "");
-        if ($("#chat-input")) $("#chat-input").value = txt;
-      };
+  // ---------- lists ----------
+  function drawTabs() {
+    var box = $("#cb-box"); if (!box) return;
+    var n = { all: st.counts.all, mine: st.counts.mine, unassigned: st.counts.unassigned };
+    box.innerHTML = BOX.map(function (b) {
+      return '<button type="button" role="tab" aria-selected="' + (st.box === b[0]) + '" class="' + (st.box === b[0] ? "on" : "") + '" data-box="' + b[0] + '">' +
+        esc(b[1]) + (n[b[0]] != null ? ' <span class="cb-n">' + esc(String(n[b[0]])) + "</span>" : "") + "</button>";
+    }).join("");
+    var ch = $("#cb-chan"); if (!ch) return;
+    ch.innerHTML = CHAN.map(function (c) {
+      return '<button type="button" aria-pressed="' + (st.chan === c[0]) + '" class="' + (st.chan === c[0] ? "on" : "") + '" data-chan="' + c[0] + '">' + esc(c[1]) + "</button>";
+    }).join("");
+  }
+  function drawThreads() {
+    var box = $("#cb-threads"); if (!box) return;
+    var q = st.q.toLowerCase();
+    var rows = st.chats.filter(function (c) {
+      if (st.chan !== "all" && (c.channel || "web") !== st.chan) return false;
+      if (!q) return true;
+      return [c.name, c.phone, c.last, c.page].join(" ").toLowerCase().indexOf(q) >= 0;
     });
+    if (!rows.length) { box.innerHTML = '<p class="cb-empty">' + (st.chats.length ? "No conversations match these filters." : "No open conversations yet. New website and WhatsApp chats appear here.") + "</p>"; return; }
+    box.innerHTML = rows.map(function (c) {
+      var on = c.id === st.id, n = who(c), unread = c.unread || c.needs;
+      return '<button type="button" role="option" aria-selected="' + on + '" class="cb-item' + (on ? " on" : "") + (unread ? " unread" : "") + '" data-id="' + c.id + '">' +
+        '<span class="cb-av">' + esc(ini(n)) + "</span>" +
+        '<span class="cb-item-b"><span class="cb-item-t"><b>' + esc(n) + "</b><small>" + esc(when(c.updated_at)) + "</small></span>" +
+        '<span class="cb-item-s">' + esc(c.last || "") + "</span>" +
+        '<span class="cb-item-m">' + chanBadge(c) +
+        (c.needs ? ' <span class="cb-tag warn">Needs you</span>' : "") +
+        (unread && !c.needs ? ' <span class="cb-tag">New</span>' : "") +
+        (c.mode === "ai" ? ' <span class="cb-tag ai">AI</span>' : "") + "</span></span></button>";
+    }).join("");
+  }
+  function loadList() {
+    if (!alive()) return stopTimers();
+    return api("chat_list", { status: "open", box: st.box }).then(function (r) {
+      if (!alive()) return stopTimers();
+      if (!r || !r.ok) { toast((r && r.error) || "Could not load conversations", true); return; }
+      st.chats = r.chats || []; st.counts = r.counts || {}; st.team = r.team || [];
+      if (!st.id && st.chats.length) { st.id = st.chats[0].id; st.first = true; }
+      drawTabs(); drawThreads();
+      if (st.id && (!st.chat || st.chat.id !== st.id)) loadChat(true);
+    });
+  }
 
-    if ($("#chat-takeover")) {
-      $("#chat-takeover").onclick = function () {
-        toast("You have taken over this conversation. AI responses paused for this chat.");
-      };
+  // ---------- active chat ----------
+  function msgHtml(m, c) {
+    if (m.who === "sys") return '<div class="cb-sys">' + esc(m.text) + (m.t ? " · " + esc(when(m.t)) : "") + "</div>";
+    var out = m.who === "agent" || m.who === "ai" || m.who === "note";
+    var label = m.who === "visitor" ? who(c) : m.who === "ai" ? "AI assistant" : m.who === "note" ? "Internal note" : (m.name || "Team");
+    var body = W.chatX ? W.chatX.body(m) : esc(m.text);
+    return '<div class="cb-row ' + (out ? "out" : "in") + (m.fresh ? " fresh" : "") + '">' +
+      '<div class="cb-bub ' + esc(m.who) + '">' + body + "</div>" +
+      '<small class="cb-meta">' + esc(label) + " · " + esc(when(m.t)) + (m.fresh ? ' <span class="cb-tag">New</span>' : "") + "</small></div>";
+  }
+  function drawChat() {
+    var c = st.chat, box = $("#cb-msgs"), hd = $("#cb-head"), inf = $("#cb-info");
+    if (!c || !box) {
+      if (hd) hd.innerHTML = '<div class="cb-none">Select a conversation to read it and reply.</div>';
+      if (box) box.innerHTML = ""; if (inf) inf.innerHTML = ""; return;
     }
+    var n = who(c), takeover = c.mode === "ai";
+    var digits = String(c.phone || "").replace(/\D/g, "");
+    hd.innerHTML = '<span class="cb-av lg">' + esc(ini(n)) + '</span><div class="cb-head-t"><b>' + esc(n) + "</b>" +
+      "<small>" + chanBadge(c) + " " + esc(takeover ? "AI is answering" : "Handled by " + (c.agent || "the team")) + "</small></div>" +
+      '<div class="cb-head-a">' +
+        '<button type="button" class="btn sm" id="cb-mode" data-mode="' + (takeover ? "human" : "ai") + '">' + ic("user") + (takeover ? "Take over from AI" : "Hand back to AI") + "</button>" +
+        (c.channel === "wa" && digits ? '<a class="btn sm wa" target="_blank" rel="noopener" href="https://wa.me/' + esc(digits) + '">' + ic("message-circle") + "Open WhatsApp</a>" : "") +
+      "</div>";
+    box.innerHTML = st.msgs.map(function (m) { return msgHtml(m, c); }).join("") || '<p class="cb-empty">No messages yet.</p>';
+    var ty = $("#cb-ty"); if (ty) ty.textContent = st.typing ? n + " is typing…" : "";
+    if (st.first) box.scrollTop = box.scrollHeight;
+    if (inf) inf.innerHTML = infoHtml(c);
+    W.fillIcons && W.fillIcons(hd);
+    if (st.first) { var d = $("#cb-msgs"); if (d) d.scrollTop = d.scrollHeight; }
+  }
+  function infoHtml(c) {
+    var tags = (c.tags || []).map(function (t) { return '<span class="cb-tag">' + esc(t) + "</span>"; }).join(" ");
+    function row(k, v) { return v ? '<div class="cb-kv"><small>' + esc(k) + "</small><span>" + v + "</span></div>" : ""; }
+    var digits = String(c.phone || "").replace(/\D/g, "");
+    return '<div class="cb-info-h"><span class="cb-av lg">' + esc(ini(who(c))) + "</span><b>" + esc(who(c)) + "</b>" + chanBadge(c) + "</div>" +
+      row("Phone", c.phone ? '<a href="tel:' + esc(digits) + '">' + esc(c.phone) + "</a>" : "") +
+      row("Email", c.email ? '<a href="mailto:' + esc(c.email) + '">' + esc(c.email) + "</a>" : "") +
+      row("Page", c.page ? esc(c.page) : "") +
+      row("Handled by", esc(c.mode === "ai" ? "AI assistant" : (c.agent || "Team"))) +
+      row("Hand-over reason", c.handoff ? esc(c.handoff) : "") +
+      row("Tags", tags) +
+      '<div class="cb-info-a">' +
+        (c.lead_id ? '<a class="btn pri btn-preline-cyan" href="#/enquiries">' + ic("inbox") + "Open lead #" + esc(String(c.lead_id)) + "</a>" : '<p class="muted" style="margin:0">No lead yet. The AI creates one when the visitor shares a phone number.</p>') +
+      "</div>";
+  }
+  function loadChat(first) {
+    if (!alive()) return stopTimers();
+    var id = st.id; if (!id) return;
+    if (first) { st.msgs = []; st.last = 0; st.first = true; }
+    return api("chat_get", { id: id, since: st.last }).then(function (r) {
+      if (!alive() || id !== st.id) return;
+      if (!r || !r.ok) { toast((r && r.error) || "Could not load the chat", true); return; }
+      st.chat = r.chat; st.typing = !!r.typing;
+      var added = (r.messages || []).filter(function (m) { return m.id > st.last; });
+      added.forEach(function (m) { st.last = Math.max(st.last, m.id); m.fresh = !st.first && m.who === "visitor"; st.msgs.push(m); });
+      drawThreads(); drawChat();
+      st.first = false;
+    });
+  }
+  function selectChat(id) {
+    st.id = id; st.chat = null; st.msgs = []; st.last = 0; st.first = true;
+    if (history.replaceState) history.replaceState(null, "", "#/chat/" + id);
+    drawThreads(); loadChat(true);
+  }
+
+  // ---------- actions ----------
+  function send(e) {
+    if (e) e.preventDefault();
+    var ta = $("#cb-txt"), btn = $("#cb-send"); if (!ta || st.sending || !st.id) return;
+    var text = ta.value.trim(); if (!text) return;
+    st.sending = true; btn.disabled = true;
+    api("chat_reply", { id: st.id, text: text }).then(function (r) {
+      st.sending = false; btn.disabled = false;
+      if (!r || !r.ok) { toast((r && r.error) || "Message not sent", true); return; }
+      ta.value = ""; st.first = false; loadChat(false); loadList();
+    }).catch(function () { st.sending = false; btn.disabled = false; toast("Message not sent. Check the connection and try again.", true); });
+  }
+  function suggest() {
+    var b = $("#cb-suggest"), ta = $("#cb-txt"); if (!b || !ta || !st.id) return;
+    b.disabled = true;
+    api("chat_suggest", { id: st.id }).then(function (r) {
+      b.disabled = false;
+      if (!r || !r.ok) return toast((r && r.error) || "Could not suggest a reply", true);
+      ta.value = r.text || ""; ta.focus();
+    }).catch(function () { b.disabled = false; });
+  }
+  function toggleMode(e) {
+    var b = e.target.closest("#cb-mode"); if (!b || !st.id) return;
+    api("chat_mode", { id: st.id, mode: b.dataset.mode }).then(function (r) {
+      if (!r || !r.ok) return toast((r && r.error) || "Could not change the mode", true);
+      toast(b.dataset.mode === "human" ? "You have taken over this chat. The AI is paused." : "The AI is back in this chat.");
+      loadChat(false); loadList();
+    });
+  }
+
+  W.VIEWS.chat = function (el, parts) {
+    stopTimers();
+    var want = parts && parts[0] ? parseInt(parts[0], 10) : 0;
+    st.id = want || 0; st.chat = null; st.msgs = []; st.last = 0; st.first = true; st.sending = false; st.q = ""; st.typing = false;
+    el.innerHTML = head("Inbox", "Inbox",
+      '<a class="btn" href="#/aicenter">' + ic("sparkles") + "AI settings</a>" +
+      '<a class="btn pri btn-preline-cyan" href="#/enquiries">' + ic("inbox") + "View CRM leads</a>") +
+      '<div class="cb-shell card">' +
+        '<aside class="cb-list" aria-label="Conversations">' +
+          '<div class="cb-list-h"><input type="search" id="cb-q" placeholder="Search name, phone or message" aria-label="Search conversations"></div>' +
+          '<div class="cb-tabs" id="cb-box"></div>' +
+          '<div class="cb-chans" id="cb-chan"></div>' +
+          '<div id="cb-threads" class="cb-threads" role="listbox" aria-label="Open conversations"></div>' +
+        "</aside>" +
+        '<section class="cb-chat" aria-live="polite">' +
+          '<header class="cb-chat-h" id="cb-head"></header>' +
+          '<div class="cb-msgs" id="cb-msgs" tabindex="0" aria-label="Messages"></div>' +
+          '<div class="cb-typing" id="cb-ty"></div>' +
+          '<form class="cb-form" id="cb-form">' +
+            '<textarea id="cb-txt" rows="2" placeholder="Reply… (Enter to send, Shift+Enter for a new line)" aria-label="Reply"></textarea>' +
+            '<div class="cb-form-b">' +
+              '<button type="button" class="btn sm" id="cb-suggest">' + ic("sparkles") + "Suggest reply</button>" +
+              '<button class="btn pri btn-preline-cyan" type="submit" id="cb-send">' + ic("send") + "Send</button>" +
+            "</div>" +
+          "</form>" +
+        "</section>" +
+        '<aside class="cb-info" id="cb-info" aria-label="Lead details"></aside>' +
+      "</div>";
+    W.fillIcons && W.fillIcons(el);
+    drawTabs(); drawChat();
+
+    $("#cb-box").onclick = function (e) { var b = e.target.closest("[data-box]"); if (!b) return; st.box = b.dataset.box; drawTabs(); loadList(); };
+    $("#cb-chan").onclick = function (e) { var b = e.target.closest("[data-chan]"); if (!b) return; st.chan = b.dataset.chan; drawTabs(); drawThreads(); };
+    $("#cb-threads").onclick = function (e) { var b = e.target.closest(".cb-item"); if (b) selectChat(+b.dataset.id); };
+    $("#cb-q").oninput = function () { st.q = this.value.trim(); drawThreads(); };
+    $("#cb-form").onsubmit = send;
+    $("#cb-suggest").onclick = suggest;
+    $("#cb-txt").onkeydown = function (e) { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); $("#cb-form").requestSubmit(); } };
+    $("#cb-head").onclick = toggleMode;
+
+    W._cbTimers = [
+      setInterval(function () { if (!alive()) return stopTimers(); loadChat(false); }, 3000),
+      setInterval(function () { if (!alive()) return stopTimers(); loadList(); }, 15000)
+    ];
+    loadList();
   };
   W.VIEWS.inbox = W.VIEWS.chat;
 })();

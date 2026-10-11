@@ -16,6 +16,23 @@
     $("#ar-tab").onclick = function (e) { var b = e.target.closest("[data-t]"); if (!b) return; st.tab = b.dataset.t; draw(); };
     draw();
   };
+  // Automation channel hub: live conversation counts per channel, with links to each channel's own screen.
+  function hub(r) {
+    var c = r.channels || {};
+    var cards = [
+      ["Website chat", c.web || 0, "#/chat", "Open the Inbox"],
+      ["WhatsApp", c.wa || 0, "#/wahub", "Open WhatsApp"],
+      ["Telegram", c.tg || 0, "#/telegram", "Open Telegram"],
+      ["Social media", null, "#/social", "Open social media"],
+      ["Client updates", null, "#/updates", "Open client updates"],
+      ["AI agents", null, "#/aicenter", "Open AI agents"]
+    ];
+    return '<div class="cb-hub">' + cards.map(function (x) {
+      var n = x[1] == null ? "—" : String(x[1]);
+      var note = x[1] == null ? "Managed on its own screen" : "Conversations in the last " + st.days + " days";
+      return '<a class="cb-hub-c" href="' + x[2] + '"><b>' + esc(x[0]) + '</b><span class="cb-hub-n">' + esc(n) + "</span><small>" + esc(note) + '</small><span class="cb-hub-go">' + esc(x[3]) + " →</span></a>";
+    }).join("") + "</div>";
+  }
   function tabs() { [].forEach.call(document.querySelectorAll("#ar-tab button"), function (b) { b.classList.toggle("on", b.dataset.t === st.tab); }); }
   function draw() { tabs(); if (st.tab === "un") unans(); else report(); }
 
@@ -26,6 +43,7 @@
       $("#ar-unc").textContent = r.unanswered ? "(" + r.unanswered + ")" : "";
       var max = Math.max.apply(null, [1].concat(r.reasons.map(function (x) { return x.n; })));
       b.innerHTML = '<div style="display:flex;justify-content:flex-end;margin-bottom:10px"><div class="seg" id="ar-d">' + [[7, "7 days"], [30, "30 days"], [90, "90 days"]].map(function (d) { return '<button data-d="' + d[0] + '"' + (st.days === d[0] ? ' class="on"' : "") + ">" + d[1] + "</button>"; }).join("") + "</div></div>" +
+        hub(r) +
         '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:12px">' +
           kpi(r.chats, "Conversations", Object.keys(r.channels).map(function (k) { return (CH[k] || k) + " " + r.channels[k]; }).join(" · ") || "No chats yet") +
           kpi(pct(r.aiOnly, r.chats), "Handled by AI alone", r.aiOnly + " of " + r.chats + " without a team reply") +

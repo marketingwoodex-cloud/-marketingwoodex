@@ -50,7 +50,7 @@
       ".wx-wa-av{width:38px;height:38px;border-radius:50%;background:#b8956a;color:#0c1628;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;flex:none}",
       ".wx-wa-head .t{font-weight:700;font-size:15px;line-height:1.2}.wx-wa-head .s{font-size:12px;opacity:.85;display:flex;align-items:center;gap:6px;white-space:nowrap}.wx-wa-head>div{min-width:0}",
       ".wx-wa-head .s i{width:8px;height:8px;border-radius:50%;background:" + (open ? "#4ade80" : "#fbbf24") + ";display:inline-block}",
-      ".wx-wa-x{margin-left:auto;background:none!important;border:0!important;color:#fff!important;font-size:22px;cursor:pointer;line-height:1;padding:0 4px!important;min-width:0!important}",
+      ".wx-wa-acts{margin-left:auto;display:flex;gap:6px;flex:none}.wx-wa-x,.wx-wa-min{display:grid;place-items:center;width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.1)!important;border:0!important;color:#fff!important;cursor:pointer;padding:0!important;min-width:0!important;transition:background-color .15s ease,transform .15s ease}.wx-wa-x:hover,.wx-wa-min:hover{background:rgba(255,255,255,.22)!important}.wx-wa-x:active,.wx-wa-min:active{transform:scale(.94)}.wx-wa-x:focus-visible,.wx-wa-min:focus-visible{outline:2px solid #b8956a;outline-offset:2px}.wx-wa-x svg,.wx-wa-min svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round}@media (prefers-reduced-motion:reduce){.wx-wa-x,.wx-wa-min{transition:none}}",
       ".wx-wa-body{padding:16px 16px 6px;background:#f6f1e9}",
       ".wx-wa-msg{background:#fff;border-radius:4px 14px 14px 14px;padding:12px 14px;font-size:14px;line-height:1.55;box-shadow:0 1px 2px rgba(12,22,40,.08);margin-bottom:16px}",
       ".wx-wa-lbl{display:block;font-size:10.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:#8a6a43;margin:0 0 8px}",
@@ -102,7 +102,7 @@
 
     var panel = el("div", "wx-wa-panel"); panel.setAttribute("role", "dialog"); panel.setAttribute("aria-label", "Chat with Woodex");
     panel.innerHTML =
-      '<div class="wx-wa-head"><button type="button" class="wx-back" aria-label="Back" hidden>&#8249;</button><span class="wx-wa-av">W</span><div><div class="t" id="wx-nm">Woodex Interior</div><div class="s"><i></i>' + (open ? "Design team online · replies in a few minutes" : "Away · replies from 9:30 am, Mon–Sat") + '</div></div><button type="button" class="wx-wa-x" aria-label="Close chat">&times;</button></div>' +
+      '<div class="wx-wa-head"><button type="button" class="wx-back" aria-label="Back" hidden>&#8249;</button><span class="wx-wa-av">W</span><div><div class="t" id="wx-nm">Woodex Interior</div><div class="s"><i></i>' + (open ? "Design team online · replies in a few minutes" : "Away · replies from 9:30 am, Mon–Sat") + '</div></div><div class="wx-wa-acts"><button type="button" class="wx-wa-min" aria-label="Minimise chat" title="Minimise"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/></svg></button><button type="button" class="wx-wa-x" aria-label="Close chat" title="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div></div>' +
       '<div class="v-home"><div class="wx-wa-body"><div class="wx-wa-msg">Assalam-o-Alaikum! How would you like to talk to us?</div>' +
       '<button type="button" class="wx-opt" data-go="chat"><span class="ic ch"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-4.9A8 8 0 1 1 21 12Z"/><path d="M8.5 11h.01M12 11h.01M15.5 11h.01"/></svg></span><span><b>Live chat with a designer</b><small>Instant answers here · our team can join</small></span></button>' +
       '<button type="button" class="wx-opt" data-go="wa"><span class="ic">' + waGlyph + '</span><span><b>WhatsApp</b><small>Message us on +92 322 4000768</small></span></button>' +
@@ -293,6 +293,7 @@
     }
     btn.addEventListener("click", function () { toggle(); });
     $(".wx-wa-x").addEventListener("click", function () { toggle(false); });
+    $(".wx-wa-min").addEventListener("click", function () { toggle(false); });
     $(".wx-wa-send").addEventListener("click", send);
     $("#wx-wa-m").addEventListener("keydown", function (e) { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) send(); });
     document.addEventListener("keydown", function (e) { if (e.key === "Escape") toggle(false); });
