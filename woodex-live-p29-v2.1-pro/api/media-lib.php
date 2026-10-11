@@ -136,10 +136,14 @@ function a7_restore(string $file): void {
 function a7_health_scan(): array {
     $redir = array_map(fn($r) => rtrim((string)$r['from'], '/'), jread(PRIVATE_DIR . '/redirects.json'));
     $pages = a7_pages(); $issues = []; $titles = []; $sizes = [];
+    // Not website pages: error pages and search-engine verification files. Flagging those as
+    // "missing title / no canonical" only trains the owner to ignore this screen.
+    $pages = array_values(array_filter($pages, fn($r) => !preg_match('~^(404|500|503)\.html$~i', $r)
+        && !preg_match('~(^|/)(google[0-9a-f]+\.html|[a-z0-9]+siteauth\.(html|xml))$~i', $r)));
     $add = function ($rel, $type, $sev, $msg, $extra = []) use (&$issues) { $issues[] = array_merge(['rel' => $rel, 'type' => $type, 'sev' => $sev, 'msg' => $msg], $extra); };
     $fileFor = function (string $href): string { $p = rawurldecode(preg_split('~[?#]~', $href)[0]); if ($p === '' || $p === '/') return 'index.html'; $p = ltrim($p, '/'); if (substr($p, -1) === '/') return $p . 'index.html'; return preg_match('~\.[a-z0-9]+$~i', $p) ? $p : $p . '/index.html'; };
     foreach ($pages as $rel) {
-        if ($rel === '404.html') continue; $h = (string)file_get_contents(ROOT_DIR . '/' . $rel);
+        $h = (string)file_get_contents(ROOT_DIR . '/' . $rel);
         $title = preg_match('~<title[^>]*>(.*?)</title>~is', $h, $m) ? trim(html_entity_decode($m[1])) : '';
         $desc = preg_match('~<meta[^>]+name="description"[^>]*content="([^"]*)"~i', $h, $m) ? html_entity_decode($m[1]) : null;
         if ($title === '') $add($rel, 'seo', 3, 'Missing page title'); else { $tl = mb_strlen($title); if ($tl > 65) $add($rel, 'seo', 1, "Title is long ($tl characters, aim for 60)"); if ($tl < 20) $add($rel, 'seo', 1, 'Title is very short'); $titles[$title][] = $rel; }

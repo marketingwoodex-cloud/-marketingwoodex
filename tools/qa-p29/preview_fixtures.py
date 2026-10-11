@@ -229,7 +229,12 @@ SEO_ROWS = [
     {'path': '/turnkey-design', 'title': 'Turnkey design | Woodex', 'status': 'ok', 'issues': 0, 'score': 88},
 ]
 
-PSI_ROW = {'performance': 88, 'lcp': '2.1 s', 'cls': '0.02', 'tbt': '180 ms', 'at': ts(-1, '13:00'), 'score': 88}
+# Same keys api/media-lib.php stores for a PageSpeed run (admin-speed.js reads them):
+# perf/a11y/bp/seo are 0-100, the rest are the display strings Lighthouse returns.
+PSI_ROW = {'perf': 88, 'a11y': 96, 'bp': 100, 'seo': 92, 'lcp': '2.1 s', 'cls': '0.02', 'tbt': '180 ms',
+           'fcp': '1.4 s', 'si': '2.4 s', 'strategy': 'mobile', 'at': ts(-1, '13:00'),
+           'tips': [{'id': 'unused-javascript', 'title': 'Reduce unused JavaScript', 'value': '0.4 s'},
+                    {'id': 'render-blocking-resources', 'title': 'Eliminate render-blocking resources', 'value': '0.3 s'}]}
 
 
 # ---- quotation templates (api/sales-lib.php sales_starter_templates + wx_templates) -----
@@ -1046,15 +1051,8 @@ def build(action, data):
                     {'sev': '1', 'manual': True, 'msg': 'No internal links from the home page to /turnkey-design',
                      'url': '/'}]},
                 'history': [{'at': ts(-1, '13:00'), 'pages': 4, 'issues': 3}, {'at': ts(-8, '13:00'), 'pages': 4, 'issues': 5}]}
-    if action == 'health_speed':
-        return {'ok': True, 'psi': {'index.html|mobile': [dict(PSI_ROW)], 'index.html|desktop': [dict(PSI_ROW, performance=96)],
-                                    '/portfolio|mobile': [dict(PSI_ROW, performance=79)], '/portfolio|desktop': [dict(PSI_ROW, performance=90)]}}
-    if action in ('health_get', 'health_scan'):
-        return {'ok': True, 'score': 88, 'checked': ts(-1, '13:00'), 'items': [
-            {'id': 'ssl', 'label': 'HTTPS certificate', 'status': 'ok', 'detail': 'valid until 2027-01-14'},
-            {'id': 'robots', 'label': 'robots.txt', 'status': 'ok', 'detail': 'found'},
-            {'id': 'sitemap', 'label': 'sitemap.xml', 'status': 'warn', 'detail': '3 pages not listed'},
-            {'id': 'backup', 'label': 'Last backup', 'status': 'ok', 'detail': ts(-1, '02:00')}]}
+    # health_get / health_scan / health_speed / health_psi are served by preview-server.py:
+    # Site health runs the real local scan and PageSpeed results live in the health store.
     if action in ('redirects',):
         return {'ok': True, 'redirects': [{'id': 1, 'from': '/old-portfolio', 'to': '/portfolio', 'code': 301, 'hits': 12},
                                           {'id': 2, 'from': '/furniture', 'to': '/boardroom-tables', 'code': 301, 'hits': 4}],

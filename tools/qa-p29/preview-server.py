@@ -141,6 +141,104 @@ def site_pages(root):
     return out
 
 
+def _h_file_for(href, root):
+    """a7_health_scan()'s $fileFor: the URL path -> the file it must exist as on disk."""
+    p = urllib.parse.unquote(re.split(r'[?#]', href)[0])
+    if p in ('', '/'):
+        return 'index.html'
+    p = p.lstrip('/')
+    if p.endswith('/'):
+        return p + 'index.html'
+    return p if re.search(r'\.[a-z0-9]+$', p, re.I) else p + '/index.html'
+
+
+def real_health_scan(root):
+    """The same scan the admin runs on itself (a7_health_scan() in api/media-lib.php):
+    it stays local — it reads the real pages and assets from disk and reports what is
+    actually wrong with them. No network, so it behaves the same here as on the host."""
+    redir = []
+    try:
+        with open(os.path.join(root, '_private', 'redirects.json'), encoding='utf-8') as fh:
+            for r in (json.load(fh) or []):
+                src = (r.get('from') if isinstance(r, dict) else r) or ''
+                redir.append(re.split(r'[?#]', str(src))[0].rstrip('/'))
+    except (OSError, ValueError):
+        pass
+    pages = [p for p in site_pages(root)
+             if not re.match(r'^(404|500|503)\.html$', p, re.I)
+             and not re.match(r'(^|/)(google[0-9a-f]+\.html|[a-z0-9]+siteauth\.(html|xml))$', p, re.I)]
+    issues, titles, sizes = [], {}, {}
+    def add(rel, typ, sev, msg, **extra):
+        issues.append(dict(rel=rel, type=typ, sev=sev, msg=msg, **extra))
+    for rel in pages:
+        try:
+            with open(os.path.join(root, rel), encoding='utf-8', errors='ignore') as fh:
+                h = fh.read()
+        except OSError:
+            h = ''
+        m = re.search(r'<title[^>]*>(.*?)</title>', h, re.I | re.S)
+        title = re.sub(r'\s+', ' ', m.group(1)).strip() if m else ''
+        m = re.search(r'<meta[^>]+name="description"[^>]*content="([^"]*)"', h, re.I)
+        desc = m.group(1) if m else None
+        if title == '':
+            add(rel, 'seo', 3, 'Missing page title')
+        else:
+            if len(title) > 65:
+                add(rel, 'seo', 1, 'Title is long (%d characters, aim for 60)' % len(title))
+            titles.setdefault(title, []).append(rel)
+        if not desc:
+            add(rel, 'seo', 2, 'Missing meta description')
+        elif len(desc) > 165:
+            add(rel, 'seo', 1, 'Description is long (%d, aim for 150-158)' % len(desc))
+        main = re.sub(r'<script[\s\S]*?</script>', '', h, flags=re.I)
+        h1 = len(re.findall(r'<h1[\s>]', main, re.I))
+        if h1 == 0:
+            add(rel, 'seo', 2, 'No main heading (H1)')
+        elif h1 > 1:
+            add(rel, 'seo', 1, '%d main headings (H1), use one' % h1)
+        if not re.search(r'<link[^>]+rel="canonical"', h, re.I):
+            add(rel, 'seo', 1, 'No canonical link')
+        noalt = 0
+        for tag in re.findall(r'<img\b[^>]*>', main, re.I):
+            am = re.search(r'\salt\s*=\s*"([^"]*)"', tag, re.I)
+            if (not am or am.group(1).strip() == '') and not re.search(r'aria-hidden="true"|role="presentation"', tag):
+                noalt += 1
+        if noalt:
+            add(rel, 'alt', 2, '%d image(s) without alt text' % noalt, count=noalt)
+        seen = set()
+        for href in re.findall(r'\shref="(/[^"]*)"', main, re.I):
+            if re.match(r'^//|^/(api|admin|builder)/', href) or href in seen:
+                continue
+            seen.add(href)
+            if not os.path.isfile(os.path.join(root, _h_file_for(href, root))) \
+                    and re.split(r'[?#]', href)[0].rstrip('/') not in redir:
+                add(rel, 'link', 3, 'Broken link: ' + href, target=href)
+        for u in re.findall(r'\s(?:src|href|content)="((?:https://woodex\.com\.pk)?/assets/[^"]+\.(?:webp|jpe?g|png|gif|svg|avif))"', main, re.I):
+            u = u.replace('https://woodex.com.pk', '')
+            if u in seen:
+                continue
+            seen.add(u)
+            fp = os.path.join(root, re.split(r'[?#]', u)[0].lstrip('/'))
+            if not os.path.isfile(fp):
+                add(rel, 'image', 3, 'Missing image: ' + u, target=u)
+                continue
+            sz = sizes.get(u) or os.path.getsize(fp)
+            sizes[u] = sz
+            if sz > 350 * 1024:
+                add(rel, 'image', 1, 'Large image %s (%d KB)' % (os.path.basename(u), round(sz / 1024)), target=u)
+    for rels in titles.values():
+        if len(rels) > 1:
+            for r in rels:
+                add(r, 'seo', 1, 'Same title as %d other page(s)' % (len(rels) - 1))
+    pen = 0
+    for i in issues:
+        pen += 3 if i['sev'] == 3 else (1.2 if i['sev'] == 2 else 0.35)
+    score = int(max(0, min(100, round(100 - pen * 100 / max(1, len(pages) * 4)))))
+    counts = {k: len([i for i in issues if i['type'] == k]) for k in ('seo', 'alt', 'link', 'image')}
+    return {'score': score, 'pages': len(pages), 'at': time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime()),
+            'issues': issues, 'counts': counts}
+
+
 def media_alt_map(root):
     try:
         with open(os.path.join(root, '_private', 'media.json'), encoding='utf-8') as fh:
@@ -602,6 +700,39 @@ class H(http.server.SimpleHTTPRequestHandler):
         if action == 'r404_list':
             rows = [{'path': k, **v} for k, v in (_rd_read('404.json', {}) or {}).items()]
             return self._json(200, {'ok': True, 'rows': rows})
+        if action in ('health_get', 'health_scan'):
+            # Site health runs a local file scan on the host too (api/media-lib.php
+            # a7_health_scan), so the preview runs the real thing instead of a fixture:
+            # health_get reports the stored scan, health_scan performs it.
+            store = _rd_read('health.json', {}) or {}
+            if action == 'health_scan':
+                store['scan'] = real_health_scan(ROOT)
+                _rd_write('health.json', store)
+            return self._json(200, {'ok': True, 'scan': store.get('scan'), 'psi': store.get('psi', {}),
+                                    'psiKeySet': bool(store.get('psiKey')), 'site': store.get('site', 'https://woodex.com.pk')})
+        if action in ('health_speed', 'health_psi'):
+            store = _rd_read('health.json', {}) or {}
+            psi = store.get('psi') or {}
+            if action == 'health_speed':
+                return self._json(200, {'ok': True, 'psi': psi, 'psiKeySet': bool(store.get('psiKey')),
+                                        'site': store.get('site', 'https://woodex.com.pk')})
+            rel = str(data.get('rel') or 'index.html')
+            if not re.match(r'^[a-z0-9][a-z0-9/_\-.]*\.html$', rel, re.I) or '..' in rel:
+                return self._json(200, {'ok': False, 'error': 'Invalid page'})
+            strat = 'desktop' if data.get('strategy') == 'desktop' else 'mobile'
+            # The host calls Google's PageSpeed API here. This sandbox has no route to it, so the
+            # preview synthesises one plausible run with the very same fields the API result maps
+            # to — the screen stays honest about being a preview.
+            import preview_fixtures as _F
+            row = dict(_F.PSI_ROW)
+            row['strategy'] = strat
+            row['perf'] = 96 if strat == 'desktop' else row['perf']
+            row['at'] = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime())
+            key = rel + '|' + strat
+            psi[key] = ([row] + list(psi.get(key) or []))[:10]
+            store['psi'] = psi
+            _rd_write('health.json', store)
+            return self._json(200, {'ok': True, 'result': row})
         if action == 'media_list':
             # The library must show the website's own images, not samples.
             return self._json(200, real_media_list(ROOT))
