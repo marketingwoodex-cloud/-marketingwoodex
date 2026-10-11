@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Demo help — Woodex admin (static copy)</title>
+<style>body{margin:0;background:#0b0d13;color:#e2e8f0;font:15px/1.6 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+main{max-width:760px;margin:0 auto;padding:34px 22px 70px}h1{font-size:24px;margin:0 0 6px}
+h2{font-size:16px;margin:26px 0 8px;color:#7dd3fc}code{background:#111318;border:1px solid #1e2430;border-radius:6px;padding:1px 6px}
+a{color:#7dd3fc}.card{background:#111318;border:1px solid #1e2430;border-radius:12px;padding:16px 18px;margin-top:14px}
+ul{margin:8px 0 0 18px;padding:0}li{margin:3px 0}.muted{opacity:.72}</style></head>
+<body><main>
+<h1>Woodex admin — demo copy</h1>
+<p class="muted">This folder (<code>demo-preview/</code>) is a copy of <code>admin/</code> that needs no PHP:
+<code>demo-api.js</code> answers the admin's own API calls in the browser. The original admin folder is untouched.</p>
+
+<div class="card"><h2 style="margin-top:0">Sign in</h2>
+<p><b>demo@woodex.pk</b> &nbsp;/&nbsp; <b>Demo@Woodex2026</b></p>
+<p class="muted">Same credentials as the demo login in <code>_database/woodex-demo-login.sql</code>.</p></div>
+
+<div class="card"><h2 style="margin-top:0">Working with real demo data</h2>
+<ul>
+<li>Dashboard — KPIs, lead/paid series, pipeline funnel, follow-ups, overdue list</li>
+<li>Expenses (Money → Expense log) — 10 vouchers, budget-versus-actual, filters, CSV</li>
+<li>Document packs (Money → Document packs) — tick types, build a pack, workbook, CSV, print packet</li>
+<li>Leads &amp; pipeline, Clients, Bookings, Quotations, Invoices — Woodex-shaped records</li>
+<li>Regional ops — the 12 node codes, projects, milestones, ledger, rate cards</li>
+<li>Inbox, Team feed, WhatsApp, Media, SEO, Health, Theme, Telegram, Backups, Users, Activity log</li>
+</ul></div>
+
+<div class="card"><h2 style="margin-top:0">Opens but has no data behind it</h2>
+<ul>
+<li>Anything that would read or write the real database — settings forms save into nothing</li>
+<li>Uploads (media, logos, backups) — there is no disk here on purpose</li>
+<li>The page builder's saved pages, Google/Sheets sync, Telegram and WhatsApp bridges</li>
+</ul></div>
+
+<div class="card"><h2 style="margin-top:0">What is deliberately different from the live site</h2>
+<ul>
+<li>The dark bar at the top: this is the demo, and it says so on every page</li>
+<li>Writes are acknowledged and thrown away; reload the browser and the demo starts over</li>
+<li>No PHP runs at all — the API is JavaScript in this folder</li>
+</ul></div>
+
+<div class="card"><h2 style="margin-top:0">How to see the real thing</h2>
+<p>Deploy <code>woodex-live-p23/</code> to PHP 8.2 + MySQL (<code>docs/V2.7-PRELINE-UPGRADE-PLAN.md</code> §9 has the
+checklist) and open <code>/wx-install.php</code> once. Or locally, on a machine with PHP and MySQL:
+<code>php -S 0.0.0.0:8080 index.php</code>.</p>
+<p><a href="./">← back to the admin</a></p></div>
+</main></body></html>

@@ -122,6 +122,10 @@ function helpPage() {
       "Uploads (media, logos, backups) — there is no disk to write to on purpose",
       "The page builder's saved pages, Google/Sheets sync, Telegram and WhatsApp bridges",
     ]) +
+    s("No server at all? Use the static copy", [
+      "<code>woodex-live-p23/demo-preview/</code> is the same admin as a copy that needs no Node and no PHP: its own <code>demo-api.js</code> answers the API calls inside the page, so any plain static host can serve it",
+      "Both demos read the same fixtures (<code>tools/demo-data.mjs</code>), so they cannot drift apart",
+    ]) +
     s("What is deliberately different from the live site", [
       "The dark bar at the top: this is the demo, and it says so on every page",
       "Writes are acknowledged and discarded; reload the browser and the demo starts over",

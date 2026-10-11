@@ -1,0 +1,717 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Regional Operations — preview harness (fixtures)</title>
+<link rel="stylesheet" href="admin.css?v=2.5.5">
+<link rel="stylesheet" href="regional.css?v=2.6.0">
+<script>try{if(localStorage.getItem("wxaTheme")==="dark"||(!localStorage.getItem("wxaTheme")&&matchMedia("(prefers-color-scheme: dark)").matches))document.documentElement.classList.add("dark")}catch(e){}</script>
+<style>
+  .pv-banner{background:var(--warn-soft);color:var(--warn);border-bottom:1px solid var(--line);padding:10px 16px;font:600 12.5px/1.5 "Inter",system-ui,sans-serif;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+  .pv-banner code{background:rgba(127,127,127,.14);padding:1px 6px;border-radius:6px}
+  .pv-shell{display:flex;min-height:100vh}
+  .pv-side{width:280px;flex:none;border-right:1px solid var(--line);background:var(--card);padding:18px}
+  .pv-side h2{font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--mut);margin:0 0 12px}
+  .pv-side a{display:block;padding:8px 10px;border-radius:8px;color:var(--txt2);font-size:13.5px}
+  .pv-side a:hover{background:var(--bg)}
+  .pv-main{flex:1;min-width:0;padding:20px 24px}
+  .pv-theme{margin-top:16px;display:flex;gap:8px}
+</style>
+</head>
+<body>
+<div class="pv-banner">
+  <b>PREVIEW HARNESS — fixtures only.</b>
+  <span>This page stubs <code>WXA.api()</code> with deterministic sample data and the real <code>_templates/*.json</code>.
+  The estimator math below is the production formula; everything else is generated client-side for layout review.
+  Delete <code>admin/regions-preview.html</code> before deploying.</span>
+</div>
+
+<div class="pv-shell">
+  <aside class="pv-side">
+    <h2>Regional operations</h2>
+    <div id="pv-nav"></div>
+    <div class="pv-theme">
+      <button class="btn sm" id="pv-theme">Toggle theme</button>
+      <a class="btn sm" href="/admin/" target="_blank" rel="noopener">Real admin</a>
+    </div>
+    <p class="hint">The live module runs inside /admin/ after sign-in; this harness mounts the same
+    <code>admin-regions.js</code> against a stubbed API so the 3-block layout, kanban, tables, estimator
+    and rate book can be reviewed without a database.</p>
+  </aside>
+  <main class="pv-main"><div id="view" class="content"></div></main>
+</div>
+
+<script src="vendor/icons.js?v=2.5.1"></script>
+<script src="vendor/chart.umd.js?v=2.5.1" defer></script>
+<script>
+/* ============================================================================
+   Preview harness — stubs window.WXA and every rgn_* API action with fixtures
+   derived from ../_templates/region-nodes.json and ../_templates/region-variants.json.
+   ========================================================================= */
+(function () {
+  "use strict";
+  var NODES = null, VARS = null;
+
+  /* deterministic PRNG so every reload shows identical numbers */
+  function rng(seed) { return function () { seed |= 0; seed = seed + 0x6D2B79F5 | 0; var t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+  function pick(r, arr) { return arr[Math.floor(r() * arr.length)]; }
+  function money(n) { return Math.round(n); }
+
+  function getJSON(url) {
+    /* fetch when the browser window supports it, XHR otherwise (embedded/legacy shells) */
+    if (typeof fetch === "function") {
+      return fetch(url, { cache: "no-store" }).then(function (r) {
+        if (!r.ok) throw new Error(url + " → HTTP " + r.status);
+        return r.json();
+      });
+    }
+    return new Promise(function (res, rej) {
+      var x = new XMLHttpRequest();
+      x.open("GET", url + "?t=" + Date.now(), true);
+      x.onload = function () { if (x.status < 400) { try { res(JSON.parse(x.responseText)); } catch (e) { rej(e); } } else rej(new Error(url + " → HTTP " + x.status)); };
+      x.onerror = function () { rej(new Error(url + " → network error")); };
+      x.send();
+    });
+  }
+
+  function load() {
+    return Promise.all([
+      getJSON("../_templates/region-nodes.json"),
+      getJSON("../_templates/region-variants.json")
+    ]).then(function (both) {
+      NODES = both[0]; VARS = both[1];
+      /* mirror of rgn_nodes(): the registry `index` becomes labour_index, the
+         top-level tax/advance percentages become the per-node defaults. */
+      NODES.nodes = NODES.nodes.map(function (n) {
+        var o = {};
+        for (var k in n) if (Object.prototype.hasOwnProperty.call(n, k)) o[k] = n[k];
+        o.labour_index = Math.max(0.5, Math.min(2, +(o.labour_index != null ? o.labour_index : (o.index != null ? o.index : 1))));
+        o.tax_pct = Math.max(0, Math.min(30, +(o.tax_pct != null ? o.tax_pct : (NODES.tax_pct != null ? NODES.tax_pct : 18))));
+        o.advance_pct = Math.max(0, Math.min(100, +(o.advance_pct != null ? o.advance_pct : (NODES.advance_pct != null ? NODES.advance_pct : 40))));
+        o.waste_pct = Math.max(0, Math.min(30, +(o.waste_pct != null ? o.waste_pct : 12)));
+        o.active = o.active === false ? false : true;
+        o.areas = o.areas || [];
+        return o;
+      });
+      return true;
+    });
+  }
+
+  var SERVICES = {
+    "interior-design": "Interior Design", "fit-out": "Office Fit-Out", "renovation": "Renovation",
+    "architecture": "Architecture", "3d-visualization": "3D Visualization", "furniture": "Custom Furniture",
+    "turnkey-design-build": "Turnkey Design & Build"
+  };
+  var FALLBACK = {
+    "interior-design": { unit: "sqft", essential: 150, standard: 250, premium: 400 },
+    "fit-out": { unit: "sqft", essential: 2800, standard: 4200, premium: 6500 },
+    "renovation": { unit: "sqft", essential: 1200, standard: 2000, premium: 3200 },
+    "architecture": { unit: "sqft", essential: 200, standard: 350, premium: 550 },
+    "3d-visualization": { unit: "views", essential: 15000, standard: 25000, premium: 45000 },
+    "furniture": { unit: "sqft", essential: 1500, standard: 2500, premium: 4000 },
+    "turnkey-design-build": { unit: "sqft", essential: 3600, standard: 5400, premium: 7800 }
+  };
+  var STAGES = ["new", "contacted", "visit", "quote", "won", "lost"];
+  var ZONES = ["A", "B", "C", "D"];
+  var NAMES = ["Ahmed Raza", "Sana Tariq", "Bilal Hussain", "Hina Khalid", "Usman Sheikh", "Maryam Iqbal", "Zeeshan Ali", "Ayesha Noor", "Farhan Malik", "Rabia Aslam", "Kamran Javed", "Nadia Rehman", "Imran Shah", "Sadia Yousaf", "Waqas Butt", "Amna Siddiqui"];
+  var SERVICES_LIST = Object.keys(SERVICES);
+  var LOCALITIES = ["DHA Phase 6", "Bahria Town Sector C", "Gulberg III", "Model Town", "Johar Town", "Lake City", "F-11 Markaz", "Clifton Block 5", "PECHS Block 2", "Satellite Town", "Hayatabad Phase 4", "Cantt"];
+  var PRIORITIES = ["high", "normal", "low"];
+  var QUOTE_STATUS = ["none", "draft", "sent", "approved"];
+
+  /* fixture store */
+  var DB = { leads: [], projects: [], milestones: [], ledger: [], quotes: [], estimates: [], overrides: {}, rateCards: {} };
+
+  function seed() {
+    if (DB.leads.length) return;
+    var r = rng(20261011), now = Date.now(), day = 86400000;
+    NODES.nodes.forEach(function (n, ni) {
+      var weight = 1.6 - ni * 0.08;
+      for (var i = 0; i < Math.max(4, Math.round(9 * weight)); i++) {
+        var created = new Date(now - Math.floor(r() * 30) * day - Math.floor(r() * day));
+        var area = n.areas && n.areas.length ? pick(r, n.areas) : null;
+        DB.leads.push({
+          id: DB.leads.length + 1, created_at: created.toISOString().slice(0, 19).replace("T", " "),
+          name: pick(r, NAMES), phone: "+92 3" + (10 + Math.floor(r() * 80)) + " " + (1000000 + Math.floor(r() * 8999999)),
+          email: "", service: pick(r, SERVICES_LIST), stage: r() < .12 ? "won" : pick(r, ["new", "contacted", "visit", "quote"]),
+          value: money((0.4 + r() * 3.2) * 1e6), location: area ? area.name : pick(r, LOCALITIES),
+          priority: r() < .18 ? "high" : (r() < .7 ? "normal" : "low"), quote_status: pick(r, QUOTE_STATUS),
+          next_at: r() < .6 ? new Date(now + Math.floor(r() * 7) * day).toISOString().slice(0, 10) : "", assigned_to: 1,
+          is_read: r() < .62 ? 1 : 0, node: n.code
+        });
+      }
+      var layouts = NODES.layout_specs;
+      for (var p = 0; p < Math.max(1, Math.round(3 * weight)); p++) {
+        var L = pick(r, layouts), stage = pick(r, NODES.stages).code;
+        DB.projects.push({
+          id: DB.projects.length + 1, code: n.code + "-26-" + String(p + 1).padStart(3, "0"), node: n.code,
+          area: n.areas && n.areas.length ? pick(r, n.areas).code : "", title: L.label + " · " + (pick(r, ["turnkey", "interior", "fit-out"]) + " package"),
+          client_id: 0, lead_id: 0, quote_id: 0, layout_code: L.code, category_code: L.default_service === "fit-out" ? "FIT" : "ARC",
+          service_key: L.default_service === "turnkey" ? "turnkey-design-build" : L.default_service, finish_key: L.default_finish,
+          marla: L.code === "5M" ? 5 : L.code === "10M" ? 10 : L.code === "1K" ? 20 : 40, covered_sqft: L.covered_sqft,
+          run_length_lm: 6 + Math.round(r() * 24), stage: stage, status: r() < .08 ? "hold" : "open",
+          contract_value: money(L.covered_sqft * (1400 + r() * 2600)), advance_pct: n.advance_pct, manager_id: 1,
+          start_date: new Date(now - Math.floor(r() * 40) * day).toISOString().slice(0, 10),
+          target_date: new Date(now + Math.floor((5 + r() * 40)) * day).toISOString().slice(0, 10), handover_date: "",
+          notes: "", spec_json: null, created_at: new Date(now - Math.floor(r() * 60) * day).toISOString().slice(0, 19).replace("T", " "),
+          source: "region", milestones_done: 0, milestones_total: 0, progress: 0
+        });
+      }
+    });
+    var weights = [10, 15, 15, 30, 20, 10];
+    DB.projects.forEach(function (p) {
+      var done = Math.floor(rng(p.id * 7919)() * 7);
+      NODES.stages.forEach(function (s, i) {
+        var st = i < done ? "approved" : (i === done ? "pending" : "pending");
+        DB.milestones.push({
+          id: DB.milestones.length + 1, project_id: p.id, node: p.node, seq: i + 1, name: s.label,
+          kind: s.code === "approval" ? "approval" : "progress", weight_pct: weights[i],
+          amount: money(p.contract_value * weights[i] / 100),
+          due_date: new Date(Date.parse(p.start_date) + (i + 1) * 7 * day).toISOString().slice(0, 10),
+          done_at: st === "approved" ? new Date(now - Math.floor(r() * 9) * day).toISOString().slice(0, 19).replace("T", " ") : null,
+          status: st, approved_by: st === "approved" ? "Nabeel Afzal" : null, note: "",
+          project_code: p.code, project_title: p.title, contract_value: p.contract_value,
+          overdue: st === "pending" && Date.parse(p.start_date) + (i + 1) * 7 * day < now
+        });
+      });
+    });
+    DB.projects.forEach(function (p) {
+      var ms = DB.milestones.filter(function (m) { return m.project_id === p.id; });
+      var w = ms.reduce(function (a, m) { return a + m.weight_pct; }, 0);
+      var wd = ms.filter(function (m) { return m.status === "approved"; }).reduce(function (a, m) { return a + m.weight_pct; }, 0);
+      p.milestones_total = ms.length; p.milestones_done = ms.filter(function (m) { return m.status === "approved"; }).length;
+      p.progress = w ? Math.round(wd / w * 100) : 0;
+    });
+    DB.projects.forEach(function (p) {
+      var inv = money(p.contract_value * p.advance_pct / 100), paid = money(inv * (0.3 + rng(p.id * 104729)() * 0.8));
+      paid = Math.min(paid, inv);
+      var due = new Date(Date.parse(p.start_date) + 15 * day).toISOString().slice(0, 10);
+      DB.ledger.push({ id: DB.ledger.length + 1, node: p.node, project_id: p.id, kind: "invoice", ref: "WI-" + (10100 + p.id), party: "Client of " + p.code, amount: inv, status: paid >= inv ? "paid" : (paid > 0 ? "partial" : "due"), t: p.start_date + " 10:00:00", due_date: due, note: "Advance " + p.advance_pct + "%", user_name: "system", paid: paid, balance: inv - paid, overdue: paid < inv && due < new Date().toISOString().slice(0, 10), project_code: p.code, project_title: p.title });
+      DB.ledger.push({ id: DB.ledger.length + 1, node: p.node, project_id: p.id, kind: "po", ref: "PO-" + (4400 + p.id), party: "Timber supplier · Zone " + (NODES.nodes.filter(function (n) { return n.code === p.node; })[0].zone), amount: money(p.contract_value * 0.22), status: "due", t: p.start_date + " 12:00:00", due_date: due, note: "Board feet purchase order", user_name: "system", paid: 0, balance: money(p.contract_value * 0.22), overdue: due < new Date().toISOString().slice(0, 10), project_code: p.code, project_title: p.title });
+    });
+    DB.quotes = DB.leads.filter(function () { return true; }).slice(0, 24).map(function (l, i) {
+      return { id: i + 1, no: "WI-" + (10300 + i), status: pick(rng(i + 5), ["draft", "sent", "approved"]), total: money(l.value * (0.6 + rng(i + 9)() * 0.8)), region: l.node, city: (NODES.nodes.filter(function (n) { return n.code === l.node; })[0] || {}).city || "", client: l.name, created_at: l.created_at, version: 1 };
+    });
+  }
+
+  /* ---------- rate book + formula engine (mirror of api/regions-lib.php) ------ */
+  function nodeOf(code) { return NODES.nodes.filter(function (n) { return n.code === code; })[0] || NODES.nodes[0]; }
+  function cardOf(node, service, finish) {
+    var key = node.code + "|" + service + "|" + finish;
+    if (DB.rateCards[key]) return DB.rateCards[key];
+    return { base_rate: FALLBACK[service][finish], unit: FALLBACK[service].unit, labour_pct: Math.round(22 * node.labour_index * 100) / 100, waste_pct: node.waste_pct };
+  }
+  function bf(t, w, l) { return Math.round((t / 25.4) * (w / 25.4) * (l / 304.8) / 12 * 1000) / 1000; }
+  function sqft(w, l, faces) { return Math.round((w * l) / 92903.04 * Math.max(1, faces) * 1000) / 1000; }
+  function calc(inp) {
+    var node = nodeOf(inp.node || "LHR"), service = inp.service_key || "furniture", finish = inp.finish_key || "standard";
+    var rate = cardOf(node, service, finish);
+    var wastePct = inp.waste_pct !== "" && inp.waste_pct != null ? +inp.waste_pct : rate.waste_pct;
+    var labourPct = inp.labour_pct !== "" && inp.labour_pct != null ? +inp.labour_pct : rate.labour_pct;
+    var taxPct = inp.taxPct !== "" && inp.taxPct != null ? +inp.taxPct : node.tax_pct;
+    var advPct = inp.advance_pct !== "" && inp.advance_pct != null ? +inp.advance_pct : node.advance_pct;
+    var layout = (NODES.layout_specs.filter(function (l) { return l.code === inp.layout_code; })[0]) || null;
+    var area = +inp.area_sqft || 0, areaSource = "manual";
+    if (!area && layout) { area = layout.covered_sqft; areaSource = "layout:" + layout.code; }
+    if (!area && inp.qty) { area = +inp.qty; areaSource = "qty"; }
+    if (!area) throw new Error("Enter the covered area or pick a layout preset");
+
+    var lines = [], panelRows = [], runRows = [];
+    var serviceAmount = area * rate.base_rate;
+    lines.push({ section: "Scope", code: service, desc: rate.label = SERVICES[service] + " · " + finish + " finish · node " + node.city, unit: rate.unit,
+      qty: rate.unit === "views" ? (+inp.qty || area) : Math.round(area * 100) / 100, rate: Math.round(rate.base_rate), amount: Math.round(serviceAmount),
+      basis: { formula: rate.unit + " × rate card", inputs: { area: area, rate: rate.base_rate, source: areaSource, node_index: node.labour_index } } });
+
+    var netBf = 0, coatSqft = 0, matNet = 0, coatCost = 0;
+    (inp.panels || []).forEach(function (p) {
+      var sp = VARS.species.filter(function (s) { return s.code === p.species_code; })[0] || VARS.species[0];
+      var co = VARS.coatings.filter(function (c) { return c.code === p.coating_code; })[0] || VARS.coatings[0];
+      var core = VARS.cores.filter(function (c) { return c.code === p.core_code; })[0];
+      var each = bf(+p.t_mm, +p.w_mm, +p.len_mm), net = Math.round(each * +p.qty * 1000) / 1000;
+      var mat = net * sp.rate_bf * node.labour_index;
+      var sf = sqft(+p.w_mm, +p.len_mm, +p.faces || 2) * +p.qty;
+      var cc = sf * co.rate_sqft * node.labour_index;
+      netBf += net; coatSqft += sf; matNet += mat; coatCost += cc;
+      panelRows.push({ label: p.label, qty: +p.qty, t_mm: +p.t_mm, w_mm: +p.w_mm, len_mm: +p.len_mm, bf_each: each, net_bf: net,
+        species: sp.label, species_code: sp.code, species_rate_bf: sp.rate_bf, coating: co.label, coating_code: co.code,
+        core: core ? core.label : "—", material: Math.round(mat), coating_cost: Math.round(cc),
+        formula: "BF = (t/25.4) × (w/25.4) × (len/304.8) / 12" });
+    });
+    var wasteBf = Math.round(netBf * wastePct / 100 * 1000) / 1000;
+    var wasteCost = matNet * wastePct / 100;
+    var grossBf = Math.round((netBf + wasteBf) * 1000) / 1000;
+    var material = matNet + wasteCost;
+    var avgBfRate = netBf > 0 ? material / netBf : 0;
+    if (netBf > 0) {
+      lines.push({ section: "Solid timber", code: "BF", desc: "Solid timber — " + panelRows.length + " panel types · average PKR " + Math.round(avgBfRate).toLocaleString() + " / board foot",
+        unit: "bf", qty: netBf, rate: Math.round(avgBfRate), amount: Math.round(matNet), basis: { formula: "net_bf × species rate_bf × node index", inputs: { net_bf: netBf, avg_rate_bf: avgBfRate } } });
+      lines.push({ section: "Solid timber", code: "BF-W", desc: "Waste tolerance " + wastePct + "% on board feet (node " + node.code + " rate card)",
+        unit: "bf", qty: wasteBf, rate: Math.round(avgBfRate), amount: Math.round(wasteCost), basis: { formula: "net_bf × waste_pct / 100", inputs: { net_bf: netBf, waste_pct: wastePct, gross_bf: grossBf } } });
+      lines.push({ section: "Surface finishing", code: "COAT", desc: "Surface coating — " + Math.round(coatSqft) + " sq ft (2 faces on shutters, 1 on carcass)",
+        unit: "sqft", qty: Math.round(coatSqft), rate: Math.round(coatCost / Math.max(coatSqft, 0.001)), amount: Math.round(coatCost), basis: { formula: "surface_sqft × coating rate_sqft × node index", inputs: { surface_sqft: coatSqft } } });
+    }
+    var runAmount = 0;
+    (inp.runs || []).forEach(function (rr) {
+      var sp = VARS.species.filter(function (s) { return s.code === rr.species_code; })[0] || VARS.species[0];
+      var face = bf(25, +rr.h_mm, +rr.len_mm) * 2 + bf(25, +rr.d_mm, +rr.len_mm) * 2;
+      var rft = Math.round(+rr.len_mm / 304.8 * 1000) / 1000;
+      var unitMat = face * sp.rate_bf * node.labour_index * (1 + wastePct / 100);
+      var unitLab = unitMat * labourPct / 100;
+      var amt = (unitMat + unitLab) * +rr.qty; runAmount += amt;
+      var rateRft = Math.round((unitMat + unitLab) / Math.max(rft, 0.001));
+      runRows.push({ label: rr.label, qty: +rr.qty, len_mm: +rr.len_mm, h_mm: +rr.h_mm, d_mm: +rr.d_mm, rft_each: rft, rft_total: rft * +rr.qty, bf_per_run: Math.round(face * 1000) / 1000, species: sp.label, rate_rft: rateRft, amount: Math.round(amt), formula: "BF skeleton (2 × face + 2 × side at 25 mm) → × (1 + waste) → + labour " + labourPct + "%" });
+      lines.push({ section: "Millwork runs", code: "RFT", desc: rr.label + " · " + Math.round(rft * +rr.qty * 10) / 10 + " running ft · " + sp.label,
+        unit: "rft", qty: Math.round(rft * +rr.qty * 100) / 100, rate: rateRft, amount: Math.round(amt), basis: { formula: "BF per run × species rate × (1 + waste) / running ft", inputs: { len_mm: rr.len_mm, h_mm: rr.h_mm, d_mm: rr.d_mm, qty: rr.qty } } });
+    });
+    var hwAmount = 0;
+    (inp.hardware || []).forEach(function (h) {
+      var kit = VARS.hardware_kits.filter(function (k) { return k.code === h.code; })[0]; if (!kit) return;
+      var amt = kit.rate * +h.qty; hwAmount += amt;
+      lines.push({ section: "Hardware", code: kit.code, desc: kit.label + " — " + kit.per, unit: kit.unit, qty: +h.qty, rate: Math.round(kit.rate), amount: Math.round(amt), basis: { formula: "qty × kit rate", inputs: { kit: kit.code } } });
+    });
+    var labourBase = material + coatCost;
+    var labour = labourBase * labourPct / 100, machine = labour * VARS.labour_split.machine_pct / 100, site = labourBase * VARS.labour_split.on_site_pct / 100;
+    var bfRate = grossBf > 0 ? labour / grossBf : 0;
+    if (labour > 0) lines.push({ section: "Fabrication", code: "LAB", desc: "Workshop joinery labour @ " + labourPct + "% of material — " + node.city + " fabrication rate PKR " + Math.round(bfRate).toLocaleString() + " / board foot", unit: "job", qty: 1, rate: Math.round(labour), amount: Math.round(labour), basis: { formula: "(material + coating) × labour_pct / 100", inputs: { labour_pct: labourPct, labour_per_bf: bfRate } } });
+    if (machine > 0) lines.push({ section: "Fabrication", code: "MAC", desc: "Machine time absorbed at " + VARS.labour_split.machine_pct + "% of joinery labour (CNC, edge banding, sanding)", unit: "job", qty: 1, rate: Math.round(machine), amount: Math.round(machine), basis: { formula: "joinery × machine_pct", inputs: { joinery: Math.round(labour) } } });
+    if (site > 0) lines.push({ section: "Installation", code: "SITE", desc: "On-site fitting team — " + node.lead_time_days + "-day mobilisation for " + node.label, unit: "job", qty: 1, rate: Math.round(site), amount: Math.round(site), basis: { formula: "(material + coating) × on_site_pct", inputs: { on_site_pct: VARS.labour_split.on_site_pct } } });
+    var tz = VARS.transport.filter(function (t) { return t.zone === node.zone; })[0];
+    var pre = material + coatCost + runAmount + hwAmount + labour + machine + site + serviceAmount;
+    var trAmount = Math.max(tz.min_pkr, pre * tz.pct_of_material / 100);
+    lines.push({ section: "Transport", code: "TRN", desc: "Transport " + tz.label + " — " + tz.pct_of_material + "% of material value, minimum PKR " + tz.min_pkr.toLocaleString(), unit: "job", qty: 1, rate: Math.round(trAmount), amount: Math.round(trAmount), basis: { formula: "max(min_pkr, subject_value × zone pct)", inputs: { zone: node.zone } } });
+    var subtotal = Math.round(lines.reduce(function (a, l) { return a + l.amount; }, 0));
+    var discount = Math.min(+inp.discount || 0, subtotal);
+    var tax = Math.round((subtotal - discount) * taxPct / 100);
+    var total = subtotal - discount + tax, advance = Math.round(total * advPct / 100);
+    return {
+      node: node, rate: { service: service, label: SERVICES[service], finish: finish, unit: rate.unit, base_rate: rate.base_rate, labour_pct: labourPct, waste_pct: wastePct, source: DB.rateCards[node.code + "|" + service + "|" + finish] ? "db" : "template" },
+      lines: lines, panels: panelRows, runs: runRows,
+      spec: { service: SERVICES[service], service_key: service, finish: finish, area_sqft: area, area_source: areaSource, layout: layout ? layout.label : "", run_lm: runRows.reduce(function (a, r) { return a + r.len_mm * r.qty / 1000; }, 0) },
+      recon: { net_bf: netBf, waste_pct: wastePct, waste_bf: wasteBf, gross_bf: grossBf, avg_rate_bf: Math.round(avgBfRate * 100) / 100, coating_sqft: Math.round(coatSqft * 100) / 100,
+        material: Math.round(material), material_net: Math.round(matNet), waste_cost: Math.round(wasteCost), coating: Math.round(coatCost),
+        labour_pct: labourPct, labour: Math.round(labour), labour_per_bf: Math.round(bfRate * 100) / 100, machine: Math.round(machine), site: Math.round(site),
+        hardware: Math.round(hwAmount), service: Math.round(serviceAmount), transport: Math.round(trAmount), zone: node.zone,
+        subtotal: subtotal, discount: discount, tax_pct: taxPct, tax: tax, total: total, advance_pct: advPct, advance: advance, balance: total - advance,
+        lead_time_days: node.lead_time_days, valid_days: 15 },
+      formulas: VARS.formulas
+    };
+  }
+
+  /* ---------- selection + window helpers (mirror of rgn_window / rgn_sel) ---- */
+  /* mirror of rgn_sel(): an empty node filter means "all 12 verified nodes" */
+  function selected() { return NODES.nodes.map(function (n) { return n.code; }); }
+  function winLabel(preset) {
+    if (preset === "7d") return "Last 7 days"; if (preset === "30d") return "Last 30 days";
+    if (preset === "90d") return "Last 90 days"; if (preset === "ytd") return "Year to date";
+    if (preset === "12m") return "Last 12 months"; return "Custom range";
+  }
+  function winRange(preset) {
+    var to = new Date(Date.now()); to.setHours(23, 59, 59, 0);
+    var from = new Date(to);
+    if (preset === "7d") from.setDate(from.getDate() - 6);
+    else if (preset === "90d") from.setDate(from.getDate() - 89);
+    else if (preset === "ytd") from = new Date(to.getFullYear(), 0, 1);
+    else if (preset === "12m") from.setDate(from.getDate() - 364);
+    else from.setDate(from.getDate() - 29);
+    return { from: from, to: to, bucket: preset === "12m" ? "month" : preset === "90d" ? "week" : "day", label: winLabel(preset) };
+  }
+  function inWindow(t, w) { var d = new Date(String(t).replace(" ", "T")); return d >= w.from && d <= w.to; }
+  function series(len, base, seed) { var r = rng(seed), out = [], v = base; for (var i = 0; i < len; i++) { v = Math.max(base * 0.35, v * (0.86 + r() * 0.3)); out.push(Math.round(v)); } return out; }
+  function axisFor(w) {
+    if (w.bucket === "month") return ["Nov", "Dec", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct"];
+    if (w.bucket === "week") return ["W1", "W2", "W3", "W4", "W5", "W6", "W7", "W8", "W9", "W10", "W11", "W12", "W13"];
+    var out = [], d = new Date(w.to);
+    for (var i = 6; i >= 0; i--) { var x = new Date(d); x.setDate(x.getDate() - i); out.push(x.getDate() + "/" + (x.getMonth() + 1)); }
+    return out;
+  }
+  function bucketRows(rows, w, dateKey, valKey) {
+    var n = w.bucket === "month" ? 12 : w.bucket === "week" ? 13 : 7, span = w.bucket === "day" ? 86400000 : w.bucket === "week" ? 7 * 86400000 : 0;
+    var out = [];
+    for (var i = 0; i < n; i++) out.push(0);
+    rows.forEach(function (r) {
+      var t = new Date(String(r[dateKey]).replace(" ", "T"));
+      var idx;
+      if (w.bucket === "month") idx = (t.getFullYear() - w.to.getFullYear()) * 12 + t.getMonth() - w.to.getMonth() + 11;
+      else { var diff = Math.floor((w.to.getTime() - t.getTime()) / span); idx = n - 1 - Math.max(0, diff); }
+      if (idx < 0 || idx >= n) return;
+      out[idx] += (+r[valKey] || 0);
+    });
+    return out;
+  }
+  function selRows(rows, codes) { return rows.filter(function (r) { return codes.indexOf(r.node) > -1; }); }
+
+  /* ---------- KPI assembly (mirror of rgn_kpis) ----------------------------- */
+  function kpis(inp) {
+    var w = inp.preset === "custom" ? { from: new Date(inp.from), to: new Date(inp.to), bucket: "day", label: "Custom range" } : winRange(inp.preset || "30d");
+    var codes = inp.nodes && inp.nodes.length ? inp.nodes : selected();
+    var leads = selRows(DB.leads, codes).filter(function (l) { return inWindow(l.created_at, w); });
+    var projects = selRows(DB.projects, codes).filter(function (p) { return inWindow(p.created_at, w); });
+    var ms = selRows(DB.milestones, codes); var pendMs = ms.filter(function (m) { return m.status === "pending"; });
+    var led = selRows(DB.ledger, codes).filter(function (l) { return inWindow(l.t, w); });
+    var quotes = DB.quotes.filter(function (q) { return codes.indexOf(q.region) > -1; });
+    var contracts = projects.reduce(function (a, p) { return a + (+p.contract_value || 0); }, 0);
+    var receivable = led.reduce(function (a, l) { return a + (l.balance != null ? +l.balance : Math.max(0, l.amount - (+l.paid || 0))); }, 0);
+    var overdue = led.filter(function (l) { return l.overdue; }).reduce(function (a, l) { return a + (+l.balance || 0); }, 0);
+    var grossBf = 0, labour = 0;
+    projects.forEach(function (p) {
+      grossBf += p.covered_sqft / 1000 * 42;
+      labour += p.covered_sqft * 1.9 * nodeOf(p.node).labour_index;
+    });
+    var stageFunnel = {};
+    ["new", "contacted", "visit", "quote", "won", "lost"].forEach(function (s) { stageFunnel[s] = { n: 0, value: 0 }; });
+    leads.forEach(function (l) { var f = stageFunnel[l.stage] || (stageFunnel[l.stage] = { n: 0, value: 0 }); f.n++; f.value += +l.value || 0; });
+    var axis = axisFor(w);
+    var kpi = [
+      { key: "volume", label: "Total volume configurations", value: grossBf, valueLabel: Math.round(grossBf).toLocaleString("en-PK") + " bf", sub: projects.length + " projects · " + leads.length + " leads · " + Math.round(projects.reduce(function (a, p) { return a + (p.covered_sqft || 0); }, 0)).toLocaleString("en-PK") + " sq ft bound",
+        delta: { pct: 8.4, dir: "up", prev: Math.round(grossBf * 0.92) }, series: series(axis.length, Math.max(40, grossBf / 6), 11), unit: "bf", route: "#/regional/pipeline" },
+      { key: "contract", label: "Contract value under review", value: contracts, valueLabel: "PKR " + (contracts / 1e7).toFixed(2) + " Cr", sub: quotes.length + " quotations in the window · highest node " + (codes.map(function (c) { return nodeOf(c); }).sort(function (a, b) { return b.labour_index - a.labour_index; })[0] || {}).city,
+        delta: { pct: 3.1, dir: "up", prev: Math.round(contracts * 0.969) }, series: series(axis.length, Math.max(60, contracts / 9), 12), unit: "pkr", route: "#/regional/projects" },
+      { key: "approvals", label: "Pending milestone approvals", value: pendMs.length, valueLabel: String(pendMs.length), sub: pendMs.length + " milestones · PKR " + (pendMs.reduce(function (a, m) { return a + (+m.amount || 0); }, 0) / 1e5).toFixed(1) + " Lac held",
+        delta: { pct: 12.5, dir: "down", prev: pendMs.length + 3 }, series: series(axis.length, Math.max(2, pendMs.length), 13), unit: "count", route: "#/regional/approvals" },
+      { key: "ledger", label: "Ledger health", value: labour, valueLabel: (grossBf > 0 ? Math.round(labour / grossBf) : 0) + " PKR/bf", sub: "receivable PKR " + (receivable / 1e5).toFixed(1) + " Lac · overdue PKR " + (overdue / 1e5).toFixed(1) + " Lac",
+        delta: { pct: 1.6, dir: "flat", prev: Math.round(labour * 0.99) }, series: series(axis.length, Math.max(20, labour / 12), 14), unit: "pkr", route: "#/regional/ledger" }
+    ];
+    var nodes = NODES.nodes.map(function (n) {
+      var nl = DB.leads.filter(function (l) { return l.node === n.code; });
+      var nq = DB.quotes.filter(function (q) { return q.region === n.code; });
+      var np = DB.projects.filter(function (p) { return p.node === n.code; });
+      var nm = DB.milestones.filter(function (m) { return m.node === n.code && m.status === "pending"; });
+      return { code: n.code, city: n.city, dir: n.dir, zone: n.zone, index: n.labour_index, selected: codes.indexOf(n.code) > -1,
+        leads: nl.length, lead_value: nl.reduce(function (a, l) { return a + (+l.value || 0); }, 0),
+        quotes: nq.length, quote_value: nq.reduce(function (a, q) { return a + (+q.total || 0); }, 0),
+        projects: np.length, project_value: np.reduce(function (a, p) { return a + (+p.contract_value || 0); }, 0),
+        pending_ms: nm.length, waste_pct: n.waste_pct, lead_time_days: n.lead_time_days };
+    });
+    var alerts = [];
+    if (overdue > 0) alerts.push({ level: "bad", text: "Overdue ledger balance PKR " + overdue.toLocaleString("en-PK"), fix: "Post the pending receipt or move the due date on the node ledger.", route: "#/regional/ledger" });
+    if (pendMs.length) alerts.push({ level: "warn", text: pendMs.length + " milestone approvals waiting", fix: "Clear the master approval queue so fabrication orders can be released.", route: "#/regional/approvals" });
+    var soon = ms.filter(function (m) { return m.status === "pending" && Date.parse(m.due_date) < Date.now() + 3 * 86400000; });
+    if (soon.length) alerts.push({ level: "warn", text: soon.length + " milestones due within 3 days", fix: "Confirm the site visit sheet before the due date passes.", route: "#/regional/approvals" });
+    if (!alerts.length) alerts.push({ level: "ok", text: "Routing, ledger and milestone queues are clean", fix: "Registry, rate cards and node directories verified for this window.", route: "#/regional/health" });
+    return {
+      ok: true, window: { from: w.from.toISOString().slice(0, 10), to: w.to.toISOString().slice(0, 10), bucket: w.bucket, label: w.label },
+      axis: axis, nodes_selected: codes, kpi: kpi, funnel: stageFunnel, nodes: nodes, alerts: alerts,
+      recent: leads.slice(0, 8).map(function (l) { return Object.assign({}, l, { city: nodeOf(l.node).city }); }),
+      quotes: quotes.slice(0, 8), projects: projects.slice(0, 8), milestones: pendMs.slice(0, 6), ledger: led,
+      totals: { leads: leads.reduce(function (a, l) { return a + (+l.value || 0); }, 0), lead_count: leads.length,
+        quote_count: quotes.length, quote_value: quotes.reduce(function (a, q) { return a + (+q.total || 0); }, 0),
+        project_count: projects.length, contract_value: contracts,
+        milestones_pending: pendMs.length, receivable: receivable },
+      tables: { nodes: true, projects: true, milestones: true, ledger: true, rate_cards: true, variants: true },
+      generated_at: new Date().toISOString().slice(0, 19).replace("T", " ") + " UTC"
+    };
+  }
+
+  /* ---------- write-side fixtures ------------------------------------------- */
+  function projectSave(inp) {
+    var t = NODES.nodes.filter(function (n) { return n.code === String(inp.node).toUpperCase(); })[0];
+    if (!t) return { ok: false, error: 'Routing parameter "' + inp.node + '" is not one of the 12 operation nodes' };
+    if (!inp.title) return { ok: false, error: "Project title is required" };
+    var y = String(new Date().getFullYear()).slice(2);
+    var code = t.code + "-" + y + "-" + String(DB.projects.filter(function (p) { return p.node === t.code; }).length + 1).padStart(3, "0");
+    var p = { id: 9000 + DB.projects.length, code: code, node: t.code, area: inp.area || "", title: inp.title,
+      lead_id: +inp.lead_id || 0, quote_id: 0, layout_code: inp.layout_code || "", category_code: inp.category_code || "",
+      service_key: inp.service_key || "furniture", finish_key: inp.finish_key || "standard",
+      covered_sqft: +inp.covered_sqft || 0, run_length_lm: +inp.run_length_lm || 0, stage: inp.stage || "survey", status: "open",
+      contract_value: +inp.contract_value || 0, advance_pct: t.advance_pct, manager_id: 1,
+      start_date: inp.start_date || new Date().toISOString().slice(0, 10), target_date: inp.target_date || "", handover_date: "",
+      notes: inp.notes || "", spec_json: null, created_at: new Date().toISOString().slice(0, 19).replace("T", " "),
+      source: "admin", milestones_done: 0, milestones_total: 0, progress: 0 };
+    DB.projects.push(p);
+    return { ok: true, project: p, milestones: 0 };
+  }
+  function milestonePlan(project, t) {
+    var weights = [10, 15, 15, 30, 20, 10];
+    return NODES.stages.map(function (s, i) {
+      return { id: 5000 + DB.milestones.length, project_id: project.id, node: project.node, seq: i + 1, name: s.label,
+        kind: s.code === "approval" ? "approval" : "progress", weight_pct: weights[i],
+        amount: Math.round(project.contract_value * weights[i] / 100),
+        due_date: new Date(Date.now() + (i + 1) * 7 * 86400000).toISOString().slice(0, 10),
+        done_at: null, status: "pending", approved_by: null, note: "",
+        project_code: project.code, project_title: project.title, contract_value: project.contract_value, overdue: false };
+    });
+  }
+  function quoteCreate(inp) {
+    if (!inp.name) return { ok: false, error: "Client name is required" };
+    var node = nodeOf(inp.node); if (!node || !node.code) return { ok: false, error: 'Routing parameter "' + inp.node + '" is not one of the 12 operation nodes' };
+    var out;
+    try { out = calc(inp); } catch (e) { return { ok: false, error: e.message }; }
+    var no = "WI-" + (10400 + DB.quotes.length);
+    var q = { id: DB.quotes.length + 1, no: no, status: "draft", total: out.recon.total, region: node.code, city: node.city, client: inp.name, created_at: new Date().toISOString().slice(0, 19).replace("T", " "), version: 1 };
+    DB.quotes.push(q);
+    var project = null, ms = 0;
+    if (inp.create_project) {
+      var save = projectSave({ node: node.code, title: inp.project || (out.spec.layout || inp.service_key) + " · " + inp.name, area: inp.area_code, layout_code: inp.layout_code, category_code: inp.category_code, service_key: inp.service_key, finish_key: inp.finish_key, covered_sqft: out.spec.area_sqft, stage: "design", contract_value: out.recon.total, target_date: new Date(Date.now() + node.lead_time_days * 86400000).toISOString().slice(0, 10) });
+      if (save.ok) { project = save.project; var plan = milestonePlan(project, node); plan.forEach(function (m) { DB.milestones.push(m); }); ms = plan.length; project.milestones_total = ms; }
+    }
+    DB.estimates.push({ node: node.code, service_key: inp.service_key, total: out.recon.total, gross_bf: out.recon.gross_bf, at: q.created_at });
+    return { ok: true, quote: q, calc: { node: node.code, total: out.recon.total, gross_bf: out.recon.gross_bf }, project: project, milestones: ms };
+  }
+  function health() {
+    var checks = [], add = function (group, name, ok, detail, fix) { checks.push({ group: group, name: name, ok: !!ok, detail: detail, fix: fix }); };
+    add("Routing", "Twelve municipal nodes registered", NODES.nodes.length === 12, NODES.nodes.length + " nodes: " + NODES.nodes.map(function (n) { return n.code; }).join(", "), "Restore _templates/region-nodes.json.");
+    add("Routing", "Every lead carries a verified node", DB.leads.every(function (l) { return NODES.nodes.some(function (n) { return n.code === l.node; }); }), DB.leads.length + " leads routed", "Re-route leads with missing codes.");
+    add("Routing", "Locality codes map to the node directories", true, NODES.nodes.map(function (n) { return n.code + ":" + (n.areas || []).length; }).join(" "), "Add the missing locality sub-directory.");
+    add("Registry", "Node directories exist on disk", true, "12 index.html files found under the operation roots", "Create the missing city directory.");
+    add("Registry", "Layout presets bound to /builder", (NODES.layout_specs || []).length >= 5, (NODES.layout_specs || []).length + " presets: " + (NODES.layout_specs || []).map(function (l) { return l.code; }).join(", "), "Re-export the layout presets from /builder.");
+    add("Rate book", "Seven /estimator services covered", Object.keys(SERVICES).length === 7, "3 finishes × 12 nodes = 252 rate rows", "Re-run rate sync.");
+    add("Rate book", "Node index applied to labour", NODES.nodes.some(function (n) { return n.labour_index !== 1; }), "ISB 1.12 · BWP 0.90 branch", "Check the registry index values.");
+    add("Rate book", "Waste tolerance within 11–14 %", NODES.nodes.every(function (n) { return n.waste_pct >= 11 && n.waste_pct <= 14; }), "Lahore 12 % · Quetta 14 %", "Clamp waste_pct in the rate card.");
+    add("Estimator", "Board-foot formula matches regions-lib.php", true, "bf = (t/25.4)(w/25.4)(len/304.8)/12", "Re-import the specification engine.");
+    add("Estimator", "Transport zones A–D present", VARS.transport.length === 4, VARS.transport.map(function (t) { return t.zone + " " + t.pct_of_material + "%"; }).join(" · "), "Restore the transport table.");
+    add("Estimator", "Species / coating / core matrix loaded", VARS.species.length >= 8 && VARS.coatings.length >= 6 && VARS.cores.length >= 6, VARS.species.length + " species · " + VARS.coatings.length + " coatings · " + VARS.cores.length + " cores", "Restore _templates/region-variants.json.");
+    add("Ledger", "No ledger entry without a node", DB.ledger.every(function (l) { return !!l.node; }), DB.ledger.length + " entries carry a node", "Re-post the offending entry.");
+    add("Ledger", "Advance percentages inside 0–100", NODES.nodes.every(function (n) { return n.advance_pct >= 0 && n.advance_pct <= 100; }), "Node default 40 %", "Correct the advance in the registry override.");
+    add("Milestones", "Weighted plan sums to 100 %", NODES.stages.length === 6, "survey 10 · design 15 · approval 15 · fabrication 30 · install 20 · handover 10", "Re-seed the milestone plan.");
+    add("Schema", "Regional tables imported", true, "6 wx_region_* tables + wx_leads.node / area_code", "Import _database/woodex-regions.sql.");
+    var pass = checks.filter(function (c) { return c.ok; }).length;
+    return { ok: true, score: Math.round(pass / checks.length * 100), checks: checks, generated_at: new Date().toISOString().slice(0, 19).replace("T", " ") + " UTC" };
+  }
+  function reports(inp) {
+    var months = +inp.months || 12, now = new Date(), codes = inp.nodes && inp.nodes.length ? inp.nodes : selected();
+    var matrix = [];
+    for (var i = months - 1; i >= 0; i--) {
+      var d = new Date(now.getFullYear(), now.getMonth() - i, 1), label = d.toLocaleDateString("en", { month: "short", year: "2-digit" });
+      var r2 = rng(d.getFullYear() * 100 + d.getMonth() + 7);
+      var leads = Math.round(40 + r2() * 90), quotes = Math.round(leads * (0.35 + r2() * 0.3)), won = Math.round(quotes * (0.4 + r2() * 0.3));
+      var lv = leads * (0.9 + r2() * 0.6) * 1e6 / 4, qv = quotes * (2.1 + r2() * 1.4) * 1e6 / 3, cv = won * (2.4 + r2() * 1.8) * 1e6 / 2;
+      matrix.push({ label: label, leads: leads, lead_value: Math.round(lv), quotes: quotes, quote_value: Math.round(qv), won: won, projects: won,
+        contract_value: Math.round(cv), received: Math.round(cv * (0.28 + r2() * 0.35)), overdue: Math.round(cv * r2() * 0.09) });
+    }
+    var rank = NODES.nodes.map(function (n, i) {
+      var r3 = rng(i * 977 + 31), leads = Math.round(30 + r3() * 120), quotes = Math.round(leads * (0.4 + r3() * 0.3)), projects = Math.round(quotes * (0.35 + r3() * 0.4));
+      return { code: n.code, city: n.city, leads: leads, quotes: quotes, projects: projects, quote_value: Math.round(quotes * (2.4 + r3() * 2.2) * 1e6 / 2), win_rate: Math.round(28 + r3() * 34) };
+    }).filter(function (n) { return codes.indexOf(n.code) > -1; }).sort(function (a, b) { return b.quote_value - a.quote_value; });
+    return { ok: true, months: months, matrix: matrix, nodes: rank, best: rank[0] || null, worst: rank[rank.length - 1] || null,
+      totals: { contract_value: matrix.reduce(function (a, x) { return a + x.contract_value; }, 0) } };
+  }
+  function ratesFor(code) {
+    var n = nodeOf(code);
+    var rows = [];
+    SERVICES_LIST.forEach(function (sk) {
+      ["essential", "standard", "premium"].forEach(function (fk) {
+        var stored = DB.rateCards[code + "|" + sk + "|" + fk];
+        rows.push({ service_key: sk, service: SERVICES[sk], finish_key: fk, unit: FALLBACK[sk].unit,
+          base_rate: stored ? stored.base_rate : FALLBACK[sk][fk], labour_pct: stored ? stored.labour_pct : Math.round(22 * n.labour_index * 100) / 100,
+          waste_pct: stored ? stored.waste_pct : n.waste_pct, stored: !!stored });
+      });
+    });
+    return { ok: true, node: { code: n.code, city: n.city, dir: n.dir, index: n.labour_index, waste_pct: n.waste_pct, zone: n.zone, tax_pct: n.tax_pct, advance_pct: n.advance_pct },
+      rows: rows, source: Object.keys(DB.rateCards).length ? "database" : "template" };
+  }
+  function csvExport(kind, codes, w) {
+    var heads, rows = [];
+    if (kind === "leads") { heads = ["node", "name", "phone", "service", "stage", "value", "priority", "created_at"];
+      rows = selRows(DB.leads, codes).map(function (l) { return [l.node, l.name, l.phone, l.service, l.stage, l.value, l.priority, l.created_at]; }); }
+    else if (kind === "projects") { heads = ["code", "node", "title", "stage", "status", "contract_value", "progress", "target_date"];
+      rows = selRows(DB.projects, codes).map(function (p) { return [p.code, p.node, p.title, p.stage, p.status, p.contract_value, p.progress, p.target_date]; }); }
+    else if (kind === "milestones") { heads = ["project_code", "node", "seq", "name", "weight_pct", "amount", "status", "due_date"];
+      rows = selRows(DB.milestones, codes).map(function (m) { return [m.project_code, m.node, m.seq, m.name, m.weight_pct, m.amount, m.status, m.due_date]; }); }
+    else { heads = ["node", "project_code", "kind", "ref", "party", "amount", "paid", "balance", "status", "due_date"];
+      rows = selRows(DB.ledger, codes).map(function (l) { return [l.node, l.project_code, l.kind, l.ref, l.party, l.amount, l.paid, l.balance, l.status, l.due_date]; }); }
+    var csv = heads.join(",") + "\n" + rows.map(function (r) { return r.map(function (v) { return '"' + String(v == null ? "" : v).replace(/"/g, '""') + '"'; }).join(","); }).join("\n");
+    return { ok: true, csv: csv, filename: "woodex-regional-" + kind + "-" + w.from + "_" + w.to + ".csv", rows: rows.length, nodes: codes };
+  }
+
+  /* ---------- action dispatcher -------------------------------------------- */
+  var CALLS = window.__pvCalls = {};
+  function dispatch(action, inp) {
+    inp = inp || {};
+    CALLS[action] = (CALLS[action] || 0) + 1;
+    var code = String(inp.node || (inp.nodes && inp.nodes[0]) || "LHR").toUpperCase();
+    var w = inp.preset === "custom" ? { from: inp.from, to: inp.to } : { from: winRange(inp.preset || "30d").from.toISOString().slice(0, 10), to: new Date().toISOString().slice(0, 10) };
+    switch (action) {
+      case "rgn_boot": return { ok: true, user: { name: "Preview Operator", role: "owner" }, version: "2.6.0",
+        nodes: NODES.nodes, layouts: NODES.layout_specs, services: SERVICES,
+        presets: [{ key: "7d", label: "7 days" }, { key: "30d", label: "30 days" }, { key: "90d", label: "90 days" }, { key: "ytd", label: "YTD" }, { key: "12m", label: "12 months" }, { key: "custom", label: "Custom" }],
+        stages: NODES.stages, categories: NODES.categories, species: VARS.species, coatings: VARS.coatings, cores: VARS.cores,
+        hardware_kits: VARS.hardware_kits, transport: VARS.transport, formulas: VARS.formulas,
+        tables: { nodes: true, rate_cards: true, projects: true, milestones: true, ledger: true, variants: true, lead_node_col: true },
+        currency: "PKR", tax_pct: NODES.tax_pct };
+      case "rgn_nodes": return { ok: true, nodes: NODES.nodes, stages: NODES.stages };
+      case "rgn_node_save": { var n = nodeOf(code); var o = {}; ["labour_index", "waste_pct", "tax_pct", "advance_pct", "lead_time_days"].forEach(function (k) { if (inp[k] != null && inp[k] !== "") o[k] = +inp[k]; });
+        Object.assign(n, o); return { ok: true, node: n }; }
+      case "rgn_kpis": return kpis(inp);
+      case "rgn_leads": {
+        var codes = (inp.nodes && inp.nodes.length ? inp.nodes : selected());
+        var rows = selRows(DB.leads, codes);
+        var q = String(inp.q || "").toLowerCase().trim();
+        if (q) rows = rows.filter(function (l) { return ["name", "phone", "email", "service", "location", "node"].some(function (k) { return String(l[k] || "").toLowerCase().indexOf(q) > -1; }); });
+        var st = inp.stages && inp.stages.length ? (Array.isArray(inp.stages) ? inp.stages : String(inp.stages).split(",")) : [];
+        if (st.length) rows = rows.filter(function (l) { return st.indexOf(l.stage) > -1; });
+        var pr = inp.priorities && inp.priorities.length ? (Array.isArray(inp.priorities) ? inp.priorities : String(inp.priorities).split(",")) : [];
+        if (pr.length) rows = rows.filter(function (l) { return pr.indexOf(l.priority) > -1; });
+        if (+inp.unread) rows = rows.filter(function (l) { return !l.is_read; });
+        rows.sort(function (a, b) { return inp.sort === "value" ? (+b.value || 0) - (+a.value || 0) : String(b.created_at).localeCompare(String(a.created_at)); });
+        var per = +inp.per || 25, page = +inp.page || 1;
+        var facets = { stages: {}, priorities: {}, nodes: {} };
+        selRows(DB.leads, codes).forEach(function (l) {
+          facets.stages[l.stage] = (facets.stages[l.stage] || 0) + 1; facets.priorities[l.priority] = (facets.priorities[l.priority] || 0) + 1; facets.nodes[l.node] = (facets.nodes[l.node] || 0) + 1;
+        });
+        return { ok: true, rows: rows.slice((page - 1) * per, page * per), total: rows.length, per: per, page: page,
+          sum_value: rows.reduce(function (a, l) { return a + (+l.value || 0); }, 0), facets: facets, nodes_selected: codes };
+      }
+      case "rgn_projects": {
+        var pc = (inp.nodes && inp.nodes.length ? inp.nodes : selected());
+        var prows = selRows(DB.projects, pc);
+        if (inp.stage && inp.stage !== "all") prows = prows.filter(function (p) { return p.stage === inp.stage; });
+        if (inp.status && inp.status !== "all") prows = prows.filter(function (p) { return p.status === inp.status; });
+        return { ok: true, rows: prows, nodes_selected: pc };
+      }
+      case "rgn_project_get": {
+        var p = DB.projects.filter(function (x) { return x.id === +inp.id; })[0];
+        if (!p) return { ok: false, error: "Project not found" };
+        return { ok: true, project: p, spec: p.spec_json || null, node: nodeOf(p.node),
+          milestones: DB.milestones.filter(function (m) { return m.project_id === p.id; }),
+          ledger: DB.ledger.filter(function (l) { return l.project_id === p.id; }) };
+      }
+      case "rgn_project_save": return projectSave(inp);
+      case "rgn_milestones": {
+        var mc = (inp.nodes && inp.nodes.length ? inp.nodes : selected());
+        var mrows = selRows(DB.milestones, mc);
+        if (inp.status && inp.status !== "all") mrows = mrows.filter(function (m) { return m.status === inp.status; });
+        return { ok: true, rows: mrows.slice(0, 60), nodes_selected: mc };
+      }
+      case "rgn_milestone_save": {
+        var mm = DB.milestones.filter(function (x) { return x.id === +inp.id; })[0];
+        if (mm) { ["name", "weight_pct", "amount", "due_date", "note", "kind"].forEach(function (k) { if (inp[k] != null && inp[k] !== "") mm[k] = k === "name" || k === "due_date" || k === "note" || k === "kind" ? inp[k] : +inp[k]; }); }
+        return { ok: true, milestone: mm || null };
+      }
+      case "rgn_milestone_approve": {
+        var ma = DB.milestones.filter(function (x) { return x.id === +inp.id; })[0];
+        if (!ma) return { ok: false, error: "Milestone not found" };
+        ma.status = inp.status === "rejected" ? "rejected" : "approved";
+        ma.done_at = ma.status === "approved" ? new Date().toISOString().slice(0, 19).replace("T", " ") : null;
+        ma.approved_by = "Preview Operator"; ma.overdue = false;
+        var posted = 0;
+        if (ma.status === "approved" && +inp.post_payment) {
+          posted = ma.amount;
+          DB.ledger.push({ id: DB.ledger.length + 1, node: ma.node, project_id: ma.project_id, kind: "invoice", ref: "WI-" + (10900 + DB.ledger.length),
+            party: "Client · " + (ma.project_code || ""), amount: ma.amount, status: "due", t: new Date().toISOString().slice(0, 19).replace("T", " "),
+            due_date: new Date(Date.now() + 15 * 86400000).toISOString().slice(0, 10), note: "Milestone " + ma.name + " approved", user_name: "Preview Operator",
+            paid: 0, balance: ma.amount, overdue: false, project_code: ma.project_code, project_title: ma.project_title });
+        }
+        var proj = DB.projects.filter(function (x) { return x.id === ma.project_id; })[0];
+        if (proj) { var done = DB.milestones.filter(function (m) { return m.project_id === proj.id && m.status === "approved"; }).length;
+          proj.milestones_done = done; proj.progress = Math.round(done / Math.max(1, proj.milestones_total) * 100); }
+        return { ok: true, milestone: ma, posted: posted };
+      }
+      case "rgn_ledger": {
+        var lc = (inp.nodes && inp.nodes.length ? inp.nodes : selected());
+        var lrows = selRows(DB.ledger, lc);
+        if (inp.kind && inp.kind !== "all") lrows = lrows.filter(function (l) { return l.kind === inp.kind; });
+        if (inp.status && inp.status !== "all") lrows = lrows.filter(function (l) { return l.status === inp.status; });
+        return { ok: true, rows: lrows, nodes_selected: lc };
+      }
+      case "rgn_ledger_save": {
+        var ex = DB.ledger.filter(function (l) { return l.id === +inp.id; })[0];
+        var paid = inp.status === "paid" ? +inp.amount : (ex ? ex.paid : 0);
+        var rec = { id: ex ? ex.id : DB.ledger.length + 1, node: String(inp.node || "LHR").toUpperCase(), project_id: +inp.project_id || 0,
+          kind: inp.kind || "invoice", ref: inp.ref || "", party: inp.party || "", amount: +inp.amount || 0, status: inp.status || "due",
+          t: inp.t || new Date().toISOString().slice(0, 10), due_date: inp.due_date || "", note: inp.note || "", user_name: "Preview Operator",
+          paid: paid, balance: Math.max(0, (+inp.amount || 0) - paid), overdue: (+inp.amount || 0) - paid > 0 && (inp.due_date || "") < new Date().toISOString().slice(0, 10) };
+        var pj = DB.projects.filter(function (x) { return x.id === +inp.project_id; })[0];
+        rec.project_code = pj ? pj.code : ""; rec.project_title = pj ? pj.title : "";
+        if (ex) DB.ledger[DB.ledger.indexOf(ex)] = rec; else DB.ledger.push(rec);
+        return { ok: true, entry: rec };
+      }
+      case "rgn_estimate": { try { var out = calc(inp); out.ok = true; return out; } catch (e) { return { ok: false, error: e.message }; } }
+      case "rgn_quote": return quoteCreate(inp);
+      case "rgn_rates": return ratesFor(code);
+      case "rgn_variants": return { ok: true, overrides: DB.overrides[code] || [] };
+      case "rgn_rate_save": {
+        DB.rateCards[code + "|" + inp.service_key + "|" + inp.finish_key] = { base_rate: +inp.base_rate, labour_pct: +inp.labour_pct, waste_pct: +inp.waste_pct, unit: (FALLBACK[inp.service_key] || {}).unit || "sqft" };
+        return { ok: true, row: DB.rateCards[code + "|" + inp.service_key + "|" + inp.finish_key] };
+      }
+      case "rgn_variant_save": {
+        var arr = DB.overrides[code] = DB.overrides[code] || [];
+        var rec2 = arr.filter(function (x) { return x.species_code === inp.species_code; })[0];
+        if (!rec2) { rec2 = { node: code, species_code: inp.species_code }; arr.push(rec2); }
+        ["rate_bf", "labour_pct", "waste_pct"].forEach(function (k) { if (inp[k] != null) rec2[k] = +inp[k]; });
+        return { ok: true, override: rec2 };
+      }
+      case "rgn_rate_sync": return { ok: true, rows: 252, nodes: 12 };
+      case "rgn_reports": return reports(inp);
+      case "rgn_health": return health();
+      case "rgn_export": return csvExport(String(inp.kind || "leads"), (inp.nodes && inp.nodes.length ? inp.nodes : selected()), w);
+      default: return { ok: false, error: "Unknown action " + action + " (preview harness stub)" };
+    }
+  }
+
+  /* ---------- minimal WXA shell (the real one lives in admin/admin.js) ------- */
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+  function iconSvg(n) {
+    var I = window.WXA_ICONS || {};
+    var alias = { mail: "email", chat: "message-circle", users: "user", lead: "inbox", quote: "receipt", leads: "inbox" };
+    return I[n] || I[alias[n]] || I.square || '<rect width="18" height="18" x="3" y="3" rx="2"/>';
+  }
+  function ic(n) { return '<i data-i="' + n + '"><svg viewBox="0 0 24 24" aria-hidden="true">' + iconSvg(n) + "</svg></i>"; }
+  function fillIcons(root) {
+    [].slice.call((root || document).querySelectorAll("i[data-i]")).forEach(function (i) {
+      if (!i.firstChild) i.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true">' + iconSvg(i.dataset.i) + "</svg>";
+    });
+  }
+  function head(title, crumb, right) {
+    return '<div class="ph"><div><h1>' + esc(title) + '</h1><div class="crumb"><a href="#/regional/dashboard">Home</a> / ' + esc(crumb || title) + "</div></div>" + (right ? '<div class="toolbar">' + right + "</div>" : "") + "</div>";
+  }
+  function toast(m, bad) {
+    var t = document.getElementById("pv-toast");
+    if (!t) { t = document.createElement("div"); t.id = "pv-toast"; t.className = "toast"; document.body.appendChild(t); }
+    t.textContent = m; t.className = "toast on" + (bad ? " bad" : "");
+    clearTimeout(toast.t); toast.t = setTimeout(function () { t.className = "toast"; }, bad ? 6000 : 3000);
+  }
+  var VIEWS = {};
+  window.WXA = {
+    esc: esc, ic: ic, fillIcons: fillIcons, head: head, toast: toast, VIEWS: VIEWS,
+    ROLE_LABEL: { owner: "Owner", admin: "Master admin", sales: "Sales", editor: "Editor", support: "Support" },
+    PERM_LABEL: {}, can: function () { return true; }, navBadges: function () {}, formDraft: function () {},
+    $: function (s, r) { return (r || document).querySelector(s); },
+    $$: function (s, r) { return [].slice.call((r || document).querySelectorAll(s)); },
+    ago: function (t) { if (!t) return "—"; var s = (Date.now() - new Date(String(t).replace(" ", "T")).getTime()) / 1000; return s < 3600 ? Math.max(1, Math.round(s / 60)) + "m ago" : s < 86400 ? Math.round(s / 3600) + "h ago" : Math.round(s / 86400) + "d ago"; },
+    S: { token: "preview", user: { name: "Preview Operator", role: "owner" } },
+    signedIn: true, showAuth: function () {}, route: function () {},
+    api: function (action, data) {
+      return new Promise(function (resolve) {
+        var payload = JSON.parse(JSON.stringify(data || {}));
+        setTimeout(function () { resolve(dispatch(action, payload)); }, 90 + Math.round(Math.random() * 120));
+      });
+    },
+    bapi: function (action, data) { return window.WXA.api(action, data); }
+  };
+
+  /* ---------- navigation + mount -------------------------------------------- */
+  var TABLIST = [
+    ["dashboard", "Node dashboard"], ["pipeline", "Pipeline"], ["configs", "Volume configs"], ["projects", "Projects"],
+    ["approvals", "Milestone approvals"], ["ledger", "Node ledger"], ["estimator", "Estimator"], ["rates", "Rate cards"],
+    ["reports", "Reports"], ["health", "Health"]
+  ];
+  function currentTab() { var p = location.hash.replace(/^#\/?/, "").split("/"); return p[1] || "dashboard"; }
+  function paintNav() {
+    var cur = currentTab();
+    document.getElementById("pv-nav").innerHTML = TABLIST.map(function (t) {
+      return '<a href="#/regional/' + t[0] + '" data-tab="' + t[0] + '"' + (cur === t[0] ? ' style="background:var(--bg);color:var(--txt);font-weight:600"' : "") + ">" + t[1] + "</a>";
+    }).join("");
+  }
+  function mount() {
+    var view = document.getElementById("view");
+    view.innerHTML = "";
+    window.WXA.VIEWS.regional(view, [currentTab()]);
+    paintNav();
+  }
+  window.addEventListener("hashchange", mount);
+  document.getElementById("pv-theme").addEventListener("click", function () {
+    document.documentElement.classList.toggle("dark");
+    try { localStorage.setItem("wxaTheme", document.documentElement.classList.contains("dark") ? "dark" : "light"); } catch (e) {}
+    mount();
+  });
+
+  load().then(function () { seed(); mount(); }).catch(function (e) {
+    document.getElementById("view").innerHTML = '<div class="empty">Could not read <code>_templates/region-nodes.json</code> or <code>_templates/region-variants.json</code> — serve this page over HTTP from the repo root, not from the file system.<br><small>' + esc(e && e.message) + "</small></div>";
+  });
+})();
+</script>
+<script src="admin-regions.js?v=2.6.0"></script>
+</body>
+</html>

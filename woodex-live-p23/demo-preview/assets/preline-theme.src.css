@@ -1,0 +1,70 @@
+/* =============================================================================
+   Woodex Admin v2.7 — Preline "Ocean Pure" foundation
+   -----------------------------------------------------------------------------
+   Built with Tailwind CSS v4 + Preline UI 5.0.0 (Ocean primary = cyan, the
+   palette fixed in MASTER-PLAN-V2.1.md: #0b0d13 / #111318 / #20242f / #00b8db).
+
+   Rebuild after changing any admin markup or class usage:
+       bash tools/build-preline-ui.sh
+   Requires node_modules with tailwindcss@4, @tailwindcss/cli@4 and preline@5
+   (see tools/build-preline-ui.sh — no CDN, the compiled sheet is committed).
+
+   Layer order in admin/index.html:
+       admin.css  →  woodex-ui.css  →  preline-theme.css  →  regional.css
+   admin.css owns the runtime design tokens (--bg/--card/--txt/--pri …); this
+   sheet re-exposes them as Tailwind theme colours so utilities written during
+   the view-by-view migration follow whichever theme the toggle has applied.
+   ========================================================================== */
+
+@import "tailwindcss";
+@import "preline/theme.css";
+@import "preline/variants.css";
+
+/* Ocean = Preline's cyan preset; Moon = its neutral dark counterpart.
+   Applied with data-theme="theme-ocean" (light) / "theme-moon" (dark) on <html>. */
+@import "./preline-themes/ocean.css";
+@import "./preline-themes/moon.css";
+
+/* The admin toggles dark mode with html.dark (admin.css + the head script),
+   not with prefers-color-scheme, so every Preline `dark:` utility must follow it. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ---------- design-token bridge ---------- */
+@theme inline {
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  --color-bg: var(--bg);
+  --color-card: var(--card);
+  --color-card-elev: var(--card-elevated);
+  --color-card-sub: var(--card-sub);
+  --color-line: var(--line);
+  --color-line2: var(--line2);
+  --color-txt: var(--txt);
+  --color-txt2: var(--txt2);
+  --color-mut: var(--mut);
+  --color-mut2: var(--mut2);
+  --color-pri: var(--pri);
+  --color-pri-fg: var(--pri-fg);
+  --color-navy: var(--navy);
+  --color-gold: var(--gold);
+  --color-ok: var(--ok);
+  --color-warn: var(--warn);
+  --color-bad: var(--bad);
+  --color-info: var(--info);
+
+  --radius-wx: var(--r);
+  --radius-wx-sm: 8px;
+  --radius-wx-lg: 16px;
+  --shadow-wx: var(--sh);
+}
+
+/* ---------- sources ---------- */
+/* Preline injects markup from its own plugin code (datepicker cells, datatable
+   controls, file-upload drop zones …), so the bundle has to be scanned too. */
+@source "../../../node_modules/preline/dist/*.js";
+/* only what the admin can actually render */
+@source "../**/*.html";
+@source "../**/*.js";
+@source "../../builder/**/*.js";
+@source "../../builder/**/*.html";
+@source "../../_templates/*.json";

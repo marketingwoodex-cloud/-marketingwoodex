@@ -1,0 +1,313 @@
+/* Woodex Admin — design layer (loaded after admin.css and assets/woodex-tw.css).
+   Replica direction: Preline CRM dashboard look (neutral surfaces, blue primary, Inter, Lucide icons),
+   rebuilt by hand. No template code is copied.
+   Rules are scoped with `html` to beat the older `!important` rules in admin.css.
+   Remove a rule here only after its screen is checked in both themes (tools/qa-p29/theme-contrast.mjs). */
+
+@font-face { font-family: "Inter"; font-style: normal; font-weight: 400; font-display: swap; src: url("assets/fonts/inter-latin-400.woff2") format("woff2"); }
+@font-face { font-family: "Inter"; font-style: normal; font-weight: 500; font-display: swap; src: url("assets/fonts/inter-latin-500.woff2") format("woff2"); }
+@font-face { font-family: "Inter"; font-style: normal; font-weight: 600; font-display: swap; src: url("assets/fonts/inter-latin-600.woff2") format("woff2"); }
+@font-face { font-family: "Inter"; font-style: normal; font-weight: 700; font-display: swap; src: url("assets/fonts/inter-latin-700.woff2") format("woff2"); }
+
+/* ---------- Tokens ---------- */
+:root {
+  --ui-font: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --ui-bg: #f3f4f6;          /* neutral-100 page */
+  --ui-surface: #ffffff;     /* cards, top bar */
+  --ui-surface-2: #f9fafb;   /* table heads, wells, inputs */
+  --ui-border: #e5e7eb;      /* neutral-200 */
+  --ui-text: #111827;        /* 17.9:1 on surface */
+  --ui-text-2: #374151;      /* 10.3:1 */
+  --ui-muted: #4b5563;       /* 7.6:1 on surface, 6.6:1 on page */
+  --ui-brand: #2563eb;       /* blue-600: button fill, white text 5.2:1 */
+  --ui-brand-hover: #1d4ed8; /* blue-700: white text 6.7:1 */
+  --ui-brand-text: #1d4ed8;  /* links and accent text on light surfaces 6.7:1 */
+  --ui-brand-soft: #eff6ff;  /* blue-50 active fills */
+  --ui-brand-fg: #ffffff;
+  --ui-side: #ffffff;
+  --ui-side-text: #374151;
+  --ui-side-muted: #4b5563;
+  --ui-side-active: #eff6ff;
+  --ui-side-active-text: #1d4ed8;
+  --ui-side-border: #e5e7eb;
+  --ui-focus: #2563eb;
+  --ui-radius: 10px;
+  --ui-radius-lg: 14px;
+  --ui-shadow: 0 1px 2px rgba(17, 24, 39, 0.06);
+}
+
+html.dark {
+  --ui-bg: #171717;          /* neutral-900 page */
+  --ui-surface: #262626;     /* neutral-800 cards */
+  --ui-surface-2: #2f2f2f;   /* wells, inputs */
+  --ui-border: #404040;      /* neutral-700 */
+  --ui-text: #f5f5f5;        /* 13.9:1 on surface */
+  --ui-text-2: #d4d4d4;      /* 10.1:1 */
+  --ui-muted: #a3a3a3;       /* 6.0:1 on surface, 7.1:1 on page */
+  --ui-brand: #2563eb;       /* same fill in both themes */
+  --ui-brand-hover: #1d4ed8;
+  --ui-brand-text: #60a5fa;  /* blue-400 text 5.4:1 on surface */
+  --ui-brand-soft: rgba(37, 99, 235, 0.18);
+  --ui-brand-fg: #ffffff;
+  --ui-side: #171717;
+  --ui-side-text: #d4d4d4;
+  --ui-side-muted: #a3a3a3;
+  --ui-side-active: #262626;
+  --ui-side-active-text: #f5f5f5;
+  --ui-side-border: #2f2f2f;
+  --ui-focus: #60a5fa;
+  --ui-shadow: none;
+}
+
+/* ---------- Bridge to admin.css tokens: the admin reads these, so the brand and neutrals change on every page ---------- */
+:root {
+  --bg: #f3f4f6; --card: #ffffff; --card-elevated: #ffffff; --card-sub: #f9fafb; --bg2: #f3f4f6;
+  --line: #e5e7eb; --line2: #d1d5db; --txt: #111827; --txt2: #374151; --mut: #4b5563; --mut2: #566374;
+  --navy: #111827; --gold: #1d4ed8; --gold-d: #1e40af; --pri: #2563eb; --pri-fg: #ffffff; --pri-soft: #eff6ff;
+  --cyan: #2563eb; --cyan-glow: rgba(37, 99, 235, 0.2);
+  --chat-bubble-ai: #2563eb; --chat-bubble-ai-txt: #ffffff;
+}
+html.dark {
+  --bg: #171717; --card: #262626; --card-elevated: #2f2f2f; --card-sub: #2f2f2f; --bg2: #1f1f1f;
+  --line: #404040; --line2: #525252; --txt: #f5f5f5; --txt2: #d4d4d4; --mut: #a3a3a3; --mut2: #a3a3a3;
+  --navy: #0a0a0a; --gold: #60a5fa; --gold-d: #93c5fd; --pri: #60a5fa; --pri-fg: #0a0a0a; --pri-soft: rgba(37, 99, 235, 0.18);
+  --cyan: #60a5fa; --cyan-glow: rgba(96, 165, 250, 0.3);
+  --chat-bubble-ai: #2563eb; --chat-bubble-ai-txt: #ffffff;
+}
+
+/* ---------- Typography ---------- */
+html, html body, html input, html button, html select, html textarea, html .btn, html .pk-btn {
+  font-family: var(--ui-font) !important;
+}
+html body { background: var(--ui-bg); color: var(--ui-text); -webkit-font-smoothing: antialiased; }
+html .content h1, html .page-h h1 { font-size: 24px; font-weight: 600; letter-spacing: -0.01em; color: var(--ui-text); }
+html .card h3, html .card-h h3, html .card h4 { font-size: 15px; font-weight: 600; color: var(--ui-text); }
+html .muted, html .card small, html .card .muted { color: var(--ui-muted); }
+html .crumb { color: var(--ui-muted) !important; font-size: 13px; }
+html .content a:not(.btn):not(.nav-a) { color: var(--ui-brand-text); }
+html .content a:not(.btn):not(.nav-a):hover { text-decoration: underline; }
+
+/* ---------- Page and sidebar ---------- */
+html .main { background: var(--ui-bg); }
+html .content { color: var(--ui-text); }
+html .side {
+  background: var(--ui-side) !important;
+  color: var(--ui-side-text) !important;
+  border-right: 1px solid var(--ui-side-border);
+}
+html .side .nav-a {
+  color: var(--ui-side-text);
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+}
+html .side .nav-a:hover { background: var(--ui-side-active); color: var(--ui-text); }
+html .side .nav-a.on { background: var(--ui-side-active); color: var(--ui-side-active-text); font-weight: 600; }
+html .side .nav-a.on i, html .side .nav-a:hover i, html .side .nav-a.on svg { color: var(--ui-brand-text); }
+html .side .nav-g, html .side .nav-h { color: var(--ui-side-muted) !important; font-size: 12px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
+html .side small, html .side .muted { color: var(--ui-side-muted) !important; }
+html .side b, html .side strong { color: var(--ui-text) !important; }
+html .side span:not(.badge):not(.nt-n):not(.nt-b):not(.pill):not(.nav-bdg):not(.nav-new):not(.nav-pin) { color: var(--ui-side-muted) !important; }
+html .side .side-foot { background: var(--ui-side); border-top: 1px solid var(--ui-side-border); }
+html .side-foot a { color: var(--ui-side-text) !important; }
+html .side-foot a:hover, html .side-foot button:hover { color: var(--ui-text) !important; }
+
+/* Shell pieces added in index.html (Tailwind utilities do the layout) */
+html .wx-logo { background: var(--ui-brand) !important; color: #ffffff !important; font-weight: 700; border-radius: 10px; }
+html .wx-brand-sub { color: var(--ui-brand-text) !important; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; font-size: 11px; }
+html .wx-av, html #sf-av, html #u-av, html .side-foot .av {
+  background: var(--ui-brand) !important; color: #ffffff !important;
+  width: 34px; height: 34px; border-radius: 999px; display: grid; place-items: center; font-size: 13px; font-weight: 600; flex-shrink: 0;
+}
+html .wx-muted-sm { color: var(--ui-side-muted) !important; }
+html .wx-foot-btn {
+  display: grid; place-items: center; padding: 6px; border-radius: 8px; background: none; border: none; cursor: pointer;
+  color: var(--ui-side-muted) !important;
+}
+html .wx-foot-btn:hover { background: var(--ui-side-active); color: var(--ui-text) !important; }
+html #sf-name { color: var(--ui-text) !important; }
+
+/* ---------- Top bar ---------- */
+html .top {
+  background: var(--ui-surface) !important; color: var(--ui-text);
+  border-bottom: 1px solid var(--ui-border); height: 64px;
+}
+html .top .icon-btn { color: var(--ui-text-2); border: 1px solid var(--ui-border); background: var(--ui-surface); border-radius: 10px; }
+html .top .icon-btn:hover { background: var(--ui-surface-2); color: var(--ui-text); }
+html .pk-btn { background: var(--ui-surface-2) !important; border: 1px solid var(--ui-border) !important; border-radius: 10px; color: var(--ui-muted) !important; }
+html .top-search input { background: var(--ui-surface-2) !important; color: var(--ui-text) !important; border-color: var(--ui-border) !important; }
+html .user-btn { border-radius: 10px; }
+html .user-btn b { color: var(--ui-text); font-weight: 600; }
+html .user-btn small { color: var(--ui-muted); }
+html .dd-menu { background: var(--ui-surface); border: 1px solid var(--ui-border); border-radius: var(--ui-radius); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12); }
+html .dd-menu a, html .dd-menu button { color: var(--ui-text); }
+html .dd-menu a:hover, html .dd-menu button:hover { background: var(--ui-surface-2); }
+
+/* ---------- Cards, panels, tables ---------- */
+html .card {
+  background: var(--ui-surface); border: 1px solid var(--ui-border); border-radius: var(--ui-radius-lg);
+  box-shadow: var(--ui-shadow); color: var(--ui-text);
+}
+html .card-h { border-bottom: 1px solid var(--ui-border); }
+html .kpi .v, html .kpi b { font-variant-numeric: tabular-nums; font-weight: 600; color: var(--ui-text); }
+html .tbl thead th {
+  background: var(--ui-surface-2); color: var(--ui-muted); border-color: var(--ui-border);
+  font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em;
+}
+html .tbl td, html .tbl tbody tr { border-color: var(--ui-border); color: var(--ui-text); }
+html .tbl tbody tr:hover { background: var(--ui-surface-2); }
+html .modal-card, html .auth-card {
+  background: var(--ui-surface); border: 1px solid var(--ui-border); border-radius: var(--ui-radius-lg); color: var(--ui-text);
+}
+html .toast { border-radius: var(--ui-radius); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14); }
+
+/* ---------- Buttons ---------- */
+html .btn {
+  background: var(--ui-surface); color: var(--ui-text); border: 1px solid var(--ui-border);
+  border-radius: 8px; font-weight: 500; font-size: 14px; min-height: 36px;
+}
+html .btn:hover { background: var(--ui-surface-2); }
+html .btn.pri, html .btn.pri:hover, html .btn-auth-main {
+  background: var(--ui-brand) !important; border-color: var(--ui-brand) !important; color: var(--ui-brand-fg) !important;
+}
+html .btn.pri:hover, html .btn-auth-main:hover { background: var(--ui-brand-hover) !important; border-color: var(--ui-brand-hover) !important; }
+html .btn-auth-main { border-radius: 8px; font-weight: 600; }
+
+/* ---------- Inputs, segmented controls, tabs, badges ---------- */
+html input:not([type=checkbox]):not([type=radio]), html select, html textarea {
+  background: var(--ui-surface-2); color: var(--ui-text); border: 1px solid var(--ui-border); border-radius: 8px;
+}
+html input::placeholder, html textarea::placeholder { color: var(--ui-muted); opacity: 1; }
+html input:focus, html select:focus, html textarea:focus { border-color: var(--ui-focus); outline: none; box-shadow: 0 0 0 3px var(--ui-brand-soft); }
+html :focus-visible { outline: 2px solid var(--ui-focus); outline-offset: 2px; }
+html .seg { background: var(--ui-surface-2); border: 1px solid var(--ui-border); border-radius: 8px; }
+html .seg button { color: var(--ui-text-2); border-radius: 6px; }
+html .seg button.on { background: var(--ui-surface); color: var(--ui-text); box-shadow: var(--ui-shadow); }
+html.dark .seg button.on { background: var(--ui-surface-2); }
+html .tabs { border-bottom: 1px solid var(--ui-border); }
+html .badge { border-radius: 999px; font-size: 12px; font-weight: 500; padding: 2px 10px; }
+html .badge.ok { color: #047857; background: #ecfdf5; }
+html .badge.warn { color: #92400e; background: #fffbeb; }
+html .badge.bad { color: #b91c1c; background: #fef2f2; }
+html.dark .badge.ok { color: #6ee7b7; background: rgba(16, 185, 129, 0.16); }
+html.dark .badge.warn { color: #fcd34d; background: rgba(245, 158, 11, 0.16); }
+html.dark .badge.bad { color: #fca5a5; background: rgba(239, 68, 68, 0.16); }
+
+/* ---------- Brand colour: cyan/teal/gold inline styles in the JS and HTML become the blue token ---------- */
+html [style*="background:#00b8db"], html [style*="background: #00b8db"], html [style*="background:#00d3f2"], html [style*="background:#22c7e6"],
+html [style*="background:#c59b27"], html [style*="background:#d4af6a"], html [style*="background:#00708a"] {
+  background: var(--ui-brand) !important; color: var(--ui-brand-fg) !important; border-color: var(--ui-brand) !important;
+}
+html [style*="color:#00d3f2"], html [style*="color: #00d3f2"], html [style*="color:#00b8db"], html [style*="color: #00b8db"],
+html [style*="color:#c59b27"], html [style*="color: #c59b27"], html [style*="color:#22c7e6"] { color: var(--ui-brand-text) !important; }
+html [style*="border-color:#00b8db"], html [style*="border-color: #00b8db"] { border-color: var(--ui-brand) !important; }
+
+/* ---------- Inline dark surfaces from the JS: neutral cards in both themes ---------- */
+html [style*="background:#111318"], html [style*="background: #111318"], html [style*="background:#111622"],
+html [style*="background:#161922"], html [style*="background: #161922"], html [style*="background:#0c1628"], html [style*="background:#0a0c10"],
+html [style*="background:#181c24"] {
+  background: var(--ui-surface) !important;
+  color: var(--ui-text);
+}
+html [style*="background:#0b0d13"], html [style*="background:#12151d"] { background: var(--ui-surface-2) !important; color: var(--ui-text); }
+html [style*="background:#111318"] p.muted, html [style*="background:#111318"] .muted,
+html [style*="background:#161922"] p.muted, html [style*="background:#161922"] .muted, html [style*="background:#161922"] small,
+html [style*="background:#0c1628"] p.muted, html [style*="background:#0c1628"] .muted { color: var(--ui-muted) !important; }
+
+/* Light-theme text inside cards that carries dark-theme inline colours */
+html:not(.dark) .card [style*="color:#00d3f2"], html:not(.dark) .card [style*="color: #00d3f2"] { color: #1d4ed8 !important; }
+html:not(.dark) .card [style*="color:var(--ok)"], html:not(.dark) .card [style*="color: var(--ok)"] { color: #047857 !important; }
+html:not(.dark) .card [style*="color:#a78bfa"], html:not(.dark) .card [style*="color: #a78bfa"] { color: #6d28d9 !important; }
+html:not(.dark) .card [style*="color:#cbd5e1"], html:not(.dark) .card [style*="color: #cbd5e1"],
+html:not(.dark) .card [style*="color:var(--mut2)"], html:not(.dark) .card [style*="color: var(--mut2)"],
+html:not(.dark) .card [style*="color:#9ca3af"], html:not(.dark) .card [style*="color: #9ca3af"] { color: var(--ui-muted) !important; }
+html:not(.dark) .card :is(h1, h2, h3, h4, h5, b, strong, p, label, span)[style*="color:#f9fafb"],
+html:not(.dark) .card :is(h1, h2, h3, h4, h5, b, strong, p, label)[style*="color:#fff;"],
+html:not(.dark) .card :is(h1, h2, h3, h4, h5, b, strong, p, label)[style*="color: #fff"] { color: var(--ui-text) !important; }
+html:not(.dark) #sec-revoke-all { color: #b91c1c !important; }
+html.dark #sec-revoke-all { color: #fca5a5 !important; }
+
+html:not(.dark) .content [style*="color:#e5e7eb"], html:not(.dark) .content [style*="color: #e5e7eb"] { color: var(--ui-text-2) !important; }
+
+/* ---------- Auth screen ---------- */
+html .auth { background: var(--ui-bg); }
+html .auth-card { padding: 32px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08); }
+html .auth-title { color: var(--ui-text) !important; font-weight: 600; }
+html .auth-sub { color: var(--ui-muted) !important; }
+html .auth-link-cyan { color: var(--ui-brand-text) !important; }
+
+/* ---------- Active states and tabs: blue fill with white text (the old dark-navy and gold fills failed contrast) ---------- */
+html .hub-bar a.on, html.dark .hub-bar a.on, html .seg button.on, html .lp-bar button.on, html .ib-chips button.on {
+  background: var(--ui-brand) !important; border-color: var(--ui-brand) !important; color: #ffffff !important;
+}
+html .us-tabs a.on { border-bottom-color: var(--ui-brand) !important; }
+
+/* ---------- Muted greys from inline styles: one readable muted tone per theme ---------- */
+html:not(.dark) [style*="color:var(--mut2)"], html:not(.dark) [style*="color: var(--mut2)"], html:not(.dark) [style*="color:#64748b"],
+html:not(.dark) [style*="color: #64748b"], html:not(.dark) [style*="color:#98a2b3"], html:not(.dark) [style*="color:#9ca3af"] { color: var(--ui-muted) !important; }
+html.dark [style*="color:#667085"], html.dark [style*="color: #667085"], html.dark [style*="color:#475569"] { color: var(--ui-muted) !important; }
+html.dark [style*="color:#344054"], html.dark [style*="color: #344054"], html.dark [style*="color:#0c1628"], html.dark [style*="color: #0c1628"] { color: var(--ui-text) !important; }
+
+/* Avatars drawn on dark slate: white text in both themes */
+html [style*="background:#1e293b"], html [style*="background: #1e293b"] { color: #ffffff !important; }
+
+/* WhatsApp action: readable green on dark surfaces */
+html .btn.wa, html #chat-wa-btn { color: #0f7a40 !important; }
+html.dark .btn.wa, html.dark #chat-wa-btn { color: #86efac !important; border-color: #166534 !important; }
+
+/* Classes whose colour is set in admin.css or in page scripts (not inline) */
+html .p19-empty, html .md-folders button small, html .bz-pairs s, html .bk-leg { color: var(--ui-muted) !important; }
+html.dark .p19-empty { border-color: var(--ui-border); }
+/* Avatars on slate: white text (must come after the card rule above) */
+html:not(.dark) .card [style*="background:#1e293b"], html.dark [style*="background:#1e293b"] { color: #ffffff !important; }
+/* Info callouts (admin.css .p19-how used a cream fill and navy text, unreadable in dark mode) */
+html .p19-how { background: var(--pri-soft); border: 1px solid var(--ui-border); border-radius: var(--ui-radius-lg); color: var(--ui-text); }
+html .p19-how > b, html .p19-how ol, html .p19-how li, html .p19-how li b, html .p19-how ol b { color: var(--ui-text) !important; }
+/* Library filter chips: white pills with light text in dark mode (unreadable) */
+html.dark .ib-chips button:not(.on), html.dark .l6-chips button:not(.on) {
+  background: var(--ui-surface-2) !important; color: var(--ui-text) !important; border-color: var(--ui-border) !important;
+}
+/* Pipeline and estimator muted text (set in class rules inside page scripts) */
+html .p19-k span, html .p19-cf .v em { color: var(--ui-muted) !important; }
+/* Estimator navy panel keeps its navy fill: its small text must be light */
+html .sk-navy small, html .sk-navy .muted, html .sk-navy p { color: #cbd5e1 !important; }
+
+/* ---------- Page layout (U1): page header, KPI row, card header, tables ---------- */
+/* Page header: title, breadcrumb, actions. Same markup on every screen (admin.js head() and p18 head()). */
+html .ph { margin-bottom: 20px; align-items: flex-start; }
+html .ph h1 { font-size: 24px; font-weight: 600; line-height: 1.25; letter-spacing: -0.01em; color: var(--ui-text); margin: 0; }
+html .ph .crumb { margin-top: 4px; font-size: 13px; color: var(--ui-muted); }
+html .ph .toolbar { gap: 8px; align-items: center; }
+html .ph .toolbar .btn { padding: 0 14px; min-height: 36px; font-size: 14px; }
+
+/* KPI row: even tiles, consistent padding, tabular numbers */
+html .kpis, html .grid.kpis { gap: 16px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+html .kpi, html .card.kpi { padding: 18px 20px; }
+html .kpi b { font-size: 26px; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--ui-text); }
+html .kpi small { font-size: 13px; font-weight: 500; color: var(--ui-muted); }
+html .kpi .kpi-ic { width: 36px; height: 36px; margin: 0 0 12px; border-radius: 10px; background: var(--ui-brand-soft); color: var(--ui-brand-text); }
+html .grid.kpis .kpi-ic { display: grid; }
+html .kpi .kpi-ic svg { width: 18px; height: 18px; }
+
+/* Card header: 16px rhythm, quiet divider */
+html .card-h { padding: 16px 20px; border-bottom: 1px solid var(--ui-border); margin: 0; align-items: center; }
+html .card-h h3 { font-size: 15px; font-weight: 600; margin: 0; }
+html .card-b { padding: 16px 20px; }
+
+/* Tables: header row and cell rhythm */
+html .tbl { font-size: 14px; }
+html .tbl thead th { padding: 10px 16px; white-space: nowrap; }
+html .tbl td { padding: 12px 16px; vertical-align: middle; }
+html .tbl tbody tr { transition: background-color 0.12s ease; }
+
+/* Grid gaps between cards */
+html .grid { gap: 16px; }
+
+/* ---------- Team feed (ARC.STUDIO A4) ---------- */
+html .tf-list { display: grid; gap: 10px; max-height: 52vh; overflow: auto; padding-right: 4px; }
+html .tf-msg { background: var(--ui-surface-2); border: 1px solid var(--ui-border); border-radius: var(--ui-radius); padding: 10px 14px; max-width: 78%; }
+html .tf-msg.tf-mine { margin-left: auto; background: var(--ui-brand-soft); border-color: transparent; }
+html .tf-meta { font-size: 12px; color: var(--ui-muted); margin-bottom: 4px; }
+html .tf-meta b { color: var(--ui-text); font-weight: 600; font-size: 13px; }
+html .tf-body { font-size: 14px; line-height: 1.5; color: var(--ui-text); white-space: normal; overflow-wrap: anywhere; }
+html .tf-form textarea { width: 100%; min-height: 84px; resize: vertical; padding: 10px 12px; border-radius: 10px; }
