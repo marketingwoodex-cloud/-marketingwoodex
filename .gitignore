@@ -17,3 +17,7 @@ woodex-live-p29-v2.1-pro/_private/health.json
 
 # Local preview accounts for tools/qa-p29/preview-server.py (never commit real credentials)
 .preview-accounts*.json
+
+# Python bytecode from the QA tools
+__pycache__/
+*.pyc

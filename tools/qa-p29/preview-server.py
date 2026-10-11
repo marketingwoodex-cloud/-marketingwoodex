@@ -1,6 +1,8 @@
 # Filtered static preview for the pro site, with a PREVIEW-ONLY API stub.
 # - Serves public front-end files only (blocks PHP source, api/, private/db/template folders, SQL, env, dotfiles, docs).
 # - POST /api/admin.php and /api/builder.php are answered by this stub (no PHP, no database, no real accounts).
+# - Every action gets either a handler here, a shape from preview_fixtures.py, or an empty-but-valid answer;
+#   a screen that hangs on "Loading…" means its action has no fixture yet — add one to preview_fixtures.py.
 #   Login accepts ONLY accounts set by the environment (no built-in account, no values in this file):
 #     PREVIEW_ACCOUNTS       JSON list, e.g. [{"email":"a@b.pk","role":"sales","password":"..."}]
 #                            roles mirror api/roles-lib.php: owner|admin|editor|sales|support
@@ -10,6 +12,8 @@
 #   Each account gets its own token, so `me`/`status` return THAT account after a reload
 #   and the role gating in the sidebar can be checked by signing in as each role.
 import http.server, os, sys, json, urllib.parse, time
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from preview_fixtures import build as build_fixture  # preview-only sample answers (see that file)
 ROOT = sys.argv[1]
 PORT = int(sys.argv[2])
 PREVIEW_EMAIL = os.environ.get('PREVIEW_EMAIL', '').strip().lower()
@@ -133,18 +137,30 @@ PREVIEW_LEADS = [
      'service': 'Kitchen redesign', 'source': 'Instagram', 'assigned_to': None, 'next_at': '2026-10-15 12:30:00', 'next_type': 'Call', 'created_at': '2026-10-04 09:20:00'},
 ]
 PROJECTS = []  # in-memory projects for preview only (sample projects created here are not saved anywhere)
+try:
+    import preview_fixtures as _F
+    PROJECTS.extend([dict(x) for x in _F.PROJECTS])  # seeded sample projects (U4-style fixtures)
+except Exception as _e:  # pragma: no cover - fixtures are optional
+    print('preview fixtures not loaded:', _e)
 PROJ_NEXT = [0]
 PROJ_STAGES = ['planning', 'design', 'procurement', 'execution', 'finishing', 'handover', 'completed']
 PROJ_LINES = {'project': 'Project', 'interior': 'Interior (WI)', 'furniture': 'Furniture (WF)'}
 PROJ_TYPES = ['Interior', 'Fit-out', 'Renovation', 'Furniture']
 def _proj_row(p):
     ms = p.get('milestones') or []
-    return dict(p, progress=0, late=False, invoiced=0, received=0, balance=0, team_names=[], manager_name='', milestones=ms, invoices=p.get('invoices') or [])
+    inv = float(p.get('invoiced') or p.get('value') or 0)
+    rec = float(p.get('paid') or 0)
+    return dict(p, progress=float(p.get('progress') or 0), late=False, invoiced=inv, received=rec,
+                balance=max(0.0, inv - rec), team_names=[], manager_name='', milestones=ms,
+                invoices=p.get('invoices') or [], handover=p.get('target') or '')
 def _proj_table():
     rows = [_proj_row(p) for p in PROJECTS]
     active = [p for p in rows if p['stage'] != 'completed']
+    inv = sum(float(p.get('invoiced') or 0) for p in active)
+    rec = sum(float(p.get('paid') or 0) for p in active)
     return {'ok': True, 'projects': rows, 'lines': PROJ_LINES, 'types': PROJ_TYPES, 'stages': PROJ_STAGES, 'team': [],
-            'kpi': {'active': len(active), 'value': sum(p['value'] for p in active), 'invoiced': 0, 'received': 0, 'balance': 0}}
+            'kpi': {'active': len(active), 'late': 0, 'completed': len(rows) - len(active), 'value': sum(p['value'] for p in active),
+                    'invoiced': inv, 'received': rec, 'balance': max(0.0, inv - rec)}}
 class H(http.server.SimpleHTTPRequestHandler):
     def __init__(self, *a, **k):
         super().__init__(*a, directory=ROOT, **k)
@@ -291,7 +307,7 @@ class H(http.server.SimpleHTTPRequestHandler):
             FEED.append(m)
             return self._json(200, {'ok': True, 'item': m})
         if action == 'invs_tracker':
-            return self._json(200, {'ok': True, 'year': 2026, 'years': [2026], 'months': [], 'rows': [], 'lateAll': 0})
+            return self._json(200, build_fixture('invs_tracker', data) or {'ok': True, 'year': 2026, 'years': [2026], 'months': {}, 'rows': [], 'lateAll': 0})
         if action == 'tpl_list':
             return self._json(200, {'ok': True, 'templates': list(TEMPLATES)})
         if action == 'tpl_import':
@@ -350,10 +366,16 @@ class H(http.server.SimpleHTTPRequestHandler):
                 g['overdue' if d < today else ('today' if d == today else 'upcoming')].append(dict(l))
             return self._json(200, dict({'ok': True}, **g))
         if action == 'leads_list':
-            return self._json(200, {'ok': True, 'leads': [dict(l) for l in PREVIEW_LEADS], 'total': len(PREVIEW_LEADS)})
+            team = [{'id': a['id'], 'name': a['name']} for a in ACCOUNTS]
+            return self._json(200, {'ok': True, 'leads': [dict(l) for l in PREVIEW_LEADS], 'total': len(PREVIEW_LEADS),
+                                    'team': team, 'sources': {'Website form': 24, 'WhatsApp': 15, 'Google search': 9, 'Instagram': 4},
+                                    'teamSources': ['Website form', 'WhatsApp', 'Google search', 'Instagram', 'import']})
         if action == 'leads_count':
             return self._json(200, {'ok': True, 'total': len(PREVIEW_LEADS),
                                     'new': sum(1 for l in PREVIEW_LEADS if l['stage'] == 'new')})
+        fx = build_fixture(action, data)
+        if fx is not None:
+            return self._json(200, fx)
         return self._json(200, empty())
     def do_GET(self):
         if self._blocked(urllib.parse.urlsplit(self.path).path):

@@ -592,7 +592,10 @@
     };
   };
 
-  W.VIEWS.business = W.VIEWS.settings;
+  // #/integrations and #/connections ARE this screen with a different tab, so they alias to it.
+  // #/business must NOT: admin-fields.js owns a full Business info screen (contact & hours, brand &
+  // logo, social profiles) and this line used to clobber it, which made Business info and
+  // Integrations render the same page (bug report 2026-10-12).
   W.VIEWS.integrations = W.VIEWS.settings;
   W.VIEWS.connections = W.VIEWS.settings;
 })();
