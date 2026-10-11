@@ -51,6 +51,19 @@ def _tpl_total(t):
             except (TypeError, ValueError): pass
     return round(tot, 2)
 
+PROJECTS = []  # in-memory projects for preview only (sample projects created here are not saved anywhere)
+PROJ_NEXT = [0]
+PROJ_STAGES = ['planning', 'design', 'procurement', 'execution', 'finishing', 'handover', 'completed']
+PROJ_LINES = {'project': 'Project', 'interior': 'Interior (WI)', 'furniture': 'Furniture (WF)'}
+PROJ_TYPES = ['Interior', 'Fit-out', 'Renovation', 'Furniture']
+def _proj_row(p):
+    ms = p.get('milestones') or []
+    return dict(p, progress=0, late=False, invoiced=0, received=0, balance=0, team_names=[], manager_name='', milestones=ms, invoices=p.get('invoices') or [])
+def _proj_table():
+    rows = [_proj_row(p) for p in PROJECTS]
+    active = [p for p in rows if p['stage'] != 'completed']
+    return {'ok': True, 'projects': rows, 'lines': PROJ_LINES, 'types': PROJ_TYPES, 'stages': PROJ_STAGES, 'team': [],
+            'kpi': {'active': len(active), 'value': sum(p['value'] for p in active), 'invoiced': 0, 'received': 0, 'balance': 0}}
 class H(http.server.SimpleHTTPRequestHandler):
     def __init__(self, *a, **k):
         super().__init__(*a, directory=ROOT, **k)
@@ -174,6 +187,38 @@ class H(http.server.SimpleHTTPRequestHandler):
         if action == 'tpl_delete':
             tid = int(data.get('id') or 0)
             TEMPLATES[:] = [t for t in TEMPLATES if t['id'] != tid]
+            return self._json(200, {'ok': True})
+        if action == 's17_meta':
+            return self._json(200, {'ok': True, 'lines': PROJ_LINES, 'leadTypes': {}, 'quoteStatus': {}, 'nextTypes': {}, 'clientTypes': {}, 'projectTypes': PROJ_TYPES})
+        if action == 'projs_table':
+            return self._json(200, _proj_table())
+        if action == 'proj_save':
+            pid = int(data.get('id') or 0)
+            if pid:
+                p = next((x for x in PROJECTS if x['id'] == pid), None)
+                if not p: return self._json(200, {'ok': False, 'error': 'Project not found'})
+                for k in ('stage', 'value', 'start', 'target', 'manager', 'site', 'client_name', 'name'):
+                    if k in data and data[k] not in (None, ''): p[k] = int(data[k]) if k == 'value' and str(data[k]).isdigit() else data[k]
+                return self._json(200, {'ok': True, 'project': _proj_row(p)})
+            name = str(data.get('name') or '').strip()[:160]
+            if not name: return self._json(200, {'ok': False, 'error': 'Project name is required'})
+            PROJ_NEXT[0] += 1
+            p = {'id': PROJ_NEXT[0], 'no': 'PRJ-%03d' % PROJ_NEXT[0], 'name': name, 'client_name': str(data.get('client_name') or ''), 'site': str(data.get('site') or ''),
+                 'line': 'project', 'ptype': '', 'area': 0, 'stage': 'planning', 'start': '2026-10-11', 'target': str(data.get('target') or ''),
+                 'value': int(float(data.get('value') or 0)), 'manager': None, 'milestones': []}
+            PROJECTS.append(p)
+            return self._json(200, {'ok': True, 'project': _proj_row(p)})
+        if action == 'proj_meta':
+            p = next((x for x in PROJECTS if x['id'] == int(data.get('id') or 0)), None)
+            if not p: return self._json(200, {'ok': False, 'error': 'Project not found'})
+            p['line'] = str(data.get('line') or p['line']); p['ptype'] = str(data.get('ptype') or '')
+            return self._json(200, {'ok': True})
+        if action == 'proj_milestones':
+            p = next((x for x in PROJECTS if x['id'] == int(data.get('id') or 0)), None)
+            if not p: return self._json(200, {'ok': False, 'error': 'Project not found'})
+            plan = data.get('plan') or []
+            if sum(float(m.get('pct') or 0) for m in plan) != 100: return self._json(200, {'ok': False, 'error': 'Milestones must add up to 100%'})
+            p['milestones'] = [{'label': str(m.get('label') or '')[:80], 'pct': float(m.get('pct') or 0), 'inv_id': None, 'inv_no': '', 'status': 'unbilled'} for m in plan]
             return self._json(200, {'ok': True})
         return self._json(200, empty())
     def do_GET(self):
