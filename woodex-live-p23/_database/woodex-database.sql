@@ -2,7 +2,7 @@
 -- WOODEX ARCHITECTURE & LUXURY INTERIOR - COMPLETE PRODUCTION DATABASE
 -- Domain: woodex.com.pk
 -- Compatible with Hostinger MySQL 5.7+ / 8.0+ & MariaDB 10.3+
--- Includes: All 20+ Tables, Pre-seeded Team Roles, CRM Leads, 
+-- Includes: All 22+ Tables, Pre-seeded Team Roles, CRM Leads, 
 --           Bilingual Templates, Verified Testimonials & Settings.
 -- =====================================================================
 
@@ -266,6 +266,40 @@ CREATE TABLE IF NOT EXISTS `wx_tg_map` (
   `chat_id` INT NOT NULL,
   `t` DATETIME NOT NULL,
   PRIMARY KEY (`msg_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 19. Expense Log Table (v2.7) — the cash book: one voucher per row, GST and withholding separate
+CREATE TABLE IF NOT EXISTS `wx_expenses` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `spent_on` DATE NOT NULL,
+  `category` VARCHAR(40) NOT NULL,
+  `node` VARCHAR(8) NOT NULL DEFAULT 'LHR',
+  `vendor` VARCHAR(160) NOT NULL DEFAULT '',
+  `detail` VARCHAR(255) NOT NULL DEFAULT '',
+  `amount` DECIMAL(12,2) NOT NULL DEFAULT 0,
+  `tax_pct` DECIMAL(5,2) NOT NULL DEFAULT 0,
+  `tax_amt` DECIMAL(12,2) NOT NULL DEFAULT 0,
+  `wht_amt` DECIMAL(12,2) NOT NULL DEFAULT 0,
+  `paid_by` VARCHAR(16) NOT NULL DEFAULT 'cash',
+  `status` VARCHAR(12) NOT NULL DEFAULT 'paid',
+  `project` VARCHAR(40) NOT NULL DEFAULT '',
+  `receipt` VARCHAR(190) NOT NULL DEFAULT '',
+  `recurring` TINYINT(1) NOT NULL DEFAULT 0,
+  `note` VARCHAR(255) NOT NULL DEFAULT '',
+  `created_by` VARCHAR(120) NOT NULL DEFAULT '',
+  `created_at` DATETIME NOT NULL,
+  `updated_at` DATETIME NULL,
+  INDEX `idx_exp_date` (`spent_on`),
+  INDEX `idx_exp_cat` (`category`),
+  INDEX `idx_exp_node` (`node`),
+  INDEX `idx_exp_status` (`status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 20. Expense Budgets Table (v2.7) — one monthly cap per category, for budget-versus-actual
+CREATE TABLE IF NOT EXISTS `wx_expense_budgets` (
+  `category` VARCHAR(40) PRIMARY KEY,
+  `cap_month` DECIMAL(12,2) NOT NULL DEFAULT 0,
+  `updated_at` DATETIME NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- =====================================================================

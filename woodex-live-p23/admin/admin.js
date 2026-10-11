@@ -99,6 +99,7 @@
       ["quotes", "Quotations", "file-text", "g:sales"],
       ["invoices", "Invoices", "receipt", "g:sales"],
       ["transactions", "Payments", "receipt", "g:sales"],
+      ["expenses", "Expense log", "table", "owner,admin"],
       ["templates", "Quote templates", "layers", "g:sales"]] },
     ["projects", "Projects", "briefcase", "g:sales,g:support_view"],
     ["regional", "Regional ops", "map-pin", "g:sales"],
@@ -705,7 +706,8 @@
      redraw once everything has loaded, if a placeholder was shown for a screen that now exists. */
   window.addEventListener("load", function () { setTimeout(function () { if (S.user && document.querySelector("#view .soon-box")) { var v = (location.hash.replace(/^#\/?/, "").split("/")[0] || "dashboard"); if (VIEWS[v] && VIEWS[v] !== VIEWS.soon) route(); } }, 0); });
   window.WXA = { formDraft: formDraft, S: S, signedIn: signedIn, showAuth: showAuth, api: api, bapi: bapi, modal: modal, closeModal: closeModal, toast: toast, esc: esc, ic: ic, fillIcons: fillIcons, ago: ago, head: head, navBadges: function () { navBadges(); }, can: can, ROLE_LABEL: ROLE_LABEL, PERM_LABEL: PERM_LABEL, VIEWS: VIEWS, $: $, $$: $$, route: function () { route(); } };
-  Object.assign(ACT, { "page.meta": ["file-text", "updated SEO/settings of"], "page.delete": ["x", "deleted page"], "redirects.save": ["refresh-cw", "saved redirects"], "global.menu": ["panel-left", "updated the site menu on"], "global.replace": ["refresh-cw", "replaced in header/footer"], "global.chrome": ["panel-left", "published header & footer on"] });
+  Object.assign(ACT, { "page.meta": ["file-text", "updated SEO/settings of"], "page.delete": ["x", "deleted page"], "redirects.save": ["refresh-cw", "saved redirects"], "global.menu": ["panel-left", "updated the site menu on"],
+    "exp.save": ["table", "logged an expense"], "exp.del": ["x", "deleted an expense"], "exp.budget": ["gauge", "updated expense budgets"], "exp.copy": ["copy", "copied the fixed monthly costs"], "global.replace": ["refresh-cw", "replaced in header/footer"], "global.chrome": ["panel-left", "published header & footer on"] });
 
   // ---------------------------------------------------------------- boot
   fillIcons(document);

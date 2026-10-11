@@ -60,6 +60,15 @@ function migrate(PDO $pdo): void {
         target VARCHAR(255) NULL, ip VARCHAR(64) NULL, created_at DATETIME NOT NULL, INDEX(created_at)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
     $pdo->exec("CREATE TABLE IF NOT EXISTS wx_settings (k VARCHAR(80) PRIMARY KEY, v TEXT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
     $pdo->exec("CREATE TABLE IF NOT EXISTS wx_throttle (ip VARCHAR(64) PRIMARY KEY, n INT NOT NULL, t INT NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+    $pdo->exec("CREATE TABLE IF NOT EXISTS wx_expenses (id INT AUTO_INCREMENT PRIMARY KEY, spent_on DATE NOT NULL, category VARCHAR(40) NOT NULL,
+        node VARCHAR(8) NOT NULL DEFAULT 'LHR', vendor VARCHAR(160) NOT NULL DEFAULT '', detail VARCHAR(255) NOT NULL DEFAULT '',
+        amount DECIMAL(12,2) NOT NULL DEFAULT 0, tax_pct DECIMAL(5,2) NOT NULL DEFAULT 0, tax_amt DECIMAL(12,2) NOT NULL DEFAULT 0,
+        wht_amt DECIMAL(12,2) NOT NULL DEFAULT 0, paid_by VARCHAR(16) NOT NULL DEFAULT 'cash', status VARCHAR(12) NOT NULL DEFAULT 'paid',
+        project VARCHAR(40) NOT NULL DEFAULT '', receipt VARCHAR(190) NOT NULL DEFAULT '', recurring TINYINT(1) NOT NULL DEFAULT 0,
+        note VARCHAR(255) NOT NULL DEFAULT '', created_by VARCHAR(120) NOT NULL DEFAULT '', created_at DATETIME NOT NULL, updated_at DATETIME NULL,
+        INDEX(spent_on), INDEX(category), INDEX(node), INDEX(status)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+    $pdo->exec("CREATE TABLE IF NOT EXISTS wx_expense_budgets (category VARCHAR(40) PRIMARY KEY, cap_month DECIMAL(12,2) NOT NULL DEFAULT 0,
+        updated_at DATETIME NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
 }
 function now(): string { return date('Y-m-d H:i:s'); }
 function ip(): string { return substr((string)($_SERVER['REMOTE_ADDR'] ?? ''), 0, 64); }
@@ -230,6 +239,7 @@ require __DIR__ . '/phase8-lib.php';
 require __DIR__ . '/chat-lib.php';
 require __DIR__ . '/tg-lib.php';
 require __DIR__ . '/ai-agent-lib.php';
+require __DIR__ . '/expense-lib.php';      // v2.7 expense log (wx_expenses, wx_expense_budgets)
 require __DIR__ . '/arc-feed-lib.php';
 require __DIR__ . '/notify-lib.php';
 require __DIR__ . '/booking-lib.php';
@@ -588,6 +598,6 @@ switch ($action) {
         if (!$dry && $total) log_act($u, 'global.replace', '"' . mb_substr($find, 0, 60) . '" → "' . mb_substr($rep, 0, 60) . '" (' . count($res) . ' pages)');
         out(['ok' => true, 'pages' => $res, 'total' => $total, 'dry' => $dry]);
 
-    default: if (!rgn_actions($action, $in) && !arc_feed_actions($action, $in) && !soc_actions($action, $in) && !sag_actions($action, $in) && !aic_actions($action, $in) && !aia_actions($action, $in) && !wah_actions($action, $in) && !tg_actions($action, $in) && !sheets_actions($action, $in) && !conn_actions($action, $in) && !logos_actions($action, $in) && !p19c_actions($action, $in) && !p18j_actions($action, $in) && !sales17_actions($action, $in) && !booking_actions($action, $in) && !crm_actions($action, $in) && !sales_actions($action, $in) && !content_actions($action, $in) && !media_actions($action, $in) && !security_actions($action, $in) && !gdata_actions($action, $in) && !dash_actions($action, $in) && !p8_actions($action, $in) && !chat_actions($action, $in) && !notify_actions($action, $in) && !seo_actions($action, $in) && !redirects_actions($action, $in) && !p18e_actions($action, $in) && !p18g_actions($action, $in) && !p18h_actions($action, $in)) fail('Unknown action', 404);
+    default: if (!rgn_actions($action, $in) && !arc_feed_actions($action, $in) && !soc_actions($action, $in) && !sag_actions($action, $in) && !aic_actions($action, $in) && !aia_actions($action, $in) && !wah_actions($action, $in) && !tg_actions($action, $in) && !sheets_actions($action, $in) && !conn_actions($action, $in) && !logos_actions($action, $in) && !p19c_actions($action, $in) && !p18j_actions($action, $in) && !sales17_actions($action, $in) && !booking_actions($action, $in) && !crm_actions($action, $in) && !sales_actions($action, $in) && !content_actions($action, $in) && !media_actions($action, $in) && !security_actions($action, $in) && !gdata_actions($action, $in) && !dash_actions($action, $in) && !p8_actions($action, $in) && !chat_actions($action, $in) && !notify_actions($action, $in) && !seo_actions($action, $in) && !redirects_actions($action, $in) && !p18e_actions($action, $in) && !p18g_actions($action, $in) && !p18h_actions($action, $in) && !exp_actions($action, $in)) fail('Unknown action', 404);
 }
 } catch (PDOException $e) { error_log('admin.php: ' . $e->getMessage()); fail('Database error', 500); }

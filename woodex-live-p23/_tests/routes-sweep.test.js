@@ -71,6 +71,35 @@ function respond(action) {
   if (action === "theme_get") return { ok: true, vars: { "--wx-preset": "woodex", "--wx-navy": "#0c1628", "--wx-font": "dm", "--wx-font-head": "jakarta", "--wx-r-lg": "16px", "--wx-btn-radius": "999px" } };
   if (action === "tg_get") return { ok: true, cfg: { bot: "", site: "chat", tgUser: "", group: false, groupTitle: "", linked: 0, tokenSet: false, webhook: "", waDown: false, meDm: false, alertChats: false, alertLeads: true, alertChatsPhone: "" }, me: null, on: false };
   if (action === "mt_get") return { ok: true, on: false, mode: "maintenance", until: "", text: "", token: "qa-staff-token", files: [{ name: "404.html", bytes: 8123 }, { name: "500.html", bytes: 6402 }, { name: "503.html", bytes: 7311 }], pages: [{ path: "404.html", title: "Page not found" }, { path: "500.html", title: "Server error" }, { path: "503.html", title: "Maintenance" }] };
+  /* v2.7 expense log — shapes mirror api/expense-lib.php exp_list / exp_kpis, so the screen draws
+     real rows and real KPIs instead of falling through to the permissive payload. */
+  if (action === "exp_list") return { ok: true, count: 3,
+    items: [
+      { id: 41, spent_on: "2026-10-03", category: "board", cat_label: "Board & raw material", node: "LHR", vendor: "Pak Boards, Gulberg", detail: "18 mm MDF, 14 sheets + 6 mm backing", amount: 96500, tax_pct: 18, tax_amt: 17370, wht_amt: 0, total: 113870, paid_by: "bank", pay_label: "Bank transfer", status: "paid", project: "NODE-26-014", receipt: "/assets/uploads/bill-41.webp", recurring: 0, note: "", created_by: "Ar. Bilal Ahmed", created_at: "2026-10-03 11:20:00" },
+      { id: 42, spent_on: "2026-10-05", category: "wages", cat_label: "Site labour (daily wages)", node: "RWP", vendor: "Site crew — 6 men", detail: "Wardrobe carcass fitting, 3 days", amount: 54000, tax_pct: 0, tax_amt: 0, wht_amt: 0, total: 54000, paid_by: "cash", pay_label: "Cash", status: "paid", project: "NODE-26-011", receipt: "", recurring: 0, note: "", created_by: "Ar. Bilal Ahmed", created_at: "2026-10-05 09:05:00" },
+      { id: 43, spent_on: "2026-10-07", category: "transport", cat_label: "Transport, fuel & loading", node: "KHI", vendor: "Al-Noor Transport", detail: "1.5 ton, 2 loads to site", amount: 22500, tax_pct: 5, tax_amt: 1125, wht_amt: 0, total: 23625, paid_by: "credit", pay_label: "On credit", status: "pending", project: "", receipt: "", recurring: 0, note: "Invoice awaited", created_by: "Ar. Bilal Ahmed", created_at: "2026-10-07 16:40:00" }
+    ],
+    totals: { amount: 173000, tax: 18495, with_tax: 191495 },
+    range: { month: "2026-10", from: "2026-10-01", to: "2026-10-31" },
+    meta: { categories: { board: "Board & raw material", hardware: "Hardware & fittings", polish: "Polish, paint & adhesive", glass: "Glass, mirrors & acrylic", transport: "Transport, fuel & loading", wages: "Site labour (daily wages)", workshop: "Workshop & machine labour", tools: "Machinery, tools & blades", rent: "Rent — workshop & showroom", utilities: "Electricity, gas & water", phone: "Internet & phone", marketing: "Marketing & advertising", software: "Software & subscriptions", taxes: "Taxes & government fees", professional: "Professional fees", repairs: "Repairs & maintenance", travel: "Travel & food", misc: "Miscellaneous" },
+      pay: { cash: "Cash", bank: "Bank transfer", cheque: "Cheque", jazzcash: "JazzCash", easypaisa: "Easypaisa", card: "Card", credit: "On credit" },
+      status: { paid: "Paid", pending: "Pending approval", credit: "On credit" },
+      nodes: ["LHR", "ISB", "KHI", "RWP", "FSD", "GRW", "MUX", "PSH", "SKT", "BWP", "QTA", "HYD"] } };
+  if (action === "exp_kpis") return { ok: true, kpis: {
+    month: "2026-10", from: "2026-10-01", to: "2026-10-31", days: 31, day: 11, count: 3,
+    sum: 173000, tax: 18495, wht: 0, with_tax: 191495,
+    pending: { n: 1, value: 23625 }, credit: { n: 1, value: 23625 }, paid: { n: 2, value: 167870 },
+    recurring: { value: 185000, n: 1 }, avg_day: 15727.27, projected: 487545.45,
+    by_cat: [
+      { key: "board", label: "Board & raw material", n: 1, amount: 96500, tax: 17370 },
+      { key: "wages", label: "Site labour (daily wages)", n: 1, amount: 54000, tax: 0 },
+      { key: "transport", label: "Transport, fuel & loading", n: 1, amount: 22500, tax: 1125 }
+    ],
+    by_node: [ { key: "LHR", n: 1, amount: 96500 }, { key: "RWP", n: 1, amount: 54000 }, { key: "KHI", n: 1, amount: 22500 } ],
+    caps: { board: 120000, wages: 480000, transport: 140000, rent: 185000 },
+    top: { key: "board", label: "Board & raw material", n: 1, amount: 96500, tax: 17370 },
+    over_budget: [],
+    meta: { categories: { board: "Board & raw material" }, pay: { cash: "Cash" }, status: { paid: "Paid" }, nodes: ["LHR", "RWP", "KHI"] } } };
   if (action === "notifications" || action === "notify_list") return { ok: true, items: [], unread: 0, total: 0 };
   return new Proxy({ ok: true }, {
     get(t, k) {
@@ -164,6 +193,13 @@ const iframeStub = requestInterceptor(request => {
 
   var only = (process.env.WX_ONLY || "").split(",").filter(Boolean);
   if (only.length) { for (let i = routes.length - 1; i >= 0; i--) if (only.indexOf(routes[i][0]) < 0) routes.splice(i, 1); }
+  /* Per-route content markers. A screen is only "ok" if the strings that prove its blocks drew are
+     actually in the canvas — 220 bytes of header markup is not a rendered screen. Add a row here
+     when a screen gains a structural element worth pinning down. */
+  var MARKS = {
+    expenses: ["Expense log", "Spent in ", "Waiting for approval", "On credit", "Projected month-end",
+               "By category", "Pak Boards, Gulberg", "Site labour (daily wages)", "Fixed monthly"]
+  };
   var settle = Number(process.env.WX_WAIT || 0);
   console.log("\n  routes discovered in the sidebar: " + routes.length + "\n");
 
@@ -184,9 +220,12 @@ const iframeStub = requestInterceptor(request => {
          not fabricate; the fixture packs for those actions are added in Phase 3. */
     if (state !== "ok" && id === "builder") state = "SKIP";
     else if (state !== "ok" && /Loading…/.test(html)) state = "STUB";
-    const mark = state === "ok" ? "✓" : state === "SKIP" ? "−" : state === "STUB" ? "~" : state === "soon" ? "•" : "✗";
+    var want = MARKS[id] || [], missing = want.filter(function (m) { return html.indexOf(m) < 0; });
+    if (state === "ok" && missing.length) state = "THIN";
+    const mark = state === "ok" ? "✓" : state === "SKIP" ? "−" : state === "STUB" ? "~" : state === "soon" ? "•" : state === "THIN" ? "!" : "✗";
     ok("  " + mark + " " + id.padEnd(16) + String(html.length).padStart(7) + " B  " + state + (err ? "  " + err.slice(0, 110) : ""));
     if (state === "ERROR" || state === "EMPTY") fails.push(id + " → " + state + " " + err.slice(0, 200));
+    if (state === "THIN") fails.push(id + " → rendered, but these markers never appeared: " + missing.join(", "));
     if (state === "STUB" || state === "SKIP") gaps.push(id + "(" + state + ")");
     if ((process.env.WX_DUMP || "").split(",").indexOf(id) > -1) {
       console.log("      └ " + html.slice(0, 260).replace(/\s+/g, " "));

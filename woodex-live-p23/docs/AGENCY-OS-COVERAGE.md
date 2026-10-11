@@ -8,7 +8,7 @@ data file, stylesheet or copy was touched. It exists because two things were ask
 | --- | --- |
 | Date | 2026-10-11 |
 | Tree audited | `woodex-live-p23/` (the verified live tree), branch `arena/5252cdd7-marketingwoodex` |
-| What was added by this audit | this document only |
+| What was added by this audit | this document only (the follow-up commit then built the Expense Log, §3 item 2) |
 | What was changed | nothing |
 
 ## 0. The blocking fact, with the evidence
@@ -65,7 +65,7 @@ Status: **✅** a live view renders it · **◐** partially covered by a neighbo
 | Monthly Income Board | "Monthly report — last 12 months" modal | `admin-reports.js` (`W.monthlyReport`), also `admin-p8.js` | ✅ as the monthly report board |
 | Due Payments | invoices with dues | `admin-sales17.js` (27 due/overdue references), `admin-dash.js` | ✅ |
 | Receipts Vault | receipt flow | `admin-print17.js`, `admin-sales17.js`, `admin-print.js` (19 files mention receipts) | ✅ |
-| Expense Log | — | — | **✗ absent** — the string `expense` appears in **zero** files under `admin/` and `api/` |
+| Expense Log | `#/expenses` | `admin-expense.js` + `api/expense-lib.php`, tables `wx_expenses` / `wx_expense_budgets` | **✅ built** (was absent — see §3 and the plan doc §8.6) |
 | Financial Reports | `#/reports` | `admin-reports.js` | ✅ |
 
 ### Inbox, messaging, AI
@@ -155,8 +155,9 @@ exposing four actions. Two of them are **orphans**:
 1. **Wire the 26 ARC.STUDIO screens into the live admin** — the single biggest piece, and the one
    the manifest is written around. 23 of 26 have no live equivalent; the kit's HTML, its compiled
    stylesheet and its engine are already in the repo, so this is integration work, not design work.
-2. **Expense Log** — genuinely absent from V2.1 (zero occurrences of `expense`).
-3. **Bulk Document Manager** — a hub over the existing XLSX/print/bulk-select machinery.
+2. ~~**Expense Log** — genuinely absent from V2.1~~ — **built** (route `#/expenses`, backend
+   `api/expense-lib.php`, tables `wx_expenses` / `wx_expense_budgets`; plan doc §8.6).
+3. **Bulk Document Manager** — a hub over the existing XLSX/print/bulk-select machinery. Next.
 4. **Two orphan ARC endpoints** (`arc_budget_change`, `arc_drawing_revision`) — backend exists, no UI.
 5. **Gantt view** for activity/timelines; **contractor field reports**; **client interactive portal**.
 
