@@ -47,7 +47,7 @@
     box.innerHTML = '<div class="ig-head"><div><h3>Integrations</h3><p class="muted">' + on + " of " + cs.length + ' connected · all free except AI usage</p></div><div class="seg" id="ig-f">' +
       [["all", "All"], ["on", "Connected"], ["off", "Needs setup"]].map(function (x) { return '<button data-f="' + x[0] + '"' + (filt === x[0] ? ' class="on"' : "") + ">" + x[1] + "</button>"; }).join("") + "</div></div>" +
       '<div class="ig-grid">' + cs.map(tile).join("") +
-      '<button type="button" class="ig-tile" data-tab="connections"><span class="ig-ic" style="--c:#0c1628">' + ic("key") + '</span><span class="ig-cat">Sign-in & agents</span><b>Google sign-in · AI agents (MCP)</b><small>Sign in with Google and connect Claude/ChatGPT to your admin.</small><span class="ig-st"><i></i>See Connections</span><span class="ig-go">Open →</span></button></div>' +
+      '<button type="button" class="ig-tile" data-tab="connections"><span class="ig-ic" style="--c:var(--pri)">' + ic("key") + '</span><span class="ig-cat">Sign-in & agents</span><b>Google sign-in · AI agents (MCP)</b><small>Sign in with Google and connect Claude/ChatGPT to your admin.</small><span class="ig-st"><i></i>See Connections</span><span class="ig-go">Open →</span></button></div>' +
       (open ? '<div class="ig-back"><button type="button" class="btn sm" id="ig-all">← All integrations</button><b>' + esc(META[open][0]) + "</b></div>" : "");
     grid.classList.toggle("ig-one", !!open);
     cs.forEach(function (c) { c.classList.toggle("ig-show", c.id === open); });

@@ -48,23 +48,23 @@
       '<div style="display:grid;grid-template-columns:minmax(0,1.6fr) minmax(280px,1fr);gap:14px;align-items:start" class="wh-grid">' +
         '<div>' +
           '<!-- Interactive Bot & Estimator Simulator Card -->' +
-          '<div class="card" style="margin-bottom:14px;border:1px solid #1e2430;background:#111318">' +
+          '<div class="card" style="margin-bottom:14px;border:1px solid var(--line);background:var(--card-sub)">' +
             '<div class="card-h" style="display:flex;justify-content:space-between;align-items:center">' +
-              '<div><h3 style="color:#f9fafb;font-size:15px">' + ic("sparkles") + ' Autonomous Estimator &amp; Interactive Bot</h3><small class="muted">Runs 100% natively on WhatsApp &amp; Telegram — 0 paid SaaS / 0 dependencies</small></div>' +
+              '<div><h3 style="color:var(--txt);font-size:15px">' + ic("sparkles") + ' Autonomous Estimator &amp; Interactive Bot</h3><small class="muted">Runs 100% natively on WhatsApp &amp; Telegram — 0 paid SaaS / 0 dependencies</small></div>' +
               '<button class="btn sm pri btn-preline-cyan" id="wh-test-bot">' + ic("play") + 'Test Bot Flow</button>' +
             '</div>' +
             '<div class="card-b">' +
               '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;font-size:12.5px">' +
-                '<div style="background:#161922;padding:12px;border-radius:8px;border:1px solid #232836">' +
-                  '<b style="color:#00d3f2">1. Space Selection</b>' +
+                '<div style="background:var(--card-sub);padding:12px;border-radius:8px;border:1px solid var(--line)">' +
+                  '<b style="color:var(--pri)">1. Space Selection</b>' +
                   '<p class="muted" style="margin:4px 0 0">Interactive buttons: Full Home, Luxury Kitchen, Wardrobes, Commercial.</p>' +
                 '</div>' +
-                '<div style="background:#161922;padding:12px;border-radius:8px;border:1px solid #232836">' +
-                  '<b style="color:#00d3f2">2. Scale &amp; Material Quiz</b>' +
+                '<div style="background:var(--card-sub);padding:12px;border-radius:8px;border:1px solid var(--line)">' +
+                  '<b style="color:var(--pri)">2. Scale &amp; Material Quiz</b>' +
                   '<p class="muted" style="margin:4px 0 0">5/10 Marla, 1/2 Kanal · Acrylic, Solid Oak, Victorian Classic finishes.</p>' +
                 '</div>' +
-                '<div style="background:#161922;padding:12px;border-radius:8px;border:1px solid #232836">' +
-                  '<b style="color:#00d3f2">3. Instant BOQ &amp; Lead Sync</b>' +
+                '<div style="background:var(--card-sub);padding:12px;border-radius:8px;border:1px solid var(--line)">' +
+                  '<b style="color:var(--pri)">3. Instant BOQ &amp; Lead Sync</b>' +
                   '<p class="muted" style="margin:4px 0 0">Calculates PKR estimate range, creates CRM lead &amp; alerts Telegram staff.</p>' +
                 '</div>' +
               '</div>' +

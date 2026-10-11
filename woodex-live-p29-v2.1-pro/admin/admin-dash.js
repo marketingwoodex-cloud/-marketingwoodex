@@ -95,7 +95,7 @@
         '</div>' +
         '<div id="dx-task-list" style="display:flex;flex-direction:column;gap:10px">' +
           '<div class="dx-task-item" data-st="open" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--card-sub);border:1px solid var(--line);border-radius:10px;gap:12px;flex-wrap:wrap">' +
-            '<div style="display:flex;align-items:center;gap:10px"><span style="color:#f59e0b;font-size:15px">⚠️</span><div><b style="font-size:13.5px;color:var(--txt)">SEO metadata &amp; OpenGraph fixes</b><small class="muted" style="display:block;font-size:12px">12 published city &amp; residential pages need meta tags validation</small></div></div>' +
+            '<div style="display:flex;align-items:center;gap:10px"><span style="color:var(--warn);font-size:15px">⚠️</span><div><b style="font-size:13.5px;color:var(--txt)">SEO metadata &amp; OpenGraph fixes</b><small class="muted" style="display:block;font-size:12px">12 published city &amp; residential pages need meta tags validation</small></div></div>' +
             '<div style="display:flex;align-items:center;gap:10px"><span class="badge warn">Needs Work</span><a class="btn sm" href="#/seo">Open SEO</a></div>' +
           '</div>' +
           '<div class="dx-task-item" data-st="open" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--card-sub);border:1px solid var(--line);border-radius:10px;gap:12px;flex-wrap:wrap">' +
@@ -107,31 +107,31 @@
             '<div style="display:flex;align-items:center;gap:10px"><span class="badge info">Input Needed</span><a class="btn sm" href="#/testimonials">Testimonials</a></div>' +
           '</div>' +
           '<div class="dx-task-item" data-st="done" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--card-sub);border:1px solid var(--line);border-radius:10px;gap:12px;flex-wrap:wrap">' +
-            '<div style="display:flex;align-items:center;gap:10px"><span style="color:#10b981;font-size:15px">✅</span><div><b style="font-size:13.5px;color:var(--txt)">Telegram Bot @WoodexInteriorBot</b><small class="muted" style="display:block;font-size:12px">Token connected · Test broadcasts &amp; staff routing enabled</small></div></div>' +
+            '<div style="display:flex;align-items:center;gap:10px"><span style="color:var(--ok);font-size:15px">✅</span><div><b style="font-size:13.5px;color:var(--txt)">Telegram Bot @WoodexInteriorBot</b><small class="muted" style="display:block;font-size:12px">Token connected · Test broadcasts &amp; staff routing enabled</small></div></div>' +
             '<div style="display:flex;align-items:center;gap:10px"><span class="badge ok">Operational</span><a class="btn sm" href="#/telegram">Telegram</a></div>' +
           '</div>' +
           '<div class="dx-task-item" data-st="done" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--card-sub);border:1px solid var(--line);border-radius:10px;gap:12px;flex-wrap:wrap">' +
-            '<div style="display:flex;align-items:center;gap:10px"><span style="color:#10b981;font-size:15px">✅</span><div><b style="font-size:13.5px;color:var(--txt)">WhatsApp Cloud API &amp; Webhook Hub</b><small class="muted" style="display:block;font-size:12px">Automated quote templates &amp; customer chat triggers active</small></div></div>' +
+            '<div style="display:flex;align-items:center;gap:10px"><span style="color:var(--ok);font-size:15px">✅</span><div><b style="font-size:13.5px;color:var(--txt)">WhatsApp Cloud API &amp; Webhook Hub</b><small class="muted" style="display:block;font-size:12px">Automated quote templates &amp; customer chat triggers active</small></div></div>' +
             '<div style="display:flex;align-items:center;gap:10px"><span class="badge ok">Operational</span><a class="btn sm" href="#/wahub">WhatsApp Hub</a></div>' +
           '</div>' +
           '<div class="dx-task-item" data-st="done" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--card-sub);border:1px solid var(--line);border-radius:10px;gap:12px;flex-wrap:wrap">' +
-            '<div style="display:flex;align-items:center;gap:10px"><span style="color:#10b981;font-size:15px">✅</span><div><b style="font-size:13.5px;color:var(--txt)">Agent Bridge &amp; MCP Protocol (Claude/Cursor)</b><small class="muted" style="display:block;font-size:12px">7 JSON-RPC 2.0 tools exposed for autonomous CRM &amp; quotation drafting</small></div></div>' +
+            '<div style="display:flex;align-items:center;gap:10px"><span style="color:var(--ok);font-size:15px">✅</span><div><b style="font-size:13.5px;color:var(--txt)">Agent Bridge &amp; MCP Protocol (Claude/Cursor)</b><small class="muted" style="display:block;font-size:12px">7 JSON-RPC 2.0 tools exposed for autonomous CRM &amp; quotation drafting</small></div></div>' +
             '<div style="display:flex;align-items:center;gap:10px"><span class="badge ok">Operational</span><a class="btn sm" href="#/settings">Bridge Settings</a></div>' +
           '</div>' +
           '<div class="dx-task-item" data-st="done" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--card-sub);border:1px solid var(--line);border-radius:10px;gap:12px;flex-wrap:wrap">' +
-            '<div style="display:flex;align-items:center;gap:10px"><span style="color:#10b981;font-size:15px">✅</span><div><b style="font-size:13.5px;color:var(--txt)">360° VR Panoramic Virtual Tour</b><small class="muted" style="display:block;font-size:12px">Pannellum HTML5 engine &amp; DHA Phase 6 luxury living panorama loaded</small></div></div>' +
+            '<div style="display:flex;align-items:center;gap:10px"><span style="color:var(--ok);font-size:15px">✅</span><div><b style="font-size:13.5px;color:var(--txt)">360° VR Panoramic Virtual Tour</b><small class="muted" style="display:block;font-size:12px">Pannellum HTML5 engine &amp; DHA Phase 6 luxury living panorama loaded</small></div></div>' +
             '<div style="display:flex;align-items:center;gap:10px"><span class="badge ok">Operational</span><a class="btn sm" href="#/settings">VR Controls</a></div>' +
           '</div>' +
           '<div class="dx-task-item" data-st="done" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--card-sub);border:1px solid var(--line);border-radius:10px;gap:12px;flex-wrap:wrap">' +
-            '<div style="display:flex;align-items:center;gap:10px"><span style="color:#10b981;font-size:15px">✅</span><div><b style="font-size:13.5px;color:var(--txt)">Real DHA &amp; Gulberg project portfolio</b><small class="muted" style="display:block;font-size:12px">147 live public pages with high-res photography and specifications</small></div></div>' +
+            '<div style="display:flex;align-items:center;gap:10px"><span style="color:var(--ok);font-size:15px">✅</span><div><b style="font-size:13.5px;color:var(--txt)">Real DHA &amp; Gulberg project portfolio</b><small class="muted" style="display:block;font-size:12px">147 live public pages with high-res photography and specifications</small></div></div>' +
             '<div style="display:flex;align-items:center;gap:10px"><span class="badge ok">Operational</span><a class="btn sm" href="#/portfolio">Portfolio</a></div>' +
           '</div>' +
           '<div class="dx-task-item" data-st="done" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--card-sub);border:1px solid var(--line);border-radius:10px;gap:12px;flex-wrap:wrap">' +
-            '<div style="display:flex;align-items:center;gap:10px"><span style="color:#10b981;font-size:15px">✅</span><div><b style="font-size:13.5px;color:var(--txt)">Quotation &amp; BOQ dual bank routing</b><small class="muted" style="display:block;font-size:12px">Meezan &amp; Bank Alfalah accounts configured for luxury project payments</small></div></div>' +
+            '<div style="display:flex;align-items:center;gap:10px"><span style="color:var(--ok);font-size:15px">✅</span><div><b style="font-size:13.5px;color:var(--txt)">Quotation &amp; BOQ dual bank routing</b><small class="muted" style="display:block;font-size:12px">Meezan &amp; Bank Alfalah accounts configured for luxury project payments</small></div></div>' +
             '<div style="display:flex;align-items:center;gap:10px"><span class="badge ok">Operational</span><a class="btn sm" href="#/quotes">Quotations</a></div>' +
           '</div>' +
           '<div class="dx-task-item" data-st="done" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--card-sub);border:1px solid var(--line);border-radius:10px;gap:12px;flex-wrap:wrap">' +
-            '<div style="display:flex;align-items:center;gap:10px"><span style="color:#10b981;font-size:15px">✅</span><div><b style="font-size:13.5px;color:var(--txt)">Hostinger 1-click flat deployment ready</b><small class="muted" style="display:block;font-size:12px">Woodex Live P29-v2.1.zip archive generated with .htaccess &amp; database</small></div></div>' +
+            '<div style="display:flex;align-items:center;gap:10px"><span style="color:var(--ok);font-size:15px">✅</span><div><b style="font-size:13.5px;color:var(--txt)">Hostinger 1-click flat deployment ready</b><small class="muted" style="display:block;font-size:12px">Woodex Live P29-v2.1.zip archive generated with .htaccess &amp; database</small></div></div>' +
             '<div style="display:flex;align-items:center;gap:10px"><span class="badge ok">Ready</span><a class="btn sm pri btn-preline-cyan" href="#/backups">Backups</a></div>' +
           '</div>' +
         '</div>' +
@@ -168,17 +168,21 @@
     if (!window.Chart) return setTimeout(function () { chart(r); }, 150);
     kill(); var cv = $("#dx-ch"); if (!cv) return;
     var s = r.crm.series, lab = r.axis.map(function (d) { return new Date(d + "T00:00").toLocaleDateString("en", { day: "numeric", month: "short" }); });
-    var dark = document.documentElement.classList.contains("dark"), grid = dark ? "#1f2533" : "#eef0f3";
-    var gold = "#b8956a", navy = dark ? "#9fb3d9" : "#0c1628", grad = function (c) { var g = cv.getContext("2d").createLinearGradient(0, 0, 0, 280); g.addColorStop(0, c + "55"); g.addColorStop(1, c + "00"); return g; };
+    // U3 / AD-18: colours come from the theme tokens, not literals, so the chart matches the design layer.
+    var P = window.WXPalette ? window.WXPalette.palette() : { brand: "#2563eb", strong: "#111827", grid: "rgba(17,24,39,.08)" };
+    var grid = P.grid;
+    var gold = P.brand, navy = P.strong, grad = function (c) { var g = cv.getContext("2d").createLinearGradient(0, 0, 0, 280); g.addColorStop(0, c + "55"); g.addColorStop(1, c + "00"); return g; };
     var sets, type = "line", money = false;
     if (tab === "sales") { type = "bar"; sets = [{ label: "Quotes sent", data: s.sent, backgroundColor: navy, borderRadius: 4 }, { label: "Approved", data: s.won, backgroundColor: gold, borderRadius: 4 }]; }
-    else if (tab === "revenue") { money = true; sets = [{ label: "Invoiced", data: s.invoiced, borderColor: navy, backgroundColor: "transparent", tension: .35, borderWidth: 2, pointRadius: 0 }, { label: "Received", data: s.paid, borderColor: gold, backgroundColor: grad("#b8956a"), fill: true, tension: .35, borderWidth: 2.5, pointRadius: 0 }]; }
-    else { sets = [{ label: "Enquiries", data: s.leads, borderColor: gold, backgroundColor: grad("#b8956a"), fill: true, tension: .35, borderWidth: 2.5, pointRadius: 0, yAxisID: "y" }];
+    else if (tab === "revenue") { money = true; sets = [{ label: "Invoiced", data: s.invoiced, borderColor: navy, backgroundColor: "transparent", tension: .35, borderWidth: 2, pointRadius: 0 }, { label: "Received", data: s.paid, borderColor: gold, backgroundColor: grad(P.brand), fill: true, tension: .35, borderWidth: 2.5, pointRadius: 0 }]; }
+    else { sets = [{ label: "Enquiries", data: s.leads, borderColor: gold, backgroundColor: grad(P.brand), fill: true, tension: .35, borderWidth: 2.5, pointRadius: 0, yAxisID: "y" }];
       if (r.visitors.some(function (v) { return v != null; })) sets.push({ label: "Visitors", data: r.visitors, borderColor: navy, backgroundColor: "transparent", tension: .35, borderWidth: 2, pointRadius: 0, yAxisID: "y1" }); }
     var sum = function (a) { return a.reduce(function (x, y) { return x + (+y || 0); }, 0); };
     $("#dx-leg").innerHTML = sets.map(function (d) { var v = sum(d.data); return '<span><i style="background:' + (d.borderColor && d.borderColor !== "transparent" ? d.borderColor : d.backgroundColor) + '"></i>' + d.label + " <b>" + (money ? pkr(v) : v.toLocaleString()) + "</b></span>"; }).join("");
     var scales = { x: { grid: { display: false }, ticks: { maxTicksLimit: 8 } }, y: { beginAtZero: true, grid: { color: grid }, border: { display: false }, ticks: { precision: 0, callback: money ? function (v) { return pkr(v).replace("PKR ", ""); } : undefined } } };
     if (sets.some(function (d) { return d.yAxisID === "y1"; })) scales.y1 = { beginAtZero: true, position: "right", grid: { display: false }, border: { display: false }, ticks: { precision: 0 } };
     charts.push(new Chart(cv, { type: type, data: { labels: lab, datasets: sets }, options: { maintainAspectRatio: false, interaction: { mode: "index", intersect: false }, plugins: { legend: { display: false }, tooltip: { callbacks: money ? { label: function (x) { return x.dataset.label + ": " + pkr(x.raw); } } : {} } }, scales: scales } }));
+    // AD-18: a theme switch re-draws this chart with the other palette.
+    if (window.WXPalette) window.WXPalette.register("dashboard", function () { kill(); chart(r); });
   }
 })();

@@ -16,6 +16,25 @@ Release recommendation: **BLOCK** (credential exposure is not contained; live si
 
 **What did not change:** the visual design. The screenshot still shows the dark sidebar, dark cards, and the same layout on every page. The fixes above are behaviour and wording, not the redesign. That is why every page looks the same.
 
+## A2. Design batch (2026-10-12) — U1–U3 evidence
+
+Done and verified on a local stub (details: `deliverables/ADMIN-DESIGN-BATCH-2026-10-12.md`):
+- OV-2 / AD-18 charts: token palette (`admin/uipal.js`) + repaint on theme switch; canvas pixels
+  measured blue-600 (light) / blue-400 (dark). The toggle no longer re-routes the dashboard.
+- AS-27: sidebar is one token set (`--side-*`) in `admin.css`; 27 `!important` declarations removed;
+  `woodex-ui.css` aliases the same tokens.
+- AS-28 / U2 / AS-30: 343 literal colours replaced by tokens across 21 files (by property);
+  theme/header/footer palettes and print inks deliberately kept as data.
+- U7 / AS-31: active font stack was already Inter; comment corrected.
+- AU-10 verified (tab icons already had `gap:7px`).
+- Fixed while sweeping: KPI delta ink failed AA in light mode (2.62:1) and the sign-in "or" divider
+  (4.39:1 / 3.94:1); both now pass. Full sweep after the fixes: light 0, dark 0 below AA.
+- New: seeded preview `dash_data` fixture (U4) so the KPI row/chart can be seen; QA scripts
+  `ui-design-batch.mjs`, `login-contrast.mjs`. `regression_static.py` 15/15 (mirror checks for the
+  four changed files now report known drift, U6 open). `reverify_findings.py` 51/5/10 — the five
+  FAILs are stale expectations (AD-13/27/28 assert the old literals are present) plus pre-existing
+  AD-02/AD-24.
+
 ## B. What is still pending
 
 ### B1. Design and UI/UX (replica in progress)

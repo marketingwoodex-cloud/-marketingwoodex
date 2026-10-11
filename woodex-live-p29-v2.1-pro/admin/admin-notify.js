@@ -4,8 +4,8 @@
   var api = W.api, esc = W.esc, ic = W.ic, $ = W.$, $$ = W.$$, toast = W.toast;
   var HINT = { lead: "Sent when a customer submits a form on the website.", quote: "Sent when a quotation's status changes from Draft to Sent.", started: "Sent once when a project moves to Execution.", handover: "Sent once when a project moves to Handover or Completed." };
   var css = document.createElement("style");
-  css.textContent = ".nt-ev{border:1px solid var(--line,#e5e7eb);border-radius:12px;padding:14px 16px;margin-bottom:12px}.nt-ev h4{margin:0;display:flex;align-items:center;gap:10px;font-size:15px}.nt-ev h4 small{font-weight:400;color:#6b7280;font-size:12.5px}.nt-ev h4 .sw{margin-left:auto}" +
-    ".nt-ev textarea{font-size:13.5px;line-height:1.5}.nt-ev .row{display:grid;grid-template-columns:1fr 220px;gap:10px}@media(max-width:800px){.nt-ev .row{grid-template-columns:1fr}}.nt-ph{font-size:12px;color:#6b7280;margin:6px 0 0}.nt-ph code{background:var(--soft,#f3f4f6);padding:1px 5px;border-radius:4px}" +
+  css.textContent = ".nt-ev{border:1px solid var(--line,#e5e7eb);border-radius:12px;padding:14px 16px;margin-bottom:12px}.nt-ev h4{margin:0;display:flex;align-items:center;gap:10px;font-size:15px}.nt-ev h4 small{font-weight:400;color:var(--mut);font-size:12.5px}.nt-ev h4 .sw{margin-left:auto}" +
+    ".nt-ev textarea{font-size:13.5px;line-height:1.5}.nt-ev .row{display:grid;grid-template-columns:1fr 220px;gap:10px}@media(max-width:800px){.nt-ev .row{grid-template-columns:1fr}}.nt-ph{font-size:12px;color:var(--mut);margin:6px 0 0}.nt-ph code{background:var(--soft,#f3f4f6);padding:1px 5px;border-radius:4px}" +
     ".nt-log{width:100%;border-collapse:collapse;font-size:13px}.nt-log td,.nt-log th{padding:7px 8px;border-bottom:1px solid var(--line,#e5e7eb);text-align:left}.nt-ok{color:#15803d}.nt-bad{color:#b91c1c}";
   document.head.appendChild(css);
 

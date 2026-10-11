@@ -74,19 +74,19 @@
             '<div class="crm-imp-item"><div class="crm-imp-left"><div class="crm-imp-ic">' + ic("file-text") + '</div><div><div class="crm-imp-title">Notion</div><div class="crm-imp-desc">Users</div></div></div><button class="crm-imp-btn" id="imp-notion">Launch importer ↗</button></div>' +
             '<div class="crm-imp-item"><div class="crm-imp-left"><div class="crm-imp-ic">' + ic("file") + '</div><div><div class="crm-imp-title">CSV</div><div class="crm-imp-desc">Users</div></div></div><button class="crm-imp-btn" id="imp-csv">Launch importer ↗</button></div>' +
           '</div>' +
-          '<small style="color:var(--mut);font-size:12px;margin-top:auto">Or you can <a href="#/settings" style="color:#00d3f2;text-decoration:none;font-weight:600">sync data to Preline</a> to ensure your data is always up-to-date.</small>' +
+          '<small style="color:var(--mut);font-size:12px;margin-top:auto">Or you can <a href="#/settings" style="color:var(--pri);text-decoration:none;font-weight:600">sync data to Preline</a> to ensure your data is always up-to-date.</small>' +
         '</div>' +
 
         '<div class="crm-block-card"><div class="crm-block-h"><h3>Lead funnel status</h3><button class="icon-btn" style="opacity:0.6">⋮</button></div>' +
           '<div style="margin-top:10px">' +
-            '<div class="crm-funnel-row"><div class="crm-funnel-meta"><span><i style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#38bdf8;margin-right:6px"></i>Spam/blocked</span><span style="color:#94a3b8">12 (9.9%)</span></div>' +
-              '<div class="crm-funnel-meta"><span><i style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#00d3f2;margin-right:6px"></i>Valid leads</span><span style="color:#94a3b8">28 (25.6%)</span></div>' +
+            '<div class="crm-funnel-row"><div class="crm-funnel-meta"><span><i style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#38bdf8;margin-right:6px"></i>Spam/blocked</span><span style="color:var(--mut)">12 (9.9%)</span></div>' +
+              '<div class="crm-funnel-meta"><span><i style="display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--pri);margin-right:6px"></i>Valid leads</span><span style="color:var(--mut)">28 (25.6%)</span></div>' +
               '<div class="crm-funnel-track"><div class="crm-funnel-fill-cyan" style="width:35%"></div><div class="crm-funnel-fill-gray" style="width:65%"></div></div></div>' +
-            '<div class="crm-funnel-row"><div class="crm-funnel-meta"><span><i style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#818cf8;margin-right:6px"></i>Qualified leads</span><span style="color:#94a3b8">38 (29.5%)</span></div>' +
-              '<div class="crm-funnel-meta"><span><i style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#6366f1;margin-right:6px"></i>Cold leads</span><span style="color:#94a3b8">31 (20.5%)</span></div>' +
+            '<div class="crm-funnel-row"><div class="crm-funnel-meta"><span><i style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#818cf8;margin-right:6px"></i>Qualified leads</span><span style="color:var(--mut)">38 (29.5%)</span></div>' +
+              '<div class="crm-funnel-meta"><span><i style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#6366f1;margin-right:6px"></i>Cold leads</span><span style="color:var(--mut)">31 (20.5%)</span></div>' +
               '<div class="crm-funnel-track"><div class="crm-funnel-fill-indigo" style="width:50%"></div><div class="crm-funnel-fill-gray" style="width:50%"></div></div></div>' +
-            '<div class="crm-funnel-row"><div class="crm-funnel-meta"><span><i style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#00d3f2;margin-right:6px"></i>Converted to deal</span><span style="color:#94a3b8">22 (17.0%)</span></div>' +
-              '<div class="crm-funnel-meta"><span><i style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#38bdf8;margin-right:6px"></i>Still in pipeline</span><span style="color:#94a3b8">44 (43.0%)</span></div>' +
+            '<div class="crm-funnel-row"><div class="crm-funnel-meta"><span><i style="display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--pri);margin-right:6px"></i>Converted to deal</span><span style="color:var(--mut)">22 (17.0%)</span></div>' +
+              '<div class="crm-funnel-meta"><span><i style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#38bdf8;margin-right:6px"></i>Still in pipeline</span><span style="color:var(--mut)">44 (43.0%)</span></div>' +
               '<div class="crm-funnel-track"><div class="crm-funnel-fill-cyan" style="width:60%"></div><div class="crm-funnel-fill-gray" style="width:40%"></div></div></div>' +
           '</div>' +
           '<small style="color:var(--mut);font-size:12px;margin-top:auto">High cold lead count may indicate a need to adjust targeting or messaging.</small>' +
@@ -96,7 +96,7 @@
           '<div style="display:flex;align-items:baseline;gap:8px;margin-top:4px"><span style="font-size:30px;font-weight:800;color:var(--txt)">44%</span><span class="crm-kpi-badge down">↘ down from 56.8%</span></div>' +
           '<div class="crm-gauge-wrap">' + gaugeSvg() + '</div>' +
           '<div class="crm-gauge-legend">' +
-            '<div class="crm-leg-item"><span class="crm-leg-dot" style="background:#00d3f2"></span><div><div class="crm-leg-title" style="color:var(--txt)">47</div><div class="crm-leg-desc">Nurtured successfully</div></div></div>' +
+            '<div class="crm-leg-item"><span class="crm-leg-dot" style="background:var(--pri)"></span><div><div class="crm-leg-title" style="color:var(--txt)">47</div><div class="crm-leg-desc">Nurtured successfully</div></div></div>' +
             '<div class="crm-leg-item"><span class="crm-leg-dot" style="background:#2563eb"></span><div><div class="crm-leg-title" style="color:var(--txt)">23</div><div class="crm-leg-desc">Sent to sales review</div></div></div>' +
             '<div class="crm-leg-item"><span class="crm-leg-dot" style="background:#475569"></span><div><div class="crm-leg-title" style="color:var(--txt)">30</div><div class="crm-leg-desc">Blocked</div></div></div>' +
             '<div class="crm-leg-item"><span class="crm-leg-dot" style="background:#94a3b8"></span><div><div class="crm-leg-title" style="color:var(--txt)">30</div><div class="crm-leg-desc">Disqualified by team</div></div></div>' +
@@ -119,7 +119,7 @@
           '</div>' +
         '</div>' +
         '<div class="tbl-wrap"><table class="tbl s17-tbl"><thead><tr>' +
-          '<th style="width:32px"><input type="checkbox" style="width:16px;height:16px;accent-color:#00b8db"></th>' +
+          '<th style="width:32px"><input type="checkbox" style="width:16px;height:16px;accent-color:var(--pri)"></th>' +
           '<th>Name</th><th>Company</th><th>Location / Address</th><th>Email</th><th>Phone</th><th>Quotation</th><th>Stage</th><th>Date</th>' +
         '</tr></thead><tbody id="s17-rows"><tr><td colspan="9" class="empty">Loading…</td></tr></tbody></table></div>' +
       '</div>' +
@@ -154,9 +154,9 @@
         var emailStr = l.email ? '<a href="mailto:' + esc(l.email) + '" style="color:inherit;text-decoration:none">' + esc(l.email) + '</a>' : '<span class="muted">—</span>';
         var phoneStr = l.phone ? '<span style="display:inline-flex;align-items:center;gap:6px">' + esc(l.phone) + ' <a class="s17-wa" data-stop title="WhatsApp" target="_blank" rel="noopener" href="https://wa.me/' + waNum(l.phone) + '">' + ic("message-circle") + '</a></span>' : '<span class="muted">—</span>';
         return '<tr data-id="' + l.id + '" class="' + (od ? "s17-od " : "") + (l.read ? "" : "unread") + '">' +
-          '<td><input type="checkbox" style="width:16px;height:16px;accent-color:#00b8db" data-stop></td>' +
+          '<td><input type="checkbox" style="width:16px;height:16px;accent-color:var(--pri)" data-stop></td>' +
           '<td><div style="display:flex;align-items:center;gap:10px"><span class="preline-avatar">' + esc(ini) + '</span><div><b>' + esc(title) + '</b>' + (l.lead_type === "returning" || l.client_id ? " <span class='badge navy sm'>Client</span>" : "") + '</div></div></td>' +
-          '<td>' + (l.company ? '<span class="badge" style="background:#1e293b;color:#94a3b8">' + esc(l.company) + '</span>' : '<span class="muted">' + esc(sub) + '</span>') + '</td>' +
+          '<td>' + (l.company ? '<span class="badge" style="background:#1e293b;color:var(--mut)">' + esc(l.company) + '</span>' : '<span class="muted">' + esc(sub) + '</span>') + '</td>' +
           '<td>' + esc(l.location || (l.fields && l.fields.city) || (l.fields && l.fields.address) || "Lahore") + '</td>' +
           '<td>' + emailStr + '</td>' +
           '<td class="nw">' + phoneStr + '</td>' +

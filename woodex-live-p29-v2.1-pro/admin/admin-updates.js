@@ -10,46 +10,46 @@
       '<button class="btn pri btn-preline-cyan" id="upd-save-btn">' + ic("check") + 'Save</button>') +
 
       '<!-- 4-Step Lifecycle Progress Banner (From Image 10) -->' +
-      '<div class="card" style="background:#111318;border:1px solid #20242f;border-radius:14px;padding:20px;margin-bottom:20px">' +
+      '<div class="card" style="background:var(--card-sub);border:1px solid var(--line);border-radius:14px;padding:20px;margin-bottom:20px">' +
         '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:18px">' +
           '<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">' +
-            '<b style="color:#f9fafb;font-size:14px">How client updates work</b>' +
+            '<b style="color:var(--txt);font-size:14px">How client updates work</b>' +
             '<span class="badge warn" style="font-size:11.5px">● WhatsApp connected</span>' +
             '<span class="badge navy" style="font-size:11.5px">● Auto-save leads on</span>' +
-            '<span class="badge" style="font-size:11.5px;color:#9ca3af">● Mon-Sat, 9:30 am – 6:30 pm</span>' +
+            '<span class="badge" style="font-size:11.5px;color:var(--mut)">● Mon-Sat, 9:30 am – 6:30 pm</span>' +
           '</div>' +
-          '<button class="icon-btn sm" style="color:#6b7280;font-size:12px">Hide</button>' +
+          '<button class="icon-btn sm" style="color:var(--mut);font-size:12px">Hide</button>' +
         '</div>' +
 
         '<div style="display:grid;grid-template-columns:repeat(4, 1fr);gap:16px;position:relative">' +
-          '<div style="background:#161922;border:1px solid #232836;border-radius:12px;padding:16px">' +
+          '<div style="background:var(--card-sub);border:1px solid var(--line);border-radius:12px;padding:16px">' +
             '<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">' +
-              '<span style="width:28px;height:28px;border-radius:50%;background:#00b8db;color:#04222b;font-weight:800;display:grid;place-items:center;font-size:12px">1</span>' +
-              '<b style="font-size:13.5px;color:#f9fafb">Project moves a step</b>' +
+              '<span style="width:28px;height:28px;border-radius:50%;background:var(--pri);color:var(--pri-fg);font-weight:800;display:grid;place-items:center;font-size:12px">1</span>' +
+              '<b style="font-size:13.5px;color:var(--txt)">Project moves a step</b>' +
             '</div>' +
             '<small class="muted" style="font-size:12px;line-height:1.4;display:block">Enquiry received · Quotation sent · Work started · Handover.</small>' +
           '</div>' +
 
-          '<div style="background:#161922;border:1px solid #232836;border-radius:12px;padding:16px">' +
+          '<div style="background:var(--card-sub);border:1px solid var(--line);border-radius:12px;padding:16px">' +
             '<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">' +
-              '<span style="width:28px;height:28px;border-radius:50%;background:#00b8db;color:#04222b;font-weight:800;display:grid;place-items:center;font-size:12px">2</span>' +
-              '<b style="font-size:13.5px;color:#f9fafb">Message is chosen</b>' +
+              '<span style="width:28px;height:28px;border-radius:50%;background:var(--pri);color:var(--pri-fg);font-weight:800;display:grid;place-items:center;font-size:12px">2</span>' +
+              '<b style="font-size:13.5px;color:var(--txt)">Message is chosen</b>' +
             '</div>' +
             '<small class="muted" style="font-size:12px;line-height:1.4;display:block">Your English + Urdu text for that step, with name and project filled in.</small>' +
           '</div>' +
 
-          '<div style="background:#161922;border:1px solid #232836;border-radius:12px;padding:16px">' +
+          '<div style="background:var(--card-sub);border:1px solid var(--line);border-radius:12px;padding:16px">' +
             '<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">' +
-              '<span style="width:28px;height:28px;border-radius:50%;background:#00b8db;color:#04222b;font-weight:800;display:grid;place-items:center;font-size:12px">3</span>' +
-              '<b style="font-size:13.5px;color:#f9fafb">Sent on 2 channels</b>' +
+              '<span style="width:28px;height:28px;border-radius:50%;background:var(--pri);color:var(--pri-fg);font-weight:800;display:grid;place-items:center;font-size:12px">3</span>' +
+              '<b style="font-size:13.5px;color:var(--txt)">Sent on 2 channels</b>' +
             '</div>' +
             '<small class="muted" style="font-size:12px;line-height:1.4;display:block">WhatsApp (when connected) and email, once per step, never twice.</small>' +
           '</div>' +
 
-          '<div style="background:#161922;border:1px solid #232836;border-radius:12px;padding:16px">' +
+          '<div style="background:var(--card-sub);border:1px solid var(--line);border-radius:12px;padding:16px">' +
             '<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">' +
-              '<span style="width:28px;height:28px;border-radius:50%;background:#00b8db;color:#04222b;font-weight:800;display:grid;place-items:center;font-size:12px">4</span>' +
-              '<b style="font-size:13.5px;color:#f9fafb">Saved to timeline</b>' +
+              '<span style="width:28px;height:28px;border-radius:50%;background:var(--pri);color:var(--pri-fg);font-weight:800;display:grid;place-items:center;font-size:12px">4</span>' +
+              '<b style="font-size:13.5px;color:var(--txt)">Saved to timeline</b>' +
             '</div>' +
             '<small class="muted" style="font-size:12px;line-height:1.4;display:block">Shown on the client and project, so everyone knows what the client was told.</small>' +
           '</div>' +
@@ -58,8 +58,8 @@
 
       '<div style="display:grid;grid-template-columns:1.2fr 1fr;gap:20px">' +
         '<!-- Notification Templates Table -->' +
-        '<div class="card" style="background:#111318;border:1px solid #20242f;border-radius:14px;padding:20px">' +
-          '<div class="card-h" style="padding:0 0 14px;border-bottom:1px solid #1a1e27;display:flex;align-items:center;justify-content:space-between">' +
+        '<div class="card" style="background:var(--card-sub);border:1px solid var(--line);border-radius:14px;padding:20px">' +
+          '<div class="card-h" style="padding:0 0 14px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between">' +
             '<h3>' + ic("bell") + ' Milestone Triggers & Templates</h3>' +
             '<span class="badge ok">Live Sync</span>' +
           '</div>' +
@@ -67,13 +67,13 @@
         '</div>' +
 
         '<!-- Interactive Template Preview & Tester -->' +
-        '<div class="card" style="background:#111318;border:1px solid #20242f;border-radius:14px;padding:20px">' +
-          '<div class="card-h" style="padding:0 0 14px;border-bottom:1px solid #1a1e27"><h3>' + ic("smartphone") + ' WhatsApp Live Preview</h3></div>' +
-          '<div style="margin-top:16px;background:#0b0d13;border:1px solid #1e2430;border-radius:12px;padding:16px">' +
+        '<div class="card" style="background:var(--card-sub);border:1px solid var(--line);border-radius:14px;padding:20px">' +
+          '<div class="card-h" style="padding:0 0 14px;border-bottom:1px solid var(--line)"><h3>' + ic("smartphone") + ' WhatsApp Live Preview</h3></div>' +
+          '<div style="margin-top:16px;background:var(--card-sub);border:1px solid var(--line);border-radius:12px;padding:16px">' +
             '<div style="background:#075e54;color:#fff;padding:8px 12px;border-radius:8px 8px 0 0;font-size:12px;display:flex;align-items:center;gap:8px">' +
               ic("message-circle") + '<b>Woodex Studio Official Updates</b>' +
             '</div>' +
-            '<div id="preview-box" style="background:#0b141a;padding:14px;min-height:180px;font-size:13px;line-height:1.5;color:#e9edef;white-space:pre-wrap;border-radius:0 0 8px 8px;border:1px solid #1e2430;border-top:0">' +
+            '<div id="preview-box" style="background:#0b141a;padding:14px;min-height:180px;font-size:13px;line-height:1.5;color:#e9edef;white-space:pre-wrap;border-radius:0 0 8px 8px;border:1px solid var(--line);border-top:0">' +
               'Select a template on the left to preview.' +
             '</div>' +
           '</div>' +
@@ -126,12 +126,12 @@
       if (!box) return;
 
       box.innerHTML = templates.map(function (t, i) {
-        return '<div class="upd-item" data-idx="' + i + '" style="background:#0b0d13;border:1px solid #1e2430;border-radius:10px;padding:14px;cursor:pointer;transition:all 0.15s ease">' +
+        return '<div class="upd-item" data-idx="' + i + '" style="background:var(--card-sub);border:1px solid var(--line);border-radius:10px;padding:14px;cursor:pointer;transition:all 0.15s ease">' +
           '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">' +
-            '<b style="color:#f9fafb;font-size:13.5px">' + esc(t.title) + '</b>' +
+            '<b style="color:var(--txt);font-size:13.5px">' + esc(t.title) + '</b>' +
             '<span class="badge navy" style="font-size:11px">' + esc(t.stage) + '</span>' +
           '</div>' +
-          '<div style="display:flex;align-items:center;gap:12px;font-size:12px;color:#94a3b8">' +
+          '<div style="display:flex;align-items:center;gap:12px;font-size:12px;color:var(--mut)">' +
             '<span>' + esc(t.lang) + '</span> · <span>' + esc(t.channel) + '</span>' +
           '</div>' +
         '</div>';

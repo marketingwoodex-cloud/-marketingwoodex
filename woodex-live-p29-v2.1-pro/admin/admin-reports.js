@@ -45,13 +45,23 @@
         "<tr style='font-weight:700;border-top:2px solid var(--line)'><td>Total</td>" + cols.map(function (c) { return "<td class='r'>" + (c[2] ? pkr(tot[c[0]]) : tot[c[0]]) + "</td>"; }).join("") + "</tr></tbody></table></div>" +
         "<p class='hint'>Conversion: " + (tot.enq ? Math.round(tot.won / tot.enq * 100) : 0) + "% of enquiries won · " + (tot.quotes ? Math.round(tot.approved / tot.quotes * 100) : 0) + "% of quotes approved.</p>";
       W.fillIcons($("#modal-card"));
-      $("#mr-x").onclick = function () { $("#modal-card").classList.remove("wide"); closeModal(); };
+      $("#mr-x").onclick = function () { $("#modal-card").classList.remove("wide"); closeModal(); if (window.WXPalette) window.WXPalette.unregister("reports"); };
       $("#mr-csv").onclick = function () { download("woodex-monthly-report-" + keys[11] + ".csv", toCsv([["Month"].concat(cols.map(function (c) { return c[1]; }))].concat(keys.map(function (k) { return [mname(k)].concat(cols.map(function (c) { return Math.round(M[k][c[0]]); })); })))); };
-      if (window.Chart) new Chart($("#mr-ch"), { type: "bar", data: { labels: keys.map(mname), datasets: [
-        { type: "bar", label: "Enquiries", data: keys.map(function (k) { return M[k].enq; }), backgroundColor: "#c9a97a", yAxisID: "y" },
-        { type: "bar", label: "New clients", data: keys.map(function (k) { return M[k].clients; }), backgroundColor: "#0c1628", yAxisID: "y" },
-        { type: "line", label: "Received (Rs)", data: keys.map(function (k) { return M[k].received; }), borderColor: "#16a34a", tension: .3, yAxisID: "y2" }
-      ] }, options: { maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { precision: 0 } }, y2: { beginAtZero: true, position: "right", grid: { display: false } } } } });
+      /* U3 / AD-18: token colours, and the chart repaints with the theme while the report is open. */
+      var mr = null;
+      var drawMr = function () {
+        if (!window.Chart || !$("#mr-ch")) { if (window.WXPalette) window.WXPalette.unregister("reports"); return; }
+        var P = window.WXPalette ? window.WXPalette.palette() : { brand: "#2563eb", strong: "#111827", ok: "#10b981", text: "#4b5563", font: '"Inter",system-ui,sans-serif' };
+        Chart.defaults.font.family = P.font; Chart.defaults.color = P.text;
+        if (mr) { try { mr.destroy(); } catch (e) {} }
+        if (window.WXPalette) window.WXPalette.register("reports", drawMr);
+        mr = new Chart($("#mr-ch"), { type: "bar", data: { labels: keys.map(mname), datasets: [
+          { type: "bar", label: "Enquiries", data: keys.map(function (k) { return M[k].enq; }), backgroundColor: P.brand, yAxisID: "y" },
+          { type: "bar", label: "New clients", data: keys.map(function (k) { return M[k].clients; }), backgroundColor: P.strong, yAxisID: "y" },
+          { type: "line", label: "Received (Rs)", data: keys.map(function (k) { return M[k].received; }), borderColor: P.ok, tension: .3, yAxisID: "y2" }
+        ] }, options: { maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { precision: 0 } }, y2: { beginAtZero: true, position: "right", grid: { display: false } } } } });
+      };
+      drawMr();
     });
   }
 

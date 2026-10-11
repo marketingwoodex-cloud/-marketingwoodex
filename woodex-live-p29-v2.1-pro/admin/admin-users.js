@@ -18,14 +18,14 @@
       '<button class="btn" id="tm-roles-btn">' + ic("shield") + 'Role permissions</button>' +
       '<button class="btn pri btn-preline-cyan" id="tm-add-btn">' + ic("plus") + 'Add team member</button>') +
 
-      '<div class="card" style="margin-bottom:20px;background:#111318;border:1px solid #20242f">' +
+      '<div class="card" style="margin-bottom:20px;background:var(--card-sub);border:1px solid var(--line)">' +
         '<div class="card-b" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:14px 18px">' +
           '<div style="display:flex;align-items:center;gap:10px">' +
-            '<span class="kpi-ic" style="background:rgba(0,184,219,0.15);color:#00d3f2">' + ic("users") + '</span>' +
-            '<div><b style="font-size:15px;color:#f9fafb">Active Studio Team</b><small class="muted" style="display:block">5 team members with role-based dashboard access</small></div>' +
+            '<span class="kpi-ic" style="background:rgba(0,184,219,0.15);color:var(--pri)">' + ic("users") + '</span>' +
+            '<div><b style="font-size:15px;color:var(--txt)">Active Studio Team</b><small class="muted" style="display:block">5 team members with role-based dashboard access</small></div>' +
           '</div>' +
           '<div style="display:flex;gap:8px">' +
-            '<input type="search" id="tm-q" placeholder="Search team by name, role, email…" style="margin:0;min-width:240px;background:#181c24;border-color:#262a33">' +
+            '<input type="search" id="tm-q" placeholder="Search team by name, role, email…" style="margin:0;min-width:240px;background:var(--card-sub);border-color:#262a33">' +
           '</div>' +
         '</div>' +
       '</div>' +
@@ -60,24 +60,24 @@
           var ini = u.avatar || u.name.split(" ").map(function (n) { return n[0]; }).join("").slice(0, 2).toUpperCase();
           var badgeCls = ROLE_BADGE[u.role] || "badge";
 
-          return '<div class="card" style="background:#111318;border:1px solid #20242f;border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:14px;box-shadow:0 4px 20px rgba(0,0,0,0.25)">' +
+          return '<div class="card" style="background:var(--card-sub);border:1px solid var(--line);border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:14px;box-shadow:0 4px 20px rgba(0,0,0,0.25)">' +
             '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">' +
               '<div style="display:flex;align-items:center;gap:12px">' +
-                '<span class="preline-avatar" style="width:44px;height:44px;font-size:16px;background:#1e293b;color:#00d3f2;border:1px solid #334155">' + esc(ini) + '</span>' +
+                '<span class="preline-avatar" style="width:44px;height:44px;font-size:16px;background:#1e293b;color:var(--pri);border:1px solid #334155">' + esc(ini) + '</span>' +
                 '<div>' +
-                  '<b style="font-size:15px;color:#f9fafb;display:block">' + esc(u.name) + '</b>' +
+                  '<b style="font-size:15px;color:var(--txt);display:block">' + esc(u.name) + '</b>' +
                   '<span class="' + badgeCls + '" style="font-size:11px;margin-top:2px">' + esc(u.role_label || u.role) + '</span>' +
                 '</div>' +
               '</div>' +
               '<span class="badge ok" style="font-size:10.5px">Active</span>' +
             '</div>' +
-            '<p style="font-size:12.5px;color:#94a3b8;line-height:1.5;margin:0;min-height:38px">' + esc(u.bio || "Team member at Woodex Interior Studio.") + '</p>' +
-            '<div style="border-top:1px solid #1a1e27;padding-top:12px;display:flex;flex-direction:column;gap:6px;font-size:12px;color:#cbd5e1">' +
+            '<p style="font-size:12.5px;color:var(--mut);line-height:1.5;margin:0;min-height:38px">' + esc(u.bio || "Team member at Woodex Interior Studio.") + '</p>' +
+            '<div style="border-top:1px solid var(--line);padding-top:12px;display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--txt2)">' +
               '<div style="display:flex;align-items:center;gap:8px">' + ic("mail") + '<a href="mailto:' + esc(u.email) + '" style="color:inherit;text-decoration:none">' + esc(u.email) + '</a></div>' +
               (u.phone ? '<div style="display:flex;align-items:center;gap:8px">' + ic("phone") + '<span>' + esc(u.phone) + '</span></div>' : '') +
               (u.department ? '<div style="display:flex;align-items:center;gap:8px">' + ic("briefcase") + '<span class="muted">' + esc(u.department) + '</span></div>' : '') +
             '</div>' +
-            '<div style="border-top:1px solid #1a1e27;padding-top:12px;display:flex;gap:8px;margin-top:auto">' +
+            '<div style="border-top:1px solid var(--line);padding-top:12px;display:flex;gap:8px;margin-top:auto">' +
               '<button class="btn sm" data-edit="' + u.id + '" style="flex:1">' + ic("edit-2") + 'Edit details</button>' +
               (u.phone ? '<a class="btn sm wa" target="_blank" rel="noopener" href="https://wa.me/' + u.phone.replace(/\D/g, "") + '">' + ic("message-circle") + '</a>' : '') +
             '</div>' +

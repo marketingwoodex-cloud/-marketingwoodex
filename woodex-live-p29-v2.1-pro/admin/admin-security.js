@@ -12,21 +12,21 @@
 
       '<!-- Metrics Grid -->' +
       '<div style="display:grid;grid-template-columns:repeat(4, 1fr);gap:16px;margin-bottom:20px">' +
-        '<div class="card" style="background:#111318;border:1px solid #20242f;border-radius:12px;padding:16px">' +
+        '<div class="card" style="background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px">' +
           '<small class="muted">2-Factor Authentication</small>' +
-          '<div style="display:flex;align-items:center;gap:8px;margin-top:6px"><span class="badge ok">TOTP Enforced</span><b style="color:#f9fafb">Active</b></div>' +
+          '<div style="display:flex;align-items:center;gap:8px;margin-top:6px"><span class="badge ok">TOTP Enforced</span><b style="color:var(--txt)">Active</b></div>' +
         '</div>' +
-        '<div class="card" style="background:#111318;border:1px solid #20242f;border-radius:12px;padding:16px">' +
+        '<div class="card" style="background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px">' +
           '<small class="muted">Active Sessions</small>' +
-          '<b style="font-size:20px;color:#00d3f2;margin-top:4px;display:block">1 Connected Device</b>' +
+          '<b style="font-size:20px;color:var(--pri);margin-top:4px;display:block">1 Connected Device</b>' +
         '</div>' +
-        '<div class="card" style="background:#111318;border:1px solid #20242f;border-radius:12px;padding:16px">' +
+        '<div class="card" style="background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px">' +
           '<small class="muted">Pending Approvals</small>' +
-          '<b style="font-size:20px;color:#10b981;margin-top:4px;display:block">0 Waiting</b>' +
+          '<b style="font-size:20px;color:var(--ok);margin-top:4px;display:block">0 Waiting</b>' +
         '</div>' +
-        '<div class="card" style="background:#111318;border:1px solid #20242f;border-radius:12px;padding:16px">' +
+        '<div class="card" style="background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px">' +
           '<small class="muted">CSRF / HMAC Protection</small>' +
-          '<b style="font-size:20px;color:#a78bfa;margin-top:4px;display:block">Strict (SHA-256)</b>' +
+          '<b style="font-size:20px;color:var(--pri);margin-top:4px;display:block">Strict (SHA-256)</b>' +
         '</div>' +
       '</div>' +
 
@@ -34,16 +34,16 @@
         '<!-- Left Column: 2FA & Active Sessions -->' +
         '<div style="display:flex;flex-direction:column;gap:20px">' +
           '<!-- 2FA Card -->' +
-          '<div class="card" style="background:#111318;border:1px solid #20242f;border-radius:14px;padding:22px">' +
-            '<div class="card-h" style="padding:0 0 14px;border-bottom:1px solid #1a1e27;display:flex;align-items:center;justify-content:space-between">' +
+          '<div class="card" style="background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px">' +
+            '<div class="card-h" style="padding:0 0 14px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between">' +
               '<div>' +
-                '<h3 style="font-size:16px;color:#f9fafb;margin:0 0 4px">' + ic("shield-check") + ' Two-Step Verification (2FA)</h3>' +
+                '<h3 style="font-size:16px;color:var(--txt);margin:0 0 4px">' + ic("shield-check") + ' Two-Step Verification (2FA)</h3>' +
                 '<small class="muted">Protect your Master Admin account with an authenticator app (Google Authenticator, 1Password, Authy).</small>' +
               '</div>' +
               '<span class="badge ok">Enabled</span>' +
             '</div>' +
             '<div style="margin-top:16px;display:flex;flex-direction:column;gap:14px">' +
-              '<p style="font-size:13.5px;color:#cbd5e1;line-height:1.5;margin:0">Authenticator codes are required on every new device login. In case you lose your phone, keep your 8 recovery codes in a safe place.</p>' +
+              '<p style="font-size:13.5px;color:var(--txt2);line-height:1.5;margin:0">Authenticator codes are required on every new device login. In case you lose your phone, keep your 8 recovery codes in a safe place.</p>' +
               '<div style="display:flex;gap:10px;flex-wrap:wrap">' +
                 '<button class="btn sm" id="sec-rec-btn">' + ic("key") + 'View Recovery Codes</button>' +
                 '<button class="btn sm" id="sec-qr-btn">' + ic("qr-code") + 'Re-configure Authenticator</button>' +
@@ -52,20 +52,20 @@
           '</div>' +
 
           '<!-- Active Sessions Card -->' +
-          '<div class="card" style="background:#111318;border:1px solid #20242f;border-radius:14px;padding:22px">' +
-            '<div class="card-h" style="padding:0 0 14px;border-bottom:1px solid #1a1e27;display:flex;align-items:center;justify-content:space-between">' +
+          '<div class="card" style="background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px">' +
+            '<div class="card-h" style="padding:0 0 14px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between">' +
               '<div>' +
-                '<h3 style="font-size:16px;color:#f9fafb;margin:0 0 4px">' + ic("monitor") + ' Active Sessions & Connected Devices</h3>' +
+                '<h3 style="font-size:16px;color:var(--txt);margin:0 0 4px">' + ic("monitor") + ' Active Sessions & Connected Devices</h3>' +
                 '<small class="muted">Devices currently logged into Woodex Admin with your token.</small>' +
               '</div>' +
-              '<button class="btn sm" id="sec-revoke-all" style="color:#ef4444">' + ic("log-out") + 'Revoke others</button>' +
+              '<button class="btn sm" id="sec-revoke-all" style="color:var(--bad)">' + ic("log-out") + 'Revoke others</button>' +
             '</div>' +
             '<div style="margin-top:16px;display:flex;flex-direction:column;gap:12px">' +
-              '<div style="background:#161922;border:1px solid #232836;border-radius:10px;padding:14px;display:flex;align-items:center;justify-content:space-between">' +
+              '<div style="background:var(--card-sub);border:1px solid var(--line);border-radius:10px;padding:14px;display:flex;align-items:center;justify-content:space-between">' +
                 '<div style="display:flex;align-items:center;gap:12px">' +
-                  '<span style="width:36px;height:36px;border-radius:8px;background:#00b8db;color:#04222b;display:grid;place-items:center;font-weight:700">' + ic("monitor") + '</span>' +
+                  '<span style="width:36px;height:36px;border-radius:8px;background:var(--pri);color:var(--pri-fg);display:grid;place-items:center;font-weight:700">' + ic("monitor") + '</span>' +
                   '<div>' +
-                    '<b style="color:#f9fafb;font-size:13.5px">Current Browser Session (Master)</b>' +
+                    '<b style="color:var(--txt);font-size:13.5px">Current Browser Session (Master)</b>' +
                     '<small class="muted" style="display:block;margin-top:2px">Lahore, Pakistan · IP 127.0.0.1 · Active now</small>' +
                   '</div>' +
                 '</div>' +
@@ -75,15 +75,15 @@
           '</div>' +
 
           '<!-- Pending Approvals Queue -->' +
-          '<div class="card" style="background:#111318;border:1px solid #20242f;border-radius:14px;padding:22px">' +
-            '<div class="card-h" style="padding:0 0 14px;border-bottom:1px solid #1a1e27;display:flex;align-items:center;justify-content:space-between">' +
+          '<div class="card" style="background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px">' +
+            '<div class="card-h" style="padding:0 0 14px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between">' +
               '<div>' +
-                '<h3 style="font-size:16px;color:#f9fafb;margin:0 0 4px">' + ic("check-circle") + ' Pending Staff Approvals</h3>' +
+                '<h3 style="font-size:16px;color:var(--txt);margin:0 0 4px">' + ic("check-circle") + ' Pending Staff Approvals</h3>' +
                 '<small class="muted">Changes submitted by Managers or Sales reps requiring Master approval.</small>' +
               '</div>' +
               '<span class="badge navy">0 Queue</span>' +
             '</div>' +
-            '<div style="margin-top:16px;padding:20px;text-align:center;background:#161922;border:1px solid #232836;border-radius:10px">' +
+            '<div style="margin-top:16px;padding:20px;text-align:center;background:var(--card-sub);border:1px solid var(--line);border-radius:10px">' +
               '<p class="muted" style="margin:0;font-size:13.5px">No pending changes in the approval queue. All staff edits are up to date. 🎉</p>' +
             '</div>' +
           '</div>' +
@@ -92,38 +92,38 @@
         '<!-- Right Column: Password Rotation & Security Audit -->' +
         '<div style="display:flex;flex-direction:column;gap:20px">' +
           '<!-- Password Rotation Card -->' +
-          '<div class="card" style="background:#111318;border:1px solid #20242f;border-radius:14px;padding:22px">' +
-            '<div class="card-h" style="padding:0 0 14px;border-bottom:1px solid #1a1e27">' +
-              '<h3 style="font-size:16px;color:#f9fafb">' + ic("lock") + ' Change Password</h3>' +
+          '<div class="card" style="background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px">' +
+            '<div class="card-h" style="padding:0 0 14px;border-bottom:1px solid var(--line)">' +
+              '<h3 style="font-size:16px;color:var(--txt)">' + ic("lock") + ' Change Password</h3>' +
             '</div>' +
             '<form id="sec-pw-form" style="margin-top:16px;display:flex;flex-direction:column;gap:12px">' +
-              '<label style="display:flex;flex-direction:column;gap:6px;font-size:13px;color:#cbd5e1">' +
+              '<label style="display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--txt2)">' +
                 'Current Password' +
-                '<input type="password" id="sec-pw-cur" required placeholder="Enter current password" style="background:#181c24;border-color:#262a33;padding:9px 12px;border-radius:8px">' +
+                '<input type="password" id="sec-pw-cur" required placeholder="Enter current password" style="background:var(--card-sub);border-color:var(--line);padding:9px 12px;border-radius:8px">' +
               '</label>' +
-              '<label style="display:flex;flex-direction:column;gap:6px;font-size:13px;color:#cbd5e1">' +
+              '<label style="display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--txt2)">' +
                 'New Password (8+ characters)' +
-                '<input type="password" id="sec-pw-new" minlength="8" required placeholder="Enter new strong password" style="background:#181c24;border-color:#262a33;padding:9px 12px;border-radius:8px">' +
+                '<input type="password" id="sec-pw-new" minlength="8" required placeholder="Enter new strong password" style="background:var(--card-sub);border-color:var(--line);padding:9px 12px;border-radius:8px">' +
               '</label>' +
-              '<label style="display:flex;flex-direction:column;gap:6px;font-size:13px;color:#cbd5e1">' +
+              '<label style="display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--txt2)">' +
                 'Confirm New Password' +
-                '<input type="password" id="sec-pw-new2" minlength="8" required placeholder="Repeat new password" style="background:#181c24;border-color:#262a33;padding:9px 12px;border-radius:8px">' +
+                '<input type="password" id="sec-pw-new2" minlength="8" required placeholder="Repeat new password" style="background:var(--card-sub);border-color:var(--line);padding:9px 12px;border-radius:8px">' +
               '</label>' +
-              '<p class="err" id="sec-pw-err" style="margin:0;font-size:12.5px;color:#ef4444"></p>' +
+              '<p class="err" id="sec-pw-err" style="margin:0;font-size:12.5px;color:var(--bad)"></p>' +
               '<button type="submit" class="btn pri btn-preline-cyan" style="margin-top:6px">' + ic("key") + 'Update Password</button>' +
             '</form>' +
           '</div>' +
 
           '<!-- Audit Policy Card -->' +
-          '<div class="card" style="background:#111318;border:1px solid #20242f;border-radius:14px;padding:22px">' +
-            '<div class="card-h" style="padding:0 0 14px;border-bottom:1px solid #1a1e27">' +
-              '<h3 style="font-size:16px;color:#f9fafb">' + ic("file-text") + ' Security Policy</h3>' +
+          '<div class="card" style="background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px">' +
+            '<div class="card-h" style="padding:0 0 14px;border-bottom:1px solid var(--line)">' +
+              '<h3 style="font-size:16px;color:var(--txt)">' + ic("file-text") + ' Security Policy</h3>' +
             '</div>' +
-            '<div style="display:flex;flex-direction:column;gap:10px;margin-top:14px;font-size:12.5px;color:#94a3b8">' +
-              '<div style="display:flex;justify-content:space-between"><span>Session Lifetime</span><b style="color:#cbd5e1">4 Hours</b></div>' +
-              '<div style="display:flex;justify-content:space-between"><span>Password Hash</span><b style="color:#cbd5e1">Bcrypt / Scrypt</b></div>' +
-              '<div style="display:flex;justify-content:space-between"><span>Failed Login Lockout</span><b style="color:#cbd5e1">5 Attempts (15m)</b></div>' +
-              '<div style="display:flex;justify-content:space-between"><span>HMAC Secret Signatures</span><b style="color:#10b981">Verified ✓</b></div>' +
+            '<div style="display:flex;flex-direction:column;gap:10px;margin-top:14px;font-size:12.5px;color:var(--mut)">' +
+              '<div style="display:flex;justify-content:space-between"><span>Session Lifetime</span><b style="color:var(--txt2)">4 Hours</b></div>' +
+              '<div style="display:flex;justify-content:space-between"><span>Password Hash</span><b style="color:var(--txt2)">Bcrypt / Scrypt</b></div>' +
+              '<div style="display:flex;justify-content:space-between"><span>Failed Login Lockout</span><b style="color:var(--txt2)">5 Attempts (15m)</b></div>' +
+              '<div style="display:flex;justify-content:space-between"><span>HMAC Secret Signatures</span><b style="color:var(--ok)">Verified ✓</b></div>' +
             '</div>' +
           '</div>' +
         '</div>' +
@@ -136,9 +136,9 @@
       var codes = ["WX-8840-1928", "WX-7721-9943", "WX-5520-4182", "WX-3319-7721", "WX-9942-1049", "WX-6631-8842", "WX-1192-3384", "WX-4402-9951"];
       modal(
         '<div style="padding:10px">' +
-          '<h2 style="font-size:18px;margin:0 0 8px;color:#f9fafb">' + ic("key") + ' 2FA Emergency Recovery Codes</h2>' +
+          '<h2 style="font-size:18px;margin:0 0 8px;color:var(--txt)">' + ic("key") + ' 2FA Emergency Recovery Codes</h2>' +
           '<p class="muted" style="font-size:13px;margin:0 0 16px">Keep these 8 one-time codes safe. Each code can be used once to access the admin if your phone is lost.</p>' +
-          '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;background:#161922;padding:16px;border-radius:10px;font-family:monospace;font-size:14px;color:#00d3f2;border:1px solid #232836">' +
+          '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;background:var(--card-sub);padding:16px;border-radius:10px;font-family:monospace;font-size:14px;color:var(--pri);border:1px solid var(--line)">' +
             codes.map(function (c) { return '<div>' + c + '</div>'; }).join("") +
           '</div>' +
           '<div style="margin-top:20px;display:flex;justify-content:flex-end;gap:10px">' +
@@ -158,12 +158,12 @@
     $("#sec-qr-btn").onclick = function () {
       modal(
         '<div style="padding:10px;text-align:center">' +
-          '<h2 style="font-size:18px;margin:0 0 8px;color:#f9fafb">' + ic("qr-code") + ' Authenticator Configuration</h2>' +
+          '<h2 style="font-size:18px;margin:0 0 8px;color:var(--txt)">' + ic("qr-code") + ' Authenticator Configuration</h2>' +
           '<p class="muted" style="font-size:13px;margin:0 0 16px">Scan this QR code in Google Authenticator or 1Password</p>' +
           '<div style="background:#fff;padding:16px;border-radius:12px;display:inline-block;margin-bottom:14px">' +
-            '<img src="/assets/img/qr-placeholder.png" alt="2FA QR" style="width:160px;height:160px;display:block" onerror="this.outerHTML=\'<div style=\\\'width:160px;height:160px;background:#0a0c10;color:#00d3f2;display:grid;place-items:center;font-weight:700\\\'>2FA TOTP ACTIVE</div>\'">' +
+            '<img src="/assets/img/qr-placeholder.png" alt="2FA QR" style="width:160px;height:160px;display:block" onerror="this.outerHTML=\'<div style=\\\'width:160px;height:160px;background:var(--card);color:var(--pri);display:grid;place-items:center;font-weight:700\\\'>2FA TOTP ACTIVE</div>\'">' +
           '</div>' +
-          '<div style="font-family:monospace;font-size:13px;color:#94a3b8;margin-bottom:16px">Secret: <b>JBSWY3DPEHPK3PXP</b></div>' +
+          '<div style="font-family:monospace;font-size:13px;color:var(--mut);margin-bottom:16px">Secret: <b>JBSWY3DPEHPK3PXP</b></div>' +
           '<button class="btn pri btn-preline-cyan" id="sec-qr-close">Done</button>' +
         '</div>'
       );

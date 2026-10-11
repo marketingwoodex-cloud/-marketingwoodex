@@ -62,28 +62,28 @@
       var fHtml = (c.fields || ["API Key", "Client Secret"]).map(function(f, i) {
         var dummyVal = isConn ? (i === 0 ? "wx_oauth_live_" + c.id : "••••••••••••••••") : "";
         return '<div style="margin-bottom:12px">' +
-          '<label style="display:block;font-size:12.5px;font-weight:600;color:#f9fafb;margin-bottom:4px">' + esc(f) + '</label>' +
-          '<input type="text" id="soc-f-' + i + '" value="' + esc(dummyVal) + '" placeholder="Enter ' + esc(f) + '" style="width:100%;background:#161922;border:1px solid #232836;border-radius:8px;padding:9px 12px;color:#f9fafb;font-size:13px">' +
+          '<label style="display:block;font-size:12.5px;font-weight:600;color:var(--txt);margin-bottom:4px">' + esc(f) + '</label>' +
+          '<input type="text" id="soc-f-' + i + '" value="' + esc(dummyVal) + '" placeholder="Enter ' + esc(f) + '" style="width:100%;background:var(--card-sub);border:1px solid var(--line);border-radius:8px;padding:9px 12px;color:var(--txt);font-size:13px">' +
         '</div>';
       }).join("");
 
       var h = '<div style="padding:4px">' +
-        '<div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;border-bottom:1px solid #1e2430;padding-bottom:14px">' +
+        '<div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;border-bottom:1px solid var(--line);padding-bottom:14px">' +
           '<span style="font-size:32px">' + c.icon + '</span>' +
           '<div>' +
-            '<h2 style="margin:0;font-size:17px;color:#f9fafb">' + esc(c.name) + ' OAuth &amp; Sync</h2>' +
+            '<h2 style="margin:0;font-size:17px;color:var(--txt)">' + esc(c.name) + ' OAuth &amp; Sync</h2>' +
             '<span class="badge ' + (isConn ? 'ok' : 'ghost') + '" style="font-size:11px;margin-top:2px">' + (isConn ? '● Live Connected' : 'Not Connected') + '</span>' +
           '</div>' +
         '</div>' +
         '<p class="muted" style="font-size:13px;margin:0 0 16px">' + esc(c.desc) + '</p>' +
         '<form id="soc-modal-form">' +
           fHtml +
-          '<div style="background:#0b0d13;border:1px solid #1e2430;border-radius:10px;padding:12px;margin:16px 0">' +
-            '<label class="check" style="color:#cbd5e1;font-size:12.5px;margin:0"><input type="checkbox" checked style="accent-color:#00b8db"> <b>Auto-ingest inbound leads &amp; 24/7 AI Community Responder</b></label>' +
+          '<div style="background:var(--card-sub);border:1px solid var(--line);border-radius:10px;padding:12px;margin:16px 0">' +
+            '<label class="check" style="color:var(--txt2);font-size:12.5px;margin:0"><input type="checkbox" checked style="accent-color:var(--pri)"> <b>Auto-ingest inbound leads &amp; 24/7 AI Community Responder</b></label>' +
           '</div>' +
           '<div id="soc-ping-res" style="display:none;padding:10px;border-radius:8px;background:#052e16;border:1px solid #166534;color:#4ade80;font-size:12.5px;margin-bottom:14px">✓ OAuth handshake verified: 200 OK · Latency 112 ms</div>' +
           '<div class="modal-actions" style="margin-top:20px;display:flex;gap:10px;justify-content:flex-end">' +
-            '<button type="button" class="btn" id="soc-m-ping" style="background:#161922;color:#00d3f2;border-color:#232836">' + ic("activity") + ' Test Ping</button>' +
+            '<button type="button" class="btn" id="soc-m-ping" style="background:var(--card-sub);color:var(--pri);border-color:#232836">' + ic("activity") + ' Test Ping</button>' +
             (isConn ? '<button type="button" class="btn danger" id="soc-m-disc">' + ic("x") + ' Disconnect</button>' : '') +
             '<button type="button" class="btn" id="soc-m-cancel">Cancel</button>' +
             '<button type="submit" class="btn pri btn-preline-cyan">' + ic("check") + (isConn ? ' Save Updates' : ' Login with ' + c.name) + '</button>' +

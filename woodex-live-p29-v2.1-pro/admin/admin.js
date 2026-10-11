@@ -347,7 +347,7 @@
   if ($("#menu-btn")) $("#menu-btn").onclick = function () { innerWidth <= 1024 ? $("#app").classList.toggle("open") : $("#app").classList.toggle("mini"); };
   if ($("#side-x")) $("#side-x").onclick = function () { $("#app").classList.remove("open"); };
   if ($("#side-shade")) $("#side-shade").onclick = function () { $("#app").classList.remove("open"); };
-  if ($("#dark-btn")) $("#dark-btn").onclick = function () { var d = document.documentElement.classList.toggle("dark"); localStorage.setItem("wxaTheme", d ? "dark" : "light"); if (S.view === "dashboard") route(); };
+  if ($("#dark-btn")) $("#dark-btn").onclick = function () { var d = document.documentElement.classList.toggle("dark"); localStorage.setItem("wxaTheme", d ? "dark" : "light"); }; /* charts repaint through window.WXPalette (AD-18) */
   if ($("#user-btn")) $("#user-btn").onclick = function (e) { e.stopPropagation(); if ($("#nt-menu")) $("#nt-menu").hidden = true; $("#user-menu").hidden = !$("#user-menu").hidden; };
   document.addEventListener("click", function () {
     if ($("#user-menu")) $("#user-menu").hidden = true;
@@ -377,8 +377,8 @@
     if (!ntMenu) return;
     var unreadCount = notifs.filter(function(n) { return n.unread; }).length;
     ntMenu.innerHTML =
-      '<div style="padding:12px 14px;border-bottom:1px solid #1e2430;display:flex;align-items:center;justify-content:space-between;background:#111318">' +
-        '<div><b style="font-size:13.5px;color:#f9fafb">Notifications</b>' + (unreadCount ? ' <span class="badge ok" style="font-size:10px">' + unreadCount + ' new</span>' : '') + '</div>' +
+      '<div style="padding:12px 14px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;background:var(--card-sub)">' +
+        '<div><b style="font-size:13.5px;color:var(--txt)">Notifications</b>' + (unreadCount ? ' <span class="badge ok" style="font-size:10px">' + unreadCount + ' new</span>' : '') + '</div>' +
         '<div style="display:flex;gap:6px">' +
           '<button type="button" class="btn sm" id="nt-test-btn" style="padding:2px 8px;font-size:11px" title="Test Live Alert">Test Alert</button>' +
           '<button type="button" class="btn sm ghost" id="nt-read-all" style="padding:2px 8px;font-size:11px">Mark all read</button>' +
@@ -386,18 +386,18 @@
       '</div>' +
       '<div style="max-height:340px;overflow-y:auto;display:flex;flex-direction:column">' +
         notifs.map(function(n) {
-          return '<a href="' + n.href + '" class="nt-item" data-id="' + n.id + '" style="padding:10px 14px;border-bottom:1px solid #1a1e27;display:flex;align-items:flex-start;gap:10px;text-decoration:none;background:' + (n.unread ? 'rgba(0,184,219,0.06)' : 'transparent') + '">' +
+          return '<a href="' + n.href + '" class="nt-item" data-id="' + n.id + '" style="padding:10px 14px;border-bottom:1px solid var(--line);display:flex;align-items:flex-start;gap:10px;text-decoration:none;background:' + (n.unread ? 'rgba(0,184,219,0.06)' : 'transparent') + '">' +
             '<span class="kpi-ic" style="width:28px;height:28px;font-size:12px;background:' + (n.unread ? 'rgba(0,184,219,0.2)' : 'rgba(255,255,255,0.05)') + ';color:' + (n.unread ? '#00d3f2' : '#94a3b8') + '">' + ic(n.icon) + '</span>' +
             '<div style="flex:1;min-width:0">' +
               '<b style="font-size:12.5px;color:' + (n.unread ? '#f9fafb' : '#cbd5e1') + ';display:block">' + esc(n.title) + '</b>' +
               '<small class="muted" style="font-size:11.5px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc(n.desc) + '</small>' +
-              '<small style="color:#64748b;font-size:10.5px;margin-top:2px;display:block">' + esc(n.time) + '</small>' +
+              '<small style="color:var(--mut);font-size:10.5px;margin-top:2px;display:block">' + esc(n.time) + '</small>' +
             '</div>' +
           '</a>';
         }).join("") +
       '</div>' +
-      '<div style="padding:8px 14px;border-top:1px solid #1e2430;text-align:center;background:#111318">' +
-        '<a href="#/updates" style="font-size:12px;color:#00d3f2;text-decoration:none;font-weight:600">Client updates &amp; automations hub →</a>' +
+      '<div style="padding:8px 14px;border-top:1px solid var(--line);text-align:center;background:var(--card-sub)">' +
+        '<a href="#/updates" style="font-size:12px;color:var(--pri);text-decoration:none;font-weight:600">Client updates &amp; automations hub →</a>' +
       '</div>';
     fillIcons(ntMenu);
 
@@ -553,17 +553,25 @@
   };
   function drawCharts(r, s) {
     if (!window.Chart) return setTimeout(function () { drawCharts(r, s); }, 150);
-    var dark = document.documentElement.classList.contains("dark"), grid = dark ? "#1f2533" : "#eef0f3", txt = dark ? "#94969c" : "#667085";
-    Chart.defaults.font.family = '"DM Sans",system-ui,sans-serif'; Chart.defaults.color = txt;
+    /* U3 / AD-18: token colours, not literals, and the font is the design layer's (U7). */
+    var P = window.WXPalette ? window.WXPalette.palette() : { brand: "#2563eb", strong: "#111827", grid: "rgba(17,24,39,.08)", text: "#4b5563", font: '"Inter",system-ui,sans-serif', ringBorder: "#ffffff", series: ["#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#94a3b8", "#d1d5db"] };
+    var A = window.WXPalette ? window.WXPalette.alpha : function (c) { return c; };
+    Chart.defaults.font.family = P.font; Chart.defaults.color = P.text;
+    var grid = P.grid;
     var days = [], vals = []; for (var i = 13; i >= 0; i--) { var d = new Date(Date.now() - i * 864e5), k = d.toISOString().slice(0, 10); days.push(d.toLocaleDateString(undefined, { day: "numeric", month: "short" })); vals.push(r.editsByDay[k] || 0); }
     var c1 = $("#ch-edits"); if (!c1) return;
-    var g = c1.getContext("2d").createLinearGradient(0, 0, 0, 260); g.addColorStop(0, "rgba(212,175,106,.35)"); g.addColorStop(1, "rgba(212,175,106,0)");
-    S.charts.push(new Chart(c1, { type: "line", data: { labels: days, datasets: [{ label: "Changes", data: vals, borderColor: "#d4af6a", backgroundColor: g, fill: true, tension: .35, pointRadius: 3, pointBackgroundColor: "#d4af6a", borderWidth: 2.5 }] },
+    var g = c1.getContext("2d").createLinearGradient(0, 0, 0, 260); g.addColorStop(0, A(P.brand, .35)); g.addColorStop(1, A(P.brand, 0));
+    S.charts.push(new Chart(c1, { type: "line", data: { labels: days, datasets: [{ label: "Changes", data: vals, borderColor: P.brand, backgroundColor: g, fill: true, tension: .35, pointRadius: 3, pointBackgroundColor: P.brand, borderWidth: 2.5 }] },
       options: { maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } }, y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: grid }, border: { display: false } } } } }));
     var f = Object.keys(s.folders).map(function (k) { return [k, s.folders[k]]; }).sort(function (a, b) { return b[1] - a[1]; }), top = f.slice(0, 6), rest = f.slice(6).reduce(function (a, b) { return a + b[1]; }, 0);
     if (rest) top.push(["other", rest]);
-    S.charts.push(new Chart($("#ch-folders"), { type: "doughnut", data: { labels: top.map(function (x) { return x[0]; }), datasets: [{ data: top.map(function (x) { return x[1]; }), backgroundColor: [dark ? "#f5f5f6" : "#0a0f1e", "#d4af6a", "#465fff", "#12b76a", "#f79009", "#98a2b3", "#e4e7ec"], borderColor: dark ? "#161b26" : "#fff", borderWidth: 3 }] },
+    S.charts.push(new Chart($("#ch-folders"), { type: "doughnut", data: { labels: top.map(function (x) { return x[0]; }), datasets: [{ data: top.map(function (x) { return x[1]; }), backgroundColor: [P.strong].concat(P.series).slice(0, 7), borderColor: P.ringBorder, borderWidth: 3 }] },
       options: { maintainAspectRatio: false, cutout: "68%", plugins: { legend: { position: "bottom", labels: { boxWidth: 10, boxHeight: 10, usePointStyle: true } } } } }));
+    /* AD-18: a theme switch repaints the two charts in place instead of re-routing the screen
+       (the old route() also re-fetched the whole dashboard from the API on every toggle). */
+    if (window.WXPalette) window.WXPalette.register("classic-dashboard", function () {
+      S.charts.forEach(function (c) { try { c.destroy(); } catch (e) {} }); S.charts = []; drawCharts(r, s);
+    });
   }
 
   // ---------------- pages (quick list; full manager in A2)
@@ -648,12 +656,12 @@
   VIEWS.profile = function (el) {
     el.innerHTML = head("My account", "Home / Profile", '<a class="btn" href="#/security">' + ic("shield-check") + 'Security &amp; 2FA</a>') +
       '<div class="grid g-7-5">' +
-        '<div class="card" style="background:#111318;border:1px solid #20242f;border-radius:14px;padding:24px">' +
-          '<div class="card-h" style="padding:0 0 16px;border-bottom:1px solid #1a1e27"><h3 style="color:#f9fafb;font-size:16px">' + ic("user") + ' Personal Information</h3></div>' +
+        '<div class="card" style="background:var(--card-sub);border:1px solid var(--line);border-radius:14px;padding:24px">' +
+          '<div class="card-h" style="padding:0 0 16px;border-bottom:1px solid var(--line)"><h3 style="color:var(--txt);font-size:16px">' + ic("user") + ' Personal Information</h3></div>' +
           '<div style="display:flex;align-items:center;gap:18px;margin:20px 0">' +
-            '<span class="av" style="width:64px;height:64px;font-size:22px;border-radius:50%;background:#00b8db;color:#04222b;font-weight:800;display:grid;place-items:center">' + initials(S.user.name) + '</span>' +
+            '<span class="av" style="width:64px;height:64px;font-size:22px;border-radius:50%;background:var(--pri);color:var(--pri-fg);font-weight:800;display:grid;place-items:center">' + initials(S.user.name) + '</span>' +
             '<div>' +
-              '<b style="font-size:18px;color:#f9fafb;display:block">' + esc(S.user.name) + '</b>' +
+              '<b style="font-size:18px;color:var(--txt);display:block">' + esc(S.user.name) + '</b>' +
               '<div style="display:flex;align-items:center;gap:8px;margin-top:4px">' +
                 '<span class="badge gold" style="text-transform:uppercase">' + esc(S.user.role) + '</span>' +
                 '<small class="muted">' + esc(S.user.email) + '</small>' +
@@ -661,7 +669,7 @@
             '</div>' +
           '</div>' +
           '<form id="pf" style="display:flex;flex-direction:column;gap:14px">' +
-            '<label>Full Name<input id="pf-n" value="' + esc(S.user.name) + '" required style="background:#161922;border-color:#232836"></label>' +
+            '<label>Full Name<input id="pf-n" value="' + esc(S.user.name) + '" required style="background:var(--card-sub);border-color:#232836"></label>' +
             '<label>Email Address <small class="muted">(contact Master Admin to change)</small><input value="' + esc(S.user.email) + '" disabled style="background:#12151d;border-color:#1e2430;opacity:0.7"></label>' +
             '<label>Studio Department<input value="Executive Management &amp; Architecture" disabled style="background:#12151d;border-color:#1e2430;opacity:0.7"></label>' +
             '<div style="margin-top:10px"><button class="btn pri btn-preline-cyan" style="min-width:120px">Save Profile</button></div>' +
@@ -669,18 +677,18 @@
         '</div>' +
 
         '<div style="display:flex;flex-direction:column;gap:20px">' +
-          '<div class="card" style="background:#111318;border:1px solid #20242f;border-radius:14px;padding:24px">' +
-            '<div class="card-h" style="padding:0 0 16px;border-bottom:1px solid #1a1e27"><h3 style="color:#f9fafb;font-size:16px">' + ic("key-round") + ' Password &amp; Credentials</h3></div>' +
+          '<div class="card" style="background:var(--card-sub);border:1px solid var(--line);border-radius:14px;padding:24px">' +
+            '<div class="card-h" style="padding:0 0 16px;border-bottom:1px solid var(--line)"><h3 style="color:var(--txt);font-size:16px">' + ic("key-round") + ' Password &amp; Credentials</h3></div>' +
             '<form id="pw" style="margin-top:16px;display:flex;flex-direction:column;gap:14px">' +
-              '<label>Current password<input type="password" id="pw-c" required autocomplete="current-password" style="background:#161922;border-color:#232836"></label>' +
-              '<label>New password <small class="muted">(min. 8 characters)</small><input type="password" id="pw-n" minlength="8" required autocomplete="new-password" style="background:#161922;border-color:#232836"></label>' +
+              '<label>Current password<input type="password" id="pw-c" required autocomplete="current-password" style="background:var(--card-sub);border-color:#232836"></label>' +
+              '<label>New password <small class="muted">(min. 8 characters)</small><input type="password" id="pw-n" minlength="8" required autocomplete="new-password" style="background:var(--card-sub);border-color:#232836"></label>' +
               '<p class="err" id="pw-err" style="margin:0"></p>' +
               '<div><button class="btn" style="min-width:140px">Update Password</button></div>' +
             '</form>' +
           '</div>' +
 
-          '<div class="card" style="background:#111318;border:1px solid #20242f;border-radius:14px;padding:24px">' +
-            '<div class="card-h" style="padding:0 0 16px;border-bottom:1px solid #1a1e27"><h3 style="color:#f9fafb;font-size:16px">' + ic("send") + ' Telegram Alerts</h3></div>' +
+          '<div class="card" style="background:var(--card-sub);border:1px solid var(--line);border-radius:14px;padding:24px">' +
+            '<div class="card-h" style="padding:0 0 16px;border-bottom:1px solid var(--line)"><h3 style="color:var(--txt);font-size:16px">' + ic("send") + ' Telegram Alerts</h3></div>' +
             '<div style="margin-top:14px;font-size:13px">' +
               '<p class="muted" style="margin:0 0 12px">Receive instant customer enquiry alerts and reply directly via Telegram.</p>' +
               '<a class="btn sm pri btn-preline-cyan" href="#/telegram">' + ic("qr-code") + 'Link Telegram Account</a>' +

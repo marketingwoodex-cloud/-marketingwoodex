@@ -16,10 +16,10 @@
   function load() { return api("leads_list").then(function (r) { if (!r.ok) { toast(r.error, true); return false; } C.leads = r.leads; C.sources = r.sources; C.team = r.team; badgeNav(); return true; }); }
   function badgeNav() {
     var n = C.leads.filter(function (l) { return !l.read; }).length, a = $('.nav-a[data-v="enquiries"]'); if (!a) return;
-    var b = a.querySelector(".pill"); if (!n) { if (b) b.remove(); return; } if (!b) { b = document.createElement("span"); b.className = "pill"; b.style.cssText = "background:var(--gold);color:#0a0f1e"; a.appendChild(b); } b.textContent = n;
+    var b = a.querySelector(".pill"); if (!n) { if (b) b.remove(); return; } if (!b) { b = document.createElement("span"); b.className = "pill"; b.style.cssText = "background:var(--gold);color:var(--pri-fg)"; a.appendChild(b); } b.textContent = n;
   }
   // unread badge after sign-in and every 60s
-  var poll = function () { if (S.user && can("owner,admin,sales")) api("leads_count").then(function (r) { if (r.ok) { C.leads = C.leads.length ? C.leads : []; var a = $('.nav-a[data-v="enquiries"]'); if (!a) return; var b = a.querySelector(".pill"); if (!r.unread) { if (b) b.remove(); return; } if (!b) { b = document.createElement("span"); b.className = "pill"; b.style.cssText = "background:var(--gold);color:#0a0f1e"; a.appendChild(b); } b.textContent = r.unread; } }); };
+  var poll = function () { if (S.user && can("owner,admin,sales")) api("leads_count").then(function (r) { if (r.ok) { C.leads = C.leads.length ? C.leads : []; var a = $('.nav-a[data-v="enquiries"]'); if (!a) return; var b = a.querySelector(".pill"); if (!r.unread) { if (b) b.remove(); return; } if (!b) { b = document.createElement("span"); b.className = "pill"; b.style.cssText = "background:var(--gold);color:var(--pri-fg)"; a.appendChild(b); } b.textContent = r.unread; } }); };
   setInterval(poll, 60000); window.addEventListener("hashchange", function () { setTimeout(poll, 400); }); setTimeout(poll, 1500);
 
   // =========================================================== LEAD DETAIL (drawer-style modal)
@@ -174,12 +174,12 @@
 
       var html =
         '<!-- October 2026 Deal Stage Summary Bar (From Image 2) -->' +
-        '<div style="background:#111318;border:1px solid #20242f;border-radius:14px;padding:16px 20px;margin-bottom:18px">' +
+        '<div style="background:var(--card-sub);border:1px solid var(--line);border-radius:14px;padding:16px 20px;margin-bottom:18px">' +
           '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:14px">' +
             '<div style="display:flex;align-items:center;gap:10px">' +
-              '<button class="icon-btn sm" style="width:28px;height:28px;border-radius:6px;background:#181c24;border:1px solid #262a33;color:#9ca3af">&lt;</button>' +
-              '<b style="font-size:14px;color:#f9fafb">October 2026</b>' +
-              '<button class="icon-btn sm" style="width:28px;height:28px;border-radius:6px;background:#181c24;border:1px solid #262a33;color:#9ca3af">&gt;</button>' +
+              '<button class="icon-btn sm" style="width:28px;height:28px;border-radius:6px;background:var(--card-sub);border:1px solid var(--line);color:var(--mut)">&lt;</button>' +
+              '<b style="font-size:14px;color:var(--txt)">October 2026</b>' +
+              '<button class="icon-btn sm" style="width:28px;height:28px;border-radius:6px;background:var(--card-sub);border:1px solid var(--line);color:var(--mut)">&gt;</button>' +
             '</div>' +
             '<div class="seg" id="pl-lines" style="margin:0">' +
               '<button class="' + (lineFilter === "all" ? "on" : "") + '" data-line="all">All lines</button>' +
@@ -189,64 +189,64 @@
             '</div>' +
           '</div>' +
           '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:10px">' +
-            '<div style="background:#161922;border:1px solid #232836;border-radius:10px;padding:10px 12px;border-left:3px solid #00b8db">' +
-              '<small class="muted" style="font-size:11px;display:block">Total</small><b style="font-size:18px;color:#f9fafb">' + L.length + '</b>' +
+            '<div style="background:var(--card-sub);border:1px solid var(--line);border-radius:10px;padding:10px 12px;border-left:3px solid #00b8db">' +
+              '<small class="muted" style="font-size:11px;display:block">Total</small><b style="font-size:18px;color:var(--txt)">' + L.length + '</b>' +
             '</div>' +
-            '<div style="background:#161922;border:1px solid #232836;border-radius:10px;padding:10px 12px;border-left:3px solid #3b82f6">' +
-              '<small class="muted" style="font-size:11px;display:block">New lead</small><b style="font-size:18px;color:#f9fafb">' + countNew + '</b>' +
+            '<div style="background:var(--card-sub);border:1px solid var(--line);border-radius:10px;padding:10px 12px;border-left:3px solid #3b82f6">' +
+              '<small class="muted" style="font-size:11px;display:block">New lead</small><b style="font-size:18px;color:var(--txt)">' + countNew + '</b>' +
             '</div>' +
-            '<div style="background:#161922;border:1px solid #232836;border-radius:10px;padding:10px 12px;border-left:3px solid #6366f1">' +
-              '<small class="muted" style="font-size:11px;display:block">Client</small><b style="font-size:18px;color:#f9fafb">3</b>' +
+            '<div style="background:var(--card-sub);border:1px solid var(--line);border-radius:10px;padding:10px 12px;border-left:3px solid #6366f1">' +
+              '<small class="muted" style="font-size:11px;display:block">Client</small><b style="font-size:18px;color:var(--txt)">3</b>' +
             '</div>' +
-            '<div style="background:#161922;border:1px solid #232836;border-radius:10px;padding:10px 12px;border-left:3px solid #f59e0b">' +
-              '<small class="muted" style="font-size:11px;display:block">Meeting</small><b style="font-size:18px;color:#f9fafb">' + countVisit + '</b>' +
+            '<div style="background:var(--card-sub);border:1px solid var(--line);border-radius:10px;padding:10px 12px;border-left:3px solid #f59e0b">' +
+              '<small class="muted" style="font-size:11px;display:block">Meeting</small><b style="font-size:18px;color:var(--txt)">' + countVisit + '</b>' +
             '</div>' +
-            '<div style="background:#161922;border:1px solid #232836;border-radius:10px;padding:10px 12px;border-left:3px solid #d97706">' +
-              '<small class="muted" style="font-size:11px;display:block">Proposal</small><b style="font-size:18px;color:#f9fafb">' + countQuote + '</b>' +
+            '<div style="background:var(--card-sub);border:1px solid var(--line);border-radius:10px;padding:10px 12px;border-left:3px solid #d97706">' +
+              '<small class="muted" style="font-size:11px;display:block">Proposal</small><b style="font-size:18px;color:var(--txt)">' + countQuote + '</b>' +
             '</div>' +
-            '<div style="background:#161922;border:1px solid #232836;border-radius:10px;padding:10px 12px;border-left:3px solid #64748b">' +
-              '<small class="muted" style="font-size:11px;display:block">Hold</small><b style="font-size:18px;color:#f9fafb">1</b>' +
+            '<div style="background:var(--card-sub);border:1px solid var(--line);border-radius:10px;padding:10px 12px;border-left:3px solid #64748b">' +
+              '<small class="muted" style="font-size:11px;display:block">Hold</small><b style="font-size:18px;color:var(--txt)">1</b>' +
             '</div>' +
-            '<div style="background:#161922;border:1px solid #232836;border-radius:10px;padding:10px 12px;border-left:3px solid #00d3f2">' +
-              '<small class="muted" style="font-size:11px;display:block">Quote done</small><b style="font-size:18px;color:#f9fafb">' + countQuote + '</b>' +
+            '<div style="background:var(--card-sub);border:1px solid var(--line);border-radius:10px;padding:10px 12px;border-left:3px solid #00d3f2">' +
+              '<small class="muted" style="font-size:11px;display:block">Quote done</small><b style="font-size:18px;color:var(--txt)">' + countQuote + '</b>' +
             '</div>' +
-            '<div style="background:#161922;border:1px solid #232836;border-radius:10px;padding:10px 12px;border-left:3px solid #10b981">' +
-              '<small class="muted" style="font-size:11px;display:block">Won</small><b style="font-size:18px;color:#10b981">' + countWon + '</b>' +
+            '<div style="background:var(--card-sub);border:1px solid var(--line);border-radius:10px;padding:10px 12px;border-left:3px solid #10b981">' +
+              '<small class="muted" style="font-size:11px;display:block">Won</small><b style="font-size:18px;color:var(--ok)">' + countWon + '</b>' +
             '</div>' +
-            '<div style="background:#161922;border:1px solid #232836;border-radius:10px;padding:10px 12px;border-left:3px solid #ef4444">' +
-              '<small class="muted" style="font-size:11px;display:block">Overdue</small><b style="font-size:18px;color:#f9fafb">0</b>' +
+            '<div style="background:var(--card-sub);border:1px solid var(--line);border-radius:10px;padding:10px 12px;border-left:3px solid #ef4444">' +
+              '<small class="muted" style="font-size:11px;display:block">Overdue</small><b style="font-size:18px;color:var(--txt)">0</b>' +
             '</div>' +
-            '<div style="background:#161922;border:1px solid #232836;border-radius:10px;padding:10px 12px;border-left:3px solid #d4af6a;grid-column:span 2">' +
-              '<small class="muted" style="font-size:11px;display:block">Won value</small><b style="font-size:17px;color:#d4af6a">' + (totalWonVal ? "Rs " + (totalWonVal / 1000000).toFixed(2) + "M" : "Rs 2.95M") + '</b>' +
+            '<div style="background:var(--card-sub);border:1px solid var(--line);border-radius:10px;padding:10px 12px;border-left:3px solid #d4af6a;grid-column:span 2">' +
+              '<small class="muted" style="font-size:11px;display:block">Won value</small><b style="font-size:17px;color:var(--pri)">' + (totalWonVal ? "Rs " + (totalWonVal / 1000000).toFixed(2) + "M" : "Rs 2.95M") + '</b>' +
             '</div>' +
           '</div>' +
         '</div>' +
 
         '<!-- 5 KPI Cards (From Image 3) -->' +
         '<div style="display:grid;grid-template-columns:repeat(5, 1fr);gap:14px;margin-bottom:18px">' +
-          '<div class="card" style="background:#111318;border:1px solid #20242f;border-radius:12px;padding:18px">' +
+          '<div class="card" style="background:var(--card-sub);border:1px solid var(--line);border-radius:12px;padding:18px">' +
             '<small class="muted" style="font-size:12px">Open deals</small>' +
-            '<b style="font-size:24px;color:#f9fafb;display:block;margin:4px 0 2px">' + openDeals.length + '</b>' +
+            '<b style="font-size:24px;color:var(--txt);display:block;margin:4px 0 2px">' + openDeals.length + '</b>' +
             '<small class="muted" style="font-size:11.5px">nothing overdue</small>' +
           '</div>' +
-          '<div class="card" style="background:#111318;border:1px solid #20242f;border-radius:12px;padding:18px">' +
+          '<div class="card" style="background:var(--card-sub);border:1px solid var(--line);border-radius:12px;padding:18px">' +
             '<small class="muted" style="font-size:12px">Pipeline value</small>' +
-            '<b style="font-size:24px;color:#f9fafb;display:block;margin:4px 0 2px">Rs ' + (totalOpenVal ? (totalOpenVal / 1000000).toFixed(0) : "27") + 'M</b>' +
+            '<b style="font-size:24px;color:var(--txt);display:block;margin:4px 0 2px">Rs ' + (totalOpenVal ? (totalOpenVal / 1000000).toFixed(0) : "27") + 'M</b>' +
             '<small class="muted" style="font-size:11.5px">' + openDeals.length + ' open deals</small>' +
           '</div>' +
-          '<div class="card" style="background:#111318;border:1px solid #20242f;border-radius:12px;padding:18px">' +
+          '<div class="card" style="background:var(--card-sub);border:1px solid var(--line);border-radius:12px;padding:18px">' +
             '<small class="muted" style="font-size:12px">Forecast</small>' +
-            '<b style="font-size:24px;color:#00d3f2;display:block;margin:4px 0 2px">Rs 7.2M</b>' +
+            '<b style="font-size:24px;color:var(--pri);display:block;margin:4px 0 2px">Rs 7.2M</b>' +
             '<small class="muted" style="font-size:11.5px">weighted by stage</small>' +
           '</div>' +
-          '<div class="card" style="background:#111318;border:1px solid #20242f;border-radius:12px;padding:18px">' +
+          '<div class="card" style="background:var(--card-sub);border:1px solid var(--line);border-radius:12px;padding:18px">' +
             '<small class="muted" style="font-size:12px">Won this month</small>' +
-            '<b style="font-size:24px;color:#10b981;display:block;margin:4px 0 2px">Rs ' + (totalWonVal ? (totalWonVal / 1000000).toFixed(1) : "3.0") + 'M</b>' +
+            '<b style="font-size:24px;color:var(--ok);display:block;margin:4px 0 2px">Rs ' + (totalWonVal ? (totalWonVal / 1000000).toFixed(1) : "3.0") + 'M</b>' +
             '<small class="muted" style="font-size:11.5px">' + countWon + ' won in total</small>' +
           '</div>' +
-          '<div class="card" style="background:#111318;border:1px solid #20242f;border-radius:12px;padding:18px">' +
+          '<div class="card" style="background:var(--card-sub);border:1px solid var(--line);border-radius:12px;padding:18px">' +
             '<small class="muted" style="font-size:12px">Win rate</small>' +
-            '<b style="font-size:24px;color:#f9fafb;display:block;margin:4px 0 2px">100%</b>' +
+            '<b style="font-size:24px;color:var(--txt);display:block;margin:4px 0 2px">100%</b>' +
             '<small class="muted" style="font-size:11.5px">1 won · 0 lost</small>' +
           '</div>' +
         '</div>' +
@@ -254,8 +254,8 @@
         '<!-- Filters and Search Bar -->' +
         '<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px;flex-wrap:wrap">' +
           '<div style="display:flex;align-items:center;gap:10px;flex:1;max-width:560px">' +
-            '<input type="search" id="pl-q" placeholder="Search name, company, phone…" value="' + esc(q) + '" style="margin:0;background:#111318;border-color:#20242f;border-radius:10px;padding:8px 14px;font-size:13px;flex:1">' +
-            '<select id="pl-own" style="margin:0;width:140px;background:#111318;border-color:#20242f;border-radius:10px;padding:8px 12px;font-size:13px">' +
+            '<input type="search" id="pl-q" placeholder="Search name, company, phone…" value="' + esc(q) + '" style="margin:0;background:var(--card-sub);border-color:#20242f;border-radius:10px;padding:8px 14px;font-size:13px;flex:1">' +
+            '<select id="pl-own" style="margin:0;width:140px;background:var(--card-sub);border-color:#20242f;border-radius:10px;padding:8px 12px;font-size:13px">' +
               '<option value="">All owners</option>' +
               '<option value="Kamran Tariq">Kamran Tariq</option>' +
               '<option value="Dr. Sarah Mansoor">Dr. Sarah Mansoor</option>' +
@@ -296,33 +296,33 @@
 
         var cardList = items.map(function (l) {
           var initials = l.assigned_name ? l.assigned_name.split(" ").map(function (w) { return w[0]; }).join("").slice(0, 2) : "KT";
-          return '<div class="kb-card" draggable="true" data-id="' + l.id + '" style="background:#161922;border:1px solid #232836;border-radius:10px;padding:14px;margin-bottom:10px;cursor:pointer">' +
+          return '<div class="kb-card" draggable="true" data-id="' + l.id + '" style="background:var(--card-sub);border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:10px;cursor:pointer">' +
             '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">' +
-              '<b style="color:#f9fafb;font-size:13.5px">' + esc(l.name) + '</b>' +
+              '<b style="color:var(--txt);font-size:13.5px">' + esc(l.name) + '</b>' +
               '<small class="muted" style="font-size:11px">0d</small>' +
             '</div>' +
             (l.company ? '<small class="muted" style="display:block;font-size:12px;margin-bottom:6px">' + esc(l.company) + '</small>' : "") +
-            '<div style="background:#10131a;border-radius:6px;padding:6px 8px;margin-bottom:10px;font-size:12px;color:#9ca3af">' + esc(l.service) + '</div>' +
+            '<div style="background:var(--card-sub);border-radius:6px;padding:6px 8px;margin-bottom:10px;font-size:12px;color:var(--mut)">' + esc(l.service) + '</div>' +
             '<div style="display:flex;align-items:center;justify-content:space-between">' +
-              '<b style="color:#00d3f2;font-size:13.5px">' + (l.value ? "Rs " + l.value.toLocaleString("en-PK") : "—") + '</b>' +
+              '<b style="color:var(--pri);font-size:13.5px">' + (l.value ? "Rs " + l.value.toLocaleString("en-PK") : "—") + '</b>' +
               '<div style="display:flex;align-items:center;gap:6px">' +
                 (l.followup ? '<small class="muted" style="font-size:11px">' + ic("clock") + ' ' + esc(l.followup.slice(5)) + '</small>' : "") +
-                '<span style="width:24px;height:24px;border-radius:50%;background:#00b8db;color:#04222b;font-weight:700;font-size:10px;display:grid;place-items:center">' + initials + '</span>' +
+                '<span style="width:24px;height:24px;border-radius:50%;background:var(--pri);color:var(--pri-fg);font-weight:700;font-size:10px;display:grid;place-items:center">' + initials + '</span>' +
               '</div>' +
             '</div>' +
           '</div>';
         }).join("");
 
-        return '<div class="kb-col" data-st="' + col.id + '" style="background:#111318;border:1px solid #20242f;border-radius:12px;padding:14px;min-height:360px;display:flex;flex-direction:column">' +
+        return '<div class="kb-col" data-st="' + col.id + '" style="background:var(--card-sub);border:1px solid var(--line);border-radius:12px;padding:14px;min-height:360px;display:flex;flex-direction:column">' +
           '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">' +
             '<div style="display:flex;align-items:center;gap:8px">' +
               '<span class="kb-dot" style="width:8px;height:8px;border-radius:50%;background:' + (col.dot === "blue" ? "#3b82f6" : col.dot === "amber" ? "#f59e0b" : col.dot === "purple" ? "#a855f7" : col.dot === "green" ? "#10b981" : col.dot === "red" ? "#ef4444" : "#64748b") + '"></span>' +
-              '<b style="font-size:13px;color:#f9fafb">' + col.title + '</b>' +
+              '<b style="font-size:13px;color:var(--txt)">' + col.title + '</b>' +
               '<span class="pill" style="font-size:11px;padding:2px 6px">' + items.length + '</span>' +
             '</div>' +
             (col.sum ? '<small class="muted" style="font-size:11.5px">' + col.sum + '</small>' : "") +
           '</div>' +
-          '<div class="kb-list" style="flex:1">' + (cardList || '<div style="border:1px dashed #232836;border-radius:8px;padding:32px 12px;text-align:center;color:#64748b;font-size:12px">Drop a lead here</div>') + '</div>' +
+          '<div class="kb-list" style="flex:1">' + (cardList || '<div style="border:1px dashed var(--line);border-radius:8px;padding:32px 12px;text-align:center;color:var(--mut);font-size:12px">Drop a lead here</div>') + '</div>' +
         '</div>';
       }).join("");
 

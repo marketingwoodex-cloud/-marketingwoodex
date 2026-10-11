@@ -1,4 +1,4 @@
-/* Woodex Admin v2 — layout and components modelled on TailAdmin (free, MIT), Woodex palette, DM Sans */
+/* Woodex Admin v2 — layout and components modelled on TailAdmin (free, MIT), Woodex palette, Inter (self-hosted; woodex-ui.css). */
 @font-face{font-family:"Inter", system-ui, -apple-system, sans-serif;src:url("/assets/fonts/inter-400.woff2") format("woff2");font-weight:400;font-display:swap}
 @font-face{font-family:"Inter", system-ui, -apple-system, sans-serif;src:url("/assets/fonts/inter-500.woff2") format("woff2");font-weight:500;font-display:swap}
 @font-face{font-family:"Inter", system-ui, -apple-system, sans-serif;src:url("/assets/fonts/inter-600.woff2") format("woff2");font-weight:600;font-display:swap}
@@ -12,6 +12,10 @@
   --code-bg:#0f172a;--code-fg:#38bdf8;
   --chat-bg:#ffffff;--chat-bubble-visitor:#f1f5f9;--chat-bubble-visitor-txt:#0f172a;--chat-bubble-ai:#0087a3;--chat-bubble-ai-txt:#ffffff;
   --side:280px;--top:68px;--r:12px;--sh:0 1px 3px rgba(0,0,0,0.06),0 1px 2px rgba(0,0,0,0.04);
+  /* Sidebar palette (AS-27). The hard-coded navy literals in this file read these now, and
+     woodex-ui.css aliases its --ui-side* tokens to them, so both layers change together. */
+  --side-bg:#ffffff;--side-fg:#374151;--side-fg-strong:#111827;--side-muted:#4b5563;
+  --side-hover:#f3f4f6;--side-active:#eff6ff;--side-active-fg:#1d4ed8;--side-line:#e5e7eb;
   color-scheme:light
 }
 html.dark{
@@ -22,6 +26,8 @@ html.dark{
   --code-bg:#0b0d13;--code-fg:#a78bfa;
   --chat-bg:#0b0d13;--chat-bubble-visitor:#1e2430;--chat-bubble-visitor-txt:#f3f4f6;--chat-bubble-ai:#00b8db;--chat-bubble-ai-txt:#04222b;
   --side:280px;--top:68px;--r:12px;--sh:0 4px 20px rgba(0,0,0,0.4);
+  --side-bg:#171717;--side-fg:#d4d4d4;--side-fg-strong:#f5f5f5;--side-muted:#a3a3a3;
+  --side-hover:#262626;--side-active:#262626;--side-active-fg:#f5f5f5;--side-line:#2f2f2f;
   color-scheme:dark
 }
 *{box-sizing:border-box}
@@ -94,7 +100,7 @@ html.dark .nav-a.on i{color:var(--gold)}
 .app.mini .main{margin-left:72px;transition:margin-left .22s cubic-bezier(.4,0,.2,1)}
 .app.mini .side-top{padding:0 8px;justify-content:center}
 .app.mini .side-top .brand{display:none!important}
-.app.mini .side-top #rail{margin:0 auto!important;width:40px!important;height:40px!important;border-radius:10px!important;display:grid!important;place-items:center!important;background:rgba(255,255,255,.04)!important;border:1px solid rgba(255,255,255,.08)!important;color:#fff!important}
+.app.mini .side-top #rail{margin:0 auto!important;width:40px!important;height:40px!important;border-radius:10px!important;display:grid!important;place-items:center!important;background:var(--side-hover)!important;border:1px solid var(--side-line)!important;color:var(--side-fg-strong)!important}
 .app.mini #nav{padding:8px 6px}
 .app.mini .nav-a{justify-content:center!important;padding:10px 0!important;width:44px!important;height:44px!important;margin:3px auto!important;border-radius:10px!important}
 .app.mini .nav-a>span,.app.mini .nav-a .pill,.app.mini .nav-a .nav-bdg,.app.mini .nav-a .nav-new,.app.mini .nav-car,.app.mini .nav-sub{display:none!important}
@@ -436,25 +442,25 @@ small.bad{color:var(--bad)}small.warnc{color:var(--warn)}
 @media(max-width:760px){.pk-btn{min-width:0}.pk-btn span,.pk-btn kbd{display:none}}
 
 /* ===== P16 3.1 navy sidebar + gold, hover-expand rail ===== */
-.side{background:#0c1628;border-right:0;color:#c9d1dc}
-.side .brand b{color:#fff}.side .brand small{color:var(--gold)}
-.side .logo{background:var(--gold);color:#0c1628}
-.side .side-x{color:#c9d1dc}
-.side .nav-h{color:#6b7a90}
-.side .nav-a{color:#c3cbd6}
-.side .nav-a i,.side .nav-a svg{color:#8b98ab}
-.side .nav-a:hover{background:rgba(255,255,255,.06);color:#fff}
-.side .nav-a.on{background:rgba(184,149,106,.18);color:#f1e2cc}
-.side .nav-a.on i,.side .nav-a.on svg{color:var(--gold)!important}
-.side .nav-g.has-on>.nav-gb{color:#fff}.side .nav-g.has-on>.nav-gb svg{color:var(--gold)}
-.side .nav-sub{border-left-color:rgba(255,255,255,.1)}
-.side .nav-car{color:#6b7a90}
-.side .side-foot{border-top-color:rgba(255,255,255,.08)}
-.side .side-foot a{color:#8b98ab}.side .side-foot a:hover{color:#fff}
-.side ::-webkit-scrollbar{width:6px}.side ::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:6px}
-.nav-bdg{margin-left:auto;min-width:20px;height:20px;padding:0 6px;border-radius:10px;background:var(--gold);color:#0c1628;font:700 11px/20px system-ui;text-align:center}
-.nav-new{margin-left:auto;padding:1px 8px;border-radius:10px;border:1px solid rgba(184,149,106,.6);color:var(--gold);font:600 10.5px/16px system-ui}
-.nav-pin{background:none;border:0;color:#8b98ab;cursor:pointer;padding:6px;border-radius:8px}.nav-pin:hover{color:#fff;background:rgba(255,255,255,.06)}
+.side{background:var(--side-bg);border-right:0;color:var(--side-fg)}
+.side .brand b{color:var(--side-fg-strong)}.side .brand small{color:var(--gold)}
+.side .logo{background:var(--gold);color:var(--pri-fg)}
+.side .side-x{color:var(--side-fg)}
+.side .nav-h{color:var(--side-muted)}
+.side .nav-a{color:var(--side-fg)}
+.side .nav-a i,.side .nav-a svg{color:var(--side-muted)}
+.side .nav-a:hover{background:var(--side-hover);color:var(--side-fg-strong)}
+.side .nav-a.on{background:var(--side-active);color:var(--side-active-fg)}
+.side .nav-a.on i,.side .nav-a.on svg{color:var(--side-active-fg)}
+.side .nav-g.has-on>.nav-gb{color:var(--side-fg-strong)}.side .nav-g.has-on>.nav-gb svg{color:var(--gold)}
+.side .nav-sub{border-left-color:var(--side-line)}
+.side .nav-car{color:var(--side-muted)}
+.side .side-foot{border-top-color:var(--side-line)}
+.side .side-foot a{color:var(--side-muted)}.side .side-foot a:hover{color:var(--side-fg-strong)}
+.side ::-webkit-scrollbar{width:6px}.side ::-webkit-scrollbar-thumb{background:var(--side-line);border-radius:6px}
+.nav-bdg{margin-left:auto;min-width:20px;height:20px;padding:0 6px;border-radius:10px;background:var(--gold);color:var(--pri-fg);font:700 11px/20px system-ui;text-align:center}
+.nav-new{margin-left:auto;padding:1px 8px;border-radius:10px;border:1px solid var(--side-line);color:var(--gold-d);font:600 10.5px/16px system-ui}
+.nav-pin{background:none;border:0;color:var(--side-muted);cursor:pointer;padding:6px;border-radius:8px}.nav-pin:hover{color:var(--side-fg-strong);background:var(--side-hover)}
 @media(min-width:1025px){
   #app.mini .side:hover{width:260px!important;box-shadow:12px 0 36px rgba(0,0,0,.5)!important;z-index:50!important}
   #app.mini .side:hover .side-top{padding:0 18px!important;justify-content:space-between!important}
@@ -481,7 +487,10 @@ small.bad{color:var(--bad)}small.warnc{color:var(--warn)}
 .dx-kpi{display:block;padding:20px;text-decoration:none;color:inherit;transition:box-shadow .2s,transform .2s}.dx-kpi:hover{box-shadow:0 8px 24px rgba(12,22,40,.08);transform:translateY(-1px)}
 .dx-kpi .kpi-ic{display:inline-grid;place-items:center;width:40px;height:40px;border-radius:10px;background:#f4efe7;color:#8a6a43;margin-bottom:12px}.dx-kpi .kpi-ic svg{width:20px;height:20px}
 .dx-kpi small{display:block;color:var(--txt2);font-size:13px}.dx-kpi b{display:block;font-size:24px;letter-spacing:-.02em;margin:4px 0 6px;color:var(--txt)}
-.dx-sub{font-size:12px;color:var(--txt2)}.dl{font-weight:700;margin-right:4px}.dl.up{color:#12b76a}.dl.down{color:#f04438}
+.dx-sub{font-size:12px;color:var(--txt2)}.dl{font-weight:700;margin-right:4px}
+/* KPI delta ink: the bright greens/reds only pass on dark surfaces (theme-contrast sweep). */
+.dl.up{color:#047857}.dl.down{color:#b42318}
+html.dark .dl.up{color:#34d399}html.dark .dl.down{color:#fca5a5}
 .dx-g84{grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:18px;margin-top:18px}.dx-g3{grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin-top:18px}
 #dx .card-h small{display:block;font-size:12px}
 .dx-legend{display:flex;gap:18px;flex-wrap:wrap;font-size:13px;color:var(--txt2);margin-bottom:10px}.dx-legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}.dx-legend b{color:var(--txt);margin-left:4px}
@@ -1275,32 +1284,33 @@ html.dark ::-webkit-scrollbar-thumb{background:var(--line2);border-radius:8px;bo
 html.dark ::-webkit-scrollbar-track{background:transparent}
 
 /* ==================== PRELINE OBSIDIAN & CYAN V2.1 ENHANCEMENTS ==================== */
-/* Sidebar & Navigation (Image 1 & 2) */
+/* Sidebar & Navigation (Image 1 & 2) — AS-27: token colours, and the !important overrides are gone
+   (the design layer in woodex-ui.css wins on specificity, so neither file needs to shout). */
 .side {
-  background: #0a0c10 !important;
-  border-right: 1px solid #1a1e27 !important;
+  background: var(--side-bg);
+  border-right: 1px solid var(--side-line);
 }
 .side .nav-h, .side-group-title {
-  color: #9ca3af !important;
-  font-size: 11px !important;
-  font-weight: 700 !important;
-  letter-spacing: 0.08em !important;
-  text-transform: uppercase !important;
+  color: var(--side-muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 .side a.nav-item, .side .nav-a, .side a {
-  border-radius: 8px !important;
-  color: #d1d5db !important;
-  transition: all 0.15s ease !important;
+  border-radius: 8px;
+  color: var(--side-fg);
+  transition: all 0.15s ease;
 }
 .side a.nav-item:hover, .side .nav-a:hover {
-  background: rgba(255, 255, 255, 0.04) !important;
-  color: #ffffff !important;
+  background: var(--side-hover);
+  color: var(--side-fg-strong);
 }
 .side a.nav-item.active, .side .nav-a.active, .side a.active {
-  background: rgba(0, 184, 219, 0.12) !important;
-  color: #00d3f2 !important;
-  font-weight: 600 !important;
-  border-left: 3px solid #00b8db !important;
+  background: var(--side-active);
+  color: var(--side-active-fg);
+  font-weight: 600;
+  border-left: 3px solid var(--gold);
 }
 
 /* Page Header & Breadcrumbs (Image 2 - Circled in Red) */
@@ -2531,11 +2541,10 @@ input:focus, select:focus, textarea:focus {
    Hover overlay (#app.mini .side:hover) is unchanged. */
 @media(min-width:1025px){
 .app.mini .side{border-right:1px solid rgba(15,23,42,.10)}
-html:not(.dark) .app.mini .side-top #rail{color:#0f172a!important;background:#fff!important;border:1px solid #d6dce6!important;box-shadow:0 1px 2px rgba(15,23,42,.06)!important}
-html.dark .app.mini .side-top #rail{color:#e5e7eb!important}
+/* #rail now reads the sidebar tokens above, so the light/dark literal pair is no longer needed. */
 .app.mini .nav-a{position:relative;transition:background .18s,color .18s}
-.app.mini .nav-a.on::before,.app.mini .nav-a.active::before{content:"";position:absolute;left:-6px;top:10px;bottom:10px;width:3px;border-radius:3px;background:#2563eb}
-.app.mini .nav-a:hover{background:rgba(37,99,235,.10)!important}
+.app.mini .nav-a.on::before,.app.mini .nav-a.active::before{content:"";position:absolute;left:-6px;top:10px;bottom:10px;width:3px;border-radius:3px;background:var(--pri)}
+.app.mini .nav-a:hover{background:var(--side-hover)!important}
 }
 @media (prefers-reduced-motion: reduce){ .app.mini .nav-a{transition:none} }
 

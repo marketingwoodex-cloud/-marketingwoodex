@@ -153,6 +153,42 @@ class H(http.server.SimpleHTTPRequestHandler):
         if action == 'wag_get':
             return self._json(200, {'ok': True, 'dailyCap': 200, 'perTick': 20, 'quietFrom': 21, 'quietTo': 8, 'camps': [], 'tpls': [],
                                     'segs': [], 'flows': [], 'optout': [], 'runs': [], 'running': 0, 'enabled': False})
+        if action == 'dash_data':
+            # U4: a seeded dashboard so the KPI row, chips, funnel, target ring and the statistics
+            # chart can be seen and contrast-checked. Shapes follow api/*.php; values are invented.
+            days = int(data.get('days') or 28)
+            axis, leads, sent, won, invoiced, paid, visitors = [], [], [], [], [], [], []
+            for i in range(days, 0, -1):
+                d = time.strftime('%Y-%m-%d', time.localtime(time.time() - i * 86400))
+                axis.append(d)
+                ph = (i % 7) / 7.0
+                leads.append(int(2 + 3 * ph + (i % 3)))
+                sent.append(int(1 + 2 * ph))
+                won.append(int(1 * ph) + (1 if i % 5 == 0 else 0))
+                invoiced.append(int(150000 + 90000 * ph))
+                paid.append(int(100000 + 70000 * ph))
+                visitors.append(int(40 + 60 * ph))
+            return self._json(200, {'ok': True, 'days': days, 'role': OWNER['role'], 'axis': axis, 'visitors': visitors,
+                'crm': {
+                    'kpi': {'leads': [sum(leads), sum(leads) * 4 // 5], 'pipeline': 7420000, 'openQuotes': [6, 3480000],
+                            'quotesSent': [sum(sent), sum(sent) * 3 // 4], 'won': sum(won), 'paid': [sum(paid), sum(paid) * 9 // 10], 'unpaid': 1260000},
+                    'chips': {'new': 4, 'follow': 3, 'overdue': 2},
+                    'series': {'leads': leads, 'sent': sent, 'won': won, 'invoiced': invoiced, 'paid': paid},
+                    'funnel': {'new': 12, 'contacted': 9, 'visit': 6, 'quoted': 5, 'won': sum(won), 'lost': 2},
+                    'target': {'target': 2500000, 'month': sum(paid[-28:]), 'monthLabel': time.strftime('%B %Y')},
+                    'followups': [{'id': 1, 'name': 'Kamran Ashraf', 'service': 'Turnkey residence', 'stage': 'contacted', 'followup': '2026-10-12', 'late': False},
+                                  {'id': 2, 'name': 'Dr. Sarah Mansoor', 'service': 'Clinic fit-out', 'stage': 'visit', 'followup': '2026-10-11', 'late': True},
+                                  {'id': 3, 'name': 'Tariq Mahmood', 'service': 'Boardroom table', 'stage': 'quoted', 'followup': '2026-10-13', 'late': False}],
+                    'overdueN': 2,
+                    'overdue': [{'id': 11, 'no': 'INV-0114', 'client': 'Mrs. Ahmed', 'due': '2026-10-02', 'balance': 480000},
+                                {'id': 12, 'no': 'INV-0119', 'client': 'Gulberg Plaza', 'due': '2026-10-08', 'balance': 265000}],
+                    'recent': [{'id': 1, 'name': 'Kamran Ashraf', 'service': 'Turnkey residence', 'stage': 'new', 'created_at': '2026-10-11 10:12:00', 'read': False},
+                               {'id': 2, 'name': 'Dr. Sarah Mansoor', 'service': 'Clinic fit-out', 'stage': 'visit', 'created_at': '2026-10-11 08:40:00', 'read': True},
+                               {'id': 3, 'name': 'Tariq Mahmood', 'service': 'Boardroom table', 'stage': 'quoted', 'created_at': '2026-10-10 15:05:00', 'read': True},
+                               {'id': 4, 'name': 'Ayesha Khan', 'service': 'Kitchen redesign', 'stage': 'contacted', 'created_at': '2026-10-10 09:20:00', 'read': True}],
+                    'sources': [{'name': 'Website form', 'n': 24}, {'name': 'WhatsApp', 'n': 15}, {'name': 'Google search', 'n': 9}, {'name': 'Instagram', 'n': 4}],
+                    'tasks': []},
+                'website': {'pages': 412, 'edits': sum(leads)}, 'recent': []})
         if action == 'projs_list':
             return self._json(200, {'ok': True, 'projects': [dict(PREVIEW_PROJECT), dict(PREVIEW_UNDATED)]})
         if action == 'arc_feed_list':

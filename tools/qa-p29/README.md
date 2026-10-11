@@ -22,6 +22,22 @@ Notes:
 - **Checks:** `t16`, `editor-dash`, `approvals`, `approvals-initial` (add `JITTER=<seed>` for seeded script delay), `security`.
 - **Full evidence run:** `bash run-browser-evidence.sh`, with `PREFIX` and `HEADT` pointing at `git archive` extracts of the pre-fix and HEAD trees (outside the repo).
 
+## Design-batch checks (2026-10-12)
+
+- `ui-design-batch.mjs` — routes × both themes in one run: page errors, screenshots, an inline-hex
+  census, the icon-to-label gap in the AI sub-nav (`#ai-subnav`), and **chart ink sampling**: it reads
+  the canvas pixels and asserts the dashboard chart repaints with the other palette when the theme
+  flips (`window.WXPalette`; light mean ink ≈ blue-600, dark ≈ blue-400).
+- `login-contrast.mjs` — rendered AA audit of the sign-in page alone (no sign-in performed).
+- `preview-server.py` now answers `dash_data` with a **seeded fixture** (U4), so the KPI row, chips,
+  funnel, target ring, follow-up and overdue lists, latest-enquiries table and the statistics chart
+  all render in the preview. Values are invented; shapes follow `api/*.php`.
+
+    PREVIEW_EMAIL=you@example.com PREVIEW_PASS=preview-only \
+      node ui-design-batch.mjs http://127.0.0.1:8080 /tmp/ui-out
+    PREVIEW_EMAIL=you@example.com PREVIEW_PASS=only-the-browser-sees-this \
+      node login-contrast.mjs http://127.0.0.1:8080
+
 ## Static preview server (not production)
 
 - `preview-server.py <dir> <port>`: serves the public front-end files of the pro tree, and blocks PHP source, `api/`, `_private/`, `_database/`, `_templates/`, SQL, env/dotfiles, Markdown, JSON, and `admin/admin-tg.js` (token literal, SEC-003).

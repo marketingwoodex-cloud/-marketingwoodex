@@ -24,12 +24,13 @@
   --ui-brand-text: #1d4ed8;  /* links and accent text on light surfaces 6.7:1 */
   --ui-brand-soft: #eff6ff;  /* blue-50 active fills */
   --ui-brand-fg: #ffffff;
-  --ui-side: #ffffff;
-  --ui-side-text: #374151;
-  --ui-side-muted: #4b5563;
-  --ui-side-active: #eff6ff;
-  --ui-side-active-text: #1d4ed8;
-  --ui-side-border: #e5e7eb;
+  /* Sidebar: aliases of the admin.css tokens (AS-27) so there is one palette, not two. */
+  --ui-side: var(--side-bg);
+  --ui-side-text: var(--side-fg);
+  --ui-side-muted: var(--side-muted);
+  --ui-side-active: var(--side-active);
+  --ui-side-active-text: var(--side-active-fg);
+  --ui-side-border: var(--side-line);
   --ui-focus: #2563eb;
   --ui-radius: 10px;
   --ui-radius-lg: 14px;
@@ -49,12 +50,7 @@ html.dark {
   --ui-brand-text: #60a5fa;  /* blue-400 text 5.4:1 on surface */
   --ui-brand-soft: rgba(37, 99, 235, 0.18);
   --ui-brand-fg: #ffffff;
-  --ui-side: #171717;
-  --ui-side-text: #d4d4d4;
-  --ui-side-muted: #a3a3a3;
-  --ui-side-active: #262626;
-  --ui-side-active-text: #f5f5f5;
-  --ui-side-border: #2f2f2f;
+  /* Sidebar aliases: same tokens, dark values live in admin.css html.dark. */
   --ui-focus: #60a5fa;
   --ui-shadow: none;
 }
@@ -91,8 +87,8 @@ html .content a:not(.btn):not(.nav-a):hover { text-decoration: underline; }
 html .main { background: var(--ui-bg); }
 html .content { color: var(--ui-text); }
 html .side {
-  background: var(--ui-side) !important;
-  color: var(--ui-side-text) !important;
+  background: var(--ui-side);
+  color: var(--ui-side-text);
   border-right: 1px solid var(--ui-side-border);
 }
 html .side .nav-a {

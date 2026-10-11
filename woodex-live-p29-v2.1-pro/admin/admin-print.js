@@ -41,7 +41,7 @@
     "th{background:#0a0f1e;color:#fff;font-weight:600;font-size:8pt;letter-spacing:.06em;text-transform:uppercase;padding:2.6mm 2.4mm;text-align:left}th.r,td.r{text-align:right}th.c,td.c{text-align:center}" +
     "td{padding:2.4mm;border-bottom:1px solid #e4e7ec;vertical-align:top;font-size:9.2pt}tbody tr:nth-child(even) td{background:#fafaf7}" +
     "td.sr{width:11mm;text-align:center;color:#667085}.sum td{font-size:10pt}.sum td.p{font-weight:600;text-transform:uppercase;letter-spacing:.03em}" +
-    ".tot{margin-left:auto;width:78mm;margin-top:4mm}.tot div{display:flex;justify-content:space-between;padding:1.6mm 3mm;font-size:9.5pt}.tot .g{background:#0a0f1e;color:#fff;font-weight:700;font-size:12pt;padding:3mm;border-radius:2mm;margin-top:1mm}.tot .g span:last-child{color:#d4af6a}" +
+    ".tot{margin-left:auto;width:78mm;margin-top:4mm}.tot div{display:flex;justify-content:space-between;padding:1.6mm 3mm;font-size:9.5pt}.tot .g{background:#0a0f1e;color:#fff;font-weight:700;font-size:12pt;padding:3mm;border-radius:2mm;margin-top:1mm}.tot .g span:last-child{color:#d4af6a}/* print ink: A4 paper palette, exempt from the screen theme */" +
     ".words{margin-top:3mm;font-size:9pt;color:#344054;text-align:right}.words b{color:#0a0f1e}" +
     ".sec-h{display:flex;justify-content:space-between;align-items:baseline;margin:6mm 0 3mm;padding-bottom:2mm;border-bottom:1px solid #d0d5dd}.sec-h h2{margin:0;font-size:15pt;text-transform:uppercase;letter-spacing:.04em}.sec-h h2 span{color:#b8924c;margin-right:3mm}.sec-h small{color:#667085}" +
     ".mini{display:flex;justify-content:space-between;align-items:center;font-size:8pt;color:#667085;padding-bottom:3mm;border-bottom:1px solid #e4e7ec}.mini img{height:7mm;vertical-align:middle;margin-right:6px}" +
