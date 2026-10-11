@@ -94,23 +94,31 @@ active row were equally washed out. Measured now:
 | Row height / radius / icon gap | 40 px · 8 px · 12 px (sub-items 34 px) |
 | Hover / chevron | 160 ms transitions, chevrons rotate when a group opens, reduced-motion respected |
 
-## 5. The Preline-style design pass — what it takes
+## 5. The Preline-style design pass — block 1 landed in this same commit series
 
-Your reference (`preline.co/templates/support/shared-inbox`) is a different design system, not just
-a different colour. A faithful pass is a **design-system change**, not a CSS patch, and doing it
-half-way would look worse than today. The plan I propose, in order:
+Your reference (`preline.co/templates/support/shared-inbox`) is a different design *system*, not a
+different colour, so it is being applied as one: through the shared stylesheet, so every screen
+inherits it, without touching any screen's layout.
 
-1. **Tokens + typography first** (one commit): Preline's spacing scale, 13/14 px text, Inter, card
-   radius/shadow/border set, muted greys — applied through the existing `woodex-ui.css` tokens so
-   every screen inherits it at once.
-2. **Sidebar + topbar** (already partly done): grouped nav with section labels, 36–40 px rows, icon
-   rail collapse, user block at the bottom.
-3. **One reference screen end-to-end** — I suggest **Dashboard**: 4 KPI cards with inline sparklines
-   and delta chips, a clean card grid, table styling with sticky headers (exactly like your
-   screenshot). You approve the look once, then every other screen follows the same recipe.
-4. **Tables + forms pass**: sticky headers, row hover, checkbox selection, filter/search row, badges,
-   empty states — this is the biggest visual win across the 58 screens.
-5. **Per-screen sweeps**: Content, Sales, Settings, System.
+**Block 1 — done and measured** (`deliverables/DESIGN-PASS-1-2026-10-12.md`, screenshots
+`deliverables/design-pass/`):
 
-Say "start the Preline pass" and I will do step 1 + 2 + the Dashboard reference screen first so you
-can judge the direction on one screen before it goes everywhere.
+- **Cards** — KPI cards now use the reference order: uppercased muted label, 26px tabular value,
+  tinted icon square top-right, sub-line beneath.
+- **Chips** — soft same-hue washes with hairline tint borders instead of saturated outlines.
+- **Tables** — uppercased 11.5px column labels with a tinted header band, roomier rows, tabular
+  numbers, soft hover.
+- **Typography/spacing** — 15px/600 card headings, 18/20px card padding, tighter tracking.
+- **Animation** — a freshly built screen fades in for 180ms (staggered), opacity only so no
+  `position: fixed` child is re-anchored; all motion off under `prefers-reduced-motion`.
+
+Gates: `master-qa` 58/58 clean · `cms-audit` 23/23 clean · contrast **belowAA 0** in light *and*
+dark · 390 px sweep unchanged from the unmodified baseline (the one media overflow pre-exists).
+
+**Blocks 2–5 (next):** global spacing/type tokens · sidebar icon rail and bottom-anchored user
+block · reusable page-header / toolbar / table / side-panel section blocks · per-screen sweep of
+Sales, CRM, Settings and System.
+
+The sidebar complaint itself was a scrollbar painted with the border colour plus a rule that muted
+every label; both are fixed and measured (section 4 above), with the rail gone from the rendered
+sidebar.
