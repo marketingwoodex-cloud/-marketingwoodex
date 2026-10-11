@@ -103,10 +103,24 @@ function demo_expired(string $email): bool {
     if (substr(strtolower($email), -15) !== '@demo.woodex.pk') return false;
     $d = jread(PRIVATE_DIR . '/demo.json'); return empty($d['until']) || (int)$d['until'] < time();
 }
+/* The role column can carry a word another admin tool wrote — the WordPress-era schema used
+   "master"/"manager"/"developer", and a hand-edited row can say "administrator". Every gate in
+   this app compares against the five canonical roles, so an unrecognised word silently locked the
+   owner out of the builder and half the API ("No builder access — your role cannot edit pages").
+   Normalise once, here, where the user is loaded. */
+const ROLE_ALIAS = ['master' => 'owner', 'superadmin' => 'owner', 'administrator' => 'owner', 'owner' => 'owner',
+    'manager' => 'admin', 'admin' => 'admin', 'developer' => 'editor', 'editor' => 'editor',
+    'sales' => 'sales', 'support' => 'support'];
+function role_canon(?string $r): string {
+    $r = strtolower(trim((string)$r));
+    return ROLE_ALIAS[$r] ?? ($r !== '' ? $r : 'support');
+}
+
 function current_user(): ?array {
     if (isset($GLOBALS['WX_AS'])) return $GLOBALS['WX_AS']; // set by api/mcp.php after Bearer-token auth
     if (!preg_match('~^(\d+)\.(\d{10})\.([a-f0-9]{16})\.([a-f0-9]{64})$~', (string)($_SERVER['HTTP_X_WX_ADM'] ?? ''), $m) || (int)$m[2] < time()) return null;
     $u = q('SELECT * FROM wx_users WHERE id=? AND active=1', [(int)$m[1]])->fetch(); if (!$u || demo_expired((string)$u['email'])) return null;
+    $u['role'] = role_canon($u['role'] ?? '');
     if (!hash_equals(hash_hmac('sha256', 'adm|' . $u['id'] . '|' . $m[2] . '|' . $u['pw_ver'] . '|' . $m[3], bsecret()), $m[4])) return null;
     if (!sec_session_ok((int)$u['id'], $m[3])) return null; // signed out remotely
     $GLOBALS['WX_SID'] = $m[3]; return $u;

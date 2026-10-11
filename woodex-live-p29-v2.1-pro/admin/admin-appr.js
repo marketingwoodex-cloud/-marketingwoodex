@@ -20,7 +20,7 @@
   var tab = "pending";
   VIEWS.approvals = function (el) {
     var r = role(), isM = r === "owner";
-    if (["owner", "admin", "editor"].indexOf(r) < 0) { el.innerHTML = W.head("Approvals") + '<div class="card"><div class="empty">Not available for your role.</div></div>'; return; }
+    if (["owner", "admin", "editor"].indexOf(W.roleCanon ? W.roleCanon(r) : r) < 0) { el.innerHTML = W.head("Approvals") + '<div class="card"><div class="empty">Not available for your role.</div></div>'; return; }
     el.innerHTML = W.head("Approvals", "Approvals", '<div class="seg" id="ap-tab"><button data-t="pending"' + (tab === "pending" ? ' class="on"' : "") + '>Waiting</button><button data-t="all"' + (tab === "all" ? ' class="on"' : "") + ">History</button></div>") +
       '<div class="card" style="margin-bottom:14px"><div class="card-b" style="display:flex;gap:12px;align-items:center">' + ic("shield-check") + "<div>" +
       (isM ? "Changes made by the <b>Manager</b> wait here. Approve to apply them exactly as sent, or reject with a note."

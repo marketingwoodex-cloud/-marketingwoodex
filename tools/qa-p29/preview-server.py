@@ -33,6 +33,18 @@ ROLE_GROUPS = {
 BUILDER_ROLES = ('owner', 'admin', 'editor')  # same list as the login branch of api/admin.php
 
 
+# Same words api/admin.php role_canon() accepts: a role column another tool wrote must not
+# lock the owner out of the app (nor make the preview silently drop the account).
+ROLE_ALIAS = {'master': 'owner', 'superadmin': 'owner', 'administrator': 'owner', 'owner': 'owner',
+              'manager': 'admin', 'admin': 'admin', 'developer': 'editor', 'editor': 'editor',
+              'sales': 'sales', 'support': 'support'}
+
+
+def role_canon(r):
+    r = str(r or '').strip().lower()
+    return ROLE_ALIAS.get(r, r or 'support')
+
+
 def _load_accounts():
     raw = os.environ.get('PREVIEW_ACCOUNTS', '').strip()
     f = os.environ.get('PREVIEW_ACCOUNTS_FILE', '').strip()
@@ -52,12 +64,12 @@ def _load_accounts():
         for i, a in enumerate(rows if isinstance(rows, list) else []):
             em = str(a.get('email', '')).strip().lower()
             pw = str(a.get('password') or a.get('pass') or '')
-            role = str(a.get('role', 'owner')).strip().lower()
+            role = role_canon(a.get('role', 'owner'))
             if not em or not pw:
                 print('preview account skipped (needs email + password): %s' % (em or '(no email)'))
                 continue
             if role not in ROLE_GROUPS:
-                print('preview account skipped (unknown role "%s"): %s' % (role, em))
+                print('preview account skipped (unknown role "%s"): %s' % (a.get('role'), em))
                 continue
             out.append({'id': i + 1, 'name': str(a.get('name') or ROLE_LABELS[role]), 'role': role,
                         'email': em, 'password': pw, 'token': str(a.get('token') or ('preview-token-%d' % (i + 1)))})

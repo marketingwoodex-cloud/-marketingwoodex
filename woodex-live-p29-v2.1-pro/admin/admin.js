@@ -67,10 +67,10 @@
   var PERM_LABEL = { sales: "Sales (leads, quotes, projects)", conversations: "Inbox", updates: "Client updates", broadcast: "WhatsApp broadcasts & automation", ai: "Train AI", website: "Website (pages, content, SEO)", settings: "Settings & integrations" };
   var ROLE_LABEL = { owner: "Master", admin: "Manager", editor: "Developer", sales: "Sales", support: "Support" };
   var ROLE_GROUPS = { owner: ["sales", "conversations", "updates", "broadcast", "ai", "website", "settings", "master"], admin: ["sales", "conversations", "updates", "broadcast", "ai", "website", "settings"], editor: ["website", "settings"], sales: ["sales", "conversations", "support_view"], support: ["conversations", "updates", "support_view"] };
-  var groupsOf = function (u) { return (ROLE_GROUPS[u.role] || []).concat(u.perms || []); };
+  var groupsOf = function (u) { u = u || {}; return (ROLE_GROUPS[roleCanon(u.role)] || []).concat(u.perms || []); };
   var can = function (roles) {
-    if (!S.user) return false; var g = groupsOf(S.user);
-    return roles.split(",").some(function (r) { r = r.trim(); return r.indexOf("g:") === 0 ? g.indexOf(r.slice(2)) >= 0 : r === S.user.role; });
+    if (!S.user) return false; var g = groupsOf(S.user), role = roleCanon(S.user.role);
+    return roles.split(",").some(function (r) { r = r.trim(); return r.indexOf("g:") === 0 ? g.indexOf(r.slice(2)) >= 0 : roleCanon(r) === role; });
   };
   var ACT = {
     login: ["log-out", "signed in"], logout: ["log-out", "signed out"], setup: ["shield-check", "installed Woodex Admin"], "profile.update": ["user", "updated their profile"], "password.change": ["key-round", "changed their password"],
@@ -210,7 +210,7 @@
     } catch (e) { /* not our opener */ }
   }
   function signedIn(r) {
-    S.token = r.token || S.token; S.user = r.user; S.btoken = r.builderToken || null;
+    S.token = r.token || S.token; S.user = r.user; if (S.user) S.user.role = roleCanon(S.user.role); S.btoken = r.builderToken || null;
     sessionStorage.setItem("wxaTok", S.token); if (S.btoken) sessionStorage.setItem("wxTok", S.btoken);
     wxShare();
     $("#auth").hidden = true; $("#app").hidden = false;
@@ -465,6 +465,11 @@
 
   // ---------------------------------------------------------------- router
   window.addEventListener("hashchange", route);
+  /* Roles as the server canonicalises them: accept the words older admins/other tools wrote
+     (master/manager/developer/administrator) so an account is never refused by spelling alone. */
+  var ROLE_ALIAS = { master: "owner", superadmin: "owner", administrator: "owner", owner: "owner",
+    manager: "admin", admin: "admin", developer: "editor", editor: "editor", sales: "sales", support: "support" };
+  function roleCanon(r) { r = String(r || "").toLowerCase().trim(); return ROLE_ALIAS[r] || r || "support"; }
   function route0Mark(v) {
     v = v || S.view;
     var nv = { quote: "quotes", template: "templates", invoice: "invoices", post: "blog", study: "portfolio", fields: "services", citydraft: "cities" }[v] || v; $$(".nav-a").forEach(function (a) { a.classList.toggle("on", a.dataset.v === nv); }); $$(".nav-g").forEach(function (g) { var has = !!g.querySelector('.nav-a[data-v="' + nv + '"]'); g.classList.toggle("has-on", has); if (has) g.classList.add("open"); }); $$(".nav-sec.shut").forEach(function (x) { if (x.querySelector(".nav-a.on")) x.classList.remove("shut"); });
@@ -610,14 +615,16 @@
       /* A Master can still land here without a token: the page was reloaded in a fresh tab, the
          session predates the token, or storage was cleared. Ask the server once before refusing,
          and when the refusal is real, name the role and the fix instead of a dead end. */
-      var editor = ["owner", "admin", "editor"].indexOf((S.user && S.user.role) || "") >= 0;
+      var role = roleCanon(S.user && S.user.role), editor = ["owner", "admin", "editor"].indexOf(role) >= 0;
       el.innerHTML = '<div class="content"><div class="card soon-box"><h2>Checking your builder access…</h2><p class="muted">One moment.</p></div></div>';
       api("me").then(function (r) {
         if (r && r.builderToken) { S.btoken = r.builderToken; sessionStorage.setItem("wxTok", S.btoken); VIEWS.builder(el, args); return; }
         el.innerHTML = '<div class="content"><div class="card soon-box"><h2>No builder access</h2><p>'
-          + (editor ? "Your account can edit pages but this session has no builder token. Sign out and sign in again — if it stays like this, send this screen to the developer."
-                    : "The “" + ((S.user && S.user.role) || "current") + "” role cannot edit pages. Ask the owner for an Editor or Admin account.")
-          + "</p></div></div>";
+          + (editor ? "Your account can edit pages but this session has no builder token. Sign out and sign in again — if it stays like this, press Retry or send this screen to the developer."
+                    : "The “" + role + "” role cannot edit pages. Ask the owner for an Editor or Admin account.")
+          + '</p><button class="btn" id="bx-retry">Retry</button></div></div>';
+        var rb = document.getElementById("bx-retry");
+        if (rb) rb.onclick = function () { S.btoken = ""; VIEWS.builder(el, args); };
       });
       return;
     }
@@ -748,7 +755,7 @@
   /* Screens from separate files (defer scripts) may not exist yet when the first screen is drawn after a refresh:
      redraw once everything has loaded, if a placeholder was shown for a screen that now exists. */
   window.addEventListener("load", function () { setTimeout(function () { if (S.user && document.querySelector("#view .soon-box")) { var v = (location.hash.replace(/^#\/?/, "").split("/")[0] || "dashboard"); if (VIEWS[v] && VIEWS[v] !== VIEWS.soon) route(); } }, 0); });
-  window.WXA = { formDraft: formDraft, S: S, signedIn: signedIn, showAuth: showAuth, api: api, bapi: bapi, modal: modal, closeModal: closeModal, toast: toast, esc: esc, ic: ic, fillIcons: fillIcons, ago: ago, head: head, autoHead: autoHead, navBadges: function () { navBadges(); }, can: can, ROLE_LABEL: ROLE_LABEL, PERM_LABEL: PERM_LABEL, VIEWS: VIEWS, $: $, $$: $$, route: function () { route(); } };
+  window.WXA = { roleCanon: roleCanon, formDraft: formDraft, S: S, signedIn: signedIn, showAuth: showAuth, api: api, bapi: bapi, modal: modal, closeModal: closeModal, toast: toast, esc: esc, ic: ic, fillIcons: fillIcons, ago: ago, head: head, autoHead: autoHead, navBadges: function () { navBadges(); }, can: can, ROLE_LABEL: ROLE_LABEL, PERM_LABEL: PERM_LABEL, VIEWS: VIEWS, $: $, $$: $$, route: function () { route(); } };
   Object.assign(ACT, { "page.meta": ["file-text", "updated SEO/settings of"], "page.delete": ["x", "deleted page"], "redirects.save": ["refresh-cw", "saved redirects"], "global.menu": ["panel-left", "updated the site menu on"], "global.replace": ["refresh-cw", "replaced in header/footer"], "global.chrome": ["panel-left", "published header & footer on"] });
 
   // ---------------------------------------------------------------- boot
