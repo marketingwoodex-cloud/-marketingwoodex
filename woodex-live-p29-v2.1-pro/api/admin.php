@@ -83,6 +83,20 @@ function ingest(): void {
 
 // ---------- auth ----------
 /** Token = uid.exp.sid.sig — the session id makes every sign-in listable and revocable (security-lib.php). */
+/* Google sign-in (team members only). Client ID comes from the GOOGLE_CLIENT_ID env var; it is public, not a secret. */
+function google_client_id(): string { $v = getenv('GOOGLE_CLIENT_ID'); return is_string($v) ? trim($v) : ''; }
+function google_token_claims(string $cred): ?array {
+    if (!function_exists('curl_init')) return null;
+    $ch = curl_init('https://oauth2.googleapis.com/tokeninfo?id_token=' . rawurlencode($cred));
+    curl_setopt_array($ch, [CURLOPT_CAINFO => __DIR__ . '/cacert.pem', CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 10, CURLOPT_FOLLOWLOCATION => false, CURLOPT_SSL_VERIFYPEER => true]);
+    $body = curl_exec($ch); $code = (int)curl_getinfo($ch, CURLINFO_RESPONSE_CODE); curl_close($ch);
+    if ($body === false || $code !== 200) return null;
+    $j = json_decode((string)$body, true);
+    if (!is_array($j)) return null;
+    if (!in_array($j['iss'] ?? '', ['accounts.google.com', 'https://accounts.google.com'], true)) return null;
+    if ((int)($j['exp'] ?? 0) < time()) return null;
+    return $j;
+}
 function token_for(array $u): string { $e = time() + 12 * 3600; $exp = (string)$e; $sid = sec_new_session($u, $e); $GLOBALS['WX_SID'] = $sid; return $u['id'] . '.' . $exp . '.' . $sid . '.' . hash_hmac('sha256', 'adm|' . $u['id'] . '|' . $exp . '|' . $u['pw_ver'] . '|' . $sid, bsecret()); }
 /** P20 demo accounts (@demo.woodex.pk) stop working after the date in _private/demo.json. */
 function demo_expired(string $email): bool {
@@ -384,6 +398,23 @@ switch ($action) {
         $pw = (string)($in['password'] ?? ''); valid_pw($pw);
         q('UPDATE wx_users SET pass_hash=?, pw_ver=pw_ver+1 WHERE id=?', [password_hash($pw, PASSWORD_DEFAULT), $u['id']]);
         log_act($u, 'password.reset'); out(['ok' => true, 'message' => 'Password changed. Sign in with your new password.']);
+
+    case 'auth_info': // public: which sign-in options are on (no secrets)
+        out(['ok' => true, 'googleClientId' => google_client_id()]);
+
+    case 'google_login':
+        throttle();
+        $cid = google_client_id();
+        if ($cid === '') fail('Google sign-in is not set up yet. Use your email and password.', 403);
+        $cred = trim((string)($in['credential'] ?? ''));
+        $cl = ($cred !== '' && strlen($cred) < 4096) ? google_token_claims($cred) : null;
+        $ev = $cl['email_verified'] ?? false;
+        if (!$cl || ($cl['aud'] ?? '') !== $cid || !filter_var($cl['email'] ?? '', FILTER_VALIDATE_EMAIL) || !($ev === true || $ev === 'true')) { throttle(true); fail('Google sign-in failed. Use your email and password.', 401); }
+        $gu = q('SELECT * FROM wx_users WHERE email=? AND active=1', [strtolower(trim((string)$cl['email']))])->fetch();
+        if (!$gu) { throttle(true); fail('This Google account is not on the team list. Ask the owner to add your email in Team & roles.', 403); }
+        if (demo_expired((string)$gu['email'])) fail('This demo account has expired. Ask the owner for a real login.', 403);
+        log_act($gu, 'login.google');
+        sec_login_after_password($gu);
 
     case 'me':
         $u = need(); out(['ok' => true, 'user' => pub($u), 'caps' => wx_caps($u), 'builderToken' => in_array($u['role'], ['owner', 'admin', 'editor'], true) ? builder_token((int)$u['id']) : null]);

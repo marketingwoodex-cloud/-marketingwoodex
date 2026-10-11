@@ -277,6 +277,30 @@
       $("#l-err").textContent = "";
       toast("Google sign-in is not set up yet. Use your email and password.", true);
     };
+    api("auth_info").then(function (r) {
+      if (r && r.ok && r.googleClientId) loadGis(function () { gsiInit(r.googleClientId, socG); });
+    });
+  }
+  /* Google sign-in: only accounts already active in Team & roles can get in (checked on the server). */
+  function loadGis(cb) {
+    if (window.google && google.accounts && google.accounts.id) return cb();
+    var sc = document.createElement("script"); sc.src = "https://accounts.google.com/gsi/client"; sc.async = true;
+    sc.onload = cb;
+    sc.onerror = function () { $("#l-err").textContent = "Could not load Google sign-in. Use your email and password."; };
+    document.head.appendChild(sc);
+  }
+  function gsiInit(clientId, btn) {
+    var host = document.createElement("div"); host.id = "l-google-host"; host.style.width = "100%";
+    btn.parentNode.insertBefore(host, btn); btn.hidden = true;
+    google.accounts.id.initialize({ client_id: clientId, callback: function (resp) {
+      $("#l-err").textContent = "";
+      api("google_login", { credential: resp.credential }).then(function (r) {
+        if (!r.ok) return ($("#l-err").textContent = r.error);
+        if (r.need2fa) { S.ticket = r.ticket; $("#login-form").hidden = true; $("#tfa-form").hidden = false; $("#t-code").value = ""; $("#t-err").textContent = ""; $("#t-code").focus(); return; }
+        signedIn(r);
+      });
+    } });
+    google.accounts.id.renderButton(host, { type: "standard", theme: "filled_black", size: "large", text: "continue_with", shape: "rectangular", width: 360 });
   }
   var socGh = $("#l-soc-github");
   if (socGh) {
