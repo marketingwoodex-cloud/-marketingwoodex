@@ -257,3 +257,64 @@ html:not(.dark) .seg button.on, html:not(.dark) .wh-tabs a.on { background: var(
 /* Pill tabs: icon and label sit on one line with the same gap on every page. */
 html .seg button { display: inline-flex; align-items: center; gap: 7px; }
 html .seg button > svg, html .seg button > i { flex: none; width: 16px; height: 16px; }
+
+/* ---------- Preline-alignment pass (2026-10-12) ----------
+   Goal: the same visual grammar as the reference templates — muted uppercased labels, generous
+   card padding, soft tinted chips and badges, tabular numbers in tables, and a short fade when a
+   screen mounts. Layouts are untouched: this only restyles blocks that already exist, so every
+   screen that uses .card / .dx-kpi / .tbl / .dx-chip inherits it at once. */
+
+/* Screen mount: fade the freshly built view in. Opacity only — a transform here would turn an
+   ancestor into a containing block for any position:fixed child for the length of the animation. */
+@keyframes ds-view-in { from { opacity: 0; } to { opacity: 1; } }
+html #view > * { animation: ds-view-in 180ms var(--ds-ease) both; }
+html #view > *:nth-child(2) { animation-delay: 35ms; }
+html #view > *:nth-child(3) { animation-delay: 70ms; }
+
+/* Card headings: one step down from the page title, tighter tracking. */
+html .card-h h3, html .card h3 { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
+html .card-h { padding: 18px 20px 0; }
+html .card-b { padding: 18px 20px 20px; }
+
+/* KPI card: label and value stack on the left, tinted icon square top-right, sub-line beneath —
+   the same order as the reference dashboard cards. */
+html .dx-kpi {
+  display: grid; align-items: start; padding: 18px 20px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas: "label icon" "value icon" "sub icon";
+  row-gap: 2px;
+}
+html .dx-kpi small { grid-area: label; font-size: 11.5px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: var(--ui-muted); }
+html .dx-kpi b { grid-area: value; font-size: 26px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.2; font-variant-numeric: tabular-nums; margin: 2px 0 0; }
+html .dx-kpi .kpi-ic { grid-area: icon; width: 38px; height: 38px; margin: 0 0 0 12px; border-radius: 10px; background: var(--ui-brand-soft); color: var(--ui-brand-text); }
+html .dx-kpi .dx-sub { grid-area: sub; margin-top: 6px; font-size: 12.5px; }
+
+/* Chips: tint only, no saturated 1px outline — the reference uses a soft wash with the same hue. */
+html .dx-chips { gap: 10px; }
+html .dx-chip {
+  padding: 6px 13px; font-size: 13px; font-weight: 500; color: var(--ui-text-2);
+  border: 1px solid transparent; background: var(--ui-surface-2);
+  transition: background-color var(--ds-fast) var(--ds-ease), border-color var(--ds-fast) var(--ds-ease), transform 120ms var(--ds-ease);
+}
+html .dx-chip b { font-size: 13.5px; font-weight: 700; font-variant-numeric: tabular-nums; }
+html .dx-chip:hover { transform: translateY(-1px); }
+html .dx-chip.warn { background: #fffbeb; border-color: #fde68a; }
+html .dx-chip.info { background: #eff6ff; border-color: #bfdbfe; }
+html .dx-chip.bad { background: #fef2f2; border-color: #fecaca; }
+html.dark .dx-chip.warn { background: rgba(245, 158, 11, 0.14); border-color: rgba(245, 158, 11, 0.32); }
+html.dark .dx-chip.info { background: rgba(37, 99, 235, 0.16); border-color: rgba(59, 130, 246, 0.34); }
+html.dark .dx-chip.bad { background: rgba(239, 68, 68, 0.15); border-color: rgba(239, 68, 68, 0.34); }
+
+/* Tables: small uppercased column labels, roomier rows, numbers that line up, a soft hover. */
+html table.tbl th {
+  font-size: 11.5px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase;
+  color: var(--ui-muted); padding: 11px 16px; background: var(--ui-surface-2);
+}
+html table.tbl td { font-size: 13.5px; padding: 13px 16px; }
+html table.tbl th, html table.tbl td, html .dx-kpi b, html .stat b { font-variant-numeric: tabular-nums; }
+html table.tbl tbody tr:last-child td { border-bottom: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  html #view > * { animation: none; }
+  html .dx-chip:hover { transform: none; }
+}
