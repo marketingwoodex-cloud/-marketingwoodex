@@ -22,6 +22,7 @@ function sales_migrate(): void {
     // Replaced invoices are kept here (never deleted outright), so a milestone billing change cannot destroy a finance record.
     q('CREATE TABLE IF NOT EXISTS wx_invoices_archive (id INT AUTO_INCREMENT PRIMARY KEY, src_id INT NOT NULL, no VARCHAR(30) NOT NULL, quote_id INT NULL, data LONGTEXT NOT NULL, archived_at VARCHAR(40) NOT NULL, archived_by VARCHAR(80) NOT NULL, reason VARCHAR(190) NOT NULL, INDEX(src_id))' . $e);
     q('CREATE TABLE IF NOT EXISTS wx_projects (id INT AUTO_INCREMENT PRIMARY KEY, data LONGTEXT NOT NULL)' . $e);
+    sales_seed_templates();
 }
 
 // ---------------------------------------------------------------- JSON document helpers
@@ -113,6 +114,91 @@ function tpl_row(array $x): array {
     return ['name' => clip($x['name'] ?? '', 80), 'kind' => $kind, 'description' => clip($x['description'] ?? '', 400), 'sections' => clean_sections($x['sections'] ?? []), 'terms' => clip($x['terms'] ?? '', 3000)];
 }
 
+/**
+ * The Woodex starter set for quotations/invoices (renovation, design, fit-out, kitchen).
+ * Single source of truth for both the automatic seed below and the "Import starter
+ * templates" button, which used to read an undefined window.WX_QUOT_TEMPLATES.
+ */
+function sales_starter_templates(): array {
+    $terms = "50% advance with the confirmed purchase order; balance before delivery.\n"
+        . "Rates hold for 30 days and exclude tax where applicable.\n"
+        . "Timeline counts from the advance received and drawings approved.\n"
+        . "Quantities are measured on site; variations settle at the same rates.";
+    $R = function (string $d, float $q, string $u, float $r) { return ['desc' => $d, 'qty' => $q, 'unit' => $u, 'rate' => $r]; };
+    $S = function (string $n, array $items) { return ['name' => $n, 'note' => 'Measured on site; final quantities may vary within 5%.', 'items' => $items]; };
+    return [
+        ['name' => 'Home renovation 1 Kanal', 'kind' => 'renovation', 'description' => 'Turnkey renovation of a 1 Kanal house: civil, plumbing, electrical and finishes.', 'terms' => $terms, 'sections' => [
+            $S('Demolition & civil', [
+                $R('Dismantling existing finishes, including debris removal', 1, 'job', 185000),
+                $R('Cement plaster repair: kitchen and bathrooms', 850, 'sft', 210),
+                $R('Waterproofing, roof and bathroom floors', 1200, 'sft', 165),
+            ]),
+            $S('Plumbing & sanitary', [
+                $R('Concealed water supply and drainage lines', 1, 'job', 265000),
+                $R('Sanitary fixture set installation, per bathroom', 3, 'set', 46000),
+            ]),
+            $S('Electrical', [
+                $R('Concealed wiring, DB panel and earthing', 1, 'job', 320000),
+                $R('Light points with switch board and fixture', 24, 'pts', 4200),
+            ]),
+            $S('Flooring', [
+                $R('Vitrified tile 600x600 supply and laying', 1900, 'sft', 315),
+                $R('Skirting, matching tile', 320, 'rft', 260),
+            ]),
+            $S('Painting', [
+                $R('Putty, primer and premium emulsion, 2 coats', 3200, 'sft', 95),
+                $R('Weather coat on external facade', 900, 'sft', 130),
+            ]),
+        ]],
+        ['name' => 'Interior design package', 'kind' => 'design', 'description' => 'Concept to working drawings with 3D views and site supervision visits.', 'terms' => $terms, 'sections' => [
+            $S('Design services', [
+                $R('Concept design with 3D visualisation, per room', 4, 'room', 38000),
+                $R('Working drawings: floor, ceiling and electrical layout', 1, 'job', 120000),
+                $R('Site supervision visit', 6, 'visit', 8000),
+            ]),
+            $S('Execution allowance', [
+                $R('TV console, lacquered MDF with storage', 6, 'rft', 14500),
+                $R('Wall panelling behind bed or sofa', 78, 'sft', 1250),
+            ]),
+        ]],
+        ['name' => 'Office fit-out per seat', 'kind' => 'fitout', 'description' => 'Rate card for office interiors, priced per workstation.', 'terms' => $terms, 'sections' => [
+            $S('Workstations', [
+                $R('Manager desk 5x2.5 ft with side return', 2, 'no', 62000),
+                $R('Modular workstation 4x2 ft', 12, 'no', 28500),
+                $R('Mesh-back ergonomic chair', 14, 'no', 21000),
+            ]),
+            $S('Ceiling & lighting', [
+                $R('Grid ceiling 600x600 with insulation', 850, 'sft', 175),
+                $R('Panel LED luminaire supplied and fixed', 26, 'no', 5200),
+            ]),
+        ]],
+        ['name' => 'Kitchen cabinets per running foot', 'kind' => 'fitout', 'description' => 'Modular kitchen: carcass, shutters, hardware and counter on a running-foot rate.', 'terms' => $terms, 'sections' => [
+            $S('Kitchen', [
+                $R('Base cabinet, MDF carcass with soft-close hardware', 14, 'rft', 22500),
+                $R('Wall cabinet with lift-up or hinged shutters', 10, 'rft', 19500),
+                $R('Quartz counter top, 20 mm', 12, 'rft', 16500),
+                $R('Stainless sink with mixer tap', 1, 'set', 48000),
+            ]),
+        ]],
+    ];
+}
+
+/**
+ * Seed the starter set once per install. A fresh install (or a restored backup) had an
+ * empty wx_templates table, so "New quotation" and the invoice builder opened with
+ * nothing to pick. Guarded by a marker row in wx_settings and skipped if templates exist.
+ */
+function sales_seed_templates(): void {
+    if ((int)(q("SELECT COUNT(*) FROM wx_settings WHERE k='sales_tpl_seed'")->fetchColumn() ?: 0) > 0) return;
+    q("REPLACE INTO wx_settings (k,v) VALUES ('sales_tpl_seed',?)", [gmdate('c')]);
+    if ((int)(q('SELECT COUNT(*) FROM wx_templates')->fetchColumn() ?: 0) > 0) return;
+    foreach (sales_starter_templates() as $s) {
+        $t = tpl_row($s);
+        if ($t['name'] === '') continue;
+        doc_put('wx_templates', $t + ['created_at' => now(), 'updated_at' => now()], ['name' => $t['name']]);
+    }
+}
+
 function sales_stats(): array {
     sales_migrate(); $open = 0; $openV = 0; $rec = 0;
     foreach (doc_all('wx_quotes') as $x) if ($x['status'] === 'sent') { $open++; $openV += $x['total']; }
@@ -149,6 +235,11 @@ function sales_actions(string $action, array $in): bool {
             if (q('SELECT id FROM wx_templates WHERE name=? AND id<>?', [$t['name'], $id])->fetch()) fail('Another template already has that name');
             $t = doc_put('wx_templates', ['id' => $id ?: null, 'created_at' => $old['created_at'], 'updated_at' => now()] + $t, ['name' => $t['name']]);
             log_act($u, 'template.save', $t['name']); out(['ok' => true, 'template' => $t]);
+        case 'tpl_starters':
+            // Powers the "Import Woodex starter templates" button (admin-sales.js). It used to
+            // read window.WX_QUOT_TEMPLATES, which nothing ever defined, so the button imported
+            // nothing at all.
+            need($OA); out(['ok' => true, 'templates' => array_map('tpl_row', sales_starter_templates())]);
         case 'tpl_import':
             $u = need($OA); $n = 0;
             foreach (array_slice(is_array($in['templates'] ?? null) ? $in['templates'] : [], 0, 50) as $x) {

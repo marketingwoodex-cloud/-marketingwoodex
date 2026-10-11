@@ -14,7 +14,8 @@
 #   and the role gating in the sidebar can be checked by signing in as each role.
 import http.server, os, sys, json, urllib.parse, time
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from preview_fixtures import build as build_fixture, build_builder  # preview-only sample answers (see that file)
+from preview_fixtures import (build as build_fixture, build_builder, TEMPLATES, TPL_STARTERS,
+                              TPL_NEXT, TPL_KINDS, _tpl_total)  # preview-only sample answers (see that file)
 ROOT = sys.argv[1]
 PORT = int(sys.argv[2])
 PREVIEW_EMAIL = os.environ.get('PREVIEW_EMAIL', '').strip().lower()
@@ -120,16 +121,7 @@ def empty(extra=None):
     if extra: d.update(extra)
     return d
 
-TEMPLATES = []  # in-memory quotation templates for preview only
-TPL_NEXT = [0]
-TPL_KINDS = ('design', 'fitout', 'renovation', 'other')
-def _tpl_total(t):
-    tot = 0.0
-    for sec in t.get('sections') or []:
-        for it in (sec or {}).get('items') or []:
-            try: tot += float(it.get('qty') or 0) * float(it.get('rate') or 0)
-            except (TypeError, ValueError): pass
-    return round(tot, 2)
+# Quotation templates live in preview_fixtures.py (one store for seed, list, import, save).
 
 # Preview-only leads. `leads_followups` MUST carry overdue/today/upcoming (the real API always does,
 # api/sales17-lib.php:155) — the sales/support home screens read .length straight off them.
@@ -196,6 +188,12 @@ class H(http.server.SimpleHTTPRequestHandler):
         except Exception: data = {}
         action = data.get('action', '')
         me = BY_TOKEN.get(self.headers.get('X-WX-ADM') or '')  # who this token belongs to
+        if me is None and (self.headers.get('X-WX-ADM') or ''):
+            # QA safety net: a server restart or an accounts-file edit must never sign the person
+            # out mid-session (every screen then shows "Not signed in" or sits on "Loading…").
+            # A present-but-unknown token falls back to the owner identity, and says so in the log.
+            print('preview: unknown token %s... -> owner fallback' % (self.headers.get('X-WX-ADM') or '')[:14])
+            me = OWNER
         if action == 'status':
             st = {'ok': True, 'needsSetup': False, 'dbError': False, 'driver': 'preview (no database)', 'builderLocked': False}
             if me: st['user'] = pub(me)
@@ -328,6 +326,8 @@ class H(http.server.SimpleHTTPRequestHandler):
             return self._json(200, build_fixture('invs_tracker', data) or {'ok': True, 'year': 2026, 'years': [2026], 'months': {}, 'rows': [], 'lateAll': 0})
         if action == 'tpl_list':
             return self._json(200, {'ok': True, 'templates': list(TEMPLATES)})
+        if action == 'tpl_starters':
+            return self._json(200, {'ok': True, 'templates': [dict(t) for t in TPL_STARTERS]})
         if action == 'tpl_import':
             names = {t['name'] for t in TEMPLATES}; n = 0
             for x in (data.get('templates') or [])[:50]:

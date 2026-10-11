@@ -146,7 +146,14 @@
         getCompany().then(function (co) {
           api("quote_save", { lead_id: +$("#nq-lead").value || null, client_id: c ? c.id : null, client: { name: $("#nq-n").value, phone: $("#nq-p").value, email: $("#nq-e").value, address: c ? c.address : "", company: c ? c.company : "" }, project: $("#nq-pr").value, site: $("#nq-s").value, kind: t ? t.kind : "other",
             sections: t ? t.sections : [{ name: "Scope of work", items: [{ desc: "Describe the work", qty: 1, unit: "job", rate: 0 }] }], terms: t ? t.terms : "50% advance payment with work order.\nPayment will be charged on the actual dimension / size of area.\nRates are valid for " + (co.validDays || 15) + " days as per market rates.", date: today() })
-            .then(function (x) { if (!x.ok) return ($("#nq-err").textContent = x.error); close(); toast(x.quote.no + " created ✓"); location.hash = "#/quote/" + x.quote.id; });
+            .then(function (x) {
+              if (!x.ok) return ($("#nq-err").textContent = x.error);
+              var nq = x.quote || {};
+              close();
+              // Never navigate on a missing id: a blank #/quote/ page used to look like a crash.
+              if (!nq.id) { toast("Quotation saved, but the reply was incomplete — open it from the list.", true); location.hash = "#/quotes"; return; }
+              toast((nq.no || "Quotation") + " created ✓"); location.hash = "#/quote/" + nq.id;
+            });
         });
       };
     });
@@ -282,9 +289,13 @@
     el.innerHTML = head("Quotation templates", "Templates", (admin ? '<button class="btn" id="tp-st">' + ic("sparkles") + 'Import Woodex starter templates</button><button class="btn ghost" id="tp-file">' + ic("upload") + 'Import from file</button><input type="file" id="tp-fin" accept=".json,application/json" hidden><button class="btn pri" id="tp-new">' + ic("plus") + "New template</button>" : "")) +
       '<p class="muted" style="margin:-8px 0 18px">One template per type of work. A quotation made from a template can be changed freely for each client.</p><div class="tp-grid" id="tp-g"><div class="empty">Loading…</div></div>';
     var load = function () {
-      api("tpl_list").then(function (r) {
+      // The starter set lives on the server (api/sales-lib.php: sales_starter_templates), so the
+      // import button hides only once every starter template is really present in the database.
+      Promise.all([api("tpl_list"), admin ? api("tpl_starters") : Promise.resolve({ ok: true, templates: [] })]).then(function (rs) {
+        var r = rs[0];
         if (!r.ok) return toast(r.error, true); var T = r.templates;
-        if ($("#tp-st")) $("#tp-st").hidden = (window.WX_QUOT_TEMPLATES || []).every(function (s) { return T.some(function (t) { return t.name === s.name; }); });
+        var starters = (rs[1] && rs[1].ok ? rs[1].templates : []) || [];
+        if ($("#tp-st")) $("#tp-st").hidden = !starters.length || starters.every(function (s) { return T.some(function (t) { return t.name === s.name; }); });
         $("#tp-g").innerHTML = T.map(function (t) {
           var n = t.sections.reduce(function (a, s) { return a + s.items.length; }, 0);
           return '<div class="card tp"><div class="card-b"><div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start"><div><b style="font-size:16px">' + esc(t.name) + '</b><div class="muted" style="font-size:13px">' + t.sections.length + " sections · " + n + ' lines</div></div><span class="badge gold">' + esc(KINDS[t.kind] || "Other") + "</span></div>" +
@@ -299,8 +310,11 @@
     };
     if ($("#tp-new")) $("#tp-new").onclick = function () { location.hash = "#/template/new"; };
     if ($("#tp-st")) $("#tp-st").onclick = function () {
-      var list = (window.WX_QUOT_TEMPLATES || []).map(function (t) { return { name: t.name, kind: kindOf(t.name), description: phDesc(t.description), sections: t.sections, terms: t.terms }; });
-      api("tpl_import", { templates: list }).then(function (x) { if (!x.ok) return toast(x.error, true); toast(x.imported + " templates imported ✓"); load(); });
+      api("tpl_starters").then(function (r) {
+        var list = ((r.ok ? r.templates : null) || []).map(function (t) { return { name: t.name, kind: t.kind, description: t.description, sections: t.sections, terms: t.terms }; });
+        if (!list.length) return toast(r.error || "No starter templates on the server", true);
+        api("tpl_import", { templates: list }).then(function (x) { if (!x.ok) return toast(x.error, true); toast(x.imported + " templates imported ✓"); load(); });
+      });
     };
     if ($("#tp-file")) { $("#tp-file").onclick = function () { $("#tp-fin").click(); };
       $("#tp-fin").onchange = function () { var f = this.files[0]; if (!f) return; var rd = new FileReader();

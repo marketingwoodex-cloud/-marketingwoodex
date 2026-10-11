@@ -468,15 +468,18 @@
   function route() {
     if (!S.user) return;
     var parts = (location.hash.replace(/^#\/?/, "") || "dashboard").split("/"), v = parts[0];
+    // Only true aliases belong here: another name for the SAME screen. quote / template /
+    // invoice / fields / citydraft are detail views (VIEWS.quote etc.) that the app itself
+    // links to as "#/quote/<id>"; rewriting them to the list route made those editors
+    // unreachable — "New quotation" opened the list again. Their sidebar highlight comes
+    // from SUB below instead.
     var ALIAS = {
       leads: "enquiries", lead: "enquiries",
       posts: "blog", post: "blog",
       studies: "portfolio", study: "portfolio",
       tg: "telegram", inbox: "chat",
       wains: "wainsights",
-      quote: "quotes", template: "templates",
-      invoice: "invoices", fields: "services",
-      citydraft: "cities", payments: "transactions"
+      payments: "transactions"
     };
     if (ALIAS[v]) { v = parts[0] = ALIAS[v]; history.replaceState(null, "", "#/" + parts.join("/")); }
     var SUB = { quote: "quotes", template: "templates", invoice: "invoices", post: "blog", study: "portfolio", fields: "services", citydraft: "cities" };

@@ -231,9 +231,587 @@ SEO_ROWS = [
 PSI_ROW = {'performance': 88, 'lcp': '2.1 s', 'cls': '0.02', 'tbt': '180 ms', 'at': ts(-1, '13:00'), 'score': 88}
 
 
+# ---- quotation templates (api/sales-lib.php sales_starter_templates + wx_templates) -----
+TPL_KINDS = ('design', 'fitout', 'renovation', 'other')
+
+
+def _tpl_total(t):
+    tot = 0.0
+    for sec in t.get('sections') or []:
+        for it in (sec or {}).get('items') or []:
+            try:
+                tot += float(it.get('qty') or 0) * float(it.get('rate') or 0)
+            except (TypeError, ValueError):
+                pass
+    return round(tot, 2)
+
+
+def _seed_templates():
+    """Mirror of sales_starter_templates() in api/sales-lib.php."""
+    terms = ("50% advance with the confirmed purchase order; balance before delivery.\n"
+             "Rates hold for 30 days and exclude tax where applicable.\n"
+             "Timeline counts from the advance received and drawings approved.\n"
+             "Quantities are measured on site; variations settle at the same rates.")
+
+    def R(d, q, u, r):
+        return {'desc': d, 'qty': q, 'unit': u, 'rate': r}
+
+    def S(n, items):
+        return {'name': n, 'note': 'Measured on site; final quantities may vary within 5%.', 'items': items}
+
+    rows = [
+        ('Home renovation 1 Kanal', 'renovation', 'Turnkey renovation of a 1 Kanal house: civil, plumbing, electrical and finishes.', [
+            S('Demolition & civil', [R('Dismantling existing finishes, including debris removal', 1, 'job', 185000),
+                                     R('Cement plaster repair: kitchen and bathrooms', 850, 'sft', 210),
+                                     R('Waterproofing, roof and bathroom floors', 1200, 'sft', 165)]),
+            S('Plumbing & sanitary', [R('Concealed water supply and drainage lines', 1, 'job', 265000),
+                                      R('Sanitary fixture set installation, per bathroom', 3, 'set', 46000)]),
+            S('Electrical', [R('Concealed wiring, DB panel and earthing', 1, 'job', 320000),
+                             R('Light points with switch board and fixture', 24, 'pts', 4200)]),
+            S('Flooring', [R('Vitrified tile 600x600 supply and laying', 1900, 'sft', 315),
+                           R('Skirting, matching tile', 320, 'rft', 260)]),
+            S('Painting', [R('Putty, primer and premium emulsion, 2 coats', 3200, 'sft', 95),
+                           R('Weather coat on external facade', 900, 'sft', 130)]),
+        ]),
+        ('Interior design package', 'design', 'Concept to working drawings with 3D views and site supervision visits.', [
+            S('Design services', [R('Concept design with 3D visualisation, per room', 4, 'room', 38000),
+                                  R('Working drawings: floor, ceiling and electrical layout', 1, 'job', 120000),
+                                  R('Site supervision visit', 6, 'visit', 8000)]),
+            S('Execution allowance', [R('TV console, lacquered MDF with storage', 6, 'rft', 14500),
+                                      R('Wall panelling behind bed or sofa', 78, 'sft', 1250)]),
+        ]),
+        ('Office fit-out per seat', 'fitout', 'Rate card for office interiors, priced per workstation.', [
+            S('Workstations', [R('Manager desk 5x2.5 ft with side return', 2, 'no', 62000),
+                               R('Modular workstation 4x2 ft', 12, 'no', 28500),
+                               R('Mesh-back ergonomic chair', 14, 'no', 21000)]),
+            S('Ceiling & lighting', [R('Grid ceiling 600x600 with insulation', 850, 'sft', 175),
+                                     R('Panel LED luminaire supplied and fixed', 26, 'no', 5200)]),
+        ]),
+        ('Kitchen cabinets per running foot', 'fitout', 'Modular kitchen: carcass, shutters, hardware and counter on a running-foot rate.', [
+            S('Kitchen', [R('Base cabinet, MDF carcass with soft-close hardware', 14, 'rft', 22500),
+                          R('Wall cabinet with lift-up or hinged shutters', 10, 'rft', 19500),
+                          R('Quartz counter top, 20 mm', 12, 'rft', 16500),
+                          R('Stainless sink with mixer tap', 1, 'set', 48000)]),
+        ]),
+    ]
+    out = []
+    for i, (name, kind, desc, sections) in enumerate(rows, start=1):
+        t = {'id': i, 'name': name, 'kind': kind, 'description': desc, 'sections': sections, 'terms': terms}
+        t['total'] = _tpl_total(t)
+        out.append(t)
+    return out
+
+
+TPL_STARTERS = _seed_templates()          # the server's starter set (tpl_starters)
+TEMPLATES = [dict(t) for t in TPL_STARTERS]
+TPL_NEXT = [len(TEMPLATES)]
+
+
+# =====================================================================================
+# Sales documents — quotations, invoices, payments, clients, company settings.
+#
+# Shapes mirror the PHP they stand in for, field for field, because the screens read
+# them field by field:
+#   api/sales-lib.php      doc_totals() q_pub() inv_pub() client_of() company_cfg()
+#   api/sales17-lib.php    s17_inv_row() s17_inv_client() inv_new inv_track invs_tracker
+# Anything missing here shows up as "undefined" on screen — that is a preview bug.
+# =====================================================================================
+Q_SEQ = [122]        # next quotation sequence
+INV_SEQ = [130]      # next invoice sequence
+PAY_SEQ = [900]      # next payment row id
+COMPANY = {
+    'name': 'Woodex Interior', 'tagline': 'Design · Build · Furniture',
+    'address': 'M-71, Zainab Tower, Model Town Link Road, Lahore',
+    'phones': '+92 42 3517 4400', 'email': 'info@woodex.com.pk', 'web': 'woodex.com.pk',
+    'ntn': '0000000-0', 'bankName': '', 'bankTitle': '', 'bankAccount': '', 'bankIban': '',
+    'signName': 'Preview Owner', 'signTitle': 'Director',
+    'signers': [{'name': 'Preview Owner', 'title': 'Director'}],
+    'banks': [{'bank': 'Bank Alfalah', 'title': 'WOODEX INTERIOR', 'account': '0000-0000-0000',
+               'iban': 'PK00XXXX0000000000000000', 'branch': 'Model Town Link Road, Lahore', 'use': 'interior'},
+              {'bank': 'Meezan Bank', 'title': 'WOODEX FURNITURE', 'account': '0000-0000-0000',
+               'iban': 'PK00XXXX0000000000000000', 'branch': 'Model Town Link Road, Lahore', 'use': 'furniture'}],
+    'wallets': [{'name': 'JazzCash', 'number': '+92 300 0000000'}],
+    'payTerms': '', 'prefix': 'Q-2026-', 'nextNo': 122, 'validDays': 15, 'consultant': 'Woodex Interior',
+}
+UNITS = ['sft', 'rft', 'sqmt', 'nos', 'each', 'set', 'point', 'job', 'lumpsum']
+S17_LINES = {'furniture': 'Furniture', 'interior': 'Interior', 'project': 'Project'}
+
+_CLIENT_BY_ID = {c['id']: c for c in CLIENTS}
+
+
+def _client_obj(name, cid=None, **over):
+    """Same keys as client_of() in sales-lib.php."""
+    c = dict(_CLIENT_BY_ID.get(cid) or {})
+    o = {'name': name or c.get('name', ''), 'phone': c.get('phone', ''), 'email': c.get('email', ''),
+         'address': c.get('address', ''), 'company': c.get('company', ''), 'city': c.get('city', '')}
+    o.update(over)
+    if not o['name']:
+        o['name'] = o['company']
+    return o
+
+
+def _fix_clients(rows):
+    for r in rows:
+        if isinstance(r.get('client'), str):
+            r['client'] = _client_obj(r['client'], r.get('client_id'))
+
+
+_fix_clients(QUOTES)
+_fix_clients(INVOICES)
+_fix_clients(PROJECTS)
+
+
+def _totals(doc):
+    """doc_totals() parity: per-section subtotals, discount, tax, total, advance."""
+    sub = 0.0
+    sections = []
+    for s in doc.get('sections') or []:
+        items = []
+        for it in s.get('items') or []:
+            try:
+                qty = float(it.get('qty') or 0)
+                rate = float(it.get('rate') or 0)
+            except (TypeError, ValueError):
+                qty = rate = 0.0
+            items.append(dict(it, amount=round(qty * rate, 2)))
+        st = round(sum(i['amount'] for i in items), 2)
+        sections.append(dict(s, items=items, subtotal=st))
+        sub += st
+    doc['sections'] = sections
+    doc['subtotal'] = int(round(sub))
+    doc['discount'] = int(min(float(doc.get('discount') or 0), doc['subtotal']))
+    doc['taxPct'] = min(float(doc.get('taxPct') or 0), 50)
+    doc['rent'] = max(0, int(round(float(doc.get('rent') or 0))))
+    doc['tax'] = int(round((doc['subtotal'] - doc['discount'] + doc['rent']) * doc['taxPct'] / 100))
+    doc['total'] = doc['subtotal'] - doc['discount'] + doc['rent'] + doc['tax']
+    doc['advance'] = min(max(0, int(round(float(doc.get('advance') or 0)))), doc['total'])
+    return doc
+
+
+def _q_pub(q):
+    q = dict(q)
+    q['label'] = str(q.get('no', '')) + (' · V' + str(q['version']) if int(q.get('version') or 1) > 1 else '') \
+        + (' · ' + str(q['option']) if q.get('option') else '')
+    return q
+
+
+def _inv_pub(i):
+    """inv_pub() parity."""
+    i = dict(i)
+    paid = int(sum(int(p.get('amount') or 0) for p in i.get('payments') or []))
+    i['paid'] = paid
+    i['balance'] = max(0, int(i.get('total') or 0) - paid)
+    i['payStatus'] = 'unpaid' if paid <= 0 else ('paid' if paid >= int(i.get('total') or 0) else 'partial')
+    due = str(i.get('due_date') or '')
+    i['overdue'] = bool(paid < int(i.get('total') or 0) and due and due < ymd(0))
+    return i
+
+
+def _s17_row(i):
+    """s17_inv_row() parity — the tracker's row shape."""
+    r = _inv_pub(i)
+    t = ymd(0)
+    r['track'] = 'paid' if (int(r.get('total') or 0) > 0 and r['balance'] <= 0) else \
+        ('after_delivery' if (r.get('mode') == 'after_delivery' and not r.get('delivered')) else
+         ('partial' if r['paid'] > 0 else 'unpaid'))
+    r['late'] = bool(r.get('delivery_date') and not r.get('delivered') and str(r['delivery_date']) < t)
+    for k in ('po', 'delivery_date', 'line', 'mode', 'track_note', 'delivered'):
+        r[k] = str(r.get(k) or '')
+    r['company'] = str((r.get('client') or {}).get('company') or (r.get('client') or {}).get('name') or '')
+    r.pop('sections', None)
+    return r
+
+
+def _norm_inv(i):
+    i.setdefault('issue_date', i.get('date', ymd(0)))
+    i.setdefault('due_date', i.get('due', ''))
+    i.setdefault('subtotal', int(i.get('total') or 0))
+    for k, v in (('discount', 0), ('taxPct', 0), ('tax', 0), ('rent', 0), ('notes', ''),
+                 ('schedule', ''), ('terms', 'Payment 50% advance, balance on completion.'),
+                 ('quote_id', None), ('quote_label', ''), ('po', ''), ('delivery_date', ''),
+                 ('delivered', ''), ('track_note', ''), ('mode', ''), ('line', 'interior'),
+                 ('project_id', None), ('created_by', 'Preview Owner')):
+        i.setdefault(k, v)
+    i.setdefault('created_at', ts(-20))
+    i.setdefault('blocks', [])
+    if not i.get('sections'):
+        # inv_get() hands the invoice's own sections to the screen, which maps over them.
+        i['sections'] = [{'name': 'Supply & services', 'note': '', 'subtotal': int(i.get('total') or 0),
+                          'items': [{'desc': str(i.get('project') or 'As per agreement')[:120], 'qty': 1,
+                                     'unit': 'job', 'rate': int(i.get('total') or 0),
+                                     'amount': int(i.get('total') or 0)}]}]
+    pays = []
+    for n, p in enumerate(i.get('payments') or [], start=1):
+        pays.append({'id': int(p.get('id') or n), 'rcpt': str(i.get('no')) + '-R' + str(n),
+                     'date': p.get('date', ymd(0)), 'amount': int(p.get('amount') or 0),
+                     'method': p.get('method') or p.get('mode') or 'bank', 'ref': p.get('ref', ''),
+                     'by': p.get('by') or 'Preview Owner', 'note': p.get('note', '')})
+    i['payments'] = pays
+    i['seqPay'] = len(pays)
+    return i
+
+
+for _i in INVOICES:
+    _norm_inv(_i)
+
+
+def _norm_quote(q):
+    q.setdefault('version', 1)
+    q.setdefault('option', '')
+    q.setdefault('date', ymd(0))
+    q.setdefault('valid_days', 15)
+    q.setdefault('project', '')
+    q.setdefault('site', '')
+    q.setdefault('kind', 'other')
+    q.setdefault('qtype', '')
+    q.setdefault('layout', 'classic')
+    q.setdefault('design', 'classic')
+    q.setdefault('notes', '')
+    q.setdefault('intro', '')
+    q.setdefault('scope', '')
+    q.setdefault('terms', '50% advance payment with work order.\nBalance before delivery.')
+    q.setdefault('history', [])
+    q.setdefault('created_by', 'Preview Owner')
+    q.setdefault('created_at', ts(-6))
+    if not q.get('sections'):
+        q['sections'] = [
+            {'name': 'Scope of work', 'note': '', 'items': [
+                {'desc': 'Design and execution as per approved drawings', 'qty': 1, 'unit': 'job',
+                 'rate': int(q.get('total') or 0) or 250000}]},
+        ]
+    return _totals(q)
+
+
+for _q in QUOTES:
+    _norm_quote(_q)
+
+
+def _next_q_no():
+    Q_SEQ[0] += 1
+    return 'Q-2026-%04d' % Q_SEQ[0]
+
+
+def _next_inv_no():
+    INV_SEQ[0] += 1
+    return 'INV-%04d' % INV_SEQ[0]
+
+
+def _save_quote(d):
+    qid = int(d.get('id') or 0)
+    q = next((x for x in QUOTES if x['id'] == qid), None)
+    new = q is None
+    if new:
+        q = {'id': (max([x['id'] for x in QUOTES] + [0]) + 1), 'no': _next_q_no(), 'version': 1,
+             'option': '', 'status': 'draft', 'created_by': 'Preview Owner', 'created_at': ts(0),
+             'history': []}
+        QUOTES.append(q)
+    cl = d.get('client') if isinstance(d.get('client'), dict) else {}
+    if new and not (cl or {}).get('name'):
+        return {'ok': False, 'error': 'Client name is required'}
+    if cl:
+        q['client'] = _client_obj(cl.get('name', ''), d.get('client_id'), **{k: cl.get(k, '') for k in ('phone', 'email', 'address', 'company')})
+    elif 'client' not in q:
+        q['client'] = _client_obj('')
+    q['client_id'] = int(d.get('client_id') or q.get('client_id') or 0) or None
+    for k, lim in (('project', 160), ('site', 160), ('notes', 2000), ('intro', 1500), ('scope', 6000), ('terms', 3000)):
+        if k in d:
+            q[k] = str(d.get(k) or '')[:lim]
+    for k in ('kind', 'qtype', 'layout', 'design'):
+        if d.get(k):
+            q[k] = d[k]
+    if d.get('date'):
+        q['date'] = str(d['date'])[:10]
+    for k in ('discount', 'taxPct', 'rent', 'advance'):
+        if k in d:
+            q[k] = d[k]
+    if isinstance(d.get('sections'), list):
+        q['sections'] = d['sections']
+    q['updated_at'] = ts(0)
+    if new:
+        q['history'].append({'t': ts(0), 'user': 'Preview Owner', 'text': 'Quotation created'})
+    return {'ok': True, 'quote': _q_pub(_totals(q))}
+
+
+def _inv_from_quote(q):
+    i = {'id': (max([x['id'] for x in INVOICES] + [0]) + 1), 'no': str(q.get('no')), 'quote_id': q['id'],
+         'quote_label': _q_pub(q)['label'], 'client': dict(q.get('client') or {}), 'client_id': q.get('client_id'),
+         'project': q.get('project', ''), 'site': q.get('site', ''), 'project_id': None,
+         'subtotal': q.get('subtotal', 0), 'discount': q.get('discount', 0), 'rent': q.get('rent', 0),
+         'taxPct': q.get('taxPct', 0), 'tax': q.get('tax', 0), 'total': q.get('total', 0),
+         'issue_date': ymd(0), 'due_date': ymd(15), 'terms': q.get('terms', ''), 'notes': '',
+         'schedule': '50% advance with work order, balance on completion', 'payments': [], 'seqPay': 0,
+         'created_by': 'Preview Owner', 'created_at': ts(0),
+         'sections': [dict(sec) for sec in (q.get('sections') or [])], 'blocks': [],
+         'line': 'interior', 'mode': '', 'po': '', 'delivery_date': '', 'delivered': '', 'track_note': ''}
+    INVOICES.append(i)
+    return i
+
+
+def _pay_add(d):
+    i = next((x for x in INVOICES if x['id'] == int(d.get('id') or 0)), None)
+    if i is None:
+        return {'ok': False, 'error': 'Invoice not found'}
+    amount = int(round(float(d.get('amount') or 0)))
+    if amount <= 0:
+        return {'ok': False, 'error': 'Enter the amount received'}
+    bal = _inv_pub(i)['balance']
+    if amount > bal:
+        return {'ok': False, 'error': 'Amount is more than the balance (PKR %s)' % format(bal, ',d')}
+    PAY_SEQ[0] += 1
+    method = d.get('method') if d.get('method') in ('cash', 'bank', 'cheque', 'online') else 'bank'
+    p = {'id': PAY_SEQ[0], 'rcpt': str(i['no']) + '-R' + str(len(i['payments']) + 1),
+         'date': str(d.get('date') or ymd(0))[:10], 'amount': amount, 'method': method,
+         'ref': str(d.get('ref') or '')[:80], 'note': str(d.get('note') or '')[:200]}
+    i['payments'].append(p)
+    i['seqPay'] = len(i['payments'])
+    return {'ok': True, 'invoice': _inv_pub(i), 'payment': p}
+
+
+def _sales_build(action, d):
+    """Answers for the sales/CRM screens. Returns None when the action is not handled here."""
+    if action == 'quotes_list':
+        rows = []
+        for q in QUOTES:
+            r = _q_pub(q)
+            r['sectionCount'] = len(q.get('sections') or [])
+            r.pop('sections', None)
+            rows.append(r)
+        return {'ok': True, 'quotes': rows}
+    if action == 'quote_get':
+        q = next((x for x in QUOTES if x['id'] == int(d.get('id') or 0)), None)
+        if q is None:
+            return {'ok': False, 'error': 'Quotation not found', 'code': 404}
+        inv = next((x for x in INVOICES if x.get('quote_id') == q['id']), None)
+        return {'ok': True, 'quote': _q_pub(q),
+                'family': [{'id': f['id'], 'version': f.get('version', 1), 'option': f.get('option', ''),
+                            'status': f.get('status', 'draft')} for f in QUOTES if f.get('no') == q.get('no')],
+                'company': dict(COMPANY), 'invoice': _inv_pub(inv) if inv else None}
+    if action == 'quote_save':
+        return _save_quote(d)
+    if action == 'quote_delete':
+        q = next((x for x in QUOTES if x['id'] == int(d.get('id') or 0)), None)
+        if q is None:
+            return {'ok': False, 'error': 'Quotation not found'}
+        if q.get('status') not in ('draft', 'rejected', 'superseded'):
+            return {'ok': False, 'error': 'Only draft, rejected or superseded quotations can be deleted'}
+        QUOTES.remove(q)
+        return {'ok': True}
+    if action == 'quote_status':
+        q = next((x for x in QUOTES if x['id'] == int(d.get('id') or 0)), None)
+        if q is None:
+            return {'ok': False, 'error': 'Quotation not found'}
+        to = str(d.get('status') or '')
+        if to not in ('draft', 'sent', 'approved', 'rejected'):
+            return {'ok': False, 'error': 'Unknown status'}
+        if q.get('status') == 'invoiced':
+            return {'ok': False, 'error': 'This quotation is already invoiced'}
+        frm = q.get('status')
+        q['status'] = to
+        q.setdefault('history', []).append({'t': ts(0), 'user': 'Preview Owner', 'text': 'Status: %s -> %s' % (frm, to)})
+        if to == 'approved':
+            for f in QUOTES:
+                if f.get('no') == q.get('no') and f['id'] != q['id'] and f.get('status') in ('draft', 'sent'):
+                    f['status'] = 'superseded'
+        return {'ok': True, 'quote': _q_pub(q)}
+    if action == 'quote_copy':
+        src = next((x for x in QUOTES if x['id'] == int(d.get('id') or 0)), None)
+        if src is None:
+            return {'ok': False, 'error': 'Quotation not found', 'code': 404}
+        mode = d.get('mode') if d.get('mode') in ('version', 'option', 'duplicate') else 'version'
+        x = dict(src)
+        x['id'] = max([q['id'] for q in QUOTES] + [0]) + 1
+        x['status'] = 'draft'
+        x['history'] = []
+        if mode == 'duplicate':
+            x['no'] = _next_q_no()
+            x['version'] = 1
+            x['option'] = ''
+        elif mode == 'version':
+            x['version'] = max([q.get('version', 1) for q in QUOTES if q.get('no') == src.get('no')] + [1]) + 1
+        else:
+            x['option'] = 'Option %d' % (len([q for q in QUOTES if q.get('no') == src.get('no')]) + 1)
+            x['version'] = 1
+        QUOTES.append(x)
+        return {'ok': True, 'quote': _q_pub(x)}
+    if action == 'quote_invoice':
+        q = next((x for x in QUOTES if x['id'] == int(d.get('id') or 0)), None)
+        if q is None:
+            return {'ok': False, 'error': 'Quotation not found', 'code': 404}
+        if q.get('status') == 'invoiced':
+            return {'ok': False, 'error': 'This quotation is already invoiced'}
+        q['status'] = 'invoiced'
+        i = _inv_from_quote(q)
+        return {'ok': True, 'invoice': _inv_pub(i)}
+    if action == 'quote_link':
+        q = next((x for x in QUOTES if x['id'] == int(d.get('id') or 0)), None)
+        if q is None:
+            return {'ok': False, 'error': 'Quotation not found'}
+        return {'ok': True, 'url': 'https://woodex.com.pk/api/quote-view.php?id=%d&t=previewtoken' % q['id']}
+    if action == 'quote_send':
+        q = next((x for x in QUOTES if x['id'] == int(d.get('id') or 0)), None)
+        if q is None:
+            return {'ok': False, 'error': 'Quotation not found'}
+        if q.get('status') == 'draft':
+            q['status'] = 'sent'
+        return {'ok': True, 'sent': True, 'via': str(d.get('channel') or 'email'), 'quote': _q_pub(q)}
+    if action == 'invs_list':
+        return {'ok': True, 'invoices': [dict(_inv_pub(i), sections=[]) for i in INVOICES]}
+    if action == 'inv_get':
+        i = next((x for x in INVOICES if x['id'] == int(d.get('id') or 0)), None)
+        if i is None:
+            return {'ok': False, 'error': 'Invoice not found', 'code': 404}
+        return {'ok': True, 'invoice': _inv_pub(i), 'company': dict(COMPANY)}
+    if action == 'inv_save':
+        i = next((x for x in INVOICES if x['id'] == int(d.get('id') or 0)), None)
+        if i is None:
+            return {'ok': False, 'error': 'Invoice not found', 'code': 404}
+        if d.get('due_date'):
+            i['due_date'] = str(d['due_date'])[:10]
+        if d.get('issue_date'):
+            i['issue_date'] = str(d['issue_date'])[:10]
+        for k in ('notes', 'schedule', 'terms'):
+            if k in d:
+                i[k] = str(d.get(k) or '')[:3000]
+        if isinstance(d.get('blocks'), list):
+            i['blocks'] = d['blocks']
+        return {'ok': True, 'invoice': _inv_pub(i)}
+    if action == 'inv_new':
+        cl = d.get('client') if isinstance(d.get('client'), dict) else {}
+        cid = int(d.get('client_id') or 0) or None
+        name = str(cl.get('name') or cl.get('company') or '').strip()
+        if not name and not cid:
+            return {'ok': False, 'error': 'Pick a client or type the company name'}
+        line = d.get('line') if d.get('line') in S17_LINES else 'interior'
+        secs = d.get('sections') if isinstance(d.get('sections'), list) else []
+        amt = float(d.get('total') or 0)
+        if not secs or not sum(len(s.get('items') or []) for s in secs):
+            if amt <= 0:
+                return {'ok': False, 'error': 'Enter the invoice amount or add items'}
+            secs = [{'name': 'Supply & services', 'note': '', 'items': [
+                {'desc': str(d.get('desc') or d.get('project') or 'As per agreement')[:600],
+                 'qty': 1, 'unit': 'job', 'rate': amt}]}]
+        i = {'id': (max([x['id'] for x in INVOICES] + [0]) + 1),
+             'no': (str(d['no'])[:30] if str(d.get('no') or '').strip() else _next_inv_no()),
+             'quote_id': None, 'quote_label': '', 'client': _client_obj(name, cid, **{k: cl.get(k, '') for k in ('phone', 'email', 'address', 'company')}),
+             'client_id': cid, 'project': str(d.get('project') or '')[:160], 'site': str(d.get('site') or '')[:160],
+             'issue_date': str(d.get('issue_date') or ymd(0))[:10], 'due_date': str(d.get('due_date') or '')[:10],
+             'terms': str(d.get('terms') or '')[:3000], 'notes': str(d.get('notes') or '')[:3000],
+             'payments': [], 'seqPay': 0, 'created_by': 'Preview Owner', 'created_at': ts(0),
+             'po': str(d.get('po') or '')[:60], 'delivery_date': str(d.get('delivery_date') or '')[:10],
+             'line': line, 'mode': ('after_delivery' if d.get('mode') == 'after_delivery' else ''),
+             'track_note': str(d.get('track_note') or '')[:500], 'delivered': '', 'schedule': '',
+             'sections': [dict(x) for x in secs], 'blocks': []}
+        for k in ('discount', 'rent', 'taxPct'):
+            i[k] = d.get(k) or 0
+        _totals(i)
+        INVOICES.append(i)
+        return {'ok': True, 'invoice': _s17_row(i)}
+    if action == 'inv_track':
+        i = next((x for x in INVOICES if x['id'] == int(d.get('id') or 0)), None)
+        if i is None:
+            return {'ok': False, 'error': 'Invoice not found', 'code': 404}
+        for k, lim in (('po', 60), ('track_note', 500)):
+            if k in d:
+                i[k] = str(d.get(k) or '')[:lim]
+        if 'delivery_date' in d:
+            i['delivery_date'] = str(d.get('delivery_date') or '')[:10]
+        if 'line' in d:
+            i['line'] = d['line'] if d['line'] in S17_LINES else ''
+        if 'mode' in d:
+            i['mode'] = 'after_delivery' if d.get('mode') == 'after_delivery' else ''
+        if 'delivered' in d:
+            i['delivered'] = (str(d.get('delivered'))[:10] if d.get('delivered') else ymd(0)) if d.get('delivered') else ''
+        return {'ok': True, 'invoice': _s17_row(i)}
+    if action == 'pay_add':
+        return _pay_add(d)
+    if action == 'pay_delete':
+        i = next((x for x in INVOICES if x['id'] == int(d.get('id') or 0)), None)
+        if i is None:
+            return {'ok': False, 'error': 'Invoice not found', 'code': 404}
+        pid = int(d.get('pay_id') or 0)
+        keep = [p for p in i['payments'] if int(p['id']) != pid]
+        if len(keep) == len(i['payments']):
+            return {'ok': False, 'error': 'Payment not found', 'code': 404}
+        i['payments'] = keep
+        return {'ok': True, 'invoice': _inv_pub(i)}
+    if action == 'invs_tracker':
+        rows = [_s17_row(i) for i in INVOICES]
+        years = sorted({str(i.get('issue_date', ''))[:4] for i in INVOICES} | {ymd(0)[:4]}, reverse=True)
+        year = str(d.get('year') or ymd(0)[:4])
+        yr = [r for r in rows if str(r.get('issue_date', ''))[:4] == year]
+        months = {}
+        for m in range(1, 13):
+            k = '%s-%02d' % (year, m)
+            mm = [r for r in yr if str(r.get('issue_date', ''))[:7] == k]
+            months[k] = {'count': len(mm), 'total': sum(int(r['total']) for r in mm),
+                         'received': sum(int(r['paid']) for r in mm),
+                         'balance': sum(int(r['balance']) for r in mm)}
+        return {'ok': True, 'year': year, 'years': years, 'rows': yr, 'months': months,
+                'lateAll': len([r for r in rows if r['late']]),
+                'outstandingAll': sum(int(r['balance']) for r in rows)}
+    if action == 'clients_list':
+        out = []
+        for c in CLIENTS:
+            row = dict(c)
+            row.setdefault('city', 'Lahore')
+            row.setdefault('type', 'individual')
+            row.setdefault('source', 'Referral')
+            row.setdefault('notes', '')
+            row['quotes'] = [q['id'] for q in QUOTES if q.get('client_id') == c['id']]
+            row['invoices'] = [i['id'] for i in INVOICES if i.get('client_id') == c['id']]
+            row['projects'] = [p['id'] for p in PROJECTS if p.get('client_id') == c['id']]
+            out.append(row)
+        return {'ok': True, 'clients': out}
+    if action == 'client_save':
+        cl = d.get('client') if isinstance(d.get('client'), dict) else d
+        name = str(cl.get('name') or '').strip()
+        if not name:
+            return {'ok': False, 'error': 'Client name is required'}
+        cid = int(d.get('id') or cl.get('id') or 0)
+        c = next((x for x in CLIENTS if x['id'] == cid), None)
+        if c is None:
+            c = {'id': max([x['id'] for x in CLIENTS] + [0]) + 1, 'created_at': ts(0)}
+            CLIENTS.append(c)
+        for k in ('name', 'phone', 'email', 'company', 'city', 'address', 'type', 'source', 'notes'):
+            if k in cl:
+                c[k] = str(cl.get(k) or '')[:190]
+        return {'ok': True, 'client': dict(c)}
+    if action == 'company_get':
+        return {'ok': True, 'company': dict(COMPANY), 'units': UNITS}
+    if action == 'company_save':
+        c = d.get('company') if isinstance(d.get('company'), dict) else {}
+        for k, v in c.items():
+            if k in ('banks', 'signers', 'wallets') and isinstance(v, list):
+                COMPANY[k] = v
+            elif k in COMPANY:
+                COMPANY[k] = v
+        return {'ok': True, 'company': dict(COMPANY)}
+    if action == 'tpl_save':
+        name = str(d.get('name') or '').strip()[:80]
+        if not name:
+            return {'ok': False, 'error': 'Template name is required'}
+        tid = int(d.get('id') or 0)
+        t = next((x for x in TEMPLATES if x['id'] == tid), None)
+        if t is None:
+            if any(x['name'] == name for x in TEMPLATES):
+                return {'ok': False, 'error': 'Another template already has that name'}
+            TPL_NEXT[0] += 1
+            t = {'id': TPL_NEXT[0]}
+            TEMPLATES.append(t)
+        t.update({'name': name, 'kind': d.get('kind') if d.get('kind') in TPL_KINDS else 'other',
+                  'description': str(d.get('description') or '')[:400],
+                  'sections': d.get('sections') or [], 'terms': str(d.get('terms') or '')[:3000]})
+        t['total'] = _tpl_total(t)
+        return {'ok': True, 'template': dict(t)}
+    return None
+
+
 def build(action, data):
     """Return a response dict for `action`, or None to fall through to the server default."""
     d = data or {}
+    r = _sales_build(action, d)
+    if r is not None:
+        return r
     if action == 'bk_list':
         items = [dict(b) for b in BOOKINGS]
         return {'ok': True, 'today': ymd(0), 'items': items,
