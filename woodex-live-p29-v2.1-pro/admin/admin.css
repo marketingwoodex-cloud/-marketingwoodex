@@ -2538,3 +2538,119 @@ html.dark .app.mini .side-top #rail{color:#e5e7eb!important}
 .app.mini .nav-a:hover{background:rgba(37,99,235,.10)!important}
 }
 @media (prefers-reduced-motion: reduce){ .app.mini .nav-a{transition:none} }
+
+/* ===== Sign-in page: clean frosted card over office interior (no neon) =====
+   Light: frosted light card, dark text. Dark: frosted dark card, light text.
+   One border per field. Brand blue #2563eb, flat. Motion 150-200ms. Reduced motion honoured. */
+html body .auth:not([hidden]) {
+  background: linear-gradient(rgba(10,14,22,.18), rgba(10,14,22,.38)), url('assets/img/signin-office-20261011.jpg') center/cover no-repeat fixed !important;
+  min-height: 100vh;
+}
+html.dark body .auth:not([hidden]) {
+  background: linear-gradient(rgba(5,6,8,.62), rgba(5,6,8,.84)), url('assets/img/signin-office-20261011.jpg') center/cover no-repeat fixed !important;
+}
+html body .auth:not([hidden]) .auth-card {
+  background: rgba(255,255,255,.16) !important;
+  border: 1px solid rgba(255,255,255,.42) !important;
+  border-radius: 20px !important;
+  box-shadow: 0 16px 44px rgba(15,23,42,.22) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  padding: 34px 30px !important;
+  max-width: 400px !important;
+}
+html.dark body .auth:not([hidden]) .auth-card {
+  background: rgba(12,16,24,.58) !important;
+  border-color: rgba(255,255,255,.12) !important;
+  box-shadow: 0 16px 44px rgba(0,0,0,.45) !important;
+}
+html body .auth:not([hidden]) .auth-card h1 { color: #0b1220 !important; text-align: center; }
+html.dark body .auth:not([hidden]) .auth-card h1 { color: #ffffff !important; }
+html body .auth:not([hidden]) .auth-card p { color: #1e293b !important; text-align: center; }
+html.dark body .auth:not([hidden]) .auth-card p { color: #d1d5db !important; }
+html body .auth:not([hidden]) .auth-card .brand b { color: #0b1220 !important; }
+html.dark body .auth:not([hidden]) .auth-card .brand b { color: #ffffff !important; }
+html body .auth:not([hidden]) .auth-card label { color: #0b1220 !important; font-weight: 600 !important; }
+html.dark body .auth:not([hidden]) .auth-card label { color: #f3f4f6 !important; }
+
+/* Field: one border only, no inner outline, no glow */
+html body .auth:not([hidden]) .auth-card .auth-input-pill {
+  background: rgba(255,255,255,.62) !important;
+  border: 1px solid rgba(15,23,42,.18) !important;
+  border-radius: 12px !important;
+  padding: 0 14px !important;
+  box-shadow: none !important;
+  transition: border-color .18s ease, box-shadow .18s ease, background .18s ease;
+}
+html.dark body .auth:not([hidden]) .auth-card .auth-input-pill {
+  background: rgba(8,11,18,.6) !important;
+  border-color: rgba(255,255,255,.16) !important;
+}
+html body .auth:not([hidden]) .auth-card .auth-input-pill:focus-within {
+  border-color: #2563eb !important;
+  box-shadow: 0 0 0 3px rgba(37,99,235,.22) !important;
+}
+html body .auth:not([hidden]) .auth-card input {
+  background: transparent !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  color: #0b1220 !important;
+  height: 46px !important;
+}
+html.dark body .auth:not([hidden]) .auth-card input { color: #ffffff !important; }
+html body .auth:not([hidden]) .auth-card input::placeholder { color: #4b5563 !important; opacity: 1 !important; }
+html.dark body .auth:not([hidden]) .auth-card input::placeholder { color: #9ca3af !important; }
+html body .auth:not([hidden]) .auth-card .auth-input-pill button { color: #1d4ed8 !important; background: none !important; box-shadow: none !important; }
+html.dark body .auth:not([hidden]) .auth-card .auth-input-pill button { color: #93c5fd !important; }
+
+/* Primary button: flat brand blue, no gradient, no glow */
+html body .auth:not([hidden]) .auth-card .btn-auth-main {
+  background: #2563eb !important;
+  color: #ffffff !important;
+  border: none !important;
+  border-radius: 12px !important;
+  box-shadow: none !important;
+  height: 46px !important;
+  transition: background .18s ease;
+}
+html body .auth:not([hidden]) .auth-card .btn-auth-main:hover { background: #1d4ed8 !important; box-shadow: none !important; }
+html body .auth:not([hidden]) .auth-card .btn-auth-main:focus-visible { outline: 2px solid #93c5fd !important; outline-offset: 2px !important; }
+
+/* Google button: neutral, no glow */
+html body .auth:not([hidden]) .auth-card .btn-sso {
+  background: rgba(255,255,255,.7) !important;
+  color: #0b1220 !important;
+  border: 1px solid rgba(15,23,42,.18) !important;
+  border-radius: 12px !important;
+  box-shadow: none !important;
+  transition: background .18s ease;
+}
+html.dark body .auth:not([hidden]) .auth-card .btn-sso {
+  background: rgba(8,11,18,.6) !important;
+  color: #ffffff !important;
+  border-color: rgba(255,255,255,.16) !important;
+}
+html body .auth:not([hidden]) .auth-card a { color: #1d4ed8 !important; }
+html.dark body .auth:not([hidden]) .auth-card a { color: #93c5fd !important; }
+html body .auth:not([hidden]) .auth-card .err { background: rgba(254,242,242,.92) !important; color: #b42318 !important; border-radius: 12px !important; }
+@media (prefers-reduced-motion: reduce) {
+  html body .auth:not([hidden]) .auth-card, html body .auth:not([hidden]) .auth-card * { transition: none !important; }
+}
+
+/* Sign-in error message: readable in both themes */
+html body .auth:not([hidden]) .auth-card .err,
+html body .auth:not([hidden]) .auth-card p.err {
+  background: rgba(254,242,242,.95) !important;
+  color: #7f1d1d !important;
+  border: 1px solid rgba(220,38,38,.25) !important;
+  border-radius: 12px !important;
+  padding: 10px 12px !important;
+  line-height: 1.45 !important;
+}
+html.dark body .auth:not([hidden]) .auth-card .err,
+html.dark body .auth:not([hidden]) .auth-card p.err {
+  background: rgba(127,29,29,.55) !important;
+  color: #fee2e2 !important;
+  border: 1px solid rgba(248,113,113,.45) !important;
+}

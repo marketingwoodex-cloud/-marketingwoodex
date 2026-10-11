@@ -1,17 +1,17 @@
 # Filtered static preview for the pro site, with a PREVIEW-ONLY API stub.
 # - Serves public front-end files only (blocks PHP source, api/, private/db/template folders, SQL, env, dotfiles, docs).
 # - POST /api/admin.php and /api/builder.php are answered by this stub (no PHP, no database, no real accounts).
-#   Login accepts ONE preview test account from env PREVIEW_EMAIL / PREVIEW_PASS. Everything else is rejected.
+#   Login accepts ONE account set by env PREVIEW_EMAIL / PREVIEW_PASS (no built-in account). Everything else is rejected.
 import http.server, os, sys, json, urllib.parse, time
 ROOT = sys.argv[1]
 PORT = int(sys.argv[2])
-PREVIEW_EMAIL = os.environ.get('PREVIEW_EMAIL', 'preview@woodex.test')
+PREVIEW_EMAIL = os.environ.get('PREVIEW_EMAIL', '').strip().lower()
 PREVIEW_PASS = os.environ.get('PREVIEW_PASS', '')
 TOKEN = 'preview-token'
 BLOCK_DIRS = {'api', '_private', '_database', '_templates', '_scripts', 'tools', 'node_modules', '.git'}
 BLOCK_EXT = {'.php', '.sql', '.env', '.md', '.json', '.lock', '.yaml', '.yml', '.ini', '.bak', '.log', '.dist', '.sh', '.bat', '.tar', '.zip'}
 BLOCK_NAMES = set()  # admin-tg.js no longer holds a token literal (C-1), so the Telegram page can be previewed
-OWNER = {'id': 1, 'name': 'Preview Owner', 'role': 'owner', 'email': PREVIEW_EMAIL}
+OWNER = {'id': 1, 'name': os.environ.get('PREVIEW_NAME', 'Owner'), 'role': 'owner', 'email': PREVIEW_EMAIL}
 PREVIEW_PROJECT = {'id': 1, 'name': 'Preview project (stub)', 'stage': 'design', 'photos': [], 'value': 0, 'paid': 0, 'no': 'P-1', 'client': '',
                     'start': '2026-09-01', 'target': '2026-12-15', 'milestones': [{'label': 'Deposit', 'pct': 30, 'inv_id': 1}, {'label': 'Installation', 'pct': 70, 'inv_id': None}]}
 PREVIEW_UNDATED = {'id': 2, 'name': 'Preview project without dates', 'stage': 'design', 'photos': [], 'value': 0, 'paid': 0, 'no': 'P-2', 'client': '', 'start': '', 'target': '', 'milestones': []}
@@ -92,13 +92,13 @@ class H(http.server.SimpleHTTPRequestHandler):
             if self.headers.get('X-WX-ADM') == TOKEN: st['user'] = OWNER
             return self._json(200, st)
         if action == 'login':
-            if PREVIEW_PASS and data.get('email') == PREVIEW_EMAIL and data.get('password') == PREVIEW_PASS:
+            if not PREVIEW_EMAIL or not PREVIEW_PASS:
+                return self._json(200, {'ok': False, 'error': 'Preview sign-in is not set up. Start the preview with PREVIEW_EMAIL and PREVIEW_PASS set.'})
+            if data.get('email', '').strip().lower() == PREVIEW_EMAIL and data.get('password') == PREVIEW_PASS:
                 return self._json(200, {'ok': True, 'token': TOKEN, 'user': OWNER, 'builderToken': None})
-            if not PREVIEW_PASS:
-                return self._json(200, {'ok': False, 'error': 'The preview password is not set on the server. Start the preview with PREVIEW_PASS set.'})
-            if data.get('email') == PREVIEW_EMAIL:
-                return self._json(200, {'ok': False, 'error': 'Wrong password for the preview account. Type the preview password in the Password box, not the email.'})
-            return self._json(200, {'ok': False, 'error': 'Preview sign-in only accepts the preview test account (preview@woodex.test). The live database is not connected in this preview.'})
+            if data.get('email', '').strip().lower() == PREVIEW_EMAIL:
+                return self._json(200, {'ok': False, 'error': 'Wrong password. Check the preview password you set on the server.'})
+            return self._json(200, {'ok': False, 'error': 'Preview sign-in only accepts the email set on the server. The live database is not connected in this preview.'})
         if action == 'me':
             if self.headers.get('X-WX-ADM') == TOKEN:
                 return self._json(200, {'ok': True, 'user': OWNER, 'caps': {}, 'builderToken': None})

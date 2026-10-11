@@ -15,7 +15,7 @@ const pptr = pp.default || pp;
 const base = (process.argv[2] || 'http://127.0.0.1:8080').replace(/\/$/, '');
 const outFile = process.argv[3] || '/tmp/responsive.jsonl';
 const width = parseInt(process.argv[4] || '390', 10);
-const PREVIEW_EMAIL = process.env.PREVIEW_EMAIL || 'preview@woodex.test';
+const PREVIEW_EMAIL = process.env.PREVIEW_EMAIL || '';
 const PREVIEW_PASS = process.env.PREVIEW_PASS || '';
 if (!PREVIEW_PASS) { console.log('FAIL: set PREVIEW_PASS'); process.exit(2); }
 const sleep = ms => new Promise(r => setTimeout(r, ms));

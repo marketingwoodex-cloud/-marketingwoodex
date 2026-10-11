@@ -15,7 +15,7 @@ const pptr = pp.default || pp;
 const base = (process.argv[2] || 'http://127.0.0.1:8080').replace(/\/$/, '');
 const outDir = process.argv[3] || '/tmp/theme-shots';
 const PREVIEW_PASS = process.env.PREVIEW_PASS || '';
-const PREVIEW_EMAIL = process.env.PREVIEW_EMAIL || 'preview@woodex.test';
+const PREVIEW_EMAIL = process.env.PREVIEW_EMAIL || '';
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 let SCREENS = [['dashboard', '#/dashboard'], ['settings', '#/settings/integrations'], ['security', '#/security'], ['approvals', '#/approvals']];
 // ALL=1: every route id listed in the admin NAV (read from admin.js), in both themes.

@@ -43,7 +43,7 @@ Credential values are never written here. Credentials are referred to by file an
 ### 1A. Email and password login
 - [x] Email is remembered in browser storage (`wxaLastEmail`, commit `70c12cb`). The password is never stored.
 - [x] Built-in default password removed from the admin UI (commit `75ecf7d`).
-- [x] Browser test: email and password sign-in works with `preview@woodex.test`. Preview only; the live database is not connected.
+- [x] Browser test: email and password sign-in works with `the email set in PREVIEW_EMAIL`. Preview only; the live database is not connected.
 - [ ] 1A.1 Confirm what you saw when you tested. Your last message did not say whether it worked.
 - [ ] 1A.2 Empty-field messages: the browser's required check runs first. Decide whether to keep native messages or show our own text.
 - [ ] 1A.3 Wrong password: throttle lockout message appears and the counter resets after success.

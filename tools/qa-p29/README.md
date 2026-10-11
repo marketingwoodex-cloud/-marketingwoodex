@@ -25,6 +25,6 @@ Notes:
 ## Static preview server (not production)
 
 - `preview-server.py <dir> <port>`: serves the public front-end files of the pro tree, and blocks PHP source, `api/`, `_private/`, `_database/`, `_templates/`, SQL, env/dotfiles, Markdown, JSON, and `admin/admin-tg.js` (token literal, SEC-003).
-- It answers `POST /api/admin.php` and `/api/builder.php` with a **preview-only stub**: no PHP, no database, no real accounts. Login accepts one test account set by environment variables `PREVIEW_EMAIL` (default `preview@woodex.test`) and `PREVIEW_PASS`. Everything else is rejected, including the shared pre-filled password.
+- It answers `POST /api/admin.php` and `/api/builder.php` with a **preview-only stub**: no PHP, no database, no real accounts. Login accepts one test account set by environment variables `PREVIEW_EMAIL` (default `the email set in PREVIEW_EMAIL`) and `PREVIEW_PASS`. Everything else is rejected, including the shared pre-filled password.
 - Why: Python's plain static server returns 501 for POST, which the admin shows as "Server error (501)". Serving `.php` files as plain text leaks source, so the filter is required.
 - Test: `PREVIEW_PASS=... node preview-login-test.mjs http://127.0.0.1:8080` (headless browser; prints booleans only).
