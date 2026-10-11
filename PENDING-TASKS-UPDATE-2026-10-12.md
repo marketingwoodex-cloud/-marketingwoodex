@@ -60,6 +60,16 @@ Also fixed while sweeping (not on the 2026-10-11 list):
 Full write-up without values: `deliverables/SECRET-EXPOSURE-VERIFIED-2026-10-12.md`.
 Options 1–6 there need owner approval; visibility (C-6) is still refused from this sandbox (403).
 
+## Fourth batch (2026-10-12) — master QA sweep over all 58 routes
+
+| ID | Was | Now | Evidence |
+|---|---|---|---|
+| U1.3 (new) | `#/business` and `#/settings` rendered the **same** page | **FIXED** | `admin-settings.js` ended with `W.VIEWS.business = W.VIEWS.settings` (it loads after `admin-fields.js`, so it always won and the real Business info screen — contact, brand, social — never appeared). Alias removed for `business` only; `integrations`/`connections` stay aliases on purpose |
+| QA-1 (new) | 11 screens stuck on "Loading…", 14 with JS errors | **0 and 0** | New `tools/qa-p29/master-qa.mjs` walks every route; new `preview_fixtures.py` answers 240 actions that had no preview answer (sample data, real API shapes) |
+| U6 / AS-32 | `frontend-v1/admin` mirror drift | **still open** | If the mirror is deployed anywhere, today's fixes are not in it — needs the owner's call |
+
+Reproduce: `cd tools/qa-p29 && PREVIEW_EMAIL=… PREVIEW_PASS=… node master-qa.mjs http://127.0.0.1:8080 /tmp/mq`
+
 ## Changed status elsewhere
 
 | ID | Was | Now | Note |
