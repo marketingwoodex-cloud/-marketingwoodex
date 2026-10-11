@@ -70,7 +70,11 @@ class H(http.server.SimpleHTTPRequestHandler):
         if action == 'login':
             if PREVIEW_PASS and data.get('email') == PREVIEW_EMAIL and data.get('password') == PREVIEW_PASS:
                 return self._json(200, {'ok': True, 'token': TOKEN, 'user': OWNER, 'builderToken': None})
-            return self._json(200, {'ok': False, 'error': 'Preview sign-in only accepts the preview test account. The live database is not connected in this preview.'})
+            if not PREVIEW_PASS:
+                return self._json(200, {'ok': False, 'error': 'The preview password is not set on the server. Start the preview with PREVIEW_PASS set.'})
+            if data.get('email') == PREVIEW_EMAIL:
+                return self._json(200, {'ok': False, 'error': 'Wrong password for the preview account. Type the preview password in the Password box, not the email.'})
+            return self._json(200, {'ok': False, 'error': 'Preview sign-in only accepts the preview test account (preview@woodex.test). The live database is not connected in this preview.'})
         if action == 'me':
             if self.headers.get('X-WX-ADM') == TOKEN:
                 return self._json(200, {'ok': True, 'user': OWNER, 'caps': {}, 'builderToken': None})
