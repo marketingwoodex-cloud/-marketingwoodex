@@ -40,6 +40,17 @@ def empty(extra=None):
     if extra: d.update(extra)
     return d
 
+TEMPLATES = []  # in-memory quotation templates for preview only
+TPL_NEXT = [0]
+TPL_KINDS = ('design', 'fitout', 'renovation', 'other')
+def _tpl_total(t):
+    tot = 0.0
+    for sec in t.get('sections') or []:
+        for it in (sec or {}).get('items') or []:
+            try: tot += float(it.get('qty') or 0) * float(it.get('rate') or 0)
+            except (TypeError, ValueError): pass
+    return round(tot, 2)
+
 class H(http.server.SimpleHTTPRequestHandler):
     def __init__(self, *a, **k):
         super().__init__(*a, directory=ROOT, **k)
@@ -145,6 +156,25 @@ class H(http.server.SimpleHTTPRequestHandler):
             m = {'id': len(FEED) + 1, 'author_id': OWNER['id'], 'author': OWNER['name'], 'role': OWNER['role'], 'text': text, 'at': int(time.time())}
             FEED.append(m)
             return self._json(200, {'ok': True, 'item': m})
+        if action == 'invs_tracker':
+            return self._json(200, {'ok': True, 'year': 2026, 'years': [2026], 'months': [], 'rows': [], 'lateAll': 0})
+        if action == 'tpl_list':
+            return self._json(200, {'ok': True, 'templates': list(TEMPLATES)})
+        if action == 'tpl_import':
+            names = {t['name'] for t in TEMPLATES}; n = 0
+            for x in (data.get('templates') or [])[:50]:
+                if not isinstance(x, dict) or not str(x.get('name') or '').strip(): continue
+                name = str(x['name'])[:80]
+                if name in names: continue
+                TPL_NEXT[0] += 1
+                t = {'id': TPL_NEXT[0], 'name': name, 'kind': x.get('kind') if x.get('kind') in TPL_KINDS else 'other',
+                     'description': str(x.get('description') or '')[:400], 'sections': x.get('sections') or [], 'terms': str(x.get('terms') or '')[:3000]}
+                t['total'] = _tpl_total(t); TEMPLATES.append(t); names.add(name); n += 1
+            return self._json(200, {'ok': True, 'imported': n})
+        if action == 'tpl_delete':
+            tid = int(data.get('id') or 0)
+            TEMPLATES[:] = [t for t in TEMPLATES if t['id'] != tid]
+            return self._json(200, {'ok': True})
         return self._json(200, empty())
     def do_GET(self):
         if self._blocked(urllib.parse.urlsplit(self.path).path):

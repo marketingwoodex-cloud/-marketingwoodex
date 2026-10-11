@@ -15,7 +15,10 @@
   var today = function () { return new Date().toISOString().slice(0, 10); };
   var dshort = function (d) { if (!d) return "—"; var x = new Date(String(d).replace(" ", "T")); return isNaN(x) ? d : x.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "2-digit" }); };
   var waNum = function (p) { var d = String(p || "").replace(/\D/g, ""); if (/^0\d{9,10}$/.test(d)) d = "92" + d.slice(1); else if (/^3\d{9}$/.test(d)) d = "92" + d; return d; };
-  var kindOf = function (name) { name = String(name).toLowerCase(); return /renov|civil/.test(name) ? "renovation" : /fit/.test(name) ? "fitout" : /design|3d|architect|consult/.test(name) ? "design" : "other"; };
+  var kindOf = function (name) { name = String(name).toLowerCase(); return /renov|civil/.test(name) ? "renovation" : /fit/.test(name) ? "fitout" : /design|3d|architect|consult|interior/.test(name) ? "design" : "other"; };
+  // Starter figures (rates, terms) are not yet confirmed by Woodex. Every imported starter is labelled so it is not sent as final.
+  var PH_NOTE = "PLACEHOLDER figures: confirm rates and terms before sending. ";
+  var phDesc = function (d) { d = String(d || ""); return d.indexOf(PH_NOTE) === 0 ? d : PH_NOTE + d; };
   var company = null; var getCompany = function () { return company ? Promise.resolve(company) : api("company_get").then(function (r) { if (r.ok) company = r.company; return company || {}; }); };
 
   // =========================================================== SECTION EDITOR (quotations + templates)
@@ -296,7 +299,7 @@
     };
     if ($("#tp-new")) $("#tp-new").onclick = function () { location.hash = "#/template/new"; };
     if ($("#tp-st")) $("#tp-st").onclick = function () {
-      var list = (window.WX_QUOT_TEMPLATES || []).map(function (t) { return { name: t.name, kind: kindOf(t.name), description: t.description, sections: t.sections, terms: t.terms }; });
+      var list = (window.WX_QUOT_TEMPLATES || []).map(function (t) { return { name: t.name, kind: kindOf(t.name), description: phDesc(t.description), sections: t.sections, terms: t.terms }; });
       api("tpl_import", { templates: list }).then(function (x) { if (!x.ok) return toast(x.error, true); toast(x.imported + " templates imported ✓"); load(); });
     };
     if ($("#tp-file")) { $("#tp-file").onclick = function () { $("#tp-fin").click(); };

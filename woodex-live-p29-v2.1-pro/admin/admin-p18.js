@@ -27,7 +27,7 @@
         '<label>Project<input id="ci-p" placeholder="e.g. Head office workstations"></label><label>PO #<input id="ci-po" placeholder="Client purchase order"></label>' +
         '<label>Payment condition<select id="ci-m"><option value="">Standard (as per terms)</option><option value="after_delivery">Payment after delivery</option></select></label>' +
         '<div class="ci-2"><label>Issue date<input id="ci-d" type="date" value="' + today() + '"></label><label>Due date<input id="ci-dd" type="date"></label></div>' +
-        '<label>Delivery date<input id="ci-del" type="date"></label><label>Payment schedule<input id="ci-sc" placeholder="e.g. 50% advance, 50% on delivery"></label>' +
+        '<label>Delivery date<input id="ci-del" type="date"></label><label>Payment schedule<input id="ci-sc" list="ci-sc-list" placeholder="e.g. 50% advance, 50% on delivery" autocomplete="off"><datalist id="ci-sc-list"><option value="PLACEHOLDER: 50% advance with work order, 40% on completion of civil and wood work, 10% on handover"></option><option value="PLACEHOLDER: 75% advance with work order, 25% on approval of project"></option><option value="PLACEHOLDER: 50% advance with work order, balance on completion"></option></datalist></label>' +
         '<label class="span2">Additional info <small class="muted">(printed as terms)</small><textarea id="ci-t" rows="3" placeholder="Terms or receipt info (optional)"></textarea></label>' +
       "</div></div>" +
       '<div class="card"><div class="card-h"><h3>Items</h3><button class="btn sm" id="ci-add">' + ic("plus") + 'Add item</button></div><div class="tbl-wrap"><table class="tbl ci-items"><thead><tr><th style="width:56px">S. No.</th><th>Products / description</th><th style="width:90px" class="r">Quantity</th><th style="width:96px">Unit</th><th style="width:130px" class="r">Unit cost</th><th style="width:120px" class="r">Discount</th><th style="width:130px" class="r">Total</th><th style="width:44px"></th></tr></thead><tbody id="ci-rows"></tbody></table></div>' +
@@ -143,4 +143,11 @@
     document.addEventListener("click", function (e) { var b = e.target.closest && e.target.closest("#it-new"); if (!b) return; e.preventDefault(); e.stopImmediatePropagation(); location.hash = "#/invoice/new"; }, true);
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", install); else install();
+  // admin-sales17.js replaces VIEWS.invoices after this script runs, so the tracker wrapper must wait for all deferred scripts.
+  function installLate() {
+    var V = W.VIEWS; if (!V || !V.invoices) return;
+    var oldInvs = V.invoices;
+    V.invoices = function (el, parts, def) { if (parts && parts[0] === "new") return createInvoice(el); return oldInvs(el, parts, def); };
+  }
+  if (document.readyState === "loading" || document.readyState === "interactive") document.addEventListener("DOMContentLoaded", installLate); else installLate();
 })();
