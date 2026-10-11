@@ -369,7 +369,10 @@ small.bad{color:var(--bad)}small.warnc{color:var(--warn)}
 .md-card{position:relative;background:var(--card,#fff);border:1px solid var(--line,#e4e7ec);border-radius:12px;overflow:hidden;cursor:pointer;transition:box-shadow .15s}
 .md-card:hover{box-shadow:0 6px 20px rgba(16,24,40,.08)}.md-card.sel{outline:2px solid var(--pri,#465fff)}
 .md-chk{position:absolute;top:8px;left:8px;width:18px;height:18px;z-index:1;opacity:0}.md-card:hover .md-chk,.md-card.sel .md-chk{opacity:1}
-.md-th{aspect-ratio:4/3;background:#f2f4f7 repeating-conic-gradient(#eaecf0 0 25%,transparent 0 50%) 50%/16px 16px;display:grid;place-items:center}
+.md-th{aspect-ratio:4/3;background:var(--card-sub) repeating-conic-gradient(var(--line) 0 25%,transparent 0 50%) 50%/16px 16px;display:grid;place-items:center}
+/* the checkerboard behind a thumbnail must follow the theme: it was a fixed light grey,
+   which read as a bright island on the dark Media library (light-islands sweep). */
+html.dark .md-th{background-color:var(--card-sub);background-image:repeating-conic-gradient(rgba(255,255,255,.05) 0 25%,transparent 0 50%)}
 .md-th img{width:100%;height:100%;object-fit:cover}
 .md-meta{padding:8px 10px;display:grid;gap:2px;font-size:12px}.md-meta b{font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.md-meta>span{color:#667085}
 .md-bulk{position:sticky;top:8px;z-index:5;display:flex;gap:8px;align-items:center;background:#101828;color:#fff;border-radius:12px;padding:8px 12px;margin-bottom:12px}.md-bulk b{flex:1}

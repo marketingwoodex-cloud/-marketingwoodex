@@ -103,7 +103,7 @@ html .side .nav-a.on i, html .side .nav-a:hover i, html .side .nav-a.on svg { co
 html .side .nav-g, html .side .nav-h { color: var(--ui-side-muted) !important; font-size: 12px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
 html .side small, html .side .muted { color: var(--ui-side-muted) !important; }
 html .side b, html .side strong { color: var(--ui-text) !important; }
-html .side span:not(.badge):not(.nt-n):not(.nt-b):not(.pill):not(.nav-bdg):not(.nav-new):not(.nav-pin) { color: var(--ui-side-muted) !important; }
+html .side span:not(.badge):not(.nt-n):not(.nt-b):not(.pill):not(.nav-bdg):not(.nav-new):not(.nav-pin):not(.nav-t) { color: var(--ui-side-muted) !important; }
 html .side .side-foot { background: var(--ui-side); border-top: 1px solid var(--ui-side-border); }
 html .side-foot a { color: var(--ui-side-text) !important; }
 html .side-foot a:hover, html .side-foot button:hover { color: var(--ui-text) !important; }
@@ -341,3 +341,58 @@ html .gt-ms { margin: 2px 0 0; padding-left: 18px; font-size: 13px; color: var(-
 html .gt-ms li { margin: 2px 0; }
 html .gt-ms-none { margin: 0; font-size: 13px; }
 @media (max-width: 720px) { html .gt-row { grid-template-columns: 1fr; } html .gt-axis-row > div:first-child { display: none; } }
+
+
+/* =====================================================================
+   Sidebar polish (2026-10-12, bug report: "sidebar poor design").
+   1) the scrollbar rail: it was a 6px bright bar painted with the border
+      colour, visible even when the list barely scrolls. Now: thin, no
+      track, and revealed only while the pointer is over the sidebar.
+   2) nav labels: the blanket span rule made them the muted colour, so a
+      menu item and an active item looked equally washed out. Labels now
+      use the sidebar text colour and the active row is clearly stronger.
+   3) row rhythm: one height (40px), one radius (8px), one gap (12px),
+      icons 18px, and a 160ms background/colour transition on hover.
+   ===================================================================== */
+html .side, html .side #nav { scrollbar-width: thin; scrollbar-color: transparent transparent; }
+html .side:hover, html .side:hover #nav { scrollbar-color: rgba(148, 163, 184, .45) transparent; }
+html .side ::-webkit-scrollbar { width: 10px; height: 10px; }
+html .side ::-webkit-scrollbar-track { background: transparent; }
+html .side ::-webkit-scrollbar-thumb {
+  background: transparent; border-radius: 10px; border: 3px solid transparent; background-clip: padding-box;
+  transition: background-color .18s ease;
+}
+html .side:hover ::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, .38); background-clip: padding-box; }
+html .side ::-webkit-scrollbar-thumb:hover { background: rgba(148, 163, 184, .6); background-clip: padding-box; }
+
+html .side #nav { padding: 10px 12px 18px; }
+html .side .nav-a {
+  min-height: 40px; padding: 8px 12px; gap: 12px; border-radius: 8px; font-size: 13.5px; line-height: 1.25;
+  transition: background-color .16s ease, color .16s ease, box-shadow .16s ease;
+}
+html .side .nav-a > svg, html .side .nav-a > i { width: 18px; height: 18px; flex: 0 0 18px; }
+html .side .nav-a .nav-t { color: var(--ui-side-text) !important; font-weight: 500; transition: color .16s ease; }
+html .side .nav-a:hover .nav-t { color: var(--ui-text) !important; }
+html .side .nav-a:hover { background: var(--ui-side-active); }
+html .side .nav-a.on { box-shadow: inset 2px 0 0 0 var(--ui-brand); }
+html .side .nav-a.on .nav-t { color: var(--ui-side-active-text) !important; font-weight: 600; }
+html .side .nav-a:focus-visible { outline: 2px solid var(--ui-brand); outline-offset: 2px; }
+html .side .nav-sub .nav-a { min-height: 34px; padding: 6px 12px; font-size: 13px; }
+html .side .nav-h, html .side .nav-hb {
+  font-size: 11px; letter-spacing: .09em; font-weight: 600; color: var(--ui-side-muted) !important;
+  margin: 16px 12px 6px; padding: 0;
+}
+html .side .nav-g { margin: 0; }
+html .side .nav-gb { min-height: 40px; padding: 8px 12px; border-radius: 8px; gap: 12px; font-size: 13.5px; font-weight: 500;
+  color: var(--ui-side-text) !important; transition: background-color .16s ease, color .16s ease; }
+html .side .nav-gb > span { color: var(--ui-side-text) !important; }
+html .side .nav-gb > svg, html .side .nav-gb > i { color: var(--ui-side-muted); }
+html .side .nav-gb:hover { background: var(--ui-side-active); }
+html .side .nav-gb:hover > span { color: var(--ui-text) !important; }
+html .side .nav-gb .nav-car { margin-left: auto; transition: transform .18s ease; }
+html .side .nav-g.open > .nav-gb .nav-car { transform: rotate(180deg); }
+html .side .nav-bdg, html .side .nav-new, html .side .pill { margin-left: auto; }
+html .side .nav-a.sub { margin-left: 6px; }
+@media (prefers-reduced-motion: reduce) {
+  html .side .nav-a, html .side .nav-a .nav-t, html .side .nav-gb, html .side .nav-gb .nav-car { transition: none; }
+}

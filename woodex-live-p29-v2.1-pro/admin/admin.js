@@ -153,7 +153,7 @@
   function pinKey() { return "wxPins" + (S.user ? S.user.id : ""); }
   function pins() { try { return JSON.parse(localStorage.getItem(pinKey()) || "[]"); } catch (e) { return []; } }
   var navOpen = (function () { try { return JSON.parse(localStorage.getItem("wxNavOpen") || "{}"); } catch (e) { return {}; } })();
-  function navLink(n, sub) { return '<a class="nav-a' + (sub ? " sub" : "") + (n[4] ? " soon" : "") + '" href="#/' + n[0] + '" data-v="' + n[0] + '" title="' + n[1] + '">' + ic(n[2]) + "<span>" + n[1] + "</span>" + (n[4] ? '<span class="pill">' + n[4] + "</span>" : "") + (n[5] === "new" ? '<span class="nav-new">NEW</span>' : "") + '<span class="nav-bdg" data-bdg="' + n[0] + '" hidden></span><span class="nav-pin' + (pins().indexOf(n[0]) > -1 ? " on" : "") + '" data-pin="' + n[0] + '" title="Pin to top">★</span></a>'; }
+  function navLink(n, sub) { return '<a class="nav-a' + (sub ? " sub" : "") + (n[4] ? " soon" : "") + '" href="#/' + n[0] + '" data-v="' + n[0] + '" title="' + n[1] + '">' + ic(n[2]) + '<span class="nav-t">' + n[1] + "</span>" + (n[4] ? '<span class="pill">' + n[4] + "</span>" : "") + (n[5] === "new" ? '<span class="nav-new">NEW</span>' : "") + '<span class="nav-bdg" data-bdg="' + n[0] + '" hidden></span><span class="nav-pin' + (pins().indexOf(n[0]) > -1 ? " on" : "") + '" data-pin="' + n[0] + '" title="Pin to top">★</span></a>'; }
   // P16: live count badges (new leads, chats needing a reply)
   function navBadges() {
     if (!S.user) return;
