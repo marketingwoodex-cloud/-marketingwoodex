@@ -217,7 +217,14 @@
     if (sfa) sfa.textContent = initials(S.user.name);
     try { if (localStorage.getItem("wxSideMini") === "1" && innerWidth > 1024) $("#app").classList.add("mini"); } catch(e){}
     renderNav(); route();
-    if (S.btoken) bapi("pages").then(function (p) { if (p.ok) { S.pages = p.pages; $("#gsearch-list").innerHTML = p.pages.map(function (x) { return '<option value="' + esc(x.url) + '">' + esc(x.title) + "</option>"; }).join(""); } });
+    // S.btoken: pull the CMS page list once for search. The old markup this wrote into
+    // (#gsearch-list) no longer exists - writing to it crashed boot for owner/admin/editor.
+    if (S.btoken) bapi("pages").then(function (p) {
+      if (!p.ok || !p.pages) return;
+      S.pages = p.pages;
+      var gl = $("#gsearch-list");
+      if (gl) gl.innerHTML = p.pages.map(function (x) { return '<option value="' + esc(x.url) + '">' + esc(x.title) + "</option>"; }).join("");
+    });
   }
   function signedOut(msg) { S.user = null; S.token = ""; sessionStorage.removeItem("wxaTok"); sessionStorage.removeItem("wxTok"); showAuth("login"); if (msg) $("#l-err").textContent = msg; }
 
@@ -323,9 +330,10 @@
   function navFlat() { var r = []; NAV.forEach(function (n) { if (n.g) n.items.forEach(function (x) { r.push([x, n.g]); }); else if (n.length > 1) r.push([n, ""]); }); return r.filter(function (x) { return !x[0][3] || can(x[0][3]); }); }
   function palette() {
     if (!S.user) return; var all = navFlat(), idx = 0;
+    if (S.pages && S.pages.length) all = all.concat(S.pages.map(function (pg) { return [[pg.url, pg.title || pg.url, "file-text", null], "Page", "#/pages"]; }));
     modal('<input id="pk-q" placeholder="Search screens… (e.g. invoice, speed, whatsapp)" autocomplete="off" style="font-size:16px"><div id="pk-l" class="pk-l"></div><p class="muted" style="font-size:12px;margin:8px 0 0">↑ ↓ to move · Enter to open · Esc to close</p>');
     function draw() { var q = $("#pk-q").value.toLowerCase(), m = all.filter(function (x) { return (x[0][1] + " " + x[1] + " " + x[0][0]).toLowerCase().indexOf(q) > -1; }).slice(0, 12); idx = Math.min(idx, Math.max(0, m.length - 1));
-      $("#pk-l").innerHTML = m.map(function (x, i) { return '<a href="#/' + x[0][0] + '" class="pk-i' + (i === idx ? " on" : "") + '">' + ic(x[0][2]) + "<span>" + x[0][1] + "</span>" + (x[1] ? '<small class="muted">' + x[1] + "</small>" : "") + "</a>"; }).join("") || '<p class="muted" style="padding:10px">No match</p>';
+      $("#pk-l").innerHTML = m.map(function (x, i) { return '<a href="' + esc(x[2] || ("#/" + x[0][0])) + '" class="pk-i' + (i === idx ? " on" : "") + '">' + ic(x[0][2]) + "<span>" + x[0][1] + "</span>" + (x[1] ? '<small class="muted">' + x[1] + "</small>" : "") + "</a>"; }).join("") || '<p class="muted" style="padding:10px">No match</p>';
       $$("#pk-l a").forEach(function (a) { a.onclick = closeModal; }); }
     $("#pk-q").oninput = function () { idx = 0; draw(); };
     $("#pk-q").onkeydown = function (e) { var n = $$("#pk-l a").length; if (e.key === "ArrowDown") { idx = (idx + 1) % n; draw(); e.preventDefault(); } else if (e.key === "ArrowUp") { idx = (idx - 1 + n) % n; draw(); e.preventDefault(); } else if (e.key === "Enter") { var a = $$("#pk-l a")[idx]; if (a) { location.hash = a.getAttribute("href"); closeModal(); } } };

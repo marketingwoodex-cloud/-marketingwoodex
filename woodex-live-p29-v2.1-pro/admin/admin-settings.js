@@ -140,7 +140,7 @@
               '<p class="muted" style="margin:0;font-size:13.5px">Link social, business, productivity, 360 VR, and AI marketing channels. Secure token credentials stay on your server.</p>' +
             '</div>' +
             '<div style="display:flex;align-items:center;gap:10px">' +
-              '<input type="search" id="conn-q" placeholder="Search connectors (e.g. meta, tiktok, zapier)…" style="margin:0;width:280px;background:var(--card-sub);border-color:#262a33;padding:8px 14px;border-radius:10px;font-size:13px">' +
+              '<input type="search" id="conn-q" placeholder="Search connectors (e.g. meta, tiktok, zapier)…" style="margin:0;width:280px;background:var(--card-sub);border-color:var(--line);padding:8px 14px;border-radius:10px;font-size:13px">' +
               '<button class="btn" id="conn-add-any" style="background:var(--pri);color:var(--pri-fg);font-weight:600;border:none">+ Add Custom Webhook</button>' +
             '</div>' +
           '</div>' +
@@ -154,7 +154,7 @@
           '</div>' +
 
           '<!-- App Grid -->' +
-          '<div id="conn-grid" style="display:grid;grid-template-columns:repeat(2, 1fr);gap:16px;margin-top:20px"></div>' +
+          '<div id="conn-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(430px,100%),1fr));gap:16px;margin-top:20px"></div>' +
 
           '<!-- Bottom Status Bar -->' +
           '<div style="display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--line);padding-top:18px;margin-top:20px">' +
@@ -185,14 +185,14 @@
                 '<label style="margin:0;font-weight:600;color:var(--txt);font-size:13px">Google Analytics 4 Measurement ID</label>' +
                 '<a href="https://analytics.google.com" target="_blank" rel="noopener" style="font-size:12px;color:var(--pri);text-decoration:none;display:flex;align-items:center;gap:4px">' + ic("external-link") + 'Open Analytics Console</a>' +
               '</div>' +
-              '<input type="text" id="st-ga4" value="G-WX880921B" placeholder="G-XXXXXXXXXX" style="width:100%;background:var(--card-sub);border-color:#262a33;padding:9px 14px;border-radius:8px">' +
+              '<input type="text" id="st-ga4" value="G-WX880921B" placeholder="G-XXXXXXXXXX" style="width:100%;background:var(--card-sub);border-color:var(--line);padding:9px 14px;border-radius:8px">' +
             '</div>' +
             '<div>' +
               '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">' +
                 '<label style="margin:0;font-weight:600;color:var(--txt);font-size:13px">Google Search Console Verification Tag / HTML</label>' +
                 '<a href="https://search.google.com/search-console" target="_blank" rel="noopener" style="font-size:12px;color:var(--pri);text-decoration:none;display:flex;align-items:center;gap:4px">' + ic("external-link") + 'Open Search Console</a>' +
               '</div>' +
-              '<input type="text" id="st-gsc" value="google-site-verification: google0b104c3cfb7a4943.html" placeholder="google-site-verification=..." style="width:100%;background:var(--card-sub);border-color:#262a33;padding:9px 14px;border-radius:8px">' +
+              '<input type="text" id="st-gsc" value="google-site-verification: google0b104c3cfb7a4943.html" placeholder="google-site-verification=..." style="width:100%;background:var(--card-sub);border-color:var(--line);padding:9px 14px;border-radius:8px">' +
               '<small class="muted" style="font-size:11.5px;margin-top:4px;display:block">Direct HTML verification file `google0b104c3cfb7a4943.html` is verified and active at root.</small>' +
             '</div>' +
           '</div>' +
@@ -309,7 +309,7 @@
       if (statTxt) statTxt.textContent = connCount + " of " + APPS.length + " marked connected (not verified) · no live health checks run";
 
       grid.innerHTML = list.map(function (app) {
-        return '<div style="background:var(--card-sub);border:1px solid var(--line);border-radius:12px;padding:16px;display:flex;align-items:center;justify-content:space-between;gap:14px">' +
+        return '<div class="conn-card" style="background:var(--card-sub);border:1px solid var(--line);border-radius:12px;padding:16px;display:flex;align-items:center;justify-content:space-between;gap:14px;min-width:0">' +
           '<div style="display:flex;align-items:center;gap:12px;flex:1;min-width:0">' +
             '<span style="width:42px;height:42px;border-radius:10px;background:' + app.color + ';color:' + tileInk(app.color) + ';font-weight:700;font-size:14px;display:grid;place-items:center;flex-shrink:0">' + app.tag + '</span>' +
             '<div style="flex:1;min-width:0">' +
