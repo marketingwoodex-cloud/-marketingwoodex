@@ -22,6 +22,30 @@ Notes:
 - **Checks:** `t16`, `editor-dash`, `approvals`, `approvals-initial` (add `JITTER=<seed>` for seeded script delay), `security`.
 - **Full evidence run:** `bash run-browser-evidence.sh`, with `PREFIX` and `HEADT` pointing at `git archive` extracts of the pre-fix and HEAD trees (outside the repo).
 
+## Master QA + CMS audit (every route, every call)
+
+```bash
+PREVIEW_EMAIL=… PREVIEW_PASS=… node master-qa.mjs   http://127.0.0.1:8080 /tmp/mq   # all 58 routes
+PREVIEW_EMAIL=… PREVIEW_PASS=… node cms-audit.mjs   http://127.0.0.1:8080 /tmp/cms  # the 23 Website & CMS screens
+```
+
+- `master-qa.mjs` — per route: the API actions the screen calls, whether a "Loading…" placeholder is
+  still on screen after the wait, JS errors with file:line, row counts, render time.
+- `cms-audit.mjs` — the same, plus for every API call the response `ok`, its top-level keys and the
+  size of every array in it, so a screen that renders with empty data is visible at a glance.
+- Both pair requests with responses by request identity and ignore the background badge polls
+  (`leads_count`, `appr_count`, `chat_list`).
+
+## /api/builder.php in the preview
+
+The site builder and the Theme screen talk to `/api/builder.php`, not `admin.php`. The stub routes
+that endpoint to `build_builder()` in `preview_fixtures.py` (`status`, `pages`, `load`, `save`,
+`page_new`, `theme`, `theme_get`, `blocks_*`, `backups`, `restore`, `media`, `upload`) and reports
+`loggedIn: true` when the signed-in account may edit, so `/admin/#/builder/<page>` opens the real
+editor instead of its password screen. Static front-end JSON the app fetches at runtime
+(`/builder/vendor/icons.json`, `/assets/data/*`, `/assets/announce.json`) is served; data JSON stays
+blocked.
+
 ## Preview sign-in accounts (role testing)
 
 The preview stub has **no built-in account** — every account comes from the environment, so no

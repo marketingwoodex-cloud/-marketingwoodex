@@ -437,3 +437,100 @@ def build(action, data):
     if action in ('backups',):
         return {'ok': True, 'backups': [{'id': 1, 'at': ts(-1, '02:00'), 'size': 4_200_000, 'kind': 'auto'}]}
     return None
+
+
+# ---------------------------------------------------------------------------
+# /api/builder.php — the site builder + theme endpoint (separate from admin.php).
+# The Pages & builder, Section library, Header & footer, Hero slides and Theme
+# screens all talk to this one. Before this block the stub returned `empty()`
+# for all of it, so those screens rendered blank.
+# ---------------------------------------------------------------------------
+
+SITE_THEME = {
+    '--wx-navy': '#0c1628', '--wx-ink': '#12151c', '--wx-muted': '#6a6560',
+    '--wx-paper': '#ffffff', '--wx-surface': '#f4efe7', '--wx-beige': '#f4efe7',
+    '--wx-accent': '#b8956a', '--wx-wood': '#b8956a', '--wx-cream': '#f4efe7',
+    '--wx-preset': 'studio-classic', '--wx-font': 'Plus Jakarta Sans',
+    '--wx-font-head': 'Plus Jakarta Sans', '--wx-h1': '56px', '--wx-h2': '38px',
+    '--wx-h3': '24px', '--wx-c1': '#0c1628', '--wx-c2': '#b8956a', '--wx-c3': '#f4efe7',
+    '--wx-c4': '#12151c', '--wx-section': '88px', '--wx-container': '1200px',
+    '--wx-btn-radius': '10px', '--wx-r-lg': '18px', '--wx-base-size': '16px',
+}
+
+PAGE_HTML = """<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Preview page</title></head>
+<body>
+<section class="hero"><h1>Turnkey interiors in Lahore</h1>
+  <p>Design, fit-out and furniture under one roof.</p>
+  <a class="btn" href="#contact">Book a consultation</a></section>
+<section class="cards"><article><h2>Interior design</h2><p>Concept to handover.</p></article>
+  <article><h2>Fit-out</h2><p>Civil, ceiling, electrical.</p></article></section>
+</body>
+</html>"""
+
+SECTION_LIBRARY = [
+    {'id': 'hero-split', 'name': 'Hero — split image', 'kind': 'hero', 'used': 3,
+     'html': '<section class="hero"><h1>{{title}}</h1><p>{{lead}}</p></section>'},
+    {'id': 'cta-band', 'name': 'CTA band', 'kind': 'cta', 'used': 7,
+     'html': '<section class="cta"><h2>{{title}}</h2><a class="btn" href="#contact">Talk to us</a></section>'},
+    {'id': 'cards-3', 'name': 'Three cards', 'kind': 'cards', 'used': 5,
+     'html': '<section class="cards"><article><h2>{{a}}</h2></article><article><h2>{{b}}</h2></article><article><h2>{{c}}</h2></article></section>'},
+    {'id': 'faq-acc', 'name': 'FAQ accordion', 'kind': 'faq', 'used': 2,
+     'html': '<section class="faq"><details><summary>{{q}}</summary><p>{{a}}</p></details></section>'},
+]
+
+
+def build_builder(action, data):
+    """Answers for /api/builder.php. Same shape as api/builder.php."""
+    d = data or {}
+    if action == 'pages':
+        return {'ok': True, 'pages': [{'path': p['path'], 'url': p['url'], 'title': p['title'],
+                                       'mtime': p['mtime'], 'size': p['size'], 'score': p.get('score', 0),
+                                       'words': p.get('words', 0)} for p in PAGES]}
+    if action == 'load':
+        rel = str(d.get('path') or 'index.html')
+        p = next((x for x in PAGES if x['path'] == rel), None)
+        if not p:
+            return {'ok': False, 'error': 'Page not found in preview'}
+        return {'ok': True, 'path': rel, 'title': p['title'], 'url': p['url'], 'html': PAGE_HTML,
+                'mtime': p['mtime'], 'size': p['size'], 'ro': False}
+    if action == 'save':
+        return {'ok': True, 'mtime': epoch(0, time.strftime('%H:%M')), 'size': len(PAGE_HTML), 'saved': True}
+    if action == 'page_new':
+        slug = str(d.get('slug') or 'new-page')
+        folder = str(d.get('folder') or '').strip('/')
+        rel = (folder + '/' if folder else '') + slug + '/index.html'
+        return {'ok': True, 'path': rel, 'url': '/' + rel.replace('/index.html', ''), 'created': True}
+    if action in ('theme', 'theme_get'):
+        return {'ok': True, 'vars': dict(SITE_THEME), 'preset': SITE_THEME['--wx-preset'],
+                'fonts': [{'id': 'jakarta', 'label': 'Plus Jakarta Sans'},
+                          {'id': 'inter', 'label': 'Inter'},
+                          {'id': 'manrope', 'label': 'Manrope'}], 'saved': True}
+    if action == 'blocks_list':
+        return {'ok': True, 'blocks': [dict(b) for b in SECTION_LIBRARY], 'total': len(SECTION_LIBRARY)}
+    if action == 'blocks_usage':
+        return {'ok': True, 'usage': {b['id']: b['used'] for b in SECTION_LIBRARY},
+                'pages': [{'path': 'index.html', 'blocks': ['hero-split', 'cards-3']},
+                          {'path': 'portfolio.html', 'blocks': ['cta-band']}]}
+    if action == 'blocks_save':
+        return {'ok': True, 'id': str(d.get('id') or 'custom-block'), 'saved': True}
+    if action == 'blocks_delete':
+        return {'ok': True}
+    if action in ('backups', 'backup_list'):
+        return {'ok': True, 'backups': [{'id': 'index-2026-10-11-0200', 'path': 'index.html', 'at': ts(-1, '02:00'),
+                                         'size': 48210, 'kind': 'auto'},
+                                        {'id': 'portfolio-2026-10-10-0200', 'path': 'portfolio.html', 'at': ts(-2, '02:00'),
+                                         'size': 31140, 'kind': 'auto'}],
+                'file': 'index.html', 'size': 48210}
+    if action == 'backup_get':
+        return {'ok': True, 'path': str(d.get('path') or 'index.html'), 'html': PAGE_HTML,
+                'mtime': epoch(-1), 'at': ts(-1, '02:00')}
+    if action == 'restore':
+        return {'ok': True, 'path': str(d.get('path') or 'index.html'), 'restored': True}
+    if action == 'media':
+        return {'ok': True, 'media': [{'url': f['url'], 'name': f['name'], 'size': f['size'],
+                                       'w': f['w'], 'h': f['h'], 'alt': f['alt']} for f in MEDIA_FILES]}
+    if action == 'upload':
+        return {'ok': True, 'url': '/assets/uploads/preview-upload.webp', 'width': 1600, 'height': 1067}
+    return None

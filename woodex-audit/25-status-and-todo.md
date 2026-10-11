@@ -52,6 +52,25 @@ Details: `deliverables/ADMIN-LAYOUT-BATCH-2026-10-12.md`.
 - Gate: contrast sweep 0 below AA both themes (58 screens), `node --check` 65/65,
   `regression_static.py` 15/15, KPI grid clean at 390/768/1024/1440 with no overflow.
 
+## A4. Website & CMS master audit (2026-10-12, fifth) — every route, every call
+
+Tool: `tools/qa-p29/cms-audit.mjs` (23 screens of the Website & CMS area) + `master-qa.mjs` (all 58).
+
+- Result: **23/23 CMS screens render with data, 0 JS errors, 0 failing API calls**; all 58 routes
+  clean in the wider sweep.
+- The audit exposed two gaps in the preview harness and one real app bug:
+  1. `/api/builder.php` was not answered at all, so Pages & builder, Section library, Header &
+     footer, Hero slides and Theme rendered blank or as "No builder access" (the stub never issued a
+     builder token). Both fixed in the stub.
+  2. `admin-appr.js` inserted the approvals card into a view that a route change had already
+     replaced (the dashboard template sits in the dashboard node, but the approvals card is inserted
+     into `#dx`/the view container) → uncaught `insertBefore` of null. Now guarded (AD-32).
+  3. `builder/vendor/icons.json` was blocked as a data file by the preview server; static front-end
+     JSON is now served while `_private`/API JSON stays blocked.
+- Coverage measured: the CMS-area PHP implements **121 actions**; visiting the 23 screens exercises
+  **19** of them. The remaining **102** are write/flow actions (save, delete, import, scan, upload,
+  restore, reorder, publish) that need a click-driven flow audit — see the pending list.
+
 ## B. What is still pending
 
 ### B1. Design and UI/UX (replica in progress)

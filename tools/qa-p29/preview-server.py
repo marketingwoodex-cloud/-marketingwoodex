@@ -1,6 +1,7 @@
 # Filtered static preview for the pro site, with a PREVIEW-ONLY API stub.
 # - Serves public front-end files only (blocks PHP source, api/, private/db/template folders, SQL, env, dotfiles, docs).
 # - POST /api/admin.php and /api/builder.php are answered by this stub (no PHP, no database, no real accounts).
+# - /api/builder.php (site builder + theme) is answered by build_builder() in preview_fixtures.py.
 # - Every action gets either a handler here, a shape from preview_fixtures.py, or an empty-but-valid answer;
 #   a screen that hangs on "Loading…" means its action has no fixture yet — add one to preview_fixtures.py.
 #   Login accepts ONLY accounts set by the environment (no built-in account, no values in this file):
@@ -13,7 +14,7 @@
 #   and the role gating in the sidebar can be checked by signing in as each role.
 import http.server, os, sys, json, urllib.parse, time
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from preview_fixtures import build as build_fixture  # preview-only sample answers (see that file)
+from preview_fixtures import build as build_fixture, build_builder  # preview-only sample answers (see that file)
 ROOT = sys.argv[1]
 PORT = int(sys.argv[2])
 PREVIEW_EMAIL = os.environ.get('PREVIEW_EMAIL', '').strip().lower()
@@ -79,6 +80,12 @@ def pub(a):
 def caps_of(a):
     return {'label': ROLE_LABELS.get(a['role'], a['role'].title()),
             'groups': ROLE_GROUPS.get(a['role'], ['self']), 'perms': []}
+
+
+def builder_token(a):
+    """api/admin.php gives a builder token to owner/admin/editor only; the builder screens and
+    Hero slides show 'No builder access' without it. Same rule here."""
+    return 'preview-builder-token' if a['role'] in BUILDER_ROLES else None
 BLOCK_DIRS = {'api', '_private', '_database', '_templates', '_scripts', 'tools', 'node_modules', '.git'}
 BLOCK_EXT = {'.php', '.sql', '.env', '.md', '.json', '.lock', '.yaml', '.yml', '.ini', '.bak', '.log', '.dist', '.sh', '.bat', '.tar', '.zip'}
 BLOCK_NAMES = set()  # admin-tg.js no longer holds a token literal (C-1), so the Telegram page can be previewed
@@ -167,6 +174,10 @@ class H(http.server.SimpleHTTPRequestHandler):
     def _blocked(self, p):
         parts = [x for x in urllib.parse.unquote(p).split('/') if x]
         if any(x.startswith('.') for x in parts): return True
+        # Static data assets the front-end and the builder fetch at runtime (icon list, client logos,
+        # announcement). Private/data JSON stays blocked below.
+        STATIC_JSON = ('/builder/vendor/', '/assets/data/', '/assets/announce.json')
+        if p.endswith('.json') and any(p.startswith(x) for x in STATIC_JSON): return False
         if any(x in BLOCK_DIRS for x in parts): return True
         name = parts[-1] if parts else ''
         if name in BLOCK_NAMES: return True
@@ -188,6 +199,13 @@ class H(http.server.SimpleHTTPRequestHandler):
         if action == 'status':
             st = {'ok': True, 'needsSetup': False, 'dbError': False, 'driver': 'preview (no database)', 'builderLocked': False}
             if me: st['user'] = pub(me)
+            if path.endswith('/builder.php'):
+                # The builder boots on this: loggedIn=true skips its own password screen.
+                # A valid X-WX-CSRF builder token (or an admin session that can edit) counts.
+                csrf = self.headers.get('X-WX-CSRF') or ''
+                st['adminOnly'] = True
+                st['loggedIn'] = bool(me and csrf and builder_token(me)) or bool(me and builder_token(me))
+                if me: st['user'] = pub(me)
             return self._json(200, st)
         if action == 'login':
             if not ACCOUNTS:
@@ -196,13 +214,13 @@ class H(http.server.SimpleHTTPRequestHandler):
             acc = BY_EMAIL.get(em)
             if acc and data.get('password') == acc['password']:
                 return self._json(200, {'ok': True, 'token': acc['token'], 'user': pub(acc), 'caps': caps_of(acc),
-                                        'builderToken': None})
+                                        'builderToken': builder_token(acc)})
             if acc:
                 return self._json(200, {'ok': False, 'error': 'Wrong password. Check the preview password you set on the server.'})
             return self._json(200, {'ok': False, 'error': 'Preview sign-in only accepts the accounts set on the server. The live database is not connected in this preview.'})
         if action == 'me':
             if me:
-                return self._json(200, {'ok': True, 'user': pub(me), 'caps': caps_of(me), 'builderToken': None})
+                return self._json(200, {'ok': True, 'user': pub(me), 'caps': caps_of(me), 'builderToken': builder_token(me)})
             return self._json(200, {'ok': False, 'error': 'Not signed in'})
         if me is None and action not in ('password',):
             return self._json(200, {'ok': False, 'error': 'Not signed in'})
@@ -373,7 +391,8 @@ class H(http.server.SimpleHTTPRequestHandler):
         if action == 'leads_count':
             return self._json(200, {'ok': True, 'total': len(PREVIEW_LEADS),
                                     'new': sum(1 for l in PREVIEW_LEADS if l['stage'] == 'new')})
-        fx = build_fixture(action, data)
+        is_builder = path.endswith('/builder.php')
+        fx = build_builder(action, data) if is_builder else build_fixture(action, data)
         if fx is not None:
             return self._json(200, fx)
         return self._json(200, empty())

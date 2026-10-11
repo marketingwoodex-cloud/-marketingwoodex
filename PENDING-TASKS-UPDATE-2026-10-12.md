@@ -70,6 +70,16 @@ Options 1–6 there need owner approval; visibility (C-6) is still refused from 
 
 Reproduce: `cd tools/qa-p29 && PREVIEW_EMAIL=… PREVIEW_PASS=… node master-qa.mjs http://127.0.0.1:8080 /tmp/mq`
 
+## Fifth batch (2026-10-12) — Website & CMS master audit
+
+| ID | Was | Now | Evidence |
+|---|---|---|---|
+| AUDIT-1 (new) | The CMS area had never been audited screen-by-screen | **DONE — 23/23 clean** | `tools/qa-p29/cms-audit.mjs`: every screen renders with data, 0 JS errors, 0 failing calls; all 58 routes clean in `master-qa.mjs` |
+| QA-2 (new) | `/api/builder.php` was unanswered in the preview → Pages & builder, Library, Header & footer, Hero slides, Theme blank or "No builder access" | **FIXED** | Stub answers the builder endpoint and issues a builder token to Master/Manager/Developer, matching `api/admin.php` |
+| AD-32 (new) | Approvals card crashed when a route change landed mid-request | **FIXED** | `admin-appr.js` guards the insert; `?v=ui-6` |
+| U1.4 (new) | Sidebar: grey scrollbar rail + washed-out labels | **FIXED** (commit `82221bc`) | Measured: no thin bars, labels `rgb(55,65,81)`, active row brand blue, 40px rows, 8px radius, 12px gap; screenshots at 1280/1440/2560 |
+| FLOW-1 (new) | 102 CMS-area write actions never exercised | **OPEN — next block** | Coverage table: 121 implemented, 19 exercised by navigation; the rest need a click-driven flow audit |
+
 ## Changed status elsewhere
 
 | ID | Was | Now | Note |

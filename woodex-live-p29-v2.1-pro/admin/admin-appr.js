@@ -125,6 +125,7 @@
     api("appr_count").then(function (j) {
       if (!j.ok || !j.pending) return; var dx = $("#dx") || el; var d = document.createElement("a"); d.href = "#/approvals"; d.className = "card"; d.style.cssText = "display:flex;gap:12px;align-items:center;margin-bottom:14px;text-decoration:none;color:inherit;border-left:4px solid #b8956a;padding:14px 16px";
       d.innerHTML = ic("shield-check") + "<div><b>" + j.pending + (j.master ? " change" + (j.pending > 1 ? "s" : "") + " waiting for your approval" : " of your changes waiting for the Master") + '</b><br><small class="muted">' + (j.master ? "Review and approve or reject." : "You'll be notified when they are approved.") + "</small></div>";
+      if (!dx.parentNode) return; /* the view was replaced while this was in flight (route change) — AD-32 */
       dx.parentNode.insertBefore(d, dx);
     });
   }
