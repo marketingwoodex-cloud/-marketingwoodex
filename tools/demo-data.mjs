@@ -1,0 +1,643 @@
+/**
+ * tools/demo-data.mjs — the payloads behind the browser demo.
+ *
+ * WHY THIS EXISTS: the admin is a PHP + MySQL application, and the review preview is a plain static
+ * file server, so every POST to /api/admin.php comes back "501 Unsupported method" — which is the
+ * error on the sign-in screen. Nothing in the application is wrong; there is simply no PHP to run
+ * it. This module answers the Admin API in JavaScript instead, so the real, untouched
+ * admin/index.html can sign in and every screen can be walked through without a server at all.
+ *
+ * WHAT IT IS NOT: a database. The rows below are hand-written Woodex-shaped demo data (Lahore
+ * rates, the 12 office codes, WDX/NODE numbering) held in memory for the life of the process.
+ * Writes are accepted and reported as saved but are not persisted — reload and the demo starts
+ * over. Every screen states that in the banner the server injects, and /wx-check.php is answered by
+ * this module too, saying plainly that it is demo mode.
+ *
+ * Shapes mirror the real actions: where a fixture exists below it was written from the `out([...])`
+ * call in the owning api/*-lib.php file, so the screens render their real markup rather than an
+ * empty shell.
+ */
+
+export const DEMO = {
+  email: "demo@woodex.pk",
+  password: "Demo@Woodex2026",
+  token: "demo.token.3f9a1c7b2e5d4088",
+  builderToken: "demo.builder.88c1f0",
+  user: {
+    id: 1, name: "Demo Login", email: "demo@woodex.pk", role: "owner", roleLabel: "Master",
+    perms: ["sales", "conversations", "updates", "broadcast", "ai", "website", "settings"],
+    active: true, created_at: "2026-10-11 09:00:00", last_login: "2026-10-11 12:04:00",
+  },
+};
+
+const NODES = ["LHR", "ISB", "KHI", "RWP", "FSD", "GRW", "MUX", "PSH", "SKT", "BWP", "QTA", "HYD"];
+const CATEGORIES = {
+  board: "Board & raw material", hardware: "Hardware & fittings", polish: "Polish, paint & adhesive",
+  glass: "Glass, mirrors & acrylic", transport: "Transport, fuel & loading", wages: "Site labour (daily wages)",
+  workshop: "Workshop & machine labour", tools: "Machinery, tools & blades", rent: "Rent — workshop & showroom",
+  utilities: "Electricity, gas & water", phone: "Internet & phone", marketing: "Marketing & advertising",
+  software: "Software & subscriptions", taxes: "Taxes & government fees", professional: "Professional fees",
+  repairs: "Repairs & maintenance", travel: "Travel & food", misc: "Miscellaneous",
+};
+const PAY = { cash: "Cash", bank: "Bank transfer", cheque: "Cheque", jazzcash: "JazzCash", easypaisa: "Easypaisa", card: "Card", credit: "On credit" };
+const EXP_STATUS = { paid: "Paid", pending: "Pending approval", credit: "On credit" };
+const STAGES = ["new", "contacted", "visit", "quote", "hold", "won", "lost"];
+
+/* ------------------------------------------------------------------ expenses (mirrors exp_*) */
+const EXPENSES = [
+  { id: 41, spent_on: "2026-10-03", category: "board", node: "LHR", vendor: "Pak Boards, Gulberg", detail: "18 mm MDF 14 sheets + 6 mm backing", amount: 96500, tax_pct: 18, tax_amt: 17370, wht_amt: 0, paid_by: "bank", status: "paid", project: "NODE-26-014", receipt: "/assets/img/clients/total-parco.webp", recurring: 0, note: "Rate held from September", created_by: "Demo Login" },
+  { id: 42, spent_on: "2026-10-05", category: "wages", node: "RWP", vendor: "Site crew — 6 men", detail: "Wardrobe carcass fitting, 3 days", amount: 54000, tax_pct: 0, tax_amt: 0, wht_amt: 0, paid_by: "cash", status: "paid", project: "NODE-26-011", receipt: "", recurring: 0, note: "", created_by: "Demo Login" },
+  { id: 43, spent_on: "2026-10-07", category: "transport", node: "KHI", vendor: "Al-Noor Transport", detail: "1.5 ton, 2 loads to site", amount: 22500, tax_pct: 5, tax_amt: 1125, wht_amt: 0, paid_by: "credit", status: "pending", project: "", receipt: "", recurring: 0, note: "Invoice awaited", created_by: "Demo Login" },
+  { id: 44, spent_on: "2026-10-01", category: "rent", node: "LHR", vendor: "Landlord — workshop, Band Road", detail: "October rent, workshop + store", amount: 185000, tax_pct: 0, tax_amt: 0, wht_amt: 0, paid_by: "cheque", status: "paid", project: "", receipt: "", recurring: 1, note: "5 % annual increase due in March", created_by: "Demo Login" },
+  { id: 45, spent_on: "2026-10-02", category: "utilities", node: "LHR", vendor: "LESCO", detail: "September bill, workshop meter 2", amount: 78200, tax_pct: 0, tax_amt: 0, wht_amt: 0, paid_by: "jazzcash", status: "paid", project: "", receipt: "", recurring: 1, note: "", created_by: "Demo Login" },
+  { id: 46, spent_on: "2026-10-08", category: "hardware", node: "LHR", vendor: "Hettich dealer, Hall Road", detail: "Soft-close hinges 120 + tandem boxes 40", amount: 138500, tax_pct: 18, tax_amt: 24930, wht_amt: 0, paid_by: "bank", status: "paid", project: "NODE-26-014", receipt: "", recurring: 0, note: "Warranty card in the file", created_by: "Demo Login" },
+  { id: 47, spent_on: "2026-10-09", category: "polish", node: "ISB", vendor: "Kashmir Paints", detail: "Matt lacquer 40 L + sealer 20 L", amount: 61500, tax_pct: 18, tax_amt: 11070, wht_amt: 0, paid_by: "cash", status: "paid", project: "NODE-26-019", receipt: "", recurring: 0, note: "", created_by: "Demo Login" },
+  { id: 48, spent_on: "2026-10-10", category: "marketing", node: "LHR", vendor: "Meta Ads", detail: "October kitchen campaign", amount: 45000, tax_pct: 0, tax_amt: 0, wht_amt: 0, paid_by: "card", status: "pending", project: "", receipt: "", recurring: 0, note: "Half of the monthly budget", created_by: "Demo Login" },
+  { id: 49, spent_on: "2026-10-04", category: "tools", node: "LHR", vendor: "Woodworking Machines, Ravi Road", detail: "Panel blades 4 + edge banding cutter", amount: 34500, tax_pct: 18, tax_amt: 6210, wht_amt: 0, paid_by: "cash", status: "paid", project: "", receipt: "", recurring: 0, note: "", created_by: "Demo Login" },
+  { id: 50, spent_on: "2026-10-06", category: "professional", node: "LHR", vendor: "Rizvi & Co, Chartered Accountants", detail: "September filing + sales tax return", amount: 25000, tax_pct: 0, tax_amt: 0, wht_amt: 2500, paid_by: "bank", status: "paid", project: "", receipt: "", recurring: 1, note: "Withholding certificate received", created_by: "Demo Login" },
+];
+const CAPS = { rent: 185000, utilities: 95000, wages: 480000, transport: 140000, marketing: 120000, software: 25000, board: 400000, hardware: 300000 };
+
+function expRow(r) {
+  return Object.assign({}, r, {
+    cat_label: CATEGORIES[r.category] || r.category,
+    pay_label: PAY[r.paid_by] || r.paid_by,
+    total: Math.round((r.amount + r.tax_amt) * 100) / 100,
+    created_at: r.spent_on + " 10:0" + (r.id % 9) + ":00",
+  });
+}
+function monthRange(month) {
+  const m = /^\d{4}-\d{2}$/.test(month || "") ? month : "2026-10";
+  const [y, mo] = m.split("-").map(Number);
+  const last = new Date(Date.UTC(y, mo, 0)).getUTCDate();
+  return { month: m, from: m + "-01", to: m + "-" + String(last).padStart(2, "0"), days: last };
+}
+function expList(body) {
+  const { month, from, to } = monthRange(body.month);
+  let rows = EXPENSES.map(expRow);
+  if (body.cat) rows = rows.filter(r => r.category === body.cat);
+  if (body.node) rows = rows.filter(r => r.node === body.node);
+  if (body.status) rows = rows.filter(r => r.status === body.status);
+  if (body.pay) rows = rows.filter(r => r.paid_by === body.pay);
+  if (body.q) { const q = String(body.q).toLowerCase(); rows = rows.filter(r => (r.vendor + r.detail + r.project + r.note).toLowerCase().includes(q)); }
+  rows.sort((a, b) => (a.spent_on < b.spent_on ? 1 : -1));
+  const amount = rows.reduce((a, r) => a + r.amount, 0);
+  const tax = rows.reduce((a, r) => a + r.tax_amt, 0);
+  return {
+    ok: true, items: rows, count: rows.length,
+    totals: { amount: round2(amount), tax: round2(tax), with_tax: round2(amount + tax) },
+    range: { month, from, to },
+    meta: { categories: CATEGORIES, pay: PAY, status: EXP_STATUS, nodes: NODES },
+  };
+}
+function expKpis(body) {
+  const { month, from, to, days } = monthRange(body.month);
+  const inMonth = EXPENSES.filter(r => r.spent_on >= from && r.spent_on <= to);
+  const sum = inMonth.reduce((a, r) => a + r.amount, 0);
+  const tax = inMonth.reduce((a, r) => a + r.tax_amt, 0);
+  const wht = inMonth.reduce((a, r) => a + r.wht_amt, 0);
+  const byCat = Object.entries(CATEGORIES).map(([key, label]) => {
+    const rs = inMonth.filter(r => r.category === key);
+    return { key, label, n: rs.length, amount: round2(rs.reduce((a, r) => a + r.amount, 0)), tax: round2(rs.reduce((a, r) => a + r.tax_amt, 0)) };
+  }).filter(c => c.n).sort((a, b) => b.amount - a.amount);
+  const byNode = NODES.map(key => {
+    const rs = inMonth.filter(r => r.node === key);
+    return { key, n: rs.length, amount: round2(rs.reduce((a, r) => a + r.amount, 0)) };
+  }).filter(x => x.n).sort((a, b) => b.amount - a.amount);
+  const st = s => {
+    const rs = inMonth.filter(r => r.status === s);
+    return { n: rs.length, value: round2(rs.reduce((a, r) => a + r.amount + r.tax_amt, 0)) };
+  };
+  const fixed = inMonth.filter(r => r.recurring);
+  const day = 11;
+  const avg = sum / day;
+  return {
+    ok: true,
+    kpis: {
+      month, from, to, days, day, count: inMonth.length, sum: round2(sum), tax: round2(tax), wht: round2(wht),
+      with_tax: round2(sum + tax), pending: st("pending"), credit: st("credit"), paid: st("paid"),
+      recurring: { value: round2(fixed.reduce((a, r) => a + r.amount, 0)), n: fixed.length },
+      avg_day: round2(avg), projected: round2(avg * days),
+      by_cat: byCat, by_node: byNode, caps: CAPS, top: byCat[0] || null,
+      over_budget: byCat.filter(c => CAPS[c.key] && c.amount > CAPS[c.key]),
+      meta: { categories: CATEGORIES, pay: PAY, status: EXP_STATUS, nodes: NODES },
+    },
+  };
+}
+const round2 = n => Math.round(n * 100) / 100;
+
+/* ------------------------------------------------------------------ documents (mirrors bd_*) */
+const QUOTES = [
+  { id: 61, no: "WDX-26-041", status: "proposal", date: "2026-10-04", version: 1, option: "", total: 486500, client: { name: "Mr. Ahsan Raza", phone: "0300 4112233" }, project: "Kitchen — DHA Phase 6", kind: "kitchen", sectionCount: 4 },
+  { id: 62, no: "WDX-26-042", status: "done", date: "2026-10-06", version: 2, option: "B", total: 742000, client: { name: "Mrs. Sadia Khan", phone: "0321 8899770" }, project: "Wardrobes — Bahria Orchard", kind: "wardrobe", sectionCount: 5 },
+  { id: 63, no: "WDX-26-043", status: "pending", date: "2026-10-09", version: 1, option: "", total: 318750, client: { name: "Faletti's Hotel", phone: "042 111223344" }, project: "Office fit-out — Gulberg III", kind: "office", sectionCount: 6 },
+  { id: 64, no: "WDX-26-044", status: "proposal", date: "2026-10-10", version: 1, option: "", total: 1298000, client: { name: "Mr. Bilal Tariq", phone: "0333 7654321" }, project: "Full house interior — 1 kanal, Phase 5", kind: "interior", sectionCount: 8 },
+];
+const INVOICES = [
+  { id: 71, no: "INV-26-061", date: "2026-10-02", due_date: "2026-10-12", total: 291900, paid: 175100, balance: 116800, payStatus: "partial", overdue: false, client: { name: "Mr. Ahsan Raza" }, quote_id: 61 },
+  { id: 72, no: "INV-26-062", date: "2026-10-05", due_date: "2026-10-05", total: 445200, paid: 0, balance: 445200, payStatus: "unpaid", overdue: true, client: { name: "Mrs. Sadia Khan" }, quote_id: 62 },
+  { id: 73, no: "INV-26-063", date: "2026-10-08", due_date: "2026-10-20", total: 191250, paid: 191250, balance: 0, payStatus: "paid", overdue: false, client: { name: "Faletti's Hotel" }, quote_id: 63 },
+];
+const MILESTONES = [
+  { id: 81, project_id: 1, pcode: "NODE-26-014", ptitle: "Kitchen + dining, DHA Phase 6", node: "LHR", seq: 10, name: "Advance on work order", kind: "payment", weight_pct: 40, amount: 194600, due_date: "2026-10-04", status: "approved", approved_by: "Demo Login", done_at: "2026-10-04 15:20:00" },
+  { id: 82, project_id: 1, pcode: "NODE-26-014", ptitle: "Kitchen + dining, DHA Phase 6", node: "LHR", seq: 20, name: "Carcass installation", kind: "progress", weight_pct: 30, amount: 145950, due_date: "2026-10-14", status: "pending", approved_by: "", done_at: "" },
+  { id: 83, project_id: 2, pcode: "NODE-26-011", ptitle: "Wardrobes, Bahria Orchard", node: "RWP", seq: 10, name: "Advance on work order", kind: "payment", weight_pct: 40, amount: 296800, due_date: "2026-10-06", status: "approved", approved_by: "Demo Login", done_at: "2026-10-06 11:05:00" },
+  { id: 84, project_id: 3, pcode: "NODE-26-019", ptitle: "Office fit-out, Gulberg III", node: "LHR", seq: 10, name: "Site survey & drawings", kind: "progress", weight_pct: 10, amount: 31875, due_date: "2026-10-18", status: "pending", approved_by: "", done_at: "" },
+];
+const LEADS = [
+  { id: 101, created_at: "2026-10-02 10:12:00", source: "website", page: "/kitchens/", name: "Mr. Ahsan Raza", phone: "0300 4112233", email: "ahsan.raza@gmail.com", service: "Kitchen design", stage: "quote", value: 486500, assigned_to: 1, assigned_name: "Demo Login", followup: "2026-10-12", node: "LHR", message: "L-shape kitchen, 22 running ft, wants soft-close and quartz top.", notes: [] },
+  { id: 102, created_at: "2026-10-04 16:40:00", source: "whatsapp", page: "", name: "Mrs. Sadia Khan", phone: "0321 8899770", email: "", service: "Wardrobe & storage", stage: "visit", value: 742000, assigned_to: 1, assigned_name: "Demo Login", followup: "2026-10-13", node: "RWP", message: "Three bedrooms, wants measurements this week.", notes: [] },
+  { id: 103, created_at: "2026-10-07 09:25:00", source: "google", page: "/office-fit-out/", name: "Faletti's Hotel", phone: "042 111223344", email: "projects@falettis.com", service: "Office fit-out", stage: "new", value: 318750, assigned_to: 1, assigned_name: "Demo Login", followup: "2026-10-11", node: "LHR", message: "Admin wing, 14 workstations and a reception desk.", notes: [] },
+  { id: 104, created_at: "2026-10-09 12:05:00", source: "referral", page: "", name: "Mr. Bilal Tariq", phone: "0333 7654321", email: "bilal.tariq@outlook.com", service: "Complete home redesign", stage: "contacted", value: 1298000, assigned_to: 1, assigned_name: "Demo Login", followup: "2026-10-15", node: "LHR", message: "1 kanal in Phase 5, referred by Mr. Ahsan.", notes: [] },
+  { id: 105, created_at: "2026-10-10 18:30:00", source: "facebook", page: "/wardrobes/", name: "Ms. Hira Nadeem", phone: "0345 2233445", email: "", service: "Wardrobe & storage", stage: "new", value: 265000, assigned_to: 1, assigned_name: "Demo Login", followup: "2026-10-14", node: "KHI", message: "Walk-in closet, 8 ft wall.", notes: [] },
+];
+const CLIENTS = [
+  { id: 1, name: "Mr. Ahsan Raza", phone: "0300 4112233", email: "ahsan.raza@gmail.com", company: "", city: "Lahore", stage: "active", source: "website", value: 486500, created_at: "2026-10-02 10:12:00", type: "individual", ltv: 486500, open: 116800, projects: 1 },
+  { id: 2, name: "Mrs. Sadia Khan", phone: "0321 8899770", email: "", company: "", city: "Rawalpindi", stage: "active", source: "whatsapp", value: 742000, created_at: "2026-10-04 16:40:00", type: "individual", ltv: 742000, open: 445200, projects: 1 },
+  { id: 3, name: "Faletti's Hotel", phone: "042 111223344", email: "projects@falettis.com", company: "Faletti's Hotel (Pvt) Ltd", city: "Lahore", stage: "active", source: "google", value: 318750, created_at: "2026-10-07 09:25:00", type: "company", ltv: 318750, open: 0, projects: 1 },
+];
+
+/* ------------------------------------------------------------------ payload router */
+const FIXTURES = {
+  /* --- auth ----------------------------------------------------------------------------- */
+  status: (b, token) => token === DEMO.token
+    ? { ok: true, user: DEMO.user, setup: false, needsSetup: false, dbError: false, driver: "demo", installer: false, builderLocked: false }
+    : { ok: true, user: null, setup: false, needsSetup: false, dbError: false, driver: "demo", installer: false, builderLocked: false },
+  me: () => ({ ok: true, token: DEMO.token, builderToken: DEMO.builderToken, user: DEMO.user }),
+  login: b => (String(b.email || "").trim().toLowerCase() === DEMO.email && String(b.password || "") === DEMO.password)
+    ? { ok: true, token: DEMO.token, builderToken: DEMO.builderToken, user: DEMO.user }
+    : { ok: false, error: "Wrong email or password", status: 401 },
+  login_2fa: () => ({ ok: true, token: DEMO.token, builderToken: DEMO.builderToken, user: DEMO.user }),
+  logout: () => ({ ok: true }),
+  profile: () => ({ ok: true, user: DEMO.user, sessions: [] }),
+  me_get: () => ({ ok: true, me: PROFILE, profile: PROFILE, user: PROFILE, avatars: {}, twofa: false,
+    activity: ACTIONS.slice(0, 5),
+    stats: { leads: 5, quotes: 6, invoices: 3, messages: 9, pages: 4 },
+    security: { totp: false, sessions: 2, lastLogin: { created_at: "2026-10-11 09:00:00", ip: "127.0.0.1" } } }),
+  me_avatars: () => ({ ok: true, avatars: {} }),
+
+  /* --- dashboard ------------------------------------------------------------------------ */
+  dash_data: () => dashData(),
+  dashboard: () => dashData(),
+
+  /* --- expenses ------------------------------------------------------------------------- */
+  exp_list: b => expList(b),
+  exp_kpis: b => expKpis(b),
+  exp_get: b => ({ ok: true, item: expRow(EXPENSES.find(e => e.id === Number(b.id || 41)) || EXPENSES[0]), meta: { categories: CATEGORIES, pay: PAY, status: EXP_STATUS, nodes: NODES } }),
+  exp_save: b => ({ ok: true, item: expRow(Object.assign({ id: Number(b.id) || 51 }, EXPENSES[0], b, { cat_label: undefined })) }),
+  exp_duplicate: () => ({ ok: true, item: expRow(EXPENSES[0]) }),
+  exp_del: b => ({ ok: true, id: Number(b.id) || 0 }),
+  exp_budget_save: b => expKpis(b),
+  exp_recurring_copy: b => ({ ok: true, added: 3, skipped: 0, from: "2026-09", month: monthRange(b.month).month, kpis: expKpis(b).kpis }),
+
+  /* --- document packs ------------------------------------------------------------------- */
+  bd_types: () => {
+    const t = [
+      docType("quotes", "Quotations", "file-text", "one row per revision; the newest of a family is what the client holds", QUOTES.length, QUOTES.reduce((a, q) => a + q.total, 0)),
+      docType("invoices", "Invoices & receipts", "receipt", "with paid, balance and overdue state", INVOICES.length, INVOICES.reduce((a, i) => a + i.balance, 0)),
+      docType("milestones", "Progress certificates", "shield-check", "regional milestones with weight and approved-by", MILESTONES.length, MILESTONES.reduce((a, m) => a + m.amount, 0)),
+      docType("expenses", "Expense vouchers", "table", "the cash book, GST and withholding included", EXPENSES.length, EXPENSES.reduce((a, e) => a + e.amount + e.tax_amt, 0)),
+      docType("leads", "Enquiries", "contact", "the enquiry book with stage and value", LEADS.length, LEADS.reduce((a, l) => a + l.value, 0)),
+      docType("activity", "Activity trail", "activity", "who changed what — owner and manager only", 6, 0),
+    ];
+    return { ok: true, period: periodOf(), types: t, total: { documents: t.reduce((a, x) => a + x.documents, 0), value: round2(t.reduce((a, x) => a + (x.value_column ? x.value : 0), 0)) } };
+  },
+  bd_pack: b => {
+    const want = Array.isArray(b.types) && b.types.length ? b.types : ["quotes", "invoices"];
+    const all = FIXTURES.bd_types();
+    const pack = {};
+    want.forEach(k => {
+      const meta = all.types.find(x => x.id === k);
+      if (!meta) return;
+      const built = packFor(k);
+      pack[k] = Object.assign({ label: meta.label, icon: meta.icon }, built);
+    });
+    const docs = Object.values(pack).reduce((a, x) => a + x.documents, 0);
+    const value = Object.values(pack).reduce((a, x) => a + x.value, 0);
+    return { ok: true, period: periodOf(), pack,
+      total: { documents: docs, value: round2(value), undated: 0, types: Object.keys(pack).length, generated_at: "2026-10-11 12:04:00", by: DEMO.user.name } };
+  },
+
+  /* --- national ops --------------------------------------------------------------------- */
+  rgn_boot: () => ({ ok: true, nodes: rgnNodes(), specs: { housing: 5, categories: 10, matrix: 3, layouts: 6 }, meta: { areas: ["5 marla", "10 marla", "1 kanal"], finishes: ["Laminate", "Acrylic", "PU lacquer", "Veneer"] } }),
+  rgn_kpis: () => ({ ok: true, kpis: { projects: 4, open: 3, done: 1, pipeline: 4280000, billed: 2112000, received: 1423150, outstanding: 688850, overdue: 445200, nodes: NODES.length } }),
+  rgn_projects: () => ({ ok: true, projects: [
+    { id: 1, code: "NODE-26-014", node: "LHR", area: "10 marla", title: "Kitchen + dining, DHA Phase 6", stage: "installation", status: "open", covered_sqft: 420, run_length_lm: 18.4, marla: 10, total: 486500, received: 291900, balance: 194600, progress: 62 },
+    { id: 2, code: "NODE-26-011", node: "RWP", area: "10 marla", title: "Wardrobes, Bahria Orchard", stage: "carcass", status: "open", covered_sqft: 640, run_length_lm: 32.2, marla: 10, total: 742000, received: 296800, balance: 445200, progress: 40 },
+    { id: 3, code: "NODE-26-019", node: "LHR", area: "1 kanal", title: "Office fit-out, Gulberg III", stage: "survey", status: "open", covered_sqft: 1180, run_length_lm: 44.0, marla: 20, total: 318750, received: 0, balance: 318750, progress: 10 },
+    { id: 4, code: "NODE-26-007", node: "ISB", area: "5 marla", title: "Bedroom set, F-11", stage: "handover", status: "done", covered_sqft: 260, run_length_lm: 12.5, marla: 5, total: 384500, received: 384500, balance: 0, progress: 100 } ] }),
+  rgn_project_get: b => ({ ok: true, project: FIXTURES.rgn_projects().projects.find(p => p.id === Number(b.id || 1)) || FIXTURES.rgn_projects().projects[0], milestones: MILESTONES }),
+  rgn_milestones: () => ({ ok: true, milestones: MILESTONES }),
+  rgn_ledger: () => ({ ok: true, entries: MILESTONES.filter(m => m.status === "approved").map(m => ({ id: m.id, project: m.pcode, node: m.node, kind: "receipt", label: m.name, amount: m.amount, at: m.done_at || m.due_date })), totals: { in: 491400, out: 311200, net: 180200 } }),
+  rgn_rates: () => ({ ok: true, rates: [
+    { service_key: "kitchen_l", label: "Kitchen — L shape", unit: "running_ft", rate: 24500 },
+    { service_key: "wardrobe_sliding", label: "Wardrobe — sliding", unit: "sqft", rate: 1850 },
+    { service_key: "wardrobe_hinged", label: "Wardrobe — hinged", unit: "sqft", rate: 1550 },
+    { service_key: "office_workstation", label: "Office workstation", unit: "nos", rate: 42500 },
+    { service_key: "board_bf", label: "Board (per board foot)", unit: "bf", rate: 1450 } ] }),
+  rgn_health: () => ({ ok: true, checks: [{ name: "12 node codes registered", ok: true }, { name: "Rate cards current", ok: true }, { name: "Variant bindings complete", ok: true }, { name: "Milestone weights sum to 100", ok: true }, { name: "Ledger reconciled", ok: false, note: "Rs 22,500 pending voucher without invoice" }] }),
+  rgn_reports: () => ({ ok: true, months: ["2026-07", "2026-08", "2026-09", "2026-10"], series: { billed: [1420000, 1685000, 1912000, 2112000], received: [1180000, 1490000, 1704000, 1423150] } }),
+  rgn_leads: () => ({ ok: true, leads: LEADS.map(l => ({ id: l.id, name: l.name, node: l.node, service: l.service, value: l.value, stage: l.stage })) }),
+
+  /* --- CRM ------------------------------------------------------------------------------ */
+  leads_list: () => ({ ok: true, leads: LEADS, stages: STAGES, sources: { website: "Website", whatsapp: "WhatsApp", google: "Google", facebook: "Facebook", referral: "Referral", walkin: "Walk-in", call: "Phone call" }, teamSources: {}, team: [{ id: 1, name: "Demo Login" }], counts: { new: 2, overdue: 0, follow: 3 } }),
+  leads_count: () => ({ ok: true, unread: 2 }),
+  leads_followups: () => ({ ok: true, items: LEADS.filter(l => l.followup).map(l => ({ id: l.id, name: l.name, phone: l.phone, stage: l.stage, next_at: l.followup + " 11:00:00", next_type: "call", value: l.value })) }),
+  lead_activity: b => ({ ok: true, activity: [{ t: "2026-10-10 12:20:00", kind: "call", text: "Called, asked for the revised quartz rate", user: "Demo Login" }], lead: LEADS.find(l => l.id === Number(b.id || 101)) || LEADS[0] }),
+  clients_list: () => ({ ok: true, clients: CLIENTS, counts: { all: CLIENTS.length, active: CLIENTS.length } }),
+  clients_master: () => ({ ok: true, clients: CLIENTS, total: CLIENTS.length, stats: { new30: 3, value: 1547250, open: 562000 } }),
+  client_360: b => ({ ok: true, client: CLIENTS.find(c => c.id === Number(b.id || 1)) || CLIENTS[0], quotes: QUOTES.slice(0, 2), invoices: INVOICES.slice(0, 2), activity: [], notes: [] }),
+  crm_settings: () => ({ ok: true, cfg: { autoAssign: true, followupDays: 3, waConnected: false } }),
+  crm_offers: () => ({ ok: true, offers: [{ id: 1, title: "October kitchen offer", text: "Free 3D visual with every kitchen quote before 31 October.", sent: 42, replies: 7, active: true }] }),
+  s17_meta: () => ({ ok: true,
+    lines: { interior: "Interior works", furniture: "Furniture & joinery", project: "Turnkey project" },
+    clientTypes: { individual: "Individual", company: "Company", developer: "Developer / builder", architect: "Architect / consultant" },
+    stages: STAGES, sources: { website: "Website", whatsapp: "WhatsApp", google: "Google", facebook: "Facebook", referral: "Referral", walkin: "Walk-in" },
+    types: ["Furniture", "Interior", "Project"], ltypes: { new: "New lead", returning: "Returning client", referral: "Referral" }, ctypes: { individual: "Individual", company: "Company", developer: "Developer / builder" }, ptypes: ["Kitchen design", "Wardrobe & storage", "Complete home redesign / refurbishment", "Office fit-out"] }),
+
+  /* --- sales ---------------------------------------------------------------------------- */
+  quotes_list: () => ({ ok: true, quotes: QUOTES }),
+  quote_get: b => ({ ok: true, quote: Object.assign({}, QUOTES.find(q => q.id === Number(b.id || 61)) || QUOTES[0], { sections: [], terms: "50% advance payment with work order.", taxPct: 18, discount: 0, layout: "project" }), family: [], company: COMPANY, invoice: null }),
+  invs_list: () => ({ ok: true, invoices: INVOICES, stats: { billed: 928350, received: 366350, balance: 562000, overdue: 445200 } }),
+  inv_get: b => ({ ok: true, invoice: INVOICES.find(i => i.id === Number(b.id || 71)) || INVOICES[0], payments: [{ amount: 175100, method: "bank", at: "2026-10-02 14:10:00" }], company: COMPANY }),
+  projs_list: () => ({ ok: true, stages: ["survey", "design", "carcass", "installation", "handover"], projects: [
+    { id: 1, code: "NODE-26-014", client: "Mr. Ahsan Raza", title: "Kitchen + dining, DHA Phase 6", stage: "installation", total: 486500, received: 291900, progress: 62 },
+    { id: 2, code: "NODE-26-011", client: "Mrs. Sadia Khan", title: "Wardrobes, Bahria Orchard", stage: "carcass", total: 742000, received: 296800, progress: 40 } ]
+      .map(p => Object.assign(p, { lines: {}, payments: [], notes: [], milestones: MILESTONES.filter(m => m.pcode === p.code) })) }),
+  tpl_list: () => ({ ok: true, templates: [
+    { id: 1, name: "Standard kitchen quotation", kind: "kitchen", notes: "L-shape, per running ft", sections: [
+      { name: "Scope of work", items: [{ desc: "Kitchen carcass in 18 mm moisture-resistant board", qty: 22, unit: "running_ft", rate: 24500 }, { desc: "Quartz counter top, 20 mm", qty: 34, unit: "sqft", rate: 1850 }] },
+      { name: "Terms", items: [{ desc: "50 % advance with work order, balance before installation", qty: 1, unit: "job", rate: 0 }] }] },
+    { id: 2, name: "Wardrobe per sqft", kind: "wardrobe", notes: "Sliding or hinged", sections: [
+      { name: "Scope of work", items: [{ desc: "Wardrobe, 8 ft height, laminate finish", qty: 96, unit: "sqft", rate: 1850 }] }] }] }),
+  company_get: () => ({ ok: true, company: COMPANY }),
+
+  /* --- money, docs, comms --------------------------------------------------------------- */
+  activity: () => ({ ok: true, rows: ACTIONS, items: ACTIONS, total: ACTIONS.length, page: 1, pages: 1 }),
+  users: () => ({ ok: true, users: [DEMO.user, { id: 2, name: "Ar. Bilal Ahmed", email: "bilal@woodex.pk", role: "admin", roleLabel: "Manager", active: true, last_login: "2026-10-11 10:12:00" }, { id: 3, name: "Usman Ali", email: "usman@woodex.pk", role: "sales", roleLabel: "Sales", active: true, last_login: "2026-10-10 18:40:00" }] }),
+  team_list: () => ({ ok: true, team: [{ id: 1, name: "Demo Login" }, { id: 2, name: "Ar. Bilal Ahmed" }, { id: 3, name: "Usman Ali" }] }),
+  media_list: () => ({
+    ok: true, folders: ["Kitchens", "Wardrobes", "Office"], trash: 0,
+    files: MEDIA.map((x, i) => ({ url: x.path, name: x.name, size: x.bytes, bytes: x.bytes, w: x.w, h: x.h, alt: x.alt,
+      folder: i === 3 ? "site" : "uploads", mtime: "2026-10-0" + (3 + i) + " 11:2" + i + ":00",
+      used: i < 3 ? [{ page: "/kitchens/", block: "gallery" }] : [] })),
+    total: MEDIA.length, usage: MEDIA.reduce((a, x) => a + x.bytes, 0), quota: 500_000_000,
+    scan: { ok: 3, warn: 1, bad: 0, at: "2026-10-11 06:00:00", checks: [{ name: "WebP conversion", ok: true }, { name: "Alt text", ok: false, note: "2 images in /portfolio/" }] },
+  }),
+  chat_list: () => ({ ok: true, chats: [
+    { id: 1, name: "Mr. Ahsan Raza", phone: "0300 4112233", last: "Quotation mil gayi, rate thora adjust kar dein?", at: "2026-10-11 11:52:00", unread: 1, channel: "wa" },
+    { id: 2, name: "Mrs. Sadia Khan", phone: "0321 8899770", last: "Measurement Sunday 11 baje.", at: "2026-10-11 10:20:00", unread: 0, channel: "wa" } ] }),
+  chat_get: b => ({ ok: true, chat: { id: Number(b.id || 1), name: "Mr. Ahsan Raza" }, messages: [{ id: 1, from: "them", text: "Assalam o alaikum, kitchen ka rate kya hoga?", at: "2026-10-11 11:40:00" }, { id: 2, from: "me", text: "Walaikum assalam. L-shape ke liye PKR 24,500 per running ft, measurement ke baad final.", at: "2026-10-11 11:44:00" }, { id: 3, from: "them", text: "Quotation mil gayi, rate thora adjust kar dein?", at: "2026-10-11 11:52:00" }] }),
+  arc_feed_list: () => ({ ok: true, posts: [
+    { id: 1, at: "2026-10-11 11:15:00", by: "Demo Login", project: "NODE-26-014", text: "Carcass levelled and fixed, carcass inspection at 4 pm today." },
+    { id: 2, at: "2026-10-10 17:40:00", by: "Ar. Bilal Ahmed", project: "NODE-26-011", text: "Sliding track delivered — 3 m, 2 sets. Will fit tomorrow morning." } ] }),
+  wah_overview: () => ({
+    ok: true, sent: 412, delivered: 398, read: 341, replied: 62, failed: 14, bestHour: "20:00",
+    connected: false, running: 1, camps: 3, cap: 250, week: 118, today: 18, left: 232, lastTick: "2026-10-11 11:55:00",
+    camp: { name: "October kitchen campaign", sent: 412, delivered: 398, read: 341, replied: 62, failed: 14, started: "2026-10-03" },
+    hub: { remindHours: 4, remindChats: true, remindLeads: true, waba: "102938475610293", templates: [], optout: 4, blacklist: [] },
+    wa: { waiting: 2, open: 5, today: 18, unread: 3, staff: [{ name: "Demo Login", chats: 7 }, { name: "Usman Ali", chats: 4 }] },
+    rules: [], templates: [{ id: 1, name: "Quotation sent — thank you", body: "Assalam o alaikum, aap ka quotation bhej diya hai.", status: "approved" }],
+  }),
+  wah_insights: () => ({ ok: true,
+    series: [{ d: "2026-10-05", web: 6, wa: 14, tg: 2, leads: 4, auto: 5 }, { d: "2026-10-06", web: 8, wa: 18, tg: 3, leads: 5, auto: 6 }, { d: "2026-10-07", web: 5, wa: 11, tg: 1, leads: 3, auto: 4 }, { d: "2026-10-08", web: 9, wa: 21, tg: 4, leads: 6, auto: 8 }, { d: "2026-10-09", web: 7, wa: 16, tg: 2, leads: 4, auto: 5 }, { d: "2026-10-10", web: 6, wa: 19, tg: 3, leads: 5, auto: 7 }],
+    totals: { web: 41, wa: 99, tg: 15, leads: 27, auto: 35 }, bestHour: "20:00", winRate: 62,
+    hours: [{ h: 12, n: 14 }, { h: 15, n: 22 }, { h: 18, n: 31 }, { h: 20, n: 38 }, { h: 22, n: 17 }],
+    funnel: { new: 14, contacted: 11, visit: 7, quote: 5, won: 3, lost: 1 },
+    stages: { new: "New", contacted: "Contacted", visit: "Meeting / visit", quote: "Proposal / quotation", won: "Won", lost: "Lost" },
+    optout: 4,
+    flows: [{ id: 1, name: "New lead auto-reply", on: true, wa: true, email: false, fired: 38, replied: 9 },
+            { id: 2, name: "Quotation follow-up", on: true, wa: true, email: true, fired: 19, replied: 6 }],
+    sources: { website: 9, whatsapp: 6, google: 5, facebook: 3, referral: 2, walkin: 1 },
+    reply: { ai: 6, team: 96, aiN: 41, teamN: 12 },
+    camps: [{ id: 1, name: "October kitchen campaign", sent: 412, delivered: 398, read: 341, replied: 62, at: "2026-10-03" }],
+    auto: [{ name: "New lead auto-reply", fired: 38, replied: 9 }, { name: "Quotation follow-up", fired: 19, replied: 6 }] }),
+  wag_get: () => ({ ok: true, connected: false, today: 18, left: 232,
+    camps: [{ id: 1, name: "October kitchen campaign", status: "done", at: "2026-10-03", stats: { sent: 412, delivered: 398, read: 341, replied: 62, failed: 14 } },
+            { id: 2, name: "Eid wardrobe offer", status: "draft", at: "2026-10-15", stats: { sent: 0, delivered: 0, read: 0, replied: 0, failed: 0 } }],
+    flows: [{ id: 1, name: "New lead welcome", on: true, steps: 3, fired: 38 }],
+    segments: [{ id: 1, name: "Lahore kitchen leads", n: 64 }],
+    templates: [{ id: 1, name: "Quotation sent — thank you", status: "approved" }], optouts: [], rules: [] }),
+  wag_audience: () => ({ ok: true, segments: [{ id: 1, name: "Lahore kitchen leads", n: 64 }], rows: [], items: [], total: 128, optedOut: 4 }),
+  wa_stats: () => ({ ok: true, sent: 412, delivered: 398, read: 341, replied: 62, failed: 14 }),
+  appr_list: () => ({ ok: true, items: [{ id: "AP-3", action: "sales17", what: "Quote WDX-26-043 rate change", by: "Ar. Bilal Ahmed", at: "2026-10-11 09:30:00", status: "pending" }], cfg: { on: true, roles: ["admin", "sales"] }, master: true }),
+  appr_count: () => ({ ok: true, pending: 1, master: true }),
+  notify_get: () => ({ ok: true, emailReady: false, waReady: false, events: [], log: [],
+    cfg: { projectUpdates: true, toClient: true, onMilestone: true, onInvoice: true, emailOn: true, waOn: false, emailTo: "" }, templates: [] }),
+  notifications: () => ({ ok: true, items: [{ id: 1, icon: "receipt", text: "INV-26-062 is 6 days overdue — Rs 445,200", at: "2026-10-11 08:00:00", read: false, href: "#/invoices" }], unread: 1, total: 1 }),
+  notify_list: () => FIXTURES.notifications(),
+
+  /* --- site ------------------------------------------------------------------------------ */
+  pages: () => ({ ok: true, pages: PAGES, total: PAGES.length, page: 1, pages_count: PAGES.length,
+    backups: [{ id: 1, at: "2026-10-11 02:00:00", path: "index.html", bytes: 130672 }], redirects: [{ from: "/kitchen/", to: "/kitchens/" }], media: MEDIA }),
+  pages_list: () => FIXTURES.pages(),
+  cms_list: () => ({ ok: true, items: [{ id: 1, title: "5 kitchen layout mistakes we see every week", kind: "post", status: "published", at: "2026-10-06", slug: "kitchen-layout-mistakes" }], kinds: { post: "Blog post", page: "Page" }, total: 1 }),
+  blocks_list: () => ({ ok: true, blocks: [{ id: 1, name: "Kitchen hero — rate card", cat: "Kitchens", tags: ["kitchen", "hero"], global: false, bytes: 2400 }] }),
+    seo_list: () => ({ ok: true, sitemap: 6, broken: 2, scanAt: "2026-10-11 06:00:00",
+    robots: "User-agent: *\nAllow: /\nDisallow: /admin/\nSitemap: https://woodex.com.pk/sitemap.xml",
+    pages: Object.fromEntries(PAGES.map((p, i) => [p.path, {
+      kw: ["kitchen design lahore", "", "wardrobe lahore", "office fit out lahore", "architecture lahore", "kitchen estimator"][i],
+      seo: p.score, read: 70 + (i * 2) % 25, title: p.title, desc: "Woodex Interior — " + p.title.split("|")[0].trim(),
+      issues: i === 3 ? ["Title tag is 68 characters", "Missing meta description on 2 sub-pages"] : [],
+    }])) }),
+  seo_scores: () => ({ ok: true, average: 84, scanned: 6, worst: [{ path: "/office-fit-out/", score: 66 }],
+    rows: PAGES.map((p, i) => ({ path: p.url, title: p.title, score: 78 + (i * 3) % 20, issues: i % 2 ? 2 : 0, words: 620 + i * 90, links: 14, images: 9 })),
+    cfg: { title_max: 60, desc_max: 158, og: true }, last: { at: "2026-10-11 06:00:00", pages: 6 } }),
+  sag_get: () => ({ ok: true,
+    cfg: { engine: "claude", model: "claude-sonnet", autoFix: false, weekly: true },
+    engines: { default: "claude", list: [{ id: "claude", label: "Claude (Anthropic)", model: "claude-sonnet", ready: true },
+      { id: "openai", label: "OpenAI GPT", model: "gpt-4o-mini", ready: false }, { id: "gemini", label: "Google Gemini", model: "gemini-1.5-flash", ready: false }] },
+    last: { at: "2026-10-11 06:00:00", score: 84, pages: 6, scanned: 6, issues: [
+      { id: "i1", sev: 3, type: "title", page: "office-fit-out/index.html", rel: "office-fit-out/index.html", msg: "Title tag is 68 characters (60 is the limit)", before: "Office Fit-Out Lahore | Commercial Interiors | Woodex", manual: false },
+      { id: "i2", sev: 3, type: "alt", page: "portfolio/index.html", rel: "portfolio/index.html", msg: "2 images have no alt text", manual: false },
+      { id: "i3", sev: 2, type: "desc", page: "wardrobes/index.html", rel: "wardrobes/index.html", msg: "Meta description is 168 characters", manual: false },
+      { id: "i4", sev: 2, type: "kw", page: "architecture/index.html", rel: "architecture/index.html", msg: "Focus keyphrase is missing", manual: false },
+      { id: "i5", sev: 1, type: "thin", page: "estimator/index.html", rel: "estimator/index.html", msg: "Only 640 words on the page", manual: true },
+      { id: "i6", sev: 1, type: "schema", page: "index.html", rel: "index.html", msg: "No LocalBusiness schema found", manual: false },
+    ] },
+    history: [{ at: "2026-09-27", score: 79 }, { at: "2026-10-04", score: 82 }, { at: "2026-10-11", score: 84 }],
+    proposals: [], scans: [] }),
+  sag_scan: () => ({ ok: true, last: FIXTURES.sag_get().last, history: FIXTURES.sag_get().history }),
+  redirects: () => ({ ok: true,
+    redirects: [{ from: "/kitchen/", to: "/kitchens/", code: 301, hits: 14 }, { from: "/services/", to: "/office-fit-out/", code: 301, hits: 6 }, { from: "/old-gallery/", to: "/portfolio/", code: 410, hits: 3 }],
+    test: [], planCount: 0, added: 0, pages: PAGES.map(p => p.url) }),
+  r404_list: () => ({ ok: true, rows: [{ path: "/blog/kitchen-rate-2025/", hits: 9, last: "2026-10-10 19:00:00" }, { path: "/wp-login.php", hits: 41, last: "2026-10-11 03:12:00" }] }),
+  health_get: () => ({ ok: true,
+    scan: { score: 88, pages: 6, ok: 11, warn: 1, bad: 0, at: "2026-10-11 06:00:00",
+      counts: { seo: 1, alt: 1, link: 1, image: 1 },
+      issues: [
+        { type: "alt", sev: 3, rel: "portfolio/index.html", msg: "2 images without alt text", size: 184320 },
+        { type: "link", sev: 2, rel: "office-fit-out/index.html", msg: "Broken link → /services/" },
+        { type: "seo", sev: 1, rel: "wardrobes/index.html", msg: "Meta description is 168 characters" },
+        { type: "image", sev: 1, rel: "kitchens/index.html", msg: "Hero image is 720 KB", size: 737280 },
+      ],
+      checks: [
+        { name: "Core Web Vitals — LCP 1.9 s", ok: true }, { name: "Broken links", ok: true },
+        { name: "Missing alt text", ok: false, note: "2 images in /portfolio/", fix: "Add alt text in Media" }] },
+    psi: psiMap(), psiKeySet: false, site: COMPANY.site, lastCron: "2026-10-11 06:00:00",
+    history: [{ at: "2026-10-04", perf: 88 }, { at: "2026-10-11", perf: 92 }], role: "owner" }),
+  health_speed: () => ({ ok: true, lcp: 1.9, cls: 0.02, inp: 120, ttfb: 240, site: COMPANY.site,
+    psi: psiMap(), pages: PAGES.map(p => p.path),
+    tips: [{ id: "unused-css-rules", title: "Unused CSS", value: "42 KB" }, { id: "lcp-discovery-insight", title: "LCP image is found late", value: "2.6 s" }] }),
+  backup_list: () => ({ ok: true, backups: [{ id: 1, at: "2026-10-11 02:00:00", bytes: 41_500_000, files: 1263, label: "nightly" }, { id: 2, at: "2026-10-04 02:00:00", bytes: 39_800_000, files: 1241, label: "weekly" }] }),
+  fm_list: () => ({ ok: true, dir: "assets/uploads", trash: 0, ro: false, since: "2026-10-11 12:00:00",
+    files: [
+      { name: "kitchen-dha-6-01.webp", dir: false, size: 184320, mtime: "2026-10-03 11:20:00", mime: "image/webp" },
+      { name: "wardrobe-bahria-02.webp", dir: false, size: 156800, mtime: "2026-10-05 09:05:00", mime: "image/webp" },
+      { name: "office-gulberg-03.webp", dir: false, size: 211400, mtime: "2026-10-07 16:40:00", mime: "image/webp" },
+      { name: "uploads", dir: true, size: 0, mtime: "2026-10-01 08:00:00" },
+    ], items: [] }),
+  dbx_browse: () => ({ ok: true, table: "wx_leads", page: 1, pages: 1, total: LEADS.length, cols: Object.keys(LEADS[0] || {}), content: "", mime: "", rows: LEADS }),
+  dbx_tables: () => ({ ok: true, tables: [{ name: "wx_leads", rows: LEADS.length }, { name: "wx_quotes", rows: QUOTES.length }, { name: "wx_invoices", rows: INVOICES.length }, { name: "wx_expenses", rows: EXPENSES.length }, { name: "wx_region_projects", rows: 4 }] }),
+  theme_get: () => ({ ok: true, vars: { "--wx-preset": "woodex", "--wx-navy": "#0c1628", "--wx-font": "inter", "--wx-font-head": "jakarta", "--wx-r-lg": "16px", "--wx-btn-radius": "999px" } }),
+  tg_get: () => ({ ok: true, cfg: { bot: "", site: "chat", tgUser: "", group: false, groupTitle: "", linked: 0, tokenSet: false, webhook: "", waDown: false, meDm: false, alertChats: false, alertLeads: true, alertChatsPhone: "" }, me: null, on: false }),
+  mt_get: () => ({ ok: true, on: false, mode: "maintenance", until: "", text: "", token: "demo-staff-token", files: [{ name: "404.html", bytes: 8123 }, { name: "500.html", bytes: 6402 }, { name: "503.html", bytes: 7311 }], pages: [{ path: "404.html", title: "Page not found" }, { name: "500.html", title: "Server error" }, { path: "503.html", title: "Maintenance" }] }),
+  conn_list: () => ({ ok: true, connections: [{ id: "google", name: "Google Analytics", on: false }, { id: "sheets", name: "Google Sheets", on: false }, { id: "wa", name: "WhatsApp Cloud API", on: false }, { id: "tg", name: "Telegram", on: false }] }),
+  sheets_get: () => ({ ok: true, cfg: { url: "", tab: "", on: false }, last: null }),
+  gdata_status: () => ({ ok: true, connected: false, cache: null }),
+  logos_get: () => ({ ok: true, data: { title: "Our clients", kicker: "Trusted by", mode: "grid", speed: 30, grey: true, show: true, items: [] } }),
+  aic_get: () => ({ ok: true,
+    aic: { style: "balanced", length: "medium", urdu: "match", creativity: 40, signoff: true,
+      instructions: "Always ask which city and the room size before quoting any rate.",
+      persona: { name: "Woodex Assistant", about: "Woodex Interior Studio, Lahore — kitchens, wardrobes and office fit-out since 2009." },
+      chan: { web: { on: true, style: "", note: "Ask for their WhatsApp number early." },
+              wa: { on: true, style: "concise", note: "Use *bold* for amounts." },
+              tg: { on: false, style: "", note: "" } } },
+    base: { ai: true, on: true, noPrices: true, waAgent: false, tone: "designer",
+      greeting: "Assalam-o-Alaikum! Welcome to Woodex Interior Studio. How may I help you with your home?",
+      waGreeting: "Assalam-o-Alaikum! Woodex Interior se rabta karne ka shukriya.",
+      tones: ["designer", "consultant", "technical"] },
+    channels: { web: "Website chat", wa: "WhatsApp", tg: "Telegram" },
+    health: [
+      { st: "ok", label: "AI key is set", msg: "Anthropic key stored 41 days ago", ms: 12 },
+      { st: "ok", label: "Model reachable", msg: "claude-sonnet replied in 640 ms", ms: 640 },
+      { st: "warn", label: "Knowledge base is 6 days old", msg: "Re-index from Knowledge & Q&A", ms: 0, link: "#/train" },
+      { st: "ok", label: "Spend is under the monthly cap", msg: "Rs 1,840 of Rs 5,000 used", ms: 0 },
+      { st: "off", label: "Telegram channel is off", msg: "Buyers on Telegram get no reply", ms: 0 },
+    ],
+    spend: { month: 1840, cap: 5000 }, models: [{ id: "claude-sonnet", name: "Claude Sonnet", on: true }] }),
+  aic_health: () => ({ ok: true, health: FIXTURES.aic_get().health }),
+  ai_unans_list: () => ({ ok: true, items: [{ id: 1, q: "Kitchen ka rate per running foot kya hai?", at: "2026-10-10 21:14:00", hits: 3 }] }),
+  ai_report: b => ({ ok: true, days: Number(b.days || 30), chats: 65, channels: { web: 41, wa: 22, tg: 2 },
+    aiOnly: 38, handoffs: 27, leads: 18, visits: 6, firstReply: 8, firstTeam: 96, unanswered: 2,
+    reasons: [{ label: "Asked for a person", n: 12 }, { label: "Asked about price", n: 9 },
+      { label: "Complaint", n: 3 }, { label: "Ready to finalise", n: 2 }, { label: "AI was unsure", n: 1 }],
+    rows: [
+      { d: "2026-10-07", chats: 12, leads: 3, answered: 11 }, { d: "2026-10-08", chats: 18, leads: 5, answered: 16 },
+      { d: "2026-10-09", chats: 14, leads: 4, answered: 13 }, { d: "2026-10-10", chats: 21, leads: 6, answered: 19 }],
+    items: [], totals: { chats: 65, leads: 18, answered: 59, unanswered: 2 } }),
+  ai_test: () => ({ ok: true, answer: "L-shape kitchen ka rate PKR 24,500 per running ft hai, measurement ke baad final hota hai." }),
+  security: () => ({ ok: true, twofa: false, sessions: [], logins: [{ at: "2026-10-11 09:00:00", ip: "127.0.0.1", agent: "Demo" }] }),
+  backups: () => FIXTURES.backup_list(),
+  global_chrome: () => ({ ok: true, versions: [],
+    header: { logo: "/assets/img/logo.svg", phone: COMPANY.phone, cta: "Get a free estimate", ctaHref: "/estimator/", sticky: true },
+    menu: [{ label: "Kitchens", href: "/kitchens/", children: [] }, { label: "Wardrobes", href: "/wardrobes/", children: [] }, { label: "Office fit-out", href: "/office-fit-out/", children: [] }, { label: "Architecture", href: "/architecture/", children: [] }],
+    mega: { on: true, columns: [] },
+    footer: { about: "Kitchen, wardrobe and interior joinery in Lahore since 2009.", copyright: "© 2026 Woodex Interior", social: ["facebook", "instagram", "youtube"] },
+    design: { radius: "16px", btnRadius: "999px", preset: "woodex" },
+    contact: { phone: COMPANY.phone, email: COMPANY.email, address: COMPANY.address } }),
+  global_menu: () => FIXTURES.global_chrome(),
+  env: () => ({ ok: true, php: "8.2 (demo)", mysql: "demo", driver: "demo", writable: true }),
+
+  /* --- bookings (the working-hours diary) -------------------------------------------------- */
+  bk_list: () => ({ ok: true, today: "2026-10-11",
+    items: [
+      { id: 1, d: "2026-10-11", time: "11:00", tm: "11:00", dur: 60, status: "confirmed", type: "visit", type_label: "Site visit", name: "Mr. Ahsan Raza", phone: "0300 4112233", city: "Lahore", address: "House 41, DHA Phase 6" },
+      { id: 2, d: "2026-10-11", time: "15:30", tm: "15:30", dur: 45, status: "pending", type: "measure", type_label: "Measurement", name: "Mrs. Sadia Khan", phone: "0321 8899770", city: "Rawalpindi", address: "Bahria Orchard, Block C" },
+      { id: 3, d: "2026-10-13", time: "10:00", tm: "10:00", dur: 90, status: "confirmed", type: "office", type_label: "Office consult", name: "Faletti's Hotel", phone: "042 111223344", city: "Lahore", address: "Egerton Road" },
+    ],
+    pending: [{ id: 2, d: "2026-10-11", tm: "15:30", name: "Mrs. Sadia Khan", type_label: "Measurement", status: "pending" }],
+    slots: ["10:00", "11:00", "12:00", "15:00", "15:30", "17:00"],
+    cfg: { open: "10:00", last: "19:00", close: "19:00", slot: 60, days: [1, 2, 3, 4, 5, 6], blocked: ["2026-10-14", "2026-10-15"] } }),
+  bk_status: b => ({ ok: true, id: Number(b.id || 0), status: b.status || "confirmed" }),
+  bk_slots: () => ({ ok: true, slots: ["10:00", "11:00", "12:00", "15:00", "15:30", "17:00"] }),
+  bookings: () => FIXTURES.bk_list(),
+
+  /* --- forms (where every enquiry lands) --------------------------------------------------- */
+  forms_get: () => ({ ok: true,
+    defaults: { emailTo: "woodexinterior.pk@gmail.com", waTo: "923008411223", emailOn: true, waOn: true, waReady: false, smtpReady: true, subject: "New enquiry from the website" },
+    forms: [
+      { id: "contact", label: "Contact form", count: 14, last: "2026-10-10 12:00:00",
+        pages: ["/contact/", "/kitchens/", "/wardrobes/"],
+        fields: ["name", "phone", "email", "city", "message", "page"],
+        cfg: { alertTo: "", waTo: "", waAlert: true, reply: true, replyText: "" } },
+      { id: "estimate", label: "Estimator request", count: 6, last: "2026-10-09 18:20:00",
+        pages: ["/estimator/"],
+        fields: ["name", "phone", "room", "size", "finish"],
+        cfg: { alertTo: "sales@woodex.pk", waTo: "", waAlert: false, reply: false, replyText: "" } },
+    ] }),
+  forms_save: b => ({ ok: true, defaults: b.defaults || {}, forms: b.forms || [] }),
+
+  /* --- invoice tracker (the year/month sheet view at #/invoices) --------------------------- */
+  invs_tracker: b => ({ ok: true, year: String(b.year || "2026"), years: ["2025", "2026"], lateAll: 1,
+    months: { "2026-10": { count: INVOICES.length, total: 928350, received: 366350 } },
+    rows: INVOICES.map(i => ({ id: i.id, no: i.no, po: "PO-26-0" + i.id, company: i.client.name, client: i.client,
+      line: "interior", track: i.payStatus === "paid" ? "paid" : i.payStatus === "partial" ? "partial" : "unpaid",
+      track_note: i.payStatus === "unpaid" ? "Client asked for 10 more days" : "",
+      project: "NODE-26-0" + (i.id - 60), issue_date: i.date, total: i.total, paid: i.paid, balance: i.balance,
+      late: !!i.overdue, delivery_date: i.due_date, delivered: i.payStatus === "paid" ? i.date : "", quote_id: i.quote_id })) }),
+
+  /* --- projects table (milestone billing on top of the board) ------------------------------ */
+  projs_table: () => ({ ok: true,
+    kpi: { active: 2, value: 1228500, invoiced: 928350, received: 366350, balance: 562000 },
+    lines: { interior: "Interior works", furniture: "Furniture & joinery" },
+    team: [{ id: 1, name: "Demo Login" }, { id: 2, name: "Ar. Bilal Ahmed" }],
+    projects: [
+      { id: 1, no: "WI-26-014", name: "Kitchen + dining, DHA Phase 6", client_name: "Mr. Ahsan Raza", site: "DHA Phase 6, Lahore", line: "interior", ptype: "Kitchen design", area: 210, stage: "execution", progress: 62, late: false, target: "2026-10-24", value: 486500, invoiced: 291900, received: 175100, balance: 116800, manager: 1, manager_name: "Demo Login", team_names: ["Demo Login", "Ar. Bilal Ahmed"], invoices: [{ id: 71, no: "INV-26-061" }], milestones: [] },
+      { id: 2, no: "WI-26-011", name: "Wardrobes, Bahria Orchard", client_name: "Mrs. Sadia Khan", site: "Bahria Orchard, Rawalpindi", line: "furniture", ptype: "Wardrobe & storage", area: 96, stage: "procurement", progress: 40, late: true, target: "2026-10-08", value: 742000, invoiced: 445200, received: 0, balance: 445200, manager: 2, manager_name: "Ar. Bilal Ahmed", team_names: ["Ar. Bilal Ahmed"], invoices: [{ id: 72, no: "INV-26-062" }], milestones: [] },
+    ] }),
+
+  /* --- announcement bar (the card the site screens insert on load) -------------------------- */
+  cms_announce_get: () => ({ ok: true, ann: { on: true, text: "Free site visit in Lahore this month", link: "/contact/", linkText: "Book now", style: "navy" } }),
+  cms_announce_save: b => ({ ok: true, ann: b.ann || {} }),
+
+  /* --- builder (loaded inside the iframe) ----------------------------------------------- */
+  load: () => ({ ok: true, pages: PAGES, blocks: [], theme: {}, locked: false, html: SITE_HTML }),
+};
+
+/* ---------------------------------------------------------------- helpers */
+const COMPANY = {
+  name: "Woodex Interior", site: "woodex.com.pk", phone: "042 3577 8899", phone2: "0300 8411 2233",
+  email: "info@woodex.pk", address: "Main Boulevard, Gulberg III, Lahore",
+  bank: { title: "Meezan Bank — Gulberg", account: "PK36 MEZN 0000 1234 5678 9012", title2: "Woodex Interior" },
+  gst: "03-11-99-1234-567", validDays: 15, advance: 40, taxPct: 18,
+};
+const PAGES = [
+  { path: "index.html", url: "/", title: "Woodex Interior — Kitchen, Wardrobes & Interior Design in Lahore", bytes: 130672, blocks: 14, score: 92 },
+  { path: "kitchens/index.html", url: "/kitchens/", title: "Kitchen Design Lahore | Modular Kitchens | Woodex", bytes: 68126, blocks: 11, score: 88 },
+  { path: "wardrobes/index.html", url: "/wardrobes/", title: "Wardrobes & Dressing Rooms Lahore | Woodex", bytes: 64210, blocks: 10, score: 86 },
+  { path: "office-fit-out/index.html", url: "/office-fit-out/", title: "Office Fit-Out Lahore | Commercial Interiors | Woodex", bytes: 59980, blocks: 9, score: 66 },
+  { path: "architecture/index.html", url: "/architecture/", title: "Architecture Services Lahore | Woodex", bytes: 41620, blocks: 8, score: 81 },
+  { path: "estimator/index.html", url: "/estimator/", title: "Kitchen & Wardrobe Price Estimator | Woodex", bytes: 68126, blocks: 7, score: 84 },
+];
+/* The page list screen shows a status badge, issue count, word count and the last edit time on every
+   row; the real api/pages-lib.php computes them during the health scan. Kept next to the list. */
+PAGES.forEach((p, i) => Object.assign(p, {
+  status: "published", noindex: false, issues: [], words: 620 + i * 90, editedBy: "Demo Login",
+  mtime: "2026-10-0" + (3 + i) + " 11:20:00",
+}));
+Object.assign(PAGES[3], { score: 66, issues: ["Title tag is 68 characters", "Only one internal link to /estimator/"] });
+const MEDIA = [
+  { path: "/assets/uploads/kitchen-dha-6-01.webp", name: "kitchen-dha-6-01.webp", bytes: 184_320, w: 1600, h: 1067, alt: "L-shape kitchen with quartz top, DHA Phase 6" },
+  { path: "/assets/uploads/wardrobe-bahria-02.webp", name: "wardrobe-bahria-02.webp", bytes: 156_800, w: 1600, h: 1067, alt: "Sliding wardrobe with mirror panel, Bahria Orchard" },
+  { path: "/assets/uploads/office-gulberg-03.webp", name: "office-gulberg-03.webp", bytes: 211_400, w: 1600, h: 1067, alt: "Office fit-out reception desk, Gulberg III" },
+  { path: "/assets/uploads/finish-samples.webp", name: "finish-samples.webp", bytes: 98_200, w: 1200, h: 900, alt: "Laminate and veneer finish samples" },
+];
+const ACTIONS = [
+  { action: "exp.save", target: "logged Board & raw material Rs 96,500 (LHR)", user_name: "Demo Login", ip: "127.0.0.1", created_at: "2026-10-11 12:02:00" },
+  { action: "bd.pack", target: "6 document(s) packed for 1 Oct 2026 → 31 Oct 2026", user_name: "Demo Login", ip: "127.0.0.1", created_at: "2026-10-11 12:04:00" },
+  { action: "quote.save", target: "saved quotation WDX-26-044", user_name: "Ar. Bilal Ahmed", ip: "127.0.0.1", created_at: "2026-10-10 18:22:00" },
+  { action: "login", target: "signed in", user_name: "Usman Ali", ip: "127.0.0.1", created_at: "2026-10-10 18:40:00" },
+  { action: "lead.save", target: "added lead Ms. Hira Nadeem", user_name: "Usman Ali", ip: "127.0.0.1", created_at: "2026-10-10 18:31:00" },
+  { action: "theme.save", target: "changed the site theme", user_name: "Ar. Bilal Ahmed", ip: "127.0.0.1", created_at: "2026-10-09 15:10:00" },
+];
+function rgnNodes() {
+  return NODES.map(code => ({ code, city: { LHR: "Lahore", ISB: "Islamabad", KHI: "Karachi", RWP: "Rawalpindi", FSD: "Faisalabad", GRW: "Gujranwala", MUX: "Multan", PSH: "Peshawar", SKT: "Sialkot", BWP: "Bahawalpur", QTA: "Quetta", HYD: "Hyderabad" }[code], active: true }));
+}
+function periodOf() { return { preset: "month", from: "2026-10-01", to: "2026-10-31", label: "1 Oct 2026 → 31 Oct 2026" }; }
+const PROFILE = Object.assign({}, DEMO.user, { phone: "0300 8411 2233", whatsapp: "923008411223", city: "Lahore", bio: "Owner at Woodex Interior", twofa: false });
+/* The header/footer editor does not read JSON: it fetches index.html and parses nav.desktop-nav /
+   nav.mobile-panel / footer.footer / header .brand out of it. The demo server hands it this shell so
+   the editor opens with a real structure instead of "this site's header/footer structure was not found". */
+const SITE_HTML = `<!doctype html><html lang="en"><head><title>Woodex Interior</title></head><body>
+<header class="site-header"><a class="brand" href="/"><img src="/assets/img/logo.svg" alt="Woodex Interior"></a>
+<a href="tel:04235778899">042 3577 8899</a><a href="/estimator/" class="btn">Get a free estimate</a></header>
+<nav class="desktop-nav">
+<a href="/" data-page-route="home">Home</a>
+<a href="/portfolio/" data-page-route="portfolio">Portfolio</a>
+<div class="nav-services"><span class="nav-services-trigger">Services</span>
+<div class="mega-studio"><div class="mega-column"><a class="mega-title" href="/kitchens/">Kitchens</a><a href="/kitchens/">Modular kitchens</a><a href="/kitchens/#l-shape">L-shape kitchens</a></div><div class="mega-column"><a class="mega-title" href="/wardrobes/">Wardrobes</a><a href="/wardrobes/">Sliding wardrobes</a><a href="/wardrobes/#walk-in">Walk-in closets</a></div><div class="mega-column"><a class="mega-title" href="/office-fit-out/">Office fit-out</a><a href="/office-fit-out/">Workstations</a></div></div>
+<div class="mega-project"><img src="/assets/uploads/kitchen-dha-6-01.webp" alt="Recent kitchen"><span>DHA Phase 6 kitchen</span></div></div>
+<a href="/architecture/" data-page-route="architecture">Architecture</a>
+<a href="/insights/" data-page-route="insights">Insights</a>
+<a href="/about/" data-page-route="about">About</a><a href="/contact/" data-page-route="contact">Contact</a>
+</nav>
+<nav class="mobile-panel"><a href="/">Home</a><a href="/kitchens/">Kitchens</a><a href="/contact/">Contact</a></nav>
+<footer class="footer"><p>Kitchen, wardrobe and interior joinery in Lahore since 2009.</p>
+<div>© 2026 Woodex Interior · Main Boulevard, Gulberg III, Lahore · 042 3577 8899</div></footer>
+</body></html>`;
+function psiMap() {
+  const out = {};
+  PAGES.slice(0, 4).forEach((p, i) => {
+    ["mobile", "desktop"].forEach(d => {
+      out[p.path + "|" + d] = [{ perf: d === "mobile" ? 76 + i * 4 : 92 + i, a11y: 94, bp: 96, seo: 96,
+        fcp: d === "mobile" ? 1.8 : 1.1, lcp: d === "mobile" ? 2.6 : 1.9, cls: 0.02, inp: 120, ttfb: 240,
+        strategy: d, at: "2026-10-11 06:00:00", fetched: "2026-10-11 06:00:00", tips: ["Optimise images", "Defer non-critical JS"] }];
+    });
+  });
+  return out;
+}
+function docType(id, label, icon, note, documents, value) { return { id, label, icon, note, value_column: id !== "activity", documents, value: round2(value), undated: 0, truncated: false }; }
+function packFor(k) {
+  if (k === "quotes") return { columns: ["No", "Date", "Client", "Project", "Status", "Total (Rs)"], rows: QUOTES.map(q => [q.no, q.date, q.client.name, q.project, q.status, q.total]), documents: QUOTES.length, value: QUOTES.reduce((a, q) => a + q.total, 0) };
+  if (k === "invoices") return { columns: ["No", "Date", "Client", "Total (Rs)", "Paid (Rs)", "Balance (Rs)", "State", "Due date"], rows: INVOICES.map(i => [i.no, i.date, i.client.name, i.total, i.paid, i.balance, i.payStatus, i.due_date]), documents: INVOICES.length, value: INVOICES.reduce((a, i) => a + i.balance, 0) };
+  if (k === "milestones") return { columns: ["Project", "Node", "Certificate", "Weight %", "Amount (Rs)", "Due", "Status", "Approved by", "Done at"], rows: MILESTONES.map(m => [m.pcode + " — " + m.ptitle, m.node, m.name, m.weight_pct, m.amount, m.due_date, m.status, m.approved_by, m.done_at]), documents: MILESTONES.length, value: MILESTONES.reduce((a, m) => a + m.amount, 0) };
+  if (k === "expenses") return { columns: ["Date", "Category", "Vendor", "Detail", "Location", "Amount (Rs)", "GST (Rs)", "Total (Rs)", "Status", "Mode"], rows: EXPENSES.map(e => [e.spent_on, CATEGORIES[e.category], e.vendor, e.detail, e.node, e.amount, e.tax_amt, e.amount + e.tax_amt, EXP_STATUS[e.status], PAY[e.paid_by]]), documents: EXPENSES.length, value: EXPENSES.reduce((a, e) => a + e.amount + e.tax_amt, 0) };
+  if (k === "leads") return { columns: ["Date", "Name", "Phone", "Service", "Source", "Stage", "Value (Rs)"], rows: LEADS.map(l => [l.created_at.slice(0, 10), l.name, l.phone, l.service, l.source, l.stage, l.value]), documents: LEADS.length, value: LEADS.reduce((a, l) => a + l.value, 0) };
+  if (k === "activity") return { columns: ["When", "Who", "Action", "Target", "IP"], rows: ACTIONS.map(a => [a.created_at, a.user_name, a.action, a.target, a.ip]), documents: ACTIONS.length, value: 0 };
+  return { columns: [], rows: [], documents: 0, value: 0 };
+}
+function dashData() {
+  const axis = [];
+  for (let i = 0; i < 30; i++) { const d = new Date(Date.UTC(2026, 8, 12 + i)); axis.push(d.toISOString().slice(0, 10)); }
+  const zig = (base, amp, phase) => axis.map((_, i) => Math.max(0, Math.round(base + amp * Math.sin((i + phase) / 3.2) + (i % 5))));
+  return {
+    ok: true, days: 30, role: "owner", axis,
+    visitors: zig(120, 40, 1),
+    crm: {
+      kpi: {
+        leads: [14, 11], pipeline: LEADS.reduce((a, l) => a + (l.stage === "won" ? 0 : l.value), 0),
+        quotesSent: [6, 5], openQuotes: [3, 1447250], paid: [366350, 291900], unpaid: [562000, 445200],
+      },
+      series: { leads: zig(1, 1, 2), sent: zig(0.4, 1, 4), won: zig(0.2, 0.6, 6), invoiced: zig(0.5, 1.2, 3), paid: zig(0.4, 1, 5) },
+      funnel: { new: 2, contacted: 1, visit: 1, quote: 1, hold: 0, won: 1, lost: 1 },
+      recent: QUOTES.slice(0, 4).map(q => ({ no: q.no, client: q.client.name, total: q.total, status: q.status, at: q.date })),
+      followups: LEADS.filter(l => l.followup).slice(0, 4).map(l => ({ id: l.id, name: l.name, phone: l.phone, next_at: l.followup + " 11:00:00", next_type: "call" })),
+      overdue: INVOICES.filter(i => i.overdue).map(i => ({ no: i.no, client: i.client.name, balance: i.balance, due: i.due_date })),
+      overdueN: INVOICES.filter(i => i.overdue).length,
+      sources: { website: 2, whatsapp: 1, google: 1, referral: 1 },
+      chips: { new: 2, overdue: 1, follow: 5 },
+      target: { target: 2500000, month: 366350, monthLabel: "October 2026" },
+    },
+  };
+}
+
+/**
+ * Actions with no fixture above still have to answer: a screen that reads `r.items` must not throw
+ * just because the demo did not model that corner. This builds a shaped, empty payload — real
+ * arrays stay arrays, real objects stay objects — which is exactly what the live API returns for a
+ * table with nothing in it yet.
+ */
+const ARRAY_KEYS = ["items", "rows", "list", "leads", "clients", "quotes", "invoices", "projects", "users", "team", "files", "folders", "media", "activity", "chats", "messages", "templates", "backups", "tables", "columns", "logs", "events", "sections", "blocks", "offers", "testimonials", "faqs", "portfolio", "study", "services", "cities", "forms", "redirects", "connections", "integrations", "checks", "posts", "pages", "kinds", "stages", "sources", "rules", "sessions", "entries", "milestones", "rates", "variants", "notes", "payments", "series", "chips", "followups", "overdue", "recent", "family", "tokens", "models", "campaigns", "segments", "flows", "trash", "unanswered", "avatars", "offers"];
+const OBJECT_KEYS = ["data", "cfg", "meta", "totals", "stats", "counts", "kpi", "kpis", "summary", "funnel", "target", "company", "user", "me", "quote", "invoice", "project", "client", "lead", "item", "scan", "psi", "usage", "spend", "series0",
+  "header", "footer", "mega", "design", "menu", "engines", "profile", "settings", "wa", "overview", "last", "history", "contact", "plan", "bounds", "role", "filter"];
+function emptyPayload() {
+  const out = { ok: true, total: 0, count: 0, page: 1, pages: 1, per: 50 };
+  ARRAY_KEYS.forEach(k => { out[k] = []; });
+  OBJECT_KEYS.forEach(k => { if (!(k in out)) out[k] = {}; });
+  out.user = null;
+  return out;
+}
+
+/**
+ * Answer one Admin API call.
+ * @returns {{status:number, body:object}}
+ */
+export function respond(action, body, token) {
+  const b = body && typeof body === "object" ? body : {};
+  const fn = FIXTURES[action];
+  if (fn) {
+    try {
+      const r = fn(b, token) || {};
+      const status = Number(r.status) || 200;
+      if (status !== 200) return { status, body: r };
+      return { status: 200, body: r };
+    } catch (e) {
+      return { status: 500, body: { ok: false, error: "demo fixture failed for " + action + ": " + e.message } };
+    }
+  }
+  return { status: 200, body: emptyPayload() };
+}
+
+export const KNOWN_ACTIONS = Object.keys(FIXTURES);
+export { CATEGORIES, PAY as PAY_MODES, NODES, EXPENSES, QUOTES, INVOICES, LEADS, CLIENTS, MILESTONES, PAGES, MEDIA, ACTIONS, COMPANY, round2 };
