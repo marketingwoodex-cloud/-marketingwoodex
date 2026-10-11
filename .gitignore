@@ -8,3 +8,9 @@ frontend-v1/woodex-master-p22.1-updated.zip
 woodex-live-v3/woodex-master-p22.1-updated.zip
 frontend-v1/woodex-live-v3/woodex-master-p22.1-updated.zip
 *woodex-master-suite.zip
+
+# Live data copies: personal records and password hashes. Never commit.
+woodex-live-p29-v2.1-pro/_private/admin-db.json
+woodex-live-p29-v2.1-pro/_private/db.json
+woodex-live-p29-v2.1-pro/_private/outbox.jsonl
+woodex-live-p29-v2.1-pro/_private/health.json
