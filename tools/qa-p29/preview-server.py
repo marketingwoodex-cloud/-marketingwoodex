@@ -10,7 +10,7 @@ PREVIEW_PASS = os.environ.get('PREVIEW_PASS', '')
 TOKEN = 'preview-token'
 BLOCK_DIRS = {'api', '_private', '_database', '_templates', '_scripts', 'tools', 'node_modules', '.git'}
 BLOCK_EXT = {'.php', '.sql', '.env', '.md', '.json', '.lock', '.yaml', '.yml', '.ini', '.bak', '.log', '.dist', '.sh', '.bat', '.tar', '.zip'}
-BLOCK_NAMES = {'admin-tg.js'}  # contains a token literal (SEC-003); not for preview
+BLOCK_NAMES = set()  # admin-tg.js no longer holds a token literal (C-1), so the Telegram page can be previewed
 OWNER = {'id': 1, 'name': 'Preview Owner', 'role': 'owner', 'email': PREVIEW_EMAIL}
 PREVIEW_PROJECT = {'id': 1, 'name': 'Preview project (stub)', 'stage': 'design', 'photos': [], 'value': 0, 'paid': 0, 'no': 'P-1', 'client': '',
                     'start': '2026-09-01', 'target': '2026-12-15', 'milestones': [{'label': 'Deposit', 'pct': 30, 'inv_id': 1}, {'label': 'Installation', 'pct': 70, 'inv_id': None}]}

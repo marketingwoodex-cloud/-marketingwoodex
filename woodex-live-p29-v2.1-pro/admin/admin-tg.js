@@ -24,7 +24,7 @@
         (on ? (c.group ? "Team group: " + esc(c.groupTitle) : "No team group yet") + " · " + c.linked + " staff linked · WhatsApp is " + (c.waDown ? '<b style="color:#b42318">not working</b> (Telegram button is ' + (c.buttonLive ? "showing" : "hidden") + " on the website)" : "working") : "Customers can chat with your Telegram bot, staff reply from a Telegram group, and the website offers Telegram when WhatsApp is down.") +
         "</small></div>" + (on ? '<div style="display:flex;gap:8px"><button class="btn sm" id="tg-test-top">Send test alert</button><a class="btn sm pri btn-preline-cyan" target="_blank" rel="noopener" href="https://t.me/' + esc(c.bot) + '">Open @' + esc(c.bot) + '</a></div>' : "") + "</div></div>" +
         step(1, "Create your bot (2 minutes)", '<ol style="margin:0 0 10px 18px;padding:0;font-size:13.5px;line-height:1.7"><li>In Telegram, open <a href="https://t.me/BotFather" target="_blank" rel="noopener">@BotFather</a> and send <code>/newbot</code>.</li><li>Name: <b>Woodex Interior</b> · username e.g. <b>WoodexInteriorBot</b>.</li><li>Copy the token it gives you and paste it here.</li></ol>' +
-          '<div style="display:flex;gap:8px;flex-wrap:wrap"><input id="tg-tok" type="password" autocomplete="off" value="8946347004:AAFqpMe7fZ7EVuLDMKQ_J4_jcCUuqrbPn7A" placeholder="' + (c.tokenSet ? "Token saved (paste a new one to change)" : "123456789:AA…") + '" style="flex:1;min-width:240px;margin:0"><button class="btn pri" id="tg-con">' + (on ? "Reconnect" : "Connect") + "</button>" + (on ? '<button class="btn" id="tg-off">Disconnect</button>' : "") + "</div>" +
+          '<div style="display:flex;gap:8px;flex-wrap:wrap"><input id="tg-tok" type="password" autocomplete="off" value="" placeholder="' + (c.tokenSet ? "Token saved (paste a new one to change)" : "123456789:AA…") + '" style="flex:1;min-width:240px;margin:0"><button class="btn pri" id="tg-con">' + (on ? "Reconnect" : "Connect") + "</button>" + (on ? '<button class="btn" id="tg-off">Disconnect</button>' : "") + "</div>" +
           '<small class="muted">The webhook is set for you: ' + esc(c.webhook) + "</small>", on) +
         step(2, "Connect my Telegram (scan QR)", '<p style="margin:0 0 8px;font-size:13.5px">Scan the QR code with your phone camera or Telegram and tap <b>Start</b>. New clients, leads and chats then arrive in your Telegram, and you <b>reply to a message there</b> to answer the customer. Each staff member can do this from <b>My profile</b>.</p>' +
           '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><button class="btn' + (r.me ? "" : " pri") + '" id="tg-me"' + (on ? "" : " disabled") + ">" + ic("send") + (r.me ? "✓ Connected · scan again" : "Scan QR to connect") + "</button>" +
@@ -50,7 +50,7 @@
       W.fillIcons($("#tg-b"));
       $("#tg-con").onclick = function () {
         var b = this; b.disabled = true;
-        var tok = $("#tg-tok").value.trim() || "8946347004:AAFqpMe7fZ7EVuLDMKQ_J4_jcCUuqrbPn7A";
+        var tok = $("#tg-tok").value.trim() || "";
         api("tg_connect", { token: tok }).then(function (x) {
           b.disabled = false;
           if (!x.ok) return toast(x.error, true);
