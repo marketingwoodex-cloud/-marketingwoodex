@@ -455,7 +455,7 @@
       $$("#it-rows [data-dl]").forEach(function (b) { b.onclick = function () { api("inv_track", { id: +b.dataset.dl, delivered: today() }).then(function (r) { if (!r.ok) return toast(r.error, true); toast("Marked delivered ✓"); load(); }); }; });
       $$("#it-rows [data-ed]").forEach(function (b) { b.onclick = function () { trackForm(find(b.dataset.ed), load); }; });
     }
-    function load() { return api("invs_tracker", { year: st.year }).then(function (r) { if (!r.ok) return toast(r.error, true); D = r; if (st.month && st.month.slice(0, 4) !== r.year) st.month = ""; if ($("#it-rows")) draw(); }); }
+    function load() { return api("invs_tracker", { year: st.year }).then(function (r) { if (!r.ok) return toast(r.error, true); D = r; if (st.month && st.month.slice(0, 4) !== r.year) st.month = ""; if (st.month && !r.rows.some(function (i) { return String(i.issue_date).slice(0, 7) === st.month; })) st.month = ""; /* a month with no invoices read as "every status is 0" — open on the whole year instead */ if ($("#it-rows")) draw(); }); }
     $("#it-y").onchange = function () { st.year = this.value; st.month = ""; load(); };
     $("#it-q").oninput = function () { st.q = this.value; rows(base()); };
     $("#it-new").onclick = function () { invForm(function (inv) { st.year = inv.issue_date.slice(0, 4); st.month = inv.issue_date.slice(0, 7); load(); }); };

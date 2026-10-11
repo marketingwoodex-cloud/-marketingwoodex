@@ -12,7 +12,7 @@
 #     PREVIEW_EMAIL/PASS     one extra account (role owner) — kept so the QA probes keep working
 #   Each account gets its own token, so `me`/`status` return THAT account after a reload
 #   and the role gating in the sidebar can be checked by signing in as each role.
-import http.server, os, sys, json, urllib.parse, time
+import http.server, os, sys, json, urllib.parse, time, re
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from preview_fixtures import (build as build_fixture, build_builder, TEMPLATES, TPL_STARTERS,
                               TPL_NEXT, TPL_KINDS, _tpl_total)  # preview-only sample answers (see that file)
@@ -113,6 +113,84 @@ MSGS = {
 }
 NEXT_MSG = [100]
 API_PATHS = {'/api/admin.php', '/api/builder.php'}
+
+# ---------------------------------------------------------------- media library (real files)
+# Mirrors api/media-lib.php: same folders, same exclusions, same "used on" detection. The
+# preview used to answer media_list with sample files, which made the library look like it
+# was not the website's data.
+IMG_EXT = re.compile(r'\.(webp|jpe?g|png|gif|svg|avif)$', re.I)
+IMG_OK = re.compile(r'^/assets/(img|uploads)/([a-z0-9-]+/)?[a-z0-9][a-z0-9._-]*\.(webp|jpe?g|png|gif|svg|avif)$')
+RS_VARIANT = re.compile(r'\.w(480|960|1600)\.webp$', re.I)
+RS_LEGACY = re.compile(r'-(480|960|1600)\.webp$', re.I)
+PAGE_SKIP = {'_private', 'builder', 'admin', 'api', 'assets', 'node_modules', '.git', 'vendor',
+             'tools', '_database', '_templates', '_scripts'}
+
+
+def site_pages(root):
+    """Every .html the website serves (a7_pages() in api/media-lib.php)."""
+    out = []
+    for dp, dns, fns in os.walk(root):
+        rel = os.path.relpath(dp, root)
+        top = rel.split(os.sep)[0]
+        if rel != '.' and top in PAGE_SKIP:
+            dns[:] = []
+            continue
+        for fn in fns:
+            if fn.lower().endswith('.html'):
+                out.append(os.path.relpath(os.path.join(dp, fn), root).replace(os.sep, '/'))
+    return out
+
+
+def media_alt_map(root):
+    try:
+        with open(os.path.join(root, '_private', 'media.json'), encoding='utf-8') as fh:
+            m = json.load(fh)
+        return m.get('alt') or {}, len(m.get('trash') or [])
+    except (OSError, ValueError):
+        return {}, 0
+
+
+def real_media_list(root):
+    pages = {}
+    for rel in site_pages(root):
+        try:
+            with open(os.path.join(root, rel), encoding='utf-8', errors='ignore') as fh:
+                pages[rel] = fh.read().lower()
+        except OSError:
+            pass
+    alt, trash = media_alt_map(root)
+    files = []
+    for base in ('assets/img', 'assets/uploads'):
+        absbase = os.path.join(root, base)
+        for dp, dns, fns in os.walk(absbase):
+            if '_orig' in dp.split(os.sep):
+                dns[:] = []
+                continue
+            for fn in fns:
+                if not IMG_EXT.search(fn):
+                    continue
+                url = '/' + os.path.relpath(os.path.join(dp, fn), root).replace(os.sep, '/')
+                if RS_VARIANT.search(url) or not IMG_OK.match(url):
+                    continue
+                if RS_LEGACY.search(url):
+                    stem = RS_LEGACY.sub('', url)
+                    if any(os.path.isfile(os.path.join(root, stem.lstrip('/') + ext)) for ext in ('.webp', '.jpg', '.jpeg', '.png')):
+                        continue
+                st = os.stat(os.path.join(dp, fn))
+                sub = os.path.dirname(os.path.relpath(os.path.join(dp, fn), absbase)).replace(os.sep, '/')
+                low = url.lower()
+                used = [r for r, txt in pages.items() if low in txt or (len(fn) > 10 and fn.lower() in txt)]
+                files.append({'url': url, 'name': fn, 'folder': 'site' if base == 'assets/img' else (sub or 'uploads'),
+                              'size': st.st_size, 'mtime': time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(st.st_mtime)),
+                              'alt': alt.get(url, ''), 'used': sorted(used)})
+    files.sort(key=lambda x: x['mtime'], reverse=True)
+    try:
+        folders = sorted(d for d in os.listdir(os.path.join(root, 'assets/uploads'))
+                         if os.path.isdir(os.path.join(root, 'assets/uploads', d)))
+    except OSError:
+        folders = []
+    return {'ok': True, 'files': files, 'folders': folders, 'trash': trash}
+
 
 def empty(extra=None):
     d = {'ok': True, 'avatars': {}, 'rows': [], 'items': [], 'list': [], 'total': 0, 'per': 20, 'pages': [], 'cfg': {}, 'apps': [],
@@ -391,6 +469,9 @@ class H(http.server.SimpleHTTPRequestHandler):
         if action == 'leads_count':
             return self._json(200, {'ok': True, 'total': len(PREVIEW_LEADS),
                                     'new': sum(1 for l in PREVIEW_LEADS if l['stage'] == 'new')})
+        if action == 'media_list':
+            # The library must show the website's own images, not samples.
+            return self._json(200, real_media_list(ROOT))
         is_builder = path.endswith('/builder.php')
         fx = build_builder(action, data) if is_builder else build_fixture(action, data)
         if fx is not None:

@@ -417,7 +417,8 @@ def _s17_row(i):
     r['late'] = bool(r.get('delivery_date') and not r.get('delivered') and str(r['delivery_date']) < t)
     for k in ('po', 'delivery_date', 'line', 'mode', 'track_note', 'delivered'):
         r[k] = str(r.get(k) or '')
-    r['company'] = str((r.get('client') or {}).get('company') or (r.get('client') or {}).get('name') or '')
+    cl = r.get('client') if isinstance(r.get('client'), dict) else {'name': r.get('client') or ''}
+    r['company'] = str(cl.get('company') or cl.get('name') or '')
     r.pop('sections', None)
     return r
 
@@ -453,6 +454,45 @@ def _norm_inv(i):
 
 for _i in INVOICES:
     _norm_inv(_i)
+
+# Sample invoices are dated inside the *current* month (and one in the previous month) so the
+# invoice tracker opens on real numbers, and every status its chips count is represented:
+# paid, partial, unpaid, after-delivery, and a late delivery.
+_TODAY = ymd(0)
+_M0 = _TODAY[:7]
+_M1 = ymd(-31)[:7]
+_day = lambda back: '%s-%02d' % (_M0, max(1, int(_TODAY[8:10]) - back))
+
+
+def _month_of_back(back):
+    d = ymd(-back)
+    return d
+
+
+for _n, _i in enumerate(INVOICES):
+    _back = 1 + _n * 2
+    _d = ymd(-_back)
+    _i['issue_date'] = _d if _d[:7] == _M0 else _day(_back)
+    if not _i.get('due_date'):
+        _i['due_date'] = _i['issue_date']
+
+INVOICES.extend([
+    {'id': 14, 'no': 'INV-0125', 'client_id': 2, 'client': 'Dr. Sarah Mansoor', 'total': 940000, 'paid': 0,
+     'status': 'unpaid', 'date': ymd(0), 'due': ymd(10), 'project_id': 3, 'payments': [],
+     'line': 'furniture', 'delivery_date': ymd(-4), 'delivered': '', 'po': 'PO-2291',
+     'track_note': 'Client asked to hold delivery until the clinic closes for renovation.'},
+    {'id': 15, 'no': 'INV-0126', 'client_id': 4, 'client': "Ayesha Khan", 'total': 385000, 'paid': 0,
+     'status': 'unpaid', 'date': ymd(0), 'due': ymd(20), 'project_id': None, 'payments': [],
+     'line': 'interior', 'mode': 'after_delivery', 'delivery_date': ymd(-2), 'delivered': '',
+     'track_note': 'Billed after installation, as agreed.'},
+    {'id': 16, 'no': 'INV-0110', 'client_id': 1, 'client': 'Kamran Ashraf', 'total': 780000, 'paid': 780000,
+     'status': 'paid', 'date': _M1 + '-18', 'due': _M1 + '-28', 'project_id': 1,
+     'payments': [{'id': 9, 'date': _M1 + '-20', 'amount': 780000, 'method': 'bank', 'note': 'Final payment'}],
+     'line': 'project'},
+])
+for _i in INVOICES:
+    _norm_inv(_i)
+_fix_clients(INVOICES)   # the invoices added above still carried a plain client name
 
 
 def _norm_quote(q):
