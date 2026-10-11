@@ -1,8 +1,8 @@
 /* Woodex Admin v2 — layout and components modelled on TailAdmin (free, MIT), Woodex palette, DM Sans */
-@font-face{font-family:"Inter", system-ui, -apple-system, sans-serif;src:url("/assets/fonts/dm-sans-400.woff2") format("woff2");font-weight:400;font-display:swap}
-@font-face{font-family:"Inter", system-ui, -apple-system, sans-serif;src:url("/assets/fonts/dm-sans-500.woff2") format("woff2");font-weight:500;font-display:swap}
-@font-face{font-family:"Inter", system-ui, -apple-system, sans-serif;src:url("/assets/fonts/dm-sans-600.woff2") format("woff2");font-weight:600;font-display:swap}
-@font-face{font-family:"Inter", system-ui, -apple-system, sans-serif;src:url("/assets/fonts/dm-sans-700.woff2") format("woff2");font-weight:700;font-display:swap}
+@font-face{font-family:"Inter", system-ui, -apple-system, sans-serif;src:url("/assets/fonts/inter-400.woff2") format("woff2");font-weight:400;font-display:swap}
+@font-face{font-family:"Inter", system-ui, -apple-system, sans-serif;src:url("/assets/fonts/inter-500.woff2") format("woff2");font-weight:500;font-display:swap}
+@font-face{font-family:"Inter", system-ui, -apple-system, sans-serif;src:url("/assets/fonts/inter-600.woff2") format("woff2");font-weight:600;font-display:swap}
+@font-face{font-family:"Inter", system-ui, -apple-system, sans-serif;src:url("/assets/fonts/inter-700.woff2") format("woff2");font-weight:700;font-display:swap}
 
 :root{
   --bg:#f8fafc;--card:#ffffff;--card-elevated:#ffffff;--card-sub:#f1f5f9;--line:#e2e8f0;--line2:#cbd5e1;--txt:#0f172a;--txt2:#334155;--mut:#64748b;--mut2:#94a3b8;
@@ -995,7 +995,7 @@ html.dark .hub-bar{background:#111a2b;border-color:#24304a}html.dark .hub-bar a{
 /* ==========================================================================
    P22.2 — ADMIN THEME IMPROVEMENT LAYER  (appended; replaces no existing rule)
    * WCAG-passing contrast in both themes
-   * one palette, one font (Plus Jakarta Sans — already shipped, no new download)
+   * one palette, one font (Inter, shipped in assets/fonts)
    * premium elevation / focus / motion polish
    Generated from an audit of admin.css. Edit here, not in the rules above.
    ========================================================================== */
@@ -1038,11 +1038,7 @@ html.dark{
 }
 
 /* ---------- 2. one font, both themes ---------- */
-@font-face{font-family:"Plus Jakarta Sans";src:url("/assets/fonts/plus-jakarta-sans-400.woff2") format("woff2");font-weight:400;font-display:swap}
-@font-face{font-family:"Plus Jakarta Sans";src:url("/assets/fonts/plus-jakarta-sans-500.woff2") format("woff2");font-weight:500;font-display:swap}
-@font-face{font-family:"Plus Jakarta Sans";src:url("/assets/fonts/plus-jakarta-sans-600.woff2") format("woff2");font-weight:600;font-display:swap}
-@font-face{font-family:"Plus Jakarta Sans";src:url("/assets/fonts/plus-jakarta-sans-700.woff2") format("woff2");font-weight:700;font-display:swap}
-body{font-family:"Plus Jakarta Sans","Inter", system-ui, -apple-system, sans-serif,system-ui,sans-serif}
+body{font-family:"Inter", system-ui, -apple-system, sans-serif}
 
 /* ---------- 3. dark-mode colour fixes ----------
    each of these rules hardcoded a light colour and stayed light in dark mode */
