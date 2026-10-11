@@ -113,6 +113,18 @@ class H(http.server.SimpleHTTPRequestHandler):
             return self._json(200, {'ok': True, 'days': int(data.get('days') or 30), 'chats': 3, 'aiOnly': 2, 'handoffs': 1, 'leads': 1, 'visits': 0,
                                     'channels': {'web': 1, 'wa': 1, 'tg': 1}, 'firstReply': 40, 'firstTeam': 300, 'unanswered': 0,
                                     'reasons': [{'k': 'human', 'label': 'Asked for a person', 'n': 1}]})
+        if action == 'wah_overview':
+            return self._json(200, {'ok': True, 'connected': False, 'lastTick': 0, 'flowsOn': False, 'days': 7, 'waiting': 0,
+                                    'wa': {'waiting': 0}, 'hub': {'remindHours': 0, 'remindChats': False, 'remindLeads': False, 'waba': ''},
+                                    'camp': {'name': '', 'sent': 0, 'delivered': 0, 'read': 0, 'replied': 0, 'status': 'none'}, 'camps': [], 'rules': [], 'tpls': [], 'optout': 0, 'today': 0, 'week': 0, 'sent': 0, 'autoSent': 0,
+                                    'running': 0, 'approved': 0, 'alert': '', 'cap': 0})
+        if action == 'wah_insights':
+            return self._json(200, {'ok': True, 'days': 7, 'sent': 0, 'optout': 0, 'winRate': 0,
+                                    'reply': {'ai': 0, 'aiN': 0, 'team': 0, 'teamN': 0}, 'funnel': [], 'stages': [], 'sources': [],
+                                    'camps': [], 'flows': [], 'series': []})
+        if action == 'wag_get':
+            return self._json(200, {'ok': True, 'dailyCap': 200, 'perTick': 20, 'quietFrom': 21, 'quietTo': 8, 'camps': [], 'tpls': [],
+                                    'segs': [], 'flows': [], 'optout': [], 'runs': [], 'running': 0, 'enabled': False})
         if action == 'projs_list':
             return self._json(200, {'ok': True, 'projects': [dict(PREVIEW_PROJECT), dict(PREVIEW_UNDATED)]})
         if action == 'arc_feed_list':
