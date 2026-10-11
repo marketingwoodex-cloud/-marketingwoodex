@@ -226,6 +226,9 @@ html .page-h { flex-wrap: wrap; gap: 12px; }
 
 /* AI Assistant sub-nav: the active item uses the light tint in light mode (its navy fill broke AA with blue text). */
 html:not(.dark) .ac-nav a.on { background: var(--ui-brand-soft); color: var(--ui-brand-text); }
+/* Sub-nav icons: same gap in every item, and the active icon takes the brand text token (not the old gold literal). */
+html .ac-nav a { gap: 12px; }
+html .ac-nav a.on svg { color: var(--ui-brand-text); }
 
 /* AI Assistant on phones: the single column must shrink to the screen; the section nav scrolls sideways inside its own box. */
 @media (max-width: 900px) {
