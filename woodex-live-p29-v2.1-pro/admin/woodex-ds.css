@@ -233,3 +233,8 @@ html:not(.dark) .ac-nav a.on { background: var(--ui-brand-soft); color: var(--ui
   html .ac > div, html .ac-sec { min-width: 0; }
   html .ac-nav { max-width: 100%; overflow-x: auto; }
 }
+
+/* Agent reply bubbles: the old cyan fill (admin.css, !important) becomes the brand blue token in both themes. */
+html .lm.g { background: var(--ui-brand) !important; color: #ffffff !important; border: 0 !important; }
+html.dark .lm.g small, html .lm.g small { color: #dbeafe; }
+html #cx-dock .lm.g { background: var(--ui-brand) !important; color: #ffffff !important; font-weight: 400 !important; }

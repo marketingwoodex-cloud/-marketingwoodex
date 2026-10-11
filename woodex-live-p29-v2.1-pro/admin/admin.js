@@ -161,7 +161,7 @@
     if (can("owner,admin,editor")) api("appr_count").then(function (r) { if (r && r.ok) set("approvals", r.pending); });
     if (can("g:sales,g:conversations")) {
       api("leads_count").then(function (r) { if (r && r.ok) set("enquiries", r.unread); });
-      api("chat_list", { status: "open" }).then(function (r) { if (r && r.ok) set("chat", (r.chats || []).filter(function (c) { return c.unread || c.needs; }).length); });
+      api("chat_list", { status: "open" }).then(function (r) { if (!r || !r.ok) return; var n = (r.chats || []).filter(function (c) { return c.unread || c.needs; }).length; set("chat", n); var tn = document.getElementById("chat-nt-n"); if (tn) { tn.textContent = n > 99 ? "99+" : n; tn.style.display = n ? "inline-flex" : "none"; } });
     }
   }
   setInterval(function () { if (!document.hidden) navBadges(); }, 60000);
@@ -349,11 +349,6 @@
     if (ntN) {
       ntN.hidden = unreadCount === 0;
       ntN.textContent = unreadCount;
-    }
-    var chatNtN = $("#chat-nt-n");
-    if (chatNtN) {
-      chatNtN.style.display = "inline-flex";
-      chatNtN.textContent = "2";
     }
   }
 
