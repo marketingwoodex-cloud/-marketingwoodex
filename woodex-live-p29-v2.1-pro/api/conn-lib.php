@@ -80,7 +80,7 @@ function conn_actions(string $action, array $in): bool {
 function p22_gmail_smtp(array $c): array {
     $user = trim((string)($c['account'] ?? '')); $pass = preg_replace('~\s+~', '', (string)($c['secret'] ?? ''));
     if (!filter_var($user, FILTER_VALIDATE_EMAIL) || strlen($pass) !== 16) fail('Save the Gmail address and the 16-letter app password first');
-    return ['smtpHost' => 'smtp.gmail.com', 'smtpPort' => 465, 'smtpUser' => $user, 'smtpPass' => $pass, 'smtpFrom' => $user];
+    return ['smtpHost' => 'smtp.gmail.com', 'smtpPort' => 587, 'smtpUser' => $user, 'smtpPass' => $pass, 'smtpFrom' => $user];
 }
 /** Off-site backup: website pages + database, WITHOUT secrets (no _private files, no logins/passwords). */
 function p22_offsite_zip(): array {
