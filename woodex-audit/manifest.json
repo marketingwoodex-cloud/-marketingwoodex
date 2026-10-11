@@ -4,7 +4,7 @@
   "evidence_revision": "653e2dd",
   "branch": "arena/7f38fddd-marketingwoodex",
   "generated": "2026-10-11",
-  "note": "SHA-256 of each listed file as committed at this revision. manifest.json is excluded. PNG screenshots are listed in the evidence index, not hashed here. No secret values, no personal data. Scope widened in the 2026-10-12 refresh: the admin tree, the QA tools, deliverables and the audit pack (previously the audit pack and a handful of tools only).",
+  "note": "SHA-256 of each listed file as committed at `evidence_revision` \u2014 the revision whose tree these hashes describe; this manifest ships in the following commit and is itself excluded. PNG screenshots are listed in the evidence index, not hashed here. No secret values, no personal data. Scope widened in the 2026-10-12 refresh: the admin tree, the QA tools, deliverables and the audit pack (previously the audit pack and a handful of tools only).",
   "release_recommendation": "BLOCK",
   "files": [
     {
