@@ -39,6 +39,27 @@ Also fixed while sweeping (not on the 2026-10-11 list):
 | AS-33 / U8 | TODO — refresh the audit manifest | **DONE** | Regenerated, 69 → 167 entries, SHA-256 + size, revision-pinned |
 | AD-18 follow-through | "`themeChanged()` once for all charts" | **DONE** | `window.themeChanged()` is the single hook; the toggle calls it, the class watcher covers the rest |
 
+## Third batch (2026-10-12) — preview role sign-in
+
+| ID | Was | Now | Evidence |
+|---|---|---|---|
+| AS-27 follow-up (preview sign-in) | The preview stub accepted exactly ONE account, so no role could be demonstrated | **DONE** | Accounts now come from `PREVIEW_ACCOUNTS` / `PREVIEW_ACCOUNTS_FILE` (never from the repo); roles mirror `api/roles-lib.php`; each account has its own token, so `me`/`status` keep that role after a reload. Tested: six accounts, correct role label each, sidebar 32/32/17/12/8 links, 0 page errors |
+| AD-31 (new) | — | **FIXED** | `admin-appr.js` read `.length` off follow-up buckets that the API always sends but a stub did not; one missing key blanked the whole Sales day-view. Buckets are now normalised. `leads_followups` / `leads_list` / `leads_count` fixtures added to the preview stub (the real shape from `api/sales17-lib.php:155`) |
+
+## AD-24 — verified in more detail (still owner-only)
+
+| Fact | Evidence |
+|---|---|
+| Shared team password in **117 tracked files** | `git grep -l` |
+| It is the live **database password fallback** in the source-of-truth tree | `woodex-live-p29-v2.1-pro/config.php:19` |
+| Deployment `.env` tracked, not git-ignored (DB pass, APP_KEY, Telegram token) | `woodex-live-p29-v2.1-pro/.env` |
+| One **Telegram bot token** appears in 25 tracked files | distinct-match count = 1 |
+| `_private/system.json` holds a 32-char maintenance token | `/maint/token` |
+| Audit correction | `_private/db.json` / `admin-db.json` are no longer tracked |
+
+Full write-up without values: `deliverables/SECRET-EXPOSURE-VERIFIED-2026-10-12.md`.
+Options 1–6 there need owner approval; visibility (C-6) is still refused from this sandbox (403).
+
 ## Changed status elsewhere
 
 | ID | Was | Now | Note |
