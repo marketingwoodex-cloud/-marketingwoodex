@@ -235,8 +235,8 @@
   try { var lastEm = localStorage.getItem("wxaLastEmail") || ""; if (lastEm && $("#l-email")) { $("#l-email").value = lastEm; setTimeout(function () { var pw = $("#l-pass"); if (pw) pw.focus(); }, 50); } } catch (x) {}
   $("#login-form").onsubmit = function (e) {
     e.preventDefault(); var b = $("#l-btn"); b.disabled = true; b.classList.add("busy"); b.setAttribute("aria-busy", "true"); $("#l-err").textContent = "";
-    var em = ($("#l-email").value.trim()) || "master@woodex.pk";
-    var pw = ($("#l-pass").value) || "Woodex@2026";
+    var em = $("#l-email").value.trim(), pw = $("#l-pass").value;
+    if (!em || !pw) { b.disabled = false; b.classList.remove("busy"); b.removeAttribute("aria-busy"); $("#l-err").textContent = !em ? "Type your email." : "Type your password."; return; }
     api("login", { email: em, password: pw }).then(function (r) { b.disabled = false; b.classList.remove("busy"); b.removeAttribute("aria-busy"); if (!r.ok) return ($("#l-err").textContent = r.error); try { localStorage.setItem("wxaLastEmail", em); } catch (x) {} $("#l-pass").value = "";
       if (r.need2fa) { S.ticket = r.ticket; $("#login-form").hidden = true; $("#tfa-form").hidden = false; $("#t-code").value = ""; $("#t-err").textContent = ""; $("#t-code").focus(); return; }
       signedIn(r); });
@@ -257,9 +257,9 @@
   $$(".btn-demo-pill").forEach(function (b) {
     b.onclick = function () {
       $("#l-email").value = b.dataset.e;
-      $("#l-pass").value = "Woodex@2026";
       $("#l-err").textContent = "";
-      $("#l-btn").click();
+      $("#l-pass").value = "";
+      $("#l-pass").focus();
     };
   });
   var eye = $("#l-pass-toggle");
@@ -274,21 +274,15 @@
   var socG = $("#l-soc-google");
   if (socG) {
     socG.onclick = function () {
-      $("#l-email").value = "admin@woodex.pk";
-      $("#l-pass").value = "Woodex@2026";
       $("#l-err").textContent = "";
-      toast("Signing in via Google SSO…");
-      $("#l-btn").click();
+      toast("Google sign-in is not set up yet. Use your email and password.", true);
     };
   }
   var socGh = $("#l-soc-github");
   if (socGh) {
     socGh.onclick = function () {
-      $("#l-email").value = "developer@woodex.pk";
-      $("#l-pass").value = "Woodex@2026";
       $("#l-err").textContent = "";
-      toast("Signing in via GitHub SSO…");
-      $("#l-btn").click();
+      toast("GitHub sign-in is not set up yet. Use your email and password.", true);
     };
   }
   var su = $("#l-signup");
