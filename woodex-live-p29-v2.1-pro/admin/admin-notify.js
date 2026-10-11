@@ -10,7 +10,7 @@
   document.head.appendChild(css);
 
   W.VIEWS.updates = function (el) {
-    el.innerHTML = W.head("Client updates", "Client updates", '<button class="btn pri" id="nt-save">' + ic("check") + "Save</button>") + '<div class="card" id="ld-card" style="padding:18px">Loading…</div>';
+    el.innerHTML = W.autoHead("Client updates", "Client updates", '<button class="btn pri" id="nt-save">' + ic("check") + "Save</button>") + '<div class="card" id="ld-card" style="padding:18px">Loading…</div>';
     W.fillIcons(el);
     api("notify_get").then(function (r) {
       if (!r.ok) { (el.querySelector("#ld-card") || el.querySelector(".card")).textContent = r.error; return; }

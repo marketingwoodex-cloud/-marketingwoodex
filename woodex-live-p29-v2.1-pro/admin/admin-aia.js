@@ -11,7 +11,7 @@
   var st = { tab: "report", days: 30, un: "open" };
 
   V.aireport = function (el) {
-    el.innerHTML = W.head("AI report", "AI report") +
+    el.innerHTML = W.autoHead("AI report", "AI report") +
       '<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px"><div class="seg" id="ar-tab"><button data-t="report">Report</button><button data-t="un">Unanswered questions <span id="ar-unc"></span></button></div><span style="flex:1"></span><a class="btn sm" href="#/train">Train the AI</a></div><div id="ar-b"><div class="card"><div class="empty">Loading…</div></div></div>';
     $("#ar-tab").onclick = function (e) { var b = e.target.closest("[data-t]"); if (!b) return; st.tab = b.dataset.t; draw(); };
     draw();

@@ -1,7 +1,7 @@
 /* Woodex Admin — P16 WhatsApp: discount offers to leads + WhatsApp connection card (connect / change number / disconnect). */
 (function () {
   "use strict";
-  var W = window.WXA, api = W.api, esc = W.esc, ic = W.ic, $ = W.$, toast = W.toast, modal = W.modal, closeModal = W.closeModal, head = W.head;
+  var W = window.WXA, api = W.api, esc = W.esc, ic = W.ic, $ = W.$, toast = W.toast, modal = W.modal, closeModal = W.closeModal, head = W.autoHead;
   var $$ = W.$$ || function (s, r) { return [].slice.call((r || document).querySelectorAll(s)); };
   var STAGE = { new: "New", contacted: "Contacted", visit: "Site visit", quote: "Quote sent", won: "Won", lost: "Lost" };
   var DEF_MSG = "Assalam o Alaikum {name}! Woodex Interior has a special offer for you: {percent}% off your interior project with code {code}. Valid until {expires}. Reply here to book a free site visit.";

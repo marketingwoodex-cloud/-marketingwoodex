@@ -18,7 +18,7 @@
   function pct(a, b) { return b ? Math.round((a / b) * 100) + "%" : "—"; }
   var D = null;
   V.wahub = function (el) {
-    el.innerHTML = W.head("WhatsApp hub", "Conversations / WhatsApp", '<a class="btn pri" href="#/wauto">' + ic("plus") + "New campaign</a>") + '<div id="wh-b"><div class="card"><div class="empty">Loading…</div></div></div>';
+    el.innerHTML = W.autoHead("WhatsApp hub", "Conversations / WhatsApp", '<a class="btn pri" href="#/wauto">' + ic("plus") + "New campaign</a>") + '<div id="wh-b"><div class="card"><div class="empty">Loading…</div></div></div>';
     W.fillIcons(el); load();
   };
   function load() {

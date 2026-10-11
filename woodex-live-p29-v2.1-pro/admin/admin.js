@@ -484,7 +484,11 @@
     $$(".nav-a").forEach(function (a) { if (a.dataset.v === h.id) a.classList.add("on"); });
     var on = bar.querySelector(".on"); if (on) setTimeout(function () { on.scrollIntoView({ block: "nearest", inline: "center" }); }, 0);
   }
-  function head(title, crumb, right) { return '<div class="ph"><div><h1>' + esc(title) + '</h1><div class="crumb"><a href="#/dashboard">Home</a> / ' + esc(crumb || title) + "</div></div>" + (right ? '<div class="toolbar">' + right + "</div>" : "") + "</div>"; }
+  function head(title, crumb, right, flow) { return '<div class="ph"><div><h1>' + esc(title) + '</h1><div class="crumb"><a href="#/dashboard">Home</a> / ' + esc(crumb || title) + "</div></div>" + (right ? '<div class="toolbar">' + right + "</div>" : "") + "</div>" + (flow ? flowStrip() : ""); }
+  // AUTOMATION pages share one "how it works" strip under the page header (same five steps everywhere).
+  var FLOW_STEPS = [["Connect", "Link the channel or account"], ["Set rules", "Choose what runs and when"], ["Test", "Try a sample before customers see it"], ["Go live", "Turn it on for customers"], ["Review", "Check results and fix alerts"]];
+  function flowStrip() { return '<section class="au-flow" aria-label="How it works"><div class="au-cap">How it works</div><ol class="au-steps">' + FLOW_STEPS.map(function (s, i) { return '<li><span class="au-n">' + (i + 1) + '</span><div><b>' + esc(s[0]) + "</b><span>" + esc(s[1]) + "</span></div></li>"; }).join("") + "</ol></section>"; }
+  function autoHead(title, crumb, right) { return head(title, crumb, right, true); }
 
   var VIEWS = {};
 
@@ -687,7 +691,7 @@
   /* Screens from separate files (defer scripts) may not exist yet when the first screen is drawn after a refresh:
      redraw once everything has loaded, if a placeholder was shown for a screen that now exists. */
   window.addEventListener("load", function () { setTimeout(function () { if (S.user && document.querySelector("#view .soon-box")) { var v = (location.hash.replace(/^#\/?/, "").split("/")[0] || "dashboard"); if (VIEWS[v] && VIEWS[v] !== VIEWS.soon) route(); } }, 0); });
-  window.WXA = { formDraft: formDraft, S: S, signedIn: signedIn, showAuth: showAuth, api: api, bapi: bapi, modal: modal, closeModal: closeModal, toast: toast, esc: esc, ic: ic, fillIcons: fillIcons, ago: ago, head: head, navBadges: function () { navBadges(); }, can: can, ROLE_LABEL: ROLE_LABEL, PERM_LABEL: PERM_LABEL, VIEWS: VIEWS, $: $, $$: $$, route: function () { route(); } };
+  window.WXA = { formDraft: formDraft, S: S, signedIn: signedIn, showAuth: showAuth, api: api, bapi: bapi, modal: modal, closeModal: closeModal, toast: toast, esc: esc, ic: ic, fillIcons: fillIcons, ago: ago, head: head, autoHead: autoHead, navBadges: function () { navBadges(); }, can: can, ROLE_LABEL: ROLE_LABEL, PERM_LABEL: PERM_LABEL, VIEWS: VIEWS, $: $, $$: $$, route: function () { route(); } };
   Object.assign(ACT, { "page.meta": ["file-text", "updated SEO/settings of"], "page.delete": ["x", "deleted page"], "redirects.save": ["refresh-cw", "saved redirects"], "global.menu": ["panel-left", "updated the site menu on"], "global.replace": ["refresh-cw", "replaced in header/footer"], "global.chrome": ["panel-left", "published header & footer on"] });
 
   // ---------------------------------------------------------------- boot

@@ -3,7 +3,7 @@
 (function () {
   "use strict";
   var W = window.WXA; if (!W) return;
-  var api = W.api, esc = W.esc, ic = W.ic, toast = W.toast, modal = W.modal, closeModal = W.closeModal, $ = W.$, $$ = W.$$, head = W.head;
+  var api = W.api, esc = W.esc, ic = W.ic, toast = W.toast, modal = W.modal, closeModal = W.closeModal, $ = W.$, $$ = W.$$, head = W.autoHead;
 
   W.VIEWS.social = function (el) {
     el.innerHTML = head("Social Media & Community Automation", "Social Media",

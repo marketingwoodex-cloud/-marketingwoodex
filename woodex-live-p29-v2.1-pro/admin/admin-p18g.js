@@ -3,7 +3,7 @@
 (function () {
   "use strict";
   var W = window.WXA; if (!W) return;
-  var api = W.api, wmodal = function (h) { W.modal(h, "wide wg-m"); }, esc = W.esc, ic = W.ic, $ = W.$, $$ = W.$$, toast = W.toast, modal = W.modal, closeModal = W.closeModal, head = W.head;
+  var api = W.api, wmodal = function (h) { W.modal(h, "wide wg-m"); }, esc = W.esc, ic = W.ic, $ = W.$, $$ = W.$$, toast = W.toast, modal = W.modal, closeModal = W.closeModal, head = W.autoHead;
   var STG = { new: "New", contacted: "Contacted", visit: "Site visit", quote: "Quote sent", won: "Won", lost: "Lost" };
   var ST = { draft: ["Draft", ""], scheduled: ["Scheduled", "info"], sending: ["Sending", "warn"], paused: ["Paused", "warn"], done: ["Completed", "ok"], cancelled: ["Cancelled", "bad"], failed: ["Failed", "bad"] };
   var css = document.createElement("style");

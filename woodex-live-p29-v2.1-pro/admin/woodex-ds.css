@@ -241,3 +241,19 @@ html .ac-nav a.on svg { color: var(--ui-brand-text); }
 html .lm.g { background: var(--ui-brand) !important; color: #ffffff !important; border: 0 !important; }
 html.dark .lm.g small, html .lm.g small { color: #dbeafe; }
 html #cx-dock .lm.g { background: var(--ui-brand) !important; color: #ffffff !important; font-weight: 400 !important; }
+
+/* ---- AUTOMATION pages (AU-9): one "how it works" strip and one pill-tab style ---- */
+html .au-flow { margin: -4px 0 18px; }
+html .au-cap { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--ui-muted); font-weight: 600; margin: 0 0 8px; }
+html .au-steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; }
+html .au-steps li { display: flex; gap: 10px; align-items: flex-start; min-width: 0; padding: 12px; border: 1px solid var(--ui-border); border-radius: 12px; background: var(--ui-surface); }
+html .au-steps b { display: block; font-size: 13.5px; color: var(--ui-text); }
+html .au-steps li > div > span { display: block; margin-top: 2px; font-size: 12px; line-height: 1.4; color: var(--ui-muted); }
+html .au-n { flex: none; display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--ui-brand-soft); color: var(--ui-brand-text); font-size: 12px; font-weight: 700; }
+@media (max-width: 1100px) { html .au-steps { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 700px) { html .au-steps { grid-template-columns: minmax(0, 1fr); } }
+/* Light mode: the active pill uses the brand tint, the same as the AI Assistant sub-nav. Dark mode keeps its navy fill. */
+html:not(.dark) .seg button.on, html:not(.dark) .wh-tabs a.on { background: var(--ui-brand-soft); color: var(--ui-brand-text); }
+/* Pill tabs: icon and label sit on one line with the same gap on every page. */
+html .seg button { display: inline-flex; align-items: center; gap: 7px; }
+html .seg button > svg, html .seg button > i { flex: none; width: 16px; height: 16px; }

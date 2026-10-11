@@ -21,7 +21,7 @@
   function n(x) { return (+x || 0).toLocaleString("en-US"); }
 
   V.wainsights = function (el) {
-    el.innerHTML = W.head("Insights", "Conversations / WhatsApp", '<select id="wi-d" style="width:auto;margin:0"><option value="7">Last 7 days</option><option value="14">Last 14 days</option><option value="30">Last 30 days</option><option value="90">Last 90 days</option></select>') +
+    el.innerHTML = W.autoHead("Insights", "Conversations / WhatsApp", '<select id="wi-d" style="width:auto;margin:0"><option value="7">Last 7 days</option><option value="14">Last 14 days</option><option value="30">Last 30 days</option><option value="90">Last 90 days</option></select>') +
       '<div id="wi-b"><div class="card"><div class="empty">Loading…</div></div></div>';
     $("#wi-d").value = String(days);
     $("#wi-d").onchange = function () { days = +this.value; load(); };

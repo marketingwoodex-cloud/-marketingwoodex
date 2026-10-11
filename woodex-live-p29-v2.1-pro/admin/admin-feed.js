@@ -3,7 +3,7 @@
 (function () {
   "use strict";
   var W = window.WXA; if (!W) return;
-  var api = W.api, esc = W.esc, ic = W.ic, $ = W.$, toast = W.toast, head = W.head;
+  var api = W.api, esc = W.esc, ic = W.ic, $ = W.$, toast = W.toast, head = W.autoHead;
   var POLL_MS = 15000, MAX_TEXT = 2000;
   var st = { pid: 0, items: [], me: 0, busy: false, timer: null };
 

@@ -30,7 +30,7 @@
 
   V.aicenter = function (el, parts) {
     cur = (parts && parts[0]) || cur;
-    el.innerHTML = W.head("AI Assistant", "Conversations / AI Assistant") + '<div id="ac-b"><div class="card"><div class="empty">Loading…</div></div></div>';
+    el.innerHTML = W.autoHead("AI Assistant", "Conversations / AI Assistant") + '<div id="ac-b"><div class="card"><div class="empty">Loading…</div></div></div>';
     api("aic_get").then(function (r) {
       var b = $("#ac-b"); if (!b) return;
       if (!r.ok) { b.innerHTML = '<div class="card"><div class="empty">' + esc(r.error) + "</div></div>"; return; }

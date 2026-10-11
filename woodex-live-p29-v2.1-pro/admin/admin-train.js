@@ -3,7 +3,7 @@
 (function () {
   "use strict";
   var W = window.WXA; if (!W) return;
-  var api = W.api, esc = W.esc, ic = W.ic, toast = W.toast, $ = W.$, $$ = W.$$, head = W.head;
+  var api = W.api, esc = W.esc, ic = W.ic, toast = W.toast, $ = W.$, $$ = W.$$, head = W.autoHead;
 
   W.VIEWS.train = function (el) {
     el.innerHTML = head("AI Assistant & Knowledge Training", "AI Assistant",

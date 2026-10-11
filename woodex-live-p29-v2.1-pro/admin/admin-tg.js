@@ -8,7 +8,7 @@
   function sw(id, on, label, hint) { return '<label class="check" style="align-items:flex-start;margin:8px 0"><input type="checkbox" id="' + id + '"' + (on ? " checked" : "") + "><span><b>" + label + "</b>" + (hint ? '<br><small class="muted">' + hint + "</small>" : "") + "</span></label>"; }
 
   V.telegram = function (el) {
-    el.innerHTML = W.head("Telegram", "Telegram") + '<div id="tg-b"><div class="card"><div class="empty">Loading…</div></div></div>';
+    el.innerHTML = W.autoHead("Telegram", "Telegram") + '<div id="tg-b"><div class="card"><div class="empty">Loading…</div></div></div>';
     api("tg_get").then(function (r) {
       if (!r.ok) { $("#tg-b").innerHTML = '<div class="card"><div class="empty">' + esc(r.error) + "</div></div>"; return; }
       var c = r.cfg, on = !!c.bot;
