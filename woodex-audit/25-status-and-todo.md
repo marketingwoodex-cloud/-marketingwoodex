@@ -35,6 +35,23 @@ Done and verified on a local stub (details: `deliverables/ADMIN-DESIGN-BATCH-202
   FAILs are stale expectations (AD-13/27/28 assert the old literals are present) plus pre-existing
   AD-02/AD-24.
 
+## A3. Layout batch (2026-10-12, second) — U1.1/U1.2, AS-20, AS-29/AD-16, AS-33
+
+Details: `deliverables/ADMIN-LAYOUT-BATCH-2026-10-12.md`.
+- U1.1 page header: 57 of 57 routes render H1 24px/600 with a breadcrumb (`header-audit.mjs`);
+  `heroes` was the last screen without a header and now uses the shared `head()`.
+- U1.2 KPI row: 4-up grid, 16px gap, tabular numbers, brand-tinted icon on all KPI routes
+  (was 5 columns on two routes and gold ink on one). Root cause: a duplicate obsidian block
+  re-declared `.dx-kpis` with `auto-fit/minmax(220px) !important`.
+- AS-29 / AD-16 closed with a measurement, not a count: `light-islands.mjs` finds 0 real light
+  backgrounds across all 58 routes in dark mode (only the two public-site preview iframes).
+- AS-20 / AD-26: all 61 admin-relative script tags carry `?v=ui-4`.
+- AS-33: `manifest.json` regenerated — 69 → 167 entries, revision-pinned.
+- Two self-inflicted bugs found by the sweep and fixed: self-referencing token definitions
+  (`--pri: var(--pri)`) and `.badge.navy` given a background token as ink (new `--navy-fg`).
+- Gate: contrast sweep 0 below AA both themes (58 screens), `node --check` 65/65,
+  `regression_static.py` 15/15, KPI grid clean at 390/768/1024/1440 with no overflow.
+
 ## B. What is still pending
 
 ### B1. Design and UI/UX (replica in progress)

@@ -1,10 +1,10 @@
 {
   "pack": "woodex-audit",
   "target": "woodex-live-p29-v2.1-pro",
-  "evidence_revision": "24157f6",
-  "branch": "arena/4ba510f0-marketingwoodex",
-  "generated": "2026-10-10",
-  "note": "SHA-256 of each file as committed in the commit that last changed this manifest. manifest.json is excluded. PNG screenshots are listed in the evidence index, not hashed here. No secret values, no personal data.",
+  "evidence_revision": "653e2dd",
+  "branch": "arena/7f38fddd-marketingwoodex",
+  "generated": "2026-10-11",
+  "note": "SHA-256 of each listed file as committed at this revision. manifest.json is excluded. PNG screenshots are listed in the evidence index, not hashed here. No secret values, no personal data. Scope widened in the 2026-10-12 refresh: the admin tree, the QA tools, deliverables and the audit pack (previously the audit pack and a handful of tools only).",
   "release_recommendation": "BLOCK",
   "files": [
     {
@@ -13,14 +13,34 @@
       "bytes": 70302
     },
     {
-      "path": "frontend-v1/admin/admin-security.js",
-      "sha256": "9407efef55de3d21a5ee993327828eb6e3552906a7a8ff07cde3d7a136bcf709",
-      "bytes": 13525
+      "path": "deliverables/ADMIN-DESIGN-BATCH-2026-10-12.md",
+      "sha256": "dbfa1012b74703c035b88b9d5edf2df0484f64b375a49ab496d9693fef07bcf3",
+      "bytes": 6844
+    },
+    {
+      "path": "deliverables/ADMIN-LAYOUT-BATCH-2026-10-12.md",
+      "sha256": "1ca3ef2e4a0247ee72c1e6f732ac34d6fb1450f65a9a4961c52f7b393de8a4ff",
+      "bytes": 6031
+    },
+    {
+      "path": "deliverables/MASTER-AUDIT-2026-10-11.md",
+      "sha256": "3cc65eb24e9424279c71a8d598c5eb9287c8db863ccbbd7dd148dfa4f3c42505",
+      "bytes": 3444
+    },
+    {
+      "path": "deliverables/MASTER-TODO-2026-10-11.md",
+      "sha256": "8df07dbd26fd0998a2c07a39f203504da46ef6309ae7ec48a0a7fbd861c2f148",
+      "bytes": 10384
     },
     {
       "path": "tools/qa-p29/README.md",
-      "sha256": "d8d3575de1f8f42fbc4f2e8d99fb3ba6d66d463ca6e84c9c34c7190d681f3167",
-      "bytes": 2702
+      "sha256": "5ce752029f7b2264a84d8a6aa4131eb59d66e42e74d127d3162982e66df346dc",
+      "bytes": 3762
+    },
+    {
+      "path": "tools/qa-p29/a11y-labels.js",
+      "sha256": "199140cac9a6718d67e3798bc646bf897e742416e066629500e8cb031a5fc31c",
+      "bytes": 844
     },
     {
       "path": "tools/qa-p29/approvals-race.js",
@@ -28,9 +48,44 @@
       "bytes": 6267
     },
     {
+      "path": "tools/qa-p29/bad.php",
+      "sha256": "26c934a26f48e301e203e8d4f39299389b57dd451a0a0d7a1a7a1e9908e95d0a",
+      "bytes": 32
+    },
+    {
       "path": "tools/qa-p29/browser-regression.mjs",
       "sha256": "5e28f2831c224db1bab9247756d89a6e2179ea145a2ea581e06f12f2bee95f2e",
       "bytes": 9397
+    },
+    {
+      "path": "tools/qa-p29/happy-dash.js",
+      "sha256": "123bc30b2d23881906c2cd6a23685dfd67f1fed1386ea5ecbc0448eefb9a683f",
+      "bytes": 5958
+    },
+    {
+      "path": "tools/qa-p29/harness-db.js",
+      "sha256": "e4b2c965cfb5e665abff97f810e2af5d954424603e13d35aef6dde5299f70b20",
+      "bytes": 4870
+    },
+    {
+      "path": "tools/qa-p29/harness.js",
+      "sha256": "e35ecaa23fa049d9592a98b61fedc15dd322ca19f56d4801f2b6fe77f244716d",
+      "bytes": 4983
+    },
+    {
+      "path": "tools/qa-p29/header-audit.mjs",
+      "sha256": "8e2478499643f70cba504fa7905c57960d39cb9f0666329207af6fd746065f5a",
+      "bytes": 6071
+    },
+    {
+      "path": "tools/qa-p29/light-islands.mjs",
+      "sha256": "8320615ccf336c808ee77651a66bba7f1f5a7720f28b7bf3711b127316d99934",
+      "bytes": 5504
+    },
+    {
+      "path": "tools/qa-p29/login-contrast.mjs",
+      "sha256": "83bad724301057ed0c1d3f6f259593849b652e37ff74253d9bb91fee2bddbb82",
+      "bytes": 3538
     },
     {
       "path": "tools/qa-p29/package-lock.json",
@@ -43,19 +98,54 @@
       "bytes": 325
     },
     {
+      "path": "tools/qa-p29/phplint.js",
+      "sha256": "430a23104e9e3d909a4565335dd345b7d7eedd204a019b9692914142ebb2c842",
+      "bytes": 803
+    },
+    {
       "path": "tools/qa-p29/preview-login-test.mjs",
-      "sha256": "15753b7261c70de2f0b67744e7fd5259a90523bf065f432e1a60c1ce494bd7e9",
-      "bytes": 3797
+      "sha256": "e2cba6c033ada40da73f7b40a075861ed2927d3ecbd3251166bacfae50fcfd92",
+      "bytes": 3778
     },
     {
       "path": "tools/qa-p29/preview-server.py",
-      "sha256": "32dd379116689be46f34c105d39ad384ec1cc00e91ad581301d2c86a14513fb9",
-      "bytes": 4329
+      "sha256": "bc45f78e3d0815f97aae35c87a72220f8ede7b82c410bab6564e1ec21d9abaf2",
+      "bytes": 22492
+    },
+    {
+      "path": "tools/qa-p29/responsive-sweep.mjs",
+      "sha256": "331f0f46e10d598d8719ff8b1010c99d7bd2590b7e97fe1a6f137b38357cd9ca",
+      "bytes": 4419
     },
     {
       "path": "tools/qa-p29/run-browser-evidence.sh",
       "sha256": "2d1901b63a01c84cacc40915ba4ab24288ba19accfef74247b6b07dae62a47c8",
       "bytes": 1835
+    },
+    {
+      "path": "tools/qa-p29/sidebar-probe.js",
+      "sha256": "29d9dc7204c5075815fa6553c3f90dae90532c777451b1a84580278ba9ede21a",
+      "bytes": 2594
+    },
+    {
+      "path": "tools/qa-p29/test-dashboard-error.js",
+      "sha256": "3929444c6f6cb6954257da51ea80da1eb58e8ff0343010c4c9b4ca31999ceab2",
+      "bytes": 5177
+    },
+    {
+      "path": "tools/qa-p29/theme-contrast.mjs",
+      "sha256": "aca513b14e2bb15119b1a40c3b6db8bf6077a39c093570234b76c389195f938e",
+      "bytes": 7597
+    },
+    {
+      "path": "tools/qa-p29/theme-probe.js",
+      "sha256": "042e654f67c7e00353b11164a5e8794fe612212dcbbb4a3597e8019893e061d6",
+      "bytes": 4550
+    },
+    {
+      "path": "tools/qa-p29/ui-design-batch.mjs",
+      "sha256": "9d57b074029326646bb73af6f2677fe3ec792303f053986a749faece1ed7c28a",
+      "bytes": 7475
     },
     {
       "path": "tools/qa-p29/ui-regression.js",
@@ -189,8 +279,8 @@
     },
     {
       "path": "woodex-audit/25-status-and-todo.md",
-      "sha256": "129c679e51858e88b58ec16295a2b11b45a10da2c34215b51655421333dceb7c",
-      "bytes": 6251
+      "sha256": "c60263f537bf3da7292e0c58aed5ddeaaf41f130c234b0db92e12fe9e66a0acf",
+      "bytes": 11331
     },
     {
       "path": "woodex-audit/README.md",
@@ -319,8 +409,8 @@
     },
     {
       "path": "woodex-audit/evidence/scripts/regression_static.py",
-      "sha256": "71f14542627ab6b4ac11fdcdca82a3b15d685e70cf7c147726b1d32d66288a61",
-      "bytes": 3235
+      "sha256": "80a59a869432727c4d6400e05d64f7fbfa2a148400d942365ff3b02abf86ecc0",
+      "bytes": 3830
     },
     {
       "path": "woodex-audit/evidence/scripts/reverify_findings.py",
@@ -331,6 +421,11 @@
       "path": "woodex-audit/evidence/scripts/site_static_audit.py",
       "sha256": "12d852b0bb13e816647696a876a70e6c908cb514182618f3cfd3b6534a1a9ce0",
       "bytes": 6972
+    },
+    {
+      "path": "woodex-audit/manifest.json",
+      "sha256": "2dd364caba026b2253ccf89bcad62ae676c41aefb13052d461c5842c1db3b0e3",
+      "bytes": 30945
     },
     {
       "path": "woodex-audit/qa/regression-test-matrix.md",
@@ -348,9 +443,419 @@
       "bytes": 3287
     },
     {
+      "path": "woodex-live-p29-v2.1-pro/admin/admin-aia.js",
+      "sha256": "bc1229dabefe06226234ea227bd7d67fb39830ee4fd87fe00b4588f6c57ad20d",
+      "bytes": 9894
+    },
+    {
+      "path": "woodex-live-p29-v2.1-pro/admin/admin-aicenter.js",
+      "sha256": "b28ba628d90e2ce622a8b0c9381c891fb75530276114bf2556485937fb4095c8",
+      "bytes": 16600
+    },
+    {
+      "path": "woodex-live-p29-v2.1-pro/admin/admin-appr.js",
+      "sha256": "5d43f96a42c9470222ce835a0257a8d7b81f20ae0d7e02ee3f6f64afe59d61be",
+      "bytes": 16663
+    },
+    {
+      "path": "woodex-live-p29-v2.1-pro/admin/admin-booking.js",
+      "sha256": "94679a6cdfea7c573924cdd2ec94265a971bdc80409d5280b1fe328130a5b322",
+      "bytes": 19580
+    },
+    {
+      "path": "woodex-live-p29-v2.1-pro/admin/admin-chat.js",
+      "sha256": "6d6aaa0047b961eae3df99742b2dda1c331104f0b01cfe897be6cc95aac109fd",
+      "bytes": 13630
+    },
+    {
+      "path": "woodex-live-p29-v2.1-pro/admin/admin-chat2.js",
+      "sha256": "f7f5ab03df2dfa35cca7214b2a92ad8c28e4e17778fcd748418071866e238e17",
+      "bytes": 23429
+    },
+    {
+      "path": "woodex-live-p29-v2.1-pro/admin/admin-chrome.js",
+      "sha256": "16ed55fa816a34798a902d29cf0aeba05996e199b1e1e52a1b9ff980ffaea6aa",
+      "bytes": 52847
+    },
+    {
+      "path": "woodex-live-p29-v2.1-pro/admin/admin-conn.js",
+      "sha256": "23260a9585d9d8aefd45fa9e966dce7839ccbd8304e216f31ddab7fdb8ca65b0",
+      "bytes": 8527
+    },
+    {
+      "path": "woodex-live-p29-v2.1-pro/admin/admin-content.js",
+      "sha256": "c60ee691b29944dfd30b40a7b920f0283419dc05715bbf08567f1b1a325c78ef",
+      "bytes": 122636
+    },
+    {
+      "path": "woodex-live-p29-v2.1-pro/admin/admin-crm.js",
+      "sha256": "c5f527b5a8b5f605e3610041ca8f4e02a38de51d9686b7fbc4378950742d0906",
+      "bytes": 46167
+    },
+    {
+      "path": "woodex-live-p29-v2.1-pro/admin/admin-dash.js",
+      "sha256": "c9e0841961cb4e6b9688ad6093e10d171b583902701751b381c4b32447e10085",
+      "bytes": 24500
+    },
+    {
+      "path": "woodex-live-p29-v2.1-pro/admin/admin-feed.js",
+      "sha256": "ced6ca39b70f31e9ac863b10f962406e6b66b32dc9db61aced97816e15ccb98f",
+      "bytes": 5028
+    },
+    {
+      "path": "woodex-live-p29-v2.1-pro/admin/admin-fields.js",
+      "sha256": "4084fbc7daaab74b5544e413c61602539535bec22f4a200b40ea4d08dd5a84e5",
+      "bytes": 43319
+    },
+    {
+      "path": "woodex-live-p29-v2.1-pro/admin/admin-gantt.js",
+      "sha256": "7a80cfa87b81d0e5089ec1ef575e02778e7cd053ea4a07b324b72141fcdc0957",
+      "bytes": 5189
+    },
+    {
+      "path": "woodex-live-p29-v2.1-pro/admin/admin-google.js",
+      "sha256": "fb3f3f79a0bc1b817852cb69f9b5fb32c69d8dbbbc7345e0424f51cd143b566e",
+      "bytes": 5016
+    },
+    {
+      "path": "woodex-live-p29-v2.1-pro/admin/admin-hero.js",
+      "sha256": "ef9a1693e2c7147b085beb64972e93e8f9e77144e79bdef396b2ef7c13c09e05",
+      "bytes": 35669
+    },
+    {
+      "path": "woodex-live-p29-v2.1-pro/admin/admin-inbox.js",
+      "sha256": "f0427210e6ce9f3ca7cf8c9093c22d8658c24a13c03f60627c5702ee0ca02bb8",
+      "bytes": 6885
+    },
+    {
+      "path": "woodex-live-p29-v2.1-pro/admin/admin-integ.js",
+      "sha256": "d11dc36ce2a3fc94b2c0fb5ecb3c5f7458fbdee2aac37915a30188fa75052e1c",
+      "bytes": 11896
+    },
+    {
+      "path": "woodex-live-p29-v2.1-pro/admin/admin-lib26.js",
+      "sha256": "3078aa59da6b6d2b9bb3fa8e6eabee0247cdbc1d125a451d7d90426549cf3e6f",
+      "bytes": 10801
+    },
+    {
+      "path": "woodex-live-p29-v2.1-pro/admin/admin-library.js",
+      "sha256": "08e5937b9f61c1d524c5fcf995dd9c4c7e9d2a9d63361b32ddda9f700ad9c1c7",
+      "bytes": 25782
+    },
+    {
+      "path": "woodex-live-p29-v2.1-pro/admin/admin-lists.js",
+      "sha256": "f4eeccc81c17b60a7ee61463552b1f28c91d700c38e82810148b6e9e466ed329",
+      "bytes": 6233
+    },
+    {
+      "path": "woodex-live-p29-v2.1-pro/admin/admin-logos.js",
+      "sha256": "73f288f09630d6a4c6c3544f995f1d43b6cc3e5ad226b8fb4d1e8d76a745b501",
+      "bytes": 8617
+    },
+    {
+      "path": "woodex-live-p29-v2.1-pro/admin/admin-media.js",
+      "sha256": "6a0ca431413af85103ca37b1c3820f430a8919ffb359222d7c2023d29253633e",
+      "bytes": 55249
+    },
+    {
+      "path": "woodex-live-p29-v2.1-pro/admin/admin-notify.js",
+      "sha256": "86731ee209ae24c351d0885d6355c782b4b1ecae256b5b63d036be8ae6359bc9",
+      "bytes": 6761
+    },
+    {
+      "path": "woodex-live-p29-v2.1-pro/admin/admin-offers.js",
+      "sha256": "4ff594cc1a417b9e7d48f352eb2a1efa2600153b984d7b202a6fb15a674095ee",
+      "bytes": 12006
+    },
+    {
+      "path": "woodex-live-p29-v2.1-pro/admin/admin-p18.js",
+      "sha256": "6a78522b1cb648e46720c56167ea8f0e051816eedfe0d4e0139721241b58c104",
+      "bytes": 17566
+    },
+    {
+      "path": "woodex-live-p29-v2.1-pro/admin/admin-p18e.js",
+      "sha256": "0d3851534058872bbc8727511c7e4b199669031bd8698bd46a7bd1b794c2dfb0",
+      "bytes": 21707
+    },
+    {
+      "path": "woodex-live-p29-v2.1-pro/admin/admin-p18g.js",
+      "sha256": "29af7878ba0e0bb2f022a1199305cf7c217d704727b16c2668952fcfc02e3b22",
+      "bytes": 38381
+    },
+    {
+      "path": "woodex-live-p29-v2.1-pro/admin/admin-p18h.js",
+      "sha256": "96d7b2086c29d776c2c4572e68af48a58026d733f8363c847bf7f0912a13c02c",
+      "bytes": 26472
+    },
+    {
+      "path": "woodex-live-p29-v2.1-pro/admin/admin-p18j.js",
+      "sha256": "47531e58fbf01a1ce4889c4bb1dea4ca02c2b8150d5a1e67c225ae64f914651a",
+      "bytes": 14613
+    },
+    {
+      "path": "woodex-live-p29-v2.1-pro/admin/admin-p19c.js",
+      "sha256": "005d15148c98fca68ed802720260d64ce5196f84d0c14024853c7f4c8f4a989c",
+      "bytes": 3405
+    },
+    {
+      "path": "woodex-live-p29-v2.1-pro/admin/admin-p19f.js",
+      "sha256": "8fe3ca263ba07395499be310f7cb9adc9ea99c56ca0ebac73d4efc44f232aad9",
+      "bytes": 21008
+    },
+    {
+      "path": "woodex-live-p29-v2.1-pro/admin/admin-p3.js",
+      "sha256": "1687f175a079ef097a8bd24f022abc5635cb2c6c09f4fe860686c2a08f0d8a0d",
+      "bytes": 4212
+    },
+    {
+      "path": "woodex-live-p29-v2.1-pro/admin/admin-p36.js",
+      "sha256": "651eb4c51c8cd488045c0fd83282cea737e7b8a9da41a014ad7cc6d88b0fc39b",
+      "bytes": 17593
+    },
+    {
+      "path": "woodex-live-p29-v2.1-pro/admin/admin-p38wa.js",
+      "sha256": "b9577647206463813a784a6b3aeecae2499611b264c2e123225e34587307d1c3",
+      "bytes": 7885
+    },
+    {
+      "path": "woodex-live-p29-v2.1-pro/admin/admin-p8.js",
+      "sha256": "a3a74b265f22aa06e5193f7b99844e032ee9afde87e178b700d2c4ec83132cb0",
+      "bytes": 15990
+    },
+    {
+      "path": "woodex-live-p29-v2.1-pro/admin/admin-pages.js",
+      "sha256": "3d25002533d08e29b01d068c752ef59f7d399e934aa8df80b1878551c5f64f23",
+      "bytes": 39004
+    },
+    {
+      "path": "woodex-live-p29-v2.1-pro/admin/admin-print.js",
+      "sha256": "6e675bf02dba8a9e92cc5c40b23bfda178aacddcbca36e995c317eb70911db4f",
+      "bytes": 31823
+    },
+    {
+      "path": "woodex-live-p29-v2.1-pro/admin/admin-print17.js",
+      "sha256": "ecabebc42a3e46aebc010f076fa9e6f09ec80779e5a1e00f72ee2d51eb8b1073",
+      "bytes": 42116
+    },
+    {
+      "path": "woodex-live-p29-v2.1-pro/admin/admin-redirects.js",
+      "sha256": "2a1c248abd51a1b244436e3b628a14f5908d8a944d3865192533ef6407252f41",
+      "bytes": 14114
+    },
+    {
+      "path": "woodex-live-p29-v2.1-pro/admin/admin-reports.js",
+      "sha256": "83cb34c65f22f6284a60ba89e47444966d411ce09e21691245706663a3f24def",
+      "bytes": 11679
+    },
+    {
+      "path": "woodex-live-p29-v2.1-pro/admin/admin-sales.js",
+      "sha256": "3d232249ab2dfa83f6caf3f7dfcee30f343b6b811163cd5bc13f5ca6b71ceff9",
+      "bytes": 80846
+    },
+    {
+      "path": "woodex-live-p29-v2.1-pro/admin/admin-sales17.js",
+      "sha256": "4be88cb5aaeeed73aa352d7fd420cdaca65e87cff76cd66fa7ca2aaa8a1fcef2",
+      "bytes": 107180
+    },
+    {
       "path": "woodex-live-p29-v2.1-pro/admin/admin-security.js",
-      "sha256": "9407efef55de3d21a5ee993327828eb6e3552906a7a8ff07cde3d7a136bcf709",
-      "bytes": 13525
+      "sha256": "362c870305d1f978403770b8b9b7cb568976763f5f6131adc88ca53e3238d4a2",
+      "bytes": 13785
+    },
+    {
+      "path": "woodex-live-p29-v2.1-pro/admin/admin-seo.js",
+      "sha256": "f7ce7c4ff3e9588bfbb5c118f93e620a84860eaaa45c8254ebf9a42d2d8cf11b",
+      "bytes": 14420
+    },
+    {
+      "path": "woodex-live-p29-v2.1-pro/admin/admin-seo38.js",
+      "sha256": "0b50203d243e1cd29834f4950e2f90fc23d3bd19f095cbb6afc44b4d816c62d4",
+      "bytes": 25642
+    },
+    {
+      "path": "woodex-live-p29-v2.1-pro/admin/admin-seoagent.js",
+      "sha256": "4b9c8022d719a293c37af91f808006caf7b7553a9614bcc5fd67bba1f41109ff",
+      "bytes": 12833
+    },
+    {
+      "path": "woodex-live-p29-v2.1-pro/admin/admin-settings.js",
+      "sha256": "3bb6c948ed700ce8079e420aeebf612282c5822e1bc47ea348ff3fd04d227359",
+      "bytes": 42414
+    },
+    {
+      "path": "woodex-live-p29-v2.1-pro/admin/admin-sheets.js",
+      "sha256": "27bd287e534da276961432dfe9b572d5c54af30f0e13ec4c99c2bd36fe50d4d6",
+      "bytes": 8055
+    },
+    {
+      "path": "woodex-live-p29-v2.1-pro/admin/admin-social.js",
+      "sha256": "e29ba0109abd4efe9dcd21241499477150e3674205a837f0a23ddbcab41537da",
+      "bytes": 23891
+    },
+    {
+      "path": "woodex-live-p29-v2.1-pro/admin/admin-speed.js",
+      "sha256": "40aec64f24d52137b565f307a32cefc93216ce8dafa232b99f53d9fbfc5e9125",
+      "bytes": 12126
+    },
+    {
+      "path": "woodex-live-p29-v2.1-pro/admin/admin-starters.js",
+      "sha256": "8e2b72299c00d2667fafa2f93e13d3ade8439a5b042f6a09ec7ce66e8d77ac05",
+      "bytes": 11586
+    },
+    {
+      "path": "woodex-live-p29-v2.1-pro/admin/admin-system.js",
+      "sha256": "3694164b7299e879b61d8a28a294d1e22d75578d26d985898e815cb662d3a94e",
+      "bytes": 7287
+    },
+    {
+      "path": "woodex-live-p29-v2.1-pro/admin/admin-templates.js",
+      "sha256": "5a1b0c8f1e94cf54761c81b50e23ba20ae5a8aebc0e4f8d88780f90cced8b5ca",
+      "bytes": 31170
+    },
+    {
+      "path": "woodex-live-p29-v2.1-pro/admin/admin-tg.js",
+      "sha256": "191405dc775748e9881518da2b2a1aaa1ea4a394ee05a1299bdd15a30dec682a",
+      "bytes": 16867
+    },
+    {
+      "path": "woodex-live-p29-v2.1-pro/admin/admin-theme.js",
+      "sha256": "cc3989e68124a012642ed0e54689463297599bb4d1bb734b823295b1863ea9c5",
+      "bytes": 9091
+    },
+    {
+      "path": "woodex-live-p29-v2.1-pro/admin/admin-train.js",
+      "sha256": "4f3717cbb7a5b735c12d2db872298ef195e99d75d80f1cde6ae6df48c0eb72f8",
+      "bytes": 15087
+    },
+    {
+      "path": "woodex-live-p29-v2.1-pro/admin/admin-updates.js",
+      "sha256": "6b0e4fe3530cc5fef76cb2a51b044f24bbe17a6042cdeee3baa9482eb4c09623",
+      "bytes": 10721
+    },
+    {
+      "path": "woodex-live-p29-v2.1-pro/admin/admin-users.js",
+      "sha256": "cdfc7a7f3c0f8e125224ddd5ffc593d591bdc37921c4d547fee27a1851342d7c",
+      "bytes": 7303
+    },
+    {
+      "path": "woodex-live-p29-v2.1-pro/admin/admin-wahub.js",
+      "sha256": "199b5871a3287d92edfa1d7d0afbd7620aec48255c942e92a454d8b440fefef6",
+      "bytes": 15992
+    },
+    {
+      "path": "woodex-live-p29-v2.1-pro/admin/admin-wains.js",
+      "sha256": "66963a3ace2a50eb1480a4b793aef35883b4e44f2145c17e233c211e8c425e28",
+      "bytes": 9566
+    },
+    {
+      "path": "woodex-live-p29-v2.1-pro/admin/admin-xlsx.js",
+      "sha256": "19f1e353578f481808680189d8a319cafa32dbb5a980c2f2ae03cde51550bfd3",
+      "bytes": 7188
+    },
+    {
+      "path": "woodex-live-p29-v2.1-pro/admin/admin.css",
+      "sha256": "d9d1324a5340eef3f133b13da2cf57cb24684d05bfdd27b4fb345a0a4b7f6113",
+      "bytes": 167368
+    },
+    {
+      "path": "woodex-live-p29-v2.1-pro/admin/admin.js",
+      "sha256": "cb4d9e9e1e129d6589a808b16b04cdff2c56f72f57f7c71b9e5ee3d742568f93",
+      "bytes": 64703
+    },
+    {
+      "path": "woodex-live-p29-v2.1-pro/admin/assets/fonts/INTER-LICENSE.txt",
+      "sha256": "3b0a5fca3d17942cde889069889dedbbbd075e9b599968c82a95f4d944e9b345",
+      "bytes": 4477
+    },
+    {
+      "path": "woodex-live-p29-v2.1-pro/admin/assets/fonts/inter-latin-400.woff2",
+      "sha256": "8909904ab6c872eb994093482a88a28eca2cd95912d7b6fecd72103b0dc07edc",
+      "bytes": 23664
+    },
+    {
+      "path": "woodex-live-p29-v2.1-pro/admin/assets/fonts/inter-latin-500.woff2",
+      "sha256": "f3779f1efccc4bdcdf9c0a02ab95bf6bd092ed09c48c08cedc725889edd1d19f",
+      "bytes": 24272
+    },
+    {
+      "path": "woodex-live-p29-v2.1-pro/admin/assets/fonts/inter-latin-600.woff2",
+      "sha256": "f9a06e79cd3a2a20951c0f0e28f66dd0e6d3fda73911d640a2125c8fcb78f21a",
+      "bytes": 24452
+    },
+    {
+      "path": "woodex-live-p29-v2.1-pro/admin/assets/fonts/inter-latin-700.woff2",
+      "sha256": "6f56409fd3d64bb85f7d070bce20749db2d66b6d63cec586cc22d1c761be2491",
+      "bytes": 24356
+    },
+    {
+      "path": "woodex-live-p29-v2.1-pro/admin/assets/img/signin-office-20261011.jpg",
+      "sha256": "39166fd3f21b0720ec82a6c4298a2512c4ff92fdddb7ac25f935e83734ec229b",
+      "bytes": 198399
+    },
+    {
+      "path": "woodex-live-p29-v2.1-pro/admin/assets/woodex-tw.css",
+      "sha256": "6c49e3abb66e858e1f2d6e323b1363c9cd532c1f150063653e0fd8c21e04b740",
+      "bytes": 887
+    },
+    {
+      "path": "woodex-live-p29-v2.1-pro/admin/features.html",
+      "sha256": "d7c6c789e5950c619f43eb43666fea911970a232d6bcc2f136f94022f5c4451e",
+      "bytes": 42775
+    },
+    {
+      "path": "woodex-live-p29-v2.1-pro/admin/index.html",
+      "sha256": "5d7a7ea759d4a75a5265e41b7e54f8bd4220efd89c07b2a836bd7adf02f467b8",
+      "bytes": 15614
+    },
+    {
+      "path": "woodex-live-p29-v2.1-pro/admin/master-components.html",
+      "sha256": "97f675d34808047cb0d3abfbddac4e1d4a13fc4b7a28a655c66f7555b39ea27a",
+      "bytes": 44109
+    },
+    {
+      "path": "woodex-live-p29-v2.1-pro/admin/seo-analyzer.js",
+      "sha256": "a866b1472cc07102f18347f78ea1b51ce8ebd417b8fc98150d90f5936ecd53f1",
+      "bytes": 15723
+    },
+    {
+      "path": "woodex-live-p29-v2.1-pro/admin/uipal.js",
+      "sha256": "12dd5b9adcd140e624259a3cfe1e656541d2ee01cbb529fe30fb1079363f4d8f",
+      "bytes": 4657
+    },
+    {
+      "path": "woodex-live-p29-v2.1-pro/admin/vendor/chart.umd.js",
+      "sha256": "74401d738dd3e03ee5dfb3b6841210fe2c4ead8a960c4011ca4ba0b78a9fd8f3",
+      "bytes": 205125
+    },
+    {
+      "path": "woodex-live-p29-v2.1-pro/admin/vendor/html2pdf.bundle.min.js",
+      "sha256": "73b512869d64d0f2828e436b24b23b7d84f24b7028bba6c49cb4d1c988103da4",
+      "bytes": 906041
+    },
+    {
+      "path": "woodex-live-p29-v2.1-pro/admin/vendor/icons.js",
+      "sha256": "e670fb15d3698f80953e390917587973504d0f4b9ded5f67dc4d0b726f43dbb9",
+      "bytes": 13423
+    },
+    {
+      "path": "woodex-live-p29-v2.1-pro/admin/vendor/qrcode.js",
+      "sha256": "18ae399f81182bc9de916e9c77b195df20cc58d6f2d55a62b085a299f1bf1780",
+      "bytes": 56694
+    },
+    {
+      "path": "woodex-live-p29-v2.1-pro/admin/vendor/quote-starter.js",
+      "sha256": "062ddb921c458e02042f42a39fdee474abd8892fbc5d794de279f3245d26c1c2",
+      "bytes": 12559
+    },
+    {
+      "path": "woodex-live-p29-v2.1-pro/admin/woodex-ds.css",
+      "sha256": "76bac2342071b2b03ddbac7fb4ee8f2f335a39442918663765d88e173a81a41f",
+      "bytes": 19331
+    },
+    {
+      "path": "woodex-live-p29-v2.1-pro/admin/woodex-ui.css",
+      "sha256": "48d48104cb38c23eddf3a01a9573ed76cc7fe31fb817c6cc770522f366e041fc",
+      "bytes": 23234
     }
   ]
 }

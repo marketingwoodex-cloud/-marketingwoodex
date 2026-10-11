@@ -89,7 +89,7 @@
 
   // ---------- view
   W.VIEWS.heroes = function (el) {
-    if (!W.S.btoken) { el.innerHTML = '<div class="content"><div class="card soon-box"><h2>No builder access</h2><p>Your role cannot edit pages.</p></div></div>'; return; }
+    if (!W.S.btoken) { el.innerHTML = W.head("Hero slides", "Website / Hero slides") + '<div class="content"><div class="card soon-box"><h2>No builder access</h2><p>Your role cannot edit pages.</p></div></div>'; return; }
     el.innerHTML = W.head("Hero slides", "Website / Hero slides", '<a class="btn" href="/" target="_blank" rel="noopener">' + ic("external-link") + "View website</a>") +
       '<div class="content"><div class="hx-tabs seg" id="hx-tabs">' + [["home", "Home slider"], ["pages", "All page heroes"], ["tpl", "Templates"]].map(function (t) { return '<button data-t="' + t[0] + '"' + (tab === t[0] ? ' class="on"' : "") + ">" + t[1] + "</button>"; }).join("") + '</div><div id="hx-body" style="margin-top:16px"><div class="card" style="padding:24px">Loading…</div></div></div>';
     W.fillIcons && W.fillIcons(el);

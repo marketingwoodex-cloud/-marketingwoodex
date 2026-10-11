@@ -28,6 +28,17 @@ Also fixed while sweeping (not on the 2026-10-11 list):
 | Login button and shell still carried the old gold `#c59b27` / `#b58d4a` | `var(--pri)` / `var(--pri-fg)` |
 | Chart re-theme re-routed the dashboard (full API refetch per toggle) | Toggle only flips the class; charts repaint in place |
 
+## Closed by the second batch (layout, same day)
+
+| ID | Was | Now | Evidence |
+|---|---|---|---|
+| U1.1 (AS-… plan §1.3 row 1) | PARTIAL — page header checked on Approvals only | **DONE — 57 of 57 routes** | `header-audit.mjs`: every H1 is 24px/600 with a breadcrumb; the `heroes` no-access state was the only headerless route and now uses the shared header |
+| U1.2 (plan §1.3 row 2) | PARTIAL — "CSS in place; needs a screen with real KPI data" | **DONE** | KPI rows measure 4 cols / 16px gap / tabular-nums / brand icon on dashboard, pages and redirects (was 5 cols on two, gold ink on one). The duplicate `.dx-kpis` grid that caused the ragged row is gone |
+| AS-29 / AD-16 | TODO — "scope the light-background rules" (count 73, never re-run — L-19) | **CLOSED BY MEASUREMENT** | `light-islands.mjs` over 58 routes in dark mode: 0 real light islands; the only hits are the two public-site preview iframes |
+| AS-20 | TODO — "cache policy and `?v=` version on every admin asset" | **DONE** | 61 admin-relative script tags now versioned (`?v=ui-4`); vendor/absolute-path scripts excluded on purpose |
+| AS-33 / U8 | TODO — refresh the audit manifest | **DONE** | Regenerated, 69 → 167 entries, SHA-256 + size, revision-pinned |
+| AD-18 follow-through | "`themeChanged()` once for all charts" | **DONE** | `window.themeChanged()` is the single hook; the toggle calls it, the class watcher covers the rest |
+
 ## Changed status elsewhere
 
 | ID | Was | Now | Note |

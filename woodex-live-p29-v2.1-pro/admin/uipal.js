@@ -89,5 +89,10 @@
     if (mq.addEventListener) mq.addEventListener("change", function () { setTimeout(refresh, 60); });
   } catch (e) {}
 
+  // One documented hook: call window.themeChanged() after a theme change and every registered
+  // chart repaints. The watcher above already fires on the class flip, so this is a no-op
+  // there; it exists so the toggle (and any future theme switcher) has a single thing to call.
+  window.themeChanged = refresh;
+
   window.WXPalette = { dark: dark, tok: tok, alpha: alpha, palette: palette, register: register, unregister: unregister, refresh: refresh, keys: function () { return Object.keys(reg); } };
 })();
