@@ -41,13 +41,36 @@ function rd_clean(array $rows): array {
     return $list;
 }
 
-/** Current rules; seeds the verified plan once on a fresh install (merged with anything already saved). */
+/** Fingerprint of the shipped plan, so a plan update reaches installs that were seeded earlier. */
+function rd_plan_hash(): string { return substr(hash('sha256', is_file(RD_PLAN) ? (string)@file_get_contents(RD_PLAN) : ''), 0, 16); }
+
+/** Rows of the shipped plan, minus the ones the operator deleted on purpose. */
+function rd_plan_rows(array $cfg): array {
+    $skip = array_map('strtolower', array_values(array_filter((array)($cfg['skip'] ?? []), 'is_string')));
+    $out = [];
+    foreach (jread(RD_PLAN) as $r) {
+        if (!is_array($r)) continue;
+        if (in_array(strtolower('/' . trim((string)($r['from'] ?? ''), '/') . '/'), $skip, true)) continue;
+        $out[] = $r;
+    }
+    return $out;
+}
+
+/**
+ * Current rules. The verified plan is merged on a fresh install AND again whenever the shipped
+ * plan file changes — before this, an install that had been seeded once kept an empty/short list
+ * forever even though api/redirect-plan.json held the complete list ("the redirects exist but the
+ * screen does not show them"). Deletions are remembered in cfg.skip so they are never resurrected.
+ */
 function rd_list(): array {
     $cur = array_map('rd_one', jread(REDIRECTS)); $cfg = rd_cfg();
-    if (!$cfg['seeded']) {
-        $cur = rd_merge($cur, jread(RD_PLAN))['list'];
-        jwrite(REDIRECTS, $cur); $cfg['seeded'] = true; jwrite(RD_CFG, $cfg);
-        if (function_exists('publish_rules')) publish_rules();
+    $hash = rd_plan_hash();
+    if (empty($cfg['seeded']) || ($cfg['planHash'] ?? '') !== $hash) {
+        $m = rd_merge($cur, rd_plan_rows($cfg));
+        $cur = $m['list'];
+        $cfg['seeded'] = true; $cfg['planHash'] = $hash;
+        jwrite(REDIRECTS, $cur); jwrite(RD_CFG, $cfg);
+        if ($m['added'] > 0 && function_exists('publish_rules')) publish_rules();
     }
     return $cur;
 }
@@ -127,6 +150,14 @@ function redirects_actions(string $action, array $in): bool {
         case 'redirects_save':
             $u = need(['owner', 'admin']); $list = rd_clean((array)($in['redirects'] ?? []));
             if (isset($in['cfg']) && is_array($in['cfg'])) { $c = rd_cfg(); $c['www'] = (bool)($in['cfg']['www'] ?? $c['www']); $c['spam'] = (bool)($in['cfg']['spam'] ?? $c['spam']); $c['seeded'] = true; jwrite(RD_CFG, $c); }
+            /* Remember what the operator removed from the shipped plan, so the next plan merge does
+               not put it back; and clear the skip mark when they add it again themselves. */
+            $c2 = rd_cfg(); $have = []; foreach ($list as $r) $have[strtolower($r['from'])] = 1;
+            $skip = []; foreach (rd_plan_rows(['skip' => []]) as $r) {
+                $k = strtolower(rd_one($r)['from']);
+                if (!isset($have[$k])) { $skip[] = $k; }
+            }
+            $c2['skip'] = array_values(array_unique($skip)); $c2['planHash'] = rd_plan_hash(); jwrite(RD_CFG, $c2);
             jwrite(REDIRECTS, $list); publish_rules(); log_act($u, 'redirects.save', count($list) . ' redirects');
             out(['ok' => true, 'redirects' => $list, 'test' => rd_test($list)]);
         case 'redirects_plan':

@@ -89,7 +89,17 @@
 
   // ---------- view
   W.VIEWS.heroes = function (el) {
-    if (!W.S.btoken) { el.innerHTML = W.head("Hero slides", "Website / Hero slides") + '<div class="content"><div class="card soon-box"><h2>No builder access</h2><p>Your role cannot edit pages.</p></div></div>'; return; }
+    if (!W.S.btoken) {
+      el.innerHTML = W.head("Hero slides", "Website / Hero slides") + '<div class="content"><div class="card soon-box"><h2>Checking your builder access\u2026</h2><p class="muted">One moment.</p></div></div>';
+      W.api("me").then(function (r) {
+        if (r && r.builderToken) { W.S.btoken = r.builderToken; try { sessionStorage.setItem("wxTok", r.builderToken); } catch (e) {} W.VIEWS.heroes(el); return; }
+        var role = (W.S.user && W.S.user.role) || "current";
+        var editor = ["owner", "admin", "editor"].indexOf(role) >= 0;
+        el.innerHTML = W.head("Hero slides", "Website / Hero slides") + '<div class="content"><div class="card soon-box"><h2>No builder access</h2><p>'
+          + (editor ? "This session has no builder token — sign out and in again." : "The \u201C" + role + "\u201D role cannot edit pages.") + "</p></div></div>";
+      });
+      return;
+    }
     el.innerHTML = W.head("Hero slides", "Website / Hero slides", '<a class="btn" href="/" target="_blank" rel="noopener">' + ic("external-link") + "View website</a>") +
       '<div class="content"><div class="hx-tabs seg" id="hx-tabs">' + [["home", "Home slider"], ["pages", "All page heroes"], ["tpl", "Templates"]].map(function (t) { return '<button data-t="' + t[0] + '"' + (tab === t[0] ? ' class="on"' : "") + ">" + t[1] + "</button>"; }).join("") + '</div><div id="hx-body" style="margin-top:16px"><div class="card" style="padding:24px">Loading…</div></div></div>';
     W.fillIcons && W.fillIcons(el);

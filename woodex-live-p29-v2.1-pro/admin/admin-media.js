@@ -313,12 +313,33 @@
     var H, flt = "all", sev = 0;
     el.innerHTML = head("Site health", "Site health", '<button class="btn pri" id="hl-run">' + ic("refresh-cw") + "Run check</button>") + '<div id="hl-b"><p class="muted">Loading…</p></div>';
     W.fillIcons(el);
-    function load() { api("health_get").then(function (r) { if (!r.ok) return toast(r.error, true); H = r; draw(); if (!r.scan) scan(); }); }
-    function scan() { var b = $("#hl-run"); b.disabled = true; b.lastChild.textContent = "Checking…"; api("health_scan").then(function (r) { b.disabled = false; b.lastChild.textContent = "Run check"; if (!r.ok) return toast(r.error, true); H.scan = r.scan; draw(); }); }
+    function fail(msg) {
+      /* Before this, a failed scan only raised a toast and the card kept saying "Running the first
+         check…" forever — which is what a fresh install sees on a server whose scan errors out
+         (no PSI key, no outbound HTTP, or the PHP time limit). Say what happened and offer a retry. */
+      var box = $("#hl-b"); if (!box) return;
+      box.innerHTML = '<div class="card card-b" id="hl-err"><b>Site health could not run</b>'
+        + '<p class="muted" style="margin:6px 0 12px">' + esc(msg || "The server did not return a result.") + "</p>"
+        + '<button class="btn pri" id="hl-retry">' + ic("refresh-cw") + " Try again</button>"
+        + '<p class="muted" style="margin:12px 0 0;font-size:12.5px">If this repeats, the check is failing on the server: '
+        + 'open the Settings tab of this screen and add a Google PageSpeed key, or ask the host to allow outbound HTTP and raise max_execution_time.</p></div>';
+      W.fillIcons(el);
+      var b = $("#hl-retry"); if (b) b.onclick = function () { b.disabled = true; b.lastChild.textContent = "Retrying…"; load(); };
+    }
+    function load() { api("health_get").then(function (r) { if (!r.ok) return fail(r.error); H = r; draw(); if (!r.scan) scan(); }); }
+    function scan() {
+      var b = $("#hl-run"); if (b) { b.disabled = true; b.lastChild.textContent = "Checking…"; }
+      api("health_scan").then(function (r) {
+        if (b) { b.disabled = false; b.lastChild.textContent = "Run check"; }
+        if (!r.ok) return fail(r.error);
+        if (!r.scan) return fail("The check came back without a result — the server run probably hit its time limit.");
+        H.scan = r.scan; draw();
+      });
+    }
     $("#hl-run").onclick = scan;
     function draw() {
       var s = H.scan;
-      var top = s ? '<div class="hl-top"><div class="card card-b hl-score">' + ring(s.score) + "<div><b>Health score</b><p class=\"muted\">" + s.pages + " pages checked<br>" + esc(s.at.slice(0, 16)) + " UTC</p></div></div>" + Object.keys(TYPES).map(function (k) { return '<button class="card card-b hl-cat' + (flt === k ? " on" : "") + '" data-f="' + k + '">' + ic(TYPES[k][1]) + "<b>" + s.counts[k] + "</b><span>" + TYPES[k][0] + "</span></button>"; }).join("") + "</div>" : '<div class="card card-b muted">Running the first check…</div>';
+      var top = s ? '<div class="hl-top"><div class="card card-b hl-score">' + ring(s.score) + "<div><b>Health score</b><p class=\"muted\">" + s.pages + " pages checked<br>" + esc(s.at.slice(0, 16)) + " UTC</p></div></div>" + Object.keys(TYPES).map(function (k) { return '<button class="card card-b hl-cat' + (flt === k ? " on" : "") + '" data-f="' + k + '">' + ic(TYPES[k][1]) + "<b>" + s.counts[k] + "</b><span>" + TYPES[k][0] + "</span></button>"; }).join("") + "</div>" : '<div class="card card-b muted">Running the first check… (this takes up to a minute on a fresh install)</div>';
       var rows = s ? s.issues.filter(function (i) { return (flt === "all" || i.type === flt) && i.sev >= sev; }).sort(function (a, b) { return b.sev - a.sev || a.rel.localeCompare(b.rel); }) : [];
       var issues = s ? '<div class="card"><div class="card-h"><h3>Issues' + (flt !== "all" ? ": " + TYPES[flt][0] : "") + ' <span class="badge">' + rows.length + '</span></h3><div class="seg" id="hl-sev"><button data-s="0" class="' + (sev === 0 ? "on" : "") + '">All</button><button data-s="2" class="' + (sev === 2 ? "on" : "") + '">Important</button><button data-s="3" class="' + (sev === 3 ? "on" : "") + '">Critical</button></div>' + (flt !== "all" ? '<button class="btn sm" data-f="all">Show all</button>' : "") + '</div><div class="tbl-wrap" style="max-height:520px"><table class="tbl"><tbody>' +
         (rows.length ? rows.slice(0, 400).map(function (i) { var lbl = ["", "Tip", "Important", "Critical"][i.sev]; return '<tr><td><span class="sev s' + i.sev + '">' + lbl + "</span></td><td>" + esc(i.msg) + '</td><td class="muted">/' + esc(i.rel.replace(/index\.html$/, "")) + '</td><td class="r nowrap">' + (i.type === "image" && i.size ? '<a class="btn sm" href="#/media">Media</a> ' : "") + '<a class="btn sm" href="#/fields/' + encodeURIComponent(i.rel) + '">Fix</a></td></tr>'; }).join("") : '<tr><td class="muted">No issues in this group. 🎉</td></tr>') + "</tbody></table></div></div>" : "";

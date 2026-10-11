@@ -591,7 +591,21 @@
   // ---------------- builder (single sign-on)
   VIEWS.builder = function (el, args) {
     el.className = "content full";
-    if (!S.btoken) { el.innerHTML = '<div class="content"><div class="card soon-box"><h2>No builder access</h2><p>Your role cannot edit pages.</p></div></div>'; return; }
+    if (!S.btoken) {
+      /* A Master can still land here without a token: the page was reloaded in a fresh tab, the
+         session predates the token, or storage was cleared. Ask the server once before refusing,
+         and when the refusal is real, name the role and the fix instead of a dead end. */
+      var editor = ["owner", "admin", "editor"].indexOf((S.user && S.user.role) || "") >= 0;
+      el.innerHTML = '<div class="content"><div class="card soon-box"><h2>Checking your builder access…</h2><p class="muted">One moment.</p></div></div>';
+      api("me").then(function (r) {
+        if (r && r.builderToken) { S.btoken = r.builderToken; sessionStorage.setItem("wxTok", S.btoken); VIEWS.builder(el, args); return; }
+        el.innerHTML = '<div class="content"><div class="card soon-box"><h2>No builder access</h2><p>'
+          + (editor ? "Your account can edit pages but this session has no builder token. Sign out and sign in again — if it stays like this, send this screen to the developer."
+                    : "The “" + ((S.user && S.user.role) || "current") + "” role cannot edit pages. Ask the owner for an Editor or Admin account.")
+          + "</p></div></div>";
+      });
+      return;
+    }
     sessionStorage.setItem("wxTok", S.btoken);
     el.innerHTML = '<iframe class="builder-frame" title="Page builder" src="/builder/' + (args[0] ? "#" + args.join("/") : "") + '"></iframe>';
   };

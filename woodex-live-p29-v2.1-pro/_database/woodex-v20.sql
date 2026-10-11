@@ -320,3 +320,71 @@ INSERT INTO `wx_settings` (`k`, `v`) VALUES
 ON DUPLICATE KEY UPDATE `v`=VALUES(`v`);
 
 SET FOREIGN_KEY_CHECKS = 1;
+
+-- ==============================================================================
+-- Tables the API creates on first use. They were missing from this file, so a fresh
+-- import could look complete while the features that need them stayed empty
+-- (architecture feed/revisions, bot sessions, invoice archive).
+-- Added 2026-10-12 — keep in step with api/arc-lib.php, api/arc-feed-lib.php,
+-- api/bot-flow-lib.php and api/sales-lib.php.
+-- ==============================================================================
+
+CREATE TABLE IF NOT EXISTS `wx_arc_drawings` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `project_id` INT NOT NULL,
+  `kind` VARCHAR(20) NOT NULL,
+  `title` VARCHAR(160) NOT NULL,
+  `data` LONGTEXT NOT NULL,
+  INDEX(`project_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS `wx_arc_feed` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `project_id` INT NOT NULL,
+  `author_id` INT NOT NULL,
+  `author_name` VARCHAR(120) NOT NULL,
+  `author_role` VARCHAR(20) NOT NULL,
+  `body` TEXT NOT NULL,
+  `created_at` INT NOT NULL,
+  INDEX(`project_id`, `id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS `wx_arc_revisions` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `scope` VARCHAR(16) NOT NULL,
+  `scope_id` INT NOT NULL,
+  `rev` VARCHAR(20) NOT NULL,
+  `by_user` INT NOT NULL,
+  `created_at` INT NOT NULL,
+  `note` VARCHAR(255) NOT NULL DEFAULT '',
+  `prev_hash` CHAR(64) NOT NULL,
+  `hash` CHAR(64) NOT NULL,
+  `data` LONGTEXT NOT NULL,
+  INDEX(`scope`, `scope_id`),
+  UNIQUE(`hash`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS `wx_bot_sessions` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `channel` VARCHAR(8) NOT NULL,
+  `sender_id` VARCHAR(100) NOT NULL,
+  `chat_id` INT NOT NULL DEFAULT 0,
+  `flow` VARCHAR(40) NOT NULL DEFAULT '',
+  `step` VARCHAR(40) NOT NULL DEFAULT '',
+  `data` LONGTEXT NULL,
+  `updated_at` DATETIME NOT NULL,
+  UNIQUE KEY `uq_chan_sender` (`channel`, `sender_id`),
+  INDEX `idx_upd` (`updated_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS `wx_invoices_archive` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `src_id` INT NOT NULL,
+  `no` VARCHAR(30) NOT NULL,
+  `quote_id` INT NULL,
+  `data` LONGTEXT NOT NULL,
+  `archived_at` VARCHAR(40) NOT NULL,
+  `archived_by` VARCHAR(80) NOT NULL,
+  `reason` VARCHAR(190) NOT NULL,
+  INDEX(`src_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
