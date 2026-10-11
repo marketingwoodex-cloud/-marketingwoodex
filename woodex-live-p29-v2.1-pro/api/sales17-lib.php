@@ -320,9 +320,9 @@ function sales17_actions(string $action, array $in): bool {
             $u = need($SALES); sales_migrate(); $p = doc_get('wx_projects', $in['id'] ?? 0, 'Project'); $j = (int)($in['k'] ?? -1); $m = $p['milestones'][$j] ?? null;
             if (!$m) fail('Milestone not found', 404); if (!empty($m['inv_id'])) fail('This milestone is already billed');
             if ((int)($p['value'] ?? 0) <= 0) fail('Set the contract value first');
-            $base = $p['no'] ?? ''; $full = !empty($p['invoice_id']) ? q('SELECT id,data FROM wx_invoices WHERE id=?', [$p['invoice_id']])->fetch() : null;
+            $base = $p['no'] ?? ''; $full = !empty($p['invoice_id']) ? q('SELECT id,no,quote_id,data FROM wx_invoices WHERE id=?', [$p['invoice_id']])->fetch() : null;
             if ($full) { $fd = json_decode($full['data'], true) ?: []; if (!empty($fd['payments'])) fail('The full contract invoice already has payments, so milestone billing cannot replace it');
-                if (empty($in['replace'])) fail('REPLACE'); q('DELETE FROM wx_invoices WHERE id=?', [$full['id']]); $p['updates'][] = hist($u, 'Full invoice ' . ($fd['no'] ?? '') . ' replaced by milestone invoices') + ['sys' => true]; $p['invoice_id'] = null; }
+                if (empty($in['replace'])) fail('REPLACE'); q('INSERT INTO wx_invoices_archive (src_id,no,quote_id,data,archived_at,archived_by,reason) VALUES (?,?,?,?,?,?,?)', [(int)$full['id'], (string)$full['no'], $full['quote_id'] ?? null, (string)$full['data'], now(), (string)$u['name'], 'Replaced by milestone invoices']); q('DELETE FROM wx_invoices WHERE id=?', [$full['id']]); $p['updates'][] = hist($u, 'Full invoice ' . ($fd['no'] ?? '') . ' replaced by milestone invoices (kept in the invoice archive)') + ['sys' => true]; $p['invoice_id'] = null; }
             $line = $p['line'] ?? '' ?: 'project'; if ($base === '') { $base = s17_inv_no($line); $p['no'] = $base; }
             $no = $base . '-' . ($j + 1); if (q('SELECT 1 FROM wx_invoices WHERE no=?', [$no])->fetchColumn()) fail('Invoice ' . $no . ' already exists');
             $amt = (int)round($p['value'] * $m['pct'] / 100); $cid = (int)($p['client_id'] ?? 0);

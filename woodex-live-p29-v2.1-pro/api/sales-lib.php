@@ -19,6 +19,8 @@ function sales_migrate(): void {
     q('CREATE TABLE IF NOT EXISTS wx_templates (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(80) NOT NULL, data LONGTEXT NOT NULL, UNIQUE(name))' . $e);
     q('CREATE TABLE IF NOT EXISTS wx_quotes (id INT AUTO_INCREMENT PRIMARY KEY, no VARCHAR(30) NOT NULL, status VARCHAR(20) NOT NULL, data LONGTEXT NOT NULL, INDEX(no))' . $e);
     q('CREATE TABLE IF NOT EXISTS wx_invoices (id INT AUTO_INCREMENT PRIMARY KEY, no VARCHAR(30) NOT NULL, quote_id INT NULL, data LONGTEXT NOT NULL, UNIQUE(quote_id))' . $e);
+    // Replaced invoices are kept here (never deleted outright), so a milestone billing change cannot destroy a finance record.
+    q('CREATE TABLE IF NOT EXISTS wx_invoices_archive (id INT AUTO_INCREMENT PRIMARY KEY, src_id INT NOT NULL, no VARCHAR(30) NOT NULL, quote_id INT NULL, data LONGTEXT NOT NULL, archived_at VARCHAR(40) NOT NULL, archived_by VARCHAR(80) NOT NULL, reason VARCHAR(190) NOT NULL, INDEX(src_id))' . $e);
     q('CREATE TABLE IF NOT EXISTS wx_projects (id INT AUTO_INCREMENT PRIMARY KEY, data LONGTEXT NOT NULL)' . $e);
 }
 
