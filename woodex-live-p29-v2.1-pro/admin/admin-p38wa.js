@@ -49,11 +49,12 @@
   }
   function chip(on, yes, no, href) { return '<a class="fw-st ' + (on ? "ok" : "no") + '"' + (href ? ' href="' + href + '"' : "") + "><i></i>" + (on ? yes : no) + "</a>"; }
   function card(key) {
-    var F = FLOWS[key], open = localStorage.getItem("wxFlow-" + key) !== "0";
+    var F = FLOWS[key], skey = "wxFlow-" + key + (key === "chat" ? "-v2" : ""), saved = localStorage.getItem(skey),
+      open = saved === null ? key !== "chat" : saved !== "0";  // Inbox card starts collapsed (AU-8); other pages unchanged
     var d = document.createElement("details"); d.className = "card fw"; d.open = open;
     d.innerHTML = '<summary><b>' + esc(F[0]) + '</b><span class="fw-sts" id="fw-sts"></span><small class="muted">' + (open ? "Hide" : "Show") + "</small></summary>" +
       '<ol class="fw-steps">' + F[1].map(function (s, i) { return '<li><span class="fw-n">' + (i + 1) + "</span><b>" + esc(s[0]) + "</b><small>" + esc(s[1]) + "</small></li>"; }).join("") + "</ol>";
-    d.addEventListener("toggle", function () { localStorage.setItem("wxFlow-" + key, d.open ? "1" : "0"); d.querySelector("summary small").textContent = d.open ? "Hide" : "Show"; });
+    d.addEventListener("toggle", function () { localStorage.setItem(skey, d.open ? "1" : "0"); d.querySelector("summary small").textContent = d.open ? "Hide" : "Show"; });
     getStatus().then(function (s) {
       var box = d.querySelector("#fw-sts"); if (!box) return;
       box.innerHTML = (s.wa === null ? "" : chip(s.wa, "WhatsApp connected", "WhatsApp not connected", "#/settings")) + (s.known ? chip(s.ai && s.aiOn, "AI agent on", s.ai ? "AI agent off" : "No AI key", "#/train") + chip(s.lead, "Auto-save leads on", "Auto-save leads off", "#/chat") + (s.hours ? '<span class="fw-st"><i style="background:#94a3b8"></i>' + esc(s.hours) + "</span>" : "") : "");
