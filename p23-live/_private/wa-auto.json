@@ -1,0 +1,150 @@
+{
+ "cfg": {
+  "dailyCap": 250,
+  "perTick": 25,
+  "cronKey": "77b172f2ffe8184772c48c8a",
+  "quietFrom": "21:00",
+  "quietTo": "09:00"
+ },
+ "flows": {
+  "welcome": {
+   "on": false,
+   "tpl": "",
+   "params": [],
+   "days": 1,
+   "sent": 0,
+   "failed": 0,
+   "mail": false,
+   "subject": "",
+   "body": "",
+   "mailed": 0
+  },
+  "lead1": {
+   "on": false,
+   "tpl": "",
+   "params": [],
+   "days": 1,
+   "sent": 0,
+   "failed": 0,
+   "mail": false,
+   "subject": "",
+   "body": "",
+   "mailed": 0
+  },
+  "lead2": {
+   "on": false,
+   "tpl": "",
+   "params": [],
+   "days": 3,
+   "sent": 0,
+   "failed": 0,
+   "mail": false,
+   "subject": "",
+   "body": "",
+   "mailed": 0
+  },
+  "lead3": {
+   "on": false,
+   "tpl": "",
+   "params": [],
+   "days": 7,
+   "sent": 0,
+   "failed": 0,
+   "mail": false,
+   "subject": "",
+   "body": "",
+   "mailed": 0
+  },
+  "quote": {
+   "on": false,
+   "tpl": "",
+   "params": [],
+   "days": 1,
+   "sent": 0,
+   "failed": 0,
+   "mail": false,
+   "subject": "",
+   "body": "",
+   "mailed": 0
+  },
+  "quote2": {
+   "on": false,
+   "tpl": "",
+   "params": [],
+   "days": 3,
+   "sent": 0,
+   "failed": 0,
+   "mail": false,
+   "subject": "",
+   "body": "",
+   "mailed": 0
+  },
+  "quote3": {
+   "on": false,
+   "tpl": "",
+   "params": [],
+   "days": 7,
+   "sent": 0,
+   "failed": 0,
+   "mail": false,
+   "subject": "",
+   "body": "",
+   "mailed": 0
+  },
+  "invoice": {
+   "on": false,
+   "tpl": "",
+   "params": [],
+   "days": 3,
+   "sent": 0,
+   "failed": 0,
+   "mail": false,
+   "subject": "",
+   "body": "",
+   "mailed": 0
+  },
+  "invoice0": {
+   "on": false,
+   "tpl": "",
+   "params": [],
+   "days": 0,
+   "sent": 0,
+   "failed": 0,
+   "mail": false,
+   "subject": "",
+   "body": "",
+   "mailed": 0
+  },
+  "invoice_late": {
+   "on": false,
+   "tpl": "",
+   "params": [],
+   "days": 3,
+   "sent": 0,
+   "failed": 0,
+   "mail": false,
+   "subject": "",
+   "body": "",
+   "mailed": 0
+  },
+  "booking": {
+   "on": false,
+   "tpl": "",
+   "params": [],
+   "days": 1,
+   "sent": 0,
+   "failed": 0,
+   "mail": false,
+   "subject": "",
+   "body": "",
+   "mailed": 0
+  }
+ },
+ "tpls": [],
+ "segs": [],
+ "camps": [],
+ "optout": {},
+ "day": {},
+ "flowlog": {},
+ "mid": {}
+}

@@ -1,0 +1,89 @@
+# AD-10, T-16, T-18 runtime checks, 2026-10-11. jsdom 24 against admin/index.html with a stubbed API. No network, no production.
+# Pro tree = working tree with the AD-10 one-line fix applied (uncommitted at time of run). HEAD = git archive of 24157f6 (pre-fix), extracted to /tmp/headtree.
+
+## AD-10 approvals overwrite (approvals-race.js)
+# pro WITH FIX, shipped script order, 3 runs
+NAVIGATE #/dashboard -> #/approvals: queue=true security=false
+MODE=shipped SEED=1 VARIANT=woodex-live-p29-v2.1-pro
+VIEWS.approvals===VIEWS.security: false
+    437ms read  VIEWS.approvals (route)
+    560ms write VIEWS.approvals from admin-appr.js
+    571ms read  VIEWS.approvals (route)
+    612ms read  VIEWS.approvals (route)
+    709ms read  VIEWS.approvals (route)
+    764ms read  VIEWS.approvals (route)
+    805ms read  VIEWS.approvals (route)
+    840ms read  VIEWS.approvals (route)
+   3340ms read  VIEWS.approvals (route)
+   4132ms read  VIEWS.approvals (route)
+NAVIGATE #/dashboard -> #/approvals: queue=true security=false
+MODE=shipped SEED=2 VARIANT=woodex-live-p29-v2.1-pro
+VIEWS.approvals===VIEWS.security: false
+    341ms read  VIEWS.approvals (route)
+    431ms write VIEWS.approvals from admin-appr.js
+    442ms read  VIEWS.approvals (route)
+    469ms read  VIEWS.approvals (route)
+    517ms read  VIEWS.approvals (route)
+    543ms read  VIEWS.approvals (route)
+    564ms read  VIEWS.approvals (route)
+    583ms read  VIEWS.approvals (route)
+   3280ms read  VIEWS.approvals (route)
+   4078ms read  VIEWS.approvals (route)
+NAVIGATE #/dashboard -> #/approvals: queue=true security=false
+MODE=shipped SEED=3 VARIANT=woodex-live-p29-v2.1-pro
+VIEWS.approvals===VIEWS.security: false
+    409ms read  VIEWS.approvals (route)
+    483ms write VIEWS.approvals from admin-appr.js
+    496ms read  VIEWS.approvals (route)
+    533ms read  VIEWS.approvals (route)
+    553ms read  VIEWS.approvals (route)
+    572ms read  VIEWS.approvals (route)
+    593ms read  VIEWS.approvals (route)
+    614ms read  VIEWS.approvals (route)
+   3339ms read  VIEWS.approvals (route)
+   4139ms read  VIEWS.approvals (route)
+# pro WITH FIX, jitter (random delay on each admin script), seeds 1-3
+NAVIGATE #/dashboard -> #/approvals: queue=true security=false
+NAVIGATE #/dashboard -> #/approvals: queue=true security=false
+NAVIGATE #/dashboard -> #/approvals: queue=true security=false
+# pro WITH FIX, INITIAL load on #/approvals (no navigation), shipped order seeds 1-2 and jitter seeds 1-2
+approvals queue rendered (#ap-tab + #ap-list): true
+approvals queue rendered (#ap-tab + #ap-list): true
+approvals queue rendered (#ap-tab + #ap-list): true
+approvals queue rendered (#ap-tab + #ap-list): true
+# pro WITH FIX, reversed script order, seed 1 (control)
+NAVIGATE #/dashboard -> #/approvals: queue=true security=false
+# PRE-FIX, committed tree b8083f1 (git archive to /tmp/prefix): admin-security.js still has the overwrite. Jitter seeds 1-3.
+NAVIGATE #/dashboard -> #/approvals: queue=false security=true
+NAVIGATE #/dashboard -> #/approvals: queue=false security=true
+NAVIGATE #/dashboard -> #/approvals: queue=false security=true
+# Note: the HEAD extract (/tmp/headtree) cannot run this navigation check; it crashes in admin-dash.js:36 (the OV-03 defect, guarded by C-003) before the result prints.
+
+## #/security still renders (harness.js)
+view snippet : My Security & ApprovalsHome / SecuritySecurity auditUpdate security settings2-Factor AuthenticationTOTP EnforcedActiveActive 
+errors (0):
+
+## T-16 settings Test Ping and Save (ui-regression.js settings)
+# HEAD (before fixes)
+connector Connect buttons: 22
+ping result text: "✓ Ping successful: 200 OK to Facebook Pages API endpoint · Response time 148 ms"
+ping toast: "Connection test passed ✓"
+save toast: "Global settings and Google service configs saved live!"
+forbidden claims present: [ '200 OK', 'Ping successful' ]
+API requests during Ping+Save (action names): []
+jsdom errors: 0 []
+# working tree (after C-001)
+connector Connect buttons: 22
+ping result text: "Not verified: no live health check is implemented for Facebook Pages. No request was sent."
+ping toast: "Connection not verified"
+save toast: "Not saved: this page does not store these settings yet. No changes were stored."
+forbidden claims present: []
+API requests during Ping+Save (action names): []
+jsdom errors: 0 []
+
+## T-18 editor role, incomplete dashboard payload (ui-regression.js editor-dash)
+role: editor | route: #/dashboard | dashboard action called: true
+error card shown: false
+stuck on Loading: false
+view snippet: "Good evening, QAWebsite health and recent workPages0Missing pages (404)0Speed score—My changes waiting0Top missing pages"
+jsdom errors: 0 []

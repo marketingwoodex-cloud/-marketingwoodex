@@ -1,0 +1,14 @@
+# Remediation verification, woodex-live-p29-v2.1-pro (pro tree), 2026-10-10T20:15Z
+# Test copies: tools/qa-p29/test-dashboard-error.js, happy-dash.js, a11y-labels.js. jsdom canvas shim is a test-environment stub only.
+
+## 1. Owner dashboard, dash_data payload missing crm.kpi (OV-01 owner path)
+AFTER : DASH_ERROR_SHOWN: true | STILL_LOADING: false
+BEFORE: TypeError: Cannot convert undefined or null to object
+
+## 2. Owner dashboard, realistic payload (happy path, no regression)
+AFTER : DASH_ERROR_SHOWN: false | STILL_LOADING: false
+BEFORE: DASH_ERROR_SHOWN: false | STILL_LOADING: false
+
+## 3. Estimator accessible names (visible controls, aria-hidden honeypots excluded)
+HEAD unlabelled visible controls: 3 #est-name #est-phone #est-email
+WORKING unlabelled visible controls: 0 (none)

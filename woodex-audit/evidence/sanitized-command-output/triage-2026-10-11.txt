@@ -1,0 +1,17 @@
+# Triage outputs, 2026-10-11 (values intentionally omitted)
+
+## html2pdf.bundle.min.js (vendor minified bundle, 2 lines, ~906 KB)
+- detect-secrets 1.5.0 reports one "AWS Access Key" hit on line 2.
+- Matched string is the 4-char prefix ABIA followed by 16 [0-9A-Z] characters, at byte offset ~411458.
+- Surrounding bytes are a long base64-style run (repeating AUAB/ACsA patterns) typical of encoded binary data.
+- No credential keyword (key|pwd|pw|password|pass|token) within 60 characters.
+- Classification: FALSE POSITIVE (STATIC evidence, E3). An access key ID without its secret is not a usable credential. No AKIA/ASIA/AIDA/AROA/AGPA prefixes present.
+
+## Repository visibility (gh repo view --json isPrivate,name,owner)
+- isPrivate: false (repository is PUBLIC).
+- Owner/name fields recorded; no token or auth material printed.
+- Consequence: all tracked secret-bearing files are publicly readable. Visibility change, rotation and history rewrite require user approval (prompt §5.3 / §14). Not performed.
+
+## Plain-tree admin.js Phase expression
+- Path: "woodex live p29-v2.1/admin/admin.js:680" contains the unguarded def[4] concatenation.
+- Pro tree uses a guarded form. Plain-tree line number now confirmed with the correct path.

@@ -1,0 +1,134 @@
+PASS AD-01    admin-settings.js (plain tree)
+         plain copy fails node --check (expected FAIL = defect present)
+PASS AD-01    admin-settings.js (-pro tree)
+         -pro copy parses (expected PASS)
+PASS AD-02    admin-chat.js / admin-social.js (plain)
+         plain copies fail parse (expected FAIL)
+PASS AD-02    renderActiveChat count (-pro vs plain)
+         -pro=3 (expected 3)
+PASS AD-03    admin.js:461 unknown hash -> dashboard
+         1 match(es) at lines [461] (expected 1)
+PASS AD-03    admin.js:680 soon-view: plain UNGUARDED, -pro guarded
+         plain guarded=False | pro guarded=True (expected plain=False, pro=True)
+PASS AD-04    #/integrations absent from NAV
+         0 match(es) at lines [] (expected 0)
+INFO AD-04    admin-settings.js alias integrations
+         4 match(es) at lines [34, 43, 130, 587]
+PASS AD-10    admin-security.js no longer overwrites approvals (AD-10 fix, fixed pending verification)
+         0 match(es) at lines [] (expected 0)
+PASS AD-10    admin-appr.js:21 defines approvals view
+         1 match(es) at lines [21] (expected 1)
+PASS AD-11    admin-settings.js:588 connections alias
+         1 match(es) at lines [588] (expected 1)
+PASS AD-12    view keys defined by 2+ modules
+         19 keys with 2+ owners (expected 19 after AD-10 fix; was 20)
+PASS AD-05    APPS entries with connected:true
+         14 match(es) at lines [9, 10, 11, 12, 18, 19, 20, 21, 22, 23, 24, 27] (expected 14)
+PASS AD-05    no Claude AI-key card (Claude Desktop MCP snippet is separate)
+         no Claude AI-key entry (expected 0)
+PASS AD-06    Save toast "saved live!" REMOVED (post-remediation, expect 0; static only)
+         expected 0
+PASS AD-07    Ping canned "200 OK" REMOVED (post-remediation, expect 0; static only)
+         expected 0
+PASS AD-07    Connect sets app.connected locally
+         1 match(es) at lines [113] (expected 1)
+PASS AD-08    tile bridge targets #st-tabs
+         2 match(es) at lines [60, 89] (expected (1, 2))
+PASS AD-08    Settings renders #st-subnav
+         3 match(es) at lines [42, 567, 569] (expected (1, 5))
+PASS AD-09    observer targets .st-grid:not([data-ig])
+         1 match(es) at lines [93] (expected 1)
+PASS AD-13    .side !important obsidian (selector 1283, value 1284)
+         3 match(es) at lines [1284, 1391, 1614] (expected (3, 3))
+PASS AD-14    .side selector blocks: 74 token bg, 190 mobile transform-only, 439 navy bg, 1283 obsidian bg
+         4 match(es) at lines [74, 190, 439, 1283] (expected 4)
+INFO AD-15    hex literals in admin-security.js
+         65 hex, 0 var( (expected 65 / 0 at rev f86258a)
+INFO AD-15    hex literals in admin-integ.js
+         10 hex, 0 var( (expected 10 / 0)
+PASS AD-17    data-theme used by live admin JS
+         admin.js data-theme refs (expected 0)
+PASS AD-18    #dark-btn re-renders only on dashboard
+         1 match(es) at lines [328] (expected 1)
+PASS AD-19    boot redirect to installer on dbError
+         1 match(es) at lines [700] (expected 1)
+PASS AD-19    status returns dbError when db() throws
+         1 match(es) at lines [289] (expected 1)
+PASS AD-21    jwrite truncates before lock (file_put_contents LOCK_EX)
+         1 match(es) at lines [37] (expected 1)
+PASS AD-21    jread takes no lock
+         flock inside jread (expected 0)
+PASS AD-21    bsecret regenerates on empty read
+         1 match(es) at lines [40] (expected 1)
+INFO AD-22    seqL counter (WITHDRAWN: data-only, not code)
+         seqL in pro api/ code: 0 (expected 0)
+PASS AD-20    dispatcher catches only PDOException
+         1 match(es) at lines [591] (expected 1)
+PASS AD-20    strict_types=1 in admin.php
+         1 match(es) at lines [10] (expected 1)
+PASS AD-20    client maps non-JSON 500 to message
+         1 match(es) at lines [25] (expected 1)
+INFO CC-02    try-block count per library (12 present; r404-lib.php absent)
+         content-lib.php=0, dash-lib.php=0, sales-lib.php=0, roles-lib.php=0, sheets-lib.php=0, redirects-lib.php=0, logos-lib.php=0, google-data-lib.php=0, phase8-lib.php=0, r404-lib.php=-1, p18e-lib.php=0, p18h-lib.php=0, p18j-lib.php=0
+PASS OV-01    unguarded s.folders reads (dashboard)
+         2 match(es) at lines [508, 542] (expected 2)
+PASS OV-02    navBadges interval 60s
+         1 match(es) at lines [165] (expected 1)
+INFO SA-01    admin-crm.js polling
+         1 match(es) at lines [23]
+PASS SA-02    admin-sales17.js replaces enquiries
+         1 match(es) at lines [33] (expected 1)
+PASS AU-04    admin-chat2.js setInterval(load,3000)
+         1 match(es) at lines [137] (expected 1)
+INFO AU-05    admin-tg.js polling
+         1 match(es) at lines [89]
+INFO AU-05    admin-p18g.js polling
+         1 match(es) at lines [67]
+PASS AU-01    wag_tick takes wa-auto.lock with LOCK_NB
+         1 match(es) at lines [94] (expected 1)
+PASS AU-01    wag_save is a plain writer (no lock inside)
+         1 match(es) at lines [25] (expected 1)
+PASS AU-02    silent busy return
+         1 match(es) at lines [94] (expected 1)
+PASS AU-03    cronKey regenerated if empty
+         1 match(es) at lines [17] (expected 1)
+PASS AU-03    cron key comparison hash_equals
+         1 match(es) at lines [14] (expected 1)
+PASS WC-01    builder content save without mtime check
+         1 match(es) at lines [275] (expected 1)
+PASS WC-02    content-lib lock busy returns 0
+         1 match(es) at lines [50] (expected 1)
+PASS WC-04    missing asset: panorama image
+         file absent (expected absent)
+PASS WC-04    missing asset: qr placeholder
+         file absent (expected absent)
+PASS WC-05    RewriteCond www repeated in .htaccess
+         2 match(es) at lines [15, 50] (expected 2)
+PASS AD-25    Dockerfile chmod 777 on _private
+         1 match(es) at lines [15] (expected 1)
+PASS AD-25    Dockerfile does NOT set AllowOverride (defect anchor: PASS = defect present)
+         AllowOverride in Dockerfile (expected 0 = defect present)
+PASS AD-26    30-day cache on css/js
+         1 match(es) at lines [36] (expected 1)
+INFO AD-26    admin/index.html script tags without ?v=
+         69 script tags, 0 with ?v=
+PASS AD-24    secret-bearing files tracked (6 expected)
+         6 of 6 secret-bearing files tracked (expected 6)
+PASS AD-27    Telegram-format token literal in admin-tg.js (client JS)
+         2 match(es) at lines [27, 53] (expected (2, 2))
+PASS AD-28    Telegram-format token in .env.example
+         1 match(es) at lines [18] (expected 1)
+PASS AD-28    Telegram-format token in root SQL dump
+         1 match(es) at lines [318] (expected 1)
+INFO DB-01    SQL dump: email-like strings (count only)
+         14 matches
+PASS A11Y-01  estimator inputs without <label> (est-name/phone/email)
+         no label[for] for est-name, est-phone, est-email (expected none = defect present)
+PASS A11Y-01  estimator honeypots aria-hidden (positive control)
+         1 match(es) at lines [212] (expected 1)
+PASS SEO-01   robots.txt present
+         robots.txt present
+PASS SEO-01   sitemap.xml present
+         sitemap.xml present
+
+SUMMARY {'PASS': 56, 'INFO': 10}

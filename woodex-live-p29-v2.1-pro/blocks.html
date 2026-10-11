@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="en" class="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Woodex v3 — Master Template Blocks Catalog</title>
+<link rel="icon" href="/favicon.ico">
+<link rel="stylesheet" href="/assets/v3-blocks.css">
+<style>
+  body { margin: 0; background: #050608; color: #f9fafb; font-family: "Inter", sans-serif; }
+  .block-preview-wrap { border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 20px; margin-bottom: 48px; background: #08090d; overflow: hidden; }
+  .block-preview-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 24px; background: rgba(18, 20, 26, 0.9); border-bottom: 1px solid rgba(255, 255, 255, 0.08); }
+  .block-title { font-size: 15px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px; }
+  .block-code-btn { padding: 5px 14px; border-radius: 999px; background: rgba(0, 184, 219, 0.12); color: #00d3f2; border: 1px solid rgba(0, 211, 242, 0.3); font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+  .block-code-btn:hover { background: #00b8db; color: #04222b; }
+</style>
+</head>
+<body class="v3-theme">
+
+<!-- Header -->
+<header style="padding: 24px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.08); background: #07080c; position: sticky; top: 0; z-index: 50;">
+  <div class="v3-wrap" style="display:flex;align-items:center;justify-content:space-between">
+    <div style="display:flex;align-items:center;gap:12px">
+      <span style="width:32px;height:32px;border-radius:8px;background:#007595;color:#fff;display:grid;place-items:center;font-weight:700">W</span>
+      <b style="font-size:16px;letter-spacing:0.05em">WOODEX V3 BLOCKS</b>
+    </div>
+    <div style="display:flex;gap:10px">
+      <a href="/admin/#/builder" class="v3-btn-pill-sec" style="height:38px;padding:0 16px;font-size:12px">Open Visual Builder →</a>
+      <a href="/admin/" class="v3-btn-pill-pri" style="height:38px;padding:0 18px;font-size:12px">Admin Control Room →</a>
+    </div>
+  </div>
+</header>
+
+<main class="v3-wrap" style="padding: 48px 0;">
+  <div style="text-align:center;max-width:720px;margin:0 auto 48px">
+    <span class="v3-hero-badge">Preline Theme System</span>
+    <h1 style="font-size:36px;font-weight:800;letter-spacing:-0.03em;margin:10px 0 14px">Master Modular Blocks Catalog</h1>
+    <p style="color:#9ca3af;font-size:15px">Every page section in the Woodex studio suite is built from these optimized, high-performance v3 template blocks.</p>
+  </div>
+
+  <!-- Block 1: BLK-HERO-01 -->
+  <div class="block-preview-wrap">
+    <div class="block-preview-head">
+      <span class="block-title">⚡ BLK-HERO-01 · Luxury Architectural Hero</span>
+      <button class="block-code-btn" onclick="navigator.clipboard.writeText(document.getElementById('b-hero-code').innerHTML); alert('Hero block HTML copied!')">Copy Block HTML</button>
+    </div>
+    <div id="b-hero-code">
+      <section class="v3-blk-hero">
+        <div class="v3-blk-hero-glow"></div>
+        <div class="v3-wrap">
+          <div class="v3-blk-hero-grid">
+            <div>
+              <span class="v3-hero-badge">Architectural Studio · Lahore</span>
+              <h1 class="v3-hero-title">Crafting <span>Luxury Living</span> &amp; Modern Workspaces</h1>
+              <p class="v3-hero-desc">Bespoke turnkey interior design, architectural planning, custom German-hardware cabinetry, and false ceiling executions across Pakistan.</p>
+              <div class="v3-hero-actions">
+                <a href="/book-a-visit/" class="v3-btn-pill-pri">Book Free Site Survey →</a>
+                <a href="/estimator/" class="v3-btn-pill-sec">Calculate Cost Estimate</a>
+              </div>
+            </div>
+            <div class="v3-hero-media-card">
+              <img src="/assets/img/img-c7d3a3ebd62b.webp" alt="Woodex Luxury Living Interior">
+              <div class="v3-hero-card-floating">
+                <div><b style="display:block;font-size:14px;color:#fff">1-Kanal DHA Phase 6 Villa</b><small style="color:#9ca3af;font-size:11px">Turnkey Interior &amp; Fit-Out Completed</small></div>
+                <span style="font-size:12px;font-weight:700;color:#00d3f2">100% VERIFIED</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <!-- Block 2: BLK-SRV-02 -->
+  <div class="block-preview-wrap">
+    <div class="block-preview-head">
+      <span class="block-title">🛠️ BLK-SRV-02 · 3-Column Services &amp; Joinery Grid</span>
+      <button class="block-code-btn" onclick="navigator.clipboard.writeText(document.getElementById('b-srv-code').innerHTML); alert('Services block HTML copied!')">Copy Block HTML</button>
+    </div>
+    <div id="b-srv-code">
+      <section class="v3-blk-services">
+        <div class="v3-wrap">
+          <div class="v3-sec-head">
+            <div class="v3-sec-kicker">Core Capabilities</div>
+            <h2 class="v3-sec-title">Engineered Joinery &amp; Design</h2>
+            <p class="v3-sec-sub">Precision manufacturing with imported edge-banding, water-resistant core boards, and European soft-close hardware.</p>
+          </div>
+          <div class="v3-srv-grid">
+            <div class="v3-srv-card">
+              <div class="v3-srv-icon-wrap">🍳</div>
+              <h3>Modern Modular Kitchens</h3>
+              <p>UV-high gloss, matte acrylic, and tactile veneer finishes with built-in pantry units and quartz countertops.</p>
+              <a href="/kitchen-design/" class="v3-srv-link">Explore Kitchen Designs →</a>
+            </div>
+            <div class="v3-srv-card">
+              <div class="v3-srv-icon-wrap">👔</div>
+              <h3>Walk-in Wardrobes</h3>
+              <p>Custom LED-illuminated closet systems, tinted fluted glass sliding wardrobes, and dedicated accessory drawers.</p>
+              <a href="/wardrobe-design/" class="v3-srv-link">View Wardrobe Systems →</a>
+            </div>
+            <div class="v3-srv-card">
+              <div class="v3-srv-icon-wrap">🏢</div>
+              <h3>Commercial Office Fit-Out</h3>
+              <p>Acoustic ceiling baffles, executive director suites, collaborative workstations, and reception desk fabrication.</p>
+              <a href="/commercial-interior/" class="v3-srv-link">Explore Commercial Portfolio →</a>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <!-- Block 3: BLK-STEP-06 -->
+  <div class="block-preview-wrap">
+    <div class="block-preview-head">
+      <span class="block-title">🚀 BLK-STEP-06 · 4-Stage Architectural Stepper</span>
+      <button class="block-code-btn" onclick="navigator.clipboard.writeText(document.getElementById('b-step-code').innerHTML); alert('Process block HTML copied!')">Copy Block HTML</button>
+    </div>
+    <div id="b-step-code">
+      <section class="v3-blk-process">
+        <div class="v3-wrap">
+          <div class="v3-sec-head">
+            <div class="v3-sec-kicker">Seamless Execution</div>
+            <h2 class="v3-sec-title">Our Turnkey Process</h2>
+            <p class="v3-sec-sub">From first floorplan review to final handover, every milestone is tracked in our client portal.</p>
+          </div>
+          <div class="v3-step-grid">
+            <div class="v3-step-card">
+              <div class="v3-step-num">01</div>
+              <h4>Site Survey &amp; Brief</h4>
+              <p>On-site laser measurements, lifestyle brief consultation, and budget scope alignment.</p>
+            </div>
+            <div class="v3-step-card">
+              <div class="v3-step-num">02</div>
+              <h4>3D Renders &amp; BOQ</h4>
+              <p>Photorealistic 3D visualization, material samples, and fixed itemized cost schedule.</p>
+            </div>
+            <div class="v3-step-card">
+              <div class="v3-step-num">03</div>
+              <h4>Factory Fabrication</h4>
+              <p>CNC precision milling and edge-banding in our Lahore facility under strict quality checks.</p>
+            </div>
+            <div class="v3-step-card">
+              <div class="v3-step-num">04</div>
+              <h4>Installation &amp; Handover</h4>
+              <p>On-site installation by master carpenters and final client sign-off with warranty package.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <!-- Block 4: BLK-CTA-09 -->
+  <div class="block-preview-wrap">
+    <div class="block-preview-head">
+      <span class="block-title">💬 BLK-CTA-09 · Glassmorphic Lead Capture Banner</span>
+      <button class="block-code-btn" onclick="navigator.clipboard.writeText(document.getElementById('b-cta-code').innerHTML); alert('CTA block HTML copied!')">Copy Block HTML</button>
+    </div>
+    <div id="b-cta-code">
+      <section class="v3-blk-cta">
+        <div class="v3-wrap">
+          <div class="v3-cta-card">
+            <span class="v3-hero-badge">Direct Studio Helpline</span>
+            <h2 class="v3-cta-title">Ready to Transform Your Space?</h2>
+            <p class="v3-cta-sub">Talk directly with our lead architects today or book a complimentary site survey in Lahore, Islamabad, or Karachi.</p>
+            <div class="v3-cta-form">
+              <input type="tel" class="v3-input-pill" placeholder="Enter your phone number (0300...)">
+              <button class="v3-btn-pill-pri" onclick="alert('Thank you! A Woodex senior architect will call you shortly.')">Request Callback</button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <!-- Block 5: BLK-EST-04 -->
+  <div class="block-preview-wrap">
+    <div class="block-preview-head">
+      <span class="block-title">📐 BLK-EST-04 · Interactive Construction &amp; Interior Estimator</span>
+      <button class="block-code-btn" onclick="navigator.clipboard.writeText(document.getElementById('b-est-code').innerHTML); alert('Estimator block HTML copied!')">Copy Block HTML</button>
+    </div>
+    <div id="b-est-code">
+      <section class="v3-blk-estimator">
+        <div class="v3-wrap">
+          <div class="v3-sec-head">
+            <div class="v3-sec-kicker">Instant Cost Schedule</div>
+            <h2 class="v3-sec-title">Interior &amp; Fit-Out Estimator</h2>
+            <p class="v3-sec-sub">Select your property size and specification tier for an instant turn-key budget projection.</p>
+          </div>
+          <div class="v3-est-card">
+            <div class="v3-est-form">
+              <div>
+                <label style="display:block;font-size:12px;font-weight:600;margin-bottom:6px;color:#e5e7eb">Property Covered Area</label>
+                <select class="v3-input-pill" style="width:100%" id="est-area">
+                  <option value="5000">1-Kanal Villa (approx. 5,000 sq ft)</option>
+                  <option value="3100">10-Marla Modern House (approx. 3,100 sq ft)</option>
+                  <option value="1800">5-Marla House (approx. 1,800 sq ft)</option>
+                  <option value="2500">Commercial Office (approx. 2,500 sq ft)</option>
+                </select>
+              </div>
+              <div>
+                <label style="display:block;font-size:12px;font-weight:600;margin-bottom:6px;color:#e5e7eb">Specification Level</label>
+                <select class="v3-input-pill" style="width:100%" id="est-tier">
+                  <option value="luxury">Ultra-Luxury (German hardware, imported marble, UV acrylic)</option>
+                  <option value="executive">Executive (Soft-close joinery, Spanish tiles, ambient LEDs)</option>
+                  <option value="standard">Standard Quality (Durable melamine, porcelain tiles, false ceiling)</option>
+                </select>
+              </div>
+            </div>
+            <div class="v3-est-result-box">
+              <div>
+                <small style="text-transform:uppercase;font-size:11px;font-weight:700;color:#00d3f2;letter-spacing:0.08em">Estimated Budget (PKR)</small>
+                <div class="v3-est-price-tag" style="margin:8px 0">PKR 4,850,000</div>
+                <p style="font-size:12px;color:#9ca3af;margin:0">Includes complete 3D design, false ceiling, German-hardware modular kitchens, wardrobes &amp; master electrical lighting.</p>
+              </div>
+              <a href="/estimator/" class="v3-btn-pill-pri" style="margin-top:20px;text-align:center;justify-content:center">Open Full BOQ Breakdown →</a>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <!-- Block 6: BLK-RES-01 -->
+  <div class="block-preview-wrap">
+    <div class="block-preview-head">
+      <span class="block-title">🏡 BLK-RES-01 · 1-Kanal &amp; 10-Marla Residential Villa Architectural Specs</span>
+      <button class="block-code-btn" onclick="navigator.clipboard.writeText(document.getElementById('b-res-code').innerHTML); alert('Residential specs block HTML copied!')">Copy Block HTML</button>
+    </div>
+    <div id="b-res-code">
+      <section class="v3-blk-res-specs">
+        <div class="v3-wrap">
+          <div class="v3-sec-head">
+            <div class="v3-sec-kicker">Architectural Benchmarks</div>
+            <h2 class="v3-sec-title">1-Kanal Villa Design Specifications</h2>
+            <p class="v3-sec-sub">Standard architectural zoning for 50x90 plots in DHA Lahore, Bahria Town, and Islamabad.</p>
+          </div>
+          <div class="v3-res-grid">
+            <div class="v3-res-card">
+              <div class="v3-res-stat">5,200 sq.ft</div>
+              <div class="v3-res-label">Covered Area (GF + FF + Rooftop)</div>
+            </div>
+            <div class="v3-res-card">
+              <div class="v3-res-stat">5 Master Beds</div>
+              <div class="v3-res-label">En-suite Bathrooms &amp; Walk-in Closets</div>
+            </div>
+            <div class="v3-res-card">
+              <div class="v3-res-stat">2 Kitchens</div>
+              <div class="v3-res-label">Main Show Kitchen + Dirty/Spice Kitchen</div>
+            </div>
+            <div class="v3-res-card">
+              <div class="v3-res-stat">12-14 Weeks</div>
+              <div class="v3-res-label">Average Turnkey Handover Timeline</div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+</main>
+</body>
+</html>

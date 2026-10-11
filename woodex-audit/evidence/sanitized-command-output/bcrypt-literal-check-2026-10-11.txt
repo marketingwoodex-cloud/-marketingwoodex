@@ -1,0 +1,6 @@
+literal located: True (length 12; value not printed)
+woodex-database.sql: bcrypt occurrences=6 distinct=1 distinct_matching_literal=0
+_database/woodex-database.sql: bcrypt occurrences=6 distinct=1 distinct_matching_literal=0
+_database/woodex-v20.sql: bcrypt occurrences=6 distinct=1 distinct_matching_literal=0
+control positive (generated hash verifies correct string): True
+control negative (wrong string rejected): True

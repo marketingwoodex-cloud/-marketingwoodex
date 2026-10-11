@@ -1,0 +1,17 @@
+{
+ "items": [],
+ "seq": 0,
+ "ai": {
+  "customKey": "",
+  "customModel": "",
+  "customUrl": "",
+  "provider": "anthropic",
+  "anthropicKey": "",
+  "anthropicModel": "claude-sonnet-4-5",
+  "openaiKey": "",
+  "openaiModel": "gpt-4o-mini",
+  "openrouterKey": "",
+  "openrouterModel": "nousresearch/hermes-3-llama-3.1-405b",
+  "voice": "Calm, plain, confident British English. Short sentences. No hype, no exclamation marks. Woodex Interior is a design, fit-out and renovation studio in Lahore, Pakistan."
+ }
+}

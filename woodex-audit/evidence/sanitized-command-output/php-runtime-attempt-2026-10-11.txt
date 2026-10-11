@@ -1,0 +1,9 @@
+# PHP runtime attempt (@php-wasm/node 3.1.57), 2026-10-11
+Status: BLOCKED. AD-20 runtime behaviour remains UNKNOWN (E0/E1 only).
+
+- Install: approved by user; installed to tools/qa-p29/node_modules (gitignored). 92 packages, npm registry only.
+- Manifest: package.json change reverted and package-lock.json removed, so the dependency is not committed (no unused dependency in git).
+- Engine: package declares node >=24.18 and npm >=11.16. Sandbox has node v22.22.3 / npm 10.9.8 (EBADENGINE warnings).
+- Import: '@php-wasm/node' exports loadNodeRuntime (no PHP class). PHP class imported from '@php-wasm/universal'.
+- Run: loadNodeRuntime('8.3') then new PHP(runtime) fails at init: "PHPLoader.processId must be set before init".
+- Next: either approve a Node 24 runtime for QA, or use a different PHP runtime. Until then, AD-20 is verified by php-parser lint only (48/48 parse), which is NOT runtime proof.
