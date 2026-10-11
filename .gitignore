@@ -14,3 +14,6 @@ woodex-live-p29-v2.1-pro/_private/admin-db.json
 woodex-live-p29-v2.1-pro/_private/db.json
 woodex-live-p29-v2.1-pro/_private/outbox.jsonl
 woodex-live-p29-v2.1-pro/_private/health.json
+
+# Local preview accounts for tools/qa-p29/preview-server.py (never commit real credentials)
+.preview-accounts*.json

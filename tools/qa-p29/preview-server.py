@@ -1,17 +1,86 @@
 # Filtered static preview for the pro site, with a PREVIEW-ONLY API stub.
 # - Serves public front-end files only (blocks PHP source, api/, private/db/template folders, SQL, env, dotfiles, docs).
 # - POST /api/admin.php and /api/builder.php are answered by this stub (no PHP, no database, no real accounts).
-#   Login accepts ONE account set by env PREVIEW_EMAIL / PREVIEW_PASS (no built-in account). Everything else is rejected.
+#   Login accepts ONLY accounts set by the environment (no built-in account, no values in this file):
+#     PREVIEW_ACCOUNTS       JSON list, e.g. [{"email":"a@b.pk","role":"sales","password":"..."}]
+#                            roles mirror api/roles-lib.php: owner|admin|editor|sales|support
+#                            optional "name" and "token" per account
+#     PREVIEW_ACCOUNTS_FILE  path to a file holding the same JSON (git-ignored; keep it out of the repo)
+#     PREVIEW_EMAIL/PASS     one extra account (role owner) — kept so the QA probes keep working
+#   Each account gets its own token, so `me`/`status` return THAT account after a reload
+#   and the role gating in the sidebar can be checked by signing in as each role.
 import http.server, os, sys, json, urllib.parse, time
 ROOT = sys.argv[1]
 PORT = int(sys.argv[2])
 PREVIEW_EMAIL = os.environ.get('PREVIEW_EMAIL', '').strip().lower()
 PREVIEW_PASS = os.environ.get('PREVIEW_PASS', '')
 TOKEN = 'preview-token'
+# Role model mirrors api/roles-lib.php (ROLE_LABELS / wx_role_groups) so the preview can demo gating.
+ROLE_LABELS = {'owner': 'Master', 'admin': 'Manager', 'editor': 'Developer', 'sales': 'Sales', 'support': 'Support'}
+ROLE_GROUPS = {
+    'owner': ['self', 'sales', 'conversations', 'updates', 'broadcast', 'ai', 'website', 'settings', 'master'],
+    'admin': ['self', 'sales', 'conversations', 'updates', 'broadcast', 'ai', 'website', 'settings'],
+    'editor': ['self', 'website', 'settings'],
+    'sales': ['self', 'sales', 'conversations'],
+    'support': ['self', 'conversations', 'updates', 'support_view'],
+}
+BUILDER_ROLES = ('owner', 'admin', 'editor')  # same list as the login branch of api/admin.php
+
+
+def _load_accounts():
+    raw = os.environ.get('PREVIEW_ACCOUNTS', '').strip()
+    f = os.environ.get('PREVIEW_ACCOUNTS_FILE', '').strip()
+    if not raw and f:
+        try:
+            with open(f, encoding='utf-8') as fh:
+                raw = fh.read()
+        except OSError as e:
+            print('preview accounts file not readable: %s' % e)
+    out = []
+    if raw:
+        try:
+            rows = json.loads(raw)
+        except ValueError as e:
+            print('PREVIEW_ACCOUNTS is not valid JSON: %s' % e)
+            rows = []
+        for i, a in enumerate(rows if isinstance(rows, list) else []):
+            em = str(a.get('email', '')).strip().lower()
+            pw = str(a.get('password') or a.get('pass') or '')
+            role = str(a.get('role', 'owner')).strip().lower()
+            if not em or not pw:
+                print('preview account skipped (needs email + password): %s' % (em or '(no email)'))
+                continue
+            if role not in ROLE_GROUPS:
+                print('preview account skipped (unknown role "%s"): %s' % (role, em))
+                continue
+            out.append({'id': i + 1, 'name': str(a.get('name') or ROLE_LABELS[role]), 'role': role,
+                        'email': em, 'password': pw, 'token': str(a.get('token') or ('preview-token-%d' % (i + 1)))})
+    if PREVIEW_EMAIL and PREVIEW_PASS and not any(a['email'] == PREVIEW_EMAIL for a in out):
+        out.append({'id': len(out) + 1, 'name': os.environ.get('PREVIEW_NAME', 'Owner'), 'role': 'owner',
+                    'email': PREVIEW_EMAIL, 'password': PREVIEW_PASS, 'token': TOKEN})
+    return out
+
+
+ACCOUNTS = _load_accounts()
+BY_TOKEN = dict((a['token'], a) for a in ACCOUNTS)
+BY_EMAIL = dict((a['email'], a) for a in ACCOUNTS)
+if ACCOUNTS:
+    print('preview accounts: ' + ', '.join('%s (%s)' % (a['email'], a['role']) for a in ACCOUNTS))
+
+
+def pub(a):
+    return {'id': a['id'], 'name': a['name'], 'role': a['role'], 'email': a['email']}
+
+
+def caps_of(a):
+    return {'label': ROLE_LABELS.get(a['role'], a['role'].title()),
+            'groups': ROLE_GROUPS.get(a['role'], ['self']), 'perms': []}
 BLOCK_DIRS = {'api', '_private', '_database', '_templates', '_scripts', 'tools', 'node_modules', '.git'}
 BLOCK_EXT = {'.php', '.sql', '.env', '.md', '.json', '.lock', '.yaml', '.yml', '.ini', '.bak', '.log', '.dist', '.sh', '.bat', '.tar', '.zip'}
 BLOCK_NAMES = set()  # admin-tg.js no longer holds a token literal (C-1), so the Telegram page can be previewed
-OWNER = {'id': 1, 'name': os.environ.get('PREVIEW_NAME', 'Owner'), 'role': 'owner', 'email': PREVIEW_EMAIL}
+# Fallback identity for requests that arrive without a token (never a real person).
+OWNER = ACCOUNTS[0] if ACCOUNTS else {'id': 1, 'name': os.environ.get('PREVIEW_NAME', 'Owner'),
+                                     'role': 'owner', 'email': PREVIEW_EMAIL, 'token': TOKEN}
 PREVIEW_PROJECT = {'id': 1, 'name': 'Preview project (stub)', 'stage': 'design', 'photos': [], 'value': 0, 'paid': 0, 'no': 'P-1', 'client': '',
                     'start': '2026-09-01', 'target': '2026-12-15', 'milestones': [{'label': 'Deposit', 'pct': 30, 'inv_id': 1}, {'label': 'Installation', 'pct': 70, 'inv_id': None}]}
 PREVIEW_UNDATED = {'id': 2, 'name': 'Preview project without dates', 'stage': 'design', 'photos': [], 'value': 0, 'paid': 0, 'no': 'P-2', 'client': '', 'start': '', 'target': '', 'milestones': []}
@@ -51,6 +120,18 @@ def _tpl_total(t):
             except (TypeError, ValueError): pass
     return round(tot, 2)
 
+# Preview-only leads. `leads_followups` MUST carry overdue/today/upcoming (the real API always does,
+# api/sales17-lib.php:155) — the sales/support home screens read .length straight off them.
+PREVIEW_LEADS = [
+    {'id': 1, 'name': 'Kamran Ashraf', 'company': 'Marla residence', 'phone': '+92 300 4455667', 'stage': 'new', 'line': 'turnkey',
+     'service': 'Turnkey residence', 'source': 'Website form', 'assigned_to': 1, 'next_at': '2026-10-10 11:00:00', 'next_type': 'Call', 'created_at': '2026-10-08 10:12:00'},
+    {'id': 2, 'name': 'Dr. Sarah Mansoor', 'company': 'Dental clinic', 'phone': '+92 321 5551234', 'stage': 'visit', 'line': 'fitout',
+     'service': 'Clinic fit-out', 'source': 'WhatsApp', 'assigned_to': 1, 'next_at': '2026-10-12 09:00:00', 'next_type': 'Site visit', 'created_at': '2026-10-06 08:40:00'},
+    {'id': 3, 'name': 'Tariq Mahmood', 'company': 'Boardroom', 'phone': '', 'stage': 'contacted', 'line': 'furniture',
+     'service': 'Boardroom table', 'source': 'Google search', 'assigned_to': None, 'next_at': '2026-10-14 15:00:00', 'next_type': 'Quote follow-up', 'created_at': '2026-10-05 15:05:00'},
+    {'id': 4, 'name': 'Ayesha Khan', 'company': '', 'phone': '+92 333 7778899', 'stage': 'new', 'line': 'interior',
+     'service': 'Kitchen redesign', 'source': 'Instagram', 'assigned_to': None, 'next_at': '2026-10-15 12:30:00', 'next_type': 'Call', 'created_at': '2026-10-04 09:20:00'},
+]
 PROJECTS = []  # in-memory projects for preview only (sample projects created here are not saved anywhere)
 PROJ_NEXT = [0]
 PROJ_STAGES = ['planning', 'design', 'procurement', 'execution', 'finishing', 'handover', 'completed']
@@ -87,29 +168,33 @@ class H(http.server.SimpleHTTPRequestHandler):
         try: data = json.loads(self.rfile.read(n) or b'{}')
         except Exception: data = {}
         action = data.get('action', '')
+        me = BY_TOKEN.get(self.headers.get('X-WX-ADM') or '')  # who this token belongs to
         if action == 'status':
             st = {'ok': True, 'needsSetup': False, 'dbError': False, 'driver': 'preview (no database)', 'builderLocked': False}
-            if self.headers.get('X-WX-ADM') == TOKEN: st['user'] = OWNER
+            if me: st['user'] = pub(me)
             return self._json(200, st)
         if action == 'login':
-            if not PREVIEW_EMAIL or not PREVIEW_PASS:
-                return self._json(200, {'ok': False, 'error': 'Preview sign-in is not set up. Start the preview with PREVIEW_EMAIL and PREVIEW_PASS set.'})
-            if data.get('email', '').strip().lower() == PREVIEW_EMAIL and data.get('password') == PREVIEW_PASS:
-                return self._json(200, {'ok': True, 'token': TOKEN, 'user': OWNER, 'builderToken': None})
-            if data.get('email', '').strip().lower() == PREVIEW_EMAIL:
+            if not ACCOUNTS:
+                return self._json(200, {'ok': False, 'error': 'Preview sign-in is not set up. Start the preview with PREVIEW_ACCOUNTS (or PREVIEW_EMAIL / PREVIEW_PASS) set.'})
+            em = data.get('email', '').strip().lower()
+            acc = BY_EMAIL.get(em)
+            if acc and data.get('password') == acc['password']:
+                return self._json(200, {'ok': True, 'token': acc['token'], 'user': pub(acc), 'caps': caps_of(acc),
+                                        'builderToken': None})
+            if acc:
                 return self._json(200, {'ok': False, 'error': 'Wrong password. Check the preview password you set on the server.'})
-            return self._json(200, {'ok': False, 'error': 'Preview sign-in only accepts the email set on the server. The live database is not connected in this preview.'})
+            return self._json(200, {'ok': False, 'error': 'Preview sign-in only accepts the accounts set on the server. The live database is not connected in this preview.'})
         if action == 'me':
-            if self.headers.get('X-WX-ADM') == TOKEN:
-                return self._json(200, {'ok': True, 'user': OWNER, 'caps': {}, 'builderToken': None})
+            if me:
+                return self._json(200, {'ok': True, 'user': pub(me), 'caps': caps_of(me), 'builderToken': None})
             return self._json(200, {'ok': False, 'error': 'Not signed in'})
-        if self.headers.get('X-WX-ADM') != TOKEN and action not in ('password',):
+        if me is None and action not in ('password',):
             return self._json(200, {'ok': False, 'error': 'Not signed in'})
         if action == 'chat_list':
             box = data.get('box') or 'all'
-            rows = [dict(c) for c in CHATS if c['status'] == 'open' and (box == 'all' or (box == 'mine' and c['assigned'] == OWNER['id']) or (box == 'unassigned' and c['assigned'] is None))]
-            return self._json(200, {'ok': True, 'chats': rows, 'team': [], 'me': OWNER['id'],
-                                    'counts': {'mine': sum(1 for c in CHATS if c['assigned'] == OWNER['id']), 'unassigned': sum(1 for c in CHATS if c['assigned'] is None), 'all': len(CHATS)},
+            rows = [dict(c) for c in CHATS if c['status'] == 'open' and (box == 'all' or (box == 'mine' and c['assigned'] == me['id']) or (box == 'unassigned' and c['assigned'] is None))]
+            return self._json(200, {'ok': True, 'chats': rows, 'team': [], 'me': me['id'],
+                                    'counts': {'mine': sum(1 for c in CHATS if c['assigned'] == me['id']), 'unassigned': sum(1 for c in CHATS if c['assigned'] is None), 'all': len(CHATS)},
                                     'cfg': {'ai': True, 'on': True, 'saved': True, 'tg': False}})
         if action in ('chat_get', 'chat_reply', 'chat_mode', 'chat_suggest'):
             cid = int(data.get('id') or 0)
@@ -123,13 +208,13 @@ class H(http.server.SimpleHTTPRequestHandler):
                 return self._json(200, {'ok': True, 'text': 'Thank you for your message. Could you share a convenient time for a site visit?'})
             if action == 'chat_mode':
                 c['mode'] = 'human' if data.get('mode') == 'human' else 'ai'
-                c['agent'] = OWNER['name'] if c['mode'] == 'human' else ''
+                c['agent'] = me['name'] if c['mode'] == 'human' else ''
                 return self._json(200, {'ok': True})
             text = str(data.get('text') or '').strip()
             if not text: return self._json(200, {'ok': False, 'error': 'Write a message'})
             NEXT_MSG[0] += 1
-            MSGS.setdefault(cid, []).append({'id': NEXT_MSG[0], 't': '2026-10-11 12:00:00', 'who': 'agent', 'name': OWNER['name'], 'text': text, 'att': None})
-            c.update({'mode': 'human', 'agent': OWNER['name'], 'last': text, 'assigned': OWNER['id']})
+            MSGS.setdefault(cid, []).append({'id': NEXT_MSG[0], 't': '2026-10-11 12:00:00', 'who': 'agent', 'name': me['name'], 'text': text, 'att': None})
+            c.update({'mode': 'human', 'agent': me['name'], 'last': text, 'assigned': me['id']})
             return self._json(200, {'ok': True})
         if action == 'aic_get':
             return self._json(200, {'ok': True, 'base': {'ai': True, 'on': True, 'noPrices': True, 'tone': 'designer', 'tones': ['designer', 'friendly', 'formal'], 'greeting': 'Assalam-o-Alaikum! How can we help you plan your space?', 'waAgent': '', 'waGreeting': ''},
@@ -168,7 +253,7 @@ class H(http.server.SimpleHTTPRequestHandler):
                 invoiced.append(int(150000 + 90000 * ph))
                 paid.append(int(100000 + 70000 * ph))
                 visitors.append(int(40 + 60 * ph))
-            return self._json(200, {'ok': True, 'days': days, 'role': OWNER['role'], 'axis': axis, 'visitors': visitors,
+            return self._json(200, {'ok': True, 'days': days, 'role': me['role'], 'axis': axis, 'visitors': visitors,
                 'crm': {
                     'kpi': {'leads': [sum(leads), sum(leads) * 4 // 5], 'pipeline': 7420000, 'openQuotes': [6, 3480000],
                             'quotesSent': [sum(sent), sum(sent) * 3 // 4], 'won': sum(won), 'paid': [sum(paid), sum(paid) * 9 // 10], 'unpaid': 1260000},
@@ -196,13 +281,13 @@ class H(http.server.SimpleHTTPRequestHandler):
             since = int(data.get('since') or 0)
             if pid != PREVIEW_PROJECT['id']: return self._json(200, {'ok': False, 'error': 'Project not found'})
             items = [m for m in FEED if m['id'] > since] if since else FEED[-100:]
-            return self._json(200, {'ok': True, 'items': items, 'me': OWNER['id']})
+            return self._json(200, {'ok': True, 'items': items, 'me': me['id']})
         if action == 'arc_feed_post':
             pid = int(data.get('project_id') or 0)
             text = str(data.get('text') or '').strip()
             if pid != PREVIEW_PROJECT['id']: return self._json(200, {'ok': False, 'error': 'Project not found'})
             if not text or len(text) > 2000: return self._json(200, {'ok': False, 'error': 'Message must be 1 to 2000 characters'})
-            m = {'id': len(FEED) + 1, 'author_id': OWNER['id'], 'author': OWNER['name'], 'role': OWNER['role'], 'text': text, 'at': int(time.time())}
+            m = {'id': len(FEED) + 1, 'author_id': me['id'], 'author': me['name'], 'role': me['role'], 'text': text, 'at': int(time.time())}
             FEED.append(m)
             return self._json(200, {'ok': True, 'item': m})
         if action == 'invs_tracker':
@@ -256,6 +341,19 @@ class H(http.server.SimpleHTTPRequestHandler):
             if sum(float(m.get('pct') or 0) for m in plan) != 100: return self._json(200, {'ok': False, 'error': 'Milestones must add up to 100%'})
             p['milestones'] = [{'label': str(m.get('label') or '')[:80], 'pct': float(m.get('pct') or 0), 'inv_id': None, 'inv_no': '', 'status': 'unbilled'} for m in plan]
             return self._json(200, {'ok': True})
+        if action == 'leads_followups':
+            today = time.strftime('%Y-%m-%d')
+            g = {'overdue': [], 'today': [], 'upcoming': []}
+            for l in PREVIEW_LEADS:
+                d = str(l.get('next_at') or '')[:10]
+                if not d: continue
+                g['overdue' if d < today else ('today' if d == today else 'upcoming')].append(dict(l))
+            return self._json(200, dict({'ok': True}, **g))
+        if action == 'leads_list':
+            return self._json(200, {'ok': True, 'leads': [dict(l) for l in PREVIEW_LEADS], 'total': len(PREVIEW_LEADS)})
+        if action == 'leads_count':
+            return self._json(200, {'ok': True, 'total': len(PREVIEW_LEADS),
+                                    'new': sum(1 for l in PREVIEW_LEADS if l['stage'] == 'new')})
         return self._json(200, empty())
     def do_GET(self):
         if self._blocked(urllib.parse.urlsplit(self.path).path):

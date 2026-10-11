@@ -22,6 +22,25 @@ Notes:
 - **Checks:** `t16`, `editor-dash`, `approvals`, `approvals-initial` (add `JITTER=<seed>` for seeded script delay), `security`.
 - **Full evidence run:** `bash run-browser-evidence.sh`, with `PREFIX` and `HEADT` pointing at `git archive` extracts of the pre-fix and HEAD trees (outside the repo).
 
+## Preview sign-in accounts (role testing)
+
+The preview stub has **no built-in account** — every account comes from the environment, so no
+credential value is ever written into this repo:
+
+```bash
+PREVIEW_ACCOUNTS='[{"email":"you@example.pk","role":"sales","password":"…"}]' \
+  python3 preview-server.py ../../woodex-live-p29-v2.1-pro 8080
+```
+
+- `role` uses the stored codes from `api/roles-lib.php`: `owner` (Master), `admin` (Manager),
+  `editor` (Developer), `sales` (Sales), `support` (Support). Optional `name` and `token` per account.
+- `PREVIEW_ACCOUNTS_FILE` points at the same JSON in a file — keep it at
+  `.preview-accounts.local.json` (git-ignored pattern `.preview-accounts*.json`).
+- `PREVIEW_EMAIL` / `PREVIEW_PASS` still add one extra account (role `owner`), so the older probes
+  keep working unchanged.
+- Each account gets its **own token**, so `me` / `status` return that account after a reload and the
+  sidebar gating can be checked per role. Never use real production passwords here.
+
 ## Design-batch checks (2026-10-12)
 
 - `ui-design-batch.mjs` — routes × both themes in one run: page errors, screenshots, an inline-hex

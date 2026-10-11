@@ -93,7 +93,8 @@
   function sales(el) {
     el.innerHTML = hello("Your day in sales") + '<div class="grid kpis">' + kpi("clock", "Follow-ups overdue", "od", "#/enquiries", "bad") + kpi("bell", "Due today", "td", "#/enquiries") + kpi("inbox", "New leads", "nw", "#/enquiries") + kpi("message-circle", "Chats needing you", "cn", "#/chat") + '</div><div id="rd"></div>';
     Promise.all([api("leads_followups"), api("leads_list"), api("chat_list", { status: "open" })]).then(function (r) {
-      var f = r[0].ok ? r[0] : { overdue: [], today: [], upcoming: [] }, L = r[1].leads || [], C = r[2].chats || [];
+      var f = r[0].ok ? r[0] : {}; f.overdue = f.overdue || []; f.today = f.today || []; f.upcoming = f.upcoming || []; /* AD-31 */
+      var L = r[1].leads || [], C = r[2].chats || [];
       var mine = W.S.user.id, nw = L.filter(function (l) { return l.stage === "new"; });
       setK("od", f.overdue.length, f.overdue.length ? "act now" : ""); setK("td", f.today.length); setK("nw", nw.length); setK("cn", C.filter(function (c) { return c.needs; }).length);
       var fu = f.overdue.concat(f.today, f.upcoming).slice(0, 8).map(function (l) { return '<tr><td><a href="#/enquiries/' + l.id + '"><b>' + esc(l.name) + "</b></a><br><small class=\"muted\">" + esc(l.next_type || "Follow-up") + " · " + esc(l.stage) + '</small></td><td style="white-space:nowrap">' + esc(String(l.next_at).slice(0, 16)) + "</td></tr>"; });
