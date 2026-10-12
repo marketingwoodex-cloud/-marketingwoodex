@@ -16,7 +16,8 @@
   var nowS = function () { var d = new Date(); return ymd(d) + " " + two(d.getHours()) + ":" + two(d.getMinutes()) + ":00"; };
   var dd = function (d, time) { if (!d) return "—"; var x = new Date(String(d).replace(" ", "T")); if (isNaN(x)) return esc(d); return x.toLocaleDateString("en-GB", x.getFullYear() === new Date().getFullYear() ? { day: "2-digit", month: "short" } : { day: "2-digit", month: "short", year: "numeric" }) + (time && String(d).length > 10 ? " · " + x.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }) : ""); };
   var ago = function (d) { if (!d) return "—"; var s = (Date.now() - new Date(String(d).replace(" ", "T"))) / 864e5; if (isNaN(s)) return "—"; return s < 1 ? "today" : s < 2 ? "yesterday" : Math.floor(s) + " days ago"; };
-  var badge = function (st) { var s = STAGE[st] || [st, ""]; return '<span class="badge ' + s[1] + '">' + s[0] + "</span>"; };
+  var SHORT = { contact: "Contacted", visit: "Meeting", quote: "Quote", lost: "Lost" };
+  var badge = function (st, short) { var s = STAGE[st] || [st, ""]; return '<span class="badge ' + s[1] + '">' + ((short && SHORT[st]) || s[0]) + "</span>"; };
   var waNum = function (p) { var d = String(p || "").replace(/\D/g, ""); if (/^0\d{9,10}$/.test(d)) d = "92" + d.slice(1); else if (/^3\d{9}$/.test(d)) d = "92" + d; return d; };
   var open = function (l) { return ["won", "lost"].indexOf(l.stage) < 0; };
   var overdue = function (l) { return open(l) && l.next_at && l.next_at < nowS(); };
@@ -57,53 +58,17 @@
         '<button class="btn" id="s17-exp">' + ic("download") + 'Export</button>' +
         '<button class="btn pri btn-preline-cyan" id="s17-add">' + ic("plus") + 'Add lead</button>') +
 
-      '<!-- 1. Top Sparkline Metric Cards (Image 2 Match) -->' +
-      '<div class="crm-p3-top">' +
-        '<div class="crm-kpi-card"><div class="crm-kpi-head"><span class="crm-kpi-lbl">OPEN DEALS</span><span class="crm-kpi-badge up">↗ 37.3% <small>up from 142</small></span></div><div class="crm-kpi-val" id="kpi-open">482</div>' + sparkSvg("M0,20 Q20,16 35,22 T65,8 T85,12 T100,4") + '</div>' +
-        '<div class="crm-kpi-card"><div class="crm-kpi-head"><span class="crm-kpi-lbl">UNTOUCHED DEALS</span><span class="crm-kpi-badge up">↗ 14.5% <small>up from 503</small></span></div><div class="crm-kpi-val" id="kpi-untouched">639</div>' + sparkSvg("M0,24 Q25,20 45,23 T75,14 T90,16 T100,10") + '</div>' +
-        '<div class="crm-kpi-card"><div class="crm-kpi-head"><span class="crm-kpi-lbl">CALLS TODAY</span><span class="crm-kpi-badge down">↘ 4.1% <small>down from 39</small></span></div><div class="crm-kpi-val" id="kpi-calls">36</div>' + sparkSvg("M0,18 Q15,10 35,16 T65,12 T85,18 T100,14", "#38bdf8") + '</div>' +
-        '<div class="crm-kpi-card"><div class="crm-kpi-head"><span class="crm-kpi-lbl">LEADS</span><span class="crm-kpi-badge neutral">0.0% 510</span></div><div class="crm-kpi-val" id="kpi-leads">510</div>' + sparkSvg("M0,16 Q20,24 40,8 T70,18 T85,6 T100,8") + '</div>' +
-      '</div>' +
-
-      '<!-- 2. Middle 3-Column Glassmorphic Feature Blocks (Image 2 Match) -->' +
+      /* ------------------------------------------------------------------ real KPIs
+         The first three blocks of this screen used to be a screenshot of somebody
+         else's dashboard: 482 open deals, "up from 142", a Notion importer and a
+         "sync data to Preline" link. None of it read the database. Everything below
+         is computed from the leads this filter actually returns. */
+      '<div class="crm-p3-top" id="s17-kpi"><div class="crm-kpi-card"><div class="crm-kpi-head"><span class="crm-kpi-lbl">Open leads</span></div><div class="crm-kpi-val">—</div></div></div>' +
       '<div class="crm-trio-grid">' +
-        '<div class="crm-block-card"><div class="crm-block-h"><h3>Import data</h3><button class="icon-btn" style="opacity:0.6">⋮</button></div>' +
-          '<p class="crm-block-sub">See and talk to your users and leads immediately by importing your data into the Preline platform.</p>' +
-          '<div class="crm-imp-list">' +
-            '<div class="crm-imp-item"><div class="crm-imp-left"><div class="crm-imp-ic">' + ic("mail") + '</div><div><div class="crm-imp-title">Gmail</div><div class="crm-imp-desc">Users</div></div></div><button class="crm-imp-btn" id="imp-gmail">Launch importer ↗</button></div>' +
-            '<div class="crm-imp-item"><div class="crm-imp-left"><div class="crm-imp-ic">' + ic("file-text") + '</div><div><div class="crm-imp-title">Notion</div><div class="crm-imp-desc">Users</div></div></div><button class="crm-imp-btn" id="imp-notion">Launch importer ↗</button></div>' +
-            '<div class="crm-imp-item"><div class="crm-imp-left"><div class="crm-imp-ic">' + ic("file") + '</div><div><div class="crm-imp-title">CSV</div><div class="crm-imp-desc">Users</div></div></div><button class="crm-imp-btn" id="imp-csv">Launch importer ↗</button></div>' +
-          '</div>' +
-          '<small style="color:var(--mut);font-size:12px;margin-top:auto">Or you can <a href="#/settings" style="color:var(--pri-ink);text-decoration:none;font-weight:600">sync data to Preline</a> to ensure your data is always up-to-date.</small>' +
-        '</div>' +
-
-        '<div class="crm-block-card"><div class="crm-block-h"><h3>Lead funnel status</h3><button class="icon-btn" style="opacity:0.6">⋮</button></div>' +
-          '<div style="margin-top:10px">' +
-            '<div class="crm-funnel-row"><div class="crm-funnel-meta"><span><i style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#38bdf8;margin-right:6px"></i>Spam/blocked</span><span style="color:var(--mut)">12 (9.9%)</span></div>' +
-              '<div class="crm-funnel-meta"><span><i style="display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--pri);margin-right:6px"></i>Valid leads</span><span style="color:var(--mut)">28 (25.6%)</span></div>' +
-              '<div class="crm-funnel-track"><div class="crm-funnel-fill-cyan" style="width:35%"></div><div class="crm-funnel-fill-gray" style="width:65%"></div></div></div>' +
-            '<div class="crm-funnel-row"><div class="crm-funnel-meta"><span><i style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#818cf8;margin-right:6px"></i>Qualified leads</span><span style="color:var(--mut)">38 (29.5%)</span></div>' +
-              '<div class="crm-funnel-meta"><span><i style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#6366f1;margin-right:6px"></i>Cold leads</span><span style="color:var(--mut)">31 (20.5%)</span></div>' +
-              '<div class="crm-funnel-track"><div class="crm-funnel-fill-indigo" style="width:50%"></div><div class="crm-funnel-fill-gray" style="width:50%"></div></div></div>' +
-            '<div class="crm-funnel-row"><div class="crm-funnel-meta"><span><i style="display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--pri);margin-right:6px"></i>Converted to deal</span><span style="color:var(--mut)">22 (17.0%)</span></div>' +
-              '<div class="crm-funnel-meta"><span><i style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#38bdf8;margin-right:6px"></i>Still in pipeline</span><span style="color:var(--mut)">44 (43.0%)</span></div>' +
-              '<div class="crm-funnel-track"><div class="crm-funnel-fill-cyan" style="width:60%"></div><div class="crm-funnel-fill-gray" style="width:40%"></div></div></div>' +
-          '</div>' +
-          '<small style="color:var(--mut);font-size:12px;margin-top:auto">High cold lead count may indicate a need to adjust targeting or messaging.</small>' +
-        '</div>' +
-
-        '<div class="crm-block-card"><div class="crm-block-h"><h3>Lead nurturing &amp; filtering</h3><button class="icon-btn" style="opacity:0.6">⋮</button></div>' +
-          '<div style="display:flex;align-items:baseline;gap:8px;margin-top:4px"><span style="font-size:30px;font-weight:800;color:var(--txt)">44%</span><span class="crm-kpi-badge down">↘ down from 56.8%</span></div>' +
-          '<div class="crm-gauge-wrap">' + gaugeSvg() + '</div>' +
-          '<div class="crm-gauge-legend">' +
-            '<div class="crm-leg-item"><span class="crm-leg-dot" style="background:var(--pri)"></span><div><div class="crm-leg-title" style="color:var(--txt)">47</div><div class="crm-leg-desc">Nurtured successfully</div></div></div>' +
-            '<div class="crm-leg-item"><span class="crm-leg-dot" style="background:#2563eb"></span><div><div class="crm-leg-title" style="color:var(--txt)">23</div><div class="crm-leg-desc">Sent to sales review</div></div></div>' +
-            '<div class="crm-leg-item"><span class="crm-leg-dot" style="background:#475569"></span><div><div class="crm-leg-title" style="color:var(--txt)">30</div><div class="crm-leg-desc">Blocked</div></div></div>' +
-            '<div class="crm-leg-item"><span class="crm-leg-dot" style="background:#94a3b8"></span><div><div class="crm-leg-title" style="color:var(--txt)">30</div><div class="crm-leg-desc">Disqualified by team</div></div></div>' +
-          '</div>' +
-        '</div>' +
+        '<div class="crm-block-card"><div class="crm-block-h"><h3>Pipeline by stage</h3></div><div id="s17-stage-card" class="wx-fill"><small class="muted">Loading…</small></div></div>' +
+        '<div class="crm-block-card"><div class="crm-block-h"><h3>Where the leads come from</h3></div><div id="s17-src-card" class="wx-fill"><small class="muted">Loading…</small></div></div>' +
+        '<div class="crm-block-card"><div class="crm-block-h"><h3>Follow-up coverage</h3></div><div id="s17-fu-card" class="wx-fill"><small class="muted">Loading…</small></div></div>' +
       '</div>' +
-
       '<!-- 3. Bottom Customers & Leads Table (Image 2 Match) -->' +
       '<div class="s17-bar"><div class="s17-month"><button class="icon-btn" id="s17-prev" title="Previous month">‹</button><select id="s17-m"></select><button class="icon-btn" id="s17-next" title="Next month">›</button></div>' +
       '<div class="seg" id="s17-lines"></div></div>' +
@@ -111,11 +76,10 @@
 
       '<div class="preline-tbl-card">' +
         '<div class="preline-tbl-head-bar">' +
-          '<div><h3 style="margin:0;font-size:16px;font-weight:700">New customers</h3><small class="muted" id="s17-count-lbl">2 leads</small></div>' +
+          '<div><h3 style="margin:0;font-size:16px;font-weight:700">Leads</h3><small class="muted" id="s17-count-lbl">loading…</small></div>' +
           '<div class="preline-tbl-actions">' +
             '<div class="s17-filters" style="border:0;padding:0"><input type="search" id="s17-qs" placeholder="Search name, company, email, phone…" style="min-width:260px">' +
             '<select id="s17-who"></select><select id="s17-stage"></select></div>' +
-            '<button class="btn pri btn-preline-cyan" id="s17-add-sub">' + ic("plus") + 'New customer</button>' +
           '</div>' +
         '</div>' +
         '<div class="tbl-wrap"><table class="tbl s17-tbl"><thead><tr>' +
@@ -126,10 +90,99 @@
 
       '<div style="margin-top:20px"><aside class="card s17-fu" id="s17-fu"></aside></div>';
 
+    /* ---------------------------------------------------------------- real metrics
+       Every number on this screen is derived from C.leads (the same array the table
+       renders), never invented. Filters are honoured: `L` is month + line. */
+    var pkrShort = function (n) { n = +n || 0; if (n >= 1e7) return "Rs " + (n / 1e7).toFixed(n >= 1e8 ? 0 : 1) + " Cr"; if (n >= 1e5) return "Rs " + (n / 1e5).toFixed(n >= 1e6 ? 0 : 1) + " L"; return "Rs " + Math.round(n).toLocaleString("en-PK"); };
+    var spark = function (series, color) {
+      var max = Math.max.apply(null, series.concat([1])), n = series.length;
+      var pts = series.map(function (v, i) { var x = n > 1 ? i * 100 / (n - 1) : 50, y = 26 - (v / max) * 22; return (i ? "L" : "M") + x.toFixed(1) + "," + y.toFixed(1); }).join(" ");
+      color = color || "var(--pri)";
+      return '<svg viewBox="0 0 100 28" class="crm-kpi-spark" preserveAspectRatio="none" aria-hidden="true"><path d="' + pts + ' L100,28 L0,28 Z" fill="' + color + '" opacity="0.12"/><path d="' + pts + '" fill="none" stroke="' + color + '" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    };
+    var bars = function (rows) {
+      var max = Math.max.apply(null, rows.map(function (r) { return r[1]; }).concat([1]));
+      return rows.map(function (r) {
+        return '<div class="wx-brow"><span class="wx-brow-l">' + esc(r[0]) + '</span><span class="wx-brow-v">' + r[1] + '</span><span class="wx-btrack"><i style="width:' + Math.round(r[1] * 100 / max) + '%' + (r[2] ? ';background:' + r[2] : "") + '"></i></span></div>';
+      }).join("");
+    };
+    var gauge = function (pct) {
+      var C1 = 2 * Math.PI * 70, half = C1 / 2, len = half * Math.max(0, Math.min(100, pct)) / 100;
+      return '<svg viewBox="0 0 200 116" class="wx-gauge" role="img" aria-label="' + pct + '% of open leads have a follow-up scheduled">' +
+        '<g transform="rotate(180 100 100)" fill="none" stroke-linecap="round">' +
+        '<circle cx="100" cy="100" r="70" stroke="var(--card-sub)" stroke-width="16" stroke-dasharray="' + half.toFixed(1) + ' ' + C1.toFixed(1) + '"/>' +
+        (len > 0.5 ? '<circle cx="100" cy="100" r="70" stroke="var(--pri)" stroke-width="16" stroke-dasharray="' + len.toFixed(1) + ' ' + C1.toFixed(1) + '"/>' : "") + '</g>' +
+        '<text x="100" y="86" class="wx-gauge-num">' + pct + '%</text><text x="100" y="106" class="wx-gauge-cap">scheduled</text></svg>';
+    };
+    function computeStats() {
+      var L = base(), openL = L.filter(open), wonL = L.filter(function (l) { return l.stage === "won"; }), lostL = L.filter(function (l) { return l.stage === "lost"; });
+      var sum = function (a) { return a.reduce(function (x, l) { return x + (+l.value || 0); }, 0); };
+      var weekly = function (f) {
+        var out = [];
+        for (var i = 7; i >= 0; i--) { var end = Date.now() - i * 7 * 864e5, start = end - 7 * 864e5, n = 0; C.leads.filter(lineOk).forEach(function (l) { var t = new Date(String(l.created_at).replace(" ", "T")).getTime(); if (t > start && t <= end && (!f || f(l))) n++; }); out.push(n); }
+        return out;
+      };
+      var perDay = [];
+      for (var d = 0; d < 7; d++) { var day = ymd(new Date(Date.now() + d * 864e5)); perDay.push(C.leads.filter(function (l) { return open(l) && l.next_at && l.next_at.slice(0, 10) === day; }).length); }
+      var stageCount = {}, srcCount = {};
+      ORDER.forEach(function (s) { stageCount[s] = L.filter(function (l) { return l.stage === s; }).length; });
+      L.forEach(function (l) { var k = l.source || "Not recorded"; srcCount[k] = (srcCount[k] || 0) + 1; });
+      var scheduled = openL.filter(function (l) { return l.next_at; }).length;
+      return {
+        L: L, open: openL.length, won: wonL.length, lost: lostL.length, rate: (wonL.length + lostL.length) ? Math.round(wonL.length * 100 / (wonL.length + lostL.length)) : 0,
+        pipeV: sum(openL), wonV: sum(wonL), weeks: weekly(), wonWeeks: weekly(function (l) { return l.stage === "won"; }), perDay: perDay,
+        pipeWeeks: (function () { var out = []; for (var i = 7; i >= 0; i--) { var end = Date.now() - i * 7 * 864e5, start = end - 7 * 864e5, v = 0; C.leads.filter(lineOk).forEach(function (l) { var t = new Date(String(l.created_at).replace(" ", "T")).getTime(); if (t > start && t <= end && open(l)) v += (+l.value || 0); }); out.push(v); } return out; })(),
+        od: C.leads.filter(overdue).length, td: C.leads.filter(dueToday).length,
+        stageCount: stageCount, srcTop: Object.keys(srcCount).sort(function (a, b) { return srcCount[b] - srcCount[a]; }).slice(0, 5).map(function (k) { return [k, srcCount[k]]; }),
+        scheduled: scheduled, unsched: openL.length - scheduled, cover: openL.length ? Math.round(scheduled * 100 / openL.length) : 0,
+        due7: C.leads.filter(function (l) { return open(l) && l.next_at && l.next_at.slice(0, 10) <= ymd(new Date(Date.now() + 7 * 864e5)); }).length
+      };
+    }
+    function renderTop() {
+      if (!$("#s17-kpi")) return;
+      var s = computeStats(), UN = M && M.lines || {};
+      var KP = [
+        ["Open leads", s.open, s.od ? ["down", "↘ " + s.od + " overdue"] : ["up", "nothing overdue"], s.td + " due today · " + s.unsched + " without a next step", s.weeks],
+        ["Open pipeline value", pkrShort(s.pipeV), ["neutral", s.open + " open"], "average " + pkrShort(s.open ? s.pipeV / s.open : 0) + " per lead", s.pipeWeeks],
+        ["Won in filter", s.won, s.rate >= 50 ? ["up", s.rate + "% win rate"] : ["neutral", s.rate + "% win rate"], pkrShort(s.wonV) + " won · " + s.lost + " lost", s.wonWeeks],
+        ["Follow-ups", s.od + s.td, s.od ? ["down", s.od + " overdue"] : ["up", "on time"], "next 7 days: " + s.due7, s.perDay]
+      ];
+      $("#s17-kpi").innerHTML = KP.map(function (k) {
+        return '<div class="crm-kpi-card"><div class="crm-kpi-head"><span class="crm-kpi-lbl">' + k[0] + '</span><span class="crm-kpi-badge ' + k[2][0] + '">' + k[2][1] + '</span></div><div class="crm-kpi-val">' + k[1] + '</div><p class="wx-kpi-sub">' + k[3] + '</p>' + spark(k[4]) + '</div>';
+      }).join("");
+
+      var stRows = ORDER.filter(function (k) { return s.stageCount[k]; }).map(function (k) { return [STAGE[k][0], s.stageCount[k], k === "won" ? "var(--ok)" : k === "lost" ? "var(--bad)" : ""]; });
+      $("#s17-stage-card").innerHTML = stRows.length
+        ? bars(stRows) + '<p class="wx-card-foot">' + s.L.length + " lead" + (s.L.length === 1 ? "" : "s") + " in this filter · " + pkrShort(s.pipeV) + " open value · " + s.L.filter(function (l) { return l.quote_status; }).length + " with a quotation</p>"
+        : '<p class="wx-empty">No leads in this filter.</p>';
+
+      $("#s17-src-card").innerHTML = (s.srcTop.length
+        ? bars(s.srcTop) + '<p class="wx-card-foot">' + s.srcTop.length + " source" + (s.srcTop.length === 1 ? "" : "s") + " · " + s.L.length + " lead" + (s.L.length === 1 ? "" : "s") + " counted</p>"
+        : '<p class="wx-empty">No leads in this filter.</p>') +
+        '<div class="wx-card-act"><button class="btn" id="imp-src">' + ic("upload") + "Import a sheet of leads</button></div>";
+
+      $("#s17-fu-card").innerHTML = gauge(s.cover) +
+        '<div class="wx-legend">' +
+          '<span><i class="wx-dot ok"></i>Scheduled <b>' + s.scheduled + '</b></span>' +
+          '<span><i class="wx-dot bad"></i>Overdue <b>' + s.od + '</b></span>' +
+          '<span><i class="wx-dot warn"></i>Due today <b>' + s.td + '</b></span>' +
+          '<span><i class="wx-dot"></i>Next 7 days <b>' + s.due7 + '</b></span>' +
+          '<span><i class="wx-dot mut"></i>No next step <b>' + s.unsched + '</b></span>' +
+        '</div>' +
+        '<p class="wx-card-foot">Open leads with a scheduled follow-up, out of ' + s.open + ' open.</p>';
+      W.fillIcons($("#s17-fu-card"));
+      var imp = $("#imp-src"); if (imp) imp.onclick = function () { importSheet(refresh); };
+      void UN; void stats;
+    }
+
+
     var stats = null;
     var mlist = function () { var s = {}; s[today().slice(0, 7)] = 1; if (st.month) s[st.month] = 1; C.leads.forEach(function (l) { s[String(l.created_at).slice(0, 7)] = 1; }); return Object.keys(s).sort().reverse(); };
     var inMonth = function (l) { return !st.month || String(l.created_at).slice(0, 7) === st.month; };
-    var base = function () { return C.leads.filter(function (l) { return inMonth(l) && (!st.line || l.line === st.line); }); };
+    /* the segmented control is built from M.lines (slug -> label) while a lead stores the
+       label, so matching the slug alone made every line filter return an empty table */
+    var lineOk = function (l) { return !st.line || l.line === st.line || l.line === ((M && M.lines && M.lines[st.line]) || ""); };
+    var base = function () { return C.leads.filter(function (l) { return inMonth(l) && lineOk(l); }); };
     function counters() {
       var L = base(), n = function (f) { return L.filter(f).length; };
       var cs = [["all", "Total", L.length, ""], ["newlead", "New lead", n(function (l) { return l.lead_type !== "returning" && !l.client_id; }), "info"], ["client", "Client", n(function (l) { return l.lead_type === "returning" || l.client_id; }), "navy"],
@@ -137,7 +190,7 @@
         ["hold", "Hold", n(function (l) { return l.stage === "hold"; }), ""], ["done", "Quote done", n(function (l) { return l.quote_status === "done"; }), "teal"], ["won", "Won", n(function (l) { return l.stage === "won"; }), "ok"],
         ["overdue", "Overdue", C.leads.filter(overdue).length, "bad"]];
       $("#s17-c").innerHTML = cs.map(function (c) { return '<button class="s17-k s17-k-' + (c[3] || "plain") + (st.tab === c[0] ? " on" : "") + '" data-t="' + c[0] + '"><small>' + c[1] + "</small><b>" + c[2] + "</b></button>"; }).join("") +
-        '<div class="s17-k s17-k-val"><small>Won value</small><b>' + pkr(L.filter(function (l) { return l.stage === "won"; }).reduce(function (a, l) { return a + (l.value || 0); }, 0)).replace("Rs ", "") + "</b></div>";
+        '<div class="s17-k s17-k-val" title="' + pkr(L.filter(function (l) { return l.stage === "won"; }).reduce(function (a, l) { return a + (l.value || 0); }, 0)) + '"><small>Won value</small><b>' + pkrShort(L.filter(function (l) { return l.stage === "won"; }).reduce(function (a, l) { return a + (l.value || 0); }, 0)) + "</b></div>";
       $$("#s17-c [data-t]").forEach(function (b) { b.onclick = function () { st.tab = st.tab === b.dataset.t && b.dataset.t !== "all" ? "all" : b.dataset.t; counters(); rows(); }; });
     }
     var TABF = { all: function () { return true; }, newlead: function (l) { return l.lead_type !== "returning" && !l.client_id; }, client: function (l) { return l.lead_type === "returning" || l.client_id; },
@@ -146,7 +199,7 @@
     function rows() {
       var q = st.q.toLowerCase(), L = (st.tab === "overdue" ? C.leads.filter(overdue) : base().filter(TABF[st.tab] || TABF.all)).filter(function (l) {
         return (!st.who || String(l.assigned_to || "none") === st.who) && (!st.stage || l.stage === st.stage) && (!q || [l.company, l.name, l.phone, l.email, l.location, l.designation, l.message, "#" + l.id].join(" ").toLowerCase().indexOf(q) >= 0); });
-      if ($("#s17-count-lbl")) $("#s17-count-lbl").textContent = L.length + " customer" + (L.length === 1 ? "" : "s") + " · " + (st.month ? mlabel(st.month) : "All months");
+      if ($("#s17-count-lbl")) $("#s17-count-lbl").textContent = L.length + " lead" + (L.length === 1 ? "" : "s") + " · " + (st.month ? mlabel(st.month) : "All months") + (st.line ? " · " + ((M && M.lines[st.line]) || st.line) : "");
       var QS = (M && M.quoteStatus) || {};
       $("#s17-rows").innerHTML = L.length ? L.map(function (l) {
         var od = overdue(l), td = dueToday(l), title = l.name || l.company, sub = l.company ? l.company : (l.service || "Residential");
@@ -156,12 +209,12 @@
         return '<tr data-id="' + l.id + '" class="' + (od ? "s17-od " : "") + (l.read ? "" : "unread") + '">' +
           '<td><input type="checkbox" style="width:16px;height:16px;accent-color:var(--pri)" data-stop></td>' +
           '<td><div style="display:flex;align-items:center;gap:10px"><span class="preline-avatar">' + esc(ini) + '</span><div><b>' + esc(title) + '</b>' + (l.lead_type === "returning" || l.client_id ? " <span class='badge navy sm'>Client</span>" : "") + '</div></div></td>' +
-          '<td>' + (l.company ? '<span class="badge" style="background:#1e293b;color:var(--mut)">' + esc(l.company) + '</span>' : '<span class="muted">' + esc(sub) + '</span>') + '</td>' +
-          '<td>' + esc(l.location || (l.fields && l.fields.city) || (l.fields && l.fields.address) || "Lahore") + '</td>' +
+          '<td>' + (l.company ? '<span class="wx-chip">' + esc(l.company) + '</span>' : '<span class="muted">' + esc(sub) + '</span>') + '</td>' +
+          '<td>' + esc(l.location || (l.fields && l.fields.city) || (l.fields && l.fields.address) || "—") + '</td>' +
           '<td>' + emailStr + '</td>' +
           '<td class="nw">' + phoneStr + '</td>' +
           '<td>' + (l.quote_status ? "<span class='s17-q s17-q-" + esc(l.quote_status) + "'>" + esc(QS[l.quote_status] || l.quote_status) + "</span>" : "<span class='muted'>—</span>") + '</td>' +
-          '<td>' + badge(l.stage) + '</td>' +
+          '<td>' + badge(l.stage, true) + '</td>' +
           '<td class="nw muted">' + dd(l.created_at) + '</td>' +
           '</tr>';
       }).join("") : '<tr><td colspan="9" class="empty">No leads here yet. Add one, or import your sheet.</td></tr>';
@@ -173,17 +226,21 @@
       var od = L.filter(overdue), td = L.filter(dueToday), up = L.filter(function (l) { return !overdue(l) && !dueToday(l) && l.next_at.slice(0, 10) <= ymd(new Date(Date.now() + 7 * 864e5)); });
       var item = function (l, cls) { return '<a href="#" class="s17-fi ' + cls + '" data-id="' + l.id + '"><span class="s17-fic">' + ic((KIND[l.next_type] || KIND.call)[0]) + "</span><span><b>" + esc(l.company || l.name) + "</b><small>" + esc((M && M.nextTypes[l.next_type]) || "Follow-up") + " · " + dd(l.next_at, true) + (l.assigned_name ? " · " + esc(l.assigned_name) : "") + "</small></span></a>"; };
       var grp = function (t, a, cls) { return "<h4>" + t + " <span class='pill'>" + a.length + "</span></h4>" + (a.length ? a.slice(0, 8).map(function (l) { return item(l, cls); }).join("") + (a.length > 8 ? "<small class='muted'>+" + (a.length - 8) + " more</small>" : "") : "<p class='muted sm'>Nothing.</p>"); };
-      $("#s17-fu").innerHTML = "<div class='card-h'><h3>" + ic("bell") + " Follow-ups</h3></div><div class='card-b'>" + grp("Overdue", od, "od") + grp("Today", td, "td") + grp("Next 7 days", up, "up") + "</div>";
+      $("#s17-fu").innerHTML = "<div class='card-h'><h3>" + ic("bell") + " Follow-ups</h3></div><div class='card-b'>" + grp("Overdue", od, "od") + grp("Today", td, "td") + grp("Next 7 days", up, "up") +
+        ((!od.length && !td.length && !up.length) ? "<p class='muted sm'>No follow-ups are scheduled. Open a lead and set “Next step” to put it on this list — the counter on the card above turns red the moment one falls overdue.</p>" : "") + "</div>";
       W.fillIcons($("#s17-fu")); $$("#s17-fu [data-id]").forEach(function (a) { a.onclick = function (e) { e.preventDefault(); drawer(+a.dataset.id, refresh); }; });
     }
     function filters() {
       var ms = mlist(); $("#s17-m").innerHTML = "<option value=''>All months</option>" + ms.map(function (m) { return "<option value='" + m + "'" + (m === st.month ? " selected" : "") + ">" + mlabel(m) + "</option>"; }).join("");
-      $("#s17-lines").innerHTML = [["", "All lines"]].concat(Object.keys(M.lines).map(function (k) { return [k, M.lines[k]]; })).map(function (x) { return "<button data-l='" + x[0] + "' class='" + (st.line === x[0] ? "on" : "") + "'>" + x[1] + "</button>"; }).join("");
+      var seen = {}, lineList = [];
+      Object.keys(M.lines).forEach(function (k) { seen[k] = 1; seen[M.lines[k]] = 1; lineList.push([k, M.lines[k]]); });
+      C.leads.forEach(function (l) { if (l.line && !seen[l.line]) { seen[l.line] = 1; lineList.push([l.line, l.line]); } });
+      $("#s17-lines").innerHTML = [["", "All lines"]].concat(lineList).map(function (x) { return "<button data-l='" + esc(x[0]) + "' class='" + (st.line === x[0] ? "on" : "") + "'>" + esc(x[1]) + "</button>"; }).join("");
       $("#s17-who").innerHTML = "<option value=''>Everyone</option><option value='none'>Unassigned</option>" + C.team.map(function (u) { return "<option value='" + u.id + "'" + (String(u.id) === st.who ? " selected" : "") + ">" + esc(u.name) + "</option>"; }).join("");
       $("#s17-stage").innerHTML = "<option value=''>All stages</option>" + ORDER.map(function (s) { return "<option value='" + s + "'" + (s === st.stage ? " selected" : "") + ">" + STAGE[s][0] + "</option>"; }).join("");
       $$("#s17-lines button").forEach(function (b) { b.onclick = function () { st.line = b.dataset.l; filters(); counters(); rows(); }; });
     }
-    function draw() { filters(); counters(); rows(); followups(); }
+    function draw() { filters(); renderTop(); counters(); rows(); followups(); }
     function refresh() { return loadLeads().then(function (ok) { if (ok && $("#s17-rows")) draw(); }); }
     var step = function (d) { var ms = mlist(), i = ms.indexOf(st.month); if (i < 0) { st.month = ms[0]; } else if (ms[i - d]) st.month = ms[i - d]; draw(); };
     $("#s17-m").onchange = function () { st.month = this.value; draw(); };
@@ -194,9 +251,6 @@
     if ($("#s17-add-sub")) $("#s17-add-sub").onclick = function () { addLead(refresh); };
     $("#s17-exp").onclick = function () { exportCsv(C.leads.filter(inMonth)); };
     if ($("#s17-imp")) $("#s17-imp").onclick = function () { importSheet(refresh); };
-    if ($("#imp-csv")) $("#imp-csv").onclick = function () { importSheet(refresh); };
-    if ($("#imp-gmail")) $("#imp-gmail").onclick = function () { location.hash = "#/settings"; toast("Gmail importer connected under Settings -> Connectors"); };
-    if ($("#imp-notion")) $("#imp-notion").onclick = function () { location.hash = "#/settings"; toast("Notion sync connected under Settings -> Connectors"); };
     Promise.all([meta(), loadLeads()]).then(function (r) { if (r[1] && $("#s17-rows")) draw(); });
   };
 
