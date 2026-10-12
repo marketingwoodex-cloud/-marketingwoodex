@@ -427,6 +427,27 @@ Error state: `border-red-500 focus:ring-red-500` + `<p class="text-xs text-red-6
 
 **Empty state**: centered icon `size-10 text-gray-400`, title `text-sm font-semibold`, description `text-sm text-gray-500`, one primary action.
 
+**Split form + contact details** (§8.3, from the attached Preline reference
+*Split contact page with contact details* — implemented in `admin/assets/wx-ds-sales.css`)
+
+Used by: New/Edit client (modal, `.wx-split`), Client 360 sidebar (`.wx-details`),
+invoice "Bill to", quotation editor client block, both via `wxContactRows()`.
+
+    .wx-split            grid, 1 column → minmax(0,1fr) 20rem at ≥48rem, 2.5rem column gap
+    .wx-form-col         form column: sections stacked, 1.25rem gap
+    .wx-fsection         section: eyebrow <h3> + fields, divider between sections
+    .wx-field            label + control, --radius-lg, focus = --primary + --primary-soft ring
+    .wx-details          details card: --surface fill, --card-border, --radius-xl, fit-content
+    .wx-drow             icon tile (2.25rem, --card fill, --pri-ink icon) + label + value
+    .wx-drow small       0.6875rem uppercase label, --muted-foreground-1
+    .wx-drow .v          value, `a.v` uses --pri-ink and underlines on hover
+    .wx-note             footnote separated by a --card-divider rule
+
+Rules: the panel mirrors the live form (it is what the client receives on the
+quotation and invoice), every row shows its label as text, and status is never
+communicated by colour alone. `.iv-top` upgrades to the same two-column rhythm at
+≥62rem so a detail header keeps its figures beside the card.
+
 * * *
 
 ## 9. Animation Block System
@@ -572,7 +593,7 @@ Preline JS re-init after dynamic DOM changes: `window.HSStaticMethods.autoInit()
 
 * * *
 
-*Version 1.2 · Stack: Tailwind CSS v4 · Preline UI · Inter · Light/Dark*
+*Version 1.3 · Stack: Tailwind CSS v4 · Preline UI · Inter · Light/Dark*
 
 *v1.1 — added §3.1 (status text AA correction) and §3.2 (token implementation).*
 *v1.2 — §3.2 rewritten for the Preline Themes architecture (stone neutral ramp, AA-pinned muted tokens). No existing rule removed or weakened.*
