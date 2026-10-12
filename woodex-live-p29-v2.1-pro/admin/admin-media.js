@@ -336,7 +336,8 @@
         H.scan = r.scan; draw();
       });
     }
-    $("#hl-run").onclick = scan;
+    /* the "run now" button only exists once the section has rendered */
+    if ($("#hl-run")) $("#hl-run").onclick = scan;
     function draw() {
       var s = H.scan;
       var top = s ? '<div class="hl-top"><div class="card card-b hl-score">' + ring(s.score) + "<div><b>Health score</b><p class=\"muted\">" + s.pages + " pages checked<br>" + esc(s.at.slice(0, 16)) + " UTC</p></div></div>" + Object.keys(TYPES).map(function (k) { return '<button class="card card-b hl-cat' + (flt === k ? " on" : "") + '" data-f="' + k + '">' + ic(TYPES[k][1]) + "<b>" + s.counts[k] + "</b><span>" + TYPES[k][0] + "</span></button>"; }).join("") + "</div>" : '<div class="card card-b muted">Running the first check… (this takes up to a minute on a fresh install)</div>';
@@ -356,8 +357,9 @@
       $$("[data-f]", el).forEach(function (b) { b.onclick = function () { flt = flt === b.dataset.f ? "all" : b.dataset.f; draw(); }; });
       if ($("#hl-sev")) $("#hl-sev").onclick = function (e) { var b = e.target.closest("button"); if (b) { sev = +b.dataset.s; draw(); } };
       bapi("pages").then(function (r) { var s = $("#ps-p"); if (!s) return; s.innerHTML = (r.pages || []).map(function (p) { return '<option value="' + esc(p.path) + '">' + esc(p.url) + "</option>"; }).join(""); });
-      $("#ps-go").onclick = function () {
-        var b = this, rel = $("#ps-p").value, strat = $("#ps-s").value; b.disabled = true; $("#ps-msg").textContent = "Testing " + (rel === "index.html" ? "/" : "/" + rel.replace(/index\.html$/, "")) + "… (up to a minute)";
+      var go = $("#ps-go");
+      if (go) go.onclick = function () {
+        var b = go, rel = ($("#ps-p") || {}).value || "index.html", strat = ($("#ps-s") || {}).value || "mobile"; b.disabled = true; $("#ps-msg").textContent = "Testing " + (rel === "index.html" ? "/" : "/" + rel.replace(/index\.html$/, "")) + "… (up to a minute)";
         api("health_psi", { rel: rel, strategy: strat }).then(function (r) { b.disabled = false; if (!r.ok) { $("#ps-msg").innerHTML = '<span class="bad">' + esc(r.error) + "</span>"; return; } var k = rel + "|" + strat; H.psi[k] = [r.result].concat(H.psi[k] || []); draw(); toast("Performance " + r.result.perf + " · SEO " + r.result.seo); });
       };
       if ($("#ps-save")) $("#ps-save").onclick = function () { api("health_settings", { psiKey: $("#ps-k").value, site: $("#ps-site").value.trim().replace(/\/$/, "") }).then(function (r) { if (!r.ok) return toast(r.error, true); H.psiKeySet = r.psiKeySet; H.site = r.site; toast("Saved"); draw(); }); };

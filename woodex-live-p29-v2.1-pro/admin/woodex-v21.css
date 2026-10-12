@@ -254,12 +254,12 @@ html [style*="background:#161922"] p.muted, html [style*="background:#161922"] .
 html [style*="background:#0c1628"] p.muted, html [style*="background:#0c1628"] .muted { color: var(--mut) !important; }
 
 /* Light-theme text inside cards that carries dark-theme inline colours */
-html:not(.dark) .card [style*="color:#00d3f2"], html:not(.dark) .card [style*="color: #00d3f2"] { color: #1d4ed8 !important; }
-html:not(.dark) .card [style*="color:#10b981"], html:not(.dark) .card [style*="color: #10b981"] { color: #047857 !important; }
+html:not(.dark) .card [style*="color:#00d3f2"], html:not(.dark) .card [style*="color: #00d3f2"] { color: var(--primary) !important; }
+html:not(.dark) .card [style*="color:var(--ok)"], html:not(.dark) .card [style*="color: var(--ok)"] { color: #047857 !important; }
 html:not(.dark) .card [style*="color:#a78bfa"], html:not(.dark) .card [style*="color: #a78bfa"] { color: #6d28d9 !important; }
 html:not(.dark) .card [style*="color:#cbd5e1"], html:not(.dark) .card [style*="color: #cbd5e1"],
-html:not(.dark) .card [style*="color:#94a3b8"], html:not(.dark) .card [style*="color: #94a3b8"],
-html:not(.dark) .card [style*="color:#9ca3af"], html:not(.dark) .card [style*="color: #9ca3af"] { color: var(--mut) !important; }
+html:not(.dark) .card [style*="color:var(--muted-foreground-1)"], html:not(.dark) .card [style*="color: var(--muted-foreground-1)"],
+html:not(.dark) .card [style*="color:var(--muted-foreground-1)"], html:not(.dark) .card [style*="color: var(--muted-foreground-1)"] { color: var(--mut) !important; }
 html:not(.dark) .card :is(h1, h2, h3, h4, h5, b, strong, p, label, span)[style*="color:#f9fafb"],
 html:not(.dark) .card :is(h1, h2, h3, h4, h5, b, strong, p, label)[style*="color:#fff;"],
 html:not(.dark) .card :is(h1, h2, h3, h4, h5, b, strong, p, label)[style*="color: #fff"] { color: var(--txt) !important; }
@@ -282,10 +282,10 @@ html .hub-bar a.on, html.dark .hub-bar a.on, html .seg button.on, html .lp-bar b
 html .us-tabs a.on { border-bottom-color: var(--pri) !important; }
 
 /* ---------- Muted greys from inline styles: one readable muted tone per theme ---------- */
-html:not(.dark) [style*="color:#94a3b8"], html:not(.dark) [style*="color: #94a3b8"], html:not(.dark) [style*="color:#64748b"],
-html:not(.dark) [style*="color: #64748b"], html:not(.dark) [style*="color:#98a2b3"], html:not(.dark) [style*="color:#9ca3af"] { color: var(--mut) !important; }
-html.dark [style*="color:#667085"], html.dark [style*="color: #667085"], html.dark [style*="color:#475569"] { color: var(--mut) !important; }
-html.dark [style*="color:#344054"], html.dark [style*="color: #344054"], html.dark [style*="color:#0c1628"], html.dark [style*="color: #0c1628"] { color: var(--txt) !important; }
+html:not(.dark) [style*="color:var(--muted-foreground-1)"], html:not(.dark) [style*="color: var(--muted-foreground-1)"], html:not(.dark) [style*="color:#64748b"],
+html:not(.dark) [style*="color: #64748b"], html:not(.dark) [style*="color:var(--muted-foreground-1)"], html:not(.dark) [style*="color:var(--muted-foreground-1)"] { color: var(--mut) !important; }
+html.dark [style*="color:var(--muted-foreground-1)"], html.dark [style*="color: var(--muted-foreground-1)"], html.dark [style*="color:#475569"] { color: var(--mut) !important; }
+html.dark [style*="color:var(--muted-foreground-1)"], html.dark [style*="color: var(--muted-foreground-1)"], html.dark [style*="color:var(--foreground)"], html.dark [style*="color: var(--foreground)"] { color: var(--txt) !important; }
 
 /* Avatars drawn on dark slate: white text in both themes */
 html [style*="background:#1e293b"], html [style*="background: #1e293b"] { color: #ffffff !important; }
@@ -510,7 +510,7 @@ html .modal-card {
   border-radius: 16px; box-shadow: 0 24px 60px rgba(0, 0, 0, 0.25); animation: ds-rise 200ms var(--ease);
 }
 html .toast { background: #111827; color: #ffffff; border-radius: var(--r); box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25); }
-html.dark .toast { background: #f5f5f5; color: #111827; }
+html.dark .toast { background: #f5f5f5; color: var(--foreground); }
 
 /* ---------- Estimator result panel: its class sets a fixed navy background, so give it the theme surface in both modes ---------- */
 html .es-out { background: var(--card-sub); color: var(--txt); border: 1px solid var(--line); }
@@ -940,7 +940,7 @@ html .seg button.on { background: var(--card); color: var(--pri-ink); box-shadow
 html .modal { background: rgba(17, 24, 39, .55); backdrop-filter: blur(2px); }
 html .modal-card { background: var(--card); border: 1px solid var(--line); border-radius: var(--r-lg); box-shadow: var(--sh-lg); }
 html .toast { background: #111827; color: #fff; border-radius: var(--r); box-shadow: var(--sh-lg); font-size: 13.5px; }
-html.dark .toast { background: #f5f5f5; color: #111827; }
+html.dark .toast { background: #f5f5f5; color: var(--foreground); }
 
 /* 8.2 empty state */
 html .empty, html .cb-empty {
