@@ -1,0 +1,111 @@
+/* ============================================================================
+   PIPELINE BOARD (kanban) — DESIGN.md §6.5
+   ----------------------------------------------------------------------------
+   These rules used to be injected as an inline <style> string from
+   admin-p19f.js, hexes and all, with a hand-written dark block bolted on the
+   end — which is why the board kept the old look and half-broke in dark mode.
+   They now live in this sheet, with every colour replaced by a theme token, so
+   the board inherits the Admin V2.1.1 palette in both themes and the dark block
+   is gone. Selectors are html-prefixed so they beat the legacy sheets whatever
+   their specificity.
+   ============================================================================ */
+
+html .p19-kpi { display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-bottom:14px }
+html .p19-k { background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px }
+html .p19-k small { display:block;font-size:12px;color:var(--muted-foreground-1) }
+html .p19-k b { display:block;font-size:20px;margin:2px 0;color:var(--foreground) }
+html .p19-k span { font-size:11.5px;color:var(--muted-foreground-1) }
+html .p19-k span.bad { color:var(--bad);font-weight:600 }
+html .p19-fl { display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:14px }
+html .p19-fl select { height:38px;border:1px solid var(--line);border-radius:10px;padding:0 10px;background:var(--card);font:inherit;font-size:13px }
+html .p19-s { position:relative;flex:1;min-width:220px;max-width:360px }
+html .p19-s svg { position:absolute;left:11px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--muted-foreground-1) }
+html .p19-s input { width:100%;height:38px;border:1px solid var(--line);border-radius:10px;padding:0 12px 0 34px;font:inherit;font-size:13px }
+html .p19-hint { margin-left:auto;font-size:12px }
+html .p19-kb { display:grid;gap:10px!important;grid-template-columns:repeat(var(--n,6),minmax(148px,1fr));gap:12px;overflow-x:auto;padding-bottom:6px;align-items:start }
+html .p19-col { background:var(--surface);border:1px solid var(--line);border-radius:14px;display:flex;flex-direction:column;max-height:calc(100vh - 330px);min-height:260px;border-top:3px solid var(--c) }
+html .p19-col.over { background:var(--muted-foreground-1);border-color:var(--primary) }
+html .p19-kb.dragging .p19-col { outline:1px dashed var(--line);outline-offset:-4px }
+html .p19-col header { display:flex;align-items:center;gap:7px;padding:11px 12px 9px }
+html .p19-col header i { width:8px;height:8px;border-radius:50%;background:var(--c) }
+html .p19-col header b { font-size:13.5px }
+html .p19-col header .n { font-size:11.5px;font-weight:700;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:0 7px }
+html .p19-col header small { margin-left:auto;font-size:12px;font-weight:600;color:var(--muted-foreground-1) }
+html .p19-list { overflow-y:auto;padding:2px 8px 10px;display:grid;gap:8px;align-content:start;flex:1 }
+html .p19-empty { border:1.5px dashed var(--line);border-radius:10px;padding:18px 8px;text-align:center;font-size:12px;color:var(--muted-foreground-1);margin:0 }
+html .p19-card { position:relative;background:var(--card);border:1px solid var(--line);border-radius:11px;padding:10px 11px;cursor:pointer;box-shadow:0 1px 2px var(--sh);transition:box-shadow .15s,transform .15s,border-color .15s }
+html .p19-card:hover { box-shadow:0 8px 18px -8px rgba(12,22,40,.28);transform:translateY(-1px);border-color:var(--primary) }
+html .p19-card.drag { opacity:.45 }
+html .p19-card.unread { border-left:3px solid var(--primary) }
+html .p19-card.od { border-left:3px solid var(--bad) }
+html .p19-ct { display:flex;gap:8px;align-items:flex-start;justify-content:space-between }
+html .p19-ct b { display:block;font-size:13.5px;line-height:1.3;color:var(--foreground) }
+html .p19-ct small { display:block;font-size:12px;color:var(--muted-foreground-1) }
+html .p19-age { flex:none;font-size:11px;font-weight:700;color:var(--muted-foreground-1);background:var(--card-sub);border-radius:6px;padding:1px 6px }
+html .p19-age.warm { background:var(--warn);color:var(--warn) }
+html .p19-age.hot { background:var(--bad);color:var(--bad) }
+html .p19-tags { display:flex;flex-wrap:wrap;gap:4px;margin:7px 0 }
+html .p19-tags span { font-size:11px;background:var(--card-sub);color:var(--muted-foreground-1);border-radius:6px;padding:1px 7px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap }
+html .p19-tags .ln { background:var(--muted-foreground-1);color:var(--muted-foreground-1) }
+html .p19-tags .nw { background:var(--primary);color:var(--primary);font-weight:700 }
+html .p19-cf { display:flex;align-items:center;gap:8px;font-size:12px }
+html .p19-cf .v { font-weight:700;color:var(--foreground);flex:1 }
+html .p19-cf .v em { font-weight:500;color:var(--muted-foreground-1);font-style:normal }
+html .p19-cf .nx { display:inline-flex;align-items:center;gap:3px;color:var(--muted-foreground-1) }
+html .p19-cf .nx svg { width:12px;height:12px }
+html .p19-cf .nx.od { color:var(--bad);font-weight:700 }
+html .p19-cf .av { width:24px;height:24px;border-radius:50%;background:var(--foreground);color:var(--card);font-size:10px;font-weight:700;display:grid;place-items:center }
+html .p19-cf .av.none { background:var(--card-sub);color:var(--muted-foreground-1) }
+html .p19-qa { position:absolute;top:8px;right:8px;display:flex;gap:4px;opacity:0;transition:opacity .15s }
+html .p19-card:hover .p19-qa, html .p19-card:focus-within .p19-qa { opacity:1 }
+html .p19-card:hover .p19-age { visibility:hidden }
+html .p19-qa a { width:28px;height:28px;border-radius:8px;display:grid;place-items:center;background:var(--card);border:1px solid var(--line);color:var(--muted-foreground-1) }
+html .p19-qa a:hover { background:var(--foreground);color:var(--card);border-color:var(--foreground) }
+html .p19-qa svg { width:14px;height:14px }
+html .p19-why { display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:12px }
+html .p19-why label { display:flex;gap:7px;align-items:center;border:1px solid var(--line);border-radius:9px;padding:8px 10px;font-size:13px;cursor:pointer;margin:0 }
+html .p19-why label:has(input:checked) { border-color:var(--foreground);background:var(--surface) }
+html .p19-s>*:not(input) { position:absolute!important;left:11px;top:50%;transform:translateY(-50%);display:flex;width:16px;height:16px;color:var(--muted-foreground-1);pointer-events:none }
+html .p19-fl .p19-s input { padding-left:34px!important;height:38px!important }
+html .p19-fl select { width:auto!important;flex:none;margin:0!important }
+html .p19-fl .p19-s svg { width:16px!important;height:16px!important }
+html .p19-fl .p19-s input { margin:0!important }
+html .p19-col header { flex-wrap:wrap;row-gap:0 }
+html .p19-col header b { white-space:nowrap }
+html .p19-col header small { flex-basis:100%;margin:2px 0 0 15px;color:var(--muted-foreground-1) }
+html .p19-cf { flex-wrap:wrap;row-gap:6px }
+html .p19-cf .v { flex-basis:100%;white-space:nowrap }
+html .p19-cf .nx { flex:1 }
+html .p19-cf .av { margin-left:auto }
+html .p19-ct b { word-break:break-word }
+html .p19-qa { background:linear-gradient(90deg,transparent,var(--card) 22%);padding-left:14px }
+@media (max-width:1100px) {
+  html .p19-kpi { grid-template-columns:repeat(3,minmax(0,1fr)) }
+  html .p19-hint { display:none }
+}
+@media (max-width:640px) {
+  html .p19-kpi { grid-template-columns:repeat(2,minmax(0,1fr)) }
+  html .p19-kb { grid-template-columns:repeat(var(--n,6),82vw);scroll-snap-type:x mandatory }
+  html .p19-col { scroll-snap-align:start;max-height:none }
+  html .p19-qa { opacity:1;position:static;margin-top:8px }
+  html .p19-card:hover .p19-age { visibility:visible }
+}
+@media (max-width:640px) {
+  html .p19-fl { display:grid;grid-template-columns:1fr 1fr }
+  html .p19-fl .p19-s { grid-column:1/-1;max-width:none }
+  html .p19-fl select { width:100%!important }
+  html .p19-fl select:last-of-type { grid-column:1/-1 }
+}
+
+/* card text must not clip: the company/name block wraps, the tag row ellipsises */
+html .p19-ctn { min-width: 0; }
+html .p19-ctn b, html .p19-ctn small { overflow-wrap: anywhere; }
+html .p19-tags { overflow: hidden; }
+html .p19-tags span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* A nowrap tag inside the card used to size the whole grid column (auto track), so the
+   card rendered wider than its column and the text was clipped at the column edge.
+   Pin the track and let the card be the thing that shrinks. */
+html .p19-list { grid-template-columns: minmax(0, 1fr); }
+html .p19-card { min-width: 0; }
+html .p19-tags span { min-width: 0; }

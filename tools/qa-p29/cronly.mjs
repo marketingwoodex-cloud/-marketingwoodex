@@ -1,0 +1,15 @@
+import pptr from 'puppeteer-core'; import cm from '@sparticuz/chromium';
+import path from 'node:path'; import { pathToFileURL } from 'node:url';
+import { signIn } from './lib-signin.mjs';
+const ROOT=path.resolve('node_modules');
+const { inflate } = await import(pathToFileURL(path.join(ROOT,'@sparticuz/chromium/build/lambdafs.js')).href);
+const libDir=await inflate(path.join(ROOT,'@sparticuz/chromium/bin/al2023.tar.br'));
+process.env.LD_LIBRARY_PATH=[path.join(libDir,'lib'),process.env.LD_LIBRARY_PATH||''].filter(Boolean).join(':');
+const b=await pptr.launch({executablePath:await cm.executablePath(),args:cm.args,headless:true,defaultViewport:{width:1440,height:950}});
+const p=await b.newPage(); await signIn(p);
+await p.evaluate(()=>{location.hash='#/pipeline';}); await new Promise(r=>setTimeout(r,2600));
+const on = await p.$('.p19-card'); if(on) await on.screenshot({path:'/tmp/shots/kanban-card.png'});
+const s = await p.evaluate(()=>{const c=document.querySelector('.p19-card');const cs=getComputedStyle(c.querySelector('.p19-ct small')||c);
+ return {txt:c.innerText.replace(/\n/g,' | ').slice(0,120), overflow:getComputedStyle(c.closest('.p19-list')).scrollWidth-getComputedStyle(c.closest('.p19-list')).width};});
+console.log(JSON.stringify(s));
+await b.close();
