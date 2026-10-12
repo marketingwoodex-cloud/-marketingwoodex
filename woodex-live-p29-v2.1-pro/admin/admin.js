@@ -359,7 +359,7 @@
   if ($("#menu-btn")) $("#menu-btn").onclick = function () { innerWidth <= 1024 ? $("#app").classList.toggle("open") : $("#app").classList.toggle("mini"); };
   if ($("#side-x")) $("#side-x").onclick = function () { $("#app").classList.remove("open"); };
   if ($("#side-shade")) $("#side-shade").onclick = function () { $("#app").classList.remove("open"); };
-  if ($("#dark-btn")) $("#dark-btn").onclick = function () { var d = document.documentElement.classList.toggle("dark"); localStorage.setItem("wxaTheme", d ? "dark" : "light"); if (window.themeChanged) window.themeChanged(); }; /* one hook repaints every chart (OV-2 / AD-18) */
+  if ($("#dark-btn")) $("#dark-btn").onclick = function () { var d = document.documentElement.classList.toggle("dark"); localStorage.setItem("hs_theme", d ? "dark" : "light"); localStorage.setItem("wxaTheme", d ? "dark" : "light"); if (window.themeChanged) window.themeChanged(); }; /* one hook repaints every chart (OV-2 / AD-18) */
   if ($("#user-btn")) $("#user-btn").onclick = function (e) { e.stopPropagation(); if ($("#nt-menu")) $("#nt-menu").hidden = true; $("#user-menu").hidden = !$("#user-menu").hidden; };
   document.addEventListener("click", function () {
     if ($("#user-menu")) $("#user-menu").hidden = true;

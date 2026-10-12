@@ -123,12 +123,53 @@ This is a refinement of §3, not a replacement: the brand, surface, border and t
 adopted exactly as written. Only the status *text* shade moves one step darker so §3 and §12 stop
 contradicting each other.
 
-### 3.2 Token implementation
+### 3.2 Token implementation — Preline Themes architecture
 
-DESIGN.md tokens are compiled by `tools/ui-build` (Tailwind v4, `@theme static`) into
-`admin/assets/woodex-tw.css`, and bridged to the legacy token names in
-`admin/assets/wx-ds-tokens.css`, which **must load last**. The admin's hand-written stylesheets
-consume the tokens, so a token change re-themes the entire admin from one place.
+Themes are implemented as **Preline semantic tokens** (CSS variables), so a token change
+re-themes every component with no utility-class hunting.
+
+```
+tools/ui-build/src/themes/theme.css     <- the value source of truth
+        |  Preline tokens: --primary, --background, --foreground, --border,
+        |  --surface, --card, --sidebar, --navbar, --overlay, --muted, … light + dark
+        v
+tools/ui-build/src/woodex-tw.src.css    <- @theme static aliases + Tailwind mappings
+        v  (npm run build:css)
+admin/assets/woodex-tw.css              <- compiled, committed
+        v
+admin/assets/wx-ds-tokens.css           <- maps legacy names (--bg, --txt, --pri, --ok …)
+        |                                      onto the Preline tokens; loads LAST
+        v
+admin.css · woodex-v21.css · admin/*.js <- 168 KB of components + 471 inline styles,
+                                            all now following the theme
+```
+
+**Neutral ramp: `stone` (warm)** — per the Preline default theme and the approved reference
+design. This replaces the previous cool `gray`/`neutral` mix, which is what made the admin
+feel colder and less cohesive than the reference.
+
+**Readability fix.** Preline's shipped default sets `--muted-foreground` to `stone-400`
+(`#a8a29e`) — **2.66:1 on white**, which is why secondary text was hard to read. This theme pins:
+
+| Token | Value | Contrast | Use |
+| --- | --- | --- | --- |
+| `--foreground` | `stone-800` `#292524` | 13.6:1 | primary text |
+| `--muted-foreground` | `stone-600` `#57534e` | **7.0:1** | secondary text, sidebar headings |
+| `--muted-foreground-1` | `stone-600` `#57534e` | **7.0:1** | chips, tabs, table headers, badges |
+| `--surface-3` | `stone-400` `#a8a29e` | 2.7:1 | **icons/decoration only — never text** |
+
+Dark mode uses `neutral-200` / `neutral-400` on `neutral-800`, all ≥ 7:1.
+
+**Dark mode depth order.** Page (`neutral-900` `#171717`) is the darkest layer; cards and the
+sidebar (`neutral-800` `#262626`) sit above it. This is the conventional dashboard depth order
+and keeps cards legible against the page.
+
+**Verification.** An automated audit walks every rendered text node, computes its real painted
+contrast against its effective background, and fails the build on any AA violation:
+`node tools/qa-p29/contrast-audit.mjs`. Current state: **0 failures light, 0 failures dark**
+across ~1,308 text elements.
+
+**Rule:** no raw hex in `wx-ds-tokens.css` — every value is a reference to a Preline token.
 
 * * *
 
@@ -531,6 +572,7 @@ Preline JS re-init after dynamic DOM changes: `window.HSStaticMethods.autoInit()
 
 * * *
 
-*Version 1.1 · Stack: Tailwind CSS v4 · Preline UI · Inter · Light/Dark*
+*Version 1.2 · Stack: Tailwind CSS v4 · Preline UI · Inter · Light/Dark*
 
-*v1.1 — added §3.1 (status text AA correction) and §3.2 (token implementation). No existing rule removed or weakened.*
+*v1.1 — added §3.1 (status text AA correction) and §3.2 (token implementation).*
+*v1.2 — §3.2 rewritten for the Preline Themes architecture (stone neutral ramp, AA-pinned muted tokens). No existing rule removed or weakened.*
