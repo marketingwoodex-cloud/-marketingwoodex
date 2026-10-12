@@ -85,36 +85,19 @@ const MIME = {
 };
 const NO_STORE = new Set(['.html', '.js', '.mjs', '.css', '.json', '.php']);
 
+
 const main = async () => {
   console.log(`PHP preview — source ${SOURCE}`);
-  const fresh = syncProject();
-  if (fresh) console.log('[sync] first run: full copy');
 
-  let runner = await createRunner({ projectDir: WORK, trace: true });
-  runner.useSqlite({});
-  if (!(await runner.dbReady())) {
-    const inst = await runner.install();
-    console.log(`[db] schema installed: ${inst.statements} statements, ${inst.tables} tables, ${inst.errors.length} error(s)`);
-    if (inst.errors?.length) console.log(JSON.stringify(inst.errors, null, 1));
-  }
-  const accounts = loadAccounts(ACCOUNTS_FILE);
-  const seeded = await runner.seed(accounts, { reset: true });
-  console.log(`[db] logins ready: ${seeded.users} users (${seeded.created} created, ${seeded.existing} refreshed)`);
+    const accounts = loadAccounts(ACCOUNTS_FILE);
+  /* Bind the port BEFORE the heavy work. The preview panel discovers the process by watching for a
+     new listening port shortly after start; booting the PHP runtime first (10-20 s of WebAssembly
+     start-up) meant the panel could see only the runtime's internal 127.0.0.1 socket and never the
+     preview itself. So: listen first, answer "starting" until the backend is up, then serve. */
+  let ready = false;
+  const boot = { note: 'starting' };
 
-  /* Blank outbound credentials so the preview cannot call a live service. */
-  const sanitized = await runner.phpRun(`
-    require ${JSON.stringify(join(WORK, 'api/_lib/db.php'))};
-    $c = json_decode((string)file_get_contents(${JSON.stringify(join(WORK, '_private/db.json'))}), true);
-    $pdo = wx_db($c); $n = 0;
-    foreach ($pdo->query('SELECT k,v FROM wx_settings')->fetchAll(PDO::FETCH_ASSOC) as $r) {
-      if (preg_match('~token|secret|key|pass|webhook|smtp|api~i', (string)$r['k']) && trim((string)$r['v']) !== '') {
-        $pdo->prepare('UPDATE wx_settings SET v=? WHERE k=?')->execute(['', $r['k']]); $n++;
-      }
-    }
-    echo json_encode(['settings' => $n]);
-  `);
-  console.log(`[db] outbound credential settings blanked: ${sanitized.json?.settings ?? '?'}`);
-
+    let runner = null;
   /* --- the token bridge ------------------------------------------------------- */
   const realToken = /^\d+\.\d{10}\.[a-f0-9]{16}\.[a-f0-9]{64}$/;
   const realBuilder = /^\d{10}\.\d+\./;
@@ -131,9 +114,7 @@ const main = async () => {
     live.set(account.email, s);
     return s;
   }
-  /* Pre-warm so the first click after a restart is fast. */
-  for (const a of accounts) { try { await sessionFor(a); } catch (e) { console.log('[warn] ' + e.message); } }
-
+  
   const pending = [];
   let busy = false;
   const queue = (fn) => new Promise((res, rej) => { pending.push([fn, res, rej]); pump(); });
@@ -144,6 +125,7 @@ const main = async () => {
     fn().then(res, rej).finally(() => { busy = false; pump(); });
   }
 
+  
   const isAbort = (res) => res && /Aborted\(\)|RuntimeError|memory access out of bounds/.test(String(res.text) + String(res.errors));
   async function phpCall(phpRequest, tries = 2) {
     try {
@@ -159,9 +141,21 @@ const main = async () => {
     return phpCall(phpRequest, tries - 1);
   }
 
+  
   const server = createServer(async (req, res) => {
     const t0 = Date.now();
     const urlPath = decodeURIComponent((req.url || '/').split('?')[0]);
+    if (!ready) {
+      res.writeHead(503, { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store', 'retry-after': '3' });
+      res.end(`<!doctype html><meta charset="utf-8"><title>Woodex preview is starting</title>
+  <style>body{font:15px/1.6 system-ui,Segoe UI,sans-serif;background:#0c1628;color:#e8eefc;display:grid;place-items:center;height:100vh;margin:0}
+  main{max-width:520px;text-align:center}h1{font-size:22px;margin:0 0 8px}p{color:#9fb0cd;margin:4px 0}
+  .d{width:38px;height:38px;margin:18px auto;border:3px solid #2b3d5c;border-top-color:#b8956a;border-radius:50%;animation:s 1s linear infinite}
+  @keyframes s{to{transform:rotate(360deg)}}</style>
+  <main><h1>Woodex Admin — starting</h1><p>Booting the PHP runtime and the database. This page refreshes itself.</p><div class="d"></div>
+  <p id="w">${boot.note}</p></main><script>setTimeout(()=>location.reload(),2500)</script>`);
+      return;
+    }
     const query = (req.url || '/').includes('?') ? '?' + (req.url || '').split('?').slice(1).join('?') : '';
     let status = 0, note = '';
 
@@ -239,10 +233,47 @@ const main = async () => {
     }
   });
 
-  server.listen(PORT, HOST, () => {
-    console.log(`PHP preview listening on http://${HOST}:${PORT} (work dir ${WORK})`);
-    console.log(`sign in with the team accounts (${accounts.length} configured)`);
-  });
-};
+
+  /* Bind the port now — before the PHP runtime boots — so the preview panel discovers this process
+     immediately. Until boot finishes, requests get a small self-refreshing "starting" page. */
+  server.listen(PORT, HOST, () => console.log(`[listen] bound ${HOST}:${PORT} — booting the PHP runtime…`));
+
+  /* Start-up work follows: project sync, PHP runtime, database and sessions. */
+  const fresh = syncProject();
+  if (fresh) console.log('[sync] first run: full copy');
+
+  runner = await createRunner({ projectDir: WORK, trace: true });
+  runner.useSqlite({});
+  if (!(await runner.dbReady())) {
+    const inst = await runner.install();
+    console.log(`[db] schema installed: ${inst.statements} statements, ${inst.tables} tables, ${inst.errors.length} error(s)`);
+    if (inst.errors?.length) console.log(JSON.stringify(inst.errors, null, 1));
+  }
+  const seeded = await runner.seed(accounts, { reset: true });
+  console.log(`[db] logins ready: ${seeded.users} users (${seeded.created} created, ${seeded.existing} refreshed)`);
+
+  /* Blank outbound credentials so the preview cannot call a live service. */
+  const sanitized = await runner.phpRun(`
+    require ${JSON.stringify(join(WORK, 'api/_lib/db.php'))};
+    $c = json_decode((string)file_get_contents(${JSON.stringify(join(WORK, '_private/db.json'))}), true);
+    $pdo = wx_db($c); $n = 0;
+    foreach ($pdo->query('SELECT k,v FROM wx_settings')->fetchAll(PDO::FETCH_ASSOC) as $r) {
+      if (preg_match('~token|secret|key|pass|webhook|smtp|api~i', (string)$r['k']) && trim((string)$r['v']) !== '') {
+        $pdo->prepare('UPDATE wx_settings SET v=? WHERE k=?')->execute(['', $r['k']]); $n++;
+      }
+    }
+    echo json_encode(['settings' => $n]);
+  `);
+  console.log(`[db] outbound credential settings blanked: ${sanitized.json?.settings ?? '?'}`);
+
+  
+  /* Pre-warm so the first click after a restart is fast. */
+  for (const a of accounts) { try { await sessionFor(a); } catch (e) { console.log('[warn] ' + e.message); } }
+
+  
+  ready = true;
+  console.log(`[ready] preview is serving on http://${HOST}:${PORT} (work dir ${WORK})`);
+  console.log(`[ready] sign in with the team accounts (${accounts.length} configured)`);
+  }
 
 main().catch((e) => { console.error('[fatal]', e); process.exit(1); });
