@@ -146,7 +146,9 @@ const main = async () => {
     const t0 = Date.now();
     const urlPath = decodeURIComponent((req.url || '/').split('?')[0]);
     if (!ready) {
-      res.writeHead(503, { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store', 'retry-after': '3' });
+      /* 200, not 503: this is a healthy page that refreshes itself. Anything watching the port
+         (including the preview panel) sees a working response while the backend finishes booting. */
+      res.writeHead(200, { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' });
       res.end(`<!doctype html><meta charset="utf-8"><title>Woodex preview is starting</title>
   <style>body{font:15px/1.6 system-ui,Segoe UI,sans-serif;background:#0c1628;color:#e8eefc;display:grid;place-items:center;height:100vh;margin:0}
   main{max-width:520px;text-align:center}h1{font-size:22px;margin:0 0 8px}p{color:#9fb0cd;margin:4px 0}
@@ -267,8 +269,9 @@ const main = async () => {
   console.log(`[db] outbound credential settings blanked: ${sanitized.json?.settings ?? '?'}`);
 
   
-  /* Pre-warm so the first click after a restart is fast. */
-  for (const a of accounts) { try { await sessionFor(a); } catch (e) { console.log('[warn] ' + e.message); } }
+  /* Pre-warm so the first click after a restart is fast — deliberately NOT awaited: the preview
+     should start serving the moment the database is ready, and a session is minted on demand anyway. */
+  for (const a of accounts) sessionFor(a).catch((e) => console.log('[warn] ' + e.message));
 
   
   ready = true;
