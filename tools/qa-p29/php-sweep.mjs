@@ -149,9 +149,11 @@ const main = async () => {
   const isAbort = (res) => !res || /Aborted\(\)|RuntimeError|memory access out of bounds/.test(String(res.text ?? '') + String(res.errors ?? ''));
 
   runner.useSqlite({});
-  if (fresh || !existsSync(join(SANDBOX, '_private/woodex.sqlite'))) {
+  /* Ask the database itself, not the filesystem: a copied project can carry an empty database file. */
+  if (!(await runner.dbReady())) {
     const inst = await runner.install();
     if (inst.errors?.length) console.log('SCHEMA ISSUES: ' + JSON.stringify(inst.errors, null, 1));
+    console.log(`[db] schema installed: ${inst.tables} tables`);
   }
   const accounts = loadAccounts();
   const seeded = await runner.seed(accounts, { reset: true });

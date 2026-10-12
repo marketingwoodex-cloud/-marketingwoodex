@@ -156,6 +156,17 @@ export async function createRunner(opts = {}) {
     return cfg;
   }
 
+  /** Does the configured database actually have the app's tables? */
+  async function dbReady() {
+    const out = await phpRun(`
+      require ${Q(join(projectDir, 'api/_lib/db.php'))};
+      $c = json_decode((string)file_get_contents(${Q(dbFile)}), true);
+      try { echo json_encode(['ready' => wx_db_ready(wx_db($c))]); }
+      catch (Throwable $e) { echo json_encode(['ready' => false, 'why' => substr($e->getMessage(), 0, 120)]); }
+    `);
+    return out.json?.ready === true;
+  }
+
   /** Create the schema by running the project's own MySQL dump through the translator. */
   async function install({ sqlFile = null } = {}) {
     const dump = sqlFile ?? (existsSync(join(projectDir, 'woodex-database.sql'))
@@ -240,7 +251,7 @@ export async function createRunner(opts = {}) {
 
   async function close() { try { await php.exit?.(); } catch { /* best effort */ } }
 
-  return { php, handler, projectDir, phpRun, request, raw, install, seed, login, useSqlite,
+  return { php, handler, projectDir, phpRun, request, raw, install, seed, login, useSqlite, dbReady,
            sqlStats, refreshSqlStats, tailPhpErrors, close, dbFile, errLog };
 }
 

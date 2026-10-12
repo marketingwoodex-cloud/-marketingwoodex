@@ -400,6 +400,7 @@ host — for anything that depends on the server answering correctly.
 | `responsive-sweep.mjs` | horizontal overflow per route (58 screens, must be 0) |
 | `php-runner.mjs` | boots real PHP 8.3 (WASM) and answers one API action |
 | `php-sweep.mjs` | every API action × every role, classified (see §10.5) |
+| `api-matrix.mjs` | the write paths: lead → client → quote → invoice → payment → project, plus every settings screen (write, read back, restore) |
 
 ### 10.3 Running it
 
@@ -434,6 +435,7 @@ node php-runner.mjs --install                 # create the local database from t
 node php-runner.mjs --seed                    # create the QA logins
 node php-runner.mjs --action dashboard --email <owner>   # one real action
 node php-sweep.mjs                            # every action × every role (~3 min)
+node api-matrix.mjs                           # the write paths, on its own sandbox database
 ```
 
 Two pieces make that possible:
@@ -452,6 +454,12 @@ The sweep runs in a copy of the project (`tools/qa-p29/.qa-run/project`) so no a
 source tree, blanks every outbound credential first, and classifies each answer: `ok`, `gated` (the
 role gate fired), `validated` (input refused), `DB-ERROR`, `SERVER-500`, `FATAL` (PHP crash),
 `NON-JSON`. PHP warnings are counted separately — they never reach the browser but they are defects.
+
+`api-matrix.mjs` is the counterpart to the sweep: the sweep sends empty payloads (so it sees every
+refusal), the matrix performs the real business chain — create a lead, note it, convert it to a client,
+quote it, approve the quote, turn it into an invoice, mark it delivered, take a payment and check the
+balance — and, for the settings screens, reads the current value, writes a changed one, reads it back
+and restores it. It works on its own copy (`.qa-run/matrix`) so the preview's data stays clean.
 
 **Rules:** SQLite mode is for local runs, QA and demos. Hosting stays MySQL — before a release, the
 schema and the hot queries still get one pass on MySQL/XAMPP. A translation the layer cannot make

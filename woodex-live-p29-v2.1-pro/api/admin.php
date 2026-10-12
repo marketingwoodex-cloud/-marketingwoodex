@@ -320,7 +320,7 @@ switch ($action) {
         /* Report the driver that is really in use (mysql on hosting, sqlite on a local run) instead
            of always saying mysql — the admin shows this to the owner. */
         $drv = 'mysql';
-        if ($set) { $dbOk = true; try { $drv = db()->getAttribute(PDO::ATTR_DRIVER_NAME) ?: 'mysql'; } catch (Throwable $e) { $dbOk = false; $drv = (string)(jread(DB_FILE)['driver'] ?? 'mysql'); }
+        if ($set) { $dbOk = true; try { $pdo = db(); $drv = $pdo->getAttribute(PDO::ATTR_DRIVER_NAME) ?: 'mysql'; if (!wx_db_ready($pdo)) $set = false; } catch (Throwable $e) { $dbOk = false; $drv = (string)(jread(DB_FILE)['driver'] ?? 'mysql'); }
             if (!$dbOk) out(['ok' => true, 'needsSetup' => false, 'dbError' => true, 'driver' => $drv, 'builderLocked' => !empty(jread(BCONFIG)['password_hash']), 'user' => null]); }
         out(['ok' => true, 'needsSetup' => !$set, 'driver' => $drv, 'builderLocked' => !empty(jread(BCONFIG)['password_hash']), 'user' => $set && ($u = current_user()) ? pub($u) : null]);
 
@@ -394,6 +394,9 @@ switch ($action) {
 
     case 'login':
         throttle();
+        /* db.json can be right while the database itself is empty (leftover install, half-imported
+           dump). Say that plainly instead of "Database error". */
+        if (!wx_db_ready(db())) out(['ok' => false, 'needsSetup' => true, 'error' => 'The database has no tables yet. Open /wx-install.php to create them.'], 503);
         $u = q('SELECT * FROM wx_users WHERE email=?', [strtolower(trim((string)($in['email'] ?? '')))])->fetch();
         if (!$u || !$u['active'] || !password_verify((string)($in['password'] ?? ''), $u['pass_hash'])) { throttle(true); usleep(400000); fail('Wrong email or password', 401); }
         if (demo_expired((string)$u['email'])) fail('This demo account has expired. Ask the owner for a real login.', 403);

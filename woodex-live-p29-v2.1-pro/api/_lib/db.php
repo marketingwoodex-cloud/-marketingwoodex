@@ -105,3 +105,19 @@ function mig_done(string $file): void {
 function mig_reset(): void {
     @unlink(mig_state_file());
 }
+
+/**
+ * Is this database actually set up (does it have the app's tables)?
+ * A common hosting mistake is a correct db.json pointing at an empty or half-imported database;
+ * the app then answered every request with "Database error", which tells the owner nothing.
+ */
+function wx_db_ready(PDO $pdo): bool {
+    static $ready = null;
+    if ($ready !== null) return $ready;
+    try {
+        $ready = (bool)$pdo->query("SHOW TABLES LIKE 'wx_users'")->fetchColumn();
+    } catch (Throwable $e) {
+        $ready = false;
+    }
+    return $ready;
+}

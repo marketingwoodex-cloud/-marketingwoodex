@@ -92,7 +92,7 @@ const main = async () => {
 
   let runner = await createRunner({ projectDir: WORK, trace: true });
   runner.useSqlite({});
-  if (fresh || !existsSync(join(WORK, '_private/woodex.sqlite'))) {
+  if (!(await runner.dbReady())) {
     const inst = await runner.install();
     console.log(`[db] schema installed: ${inst.statements} statements, ${inst.tables} tables, ${inst.errors.length} error(s)`);
     if (inst.errors?.length) console.log(JSON.stringify(inst.errors, null, 1));
