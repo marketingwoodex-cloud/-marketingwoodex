@@ -9,7 +9,7 @@
   var esc = W.esc, api = W.api, toast = W.toast, ic = W.ic || function () { return ""; };
   /* stage accent = theme token (see assets/wx-ds-pipeline.css); resolved by the browser,
      so a stage colour can never be light-only again */
-  var STG = [["new", "New", "var(--status-info, var(--primary))", 10], ["contacted", "Contacted", "var(--status-warn, var(--primary))", 20], ["visit", "Site visit", "var(--status-warn, var(--primary))", 40], ["quote", "Quote sent", "var(--status-info, var(--primary))", 60], ["hold", "On hold", "var(--muted-foreground-1)", 15], ["won", "Won", "var(--status-ok, var(--primary))", 100], ["lost", "Lost", "var(--status-bad, var(--primary))", 0]];
+  var STG = [["new", "New", "var(--status-info, var(--primary, #2563eb))", 10], ["contacted", "Contacted", "var(--status-warn, var(--primary, #2563eb))", 20], ["visit", "Site visit", "var(--status-warn, var(--primary, #2563eb))", 40], ["quote", "Quote sent", "var(--status-info, var(--primary, #2563eb))", 60], ["hold", "On hold", "var(--muted-foreground-1, #57534e)", 15], ["won", "Won", "var(--status-ok, var(--primary, #2563eb))", 100], ["lost", "Lost", "var(--status-bad, var(--primary, #2563eb))", 0]];
   var LOST = ["Price too high", "Chose another company", "Timing / postponed", "No response", "Out of scope / area", "Other"];
   var st = { q: "", owner: "", line: "", days: "", hide: false };
   try { st = Object.assign(st, JSON.parse(localStorage.getItem("wx_pl") || "{}"), { q: "" }); } catch (e) {}

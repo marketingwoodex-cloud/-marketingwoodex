@@ -14,7 +14,7 @@
     var offers = [];
     function load() {
       api("crm_offers").then(function (r) {
-        if (!r.ok) { $("#of-list").innerHTML = '<div class="empty"><b style="color:#d92d20">' + esc(r.error || "Could not load") + '</b> <button class="btn" id="of-retry">Retry</button></div>'; $("#of-retry").onclick = load; return; }
+        if (!r.ok) { $("#of-list").innerHTML = '<div class="empty"><b style="color:var(--bad, #d92d20)">' + esc(r.error || "Could not load") + '</b> <button class="btn" id="of-retry">Retry</button></div>'; $("#of-retry").onclick = load; return; }
         offers = r.offers || [];
         $("#of-wa").innerHTML = r.waConnected ? ic("check") + " WhatsApp Cloud API connected: offers are sent automatically. Customers who haven't messaged you in 24 hours may not receive free-form messages (Meta rule) — use the <b>Open in WhatsApp</b> link shown for those."
           : ic("info") + ' WhatsApp Cloud API not connected. You can still send offers one by one with <b>Open in WhatsApp</b> links (free). <a href="#/settings">Connect WhatsApp</a>';
@@ -53,13 +53,13 @@
         var leads = (r.leads || []).filter(function (l) { return l.phone; });
         modal('<h3>Send “' + esc(o.title) + '”</h3><div class="toolbar" style="flex-wrap:wrap;margin-bottom:8px"><select id="os-st"><option value="">All stages</option>' +
           Object.keys(STAGE).map(function (k) { return '<option value="' + k + '">' + STAGE[k] + "</option>"; }).join("") + '</select><button class="btn sm" id="os-all">Select all shown</button><span class="muted" id="os-n"></span></div>' +
-          '<div id="os-l" style="max-height:46vh;overflow:auto;border:1px solid var(--line);border-radius:10px"></div><p class="muted" style="font-size:12px">Max 50 per send. Each lead gets a note in its history.</p><div id="os-res"></div>' +
+          '<div id="os-l" style="max-height:46vh;overflow:auto;border:1px solid var(--line, #e7e5e4);border-radius:10px"></div><p class="muted" style="font-size:12px">Max 50 per send. Each lead gets a note in its history.</p><div id="os-res"></div>' +
           '<div class="modal-actions"><button class="btn" id="os-x">Close</button><button class="btn pri" id="os-go">' + ic("send") + " Send</button></div>");
         $("#modal-card").classList.add("wide");
         function draw() {
           var st = $("#os-st").value;
           $("#os-l").innerHTML = leads.filter(function (l) { return !st || l.stage === st; }).map(function (l) {
-            return '<label class="check" style="display:flex;gap:10px;padding:8px 12px;border-bottom:1px solid var(--line);margin:0"><input type="checkbox" value="' + l.id + '"><span style="flex:1"><b>' + esc(l.name) + '</b> <span class="muted">' + esc(l.phone) + '</span></span><span class="badge">' + esc(STAGE[l.stage] || l.stage) + "</span></label>";
+            return '<label class="check" style="display:flex;gap:10px;padding:8px 12px;border-bottom:1px solid var(--line, #e7e5e4);margin:0"><input type="checkbox" value="' + l.id + '"><span style="flex:1"><b>' + esc(l.name) + '</b> <span class="muted">' + esc(l.phone) + '</span></span><span class="badge">' + esc(STAGE[l.stage] || l.stage) + "</span></label>";
           }).join("") || '<p class="muted" style="padding:12px">No leads with a phone number in this stage.</p>';
           count();
         }

@@ -182,7 +182,7 @@
   W.VIEWS.services = function (el) {
     el.innerHTML = head("Service & site pages", "Service pages", '<a class="btn" href="#/pagetpl">' + ic("blocks") + 'From a template</a><button class="btn pri" id="sv-new">' + ic("plus") + 'New service page</button>') + '<div class="p19-how"><b>Add a service page</b><ol><li><b>New service page</b>: copy the layout of an existing service page (or start blank), then give it a title and address.</li><li><b>Duplicate</b> on any row: same thing, starting from that page.</li><li>It opens in the builder as a <b>draft</b>. Edit, then publish from Pages.</li></ol></div>'  + '<div class="card"><div class="card-h"><h3>Pages</h3><input id="sv-q" class="sm-in" placeholder="Search…"></div><div class="tbl-wrap"><table class="tbl"><thead><tr><th>Page</th><th>Address</th><th>Type</th><th></th></tr></thead><tbody id="sv-rows"><tr><td colspan="4" class="muted">Loading…</td></tr></tbody></table></div></div>';
     Promise.all([bapi("pages"), kinds()]).then(function (rs) {
-      if (!rs[0].ok) { $("#sv-rows").innerHTML = '<tr><td colspan="4"><b style="color:#d92d20">Could not load pages:</b> ' + esc(rs[0].error || "no answer") + ' <button class="btn sm" id="sv-retry">Retry</button> <a href="#/system">System check</a></td></tr>'; $("#sv-retry").onclick = function () { W.VIEWS.services(el); }; return; }
+      if (!rs[0].ok) { $("#sv-rows").innerHTML = '<tr><td colspan="4"><b style="color:var(--bad, #d92d20)">Could not load pages:</b> ' + esc(rs[0].error || "no answer") + ' <button class="btn sm" id="sv-retry">Retry</button> <a href="#/system">System check</a></td></tr>'; $("#sv-retry").onclick = function () { W.VIEWS.services(el); }; return; }
       var pages = (rs[0].pages || []).filter(function (p) { var k = rs[1][p.path]; return k !== "city" && !/^(insights|projects)\//.test(p.path) && !/^(404|500|503|coming-soon)\.html$/.test(p.path); });
       function draw() {
         var q = $("#sv-q").value.toLowerCase();
@@ -218,7 +218,7 @@
       kindsCache = null;
       Promise.all([bapi("pages"), kinds(), api("cms_list", { type: "city" })]).then(function (rs) {
         aiReady = rs[2].aiReady;
-        if (!rs[0].ok) { $("#ct-rows").innerHTML = '<tr><td colspan="4"><b style="color:#d92d20">Could not load city pages:</b> ' + esc(rs[0].error || "no answer") + ' <button class="btn sm" id="ct-retry">Retry</button> <a href="#/system">System check</a></td></tr>'; $("#ct-retry").onclick = function () { W.VIEWS.cities ? W.VIEWS.cities(el) : location.reload(); }; return; }
+        if (!rs[0].ok) { $("#ct-rows").innerHTML = '<tr><td colspan="4"><b style="color:var(--bad, #d92d20)">Could not load city pages:</b> ' + esc(rs[0].error || "no answer") + ' <button class="btn sm" id="ct-retry">Retry</button> <a href="#/system">System check</a></td></tr>'; $("#ct-retry").onclick = function () { W.VIEWS.cities ? W.VIEWS.cities(el) : location.reload(); }; return; }
         live = (rs[0].pages || []).filter(function (p) { return rs[1][p.path] === "city"; }).map(function (p) { return { name: cityName(p), slug: p.path.split("/")[0], path: p.path, url: p.url }; });
         drafts = (rs[2].items || []).filter(function (x) { return !x.rel; });
         $("#ct-rows").innerHTML = drafts.map(function (d) { return '<tr class="click" data-d="' + d.id + '"><td><b>' + esc(d.title) + '</b></td><td><span class="badge warn">Draft</span></td><td class="muted">/' + esc(d.slug) + '/</td><td class="r"><span class="btn sm">Review</span></td></tr>'; }).join("") +

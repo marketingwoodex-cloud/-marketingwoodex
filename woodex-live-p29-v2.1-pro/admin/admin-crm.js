@@ -102,7 +102,7 @@
     var st = S.enqState || (S.enqState = { q: "", stage: "", source: "", who: "", due: false });
     var admin = can("owner,admin");
     el.innerHTML = head("Leads", "Leads", (admin ? '<button class="btn" id="eq-set">' + ic("settings") + 'Alerts & spam</button><button class="btn" id="eq-imp">' + ic("upload") + "Import CSV</button>" : "") + '<button class="btn" id="eq-exp">' + ic("download") + 'Export CSV</button><button class="btn pri" id="eq-add">' + ic("plus") + "Add enquiry</button>") +
-      '<div class="grid kpis" id="eq-kpis"></div><div class="card"><div class="card-b" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;border-bottom:1px solid var(--line)">' +
+      '<div class="grid kpis" id="eq-kpis"></div><div class="card"><div class="card-b" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;border-bottom:1px solid var(--line, #e7e5e4)">' +
       '<input type="search" id="eq-q" placeholder="Search name, phone, email, message…" style="margin:0;max-width:300px">' +
       '<select id="eq-stage" style="margin:0;width:auto"><option value="">All stages</option>' + ORDER.map(function (s) { return '<option value="' + s + '">' + STAGE[s][0] + "</option>"; }).join("") + "</select>" +
       '<select id="eq-src" style="margin:0;width:auto"></select><select id="eq-who" style="margin:0;width:auto"></select>' +
@@ -122,7 +122,7 @@
       $("#eq-rows").innerHTML = list.map(function (l) {
         return '<tr class="' + (l.read ? "" : "unread") + '" data-id="' + l.id + '"><td style="white-space:nowrap">' + dshort(l.created_at) + '</td><td><b>' + esc(l.name) + "</b><small class='muted' style='display:block'>" + esc(l.phone || l.email || "") + "</small></td>" +
           "<td>" + esc(C.sources[l.source] || l.source) + (l.service ? "<small class='muted' style='display:block'>" + esc(l.service) + "</small>" : "") + "</td><td>" + badge(l.stage) + "</td><td>" + esc(l.assigned_name || "—") + "</td>" +
-          '<td style="white-space:nowrap' + (due(l) ? ';color:var(--bad);font-weight:600' : "") + '">' + (l.followup ? dshort(l.followup) : "—") + "</td>" +
+          '<td style="white-space:nowrap' + (due(l) ? ';color:var(--bad, #d92d20);font-weight:600' : "") + '">' + (l.followup ? dshort(l.followup) : "—") + "</td>" +
           '<td style="text-align:right;white-space:nowrap">' + (l.phone ? '<a class="btn sm wa" title="WhatsApp" target="_blank" rel="noopener" href="' + esc(waHref(l)) + '" data-stop>' + ic("message-circle") + "</a> " : "") + '<button class="btn sm">Open</button></td></tr>';
       }).join("") || '<tr><td colspan="7" class="empty">' + (L.length ? "No enquiries match these filters." : "No enquiries yet. New website form submissions will appear here.") + "</td></tr>";
       $$("#eq-rows tr[data-id]").forEach(function (tr) { tr.onclick = function (e) { if (e.target.closest("[data-stop]")) return; W.leadDrawer(+tr.dataset.id, draw); }; });
@@ -174,12 +174,12 @@
 
       var html =
         '<!-- October 2026 Deal Stage Summary Bar (From Image 2) -->' +
-        '<div style="background:var(--card-sub);border:1px solid var(--line);border-radius:14px;padding:16px 20px;margin-bottom:18px">' +
+        '<div style="background:var(--card-sub, #f5f5f4);border:1px solid var(--line, #e7e5e4);border-radius:14px;padding:16px 20px;margin-bottom:18px">' +
           '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:14px">' +
             '<div style="display:flex;align-items:center;gap:10px">' +
-              '<button class="icon-btn sm" style="width:28px;height:28px;border-radius:6px;background:var(--card-sub);border:1px solid var(--line);color:var(--mut)">&lt;</button>' +
+              '<button class="icon-btn sm" style="width:28px;height:28px;border-radius:6px;background:var(--card-sub, #f5f5f4);border:1px solid var(--line, #e7e5e4);color:var(--mut)">&lt;</button>' +
               '<b style="font-size:14px;color:var(--txt)">October 2026</b>' +
-              '<button class="icon-btn sm" style="width:28px;height:28px;border-radius:6px;background:var(--card-sub);border:1px solid var(--line);color:var(--mut)">&gt;</button>' +
+              '<button class="icon-btn sm" style="width:28px;height:28px;border-radius:6px;background:var(--card-sub, #f5f5f4);border:1px solid var(--line, #e7e5e4);color:var(--mut)">&gt;</button>' +
             '</div>' +
             '<div class="seg" id="pl-lines" style="margin:0">' +
               '<button class="' + (lineFilter === "all" ? "on" : "") + '" data-line="all">All lines</button>' +
@@ -189,34 +189,34 @@
             '</div>' +
           '</div>' +
           '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:10px">' +
-            '<div style="background:var(--card-sub);border:1px solid var(--line);border-radius:10px;padding:10px 12px;border-left:3px solid #00b8db">' +
+            '<div style="background:var(--card-sub, #f5f5f4);border:1px solid var(--line, #e7e5e4);border-radius:10px;padding:10px 12px;border-left:3px solid #00b8db">' +
               '<small class="muted" style="font-size:11px;display:block">Total</small><b style="font-size:18px;color:var(--txt)">' + L.length + '</b>' +
             '</div>' +
-            '<div style="background:var(--card-sub);border:1px solid var(--line);border-radius:10px;padding:10px 12px;border-left:3px solid #3b82f6">' +
+            '<div style="background:var(--card-sub, #f5f5f4);border:1px solid var(--line, #e7e5e4);border-radius:10px;padding:10px 12px;border-left:3px solid var(--primary, #2563eb)">' +
               '<small class="muted" style="font-size:11px;display:block">New lead</small><b style="font-size:18px;color:var(--txt)">' + countNew + '</b>' +
             '</div>' +
-            '<div style="background:var(--card-sub);border:1px solid var(--line);border-radius:10px;padding:10px 12px;border-left:3px solid #6366f1">' +
+            '<div style="background:var(--card-sub, #f5f5f4);border:1px solid var(--line, #e7e5e4);border-radius:10px;padding:10px 12px;border-left:3px solid #6366f1">' +
               '<small class="muted" style="font-size:11px;display:block">Client</small><b style="font-size:18px;color:var(--txt)">3</b>' +
             '</div>' +
-            '<div style="background:var(--card-sub);border:1px solid var(--line);border-radius:10px;padding:10px 12px;border-left:3px solid #f59e0b">' +
+            '<div style="background:var(--card-sub, #f5f5f4);border:1px solid var(--line, #e7e5e4);border-radius:10px;padding:10px 12px;border-left:3px solid var(--warn, #f79009)">' +
               '<small class="muted" style="font-size:11px;display:block">Meeting</small><b style="font-size:18px;color:var(--txt)">' + countVisit + '</b>' +
             '</div>' +
-            '<div style="background:var(--card-sub);border:1px solid var(--line);border-radius:10px;padding:10px 12px;border-left:3px solid #d97706">' +
+            '<div style="background:var(--card-sub, #f5f5f4);border:1px solid var(--line, #e7e5e4);border-radius:10px;padding:10px 12px;border-left:3px solid #d97706">' +
               '<small class="muted" style="font-size:11px;display:block">Proposal</small><b style="font-size:18px;color:var(--txt)">' + countQuote + '</b>' +
             '</div>' +
-            '<div style="background:var(--card-sub);border:1px solid var(--line);border-radius:10px;padding:10px 12px;border-left:3px solid #64748b">' +
+            '<div style="background:var(--card-sub, #f5f5f4);border:1px solid var(--line, #e7e5e4);border-radius:10px;padding:10px 12px;border-left:3px solid #64748b">' +
               '<small class="muted" style="font-size:11px;display:block">Hold</small><b style="font-size:18px;color:var(--txt)">1</b>' +
             '</div>' +
-            '<div style="background:var(--card-sub);border:1px solid var(--line);border-radius:10px;padding:10px 12px;border-left:3px solid #00d3f2">' +
+            '<div style="background:var(--card-sub, #f5f5f4);border:1px solid var(--line, #e7e5e4);border-radius:10px;padding:10px 12px;border-left:3px solid #00d3f2">' +
               '<small class="muted" style="font-size:11px;display:block">Quote done</small><b style="font-size:18px;color:var(--txt)">' + countQuote + '</b>' +
             '</div>' +
-            '<div style="background:var(--card-sub);border:1px solid var(--line);border-radius:10px;padding:10px 12px;border-left:3px solid #10b981">' +
-              '<small class="muted" style="font-size:11px;display:block">Won</small><b style="font-size:18px;color:var(--ok)">' + countWon + '</b>' +
+            '<div style="background:var(--card-sub, #f5f5f4);border:1px solid var(--line, #e7e5e4);border-radius:10px;padding:10px 12px;border-left:3px solid var(--ok, #16a34a)">' +
+              '<small class="muted" style="font-size:11px;display:block">Won</small><b style="font-size:18px;color:var(--ok, #16a34a)">' + countWon + '</b>' +
             '</div>' +
-            '<div style="background:var(--card-sub);border:1px solid var(--line);border-radius:10px;padding:10px 12px;border-left:3px solid #ef4444">' +
+            '<div style="background:var(--card-sub, #f5f5f4);border:1px solid var(--line, #e7e5e4);border-radius:10px;padding:10px 12px;border-left:3px solid var(--bad, #d92d20)">' +
               '<small class="muted" style="font-size:11px;display:block">Overdue</small><b style="font-size:18px;color:var(--txt)">0</b>' +
             '</div>' +
-            '<div style="background:var(--card-sub);border:1px solid var(--line);border-radius:10px;padding:10px 12px;border-left:3px solid #d4af6a;grid-column:span 2">' +
+            '<div style="background:var(--card-sub, #f5f5f4);border:1px solid var(--line, #e7e5e4);border-radius:10px;padding:10px 12px;border-left:3px solid #d4af6a;grid-column:span 2">' +
               '<small class="muted" style="font-size:11px;display:block">Won value</small><b style="font-size:17px;color:var(--pri-ink)">' + (totalWonVal ? "Rs " + (totalWonVal / 1000000).toFixed(2) + "M" : "Rs 2.95M") + '</b>' +
             '</div>' +
           '</div>' +
@@ -224,27 +224,27 @@
 
         '<!-- 5 KPI Cards (From Image 3) -->' +
         '<div style="display:grid;grid-template-columns:repeat(5, 1fr);gap:14px;margin-bottom:18px">' +
-          '<div class="card" style="background:var(--card-sub);border:1px solid var(--line);border-radius:12px;padding:18px">' +
+          '<div class="card" style="background:var(--card-sub, #f5f5f4);border:1px solid var(--line, #e7e5e4);border-radius:12px;padding:18px">' +
             '<small class="muted" style="font-size:12px">Open deals</small>' +
             '<b style="font-size:24px;color:var(--txt);display:block;margin:4px 0 2px">' + openDeals.length + '</b>' +
             '<small class="muted" style="font-size:11.5px">nothing overdue</small>' +
           '</div>' +
-          '<div class="card" style="background:var(--card-sub);border:1px solid var(--line);border-radius:12px;padding:18px">' +
+          '<div class="card" style="background:var(--card-sub, #f5f5f4);border:1px solid var(--line, #e7e5e4);border-radius:12px;padding:18px">' +
             '<small class="muted" style="font-size:12px">Pipeline value</small>' +
             '<b style="font-size:24px;color:var(--txt);display:block;margin:4px 0 2px">Rs ' + (totalOpenVal ? (totalOpenVal / 1000000).toFixed(0) : "27") + 'M</b>' +
             '<small class="muted" style="font-size:11.5px">' + openDeals.length + ' open deals</small>' +
           '</div>' +
-          '<div class="card" style="background:var(--card-sub);border:1px solid var(--line);border-radius:12px;padding:18px">' +
+          '<div class="card" style="background:var(--card-sub, #f5f5f4);border:1px solid var(--line, #e7e5e4);border-radius:12px;padding:18px">' +
             '<small class="muted" style="font-size:12px">Forecast</small>' +
             '<b style="font-size:24px;color:var(--pri-ink);display:block;margin:4px 0 2px">Rs 7.2M</b>' +
             '<small class="muted" style="font-size:11.5px">weighted by stage</small>' +
           '</div>' +
-          '<div class="card" style="background:var(--card-sub);border:1px solid var(--line);border-radius:12px;padding:18px">' +
+          '<div class="card" style="background:var(--card-sub, #f5f5f4);border:1px solid var(--line, #e7e5e4);border-radius:12px;padding:18px">' +
             '<small class="muted" style="font-size:12px">Won this month</small>' +
-            '<b style="font-size:24px;color:var(--ok);display:block;margin:4px 0 2px">Rs ' + (totalWonVal ? (totalWonVal / 1000000).toFixed(1) : "3.0") + 'M</b>' +
+            '<b style="font-size:24px;color:var(--ok, #16a34a);display:block;margin:4px 0 2px">Rs ' + (totalWonVal ? (totalWonVal / 1000000).toFixed(1) : "3.0") + 'M</b>' +
             '<small class="muted" style="font-size:11.5px">' + countWon + ' won in total</small>' +
           '</div>' +
-          '<div class="card" style="background:var(--card-sub);border:1px solid var(--line);border-radius:12px;padding:18px">' +
+          '<div class="card" style="background:var(--card-sub, #f5f5f4);border:1px solid var(--line, #e7e5e4);border-radius:12px;padding:18px">' +
             '<small class="muted" style="font-size:12px">Win rate</small>' +
             '<b style="font-size:24px;color:var(--txt);display:block;margin:4px 0 2px">100%</b>' +
             '<small class="muted" style="font-size:11.5px">1 won · 0 lost</small>' +
@@ -254,8 +254,8 @@
         '<!-- Filters and Search Bar -->' +
         '<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px;flex-wrap:wrap">' +
           '<div style="display:flex;align-items:center;gap:10px;flex:1;max-width:560px">' +
-            '<input type="search" id="pl-q" placeholder="Search name, company, phone…" value="' + esc(q) + '" style="margin:0;background:var(--card-sub);border-color:#20242f;border-radius:10px;padding:8px 14px;font-size:13px;flex:1">' +
-            '<select id="pl-own" style="margin:0;width:140px;background:var(--card-sub);border-color:#20242f;border-radius:10px;padding:8px 12px;font-size:13px">' +
+            '<input type="search" id="pl-q" placeholder="Search name, company, phone…" value="' + esc(q) + '" style="margin:0;background:var(--card-sub, #f5f5f4);border-color:#20242f;border-radius:10px;padding:8px 14px;font-size:13px;flex:1">' +
+            '<select id="pl-own" style="margin:0;width:140px;background:var(--card-sub, #f5f5f4);border-color:#20242f;border-radius:10px;padding:8px 12px;font-size:13px">' +
               '<option value="">All owners</option>' +
               '<option value="Kamran Tariq">Kamran Tariq</option>' +
               '<option value="Dr. Sarah Mansoor">Dr. Sarah Mansoor</option>' +
@@ -296,13 +296,13 @@
 
         var cardList = items.map(function (l) {
           var initials = l.assigned_name ? l.assigned_name.split(" ").map(function (w) { return w[0]; }).join("").slice(0, 2) : "KT";
-          return '<div class="kb-card" draggable="true" data-id="' + l.id + '" style="background:var(--card-sub);border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:10px;cursor:pointer">' +
+          return '<div class="kb-card" draggable="true" data-id="' + l.id + '" style="background:var(--card-sub, #f5f5f4);border:1px solid var(--line, #e7e5e4);border-radius:10px;padding:14px;margin-bottom:10px;cursor:pointer">' +
             '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">' +
               '<b style="color:var(--txt);font-size:13.5px">' + esc(l.name) + '</b>' +
               '<small class="muted" style="font-size:11px">0d</small>' +
             '</div>' +
             (l.company ? '<small class="muted" style="display:block;font-size:12px;margin-bottom:6px">' + esc(l.company) + '</small>' : "") +
-            '<div style="background:var(--card-sub);border-radius:6px;padding:6px 8px;margin-bottom:10px;font-size:12px;color:var(--mut)">' + esc(l.service) + '</div>' +
+            '<div style="background:var(--card-sub, #f5f5f4);border-radius:6px;padding:6px 8px;margin-bottom:10px;font-size:12px;color:var(--mut)">' + esc(l.service) + '</div>' +
             '<div style="display:flex;align-items:center;justify-content:space-between">' +
               '<b style="color:var(--pri-ink);font-size:13.5px">' + (l.value ? "Rs " + l.value.toLocaleString("en-PK") : "—") + '</b>' +
               '<div style="display:flex;align-items:center;gap:6px">' +
@@ -313,7 +313,7 @@
           '</div>';
         }).join("");
 
-        return '<div class="kb-col" data-st="' + col.id + '" style="background:var(--card-sub);border:1px solid var(--line);border-radius:12px;padding:14px;min-height:360px;display:flex;flex-direction:column">' +
+        return '<div class="kb-col" data-st="' + col.id + '" style="background:var(--card-sub, #f5f5f4);border:1px solid var(--line, #e7e5e4);border-radius:12px;padding:14px;min-height:360px;display:flex;flex-direction:column">' +
           '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">' +
             '<div style="display:flex;align-items:center;gap:8px">' +
               '<span class="kb-dot" style="width:8px;height:8px;border-radius:50%;background:' + (col.dot === "blue" ? "#3b82f6" : col.dot === "amber" ? "#f59e0b" : col.dot === "purple" ? "#a855f7" : col.dot === "green" ? "#10b981" : col.dot === "red" ? "#ef4444" : "#64748b") + '"></span>' +
@@ -322,7 +322,7 @@
             '</div>' +
             (col.sum ? '<small class="muted" style="font-size:11.5px">' + col.sum + '</small>' : "") +
           '</div>' +
-          '<div class="kb-list" style="flex:1">' + (cardList || '<div style="border:1px dashed var(--line);border-radius:8px;padding:32px 12px;text-align:center;color:var(--mut);font-size:12px">Drop a lead here</div>') + '</div>' +
+          '<div class="kb-list" style="flex:1">' + (cardList || '<div style="border:1px dashed var(--line, #e7e5e4);border-radius:8px;padding:32px 12px;text-align:center;color:var(--mut);font-size:12px">Drop a lead here</div>') + '</div>' +
         '</div>';
       }).join("");
 
@@ -373,7 +373,7 @@
   // =========================================================== CLIENTS
   W.VIEWS.clients = function (el) {
     el.innerHTML = head("Clients", "Clients", '<button class="btn pri" id="cl-add">' + ic("plus") + "Add client</button>") +
-      '<div class="card"><div class="card-b" style="border-bottom:1px solid var(--line)"><input type="search" id="cl-q" placeholder="Search clients…" style="margin:0;max-width:300px"></div><div class="tbl-wrap"><table class="tbl"><thead><tr><th>Client</th><th>Contact</th><th>City</th><th>Enquiries</th><th>Won value</th><th>Since</th><th></th></tr></thead><tbody id="cl-rows"><tr><td colspan="7" class="empty">Loading…</td></tr></tbody></table></div></div>';
+      '<div class="card"><div class="card-b" style="border-bottom:1px solid var(--line, #e7e5e4)"><input type="search" id="cl-q" placeholder="Search clients…" style="margin:0;max-width:300px"></div><div class="tbl-wrap"><table class="tbl"><thead><tr><th>Client</th><th>Contact</th><th>City</th><th>Enquiries</th><th>Won value</th><th>Since</th><th></th></tr></thead><tbody id="cl-rows"><tr><td colspan="7" class="empty">Loading…</td></tr></tbody></table></div></div>';
     var list = [], q = "";
     var draw = function () {
       var rows = list.filter(function (c) { return !q || [c.name, c.phone, c.email, c.company, c.city].join(" ").toLowerCase().indexOf(q) >= 0; });

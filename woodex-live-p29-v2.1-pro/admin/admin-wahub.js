@@ -8,11 +8,11 @@
   function $(s, r) { return (r || document).querySelector(s); }
   function $$(s, r) { return [].slice.call((r || document).querySelectorAll(s)); }
   var css = document.createElement("style");
-  css.textContent = ".wh-tabs{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 16px;padding:5px;background:var(--card);border:1px solid var(--line);border-radius:12px;width:max-content;max-width:100%}" +
-    ".wh-tabs a{padding:7px 13px;border-radius:8px;font-size:13px;color:var(--txt2);text-decoration:none;white-space:nowrap}.wh-tabs a.on{background:#0c1628;color:#fff}.wh-tabs a:hover:not(.on){background:var(--bg)}" +
+  css.textContent = ".wh-tabs{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 16px;padding:5px;background:var(--card, #ffffff);border:1px solid var(--line, #e7e5e4);border-radius:12px;width:max-content;max-width:100%}" +
+    ".wh-tabs a{padding:7px 13px;border-radius:8px;font-size:13px;color:var(--txt2);text-decoration:none;white-space:nowrap}.wh-tabs a.on{background:var(--foreground, #1c1917);color:var(--card, #ffffff)}.wh-tabs a:hover:not(.on){background:var(--bg)}" +
     ".wh-k{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:14px}.wh-k .card-b b{display:block;font-size:24px;line-height:1.15}.wh-k small{color:var(--mut);font-size:12px}" +
-    ".wh-rule{display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-top:1px solid var(--line)}.wh-rule:first-child{border-top:0}.wh-rule p{margin:2px 0 0;font-size:13px;color:var(--txt2)}" +
-    ".wh-st{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px}.wh-dot{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;padding:5px 10px;border-radius:99px;background:var(--card);border:1px solid var(--line)}.wh-dot i{width:8px;height:8px;border-radius:50%;display:inline-block}";
+    ".wh-rule{display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-top:1px solid var(--line, #e7e5e4)}.wh-rule:first-child{border-top:0}.wh-rule p{margin:2px 0 0;font-size:13px;color:var(--txt2)}" +
+    ".wh-st{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px}.wh-dot{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;padding:5px 10px;border-radius:99px;background:var(--card, #ffffff);border:1px solid var(--line, #e7e5e4)}.wh-dot i{width:8px;height:8px;border-radius:50%;display:inline-block}";
   document.head.appendChild(css);
 
   function pct(a, b) { return b ? Math.round((a / b) * 100) + "%" : "—"; }
@@ -32,10 +32,10 @@
     var r = D, b = $("#wh-b"), c = r.camp, edit = W.can("owner,admin");
     var tick = r.lastTick ? "Automation last ran " + esc(W.ago(r.lastTick)) : "Automation has not run yet (set up the cron job: Broadcasts & automations → Settings)";
     b.innerHTML =
-      '<div class="wh-st"><span class="wh-dot"><i style="background:' + (r.connected ? "#12b76a" : "#f79009") + '"></i>' + (r.connected ? "WhatsApp connected" : 'WhatsApp not connected · <a href="#/settings/connections">Connect</a>') + "</span>" +
-        '<span class="wh-dot"><i style="background:' + (r.lastTick ? "#12b76a" : "#98a2b3") + '"></i>' + tick + "</span>" +
+      '<div class="wh-st"><span class="wh-dot"><i style="background:' + (r.connected ? "var(--ok, #16a34a)" : "var(--warn, #f79009)") + '"></i>' + (r.connected ? "WhatsApp connected" : 'WhatsApp not connected · <a href="#/settings/connections">Connect</a>') + "</span>" +
+        '<span class="wh-dot"><i style="background:' + (r.lastTick ? "var(--ok, #16a34a)" : "var(--muted-foreground-1, #57534e)") + '"></i>' + tick + "</span>" +
         '<span class="wh-dot">Sent today <b style="margin-left:4px">' + r.today + " / " + r.cap + "</b></span>" +
-        (r.wa.waiting ? '<a class="wh-dot" href="#/chat" style="text-decoration:none;color:#b42318"><i style="background:#f04438"></i>' + r.wa.waiting + " WhatsApp chat" + (r.wa.waiting > 1 ? "s" : "") + " waiting for you</a>" : "") + "</div>" +
+        (r.wa.waiting ? '<a class="wh-dot" href="#/chat" style="text-decoration:none;color:var(--bad, #d92d20)"><i style="background:var(--bad, #d92d20)"></i>' + r.wa.waiting + " WhatsApp chat" + (r.wa.waiting > 1 ? "s" : "") + " waiting for you</a>" : "") + "</div>" +
       '<div class="wh-k">' +
         k(r.week, "Sent in 7 days", r.camps + " campaign" + (r.camps === 1 ? "" : "s") + (r.running ? " · " + r.running + " running" : "")) +
         k(pct(c.delivered, c.sent), "Delivered", c.delivered + " of " + c.sent + " campaign messages") +
@@ -48,22 +48,22 @@
       '<div style="display:grid;grid-template-columns:minmax(0,1.6fr) minmax(280px,1fr);gap:14px;align-items:start" class="wh-grid">' +
         '<div>' +
           '<!-- Interactive Bot & Estimator Simulator Card -->' +
-          '<div class="card" style="margin-bottom:14px;border:1px solid var(--line);background:var(--card-sub)">' +
+          '<div class="card" style="margin-bottom:14px;border:1px solid var(--line, #e7e5e4);background:var(--card-sub, #f5f5f4)">' +
             '<div class="card-h" style="display:flex;justify-content:space-between;align-items:center">' +
               '<div><h3 style="color:var(--txt);font-size:15px">' + ic("sparkles") + ' Autonomous Estimator &amp; Interactive Bot</h3><small class="muted">Runs 100% natively on WhatsApp &amp; Telegram — 0 paid SaaS / 0 dependencies</small></div>' +
               '<button class="btn sm pri btn-preline-cyan" id="wh-test-bot">' + ic("play") + 'Test Bot Flow</button>' +
             '</div>' +
             '<div class="card-b">' +
               '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;font-size:12.5px">' +
-                '<div style="background:var(--card-sub);padding:12px;border-radius:8px;border:1px solid var(--line)">' +
+                '<div style="background:var(--card-sub, #f5f5f4);padding:12px;border-radius:8px;border:1px solid var(--line, #e7e5e4)">' +
                   '<b style="color:var(--pri-ink)">1. Space Selection</b>' +
                   '<p class="muted" style="margin:4px 0 0">Interactive buttons: Full Home, Luxury Kitchen, Wardrobes, Commercial.</p>' +
                 '</div>' +
-                '<div style="background:var(--card-sub);padding:12px;border-radius:8px;border:1px solid var(--line)">' +
+                '<div style="background:var(--card-sub, #f5f5f4);padding:12px;border-radius:8px;border:1px solid var(--line, #e7e5e4)">' +
                   '<b style="color:var(--pri-ink)">2. Scale &amp; Material Quiz</b>' +
                   '<p class="muted" style="margin:4px 0 0">5/10 Marla, 1/2 Kanal · Acrylic, Solid Oak, Victorian Classic finishes.</p>' +
                 '</div>' +
-                '<div style="background:var(--card-sub);padding:12px;border-radius:8px;border:1px solid var(--line)">' +
+                '<div style="background:var(--card-sub, #f5f5f4);padding:12px;border-radius:8px;border:1px solid var(--line, #e7e5e4)">' +
                   '<b style="color:var(--pri-ink)">3. Instant BOQ &amp; Lead Sync</b>' +
                   '<p class="muted" style="margin:4px 0 0">Calculates PKR estimate range, creates CRM lead &amp; alerts Telegram staff.</p>' +
                 '</div>' +
@@ -112,7 +112,7 @@
     if (r.alert) acts.push("alert the team");
     var edit = W.can("owner,admin");
     return '<div class="wh-rule"><label class="switch" title="On / off"><input type="checkbox" data-ro="' + r.id + '"' + (r.on ? " checked" : "") + (edit ? "" : " disabled") + "><span></span></label>" +
-      '<div style="flex:1;min-width:0"><b>' + esc(r.name) + "</b><p>When a lead is in <b>" + esc(D.stages[r.stage]) + "</b> " + (r.when === "created" ? r.days + " day" + (r.days === 1 ? "" : "s") + " after it came in" : "with no contact for " + r.days + " day" + (r.days === 1 ? "" : "s")) + " → " + acts.join(", ") + '.</p><small class="muted">Ran ' + (r.runs || 0) + " time" + (r.runs === 1 ? "" : "s") + " · WhatsApp sent " + (r.sent || 0) + (r.lastError ? ' · <span style="color:#b42318">last error: ' + esc(r.lastError) + "</span>" : "") + "</small></div>" +
+      '<div style="flex:1;min-width:0"><b>' + esc(r.name) + "</b><p>When a lead is in <b>" + esc(D.stages[r.stage]) + "</b> " + (r.when === "created" ? r.days + " day" + (r.days === 1 ? "" : "s") + " after it came in" : "with no contact for " + r.days + " day" + (r.days === 1 ? "" : "s")) + " → " + acts.join(", ") + '.</p><small class="muted">Ran ' + (r.runs || 0) + " time" + (r.runs === 1 ? "" : "s") + " · WhatsApp sent " + (r.sent || 0) + (r.lastError ? ' · <span style="color:var(--bad, #d92d20)">last error: ' + esc(r.lastError) + "</span>" : "") + "</small></div>" +
       (edit ? '<div style="white-space:nowrap"><button class="btn sm" data-re="' + r.id + '">Edit</button> <button class="btn sm danger" data-rd="' + r.id + '" title="Delete">✕</button></div>' : "") + "</div>";
   }
   function ruleModal(r) {

@@ -57,7 +57,7 @@
           '<small class="muted">' + esc((a.by && a.by.name) || "") + " · " + (RL[a.by && a.by.role] || "") + " · " + when(a.at) + " · " + (a.src === "builder" ? "Website builder" : "Admin") + "</small></div><div>" + badge(a.status) + "</div></div>" +
           '<div class="card-b">' + (rows ? '<div class="tbl-wrap"><table class="tbl">' + rows + "</table></div>" : "") +
           (a.note ? '<p style="margin:10px 0 0"><b>Master note:</b> ' + esc(a.note) + "</p>" : "") +
-          (a.lastError ? '<p style="margin:10px 0 0;color:#b42318"><b>Last try failed:</b> ' + esc(a.lastError) + "</p>" : "") +
+          (a.lastError ? '<p style="margin:10px 0 0;color:var(--bad, #d92d20)"><b>Last try failed:</b> ' + esc(a.lastError) + "</p>" : "") +
           (a.decidedBy && a.status !== "pending" ? '<p class="muted" style="margin:8px 0 0">' + esc(a.status) + " by " + esc(a.decidedBy) + " · " + when(a.decidedAt) + "</p>" : "") +
           (acts ? '<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">' + acts + "</div>" : "") + "</div></div>";
       }).join("");
@@ -75,7 +75,7 @@
     api("appr_get", { id: id }).then(function (j) {
       if (!j.ok) return toast(j.error, true);
       var a = j.item, h = a.in && (a.in.html || a.in.content), page = a.in && (a.in.path || a.in.page) || "";
-      W.modal('<div class="card-h"><h3>' + esc(a.summary) + "</h3></div>" + (typeof h === "string" ? '<iframe style="width:100%;height:65vh;border:1px solid #e5e7eb;border-radius:8px" sandbox="" id="ap-ifr"></iframe>' : '<p class="muted">No page preview for this change.</p>') +
+      W.modal('<div class="card-h"><h3>' + esc(a.summary) + "</h3></div>" + (typeof h === "string" ? '<iframe style="width:100%;height:65vh;border:1px solid var(--line, #e7e5e4);border-radius:8px" sandbox="" id="ap-ifr"></iframe>' : '<p class="muted">No page preview for this change.</p>') +
         '<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:10px">' + (page ? '<a class="btn sm" target="_blank" rel="noopener" href="/' + esc(String(page).replace(/^\//, "").replace(/index\.html$/, "")) + '">Open live page</a>' : "") + '<button class="btn sm" onclick="WXA.closeModal()">Close</button></div>', "wide");
       var f = $("#ap-ifr"); if (f) f.srcdoc = h;
     });
@@ -131,7 +131,7 @@
       var old = host && host.querySelector ? host.querySelector("#appr-note") : null;
       if (!j.ok || !j.pending) { if (old && old.remove) old.remove(); return; }
       var d = old || document.createElement("a");
-      d.id = "appr-note"; d.href = "#/approvals"; d.className = "card"; d.style.cssText = "display:flex;gap:12px;align-items:center;margin-bottom:14px;text-decoration:none;color:inherit;border-left:4px solid #b8956a;padding:14px 16px";
+      d.id = "appr-note"; d.href = "#/approvals"; d.className = "card"; d.style.cssText = "display:flex;gap:12px;align-items:center;margin-bottom:14px;text-decoration:none;color:inherit;border-left:4px solid var(--primary, #2563eb);padding:14px 16px";
       d.innerHTML = ic("shield-check") + "<div><b>" + j.pending + (j.master ? " change" + (j.pending > 1 ? "s" : "") + " waiting for your approval" : " of your changes waiting for the Master") + '</b><br><small class="muted">' + (j.master ? "Review and approve or reject." : "You'll be notified when they are approved.") + "</small></div>";
       if (old) return;            /* already on screen — content just refreshed in place */
       if (!dx || !dx.parentNode) return;  /* the view was replaced while this was in flight */

@@ -9,10 +9,10 @@
   var css = document.createElement("style");
   css.textContent = ".wi-k{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:14px}.wi-k .card-b b{display:block;font-size:24px;line-height:1.15}.wi-k small{color:var(--mut);font-size:12px}" +
     ".wi-g{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:14px;margin-bottom:14px}@media(max-width:1000px){.wi-g{grid-template-columns:1fr}}" +
-    ".wi-ch{display:flex;align-items:flex-end;gap:4px;height:170px;padding:8px 0 0}.wi-ch .c{flex:1;display:flex;flex-direction:column-reverse;min-width:0;height:100%;position:relative}.wi-ch .c i{display:block;width:100%}.wi-ch .c:hover{outline:1px solid var(--line)}" +
+    ".wi-ch{display:flex;align-items:flex-end;gap:4px;height:170px;padding:8px 0 0}.wi-ch .c{flex:1;display:flex;flex-direction:column-reverse;min-width:0;height:100%;position:relative}.wi-ch .c i{display:block;width:100%}.wi-ch .c:hover{outline:1px solid var(--line, #e7e5e4)}" +
     ".wi-ax{display:flex;gap:4px;font-size:10.5px;color:var(--mut);margin-top:4px}.wi-ax span{flex:1;text-align:center;min-width:0;overflow:hidden}" +
     ".wi-lg{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;margin-top:10px}.wi-lg b{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}" +
-    ".wi-f{display:grid;grid-template-columns:110px 1fr 44px;gap:10px;align-items:center;font-size:13px;margin:7px 0}.wi-f .bar{height:10px;border-radius:99px;background:var(--bg,#f2f4f7);overflow:hidden}.wi-f .bar i{display:block;height:100%;background:#0c1628;border-radius:99px}.wi-f.won .bar i{background:#16a34a}.wi-f.lost .bar i{background:#b8956a}";
+    ".wi-f{display:grid;grid-template-columns:110px 1fr 44px;gap:10px;align-items:center;font-size:13px;margin:7px 0}.wi-f .bar{height:10px;border-radius:99px;background:var(--bg,var(--card-sub, #f5f5f4));overflow:hidden}.wi-f .bar i{display:block;height:100%;background:var(--foreground, #1c1917);border-radius:99px}.wi-f.won .bar i{background:#16a34a}.wi-f.lost .bar i{background:var(--primary, #2563eb)}";
   document.head.appendChild(css);
   var COL = { web: "#0c1628", wa: "#16a34a", tg: "#2aabee", leads: "#b8956a" };
   var SRC = { form: "Website form", contact: "Contact form", quote: "Quote form", chat: "Live chat", whatsapp: "WhatsApp", wa: "WhatsApp", telegram: "Telegram", booking: "Site visit booking", manual: "Added by team", other: "Other" };
@@ -41,7 +41,7 @@
     var bars = r.series.map(function (d) {
       var tip = d.d + " · Website " + d.web + " · WhatsApp " + d.wa + " · Telegram " + d.tg + " · Leads " + d.leads;
       return '<div class="c" title="' + esc(tip) + '">' + ["web", "wa", "tg"].map(function (k) { return d[k] ? '<i style="height:' + (d[k] / max * 100) + "%;background:" + COL[k] + '"></i>' : ""; }).join("") +
-        (d.leads ? '<span style="position:absolute;left:50%;bottom:' + (d.leads / max * 100) + '%;width:7px;height:7px;margin:0 0 -3px -3.5px;border-radius:50%;background:' + COL.leads + ';border:1.5px solid #fff"></span>' : "") + "</div>";
+        (d.leads ? '<span style="position:absolute;left:50%;bottom:' + (d.leads / max * 100) + '%;width:7px;height:7px;margin:0 0 -3px -3.5px;border-radius:50%;background:' + COL.leads + ';border:1.5px solid var(--card, #ffffff)"></span>' : "") + "</div>";
     }).join("");
     var axis = r.series.map(function (d, i) { var dt = new Date(d.d + "T00:00:00"); return "<span>" + (i % every === 0 ? dt.getDate() + " " + dt.toLocaleString("en", { month: "short" }) : "") + "</span>"; }).join("");
     var fmax = 1; Object.keys(r.funnel).forEach(function (k) { fmax = Math.max(fmax, r.funnel[k]); });
@@ -61,11 +61,11 @@
       '<a href="#/leads" class="btn sm" style="margin-top:8px">Open leads</a></div></div></div>' +
       '<div class="wi-g"><div class="card"><div class="card-h"><h3>Follow-up automation</h3><a class="btn sm" href="#/wauto">Edit follow-ups</a></div><div class="card-b">' +
       (r.flows.length ? '<table class="tbl"><thead><tr><th>Follow-up</th><th>Status</th><th style="text-align:right">WhatsApp</th><th style="text-align:right">Email</th><th style="text-align:right">Failed</th></tr></thead><tbody>' +
-        r.flows.map(function (f) { return "<tr><td>" + esc(f.name) + "</td><td>" + (f.on ? '<span class="badge ok">On</span>' : '<span class="badge">Off</span>') + '</td><td style="text-align:right">' + n(f.sent) + '</td><td style="text-align:right">' + n(f.mailed) + '</td><td style="text-align:right">' + (f.failed ? '<span style="color:#b42318">' + n(f.failed) + "</span>" : "0") + "</td></tr>"; }).join("") + "</tbody></table>"
+        r.flows.map(function (f) { return "<tr><td>" + esc(f.name) + "</td><td>" + (f.on ? '<span class="badge ok">On</span>' : '<span class="badge">Off</span>') + '</td><td style="text-align:right">' + n(f.sent) + '</td><td style="text-align:right">' + n(f.mailed) + '</td><td style="text-align:right">' + (f.failed ? '<span style="color:var(--bad, #d92d20)">' + n(f.failed) + "</span>" : "0") + "</td></tr>"; }).join("") + "</tbody></table>"
         : '<p class="muted" style="margin:0">No follow-ups are on yet. Turn them on under <a href="#/wauto">Broadcasts &amp; automations → Auto flows</a>: new-lead follow-ups (day 1, 3, 7), quote follow-ups (day 1, 3, 7) and invoice reminders (before, on and after the due date).</p>') +
       "</div></div>" +
       '<div class="card"><div class="card-h"><h3>Where leads come from</h3></div><div class="card-b">' +
-      (srcK.length ? srcK.map(function (s) { return '<div class="wi-f"><span>' + esc(SRC[s] || s) + '</span><div class="bar"><i style="width:' + (r.sources[s] / smax * 100) + '%;background:#b8956a"></i></div><b style="text-align:right">' + r.sources[s] + "</b></div>"; }).join("") : '<p class="muted" style="margin:0">No leads in this period.</p>') +
+      (srcK.length ? srcK.map(function (s) { return '<div class="wi-f"><span>' + esc(SRC[s] || s) + '</span><div class="bar"><i style="width:' + (r.sources[s] / smax * 100) + '%;background:var(--primary, #2563eb)"></i></div><b style="text-align:right">' + r.sources[s] + "</b></div>"; }).join("") : '<p class="muted" style="margin:0">No leads in this period.</p>') +
       "</div></div></div>" +
       '<div class="card"><div class="card-h"><h3>Recent campaigns</h3><span class="muted" style="font-size:12px">' + r.optout + " opted out (STOP)</span></div><div class=\"card-b\">" +
       (r.camps.length ? '<table class="tbl"><thead><tr><th>Campaign</th><th>Status</th><th style="text-align:right">Sent</th><th style="text-align:right">Delivered</th><th style="text-align:right">Read</th><th style="text-align:right">Replied</th></tr></thead><tbody>' +

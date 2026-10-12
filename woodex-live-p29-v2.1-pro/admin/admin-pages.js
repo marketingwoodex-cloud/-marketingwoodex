@@ -6,7 +6,7 @@
   var STATUS = { published: ["ok", "Published"], hidden: ["info", "Hidden"], draft: ["warn", "Draft"] };
   function typeOf(p) { var top = p.path.split("/")[0]; if (p.path === "index.html") return "Home"; if (CITIES.indexOf(top) >= 0) return "Locations"; if (top === "insights") return "Insights / blog"; if (top === "projects") return "Projects"; if (/^(about|contact|privacy|estimator|404)/.test(top)) return "Company"; return "Services"; }
   function scoreBadge(n) { return '<span class="badge ' + (n >= 80 ? "ok" : n >= 55 ? "warn" : "bad") + '">' + n + "</span>"; }
-  function counter(inp, out, lo, hi) { var f = function () { var n = inp.value.length; out.textContent = n + " / " + hi; out.style.color = n > hi || (lo && n && n < lo) ? "var(--bad)" : "var(--mut)"; }; inp.addEventListener("input", f); f(); }
+  function counter(inp, out, lo, hi) { var f = function () { var n = inp.value.length; out.textContent = n + " / " + hi; out.style.color = n > hi || (lo && n && n < lo) ? "var(--bad, #d92d20)" : "var(--mut)"; }; inp.addEventListener("input", f); f(); }
   function loadPages() { return api("pages_list").then(function (r) { if (r.ok) S.plist = r.pages; return r; }); }
   function refreshBuilderPages() { bapi("pages").then(function (p) { if (p.ok) S.pages = p.pages; }); }
 
@@ -50,7 +50,7 @@
     var old = $("#pg-menu"); if (old) old.remove();
     var m = document.createElement("div"); m.className = "dd-menu"; m.id = "pg-menu"; m.style.cssText = "position:fixed;z-index:60";
     m.innerHTML = '<a href="' + esc(p.url) + '" target="_blank">' + ic("eye") + "View live page</a><button data-a='hist'>" + ic("history") + "Version history</button><button data-a='sec'>" + ic("blocks") + "Sections outline</button><button data-a='dup'>" + ic("file-plus") + "Duplicate</button>" +
-      (can("owner,admin") && p.path !== "index.html" && p.path !== "404.html" ? "<button data-a='del' style='color:var(--bad)'>" + ic("x") + "Delete…</button>" : "");
+      (can("owner,admin") && p.path !== "index.html" && p.path !== "404.html" ? "<button data-a='del' style='color:var(--bad, #d92d20)'>" + ic("x") + "Delete…</button>" : "");
     document.body.appendChild(m); var r = btn.getBoundingClientRect(); m.style.top = Math.min(r.bottom + 6, innerHeight - m.offsetHeight - 10) + "px"; m.style.left = r.right - 230 + "px";
     m.onclick = function (e) { var a = e.target.closest("[data-a]"); if (!a) return; m.remove(); ({ hist: history, sec: function () { W.outline(p); }, dup: function () { newPage(p); }, del: function () { delModal(p, redraw); } })[a.dataset.a](p); };
     setTimeout(function () { document.addEventListener("click", function h() { m.remove(); document.removeEventListener("click", h); }); });
@@ -62,11 +62,11 @@
       "<label>Status<select id='sf-st'><option value='published'>Published: public and in Google</option><option value='hidden'>Hidden: public link, not in Google or sitemap</option><option value='draft'" + (p.path === "index.html" ? " disabled" : "") + ">Draft: not public (404 for visitors)</option></select></label>" +
       "<label>Page title <small id='sf-tc'></small><input id='sf-t' value='" + esc(p.title) + "' required></label>" +
       "<label>Meta description <small id='sf-dc'></small><textarea id='sf-d' rows='3'>" + esc(p.description) + "</textarea></label>" +
-      "<div style='border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin:0 0 14px'><small class='muted'>Google preview</small><div id='sf-prev'></div></div>" +
+      "<div style='border:1px solid var(--line, #e7e5e4);border-radius:12px;padding:12px 14px;margin:0 0 14px'><small class='muted'>Google preview</small><div id='sf-prev'></div></div>" +
       "<label>Social share image <small>(1200×630 recommended)</small><div style='display:flex;gap:8px'><input id='sf-og' value='" + esc(p.ogImage) + "' placeholder='/assets/uploads/…'><button type='button' class='btn' id='sf-pick' style='margin-top:6px'>Choose</button></div></label>" +
       "<label>Canonical address <small>(leave empty unless this page copies another)</small><input id='sf-c' value='" + esc(p.canonical) + "' placeholder='https://woodex.com.pk" + esc(p.url) + "'></label>" +
       "<label class='check'><input type='checkbox' id='sf-ni'" + (p.noindex ? " checked" : "") + "> Hide from search engines (noindex)</label>" +
-      (p.issues.length ? "<div class='card' style='padding:12px 14px;margin:6px 0 14px;background:var(--warn-soft);border-color:transparent'><b style='font-size:13px'>SEO check (" + p.score + "/100)</b><ul style='margin:6px 0 0;padding-left:18px;color:var(--txt2)'>" + p.issues.map(function (i) { return "<li>" + esc(i) + "</li>"; }).join("") + "</ul></div>" : "<p class='badge ok' style='margin:0 0 14px'>✓ No SEO issues</p>") +
+      (p.issues.length ? "<div class='card' style='padding:12px 14px;margin:6px 0 14px;background:var(--warn-soft, #fef3c7);border-color:transparent'><b style='font-size:13px'>SEO check (" + p.score + "/100)</b><ul style='margin:6px 0 0;padding-left:18px;color:var(--txt2)'>" + p.issues.map(function (i) { return "<li>" + esc(i) + "</li>"; }).join("") + "</ul></div>" : "<p class='badge ok' style='margin:0 0 14px'>✓ No SEO issues</p>") +
       "<p class='err' id='sf-err'></p><div class='modal-actions'><button type='button' class='btn' id='sf-x'>Cancel</button><button class='btn pri'>Save settings</button></div></form>");
     $("#modal-card").style.maxWidth = "640px";
     $("#sf-st").value = p.status;
@@ -77,7 +77,7 @@
     $("#sf-pick").onclick = function () {
       bapi("media").then(function (r) {
         if (!r.ok) return; var box = document.createElement("div"); box.style.cssText = "display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px;max-height:220px;overflow:auto;margin:-6px 0 14px";
-        box.innerHTML = r.media.slice(0, 120).map(function (u) { return "<button type='button' data-u='" + esc(u) + "' style='border:1px solid var(--line);border-radius:8px;padding:0;background:none;cursor:pointer;aspect-ratio:1;overflow:hidden'><img src='" + esc(u) + "' loading='lazy' style='width:100%;height:100%;object-fit:cover'></button>"; }).join("");
+        box.innerHTML = r.media.slice(0, 120).map(function (u) { return "<button type='button' data-u='" + esc(u) + "' style='border:1px solid var(--line, #e7e5e4);border-radius:8px;padding:0;background:none;cursor:pointer;aspect-ratio:1;overflow:hidden'><img src='" + esc(u) + "' loading='lazy' style='width:100%;height:100%;object-fit:cover'></button>"; }).join("");
         $("#sf-pick").closest("label").after(box);
         box.onclick = function (e) { var b = e.target.closest("[data-u]"); if (b) { $("#sf-og").value = b.dataset.u; box.remove(); } };
       });
@@ -178,8 +178,8 @@
     while (i < n || j < m) { if (i < n && j < m && x[i] === y[j]) { out.push([" ", x[i]]); i++; j++; } else if (j < m && (i >= n || L[i][j + 1] >= L[i + 1][j])) { out.push(["+", y[j]]); j++; } else { out.push(["-", x[i]]); i++; } }
     var rows = out.filter(function (r, k) { if (r[0] !== " ") return true; for (var d = -2; d <= 2; d++) if (out[k + d] && out[k + d][0] !== " ") return true; return false; });
     var add = out.filter(function (r) { return r[0] === "+"; }).length, del = out.filter(function (r) { return r[0] === "-"; }).length;
-    return "<div style='margin-top:16px'><b>Changes</b> <span class='badge bad'>− " + del + " old</span> <span class='badge ok'>+ " + add + " now</span><div style='margin-top:10px;border:1px solid var(--line);border-radius:10px;max-height:320px;overflow:auto;font-size:13px'>" +
-      rows.slice(0, 400).map(function (r) { return "<div style='padding:4px 10px;border-bottom:1px solid var(--line);" + (r[0] === "+" ? "background:var(--ok-soft)" : r[0] === "-" ? "background:var(--bad-soft);text-decoration:line-through;opacity:.8" : "color:var(--mut)") + "'>" + (r[0] === " " ? "" : "<b>" + r[0] + "</b> ") + esc(r[1].slice(0, 300)) + "</div>"; }).join("") + "</div></div>";
+    return "<div style='margin-top:16px'><b>Changes</b> <span class='badge bad'>− " + del + " old</span> <span class='badge ok'>+ " + add + " now</span><div style='margin-top:10px;border:1px solid var(--line, #e7e5e4);border-radius:10px;max-height:320px;overflow:auto;font-size:13px'>" +
+      rows.slice(0, 400).map(function (r) { return "<div style='padding:4px 10px;border-bottom:1px solid var(--line, #e7e5e4);" + (r[0] === "+" ? "background:var(--ok-soft, #dcfce7)" : r[0] === "-" ? "background:var(--bad-soft, #fee2e2);text-decoration:line-through;opacity:.8" : "color:var(--mut)") + "'>" + (r[0] === " " ? "" : "<b>" + r[0] + "</b> ") + esc(r[1].slice(0, 300)) + "</div>"; }).join("") + "</div></div>";
   }
 
   // =========================================================== REDIRECTS
@@ -233,7 +233,7 @@
         box.innerHTML = pagesDl + '<div class="grid"><div class="card"><div class="card-h"><h3>Desktop menu</h3><span class="toolbar"><button class="btn sm" id="mn-add">' + ic("plus") + 'Link</button></span></div><div class="card-b">' +
           M.items.map(function (it, i) {
             if (it.type === "link") return row("items." + i, it);
-            return "<div style='border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:8px'><div style='display:flex;gap:8px;align-items:center;margin-bottom:10px'><span class='badge gold'>Dropdown</span><input data-p='items." + i + ".label' value='" + esc(it.label) + "' style='margin:0;max-width:220px'><span style='margin-left:auto;display:flex;gap:4px'><button class='btn sm' data-mv='items." + i + "|-1'>↑</button><button class='btn sm' data-mv='items." + i + "|1'>↓</button></span></div>" +
+            return "<div style='border:1px solid var(--line, #e7e5e4);border-radius:12px;padding:12px;margin-bottom:8px'><div style='display:flex;gap:8px;align-items:center;margin-bottom:10px'><span class='badge gold'>Dropdown</span><input data-p='items." + i + ".label' value='" + esc(it.label) + "' style='margin:0;max-width:220px'><span style='margin-left:auto;display:flex;gap:4px'><button class='btn sm' data-mv='items." + i + "|-1'>↑</button><button class='btn sm' data-mv='items." + i + "|1'>↓</button></span></div>" +
               "<div style='display:grid;grid-template-columns:repeat(auto-fill,minmax(420px,1fr));gap:10px'>" + it.cols.map(function (c, ci) {
                 var base = "items." + i + ".cols." + ci;
                 return "<div style='background:var(--bg);border-radius:10px;padding:10px'><small class='muted'>Column " + (ci + 1) + " heading</small><div style='display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:4px 0 8px'><input data-p='" + base + ".title' value='" + esc(c.title) + "' style='margin:0;font-weight:600'><input data-p='" + base + ".href' list='mn-pages' value='" + esc(c.href) + "' style='margin:0'></div>" +
@@ -297,7 +297,7 @@
       api("global_replace", args(true)).then(function (r) {
         if (!r.ok) return toast(r.error, true);
         last = JSON.stringify(args(false)); $("#fr-go").disabled = !r.total;
-        $("#fr-out").innerHTML = r.total ? "<p><b>" + r.total + " matches</b> on <b>" + r.pages.length + " pages</b>.</p><div style='max-height:260px;overflow:auto;border:1px solid var(--line);border-radius:10px'><table class='tbl'><tbody>" + r.pages.map(function (p) { return "<tr><td>/" + esc(p.path.replace(/index\.html$/, "")) + "</td><td style='text-align:right'><span class='badge'>" + p.count + "</span></td></tr>"; }).join("") + "</tbody></table></div>" : "<p class='muted'>No matches in the chosen areas.</p>";
+        $("#fr-out").innerHTML = r.total ? "<p><b>" + r.total + " matches</b> on <b>" + r.pages.length + " pages</b>.</p><div style='max-height:260px;overflow:auto;border:1px solid var(--line, #e7e5e4);border-radius:10px'><table class='tbl'><tbody>" + r.pages.map(function (p) { return "<tr><td>/" + esc(p.path.replace(/index\.html$/, "")) + "</td><td style='text-align:right'><span class='badge'>" + p.count + "</span></td></tr>"; }).join("") + "</tbody></table></div>" : "<p class='muted'>No matches in the chosen areas.</p>";
       });
     };
     $("#fr-go").onclick = function () {

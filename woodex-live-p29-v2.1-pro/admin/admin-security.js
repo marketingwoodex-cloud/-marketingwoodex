@@ -12,19 +12,19 @@
 
       '<!-- Metrics Grid -->' +
       '<div style="display:grid;grid-template-columns:repeat(4, 1fr);gap:16px;margin-bottom:20px">' +
-        '<div class="card" style="background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px">' +
+        '<div class="card" style="background:var(--card, #ffffff);border:1px solid var(--line, #e7e5e4);border-radius:12px;padding:16px">' +
           '<small class="muted">2-Factor Authentication</small>' +
           '<div style="display:flex;align-items:center;gap:8px;margin-top:6px"><span class="badge ok">TOTP Enforced</span><b style="color:var(--txt)">Active</b></div>' +
         '</div>' +
-        '<div class="card" style="background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px">' +
+        '<div class="card" style="background:var(--card, #ffffff);border:1px solid var(--line, #e7e5e4);border-radius:12px;padding:16px">' +
           '<small class="muted">Active Sessions</small>' +
           '<b style="font-size:20px;color:var(--pri-ink);margin-top:4px;display:block">1 Connected Device</b>' +
         '</div>' +
-        '<div class="card" style="background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px">' +
+        '<div class="card" style="background:var(--card, #ffffff);border:1px solid var(--line, #e7e5e4);border-radius:12px;padding:16px">' +
           '<small class="muted">Pending Approvals</small>' +
-          '<b style="font-size:20px;color:var(--ok);margin-top:4px;display:block">0 Waiting</b>' +
+          '<b style="font-size:20px;color:var(--ok, #16a34a);margin-top:4px;display:block">0 Waiting</b>' +
         '</div>' +
-        '<div class="card" style="background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px">' +
+        '<div class="card" style="background:var(--card, #ffffff);border:1px solid var(--line, #e7e5e4);border-radius:12px;padding:16px">' +
           '<small class="muted">CSRF / HMAC Protection</small>' +
           '<b style="font-size:20px;color:var(--pri-ink);margin-top:4px;display:block">Strict (SHA-256)</b>' +
         '</div>' +
@@ -34,8 +34,8 @@
         '<!-- Left Column: 2FA & Active Sessions -->' +
         '<div style="display:flex;flex-direction:column;gap:20px">' +
           '<!-- 2FA Card -->' +
-          '<div class="card" style="background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px">' +
-            '<div class="card-h" style="padding:0 0 14px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between">' +
+          '<div class="card" style="background:var(--card, #ffffff);border:1px solid var(--line, #e7e5e4);border-radius:14px;padding:22px">' +
+            '<div class="card-h" style="padding:0 0 14px;border-bottom:1px solid var(--line, #e7e5e4);display:flex;align-items:center;justify-content:space-between">' +
               '<div>' +
                 '<h3 style="font-size:16px;color:var(--txt);margin:0 0 4px">' + ic("shield-check") + ' Two-Step Verification (2FA)</h3>' +
                 '<small class="muted">Protect your Master Admin account with an authenticator app (Google Authenticator, 1Password, Authy).</small>' +
@@ -52,16 +52,16 @@
           '</div>' +
 
           '<!-- Active Sessions Card -->' +
-          '<div class="card" style="background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px">' +
-            '<div class="card-h" style="padding:0 0 14px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between">' +
+          '<div class="card" style="background:var(--card, #ffffff);border:1px solid var(--line, #e7e5e4);border-radius:14px;padding:22px">' +
+            '<div class="card-h" style="padding:0 0 14px;border-bottom:1px solid var(--line, #e7e5e4);display:flex;align-items:center;justify-content:space-between">' +
               '<div>' +
                 '<h3 style="font-size:16px;color:var(--txt);margin:0 0 4px">' + ic("monitor") + ' Active Sessions & Connected Devices</h3>' +
                 '<small class="muted">Devices currently logged into Woodex Admin with your token.</small>' +
               '</div>' +
-              '<button class="btn sm" id="sec-revoke-all" style="color:var(--bad)">' + ic("log-out") + 'Revoke others</button>' +
+              '<button class="btn sm" id="sec-revoke-all" style="color:var(--bad, #d92d20)">' + ic("log-out") + 'Revoke others</button>' +
             '</div>' +
             '<div style="margin-top:16px;display:flex;flex-direction:column;gap:12px">' +
-              '<div style="background:var(--card-sub);border:1px solid var(--line);border-radius:10px;padding:14px;display:flex;align-items:center;justify-content:space-between">' +
+              '<div style="background:var(--card-sub, #f5f5f4);border:1px solid var(--line, #e7e5e4);border-radius:10px;padding:14px;display:flex;align-items:center;justify-content:space-between">' +
                 '<div style="display:flex;align-items:center;gap:12px">' +
                   '<span style="width:36px;height:36px;border-radius:8px;background:var(--pri);color:var(--pri-fg);display:grid;place-items:center;font-weight:700">' + ic("monitor") + '</span>' +
                   '<div>' +
@@ -75,15 +75,15 @@
           '</div>' +
 
           '<!-- Pending Approvals Queue -->' +
-          '<div class="card" style="background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px">' +
-            '<div class="card-h" style="padding:0 0 14px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between">' +
+          '<div class="card" style="background:var(--card, #ffffff);border:1px solid var(--line, #e7e5e4);border-radius:14px;padding:22px">' +
+            '<div class="card-h" style="padding:0 0 14px;border-bottom:1px solid var(--line, #e7e5e4);display:flex;align-items:center;justify-content:space-between">' +
               '<div>' +
                 '<h3 style="font-size:16px;color:var(--txt);margin:0 0 4px">' + ic("check-circle") + ' Pending Staff Approvals</h3>' +
                 '<small class="muted">Changes submitted by Managers or Sales reps requiring Master approval.</small>' +
               '</div>' +
               '<span class="badge navy">0 Queue</span>' +
             '</div>' +
-            '<div style="margin-top:16px;padding:20px;text-align:center;background:var(--card-sub);border:1px solid var(--line);border-radius:10px">' +
+            '<div style="margin-top:16px;padding:20px;text-align:center;background:var(--card-sub, #f5f5f4);border:1px solid var(--line, #e7e5e4);border-radius:10px">' +
               '<p class="muted" style="margin:0;font-size:13.5px">No pending changes in the approval queue. All staff edits are up to date. 🎉</p>' +
             '</div>' +
           '</div>' +
@@ -92,38 +92,38 @@
         '<!-- Right Column: Password Rotation & Security Audit -->' +
         '<div style="display:flex;flex-direction:column;gap:20px">' +
           '<!-- Password Rotation Card -->' +
-          '<div class="card" style="background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px">' +
-            '<div class="card-h" style="padding:0 0 14px;border-bottom:1px solid var(--line)">' +
+          '<div class="card" style="background:var(--card, #ffffff);border:1px solid var(--line, #e7e5e4);border-radius:14px;padding:22px">' +
+            '<div class="card-h" style="padding:0 0 14px;border-bottom:1px solid var(--line, #e7e5e4)">' +
               '<h3 style="font-size:16px;color:var(--txt)">' + ic("lock") + ' Change Password</h3>' +
             '</div>' +
             '<form id="sec-pw-form" style="margin-top:16px;display:flex;flex-direction:column;gap:12px">' +
               '<label style="display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--txt2)">' +
                 'Current Password' +
-                '<input type="password" id="sec-pw-cur" required placeholder="Enter current password" style="background:var(--card-sub);border-color:var(--line);padding:9px 12px;border-radius:8px">' +
+                '<input type="password" id="sec-pw-cur" required placeholder="Enter current password" style="background:var(--card-sub, #f5f5f4);border-color:var(--line, #e7e5e4);padding:9px 12px;border-radius:8px">' +
               '</label>' +
               '<label style="display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--txt2)">' +
                 'New Password (8+ characters)' +
-                '<input type="password" id="sec-pw-new" minlength="8" required placeholder="Enter new strong password" style="background:var(--card-sub);border-color:var(--line);padding:9px 12px;border-radius:8px">' +
+                '<input type="password" id="sec-pw-new" minlength="8" required placeholder="Enter new strong password" style="background:var(--card-sub, #f5f5f4);border-color:var(--line, #e7e5e4);padding:9px 12px;border-radius:8px">' +
               '</label>' +
               '<label style="display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--txt2)">' +
                 'Confirm New Password' +
-                '<input type="password" id="sec-pw-new2" minlength="8" required placeholder="Repeat new password" style="background:var(--card-sub);border-color:var(--line);padding:9px 12px;border-radius:8px">' +
+                '<input type="password" id="sec-pw-new2" minlength="8" required placeholder="Repeat new password" style="background:var(--card-sub, #f5f5f4);border-color:var(--line, #e7e5e4);padding:9px 12px;border-radius:8px">' +
               '</label>' +
-              '<p class="err" id="sec-pw-err" style="margin:0;font-size:12.5px;color:var(--bad)"></p>' +
+              '<p class="err" id="sec-pw-err" style="margin:0;font-size:12.5px;color:var(--bad, #d92d20)"></p>' +
               '<button type="submit" class="btn pri btn-preline-cyan" style="margin-top:6px">' + ic("key") + 'Update Password</button>' +
             '</form>' +
           '</div>' +
 
           '<!-- Audit Policy Card -->' +
-          '<div class="card" style="background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px">' +
-            '<div class="card-h" style="padding:0 0 14px;border-bottom:1px solid var(--line)">' +
+          '<div class="card" style="background:var(--card, #ffffff);border:1px solid var(--line, #e7e5e4);border-radius:14px;padding:22px">' +
+            '<div class="card-h" style="padding:0 0 14px;border-bottom:1px solid var(--line, #e7e5e4)">' +
               '<h3 style="font-size:16px;color:var(--txt)">' + ic("file-text") + ' Security Policy</h3>' +
             '</div>' +
             '<div style="display:flex;flex-direction:column;gap:10px;margin-top:14px;font-size:12.5px;color:var(--mut)">' +
               '<div style="display:flex;justify-content:space-between"><span>Session Lifetime</span><b style="color:var(--txt2)">4 Hours</b></div>' +
               '<div style="display:flex;justify-content:space-between"><span>Password Hash</span><b style="color:var(--txt2)">Bcrypt / Scrypt</b></div>' +
               '<div style="display:flex;justify-content:space-between"><span>Failed Login Lockout</span><b style="color:var(--txt2)">5 Attempts (15m)</b></div>' +
-              '<div style="display:flex;justify-content:space-between"><span>HMAC Secret Signatures</span><b style="color:var(--ok)">Verified ✓</b></div>' +
+              '<div style="display:flex;justify-content:space-between"><span>HMAC Secret Signatures</span><b style="color:var(--ok, #16a34a)">Verified ✓</b></div>' +
             '</div>' +
           '</div>' +
         '</div>' +
@@ -138,7 +138,7 @@
         '<div style="padding:10px">' +
           '<h2 style="font-size:18px;margin:0 0 8px;color:var(--txt)">' + ic("key") + ' 2FA Emergency Recovery Codes</h2>' +
           '<p class="muted" style="font-size:13px;margin:0 0 16px">Keep these 8 one-time codes safe. Each code can be used once to access the admin if your phone is lost.</p>' +
-          '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;background:var(--card-sub);padding:16px;border-radius:10px;font-family:monospace;font-size:14px;color:var(--pri-ink);border:1px solid var(--line)">' +
+          '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;background:var(--card-sub, #f5f5f4);padding:16px;border-radius:10px;font-family:monospace;font-size:14px;color:var(--pri-ink);border:1px solid var(--line, #e7e5e4)">' +
             codes.map(function (c) { return '<div>' + c + '</div>'; }).join("") +
           '</div>' +
           '<div style="margin-top:20px;display:flex;justify-content:flex-end;gap:10px">' +
@@ -160,8 +160,8 @@
         '<div style="padding:10px;text-align:center">' +
           '<h2 style="font-size:18px;margin:0 0 8px;color:var(--txt)">' + ic("qr-code") + ' Authenticator Configuration</h2>' +
           '<p class="muted" style="font-size:13px;margin:0 0 16px">Scan this QR code in Google Authenticator or 1Password</p>' +
-          '<div style="background:#fff;padding:16px;border-radius:12px;display:inline-block;margin-bottom:14px">' +
-            '<img src="/assets/img/qr-placeholder.png" alt="2FA QR" style="width:160px;height:160px;display:block" onerror="this.outerHTML=\'<div style=\\\'width:160px;height:160px;background:var(--card);color:var(--pri-ink);display:grid;place-items:center;font-weight:700\\\'>2FA TOTP ACTIVE</div>\'">' +
+          '<div style="background:var(--card, #ffffff);padding:16px;border-radius:12px;display:inline-block;margin-bottom:14px">' +
+            '<img src="/assets/img/qr-placeholder.png" alt="2FA QR" style="width:160px;height:160px;display:block" onerror="this.outerHTML=\'<div style=\\\'width:160px;height:160px;background:var(--card, #ffffff);color:var(--pri-ink);display:grid;place-items:center;font-weight:700\\\'>2FA TOTP ACTIVE</div>\'">' +
           '</div>' +
           '<div style="font-family:monospace;font-size:13px;color:var(--mut);margin-bottom:16px">Secret: <b>JBSWY3DPEHPK3PXP</b></div>' +
           '<button class="btn pri btn-preline-cyan" id="sec-qr-close">Done</button>' +

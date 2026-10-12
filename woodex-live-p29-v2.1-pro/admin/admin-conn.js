@@ -11,7 +11,7 @@
       '<button class="btn pri btn-preline-cyan" id="mcp-copy-cfg">' + ic("copy") + 'Copy Claude Desktop Config</button>') +
 
       '<!-- MCP Server Status Banner -->' +
-      '<div class="card" style="background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px;margin-bottom:20px">' +
+      '<div class="card" style="background:var(--card, #ffffff);border:1px solid var(--line, #e7e5e4);border-radius:14px;padding:22px;margin-bottom:20px">' +
         '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px">' +
           '<div style="display:flex;align-items:center;gap:14px">' +
             '<span style="width:44px;height:44px;border-radius:12px;background:var(--pri);color:var(--pri-fg);font-weight:800;display:grid;place-items:center;font-size:16px">MCP</span>' +
@@ -34,12 +34,12 @@
       '<div style="display:grid;grid-template-columns:1.2fr 1fr;gap:20px">' +
         '<!-- Left: Tool Manifest & Endpoints -->' +
         '<div style="display:flex;flex-direction:column;gap:20px">' +
-          '<div class="card" style="background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px">' +
-            '<div class="card-h" style="padding:0 0 14px;border-bottom:1px solid var(--line)">' +
+          '<div class="card" style="background:var(--card, #ffffff);border:1px solid var(--line, #e7e5e4);border-radius:14px;padding:22px">' +
+            '<div class="card-h" style="padding:0 0 14px;border-bottom:1px solid var(--line, #e7e5e4)">' +
               '<h3 style="font-size:16px;color:var(--txt)">' + ic("wrench") + ' Exposed Agent Tool Capabilities</h3>' +
             '</div>' +
             '<div style="display:flex;flex-direction:column;gap:12px;margin-top:16px">' +
-              '<div style="background:var(--card-sub);border:1px solid var(--line);border-radius:10px;padding:14px">' +
+              '<div style="background:var(--card-sub, #f5f5f4);border:1px solid var(--line, #e7e5e4);border-radius:10px;padding:14px">' +
                 '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">' +
                   '<code style="color:var(--pri-ink);font-weight:700;font-size:13px">get_leads(status, limit)</code>' +
                   '<span class="badge ok">Read</span>' +
@@ -47,7 +47,7 @@
                 '<small class="muted">Queries active CRM leads, quotes, customer stages, and contact WhatsApp numbers.</small>' +
               '</div>' +
 
-              '<div style="background:var(--card-sub);border:1px solid var(--line);border-radius:10px;padding:14px">' +
+              '<div style="background:var(--card-sub, #f5f5f4);border:1px solid var(--line, #e7e5e4);border-radius:10px;padding:14px">' +
                 '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">' +
                   '<code style="color:var(--pri-ink);font-weight:700;font-size:13px">create_quote(client, items, terms)</code>' +
                   '<span class="badge gold">Write</span>' +
@@ -55,7 +55,7 @@
                 '<small class="muted">Drafts customized residential/commercial BOQ quotations with PKR line item calculations.</small>' +
               '</div>' +
 
-              '<div style="background:var(--card-sub);border:1px solid var(--line);border-radius:10px;padding:14px">' +
+              '<div style="background:var(--card-sub, #f5f5f4);border:1px solid var(--line, #e7e5e4);border-radius:10px;padding:14px">' +
                 '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">' +
                   '<code style="color:var(--pri-ink);font-weight:700;font-size:13px">update_page_seo(page, title, desc)</code>' +
                   '<span class="badge gold">Write</span>' +
@@ -63,7 +63,7 @@
                 '<small class="muted">Updates meta tags, focus keyphrases, and OpenGraph descriptors on public pages.</small>' +
               '</div>' +
 
-              '<div style="background:var(--card-sub);border:1px solid var(--line);border-radius:10px;padding:14px">' +
+              '<div style="background:var(--card-sub, #f5f5f4);border:1px solid var(--line, #e7e5e4);border-radius:10px;padding:14px">' +
                 '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">' +
                   '<code style="color:var(--pri-ink);font-weight:700;font-size:13px">send_whatsapp_update(phone, text)</code>' +
                   '<span class="badge gold">Write</span>' +
@@ -76,13 +76,13 @@
 
         '<!-- Right: Client Config Snippets -->' +
         '<div style="display:flex;flex-direction:column;gap:20px">' +
-          '<div class="card" style="background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px">' +
-            '<div class="card-h" style="padding:0 0 14px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between">' +
+          '<div class="card" style="background:var(--card, #ffffff);border:1px solid var(--line, #e7e5e4);border-radius:14px;padding:22px">' +
+            '<div class="card-h" style="padding:0 0 14px;border-bottom:1px solid var(--line, #e7e5e4);display:flex;align-items:center;justify-content:space-between">' +
               '<h3 style="font-size:16px;color:var(--txt)">' + ic("code") + ' Claude Desktop / Cursor Config</h3>' +
               '<button class="btn sm" id="mcp-copy-raw">' + ic("copy") + 'Copy</button>' +
             '</div>' +
             '<div style="margin-top:14px">' +
-              '<pre style="background:var(--code-bg);border:1px solid var(--line);border-radius:10px;padding:14px;color:var(--code-fg);font-family:monospace;font-size:12px;overflow-x:auto;line-height:1.5">' +
+              '<pre style="background:var(--code-bg);border:1px solid var(--line, #e7e5e4);border-radius:10px;padding:14px;color:var(--code-fg);font-family:monospace;font-size:12px;overflow-x:auto;line-height:1.5">' +
 esc(JSON.stringify({
   "mcpServers": {
     "woodex-admin": {
@@ -100,14 +100,14 @@ esc(JSON.stringify({
             '</div>' +
           '</div>' +
 
-          '<div class="card" style="background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px">' +
-            '<div class="card-h" style="padding:0 0 14px;border-bottom:1px solid var(--line)">' +
+          '<div class="card" style="background:var(--card, #ffffff);border:1px solid var(--line, #e7e5e4);border-radius:14px;padding:22px">' +
+            '<div class="card-h" style="padding:0 0 14px;border-bottom:1px solid var(--line, #e7e5e4)">' +
               '<h3 style="font-size:16px;color:var(--txt)">' + ic("terminal") + ' HTTP SSE / Stdio Endpoint</h3>' +
             '</div>' +
             '<div style="margin-top:14px;display:flex;flex-direction:column;gap:10px;font-size:13px">' +
               '<div style="display:flex;justify-content:space-between"><span>Protocol</span><b style="color:var(--pri-ink)">JSON-RPC 2.0</b></div>' +
               '<div style="display:flex;justify-content:space-between"><span>Endpoint</span><b style="color:var(--txt2)">/api/mcp.php</b></div>' +
-              '<div style="display:flex;justify-content:space-between"><span>Authentication</span><b style="color:var(--ok)">Header: X-WX-ADM</b></div>' +
+              '<div style="display:flex;justify-content:space-between"><span>Authentication</span><b style="color:var(--ok, #16a34a)">Header: X-WX-ADM</b></div>' +
             '</div>' +
           '</div>' +
         '</div>' +

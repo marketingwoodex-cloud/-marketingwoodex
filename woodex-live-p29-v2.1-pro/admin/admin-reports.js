@@ -42,7 +42,7 @@
         "<div style='height:240px;margin:16px 0'><canvas id='mr-ch'></canvas></div>" +
         "<div class='tbl-wrap'><table class='tbl'><thead><tr><th>Month</th>" + cols.map(function (c) { return "<th class='r'>" + c[1] + "</th>"; }).join("") + "</tr></thead><tbody>" +
         keys.slice().reverse().map(function (k) { return "<tr><td><b>" + mname(k) + "</b></td>" + cols.map(function (c) { var v = M[k][c[0]]; return "<td class='r'>" + (c[2] ? (v ? pkr(v) : "—") : (v || "—")) + "</td>"; }).join("") + "</tr>"; }).join("") +
-        "<tr style='font-weight:700;border-top:2px solid var(--line)'><td>Total</td>" + cols.map(function (c) { return "<td class='r'>" + (c[2] ? pkr(tot[c[0]]) : tot[c[0]]) + "</td>"; }).join("") + "</tr></tbody></table></div>" +
+        "<tr style='font-weight:700;border-top:2px solid var(--line, #e7e5e4)'><td>Total</td>" + cols.map(function (c) { return "<td class='r'>" + (c[2] ? pkr(tot[c[0]]) : tot[c[0]]) + "</td>"; }).join("") + "</tr></tbody></table></div>" +
         "<p class='hint'>Conversion: " + (tot.enq ? Math.round(tot.won / tot.enq * 100) : 0) + "% of enquiries won · " + (tot.quotes ? Math.round(tot.approved / tot.quotes * 100) : 0) + "% of quotes approved.</p>";
       W.fillIcons($("#modal-card"));
       $("#mr-x").onclick = function () { $("#modal-card").classList.remove("wide"); closeModal(); if (window.WXPalette) window.WXPalette.unregister("reports"); };

@@ -10,19 +10,19 @@
   var css = document.createElement("style");
   css.textContent =
     ".ac{display:grid;grid-template-columns:220px minmax(0,1fr);gap:22px;align-items:start}@media(max-width:900px){.ac{grid-template-columns:1fr}.ac-nav{position:static!important;display:flex;overflow:auto}}" +
-    ".ac-nav{position:sticky;top:84px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:8px}.ac-nav small{display:block;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--mut);padding:10px 10px 4px}" +
-    ".ac-nav a{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:9px;font-size:13.5px;color:var(--txt2);text-decoration:none;white-space:nowrap}.ac-nav a:hover{background:var(--bg)}.ac-nav a.on{background:#0c1628;color:#fff}.ac-nav a.on svg{color:#b8956a}.ac-nav a svg{width:17px;height:17px}" +
-    ".ac-sec{display:none}.ac-sec.on{display:block}.ac h2.ac-t{font-size:22px;margin:0 0 4px}.ac .ac-sub{color:var(--mut);font-size:13.5px;margin:0 0 18px;padding-bottom:16px;border-bottom:1px solid var(--line)}" +
+    ".ac-nav{position:sticky;top:84px;background:var(--card, #ffffff);border:1px solid var(--line, #e7e5e4);border-radius:14px;padding:8px}.ac-nav small{display:block;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--mut);padding:10px 10px 4px}" +
+    ".ac-nav a{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:9px;font-size:13.5px;color:var(--txt2);text-decoration:none;white-space:nowrap}.ac-nav a:hover{background:var(--bg)}.ac-nav a.on{background:var(--foreground, #1c1917);color:var(--card, #ffffff)}.ac-nav a.on svg{color:var(--primary, #2563eb)}.ac-nav a svg{width:17px;height:17px}" +
+    ".ac-sec{display:none}.ac-sec.on{display:block}.ac h2.ac-t{font-size:22px;margin:0 0 4px}.ac .ac-sub{color:var(--mut);font-size:13.5px;margin:0 0 18px;padding-bottom:16px;border-bottom:1px solid var(--line, #e7e5e4)}" +
     ".ac-lab{font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--mut);font-weight:600;margin:20px 0 8px}" +
-    ".ac-card{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden}.ac-row{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:16px 20px;border-top:1px solid var(--line)}.ac-row:first-child{border-top:0}" +
+    ".ac-card{background:var(--card, #ffffff);border:1px solid var(--line, #e7e5e4);border-radius:14px;overflow:hidden}.ac-row{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:16px 20px;border-top:1px solid var(--line, #e7e5e4)}.ac-row:first-child{border-top:0}" +
     ".ac-row b{font-size:14px;font-weight:600}.ac-row p{margin:2px 0 0;font-size:12.5px;color:var(--mut)}.ac-pad{padding:18px 20px}.ac-pad label{margin-top:0}" +
-    ".ac-seg{display:inline-flex;background:var(--bg,#f2f4f7);border-radius:10px;padding:4px;gap:2px;flex:none}.ac-seg button{border:0;background:transparent;padding:7px 14px;border-radius:7px;font:inherit;font-size:13px;color:var(--txt2);cursor:pointer}.ac-seg button.on{background:var(--card);color:var(--txt,#101828);font-weight:600;box-shadow:0 1px 3px rgba(16,24,40,.12)}" +
-    ".ac-rng{display:flex;align-items:center;gap:12px;flex:none}.ac-rng input{width:190px;accent-color:#0c1628}.ac-rng span{width:40px;text-align:right;font-size:13px;font-weight:600}" +
+    ".ac-seg{display:inline-flex;background:var(--bg,var(--card-sub, #f5f5f4));border-radius:10px;padding:4px;gap:2px;flex:none}.ac-seg button{border:0;background:transparent;padding:7px 14px;border-radius:7px;font:inherit;font-size:13px;color:var(--txt2);cursor:pointer}.ac-seg button.on{background:var(--card, #ffffff);color:var(--txt,var(--foreground, #1c1917));font-weight:600;box-shadow:0 1px 3px rgba(16,24,40,.12)}" +
+    ".ac-rng{display:flex;align-items:center;gap:12px;flex:none}.ac-rng input{width:190px;accent-color:var(--foreground, #1c1917)}.ac-rng span{width:40px;text-align:right;font-size:13px;font-weight:600}" +
     ".ac-2{display:grid;grid-template-columns:1fr 1fr;gap:14px}@media(max-width:700px){.ac-2{grid-template-columns:1fr}}" +
     ".ac-ch{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}@media(max-width:1000px){.ac-ch{grid-template-columns:1fr}}" +
-    ".ac-h{display:flex;gap:12px;align-items:flex-start;padding:13px 20px;border-top:1px solid var(--line)}.ac-h:first-child{border-top:0}.ac-h i{flex:none;width:10px;height:10px;border-radius:50%;margin-top:5px}.ac-h div{flex:1}.ac-h p{margin:2px 0 0;font-size:12.5px;color:var(--mut)}" +
+    ".ac-h{display:flex;gap:12px;align-items:flex-start;padding:13px 20px;border-top:1px solid var(--line, #e7e5e4)}.ac-h:first-child{border-top:0}.ac-h i{flex:none;width:10px;height:10px;border-radius:50%;margin-top:5px}.ac-h div{flex:1}.ac-h p{margin:2px 0 0;font-size:12.5px;color:var(--mut)}" +
     ".ac-bar{position:sticky;bottom:0;display:flex;justify-content:flex-end;gap:10px;padding:14px 0;background:linear-gradient(transparent,var(--bg) 40%);margin-top:16px}" +
-    ".ac-chat{border:1px solid var(--line);border-radius:12px;padding:12px;height:260px;overflow:auto;background:var(--bg);display:flex;flex-direction:column;gap:8px}.ac-chat div{max-width:85%;padding:8px 11px;border-radius:12px;font-size:13.5px;line-height:1.45;white-space:pre-wrap}.ac-chat .u{align-self:flex-end;background:#0c1628;color:#fff}.ac-chat .a{background:var(--card);border:1px solid var(--line)}";
+    ".ac-chat{border:1px solid var(--line, #e7e5e4);border-radius:12px;padding:12px;height:260px;overflow:auto;background:var(--bg);display:flex;flex-direction:column;gap:8px}.ac-chat div{max-width:85%;padding:8px 11px;border-radius:12px;font-size:13.5px;line-height:1.45;white-space:pre-wrap}.ac-chat .u{align-self:flex-end;background:var(--foreground, #1c1917);color:var(--card, #ffffff)}.ac-chat .a{background:var(--card, #ffffff);border:1px solid var(--line, #e7e5e4)}";
   document.head.appendChild(css);
 
   var SECS = [["", "Assistant"], ["behaviour", "Behaviour", "sparkles"], ["persona", "Persona & instructions", "user"], ["channels", "Channels", "message-circle"], ["test", "Test the assistant", "send"], ["", "System"], ["health", "Health check", "heart-pulse"]];
@@ -80,7 +80,7 @@
       '<section class="ac-sec" data-sec="channels"><h2 class="ac-t">Channels</h2><p class="ac-sub">One assistant, three channels. Turn AI on or off per channel and add channel-only notes. Messages still reach the Inbox when AI is off.</p><div class="ac-ch">' +
         Object.keys(D.channels).map(function (k) {
           var c = a.chan[k], icn = { web: "message-circle", wa: "send", tg: "send" }[k];
-          return '<div class="ac-card" data-ch="' + k + '"><div class="ac-row"><div style="display:flex;gap:10px;align-items:center">' + ic(icn) + "<b>" + esc(D.channels[k]) + "</b></div>" + sw("ac-ch-" + k, c.on) + '</div><div class="ac-pad" style="border-top:1px solid var(--line)">' +
+          return '<div class="ac-card" data-ch="' + k + '"><div class="ac-row"><div style="display:flex;gap:10px;align-items:center">' + ic(icn) + "<b>" + esc(D.channels[k]) + "</b></div>" + sw("ac-ch-" + k, c.on) + '</div><div class="ac-pad" style="border-top:1px solid var(--line, #e7e5e4)">' +
             '<label>Tone on this channel<select data-cs><option value="">Same as default</option>' + ST.map(function (o) { return '<option value="' + o[0] + '"' + (o[0] === c.style ? " selected" : "") + ">" + o[1] + "</option>"; }).join("") + "</select></label>" +
             '<label style="margin-top:10px">Note for this channel<textarea data-cn rows="3" maxlength="600" placeholder="' + ({ web: "e.g. Ask for their WhatsApp number early.", wa: "e.g. Use *bold* for key words, one emoji at most.", tg: "e.g. Keep it short; Telegram users want quick answers." })[k] + '">' + esc(c.note) + "</textarea></label></div></div>";
         }).join("") +
@@ -117,7 +117,7 @@
     var sb = $("#ac-sb"); if (sb) sb.style.display = k === "test" || k === "health" ? "none" : "";
   }
   function health() {
-    var C = { ok: "#12b76a", warn: "#f79009", bad: "#f04438", off: "#98a2b3" };
+    var C = { ok: "var(--ok, #16a34a)", warn: "var(--warn, #f79009)", bad: "var(--bad, #d92d20)", off: "var(--muted-foreground-1, #57534e)" };
     $("#ac-hl").innerHTML = D.health.map(function (h) { return '<div class="ac-h"><i style="background:' + C[h.st] + '"></i><div><b style="font-size:14px">' + esc(h.label) + "</b><p>" + esc(h.msg) + "</p></div>" + (h.link && h.st !== "ok" ? '<a class="btn sm" href="' + h.link + '">Fix</a>' : "") + "</div>"; }).join("");
   }
   function val(id) { var g = $('[data-seg="' + id + '"] .on'); return g ? g.dataset.v : ""; }

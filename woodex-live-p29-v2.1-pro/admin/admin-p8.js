@@ -5,8 +5,8 @@
   var api = W.api, esc = W.esc, ic = W.ic, $ = W.$, $$ = W.$$, toast = W.toast, S = W.S;
 
   var css = document.createElement("style");
-  css.textContent = ".g-or{display:flex;align-items:center;gap:10px;margin:14px 0 12px;color:var(--mut);font-size:12px}.g-or:before,.g-or:after{content:'';flex:1;height:1px;background:var(--line,#e5e7eb)}" +
-    "#g-btn{display:flex;justify-content:center;min-height:44px}.p8-code{font-family:ui-monospace,Menlo,monospace;font-size:12.5px;background:var(--bg);border:1px solid var(--line,#e5e7eb);border-radius:8px;padding:10px 12px;word-break:break-all;display:block;white-space:pre-wrap}" +
+  css.textContent = ".g-or{display:flex;align-items:center;gap:10px;margin:14px 0 12px;color:var(--mut);font-size:12px}.g-or:before,.g-or:after{content:'';flex:1;height:1px;background:var(--line,var(--line, #e7e5e4))}" +
+    "#g-btn{display:flex;justify-content:center;min-height:44px}.p8-code{font-family:ui-monospace,Menlo,monospace;font-size:12.5px;background:var(--bg);border:1px solid var(--line,var(--line, #e7e5e4));border-radius:8px;padding:10px 12px;word-break:break-all;display:block;white-space:pre-wrap}" +
     ".p8-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px}.p8-kpis div{background:var(--bg);border-radius:10px;padding:12px}.p8-kpis b{display:block;font-size:22px}.p8-kpis small{color:var(--mut)}" +
     ".p8-bars{display:flex;align-items:flex-end;gap:3px;height:70px;margin:6px 0 12px}.p8-bars i{flex:1;background:#25d366;border-radius:3px 3px 0 0;min-height:2px}.p8-steps li{margin:0 0 6px}@media(max-width:700px){.p8-kpis{grid-template-columns:repeat(2,1fr)}}";
   document.head.appendChild(css);

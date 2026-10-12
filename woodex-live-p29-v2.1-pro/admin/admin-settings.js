@@ -66,12 +66,12 @@
         var dummyVal = isConn ? (i === 0 ? "wx_live_token_7709124a" : "••••••••••••••••") : "";
         return '<div style="margin-bottom:12px">' +
           '<label style="display:block;font-size:12.5px;font-weight:600;color:var(--txt);margin-bottom:4px">' + esc(f) + '</label>' +
-          '<input type="text" id="conn-f-' + i + '" value="' + esc(dummyVal) + '" placeholder="Enter ' + esc(f) + '" style="width:100%;background:var(--card-sub);border:1px solid var(--line);border-radius:8px;padding:9px 12px;color:var(--txt);font-size:13px">' +
+          '<input type="text" id="conn-f-' + i + '" value="' + esc(dummyVal) + '" placeholder="Enter ' + esc(f) + '" style="width:100%;background:var(--card-sub, #f5f5f4);border:1px solid var(--line, #e7e5e4);border-radius:8px;padding:9px 12px;color:var(--txt);font-size:13px">' +
         '</div>';
       }).join("");
 
       var h = '<div style="padding:4px">' +
-        '<div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;border-bottom:1px solid var(--line);padding-bottom:14px">' +
+        '<div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;border-bottom:1px solid var(--line, #e7e5e4);padding-bottom:14px">' +
           '<span style="width:44px;height:44px;border-radius:10px;background:' + app.color + ';color:' + tileInk(app.color) + ';font-weight:700;font-size:16px;display:grid;place-items:center">' + app.tag + '</span>' +
           '<div>' +
             '<h2 style="margin:0;font-size:17px;color:var(--txt)">' + esc(app.name) + ' Integration</h2>' +
@@ -81,12 +81,12 @@
         '<p class="muted" style="font-size:13px;margin:0 0 16px">' + esc(app.desc) + '</p>' +
         '<form id="conn-modal-form">' +
           fHtml +
-          '<div style="background:var(--card-sub);border:1px solid var(--line);border-radius:10px;padding:12px;margin:16px 0">' +
+          '<div style="background:var(--card-sub, #f5f5f4);border:1px solid var(--line, #e7e5e4);border-radius:10px;padding:12px;margin:16px 0">' +
             '<label class="check" style="color:var(--txt2);font-size:12.5px;margin:0"><input type="checkbox" checked style="accent-color:var(--pri)"> <b>24/7 Real-Time Webhook Synchronization Active</b></label>' +
           '</div>' +
           '<div id="conn-ping-res" style="display:none;padding:10px;border-radius:8px;background:#052e16;border:1px solid #166534;color:#4ade80;font-size:12.5px;margin-bottom:14px">Not verified: no live health check was run. No request was sent.</div>' +
           '<div class="modal-actions" style="margin-top:20px;display:flex;gap:10px;justify-content:flex-end">' +
-            '<button type="button" class="btn" id="conn-m-ping" style="background:var(--card-sub);color:var(--pri-ink);border-color:#232836">' + ic("activity") + ' Test Ping</button>' +
+            '<button type="button" class="btn" id="conn-m-ping" style="background:var(--card-sub, #f5f5f4);color:var(--pri-ink);border-color:#232836">' + ic("activity") + ' Test Ping</button>' +
             (isConn ? '<button type="button" class="btn danger" id="conn-m-disc">' + ic("x") + ' Disconnect</button>' : '') +
             '<button type="button" class="btn" id="conn-m-cancel">Cancel</button>' +
             '<button type="submit" class="btn pri btn-preline-cyan">' + ic("check") + (isConn ? ' Save Updates' : ' Authorize & Connect') + '</button>' +
@@ -133,31 +133,31 @@
 
       cont.innerHTML =
         '<!-- Add Connector Header Card -->' +
-        '<div class="card" style="background:var(--card-sub);border:1px solid var(--line);border-radius:14px;padding:24px;margin-bottom:20px">' +
+        '<div class="card" style="background:var(--card-sub, #f5f5f4);border:1px solid var(--line, #e7e5e4);border-radius:14px;padding:24px;margin-bottom:20px">' +
           '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-bottom:18px">' +
             '<div>' +
               '<h3 style="font-size:18px;font-weight:700;color:var(--txt);margin:0 0 6px">Add connector &amp; integrations</h3>' +
               '<p class="muted" style="margin:0;font-size:13.5px">Link social, business, productivity, 360 VR, and AI marketing channels. Secure token credentials stay on your server.</p>' +
             '</div>' +
             '<div style="display:flex;align-items:center;gap:10px">' +
-              '<input type="search" id="conn-q" placeholder="Search connectors (e.g. meta, tiktok, zapier)…" style="margin:0;width:280px;background:var(--card-sub);border-color:var(--line);padding:8px 14px;border-radius:10px;font-size:13px">' +
+              '<input type="search" id="conn-q" placeholder="Search connectors (e.g. meta, tiktok, zapier)…" style="margin:0;width:280px;background:var(--card-sub, #f5f5f4);border-color:var(--line, #e7e5e4);padding:8px 14px;border-radius:10px;font-size:13px">' +
               '<button class="btn" id="conn-add-any" style="background:var(--pri);color:var(--pri-fg);font-weight:600;border:none">+ Add Custom Webhook</button>' +
             '</div>' +
           '</div>' +
 
           '<!-- Category Filter Pills -->' +
           '<div class="seg" id="conn-cats" style="border:none;background:none;gap:8px;padding:0;flex-wrap:wrap">' +
-            '<button class="' + (curCat === "all" ? "on" : "") + '" data-cat="all" style="border-radius:8px;border:1px solid var(--line)">All Channels (' + APPS.length + ')</button>' +
-            '<button class="' + (curCat === "social" ? "on" : "") + '" data-cat="social" style="border-radius:8px;border:1px solid var(--line)">Social &amp; Entertainment</button>' +
-            '<button class="' + (curCat === "business" ? "on" : "") + '" data-cat="business" style="border-radius:8px;border:1px solid var(--line)">Business &amp; Leads</button>' +
-            '<button class="' + (curCat === "productivity" ? "on" : "") + '" data-cat="productivity" style="border-radius:8px;border:1px solid var(--line)">Productivity &amp; Cloud</button>' +
+            '<button class="' + (curCat === "all" ? "on" : "") + '" data-cat="all" style="border-radius:8px;border:1px solid var(--line, #e7e5e4)">All Channels (' + APPS.length + ')</button>' +
+            '<button class="' + (curCat === "social" ? "on" : "") + '" data-cat="social" style="border-radius:8px;border:1px solid var(--line, #e7e5e4)">Social &amp; Entertainment</button>' +
+            '<button class="' + (curCat === "business" ? "on" : "") + '" data-cat="business" style="border-radius:8px;border:1px solid var(--line, #e7e5e4)">Business &amp; Leads</button>' +
+            '<button class="' + (curCat === "productivity" ? "on" : "") + '" data-cat="productivity" style="border-radius:8px;border:1px solid var(--line, #e7e5e4)">Productivity &amp; Cloud</button>' +
           '</div>' +
 
           '<!-- App Grid -->' +
           '<div id="conn-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(430px,100%),1fr));gap:16px;margin-top:20px"></div>' +
 
           '<!-- Bottom Status Bar -->' +
-          '<div style="display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--line);padding-top:18px;margin-top:20px">' +
+          '<div style="display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--line, #e7e5e4);padding-top:18px;margin-top:20px">' +
             '<div>' +
               '<b style="color:var(--txt);font-size:14px">Channel Connections</b>' +
               '<small class="muted" style="display:block;margin-top:2px" id="conn-stat-txt">' + APPS.filter(function(a){ return a.connected; }).length + ' of ' + APPS.length + ' marked connected (not verified) · no live health checks run</small>' +
@@ -171,8 +171,8 @@
         '</div>' +
 
         '<!-- Google Services & Tracking Card -->' +
-        '<div class="card" style="background:var(--card-sub);border:1px solid var(--line);border-radius:14px;padding:24px;margin-bottom:20px">' +
-          '<div class="card-h" style="padding:0 0 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between">' +
+        '<div class="card" style="background:var(--card-sub, #f5f5f4);border:1px solid var(--line, #e7e5e4);border-radius:14px;padding:24px;margin-bottom:20px">' +
+          '<div class="card-h" style="padding:0 0 16px;border-bottom:1px solid var(--line, #e7e5e4);display:flex;align-items:center;justify-content:space-between">' +
             '<div>' +
               '<h3 style="font-size:16px;color:var(--txt);margin:0 0 4px">' + ic("bar-chart-2") + ' Google Services &amp; Tracking</h3>' +
               '<small class="muted">Live telemetry and domain verification hooks</small>' +
@@ -185,22 +185,22 @@
                 '<label style="margin:0;font-weight:600;color:var(--txt);font-size:13px">Google Analytics 4 Measurement ID</label>' +
                 '<a href="https://analytics.google.com" target="_blank" rel="noopener" style="font-size:12px;color:var(--pri-ink);text-decoration:none;display:flex;align-items:center;gap:4px">' + ic("external-link") + 'Open Analytics Console</a>' +
               '</div>' +
-              '<input type="text" id="st-ga4" value="G-WX880921B" placeholder="G-XXXXXXXXXX" style="width:100%;background:var(--card-sub);border-color:var(--line);padding:9px 14px;border-radius:8px">' +
+              '<input type="text" id="st-ga4" value="G-WX880921B" placeholder="G-XXXXXXXXXX" style="width:100%;background:var(--card-sub, #f5f5f4);border-color:var(--line, #e7e5e4);padding:9px 14px;border-radius:8px">' +
             '</div>' +
             '<div>' +
               '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">' +
                 '<label style="margin:0;font-weight:600;color:var(--txt);font-size:13px">Google Search Console Verification Tag / HTML</label>' +
                 '<a href="https://search.google.com/search-console" target="_blank" rel="noopener" style="font-size:12px;color:var(--pri-ink);text-decoration:none;display:flex;align-items:center;gap:4px">' + ic("external-link") + 'Open Search Console</a>' +
               '</div>' +
-              '<input type="text" id="st-gsc" value="google-site-verification: google0b104c3cfb7a4943.html" placeholder="google-site-verification=..." style="width:100%;background:var(--card-sub);border-color:var(--line);padding:9px 14px;border-radius:8px">' +
+              '<input type="text" id="st-gsc" value="google-site-verification: google0b104c3cfb7a4943.html" placeholder="google-site-verification=..." style="width:100%;background:var(--card-sub, #f5f5f4);border-color:var(--line, #e7e5e4);padding:9px 14px;border-radius:8px">' +
               '<small class="muted" style="font-size:11.5px;margin-top:4px;display:block">Direct HTML verification file `google0b104c3cfb7a4943.html` is verified and active at root.</small>' +
             '</div>' +
           '</div>' +
         '</div>' +
 
         '<!-- 360 Panoramic VR & Virtual Tour Controls -->' +
-        '<div class="card" style="background:var(--card-sub);border:1px solid var(--line);border-radius:14px;padding:24px;margin-bottom:20px">' +
-          '<div class="card-h" style="padding:0 0 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between">' +
+        '<div class="card" style="background:var(--card-sub, #f5f5f4);border:1px solid var(--line, #e7e5e4);border-radius:14px;padding:24px;margin-bottom:20px">' +
+          '<div class="card-h" style="padding:0 0 16px;border-bottom:1px solid var(--line, #e7e5e4);display:flex;align-items:center;justify-content:space-between">' +
             '<div>' +
               '<h3 style="font-size:16px;color:var(--txt);margin:0 0 4px">' + ic("eye") + ' 360 Panoramic VR &amp; Virtual Tour Controls</h3>' +
               '<small class="muted">Interactive 360 equirectangular spherical viewer &amp; Matterport / Kuula virtual tour embeds</small>' +
@@ -232,7 +232,7 @@
         '<!-- Studio Profile & Security Columns -->' +
         '<div style="display:grid;grid-template-columns:2fr 1fr;gap:20px">' +
           '<div class="card" style="border-radius:14px;padding:20px">' +
-            '<div class="card-h" style="padding:0 0 14px;border-bottom:1px solid var(--line)"><h3>' + ic("building") + ' Studio &amp; Brand Identity</h3></div>' +
+            '<div class="card-h" style="padding:0 0 14px;border-bottom:1px solid var(--line, #e7e5e4)"><h3>' + ic("building") + ' Studio &amp; Brand Identity</h3></div>' +
             '<div class="form-grid" style="margin-top:16px;display:grid;grid-template-columns:1fr 1fr;gap:14px">' +
               '<label>Studio Name<input type="text" id="st-name" value="Woodex Interior Design Studio"></label>' +
               '<label>Tagline / Motto<input type="text" id="st-tag" value="Signature Residential &amp; Commercial Turnkey Architecture"></label>' +
@@ -245,7 +245,7 @@
           '</div>' +
 
           '<div class="card" style="border-radius:14px;padding:20px">' +
-            '<div class="card-h" style="padding:0 0 14px;border-bottom:1px solid var(--line)"><h3>' + ic("shield") + ' Security &amp; Access</h3></div>' +
+            '<div class="card-h" style="padding:0 0 14px;border-bottom:1px solid var(--line, #e7e5e4)"><h3>' + ic("shield") + ' Security &amp; Access</h3></div>' +
             '<div style="display:flex;flex-direction:column;gap:12px;margin-top:14px;font-size:12.5px;color:var(--txt2)">' +
               '<div style="display:flex;align-items:center;justify-content:space-between"><span>CSRF Protection</span><span class="badge ok">Enforced</span></div>' +
               '<div style="display:flex;align-items:center;justify-content:space-between"><span>Session Timeout</span><span>4 Hours</span></div>' +
@@ -309,7 +309,7 @@
       if (statTxt) statTxt.textContent = connCount + " of " + APPS.length + " marked connected (not verified) · no live health checks run";
 
       grid.innerHTML = list.map(function (app) {
-        return '<div class="conn-card" style="background:var(--card-sub);border:1px solid var(--line);border-radius:12px;padding:16px;display:flex;align-items:center;justify-content:space-between;gap:14px;min-width:0">' +
+        return '<div class="conn-card" style="background:var(--card-sub, #f5f5f4);border:1px solid var(--line, #e7e5e4);border-radius:12px;padding:16px;display:flex;align-items:center;justify-content:space-between;gap:14px;min-width:0">' +
           '<div style="display:flex;align-items:center;gap:12px;flex:1;min-width:0">' +
             '<span style="width:42px;height:42px;border-radius:10px;background:' + app.color + ';color:' + tileInk(app.color) + ';font-weight:700;font-size:14px;display:grid;place-items:center;flex-shrink:0">' + app.tag + '</span>' +
             '<div style="flex:1;min-width:0">' +
@@ -460,27 +460,27 @@
         '<div style="display:grid;grid-template-columns:1.1fr 1.2fr;gap:20px">' +
           '<!-- Left: Tool Manifest -->' +
           '<div class="card" style="border-radius:14px;padding:22px">' +
-            '<div class="card-h" style="padding:0 0 14px;border-bottom:1px solid var(--line)">' +
+            '<div class="card-h" style="padding:0 0 14px;border-bottom:1px solid var(--line, #e7e5e4)">' +
               '<h3 style="font-size:16px;color:var(--txt)">' + ic("wrench") + ' Exposed Agent Tool Capabilities</h3>' +
             '</div>' +
             '<div style="display:flex;flex-direction:column;gap:12px;margin-top:16px">' +
-              '<div style="background:var(--card-sub);border:1px solid var(--line);border-radius:10px;padding:14px">' +
+              '<div style="background:var(--card-sub, #f5f5f4);border:1px solid var(--line, #e7e5e4);border-radius:10px;padding:14px">' +
                 '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px"><code style="color:var(--pri-ink);font-weight:700;font-size:13px">list_leads(stage, search, limit)</code><span class="badge ok">Read</span></div>' +
                 '<small class="muted">Queries active CRM leads, quotes, customer stages, and contact WhatsApp numbers.</small>' +
               '</div>' +
-              '<div style="background:var(--card-sub);border:1px solid var(--line);border-radius:10px;padding:14px">' +
+              '<div style="background:var(--card-sub, #f5f5f4);border:1px solid var(--line, #e7e5e4);border-radius:10px;padding:14px">' +
                 '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px"><code style="color:var(--pri-ink);font-weight:700;font-size:13px">create_quote_draft(client, project, sections)</code><span class="badge gold">Write</span></div>' +
                 '<small class="muted">Drafts customized residential/commercial BOQ quotations with PKR line item calculations.</small>' +
               '</div>' +
-              '<div style="background:var(--card-sub);border:1px solid var(--line);border-radius:10px;padding:14px">' +
+              '<div style="background:var(--card-sub, #f5f5f4);border:1px solid var(--line, #e7e5e4);border-radius:10px;padding:14px">' +
                 '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px"><code style="color:var(--pri-ink);font-weight:700;font-size:13px">save_content_draft(type, title, body, faqs)</code><span class="badge gold">Write</span></div>' +
                 '<small class="muted">Creates drafts for articles, portfolio studies, and city pages with simple markdown.</small>' +
               '</div>' +
-              '<div style="background:var(--card-sub);border:1px solid var(--line);border-radius:10px;padding:14px">' +
+              '<div style="background:var(--card-sub, #f5f5f4);border:1px solid var(--line, #e7e5e4);border-radius:10px;padding:14px">' +
                 '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px"><code style="color:var(--pri-ink);font-weight:700;font-size:13px">send_telegram_alert(text, parseMode)</code><span class="badge gold">Write</span></div>' +
                 '<small class="muted">Dispatches milestone notification broadcasts through Telegram Bot @WoodexInteriorBot.</small>' +
               '</div>' +
-              '<div style="background:var(--card-sub);border:1px solid var(--line);border-radius:10px;padding:14px">' +
+              '<div style="background:var(--card-sub, #f5f5f4);border:1px solid var(--line, #e7e5e4);border-radius:10px;padding:14px">' +
                 '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px"><code style="color:var(--pri-ink);font-weight:700;font-size:13px">site_stats()</code><span class="badge ok">Read</span></div>' +
                 '<small class="muted">Returns live KPIs: total pages, monthly leads, unread count, open pipeline and payment stats.</small>' +
               '</div>' +
@@ -490,7 +490,7 @@
           '<!-- Right: Client Config Snippets with Sub-tabs -->' +
           '<div style="display:flex;flex-direction:column;gap:20px">' +
             '<div class="card" style="border-radius:14px;padding:22px">' +
-              '<div class="card-h" style="padding:0 0 14px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">' +
+              '<div class="card-h" style="padding:0 0 14px;border-bottom:1px solid var(--line, #e7e5e4);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">' +
                 '<div style="display:flex;align-items:center;gap:8px">' +
                   '<h3 style="font-size:16px;color:var(--txt)" id="mcp-client-title">' + ic("code") + ' Claude Desktop Config</h3>' +
                 '</div>' +
@@ -510,18 +510,18 @@
 
               '<div style="margin-top:14px">' +
                 '<p id="mcp-client-desc" class="muted" style="font-size:12.5px;margin-bottom:8px">Paste this JSON snippet into your Claude Desktop configuration file.</p>' +
-                '<pre id="mcp-client-pre" style="background:var(--code-bg);border:1px solid var(--line);border-radius:10px;padding:14px;color:var(--code-fg);font-family:monospace;font-size:12px;overflow-x:auto;line-height:1.5;max-height:260px">' +
+                '<pre id="mcp-client-pre" style="background:var(--code-bg);border:1px solid var(--line, #e7e5e4);border-radius:10px;padding:14px;color:var(--code-fg);font-family:monospace;font-size:12px;overflow-x:auto;line-height:1.5;max-height:260px">' +
                   esc(CLIENT_CONFIGS.claude.code) +
                 '</pre>' +
               '</div>' +
             '</div>' +
 
             '<div class="card" style="border-radius:14px;padding:22px">' +
-              '<div class="card-h" style="padding:0 0 14px;border-bottom:1px solid var(--line)"><h3 style="font-size:16px;color:var(--txt)">' + ic("terminal") + ' JSON-RPC 2.0 Endpoint</h3></div>' +
+              '<div class="card-h" style="padding:0 0 14px;border-bottom:1px solid var(--line, #e7e5e4)"><h3 style="font-size:16px;color:var(--txt)">' + ic("terminal") + ' JSON-RPC 2.0 Endpoint</h3></div>' +
               '<div style="margin-top:14px;display:flex;flex-direction:column;gap:10px;font-size:13px">' +
                 '<div style="display:flex;justify-content:space-between"><span>Protocol</span><b style="color:var(--pri-ink)">JSON-RPC 2.0 / Streamable SSE</b></div>' +
                 '<div style="display:flex;justify-content:space-between"><span>Endpoint</span><b style="color:var(--txt)">/api/mcp.php</b></div>' +
-                '<div style="display:flex;justify-content:space-between"><span>Authentication</span><b style="color:var(--ok)">Header: Authorization: Bearer wxa_...</b></div>' +
+                '<div style="display:flex;justify-content:space-between"><span>Authentication</span><b style="color:var(--ok, #16a34a)">Header: Authorization: Bearer wxa_...</b></div>' +
               '</div>' +
             '</div>' +
           '</div>' +
@@ -556,13 +556,13 @@
       if (!cont) return;
 
       cont.innerHTML =
-        '<div class="card" style="background:var(--card-sub);border:1px solid var(--line);border-radius:14px;padding:22px;margin-bottom:20px">' +
-          '<div class="card-h" style="padding:0 0 16px;border-bottom:1px solid var(--line)"><h3 style="color:var(--txt);font-size:16px">' + ic("activity") + ' System &amp; Server Health</h3></div>' +
+        '<div class="card" style="background:var(--card-sub, #f5f5f4);border:1px solid var(--line, #e7e5e4);border-radius:14px;padding:22px;margin-bottom:20px">' +
+          '<div class="card-h" style="padding:0 0 16px;border-bottom:1px solid var(--line, #e7e5e4)"><h3 style="color:var(--txt);font-size:16px">' + ic("activity") + ' System &amp; Server Health</h3></div>' +
           '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-top:16px">' +
-            '<div style="background:var(--card-sub);padding:14px;border-radius:10px;border:1px solid var(--line)"><small class="muted">PHP Version</small><b style="display:block;font-size:16px;color:var(--txt);margin-top:4px">8.2.18 (Hostinger)</b></div>' +
-            '<div style="background:var(--card-sub);padding:14px;border-radius:10px;border:1px solid var(--line)"><small class="muted">Database Latency</small><b style="display:block;font-size:16px;color:var(--ok);margin-top:4px">1.2 ms · Optimal</b></div>' +
-            '<div style="background:var(--card-sub);padding:14px;border-radius:10px;border:1px solid var(--line)"><small class="muted">Cron Daemon</small><b style="display:block;font-size:16px;color:var(--pri-ink);margin-top:4px">Active · 5 min tick</b></div>' +
-            '<div style="background:var(--card-sub);padding:14px;border-radius:10px;border:1px solid var(--line)"><small class="muted">Memory Usage</small><b style="display:block;font-size:16px;color:var(--txt);margin-top:4px">18.4 MB / 512 MB</b></div>' +
+            '<div style="background:var(--card-sub, #f5f5f4);padding:14px;border-radius:10px;border:1px solid var(--line, #e7e5e4)"><small class="muted">PHP Version</small><b style="display:block;font-size:16px;color:var(--txt);margin-top:4px">8.2.18 (Hostinger)</b></div>' +
+            '<div style="background:var(--card-sub, #f5f5f4);padding:14px;border-radius:10px;border:1px solid var(--line, #e7e5e4)"><small class="muted">Database Latency</small><b style="display:block;font-size:16px;color:var(--ok, #16a34a);margin-top:4px">1.2 ms · Optimal</b></div>' +
+            '<div style="background:var(--card-sub, #f5f5f4);padding:14px;border-radius:10px;border:1px solid var(--line, #e7e5e4)"><small class="muted">Cron Daemon</small><b style="display:block;font-size:16px;color:var(--pri-ink);margin-top:4px">Active · 5 min tick</b></div>' +
+            '<div style="background:var(--card-sub, #f5f5f4);padding:14px;border-radius:10px;border:1px solid var(--line, #e7e5e4)"><small class="muted">Memory Usage</small><b style="display:block;font-size:16px;color:var(--txt);margin-top:4px">18.4 MB / 512 MB</b></div>' +
           '</div>' +
         '</div>';
       W.fillIcons(cont);

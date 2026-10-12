@@ -183,7 +183,7 @@
       '<span style="margin-left:auto;display:flex;gap:8px"><button class="btn" id="hf-export" title="Download header & footer as a file">' + ic("download") + 'Export</button><button class="btn" id="hf-import" title="Load a header & footer file">' + ic("upload") + 'Import</button><span class="badge gold" id="hf-dirty" hidden>Unpublished changes</span><button class="btn" id="hf-undo" title="Undo (Ctrl+Z)" disabled>↶ Undo</button><button class="btn" id="hf-discard">Discard changes</button><button class="btn pri" id="hf-publish">' + ic("upload") + 'Publish to all pages</button></span></div>' +
       '<div id="hf-wrap" style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:20px;align-items:start"><div id="hf-body" style="min-width:0"><div class="empty">Loading…</div></div>' +
       '<div class="card" id="hf-prev" style="position:sticky;top:12px"><div class="card-h"><h3>Live preview</h3><span class="toolbar"><button class="btn sm pri" data-dev="d">Desktop</button><button class="btn sm" data-dev="m">Mobile</button><button class="btn sm" id="hf-mega">Show mega menu</button><button class="btn sm" id="hf-foot">Jump to footer</button></span></div>' +
-      '<div class="card-b" style="padding:10px;background:var(--bg)"><div id="hf-frame-box" style="overflow:hidden;border-radius:10px;height:640px;position:relative"><iframe id="hf-frame" src="/" title="Preview" style="border:0;background:#fff;transform-origin:0 0"></iframe></div><p class="muted" style="margin:8px 0 0;font-size:12px">Preview only — nothing is live until you press <b>Publish</b>.</p></div></div></div>';
+      '<div class="card-b" style="padding:10px;background:var(--bg)"><div id="hf-frame-box" style="overflow:hidden;border-radius:10px;height:640px;position:relative"><iframe id="hf-frame" src="/" title="Preview" style="border:0;background:var(--card, #ffffff);transform-origin:0 0"></iframe></div><p class="muted" style="margin:8px 0 0;font-size:12px">Preview only — nothing is live until you press <b>Publish</b>.</p></div></div></div>';
     W.fillIcons && W.fillIcons(el);
     var body = $("#hf-body"), frame = $("#hf-frame"), box = $("#hf-frame-box"), tab = "header", dev = "d", D = null, orig = "", S = W.S || {};
     var pagesDl = function () { return "<datalist id='hf-pages'>" + ((W.S && W.S.pages) || []).map(function (p) { return "<option value='" + A(p.url) + "'>" + A(p.title) + "</option>"; }).join("") + "</datalist>"; };
@@ -224,7 +224,7 @@
     var row = function (p, o, extra) { return "<div style='display:grid;grid-template-columns:1fr 1fr auto;gap:6px;align-items:center;margin-bottom:6px'>" + inp(p + ".label", o.label, "Label") + inp(p + ".href", o.href, "/page/", "list='hf-pages'") + "<span style='display:flex;gap:4px;align-items:center'>" + (extra || "") + ctl(p) + "</span></div>"; };
     var card = function (title, inner, btn) { return '<div class="card" style="margin-bottom:16px"><div class="card-h"><h3>' + title + "</h3>" + (btn || "") + '</div><div class="card-b">' + inner + "</div></div>"; };
     var addBtn = function (id, label) { return "<button class='btn sm' data-add='" + id + "'>" + ic("plus") + (label || "Link") + "</button>"; };
-    var imgPick = function (p, v) { return "<div style='display:flex;gap:8px;align-items:center'>" + (v ? "<img src='" + A(v) + "' style='width:64px;height:44px;object-fit:cover;border-radius:6px;background:#eee'>" : "") + inp(p, v, "/assets/img/…") + "<button class='btn sm' data-pick='" + p + "'>" + ic("image") + "Choose</button></div>"; };
+    var imgPick = function (p, v) { return "<div style='display:flex;gap:8px;align-items:center'>" + (v ? "<img src='" + A(v) + "' style='width:64px;height:44px;object-fit:cover;border-radius:6px;background:var(--card-sub, #f5f5f4)'>" : "") + inp(p, v, "/assets/img/…") + "<button class='btn sm' data-pick='" + p + "'>" + ic("image") + "Choose</button></div>"; };
 
     var draw = function () {
       if (tab === "replace") { $("#hf-wrap").style.gridTemplateColumns = "1fr"; $("#hf-prev").style.display = "none"; return W.replaceTool ? W.replaceTool(body) : (body.innerHTML = '<div class="empty">Find & replace is unavailable.</div>'); }
@@ -349,7 +349,7 @@
     var loadVersions = function () {
       api("chrome_versions", {}).then(function (r) {
         var v = (r && r.versions) || [], el2 = $("#hf-vers"); if (!el2) return;
-        el2.innerHTML = v.length ? v.map(function (x, i) { return "<div style='display:flex;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)'><div style='flex:1'><b>" + A(x.note || "Published") + "</b>" + (i === 0 ? " <span class='badge green'>live</span>" : "") + "<br><small class='muted'>" + new Date(x.t * 1000).toLocaleString() + (x.by ? " · " + A(x.by) : "") + "</small></div><button class='btn sm' data-restore='" + i + "'>Load into editor</button></div>"; }).join("") : '<div class="empty">No versions yet — the current header &amp; footer is saved as “Original” on your first publish.</div>';
+        el2.innerHTML = v.length ? v.map(function (x, i) { return "<div style='display:flex;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line, #e7e5e4)'><div style='flex:1'><b>" + A(x.note || "Published") + "</b>" + (i === 0 ? " <span class='badge green'>live</span>" : "") + "<br><small class='muted'>" + new Date(x.t * 1000).toLocaleString() + (x.by ? " · " + A(x.by) : "") + "</small></div><button class='btn sm' data-restore='" + i + "'>Load into editor</button></div>"; }).join("") : '<div class="empty">No versions yet — the current header &amp; footer is saved as “Original” on your first publish.</div>';
         $$("[data-restore]", el2).forEach(function (b) { b.onclick = function () { D = JSON.parse(JSON.stringify(v[+b.dataset.restore].data)); toast("Version loaded — check the preview, then press Publish to restore it"); setTab("header"); }; });
       });
     };
@@ -394,7 +394,7 @@
     };
 
     bapi("load", { path: "index.html" }).then(function (r) {
-      if (!r.ok) { body.innerHTML = '<div class="empty"><b style="color:#d92d20">' + A(r.error || "Could not load") + '</b><p><button class="btn" id="gl-retry">Retry</button> <a class="btn" href="#/system">Open System check</a></p></div>'; body.querySelector("#gl-retry").onclick = function () { W.VIEWS.global(el); }; return; }
+      if (!r.ok) { body.innerHTML = '<div class="empty"><b style="color:var(--bad, #d92d20)">' + A(r.error || "Could not load") + '</b><p><button class="btn" id="gl-retry">Retry</button> <a class="btn" href="#/system">Open System check</a></p></div>'; body.querySelector("#gl-retry").onclick = function () { W.VIEWS.global(el); }; return; }
       D = parse(r.html); if (!D) return (body.innerHTML = '<div class="empty">This site’s header/footer structure was not found.</div>');
       orig = JSON.stringify(D);
       var start = location.hash.split("/")[2]; if (/^(header|mega|footer|design|versions)$/.test(start || "")) return setTab(start);

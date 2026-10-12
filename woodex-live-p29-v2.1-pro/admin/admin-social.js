@@ -63,12 +63,12 @@
         var dummyVal = isConn ? (i === 0 ? "wx_oauth_live_" + c.id : "••••••••••••••••") : "";
         return '<div style="margin-bottom:12px">' +
           '<label style="display:block;font-size:12.5px;font-weight:600;color:var(--txt);margin-bottom:4px">' + esc(f) + '</label>' +
-          '<input type="text" id="soc-f-' + i + '" value="' + esc(dummyVal) + '" placeholder="Enter ' + esc(f) + '" style="width:100%;background:var(--card-sub);border:1px solid var(--line);border-radius:8px;padding:9px 12px;color:var(--txt);font-size:13px">' +
+          '<input type="text" id="soc-f-' + i + '" value="' + esc(dummyVal) + '" placeholder="Enter ' + esc(f) + '" style="width:100%;background:var(--card-sub, #f5f5f4);border:1px solid var(--line, #e7e5e4);border-radius:8px;padding:9px 12px;color:var(--txt);font-size:13px">' +
         '</div>';
       }).join("");
 
       var h = '<div style="padding:4px">' +
-        '<div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;border-bottom:1px solid var(--line);padding-bottom:14px">' +
+        '<div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;border-bottom:1px solid var(--line, #e7e5e4);padding-bottom:14px">' +
           '<span style="font-size:32px">' + c.icon + '</span>' +
           '<div>' +
             '<h2 style="margin:0;font-size:17px;color:var(--txt)">' + esc(c.name) + ' OAuth &amp; Sync</h2>' +
@@ -78,12 +78,12 @@
         '<p class="muted" style="font-size:13px;margin:0 0 16px">' + esc(c.desc) + '</p>' +
         '<form id="soc-modal-form">' +
           fHtml +
-          '<div style="background:var(--card-sub);border:1px solid var(--line);border-radius:10px;padding:12px;margin:16px 0">' +
+          '<div style="background:var(--card-sub, #f5f5f4);border:1px solid var(--line, #e7e5e4);border-radius:10px;padding:12px;margin:16px 0">' +
             '<label class="check" style="color:var(--txt2);font-size:12.5px;margin:0"><input type="checkbox" checked style="accent-color:var(--pri)"> <b>Auto-ingest inbound leads &amp; 24/7 AI Community Responder</b></label>' +
           '</div>' +
           '<div id="soc-ping-res" style="display:none;padding:10px;border-radius:8px;background:#052e16;border:1px solid #166534;color:#4ade80;font-size:12.5px;margin-bottom:14px">✓ OAuth handshake verified: 200 OK · Latency 112 ms</div>' +
           '<div class="modal-actions" style="margin-top:20px;display:flex;gap:10px;justify-content:flex-end">' +
-            '<button type="button" class="btn" id="soc-m-ping" style="background:var(--card-sub);color:var(--pri-ink);border-color:#232836">' + ic("activity") + ' Test Ping</button>' +
+            '<button type="button" class="btn" id="soc-m-ping" style="background:var(--card-sub, #f5f5f4);color:var(--pri-ink);border-color:#232836">' + ic("activity") + ' Test Ping</button>' +
             (isConn ? '<button type="button" class="btn danger" id="soc-m-disc">' + ic("x") + ' Disconnect</button>' : '') +
             '<button type="button" class="btn" id="soc-m-cancel">Cancel</button>' +
             '<button type="submit" class="btn pri btn-preline-cyan">' + ic("check") + (isConn ? ' Save Updates' : ' Login with ' + c.name) + '</button>' +
@@ -161,7 +161,7 @@
                 '<span class="badge ' + (c.connected ? "ok" : "ghost") + '" style="font-size:11px">' + (c.connected ? "Connected" : "Disconnected") + '</span>' +
               '</div>' +
               '<p style="font-size:12.5px;color:var(--mut);line-height:1.5;margin:0;flex:1">' + esc(c.desc) + '</p>' +
-              '<div style="border-top:1px solid var(--line);padding-top:12px;display:flex;gap:8px;align-items:center;margin-top:auto">' +
+              '<div style="border-top:1px solid var(--line, #e7e5e4);padding-top:12px;display:flex;gap:8px;align-items:center;margin-top:auto">' +
                 (c.connected
                   ? '<button class="btn sm" data-action="manage" data-id="' + c.id + '" style="flex:1">' + ic("shield") + 'Permissions</button>' +
                     '<button class="btn sm pri btn-preline-cyan" data-action="sync" data-id="' + c.id + '">' + ic("refresh-cw") + 'Sync</button>'
@@ -174,19 +174,19 @@
       } else if (curTab === "scheduler") {
         box.innerHTML = '<div style="display:grid;grid-template-columns:1fr 340px;gap:20px">' +
           '<div class="card" style="border-radius:14px;padding:20px">' +
-            '<div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);padding-bottom:14px;margin-bottom:16px">' +
+            '<div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line, #e7e5e4);padding-bottom:14px;margin-bottom:16px">' +
               '<div><b style="font-size:16px;color:var(--txt)">Publishing Calendar &amp; Outbox</b><small class="muted" style="display:block">Automated cross-posting across Meta, Instagram, LinkedIn, and TikTok</small></div>' +
               '<button class="btn sm pri btn-preline-cyan" id="soc-add-post">' + ic("plus") + 'New Post</button>' +
             '</div>' +
             '<div style="display:flex;flex-direction:column;gap:14px">' +
               scheduledPosts.map(function(p) {
-                return '<div style="background:var(--card-sub);border:1px solid var(--line);border-radius:12px;padding:16px">' +
+                return '<div style="background:var(--card-sub, #f5f5f4);border:1px solid var(--line, #e7e5e4);border-radius:12px;padding:16px">' +
                   '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">' +
                     '<b style="font-size:14px;color:var(--txt)">' + esc(p.title) + '</b>' +
                     '<span class="badge ' + (p.status === "Scheduled" ? "ok" : "navy") + '">' + esc(p.status) + '</span>' +
                   '</div>' +
                   '<p style="font-size:13px;color:var(--txt2);line-height:1.5;margin:0 0 10px">' + esc(p.preview) + '</p>' +
-                  '<div style="display:flex;align-items:center;justify-content:space-between;font-size:12px;color:var(--mut);border-top:1px solid var(--line);padding-top:10px">' +
+                  '<div style="display:flex;align-items:center;justify-content:space-between;font-size:12px;color:var(--mut);border-top:1px solid var(--line, #e7e5e4);padding-top:10px">' +
                     '<span>Channels: ' + p.channels.map(function(c){ return '<span class="badge sm ghost" style="margin-right:4px">' + c + '</span>'; }).join("") + '</span>' +
                     '<span style="color:var(--pri-ink);font-weight:600">' + ic("clock") + ' ' + esc(p.date) + '</span>' +
                   '</div>' +
@@ -208,7 +208,7 @@
         '</div>';
       } else if (curTab === "ai-responder") {
         box.innerHTML = '<div class="card" style="border-radius:14px;padding:20px">' +
-          '<div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);padding-bottom:14px;margin-bottom:16px">' +
+          '<div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line, #e7e5e4);padding-bottom:14px;margin-bottom:16px">' +
             '<div><b style="font-size:16px;color:var(--txt)">24/7 AI Community Manager</b><small class="muted" style="display:block">Automatically responds to public comments and direct messages on social media</small></div>' +
             '<label class="check" style="margin:0"><input type="checkbox" id="ai-soc-toggle" checked style="width:18px;height:18px;accent-color:var(--pri)"> <b>AI Auto-Reply Enabled</b></label>' +
           '</div>' +
@@ -219,25 +219,25 @@
             '</div>' +
             '<div style="display:flex;flex-direction:column;gap:14px">' +
               '<label>Auto-DM: Phone Number Capture<textarea rows="3">Thank you for reaching out to Woodex Interior! Please share your contact number and project location, and our lead architect will share a 3D mood board.</textarea></label>' +
-              '<div style="background:var(--card-sub);border:1px solid var(--line);border-radius:10px;padding:14px">' +
+              '<div style="background:var(--card-sub, #f5f5f4);border:1px solid var(--line, #e7e5e4);border-radius:10px;padding:14px">' +
                 '<b style="color:var(--pri-ink);font-size:13px;display:flex;align-items:center;gap:6px">' + ic("shield") + ' Smart Lead Extraction</b>' +
                 '<p class="muted" style="font-size:12px;margin:6px 0 0">Whenever a user comments or DMs a phone number (e.g. 03xx-xxxxxxx), the AI immediately parses it and creates a CRM Lead tagged with "Source: Social Media".</p>' +
               '</div>' +
             '</div>' +
           '</div>' +
-          '<div style="margin-top:16px;border-top:1px solid var(--line);padding-top:14px;display:flex;justify-content:flex-end">' +
+          '<div style="margin-top:16px;border-top:1px solid var(--line, #e7e5e4);padding-top:14px;display:flex;justify-content:flex-end">' +
             '<button class="btn pri btn-preline-cyan" id="soc-save-ai">' + ic("check") + 'Save AI Community Rules</button>' +
           '</div>' +
         '</div>';
       } else if (curTab === "leads-bridge") {
         box.innerHTML = '<div class="card" style="border-radius:14px;padding:20px">' +
-          '<div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);padding-bottom:14px;margin-bottom:16px">' +
+          '<div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line, #e7e5e4);padding-bottom:14px;margin-bottom:16px">' +
             '<div><b style="font-size:16px;color:var(--txt)">Inbound Social Leads Bridge</b><small class="muted" style="display:block">Leads automatically captured and extracted from Instagram, Facebook, and LinkedIn comments/DMs</small></div>' +
             '<a class="btn sm pri btn-preline-cyan" href="#/enquiries">' + ic("inbox") + 'View in CRM</a>' +
           '</div>' +
           '<div style="display:flex;flex-direction:column;gap:12px">' +
             recentSocialLeads.map(function(l) {
-              return '<div style="background:var(--card-sub);border:1px solid var(--line);border-radius:10px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:14px">' +
+              return '<div style="background:var(--card-sub, #f5f5f4);border:1px solid var(--line, #e7e5e4);border-radius:10px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:14px">' +
                 '<div style="display:flex;align-items:center;gap:12px">' +
                   '<span class="kpi-ic" style="background:var(--pri-soft);color:var(--pri-ink)">' + ic("user") + '</span>' +
                   '<div>' +

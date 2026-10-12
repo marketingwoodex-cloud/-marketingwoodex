@@ -508,7 +508,7 @@
         function bodyText() { collect(); return d.blocks.map(function (b) { return b.t === "list" ? (b.items || []).join("\n") : b.text || ""; }).join("\n\n"); }
         function tplPick(first) {
           modal("<h3>" + (first ? "Start a new article" : "Article templates") + '</h3><p class="muted">' + (first ? "Pick a template to start from, or begin with a blank page." : "Applying a template <b>replaces</b> the current content.") + '</p><div class="tp-g" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px">' +
-            Object.keys(TPL).map(function (k) { return '<button type="button" class="card card-b" data-tp="' + k + '" style="text-align:left;cursor:pointer;border:1px solid var(--line,#e5e7eb)"><b>' + TPL[k].icon + " " + esc(TPL[k].name) + '</b><p class="muted" style="margin:6px 0 0;font-size:12.5px">' + esc(TPL[k].desc) + "</p></button>"; }).join("") +
+            Object.keys(TPL).map(function (k) { return '<button type="button" class="card card-b" data-tp="' + k + '" style="text-align:left;cursor:pointer;border:1px solid var(--line,var(--line, #e7e5e4))"><b>' + TPL[k].icon + " " + esc(TPL[k].name) + '</b><p class="muted" style="margin:6px 0 0;font-size:12.5px">' + esc(TPL[k].desc) + "</p></button>"; }).join("") +
             '</div><div class="modal-actions">' + (first ? '<button class="btn" id="tp-blank">Blank article</button>' : '<button class="btn" id="tp-blank">Cancel</button>') + (aiReady ? '<button class="btn pri" id="tp-ai">' + ic("sparkles") + "Let AI write it</button>" : "") + "</div>", "wide");
           W.fillIcons($(".modal") || document.body);
           $("#tp-blank").onclick = closeModal; if ($("#tp-ai")) $("#tp-ai").onclick = function () { closeModal(); writer(); };

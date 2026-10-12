@@ -396,7 +396,7 @@
     if (!ntMenu) return;
     var unreadCount = notifs.filter(function(n) { return n.unread; }).length;
     ntMenu.innerHTML =
-      '<div style="padding:12px 14px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;background:var(--card-sub)">' +
+      '<div style="padding:12px 14px;border-bottom:1px solid var(--line, #e7e5e4);display:flex;align-items:center;justify-content:space-between;background:var(--card-sub, #f5f5f4)">' +
         '<div><b style="font-size:13.5px;color:var(--txt)">Notifications</b>' + (unreadCount ? ' <span class="badge ok" style="font-size:10px">' + unreadCount + ' new</span>' : '') + '</div>' +
         '<div style="display:flex;gap:6px">' +
           '<button type="button" class="btn sm" id="nt-test-btn" style="padding:2px 8px;font-size:11px" title="Test Live Alert">Test Alert</button>' +
@@ -405,8 +405,8 @@
       '</div>' +
       '<div style="max-height:340px;overflow-y:auto;display:flex;flex-direction:column">' +
         notifs.map(function(n) {
-          return '<a href="' + n.href + '" class="nt-item" data-id="' + n.id + '" style="padding:10px 14px;border-bottom:1px solid var(--line);display:flex;align-items:flex-start;gap:10px;text-decoration:none;background:' + (n.unread ? 'rgba(0,184,219,0.06)' : 'transparent') + '">' +
-            '<span class="kpi-ic" style="width:28px;height:28px;font-size:12px;background:' + (n.unread ? 'rgba(0,184,219,0.2)' : 'rgba(255,255,255,0.05)') + ';color:' + (n.unread ? '#00d3f2' : '#94a3b8') + '">' + ic(n.icon) + '</span>' +
+          return '<a href="' + n.href + '" class="nt-item" data-id="' + n.id + '" style="padding:10px 14px;border-bottom:1px solid var(--line, #e7e5e4);display:flex;align-items:flex-start;gap:10px;text-decoration:none;background:' + (n.unread ? 'rgba(0,184,219,0.06)' : 'transparent') + '">' +
+            '<span class="kpi-ic" style="width:28px;height:28px;font-size:12px;background:' + (n.unread ? 'var(--primary-soft, #eff6ff)' : 'var(--card-sub, #f5f5f4)') + ';color:' + (n.unread ? 'var(--primary, #2563eb)' : 'var(--muted-foreground-1, #57534e)') + '">' + ic(n.icon) + '</span>' +
             '<div style="flex:1;min-width:0">' +
               '<b style="font-size:12.5px;color:' + (n.unread ? '#f9fafb' : '#cbd5e1') + ';display:block">' + esc(n.title) + '</b>' +
               '<small class="muted" style="font-size:11.5px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc(n.desc) + '</small>' +
@@ -415,7 +415,7 @@
           '</a>';
         }).join("") +
       '</div>' +
-      '<div style="padding:8px 14px;border-top:1px solid var(--line);text-align:center;background:var(--card-sub)">' +
+      '<div style="padding:8px 14px;border-top:1px solid var(--line, #e7e5e4);text-align:center;background:var(--card-sub, #f5f5f4)">' +
         '<a href="#/updates" style="font-size:12px;color:var(--pri-ink);text-decoration:none;font-weight:600">Client updates &amp; automations hub →</a>' +
       '</div>';
     fillIcons(ntMenu);
@@ -665,7 +665,7 @@
       var c = $("#u-count"); if (c) c.textContent = list.length + " of " + users.length + " member(s) with role-based access";
       var grid = $("#u-grid"); if (!grid) return;
       grid.innerHTML = list.length ? list.map(function (u) {
-        return '<div class="card" style="background:var(--card-sub);border:1px solid var(--line);border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:14px">' +
+        return '<div class="card" style="background:var(--card-sub, #f5f5f4);border:1px solid var(--line, #e7e5e4);border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:14px">' +
           '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">' +
             '<div style="display:flex;align-items:center;gap:12px">' +
               '<span class="av" style="width:44px;height:44px;font-size:16px">' + esc(initials(u.name)) + '</span>' +
@@ -678,7 +678,7 @@
             '<span style="display:flex;align-items:center;gap:6px">' + ic("mail") + ' ' + esc(u.email) + '</span>' +
             '<span style="display:flex;align-items:center;gap:6px">' + ic("clock") + ' ' + (u.last_login ? "Last sign-in " + ago(u.last_login) : "Never signed in") + '</span>' +
           '</div>' +
-          '<div style="border-top:1px solid var(--line);padding-top:12px;display:flex;gap:8px;margin-top:auto">' +
+          '<div style="border-top:1px solid var(--line, #e7e5e4);padding-top:12px;display:flex;gap:8px;margin-top:auto">' +
             (u.role === "owner" && S.user.role !== "owner" ? '' : '<button class="btn sm" data-edit="' + u.id + '" style="flex:1">' + ic("edit-2") + ' Edit details</button>') +
             '<a class="btn sm" href="#/activity" title="See what this member did in the activity log">' + ic("activity") + '</a>' +
           '</div></div>';
@@ -730,8 +730,8 @@
   VIEWS.profile = function (el) {
     el.innerHTML = head("My account", "Home / Profile", '<a class="btn" href="#/security">' + ic("shield-check") + 'Security &amp; 2FA</a>') +
       '<div class="grid g-7-5">' +
-        '<div class="card" style="background:var(--card-sub);border:1px solid var(--line);border-radius:14px;padding:24px">' +
-          '<div class="card-h" style="padding:0 0 16px;border-bottom:1px solid var(--line)"><h3 style="color:var(--txt);font-size:16px">' + ic("user") + ' Personal Information</h3></div>' +
+        '<div class="card" style="background:var(--card-sub, #f5f5f4);border:1px solid var(--line, #e7e5e4);border-radius:14px;padding:24px">' +
+          '<div class="card-h" style="padding:0 0 16px;border-bottom:1px solid var(--line, #e7e5e4)"><h3 style="color:var(--txt);font-size:16px">' + ic("user") + ' Personal Information</h3></div>' +
           '<div style="display:flex;align-items:center;gap:18px;margin:20px 0">' +
             '<span class="av" style="width:64px;height:64px;font-size:22px;border-radius:50%;background:var(--pri);color:var(--pri-fg);font-weight:800;display:grid;place-items:center">' + initials(S.user.name) + '</span>' +
             '<div>' +
@@ -743,7 +743,7 @@
             '</div>' +
           '</div>' +
           '<form id="pf" style="display:flex;flex-direction:column;gap:14px">' +
-            '<label>Full Name<input id="pf-n" value="' + esc(S.user.name) + '" required style="background:var(--card-sub);border-color:#232836"></label>' +
+            '<label>Full Name<input id="pf-n" value="' + esc(S.user.name) + '" required style="background:var(--card-sub, #f5f5f4);border-color:#232836"></label>' +
             '<label>Email Address <small class="muted">(contact Master Admin to change)</small><input value="' + esc(S.user.email) + '" disabled style="background:#12151d;border-color:#1e2430;opacity:0.7"></label>' +
             '<label>Studio Department<input value="Executive Management &amp; Architecture" disabled style="background:#12151d;border-color:#1e2430;opacity:0.7"></label>' +
             '<div style="margin-top:10px"><button class="btn pri btn-preline-cyan" style="min-width:120px">Save Profile</button></div>' +
@@ -751,18 +751,18 @@
         '</div>' +
 
         '<div style="display:flex;flex-direction:column;gap:20px">' +
-          '<div class="card" style="background:var(--card-sub);border:1px solid var(--line);border-radius:14px;padding:24px">' +
-            '<div class="card-h" style="padding:0 0 16px;border-bottom:1px solid var(--line)"><h3 style="color:var(--txt);font-size:16px">' + ic("key-round") + ' Password &amp; Credentials</h3></div>' +
+          '<div class="card" style="background:var(--card-sub, #f5f5f4);border:1px solid var(--line, #e7e5e4);border-radius:14px;padding:24px">' +
+            '<div class="card-h" style="padding:0 0 16px;border-bottom:1px solid var(--line, #e7e5e4)"><h3 style="color:var(--txt);font-size:16px">' + ic("key-round") + ' Password &amp; Credentials</h3></div>' +
             '<form id="pw" style="margin-top:16px;display:flex;flex-direction:column;gap:14px">' +
-              '<label>Current password<input type="password" id="pw-c" required autocomplete="current-password" style="background:var(--card-sub);border-color:#232836"></label>' +
-              '<label>New password <small class="muted">(min. 8 characters)</small><input type="password" id="pw-n" minlength="8" required autocomplete="new-password" style="background:var(--card-sub);border-color:#232836"></label>' +
+              '<label>Current password<input type="password" id="pw-c" required autocomplete="current-password" style="background:var(--card-sub, #f5f5f4);border-color:#232836"></label>' +
+              '<label>New password <small class="muted">(min. 8 characters)</small><input type="password" id="pw-n" minlength="8" required autocomplete="new-password" style="background:var(--card-sub, #f5f5f4);border-color:#232836"></label>' +
               '<p class="err" id="pw-err" style="margin:0"></p>' +
               '<div><button class="btn" style="min-width:140px">Update Password</button></div>' +
             '</form>' +
           '</div>' +
 
-          '<div class="card" style="background:var(--card-sub);border:1px solid var(--line);border-radius:14px;padding:24px">' +
-            '<div class="card-h" style="padding:0 0 16px;border-bottom:1px solid var(--line)"><h3 style="color:var(--txt);font-size:16px">' + ic("send") + ' Telegram Alerts</h3></div>' +
+          '<div class="card" style="background:var(--card-sub, #f5f5f4);border:1px solid var(--line, #e7e5e4);border-radius:14px;padding:24px">' +
+            '<div class="card-h" style="padding:0 0 16px;border-bottom:1px solid var(--line, #e7e5e4)"><h3 style="color:var(--txt);font-size:16px">' + ic("send") + ' Telegram Alerts</h3></div>' +
             '<div style="margin-top:14px;font-size:13px">' +
               '<p class="muted" style="margin:0 0 12px">Receive instant customer enquiry alerts and reply directly via Telegram.</p>' +
               '<a class="btn sm pri btn-preline-cyan" href="#/telegram">' + ic("qr-code") + 'Link Telegram Account</a>' +
