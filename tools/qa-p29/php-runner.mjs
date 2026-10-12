@@ -126,6 +126,18 @@ export async function createRunner(opts = {}) {
     };
   }
 
+  /** Raw pass-through: send exactly this method/url/headers/body to PHP (used by the preview server). */
+  async function raw({ method = 'GET', url = '/', headers = {}, body = undefined } = {}) {
+    const res = await handler.request({ method, url, headers, body });
+    return {
+      status: res.httpStatusCode,
+      headers: res.headers ?? {},
+      bytes: res.bytes ?? null,
+      text: String(res.text ?? ''),
+      errors: String(res.errors ?? ''),
+    };
+  }
+
   /** Write _private/db.json in sqlite mode (QA only — hosting uses mysql). */
   function useSqlite({ file = '_private/woodex.sqlite', traceOn = trace } = {}) {
     if (!existsSync(priv)) mkdirSync(priv, { recursive: true });
@@ -228,7 +240,7 @@ export async function createRunner(opts = {}) {
 
   async function close() { try { await php.exit?.(); } catch { /* best effort */ } }
 
-  return { php, handler, projectDir, phpRun, request, install, seed, login, useSqlite,
+  return { php, handler, projectDir, phpRun, request, raw, install, seed, login, useSqlite,
            sqlStats, refreshSqlStats, tailPhpErrors, close, dbFile, errLog };
 }
 

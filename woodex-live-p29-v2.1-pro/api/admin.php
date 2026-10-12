@@ -317,9 +317,12 @@ if ($action !== "setup" && $action !== "status") { try { cms_tick(); } catch (Th
 switch ($action) {
     case 'status':
         $set = is_file(DB_FILE);
-        if ($set) { $dbOk = true; try { db(); } catch (Throwable $e) { $dbOk = false; }
-            if (!$dbOk) out(['ok' => true, 'needsSetup' => false, 'dbError' => true, 'driver' => 'mysql', 'builderLocked' => !empty(jread(BCONFIG)['password_hash']), 'user' => null]); }
-        out(['ok' => true, 'needsSetup' => !$set, 'driver' => 'mysql', 'builderLocked' => !empty(jread(BCONFIG)['password_hash']), 'user' => $set && ($u = current_user()) ? pub($u) : null]);
+        /* Report the driver that is really in use (mysql on hosting, sqlite on a local run) instead
+           of always saying mysql — the admin shows this to the owner. */
+        $drv = 'mysql';
+        if ($set) { $dbOk = true; try { $drv = db()->getAttribute(PDO::ATTR_DRIVER_NAME) ?: 'mysql'; } catch (Throwable $e) { $dbOk = false; $drv = (string)(jread(DB_FILE)['driver'] ?? 'mysql'); }
+            if (!$dbOk) out(['ok' => true, 'needsSetup' => false, 'dbError' => true, 'driver' => $drv, 'builderLocked' => !empty(jread(BCONFIG)['password_hash']), 'user' => null]); }
+        out(['ok' => true, 'needsSetup' => !$set, 'driver' => $drv, 'builderLocked' => !empty(jread(BCONFIG)['password_hash']), 'user' => $set && ($u = current_user()) ? pub($u) : null]);
 
     /* P16: System check — diagnoses live-server problems (owner/admin only) */
     case 'sys_check':
@@ -328,7 +331,7 @@ switch ($action) {
         $add = function (string $g, string $n, bool $ok, string $d = '', string $fix = '') use (&$chk) { $chk[] = ['group' => $g, 'name' => $n, 'ok' => $ok, 'detail' => $d, 'fix' => $fix]; };
         $add('Server', 'PHP version', version_compare(PHP_VERSION, '8.0', '>='), PHP_VERSION, 'Hostinger → Advanced → PHP Configuration → choose PHP 8.2+');
         foreach (['curl', 'openssl', 'pdo_mysql', 'mbstring', 'zip', 'json'] as $x) $add('Server', 'Extension ' . $x, extension_loaded($x), extension_loaded($x) ? 'loaded' : 'missing', 'Enable "' . $x . '" in Hostinger → PHP Configuration → PHP extensions');
-        try { $v = db()->query('SELECT VERSION()')->fetchColumn(); $add('Database', 'MySQL connection', true, 'MySQL ' . $v); } catch (Throwable $e) { $add('Database', 'MySQL connection', false, substr($e->getMessage(), 0, 160), 'Use "Reconnect database" on the sign-in screen'); }
+        try { $v = db()->query('SELECT VERSION()')->fetchColumn(); $add('Database', 'Database connection', true, (string)$v); } catch (Throwable $e) { $add('Database', 'Database connection', false, substr($e->getMessage(), 0, 160), 'Use "Reconnect database" on the sign-in screen'); }
         $pd = dirname(DB_FILE); $w = is_writable($pd);
         $add('Files', '_private folder writable', $w, $pd, 'File Manager → _private → Permissions 755');
         $add('Files', 'Builder config (secret)', !empty(jread(BCONFIG)['secret']), !empty(jread(BCONFIG)['secret']) ? 'present' : 'missing', 'Sign out and in again — it is created automatically');

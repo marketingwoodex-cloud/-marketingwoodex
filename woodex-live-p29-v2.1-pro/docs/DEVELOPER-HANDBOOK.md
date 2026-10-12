@@ -357,20 +357,31 @@ The whole harness is read-only and never touches production. It lives outside th
 `tools/qa-p29/`, and drives an approved headless Chromium against a **preview server** that serves the
 real files and answers the API.
 
-### 10.1 The preview server
+### 10.1 The preview server — it now runs the real PHP
 
-`tools/qa-p29/preview-server.py <project-dir> <port>` — a stdlib HTTP server that:
+There are two ways to preview, and the real one is the default:
 
-* serves the real project files with `no-store` on html/css/js/json (so an updated build always shows),
-* answers `POST /api/admin.php` and `/api/builder.php` from fixtures,
-* runs **real** work where the real thing is local: the media library lists the actual files, the
-  redirects screen reads the real 36-rule plan, Site health runs the real page scan,
-* keeps preview-only state in `tools/qa-p29/.preview-state/` (git-ignored),
-* accepts only the accounts in `PREVIEW_ACCOUNTS_FILE` (never a built-in account, no values in the repo).
+**`tools/qa-p29/php-preview.mjs [--port 8080]` — real backend.** Serves the project *and* runs its own
+`api/*.php` (PHP 8.3 in WebAssembly, §10.5) against a SQLite copy of the database. Every screen is
+then the real thing: real sign-in, real role gates, real data access, real builder saves.
 
-**What it is not:** it is not PHP and not MySQL. It proves the UI, the wiring and the contracts, with
-answers built from fixtures. It does **not** prove PHP execution — for that, use the runner below
-(§10.5), and for the real data, `wx-audit.php` on the host (§11) or the real database (§12).
+* works on a copy in `tools/qa-p29/.qa-run/preview` — clicking around can never damage the shipped
+  tree; the copy is refreshed from the project on each start while runtime files (database, sessions,
+  migration memo) are kept,
+* keeps the browser signed in: a session token is minted per account at start-up and refreshed when it
+  ages, and the old fixture tokens are bridged to freshly signed ones, so a browser holding a preview
+  token from the previous preview keeps working,
+* blanks outbound service credentials (Telegram / WhatsApp / Google / SMTP / Sheets) so no screen can
+  call a live service from the preview,
+* restarts the PHP runtime by itself if the WASM runtime ever aborts, and serves static files with
+  `no-store` so an updated build always shows.
+
+**`tools/qa-p29/preview-server.py <project-dir> <port>` — fixture mode.** A stdlib HTTP server that
+answers the API from fixtures in milliseconds. It is the fast option for pure UI sweeps (58 routes in
+under a minute) and it still runs real local work where that is possible (media listing, the redirect
+plan, the site-health page scan). It is **not** PHP and **not** MySQL: it proves the UI, the wiring and
+the contracts, never execution. Keep it for UI iterations; use the PHP preview — and ultimately the
+host — for anything that depends on the server answering correctly.
 
 ### 10.2 The probes
 

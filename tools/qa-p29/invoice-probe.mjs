@@ -84,7 +84,15 @@ async function login() {
 async function gotoInvoices() {
   await page.evaluate(() => { location.hash = '#/invoices'; });
   await page.waitForSelector('#it-new', { timeout: 25000 });
-  await sleep(1200);
+  /* Wait for the tracker to finish loading rather than guessing a duration: against the real PHP
+     backend a screen can take longer than a fixed sleep, and measuring mid-load reads "no rows". */
+  await page.waitForFunction(() => {
+    const t = document.querySelector('#it-rows');
+    const y = document.querySelector('#it-y');
+    const loaded = t && !/Loading/i.test(t.innerText || '');
+    const years = y && y.options && y.options.length > 0;
+    return loaded && years;
+  }, { timeout: 30000 }).catch(() => { /* measured below either way */ });
 }
 
 // ---------------------------------------------------------------- run

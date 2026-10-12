@@ -104,3 +104,51 @@ node php-sweep.mjs --fresh        # 2 795 calls, ~3 min, writes .qa-out/php-swee
 The sweep never touches the shipped tree: it works on a copy in `.qa-run/project`, and blanks every
 outbound credential (`wx_settings` keys matching token/secret/key/pass/smtp, and the same keys inside
 `_private/*.json`) so no action can call a real service with real credentials.
+
+---
+
+# SECOND PASS — same day, after the fixes
+
+**Re-swept after the migration guard and the four fixes (§2).** 3,144 calls · 323 admin + 26 builder
+actions × 9 sessions · 171 s.
+
+| | before | after |
+| --- | --- | --- |
+| PHP fatals | 0 | **0** |
+| DB-error answers | 11 | **0** |
+| PHP warnings | 1 distinct | **0** |
+| `CREATE TABLE` (trace) | 2,924 | **40** (25 of them the installer) |
+| `ALTER TABLE` (trace) | 1,319 | **9** |
+
+The only remaining flags are environmental and correct: `fm_zip` returns a real ZIP (binary body —
+that is what a download looks like) and `health_psi` reports a clean 502 because outbound Google is
+blocked in this environment.
+
+## The preview now runs the real PHP
+
+`tools/qa-p29/php-preview.mjs` replaced the fixture preview as the default: the browser talks to the
+project's own PHP against a SQLite database, so every screen is the real backend — real sign-in, real
+role gates, real data, real builder saves. It works on a copy (`.qa-run/preview`), keeps the browser
+signed in across restarts, and blanks outbound service credentials.
+
+Verified against it:
+
+| Check | Result |
+| --- | --- |
+| `master-qa.mjs`, 58 routes signed in as the owner | **stuck 0 · page errors 0** |
+| `users-probe.mjs` (Team & Roles, validation, add, `#/team` split) | green, `problems: []` |
+| `invoice-probe.mjs` (create → track → pay → balance → detail) | green, `problems: []` |
+| `health-probe.mjs` | green except "PageSpeed cards show no scores" — Google unreachable here |
+| builder `pages` / `media` through the bridge | 149 pages · 272 media files (the GLOB_BRACE fix, in the real app) |
+| anonymous and unknown-token requests | still refused (`Not signed in`) |
+
+Two things this surfaced that were not code defects:
+
+* **`status` claimed `"driver":"mysql"` unconditionally.** True on hosting, wrong in a local run; the
+  admin shows this string to the owner, so it now reports the driver really in use (`PDO::ATTR_DRIVER_NAME`).
+  The System-check card likewise said "MySQL connection → MySQL SQLite 3.51.0"; it now says
+  "Database connection → SQLite 3.51.0".
+* **`invoice-probe` measured too early.** It waited a fixed 1.2 s after opening the tracker; the real
+  backend can take longer, so it read "no rows" mid-load and reported a defect that did not exist. It
+  now waits for the tracker to finish loading (`#it-rows` no longer saying "Loading" and the year
+  selector populated). A probe that guesses timing will lie about a slower-but-correct server.

@@ -147,7 +147,7 @@ const main = async () => {
   const isAbort = (res) => res && /Aborted\(\)|RuntimeError|memory access out of bounds/.test(String(res.text) + String(res.errors));
   async function phpCall(phpRequest, tries = 2) {
     try {
-      const res = await runner.request(phpRequest);
+      const res = await runner.raw(phpRequest);
       if (!isAbort(res)) return res;
     } catch (e) {
       if (tries <= 1) throw e;
@@ -195,12 +195,13 @@ const main = async () => {
           headers: extraHeaders,
           body: body.length ? new Uint8Array(body) : undefined,
         }));
-        status = phpRes.httpStatusCode;
+        status = phpRes.status;
         const out = {};
         for (const [k, v] of Object.entries(phpRes.headers ?? {})) out[k] = Array.isArray(v) ? v.join(', ') : String(v);
         out['cache-control'] = 'no-store';
         res.writeHead(status, out);
-        res.end(req.method === 'HEAD' ? undefined : Buffer.from(phpRes.bytes ?? phpRes.text ?? ''));
+        const payload = phpRes.bytes ? Buffer.from(phpRes.bytes) : Buffer.from(phpRes.text ?? '');
+        res.end(req.method === 'HEAD' ? undefined : payload);
         note = req.method;
         return;
       }
