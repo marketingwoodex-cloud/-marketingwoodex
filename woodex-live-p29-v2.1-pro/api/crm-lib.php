@@ -193,13 +193,37 @@ function crm_actions(string $action, array $in): bool {
             log_act($u, 'lead.import', $n . ' rows'); out(['ok' => true, 'imported' => $n]);
         case 'lead_convert':
             $u = need($SALES); $l = lead_get((int)($in['id'] ?? 0));
-            if ($l['client_id'] && q('SELECT 1 FROM wx_clients WHERE id=?', [$l['client_id']])->fetchColumn()) out(['ok' => true, 'client_id' => $l['client_id']]);
-            $digits = preg_replace('~\D~', '', $l['phone']); $cid = 0;
+            $snap = function (int $id): array { $c = q('SELECT * FROM wx_clients WHERE id=?', [$id])->fetch() ?: []; return ['id' => $id, 'name' => (string)($c['name'] ?? ''), 'company' => (string)($c['company'] ?? ''), 'phone' => (string)($c['phone'] ?? ''), 'city' => (string)($c['city'] ?? '')]; };
+            if ($l['client_id'] && q('SELECT 1 FROM wx_clients WHERE id=?', [$l['client_id']])->fetchColumn()) out(['ok' => true, 'client_id' => (int)$l['client_id'], 'created' => false, 'client' => $snap((int)$l['client_id'])]);
+            $digits = preg_replace('~\D~', '', (string)$l['phone']); $cid = 0;
             foreach (q('SELECT id,phone,email FROM wx_clients')->fetchAll() as $c) if (($digits && preg_replace('~\D~', '', (string)$c['phone']) === $digits) || ($l['email'] && $c['email'] === $l['email'])) { $cid = (int)$c['id']; break; }
-            if (!$cid) { q("INSERT INTO wx_clients (name,phone,email,company,city,address,notes,created_at) VALUES (?,?,?,'','Lahore','','',?)", [$l['name'], $l['phone'], $l['email'], now()]); $cid = (int)db()->lastInsertId(); }
+            $created = false;
+            if (!$cid) {
+                /* the client record must carry what the enquiry already knows,
+                   otherwise quotations and invoices lose the company/address */
+                $co = clip($l['company'] ?? '', 120); if ($co === $l['name']) $co = '';
+                $city = clip($l['location'] ?? '', 80) ?: 'Lahore';
+                /* The enquiry stores the business line as a display label ("Interior"),
+                   while the client table takes the slug. s17_client_extra() rejects an
+                   unknown line outright, which used to abort the conversion after the
+                   insert — normalise (and validate) everything before writing. */
+                $line = (string)($l['line'] ?? '');
+                if ($line !== '' && function_exists('s17_line_slug')) $line = s17_line_slug($line);
+                q('INSERT INTO wx_clients (name,phone,email,company,city,address,notes,created_at) VALUES (?,?,?,?,?,?,?,?)',
+                  [clip($l['name'], 120), clip($l['phone'], 40), clip($l['email'], 190), $co, $city, '', '', now()]);
+                $cid = (int)db()->lastInsertId(); $created = true;
+                if (function_exists('s17_client_extra')) {
+                    $type = $co !== '' ? 'company' : 'individual';
+                    if (!isset(S17_CTYPES[$type])) $type = 'individual';
+                    s17_client_extra($cid, ['type' => $type, 'source' => 'enquiry', 'line' => $line, 'designation' => clip($l['designation'] ?? '', 80)]);
+                }
+            }
             q('UPDATE wx_leads SET client_id=? WHERE id=?', [$cid, $l['id']]);
-            if (!in_array($l['stage'], ['won', 'lost'], true)) { q("UPDATE wx_leads SET stage='won' WHERE id=?", [$l['id']]); lead_note_add($l['id'], $u['name'], "Stage: {$l['stage']} → won", true); }
-            log_act($u, 'client.create', $l['name'] . ' (from #' . $l['id'] . ')'); out(['ok' => true, 'client_id' => $cid]);
+            $stage_moved = false;
+            if (!in_array($l['stage'], ['won', 'lost'], true)) { q("UPDATE wx_leads SET stage='won' WHERE id=?", [$l['id']]); lead_note_add($l['id'], $u['name'], "Stage: {$l['stage']} → won", true); $stage_moved = true; }
+            if (!$stage_moved) lead_note_add($l['id'], $u['name'], $created ? 'Converted to client #' . $cid : 'Linked to existing client #' . $cid, true);
+            log_act($u, $created ? 'client.create' : 'client.link', $l['name'] . ' (from #' . $l['id'] . ')');
+            out(['ok' => true, 'client_id' => $cid, 'created' => $created, 'client' => $snap($cid)]);
         case 'clients_list':
             need($SALES); $by = [];
             foreach (q('SELECT id,client_id,stage,service,value,created_at FROM wx_leads WHERE client_id IS NOT NULL')->fetchAll() as $l) $by[(int)$l['client_id']][] = ['id' => (int)$l['id'], 'stage' => $l['stage'], 'service' => (string)$l['service'], 'value' => (int)$l['value'], 'created_at' => $l['created_at']];

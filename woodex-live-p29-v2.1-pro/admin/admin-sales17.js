@@ -218,7 +218,7 @@
         "<header><div><small class='muted'>#" + l.id + " · " + esc(C.sources[l.source] || l.source) + " · " + dd(l.created_at, true) + "</small><h2>" + esc(l.company || l.name) + "</h2>" + (l.company ? "<p class='muted'>" + esc(l.name) + (l.designation ? " · " + esc(l.designation) : "") + "</p>" : "") +
         "<div class='s17-hb'>" + badge(l.stage) + lineTag(l.line) + (overdue(l) ? "<span class='badge bad'>Follow-up overdue</span>" : "") + "</div></div><button class='icon-btn' id='dr-x' title='Close (Esc)'>" + ic("x") + "</button></header>" +
         "<div class='s17-acts'>" + (l.phone ? "<a class='btn sm' href='tel:" + esc(l.phone.replace(/[^\d+]/g, "")) + "'>" + ic("phone") + esc(l.phone) + "</a><a class='btn sm wa' target='_blank' rel='noopener' href='https://wa.me/" + waNum(l.phone) + "'>" + ic("message-circle") + "WhatsApp</a>" : "") +
-          (l.email ? "<a class='btn sm' href='mailto:" + esc(l.email) + "'>" + ic("mail") + "Email</a>" : "") + (l.client_id ? "<a class='btn sm' href='#/clients/" + l.client_id + "'>" + ic("contact") + "Client 360</a>" : "") + "<a class='btn sm' href='#/quote/new?lead=" + l.id + "'>" + ic("receipt") + "New quotation</a></div>" +
+          (l.email ? "<a class='btn sm' href='mailto:" + esc(l.email) + "'>" + ic("mail") + "Email</a>" : "") + (l.client_id ? "<a class='btn sm' href='#/clients/" + l.client_id + "'>" + ic("contact") + "Client 360</a>" : "<button class='btn sm' id='dr-cv'>" + ic("user-plus") + "Convert to client</button>") + "<a class='btn sm' href='#/quote/new?lead=" + l.id + "'>" + ic("receipt") + "New quotation</a></div>" +
         "<div class='s17-next'><b>" + ic("clock") + " Next follow-up</b><span>" + (l.next_at && open(l) ? dd(l.next_at, true) + " · " + esc(M.nextTypes[l.next_type] || "Follow-up") : "Not set") + "</span><small class='muted'>Last contact: " + (l.last_contact ? dd(l.last_contact, true) + " (" + ago(l.last_contact) + ")" : "never") + "</small></div>" +
         "<div class='s17-tabsb'><button class='on' data-p='act'>Log activity</button><button data-p='det'>Details</button><button data-p='tl'>Timeline (" + l.notes.length + ")</button></div>" +
         "<div class='s17-pane' data-p='act'><div class='s17-kinds'>" + Object.keys(KIND).map(function (k, i) { return "<button data-k='" + k + "' class='" + (i === 0 ? "on" : "") + "'>" + ic(KIND[k][0]) + KIND[k][1] + "</button>"; }).join("") + "</div>" +
@@ -237,7 +237,7 @@
           sel("dr-st", "Stage", ORDER.map(function (s) { return "<option value='" + s + "'" + (s === l.stage ? " selected" : "") + ">" + STAGE[s][0] + "</option>"; }).join("")) + "</div>" +
           "<label id='dr-lrw'" + (l.stage === "lost" ? "" : " hidden") + ">Reason closed / lost<input id='dr-lr' value='" + esc(l.lost_reason || "") + "'></label>" +
           (l.message ? "<div class='kv'><small>Message</small><span style='white-space:pre-wrap'>" + esc(l.message) + "</span></div>" : "") + fx +
-          "<div class='modal-actions' style='justify-content:space-between'><span>" + (!l.client_id ? "<button class='btn sm' id='dr-cv'>" + ic("user") + "Make client</button>" : "") + (can("owner,admin") ? " <button class='btn sm ghost' id='dr-del' style='color:var(--bad)'>Delete</button>" : "") + "</span><button class='btn pri' id='dr-sv'>Save details</button></div></div>" +
+          "<div class='modal-actions' style='justify-content:space-between'><span>" + (can("owner,admin") ? "<button class='btn sm ghost' id='dr-del' style='color:var(--bad)'>Delete enquiry</button>" : "") + "</span><button class='btn pri' id='dr-sv'>Save details</button></div></div>" +
         "<div class='s17-pane' data-p='tl' hidden><ul class='s17-tl'>" + (tl || "<p class='muted'>No history yet.</p>") + "</ul></div>" +
         "<p class='err' id='dr-err'></p></section>";
       W.fillIcons(d); requestAnimationFrame(function () { d.classList.add("on"); }); document.addEventListener("keydown", escKey);
@@ -253,7 +253,15 @@
         api("lead_save", { id: id, source: $("#dr-src").disabled ? undefined : $("#dr-src").value, company: $("#dr-co").value, name: $("#dr-n").value, designation: $("#dr-ds").value, phone: $("#dr-p").value, email: $("#dr-e").value, location: $("#dr-lo").value, line: $("#dr-li").value, lead_type: $("#dr-lt").value,
           project_type: $("#dr-pt").value, area: $("#dr-ar").value, budget: $("#dr-bu").value, value: $("#dr-v").value, quote_status: $("#dr-qs").value, priority: $("#dr-pr").value, assigned_to: $("#dr-as").value, stage: $("#dr-st").value, lost_reason: $("#dr-lr").value }).then(function (r) { done(r, "Saved ✓"); });
       };
-      if ($("#dr-cv")) $("#dr-cv").onclick = function () { if (!confirm("Create a client record for " + (l.company || l.name) + " and mark this enquiry as won?")) return; api("lead_convert", { id: id }).then(function (r) { if (!r.ok) return err(r.error); closeDrawer(); location.hash = "#/clients/" + r.client_id; }); };
+      if ($("#dr-cv")) $("#dr-cv").onclick = function () {
+        if (!confirm("Create a client record for " + (l.company || l.name) + " and mark this enquiry as won?")) return;
+        api("lead_convert", { id: id }).then(function (r) {
+          if (!r.ok) return err(r.error);
+          C.leads = []; closeDrawer();
+          toast((r.created ? "Client created" : "Linked to existing client") + " ✓");
+          location.hash = "#/clients/" + r.client_id;
+        });
+      };
       if ($("#dr-del")) $("#dr-del").onclick = function () { if (!confirm("Delete enquiry #" + id + "? This cannot be undone.")) return; api("lead_delete", { id: id }).then(function (r) { if (!r.ok) return err(r.error); C.leads = C.leads.filter(function (x) { return x.id !== id; }); toast("Deleted"); closeDrawer(); if (after) after(); }); };
       if (!l.read) api("lead_save", { id: id, read: true });
     };

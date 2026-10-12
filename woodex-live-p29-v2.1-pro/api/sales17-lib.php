@@ -46,6 +46,19 @@ function s17_lead_extra(int $id, array $in): void {
     if (!empty($in['client_id'])) { $c = (int)$in['client_id']; if (!q('SELECT 1 FROM wx_clients WHERE id=?', [$c])->fetchColumn()) fail('Client not found', 404); $set[] = 'client_id=?'; $p[] = $c; }
     if ($set) { $p[] = $id; q('UPDATE wx_leads SET ' . implode(',', $set) . ' WHERE id=?', $p); }
 }
+/** "Interior" / "interior" / "INTERIOR" → the S17_LINES slug, or '' when unknown.
+    The leads table stores the label, the clients table the slug; converting a
+    lead must not fail on the difference. */
+function s17_line_slug($v): string {
+    $v = trim((string)$v); if ($v === '') return '';
+    $k = mb_strtolower($v);
+    if (isset(S17_LINES[$k])) return $k;
+    foreach (S17_LINES as $slug => $label) if (mb_strtolower($label) === $k) return $slug;
+    foreach (['interior' => 'interior', 'furniture' => 'furniture', 'project' => 'project'] as $needle => $slug) if (str_contains($k, $needle)) return $slug;
+    if (str_contains($k, 'design') || str_contains($k, 'commercial')) return 'interior';
+    return '';
+}
+
 function s17_client_extra(int $id, array $in): void {
     s17_migrate(); $set = ['updated_at=?']; $p = [now()];
     foreach (['designation' => 80, 'source' => 40] as $k => $n) if (array_key_exists($k, $in)) { $set[] = "$k=?"; $p[] = clip($in[$k], $n); }

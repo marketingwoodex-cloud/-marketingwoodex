@@ -50,6 +50,11 @@ const isRuntime = (rel) =>
   /^_private\/woodex\.sqlite/.test(rel) || /^_private\/qa-.*\.log$/.test(rel) ||
   KEEP.includes(rel) || /\.lock$/.test(rel) || /^_private\/backups\//.test(rel);
 
+/* Runtime files are NEVER copied from the shipped tree, not even on a first run.
+   The repo ships an empty _private/woodex.sqlite placeholder; a full copy wrote
+   it over the live database and the admin fell back to the installer. */
+const neverCopy = (rel) => isRuntime(rel);
+
 /** Copy the shipped project into the working copy (or refresh it), keeping runtime state. */
 function syncProject() {
   const fresh = !existsSync(join(WORK, 'api/admin.php'));
@@ -65,12 +70,14 @@ function syncProject() {
         walk(r);
         continue;
       }
-      if (!fresh && isRuntime(r)) { skipped++; continue; }
+      if (neverCopy(r)) { skipped++; continue; }
       try { copyFileSync(join(SOURCE, r), join(WORK, r)); copied++; } catch { /* unreadable file */ }
     }
   };
   walk('');
   if (!fresh) console.log(`[sync] ${copied} file(s) refreshed from the shipped project, ${skipped} runtime file(s) kept`);
+  if (fresh && !existsSync(join(WORK, '_private/db.json')))
+    console.log('[sync] WARNING: fresh working copy with no database — run the installer before using this preview');
   return fresh;
 }
 
