@@ -56,15 +56,15 @@
             '<div class="card-b">' +
               '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;font-size:12.5px">' +
                 '<div style="background:var(--card-sub);padding:12px;border-radius:8px;border:1px solid var(--line)">' +
-                  '<b style="color:var(--pri)">1. Space Selection</b>' +
+                  '<b style="color:var(--pri-ink)">1. Space Selection</b>' +
                   '<p class="muted" style="margin:4px 0 0">Interactive buttons: Full Home, Luxury Kitchen, Wardrobes, Commercial.</p>' +
                 '</div>' +
                 '<div style="background:var(--card-sub);padding:12px;border-radius:8px;border:1px solid var(--line)">' +
-                  '<b style="color:var(--pri)">2. Scale &amp; Material Quiz</b>' +
+                  '<b style="color:var(--pri-ink)">2. Scale &amp; Material Quiz</b>' +
                   '<p class="muted" style="margin:4px 0 0">5/10 Marla, 1/2 Kanal · Acrylic, Solid Oak, Victorian Classic finishes.</p>' +
                 '</div>' +
                 '<div style="background:var(--card-sub);padding:12px;border-radius:8px;border:1px solid var(--line)">' +
-                  '<b style="color:var(--pri)">3. Instant BOQ &amp; Lead Sync</b>' +
+                  '<b style="color:var(--pri-ink)">3. Instant BOQ &amp; Lead Sync</b>' +
                   '<p class="muted" style="margin:4px 0 0">Calculates PKR estimate range, creates CRM lead &amp; alerts Telegram staff.</p>' +
                 '</div>' +
               '</div>' +

@@ -120,7 +120,7 @@ html .content h1, html .page-h h1 { font-size: 24px; font-weight: 600; letter-sp
 html .card h3, html .card-h h3, html .card h4 { font-size: 15px; font-weight: 600; color: var(--txt); }
 html .muted, html .card small, html .card .muted { color: var(--mut); }
 html .crumb { color: var(--mut) !important; font-size: 13px; }
-html .content a:not(.btn):not(.nav-a):not(.dx-chip) { color: var(--pri); }
+html .content a:not(.btn):not(.nav-a):not(.dx-chip) { color: var(--pri-ink); }
 html.dark .content a:not(.btn):not(.nav-a):not(.dx-chip) { color: var(--cyan); }   /* blue-600 on neutral-900 = 3.2:1 */
 html.dark .pk-btn kbd { background: var(--card-sub); color: var(--txt2); }
 html .content a:not(.btn):not(.nav-a):hover { text-decoration: underline; }
@@ -141,7 +141,7 @@ html .side .nav-a {
 }
 html .side .nav-a:hover { background: var(--side-active); color: var(--txt); }
 html .side .nav-a.on { background: var(--side-active); color: var(--side-active-fg); font-weight: 600; }
-html .side .nav-a.on i, html .side .nav-a:hover i, html .side .nav-a.on svg { color: var(--pri); }
+html .side .nav-a.on i, html .side .nav-a:hover i, html .side .nav-a.on svg { color: var(--pri-ink); }
 html .side .nav-g, html .side .nav-h { color: var(--side-muted) !important; font-size: 12px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
 html .side small, html .side .muted { color: var(--side-muted) !important; }
 html .side b, html .side strong { color: var(--txt) !important; }
@@ -152,7 +152,7 @@ html .side-foot a:hover, html .side-foot button:hover { color: var(--txt) !impor
 
 /* Shell pieces added in index.html (Tailwind utilities do the layout) */
 html .wx-logo { background: var(--pri) !important; color: #ffffff !important; font-weight: 700; border-radius: 10px; }
-html .wx-brand-sub { color: var(--pri) !important; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; font-size: 11px; }
+html .wx-brand-sub { color: var(--pri-ink) !important; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; font-size: 11px; }
 html .wx-av, html #sf-av, html #u-av, html .side-foot .av {
   background: var(--pri) !important; color: #ffffff !important;
   width: 34px; height: 34px; border-radius: 999px; display: grid; place-items: center; font-size: 13px; font-weight: 600; flex-shrink: 0;
@@ -238,7 +238,7 @@ html [style*="background:#c59b27"], html [style*="background:#d4af6a"], html [st
   background: var(--pri) !important; color: var(--pri-fg) !important; border-color: var(--pri) !important;
 }
 html [style*="color:#00d3f2"], html [style*="color: #00d3f2"], html [style*="color:#00b8db"], html [style*="color: #00b8db"],
-html [style*="color:#c59b27"], html [style*="color: #c59b27"], html [style*="color:#22c7e6"] { color: var(--pri) !important; }
+html [style*="color:#c59b27"], html [style*="color: #c59b27"], html [style*="color:#22c7e6"] { color: var(--pri-ink) !important; }
 html [style*="border-color:#00b8db"], html [style*="border-color: #00b8db"] { border-color: var(--pri) !important; }
 
 /* ---------- Inline dark surfaces from the JS: neutral cards in both themes ---------- */
@@ -273,7 +273,7 @@ html .auth { background: var(--bg); }
 html .auth-card { padding: 32px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08); }
 html .auth-title { color: var(--txt) !important; font-weight: 600; }
 html .auth-sub { color: var(--mut) !important; }
-html .auth-link-cyan { color: var(--pri) !important; }
+html .auth-link-cyan { color: var(--pri-ink) !important; }
 
 /* ---------- Active states and tabs: blue fill with white text (the old dark-navy and gold fills failed contrast) ---------- */
 html .hub-bar a.on, html.dark .hub-bar a.on, html .seg button.on, html .lp-bar button.on, html .ib-chips button.on {
@@ -326,7 +326,7 @@ html .kpis, html .grid.kpis { gap: 16px; grid-template-columns: repeat(4, minmax
 html .kpi, html .card.kpi { padding: 18px 20px; }
 html .kpi b { font-size: 26px; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--txt); }
 html .kpi small { font-size: 13px; font-weight: 500; color: var(--mut); }
-html .kpi .kpi-ic { width: 36px; height: 36px; margin: 0 0 12px; border-radius: 10px; background: var(--pri-soft); color: var(--pri); }
+html .kpi .kpi-ic { width: 36px; height: 36px; margin: 0 0 12px; border-radius: 10px; background: var(--pri-soft); color: var(--pri-ink); }
 html .grid.kpis .kpi-ic { display: grid; }
 html .kpi .kpi-ic svg { width: 18px; height: 18px; }
 
@@ -529,12 +529,12 @@ html .cb-list-h input { margin: 0; width: 100%; }
 html .cb-tabs { display: flex; gap: 4px; padding: 0 14px; border-bottom: 1px solid var(--line); }
 html .cb-tabs button { border: 0; background: none; padding: 10px 8px 9px; font: inherit; font-size: 13px; font-weight: 600; color: var(--mut); border-bottom: 2px solid transparent; cursor: pointer; transition: color 150ms var(--ease), border-color 150ms var(--ease); }
 html .cb-tabs button:hover { color: var(--txt); }
-html .cb-tabs button.on { color: var(--pri); border-bottom-color: var(--pri); }
+html .cb-tabs button.on { color: var(--pri-ink); border-bottom-color: var(--pri); }
 html .cb-tabs .cb-n { display: inline-block; min-width: 20px; padding: 0 6px; border-radius: 999px; background: var(--card-sub); color: var(--mut); font-size: 11px; text-align: center; }
 html .cb-chans { display: flex; gap: 6px; flex-wrap: wrap; padding: 10px 14px; }
 html .cb-chans button { border: 1px solid var(--line); background: var(--card); color: var(--txt2); font: inherit; font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 999px; cursor: pointer; transition: background-color 150ms var(--ease); }
 html .cb-chans button:hover { background: var(--card-sub); }
-html .cb-chans button.on { background: var(--pri-soft); border-color: var(--pri); color: var(--pri); }
+html .cb-chans button.on { background: var(--pri-soft); border-color: var(--pri); color: var(--pri-ink); }
 html .cb-threads { overflow: auto; flex: 1; min-height: 0; }
 html .cb-item { display: flex; gap: 10px; width: 100%; padding: 12px 14px; border: 0; border-bottom: 1px solid var(--line); background: var(--card); color: var(--txt); font: inherit; text-align: left; cursor: pointer; transition: background-color 150ms var(--ease); }
 html .cb-item:hover { background: var(--card-sub); }
@@ -546,14 +546,14 @@ html .cb-item-t small { font-size: 11.5px; color: var(--mut); white-space: nowra
 html .cb-item-s { font-size: 13px; color: var(--mut); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 html .cb-item.unread .cb-item-s, html .cb-item.unread .cb-item-t b { color: var(--txt); font-weight: 700; }
 html .cb-item-m { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
-html .cb-av { display: inline-grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: var(--pri-soft); color: var(--pri); font-size: 12px; font-weight: 700; flex: none; }
+html .cb-av { display: inline-grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: var(--pri-soft); color: var(--pri-ink); font-size: 12px; font-weight: 700; flex: none; }
 html .cb-av.lg { width: 44px; height: 44px; font-size: 14px; }
 html .cb-chan-b { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; background: var(--card-sub); color: var(--txt2); border: 1px solid var(--line); }
 html .cb-chan-b.wa { color: #15803d; border-color: #86efac; }
 html .cb-chan-b.tg { color: #0369a1; border-color: #7dd3fc; }
 html.dark .cb-chan-b.wa { color: #86efac; border-color: #166534; }
 html.dark .cb-chan-b.tg { color: #7dd3fc; border-color: #075985; }
-html .cb-tag { display: inline-block; padding: 1px 7px; border-radius: 999px; font-size: 11px; font-weight: 600; background: var(--pri-soft); color: var(--pri); }
+html .cb-tag { display: inline-block; padding: 1px 7px; border-radius: 999px; font-size: 11px; font-weight: 600; background: var(--pri-soft); color: var(--pri-ink); }
 html .cb-tag.warn { background: #fef3c7; color: #92400e; }
 html .cb-tag.ai { background: #ede9fe; color: #5b21b6; }
 html.dark .cb-tag.warn { background: rgba(245, 158, 11, 0.18); color: #fcd34d; }
@@ -585,7 +585,7 @@ html .cb-form textarea { margin: 0; resize: vertical; min-height: 58px; }
 html .cb-form-b { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
 html .cb-kv { display: grid; gap: 2px; font-size: 13.5px; }
 html .cb-kv small { color: var(--mut); font-size: 12px; }
-html .cb-kv a { color: var(--pri); }
+html .cb-kv a { color: var(--pri-ink); }
 html .cb-info-h { display: grid; justify-items: center; gap: 6px; text-align: center; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
 html .cb-info-h b { font-size: 15px; }
 html .cb-info-a { display: grid; gap: 8px; margin-top: auto; }
@@ -598,7 +598,7 @@ html .cb-hub-c:hover { box-shadow: var(--sh-md); transform: translateY(-1px); bo
 html .cb-hub-c b { font-size: 14px; }
 html .cb-hub-c .cb-hub-n { font-size: 24px; font-weight: 700; line-height: 1.1; font-variant-numeric: tabular-nums; }
 html .cb-hub-c small { color: var(--mut); font-size: 12.5px; }
-html .cb-hub-c .cb-hub-go { color: var(--pri); font-size: 12.5px; font-weight: 600; }
+html .cb-hub-c .cb-hub-go { color: var(--pri-ink); font-size: 12.5px; font-weight: 600; }
 
 @media (max-width: 1180px) {
   html .cb-shell { grid-template-columns: 280px minmax(0, 1fr); height: auto; min-height: 0; }
@@ -653,10 +653,10 @@ html .page-h { flex-wrap: wrap; gap: 12px; }
 }
 
 /* AI Assistant sub-nav: the active item uses the light tint in light mode (its navy fill broke AA with blue text). */
-html:not(.dark) .ac-nav a.on { background: var(--pri-soft); color: var(--pri); }
+html:not(.dark) .ac-nav a.on { background: var(--pri-soft); color: var(--pri-ink); }
 /* Sub-nav icons: same gap in every item, and the active icon takes the brand text token (not the old gold literal). */
 html .ac-nav a { gap: 12px; }
-html .ac-nav a.on svg { color: var(--pri); }
+html .ac-nav a.on svg { color: var(--pri-ink); }
 
 /* AI Assistant on phones: the single column must shrink to the screen; the section nav scrolls sideways inside its own box. */
 @media (max-width: 900px) {
@@ -677,11 +677,11 @@ html .au-steps { list-style: none; margin: 0; padding: 0; display: grid; grid-te
 html .au-steps li { display: flex; gap: 10px; align-items: flex-start; min-width: 0; padding: 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--card); }
 html .au-steps b { display: block; font-size: 13.5px; color: var(--txt); }
 html .au-steps li > div > span { display: block; margin-top: 2px; font-size: 12px; line-height: 1.4; color: var(--mut); }
-html .au-n { flex: none; display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--pri-soft); color: var(--pri); font-size: 12px; font-weight: 700; }
+html .au-n { flex: none; display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--pri-soft); color: var(--pri-ink); font-size: 12px; font-weight: 700; }
 @media (max-width: 1100px) { html .au-steps { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 @media (max-width: 700px) { html .au-steps { grid-template-columns: minmax(0, 1fr); } }
 /* Light mode: the active pill uses the brand tint, the same as the AI Assistant sub-nav. Dark mode keeps its navy fill. */
-html:not(.dark) .seg button.on, html:not(.dark) .wh-tabs a.on { background: var(--pri-soft); color: var(--pri); }
+html:not(.dark) .seg button.on, html:not(.dark) .wh-tabs a.on { background: var(--pri-soft); color: var(--pri-ink); }
 /* Pill tabs: icon and label sit on one line with the same gap on every page. */
 html .seg button { display: inline-flex; align-items: center; gap: 7px; }
 html .seg button > svg, html .seg button > i { flex: none; width: 16px; height: 16px; }
@@ -714,7 +714,7 @@ html .dx-kpi {
 }
 html .dx-kpi small { grid-area: label; font-size: 11.5px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: var(--mut); }
 html .dx-kpi b { grid-area: value; font-size: 26px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.2; font-variant-numeric: tabular-nums; margin: 2px 0 0; }
-html .dx-kpi .kpi-ic { grid-area: icon; width: 38px; height: 38px; margin: 0 0 0 12px; border-radius: 10px; background: var(--pri-soft); color: var(--pri); }
+html .dx-kpi .kpi-ic { grid-area: icon; width: 38px; height: 38px; margin: 0 0 0 12px; border-radius: 10px; background: var(--pri-soft); color: var(--pri-ink); }
 html .dx-kpi .dx-sub { grid-area: sub; margin-top: 6px; font-size: 12.5px; }
 
 /* Chips: tint only, no saturated 1px outline — the reference uses a soft wash with the same hue. */
@@ -888,7 +888,7 @@ html .dx-kpi {
 }
 html .dx-kpi small { display: block; padding-right: 52px; min-height: 40px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .025em; color: var(--mut); }
 html .dx-kpi b { display: block; padding-right: 0; font-size: clamp(22px, 1.9vw, 30px); font-weight: 700; line-height: 1.15; letter-spacing: -0.02em; color: var(--txt); margin: 4px 0 0; white-space: normal; overflow-wrap: anywhere; }
-html .dx-kpi .kpi-ic { position: absolute; top: 16px; right: 20px; width: 40px; height: 40px; margin: 0 !important; border-radius: var(--r); background: var(--pri-soft); color: var(--pri); display: grid; place-items: center; }
+html .dx-kpi .kpi-ic { position: absolute; top: 16px; right: 20px; width: 40px; height: 40px; margin: 0 !important; border-radius: var(--r); background: var(--pri-soft); color: var(--pri-ink); display: grid; place-items: center; }
 html .dx-kpi .dx-sub { grid-area: sub; margin-top: 6px; font-size: 12px; color: var(--mut); }
 
 /* 8.2 table */
@@ -934,7 +934,7 @@ html label { font-size: 14px; font-weight: 500; color: var(--txt); }
 html .seg { display: inline-flex; gap: 4px; padding: 3px; background: var(--card-sub); border: 1px solid var(--line); border-radius: var(--r); }
 html .seg button { border: 0; background: transparent; border-radius: 6px; padding: 6px 12px; font-size: 13px; font-weight: 500; color: var(--txt2); cursor: pointer; transition: background-color 150ms ease-out, color 150ms ease-out; }
 html .seg button:hover { color: var(--txt); }
-html .seg button.on { background: var(--card); color: var(--pri); box-shadow: var(--sh); font-weight: 600; }
+html .seg button.on { background: var(--card); color: var(--pri-ink); box-shadow: var(--sh); font-weight: 600; }
 
 /* 8.2 overlays */
 html .modal { background: rgba(17, 24, 39, .55); backdrop-filter: blur(2px); }
@@ -1025,7 +1025,7 @@ html:root:not(.dark) .badge.info, html.dark .badge.info
 
 /* inline accent text: --pri is a fill colour (blue-600, 5.2:1 with white text on a button), but it
    is not legible AS TEXT on neutral-900/800 — use the text-safe accent there. Light is unchanged. */
-html.dark [style*="color:var(--pri)"], html.dark [style*="color: var(--pri)"] { color: var(--cyan) !important; }
+html.dark [style*="color:var(--pri)"], html.dark [style*="color: var(--pri)"], html.dark [style*="color:var(--pri-ink)"], html.dark [style*="color: var(--pri-ink)"] { color: var(--cyan) !important; }
 html [style*="color:var(--ok)"],   html [style*="color: var(--ok)"]   { color: var(--ok-text) !important; }
 html [style*="color:var(--warn)"], html [style*="color: var(--warn)"] { color: var(--warn-text) !important; }
 html [style*="color:var(--bad)"],  html [style*="color: var(--bad)"]  { color: var(--bad-text) !important; }

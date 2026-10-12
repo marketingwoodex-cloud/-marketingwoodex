@@ -86,7 +86,7 @@
           '</div>' +
           '<div id="conn-ping-res" style="display:none;padding:10px;border-radius:8px;background:#052e16;border:1px solid #166534;color:#4ade80;font-size:12.5px;margin-bottom:14px">Not verified: no live health check was run. No request was sent.</div>' +
           '<div class="modal-actions" style="margin-top:20px;display:flex;gap:10px;justify-content:flex-end">' +
-            '<button type="button" class="btn" id="conn-m-ping" style="background:var(--card-sub);color:var(--pri);border-color:#232836">' + ic("activity") + ' Test Ping</button>' +
+            '<button type="button" class="btn" id="conn-m-ping" style="background:var(--card-sub);color:var(--pri-ink);border-color:#232836">' + ic("activity") + ' Test Ping</button>' +
             (isConn ? '<button type="button" class="btn danger" id="conn-m-disc">' + ic("x") + ' Disconnect</button>' : '') +
             '<button type="button" class="btn" id="conn-m-cancel">Cancel</button>' +
             '<button type="submit" class="btn pri btn-preline-cyan">' + ic("check") + (isConn ? ' Save Updates' : ' Authorize & Connect') + '</button>' +
@@ -183,14 +183,14 @@
             '<div>' +
               '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">' +
                 '<label style="margin:0;font-weight:600;color:var(--txt);font-size:13px">Google Analytics 4 Measurement ID</label>' +
-                '<a href="https://analytics.google.com" target="_blank" rel="noopener" style="font-size:12px;color:var(--pri);text-decoration:none;display:flex;align-items:center;gap:4px">' + ic("external-link") + 'Open Analytics Console</a>' +
+                '<a href="https://analytics.google.com" target="_blank" rel="noopener" style="font-size:12px;color:var(--pri-ink);text-decoration:none;display:flex;align-items:center;gap:4px">' + ic("external-link") + 'Open Analytics Console</a>' +
               '</div>' +
               '<input type="text" id="st-ga4" value="G-WX880921B" placeholder="G-XXXXXXXXXX" style="width:100%;background:var(--card-sub);border-color:var(--line);padding:9px 14px;border-radius:8px">' +
             '</div>' +
             '<div>' +
               '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">' +
                 '<label style="margin:0;font-weight:600;color:var(--txt);font-size:13px">Google Search Console Verification Tag / HTML</label>' +
-                '<a href="https://search.google.com/search-console" target="_blank" rel="noopener" style="font-size:12px;color:var(--pri);text-decoration:none;display:flex;align-items:center;gap:4px">' + ic("external-link") + 'Open Search Console</a>' +
+                '<a href="https://search.google.com/search-console" target="_blank" rel="noopener" style="font-size:12px;color:var(--pri-ink);text-decoration:none;display:flex;align-items:center;gap:4px">' + ic("external-link") + 'Open Search Console</a>' +
               '</div>' +
               '<input type="text" id="st-gsc" value="google-site-verification: google0b104c3cfb7a4943.html" placeholder="google-site-verification=..." style="width:100%;background:var(--card-sub);border-color:var(--line);padding:9px 14px;border-radius:8px">' +
               '<small class="muted" style="font-size:11.5px;margin-top:4px;display:block">Direct HTML verification file `google0b104c3cfb7a4943.html` is verified and active at root.</small>' +
@@ -465,23 +465,23 @@
             '</div>' +
             '<div style="display:flex;flex-direction:column;gap:12px;margin-top:16px">' +
               '<div style="background:var(--card-sub);border:1px solid var(--line);border-radius:10px;padding:14px">' +
-                '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px"><code style="color:var(--pri);font-weight:700;font-size:13px">list_leads(stage, search, limit)</code><span class="badge ok">Read</span></div>' +
+                '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px"><code style="color:var(--pri-ink);font-weight:700;font-size:13px">list_leads(stage, search, limit)</code><span class="badge ok">Read</span></div>' +
                 '<small class="muted">Queries active CRM leads, quotes, customer stages, and contact WhatsApp numbers.</small>' +
               '</div>' +
               '<div style="background:var(--card-sub);border:1px solid var(--line);border-radius:10px;padding:14px">' +
-                '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px"><code style="color:var(--pri);font-weight:700;font-size:13px">create_quote_draft(client, project, sections)</code><span class="badge gold">Write</span></div>' +
+                '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px"><code style="color:var(--pri-ink);font-weight:700;font-size:13px">create_quote_draft(client, project, sections)</code><span class="badge gold">Write</span></div>' +
                 '<small class="muted">Drafts customized residential/commercial BOQ quotations with PKR line item calculations.</small>' +
               '</div>' +
               '<div style="background:var(--card-sub);border:1px solid var(--line);border-radius:10px;padding:14px">' +
-                '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px"><code style="color:var(--pri);font-weight:700;font-size:13px">save_content_draft(type, title, body, faqs)</code><span class="badge gold">Write</span></div>' +
+                '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px"><code style="color:var(--pri-ink);font-weight:700;font-size:13px">save_content_draft(type, title, body, faqs)</code><span class="badge gold">Write</span></div>' +
                 '<small class="muted">Creates drafts for articles, portfolio studies, and city pages with simple markdown.</small>' +
               '</div>' +
               '<div style="background:var(--card-sub);border:1px solid var(--line);border-radius:10px;padding:14px">' +
-                '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px"><code style="color:var(--pri);font-weight:700;font-size:13px">send_telegram_alert(text, parseMode)</code><span class="badge gold">Write</span></div>' +
+                '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px"><code style="color:var(--pri-ink);font-weight:700;font-size:13px">send_telegram_alert(text, parseMode)</code><span class="badge gold">Write</span></div>' +
                 '<small class="muted">Dispatches milestone notification broadcasts through Telegram Bot @WoodexInteriorBot.</small>' +
               '</div>' +
               '<div style="background:var(--card-sub);border:1px solid var(--line);border-radius:10px;padding:14px">' +
-                '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px"><code style="color:var(--pri);font-weight:700;font-size:13px">site_stats()</code><span class="badge ok">Read</span></div>' +
+                '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px"><code style="color:var(--pri-ink);font-weight:700;font-size:13px">site_stats()</code><span class="badge ok">Read</span></div>' +
                 '<small class="muted">Returns live KPIs: total pages, monthly leads, unread count, open pipeline and payment stats.</small>' +
               '</div>' +
             '</div>' +
@@ -519,7 +519,7 @@
             '<div class="card" style="border-radius:14px;padding:22px">' +
               '<div class="card-h" style="padding:0 0 14px;border-bottom:1px solid var(--line)"><h3 style="font-size:16px;color:var(--txt)">' + ic("terminal") + ' JSON-RPC 2.0 Endpoint</h3></div>' +
               '<div style="margin-top:14px;display:flex;flex-direction:column;gap:10px;font-size:13px">' +
-                '<div style="display:flex;justify-content:space-between"><span>Protocol</span><b style="color:var(--pri)">JSON-RPC 2.0 / Streamable SSE</b></div>' +
+                '<div style="display:flex;justify-content:space-between"><span>Protocol</span><b style="color:var(--pri-ink)">JSON-RPC 2.0 / Streamable SSE</b></div>' +
                 '<div style="display:flex;justify-content:space-between"><span>Endpoint</span><b style="color:var(--txt)">/api/mcp.php</b></div>' +
                 '<div style="display:flex;justify-content:space-between"><span>Authentication</span><b style="color:var(--ok)">Header: Authorization: Bearer wxa_...</b></div>' +
               '</div>' +
@@ -561,7 +561,7 @@
           '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-top:16px">' +
             '<div style="background:var(--card-sub);padding:14px;border-radius:10px;border:1px solid var(--line)"><small class="muted">PHP Version</small><b style="display:block;font-size:16px;color:var(--txt);margin-top:4px">8.2.18 (Hostinger)</b></div>' +
             '<div style="background:var(--card-sub);padding:14px;border-radius:10px;border:1px solid var(--line)"><small class="muted">Database Latency</small><b style="display:block;font-size:16px;color:var(--ok);margin-top:4px">1.2 ms · Optimal</b></div>' +
-            '<div style="background:var(--card-sub);padding:14px;border-radius:10px;border:1px solid var(--line)"><small class="muted">Cron Daemon</small><b style="display:block;font-size:16px;color:var(--pri);margin-top:4px">Active · 5 min tick</b></div>' +
+            '<div style="background:var(--card-sub);padding:14px;border-radius:10px;border:1px solid var(--line)"><small class="muted">Cron Daemon</small><b style="display:block;font-size:16px;color:var(--pri-ink);margin-top:4px">Active · 5 min tick</b></div>' +
             '<div style="background:var(--card-sub);padding:14px;border-radius:10px;border:1px solid var(--line)"><small class="muted">Memory Usage</small><b style="display:block;font-size:16px;color:var(--txt);margin-top:4px">18.4 MB / 512 MB</b></div>' +
           '</div>' +
         '</div>';

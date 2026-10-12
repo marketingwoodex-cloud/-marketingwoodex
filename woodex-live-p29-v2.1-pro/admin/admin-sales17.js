@@ -74,7 +74,7 @@
             '<div class="crm-imp-item"><div class="crm-imp-left"><div class="crm-imp-ic">' + ic("file-text") + '</div><div><div class="crm-imp-title">Notion</div><div class="crm-imp-desc">Users</div></div></div><button class="crm-imp-btn" id="imp-notion">Launch importer ↗</button></div>' +
             '<div class="crm-imp-item"><div class="crm-imp-left"><div class="crm-imp-ic">' + ic("file") + '</div><div><div class="crm-imp-title">CSV</div><div class="crm-imp-desc">Users</div></div></div><button class="crm-imp-btn" id="imp-csv">Launch importer ↗</button></div>' +
           '</div>' +
-          '<small style="color:var(--mut);font-size:12px;margin-top:auto">Or you can <a href="#/settings" style="color:var(--pri);text-decoration:none;font-weight:600">sync data to Preline</a> to ensure your data is always up-to-date.</small>' +
+          '<small style="color:var(--mut);font-size:12px;margin-top:auto">Or you can <a href="#/settings" style="color:var(--pri-ink);text-decoration:none;font-weight:600">sync data to Preline</a> to ensure your data is always up-to-date.</small>' +
         '</div>' +
 
         '<div class="crm-block-card"><div class="crm-block-h"><h3>Lead funnel status</h3><button class="icon-btn" style="opacity:0.6">⋮</button></div>' +
@@ -343,20 +343,94 @@
       $("#mg-go").onclick = function () { if (!confirm("Merge? This cannot be undone.")) return; api("clients_merge", { keep: $("#mg-k").value, merge: $("#mg-d").value }).then(function (r) { if (!r.ok) { $("#mg-e").textContent = r.error; return; } W.closeModal(); toast("Merged ✓"); load(); }); };
     };
   };
+  /* Add/Edit client — split layout adapted from the Preline reference block
+     "Split contact page with contact details" (form left, details panel right).
+     Field ids are unchanged, so the existing save handler is untouched. */
   function clientForm(c, after) {
-    var f = function (id, lab, v, t) { return "<label>" + lab + "<input id='" + id + "' type='" + (t || "text") + "' value='" + esc(v || "") + "'></label>"; };
-    W.modal("<h2>" + (c.id ? "Edit client" : "Add client") + "</h2><div class='s17-g2'>" + f("cf-n", "Contact name *", c.name) + f("cf-co", "Company", c.company) + f("cf-ds", "Designation", c.designation) + f("cf-p", "Phone", c.phone) + f("cf-e", "Email", c.email, "email") + f("cf-c", "City", c.city || "Lahore") +
-      "<label>Client type<select id='cf-t'>" + opts(M.clientTypes, c.type, "—") + "</select></label><label>Business line<select id='cf-l'>" + opts(M.lines, c.line, "—") + "</select></label>" + f("cf-s", "Came from (source)", c.source) + f("cf-tg", "Tags (comma separated)", (c.tags || []).join(", ")) + "</div>" +
-      f("cf-a", "Address", c.address) + "<label>Notes<textarea id='cf-no' rows='3'>" + esc(c.notes || "") + "</textarea></label><p class='err' id='cf-err'></p><div class='modal-actions'><button class='btn' onclick='WXA.closeModal()'>Cancel</button><button class='btn pri' id='cf-go'>Save</button></div>");
+    var ini = function (n) { return String(n || "").trim().split(/\s+/).slice(0, 2).map(function (w) { return w[0] || ""; }).join("").toUpperCase() || "?"; };
+    var f = function (id, lab, v, t) { return "<label class='wx-field'>" + lab + "<input id='" + id + "' type='" + (t || "text") + "' value='" + esc(v || "") + "'></label>"; };
+    var sec = function (t, body) { return "<section class='wx-fsection'><h3>" + t + "</h3>" + body + "</section>"; };
+    var row = function (icon, lab, id) { return "<div class='wx-drow'><span class='ic'>" + ic(icon) + "</span><div><small>" + lab + "</small><span class='v' id='" + id + "'>—</span></div></div>"; };
+    var has = { address: !!c.address, source: !!c.source, tags: (c.tags || []).length };
+
+    W.modal("<div class='wx-form-head'><div><h2>" + (c.id ? "Edit client" : "New client") + "</h2>" +
+        "<p class='wx-sub'>Quotations, invoices, follow-ups and WhatsApp messages all pull their details from this record — keep the contact block accurate.</p></div>" +
+        "<div class='wx-pv'><span class='wx-pv-av' id='cf-pv-av'>" + esc(ini(c.company || c.name)) + "</span><div><b id='cf-pv-n'>" + esc(c.company || c.name || "New client") + "</b><small id='cf-pv-s'>" + (c.id ? "Client since " + dd(c.created_at) : "Not saved yet") + "</small></div></div></div>" +
+
+      "<div class='wx-split'><div class='wx-form-col'>" +
+        sec("Contact", "<div class='wx-grid-2'>" + f("cf-n", "Contact name *", c.name) + f("cf-co", "Company", c.company) + f("cf-ds", "Designation", c.designation) + f("cf-p", "Phone", c.phone) + f("cf-e", "Email", c.email, "email") + f("cf-c", "City", c.city || "Lahore") + "</div>") +
+        sec("Classification", "<div class='wx-grid-2'><label class='wx-field'>Client type<select id='cf-t'>" + opts(M.clientTypes, c.type, "—") + "</select></label><label class='wx-field'>Business line<select id='cf-l'>" + opts(M.lines, c.line, "—") + "</select></label>" + f("cf-s", "Came from (source)", c.source) + f("cf-tg", "Tags (comma separated)", (c.tags || []).join(", ")) + "</div>") +
+        sec("Address & notes", f("cf-a", "Address", c.address) + "<label class='wx-field'>Notes<textarea id='cf-no' rows='3'>" + esc(c.notes || "") + "</textarea></label>") +
+      "</div>" +
+
+      "<aside class='wx-details'><h3>Contact details</h3><div class='wx-details-rows'>" +
+        row("phone", "Phone", "cf-pv-phone") + row("mail", "Email", "cf-pv-mail") + row("map-pin", "Location", "cf-pv-loc") +
+        row("layers", "Classification", "cf-pv-type") + row("user", "Contact person", "cf-pv-person") +
+      "</div><div class='wx-note' id='cf-pv-note'>Fill the contact block and this panel updates as you type — it is exactly what the client sees on quotations and invoices.</div></aside>" +
+      "</div><p class='err' id='cf-err'></p><div class='modal-actions'><button class='btn' onclick='WXA.closeModal()'>Cancel</button><button class='btn pri' id='cf-go'>" + (c.id ? "Save changes" : "Create client") + "</button></div>");
     $("#modal-card").classList.add("wide");
+
+    /* Live panel — mirrors the reference, where the details card reflects the form. */
+    var sync = function () {
+      var v = function (id) { var e = $("#" + id); return e ? e.value.trim() : ""; };
+      var t = $("#cf-t"), l = $("#cf-l");
+      var put = function (id, txt, link) {
+        var e = $("#" + id); if (!e) return;
+        var val = txt || "—";
+        if (link && txt) { e.innerHTML = ""; var a = document.createElement("a"); a.className = "v"; a.href = link; a.textContent = txt; e.appendChild(a); }
+        else { e.textContent = val; e.className = "v"; }
+      };
+      put("cf-pv-phone", v("cf-p"), v("cf-p") ? "tel:" + v("cf-p").replace(/[^\d+]/g, "") : "");
+      put("cf-pv-mail", v("cf-e"), v("cf-e") ? "mailto:" + v("cf-e") : "");
+      var loc = [v("cf-c"), v("cf-a")].filter(Boolean).join(" · ");
+      put("cf-pv-loc", loc);
+      put("cf-pv-person", [v("cf-n"), v("cf-ds")].filter(Boolean).join(" · ") || "—");
+      var ty = t && t.value ? (M.clientTypes[t.value] || t.value) : "";
+      var li = l && l.value ? (M.lines[l.value] || l.value) : "";
+      put("cf-pv-type", [ty, li].filter(Boolean).join(" · ") || "—");
+      $("#cf-pv-av").textContent = ini(v("cf-co") || v("cf-n"));
+      $("#cf-pv-n").textContent = v("cf-co") || v("cf-n") || "New client";
+      var sn = $("#cf-s");
+      $("#cf-pv-note").textContent = (sn && sn.value.trim())
+        ? "Came from: " + sn.value.trim() + " · " + (has.tags ? "tagged on the list view" : "add tags to segment this client")
+        : "Fill the contact block and this panel updates as you type — it is exactly what the client sees on quotations and invoices.";
+    };
+    ["cf-n", "cf-co", "cf-ds", "cf-p", "cf-e", "cf-c", "cf-a", "cf-s"].forEach(function (id) { var e = $("#" + id); if (e) e.oninput = sync; });
+    ["cf-t", "cf-l"].forEach(function (id) { var e = $("#" + id); if (e) e.onchange = sync; });
+    sync();
+
     $("#cf-go").onclick = function () {
       api("client_save", { id: c.id || 0, name: $("#cf-n").value, company: $("#cf-co").value, designation: $("#cf-ds").value, phone: $("#cf-p").value, email: $("#cf-e").value, city: $("#cf-c").value, type: $("#cf-t").value, line: $("#cf-l").value, source: $("#cf-s").value, tags: $("#cf-tg").value, address: $("#cf-a").value, notes: $("#cf-no").value })
         .then(function (r) { if (!r.ok) { $("#cf-err").textContent = r.error; return; } $("#modal-card").classList.remove("wide"); W.closeModal(); toast("Saved ✓"); after(+(r.client && r.client.id) || c.id); });
     };
   }
+  /* Async views must not bind into a container the router has already replaced.
+     Without this, a superseded render threw "Cannot set properties of null"
+     and left the Client 360 buttons dead. */
+  var stillLive = function (el) { return !!el && el.isConnected && el === document.querySelector("#view"); };
+
+  /* Client 360 sidebar — the reference block's "Contact details" card, reused. */
+  function wxContactCard(c) {
+    var row = function (icon, lab, val, href) {
+      if (!val) return "";
+      var body = href ? "<a class='v' href='" + esc(href) + "'" + (href.indexOf("http") === 0 ? " target='_blank' rel='noopener'" : "") + ">" + esc(val) + "</a>" : "<span class='v'>" + esc(val) + "</span>";
+      return "<div class='wx-drow'><span class='ic'>" + ic(icon) + "</span><div><small>" + lab + "</small>" + body + "</div></div>";
+    };
+    var loc = [c.city, c.address].filter(Boolean).join(" · ");
+    var rows = row("phone", "Phone", c.phone, c.phone ? "tel:" + String(c.phone).replace(/[^\d+]/g, "") : "")
+      + row("mail", "Email", c.email, c.email ? "mailto:" + c.email : "")
+      + row("map-pin", "Location", loc)
+      + row("layers", "Classification", [M.clientTypes[c.type], c.line ? M.lines[c.line] : ""].filter(Boolean).join(" · "))
+      + row("user", "Contact person", [c.name, c.designation].filter(Boolean).join(" · "))
+      + row("link", "Came from", c.source);
+    var tags = c.tags && c.tags.length ? "<div class='wx-note'>" + c.tags.map(function (t) { return "<span class='badge'>" + esc(t) + "</span>"; }).join(" ") + "</div>" : "";
+    if (!rows && !tags) return "";
+    return "<div class='wx-details'><h3>Contact details</h3><div class='wx-details-rows'>" + rows + "</div>" + tags + "</div>";
+  }
   function c360(el, id) {
     el.innerHTML = "<div class='empty'>Loading client…</div>";
     Promise.all([meta(), api("client_360", { id: id })]).then(function (res) {
+      if (!stillLive(el)) return;
       var r = res[1]; if (!r.ok) { el.innerHTML = "<div class='card card-b'><p class='err'>" + esc(r.error) + "</p><a class='btn' href='#/clients'>Back to clients</a></div>"; return; }
       var c = r.client, k = r.kpis, pct = k.lifetime ? Math.round(100 * k.paid / k.lifetime) : 0;
       var TLI = { lead: "inbox", note: "file-text", quote: "receipt", invoice: "file-text", payment: "receipt", project: "briefcase" };
@@ -374,17 +448,19 @@
           "<div class='tbl-wrap' data-p='p' hidden><table class='tbl'><thead><tr><th>Project</th><th>Site</th><th>Stage</th><th>Start</th><th class='r'>Value</th></tr></thead><tbody>" + (r.projects.map(function (p) { return "<tr data-h='#/projects'><td><b>" + esc(p.name) + "</b></td><td>" + esc(p.site || "") + "</td><td><span class='badge'>" + esc(p.stage) + "</span></td><td>" + dd(p.start) + "</td><td class='r'>" + pkr(p.value) + "</td></tr>"; }).join("") || "<tr><td colspan='5' class='empty'>No projects yet.</td></tr>") + "</tbody></table></div>" +
           "<div class='tbl-wrap' data-p='l' hidden><table class='tbl'><thead><tr><th>#</th><th>Date</th><th>Project type</th><th>Stage</th><th>Next follow-up</th></tr></thead><tbody>" + (r.leads.map(function (l) { return "<tr data-lead='" + l.id + "'><td>#" + l.id + "</td><td>" + dd(l.created_at) + "</td><td>" + esc(l.project_type || l.service || "—") + "</td><td>" + badge(l.stage) + "</td><td class='" + (overdue(l) ? "s17-red" : "") + "'>" + (l.next_at && open(l) ? dd(l.next_at, true) : "—") + "</td></tr>"; }).join("") || "<tr><td colspan='5' class='empty'>No enquiries linked.</td></tr>") + "</tbody></table></div></div>" +
           (c.notes ? "<div class='card card-b' style='margin-top:16px'><h3 class='ld-h'>Notes</h3><p style='white-space:pre-wrap'>" + esc(c.notes) + "</p></div>" : "") + "</div>" +
-        "<aside><div class='card card-b s17-next'><b>" + ic("clock") + " Next follow-up</b>" + (r.next ? "<span>" + dd(r.next.at, true) + " · " + esc(M.nextTypes[r.next.type] || "Follow-up") + "</span><a href='#' data-lead='" + r.next.lead + "' class='btn sm'>Open enquiry #" + r.next.lead + "</a>" : "<span class='muted'>Nothing scheduled</span>") + "</div>" +
+        "<aside>" + wxContactCard(c) + "<div class='card card-b s17-next'><b>" + ic("clock") + " Next follow-up</b>" + (r.next ? "<span>" + dd(r.next.at, true) + " · " + esc(M.nextTypes[r.next.type] || "Follow-up") + "</span><a href='#' data-lead='" + r.next.lead + "' class='btn sm'>Open enquiry #" + r.next.lead + "</a>" : "<span class='muted'>Nothing scheduled</span>") + "</div>" +
           "<div class='card'><div class='card-h'><h3>Timeline</h3></div><ul class='s17-tl card-b'>" + (r.timeline.map(function (t) { return "<li class='k-" + t.k + "'><span class='s17-tli'>" + ic(TLI[t.k] || "info") + "</span><div><small>" + dd(t.t, true) + " " + String(t.t).slice(0, 4) + "</small><p><a href='" + link(t) + "'" + (t.k === "lead" || t.k === "note" ? " data-lead='" + t.id + "'" : "") + ">" + esc(t.title) + "</a></p><small class='muted'>" + esc(t.sub || "") + "</small></div></li>"; }).join("") || "<p class='muted'>No activity yet.</p>") + "</ul></div>" +
-          (c.tags.length || c.source || c.address ? "<div class='card card-b'>" + (c.address ? "<div class='kv'><small>Address</small><span>" + esc(c.address) + "</span></div>" : "") + (c.source ? "<div class='kv'><small>Came from</small><span>" + esc(c.source) + "</span></div>" : "") + (c.tags.length ? "<div class='kv'><small>Tags</small><span>" + c.tags.map(function (t) { return "<span class='badge'>" + esc(t) + "</span>"; }).join(" ") + "</span></div>" : "") + "</div>" : "") + "</aside></div>";
+          "</aside></div>";
       W.fillIcons(el);
       if (W.p19cClient) W.p19cClient(el, c); /*P19 C*/
       $$(".s17-c3t button", el).forEach(function (b) { b.onclick = function () { $$(".s17-c3t button", el).forEach(function (x) { x.classList.toggle("on", x === b); }); $$(".s17-c3 .tbl-wrap[data-p]", el).forEach(function (p) { p.hidden = p.dataset.p !== b.dataset.p; }); }; });
       $$("[data-h]", el).forEach(function (tr) { tr.style.cursor = "pointer"; tr.onclick = function () { location.hash = tr.dataset.h; }; });
       var reload = function () { c360(el, id); };
       $$("[data-lead]", el).forEach(function (a) { a.style.cursor = "pointer"; a.onclick = function (e) { e.preventDefault(); C.leads = []; loadLeads().then(function () { drawer(+a.dataset.lead, reload); }); }; });
-      $("#c3-ed").onclick = function () { clientForm(c, reload); };
-      $("#c3-lead").onclick = function () { api("lead_save", { name: c.name, company: c.company, phone: c.phone, email: c.email, location: c.city, line: c.line, lead_type: "returning", client_id: c.id }).then(function (x) { if (!x.ok) return toast(x.error, true); toast("Enquiry #" + x.lead.id + " added ✓"); loadLeads().then(function () { drawer(x.lead.id, reload); }); }); };
+      var ed = $("#c3-ed"), nl = $("#c3-lead");
+      if (!ed || !nl) return;   /* header missing: never bind into nothing */
+      ed.onclick = function () { clientForm(c, reload); };
+      nl.onclick = function () { api("lead_save", { name: c.name, company: c.company, phone: c.phone, email: c.email, location: c.city, line: c.line, lead_type: "returning", client_id: c.id }).then(function (x) { if (!x.ok) return toast(x.error, true); toast("Enquiry #" + x.lead.id + " added ✓"); loadLeads().then(function () { drawer(x.lead.id, reload); }); }); };
     });
   }
 

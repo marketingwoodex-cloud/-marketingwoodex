@@ -217,7 +217,7 @@
               '<small class="muted" style="font-size:11px;display:block">Overdue</small><b style="font-size:18px;color:var(--txt)">0</b>' +
             '</div>' +
             '<div style="background:var(--card-sub);border:1px solid var(--line);border-radius:10px;padding:10px 12px;border-left:3px solid #d4af6a;grid-column:span 2">' +
-              '<small class="muted" style="font-size:11px;display:block">Won value</small><b style="font-size:17px;color:var(--pri)">' + (totalWonVal ? "Rs " + (totalWonVal / 1000000).toFixed(2) + "M" : "Rs 2.95M") + '</b>' +
+              '<small class="muted" style="font-size:11px;display:block">Won value</small><b style="font-size:17px;color:var(--pri-ink)">' + (totalWonVal ? "Rs " + (totalWonVal / 1000000).toFixed(2) + "M" : "Rs 2.95M") + '</b>' +
             '</div>' +
           '</div>' +
         '</div>' +
@@ -236,7 +236,7 @@
           '</div>' +
           '<div class="card" style="background:var(--card-sub);border:1px solid var(--line);border-radius:12px;padding:18px">' +
             '<small class="muted" style="font-size:12px">Forecast</small>' +
-            '<b style="font-size:24px;color:var(--pri);display:block;margin:4px 0 2px">Rs 7.2M</b>' +
+            '<b style="font-size:24px;color:var(--pri-ink);display:block;margin:4px 0 2px">Rs 7.2M</b>' +
             '<small class="muted" style="font-size:11.5px">weighted by stage</small>' +
           '</div>' +
           '<div class="card" style="background:var(--card-sub);border:1px solid var(--line);border-radius:12px;padding:18px">' +
@@ -304,7 +304,7 @@
             (l.company ? '<small class="muted" style="display:block;font-size:12px;margin-bottom:6px">' + esc(l.company) + '</small>' : "") +
             '<div style="background:var(--card-sub);border-radius:6px;padding:6px 8px;margin-bottom:10px;font-size:12px;color:var(--mut)">' + esc(l.service) + '</div>' +
             '<div style="display:flex;align-items:center;justify-content:space-between">' +
-              '<b style="color:var(--pri);font-size:13.5px">' + (l.value ? "Rs " + l.value.toLocaleString("en-PK") : "—") + '</b>' +
+              '<b style="color:var(--pri-ink);font-size:13.5px">' + (l.value ? "Rs " + l.value.toLocaleString("en-PK") : "—") + '</b>' +
               '<div style="display:flex;align-items:center;gap:6px">' +
                 (l.followup ? '<small class="muted" style="font-size:11px">' + ic("clock") + ' ' + esc(l.followup.slice(5)) + '</small>' : "") +
                 '<span style="width:24px;height:24px;border-radius:50%;background:var(--pri);color:var(--pri-fg);font-weight:700;font-size:10px;display:grid;place-items:center">' + initials + '</span>' +
@@ -377,7 +377,10 @@
     var list = [], q = "";
     var draw = function () {
       var rows = list.filter(function (c) { return !q || [c.name, c.phone, c.email, c.company, c.city].join(" ").toLowerCase().indexOf(q) >= 0; });
-      $("#cl-rows").innerHTML = rows.map(function (c) {
+      /* the API answer can land after the router replaced this view — never
+         write into a container that is no longer on screen */
+      var tb = $("#cl-rows"); if (!tb || !tb.isConnected) return;
+      tb.innerHTML = rows.map(function (c) {
         return '<tr data-id="' + c.id + '"><td><b>' + esc(c.name) + "</b>" + (c.company ? "<small class='muted' style='display:block'>" + esc(c.company) + "</small>" : "") + "</td><td>" + esc(c.phone || "") + (c.email ? "<small class='muted' style='display:block'>" + esc(c.email) + "</small>" : "") + "</td><td>" + esc(c.city || "—") + "</td><td>" + c.leads.map(function (l) { return badge(l.stage); }).join(" ") + "</td><td>" + pkr(c.value) + "</td><td>" + dshort(c.created_at.slice(0, 10)) + '</td><td style="text-align:right;white-space:nowrap">' + (c.phone ? '<a class="btn sm wa" target="_blank" rel="noopener" data-stop href="https://wa.me/' + waNum(c.phone) + '">' + ic("message-circle") + "</a> " : "") + '<button class="btn sm">Edit</button></td></tr>';
       }).join("") || '<tr><td colspan="7" class="empty">' + (list.length ? "No clients match." : "No clients yet. Convert a won enquiry, or add one here.") + "</td></tr>";
       $$("#cl-rows tr[data-id]").forEach(function (tr) { tr.onclick = function (e) { if (!e.target.closest("[data-stop]")) edit(list.find(function (c) { return c.id === +tr.dataset.id; })); }; });

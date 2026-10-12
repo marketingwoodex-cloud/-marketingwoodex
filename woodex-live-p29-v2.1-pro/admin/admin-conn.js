@@ -41,7 +41,7 @@
             '<div style="display:flex;flex-direction:column;gap:12px;margin-top:16px">' +
               '<div style="background:var(--card-sub);border:1px solid var(--line);border-radius:10px;padding:14px">' +
                 '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">' +
-                  '<code style="color:var(--pri);font-weight:700;font-size:13px">get_leads(status, limit)</code>' +
+                  '<code style="color:var(--pri-ink);font-weight:700;font-size:13px">get_leads(status, limit)</code>' +
                   '<span class="badge ok">Read</span>' +
                 '</div>' +
                 '<small class="muted">Queries active CRM leads, quotes, customer stages, and contact WhatsApp numbers.</small>' +
@@ -49,7 +49,7 @@
 
               '<div style="background:var(--card-sub);border:1px solid var(--line);border-radius:10px;padding:14px">' +
                 '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">' +
-                  '<code style="color:var(--pri);font-weight:700;font-size:13px">create_quote(client, items, terms)</code>' +
+                  '<code style="color:var(--pri-ink);font-weight:700;font-size:13px">create_quote(client, items, terms)</code>' +
                   '<span class="badge gold">Write</span>' +
                 '</div>' +
                 '<small class="muted">Drafts customized residential/commercial BOQ quotations with PKR line item calculations.</small>' +
@@ -57,7 +57,7 @@
 
               '<div style="background:var(--card-sub);border:1px solid var(--line);border-radius:10px;padding:14px">' +
                 '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">' +
-                  '<code style="color:var(--pri);font-weight:700;font-size:13px">update_page_seo(page, title, desc)</code>' +
+                  '<code style="color:var(--pri-ink);font-weight:700;font-size:13px">update_page_seo(page, title, desc)</code>' +
                   '<span class="badge gold">Write</span>' +
                 '</div>' +
                 '<small class="muted">Updates meta tags, focus keyphrases, and OpenGraph descriptors on public pages.</small>' +
@@ -65,7 +65,7 @@
 
               '<div style="background:var(--card-sub);border:1px solid var(--line);border-radius:10px;padding:14px">' +
                 '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">' +
-                  '<code style="color:var(--pri);font-weight:700;font-size:13px">send_whatsapp_update(phone, text)</code>' +
+                  '<code style="color:var(--pri-ink);font-weight:700;font-size:13px">send_whatsapp_update(phone, text)</code>' +
                   '<span class="badge gold">Write</span>' +
                 '</div>' +
                 '<small class="muted">Dispatches milestone notification broadcasts through the WhatsApp Cloud API.</small>' +
@@ -105,7 +105,7 @@ esc(JSON.stringify({
               '<h3 style="font-size:16px;color:var(--txt)">' + ic("terminal") + ' HTTP SSE / Stdio Endpoint</h3>' +
             '</div>' +
             '<div style="margin-top:14px;display:flex;flex-direction:column;gap:10px;font-size:13px">' +
-              '<div style="display:flex;justify-content:space-between"><span>Protocol</span><b style="color:var(--pri)">JSON-RPC 2.0</b></div>' +
+              '<div style="display:flex;justify-content:space-between"><span>Protocol</span><b style="color:var(--pri-ink)">JSON-RPC 2.0</b></div>' +
               '<div style="display:flex;justify-content:space-between"><span>Endpoint</span><b style="color:var(--txt2)">/api/mcp.php</b></div>' +
               '<div style="display:flex;justify-content:space-between"><span>Authentication</span><b style="color:var(--ok)">Header: X-WX-ADM</b></div>' +
             '</div>' +

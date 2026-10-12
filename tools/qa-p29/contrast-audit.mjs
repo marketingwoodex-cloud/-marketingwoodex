@@ -1,9 +1,11 @@
 /* Contrast audit — walks every visible text node in the real admin, computes
    its actual rendered contrast against its effective background, and reports
    failures with the element's class list so they can be fixed by selector.
-   Runs light and dark. Also reports elements using hardcoded colour literals.
+   Runs light and dark over a route list (page text is route-specific, so the
+   dashboard alone is not enough). Also reports hardcoded inline colour literals.
 
-   Usage: PREVIEW_EMAIL=… PREVIEW_PASS=… node contrast-audit.mjs [base] [outdir]
+   Usage: PREVIEW_EMAIL=… PREVIEW_PASS=… node contrast-audit.mjs [base] [outdir] [routes]
+          routes = comma-separated, e.g. "dashboard,clients,invoices,settings"
 */
 import pptr from 'puppeteer-core';
 import cm from '@sparticuz/chromium';
@@ -13,6 +15,8 @@ import { pathToFileURL } from 'node:url';
 
 const BASE = process.argv[2] || 'http://127.0.0.1:8080';
 const OUT = process.argv[3] || '/tmp/contrast';
+const ROUTES = (process.argv[4] || 'dashboard,enquiries,pipeline,clients,quotes,invoices,transactions,projects,settings')
+  .split(',').map(s => s.trim()).filter(Boolean);
 fs.mkdirSync(OUT, { recursive: true });
 
 const ROOT = path.resolve('node_modules');
@@ -83,8 +87,14 @@ const AUDIT = () => {
     return el.tagName.toLowerCase() + cls;
   };
 
+  /* Emoji/pictographs paint in the font's own colours, and arrows/dashes are
+     decoration: text carrying no letter or digit is iconography, not prose, so
+     the CSS `color` says nothing about its legibility. Excluded, not waived. */
+  const PROSE = /[\p{L}\p{N}]/u;
+
   const failures = [], bySelector = {};
   const walk = document.querySelectorAll('*');
+  let textNodes = 0;
   for (const el of walk) {
     // only elements that render their own text
     const own = [...el.childNodes].filter(n => n.nodeType === 3 && n.textContent.trim().length > 1);
@@ -93,10 +103,12 @@ const AUDIT = () => {
     const s = getComputedStyle(el);
     const fg = parse(s.color);
     if (!fg || fg.a === 0) continue;
+    const txt = own.map(n => n.textContent.trim()).join(' ').slice(0, 48);
+    if (!PROSE.test(txt)) continue;
+    textNodes++;
     const bg = bgOf(el);
     const eff = fg.a < 1 ? over(fg, bg) : fg;
     const cr = ratio(eff, bg);
-    const txt = own.map(n => n.textContent.trim()).join(' ').slice(0, 48);
     const size = parseFloat(s.fontSize);
     const weight = +s.fontWeight || 400;
     const large = size >= 24 || (size >= 18.66 && weight >= 700);
@@ -120,6 +132,7 @@ const AUDIT = () => {
   return {
     dark: document.documentElement.classList.contains('dark'),
     checked: walk.length,
+    textNodes,
     failureCount: failures.length,
     distinctSelectors: Object.keys(bySelector).length,
     bySelector: Object.entries(bySelector).sort((a, b) => b[1].count - a[1].count).slice(0, 30),
@@ -129,25 +142,50 @@ const AUDIT = () => {
   };
 };
 
-const out = { base: BASE };
+const out = { base: BASE, routes: ROUTES, modes: {} };
 for (const mode of ['light', 'dark']) {
-  await page.evaluate(m => localStorage.setItem('hs_theme', m), mode);
-  await page.goto(BASE + '/admin/#/dashboard', { waitUntil: 'domcontentloaded' });
+  await page.evaluate(m => { localStorage.setItem('hs_theme', m); localStorage.setItem('wxaTheme', m); }, mode);
+  /* A hash-only navigation is same-document in Chromium and does NOT re-run the
+     theme bootstrap, which would silently measure the previous mode. Force a real
+     document load with a cache-buster, then prove the mode actually took. */
+  await page.goto(`${BASE}/admin/?theme=${mode}&t=${Date.now()}#/dashboard`, { waitUntil: 'domcontentloaded' });
   await page.waitForSelector('#nav', { timeout: 25000 });
-  await page.waitForSelector('.dx-kpi', { timeout: 15000 }).catch(() => {});
-  await new Promise(r => setTimeout(r, 1500));
-  out[mode] = await page.evaluate(AUDIT);
-  await page.screenshot({ path: path.join(OUT, `${mode}-dashboard.png`) });
+  out.modes[mode] = { routes: {}, pageErrors: [] };
+  for (const r of ROUTES) {
+    await page.goto(`${BASE}/admin/?theme=${mode}#/${r}`, { waitUntil: 'domcontentloaded' });
+    await page.waitForSelector('#view', { timeout: 25000 });
+    await new Promise(x => setTimeout(x, 2200));
+    const m = await page.evaluate(AUDIT);
+    const want = mode === 'dark';
+    if (m.dark !== want) { m.MODE_MISMATCH = true; console.log(`!! ${mode}/${r} measured html.dark=${m.dark} — invalid`); }
+    out.modes[mode].routes[r] = m;
+    if (r === ROUTES[0] || r === 'clients') await page.screenshot({ path: path.join(OUT, `${mode}-${r}.png`) });
+  }
+  const rs = Object.values(out.modes[mode].routes);
+  out.modes[mode].checked = rs.reduce((a, b) => a + b.checked, 0);
+  out.modes[mode].textNodes = rs.reduce((a, b) => a + b.textNodes, 0);
+  out.modes[mode].failureCount = rs.reduce((a, b) => a + b.failureCount, 0);
+  out.modes[mode].hardcodedInlineCount = rs.reduce((a, b) => a + b.hardcodedInlineCount, 0);
 }
-
 out.pageErrors = errs;
+
 fs.writeFileSync(path.join(OUT, 'contrast-audit.json'), JSON.stringify(out, null, 1));
+
 for (const mode of ['light', 'dark']) {
-  const r = out[mode];
-  console.log(`\n===== ${mode.toUpperCase()} =====  elements=${r.checked}  failures=${r.failureCount}  distinct selectors=${r.distinctSelectors}`);
-  console.log('--- worst offenders ---');
-  r.worst.slice(0, 12).forEach(f => console.log(`  ${String(f.ratio).padStart(6)}:1  (need ${f.need})  ${f.fontSize.padStart(7)} w${f.fontWeight}  ${f.selector.slice(0, 46).padEnd(46)} "${f.text.slice(0, 26)}"`));
-  console.log(`--- hardcoded inline colours: ${r.hardcodedInlineCount} ---`);
+  const M = out.modes[mode];
+  console.log(`\n===== ${mode.toUpperCase()} =====  elements=${M.checked}  textNodes=${M.textNodes}  failures=${M.failureCount}  hardcoded inline=${M.hardcodedInlineCount}`);
+  for (const r of ROUTES) {
+    const m = M.routes[r];
+    const mark = m.failureCount ? 'FAIL' : ' ok ';
+    console.log(`  ${mark} ${r.padEnd(13)} dark=${String(m.dark).padEnd(5)} elements=${String(m.checked).padStart(4)}  failures=${String(m.failureCount).padStart(3)}  selectors=${m.distinctSelectors}`);
+  }
+  const worst = Object.values(M.routes).flatMap(m => m.worst).sort((a, b) => a.ratio - b.ratio).slice(0, 10);
+  if (worst.length) {
+    console.log('  --- worst ---');
+    worst.forEach(f => console.log(`    ${String(f.ratio).padStart(6)}:1  ${f.fontSize.padStart(7)} w${f.fontWeight}  ${f.selector.slice(0, 40).padEnd(40)} "${f.text.slice(0, 22)}"`));
+  }
 }
-console.log('\npageErrors:', errs.length);
+const mismatched = ['light', 'dark'].filter(m => Object.values(out.modes[m].routes).some(r => r.MODE_MISMATCH));
+if (mismatched.length) { console.log('\nPROBE INVALID — mode mismatch on:', mismatched.join(', ')); await browser.close(); process.exit(2); }
+console.log('\npageErrors:', errs.length, errs.slice(0, 3));
 await browser.close();

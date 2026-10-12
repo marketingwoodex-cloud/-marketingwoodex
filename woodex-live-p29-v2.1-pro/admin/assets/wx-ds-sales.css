@@ -1,0 +1,309 @@
+/* ============================================================================
+   SALES MODULE REFINEMENT — DESIGN.md §8.2 (table), §8.0 (card), §3 (tokens)
+   ----------------------------------------------------------------------------
+   Applies the reference table/card treatment to the sales screens (Clients,
+   Leads, Quotations, Invoices, Payments, Projects, Bookings). Loads last.
+
+   Everything here traces to DESIGN.md:
+     §8.2 table   px-6 py-3 cells, text-xs font-semibold uppercase header on
+                  gray-50, divide-y rows, hover:bg-gray-100, rounded-xl wrapper
+     §8.0 card    border · shadow-xs · rounded-xl
+     §2 type      table header = eyebrow, cells = body, numbers tabular-nums
+     §9.3 hover   row hover transition
+   Colours come from the Preline tokens, so light/dark switch automatically.
+   No raw hex in this file.
+   ============================================================================ */
+
+/* ---------------------------------------------------------------------------
+   §8.2 — Table container
+   The wrapper carries the border + radius; the table itself is unstyled chrome.
+   --------------------------------------------------------------------------- */
+#view .tbl-wrap {
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-xl);
+  overflow: hidden;                 /* keeps the radius on the corner cells */
+  background: var(--card);
+}
+/* A table inside a card already has the card border — avoid a double frame. */
+html .card > .tbl-wrap,
+html .card .tbl-wrap:only-child {
+  border: 0;
+  border-radius: 0;
+}
+
+#view table.tbl {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: .875rem;               /* §2 body text-sm */
+}
+
+/* Header: text-xs font-semibold uppercase, on the muted surface */
+#view table.tbl thead th {
+  padding: .75rem 1rem;             /* §8.2 px-6 py-3, tightened for density */
+  font-size: .75rem;                /* §2 eyebrow text-xs */
+  font-weight: 600;
+  letter-spacing: .025em;
+  text-transform: uppercase;
+  color: var(--muted-foreground-1);
+  background: var(--background-2);
+  text-align: left;
+  white-space: nowrap;
+  border-bottom: 1px solid var(--card-divider);
+}
+#view table.tbl thead th.r { text-align: right; }
+#view table.tbl thead th.c { text-align: center; }
+
+/* Body cells */
+#view table.tbl tbody td {
+  padding: .75rem 1rem;
+  color: var(--foreground);
+  border-bottom: 1px solid var(--card-divider);
+  vertical-align: middle;
+}
+#view table.tbl tbody td.r { text-align: right; font-variant-numeric: tabular-nums; }
+#view table.tbl tbody td.c { text-align: center; }
+#view table.tbl tbody tr:last-child td { border-bottom: 0; }
+
+/* §9.3 row hover + pointer affordance for clickable rows */
+#view table.tbl tbody tr { transition: background-color .15s ease-out; }
+#view table.tbl tbody tr:hover { background: var(--surface-hover); }
+#view table.tbl tbody tr[data-id],
+#view table.tbl tbody tr[data-h],
+#view table.tbl tbody tr[onclick] { cursor: pointer; }
+
+/* §2 rule: numbers use tabular-nums */
+#view table.tbl td b,
+#view table.tbl td .num { font-variant-numeric: tabular-nums; }
+
+/* Secondary line inside a cell (company / name pairs) */
+#view table.tbl td small.muted,
+#view table.tbl td small.d {
+  display: block;
+  margin-top: .125rem;
+  font-size: .75rem;
+  color: var(--muted-foreground-1);
+}
+
+/* ---------------------------------------------------------------------------
+   §8.2 — Status badges, aligned to the reference
+   Status is never colour-only: every badge shows its label as text.
+   --------------------------------------------------------------------------- */
+html .badge {
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  padding: .25rem .625rem;
+  border-radius: 9999px;            /* §4 rounded-full */
+  font-size: .75rem;
+  font-weight: 500;
+  line-height: 1.25rem;
+  white-space: nowrap;
+  border: 1px solid transparent;
+}
+html .badge.ok   { background: var(--status-ok-soft);   color: var(--status-ok); }
+html .badge.warn { background: var(--status-warn-soft); color: var(--status-warn); }
+html .badge.bad  { background: var(--status-bad-soft);  color: var(--status-bad); }
+html .badge.info { background: var(--info-soft);        color: var(--status-info); }
+
+/* ---------------------------------------------------------------------------
+   §8.2 — Row action button (the "..." menu trigger in the reference)
+   size-9.5 · rounded-lg · border
+   --------------------------------------------------------------------------- */
+html .tbl-wrap button.row-act,
+#view table.tbl button.row-act {
+  width: 2rem; height: 2rem;
+  display: inline-flex; align-items: center; justify-content: center;
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-lg);
+  background: var(--card);
+  color: var(--muted-foreground-1);
+  transition: background-color .15s ease-out, color .15s ease-out;
+}
+#view table.tbl button.row-act:hover {
+  background: var(--surface-hover);
+  color: var(--foreground);
+}
+
+/* ---------------------------------------------------------------------------
+   §8.2 — Filters bar above a table
+   Wraps search + selects in one row with consistent control heights.
+   --------------------------------------------------------------------------- */
+html .s17-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .75rem;
+  padding: 1rem;
+  border-bottom: 1px solid var(--card-divider);
+  background: var(--card);
+}
+@media (min-width: 48rem) { html .s17-filters { padding: 1rem 1.25rem; } }
+html .s17-filters input[type="search"],
+html .s17-filters input[type="text"] {
+  margin: 0;
+  height: 2.5rem;
+  min-width: 16rem;
+  flex: 1 1 16rem;
+  max-width: 24rem;
+  background: var(--background-1);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-lg);
+  color: var(--foreground);
+}
+html .s17-filters input::placeholder { color: var(--muted-foreground-1); }
+html .s17-filters select {
+  height: 2.5rem;
+  min-width: 9rem;
+  background: var(--background-1);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-lg);
+  color: var(--foreground);
+}
+
+/* Keep the toolbar row on the page header consistent */
+html .toolbar { gap: .5rem; }
+
+/* ---------------------------------------------------------------------------
+   §10 — KPI grid used across the sales screens
+   --------------------------------------------------------------------------- */
+html .dx-kpis,
+html .s17-ch { gap: 1rem; }
+@media (min-width: 40rem) { html .dx-kpis, html .s17-ch { gap: 1.5rem; } }
+
+/* ---------------------------------------------------------------------------
+   Empty state inside a table (§8.2 requires one)
+   --------------------------------------------------------------------------- */
+html .tbl-wrap .empty,
+html table.tbl + .empty {
+  padding: 2.5rem 1.5rem;
+  text-align: center;
+  color: var(--muted-foreground-1);
+}
+
+/* ============================================================================
+   §8.3 — SPLIT FORM + CONTACT DETAILS BLOCK
+   ----------------------------------------------------------------------------
+   Structural adaptation of the attached Preline reference block "Split contact
+   page with contact details" (Tailwind CSS Application UI Blocks) into v2.1.1:
+
+     reference                          v2.1.1 mapping
+     ---------------------------------  ----------------------------------------
+     lg:grid-cols-2, gap-x-10           #modal-card.wide .wx-split
+     form column (fields, labels)       .wx-form-col .wx-field
+     "Contact details" card             .wx-details  (bg-surface, border-card-line)
+     icon tile + label + value rows     .wx-drow / .wx-drow .ic
+     max-w-5xl, mx-auto rhythm          section padding + 2.5rem column gap
+     rounded-lg / rounded-xl            --radius-lg / --radius-xl
+
+   Colours are Preline tokens only — no raw hex.
+   ============================================================================ */
+
+html .wx-split { display: grid; gap: 1.5rem; }
+@media (min-width: 48rem) {
+  html .wx-split { grid-template-columns: minmax(0, 1fr) 20rem; column-gap: 2.5rem; }
+}
+
+/* --- form column ---------------------------------------------------------- */
+html .wx-form-col { display: grid; gap: 1.25rem; align-content: start; }
+html .wx-fsection {
+  display: grid;
+  gap: .75rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--card-divider);
+}
+html .wx-fsection:last-child { border-bottom: 0; padding-bottom: 0; }
+html .wx-fsection > h3 {
+  margin: 0;
+  font-size: .75rem;
+  font-weight: 600;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--muted-foreground-1);
+}
+html .wx-grid-2 { display: grid; gap: .75rem; }
+@media (min-width: 34rem) { html .wx-grid-2 { grid-template-columns: 1fr 1fr; } }
+
+html .wx-field { display: grid; gap: .375rem; font-size: .8125rem; color: var(--muted-foreground-1); }
+html .wx-field > input,
+html .wx-field > select,
+html .wx-field > textarea {
+  margin: 0;
+  width: 100%;
+  background: var(--background-1);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-lg);
+  color: var(--foreground);
+}
+html .wx-field > input:focus,
+html .wx-field > select:focus,
+html .wx-field > textarea:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-soft);
+  outline: 0;
+}
+
+/* --- contact-details panel (the reference's right-hand card) -------------- */
+html .wx-details {
+  display: grid;
+  align-content: start;
+  gap: 1rem;
+  padding: 1.25rem;
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-xl);
+  background: var(--surface);
+  height: fit-content;
+}
+html .wx-details > h3 { margin: 0; font-size: .9375rem; font-weight: 600; color: var(--foreground); }
+html .wx-details-rows { display: grid; gap: .875rem; }
+html .wx-drow { display: flex; gap: .75rem; align-items: flex-start; }
+html .wx-drow .ic {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--card-border);
+  background: var(--card);
+  color: var(--pri-ink);
+}
+html .wx-drow .ic svg { width: 1rem; height: 1rem; }
+html .wx-drow small { display: block; font-size: .6875rem; text-transform: uppercase; letter-spacing: .04em; color: var(--muted-foreground-1); }
+html .wx-drow b, html .wx-drow span.v { font-size: .875rem; font-weight: 500; color: var(--foreground); word-break: break-word; }
+html .wx-drow a.v { color: var(--pri-ink); text-decoration: none; }
+html .wx-drow a.v:hover { text-decoration: underline; }
+html .wx-details .wx-note {
+  padding-top: 1rem;
+  border-top: 1px solid var(--card-divider);
+  font-size: .75rem;
+  line-height: 1.5;
+  color: var(--muted-foreground-1);
+}
+
+/* --- modal header row with the live preview ------------------------------ */
+html .wx-form-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+html .wx-form-head h2 { margin: 0 0 .25rem; }
+html .wx-sub { margin: 0; max-width: 34rem; font-size: .8125rem; line-height: 1.5; color: var(--muted-foreground-1); }
+html .wx-pv { display: flex; align-items: center; gap: .75rem; min-width: 12rem; }
+html .wx-pv .wx-pv-av {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 9999px;
+  background: var(--primary-soft);
+  color: var(--pri-ink);
+  font-weight: 700;
+  font-size: .875rem;
+}
+html .wx-pv b { display: block; font-size: .875rem; color: var(--foreground); }
+html .wx-pv small { display: block; font-size: .75rem; color: var(--muted-foreground-1); }

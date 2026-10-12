@@ -22,7 +22,7 @@
         '</div>' +
         '<div class="card" style="background:var(--card-sub);border:1px solid var(--line);border-radius:12px;padding:16px">' +
           '<small class="muted" style="display:block">Database Size</small>' +
-          '<b style="font-size:18px;color:var(--pri);margin-top:4px;display:block">1.24 MB (JSON Storage)</b>' +
+          '<b style="font-size:18px;color:var(--pri-ink);margin-top:4px;display:block">1.24 MB (JSON Storage)</b>' +
         '</div>' +
         '<div class="card" style="background:var(--card-sub);border:1px solid var(--line);border-radius:12px;padding:16px">' +
           '<small class="muted" style="display:block">Total Public Pages</small>' +

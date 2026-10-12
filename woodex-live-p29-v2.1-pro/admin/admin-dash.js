@@ -128,11 +128,11 @@
             '<div style="display:flex;align-items:center;gap:10px"><span class="badge warn">Needs Work</span><a class="btn sm" href="#/seo">Open SEO</a></div>' +
           '</div>' +
           '<div class="dx-task-item" data-st="open" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--card-sub);border:1px solid var(--line);border-radius:10px;gap:12px;flex-wrap:wrap">' +
-            '<div style="display:flex;align-items:center;gap:10px"><span style="color:var(--pri);font-size:15px">✏️</span><div><b style="font-size:13.5px;color:var(--txt)">Named architect author on insights articles</b><small class="muted" style="display:block;font-size:12px">48 articles require lead architect credentials &amp; schema</small></div></div>' +
+            '<div style="display:flex;align-items:center;gap:10px"><span style="color:var(--pri-ink);font-size:15px">✏️</span><div><b style="font-size:13.5px;color:var(--txt)">Named architect author on insights articles</b><small class="muted" style="display:block;font-size:12px">48 articles require lead architect credentials &amp; schema</small></div></div>' +
             '<div style="display:flex;align-items:center;gap:10px"><span class="badge info">Input Needed</span><a class="btn sm" href="#/team">Assign Team</a></div>' +
           '</div>' +
           '<div class="dx-task-item" data-st="open" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--card-sub);border:1px solid var(--line);border-radius:10px;gap:12px;flex-wrap:wrap">' +
-            '<div style="display:flex;align-items:center;gap:10px"><span style="color:var(--pri);font-size:15px">✏️</span><div><b style="font-size:13.5px;color:var(--txt)">Google Business reviews sync</b><small class="muted" style="display:block;font-size:12px">6 Luxury client testimonials live; connect Google Places API</small></div></div>' +
+            '<div style="display:flex;align-items:center;gap:10px"><span style="color:var(--pri-ink);font-size:15px">✏️</span><div><b style="font-size:13.5px;color:var(--txt)">Google Business reviews sync</b><small class="muted" style="display:block;font-size:12px">6 Luxury client testimonials live; connect Google Places API</small></div></div>' +
             '<div style="display:flex;align-items:center;gap:10px"><span class="badge info">Input Needed</span><a class="btn sm" href="#/testimonials">Testimonials</a></div>' +
           '</div>' +
           '<div class="dx-task-item" data-st="done" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--card-sub);border:1px solid var(--line);border-radius:10px;gap:12px;flex-wrap:wrap">' +

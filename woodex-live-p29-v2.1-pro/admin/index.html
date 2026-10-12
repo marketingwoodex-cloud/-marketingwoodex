@@ -16,7 +16,10 @@
 <link rel="stylesheet" href="assets/wx-ds-tokens.css?v=ds-1">
 <!-- DESIGN.md §8 blocks as semantic classes. Loads after everything so it
      refines admin.css without that file being rewritten. -->
-<link rel="stylesheet" href="assets/wx-ds-components.css?v=ds-1">
+<link rel="stylesheet" href="assets/wx-ds-components.css?v=ds-2">
+<!-- Sales module (§8.2 table/card/badge treatment). Loads last so it wins on the
+     sales screens only. -->
+<link rel="stylesheet" href="assets/wx-ds-sales.css?v=ds-1">
 <!-- DESIGN.md §3: theme preference persists as `hs_theme` (light | dark | auto).
      `wxaTheme` is read as a legacy alias so existing operators keep their choice. -->
 <script>try{var t=localStorage.getItem("hs_theme")||localStorage.getItem("wxaTheme")||"auto";if(t==="auto"?matchMedia("(prefers-color-scheme: dark)").matches:t==="dark")document.documentElement.classList.add("dark")}catch(e){}</script>

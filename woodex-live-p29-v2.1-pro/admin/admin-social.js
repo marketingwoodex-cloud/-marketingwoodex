@@ -83,7 +83,7 @@
           '</div>' +
           '<div id="soc-ping-res" style="display:none;padding:10px;border-radius:8px;background:#052e16;border:1px solid #166534;color:#4ade80;font-size:12.5px;margin-bottom:14px">✓ OAuth handshake verified: 200 OK · Latency 112 ms</div>' +
           '<div class="modal-actions" style="margin-top:20px;display:flex;gap:10px;justify-content:flex-end">' +
-            '<button type="button" class="btn" id="soc-m-ping" style="background:var(--card-sub);color:var(--pri);border-color:#232836">' + ic("activity") + ' Test Ping</button>' +
+            '<button type="button" class="btn" id="soc-m-ping" style="background:var(--card-sub);color:var(--pri-ink);border-color:#232836">' + ic("activity") + ' Test Ping</button>' +
             (isConn ? '<button type="button" class="btn danger" id="soc-m-disc">' + ic("x") + ' Disconnect</button>' : '') +
             '<button type="button" class="btn" id="soc-m-cancel">Cancel</button>' +
             '<button type="submit" class="btn pri btn-preline-cyan">' + ic("check") + (isConn ? ' Save Updates' : ' Login with ' + c.name) + '</button>' +
@@ -138,7 +138,7 @@
         box.innerHTML = '<div class="card" style="margin-bottom:20px">' +
           '<div class="card-b" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:16px 20px">' +
             '<div style="display:flex;align-items:center;gap:12px">' +
-              '<span class="kpi-ic" style="background:var(--pri-soft);color:var(--pri)">' + ic("globe") + '</span>' +
+              '<span class="kpi-ic" style="background:var(--pri-soft);color:var(--pri-ink)">' + ic("globe") + '</span>' +
               '<div>' +
                 '<b style="font-size:16px;color:var(--txt)">Connected Social Profiles &amp; Marketing Channels</b>' +
                 '<small class="muted" style="display:block;margin-top:2px">Manage 1-click OAuth logins, automated social posts, and inbound message synchronization</small>' +
@@ -188,7 +188,7 @@
                   '<p style="font-size:13px;color:var(--txt2);line-height:1.5;margin:0 0 10px">' + esc(p.preview) + '</p>' +
                   '<div style="display:flex;align-items:center;justify-content:space-between;font-size:12px;color:var(--mut);border-top:1px solid var(--line);padding-top:10px">' +
                     '<span>Channels: ' + p.channels.map(function(c){ return '<span class="badge sm ghost" style="margin-right:4px">' + c + '</span>'; }).join("") + '</span>' +
-                    '<span style="color:var(--pri);font-weight:600">' + ic("clock") + ' ' + esc(p.date) + '</span>' +
+                    '<span style="color:var(--pri-ink);font-weight:600">' + ic("clock") + ' ' + esc(p.date) + '</span>' +
                   '</div>' +
                 '</div>';
               }).join("") +
@@ -220,7 +220,7 @@
             '<div style="display:flex;flex-direction:column;gap:14px">' +
               '<label>Auto-DM: Phone Number Capture<textarea rows="3">Thank you for reaching out to Woodex Interior! Please share your contact number and project location, and our lead architect will share a 3D mood board.</textarea></label>' +
               '<div style="background:var(--card-sub);border:1px solid var(--line);border-radius:10px;padding:14px">' +
-                '<b style="color:var(--pri);font-size:13px;display:flex;align-items:center;gap:6px">' + ic("shield") + ' Smart Lead Extraction</b>' +
+                '<b style="color:var(--pri-ink);font-size:13px;display:flex;align-items:center;gap:6px">' + ic("shield") + ' Smart Lead Extraction</b>' +
                 '<p class="muted" style="font-size:12px;margin:6px 0 0">Whenever a user comments or DMs a phone number (e.g. 03xx-xxxxxxx), the AI immediately parses it and creates a CRM Lead tagged with "Source: Social Media".</p>' +
               '</div>' +
             '</div>' +
@@ -239,7 +239,7 @@
             recentSocialLeads.map(function(l) {
               return '<div style="background:var(--card-sub);border:1px solid var(--line);border-radius:10px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:14px">' +
                 '<div style="display:flex;align-items:center;gap:12px">' +
-                  '<span class="kpi-ic" style="background:var(--pri-soft);color:var(--pri)">' + ic("user") + '</span>' +
+                  '<span class="kpi-ic" style="background:var(--pri-soft);color:var(--pri-ink)">' + ic("user") + '</span>' +
                   '<div>' +
                     '<b style="font-size:14px;color:var(--txt);display:block">' + esc(l.user) + ' <small class="muted">via ' + esc(l.platform) + ' · ' + esc(l.time) + '</small></b>' +
                     '<p style="font-size:12.5px;color:var(--txt2);margin:4px 0 0">' + esc(l.comment) + '</p>' +
@@ -247,7 +247,7 @@
                 '</div>' +
                 '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">' +
                   '<span class="badge ok">' + esc(l.status) + '</span>' +
-                  '<b style="color:var(--pri);font-size:12px">' + esc(l.phone) + '</b>' +
+                  '<b style="color:var(--pri-ink);font-size:12px">' + esc(l.phone) + '</b>' +
                 '</div>' +
               '</div>';
             }).join("") +

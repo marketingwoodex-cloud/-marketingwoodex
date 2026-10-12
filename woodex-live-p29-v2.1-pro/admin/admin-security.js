@@ -18,7 +18,7 @@
         '</div>' +
         '<div class="card" style="background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px">' +
           '<small class="muted">Active Sessions</small>' +
-          '<b style="font-size:20px;color:var(--pri);margin-top:4px;display:block">1 Connected Device</b>' +
+          '<b style="font-size:20px;color:var(--pri-ink);margin-top:4px;display:block">1 Connected Device</b>' +
         '</div>' +
         '<div class="card" style="background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px">' +
           '<small class="muted">Pending Approvals</small>' +
@@ -26,7 +26,7 @@
         '</div>' +
         '<div class="card" style="background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px">' +
           '<small class="muted">CSRF / HMAC Protection</small>' +
-          '<b style="font-size:20px;color:var(--pri);margin-top:4px;display:block">Strict (SHA-256)</b>' +
+          '<b style="font-size:20px;color:var(--pri-ink);margin-top:4px;display:block">Strict (SHA-256)</b>' +
         '</div>' +
       '</div>' +
 
@@ -138,7 +138,7 @@
         '<div style="padding:10px">' +
           '<h2 style="font-size:18px;margin:0 0 8px;color:var(--txt)">' + ic("key") + ' 2FA Emergency Recovery Codes</h2>' +
           '<p class="muted" style="font-size:13px;margin:0 0 16px">Keep these 8 one-time codes safe. Each code can be used once to access the admin if your phone is lost.</p>' +
-          '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;background:var(--card-sub);padding:16px;border-radius:10px;font-family:monospace;font-size:14px;color:var(--pri);border:1px solid var(--line)">' +
+          '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;background:var(--card-sub);padding:16px;border-radius:10px;font-family:monospace;font-size:14px;color:var(--pri-ink);border:1px solid var(--line)">' +
             codes.map(function (c) { return '<div>' + c + '</div>'; }).join("") +
           '</div>' +
           '<div style="margin-top:20px;display:flex;justify-content:flex-end;gap:10px">' +
@@ -161,7 +161,7 @@
           '<h2 style="font-size:18px;margin:0 0 8px;color:var(--txt)">' + ic("qr-code") + ' Authenticator Configuration</h2>' +
           '<p class="muted" style="font-size:13px;margin:0 0 16px">Scan this QR code in Google Authenticator or 1Password</p>' +
           '<div style="background:#fff;padding:16px;border-radius:12px;display:inline-block;margin-bottom:14px">' +
-            '<img src="/assets/img/qr-placeholder.png" alt="2FA QR" style="width:160px;height:160px;display:block" onerror="this.outerHTML=\'<div style=\\\'width:160px;height:160px;background:var(--card);color:var(--pri);display:grid;place-items:center;font-weight:700\\\'>2FA TOTP ACTIVE</div>\'">' +
+            '<img src="/assets/img/qr-placeholder.png" alt="2FA QR" style="width:160px;height:160px;display:block" onerror="this.outerHTML=\'<div style=\\\'width:160px;height:160px;background:var(--card);color:var(--pri-ink);display:grid;place-items:center;font-weight:700\\\'>2FA TOTP ACTIVE</div>\'">' +
           '</div>' +
           '<div style="font-family:monospace;font-size:13px;color:var(--mut);margin-bottom:16px">Secret: <b>JBSWY3DPEHPK3PXP</b></div>' +
           '<button class="btn pri btn-preline-cyan" id="sec-qr-close">Done</button>' +

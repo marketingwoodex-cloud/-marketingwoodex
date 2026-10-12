@@ -56,6 +56,7 @@ html:root {
   --pri:           var(--primary);
   --pri-hover:     var(--primary-hover);
   --pri-soft:      var(--primary-soft);
+  --pri-ink:       var(--primary-text);   /* accent as TEXT/icon — AA on soft tints in both modes */
   --pri-fg:        var(--primary-foreground);
 
   /* ---------- Brand aliases (DESIGN.md §3 allows one accent) ---------- */
@@ -89,11 +90,12 @@ html.dark:root {
   --pri:           var(--primary);
   --pri-hover:     var(--primary-hover);
   --pri-soft:      var(--primary-soft);
+  --pri-ink:       var(--primary-text);   /* accent as TEXT/icon — AA on soft tints in both modes */
   --pri-fg:        var(--primary-foreground);
 
   --gold:          var(--primary);
-  --gold-d:        var(--primary-hover);
-  --cyan:          var(--primary);
+  --gold-d:        var(--primary-text);   /* ink on dark soft chips — blue-300 */
+  --cyan:          var(--primary-text);   /* dark-mode link ink — --primary is a FILL colour */
 
   --ok:            var(--status-ok);
   --ok-soft:       var(--status-ok-soft);

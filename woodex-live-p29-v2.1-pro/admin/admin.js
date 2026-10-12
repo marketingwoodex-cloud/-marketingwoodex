@@ -409,7 +409,7 @@
         }).join("") +
       '</div>' +
       '<div style="padding:8px 14px;border-top:1px solid var(--line);text-align:center;background:var(--card-sub)">' +
-        '<a href="#/updates" style="font-size:12px;color:var(--pri);text-decoration:none;font-weight:600">Client updates &amp; automations hub →</a>' +
+        '<a href="#/updates" style="font-size:12px;color:var(--pri-ink);text-decoration:none;font-weight:600">Client updates &amp; automations hub →</a>' +
       '</div>';
     fillIcons(ntMenu);
 
