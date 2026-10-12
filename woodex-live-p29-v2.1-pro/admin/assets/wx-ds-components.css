@@ -1,0 +1,262 @@
+/* ============================================================================
+   WOODEX DESIGN COMPONENTS — DESIGN.md §8 blocks as semantic classes
+   ----------------------------------------------------------------------------
+   DESIGN.md is the source of truth; this file implements its block system for the
+   admin's class-based markup. Loads LAST so it refines admin.css and woodex-v21.css
+   without those files being rewritten.
+
+   Every value here traces to DESIGN.md:
+     §4   spacing (p-4 md:p-5 = 16/20px), radius (cards 12px, controls 8px), shadow-xs
+     §8.0 card anatomy: container · header (border-b) · body · footer (border-t)
+     §8.2 stat card, table, buttons, badge, empty state
+     §9.3 skeleton, spinner, hover lift, press
+
+   Colours come from the §3 tokens (--color-*), so dark mode switches automatically
+   without a second rule block. No raw hex in this file.
+   ============================================================================ */
+
+/* ---------------------------------------------------------------------------
+   §8.0 — Universal card anatomy
+   container: bg-surface, 1px border, shadow-xs, rounded-xl, flex column
+   --------------------------------------------------------------------------- */
+html .card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-xl);       /* §4 rounded-xl = 12px */
+  box-shadow: var(--shadow-xs);          /* §4 shadow-xs */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;                      /* keeps header divider inside the radius */
+}
+/* Header: px-4 py-3 md:px-5 + border-b */
+html .card-h {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  padding: .75rem 1rem;
+  border-bottom: 1px solid var(--color-line);
+  flex-wrap: wrap;
+}
+@media (min-width: 48rem) { html .card-h { padding-inline: 1.25rem; } }
+html .card-h h3 {
+  font-size: 1rem;                       /* §2 card title text-base */
+  font-weight: 600;
+  color: var(--color-ink);
+  margin: 0;
+}
+html .card-h small { color: var(--color-ink-3); font-size: .75rem; }  /* §2 caption */
+/* Body: p-4 md:p-5 */
+html .card-b { padding: 1rem; }
+@media (min-width: 48rem) { html .card-b { padding: 1.25rem; } }
+
+/* ---------------------------------------------------------------------------
+   §10 — Page header
+   flex flex-wrap items-center justify-between gap-3
+   --------------------------------------------------------------------------- */
+html .ph {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  margin-bottom: 1.5rem;
+}
+.ph h1 {
+  font-size: 1.5rem;                     /* §2 page title text-2xl */
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--color-ink);
+  margin: 0;
+}
+.ph .crumb,
+.ph .sub {
+  font-size: .875rem;                    /* §2 body text-sm */
+  color: var(--color-ink-2);
+  margin-top: .25rem;
+}
+
+/* ---------------------------------------------------------------------------
+   §8.2 — Stat card
+   eyebrow · number · delta badge. Body p-4 md:p-5.
+   --------------------------------------------------------------------------- */
+html .dx-kpi {
+  display: block;
+  padding: 1rem;
+  text-decoration: none;
+  color: inherit;
+  /* §9.3 hover lift */
+  transition: transform .2s ease-out, box-shadow .2s ease-out;
+}
+@media (min-width: 48rem) { html .dx-kpi { padding: 1.25rem; } }
+html .dx-kpi:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+html .dx-kpi small,
+html .dx-kpi .kpi-label {
+  display: block;
+  font-size: .75rem;
+  font-weight: 600;
+  letter-spacing: .05em;
+  text-transform: uppercase;             /* §2 eyebrow */
+  color: var(--color-ink-3);
+}
+/* §2 stat number: text-3xl font-bold tabular-nums.
+   woodex-v21.css used `clamp(22px, 1.9vw, 30px)` — at 1440px that computes to
+   27.36px, i.e. never exactly the spec, and it is an arbitrary value (§7).
+   Fixed at 30px; the responsive 2/1-column grid handles narrow screens. */
+html .dx-kpi b {
+  display: block;
+  margin: .25rem 0 0;
+  font-size: 1.875rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-ink);
+  line-height: 1.15;
+  letter-spacing: -.02em;
+}
+/* §8.2's stat card is eyebrow → number → delta; it has no icon tile. The 48px
+   tinted block (admin.css) and the 40px one (woodex-v21.css) are both replaced by
+   a small muted glyph in the corner, keeping the wayfinding cue without a
+   decorative surface that the block spec does not define. */
+html .dx-kpi .kpi-ic {
+  position: absolute;
+  top: 1rem;
+  right: 1.25rem;
+  width: auto;
+  height: auto;
+  margin: 0;
+  padding: 0;
+  background: none;
+  border-radius: 0;
+  display: inline-flex;
+  align-items: center;
+  color: var(--color-ink-4);
+}
+html .dx-kpi .kpi-ic svg { width: 1rem; height: 1rem; }
+/* woodex-v21 reserves 52px / min-height 40px for its 40px tile — no longer needed */
+html .dx-kpi small { padding-right: 1.75rem; min-height: 0; }
+
+/* §8.2 delta badge — reuse .badge from admin.css, refined to the spec */
+html .badge {
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  padding: .375rem .75rem;
+  border-radius: 9999px;                 /* §4 rounded-full */
+  font-size: .75rem;
+  font-weight: 500;
+  border: 1px solid transparent;
+}
+html .badge.ok   { background: var(--color-ok-soft);   color: var(--color-ok); }    /* §3.1 AA */
+html .badge.warn { background: var(--color-warn-soft); color: var(--color-warn); }
+html .badge.bad  { background: var(--color-bad-soft);  color: var(--color-bad); }
+html .badge.info { background: var(--color-info-soft); color: var(--color-info); }
+
+/* ---------------------------------------------------------------------------
+   §8.2 — Empty state
+   centred icon size-10 gray-400 · title text-sm font-semibold ·
+   description text-sm gray-500 · one primary action
+   --------------------------------------------------------------------------- */
+html .empty {
+  padding: 2.5rem 1.5rem;
+  text-align: center;
+  color: var(--color-ink-3);
+}
+html .empty svg { width: 2.5rem; height: 2.5rem; color: var(--color-ink-4); margin: 0 auto .75rem; }
+html .empty b, html .empty strong {
+  display: block;
+  font-size: .875rem;
+  font-weight: 600;
+  color: var(--color-ink);
+}
+html .empty small { display: block; margin-top: .25rem; font-size: .875rem; color: var(--color-ink-3); }
+
+/* ---------------------------------------------------------------------------
+   §9.3 — Skeleton (shimmer) + spinner
+   Replaces text-only "Loading…" states, which §4 requires to be skeletons.
+   --------------------------------------------------------------------------- */
+/* §9.3: bg-linear-to-r from-gray-200 via-gray-100 to-gray-200, dark
+   from-neutral-700 via-neutral-600 to-neutral-700. Driven by the dedicated
+   --color-skel / --color-skel-hi tokens so the dark pair switches automatically. */
+.wx-skel {
+  border-radius: .375rem;
+  background-image: linear-gradient(to right,
+    var(--color-skel), var(--color-skel-hi), var(--color-skel));
+  background-size: 200% 100%;
+  animation: wx-shimmer 1.6s infinite linear;
+}
+@keyframes wx-shimmer { from { background-position: -200% 0 } to { background-position: 200% 0 } }
+.wx-skel-line { height: .875rem; margin-bottom: .75rem; }
+.wx-skel-line:last-child { margin-bottom: 0; width: 60%; }
+.wx-skel-num  { height: 2rem; width: 45%; margin: .5rem 0 .75rem; }
+.wx-skel-card { padding: 1rem; }
+@media (min-width: 48rem) { .wx-skel-card { padding: 1.25rem; } }
+.wx-spin {
+  width: 1rem; height: 1rem;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 9999px;
+  animation: wx-spin .7s linear infinite;
+  display: inline-block;
+  vertical-align: -2px;
+}
+@keyframes wx-spin { to { transform: rotate(360deg) } }
+
+/* §4 vertical rhythm between stacked sections (DESIGN.md §10: space-y-4 sm:space-y-6) */
+.wx-stack > * + * { margin-top: 1rem; }
+@media (min-width: 40rem) { .wx-stack > * + * { margin-top: 1.5rem; } }
+
+/* §9.3 skeleton grid matching the §10 KPI recipe */
+.wx-skel-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
+}
+@media (min-width: 40rem) { .wx-skel-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 64rem) { .wx-skel-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+
+/* ---------------------------------------------------------------------------
+   §10 — Grid recipes
+   KPI: grid sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6
+   --------------------------------------------------------------------------- */
+html .dx-kpis { gap: 1rem; }
+@media (min-width: 40rem) { html .dx-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.5rem; } }
+@media (min-width: 64rem) { html .dx-kpis { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+html .dx-g84 { gap: 1rem; }
+@media (min-width: 64rem) { html .dx-g84 { grid-template-columns: 2fr 1fr; gap: 1.5rem; } }
+html .dx-g3  { gap: 1rem; }
+@media (min-width: 48rem) { html .dx-g3 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 64rem) { html .dx-g3 { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.5rem; } }
+html .dx-chips { gap: .625rem; margin-bottom: 1.25rem; flex-wrap: wrap; }
+
+/* ---------------------------------------------------------------------------
+   §9.1 — Page entrance (§9.3 "animate-fade-up on the <main> content wrapper")
+   Excludes the loading state: a skeleton that fades in from opacity 0 is invisible
+   for the first ~300ms, which reads as a blank screen on a slow request. The
+   skeleton is a state indicator, so it must be at full opacity immediately.
+   --------------------------------------------------------------------------- */
+#view > *:not(.wx-skel-root) { animation: wx-fade-up .3s ease-out both; }
+@keyframes wx-fade-up { from { opacity: 0; transform: translateY(12px) } to { opacity: 1; transform: none } }
+.wx-skel-root { animation: none; opacity: 1; }
+
+/* ---------------------------------------------------------------------------
+   §4 — Focus ring: focus:ring-2 focus:ring-blue-500. Applied globally so every
+   interactive element is keyboard-visible, which §12 requires.
+   --------------------------------------------------------------------------- */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: var(--radius-lg);
+}
+
+/* §9.1 — reduced motion (§9.2 also sets this at the Tailwind layer) */
+@media (prefers-reduced-motion: reduce) {
+  #view > *, .wx-skel, .dx-kpi { animation: none !important; transition: none !important; }
+}

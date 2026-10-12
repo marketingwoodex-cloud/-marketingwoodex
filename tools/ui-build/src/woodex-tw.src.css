@@ -63,6 +63,10 @@
   --color-ink-3: #6b7280;         /* text-gray-500     */
   --color-ink-4: #9ca3af;         /* gray-400 — icons  */
 
+  /* Skeleton shimmer base/highlight — §9.3 from-gray-200 via-gray-100 to-gray-200 */
+  --color-skel: #e5e7eb;          /* gray-200   */
+  --color-skel-hi: #f3f4f6;       /* gray-100   */
+
   /* Primary (accent) — DESIGN.md §3: blue-600 / hover blue-700.
      Already the admin's de-facto primary (admin.css --pri), so this is a rename, not a change. */
   --color-primary: #2563eb;       /* blue-600 */
@@ -123,6 +127,10 @@ html.dark {
   --color-ink-2: #a3a3a3;         /* neutral-400 */
   --color-ink-3: #737373;         /* neutral-500 */
   --color-ink-4: #525252;         /* neutral-600 */
+
+  /* §9.3 dark: from-neutral-700 via-neutral-600 to-neutral-700 */
+  --color-skel: #404040;          /* neutral-700 */
+  --color-skel-hi: #525252;       /* neutral-600 */
 
   /* Primary is unchanged in dark per DESIGN.md §3 ("same"). */
   --color-primary-soft: rgb(29 78 216 / 0.3);  /* blue-800/30 */

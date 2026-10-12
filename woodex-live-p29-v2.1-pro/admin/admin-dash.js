@@ -17,12 +17,12 @@
     if (u.role === "editor" || u.role === "support") return classic(el);
     kill();
     var h = new Date().getHours(), hi = h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening";
-    el.innerHTML = '<div class="ph"><div><h1>' + hi + ", " + esc((u.name || "").split(" ")[0]) + '</h1><div class="crumb">Here is how Woodex is doing</div></div><div class="toolbar" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">' +
+    el.innerHTML = '<div class="ph"><div><h1>' + hi + ", " + esc((u.name || "").split(" ")[0]) + '</h1><div class="crumb">Here is how Woodex is doing</div></div><div class="toolbar">' +
       '<div class="seg" id="dx-days">' + [7, 28, 90].map(function (d) { return '<button data-d="' + d + '"' + (d === days ? ' class="on"' : "") + ">" + d + " days</button>"; }).join("") + "</div>" +
       '<a class="btn" href="/" target="_blank" rel="noopener">' + ic("eye") + 'View site</a>' +
       '<a class="btn" href="#/enquiries">' + ic("plus") + 'New lead</a>' +
       '<a class="btn pri btn-preline-cyan" href="#/quote/new">' + ic("receipt") + "New quotation</a></div></div>" +
-      '<div id="dx"><div class="card"><div class="empty">Loading dashboard…</div></div></div>';
+      '<div id="dx">' + skeleton() + '</div>';
     $("#dx-days").onclick = function (e) { var b = e.target.closest("[data-d]"); if (!b) return; days = +b.dataset.d; localStorage.setItem("wxDashDays", days); VIEWS.dashboard(el); };
     Promise.all([api("dash_data", { days: days }), api("gdata_report", { days: days }).catch(function () { return {}; })]).then(function (res) {
       var r = res[0], g = res[1] || {};
@@ -37,10 +37,39 @@
     });
   };
 
+  /* DESIGN.md §9.3 — loading is a shimmer skeleton, not a text placeholder.
+     Mirrors the §10 Overview layout (KPI row, then a 2/3 + 1/3 split) so the
+     grid does not jump when the data lands. */
+  function skeleton() {
+    var line = function (w) { return '<div class="wx-skel wx-skel-line" style="width:' + w + '"></div>'; };
+    var kpi = function () {
+      return '<div class="card"><div class="wx-skel-card">' +
+        line('60%') + '<div class="wx-skel wx-skel-num"></div>' + line('40%') +
+        '</div></div>';
+    };
+    var block = function (h) {
+      return '<div class="card"><div class="card-h"><div class="wx-skel wx-skel-line" style="width:9rem;margin:0"></div></div>' +
+        '<div class="card-b"><div class="wx-skel" style="height:' + h + 'px"></div></div></div>';
+    };
+    return '<div class="wx-stack wx-skel-root">' +
+      '<div class="wx-skel-grid">' + kpi() + kpi() + kpi() + kpi() + '</div>' +
+      '<div class="grid dx-g84">' + block(280) + block(280) + '</div>' +
+      '<div class="grid dx-g3">' + block(150) + block(150) + block(150) + '</div></div>';
+  }
+
   function render(el, r, g) {
     var c = r.crm, k = c.kpi, ch = c.chips;
     var chip = function (n, label, href, cls) { return '<a class="dx-chip ' + (n ? cls : "") + '" href="' + href + '"><b>' + n + "</b> " + label + "</a>"; };
-    var kpi = function (icon, label, val, sub, href) { return '<a class="card dx-kpi" href="' + href + '"><span class="kpi-ic">' + ic(icon) + "</span><small>" + label + "</small><b>" + val + '</b><div class="dx-sub">' + sub + "</div></a>"; };
+    /* DESIGN.md §8.2 stat card order: eyebrow → number (+ delta badge) → meta.
+       The icon is a small inline glyph beside the eyebrow, not a 48px tile —
+       a tinted icon block is not part of the §8.2 block. */
+    var kpi = function (icon, label, val, sub, href) {
+      return '<a class="card dx-kpi" href="' + href + '">' +
+        '<span class="kpi-ic" aria-hidden="true">' + ic(icon) + "</span>" +
+        "<small>" + label + "</small>" +
+        "<b>" + val + "</b>" +
+        '<div class="dx-sub">' + sub + "</div></a>";
+    };
     var fmax = Math.max.apply(null, Object.keys(STAGE).map(function (s) { return c.funnel[s] || 0; }).concat([1]));
     var t = c.target, pct = t.target ? Math.min(100, Math.round(t.month / t.target * 100)) : 0;
     var gTot = g.ok && g.connected ? { u: g.ga4 && g.ga4.totals ? g.ga4.totals.users : null, c: g.gsc && g.gsc.totals ? g.gsc.totals.clicks : null } : null;
