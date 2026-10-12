@@ -15,6 +15,12 @@ const ARC_DRAWING_KINDS = ['floor_plan', 'elevation', 'render', 'structural', 's
 const ARC_REV_SCOPES    = ['drawing', 'line', 'project'];
 
 function arc_migrate(): void {
+    require_once __DIR__ . '/_lib/db.php';
+    if (mig_skip(__FILE__)) return;   // DDL already ran for this deployment
+    arc_migrate_do();
+    mig_done(__FILE__);
+}
+function arc_migrate_do(): void {
     static $done = false; if ($done) return; $done = true;
     $e = ' ENGINE=InnoDB DEFAULT CHARSET=utf8mb4';
     q('CREATE TABLE IF NOT EXISTS wx_arc_drawings (id INT AUTO_INCREMENT PRIMARY KEY, project_id INT NOT NULL, kind VARCHAR(20) NOT NULL, title VARCHAR(160) NOT NULL, data LONGTEXT NOT NULL, INDEX(project_id))' . $e);

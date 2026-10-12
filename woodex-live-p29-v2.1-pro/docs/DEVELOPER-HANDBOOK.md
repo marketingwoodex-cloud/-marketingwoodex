@@ -405,7 +405,7 @@ PREVIEW_EMAIL=<owner> PREVIEW_PASS=<pass> node master-qa.mjs http://127.0.0.1:80
 | `master-qa.mjs` | 58 routes · stuck 0 · page errors 0 |
 | `theme-contrast.mjs` | 8/8 runs, belowAA 0 |
 | `responsive-sweep.mjs` | 58 screens · 0 with overflow |
-| `phplint.js` | 44/44 parse |
+| `phplint.js` | 54/54 parse |
 | `css-check.mjs` | balanced |
 | every probe above | exit 0 (non-zero = a regression) |
 
@@ -445,6 +445,27 @@ role gate fired), `validated` (input refused), `DB-ERROR`, `SERVER-500`, `FATAL`
 **Rules:** SQLite mode is for local runs, QA and demos. Hosting stays MySQL — before a release, the
 schema and the hot queries still get one pass on MySQL/XAMPP. A translation the layer cannot make
 throws with the original SQL attached rather than guessing.
+
+### 10.6 Schema migrations run once per deployment
+
+Every `api/*-lib.php` keeps its tables in a `*_migrate()` (`CREATE TABLE IF NOT EXISTS` plus
+`ALTER TABLE … ADD COLUMN` for columns added later). The guard used to be `static $done`, which only
+lasts for one request, so on MySQL the app re-ran that DDL on **every request** — wasted metadata
+locks and an error log full of swallowed "duplicate column" failures (a sweep measured 2,924
+`CREATE TABLE` + 1,319 `ALTER` for 2,795 calls).
+
+Now `mig_skip()` / `mig_done()` (in `api/_lib/db.php`) memoise it in **`_private/schema.json`**, keyed
+by the lib file's path + mtime + size + a hash of `db.json`. So:
+
+* a normal request runs **zero** schema statements,
+* editing a lib (new table or column) re-runs its migration exactly once,
+* pointing `db.json` at a different database re-runs everything once,
+* deleting `_private/schema.json` forces every migration to run again — the installer and
+  `tools/qa-p29/php-runner.mjs` call `mig_reset()` after creating a database.
+
+If the DDL itself throws, nothing is written for that file, so the next request retries (and the
+error is logged, not swallowed). Measured after the change: 40 `CREATE TABLE` (25 of them the
+installer) + 9 `ALTER` for 3,144 calls.
 
 ---
 

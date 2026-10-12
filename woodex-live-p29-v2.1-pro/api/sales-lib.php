@@ -14,6 +14,12 @@ const SALES_KINDS   = ['design', 'fitout', 'renovation', 'other'];
 const COMPANY_FILE  = PRIVATE_DIR . '/company.json';
 
 function sales_migrate(): void {
+    require_once __DIR__ . '/_lib/db.php';
+    if (mig_skip(__FILE__)) return;   // DDL already ran for this deployment
+    sales_migrate_do();
+    mig_done(__FILE__);
+}
+function sales_migrate_do(): void {
     static $done = false; if ($done) return; $done = true;
     $e = ' ENGINE=InnoDB DEFAULT CHARSET=utf8mb4';
     q('CREATE TABLE IF NOT EXISTS wx_templates (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(80) NOT NULL, data LONGTEXT NOT NULL, UNIQUE(name))' . $e);

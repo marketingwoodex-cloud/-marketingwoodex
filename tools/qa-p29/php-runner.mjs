@@ -153,6 +153,7 @@ export async function createRunner(opts = {}) {
       require ${Q(join(projectDir, 'api/_lib/db.php'))};
       $c = json_decode((string)file_get_contents(${Q(dbFile)}), true);
       $pdo = wx_db($c);
+      mig_reset(); // fresh database: let every *_migrate() run again
       $sql = (string)file_get_contents(${Q(dump)});
       $sql = preg_replace('~^--.*$~m', '', $sql);
       $n = 0; $errs = [];

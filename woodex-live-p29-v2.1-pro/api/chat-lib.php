@@ -38,6 +38,12 @@ function chat_open_now(): bool {
 const CHAT_TONES = ['designer' => 'a calm, professional interior designer: knowledgeable, precise and courteous. Not over-friendly: no slang, no exclamation marks, no emojis, no flattery', 'friendly' => 'warm, friendly and helpful', 'professional' => 'polite, professional and concise', 'sales' => 'enthusiastic and persuasive, gently guiding towards booking a site visit', 'simple' => 'very simple words, short sentences, easy for anyone'];
 
 function chat_migrate(): void {
+    require_once __DIR__ . '/_lib/db.php';
+    if (mig_skip(__FILE__)) return;   // DDL already ran for this deployment
+    chat_migrate_do();
+    mig_done(__FILE__);
+}
+function chat_migrate_do(): void {
     static $done = false; if ($done) return; $done = true; $e = ' ENGINE=InnoDB DEFAULT CHARSET=utf8mb4';
     q('CREATE TABLE IF NOT EXISTS wx_chats (id INT AUTO_INCREMENT PRIMARY KEY, token CHAR(64) NOT NULL, created_at DATETIME NOT NULL, updated_at DATETIME NOT NULL, name VARCHAR(120) NULL, phone VARCHAR(40) NULL, email VARCHAR(190) NULL,
         page VARCHAR(200) NULL, ip VARCHAR(64) NULL, status VARCHAR(10) NOT NULL DEFAULT \'open\', mode VARCHAR(10) NOT NULL DEFAULT \'ai\', agent_name VARCHAR(120) NULL, unread INT NOT NULL DEFAULT 0,

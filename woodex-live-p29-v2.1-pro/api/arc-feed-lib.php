@@ -14,6 +14,12 @@ const ARC_FEED_MAX_TEXT = 2000;
 const ARC_FEED_ROLES    = ['owner', 'admin', 'editor'];   // ARC roles are added in step A9
 
 function arc_feed_migrate(): void {
+    require_once __DIR__ . '/_lib/db.php';
+    if (mig_skip(__FILE__)) return;   // DDL already ran for this deployment
+    arc_feed_migrate_do();
+    mig_done(__FILE__);
+}
+function arc_feed_migrate_do(): void {
     static $done = false; if ($done) return; $done = true;
     q('CREATE TABLE IF NOT EXISTS wx_arc_feed (id INT AUTO_INCREMENT PRIMARY KEY, project_id INT NOT NULL, author_id INT NOT NULL, author_name VARCHAR(120) NOT NULL, author_role VARCHAR(20) NOT NULL, body TEXT NOT NULL, created_at INT NOT NULL, INDEX(project_id, id)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4');
 }

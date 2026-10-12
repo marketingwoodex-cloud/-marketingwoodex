@@ -32,6 +32,12 @@ function notify_cfg(): array {
     return $c;
 }
 function notify_migrate(): void {
+    require_once __DIR__ . '/_lib/db.php';
+    if (mig_skip(__FILE__)) return;   // DDL already ran for this deployment
+    notify_migrate_do();
+    mig_done(__FILE__);
+}
+function notify_migrate_do(): void {
     static $d = false; if ($d) return; $d = true;
     q('CREATE TABLE IF NOT EXISTS wx_notify_log (id INT AUTO_INCREMENT PRIMARY KEY, t DATETIME NOT NULL, event VARCHAR(12) NOT NULL, ref VARCHAR(120) NULL, name VARCHAR(160) NULL, channel VARCHAR(8) NOT NULL, dest VARCHAR(190) NOT NULL, result VARCHAR(255) NOT NULL, INDEX(t)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4');
 }

@@ -64,7 +64,13 @@ function chat_deliver(array $c, string $text): string {
 }
 
 /* ---------------------------------------------------------------- Team group + alerts */
-function tg_map_migrate(): void { static $d = false; if ($d) return; $d = true; q('CREATE TABLE IF NOT EXISTS wx_tg_map (msg_id BIGINT NOT NULL, chat_id INT NOT NULL, t DATETIME NOT NULL, PRIMARY KEY(msg_id)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4'); }
+function tg_map_migrate(): void {
+    require_once __DIR__ . '/_lib/db.php';
+    if (mig_skip(__FILE__)) return;   // DDL already ran for this deployment
+    tg_map_migrate_do();
+    mig_done(__FILE__);
+}
+function tg_map_migrate_do(): void { static $d = false; if ($d) return; $d = true; q('CREATE TABLE IF NOT EXISTS wx_tg_map (msg_id BIGINT NOT NULL, chat_id INT NOT NULL, t DATETIME NOT NULL, PRIMARY KEY(msg_id)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4'); }
 function tg_chan_label(string $ch): string { return ['wa' => 'WhatsApp', 'tg' => 'Telegram'][$ch] ?? 'Website'; }
 /** Post a customer message to the staff group (reply to it to answer). */
 function tg_team_post(array $c, string $text, string $tag = ''): void {

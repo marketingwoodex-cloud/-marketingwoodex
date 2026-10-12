@@ -15,6 +15,12 @@ const CRM_SOURCES = ['contact' => 'Contact form', 'booking' => 'Online booking',
 const CRM_SECRETS = ['smtpPass', 'waToken', 'tsSecret'];
 
 function crm_migrate(): void {
+    require_once __DIR__ . '/_lib/db.php';
+    if (mig_skip(__FILE__)) return;   // DDL already ran for this deployment
+    crm_migrate_do();
+    mig_done(__FILE__);
+}
+function crm_migrate_do(): void {
     static $done = false; if ($done) return; $done = true;
     q("CREATE TABLE IF NOT EXISTS wx_leads (id INT AUTO_INCREMENT PRIMARY KEY, created_at DATETIME NOT NULL, source VARCHAR(30) NOT NULL, page VARCHAR(200) NULL,
         name VARCHAR(120) NOT NULL, phone VARCHAR(40) NULL, email VARCHAR(190) NULL, service VARCHAR(190) NULL, message TEXT NULL, fields TEXT NULL,

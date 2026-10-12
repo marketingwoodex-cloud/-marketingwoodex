@@ -56,6 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$locked) {
             $saved = $in; foreach (array('driver', 'file') as $pk) if (!empty($cur[$pk])) $saved[$pk] = $cur[$pk];
             if (@file_put_contents($dbf, json_encode($saved, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES), LOCK_EX) === false) throw new Exception('Could not write _private/db.json. In File Manager set the _private folder permission to 755.');
             @unlink($lockf);
+            mig_reset(); // the database was just (re)created — migrations must run once again
             $log[] = 'Saved _private/db.json';
             $done = true;
         } catch (Throwable $e) {

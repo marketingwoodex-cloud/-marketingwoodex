@@ -11,6 +11,12 @@
 const AI_REASONS = ['person' => 'Asked for a person', 'price' => 'Price / quote request', 'complaint' => 'Complaint or upset', 'unsure' => 'AI not sure', 'deal' => 'Ready to finalise', 'stuck' => 'No progress after 3 messages'];
 
 function aia_migrate(): void {
+    require_once __DIR__ . '/_lib/db.php';
+    if (mig_skip(__FILE__)) return;   // DDL already ran for this deployment
+    aia_migrate_do();
+    mig_done(__FILE__);
+}
+function aia_migrate_do(): void {
     static $d = false; if ($d) return; $d = true; $e = ' ENGINE=InnoDB DEFAULT CHARSET=utf8mb4';
     q('CREATE TABLE IF NOT EXISTS wx_ai_events (id INT AUTO_INCREMENT PRIMARY KEY, t DATETIME NOT NULL, chat_id INT NOT NULL, kind VARCHAR(12) NOT NULL, reason VARCHAR(20) NULL, INDEX(t), INDEX(chat_id))' . $e);
     q('CREATE TABLE IF NOT EXISTS wx_ai_unans (id INT AUTO_INCREMENT PRIMARY KEY, t DATETIME NOT NULL, last_t DATETIME NOT NULL, chat_id INT NULL, q VARCHAR(500) NOT NULL, qkey VARCHAR(120) NOT NULL, n INT NOT NULL DEFAULT 1, status VARCHAR(10) NOT NULL DEFAULT \'open\', INDEX(status), INDEX(qkey))' . $e);

@@ -31,6 +31,12 @@ function bk_cfg(): array {
 }
 function bk_type(array $c, string $k): ?array { foreach ($c['types'] as $t) if ($t['k'] === $k) return $t; return null; }
 function bk_migrate(): void {
+    require_once __DIR__ . '/_lib/db.php';
+    if (mig_skip(__FILE__)) return;   // DDL already ran for this deployment
+    bk_migrate_do();
+    mig_done(__FILE__);
+}
+function bk_migrate_do(): void {
     static $d = false; if ($d) return; $d = true;
     q("CREATE TABLE IF NOT EXISTS wx_bookings (id INT AUTO_INCREMENT PRIMARY KEY, created_at DATETIME NOT NULL, lead_id INT NULL, name VARCHAR(120) NOT NULL, phone VARCHAR(40) NOT NULL,
         email VARCHAR(190) NULL, type VARCHAR(20) NOT NULL, city VARCHAR(80) NULL, address VARCHAR(300) NULL, d DATE NOT NULL, tm CHAR(5) NOT NULL, dur SMALLINT NOT NULL DEFAULT 60,

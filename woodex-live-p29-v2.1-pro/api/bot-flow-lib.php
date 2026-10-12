@@ -7,6 +7,12 @@
 declare(strict_types=1);
 
 function bot_flow_migrate(): void {
+    require_once __DIR__ . '/_lib/db.php';
+    if (mig_skip(__FILE__)) return;   // DDL already ran for this deployment
+    bot_flow_migrate_do();
+    mig_done(__FILE__);
+}
+function bot_flow_migrate_do(): void {
     static $done = false; if ($done) return; $done = true;
     $e = ' ENGINE=InnoDB DEFAULT CHARSET=utf8mb4';
     q('CREATE TABLE IF NOT EXISTS wx_bot_sessions (
