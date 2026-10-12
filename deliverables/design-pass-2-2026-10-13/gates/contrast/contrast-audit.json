@@ -1,0 +1,1879 @@
+{
+ "base": "http://127.0.0.1:8080",
+ "routes": [
+  "dashboard",
+  "enquiries",
+  "pipeline",
+  "clients",
+  "quotes",
+  "invoices",
+  "transactions",
+  "projects",
+  "settings"
+ ],
+ "modes": {
+  "light": {
+   "routes": {
+    "dashboard": {
+     "dark": false,
+     "checked": 1302,
+     "textNodes": 187,
+     "failureCount": 0,
+     "distinctSelectors": 0,
+     "bySelector": [],
+     "worst": [],
+     "hardcodedInline": [
+      {
+       "selector": "b",
+       "hits": [
+        "#ffffff"
+       ]
+      },
+      {
+       "selector": "h1.auth-title",
+       "hits": [
+        "#fff"
+       ]
+      },
+      {
+       "selector": "div.auth-input-pill",
+       "hits": [
+        "#f5f5f4",
+        "#e7e5e4"
+       ]
+      },
+      {
+       "selector": "input",
+       "hits": [
+        "#fff"
+       ]
+      },
+      {
+       "selector": "div.auth-input-pill",
+       "hits": [
+        "#f5f5f4",
+        "#e7e5e4"
+       ]
+      },
+      {
+       "selector": "input",
+       "hits": [
+        "#fff"
+       ]
+      },
+      {
+       "selector": "p.err",
+       "hits": [
+        "#ef4444"
+       ]
+      },
+      {
+       "selector": "div",
+       "hits": [
+        "#232836"
+       ]
+      },
+      {
+       "selector": "div",
+       "hits": [
+        "#232836"
+       ]
+      },
+      {
+       "selector": "button.btn-sso",
+       "hits": [
+        "#f5f5f4",
+        "#e7e5e4"
+       ]
+      },
+      {
+       "selector": "i",
+       "hits": [
+        "#2563eb"
+       ]
+      },
+      {
+       "selector": "div.dx-task-item",
+       "hits": [
+        "#f5f5f4",
+        "#e7e5e4"
+       ]
+      },
+      {
+       "selector": "span",
+       "hits": [
+        "#f79009"
+       ]
+      },
+      {
+       "selector": "div.dx-task-item",
+       "hits": [
+        "#f5f5f4",
+        "#e7e5e4"
+       ]
+      },
+      {
+       "selector": "div.dx-task-item",
+       "hits": [
+        "#f5f5f4",
+        "#e7e5e4"
+       ]
+      },
+      {
+       "selector": "div.dx-task-item",
+       "hits": [
+        "#f5f5f4",
+        "#e7e5e4"
+       ]
+      },
+      {
+       "selector": "span",
+       "hits": [
+        "#16a34a"
+       ]
+      },
+      {
+       "selector": "div.dx-task-item",
+       "hits": [
+        "#f5f5f4",
+        "#e7e5e4"
+       ]
+      },
+      {
+       "selector": "span",
+       "hits": [
+        "#16a34a"
+       ]
+      },
+      {
+       "selector": "div.dx-task-item",
+       "hits": [
+        "#f5f5f4",
+        "#e7e5e4"
+       ]
+      },
+      {
+       "selector": "span",
+       "hits": [
+        "#16a34a"
+       ]
+      },
+      {
+       "selector": "div.dx-task-item",
+       "hits": [
+        "#f5f5f4",
+        "#e7e5e4"
+       ]
+      },
+      {
+       "selector": "span",
+       "hits": [
+        "#16a34a"
+       ]
+      },
+      {
+       "selector": "div.dx-task-item",
+       "hits": [
+        "#f5f5f4",
+        "#e7e5e4"
+       ]
+      },
+      {
+       "selector": "span",
+       "hits": [
+        "#16a34a"
+       ]
+      }
+     ],
+     "hardcodedInlineCount": 29
+    },
+    "enquiries": {
+     "dark": false,
+     "checked": 1310,
+     "textNodes": 169,
+     "failureCount": 0,
+     "distinctSelectors": 0,
+     "bySelector": [],
+     "worst": [],
+     "hardcodedInline": [
+      {
+       "selector": "b",
+       "hits": [
+        "#ffffff"
+       ]
+      },
+      {
+       "selector": "h1.auth-title",
+       "hits": [
+        "#fff"
+       ]
+      },
+      {
+       "selector": "div.auth-input-pill",
+       "hits": [
+        "#f5f5f4",
+        "#e7e5e4"
+       ]
+      },
+      {
+       "selector": "input",
+       "hits": [
+        "#fff"
+       ]
+      },
+      {
+       "selector": "div.auth-input-pill",
+       "hits": [
+        "#f5f5f4",
+        "#e7e5e4"
+       ]
+      },
+      {
+       "selector": "input",
+       "hits": [
+        "#fff"
+       ]
+      },
+      {
+       "selector": "p.err",
+       "hits": [
+        "#ef4444"
+       ]
+      },
+      {
+       "selector": "div",
+       "hits": [
+        "#232836"
+       ]
+      },
+      {
+       "selector": "div",
+       "hits": [
+        "#232836"
+       ]
+      },
+      {
+       "selector": "button.btn-sso",
+       "hits": [
+        "#f5f5f4",
+        "#e7e5e4"
+       ]
+      },
+      {
+       "selector": "i",
+       "hits": [
+        "#16a34a"
+       ]
+      }
+     ],
+     "hardcodedInlineCount": 11
+    },
+    "pipeline": {
+     "dark": false,
+     "checked": 1163,
+     "textNodes": 101,
+     "failureCount": 0,
+     "distinctSelectors": 0,
+     "bySelector": [],
+     "worst": [],
+     "hardcodedInline": [
+      {
+       "selector": "b",
+       "hits": [
+        "#ffffff"
+       ]
+      },
+      {
+       "selector": "h1.auth-title",
+       "hits": [
+        "#fff"
+       ]
+      },
+      {
+       "selector": "div.auth-input-pill",
+       "hits": [
+        "#f5f5f4",
+        "#e7e5e4"
+       ]
+      },
+      {
+       "selector": "input",
+       "hits": [
+        "#fff"
+       ]
+      },
+      {
+       "selector": "div.auth-input-pill",
+       "hits": [
+        "#f5f5f4",
+        "#e7e5e4"
+       ]
+      },
+      {
+       "selector": "input",
+       "hits": [
+        "#fff"
+       ]
+      },
+      {
+       "selector": "p.err",
+       "hits": [
+        "#ef4444"
+       ]
+      },
+      {
+       "selector": "div",
+       "hits": [
+        "#232836"
+       ]
+      },
+      {
+       "selector": "div",
+       "hits": [
+        "#232836"
+       ]
+      },
+      {
+       "selector": "button.btn-sso",
+       "hits": [
+        "#f5f5f4",
+        "#e7e5e4"
+       ]
+      },
+      {
+       "selector": "section.p19-col",
+       "hits": [
+        "#2563eb"
+       ]
+      },
+      {
+       "selector": "section.p19-col",
+       "hits": [
+        "#2563eb"
+       ]
+      },
+      {
+       "selector": "section.p19-col",
+       "hits": [
+        "#2563eb"
+       ]
+      },
+      {
+       "selector": "section.p19-col",
+       "hits": [
+        "#2563eb"
+       ]
+      },
+      {
+       "selector": "section.p19-col",
+       "hits": [
+        "#2563eb"
+       ]
+      },
+      {
+       "selector": "section.p19-col",
+       "hits": [
+        "#2563eb"
+       ]
+      }
+     ],
+     "hardcodedInlineCount": 16
+    },
+    "clients": {
+     "dark": false,
+     "checked": 1083,
+     "textNodes": 106,
+     "failureCount": 0,
+     "distinctSelectors": 0,
+     "bySelector": [],
+     "worst": [],
+     "hardcodedInline": [
+      {
+       "selector": "b",
+       "hits": [
+        "#ffffff"
+       ]
+      },
+      {
+       "selector": "h1.auth-title",
+       "hits": [
+        "#fff"
+       ]
+      },
+      {
+       "selector": "div.auth-input-pill",
+       "hits": [
+        "#f5f5f4",
+        "#e7e5e4"
+       ]
+      },
+      {
+       "selector": "input",
+       "hits": [
+        "#fff"
+       ]
+      },
+      {
+       "selector": "div.auth-input-pill",
+       "hits": [
+        "#f5f5f4",
+        "#e7e5e4"
+       ]
+      },
+      {
+       "selector": "input",
+       "hits": [
+        "#fff"
+       ]
+      },
+      {
+       "selector": "p.err",
+       "hits": [
+        "#ef4444"
+       ]
+      },
+      {
+       "selector": "div",
+       "hits": [
+        "#232836"
+       ]
+      },
+      {
+       "selector": "div",
+       "hits": [
+        "#232836"
+       ]
+      },
+      {
+       "selector": "button.btn-sso",
+       "hits": [
+        "#f5f5f4",
+        "#e7e5e4"
+       ]
+      }
+     ],
+     "hardcodedInlineCount": 10
+    },
+    "quotes": {
+     "dark": false,
+     "checked": 1034,
+     "textNodes": 87,
+     "failureCount": 0,
+     "distinctSelectors": 0,
+     "bySelector": [],
+     "worst": [],
+     "hardcodedInline": [
+      {
+       "selector": "b",
+       "hits": [
+        "#ffffff"
+       ]
+      },
+      {
+       "selector": "h1.auth-title",
+       "hits": [
+        "#fff"
+       ]
+      },
+      {
+       "selector": "div.auth-input-pill",
+       "hits": [
+        "#f5f5f4",
+        "#e7e5e4"
+       ]
+      },
+      {
+       "selector": "input",
+       "hits": [
+        "#fff"
+       ]
+      },
+      {
+       "selector": "div.auth-input-pill",
+       "hits": [
+        "#f5f5f4",
+        "#e7e5e4"
+       ]
+      },
+      {
+       "selector": "input",
+       "hits": [
+        "#fff"
+       ]
+      },
+      {
+       "selector": "p.err",
+       "hits": [
+        "#ef4444"
+       ]
+      },
+      {
+       "selector": "div",
+       "hits": [
+        "#232836"
+       ]
+      },
+      {
+       "selector": "div",
+       "hits": [
+        "#232836"
+       ]
+      },
+      {
+       "selector": "button.btn-sso",
+       "hits": [
+        "#f5f5f4",
+        "#e7e5e4"
+       ]
+      },
+      {
+       "selector": "div.card-b",
+       "hits": [
+        "#e7e5e4"
+       ]
+      }
+     ],
+     "hardcodedInlineCount": 11
+    },
+    "invoices": {
+     "dark": false,
+     "checked": 1125,
+     "textNodes": 111,
+     "failureCount": 0,
+     "distinctSelectors": 0,
+     "bySelector": [],
+     "worst": [],
+     "hardcodedInline": [
+      {
+       "selector": "b",
+       "hits": [
+        "#ffffff"
+       ]
+      },
+      {
+       "selector": "h1.auth-title",
+       "hits": [
+        "#fff"
+       ]
+      },
+      {
+       "selector": "div.auth-input-pill",
+       "hits": [
+        "#f5f5f4",
+        "#e7e5e4"
+       ]
+      },
+      {
+       "selector": "input",
+       "hits": [
+        "#fff"
+       ]
+      },
+      {
+       "selector": "div.auth-input-pill",
+       "hits": [
+        "#f5f5f4",
+        "#e7e5e4"
+       ]
+      },
+      {
+       "selector": "input",
+       "hits": [
+        "#fff"
+       ]
+      },
+      {
+       "selector": "p.err",
+       "hits": [
+        "#ef4444"
+       ]
+      },
+      {
+       "selector": "div",
+       "hits": [
+        "#232836"
+       ]
+      },
+      {
+       "selector": "div",
+       "hits": [
+        "#232836"
+       ]
+      },
+      {
+       "selector": "button.btn-sso",
+       "hits": [
+        "#f5f5f4",
+        "#e7e5e4"
+       ]
+      }
+     ],
+     "hardcodedInlineCount": 10
+    },
+    "transactions": {
+     "dark": false,
+     "checked": 997,
+     "textNodes": 81,
+     "failureCount": 0,
+     "distinctSelectors": 0,
+     "bySelector": [],
+     "worst": [],
+     "hardcodedInline": [
+      {
+       "selector": "b",
+       "hits": [
+        "#ffffff"
+       ]
+      },
+      {
+       "selector": "h1.auth-title",
+       "hits": [
+        "#fff"
+       ]
+      },
+      {
+       "selector": "div.auth-input-pill",
+       "hits": [
+        "#f5f5f4",
+        "#e7e5e4"
+       ]
+      },
+      {
+       "selector": "input",
+       "hits": [
+        "#fff"
+       ]
+      },
+      {
+       "selector": "div.auth-input-pill",
+       "hits": [
+        "#f5f5f4",
+        "#e7e5e4"
+       ]
+      },
+      {
+       "selector": "input",
+       "hits": [
+        "#fff"
+       ]
+      },
+      {
+       "selector": "p.err",
+       "hits": [
+        "#ef4444"
+       ]
+      },
+      {
+       "selector": "div",
+       "hits": [
+        "#232836"
+       ]
+      },
+      {
+       "selector": "div",
+       "hits": [
+        "#232836"
+       ]
+      },
+      {
+       "selector": "button.btn-sso",
+       "hits": [
+        "#f5f5f4",
+        "#e7e5e4"
+       ]
+      }
+     ],
+     "hardcodedInlineCount": 10
+    },
+    "projects": {
+     "dark": false,
+     "checked": 1014,
+     "textNodes": 87,
+     "failureCount": 0,
+     "distinctSelectors": 0,
+     "bySelector": [],
+     "worst": [],
+     "hardcodedInline": [
+      {
+       "selector": "b",
+       "hits": [
+        "#ffffff"
+       ]
+      },
+      {
+       "selector": "h1.auth-title",
+       "hits": [
+        "#fff"
+       ]
+      },
+      {
+       "selector": "div.auth-input-pill",
+       "hits": [
+        "#f5f5f4",
+        "#e7e5e4"
+       ]
+      },
+      {
+       "selector": "input",
+       "hits": [
+        "#fff"
+       ]
+      },
+      {
+       "selector": "div.auth-input-pill",
+       "hits": [
+        "#f5f5f4",
+        "#e7e5e4"
+       ]
+      },
+      {
+       "selector": "input",
+       "hits": [
+        "#fff"
+       ]
+      },
+      {
+       "selector": "p.err",
+       "hits": [
+        "#ef4444"
+       ]
+      },
+      {
+       "selector": "div",
+       "hits": [
+        "#232836"
+       ]
+      },
+      {
+       "selector": "div",
+       "hits": [
+        "#232836"
+       ]
+      },
+      {
+       "selector": "button.btn-sso",
+       "hits": [
+        "#f5f5f4",
+        "#e7e5e4"
+       ]
+      }
+     ],
+     "hardcodedInlineCount": 10
+    },
+    "settings": {
+     "dark": false,
+     "checked": 1257,
+     "textNodes": 200,
+     "failureCount": 0,
+     "distinctSelectors": 0,
+     "bySelector": [],
+     "worst": [],
+     "hardcodedInline": [
+      {
+       "selector": "b",
+       "hits": [
+        "#ffffff"
+       ]
+      },
+      {
+       "selector": "h1.auth-title",
+       "hits": [
+        "#fff"
+       ]
+      },
+      {
+       "selector": "div.auth-input-pill",
+       "hits": [
+        "#f5f5f4",
+        "#e7e5e4"
+       ]
+      },
+      {
+       "selector": "input",
+       "hits": [
+        "#fff"
+       ]
+      },
+      {
+       "selector": "div.auth-input-pill",
+       "hits": [
+        "#f5f5f4",
+        "#e7e5e4"
+       ]
+      },
+      {
+       "selector": "input",
+       "hits": [
+        "#fff"
+       ]
+      },
+      {
+       "selector": "p.err",
+       "hits": [
+        "#ef4444"
+       ]
+      },
+      {
+       "selector": "div",
+       "hits": [
+        "#232836"
+       ]
+      },
+      {
+       "selector": "div",
+       "hits": [
+        "#232836"
+       ]
+      },
+      {
+       "selector": "button.btn-sso",
+       "hits": [
+        "#f5f5f4",
+        "#e7e5e4"
+       ]
+      },
+      {
+       "selector": "div.card",
+       "hits": [
+        "#f5f5f4",
+        "#e7e5e4"
+       ]
+      },
+      {
+       "selector": "input",
+       "hits": [
+        "#f5f5f4",
+        "#e7e5e4"
+       ]
+      },
+      {
+       "selector": "button.on",
+       "hits": [
+        "#e7e5e4"
+       ]
+      },
+      {
+       "selector": "button",
+       "hits": [
+        "#e7e5e4"
+       ]
+      },
+      {
+       "selector": "button",
+       "hits": [
+        "#e7e5e4"
+       ]
+      },
+      {
+       "selector": "button",
+       "hits": [
+        "#e7e5e4"
+       ]
+      },
+      {
+       "selector": "div.conn-card",
+       "hits": [
+        "#f5f5f4",
+        "#e7e5e4"
+       ]
+      },
+      {
+       "selector": "span",
+       "hits": [
+        "#1877f2",
+        "#000"
+       ]
+      },
+      {
+       "selector": "div.conn-card",
+       "hits": [
+        "#f5f5f4",
+        "#e7e5e4"
+       ]
+      },
+      {
+       "selector": "span",
+       "hits": [
+        "#e1306c",
+        "#000"
+       ]
+      },
+      {
+       "selector": "div.conn-card",
+       "hits": [
+        "#f5f5f4",
+        "#e7e5e4"
+       ]
+      },
+      {
+       "selector": "span",
+       "hits": [
+        "#111827",
+        "#fff"
+       ]
+      },
+      {
+       "selector": "div.conn-card",
+       "hits": [
+        "#f5f5f4",
+        "#e7e5e4"
+       ]
+      },
+      {
+       "selector": "span",
+       "hits": [
+        "#ff0000",
+        "#000"
+       ]
+      },
+      {
+       "selector": "div.conn-card",
+       "hits": [
+        "#f5f5f4",
+        "#e7e5e4"
+       ]
+      }
+     ],
+     "hardcodedInlineCount": 69
+    }
+   },
+   "pageErrors": [],
+   "checked": 10285,
+   "textNodes": 1129,
+   "failureCount": 0,
+   "hardcodedInlineCount": 176
+  },
+  "dark": {
+   "routes": {
+    "dashboard": {
+     "dark": true,
+     "checked": 1302,
+     "textNodes": 187,
+     "failureCount": 0,
+     "distinctSelectors": 0,
+     "bySelector": [],
+     "worst": [],
+     "hardcodedInline": [
+      {
+       "selector": "b",
+       "hits": [
+        "#ffffff"
+       ]
+      },
+      {
+       "selector": "h1.auth-title",
+       "hits": [
+        "#fff"
+       ]
+      },
+      {
+       "selector": "div.auth-input-pill",
+       "hits": [
+        "#f5f5f4",
+        "#e7e5e4"
+       ]
+      },
+      {
+       "selector": "input",
+       "hits": [
+        "#fff"
+       ]
+      },
+      {
+       "selector": "div.auth-input-pill",
+       "hits": [
+        "#f5f5f4",
+        "#e7e5e4"
+       ]
+      },
+      {
+       "selector": "input",
+       "hits": [
+        "#fff"
+       ]
+      },
+      {
+       "selector": "p.err",
+       "hits": [
+        "#ef4444"
+       ]
+      },
+      {
+       "selector": "div",
+       "hits": [
+        "#232836"
+       ]
+      },
+      {
+       "selector": "div",
+       "hits": [
+        "#232836"
+       ]
+      },
+      {
+       "selector": "button.btn-sso",
+       "hits": [
+        "#f5f5f4",
+        "#e7e5e4"
+       ]
+      },
+      {
+       "selector": "i",
+       "hits": [
+        "#2563eb"
+       ]
+      },
+      {
+       "selector": "div.dx-task-item",
+       "hits": [
+        "#f5f5f4",
+        "#e7e5e4"
+       ]
+      },
+      {
+       "selector": "span",
+       "hits": [
+        "#f79009"
+       ]
+      },
+      {
+       "selector": "div.dx-task-item",
+       "hits": [
+        "#f5f5f4",
+        "#e7e5e4"
+       ]
+      },
+      {
+       "selector": "div.dx-task-item",
+       "hits": [
+        "#f5f5f4",
+        "#e7e5e4"
+       ]
+      },
+      {
+       "selector": "div.dx-task-item",
+       "hits": [
+        "#f5f5f4",
+        "#e7e5e4"
+       ]
+      },
+      {
+       "selector": "span",
+       "hits": [
+        "#16a34a"
+       ]
+      },
+      {
+       "selector": "div.dx-task-item",
+       "hits": [
+        "#f5f5f4",
+        "#e7e5e4"
+       ]
+      },
+      {
+       "selector": "span",
+       "hits": [
+        "#16a34a"
+       ]
+      },
+      {
+       "selector": "div.dx-task-item",
+       "hits": [
+        "#f5f5f4",
+        "#e7e5e4"
+       ]
+      },
+      {
+       "selector": "span",
+       "hits": [
+        "#16a34a"
+       ]
+      },
+      {
+       "selector": "div.dx-task-item",
+       "hits": [
+        "#f5f5f4",
+        "#e7e5e4"
+       ]
+      },
+      {
+       "selector": "span",
+       "hits": [
+        "#16a34a"
+       ]
+      },
+      {
+       "selector": "div.dx-task-item",
+       "hits": [
+        "#f5f5f4",
+        "#e7e5e4"
+       ]
+      },
+      {
+       "selector": "span",
+       "hits": [
+        "#16a34a"
+       ]
+      }
+     ],
+     "hardcodedInlineCount": 29
+    },
+    "enquiries": {
+     "dark": true,
+     "checked": 1310,
+     "textNodes": 169,
+     "failureCount": 0,
+     "distinctSelectors": 0,
+     "bySelector": [],
+     "worst": [],
+     "hardcodedInline": [
+      {
+       "selector": "b",
+       "hits": [
+        "#ffffff"
+       ]
+      },
+      {
+       "selector": "h1.auth-title",
+       "hits": [
+        "#fff"
+       ]
+      },
+      {
+       "selector": "div.auth-input-pill",
+       "hits": [
+        "#f5f5f4",
+        "#e7e5e4"
+       ]
+      },
+      {
+       "selector": "input",
+       "hits": [
+        "#fff"
+       ]
+      },
+      {
+       "selector": "div.auth-input-pill",
+       "hits": [
+        "#f5f5f4",
+        "#e7e5e4"
+       ]
+      },
+      {
+       "selector": "input",
+       "hits": [
+        "#fff"
+       ]
+      },
+      {
+       "selector": "p.err",
+       "hits": [
+        "#ef4444"
+       ]
+      },
+      {
+       "selector": "div",
+       "hits": [
+        "#232836"
+       ]
+      },
+      {
+       "selector": "div",
+       "hits": [
+        "#232836"
+       ]
+      },
+      {
+       "selector": "button.btn-sso",
+       "hits": [
+        "#f5f5f4",
+        "#e7e5e4"
+       ]
+      },
+      {
+       "selector": "i",
+       "hits": [
+        "#16a34a"
+       ]
+      }
+     ],
+     "hardcodedInlineCount": 11
+    },
+    "pipeline": {
+     "dark": true,
+     "checked": 1163,
+     "textNodes": 101,
+     "failureCount": 0,
+     "distinctSelectors": 0,
+     "bySelector": [],
+     "worst": [],
+     "hardcodedInline": [
+      {
+       "selector": "b",
+       "hits": [
+        "#ffffff"
+       ]
+      },
+      {
+       "selector": "h1.auth-title",
+       "hits": [
+        "#fff"
+       ]
+      },
+      {
+       "selector": "div.auth-input-pill",
+       "hits": [
+        "#f5f5f4",
+        "#e7e5e4"
+       ]
+      },
+      {
+       "selector": "input",
+       "hits": [
+        "#fff"
+       ]
+      },
+      {
+       "selector": "div.auth-input-pill",
+       "hits": [
+        "#f5f5f4",
+        "#e7e5e4"
+       ]
+      },
+      {
+       "selector": "input",
+       "hits": [
+        "#fff"
+       ]
+      },
+      {
+       "selector": "p.err",
+       "hits": [
+        "#ef4444"
+       ]
+      },
+      {
+       "selector": "div",
+       "hits": [
+        "#232836"
+       ]
+      },
+      {
+       "selector": "div",
+       "hits": [
+        "#232836"
+       ]
+      },
+      {
+       "selector": "button.btn-sso",
+       "hits": [
+        "#f5f5f4",
+        "#e7e5e4"
+       ]
+      },
+      {
+       "selector": "section.p19-col",
+       "hits": [
+        "#2563eb"
+       ]
+      },
+      {
+       "selector": "section.p19-col",
+       "hits": [
+        "#2563eb"
+       ]
+      },
+      {
+       "selector": "section.p19-col",
+       "hits": [
+        "#2563eb"
+       ]
+      },
+      {
+       "selector": "section.p19-col",
+       "hits": [
+        "#2563eb"
+       ]
+      },
+      {
+       "selector": "section.p19-col",
+       "hits": [
+        "#2563eb"
+       ]
+      },
+      {
+       "selector": "section.p19-col",
+       "hits": [
+        "#2563eb"
+       ]
+      }
+     ],
+     "hardcodedInlineCount": 16
+    },
+    "clients": {
+     "dark": true,
+     "checked": 1083,
+     "textNodes": 106,
+     "failureCount": 0,
+     "distinctSelectors": 0,
+     "bySelector": [],
+     "worst": [],
+     "hardcodedInline": [
+      {
+       "selector": "b",
+       "hits": [
+        "#ffffff"
+       ]
+      },
+      {
+       "selector": "h1.auth-title",
+       "hits": [
+        "#fff"
+       ]
+      },
+      {
+       "selector": "div.auth-input-pill",
+       "hits": [
+        "#f5f5f4",
+        "#e7e5e4"
+       ]
+      },
+      {
+       "selector": "input",
+       "hits": [
+        "#fff"
+       ]
+      },
+      {
+       "selector": "div.auth-input-pill",
+       "hits": [
+        "#f5f5f4",
+        "#e7e5e4"
+       ]
+      },
+      {
+       "selector": "input",
+       "hits": [
+        "#fff"
+       ]
+      },
+      {
+       "selector": "p.err",
+       "hits": [
+        "#ef4444"
+       ]
+      },
+      {
+       "selector": "div",
+       "hits": [
+        "#232836"
+       ]
+      },
+      {
+       "selector": "div",
+       "hits": [
+        "#232836"
+       ]
+      },
+      {
+       "selector": "button.btn-sso",
+       "hits": [
+        "#f5f5f4",
+        "#e7e5e4"
+       ]
+      }
+     ],
+     "hardcodedInlineCount": 10
+    },
+    "quotes": {
+     "dark": true,
+     "checked": 1034,
+     "textNodes": 87,
+     "failureCount": 0,
+     "distinctSelectors": 0,
+     "bySelector": [],
+     "worst": [],
+     "hardcodedInline": [
+      {
+       "selector": "b",
+       "hits": [
+        "#ffffff"
+       ]
+      },
+      {
+       "selector": "h1.auth-title",
+       "hits": [
+        "#fff"
+       ]
+      },
+      {
+       "selector": "div.auth-input-pill",
+       "hits": [
+        "#f5f5f4",
+        "#e7e5e4"
+       ]
+      },
+      {
+       "selector": "input",
+       "hits": [
+        "#fff"
+       ]
+      },
+      {
+       "selector": "div.auth-input-pill",
+       "hits": [
+        "#f5f5f4",
+        "#e7e5e4"
+       ]
+      },
+      {
+       "selector": "input",
+       "hits": [
+        "#fff"
+       ]
+      },
+      {
+       "selector": "p.err",
+       "hits": [
+        "#ef4444"
+       ]
+      },
+      {
+       "selector": "div",
+       "hits": [
+        "#232836"
+       ]
+      },
+      {
+       "selector": "div",
+       "hits": [
+        "#232836"
+       ]
+      },
+      {
+       "selector": "button.btn-sso",
+       "hits": [
+        "#f5f5f4",
+        "#e7e5e4"
+       ]
+      },
+      {
+       "selector": "div.card-b",
+       "hits": [
+        "#e7e5e4"
+       ]
+      }
+     ],
+     "hardcodedInlineCount": 11
+    },
+    "invoices": {
+     "dark": true,
+     "checked": 1125,
+     "textNodes": 111,
+     "failureCount": 0,
+     "distinctSelectors": 0,
+     "bySelector": [],
+     "worst": [],
+     "hardcodedInline": [
+      {
+       "selector": "b",
+       "hits": [
+        "#ffffff"
+       ]
+      },
+      {
+       "selector": "h1.auth-title",
+       "hits": [
+        "#fff"
+       ]
+      },
+      {
+       "selector": "div.auth-input-pill",
+       "hits": [
+        "#f5f5f4",
+        "#e7e5e4"
+       ]
+      },
+      {
+       "selector": "input",
+       "hits": [
+        "#fff"
+       ]
+      },
+      {
+       "selector": "div.auth-input-pill",
+       "hits": [
+        "#f5f5f4",
+        "#e7e5e4"
+       ]
+      },
+      {
+       "selector": "input",
+       "hits": [
+        "#fff"
+       ]
+      },
+      {
+       "selector": "p.err",
+       "hits": [
+        "#ef4444"
+       ]
+      },
+      {
+       "selector": "div",
+       "hits": [
+        "#232836"
+       ]
+      },
+      {
+       "selector": "div",
+       "hits": [
+        "#232836"
+       ]
+      },
+      {
+       "selector": "button.btn-sso",
+       "hits": [
+        "#f5f5f4",
+        "#e7e5e4"
+       ]
+      }
+     ],
+     "hardcodedInlineCount": 10
+    },
+    "transactions": {
+     "dark": true,
+     "checked": 997,
+     "textNodes": 81,
+     "failureCount": 0,
+     "distinctSelectors": 0,
+     "bySelector": [],
+     "worst": [],
+     "hardcodedInline": [
+      {
+       "selector": "b",
+       "hits": [
+        "#ffffff"
+       ]
+      },
+      {
+       "selector": "h1.auth-title",
+       "hits": [
+        "#fff"
+       ]
+      },
+      {
+       "selector": "div.auth-input-pill",
+       "hits": [
+        "#f5f5f4",
+        "#e7e5e4"
+       ]
+      },
+      {
+       "selector": "input",
+       "hits": [
+        "#fff"
+       ]
+      },
+      {
+       "selector": "div.auth-input-pill",
+       "hits": [
+        "#f5f5f4",
+        "#e7e5e4"
+       ]
+      },
+      {
+       "selector": "input",
+       "hits": [
+        "#fff"
+       ]
+      },
+      {
+       "selector": "p.err",
+       "hits": [
+        "#ef4444"
+       ]
+      },
+      {
+       "selector": "div",
+       "hits": [
+        "#232836"
+       ]
+      },
+      {
+       "selector": "div",
+       "hits": [
+        "#232836"
+       ]
+      },
+      {
+       "selector": "button.btn-sso",
+       "hits": [
+        "#f5f5f4",
+        "#e7e5e4"
+       ]
+      }
+     ],
+     "hardcodedInlineCount": 10
+    },
+    "projects": {
+     "dark": true,
+     "checked": 1014,
+     "textNodes": 87,
+     "failureCount": 0,
+     "distinctSelectors": 0,
+     "bySelector": [],
+     "worst": [],
+     "hardcodedInline": [
+      {
+       "selector": "b",
+       "hits": [
+        "#ffffff"
+       ]
+      },
+      {
+       "selector": "h1.auth-title",
+       "hits": [
+        "#fff"
+       ]
+      },
+      {
+       "selector": "div.auth-input-pill",
+       "hits": [
+        "#f5f5f4",
+        "#e7e5e4"
+       ]
+      },
+      {
+       "selector": "input",
+       "hits": [
+        "#fff"
+       ]
+      },
+      {
+       "selector": "div.auth-input-pill",
+       "hits": [
+        "#f5f5f4",
+        "#e7e5e4"
+       ]
+      },
+      {
+       "selector": "input",
+       "hits": [
+        "#fff"
+       ]
+      },
+      {
+       "selector": "p.err",
+       "hits": [
+        "#ef4444"
+       ]
+      },
+      {
+       "selector": "div",
+       "hits": [
+        "#232836"
+       ]
+      },
+      {
+       "selector": "div",
+       "hits": [
+        "#232836"
+       ]
+      },
+      {
+       "selector": "button.btn-sso",
+       "hits": [
+        "#f5f5f4",
+        "#e7e5e4"
+       ]
+      }
+     ],
+     "hardcodedInlineCount": 10
+    },
+    "settings": {
+     "dark": true,
+     "checked": 1257,
+     "textNodes": 200,
+     "failureCount": 0,
+     "distinctSelectors": 0,
+     "bySelector": [],
+     "worst": [],
+     "hardcodedInline": [
+      {
+       "selector": "b",
+       "hits": [
+        "#ffffff"
+       ]
+      },
+      {
+       "selector": "h1.auth-title",
+       "hits": [
+        "#fff"
+       ]
+      },
+      {
+       "selector": "div.auth-input-pill",
+       "hits": [
+        "#f5f5f4",
+        "#e7e5e4"
+       ]
+      },
+      {
+       "selector": "input",
+       "hits": [
+        "#fff"
+       ]
+      },
+      {
+       "selector": "div.auth-input-pill",
+       "hits": [
+        "#f5f5f4",
+        "#e7e5e4"
+       ]
+      },
+      {
+       "selector": "input",
+       "hits": [
+        "#fff"
+       ]
+      },
+      {
+       "selector": "p.err",
+       "hits": [
+        "#ef4444"
+       ]
+      },
+      {
+       "selector": "div",
+       "hits": [
+        "#232836"
+       ]
+      },
+      {
+       "selector": "div",
+       "hits": [
+        "#232836"
+       ]
+      },
+      {
+       "selector": "button.btn-sso",
+       "hits": [
+        "#f5f5f4",
+        "#e7e5e4"
+       ]
+      },
+      {
+       "selector": "div.card",
+       "hits": [
+        "#f5f5f4",
+        "#e7e5e4"
+       ]
+      },
+      {
+       "selector": "input",
+       "hits": [
+        "#f5f5f4",
+        "#e7e5e4"
+       ]
+      },
+      {
+       "selector": "button.on",
+       "hits": [
+        "#e7e5e4"
+       ]
+      },
+      {
+       "selector": "button",
+       "hits": [
+        "#e7e5e4"
+       ]
+      },
+      {
+       "selector": "button",
+       "hits": [
+        "#e7e5e4"
+       ]
+      },
+      {
+       "selector": "button",
+       "hits": [
+        "#e7e5e4"
+       ]
+      },
+      {
+       "selector": "div.conn-card",
+       "hits": [
+        "#f5f5f4",
+        "#e7e5e4"
+       ]
+      },
+      {
+       "selector": "span",
+       "hits": [
+        "#1877f2",
+        "#000"
+       ]
+      },
+      {
+       "selector": "div.conn-card",
+       "hits": [
+        "#f5f5f4",
+        "#e7e5e4"
+       ]
+      },
+      {
+       "selector": "span",
+       "hits": [
+        "#e1306c",
+        "#000"
+       ]
+      },
+      {
+       "selector": "div.conn-card",
+       "hits": [
+        "#f5f5f4",
+        "#e7e5e4"
+       ]
+      },
+      {
+       "selector": "span",
+       "hits": [
+        "#111827",
+        "#fff"
+       ]
+      },
+      {
+       "selector": "div.conn-card",
+       "hits": [
+        "#f5f5f4",
+        "#e7e5e4"
+       ]
+      },
+      {
+       "selector": "span",
+       "hits": [
+        "#ff0000",
+        "#000"
+       ]
+      },
+      {
+       "selector": "div.conn-card",
+       "hits": [
+        "#f5f5f4",
+        "#e7e5e4"
+       ]
+      }
+     ],
+     "hardcodedInlineCount": 69
+    }
+   },
+   "pageErrors": [],
+   "checked": 10285,
+   "textNodes": 1129,
+   "failureCount": 0,
+   "hardcodedInlineCount": 176
+  }
+ },
+ "pageErrors": []
+}

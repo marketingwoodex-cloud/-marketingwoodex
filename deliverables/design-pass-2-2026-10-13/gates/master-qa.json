@@ -1,0 +1,908 @@
+{
+  "at": "2026-10-12T23:00:49.873Z",
+  "base": "http://127.0.0.1:8080",
+  "rows": [
+    {
+      "route": "dashboard",
+      "ms": 665,
+      "textLen": 2468,
+      "rows": 17,
+      "emptyStates": [],
+      "h1": "Good evening, Managing",
+      "loadingText": false,
+      "stuck": false,
+      "apiCalls": [
+        "dash_data",
+        "gdata_report",
+        "appr_count",
+        "leads_count"
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "approvals",
+      "ms": 658,
+      "textLen": 450,
+      "rows": 3,
+      "emptyStates": [
+        "Nothing waiting. All clear ✓"
+      ],
+      "h1": "Approvals",
+      "loadingText": false,
+      "stuck": false,
+      "apiCalls": [
+        "appr_cfg_get",
+        "appr_list",
+        "leads_count"
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "enquiries",
+      "ms": 657,
+      "textLen": 1929,
+      "rows": 6,
+      "emptyStates": [],
+      "h1": "Leads",
+      "loadingText": false,
+      "stuck": false,
+      "apiCalls": [
+        "s17_meta",
+        "leads_list",
+        "leads_count"
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "pipeline",
+      "ms": 658,
+      "textLen": 867,
+      "rows": 0,
+      "emptyStates": [],
+      "h1": "Pipeline",
+      "loadingText": false,
+      "stuck": false,
+      "apiCalls": [
+        "leads_list",
+        "s17_meta",
+        "leads_count"
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "bookings",
+      "ms": 657,
+      "textLen": 284,
+      "rows": 2,
+      "emptyStates": [
+        "All bookings approved."
+      ],
+      "h1": "Bookings",
+      "loadingText": false,
+      "stuck": false,
+      "apiCalls": [
+        "bk_list",
+        "leads_count"
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "clients",
+      "ms": 656,
+      "textLen": 647,
+      "rows": 9,
+      "emptyStates": [],
+      "h1": "Clients",
+      "loadingText": false,
+      "stuck": false,
+      "apiCalls": [
+        "clients_master",
+        "leads_count"
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "quotes",
+      "ms": 658,
+      "textLen": 418,
+      "rows": 7,
+      "emptyStates": [],
+      "h1": "Quotations",
+      "loadingText": false,
+      "stuck": false,
+      "apiCalls": [
+        "quotes_list",
+        "leads_count"
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "invoices",
+      "ms": 656,
+      "textLen": 514,
+      "rows": 2,
+      "emptyStates": [],
+      "h1": "Invoice tracking",
+      "loadingText": false,
+      "stuck": false,
+      "apiCalls": [
+        "invs_tracker",
+        "leads_count"
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "transactions",
+      "ms": 658,
+      "textLen": 396,
+      "rows": 6,
+      "emptyStates": [],
+      "h1": "Transactions",
+      "loadingText": false,
+      "stuck": false,
+      "apiCalls": [
+        "invs_list",
+        "leads_count"
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "templates",
+      "ms": 655,
+      "textLen": 1213,
+      "rows": 4,
+      "emptyStates": [],
+      "h1": "Quotation templates",
+      "loadingText": false,
+      "stuck": false,
+      "apiCalls": [
+        "tpl_list",
+        "tpl_starters",
+        "leads_count"
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "projects",
+      "ms": 657,
+      "textLen": 406,
+      "rows": 2,
+      "emptyStates": [],
+      "h1": "Projects",
+      "loadingText": false,
+      "stuck": false,
+      "apiCalls": [
+        "projs_table",
+        "leads_count"
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "gantt",
+      "ms": 657,
+      "textLen": 195,
+      "rows": 1,
+      "emptyStates": [],
+      "h1": "Timeline",
+      "loadingText": false,
+      "stuck": false,
+      "apiCalls": [
+        "projs_list",
+        "leads_count"
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "chat",
+      "ms": 656,
+      "textLen": 844,
+      "rows": 2,
+      "emptyStates": [],
+      "h1": "Inbox",
+      "loadingText": false,
+      "stuck": false,
+      "apiCalls": [
+        "chat_list",
+        "crm_wa_status",
+        "chat_cfg_get",
+        "leads_count"
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "team-feed",
+      "ms": 661,
+      "textLen": 335,
+      "rows": 2,
+      "emptyStates": [],
+      "h1": "Team feed",
+      "loadingText": false,
+      "stuck": false,
+      "apiCalls": [
+        "projs_list",
+        "leads_count"
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "wahub",
+      "ms": 660,
+      "textLen": 1658,
+      "rows": 10,
+      "emptyStates": [
+        "No rules yet. Click New rule."
+      ],
+      "h1": "WhatsApp hub",
+      "loadingText": false,
+      "stuck": false,
+      "apiCalls": [
+        "wah_overview",
+        "leads_count"
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "wainsights",
+      "ms": 656,
+      "textLen": 1210,
+      "rows": 11,
+      "emptyStates": [],
+      "h1": "Insights",
+      "loadingText": false,
+      "stuck": false,
+      "apiCalls": [
+        "wah_insights",
+        "leads_count"
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "wauto",
+      "ms": 656,
+      "textLen": 1216,
+      "rows": 6,
+      "emptyStates": [
+        "No campaigns yet. A campaign sends one Meta-appr"
+      ],
+      "h1": "WhatsApp automation",
+      "loadingText": false,
+      "stuck": false,
+      "apiCalls": [
+        "wag_get",
+        "leads_count"
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "offers",
+      "ms": 656,
+      "textLen": 1143,
+      "rows": 2,
+      "emptyStates": [
+        "No offers yet. Create one (e.g. Ramadan 10% off)"
+      ],
+      "h1": "WhatsApp offers",
+      "loadingText": false,
+      "stuck": false,
+      "apiCalls": [
+        "crm_offers",
+        "leads_count"
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "telegram",
+      "ms": 657,
+      "textLen": 2775,
+      "rows": 7,
+      "emptyStates": [],
+      "h1": "Telegram",
+      "loadingText": false,
+      "stuck": false,
+      "apiCalls": [
+        "tg_get",
+        "leads_count"
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "social",
+      "ms": 659,
+      "textLen": 2014,
+      "rows": 12,
+      "emptyStates": [],
+      "h1": "Social Media & Community Automation",
+      "loadingText": false,
+      "stuck": false,
+      "apiCalls": [
+        "leads_count"
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "updates",
+      "ms": 656,
+      "textLen": 4453,
+      "rows": 16,
+      "emptyStates": [],
+      "h1": "Client updates",
+      "loadingText": false,
+      "stuck": false,
+      "apiCalls": [
+        "notify_get",
+        "leads_count"
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "aicenter",
+      "ms": 655,
+      "textLen": 3577,
+      "rows": 0,
+      "emptyStates": [],
+      "h1": "AI Assistant",
+      "loadingText": false,
+      "stuck": false,
+      "apiCalls": [
+        "aic_get",
+        "leads_count"
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "train",
+      "ms": 661,
+      "textLen": 1512,
+      "rows": 4,
+      "emptyStates": [],
+      "h1": "AI Assistant & Knowledge Training",
+      "loadingText": false,
+      "stuck": false,
+      "apiCalls": [
+        "leads_count"
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "aireport",
+      "ms": 657,
+      "textLen": 1185,
+      "rows": 8,
+      "emptyStates": [],
+      "h1": "AI report",
+      "loadingText": false,
+      "stuck": false,
+      "apiCalls": [
+        "ai_report",
+        "leads_count"
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "pages",
+      "ms": 656,
+      "textLen": 17179,
+      "rows": 154,
+      "emptyStates": [],
+      "h1": "Pages",
+      "loadingText": false,
+      "stuck": false,
+      "apiCalls": [
+        "pages_list",
+        "leads_count"
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "builder",
+      "ms": 724,
+      "textLen": 0,
+      "rows": 0,
+      "emptyStates": [],
+      "h1": null,
+      "loadingText": false,
+      "stuck": false,
+      "apiCalls": [
+        "leads_count"
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "library",
+      "ms": 2297,
+      "textLen": 2787,
+      "rows": 51,
+      "emptyStates": [],
+      "h1": "Section library",
+      "loadingText": false,
+      "stuck": false,
+      "apiCalls": [
+        "leads_count"
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "global",
+      "ms": 709,
+      "textLen": 7842,
+      "rows": 6,
+      "emptyStates": [],
+      "h1": "Header & footer",
+      "loadingText": false,
+      "stuck": false,
+      "apiCalls": [
+        "cms_announce_get",
+        "leads_count"
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "heroes",
+      "ms": 655,
+      "textLen": 1629,
+      "rows": 1,
+      "emptyStates": [],
+      "h1": "Hero slides",
+      "loadingText": false,
+      "stuck": false,
+      "apiCalls": [
+        "leads_count"
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "redirects",
+      "ms": 657,
+      "textLen": 11136,
+      "rows": 46,
+      "emptyStates": [],
+      "h1": "Redirects",
+      "loadingText": false,
+      "stuck": false,
+      "apiCalls": [
+        "redirects",
+        "r404_list",
+        "leads_count"
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "blog",
+      "ms": 911,
+      "textLen": 5439,
+      "rows": 51,
+      "emptyStates": [
+        "No articles yet.Use Import existing to bring in "
+      ],
+      "h1": "Blog & insights",
+      "loadingText": false,
+      "stuck": false,
+      "apiCalls": [
+        "cms_list",
+        "pages_list",
+        "leads_count"
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "portfolio",
+      "ms": 656,
+      "textLen": 200,
+      "rows": 2,
+      "emptyStates": [
+        "No projects yet.Use Import existing to bring in "
+      ],
+      "h1": "Portfolio",
+      "loadingText": false,
+      "stuck": false,
+      "apiCalls": [
+        "cms_list",
+        "leads_count"
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "services",
+      "ms": 661,
+      "textLen": 6449,
+      "rows": 70,
+      "emptyStates": [],
+      "h1": "Service & site pages",
+      "loadingText": false,
+      "stuck": false,
+      "apiCalls": [
+        "cms_page_kinds",
+        "leads_count"
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "cities",
+      "ms": 656,
+      "textLen": 1069,
+      "rows": 21,
+      "emptyStates": [],
+      "h1": "City pages",
+      "loadingText": false,
+      "stuck": false,
+      "apiCalls": [
+        "cms_page_kinds",
+        "cms_list",
+        "leads_count"
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "pagetpl",
+      "ms": 657,
+      "textLen": 356,
+      "rows": 1,
+      "emptyStates": [
+        "No article templates yet.Create starter template"
+      ],
+      "h1": "Page templates",
+      "loadingText": false,
+      "stuck": false,
+      "apiCalls": [
+        "cms_tpl_list",
+        "cms_list",
+        "leads_count"
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "forms",
+      "ms": 1674,
+      "textLen": 2671,
+      "rows": 1,
+      "emptyStates": [],
+      "h1": "Forms",
+      "loadingText": false,
+      "stuck": false,
+      "apiCalls": [
+        "forms_get",
+        "leads_count"
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "estimator",
+      "ms": 656,
+      "textLen": 2088,
+      "rows": 9,
+      "emptyStates": [],
+      "h1": "Estimator",
+      "loadingText": false,
+      "stuck": false,
+      "apiCalls": [
+        "est_tpls",
+        "leads_count"
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "faqs",
+      "ms": 656,
+      "textLen": 576,
+      "rows": 1,
+      "emptyStates": [
+        "No FAQ groups yet."
+      ],
+      "h1": "FAQ groups",
+      "loadingText": false,
+      "stuck": false,
+      "apiCalls": [
+        "cms_list",
+        "leads_count"
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "testimonials",
+      "ms": 657,
+      "textLen": 573,
+      "rows": 1,
+      "emptyStates": [
+        "No testimonials yet."
+      ],
+      "h1": "Testimonials",
+      "loadingText": false,
+      "stuck": false,
+      "apiCalls": [
+        "cms_list",
+        "cms_placements",
+        "leads_count"
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "logos",
+      "ms": 657,
+      "textLen": 360,
+      "rows": 2,
+      "emptyStates": [],
+      "h1": "Client logos",
+      "loadingText": false,
+      "stuck": false,
+      "apiCalls": [
+        "logos_get",
+        "leads_count"
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "team",
+      "ms": 658,
+      "textLen": 450,
+      "rows": 1,
+      "emptyStates": [
+        "No team yet."
+      ],
+      "h1": "Team",
+      "loadingText": false,
+      "stuck": false,
+      "apiCalls": [
+        "cms_list",
+        "cms_placements",
+        "leads_count"
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "media",
+      "ms": 1939,
+      "textLen": 6190,
+      "rows": 6,
+      "emptyStates": [],
+      "h1": "Media library",
+      "loadingText": false,
+      "stuck": false,
+      "apiCalls": [
+        "media_list",
+        "leads_count"
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "seo",
+      "ms": 910,
+      "textLen": 23255,
+      "rows": 155,
+      "emptyStates": [],
+      "h1": "SEO & AI Agent Hub",
+      "loadingText": false,
+      "stuck": false,
+      "apiCalls": [
+        "pages_list",
+        "seo_list",
+        "leads_count"
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "seoagent",
+      "ms": 657,
+      "textLen": 537,
+      "rows": 2,
+      "emptyStates": [
+        "No scan yet. Click Scan all pages: the agent che"
+      ],
+      "h1": "AI SEO Agent",
+      "loadingText": false,
+      "stuck": false,
+      "apiCalls": [
+        "sag_get",
+        "leads_count"
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "speed",
+      "ms": 657,
+      "textLen": 4627,
+      "rows": 15,
+      "emptyStates": [],
+      "h1": "Speed",
+      "loadingText": false,
+      "stuck": false,
+      "apiCalls": [
+        "health_speed",
+        "leads_count"
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "health",
+      "ms": 657,
+      "textLen": 15351,
+      "rows": 172,
+      "emptyStates": [],
+      "h1": "Site health",
+      "loadingText": false,
+      "stuck": false,
+      "apiCalls": [
+        "health_get",
+        "leads_count"
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "theme",
+      "ms": 728,
+      "textLen": 1007,
+      "rows": 4,
+      "emptyStates": [],
+      "h1": "Theme, colours & fonts",
+      "loadingText": false,
+      "stuck": false,
+      "apiCalls": [
+        "leads_count"
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "business",
+      "ms": 655,
+      "textLen": 809,
+      "rows": 3,
+      "emptyStates": [],
+      "h1": "Business info",
+      "loadingText": false,
+      "stuck": false,
+      "apiCalls": [
+        "cms_biz_get",
+        "leads_count"
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "settings",
+      "ms": 657,
+      "textLen": 3961,
+      "rows": 5,
+      "emptyStates": [],
+      "h1": "Integrations & APIs",
+      "loadingText": false,
+      "stuck": false,
+      "apiCalls": [
+        "leads_count"
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "users",
+      "ms": 656,
+      "textLen": 1498,
+      "rows": 13,
+      "emptyStates": [],
+      "h1": "Team & Roles",
+      "loadingText": false,
+      "stuck": false,
+      "apiCalls": [
+        "users",
+        "leads_count"
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "profile",
+      "ms": 655,
+      "textLen": 684,
+      "rows": 5,
+      "emptyStates": [],
+      "h1": "My account",
+      "loadingText": false,
+      "stuck": false,
+      "apiCalls": [
+        "me_get",
+        "tg_link_code",
+        "leads_count"
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "security",
+      "ms": 662,
+      "textLen": 1131,
+      "rows": 9,
+      "emptyStates": [],
+      "h1": "My Security & Approvals",
+      "loadingText": false,
+      "stuck": false,
+      "apiCalls": [
+        "leads_count"
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "backups",
+      "ms": 660,
+      "textLen": 728,
+      "rows": 6,
+      "emptyStates": [],
+      "h1": "System Utilities & Maintenance",
+      "loadingText": false,
+      "stuck": false,
+      "apiCalls": [
+        "leads_count"
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "database",
+      "ms": 657,
+      "textLen": 2561,
+      "rows": 8,
+      "emptyStates": [],
+      "h1": "Database",
+      "loadingText": false,
+      "stuck": false,
+      "apiCalls": [
+        "dbx_tables",
+        "backup_list",
+        "dbx_browse",
+        "leads_count"
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "files",
+      "ms": 657,
+      "textLen": 209,
+      "rows": 2,
+      "emptyStates": [],
+      "h1": "File manager",
+      "loadingText": false,
+      "stuck": false,
+      "apiCalls": [
+        "fm_list",
+        "leads_count"
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "maintenance",
+      "ms": 785,
+      "textLen": 920,
+      "rows": 3,
+      "emptyStates": [],
+      "h1": "Maintenance & error pages",
+      "loadingText": false,
+      "stuck": false,
+      "apiCalls": [
+        "mt_get",
+        "leads_count"
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "activity",
+      "ms": 655,
+      "textLen": 1448,
+      "rows": 31,
+      "emptyStates": [],
+      "h1": "Activity log",
+      "loadingText": false,
+      "stuck": false,
+      "apiCalls": [
+        "activity",
+        "leads_count"
+      ],
+      "pageErrors": []
+    },
+    {
+      "route": "system",
+      "ms": 660,
+      "textLen": 728,
+      "rows": 6,
+      "emptyStates": [],
+      "h1": "System Utilities & Maintenance",
+      "loadingText": false,
+      "stuck": false,
+      "apiCalls": [
+        "leads_count"
+      ],
+      "pageErrors": []
+    }
+  ]
+}
