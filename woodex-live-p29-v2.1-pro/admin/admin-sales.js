@@ -40,9 +40,13 @@
     };
   }
   function sectionEditor(box, sections, ro, onChange) {
+    /* the quotation editor is async: its container can be gone by the time a
+       redraw is requested, which used to throw on every fast navigation */
+    if (!box) return;
     var calc = function () { sections.forEach(function (s) { s.subtotal = 0; s.items.forEach(function (it) { it.amount = it.kind ? 0 : Math.round((+it.qty || 0) * (+it.rate || 0) * 100) / 100; s.subtotal += it.amount; }); }); };
     var draw = function () {
       calc();
+      if (!box.isConnected) return;
       box.innerHTML = sections.map(function (s, si) {
         return '<div class="card sec" data-si="' + si + '"><div class="sec-hd"><span class="sec-n">' + String(si + 1).padStart(2, "0") + '</span><input class="sec-name" data-f="name" value="' + esc(s.name) + '"' + (ro ? " disabled" : "") + ' placeholder="Section name, e.g. Wood Work"><label class="sec-area" title="Total area for the per-sft summary (project layout)"><small>Area sft</small><input type="number" min="0" step="any" data-f="area" value="' + (s.area || "") + '"' + (ro ? " disabled" : "") + '></label><b class="sec-st">' + money(s.subtotal) + "</b>" +
           (ro ? "" : '<div class="sec-tools"><button class="btn sm" data-a="up" title="Move up"' + (si ? "" : " disabled") + '>↑</button><button class="btn sm" data-a="down" title="Move down"' + (si < sections.length - 1 ? "" : " disabled") + '>↓</button><button class="btn sm" data-a="dup" title="Duplicate section">⧉</button><button class="btn sm danger" data-a="del" title="Remove section">✕</button></div>') + "</div>" +
@@ -121,7 +125,8 @@
     $("#qt-q").oninput = function () { st.q = this.value; draw(); };
     $("#qt-new").onclick = function () { W.newQuote(); };
     if ($("#qt-co")) $("#qt-co").onclick = companyModal;
-    api("quotes_list").then(function (r) { if (!r.ok) return toast(r.error, true); list = r.quotes; draw(); });
+    api("quotes_list").then(function (r) {
+      if (!onScreen("#/quotes")) return; if (!r.ok) return toast(r.error, true); list = r.quotes; draw(); });
   };
 
   W.newQuote = function (leadId) {
@@ -163,6 +168,7 @@
   W.VIEWS.quote = function (el, parts) {
     var id = +parts[0]; el.innerHTML = '<div class="empty">Loading quotation…</div>';
     api("quote_get", { id: id }).then(function (r) {
+      if (!onScreen("#/quote")) return;
       if (!r.ok) { el.innerHTML = '<div class="empty">' + esc(r.error) + '</div>'; return; }
       var q = r.quote, co = r.company; company = co;
       var ro = ["approved", "invoiced", "superseded"].indexOf(q.status) >= 0, dirty = false;
@@ -177,7 +183,7 @@
           "<label style='grid-column:span 2'>Project<input data-q='project' value='" + esc(q.project) + "'></label><label>Type<select data-q='kind'>" + Object.keys(KINDS).map(function (k) { return "<option value='" + k + "'" + (k === q.kind ? " selected" : "") + ">" + KINDS[k] + "</option>"; }).join("") + "</select></label>" +
           "<label style='grid-column:span 2'>Site<input data-q='site' value='" + esc(q.site) + "'></label><div class='g2' style='gap:0 10px'><label>Date<input type='date' data-q='date' value='" + esc(q.date) + "'></label><label>Valid (days)<input type='number' min='1' data-q='valid_days' value='" + (q.valid_days || co.validDays) + "'></label></div>" +
           "<label style='grid-column:1/-1;margin-bottom:0'>Intro line on the summary page <small>(optional)</small><textarea data-q='intro' rows='2' placeholder='Thank you for the opportunity. Please find below our quotation for the renovation work.'>" + esc(q.intro || "") + "</textarea></label>" +
-        '</div></div></div><div id="qe-secs"></div></div>' +
+        '</div>' + wxContactRows([["phone", q.client.phone, q.client.phone ? "tel:" + String(q.client.phone).replace(/[^\d+]/g, "") : "", "Phone"], ["mail", q.client.email, q.client.email ? "mailto:" + q.client.email : "", "Email"], ["map-pin", [q.site, q.client.address].filter(Boolean).join(" \u00b7 "), "", "Site / location"], ["briefcase", q.project, "", "Project"]]) + '</div></div><div id="qe-secs"></div></div>' +
         '<aside class="qe-side"><div class="card"><div class="card-b"><h3 class="side-h">Summary</h3><div id="qe-sum"></div>' +
           "<div class='g2' style='margin-top:12px'><label>Discount (Rs)<input type='number' min='0' data-q='discount' value='" + (q.discount || "") + "'></label><label>Tax %<input type='number' min='0' max='50' step='0.5' data-q='taxPct' value='" + (q.taxPct || "") + "'></label></div>" +
           "<div class='g2'><label>Rent / transport (Rs)<input type='number' min='0' data-q='rent' value='" + (q.rent || "") + "'></label><label>Advance (Rs)<input type='number' min='0' data-q='advance' value='" + (q.advance || "") + "'></label></div>" + /*P18qe*/
@@ -190,6 +196,7 @@
       if (ro) $$(".qe input,.qe select,.qe textarea", el).forEach(function (x) { x.disabled = true; });
       var markDirty = function () { if (ro) return; dirty = true; var b = $("#qe-save"); b.disabled = false; b.textContent = "Save"; summary(); };
       var summary = function () {
+        if (!$("#qe-sum") || !$("#qe-tot")) return;   /* view already replaced */
         var sub = q.sections.reduce(function (a, s) { return a + (s.subtotal || 0); }, 0), disc = Math.min(+q.discount || 0, sub), rent = Math.max(0, +q.rent || 0), tax = Math.round((sub - disc + rent) * (+q.taxPct || 0) / 100), tot = Math.round(sub - disc + rent + tax), adv = Math.min(Math.max(0, +q.advance || 0), tot);
         $("#qe-sum").innerHTML = q.sections.map(function (s, i) { return "<div class='sum-r'><span>" + (i + 1) + ". " + esc(s.name || "Untitled") + "</span><b>" + (s.subtotal ? Math.round(s.subtotal).toLocaleString("en-US") : "-") + "</b></div>"; }).join("") + "<div class='sum-r sub'><span>Subtotal</span><b>" + money(sub) + "</b></div>";
         $("#qe-tot").textContent = money(tot); $("#qe-words").textContent = "Rupees " + WXPrint.words(adv ? tot - adv : tot) + " only"; var bl = $("#qe-bal"); if (bl) { bl.hidden = !adv; bl.querySelector("b").textContent = money(tot - adv); }
@@ -208,6 +215,10 @@
           .then(function (x) { if (!x.ok) { toast(x.error, true); return false; } dirty = false; if ($("#qe-save")) { $("#qe-save").disabled = true; $("#qe-save").textContent = "Saved"; } toast("Saved ✓"); return true; });
       };
       var ensureSaved = function () { return dirty ? save() : Promise.resolve(true); };
+      /* bindings below assume this render is still on screen: a later dispatch
+         (rapid navigation) can have replaced the markup between the write and
+         here, which threw "Cannot set properties of null" on every switch */
+      if (el !== document.querySelector("#view") || !$("#qe-pdf") || !$("#qe-send")) return;
       if ($("#qe-save")) $("#qe-save").onclick = save;
       var keys = function (e) { if ((e.ctrlKey || e.metaKey) && e.key === "s" && document.body.contains(el) && location.hash.indexOf("#/quote/") === 0) { e.preventDefault(); if (dirty) save(); } };
       document.addEventListener("keydown", keys); window.addEventListener("hashchange", function h() { document.removeEventListener("keydown", keys); window.removeEventListener("hashchange", h); });
@@ -364,11 +375,28 @@
   }
 
   // =========================================================== INVOICES
+  /* Async views: a late API answer must not paint over whatever the router has
+     since shown, and must not bind handlers into markup that is already gone.
+     Views capture the hash they started on and bail out if it changed. */
+  function onScreen(prefix) {
+    return String(location.hash || "").indexOf(prefix) === 0;
+  }
+
+  /* The attached reference block's "Contact details" card, for the sales detail
+     pages: icon tile + label + value rows on the §8.0 surface. */
+  function wxContactRows(rows) {
+    var out = rows.filter(function (r) { return r && r[1]; }).map(function (r) {
+      var body = r[2] ? "<a class='v' href='" + esc(r[2]) + "'" + (r[2].indexOf("http") === 0 ? " target='_blank' rel='noopener'" : "") + ">" + esc(r[1]) + "</a>" : "<span class='v'>" + esc(r[1]) + "</span>";
+      return "<div class='wx-drow'><span class='ic'>" + ic(r[0]) + "</span><div><small>" + r[3] + "</small>" + body + "</div></div>";
+    }).join("");
+    return out ? "<div class='wx-details'><h3>Contact details</h3><div class='wx-details-rows'>" + out + "</div></div>" : "";
+  }
   W.VIEWS.invoices = function (el) {
     var st = S.iState || (S.iState = { q: "", pay: "" });
     el.innerHTML = head("Invoices", "Invoices", "") + '<div class="grid kpis" id="iv-k"></div><div class="card"><div class="card-b" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;border-bottom:1px solid var(--line)"><input type="search" id="iv-q" placeholder="Search number, client…" style="margin:0;max-width:300px"><div class="toolbar" id="iv-f"></div></div>' +
       '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>No.</th><th>Client / project</th><th class="r">Total</th><th class="r">Received</th><th class="r">Balance</th><th>Status</th><th>Due</th></tr></thead><tbody id="iv-rows"><tr><td colspan="7" class="empty">Loading…</td></tr></tbody></table></div></div>';
     api("invs_list").then(function (r) {
+      if (!onScreen("#/invoices")) return;
       if (!r.ok) return toast(r.error, true); var L = r.invoices;
       var kpi = function (i, l, v, b) { return '<div class="card kpi"><div class="kpi-ic">' + ic(i) + "</div><small>" + l + '</small><div class="kpi-row"><b>' + v + "</b>" + (b || "") + "</div></div>"; };
       var sum = function (k) { return L.reduce(function (a, i) { return a + i[k]; }, 0); };
@@ -386,10 +414,12 @@
   };
   W.VIEWS.invoice = function (el, parts) {
     api("inv_get", { id: +parts[0] }).then(function (r) {
+      if (!onScreen("#/invoice")) return;
       if (!r.ok) { el.innerHTML = '<div class="empty">' + esc(r.error) + "</div>"; return; }
       var i = r.invoice, co = r.company, pct = i.total ? Math.round(100 * i.paid / i.total) : 0;
       el.innerHTML = '<div class="ph"><div><h1 style="display:flex;gap:10px;align-items:center">Invoice ' + esc(i.no) + " " + bdg(PAY, i.payStatus) + (i.overdue ? ' <span class="badge bad">overdue</span>' : "") + '</h1><div class="crumb"><a href="#/dashboard">Home</a> / <a href="#/invoices">Invoices</a> / ' + esc(i.no) + '</div></div><div class="toolbar"><a class="btn" href="#/quote/' + i.quote_id + '">Quotation ' + esc(i.quote_label) + '</a><button class="btn" id="iv-pdf">' + ic("file-text") + "Invoice PDF</button>" + (i.client.phone && i.balance ? '<a class="btn wa" id="iv-rem" target="_blank" rel="noopener">' + ic("message-circle") + "Payment reminder</a>" : "") + (i.balance ? '<button class="btn pri" id="iv-pay">' + ic("plus") + "Record payment</button>" : "") + "</div></div>" +
-        '<div class="qe"><div class="qe-main"><div class="card"><div class="card-b"><div class="iv-top"><div><small class="muted">Bill to</small><b style="display:block;font-size:17px">' + esc(i.client.company || i.client.name) + "</b>" + (i.client.company && i.client.name && i.client.name !== i.client.company ? "<div class='muted'>Attn: " + esc(i.client.name) + "</div>" : "") + "<span class='muted'>" + esc([i.client.phone, i.client.email].filter(Boolean).join(" · ")) + "</span><div class='muted'>" + esc(i.project || "") + (i.site ? " · " + esc(i.site) : "") + "</div></div>" +
+        '<div class="qe"><div class="qe-main"><div class="card"><div class="card-b"><div class="iv-top"><div class="wx-iv-client"><small class="muted">Bill to</small><b style="display:block;font-size:17px">' + esc(i.client.company || i.client.name) + "</b>" + (i.client.company && i.client.name && i.client.name !== i.client.company ? "<div class='muted'>Attn: " + esc(i.client.name) + "</div>" : "") + (i.client.id ? "<a class='btn sm' style='margin-top:6px' href='#/clients/" + i.client.id + "'>" + ic("contact") + "Client 360</a>" : "") + "</div>" +
+        wxContactRows([["phone", i.client.phone, i.client.phone ? "tel:" + String(i.client.phone).replace(/[^\d+]/g, "") : "", "Phone"], ["mail", i.client.email, i.client.email ? "mailto:" + i.client.email : "", "Email"], ["map-pin", [i.site, i.client.city, i.client.address].filter(Boolean).join(" · "), "", "Site / location"], ["briefcase", i.project, "", "Project"]]) +
         '<div class="iv-prog"><div class="iv-bar"><span style="width:' + pct + '%"></span></div><div class="iv-nums"><div><small>Total</small><b>' + money(i.total) + "</b></div><div><small>Received</small><b style='color:var(--ok)'>" + money(i.paid) + "</b></div><div><small>Balance</small><b style='color:" + (i.balance ? "var(--bad)" : "var(--ok)") + "'>" + money(i.balance) + "</b></div></div></div></div></div></div>" +
         '<div class="card"><div class="card-h"><h3>Payments</h3></div><div class="tbl-wrap"><table class="tbl"><thead><tr><th>Receipt</th><th>Date</th><th>Method</th><th>Reference</th><th class="r">Amount</th><th></th></tr></thead><tbody>' +
         (i.payments.map(function (p) { return '<tr><td><b>' + esc(p.rcpt) + "</b><small class='muted' style='display:block'>by " + esc(p.by) + "</small></td><td>" + dshort(p.date) + "</td><td style='text-transform:capitalize'>" + esc(p.method) + "</td><td>" + esc(p.ref || "—") + (p.note ? "<small class='muted' style='display:block'>" + esc(p.note) + "</small>" : "") + '</td><td class="r"><b>' + money(p.amount) + '</b></td><td class="r" style="white-space:nowrap"><button class="btn sm" data-rc="' + p.id + '">Receipt</button>' + (can("owner,admin") ? ' <button class="btn sm danger" data-pd="' + p.id + '">✕</button>' : "") + "</td></tr>"; }).join("") || '<tr><td colspan="6" class="empty">No payments yet.</td></tr>') + "</tbody></table></div></div>" +
@@ -398,11 +428,14 @@
         "<div class='card'><div class='card-b'><h3 class='side-h'>PDF blocks <small class='muted'>drag · switch</small></h3><div id='iv-blocks'></div></div></div></aside></div>"; /*P18iv*/
       W.fillIcons(el);
       if (WXPrint.blocksUI && $("#iv-blocks")) WXPrint.blocksUI($("#iv-blocks"), i.blocks, "single", "invoice", function (o) { i.blocks = o; api("inv_save", { id: i.id, blocks: o }).then(function (x) { x.ok ? toast("PDF layout saved ✓") : toast(x.error, true); }); });
+      /* Another dispatch (or a helper above) can replace the markup between the
+         write and these bindings — never assume the toolbar survived. */
+      if (!$("#iv-pdf")) return;
       $("#iv-pdf").onclick = function () { WXPrint.preview(WXPrint.invoice(i, co), "Invoice " + i.no + " · " + i.client.name); };
       if ($("#iv-rem")) $("#iv-rem").href = "https://wa.me/" + waNum(i.client.phone) + "?text=" + encodeURIComponent("Dear " + String(i.client.name).split(" ")[0] + ",\n\nA friendly reminder about invoice " + i.no + (i.project ? " (" + i.project + ")" : "") + ". Balance due: " + money(i.balance) + (i.due_date ? ", due " + dshort(i.due_date) : "") + ".\n\nThank you,\nWoodex Interior");
       $$("[data-rc]").forEach(function (b) { b.onclick = function () { var p = i.payments.find(function (x) { return x.id === +b.dataset.rc; }); WXPrint.preview(WXPrint.receipt(i, p, co), "Receipt " + p.rcpt); }; });
       $$("[data-pd]").forEach(function (b) { b.onclick = function () { if (!confirm("Delete this payment record?")) return; api("pay_delete", { id: i.id, pay_id: +b.dataset.pd }).then(function (x) { x.ok ? W.route() : toast(x.error, true); }); }; });
-      $("#iv-save").onclick = function () { api("inv_save", { id: i.id, issue_date: $("#iv-id").value, due_date: $("#iv-dd").value, schedule: $("#iv-sc").value, notes: $("#iv-nt").value }).then(function (x) { x.ok ? toast("Saved ✓") : toast(x.error, true); }); };
+      if ($("#iv-save")) $("#iv-save").onclick = function () { api("inv_save", { id: i.id, issue_date: $("#iv-id").value, due_date: $("#iv-dd").value, schedule: $("#iv-sc").value, notes: $("#iv-nt").value }).then(function (x) { x.ok ? toast("Saved ✓") : toast(x.error, true); }); };
       if ($("#iv-pay")) $("#iv-pay").onclick = function () {
         var half = /75%/.test(i.schedule || "") && !i.paid ? Math.round(i.total * 0.75) : /50%/.test(i.schedule || "") && !i.paid ? Math.round(i.total / 2) : i.balance;
         modal("<h2>Record payment · " + esc(i.no) + "</h2><p class='muted' style='margin:-10px 0 14px'>Balance " + money(i.balance) + "</p><div class='g2'><label>Amount (Rs)<input type='number' id='py-a' min='1' value='" + Math.min(half, i.balance) + "'></label><label>Date<input type='date' id='py-d' value='" + today() + "'></label><label>Method<select id='py-m'><option value='bank'>Bank transfer</option><option value='cash'>Cash</option><option value='cheque'>Cheque</option><option value='online'>Online / wallet</option></select></label><label>Reference<input id='py-r' placeholder='Cheque no. / transaction ID'></label></div><label>Note<input id='py-n' placeholder='e.g. 50% advance'></label><div class='toolbar' style='margin-bottom:6px'><button class='btn sm' data-f='0.5'>50%</button><button class='btn sm' data-f='0.75'>75%</button><button class='btn sm' data-f='1'>Full balance</button></div><p class='err' id='py-err'></p><div class='modal-actions'><button class='btn' id='py-x'>Cancel</button><button class='btn pri' id='py-go'>Save payment</button></div>");

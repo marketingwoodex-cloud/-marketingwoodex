@@ -307,3 +307,19 @@ html .wx-pv .wx-pv-av {
 }
 html .wx-pv b { display: block; font-size: .875rem; color: var(--foreground); }
 html .wx-pv small { display: block; font-size: .75rem; color: var(--muted-foreground-1); }
+
+/* ---------------------------------------------------------------------------
+   §8.3 — contact-details card inside a detail header
+   The invoice "Bill to" row and the quotation editor put the card beside the
+   heading; it stretches to its column and keeps the reference's row rhythm.
+   --------------------------------------------------------------------------- */
+html .iv-top { align-items: flex-start; }
+html .wx-iv-client { display: grid; gap: .375rem; align-content: start; }
+html .iv-top .wx-details { width: 100%; }
+html .iv-top .wx-details-rows { grid-template-columns: 1fr; }
+@media (min-width: 62rem) {
+  html .iv-top { display: grid; grid-template-columns: minmax(0, 1fr) 20rem; gap: 2rem; }
+  html .iv-top .wx-details { margin-top: 0; }
+}
+/* the editor's card sits under the client fields, so it needs breathing room */
+html .qe-main .wx-details { margin-top: 1rem; }

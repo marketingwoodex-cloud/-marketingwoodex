@@ -329,6 +329,7 @@
   P.blocksUI = function (box, saved, layout, kind, onChange, ro) {
     var order = P.blockOrder(saved, layout, kind), drag = null;
     var draw = function () {
+      if (!box || !box.isConnected) return;   /* the editor that hosts this panel was replaced */
       box.innerHTML = "<ul class='blk-ui'>" + order.map(function (k, i) { var n = k.replace(/^-+/, ""), on = k.charAt(0) !== "-";
         return "<li draggable='" + (!ro) + "' data-i='" + i + "' class='" + (on ? "" : "off") + "'><span class='blk-h' title='Drag'>⋮⋮</span><span class='blk-n'>" + esc(BLK[n]) + "</span>" +
           (ro ? "" : "<button type='button' class='icon-btn' data-up title='Move up'" + (i ? "" : " disabled") + ">↑</button><button type='button' class='icon-btn' data-dn title='Move down'" + (i < order.length - 1 ? "" : " disabled") + ">↓</button>") +
