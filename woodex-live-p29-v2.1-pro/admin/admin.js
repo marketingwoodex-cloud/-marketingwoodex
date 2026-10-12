@@ -157,11 +157,18 @@
   function pinKey() { return "wxPins" + (S.user ? S.user.id : ""); }
   function pins() { try { return JSON.parse(localStorage.getItem(pinKey()) || "[]"); } catch (e) { return []; } }
   var navOpen = (function () { try { return JSON.parse(localStorage.getItem("wxNavOpen") || "{}"); } catch (e) { return {}; } })();
-  function navLink(n, sub) { return '<a class="nav-a' + (sub ? " sub" : "") + (n[4] ? " soon" : "") + '" href="#/' + n[0] + '" data-v="' + n[0] + '" title="' + n[1] + '">' + ic(n[2]) + '<span class="nav-t">' + n[1] + "</span>" + (n[4] ? '<span class="pill">' + n[4] + "</span>" : "") + (n[5] === "new" ? '<span class="nav-new">NEW</span>' : "") + '<span class="nav-bdg" data-bdg="' + n[0] + '" hidden></span><span class="nav-pin' + (pins().indexOf(n[0]) > -1 ? " on" : "") + '" data-pin="' + n[0] + '" title="Pin to top">★</span></a>'; }
+  function navLink(n, sub) { return '<a class="nav-a' + (sub ? " sub" : "") + (n[4] ? " soon" : "") + '" href="#/' + n[0] + '" data-v="' + n[0] + '" title="' + n[1] + '">' + ic(n[2]) + '<span class="nav-t">' + n[1] + "</span>" + (n[4] ? '<span class="pill">' + n[4] + "</span>" : "") + (n[5] === "new" ? '<span class="nav-new">NEW</span>' : "") + '<span class="nav-bdg" data-bdg="' + n[0] + '" role="status" aria-label="pending items" hidden></span><span class="nav-pin' + (pins().indexOf(n[0]) > -1 ? " on" : "") + '" data-pin="' + n[0] + '" title="Pin to top">★</span></a>'; }
   // P16: live count badges (new leads, chats needing a reply)
   function navBadges() {
     if (!S.user) return;
-    var set = function (v, n) { var b = document.querySelector('[data-bdg="' + v + '"]'); if (b) { b.hidden = !n; b.textContent = n > 99 ? "99+" : n; } };
+    /* the API can answer with a string ("0"): coerce before deciding, otherwise
+       !"0" is false and an empty counter painted a pill on every nav item */
+    var set = function (v, n) {
+      var b = document.querySelector('[data-bdg="' + v + '"]'); if (!b) return;
+      n = Math.max(0, parseInt(n, 10) || 0);
+      b.hidden = n === 0;
+      b.textContent = n > 99 ? "99+" : (n || "");
+    };
     if (can("owner,admin,editor")) api("appr_count").then(function (r) { if (r && r.ok) set("approvals", r.pending); });
     if (can("g:sales,g:conversations")) {
       api("leads_count").then(function (r) { if (r && r.ok) set("enquiries", r.unread); });
@@ -176,19 +183,19 @@
       if (Array.isArray(n) && n.length === 1) { sec = { name: n[0], html: [] }; secs.push(sec); return; }
       var html;
       if (n.g) { var its = n.items.filter(ok); if (!its.length) return; its.forEach(function (x) { flat[x[0]] = x; });
-        html = '<div class="nav-g' + (navOpen[n.id] ? " open" : "") + '" data-g="' + n.id + '"><button type="button" class="nav-a nav-gb" title="' + n.g + '">' + ic(n.icon) + "<span>" + n.g + '</span><span class="nav-car">' + ic("chevron-down") + '</span></button><div class="nav-sub">' + its.map(function (x) { return navLink(x, 1); }).join("") + "</div></div>";
+        html = '<div class="nav-g' + (navOpen[n.id] ? " open" : "") + '" data-g="' + n.id + '"><button type="button" class="nav-a nav-gb" title="' + n.g + '" aria-expanded="' + (navOpen[n.id] ? "true" : "false") + '" aria-controls="wxnav-' + n.id + '">' + ic(n.icon) + "<span>" + n.g + '</span><span class="nav-car">' + ic("chevron-down") + '</span></button><div class="nav-sub" id="wxnav-' + n.id + '">' + its.map(function (x) { return navLink(x, 1); }).join("") + "</div></div>";
       } else { if (!ok(n)) return; flat[n[0]] = n; html = navLink(n); }
       sec.html.push(html);
     });
     var pn = pins().filter(function (v) { return flat[v]; });
     if (pn.length) out.push('<div class="nav-sec pinned"><div class="nav-h">★ Pinned</div>' + pn.map(function (v) { return navLink(flat[v]); }).join("") + "</div>");
     secs.forEach(function (x) { if (!x.html.length) return; var shut = navSec[x.name] && x.name !== "Home";
-      out.push('<div class="nav-sec' + (shut ? " shut" : "") + '" data-s="' + x.name + '">' + (x.name === "Home" ? "" : '<button type="button" class="nav-h nav-hb">' + x.name + '<span class="nav-car">' + ic("chevron-down") + "</span></button>") + '<div class="nav-sb">' + x.html.join("") + "</div></div>"); });
+      out.push('<div class="nav-sec' + (shut ? " shut" : "") + '" data-s="' + x.name + '">' + (x.name === "Home" ? "" : '<button type="button" class="nav-h nav-hb" aria-expanded="' + (shut ? "false" : "true") + '" aria-controls="wxsec-' + x.name.replace(/[^a-z]/gi, "") + '">' + x.name + '<span class="nav-car">' + ic("chevron-down") + "</span></button>") + '<div class="nav-sb" id="wxsec-' + x.name.replace(/[^a-z]/gi, "") + '">' + x.html.join("") + "</div></div>"); });
     $("#nav").innerHTML = out.join("");
-    $$(".nav-hb").forEach(function (h) { h.onclick = function () { var x = h.parentNode; x.classList.toggle("shut"); navSec[x.dataset.s] = x.classList.contains("shut"); localStorage.setItem("wxNavSec", JSON.stringify(navSec)); }; });
+    $$(".nav-hb").forEach(function (h) { h.onclick = function () { var x = h.parentNode; x.classList.toggle("shut"); var shut2 = x.classList.contains("shut"); h.setAttribute("aria-expanded", shut2 ? "false" : "true"); navSec[x.dataset.s] = shut2; localStorage.setItem("wxNavSec", JSON.stringify(navSec)); }; });
     $$(".nav-pin").forEach(function (p) { p.onclick = function (e) { e.preventDefault(); e.stopPropagation(); var l = pins(), v = p.dataset.pin, i = l.indexOf(v); if (i > -1) l.splice(i, 1); else l.push(v); localStorage.setItem(pinKey(), JSON.stringify(l.slice(-8))); renderNav(); route0Mark(); }; });
     setTimeout(navBadges, 400);
-    $$(".nav-gb").forEach(function (b) { b.onclick = function () { var g = b.parentNode; if ($("#app").classList.contains("mini")) { $("#app").classList.remove("mini"); g.classList.add("open"); } else g.classList.toggle("open"); navOpen[g.dataset.g] = g.classList.contains("open"); try { localStorage.setItem("wxNavOpen", JSON.stringify(navOpen)); } catch (e) {} }; });
+    $$(".nav-gb").forEach(function (b) { b.onclick = function () { var g = b.parentNode; if ($("#app").classList.contains("mini")) { $("#app").classList.remove("mini"); g.classList.add("open"); } else g.classList.toggle("open"); var op = g.classList.contains("open"); b.setAttribute("aria-expanded", op ? "true" : "false"); navOpen[g.dataset.g] = op; try { localStorage.setItem("wxNavOpen", JSON.stringify(navOpen)); } catch (e) {} }; });
     $$("[data-roles]").forEach(function (a) { a.hidden = !can(a.dataset.roles); });
   }
 
@@ -472,7 +479,7 @@
   function roleCanon(r) { r = String(r || "").toLowerCase().trim(); return ROLE_ALIAS[r] || r || "support"; }
   function route0Mark(v) {
     v = v || S.view;
-    var nv = { quote: "quotes", template: "templates", invoice: "invoices", post: "blog", study: "portfolio", fields: "services", citydraft: "cities" }[v] || v; $$(".nav-a").forEach(function (a) { a.classList.toggle("on", a.dataset.v === nv); }); $$(".nav-g").forEach(function (g) { var has = !!g.querySelector('.nav-a[data-v="' + nv + '"]'); g.classList.toggle("has-on", has); if (has) g.classList.add("open"); }); $$(".nav-sec.shut").forEach(function (x) { if (x.querySelector(".nav-a.on")) x.classList.remove("shut"); });
+    var nv = { quote: "quotes", template: "templates", invoice: "invoices", post: "blog", study: "portfolio", fields: "services", citydraft: "cities" }[v] || v; $$(".nav-a").forEach(function (a) { var on = a.dataset.v === nv; a.classList.toggle("on", on); if (on) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current"); }); $$(".nav-g").forEach(function (g) { var has = !!g.querySelector('.nav-a[data-v="' + nv + '"]'); g.classList.toggle("has-on", has); if (has) g.classList.add("open"); }); $$(".nav-sec.shut").forEach(function (x) { if (x.querySelector(".nav-a.on")) x.classList.remove("shut"); });
   }
   function route() {
     if (!S.user) return;
