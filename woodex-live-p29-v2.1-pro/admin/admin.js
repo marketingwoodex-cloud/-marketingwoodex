@@ -634,20 +634,50 @@
 
   // ---------------- users
   VIEWS.users = function (el) {
-    el.innerHTML = head("Team & roles", "Team", '<button class="btn pri" id="u-add">' + ic("plus") + "Add member</button>") +
-      '<div class="card"><div class="tbl-wrap"><table class="tbl"><thead><tr><th>Member</th><th>Role</th><th>Status</th><th>Last sign-in</th><th></th></tr></thead><tbody id="u-rows"><tr><td colspan="5" class="empty">Loading…</td></tr></tbody></table></div></div>' +
+    el.innerHTML = head("Team & Roles", "Team & Roles", '<button class="btn pri" id="u-add">' + ic("plus") + "Add member</button>") +
+      '<div class="card" style="margin-bottom:20px"><div class="card-b" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:14px 18px">' +
+        '<div><b style="font-size:15px;color:var(--txt)">Active Studio Team</b><small class="muted" style="display:block" id="u-count">Loading…</small></div>' +
+        '<input type="search" id="u-q" placeholder="Search team by name, role, email…" style="margin:0;min-width:240px">' +
+      '</div></div>' +
+      '<div id="u-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(320px,100%),1fr));gap:18px"><div class="card card-b"><div class="empty">Loading…</div></div></div>' +
       '<div class="card" style="margin-top:24px"><div class="card-h"><h3>What each role can do</h3></div><div class="card-b"><div class="roadmap">' +
         [["Master", "Everything. Adds users, sets roles and extra permissions, backups, database. Approves Manager changes (Phase 2)."], ["Manager", "Sees and prepares everything: sales, conversations, website, settings. Cannot add users or restore backups."], ["Developer", "Website only: pages, builder, hero slides, content, media, SEO, theme, integrations. No sales data."], ["Sales", "Leads, pipeline, bookings, clients, quotes, invoices, projects and the Inbox."], ["Support", "Inbox (website chat + WhatsApp) and client updates; can view a client or project to answer."]]
           .map(function (r) { return '<div class="rm"><span class="badge gold">' + r[0] + "</span><small style='display:block;margin-top:6px'>" + r[1] + "</small></div>"; }).join("") + "</div></div></div>";
     var users = [];
-    var load = function () { api("users").then(function (r) { if (!r.ok) return toast(r.error, true); users = r.users; draw(); }); };
+    var users = [];
+    /* The card grid the redesign asked for, drawn from the real wx_users rows (api "users")
+       with the real editor behind every button. A stand-alone earlier version of this screen
+       (admin-users.js) printed a hardcoded list of five people whenever its API call failed,
+       and its Edit / Add buttons only raised toasts: a screen that looked finished and did
+       nothing. It also claimed VIEWS.team, which hid the website's own Team section manager. */
+    var BADGE = { owner: "badge navy", admin: "badge ok", sales: "badge warn", editor: "badge", support: "badge ghost" };
+    var load = function () { api("users").then(function (r) { if (!r.ok) return toast(r.error, true); users = r.users || []; draw(); }); };
     var draw = function () {
-      $("#u-rows").innerHTML = users.map(function (u) {
-        return "<tr><td><div class='who'><span class='av'>" + initials(u.name) + "</span><div><b>" + esc(u.name) + (u.id === S.user.id ? " <span class='badge'>you</span>" : "") + "</b><small>" + esc(u.email) + "</small></div></div></td><td><span class='badge gold' data-role='" + u.role + "'>" + (ROLE_LABEL[u.role] || u.role) + "</span>" + ((u.perms || []).length ? "<small class='muted' style='display:block;margin-top:4px'>+ " + u.perms.map(function (p) { return PERM_LABEL[p] || p; }).join(", ") + "</small>" : "") + "</td><td>" +
-          (u.active ? "<span class='badge ok'>Active</span>" : "<span class='badge bad'>Disabled</span>") + "</td><td>" + (u.last_login ? ago(u.last_login) : "never") + "</td><td style='text-align:right'>" +
-          (u.role === "owner" && S.user.role !== "owner" ? "" : "<button class='btn sm' data-edit='" + u.id + "'>Edit</button>") + "</td></tr>";
-      }).join("");
-      $$("[data-edit]").forEach(function (b) { b.onclick = function () { form(users.find(function (u) { return u.id === +b.dataset.edit; })); }; });
+      var q = ($("#u-q") ? $("#u-q").value : "").toLowerCase();
+      var list = users.filter(function (u) { return !q || (u.name + " " + (u.roleLabel || u.role) + " " + u.email).toLowerCase().indexOf(q) >= 0; });
+      var c = $("#u-count"); if (c) c.textContent = list.length + " of " + users.length + " member(s) with role-based access";
+      var grid = $("#u-grid"); if (!grid) return;
+      grid.innerHTML = list.length ? list.map(function (u) {
+        return '<div class="card" style="background:var(--card-sub);border:1px solid var(--line);border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:14px">' +
+          '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">' +
+            '<div style="display:flex;align-items:center;gap:12px">' +
+              '<span class="av" style="width:44px;height:44px;font-size:16px">' + esc(initials(u.name)) + '</span>' +
+              '<div><b style="font-size:15px;color:var(--txt);display:block">' + esc(u.name) + (u.id === S.user.id ? ' <span class="badge">you</span>' : '') + '</b>' +
+              '<span class="' + (BADGE[u.role] || "badge") + '" style="font-size:11px;margin-top:2px">' + esc(u.roleLabel || ROLE_LABEL[u.role] || u.role) + '</span></div>' +
+            '</div>' +
+            (u.active ? '<span class="badge ok" style="font-size:11px">Active</span>' : '<span class="badge bad" style="font-size:11px">Disabled</span>') +
+          '</div>' +
+          '<div class="muted" style="font-size:12.5px;display:flex;flex-direction:column;gap:6px">' +
+            '<span style="display:flex;align-items:center;gap:6px">' + ic("mail") + ' ' + esc(u.email) + '</span>' +
+            '<span style="display:flex;align-items:center;gap:6px">' + ic("clock") + ' ' + (u.last_login ? "Last sign-in " + ago(u.last_login) : "Never signed in") + '</span>' +
+          '</div>' +
+          '<div style="border-top:1px solid var(--line);padding-top:12px;display:flex;gap:8px;margin-top:auto">' +
+            (u.role === "owner" && S.user.role !== "owner" ? '' : '<button class="btn sm" data-edit="' + u.id + '" style="flex:1">' + ic("edit-2") + ' Edit details</button>') +
+            '<a class="btn sm" href="#/activity" title="See what this member did in the activity log">' + ic("activity") + '</a>' +
+          '</div></div>';
+      }).join("") : '<div class="card card-b"><div class="empty">No member matches that search.</div></div>';
+      fillIcons(grid);
+      $$("#u-grid [data-edit]").forEach(function (b) { b.onclick = function () { form(users.find(function (u) { return u.id === +b.dataset.edit; })); }; });
     };
     var form = function (u) {
       u = u || { id: 0, name: "", email: "", role: "editor", active: true };
@@ -665,6 +695,7 @@
           .then(function (r) { if (!r.ok) return ($("#uf-err").textContent = r.error); closeModal(); toast(u.id ? "Saved ✓" : "Team member added ✓"); load(); });
       };
     };
+    var qb = $("#u-q"); if (qb) qb.oninput = draw;
     $("#u-add").onclick = function () { form(); };
     load();
   };

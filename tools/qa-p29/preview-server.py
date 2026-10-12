@@ -712,6 +712,54 @@ class H(http.server.SimpleHTTPRequestHandler):
         if action == 'r404_list':
             rows = [{'path': k, **v} for k, v in (_rd_read('404.json', {}) or {}).items()]
             return self._json(200, {'ok': True, 'rows': rows})
+        if action in ('users', 'user_save'):
+            # The real API lists wx_users (api/admin.php "users" / "user_save"). Here the
+            # equivalent store is the preview account list plus anything added from the
+            # screen, kept in preview state so an edit survives a restart.
+            if me['role'] not in ('owner', 'admin'):
+                return self._json(200, {'ok': False, 'error': 'Your role cannot manage users'})
+            extra = _rd_read('users.json', {}) or {}
+            def _pub(a):
+                row = dict(a)
+                row.pop('password', None); row.pop('token', None)
+                row['role'] = role_canon(row.get('role'))
+                row['roleLabel'] = ROLE_LABELS.get(row['role'], row['role'])
+                row['active'] = bool(row.get('active', True))
+                row['created_at'] = row.get('created_at') or time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(time.time() - 86400 * 30))
+                row['last_login'] = row.get('last_login')
+                return row
+            if action == 'users':
+                rows = [_pub(a) for a in ACCOUNTS]
+                for k, v in extra.items():
+                    row = dict(v); row['id'] = int(k)
+                    rows = [r for r in rows if r['id'] != row['id']] + [row]
+                return self._json(200, {'ok': True, 'users': sorted(rows, key=lambda r: r['id'])})
+            # user_save
+            name = str(data.get('name') or '').strip()
+            email = str(data.get('email') or '').strip().lower()
+            role = role_canon(data.get('role'))
+            uid = int(data.get('id') or 0)
+            if not name or '@' not in email:
+                return self._json(200, {'ok': False, 'error': 'Name and email are required'})
+            if role not in ROLE_GROUPS:
+                return self._json(200, {'ok': False, 'error': 'Unknown role'})
+            pw = str(data.get('password') or '')
+            if not uid and len(pw) < 8:
+                return self._json(200, {'ok': False, 'error': 'Password must be at least 8 characters'})
+            if uid and pw and len(pw) < 8:
+                return self._json(200, {'ok': False, 'error': 'Password must be at least 8 characters'})
+            taken = [a['email'] for a in ACCOUNTS if a['id'] != uid] + [v['email'] for k, v in extra.items() if int(k) != uid]
+            if email in taken:
+                return self._json(200, {'ok': False, 'error': 'Another member already uses that email'})
+            nid = uid or (max([a['id'] for a in ACCOUNTS] + [int(k) for k in extra] + [0]) + 1)
+            base = next((a for a in ACCOUNTS if a['id'] == nid), None) or {}
+            row = {'id': nid, 'name': name, 'email': email, 'role': role, 'roleLabel': ROLE_LABELS.get(role, role),
+                   'active': bool(data.get('active', True)), 'perms': base.get('perms', []),
+                   'created_at': base.get('created_at') or time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime()),
+                   'last_login': base.get('last_login')}
+            extra[str(nid)] = row
+            _rd_write('users.json', extra)
+            return self._json(200, {'ok': True, 'user': row})
         if action in ('health_get', 'health_scan'):
             # Site health runs a local file scan on the host too (api/media-lib.php
             # a7_health_scan), so the preview runs the real thing instead of a fixture:
