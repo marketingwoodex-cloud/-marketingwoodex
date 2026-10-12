@@ -1,0 +1,108 @@
+/* ============================================================================
+   WOODEX DESIGN TOKENS — the single bridge between DESIGN.md and the admin
+   ----------------------------------------------------------------------------
+   DESIGN.md is the source of truth. Its §3 semantic tokens are compiled into
+   admin/assets/woodex-tw.css by tools/ui-build (Tailwind v4, `@theme static`).
+   This file maps the *legacy* token names used across the hand-written layers
+   onto those DESIGN.md tokens, so one edit re-themes the whole admin.
+
+   Consumers of the legacy names:
+     admin.css         — 168 KB of components (--bg, --card, --txt, --pri, --ok …)
+     woodex-v21.css     — the V2.1 shell (same names, later in the cascade)
+     admin/*.js         — 471 inline styles read the same tokens
+
+   WHY THIS FILE LOADS LAST
+   These are equal-specificity custom properties, so source order decides. Loaded
+   after admin.css and woodex-v21.css, this block is the final authority for both.
+   (An earlier attempt appended the bridge to admin.css and silently lost to
+   woodex-v21.css — verified in the browser: --ok resolved to teal-600 instead of
+   the intended teal-700.)
+
+   COLOUR CORRECTIONS vs DESIGN.md §3 (documented in DESIGN.md §3.1, v1.1)
+   DESIGN.md §3 proposes teal-600 / red-600 / blue-600 for *text* on their own
+   soft chip surfaces. Measured against §12's own 4.5:1 requirement those fail:
+     teal-600 #0d9488 on teal-100 #ccfbf1 = 3.32:1   (fails)
+     red-600  #dc2626 on red-100  #fee2e2 = 3.95:1   (fails)
+     blue-600 #2563eb on blue-100 #dbeafe = 4.24:1   (fails)
+   The -700 shades pass on BOTH white and the soft surface, so text uses -700
+   while -100 stays the chip fill:
+     teal-700 #0f766e = 4.86 / 5.20     red-700  #b91c1c = 5.30 / 5.91
+     yellow-700 #a16207 = 4.58 / 4.75   blue-700 #1d4ed8 = 5.49 / 6.29
+
+   RULE: no raw hex below this line, and none added to admin.css or woodex-v21.css.
+   ============================================================================ */
+
+/* SPECIFICITY NOTE — must match woodex-v21.css, which declares its tokens on
+   `html:root` (0,1,1) and `html.dark:root` (0,2,1) to beat admin.css's plain
+   `:root`. Using plain `:root` here loses regardless of load order; verified in
+   the browser, where --ok kept resolving to v21's teal-600. Same specificity +
+   later load order = this file wins. */
+html:root {
+  /* Surfaces & text — DESIGN.md §3 light column */
+  --bg:            var(--color-page);        /* gray-50      */
+  --card:          var(--color-surface);     /* white        */
+  --card-elevated: var(--color-surface);
+  --card-sub:      var(--color-surface-2);   /* gray-100     */
+  --line:          var(--color-line);        /* gray-200     */
+  --line2:         var(--color-line-2);      /* gray-300     */
+  --txt:           var(--color-ink);         /* gray-800     */
+  --txt2:          var(--color-ink-2);       /* gray-600     */
+  --mut:           var(--color-ink-3);       /* gray-500     */
+  --mut2:          var(--color-ink-3);
+
+  /* Primary (accent) — blue-600 / hover blue-700 per §3 */
+  --pri:           var(--color-primary);
+  --pri-hover:     var(--color-primary-hover);
+  --pri-soft:      var(--color-primary-soft);
+  --pri-fg:        var(--color-primary-fg);
+
+  /* Brand aliases. admin.css carries --gold/--cyan names from the original warm
+     palette; §3 allows one accent, so both resolve to the primary. */
+  --gold:          var(--color-primary);
+  --gold-d:        var(--color-primary-hover);
+  --cyan:          var(--color-primary);
+
+  /* Status — AA-corrected text shades (see header) */
+  --ok:            var(--color-ok);
+  --ok-soft:       var(--color-ok-soft);
+  --warn:          var(--color-warn);
+  --warn-soft:     var(--color-warn-soft);
+  --bad:           var(--color-bad);
+  --bad-soft:      var(--color-bad-soft);
+  --info:          var(--color-info);
+  --info-soft:     var(--color-info-soft);
+}
+
+/* DESIGN.md §3 dark column. The --color-* values already switch under html.dark
+   in woodex-tw.css, so these simply follow. --mut2 is pinned to the ink-2 shade
+   because admin.css/woodex-v21.css use it for sidebar headings that must stay
+   legible on the dark surface. */
+html.dark:root {
+  --bg:            var(--color-page);        /* neutral-900 */
+  --card:          var(--color-surface);     /* neutral-800 */
+  --card-elevated: var(--color-surface);
+  --card-sub:      var(--color-surface-2);   /* neutral-700 */
+  --line:          var(--color-line);        /* neutral-700 */
+  --line2:         var(--color-line-2);      /* neutral-600 */
+  --txt:           var(--color-ink);         /* neutral-200 */
+  --txt2:          var(--color-ink-2);       /* neutral-400 */
+  --mut:           var(--color-ink-3);       /* neutral-500 */
+  --mut2:          var(--color-ink-2);
+
+  --pri:           var(--color-primary);
+  --pri-hover:     var(--color-primary-hover);
+  --pri-soft:      var(--color-primary-soft);
+
+  --gold:          var(--color-primary);
+  --gold-d:        var(--color-primary-hover);
+  --cyan:          var(--color-primary);
+
+  --ok:            var(--color-ok);          /* teal-500   */
+  --ok-soft:       var(--color-ok-soft);
+  --warn:          var(--color-warn);        /* yellow-500 */
+  --warn-soft:     var(--color-warn-soft);
+  --bad:           var(--color-bad);         /* red-500    */
+  --bad-soft:      var(--color-bad-soft);
+  --info:          var(--color-info);        /* blue-500   */
+  --info-soft:     var(--color-info-soft);
+}

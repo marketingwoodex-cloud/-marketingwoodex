@@ -7,10 +7,16 @@
 <title>Woodex Admin v2.1</title>
 <base href="/admin/">
 <link rel="icon" href="/favicon.ico">
-<link rel="stylesheet" href="admin.css?v=ui-5">
-<link rel="stylesheet" href="assets/woodex-tw.css?v=ui-2">
+<link rel="stylesheet" href="admin.css?v=ds-1">
+<link rel="stylesheet" href="assets/woodex-tw.css?v=ds-1">
     <link rel="stylesheet" href="woodex-v21.css?v=v21-3">
-<script>try{if(localStorage.getItem("wxaTheme")==="dark"||(!localStorage.getItem("wxaTheme")&&matchMedia("(prefers-color-scheme: dark)").matches))document.documentElement.classList.add("dark")}catch(e){}</script>
+<!-- DESIGN.md token bridge. MUST load last: it maps the legacy token names in
+     admin.css and woodex-v21.css onto the DESIGN.md §3 tokens. Equal specificity,
+     so source order decides. See the file header for why. -->
+<link rel="stylesheet" href="assets/wx-ds-tokens.css?v=ds-1">
+<!-- DESIGN.md §3: theme preference persists as `hs_theme` (light | dark | auto).
+     `wxaTheme` is read as a legacy alias so existing operators keep their choice. -->
+<script>try{var t=localStorage.getItem("hs_theme")||localStorage.getItem("wxaTheme")||"auto";if(t==="auto"?matchMedia("(prefers-color-scheme: dark)").matches:t==="dark")document.documentElement.classList.add("dark")}catch(e){}</script>
 </head>
 <body>
 
@@ -178,6 +184,11 @@
 
 <script src="vendor/icons.js"></script>
 <script src="vendor/chart.umd.js" defer></script>
+<!-- Preline UI runtime (local copy — the admin must work with no CDN on the host).
+     DESIGN.md §14: overlays, dropdowns, accordions, tabs, tooltips, selects and datepickers
+     use Preline `hs-*` plugins instead of custom JS. Views re-init with
+     window.HSStaticMethods.autoInit() after a dynamic render. -->
+<script src="vendor/preline.js" defer></script>
 <script src="uipal.js?v=ui-3" defer></script>
 <script src="admin.js?v=ui-5" defer></script>
 <script src="admin-pages.js?v=ui-4" defer></script>

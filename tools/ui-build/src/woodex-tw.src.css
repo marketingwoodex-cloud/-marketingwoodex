@@ -1,14 +1,150 @@
-/* Woodex admin utilities (Tailwind v4, static build).
-   No preflight: the admin's own CSS keeps its base styles. Only utilities used in admin/index.html are emitted.
-   Build: npm run build:css  ->  woodex-live-p29-v2.1-pro/admin/assets/woodex-tw.css (committed) */
+/* Woodex admin design layer — Tailwind CSS v4 + Preline UI.
+   Implements DESIGN.md v1.0 as the single source of truth.
+
+   Build:  npm run build:css      -> woodex-live-p29-v2.1-pro/admin/assets/woodex-tw.css (committed)
+           npm run build:preline  -> woodex-live-p29-v2.1-pro/admin/vendor/preline.js    (committed)
+
+   No preflight: the admin's own CSS keeps its base styles (admin.css). This layer adds
+   DESIGN.md tokens, Preline state variants and the §9 animation set.
+
+   Token strategy
+   --------------
+   DESIGN.md §3 defines a light/dark pair per semantic token. Tailwind compiles utilities to
+   `background-color: var(--color-surface)`, so re-declaring those custom properties under
+   `html.dark` makes every utility dark-aware *without* repeating `dark:` on each element.
+   Both mechanisms are supported: semantic tokens switch automatically, and explicit `dark:`
+   variants remain available for the §3 pairs (AGENT.md §4).
+
+   The tokens are also plain CSS custom properties, so the hand-written layers (admin.css,
+   woodex-v21.css) and JS inline styles can consume them and switch with the same theme. */
+
 @import "tailwindcss/theme.css" layer(theme);
 @import "tailwindcss/utilities.css" layer(utilities);
-@source "../../../woodex-live-p29-v2.1-pro/admin/index.html";
 
-@theme {
+/* Scan every file that emits markup. The previous source scanned only index.html, which is
+   why the emitted stylesheet was 887 bytes while 44 JS modules build the real UI. */
+@source "../../../woodex-live-p29-v2.1-pro/admin/index.html";
+@source "../../../woodex-live-p29-v2.1-pro/admin/*.js";
+@source "../../../woodex-live-p29-v2.1-pro/admin/vendor/*.js";
+@source "../../../woodex-live-p29-v2.1-pro/builder/*.js";
+@source "./node_modules/preline/dist/*.js";
+
+/* Dark mode: class on <html>, per DESIGN.md §3. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Preline plugin state variants.
+   Verified against preline@5: open -> .open, accordion -> .active, tooltip -> .show,
+   collapse -> .open, select -> .selected/.disabled. */
+@custom-variant hs-overlay-open (&.open);
+@custom-variant hs-dropdown-open (&.open);
+@custom-variant hs-accordion-active (&.active);
+@custom-variant hs-collapse-open (&.open);
+@custom-variant hs-tooltip-shown (&.show);
+@custom-variant hs-select-active (&.active);
+
+/* `static` is required, not cosmetic: Tailwind otherwise tree-shakes theme variables that no
+   generated utility references. Here the tokens are consumed as plain custom properties by the
+   hand-written layers (admin.css consumes --color-line, --color-ok, … through the bridge at its
+   end), so every token must always be emitted or those references resolve to nothing. */
+@theme static {
+  /* ---------- DESIGN.md §2 Typography ---------- */
   --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  --color-brand-50: #eff6ff;
-  --color-brand-600: #2563eb;
-  --color-brand-700: #1d4ed8;
-  --color-brand-400: #60a5fa;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* ---------- DESIGN.md §3 Colour & theme tokens ----------
+     Light column. Dark column re-declared under html.dark below. */
+  --color-page: #f9fafb;          /* bg-gray-50        */
+  --color-surface: #ffffff;       /* bg-white          */
+  --color-surface-2: #f3f4f6;     /* gray-100 — subtle fills */
+  --color-line: #e5e7eb;          /* border-gray-200   */
+  --color-line-2: #d1d5db;        /* gray-300 — stronger borders, extends §3 */
+  --color-ink: #1f2937;           /* text-gray-800     */
+  --color-ink-2: #4b5563;         /* text-gray-600     */
+  --color-ink-3: #6b7280;         /* text-gray-500     */
+  --color-ink-4: #9ca3af;         /* gray-400 — icons  */
+
+  /* Primary (accent) — DESIGN.md §3: blue-600 / hover blue-700.
+     Already the admin's de-facto primary (admin.css --pri), so this is a rename, not a change. */
+  --color-primary: #2563eb;       /* blue-600 */
+  --color-primary-hover: #1d4ed8; /* blue-700 */
+  --color-primary-soft: #dbeafe;  /* blue-100 */
+  --color-primary-fg: #ffffff;
+
+  /* Status — text shades.
+     DESIGN.md §3 proposes teal-600 / red-600 / blue-600 for text. Measured against §12's
+     4.5:1 requirement those FAIL on their own soft chip surfaces (teal-600 = 3.32:1 on
+     teal-100; red-600 = 3.95:1; blue-600 = 4.24:1). The -700 shades pass on both white and
+     the soft surface, so text uses -700 while -100 remains the chip fill. See DESIGN.md
+     §3.1 (added 2026-10-13, v1.1). */
+  --color-ok: #0f766e;            /* teal-700   — 4.86:1 / 5.20:1 */
+  --color-ok-soft: #ccfbf1;       /* teal-100   */
+  --color-warn: #a16207;          /* yellow-700 — 4.58:1 / 4.75:1 */
+  --color-warn-soft: #fef9c3;     /* yellow-100 */
+  --color-bad: #b91c1c;           /* red-700    — 5.30:1 / 5.91:1 */
+  --color-bad-soft: #fee2e2;      /* red-100    */
+  --color-info: #1d4ed8;          /* blue-700   — 5.49:1 / 6.29:1 */
+  --color-info-soft: #dbeafe;     /* blue-100   */
+
+  /* ---------- DESIGN.md §4 Radius & elevation ---------- */
+  --radius-lg: 0.5rem;            /* inputs, buttons  */
+  --radius-xl: 0.75rem;           /* cards, modals    */
+  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-2xs: 0 1px rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+
+  /* ---------- DESIGN.md §9 Animation ---------- */
+  --animate-fade-in: fade-in .3s ease-out both;
+  --animate-fade-up: fade-up .5s ease-out both;
+  --animate-scale-in: scale-in .2s ease-out both;
+  --animate-slide-in-right: slide-in-right .3s ease-out both;
+  --animate-shimmer: shimmer 1.6s infinite linear;
+  --animate-pulse-soft: pulse-soft 2s ease-in-out infinite;
+
+  @keyframes fade-in        { from { opacity: 0 } to { opacity: 1 } }
+  @keyframes fade-up        { from { opacity: 0; transform: translateY(12px) } to { opacity: 1; transform: none } }
+  @keyframes scale-in       { from { opacity: 0; transform: scale(.96) } to { opacity: 1; transform: none } }
+  @keyframes slide-in-right { from { opacity: 0; transform: translateX(16px) } to { opacity: 1; transform: none } }
+  @keyframes shimmer        { from { background-position: -200% 0 } to { background-position: 200% 0 } }
+  @keyframes pulse-soft     { 0%,100% { opacity: 1 } 50% { opacity: .6 } }
+}
+
+/* ---------- DESIGN.md §3 — dark column ----------
+   Re-declaring the same custom properties makes every semantic utility dark-aware.
+   Values are DESIGN.md §3's dark column (neutral-900 page, neutral-800 surface,
+   neutral-700 border, neutral-200/400/500 text). */
+html.dark {
+  --color-page: #171717;          /* neutral-900 */
+  --color-surface: #262626;       /* neutral-800 */
+  --color-surface-2: #404040;     /* neutral-700 */
+  --color-line: #404040;          /* neutral-700 */
+  --color-line-2: #525252;        /* neutral-600 */
+  --color-ink: #e5e5e5;           /* neutral-200 */
+  --color-ink-2: #a3a3a3;         /* neutral-400 */
+  --color-ink-3: #737373;         /* neutral-500 */
+  --color-ink-4: #525252;         /* neutral-600 */
+
+  /* Primary is unchanged in dark per DESIGN.md §3 ("same"). */
+  --color-primary-soft: rgb(29 78 216 / 0.3);  /* blue-800/30 */
+  --color-ok-soft:    rgb(19 78 74 / 0.3);     /* teal-800/30 */
+  --color-warn-soft:  rgb(133 77 14 / 0.3);    /* yellow-800/30 */
+  --color-bad-soft:   rgb(153 27 27 / 0.3);    /* red-800/30 */
+  --color-info-soft:  rgb(30 64 175 / 0.3);    /* blue-800/30 */
+
+  /* Status text needs the lighter shade in dark: the -700 values above only pass on light
+     surfaces. teal-500/red-500/blue-500 on a neutral-800 surface all clear 4.5:1. */
+  --color-ok: #14b8a6;            /* teal-500   */
+  --color-warn: #eab308;          /* yellow-500 */
+  --color-bad: #ef4444;           /* red-500    */
+  --color-info: #3b82f6;          /* blue-500   */
+}
+
+/* ---------- DESIGN.md §9.1 — reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

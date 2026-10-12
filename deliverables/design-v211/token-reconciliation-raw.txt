@@ -1,0 +1,336 @@
+TOTAL distinct hex: 326   total literal uses: 1424
+  EXACT token match :  31  (387 uses)
+  NEAR  (ΔRGB≤25)   : 157  (627 uses)
+  OFF-PALETTE       : 138  (410 uses)
+
+### EXACT matches — already DESIGN.md compliant
+  #ffffff   ×195  = white
+  #e5e7eb   ×27   = gray-200
+  #2563eb   ×22   = blue-600
+  #111827   ×16   = gray-900
+  #f9fafb   ×14   = gray-50
+  #9ca3af   ×12   = gray-400
+  #1d4ed8   ×11   = blue-700
+  #ef4444   ×10   = red-500
+  #f3f4f6   ×10   = gray-100
+  #4b5563   ×8    = gray-600
+  #d1d5db   ×8    = gray-300
+  #374151   ×6    = gray-700
+  #a3a3a3   ×6    = neutral-400
+  #262626   ×5    = neutral-800
+  #6b7280   ×5    = gray-500
+  #dc2626   ×5    = red-600
+  #1f2937   ×4    = gray-800
+  #dbeafe   ×3    = blue-100
+  #404040   ×3    = neutral-700
+  #171717   ×2    = neutral-900
+  #fee2e2   ×2    = red-100
+  #a16207   ×2    = yellow-700
+  #525252   ×2    = neutral-600
+  #3b82f6   ×2    = blue-500
+  #d4d4d4   ×1    = neutral-300
+  #0d9488   ×1    = teal-600
+  #ccfbf1   ×1    = teal-100
+  #fef9c3   ×1    = yellow-100
+  #e5e5e5   ×1    = neutral-200
+  #737373   ×1    = neutral-500
+  #eab308   ×1    = yellow-500
+
+### NEAR — collapse to the token (ΔRGB≤25, imperceptible)
+  #0c1628   ×60   -> gray-900     #111827  Δ5.5
+  #667085   ×42   -> gray-500     #6b7280  Δ7.3
+  #e4e7ec   ×39   -> gray-200     #e5e7eb  Δ1.4
+  #f2f4f7   ×21   -> gray-100     #f3f4f6  Δ1.4
+  #f4efe7   ×21   -> gray-100     #f3f4f6  Δ15.8
+  #d92d20   ×19   -> red-600      #dc2626  Δ9.7
+  #94a3b8   ×15   -> gray-400     #9ca3af  Δ12.0
+  #f59e0b   ×14   -> yellow-500   #eab308  Δ23.9
+  #344054   ×14   -> gray-700     #374151  Δ4.4
+  #475467   ×13   -> gray-600     #4b5563  Δ5.7
+  #d0d5dd   ×12   -> gray-300     #d1d5db  Δ2.2
+  #0a0f1e   ×12   -> gray-900     #111827  Δ14.5
+  #f04438   ×11   -> red-500      #ef4444  Δ12.0
+  #98a2b3   ×10   -> gray-400     #9ca3af  Δ5.7
+  #111318   ×9    -> neutral-900  #171717  Δ7.3
+  #101828   ×9    -> gray-900     #111827  Δ1.4
+  #2b2118   ×9    -> neutral-800  #262626  Δ15.7
+  #20242f   ×8    -> gray-800     #1f2937  Δ9.5
+  #eaecf0   ×8    -> gray-200     #e5e7eb  Δ8.7
+  #111111   ×8    -> neutral-900  #171717  Δ10.4
+  #cbd5e1   ×7    -> gray-300     #d1d5db  Δ8.5
+  #64748b   ×7    -> gray-500     #6b7280  Δ13.2
+  #f5f5f5   ×7    -> gray-100     #f3f4f6  Δ2.4
+  #1e293b   ×7    -> gray-800     #1f2937  Δ4.1
+  #04222b   ×7    -> gray-900     #111827  Δ16.9
+  #161922   ×6    -> gray-900     #111827  Δ7.1
+  #232836   ×6    -> gray-800     #1f2937  Δ4.2
+  #0b1220   ×6    -> gray-900     #111827  Δ11.0
+  #0f172a   ×5    -> gray-900     #111827  Δ3.7
+  #4d5156   ×5    -> neutral-600  #525252  Δ6.5
+  #fffbeb   ×4    -> gray-50      #f9fafb  Δ17.1
+  #0b0d13   ×4    -> neutral-900  #171717  Δ16.1
+  #1e2430   ×4    -> gray-800     #1f2937  Δ8.7
+  #ecfdf3   ×4    -> gray-100     #f3f4f6  Δ11.8
+  #fef3f2   ×4    -> gray-100     #f3f4f6  Δ11.7
+  #f6f7f9   ×4    -> gray-50      #f9fafb  Δ4.7
+  #fffdf9   ×4    -> white        #ffffff  Δ6.3
+  #e9ebf0   ×3    -> gray-200     #e5e7eb  Δ7.5
+  #fee4e2   ×3    -> red-100      #fee2e2  Δ2.0
+  #eef2ff   ×3    -> gray-100     #f3f4f6  Δ10.5
+  #fffaeb   ×3    -> gray-50      #f9fafb  Δ17.1
+  #e7e5e0   ×3    -> neutral-200  #e5e5e5  Δ5.4
+  #2e90fa   ×3    -> blue-500     #3b82f6  Δ19.5
+  #1a2a47   ×3    -> gray-800     #1f2937  Δ16.8
+  #175cd3   ×3    -> blue-700     #1d4ed8  Δ16.0
+  #24304a   ×3    -> gray-800     #1f2937  Δ20.9
+  #8b98ab   ×3    -> gray-400     #9ca3af  Δ20.6
+  #1a1e27   ×3    -> gray-900     #111827  Δ10.8
+  #fef3c7   ×3    -> yellow-100   #fef9c3  Δ7.2
+  #b45309   ×3    -> yellow-700   #a16207  Δ24.3
+  #12151d   ×3    -> neutral-900  #171717  Δ8.1
+  #f1f5f9   ×2    -> gray-100     #f3f4f6  Δ3.7
+  #ecfdf5   ×2    -> gray-100     #f3f4f6  Δ11.4
+  #fef2f2   ×2    -> gray-100     #f3f4f6  Δ11.9
+  #181c24   ×2    -> gray-900     #111827  Δ8.6
+  #2b3140   ×2    -> gray-800     #1f2937  Δ17.0
+  #ddd6fe   ×2    -> blue-100     #dbeafe  Δ20.1
+  #ede9fe   ×2    -> gray-100     #f3f4f6  Δ14.9
+  #eef0f3   ×2    -> gray-100     #f3f4f6  Δ7.1
+  #fef0c7   ×2    -> yellow-100   #fef9c3  Δ9.8
+  #f7f7f8   ×2    -> gray-50      #f9fafb  Δ4.7
+  #faf8f4   ×2    -> gray-50      #f9fafb  Δ7.3
+  #dcfae6   ×2    -> teal-100     #ccfbf1  Δ19.4
+  #fdf6ec   ×2    -> gray-100     #f3f4f6  Δ14.3
+  #eef4ff   ×2    -> gray-100     #f3f4f6  Δ10.3
+  #f4f3ff   ×2    -> gray-100     #f3f4f6  Δ9.1
+  #111622   ×2    -> gray-900     #111827  Δ5.4
+  #fafbfc   ×2    -> gray-50      #f9fafb  Δ1.7
+  #eff8ff   ×2    -> gray-100     #f3f4f6  Δ10.6
+  #fbf6ef   ×2    -> gray-100     #f3f4f6  Δ10.8
+  #2a2418   ×2    -> neutral-800  #262626  Δ14.7
+  #111a2b   ×2    -> gray-900     #111827  Δ4.5
+  #6b7a90   ×2    -> gray-500     #6b7280  Δ17.9
+  #111725   ×2    -> gray-900     #111827  Δ2.2
+  #0a0c10   ×2    -> neutral-900  #171717  Δ18.4
+  #0e1117   ×2    -> neutral-900  #171717  Δ10.8
+  #475569   ×2    -> gray-600     #4b5563  Δ7.2
+  #ea4335   ×2    -> red-500      #ef4444  Δ15.8
+  #fafaf7   ×2    -> gray-50      #f9fafb  Δ4.1
+  #f4efe6   ×2    -> gray-100     #f3f4f6  Δ16.8
+  #fbf8f3   ×2    -> gray-50      #f9fafb  Δ8.5
+  #e8dfd1   ×2    -> neutral-200  #e5e5e5  Δ21.1
+  #1877f2   ×2    -> blue-600     #2563eb  Δ24.9
+  #4285f4   ×2    -> blue-500     #3b82f6  Δ7.9
+  #1b1a17   ×2    -> neutral-900  #171717  Δ5.0
+  #f8fafc   ×1    -> gray-50      #f9fafb  Δ1.4
+  #e2e8f0   ×1    -> gray-200     #e5e7eb  Δ5.9
+  #334155   ×1    -> gray-700     #374151  Δ5.7
+  #f8f5ef   ×1    -> gray-100     #f3f4f6  Δ8.7
+  #f0f9ff   ×1    -> gray-50      #f9fafb  Δ9.9
+  #eff6ff   ×1    -> gray-100     #f3f4f6  Δ10.0
+  #07090e   ×1    -> neutral-900  #171717  Δ23.1
+  #2f2f2f   ×1    -> neutral-800  #262626  Δ15.6
+  #e8f8ef   ×1    -> gray-100     #f3f4f6  Δ13.6
+  #f5f3ff   ×1    -> gray-50      #f9fafb  Δ9.0
+  #fff8ea   ×1    -> gray-100     #f3f4f6  Δ17.4
+  #f0f4ff   ×1    -> gray-100     #f3f4f6  Δ9.5
+  #fff1f1   ×1    -> gray-100     #f3f4f6  Δ13.3
+  #090b10   ×1    -> neutral-900  #171717  Δ19.7
+  #131720   ×1    -> gray-900     #111827  Δ7.3
+  #0c0d12   ×1    -> neutral-900  #171717  Δ15.7
+  #f5f5f7   ×1    -> gray-100     #f3f4f6  Δ2.4
+  #f7f5f1   ×1    -> gray-100     #f3f4f6  Δ6.5
+  #efeaff   ×1    -> gray-100     #f3f4f6  Δ14.0
+  #f6f4f0   ×1    -> gray-100     #f3f4f6  Δ6.7
+  #262a33   ×1    -> gray-800     #1f2937  Δ8.1
+  #152033   ×1    -> gray-800     #1f2937  Δ14.0
+  #24324a   ×1    -> gray-800     #1f2937  Δ21.6
+  #f2f2f2   ×1    -> gray-100     #f3f4f6  Δ4.6
+  #1a2030   ×1    -> gray-800     #1f2937  Δ12.4
+  #e8f5ee   ×1    -> gray-100     #f3f4f6  Δ13.6
+  #f8f6f2   ×1    -> gray-100     #f3f4f6  Δ6.7
+  #0f1420   ×1    -> gray-900     #111827  Δ8.3
+  #cbd2de   ×1    -> gray-300     #d1d5db  Δ7.3
+  #c8d1de   ×1    -> gray-300     #d1d5db  Δ10.3
+  #686d78   ×1    -> gray-500     #6b7280  Δ9.9
+  #f7f8fa   ×1    -> gray-50      #f9fafb  Δ3.0
+  #3a3122   ×1    -> neutral-800  #262626  Δ23.2
+  #161b24   ×1    -> gray-900     #111827  Δ6.6
+  #1c2333   ×1    -> gray-800     #1f2937  Δ7.8
+  #082836   ×1    -> gray-800     #1f2937  Δ23.0
+  #e0f7fa   ×1    -> blue-100     #dbeafe  Δ14.5
+  #e0f2fe   ×1    -> blue-100     #dbeafe  Δ9.4
+  #ecfeff   ×1    -> gray-50      #f9fafb  Δ14.2
+  #2b2b2b   ×1    -> neutral-800  #262626  Δ8.7
+  #1f1f1f   ×1    -> neutral-800  #262626  Δ12.1
+  #333333   ×1    -> neutral-700  #404040  Δ22.5
+  #0a1120   ×1    -> gray-900     #111827  Δ12.1
+  #eeeeee   ×1    -> gray-100     #f3f4f6  Δ11.2
+  #f9ab00   ×1    -> yellow-500   #eab308  Δ18.8
+  #f6f6f7   ×1    -> gray-100     #f3f4f6  Δ3.7
+  #f4f4f5   ×1    -> gray-100     #f3f4f6  Δ1.4
+  #efeae2   ×1    -> neutral-200  #e5e5e5  Δ11.6
+  #e7f8ee   ×1    -> gray-100     #f3f4f6  Δ15.0
+  #e8dccb   ×1    -> neutral-300  #d4d4d4  Δ23.3
+  #e3e1dc   ×1    -> neutral-200  #e5e5e5  Δ10.0
+  #eceae5   ×1    -> neutral-200  #e5e5e5  Δ8.6
+  #fcfbf9   ×1    -> gray-50      #f9fafb  Δ3.7
+  #efe6d8   ×1    -> neutral-200  #e5e5e5  Δ16.4
+  #f7f1e8   ×1    -> gray-100     #f3f4f6  Δ14.9
+  #d6d3cc   ×1    -> neutral-300  #d4d4d4  Δ8.3
+  #eef2f6   ×1    -> gray-100     #f3f4f6  Δ5.4
+  #ffead5   ×1    -> red-100      #fee2e2  Δ15.3
+  #fef7c3   ×1    -> yellow-100   #fef9c3  Δ2.0
+  #202124   ×1    -> neutral-800  #262626  Δ8.1
+  #fffaf0   ×1    -> gray-50      #f9fafb  Δ12.5
+  #18181b   ×1    -> neutral-900  #171717  Δ4.2
+  #24292f   ×1    -> gray-800     #1f2937  Δ9.4
+  #cccccc   ×1    -> neutral-300  #d4d4d4  Δ13.9
+  #dcfce7   ×1    -> teal-100     #ccfbf1  Δ18.9
+  #12151c   ×1    -> neutral-900  #171717  Δ7.3
+  #f3ede3   ×1    -> red-100      #fee2e2  Δ15.6
+  #f6ede2   ×1    -> red-100      #fee2e2  Δ13.6
+  #fffaf4   ×1    -> gray-50      #f9fafb  Δ9.2
+  #0b141a   ×1    -> neutral-900  #171717  Δ12.7
+  #e9edef   ×1    -> gray-200     #e5e7eb  Δ8.2
+  #141822   ×1    -> gray-900     #111827  Δ5.8
+
+### OFF-PALETTE — real violations (need a decision)
+  #b8956a   ×31   -> nearest neutral-400  #a3a3a3  Δ62.3   in admin-aia.js, admin-aicenter.js, admin-appr.js
+  #12b76a   ×19   -> nearest teal-600     #0d9488  Δ46.4   in admin-aicenter.js, admin-media.js, admin-p18g.js
+  #b42318   ×17   -> nearest red-600      #dc2626  Δ42.5   in admin-appr.js, admin-p19f.js, admin-print.js
+  #10b981   ×13   -> nearest teal-500     #14b8a6  Δ37.2   in admin-crm.js, admin-reports.js, admin.css
+  #067647   ×12   -> nearest teal-600     #0d9488  Δ71.9   in admin-p19c.js, admin-seo38.js, admin.css
+  #f79009   ×11   -> nearest yellow-500   #eab308  Δ37.3   in admin-aicenter.js, admin-media.js, admin-p18h.js
+  #465fff   ×10   -> nearest blue-500     #3b82f6  Δ37.8   in admin-integ.js, admin-p36.js, admin.css
+  #b8924c   ×9    -> nearest neutral-500  #737373  Δ85.1   in admin-print.js, admin-sales.js, admin.css
+  #00b8db   ×9    -> nearest teal-500     #14b8a6  Δ56.6   in admin-crm.js, admin-updates.js, woodex-v21.css
+  #00d3f2   ×9    -> nearest teal-500     #14b8a6  Δ83.1   in admin-crm.js, admin-sales17.js, admin.js
+  #38bdf8   ×8    -> nearest blue-500     #3b82f6  Δ59.1   in admin-sales17.js, admin.css
+  #b54708   ×7    -> nearest yellow-700   #a16207  Δ33.6   in admin-p19f.js, admin.css
+  #16a34a   ×7    -> nearest teal-600     #0d9488  Δ64.4   in admin-chat2.js, admin-seo.js, admin-wains.js
+  #93c5fd   ×6    -> nearest gray-300     #d1d5db  Δ72.5   in admin.css, woodex-v21.css
+  #fca5a5   ×6    -> nearest neutral-300  #d4d4d4  Δ77.6   in admin.css, woodex-v21.css
+  #b91c1c   ×6    -> nearest red-600      #dc2626  Δ37.7   in admin-notify.js, admin.css, woodex-v21.css
+  #d4af6a   ×6    -> nearest neutral-400  #a3a3a3  Δ76.1   in admin-crm.js, admin-print.js, uipal.js
+  #047857   ×5    -> nearest teal-600     #0d9488  Δ57.1   in admin.css, woodex-v21.css
+  #25d366   ×5    -> nearest teal-500     #14b8a6  Δ71.5   in admin-integ.js, admin-p8.js, admin-settings.js
+  #6366f1   ×5    -> nearest blue-500     #3b82f6  Δ49.1   in admin-crm.js, admin-sales17.js, admin-settings.js
+  #e6cfa5   ×5    -> nearest neutral-300  #d4d4d4  Δ50.6   in admin-print17.js, admin.css
+  #166534   ×5    -> nearest gray-700     #374151  Δ56.8   in admin-settings.js, admin-social.js, admin-tg.js
+  #e11d48   ×5    -> nearest red-600      #dc2626  Δ35.5   in admin-chat2.js, admin-p18e.js, admin-settings.js
+  #000000   ×5    -> nearest neutral-900  #171717  Δ39.8   in admin-print17.js, admin-settings.js, admin-social.js
+  #60a5fa   ×4    -> nearest blue-500     #3b82f6  Δ51.1   in admin.css, uipal.js, woodex-v21.css
+  #1a0dab   ×4    -> nearest blue-700     #1d4ed8  Δ79.1   in admin-pages.js, admin-seo38.js, admin.css
+  #3538cd   ×4    -> nearest blue-700     #1d4ed8  Δ34.4   in admin-p19c.js, admin.css
+  #b58d4a   ×4    -> nearest neutral-500  #737373  Δ81.9   in admin.css
+  #e9d9c0   ×4    -> nearest neutral-300  #d4d4d4  Δ29.4   in admin.css
+  #cfae84   ×4    -> nearest neutral-400  #a3a3a3  Δ54.9   in admin.css
+  #fcd34d   ×4    -> nearest yellow-500   #eab308  Δ78.2   in woodex-v21.css
+  #15803d   ×4    -> nearest gray-700     #374151  Δ74.3   in admin-notify.js, admin-print17.js, admin-seo.js
+  #a78bfa   ×3    -> nearest gray-400     #9ca3af  Δ79.5   in admin.css, woodex-v21.css
+  #1c7a3d   ×3    -> nearest gray-700     #374151  Δ66.2   in admin-print.js, admin.css
+  #7a5af8   ×3    -> nearest blue-500     #3b82f6  Δ74.7   in admin-integ.js, admin-p19f.js, admin.css
+  #d97706   ×3    -> nearest yellow-700   #a16207  Δ59.8   in admin-crm.js, admin.css, woodex-v21.css
+  #8a6a40   ×3    -> nearest neutral-500  #737373  Δ56.7   in admin-print17.js, admin.css
+  #fde68a   ×3    -> nearest yellow-100   #fef9c3  Δ60.1   in admin.css, woodex-v21.css
+  #92400e   ×3    -> nearest yellow-700   #a16207  Δ37.8   in admin.css, woodex-v21.css
+  #c59b27   ×3    -> nearest yellow-500   #eab308  Δ53.9   in woodex-v21.css
+  #86efac   ×3    -> nearest gray-400     #9ca3af  Δ79.2   in woodex-v21.css
+  #8a6a43   ×3    -> nearest neutral-500  #737373  Δ54.0   in admin-chrome.js, admin-p18j.js, admin-p19f.js
+  #e6a23c   ×3    -> nearest yellow-500   #eab308  Δ54.9   in admin-speed.js
+  #8b5cf6   ×3    -> nearest blue-500     #3b82f6  Δ88.6   in admin.js, uipal.js
+  #0284c7   ×2    -> nearest blue-600     #2563eb  Δ60.1   in admin-settings.js, admin.css
+  #fda29b   ×2    -> nearest neutral-300  #d4d4d4  Δ86.2   in admin.css
+  #ecd9b8   ×2    -> nearest neutral-300  #d4d4d4  Δ37.2   in admin.css
+  #6d28d9   ×2    -> nearest blue-700     #1d4ed8  Δ88.6   in admin.css, woodex-v21.css
+  #34d399   ×2    -> nearest teal-500     #14b8a6  Δ43.8   in admin.css
+  #027a48   ×2    -> nearest teal-600     #0d9488  Δ69.9   in admin.css
+  #079455   ×2    -> nearest teal-600     #0d9488  Δ51.4   in admin.css
+  #5925dc   ×2    -> nearest blue-700     #1d4ed8  Δ72.8   in admin.css
+  #c9b28f   ×2    -> nearest neutral-400  #a3a3a3  Δ45.5   in admin.css
+  #6b5a45   ×2    -> nearest neutral-600  #525252  Δ29.3   in admin.css
+  #217346   ×2    -> nearest gray-700     #374151  Δ55.7   in admin-integ.js, admin.css
+  #826238   ×2    -> nearest neutral-600  #525252  Δ56.9   in admin.css
+  #53b1fd   ×2    -> nearest blue-500     #3b82f6  Δ53.2   in admin-p18g.js, admin.css
+  #5eead4   ×2    -> nearest teal-500     #14b8a6  Δ100.5   in woodex-v21.css
+  #6ee7b7   ×2    -> nearest gray-400     #9ca3af  Δ82.5   in woodex-v21.css
+  #22c7e6   ×2    -> nearest teal-500     #14b8a6  Δ67.2   in woodex-v21.css
+  #7dd3fc   ×2    -> nearest teal-100     #ccfbf1  Δ89.2   in woodex-v21.css
+  #0f9d58   ×2    -> nearest teal-600     #0d9488  Δ48.9   in admin-integ.js, admin-settings.js
+  #11692f   ×2    -> nearest neutral-700  #404040  Δ64.6   in admin-seoagent.js, admin-tg.js
+  #ff0000   ×2    -> nearest red-600      #dc2626  Δ64.1   in admin-settings.js, admin-social.js
+  #e60023   ×2    -> nearest red-600      #dc2626  Δ39.4   in admin-settings.js, admin-social.js
+  #0a66c2   ×2    -> nearest blue-700     #1d4ed8  Δ37.7   in admin-settings.js, admin-social.js
+  #229ed9   ×2    -> nearest blue-500     #3b82f6  Δ47.4   in admin-settings.js, admin-social.js
+  #052e16   ×2    -> nearest neutral-900  #171717  Δ29.2   in admin-settings.js, admin-social.js
+  #4ade80   ×2    -> nearest teal-500     #14b8a6  Δ76.2   in admin-settings.js, admin-social.js
+  #23b26d   ×2    -> nearest teal-600     #0d9488  Δ46.0   in admin-speed.js
+  #e05656   ×2    -> nearest red-500      #ef4444  Δ29.5   in admin-speed.js
+  #050608   ×1    -> nearest neutral-900  #171717  Δ28.9   in admin.css
+  #128c4b   ×1    -> nearest teal-600     #0d9488  Δ61.7   in admin.css
+  #a6e3bf   ×1    -> nearest neutral-300  #d4d4d4  Δ52.7   in admin.css
+  #dc6803   ×1    -> nearest yellow-700   #a16207  Δ59.4   in admin.css
+  #039855   ×1    -> nearest teal-600     #0d9488  Δ52.1   in admin.css
+  #f5c16c   ×1    -> nearest yellow-500   #eab308  Δ101.6   in admin.css
+  #a9c1ff   ×1    -> nearest gray-300     #d1d5db  Δ57.4   in admin.css
+  #f5a3a3   ×1    -> nearest neutral-300  #d4d4d4  Δ76.8   in admin.css
+  #0ba5ec   ×1    -> nearest blue-500     #3b82f6  Δ60.2   in admin.css
+  #d9bf93   ×1    -> nearest neutral-400  #a3a3a3  Δ62.9   in admin.css
+  #a6dcbf   ×1    -> nearest neutral-300  #d4d4d4  Δ51.2   in admin.css
+  #d8c3a2   ×1    -> nearest neutral-300  #d4d4d4  Δ53.0   in admin.css
+  #1f7a4d   ×1    -> nearest gray-600     #4b5563  Δ61.6   in admin.css
+  #5b4326   ×1    -> nearest neutral-700  #404040  Δ37.6   in admin.css
+  #eadfcd   ×1    -> nearest neutral-200  #e5e5e5  Δ25.2   in admin.css
+  #8b9099   ×1    -> nearest neutral-400  #a3a3a3  Δ32.2   in admin.css
+  #32d583   ×1    -> nearest teal-500     #14b8a6  Δ54.5   in admin.css
+  #fdb022   ×1    -> nearest yellow-500   #eab308  Δ32.3   in admin.css
+  #083344   ×1    -> nearest gray-800     #1f2937  Δ28.2   in admin.css
+  #bae6fd   ×1    -> nearest teal-100     #ccfbf1  Δ30.1   in admin.css
+  #fbbf24   ×1    -> nearest yellow-500   #eab308  Δ34.9   in admin.css
+  #f87171   ×1    -> nearest red-500      #ef4444  Δ64.3   in admin.css
+  #a7f3d0   ×1    -> nearest teal-100     #ccfbf1  Δ50.2   in admin.css
+  #fecaca   ×1    -> nearest red-100      #fee2e2  Δ33.9   in admin.css
+  #a5f3fc   ×1    -> nearest teal-100     #ccfbf1  Δ41.3   in admin.css
+  #0099cc   ×1    -> nearest teal-500     #14b8a6  Δ53.0   in admin.css
+  #7f1d1d   ×1    -> nearest yellow-700   #a16207  Δ80.0   in admin.css
+  #00708a   ×1    -> nearest teal-600     #0d9488  Δ38.3   in woodex-v21.css
+  #0f7a40   ×1    -> nearest gray-700     #374151  Δ71.7   in woodex-v21.css
+  #0369a1   ×1    -> nearest teal-600     #0d9488  Δ50.7   in woodex-v21.css
+  #075985   ×1    -> nearest teal-600     #0d9488  Δ59.4   in woodex-v21.css
+  #5b21b6   ×1    -> nearest blue-700     #1d4ed8  Δ83.8   in woodex-v21.css
+  #78350f   ×1    -> nearest yellow-700   #a16207  Δ61.4   in woodex-v21.css
+  #22c55e   ×1    -> nearest teal-600     #0d9488  Δ67.9   in admin-chat2.js
+  #d8b98a   ×1    -> nearest neutral-400  #a3a3a3  Δ62.6   in admin-chrome.js
+  #a855f7   ×1    -> nearest gray-400     #9ca3af  Δ106.8   in admin-crm.js
+  #34a853   ×1    -> nearest teal-600     #0d9488  Δ68.8   in admin-integ.js
+  #f38020   ×1    -> nearest yellow-500   #eab308  Δ57.1   in admin-integ.js
+  #e7ffdb   ×1    -> nearest neutral-200  #e5e5e5  Δ27.9   in admin-p18g.js
+  #b2ddff   ×1    -> nearest teal-100     #ccfbf1  Δ42.1   in admin-p18g.js
+  #fecdca   ×1    -> nearest red-100      #fee2e2  Δ31.9   in admin-p18g.js
+  #d6c3a5   ×1    -> nearest neutral-300  #d4d4d4  Δ50.0   in admin-p19f.js
+  #93370d   ×1    -> nearest yellow-700   #a16207  Δ45.6   in admin-p38wa.js
+  #006621   ×1    -> nearest gray-800     #1f2937  Δ71.9   in admin-pages.js
+  #818cf8   ×1    -> nearest blue-500     #3b82f6  Δ70.7   in admin-sales17.js
+  #b93815   ×1    -> nearest red-600      #dc2626  Δ42.9   in admin-seo38.js
+  #854a0e   ×1    -> nearest yellow-700   #a16207  Δ37.5   in admin-seo38.js
+  #8a5a00   ×1    -> nearest yellow-700   #a16207  Δ25.3   in admin-seoagent.js
+  #e1306c   ×1    -> nearest red-500      #ef4444  Δ46.9   in admin-settings.js
+  #ff4500   ×1    -> nearest red-600      #dc2626  Δ60.2   in admin-settings.js
+  #ea580c   ×1    -> nearest red-600      #dc2626  Δ58.1   in admin-settings.js
+  #4a154b   ×1    -> nearest neutral-700  #404040  Δ45.5   in admin-settings.js
+  #ff4f00   ×1    -> nearest red-600      #dc2626  Δ66.0   in admin-settings.js
+  #e4405f   ×1    -> nearest red-500      #ef4444  Δ29.4   in admin-social.js
+  #b7791f   ×1    -> nearest yellow-700   #a16207  Δ39.9   in admin-speed.js
+  #0a8f4d   ×1    -> nearest teal-600     #0d9488  Δ59.3   in admin-speed.js
+  #c27c0e   ×1    -> nearest yellow-700   #a16207  Δ42.6   in admin-speed.js
+  #d63b3b   ×1    -> nearest red-500      #ef4444  Δ28.1   in admin-speed.js
+  #8a6a3f   ×1    -> nearest neutral-500  #737373  Δ57.6   in admin-tg.js
+  #6a6560   ×1    -> nearest neutral-500  #737373  Δ25.3   in admin-theme.js
+  #a8834f   ×1    -> nearest neutral-500  #737373  Δ66.0   in admin-theme.js
+  #6f675c   ×1    -> nearest neutral-500  #737373  Δ26.2   in admin-theme.js
+  #c08a4b   ×1    -> nearest red-500      #ef4444  Δ84.6   in admin-theme.js
+  #b9784a   ×1    -> nearest yellow-700   #a16207  Δ74.5   in admin-theme.js
+  #7a6a5a   ×1    -> nearest neutral-500  #737373  Δ27.5   in admin-theme.js
+  #075e54   ×1    -> nearest gray-700     #374151  Δ56.2   in admin-updates.js
+  #2aabee   ×1    -> nearest blue-500     #3b82f6  Δ45.1   in admin-wains.js
