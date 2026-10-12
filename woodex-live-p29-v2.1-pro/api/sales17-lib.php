@@ -79,10 +79,17 @@ function s17_docs_for(array $c): array {
 }
 function s17_client_status(array $invs, array $projs, array $leads): string {
     $n = count($invs); $open = array_filter($projs, fn($p) => !in_array($p['stage'] ?? '', ['handover', 'done', 'closed'], true));
-    $bal = array_sum(array_column($invs, 'balance')); $won = count(array_filter($leads, fn($l) => $l['stage'] === 'won'));
-    if ($n >= 2 || $won >= 2) return 'returning';
-    if ($open || $bal > 0 || $n === 1 && strtotime((string)end($invs)['issue_date']) > strtotime('-90 days')) return 'active';
-    if ($n === 0 && $won === 0) return 'prospect';
+    $bal = array_sum(array_column($invs, 'balance'));
+    $won = array_values(array_filter($leads, fn($l) => ($l['stage'] ?? '') === 'won'));
+    $recent = function ($t): bool { $ts = strtotime((string)$t); return $ts !== false && $ts > strtotime('-180 days'); };
+    $lastWon = $won ? end($won) : null;
+    if ($n >= 2 || count($won) >= 2) return 'returning';
+    /* A deal won recently and not yet invoiced is a NEW client, not a past one.
+       Without this, every freshly converted enquiry was labelled "Past". */
+    if ($open || $bal > 0
+        || ($n === 1 && $recent($invs ? end($invs)['issue_date'] ?? '' : ''))
+        || ($lastWon && $recent($lastWon['last_contact'] ?: $lastWon['created_at'] ?? ''))) return 'active';
+    if ($n === 0 && !$won) return 'prospect';
     return 'past';
 }
 
