@@ -101,6 +101,107 @@
   --color-destructive: var(--destructive);
   --color-secondary:   var(--secondary);
 
+  /* ---------- Full Preline token mappings ----------
+     Per the Preline Themes docs: every semantic variable is mapped into Tailwind
+     colour utilities via `@theme inline`. Completing the set means the documented
+     class names (bg-surface, text-muted-foreground-1, border-line-1, bg-card …)
+     resolve, so Preline blocks can be composed directly. */
+  --color-background-1: var(--background-1);
+  --color-background-2: var(--background-2);
+  --color-plain:        var(--background-plain);
+  --color-foreground-inverse: var(--foreground-inverse);
+  --color-inverse:      var(--inverse);
+  --color-line-inverse: var(--border-line-inverse);
+  --color-line-1: var(--border-line-1);
+  --color-line-2: var(--border-line-2);
+  --color-line-3: var(--border-line-3);
+  --color-line-4: var(--border-line-4);
+  --color-line-5: var(--border-line-5);
+  --color-line-6: var(--border-line-6);
+  --color-line-7: var(--border-line-7);
+  --color-line-8: var(--border-line-8);
+  --color-primary-50:  var(--primary-50);
+  --color-primary-100: var(--primary-100);
+  --color-primary-200: var(--primary-200);
+  --color-primary-300: var(--primary-300);
+  --color-primary-400: var(--primary-400);
+  --color-primary-500: var(--primary-500);
+  --color-primary-600: var(--primary-600);
+  --color-primary-700: var(--primary-700);
+  --color-primary-800: var(--primary-800);
+  --color-primary-900: var(--primary-900);
+  --color-primary-950: var(--primary-950);
+  --color-primary-line:       var(--primary-line);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-focus:      var(--primary-focus);
+  --color-primary-active:     var(--primary-active);
+  --color-primary-checked:    var(--primary-checked);
+  --color-secondary-line:       var(--secondary-line);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary-hover:      var(--secondary-hover);
+  --color-secondary-focus:      var(--secondary-focus);
+  --color-secondary-active:     var(--secondary-active);
+  --color-layer-line:       var(--layer-line);
+  --color-layer-foreground: var(--layer-foreground);
+  --color-layer-hover:      var(--layer-hover);
+  --color-layer-focus:      var(--layer-focus);
+  --color-layer-active:     var(--layer-active);
+  --color-surface-1: var(--surface-1);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-surface-4: var(--surface-4);
+  --color-surface-5: var(--surface-5);
+  --color-surface-line:       var(--surface-line);
+  --color-surface-foreground: var(--surface-foreground);
+  --color-surface-hover:      var(--surface-hover);
+  --color-surface-focus:      var(--surface-focus);
+  --color-surface-active:     var(--surface-active);
+  --color-muted-hover:  var(--muted-hover);
+  --color-muted-focus:  var(--muted-focus);
+  --color-muted-active: var(--muted-active);
+  --color-muted-foreground-2: var(--muted-foreground-2);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-destructive-hover:  var(--destructive-hover);
+  --color-destructive-focus:  var(--destructive-focus);
+  --color-navbar-line:    var(--navbar-border);
+  --color-navbar-divider: var(--navbar-divider);
+  --color-navbar-nav-foreground: var(--navbar-nav-foreground);
+  --color-navbar-nav-hover:      var(--navbar-nav-hover);
+  --color-navbar-nav-focus:      var(--navbar-nav-focus);
+  --color-navbar-nav-active:     var(--navbar-nav-active);
+  --color-sidebar-line:    var(--sidebar-border);
+  --color-sidebar-divider: var(--sidebar-divider);
+  --color-sidebar-nav-foreground: var(--sidebar-nav-foreground);
+  --color-sidebar-nav-hover:      var(--sidebar-nav-hover);
+  --color-sidebar-nav-focus:      var(--sidebar-nav-focus);
+  --color-sidebar-nav-active:     var(--sidebar-nav-active);
+  --color-card-line:    var(--card-border);
+  --color-card-divider: var(--card-divider);
+  --color-card-header:  var(--card-header);
+  --color-card-footer:  var(--card-footer);
+  --color-card-inverse: var(--card-inverse);
+  --color-dropdown:     var(--dropdown);
+  --color-dropdown-line: var(--dropdown-border);
+  --color-dropdown-item-foreground: var(--dropdown-item-foreground);
+  --color-dropdown-item-hover:      var(--dropdown-item-hover);
+  --color-select:       var(--select);
+  --color-select-line:  var(--select-border) ;
+  --color-overlay-line: var(--overlay-border);
+  --color-overlay-divider: var(--overlay-divider);
+  --color-popover:      var(--popover);
+  --color-popover-line: var(--popover-border);
+  --color-tooltip:      var(--tooltip);
+  --color-tooltip-foreground: var(--tooltip-foreground);
+  --color-table-line:   var(--table-border);
+  --color-switch:       var(--switch);
+  --color-footer:       var(--footer);
+  --color-scrollbar-track: var(--scrollbar-track);
+  --color-scrollbar-thumb: var(--scrollbar-thumb);
+  --color-status-ok:    var(--status-ok);
+  --color-status-warn:  var(--status-warn);
+  --color-status-bad:   var(--status-bad);
+  --color-status-info:  var(--status-info);
+
   /* ---------- DESIGN.md §4 Radius & elevation ---------- */
   --radius-lg: 0.5rem;            /* inputs, buttons  */
   --radius-xl: 0.75rem;           /* cards, modals    */
