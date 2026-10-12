@@ -368,8 +368,9 @@ real files and answers the API.
 * keeps preview-only state in `tools/qa-p29/.preview-state/` (git-ignored),
 * accepts only the accounts in `PREVIEW_ACCOUNTS_FILE` (never a built-in account, no values in the repo).
 
-**What it is not:** it is not PHP and not MySQL. It proves the UI, the wiring and the contracts. It
-cannot prove PHP execution — that needs `wx-audit.php` on the host (§11) or the real database (§12).
+**What it is not:** it is not PHP and not MySQL. It proves the UI, the wiring and the contracts, with
+answers built from fixtures. It does **not** prove PHP execution — for that, use the runner below
+(§10.5), and for the real data, `wx-audit.php` on the host (§11) or the real database (§12).
 
 ### 10.2 The probes
 
@@ -386,6 +387,8 @@ cannot prove PHP execution — that needs `wx-audit.php` on the host (§11) or t
 | `phplint.js` | PHP parse for every `api/*.php` (php-parser) |
 | `sales-tpl-probe.mjs` | quotation template cards + import |
 | `responsive-sweep.mjs` | horizontal overflow per route (58 screens, must be 0) |
+| `php-runner.mjs` | boots real PHP 8.3 (WASM) and answers one API action |
+| `php-sweep.mjs` | every API action × every role, classified (see §10.5) |
 
 ### 10.3 Running it
 
@@ -405,6 +408,43 @@ PREVIEW_EMAIL=<owner> PREVIEW_PASS=<pass> node master-qa.mjs http://127.0.0.1:80
 | `phplint.js` | 44/44 parse |
 | `css-check.mjs` | balanced |
 | every probe above | exit 0 (non-zero = a regression) |
+
+### 10.5 Running the real PHP locally (no MySQL needed)
+
+`tools/qa-p29/php-runner.mjs` boots PHP 8.3 compiled to WebAssembly and serves the project's own
+`api/*.php` against the host filesystem, so the API runs unmodified on a machine with no PHP and no
+MySQL installed:
+
+```bash
+cd tools/qa-p29
+npm install                                   # @php-wasm/node + @php-wasm/universal
+node php-runner.mjs --check                   # PHP version, extensions, PDO drivers
+node php-runner.mjs --install                 # create the local database from the real schema
+node php-runner.mjs --seed                    # create the QA logins
+node php-runner.mjs --action dashboard --email <owner>   # one real action
+node php-sweep.mjs                            # every action × every role (~3 min)
+```
+
+Two pieces make that possible:
+
+* **`api/_lib/db.php`** — one factory for every connection. `_private/db.json` decides the driver:
+  **`mysql` is the production path and is byte-for-byte the old code path**; `{"driver":"sqlite"}`
+  opens a SQLite file instead (path from `"file"`, default `_private/woodex.sqlite`).
+* **`api/_lib/db-sqlite.php`** — translates the MySQL dialect the API is written in: `SHOW TABLES`,
+  `SHOW TABLE STATUS`, `SHOW COLUMNS`/`DESCRIBE`, `LIMIT a,b`, `FOR UPDATE`, `ON DUPLICATE KEY UPDATE`,
+  `INSERT IGNORE`, `TRUNCATE`, `DATE_SUB`/`DATE_ADD … INTERVAL`, plus `NOW()`, `CURDATE()`, `RAND()`,
+  `DATE_FORMAT()`, `CONCAT()`, `GREATEST()`/`LEAST()` and `VERSION()` as functions, and the MySQL
+  column types in `CREATE`/`ALTER TABLE`. With `"trace": true` in db.json every translation is
+  appended to `_private/qa-sql-trace.log` (string literals are redacted).
+
+The sweep runs in a copy of the project (`tools/qa-p29/.qa-run/project`) so no action can write to the
+source tree, blanks every outbound credential first, and classifies each answer: `ok`, `gated` (the
+role gate fired), `validated` (input refused), `DB-ERROR`, `SERVER-500`, `FATAL` (PHP crash),
+`NON-JSON`. PHP warnings are counted separately — they never reach the browser but they are defects.
+
+**Rules:** SQLite mode is for local runs, QA and demos. Hosting stays MySQL — before a release, the
+schema and the hot queries still get one pass on MySQL/XAMPP. A translation the layer cannot make
+throws with the original SQL attached rather than guessing.
 
 ---
 
@@ -449,7 +489,8 @@ deployed site's configuration is not in the zip. Uploading over the top leaves i
 
 | Gap | Unblocked by |
 | --- | --- |
-| **PHP runtime** — no action has ever executed on this machine (no PHP/MySQL in the sandbox) | `wx-audit.php` on the host, or a local PHP+MySQL pair |
+| ~~**PHP runtime** — no action has ever executed on this machine~~ | **done** — all 349 actions execute locally via `tools/qa-p29/php-sweep.mjs` (§10.5); see `deliverables/PHP-EXECUTION-REPORT-2026-10-12.md` |
+| **MySQL dialect** — the local runs use the SQLite driver, so a MySQL-only difference would not show | one pass on MySQL/XAMPP with the real database |
 | **Real records** — ~50 lesser-used screens read the preview's generic stub, so they render but their data is not proven | the owner's SQL dump (§13) |
 | **PageSpeed** — Google's API needs outbound HTTP; measured only against a synthetic row | run "Test page" once on the host |
 | Invoice print designs | owner decision — invoices print in one design today |

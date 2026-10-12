@@ -125,7 +125,7 @@ function aia_actions(string $action, array $in): bool {
                 'answers' => (int)q("SELECT COUNT(*) FROM wx_ai_events WHERE kind='answer' AND t>=?", [$from])->fetchColumn(), 'channels' => $byCh, 'firstReply' => $avg($fr), 'firstTeam' => $avg($ft),
                 'unanswered' => (int)q("SELECT COUNT(*) FROM wx_ai_unans WHERE status='open'")->fetchColumn()]);
         case 'ai_unans_list':
-            need(['owner', 'admin']); $st = in_array($in['status'] ?? 'open', ['open', 'added', 'ignored'], true) ? $in['status'] : 'open';
+            need(['owner', 'admin']); $st = (string)($in['status'] ?? 'open'); if (!in_array($st, ['open', 'added', 'ignored'], true)) $st = 'open';
             out(['ok' => true, 'items' => array_map(fn($r) => ['id' => (int)$r['id'], 'q' => $r['q'], 'n' => (int)$r['n'], 't' => $r['last_t'], 'chat_id' => $r['chat_id'] !== null ? (int)$r['chat_id'] : null, 'status' => $r['status']], q('SELECT * FROM wx_ai_unans WHERE status=? ORDER BY n DESC, last_t DESC LIMIT 200', [$st])->fetchAll())]);
         case 'ai_unans_add': // add the answer to Train AI → Q&A
             $u = need(['owner', 'admin']); $r = q('SELECT * FROM wx_ai_unans WHERE id=?', [(int)($in['id'] ?? 0)])->fetch(); if (!$r) fail('Not found', 404);

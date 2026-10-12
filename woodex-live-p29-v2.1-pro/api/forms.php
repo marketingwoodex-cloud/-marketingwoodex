@@ -27,8 +27,8 @@ function ip(): string { return substr((string)($_SERVER['REMOTE_ADDR'] ?? ''), 0
 function db(): PDO {
     static $pdo = null; if ($pdo) return $pdo;
     $c = jread(DB_FILE); if (!$c) fail('Enquiries are not available right now. Please WhatsApp us.', 503);
-    $pdo = new PDO('mysql:host=' . ($c['host'] ?: 'localhost') . ';dbname=' . $c['name'] . ';charset=utf8mb4', $c['user'], $c['pass'],
-        [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC, PDO::ATTR_EMULATE_PREPARES => false]);
+    require_once __DIR__ . '/_lib/db.php';
+    $pdo = wx_db($c);
     return $pdo;
 }
 function q(string $sql, array $p = []): PDOStatement { $s = db()->prepare($sql); $s->execute($p); return $s; }

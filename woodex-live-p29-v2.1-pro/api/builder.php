@@ -74,7 +74,8 @@ function logged_in(): bool {
     if (!$uid) return $ok = false;
     try {
         $c = json_decode((string)file_get_contents(PRIVATE_DIR . '/db.json'), true) ?: [];
-        $pdo = new PDO('mysql:host=' . (($c['host'] ?? '') ?: 'localhost') . ';dbname=' . ($c['name'] ?? '') . ';charset=utf8mb4', (string)($c['user'] ?? ''), (string)($c['pass'] ?? ''), [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
+        require_once __DIR__ . '/_lib/db.php';
+        $pdo = wx_db($c);
         $st = $pdo->prepare('SELECT id, role, active, pw_ver FROM wx_users WHERE id=?'); $st->execute([$uid]); $u = $st->fetch(PDO::FETCH_ASSOC);
     } catch (Throwable $e) { error_log('builder auth: ' . $e->getMessage()); return $ok = $why('database error: ' . substr($e->getMessage(), 0, 120)); }
     if (!$u) return $ok = $why('user not found');
@@ -106,6 +107,26 @@ function code_guard(string $html, string $base): void {
     if ($new) { $site = []; foreach (list_pages() as $p) $site = array_merge($site, code_tokens((string)@file_get_contents(ROOT_DIR . '/' . $p['path']))); $new = array_diff($new, $site); } // scripts already used elsewhere on the site are allowed
     if ($new) { act('blocked_script', mb_substr(implode(' ', $new), 0, 200)); fail('Only the owner can add scripts, embeds or on…= event code to pages. Remove: ' . mb_substr(reset($new), 0, 80)); }
 }
+/** Images under assets/img and the uploads folder.
+    GLOB_BRACE is a GNU extension that some PHP builds (musl/Alpine, Windows) do not define —
+    calling glob() with it threw "Undefined constant" and killed the whole media library there.
+    When it is missing, list each extension separately instead. */
+function media_glob(): array {
+    $img = ['webp', 'jpg', 'jpeg', 'png', 'gif', 'svg'];
+    $up = ['webp', 'jpg', 'jpeg', 'png', 'gif'];
+    $out = [];
+    if (defined('GLOB_BRACE')) {
+        $out = array_merge(
+            glob(ROOT_DIR . '/assets/img/*.{' . implode(',', $img) . '}', GLOB_BRACE) ?: [],
+            glob(UPLOAD_DIR . '/*.{' . implode(',', $up) . '}', GLOB_BRACE) ?: []
+        );
+    } else {
+        foreach ($img as $e) $out = array_merge($out, glob(ROOT_DIR . '/assets/img/*.' . $e) ?: []);
+        foreach ($up as $e) $out = array_merge($out, glob(UPLOAD_DIR . '/*.' . $e) ?: []);
+    }
+    return $out;
+}
+
 function token_uid(): ?int { if (!empty($GLOBALS['WX_AUTH_UID'])) return (int)$GLOBALS['WX_AUTH_UID']; return preg_match('~^\d{10}\.(\d+)\.~', (string)($_SERVER['HTTP_X_WX_CSRF'] ?? ''), $m) ? (int)$m[1] : null; }
 /** activity line for Woodex Admin (ingested into MySQL by admin.php) */
 function act(string $a, string $target = ''): void {
@@ -277,7 +298,7 @@ switch ($action) {
     case 'media':
         require_auth();
         $list = [];
-        foreach (array_merge(glob(ROOT_DIR . '/assets/img/*.{webp,jpg,jpeg,png,gif,svg}', GLOB_BRACE) ?: [], glob(UPLOAD_DIR . '/*.{webp,jpg,jpeg,png,gif}', GLOB_BRACE) ?: []) as $f) {
+        foreach (media_glob() as $f) {
             $list[] = '/' . str_replace('\\', '/', substr(realpath($f), strlen(realpath(ROOT_DIR)) + 1));
         }
         out(['ok' => true, 'media' => array_reverse($list)]);

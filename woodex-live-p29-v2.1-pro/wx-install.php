@@ -29,7 +29,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$locked) {
         $err = 'Missing file _database/woodex-v20.sql. Upload the full V20 zip again (Extract + Overwrite).';
     } else {
         try {
-            $pdo = new PDO('mysql:host=' . ($in['host'] ?: 'localhost') . ';dbname=' . $in['name'] . ';charset=utf8mb4', $in['user'], $in['pass'], array(PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION));
+            /* One factory for every connection (api/_lib/db.php). A db.json that already names the
+               sqlite driver installs into that file instead of MySQL — no MySQL server needed. */
+            require_once __DIR__ . '/api/_lib/db.php';
+            $conn = $in;
+            foreach (array('driver', 'file') as $pk) if (!empty($cur[$pk])) $conn[$pk] = $cur[$pk];
+            $pdo = wx_db($conn);
             $log[] = 'Connected to database ' . $in['name'];
             $sql = preg_replace('~^--.*$~m', '', (string)file_get_contents($sqlf));
             $n = 0; $seed = '';
@@ -48,7 +53,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$locked) {
             $log[] = $n . ' SQL statements run · ' . count($tables) . ' tables ready';
             if (!is_dir($priv)) @mkdir($priv, 0755, true);
             if (!is_file($priv . '/.htaccess')) @file_put_contents($priv . '/.htaccess', "Require all denied\nDeny from all\n");
-            if (@file_put_contents($dbf, json_encode($in, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES), LOCK_EX) === false) throw new Exception('Could not write _private/db.json. In File Manager set the _private folder permission to 755.');
+            $saved = $in; foreach (array('driver', 'file') as $pk) if (!empty($cur[$pk])) $saved[$pk] = $cur[$pk];
+            if (@file_put_contents($dbf, json_encode($saved, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES), LOCK_EX) === false) throw new Exception('Could not write _private/db.json. In File Manager set the _private folder permission to 755.');
             @unlink($lockf);
             $log[] = 'Saved _private/db.json';
             $done = true;

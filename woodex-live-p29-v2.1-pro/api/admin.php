@@ -48,8 +48,10 @@ function db(): PDO {
     $pdo = connect($c); return $pdo;
 }
 function connect(array $c): PDO {
-    $dsn = 'mysql:host=' . ($c['host'] ?: 'localhost') . ';dbname=' . $c['name'] . ';charset=utf8mb4';
-    return new PDO($dsn, $c['user'], $c['pass'], [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC, PDO::ATTR_EMULATE_PREPARES => false]);
+    /* Driver comes from _private/db.json: mysql on hosting (unchanged DSN), sqlite for local runs
+       on a machine with no MySQL server — see api/_lib/db.php. */
+    require_once __DIR__ . '/_lib/db.php';
+    return wx_db($c);
 }
 function q(string $sql, array $p = []): PDOStatement { $s = db()->prepare($sql); $s->execute($p); return $s; }
 function migrate(PDO $pdo): void {
