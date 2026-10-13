@@ -460,7 +460,7 @@ start the next one.
 | Auth v2 | `wx_sid` HttpOnly · Secure · SameSite=Lax cookie, `X-WX-CSRF` bound to the session row, 2FA + recovery codes preserved, capability matrix in tables | ✓ |
 | `store.php` | `JsonStore` — sidecar lock, temp+fsync+rename, a corrupt store raises instead of reading as empty | ✓ |
 | Client `api.ts` | typed fetch, closed error union, request-id on every failure, timeout, retries on GET only, token in memory | ✓ |
-| `db/migrations/000–005` | platform tables, generated role matrix, 12 indexes, document columns, 10 FKs, settings seed — with `db/migrate.php --dry-run/--status/--verify` | ✓ |
+| `db/migrations/000–005` | platform tables, generated role matrix, 12 indexes, document columns, 10 FKs, settings seed — with `db/migrate.php --dry-run/--status/--verify`, and `db/owner.php` for the account that can sign in | ✓ |
 | CI | `npm run verify` + PHP lint + conformance + behavioural tests + migration dry-run | ✓ `.github/workflows/verify.yml` |
 
 **Gate:** a signed-in request round-trips cookie → CSRF → controller → MySQL → envelope; the eight
@@ -515,8 +515,8 @@ working as intended, not a gap hidden by a fallback.
 
 ### Phase 3 — Content, assets and delivery · **in progress** · 4 weeks
 
-*Measured at this commit:* `tests/run.php` **600 passed · 0 failed · 12 skipped** · `tests/conformance.mjs`
-**72 · 0** · php-lint **139 files** · `admin-v25` smoke **103 checks · 65 routes** · legacy bridge **150 of 365
+*Measured at this commit:* `tests/run.php` **615 passed · 0 failed · 12 skipped** · `tests/conformance.mjs`
+**72 · 0** · php-lint **146 files** · `admin-v25` smoke **105 checks · 65 routes** · legacy bridge **150 of 365
 actions** (41%). Migrations **000–014** are written and none has run on a database yet.
 
 Pages · builder bridge · section library · header/footer · heroes · redirects · the full content CMS ·
@@ -726,6 +726,40 @@ One zip per release with a manifest: git SHA, build hash, asset hashes, migratio
 result summary, and the rollback commit. The v2.1 audit's packaging gate failed because QA results
 did not match a packaged artifact; the manifest is the fix.
 
+### 14.4 Getting in, and knowing which build you are looking at
+
+Two small things that between them remove the two questions asked most often about a deployment, both of
+which were previously answered by guessing.
+
+**The account.** v2.5 signs in against `wx_users` — the studio's own table, filled by v2.1's first run.
+There is no self-service route back in if that password is lost, and on a host that has never run v2.1
+there is no way to make the first account at all, because making one is behind a sign-in screen.
+`db/owner.php` is that way in, and it is deliberately boring:
+
+```
+php db/owner.php --status                         who can sign in, and how — no secrets, ever
+php db/owner.php --email owner@woodex.com.pk      create it as owner, print a password once
+php db/owner.php --email admin --reset            new password for an existing account
+php db/owner.php --email you@x.pk --disable       stop an account signing in
+php db/owner.php --dry-run                        with any of the above, change nothing
+```
+
+It cannot read a password back (they are bcrypt hashes), it refuses a role the capability matrix does not
+know rather than quietly creating one, it stores names lower-case because that is how sign-in looks them
+up, and it prints a generated password **once**. A password change bumps `pw_ver`, which ends every
+session minted under the old one, and a reset also clears a login lockout — usually the real reason the
+command is being run. The address, password and role rules are asserted in `tests/run.php`; the connection
+half needs a database and is exercised on the host.
+
+**The build.** The strip says whether the API is answering; the console also says *which console it is*.
+`vite.config.ts` stamps the commit into the bundle — `c67d564+ · built 2026-10-14 09:12Z`, with a `+` when
+the working tree is dirty, because "is this the new build?" is usually asked about edits that are not
+committed yet, and a clean commit id over edited files would be worse than no stamp. It shows in the
+sidebar foot and on the sign-in card, and a smoke assertion requires that a non-empty stamp arrived: an
+empty one is the failure this exists for. (The stamp replaced a fixed name in the sidebar foot — "Imtiaz
+Ahmad" in every state, including nobody signed in. The foot now names the person the server says is signed
+in, or says that nobody is.)
+
 ---
 
 ## 15. Risk register
@@ -750,7 +784,7 @@ Everything in `admin-v25/` runs today:
 | Evidence | Result |
 |---|---|
 | Type check | clean, strict, `noUnusedLocals` |
-| Render smoke | **103 checks · 65 routes · 0 failures** |
+| Render smoke | **105 checks · 65 routes · 0 failures** |
 | Production build | 3 chunks, content-hashed, sourcemaps on |
 | Token contract | switching theme, accent and density re-themes all charts and screens |
 | Routing defects | AD-3, AD-4 and AD-12 structurally impossible in the registry |

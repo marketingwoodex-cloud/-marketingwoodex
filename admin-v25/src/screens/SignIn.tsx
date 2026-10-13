@@ -191,6 +191,10 @@ export function SignIn() {
           twelve hours of inactivity you will be asked to sign in again, and any screen that was open
           will say so rather than keep showing numbers that may have moved.
         </p>
+
+        {/* Which build this door belongs to. A sign-in screen is where "have I got the new build?" is
+            asked, and the answer has to come from the build rather than from a refresh. */}
+        <p className="build-stamp">v2.5 · {__WX_BUILD__}</p>
       </div>
     </>
   );

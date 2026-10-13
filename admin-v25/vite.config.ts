@@ -1,5 +1,8 @@
-import { defineConfig } from "vite";
+import { defineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react";
+/* Declared in src/vite-env.d.ts rather than pulled in: this app has no @types/node (the same reason
+   `process` below is declared), and one function is all the build stamp needs. */
+import { execSync } from "node:child_process";
 
 /* The dev server is proxied under *.e2b.app (and under any hostname a preview uses), so hosts are open
    and it binds 0.0.0.0.
@@ -21,6 +24,29 @@ declare const process: {
   stderr: { write(s: string): void };
 };
 const API_TARGET = process.env.WX_API_TARGET ?? "http://127.0.0.1:8080";
+
+/**
+ * Which build this is.
+ *
+ * The strip says whether the API is answering; this says *which console* you are looking at. Both were
+ * missing once, and the result was a person refreshing a page and arguing with a screenshot: a dev server
+ * serves whatever is on disk, a built bundle serves whatever was built, and the two look identical until
+ * the bundle names itself. So it does, in the sidebar and on the sign-in card.
+ */
+const BUILD = (() => {
+  try {
+    const sha = execSync("git rev-parse --short HEAD").toString().trim();
+    /* A `+` when the tree is dirty, because "is this the new build?" is usually asked about edits that
+       are not committed yet — and a stamp that shows a clean commit over edited files would be worse
+       than no stamp at all. */
+    const dirty = execSync("git status --porcelain").toString().trim() !== "";
+    const at = new Date().toISOString().slice(0, 16).replace("T", " ");
+    return `${sha}${dirty ? "+" : ""} · built ${at}Z`;
+  } catch {
+    /* No git (a tarball, a CI checkout without history) is not a build failure. Say so and carry on. */
+    return "unknown build";
+  }
+})();
 
 /**
  * When the API is not running, say so in the API's own words.
@@ -61,14 +87,32 @@ function upstreamGuard(name: string, note = true) {
          frames on every poll buries the errors that are the developer's. */
       if (note && Date.now() - guardNoteAt > 30_000) {
         guardNoteAt = Date.now();
-        process.stderr.write(`\n  [vite] api/v2 is not reachable at ${API_TARGET} — the app falls back to demo data and says so.\n`);
+        process.stderr.write(`\n  [vite] api/v2 is not reachable at ${API_TARGET} — the strip says so, and nothing is invented for it.\n`);
       }
     });
   };
 }
 
+/**
+ * Replace `__WX_BUILD__` with the stamp, in dev and in every build.
+ *
+ * `define` is the tidier way to do this and it does not work here: a `define` replacement happens in the
+ * same pass that compiles JSX, and the identifier sits inside a JSX expression — where the transform
+ * leaves it alone, so the dev server served `v2.5 · ` with nothing after it. A one-hook plugin is a few
+ * lines and behaves identically in `vite dev`, `vite build` and the SSR build the smoke test uses.
+ */
+function buildStampPlugin(): Plugin {
+  return {
+    name: "wx-build-stamp",
+    transform(code: string) {
+      if (!code.includes("__WX_BUILD__")) return null;
+      return { code: code.replace(/__WX_BUILD__/g, JSON.stringify(BUILD)), map: null };
+    },
+  };
+}
+
 export default defineConfig(({ isSsrBuild }) => ({
-  plugins: [react()],
+  plugins: [react(), buildStampPlugin()],
   server: {
     host: "0.0.0.0",
     port: 5173,

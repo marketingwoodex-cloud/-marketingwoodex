@@ -145,13 +145,29 @@ export function Shell({
           </Btn>
         </div>
         {navBody}
+        {/* The foot names the person the *server* says is signed in. It used to name a fixed person in
+            every state — including no session at all — which is the same mistake as a demo pill over a
+            dead host: a name where a name has not been read. */}
         <div className="side-foot">
-          <Avatar name="Imtiaz Ahmad" />
-          <span className="side-foot-text">
-            <b>Imtiaz Ahmad</b>
-            <span>{ROLE_LABEL[role]}</span>
-          </span>
-          <Btn variant="ghost" size="sm" iconOnly title="Sign out"><LogOut size={14} /></Btn>
+          {user ? (
+            <>
+              <Avatar name={user.name} />
+              <span className="side-foot-text">
+                <b>{user.name}</b>
+                <span>{user.roleLabel || ROLE_LABEL[role]}</span>
+              </span>
+              <Btn variant="ghost" size="sm" iconOnly title="Sign out" onClick={onSignOut}><LogOut size={14} /></Btn>
+            </>
+          ) : (
+            <span className="side-foot-text">
+              <b>Nobody signed in</b>
+              <span>The strip says what the server answered</span>
+            </span>
+          )}
+        </div>
+        {/* Which build this is, for the question a screenshot cannot answer. */}
+        <div className="side-build" title="The commit this console was built from">
+          v2.5 · {__WX_BUILD__}
         </div>
       </aside>
 

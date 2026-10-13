@@ -29,6 +29,13 @@ if (!in_array(PHP_SAPI, ['cli', 'phpdbg', 'wasm'], true)) {
 
 require_once dirname(__DIR__) . '/api/v2/lib/bootstrap.php';
 
+/* The one command that can make an account is loaded without running it (WX_OWNER_TEST), so its rules are
+   asserted here beside the other rules. The connection half needs a database and is exercised on the host. */
+if (!defined('WX_OWNER_TEST')) {
+    define('WX_OWNER_TEST', true);
+    require_once dirname(__DIR__) . '/db/owner.php';
+}
+
 $VERBOSE = in_array('--verbose', $argv, true) || in_array('-v', $argv, true);
 $WITH_DB = in_array('--db', $argv, true);
 
@@ -1098,6 +1105,30 @@ try {
 }
 ok(wx_content_clean(['type' => 'testimonial', 'title' => 'A happy client', 'data' => [], 'seo' => []])['slug'] === '',
     'a testimonial has no address of its own — it appears inside pages, not as a page');
+
+/* ---- the account command: the rules it refuses to guess */
+ok(owner_login_ok('owner@woodex.com.pk'), 'an address is a sign-in name');
+ok(owner_login_ok('admin'), 'and so is the bare name v2.1\'s first run wrote — the live host has one');
+ok(owner_login_ok('studio.manager-1'), 'names take letters, digits, dots, dashes and underscores');
+ok(!owner_login_ok('a'), 'one character is not a sign-in name');
+ok(!owner_login_ok('has space'), 'nor is one with a space in it');
+ok(!owner_login_ok('quote\"drop'), 'nor one with a quote in it');
+ok(!owner_login_ok('ADMIN'), 'the check is on what will be stored, and that is always lower-case');
+eq(owner_role(null), 'owner', 'a new account is an owner unless told otherwise');
+eq(owner_role(' editor '), 'editor', 'and a role is trimmed and lower-cased before it is checked');
+try {
+    owner_role('manager');
+    ok(false, 'a role the capability matrix does not know must be refused, not quietly created');
+} catch (InvalidArgumentException $e) {
+    ok(str_contains($e->getMessage(), 'Unknown role'), 'the label is not the role: "manager" is refused, "admin" is right');
+}
+ok(owner_pw_ok('12345678'), 'a password is at least 8 characters — v2.1\'s rule, kept');
+ok(!owner_pw_ok('1234567'), 'and 7 is refused');
+$opw = owner_gen_pw();
+eq(strlen($opw), 20, 'a generated password is 20 characters');
+ok(preg_match('~^[A-Za-z2-9]+$~', $opw) === 1 && !str_contains($opw, 'O') && !str_contains($opw, 'l') && !str_contains($opw, 'I'),
+    'and has no look-alike characters — it gets typed off a screen into a phone');
+ok(owner_gen_pw(24) !== $opw && strlen(owner_gen_pw(24)) === 24, 'two calls do not produce the same password');
 
 /* ---- templates: the v2.1 rules, kept */
 $tpl = wx_content_tpl_clean(['type' => 'post', 'name' => '  Deep dive  ', 'hero' => 'navy', 'sections' => [['k' => 'body', 'on' => false], ['k' => 'body', 'on' => true], ['k' => 'nonsense', 'on' => true]]]);

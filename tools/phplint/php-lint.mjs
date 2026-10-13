@@ -27,7 +27,9 @@ try {
   process.exit(2);
 }
 
-const DEFAULTS = ["api/v2", "frontend-v1/api", "frontend-v1"];
+/* `db` holds the command-line tools (the migration runner, the owner command) and `tests` holds the PHP
+   tests — all of it shipped, none of it previously parsed by anything but the runtime that ran it. */
+const DEFAULTS = ["api/v2", "db", "tests", "frontend-v1/api", "frontend-v1"];
 const skip = new Set(["node_modules", ".git", "dist", "build", "vendor", "_private", "backups"]);
 
 function collect(target, out = [], seen = new Set()) {

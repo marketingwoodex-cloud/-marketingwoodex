@@ -150,6 +150,15 @@ a { color: inherit; text-decoration: none; }
 .side-foot-text { display: flex; flex-direction: column; min-width: 0; }
 .side-foot-text b { color: var(--text-on-sidebar); font-size: var(--fs-12); font-weight: 600; }
 .side-foot-text span { color: var(--text-on-sidebar-muted); font-size: var(--fs-11); }
+/* Which build this is. Quiet, but present in every state — a screenshot can be argued with, a commit id
+   cannot. */
+.side-build {
+  flex: 0 0 auto; padding: 0 var(--s-3) var(--s-3);
+  color: var(--text-on-sidebar-muted); font-size: var(--fs-11);
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.side[data-mini="true"] .side-build { display: none; }
 
 /* ----------------------------------------------------------------- topbar */
 .main { display: flex; flex-direction: column; min-width: 0; height: 100%; }
@@ -566,3 +575,9 @@ table.data tr.is-selected { background: var(--accent-soft, rgba(0, 0, 0, 0.05));
 /* The preview is the site's own stylesheet drawn around the section the push would write, so it is an
    iframe with the real /assets/site.css in it rather than a re-creation. */
 .preview-frame { width: 100%; min-height: 420px; border: 1px solid var(--line); border-radius: 10px; background: #fff; }
+
+/* The build stamp on the sign-in card, in the same words as the sidebar's. */
+.build-stamp {
+  margin-top: var(--s-2); color: var(--text-3); font-size: var(--fs-11);
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+}

@@ -498,6 +498,18 @@ for (const [name, ok] of [
       !htmlSignedOutOffline.includes(">demo data<") &&
       !htmlSignedOutOffline.includes("v2.5 Pro plan"),
   ],
+  /* A build that cannot name itself is how a person ends up refreshing a page and arguing with a
+     screenshot. The stamp is compiled in, so the assertion is that it arrived. */
+  [
+    "the door names the build it is, not an empty stamp",
+    /* React's SSR puts an empty comment between the two text nodes, so the stamp is not adjacent to the
+       label in the markup — it is still adjacent on the screen, which is the thing being asserted. */
+    /v2\.5 · (<!-- -->)?[^<]{4,}/.test(htmlSignedOutOffline),
+  ],
+  [
+    "and the foot names nobody rather than somebody who is not signed in",
+    htmlSignedOutOffline.includes("Nobody signed in") && !/Imtiaz/.test(htmlSignedOutOffline),
+  ],
   [
     "and the sentence does not claim any of it comes from the site",
     htmlSignedOutOffline.includes("Nothing on these screens is read from your site"),
