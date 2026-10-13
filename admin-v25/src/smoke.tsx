@@ -12,6 +12,11 @@ import { renderToString } from "react-dom/server";
 import { MemoryRouter } from "react-router-dom";
 import App from "./App";
 
+/* This file is built by vite for Node (see package.json#scripts.smoke), so `process` exists at run
+   time. TypeScript does not know that without @types/node, and pulling a Node type package into a
+   browser app's devDependencies for one line is worse than declaring it. */
+declare const process: { exit(code: number): void };
+
 /* Minimal environment stubs. React's server renderer needs none of these, but
    our token reader and the theme controller legitimately touch the DOM; the
    smoke test stubs them so component logic is exercised. */
