@@ -201,7 +201,7 @@ export function Note({
   tone = "info",
 }: {
   children: ReactNode;
-  tone?: "info" | "warn";
+  tone?: "info" | "warn" | "danger";
 }) {
   return (
     <div className={clsx("note", tone === "warn" && "warn")}>

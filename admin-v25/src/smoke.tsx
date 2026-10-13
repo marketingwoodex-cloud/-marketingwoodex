@@ -11,6 +11,11 @@
 import { renderToString } from "react-dom/server";
 import { MemoryRouter } from "react-router-dom";
 import App from "./App";
+import { Shell } from "./components/Shell";
+import { SignIn } from "./screens/SignIn";
+import { LiveDashboard } from "./screens/LiveDashboard";
+import { LiveLeads } from "./screens/LiveLeads";
+import { SessionCtx, type SessionValue } from "./lib/session";
 
 /* This file is built by vite for Node (see package.json#scripts.smoke), so `process` exists at run
    time. TypeScript does not know that without @types/node, and pulling a Node type package into a
@@ -88,6 +93,92 @@ try {
     </MemoryRouter>,
   );
 } catch {}
+
+/* ------------------------------------------------------------------ the states a server causes
+   renderToString does not run effects, so the app above always renders in its "checking" state. The
+   interesting states — signed out, and signed in against a live API — are produced here by giving the
+   tree a session directly. Without this, the sign-in screen and both live screens were the only parts
+   of the app that no test touched, which is exactly where the v2.1 admin's blank screens lived. */
+
+const noopAsync = async () => ({ need2fa: false });
+const session = (link: SessionValue["link"], user: SessionValue["user"]): SessionValue => ({
+  link,
+  reason: link === "offline" ? "the server could not be reached" : "",
+  health: link === "offline" ? null : {
+    service: "woodex-api", version: "2.5.0-p1", php: "8.2.33", ready: true,
+    db: { reachable: true, migrated: true }, time: "2026-10-14T00:00:00Z",
+  },
+  me: user ? { user, caps: { label: "Master", groups: ["sales"], perms: [] }, csrf: "test", session: { expires_at: null, ip: null } } : null,
+  user,
+  signIn: async () => ({ need2fa: false }),
+  signInTwoFactor: async () => { await noopAsync(); },
+  signOut: async () => { await noopAsync(); },
+  refreshHealth: () => {},
+});
+
+const asUser = {
+  id: 1, name: "Imtiaz Ahmad", email: "imtiaz@woodex.com.pk", role: "owner" as const,
+  roleLabel: "Master", perms: [], active: true, created_at: null, last_login: null, twofa: true,
+};
+
+let htmlSignedOut = "";
+let htmlLiveDash = "";
+let htmlLiveLeads = "";
+try {
+  htmlSignedOut = renderToString(
+    <MemoryRouter initialEntries={["/dashboard"]}>
+      <SessionCtx.Provider value={session("signedOut", null)}>
+        <Shell
+          role="owner" setRole={noop} theme="light" toggleTheme={noop} density="comfortable" setDensity={noop}
+          badges={{ leads: 0, chat: 0, approvals: 0, total: 0 }} onOpenPalette={noop}
+          routeId="dashboard" crumbs={[{ label: "Today" }]} link="signedOut"
+          linkText="api/v2 2.5.0-p1 · not signed in" countsFrom="demo" user={null} onSignOut={noop}
+        >
+          <SignIn />
+        </Shell>
+      </SessionCtx.Provider>
+    </MemoryRouter>,
+  );
+} catch (err) {
+  failures.push(`sign-in screen → ${(err as Error).message}`);
+}
+
+try {
+  htmlLiveDash = renderToString(
+    <MemoryRouter initialEntries={["/dashboard"]}>
+      <SessionCtx.Provider value={session("live", asUser)}>
+        <LiveDashboard role="owner" />
+      </SessionCtx.Provider>
+    </MemoryRouter>,
+  );
+} catch (err) {
+  failures.push(`live dashboard → ${(err as Error).message}`);
+}
+
+try {
+  htmlLiveLeads = renderToString(
+    <MemoryRouter initialEntries={["/leads"]}>
+      <SessionCtx.Provider value={session("live", asUser)}>
+        <LiveLeads />
+      </SessionCtx.Provider>
+    </MemoryRouter>,
+  );
+} catch (err) {
+  failures.push(`live leads → ${(err as Error).message}`);
+}
+
+/* A signed-out app must not leak a namespace behind an "everyone gets one" banner, and a live screen
+   must not render while it is still loading, or the first paint would show an empty table as truth. */
+for (const [name, ok] of [
+  ["the sign-in screen renders a form", htmlSignedOut.includes("<form") && htmlSignedOut.includes("Password")],
+  ["sign-in is not a blank page", htmlSignedOut.length > 800],
+  ["the live dashboard renders its loading state, not zeros", htmlLiveDash.includes("Loading…")],
+  ["the live dashboard does not claim numbers before the server answers", !htmlLiveDash.includes("kpi-value")],
+  ["the live leads screen renders its loading state", htmlLiveLeads.includes("Loading…")],
+] as [string, boolean][]) {
+  if (ok) pass++;
+  else failures.push(`assertion failed: ${name}`);
+}
 
 const assertions: [string, boolean][] = [
   ["dashboard renders an H1 (U1.1 fix)", /<h1[^>]*>/.test(htmlDashboard)],

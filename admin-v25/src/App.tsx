@@ -11,12 +11,37 @@ import { Placeholder } from "./screens/Placeholder";
 import { ROUTES, resolveRoute, type Role } from "./lib/nav";
 import { useAppearance } from "./lib/theme";
 import { approvals, leads } from "./lib/mock";
+import { SessionProvider, useSession } from "./lib/session";
+import { SignIn } from "./screens/SignIn";
+import { linkLabel, useLive, type BellData } from "./lib/live";
 import { Btn, Card, PageHead } from "./components/primitives";
 
 /** Route ids implemented by a real screen in this prototype (Phase 0). */
 const BUILT_IDS = new Set(["dashboard", "leads", "enquiries", "pipeline", "quotes", "theme"]);
 
+/** The public entry point: one provider, then the app proper. */
 export default function App() {
+  /* `?demo=1` (or a build with VITE_WX_DEMO=1) is the static-preview mode: no API is called at all,
+     which is what a design review or a Netlify/Vercel preview wants. Everything else tries the API. */
+  const demo =
+    import.meta.env.VITE_WX_DEMO === "1" ||
+    (typeof window !== "undefined" && new URLSearchParams(window.location.search).has("demo"));
+  return (
+    <SessionProvider demo={demo}>
+      <Frame />
+    </SessionProvider>
+  );
+}
+
+/**
+ * The frame: health, session, badges, routes.
+ *
+ * Three states, and the sign-in screen is one of them rather than an overlay:
+ *   · the API is not answering  → the design renders from demo data, and the strip says so
+ *   · the API is there, nobody is signed in → SignIn
+ *   · signed in → the app, with the role and the counts the *server* reported
+ */
+function Frame() {
   const appearance = useAppearance();
   const [role, setRole] = useState<Role>("owner");
   const [paletteOpen, setPaletteOpen] = useState(false);
@@ -31,14 +56,37 @@ export default function App() {
      match (AD-4) and threw "Cannot set properties of null" on late replies
      (Phase A1 note). Here an unknown path is an explicit 404 screen. */
 
-  const badges: Badges = useMemo(
-    () => ({
+  const { link, reason, health, user, signOut } = useSession();
+  const live = link === "live" && user !== null;
+
+  /* The bell, from the server when there is a server. One poll a minute — the same cadence and endpoint
+     the SPA will use, and the first screen that proves `GET /notifications/poll` end to end. */
+  const bell = useLive<BellData>(live ? "/notifications/poll" : null, role);
+
+  const badges: Badges = useMemo(() => {
+    if (bell.data) {
+      return {
+        leads: bell.data.leads,
+        chat: bell.data.chats,
+        approvals: bell.data.approvals,
+        total: bell.data.total,
+      };
+    }
+    /* Demo counts, from the design's own mock data — used only while the API is not answering, and
+       labelled as such in the strip. */
+    return {
       leads: leads.filter((l) => l.stage === "new").length,
       chat: 3,
       approvals: role === "support" ? 0 : approvals.length,
-    }),
-    [role],
-  );
+      total: leads.filter((l) => l.stage === "new").length + 3 + approvals.length,
+    };
+  }, [bell.data, role]);
+
+  const countsFrom: "server" | "demo" = bell.data ? "server" : "demo";
+  const strip = linkLabel(health, link, reason);
+
+  /* The role the *server* says, when there is one. The demo switcher still drives the design preview. */
+  const effectiveRole = live && user ? (user.role as Role) : role;
 
   // ⌘K / Ctrl-K opens the palette
   useEffect(() => {
@@ -63,6 +111,32 @@ export default function App() {
     return <Navigate to="/dashboard" replace />;
   }
 
+  /* Signed out, with the API answering: the door. Everything else in the app would be a screen of
+     empty tables whose emptiness has no explanation. */
+  if (link === "signedOut") {
+    return (
+      <Shell
+        role={role}
+        setRole={setRole}
+        theme={appearance.theme}
+        toggleTheme={appearance.toggleTheme}
+        density={appearance.density}
+        setDensity={appearance.setDensity}
+        badges={{ leads: 0, chat: 0, approvals: 0, total: 0 }}
+        onOpenPalette={() => setPaletteOpen(true)}
+        routeId={routeId}
+        crumbs={crumbs}
+        link={link}
+        linkText={strip}
+        countsFrom="demo"
+        user={null}
+        onSignOut={() => void signOut()}
+      >
+        <SignIn />
+      </Shell>
+    );
+  }
+
   return (
     <>
       <Shell
@@ -76,10 +150,15 @@ export default function App() {
         onOpenPalette={() => setPaletteOpen(true)}
         routeId={routeId}
         crumbs={crumbs}
+        link={link}
+        linkText={strip}
+        countsFrom={countsFrom}
+        user={user ? { name: user.name, roleLabel: user.roleLabel } : null}
+        onSignOut={() => void signOut()}
       >
         <Routes>
           {/* Phase 0 — screens implemented in this prototype */}
-          <Route path="/dashboard" element={<Dashboard role={role} />} />
+          <Route path="/dashboard" element={<Dashboard role={effectiveRole} />} />
           <Route path="/leads" element={<Leads />} />
           <Route path="/enquiries" element={<Leads />} />
           <Route path="/pipeline" element={<Pipeline />} />

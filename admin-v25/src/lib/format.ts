@@ -23,8 +23,10 @@ export const initials = (name: string) =>
     .map((w) => w[0]?.toUpperCase() ?? "")
     .join("");
 
-/** "3m ago" · "2h ago" · "12 Oct" */
-export function timeAgo(iso: string, now = new Date("2026-10-13T18:00:00+05:00")): string {
+/** "3m ago" · "2h ago" · "12 Oct" ·
+ *  The clock defaults to *now*. The prototype pinned it to the day the mock data was written, which
+ *  made every relative time correct against the mock and wrong against a live row. */
+export function timeAgo(iso: string, now = new Date()): string {
   const d = new Date(iso);
   const mins = Math.round((now.getTime() - d.getTime()) / 60000);
   if (mins < 1) return "just now";

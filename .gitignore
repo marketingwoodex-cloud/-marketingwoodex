@@ -19,3 +19,7 @@ tools/phpwasm/.phpwasm/
 # React build output and the SSR smoke bundle
 admin-v25/dist/
 admin-v25/.smoke/
+
+# TypeScript build info (incremental cache)
+admin-v25/tsconfig.tsbuildinfo
+admin-v25/.smoke/

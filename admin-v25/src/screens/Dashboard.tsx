@@ -14,12 +14,27 @@ import {
 } from "../lib/mock";
 import { timeAgo } from "../lib/format";
 import type { Role } from "../lib/nav";
+import { useSession } from "../lib/session";
+import { LiveDashboard } from "./LiveDashboard";
 
 const ICONS: Record<string, typeof Inbox> = {
   Briefcase, Inbox, TrendingUp, Gauge, FileText, Kanban, Send, Clock, HeartPulse, BookOpen,
 };
 
+/**
+ * Two dashboards, one route.
+ *
+ * When api/v2 answers, the screen shows the server's numbers (LiveDashboard). When there is no API —
+ * a static preview, a host that has not been migrated — the original design renders from `mock.ts`,
+ * because a layout with nothing in it teaches nobody anything. Which one you are looking at is stated
+ * in the shell, always; the failure mode this avoids is a mock number wearing a live label.
+ */
 export function Dashboard({ role }: { role: Role }) {
+  const { link, me } = useSession();
+  return link === "live" && me ? <LiveDashboard role={role} /> : <DemoDashboard role={role} />;
+}
+
+function DemoDashboard({ role }: { role: Role }) {
   const [range, setRange] = useState<"30d" | "90d" | "12m">("12m");
   const canSeeMoney = role === "owner" || role === "admin" || role === "sales";
   const visibleKpis = canSeeMoney ? kpis : kpis.filter((k) => k.id !== "pipeline" && k.id !== "won");

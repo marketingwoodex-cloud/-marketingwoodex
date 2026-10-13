@@ -10,10 +10,21 @@ import clsx from "clsx";
 import { Avatar, Btn, Card, Input, PageHead, Pill, Seg, statusTone } from "../components/primitives";
 import { leads, STAGES, type Lead, type Stage } from "../lib/mock";
 import { money, timeAgo } from "../lib/format";
+import { useSession } from "../lib/session";
+import { LiveLeads } from "./LiveLeads";
 
 type SortKey = "updated" | "value" | "name";
 
+/**
+ * The same split as the dashboard: real rows from `GET /leads` when the API answers, the design's own
+ * demo rows when it does not. `LiveLeads` does its filtering and paging on the server.
+ */
 export function Leads() {
+  const { link, me } = useSession();
+  return link === "live" && me ? <LiveLeads /> : <DemoLeads />;
+}
+
+function DemoLeads() {
   const [q, setQ] = useState("");
   const [stage, setStage] = useState<Stage | "all">("all");
   const [channel, setChannel] = useState<string>("all");

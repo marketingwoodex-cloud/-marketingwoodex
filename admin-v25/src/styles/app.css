@@ -411,6 +411,28 @@ table.data td.num { font-variant-numeric: tabular-nums; text-align: right; }
   font-size: var(--fs-12);
 }
 .note.warn { background: var(--warn-soft); color: var(--warn); border-color: color-mix(in srgb, var(--warn) 30%, transparent); }
+.note.danger { background: var(--danger-soft); color: var(--danger); border-color: color-mix(in srgb, var(--danger) 32%, transparent); }
+
+/* The strip under the topbar: which API this build is talking to, and whether it answered. It replaces
+   the prototype's "no backend" banner, because the answer is no longer always "no backend". */
+.status-strip {
+  display: flex; align-items: center; gap: var(--s-2); flex-wrap: wrap;
+  padding: var(--s-2) var(--s-page);
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text-muted);
+  font-size: var(--fs-12);
+}
+.status-strip[data-link="live"] { background: var(--ok-soft); color: var(--ok); border-bottom-color: color-mix(in srgb, var(--ok) 24%, transparent); }
+.status-strip[data-link="offline"] { background: var(--warn-soft); color: var(--warn); border-bottom-color: color-mix(in srgb, var(--warn) 30%, transparent); }
+.status-strip .muted { color: inherit; opacity: .7; }
+
+/* Sign-in fields sit above their inputs; the design system had no label style because the prototype
+   had no forms. */
+.field-label {
+  display: flex; align-items: center; gap: var(--s-1);
+  font-size: var(--fs-12); font-weight: 600; color: var(--text-2); margin-bottom: var(--s-1);
+}
 .note svg { flex: 0 0 16px; margin-top: 1px; }
 
 .empty { padding: var(--s-10) var(--s-4); text-align: center; color: var(--text-muted); }

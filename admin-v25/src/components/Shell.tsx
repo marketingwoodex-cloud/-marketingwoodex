@@ -13,7 +13,7 @@ const ROLE_LABEL: Record<Role, string> = {
   owner: "Master", admin: "Manager", editor: "Developer", sales: "Sales", support: "Support",
 };
 
-export interface Badges { leads: number; chat: number; approvals: number }
+export interface Badges { leads: number; chat: number; approvals: number; total: number }
 
 export function Shell({
   children,
@@ -27,6 +27,11 @@ export function Shell({
   onOpenPalette,
   routeId,
   crumbs,
+  link,
+  linkText,
+  countsFrom,
+  user,
+  onSignOut,
 }: {
   children: ReactNode;
   role: Role;
@@ -39,6 +44,13 @@ export function Shell({
   onOpenPalette: () => void;
   routeId: string;
   crumbs: { label: string; to?: string }[];
+  /** live | signedOut | offline | checking — decides the strip, and whether the role switcher is real */
+  link: "checking" | "offline" | "signedOut" | "live";
+  linkText: string;
+  /** where the badge counts came from, so nobody has to guess whether the numbers are real */
+  countsFrom: "server" | "demo";
+  user: { name: string; roleLabel: string } | null;
+  onSignOut: () => void;
 }) {
   const [mini, setMini] = useState(false);
   const loc = useLocation();
@@ -161,19 +173,24 @@ export function Shell({
           </button>
 
           <div className="row" style={{ marginLeft: "auto", gap: "var(--s-3)" }}>
-            {/* role switcher — prototype affordance so every role can be previewed */}
-            <select
-              className="select"
-              style={{ width: 128 }}
-              value={role}
-              onChange={(e) => setRole(e.target.value as Role)}
-              aria-label="Preview as role"
-              title="Preview the dashboard as another role"
-            >
-              {(Object.keys(ROLE_LABEL) as Role[]).map((r) => (
-                <option key={r} value={r}>{ROLE_LABEL[r]}</option>
-              ))}
-            </select>
+            {/* In demo mode this previews the layout as another role. When the API is answering, the
+                server decides what you may see — a switcher here would be a lie with a dropdown. */}
+            {link === "live" ? (
+              user && <Pill tone="ok" plain>{user.roleLabel}</Pill>
+            ) : (
+              <select
+                className="select"
+                style={{ width: 128 }}
+                value={role}
+                onChange={(e) => setRole(e.target.value as Role)}
+                aria-label="Preview as role"
+                title="Preview the dashboard as another role (demo data)"
+              >
+                {(Object.keys(ROLE_LABEL) as Role[]).map((r) => (
+                  <option key={r} value={r}>{ROLE_LABEL[r]}</option>
+                ))}
+              </select>
+            )}
 
             <Btn
               variant="default"
@@ -189,30 +206,56 @@ export function Shell({
               {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
             </Btn>
 
-            <Btn variant="ghost" size="sm" iconOnly title="Notifications" style={{ position: "relative" }}>
+            <Btn
+              variant="ghost"
+              size="sm"
+              iconOnly
+              title={badges.total > 0 ? `${badges.total} things need attention` : "Notifications"}
+              style={{ position: "relative" }}
+            >
               <Bell size={16} />
-              <span
-                style={{
-                  position: "absolute", top: 0, right: 0, width: 8, height: 8,
-                  borderRadius: "50%", background: "var(--danger)",
-                }}
-              />
+              {badges.total > 0 && (
+                <span
+                  style={{
+                    position: "absolute", top: -2, right: -2, minWidth: 15, height: 15, padding: "0 3px",
+                    borderRadius: 8, background: "var(--danger)", color: "#fff",
+                    fontSize: 10, lineHeight: "15px", textAlign: "center", fontWeight: 700,
+                  }}
+                >
+                  {badges.total > 99 ? "99+" : badges.total}
+                </span>
+              )}
             </Btn>
 
             <div className="row" style={{ gap: "var(--s-2)" }}>
-              <Avatar name="Imtiaz Ahmad" />
+              <Avatar name={user?.name ?? "Demo user"} />
+              {link === "live" && (
+                <Btn variant="ghost" size="sm" iconOnly title="Sign out" onClick={onSignOut}>
+                  <LogOut size={16} />
+                </Btn>
+              )}
               <User size={0} />
             </div>
           </div>
         </header>
 
-        <div className="prototype-banner">
-          <b>PROTOTYPE</b>
-          <span>
-            UI prototype for the v2.5 Pro master plan — layouts, tokens and interactions only.
-            Data is mock and no API is called.
-          </span>
-          <Pill tone="warn" plain>no backend</Pill>
+        <div
+          className="status-strip"
+          data-link={link}
+          role="status"
+          aria-live="polite"
+        >
+          {link === "live" ? (
+            <Pill tone="ok" plain>live</Pill>
+          ) : link === "checking" ? (
+            <Pill tone="info" plain>checking</Pill>
+          ) : (
+            <Pill tone="warn" plain>demo data</Pill>
+          )}
+          <span>{linkText}</span>
+          {countsFrom === "demo" && link !== "live" && (
+            <span className="muted">· layouts and interactions from the v2.5 Pro plan</span>
+          )}
         </div>
 
         <main className="content">{children}</main>
