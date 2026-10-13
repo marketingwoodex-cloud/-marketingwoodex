@@ -1148,6 +1148,10 @@ check("the business details are read off the site, and written as one undoable b
   assert(/wx_page_write_many\(/.test(applyBody), "the pages are written as one batch, so the change is one rollback");
   assert(/wx_write_file_atomic\(/.test(applyBody), "and the site's scripts through the atomic file writer");
   assert(/wx_biz_store\(WX_BIZ_SETTING_APPLIED/.test(applyBody), "the applied copy is recorded after the write, not before it");
+  /* The report lists what a person typed. The sentinel moves that protect the WhatsApp link stay out of the
+     list and are counted instead, so the screen can say the link is being rewritten rather than imply a
+     search string of "\x01WA\x01" is something somebody types. */
+  assert(/wx_biz_pairs_visible\(\$pairs\)/.test(routes), "the check reports the pairs a person typed, not the internal moves");
   assert(/wx_audit\s*\(/.test(routes), "the change is audited by the route that makes it");
 });
 

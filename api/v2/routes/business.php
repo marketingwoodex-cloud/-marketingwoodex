@@ -84,9 +84,17 @@ function wx_route_biz_check(array $ctx): array
     wx_require_user('cms_biz_get', WX_BIZ_WRITE_ROLES);
     $biz = wx_biz_clean($ctx['body']['biz'] ?? $ctx['body'], wx_biz_applied());
     $pairs = wx_biz_pairs(wx_biz_applied(), $biz);
+    /* Two kinds of pair come back from the builder, and they are not the same thing to a person: the
+       replacements the studio typed, and the internal sentinel moves that swap the WhatsApp number without
+       letting the digits-only pairs rewrite a `wa.me` address. The report lists the first kind — those are
+       the strings it says the site is missing — and counts the second, so the WhatsApp rewrite is stated
+       rather than hidden inside a number. The scan itself still runs over all of them, because all of them
+       are edits that land on a page. */
+    $visible = wx_biz_pairs_visible($pairs);
     return ['data' => [
         'biz' => $biz,
-        'pairs' => $pairs,
+        'pairs' => $visible,
+        'moves' => count($pairs) - count($visible),
         'scan' => wx_biz_scan($pairs, $biz, ['limit' => (int) ($ctx['body']['limit'] ?? 60)]),
     ]];
 }

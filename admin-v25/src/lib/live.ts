@@ -1206,7 +1206,10 @@ export interface BizScan {
 
 export interface BizCheckResult {
   biz: BizRecord;
+  /** Only the pairs a person typed — the sentinel moves that protect the WhatsApp link are not in here. */
   pairs: BizPair[];
+  /** How many internal moves those were: the news that the WhatsApp number is being swapped too. */
+  moves: number;
   scan: BizScan;
 }
 

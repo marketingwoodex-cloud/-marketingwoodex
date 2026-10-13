@@ -496,6 +496,9 @@ function twelve(t: string): string {
  */
 function CheckReport({ result, pairs }: { result: BizCheckResult; pairs: BizPair[] }) {
   const { scan } = result;
+  /* The server sends the pairs a person typed; the moves it makes behind them (the WhatsApp swap) arrive as
+     a count. The filter stays because a pair list is what an older answer would send, and a pair with a
+     countable flag of 0 is an internal move wherever it comes from. */
   const visible = useMemo(() => pairs.filter((p) => (p[2] ?? 1) === 1), [pairs]);
   return (
     <div className="stack">
@@ -505,6 +508,11 @@ function CheckReport({ result, pairs }: { result: BizCheckResult; pairs: BizPair
         <Pill>{scan.scanned} pages read</Pill>
         <Pill>{visible.length} strings looked for</Pill>
         {scan.social.pages > 0 && <Pill tone="info">{scan.social.pages} social rows</Pill>}
+        {result.moves > 0 && (
+          <Pill tone="info" title="The digits-only phone pairs cannot be allowed to rewrite a wa.me link, so the WhatsApp number is swapped through a temporary value first">
+            WhatsApp link rewritten
+          </Pill>
+        )}
       </div>
 
       {scan.none.length > 0 && (
