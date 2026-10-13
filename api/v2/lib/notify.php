@@ -159,6 +159,17 @@ function wx_notify_pk(string $p): string
 const WX_NOTIFY_TRANSPORT = false;
 
 /**
+ * The events this build composes, as opposed to the ones still sent from v2.1's screens.
+ *
+ * The seven events are v2.1's, kept whole so the wording and the switches survive the move; but only the
+ * project progress ones are wired here so far — a stage change sends `started`, `handover` or `stage`, and a
+ * person writing an update sends `stage` again. Lead, quote, booking and reminder still belong to screens
+ * that have not moved yet, and the notifications screen says which is which rather than showing seven
+ * switches that all look equally live.
+ */
+const WX_NOTIFY_WIRED = ['started', 'handover', 'stage'];
+
+/**
  * What to print next to a channel: could this message leave over it, and if not, why not.
  *
  * Two different noes, and the difference matters to whoever reads the log — "we have not connected WhatsApp"
@@ -180,7 +191,7 @@ function wx_notify_channel_result(bool $configured, bool $transport = WX_NOTIFY_
  */
 function wx_notify_transport_info(): array
 {
-    return ['ready' => WX_NOTIFY_TRANSPORT, 'sentBy' => 'v2.1', 'phase' => 4];
+    return ['ready' => WX_NOTIFY_TRANSPORT, 'sentBy' => 'v2.1', 'phase' => 4, 'wired' => WX_NOTIFY_WIRED];
 }
 
 /** Which channels are set up today. Read by the settings screen and by the send path. */

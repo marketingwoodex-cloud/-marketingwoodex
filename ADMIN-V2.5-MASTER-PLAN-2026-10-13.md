@@ -515,7 +515,7 @@ working as intended, not a gap hidden by a fallback.
 
 ### Phase 3 — Content, assets and delivery · **in progress** · 4 weeks
 
-*Measured at this commit:* `tests/run.php` **842 passed · 0 failed · 13 skipped** · `tests/conformance.mjs`
+*Measured at this commit:* `tests/run.php` **848 passed · 0 failed · 13 skipped** · `tests/conformance.mjs`
 **77 · 0** · php-lint **153 files** · `admin-v25` smoke **127 checks · 65 routes** · legacy bridge **150 of 365
 actions** (41%). Migrations **000–014** are written and none has run on a database yet.
 

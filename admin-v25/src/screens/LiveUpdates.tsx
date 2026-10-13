@@ -93,12 +93,12 @@ function UpdatesBody({ live }: { live: ReturnType<typeof useLive<NotifyData>> })
           "Messages are carried by this console."
         ) : (
           <>
-            This console <b>records</b> what should go to a client and <b>shares</b> it on the client’s own page —
-            the link at the end of every message — which needs no transport at all. The WhatsApp and e-mail
-            sending itself is v2.1’s, still live on the same server, and moves over in <b>Phase 4</b> with the
-            WhatsApp suite. Until then a log row reading <span className="mono">no transport yet</span> means
-            exactly that: recorded, not sent. Nothing is marked “the client has been told” until a message
-            really leaves, so nothing is lost when the channels are connected.
+            This console <b>records</b> what should go to a client and <b>shares</b> it on the client’s own page,
+            which needs no transport at all — every progress message it composes ends with that link. The sending
+            itself is v2.1’s, still live on the same server, and moves over in <b>Phase 4</b> with the WhatsApp
+            suite. Until then a log row reading <span className="mono">no transport yet</span> means exactly
+            that: recorded, not sent. Nothing is marked “the client has been told” until a message really leaves,
+            so nothing is lost when the channels are connected.
           </>
         )}
       </Note>
@@ -108,6 +108,16 @@ function UpdatesBody({ live }: { live: ReturnType<typeof useLive<NotifyData>> })
       <h2 className="side-h" style={{ marginTop: 18 }}>
         The seven events
       </h2>
+      <p className="cell-sub">
+        Two of these lists are not the same list, and the difference is worth saying out loud: the wording is
+        all seven, while{" "}
+        <b>
+          {t?.wired?.length === 1 ? "one event is" : `${t?.wired?.length ?? 0} events are`} composed here today
+        </b>{" "}
+        — the project progress ones. A lead, a quotation, a booking and a reminder are still sent by v2.1’s
+        screens, which have not moved yet, so their wording is kept ready rather than claimed. Each card says
+        which it is.
+      </p>
       <div className="grid-2">
         {events.map(([id, label]) => (
           <EventCard key={id} id={id} label={label} live={live} />
@@ -220,6 +230,13 @@ function EventCard({ id, label, live }: { id: string; label: string; live: Retur
         <div>
           <h2 className="cell-main">{label}</h2>
           <span className="cell-sub mono">{id}</span>
+          <div className="row" style={{ marginTop: 4 }}>
+            {data.transport.wired?.includes(id) ? (
+              <Pill tone="ok">sent from this console today</Pill>
+            ) : (
+              <Pill tone="neutral">still v2.1’s, wording kept ready</Pill>
+            )}
+          </div>
         </div>
         <Switch label={label} checked={draft.on} onChange={(v) => setDraft({ ...draft, on: v })} />
       </div>

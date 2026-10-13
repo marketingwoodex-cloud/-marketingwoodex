@@ -1042,6 +1042,9 @@ check("a message this console cannot carry is never recorded as sent", () => {
   const screen = readCode("admin-v25/src/screens/LiveUpdates.tsx");
   assert(/Phase 4/.test(screen) && /records/.test(screen), "the notifications screen explains who sends today");
   assert(/client’s own page/.test(screen) || /client's own page/.test(screen), "and that the page is what works now");
+  /* Which events are live here is a server fact (`WX_NOTIFY_WIRED`), so the screen reads it rather than
+     knowing it — a second copy of that list is a second opinion about what the product does. */
+  assert(/transport\.wired/.test(screen), "the screen reads which events this build composes from the API");
 });
 
 /* ============================================================== report */

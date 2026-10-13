@@ -1036,7 +1036,7 @@ export interface NotifyData {
   events: Record<string, string>;
   ready: { whatsapp: boolean; email: boolean };
   /** Whether this build can carry a message at all, and who sends today. See lib/notify.php. */
-  transport: { ready: boolean; sentBy: string; phase: number };
+  transport: { ready: boolean; sentBy: string; phase: number; wired: string[] };
   log: NotifyLogRow[];
 }
 

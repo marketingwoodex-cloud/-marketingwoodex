@@ -2308,6 +2308,13 @@ eq(wx_notify_without_link("Dear Ali,\nProgress.\n\nFollow the work: {link}\n\nWo
 eq(wx_notify_without_link('No placeholder here.\n\nWoodex'), 'No placeholder here.\n\nWoodex',
    'a message that never had a link is unchanged — the rule is about the text, not about what a URL looks like');
 ok(isset(wx_notify_defaults()['ev']['stage']['textNoPhotos']), 'the shipped stage wording has a shape for a stage with no photos yet');
+eq(array_diff(WX_NOTIFY_WIRED, array_keys(WX_NOTIFY_EVENTS)), [], 'every event this build composes is one of the seven — no invented names');
+ok(in_array('stage', WX_NOTIFY_WIRED, true) && !in_array('quote', WX_NOTIFY_WIRED, true),
+   'the progress events are wired here and the quotation one is not, which is what the screen tells the reader');
+eq(wx_notify_transport_info()['ready'], false, 'this build still cannot carry a message, and says so as data rather than as a comment');
+eq(wx_notify_channel_result(true), 'no transport yet', 'a channel that is set up but cannot send does not read as success');
+eq(wx_notify_channel_result(false), 'not configured', 'and a channel nobody connected reads as a task, not as Phase 4');
+eq(wx_notify_channel_result(true, true), 'sent', 'the day a transport exists, the same call says sent — no other change needed');
 ok(str_contains(wx_notify_defaults()['ev']['stage']['textNoPhotos'], '{link}'), 'which points at the client\'s page instead of an empty photo line');
 
 /* A project with no contact details cannot be sent to, and says so rather than quietly succeeding. */
