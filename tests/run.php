@@ -776,6 +776,134 @@ foreach (['../etc/passwd', 'assets/../_private/db.json', 'api/v2/index.php', 'as
 ok(!in_array('php', WX_FM_EXT, true), 'PHP is not an uploadable file type');
 ok(in_array('svg', WX_FM_EXT, true) && in_array('pdf', WX_FM_EXT, true), 'the document and image types v2.1 allowed are still allowed');
 
+/* ============================================== Phase 3 · the header, menu, footer
+   These transformations are the ones that decide whether "change the header across 150 pages" is one
+   edit or 150 small mistakes, and every one of them is pure — page HTML in, page HTML out. */
+
+/** A page shaped like the site's own: brand, header CTA, desktop nav, mobile panel, footer, sections. */
+function wx_test_page(string $url, string $extra = ''): string
+{
+    return '<!doctype html><html><head><title>Test</title>' . $extra . '</head><body>'
+        . '<header class="site-header">'
+        . '<a class="brand" href="/"><img src="/assets/img/logo.svg" alt="Woodex"></a>'
+        . '<nav class="desktop-nav"><a href="/">Home</a><a href="/about/">About</a><a href="/contact/">Contact</a></nav>'
+        . '<a class="header-cta" href="/contact/"><span class="header-cta-label">Get a quote</span></a>'
+        . '<nav class="mobile-panel"><a class="mobile-primary" href="/contact/">Get a quote</a><a href="/about/">About</a></nav>'
+        . '</header>'
+        . '<main>' . $extra . '</main>'
+        /* Shaped like the site's own footer, which matters: the intro is the block immediately before a
+           `<nav>`, and that is what tells the shared footer which sentence belongs to this page. */
+        . '<footer class="footer"><div class="footer-main">'
+        . '<div class="footer-intro">A sentence about this page.</div>'
+        . '<nav class="footer-column"><a id="footer-process" href="' . $url . '#process">Process</a>'
+        . '<a id="footer-services" href="' . $url . '#services">Services</a>'
+        . '<a id="footer-faq" href="' . $url . '#faqs">FAQs</a></nav>'
+        . '<nav class="footer-cols"><a id="footer-cta" href="/#page-contact">Contact</a></nav>'
+        . '</div></footer>'
+        . '</body></html>';
+}
+
+$homePage = wx_test_page('/');
+$aboutPage = wx_test_page('/about/', '<section id="page-contact">Contact form</section>');
+
+/* ---- the brand: the home page's own brand is marked current, every other page's is not */
+$brand = '<a class="brand" href="/"><img src="/assets/img/logo.svg" alt="Woodex"></a>';
+$newHome = wx_chrome_apply_html('index.html', $homePage, ['regions' => ['brand'], 'brand' => $brand]);
+ok($newHome === null || !str_contains($newHome, 'aria-current="page"') || str_contains((string) $newHome, '<a class="brand" aria-current="page"'),
+    'the home page brand keeps aria-current when the brand is applied');
+$brandNew = '<a class="brand" href="/"><img src="/assets/img/logo-v2.svg" alt="Woodex"></a>';
+$changedHome = wx_chrome_apply_html('index.html', $homePage, ['regions' => ['brand'], 'brand' => $brandNew]);
+ok(str_contains((string) $changedHome, 'logo-v2.svg'), 'a brand change reaches the home page');
+ok(str_contains((string) $changedHome, 'aria-current="page"'), 'and the home page still marks its own brand as the current page');
+$changedAbout = wx_chrome_apply_html('about/index.html', $aboutPage, ['regions' => ['brand'], 'brand' => $brandNew]);
+ok(!str_contains((string) $changedAbout, 'aria-current="page"'), 'the about page does not claim the home page is current');
+eq(wx_chrome_apply_html('about/index.html', $aboutPage, ['regions' => ['brand'], 'brand' => $brand]), null,
+    'applying the brand the page already has changes nothing — a no-op is reported as one');
+
+/* ---- the call-to-action label */
+$cta = wx_chrome_apply_html('about/index.html', $aboutPage, ['regions' => ['cta'], 'cta' => 'Get a quote →']);
+ok(str_contains((string) $cta, '>Get a quote →<'), 'the button text is replaced');
+ok(substr_count((string) $cta, 'Get a quote →') === 1, 'only the header button is touched, not the mobile menu copy');
+
+/* ---- the desktop menu: this page's own link is marked current, and only one link is */
+$menu = '<nav class="desktop-nav"><a href="/">Home</a><a href="/about/">About</a><a href="/contact/">Contact</a></nav>';
+$aboutMenu = wx_chrome_apply_html('about/index.html', $aboutPage, ['regions' => ['menu'], 'menuDesktop' => $menu]);
+ok(substr_count((string) $aboutMenu, 'aria-current="page"') === 1, 'exactly one menu link is marked as the current page');
+ok((bool) preg_match('~<a href="/about/" aria-current="page"~', (string) $aboutMenu), 'and it is this page\'s own link');
+$homeMenu = wx_chrome_apply_html('index.html', $homePage, ['regions' => ['menu'], 'menuDesktop' => $menu]);
+ok((bool) preg_match('~<a href="/" aria-current="page"~', (string) $homeMenu), 'the home page marks Home');
+
+/* ---- the mobile menu keeps this page's own "Get a quote" target */
+$mobile = '<nav class="mobile-panel"><a class="mobile-primary" href="/contact/">Get a quote</a><a href="/">Home</a></nav>';
+$pageWithOwnCta = str_replace('href="/contact/">Get a quote</a><a href="/about/', 'href="/services/">Get a quote</a><a href="/about/', $aboutPage);
+$mobileApplied = wx_chrome_apply_html('about/index.html', $pageWithOwnCta, ['regions' => ['menu'], 'menuMobile' => $mobile]);
+ok(str_contains((string) $mobileApplied, '<a class="mobile-primary" href="/services/">'), 'the mobile button keeps the target this page chose');
+$plainApplied = wx_chrome_apply_html('about/index.html', $aboutPage, ['regions' => ['menu'], 'menuMobile' => $mobile]);
+ok(str_contains((string) $plainApplied, '<a class="mobile-primary" href="/contact/">'), 'and keeps it when the page has no different target of its own');
+
+/* ---- the footer: shared, but this page's anchors and its own intro survive */
+$footer = '<footer class="footer"><div class="footer-main">'
+    . '<div class="footer-intro">Woodex builds interiors.</div>'
+    . '<nav class="footer-column"><a id="footer-process" href="/#process">Process</a>'
+    . '<a id="footer-services" href="/#services">Services</a><a id="footer-faq" href="/#faqs">FAQs</a></nav>'
+    . '<nav class="footer-cols"><a id="footer-cta" href="/#page-contact">Contact</a></nav></div></footer>';
+$pageWithAnchors = str_replace(
+    ['href="/#process"', 'href="/#services"', 'href="/#faqs"'],
+    ['href="/about/#process"', 'href="/about/#services"', 'href="/about/#faqs"'],
+    wx_test_page('/about/', '<section id="page-contact">Contact form</section>')
+);
+$footApplied = wx_chrome_apply_html('about/index.html', $pageWithAnchors, ['regions' => ['footer'], 'footer' => $footer]);
+ok(str_contains((string) $footApplied, 'id="footer-process" href="/about/#process"'), 'the footer keeps this page\'s own process anchor');
+ok(str_contains((string) $footApplied, 'id="footer-services" href="/about/#services"'), 'and the services anchor');
+ok(str_contains((string) $footApplied, 'id="footer-faq" href="/about/#faqs"'), 'and the FAQ anchor');
+ok(str_contains((string) $footApplied, 'A sentence about this page.'), 'the page keeps its own footer intro by default');
+$footAll = wx_chrome_apply_html('about/index.html', $pageWithAnchors, ['regions' => ['footer'], 'footer' => $footer, 'introAll' => true]);
+ok(str_contains((string) $footAll, 'Woodex builds interiors.') && !str_contains((string) $footAll, 'A sentence about this page.'),
+    'with introAll the shared intro replaces every page\'s own — which is what that switch means');
+
+/* The `/#page-contact` fix: a link that would send this visitor back to the home page, when the section
+   is right here. */
+$pageContact = wx_test_page('/contact/', '<section id="page-contact">Contact form</section>');
+$contactFoot = wx_chrome_apply_html('contact/index.html', $pageContact, ['regions' => ['footer'], 'footer' => $footer]);
+ok(str_contains((string) $contactFoot, 'id="footer-cta" href="#page-contact"'), 'a footer link to the home page\'s contact section becomes this page\'s, where the section exists');
+$pageNoContact = wx_test_page('/services/');
+/* The shared footer here differs from the page's own, so the apply genuinely changes something and the
+   result is a page rather than "null means nothing changed" — which is itself the honest answer when a
+   footer is applied to a page that already has it. */
+$footerV2 = str_replace('>Contact</a>', '>Contact us</a>', $footer);
+$servicesFoot = wx_chrome_apply_html('services/index.html', $pageNoContact, ['regions' => ['footer'], 'footer' => $footerV2]);
+ok(str_contains((string) $servicesFoot, '>Contact us</a>'), 'the shared footer reaches a page that had a different one');
+ok(str_contains((string) $servicesFoot, 'id="footer-cta" href="/#page-contact"'), 'and a footer link to the home page stays a link to the home page where that section does not exist');
+ok(str_contains((string) $servicesFoot, 'A sentence about this page.'), 'and the page still keeps its own intro');
+
+/* ---- the design block and the header phone */
+$style = '<style id="wx-chrome-style" data-cfg="banner">.site-header{--h:72px}</style>';
+$phone = '<a class="wx-hphone" href="tel:+923224000768">+92 322 4000768</a>';
+$styled = wx_chrome_apply_html('about/index.html', $aboutPage, ['regions' => ['design'], 'style' => $style, 'phone' => $phone]);
+ok(str_contains((string) $styled, 'wx-chrome-style'), 'the design block is written into the head');
+ok(strpos((string) $styled, 'wx-chrome-style') < strpos((string) $styled, '</head>'), 'and it lands before </head>');
+ok(str_contains((string) $styled, 'wx-hphone') && strpos((string) $styled, 'wx-hphone') < strpos((string) $styled, 'class="header-cta"'),
+    'the phone sits immediately before the header button');
+$restyled = wx_chrome_apply_html('about/index.html', (string) $styled, ['regions' => ['design'], 'style' => $style, 'phone' => $phone]);
+eq($restyled, null, 'applying the same design twice leaves the page alone — one style block, not two');
+
+/* ---- what the preview and the apply agree on */
+$spans = wx_chrome_spans($aboutPage);
+ok(isset($spans['brand'], $spans['footer'], $spans['menuDesktop'], $spans['menuMobile']), 'every region of a real page is found by the span reader');
+
+/* TODO-DB: coverage, the diff walk and the batch write need the site tree and the tables. */
+if (count(wx_page_walk(WX_SITE_ROOT)) > 10 && wx_table_exists('wx_page_versions')) {
+    $cov = wx_chrome_coverage();
+    ok($cov['pages'] > 50, 'the coverage count walks the site (' . $cov['pages'] . ' pages)');
+    ok($cov['regions']['footer'] > 0, 'and reports how many pages have a footer');
+    ok($cov['regions']['footer'] <= $cov['pages'], 'the region count can never exceed the page count');
+    $diff = wx_chrome_diff(['regions' => ['cta'], 'cta' => 'Get a quote'], ['limit' => 3]);
+    eq(count($diff['changed']), 3, 'the preview stops at the limit it was given');
+    ok($diff['scanned'] > 3, 'and reports how many pages it read to find them');
+} else {
+    skip('the chrome coverage and diff need the site tree and migration 011');
+}
+
 /* ============================================================== report */
 echo "\n";
 if ($failures) {

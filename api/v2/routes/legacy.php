@@ -155,6 +155,12 @@ function wx_legacy_bridged(): array
            the handler rather than cast to an int here. */
         'fm_restore'      => ['files', 'wx_route_files_restore', []],
         'fm_zip'          => ['files', 'wx_route_files_zip', []],
+        /* Phase 3 — the chrome: the header, the menu and the footer across every page. */
+        'global_chrome'   => ['chrome', 'wx_route_chrome_apply', []],
+        'global_menu'     => ['chrome', 'wx_route_chrome_apply', []],
+        'global_replace'  => ['chrome', 'wx_route_chrome_replace', []],
+        'chrome_save'     => ['chrome', 'wx_route_chrome_apply', []],
+        'chrome_versions' => ['chrome', 'wx_route_chrome_get', []],
     ];
 }
 

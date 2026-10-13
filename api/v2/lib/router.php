@@ -213,6 +213,21 @@ function wx_routes(): array
         ['DELETE', 'files',                           'files', 'wx_route_files_delete',    'fm_delete'],
         ['POST',   'files/trash/{id}/restore',        'files', 'wx_route_files_restore',   'fm_restore'],
 
+        /* ------------------------------------------------------- the site's chrome
+           The header, the menu and the footer, applied across every page as one change with one undo.
+           This is the second half of the Phase 3 gate: 'changes the header across 150 pages, and rolls
+           the change back from page history'. */
+        ['GET',    'chrome',                          'chrome', 'wx_route_chrome_get',      'global_chrome'],
+        ['POST',   'chrome',                          'chrome', 'wx_route_chrome_apply',    'global_chrome'],
+        /* The preview writes nothing, so it carries no approval action at all: its permission is the
+           role the handler asks for. Naming it `global_chrome` would put a *read* into the Master's
+           queue, and adding a name to the policy's never-queue list would edit a list that is asserted
+           to be a byte-for-byte copy of v2.1's. A null action is the honest description of "this is not
+           a change". */
+        ['POST',   'chrome/preview',                  'chrome', 'wx_route_chrome_preview',  null],
+        ['POST',   'chrome/replace',                  'chrome', 'wx_route_chrome_replace',  'global_replace'],
+        ['POST',   'chrome/versions/{id}',            'chrome', 'wx_route_chrome_restore',  'chrome_save'],
+
         /* ------------------------------------------------- the visitor's widget
            Public on purpose: these five are what the website widget calls, and a visitor has no session
            to begin with. Auth here is the chat token in the body — 20 random bytes whose sha256 is the
