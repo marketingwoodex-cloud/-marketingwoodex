@@ -280,6 +280,11 @@ html .hub-bar a.on, html.dark .hub-bar a.on, html .seg button.on, html .lp-bar b
   background: var(--pri) !important; border-color: var(--pri) !important; color: #ffffff !important;
 }
 html .us-tabs a.on { border-bottom-color: var(--pri) !important; }
+/* Chips that carry a count ("All 1", "Active 1") put it in a <small>, which the
+   generic muted-small colour painted stone-600 straight onto the primary fill
+   (1.48:1). A selected chip's count follows the chip's own ink; the navy month
+   card keeps its own tan label via the more specific .it-mo.on small rule. */
+html button.on > small, html .seg button.on > small, html .lp-bar button.on > small { color: inherit !important; }
 
 /* ---------- Muted greys from inline styles: one readable muted tone per theme ---------- */
 html:not(.dark) [style*="color:var(--muted-foreground-1)"], html:not(.dark) [style*="color: var(--muted-foreground-1)"], html:not(.dark) [style*="color:#64748b"],

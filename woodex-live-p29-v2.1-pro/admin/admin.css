@@ -473,7 +473,13 @@ html.dark .md-th{background-color:var(--card-sub);background-image:repeating-con
   #app.mini .side:hover .side-top #rail{margin-left:auto!important;margin-right:0!important;width:34px!important;height:34px!important}
   #app.mini .side:hover #nav{padding:8px 14px 16px!important}
   #app.mini .side:hover .nav-a{justify-content:flex-start!important;width:100%!important;padding:10px 12px!important;margin:2px 0!important}
-  #app.mini .side:hover .nav-a>span,#app.mini .side:hover .nav-bdg,#app.mini .side:hover .nav-new{display:inline-block!important}
+  /* Reveal labels on hover — real badges only. The bare `.nav-a>span` reveal
+     resurrected every badge the app had hidden, so each item in the collapsed rail
+     painted a stray dot; a badge now needs :not([hidden]) (the rule below keeps the
+     ordinary labels working) and an empty badge is never painted at all. */
+  #app.mini .side:hover .nav-bdg:not([hidden]),#app.mini .side:hover .nav-new:not([hidden]){display:inline-block!important}
+  #app.mini .side:hover .nav-bdg:empty{display:none!important}
+.nav-bdg:empty{display:none!important}
   #app.mini .side:hover .nav-a>span:not(.nav-bdg):not(.nav-new):not(.nav-car){display:inline!important}
   #app.mini .side:hover .nav-car{display:inline-flex!important}
   #app.mini .side:hover .nav-g.open .nav-sub{display:block!important}

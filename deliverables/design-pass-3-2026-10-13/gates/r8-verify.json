@@ -1,0 +1,219 @@
+{
+ "light": {
+  "sidebar": {
+   "visible": 1,
+   "emptyVisible": 0,
+   "texts": [
+    "enquiries=1"
+   ]
+  },
+  "navStyle": {
+   "item": {
+    "bg": "rgba(0, 0, 0, 0)",
+    "color": "rgb(87, 83, 78)",
+    "font": "14px",
+    "weight": "500",
+    "h": 36,
+    "radius": "8px",
+    "pad": "8px 10px"
+   },
+   "active": {
+    "bg": "rgb(245, 245, 244)",
+    "color": "rgb(37, 99, 235)",
+    "font": "14px",
+    "weight": "600",
+    "h": 36,
+    "radius": "8px",
+    "pad": "8px 10px"
+   },
+   "label": {
+    "bg": "rgba(0, 0, 0, 0)",
+    "color": "rgb(87, 83, 78)",
+    "font": "14px",
+    "weight": "500",
+    "h": 20,
+    "radius": "0px",
+    "pad": "0px"
+   },
+   "font": "Inter",
+   "sidebarBg": "rgb(255, 255, 255)"
+  },
+  "sidebarMini": {
+   "visible": 1,
+   "emptyVisible": 0,
+   "texts": [
+    "enquiries=1"
+   ]
+  },
+  "miniWidth": 260,
+  "leads": {
+   "kpis": [
+    {
+     "label": "Open leads",
+     "value": "4",
+     "sub": "0 due today · 4 without a next step"
+    },
+    {
+     "label": "Open pipeline value",
+     "value": "Rs 1.2 Cr",
+     "sub": "average Rs 30 L per lead"
+    },
+    {
+     "label": "Won in filter",
+     "value": "1",
+     "sub": "Rs 85 L won · 0 lost"
+    },
+    {
+     "label": "Follow-ups",
+     "value": "0",
+     "sub": "next 7 days: 0"
+    }
+   ],
+   "kpiCount": 4,
+   "demoMock": 1,
+   "prelineApiMentions": 0,
+   "rows": 5,
+   "counters": [
+    "Total5",
+    "New lead3",
+    "Client2",
+    "Meeting1"
+   ],
+   "tableBg": {
+    "headBg": "rgb(245, 245, 244)",
+    "rowColor": "rgb(41, 37, 36)",
+    "radius": "14px"
+   },
+   "inlineStyles": 36
+  },
+  "pipeline": {
+   "boards": 1,
+   "cols": 6,
+   "cards": 5,
+   "colBg": "rgb(245, 245, 244)",
+   "colCount": "rgb(41, 37, 36)",
+   "cardBg": "rgb(255, 255, 255)",
+   "cardColor": "rgb(41, 37, 36)",
+   "cardRadius": "11px",
+   "colHeads": [
+    "Fatima Noor0d",
+    "Omer Hashmi0d",
+    "Dr. Ayesha Imran0d",
+    "Tariq Mahmood0d",
+    "Salman Farooq",
+    ""
+   ],
+   "brokenBoard": false,
+   "text": "PipelineHome / PipelineHide won & lostAdd enquiryOpen deals4nothing overduePipeline valueR"
+  }
+ },
+ "dark": {
+  "sidebar": {
+   "visible": 1,
+   "emptyVisible": 0,
+   "texts": [
+    "enquiries=1"
+   ]
+  },
+  "navStyle": {
+   "item": {
+    "bg": "rgba(0, 0, 0, 0)",
+    "color": "rgb(163, 163, 163)",
+    "font": "14px",
+    "weight": "500",
+    "h": 36,
+    "radius": "8px",
+    "pad": "8px 10px"
+   },
+   "active": {
+    "bg": "rgb(64, 64, 64)",
+    "color": "rgb(147, 197, 253)",
+    "font": "14px",
+    "weight": "600",
+    "h": 36,
+    "radius": "8px",
+    "pad": "8px 10px"
+   },
+   "label": {
+    "bg": "rgba(0, 0, 0, 0)",
+    "color": "rgb(163, 163, 163)",
+    "font": "14px",
+    "weight": "500",
+    "h": 20,
+    "radius": "0px",
+    "pad": "0px"
+   },
+   "font": "Inter",
+   "sidebarBg": "rgb(38, 38, 38)"
+  },
+  "sidebarMini": {
+   "visible": 1,
+   "emptyVisible": 0,
+   "texts": [
+    "enquiries=1"
+   ]
+  },
+  "miniWidth": 260,
+  "leads": {
+   "kpis": [
+    {
+     "label": "Open leads",
+     "value": "4",
+     "sub": "0 due today · 4 without a next step"
+    },
+    {
+     "label": "Open pipeline value",
+     "value": "Rs 1.2 Cr",
+     "sub": "average Rs 30 L per lead"
+    },
+    {
+     "label": "Won in filter",
+     "value": "1",
+     "sub": "Rs 85 L won · 0 lost"
+    },
+    {
+     "label": "Follow-ups",
+     "value": "0",
+     "sub": "next 7 days: 0"
+    }
+   ],
+   "kpiCount": 4,
+   "demoMock": 1,
+   "prelineApiMentions": 0,
+   "rows": 5,
+   "counters": [
+    "Total5",
+    "New lead3",
+    "Client2",
+    "Meeting1"
+   ],
+   "tableBg": {
+    "headBg": "rgb(38, 38, 38)",
+    "rowColor": "rgb(229, 229, 229)",
+    "radius": "14px"
+   },
+   "inlineStyles": 36
+  },
+  "pipeline": {
+   "boards": 1,
+   "cols": 6,
+   "cards": 5,
+   "colBg": "rgb(64, 64, 64)",
+   "colCount": "rgb(229, 229, 229)",
+   "cardBg": "rgb(38, 38, 38)",
+   "cardColor": "rgb(229, 229, 229)",
+   "cardRadius": "11px",
+   "colHeads": [
+    "Fatima Noor0d",
+    "Omer Hashmi0d",
+    "Dr. Ayesha Imran0d",
+    "Tariq Mahmood0d",
+    "Salman Farooq",
+    ""
+   ],
+   "brokenBoard": false,
+   "text": "PipelineHome / PipelineHide won & lostAdd enquiryOpen deals4nothing overduePipeline valueR"
+  }
+ },
+ "pageErrors": []
+}

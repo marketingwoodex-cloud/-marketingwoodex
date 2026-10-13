@@ -5,6 +5,7 @@
 import pptr from 'puppeteer-core';
 import cm from '@sparticuz/chromium';
 import path from 'node:path';
+import { signIn } from './lib-signin.mjs';
 import { pathToFileURL } from 'node:url';
 const BASE = process.argv[2] || 'http://127.0.0.1:8080';
 const ROOT = path.resolve('node_modules');
@@ -14,10 +15,9 @@ process.env.LD_LIBRARY_PATH = [path.join(libDir, 'lib'), process.env.LD_LIBRARY_
 const browser = await pptr.launch({ executablePath: await cm.executablePath(), args: cm.args, headless: true, defaultViewport: { width: 1440, height: 950 } });
 const page = await browser.newPage(); const errs = [];
 page.on('pageerror', e => errs.push(String(e.message).slice(0, 120)));
-await page.goto(BASE + '/admin/', { waitUntil: 'domcontentloaded' });
-await page.waitForSelector('#login-form, #nav', { timeout: 25000 });
-if (await page.$('#l-email')) { await page.type('#l-email', process.env.PREVIEW_EMAIL); await page.type('#l-pass', process.env.PREVIEW_PASS); await page.click('#l-btn'); }
-await page.waitForFunction(() => !!sessionStorage.getItem('wxaTok'), { timeout: 30000 });
+/* typing into the form while the PHP runtime is still booting is silently dropped,
+   so use the shared sign-in helper instead of driving the inputs by hand */
+await signIn(page, BASE);
 
 const report = await page.evaluate(async () => {
   const api = (a, b) => window.WXA.api(a, b);

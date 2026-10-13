@@ -42,12 +42,12 @@ html .p19-ct { display:flex;gap:8px;align-items:flex-start;justify-content:space
 html .p19-ct b { display:block;font-size:13.5px;line-height:1.3;color:var(--foreground) }
 html .p19-ct small { display:block;font-size:12px;color:var(--muted-foreground-1) }
 html .p19-age { flex:none;font-size:11px;font-weight:700;color:var(--muted-foreground-1);background:var(--card-sub);border-radius:6px;padding:1px 6px }
-html .p19-age.warm { background:var(--warn);color:var(--warn) }
-html .p19-age.hot { background:var(--bad);color:var(--bad) }
+html .p19-age.warm { background:var(--warn-soft);color:var(--warn) }
+html .p19-age.hot { background:var(--bad-soft);color:var(--bad) }
 html .p19-tags { display:flex;flex-wrap:wrap;gap:4px;margin:7px 0 }
 html .p19-tags span { font-size:11px;background:var(--card-sub);color:var(--muted-foreground-1);border-radius:6px;padding:1px 7px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap }
-html .p19-tags .ln { background:var(--muted-foreground-1);color:var(--muted-foreground-1) }
-html .p19-tags .nw { background:var(--primary);color:var(--primary);font-weight:700 }
+html .p19-tags .ln { background:var(--primary-soft);color:var(--primary-text) }
+html .p19-tags .nw { background:var(--primary);color:var(--pri-fg);font-weight:700 }
 html .p19-cf { display:flex;align-items:center;gap:8px;font-size:12px }
 html .p19-cf .v { font-weight:700;color:var(--foreground);flex:1 }
 html .p19-cf .v em { font-weight:500;color:var(--muted-foreground-1);font-style:normal }
