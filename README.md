@@ -19,7 +19,7 @@ the install/upgrade notes in its `README.md`.
 | [Repository](https://github.com/marketingwoodex-cloud/-marketingwoodex) | this code, public |
 | [Pull request #7](https://github.com/marketingwoodex-cloud/-marketingwoodex/pull/7) | the v2.5 build, phase by phase, with the reasoning in the commit messages |
 | [Release `p25`](https://github.com/marketingwoodex-cloud/-marketingwoodex/releases/tag/p25) | the payload zip as a release asset |
-| Google Drive | the same pack, for sharing: **see the release notes for the folder link** |
+| [Google Drive](https://drive.google.com/drive/folders/12rpZKxUpHibqPZNMLi1VBMxlmWgTpBuz) | the same pack, for sharing: the zip, the manifest, the memory plan and the install notes |
 
 ## The map
 

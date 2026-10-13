@@ -71,4 +71,5 @@ counts, the SHA-256 of `api/v2/index.php` and of the zip itself, and the migrati
 - Source, plan and pull request: <https://github.com/marketingwoodex-cloud/-marketingwoodex> ·
   <https://github.com/marketingwoodex-cloud/-marketingwoodex/pull/7> ·
   <https://github.com/marketingwoodex-cloud/-marketingwoodex/releases/tag/p25>
-- Shared copy for Drive: the folder link is in the release notes.
+- The same pack, for sharing: **<https://drive.google.com/drive/folders/12rpZKxUpHibqPZNMLi1VBMxlmWgTpBuz>** (the zip, this README, the manifest, the memory plan
+  and the master plan PDF).

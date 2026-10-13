@@ -251,6 +251,22 @@ function main() {
     process.exit(1);
   }
 
+  /* Every staged file gets the commit's own timestamp before the zip is written. Not cosmetic: zip
+     records modification times, so the same payload built twice used to hash differently — and a release
+     whose hash changes for no reason cannot be checked against the QA run that approved it. With the
+     timestamps normalised, `make-release.mjs` on the same commit produces the same bytes. */
+  if (!DRY) {
+    const at = execFileSync("git", ["log", "-1", "--format=%cd", "--date=format:%Y%m%d%H%M.%S"], { cwd: ROOT, encoding: "utf8" }).trim();
+    const stamp = (dir) => {
+      for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+        const abs = path.join(dir, e.name);
+        if (e.isDirectory()) stamp(abs);
+        execFileSync("touch", ["-h", "-t", at, abs]);
+      }
+    };
+    stamp(STAGE);
+  }
+
   /* The zip is written last and hashed, so the manifest describes the bytes rather than the intent. */
   let zipBytes = 0;
   let zipSha = "";

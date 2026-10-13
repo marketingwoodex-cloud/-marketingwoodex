@@ -1,0 +1,359 @@
+# Woodex admin v2.5 — work-sandbox memory
+
+*Written 14 October 2026, at `47cde56`, on branch `arena/4150341e-marketingwoodex`.*
+*The design authority is `ADMIN-V2.5-MASTER-PLAN-2026-10-13.md` (the 18-page plan, also as PDF). This
+document is the memory: where things are, what is already true, what is next, and what bit us on the way.
+Where the two disagree, the plan wins for design and this file wins for state.*
+
+---
+
+## 1. Resume in five minutes
+
+```bash
+git fetch origin && git reset --hard origin/arena/4150341e-marketingwoodex
+cd admin-v25 && npm ci && cd ..                 # the console's dependencies
+cd tools/phpwasm && npm ci && cd ../..          # php-wasm (the only PHP this sandbox has)
+cd tools/phplint && npm ci && cd ../..
+
+# the gate, in the order that fails fastest
+node tools/phpwasm/run-php.cjs tests/run.php            # 995 passed · 0 failed · 13 skipped
+node tests/conformance.mjs                              # 84 passed · 0 failed
+node tools/phplint/php-lint.mjs                         # 157 PHP files parse clean
+cd admin-v25 && npm run typecheck && npm run smoke && cd ..   # tsc clean · 147 checks · 65 routes
+node tools/gen-aliases.mjs --check && node tools/gen-caps.mjs --check
+
+# the console, with sample data (the API cannot run here — see §3)
+cd admin-v25 && VITE_WX_DEMO=1 npm exec vite -- --host 0.0.0.0 --port 5173
+```
+
+The preview is proxied under the sandbox's own hostname; bind `0.0.0.0`, never `127.0.0.1`. Prove the
+preview is *current* by fetching a source module, not the HTML shell — the build stamp lives in
+`src/components/Shell.tsx`:
+
+```bash
+curl -s http://127.0.0.1:5173/src/components/Shell.tsx | grep -o 'built [0-9-]* [0-9:]*Z'
+```
+
+**There is no PHP and no MySQL in this sandbox.** `api/v2` cannot answer here: every screen is honest
+about that (`not answering` in the status strip, `demo data` only in demo mode). Verification is by
+tests, by `php-wasm`, and by running the console against sample data — the gate itself (§6) is a host run.
+
+---
+
+## 2. The two site generations — the single most confusing thing about this repo
+
+The repository holds **two complete websites** and a stack of older admin generations. Knowing which is
+which saves an hour every time.
+
+| Tree | What it is | Evidence |
+|---|---|---|
+| `frontend-v1/` | **The live site as it ships to Hostinger.** 150 HTML pages, the v2.1 PHP API (`api/*.php`), the v2.1 admin (`admin/`, 69 files), `_private/`, `_database/`, `_templates/`, `.htaccess`, the installer (`wx-install.php`). Every P20–P22 release zip was built from this tree — the P22 payload is byte-identical to it. | `find frontend-v1 -name '*.html' \| wc -l` → **150**, the number the plan quotes |
+| the repository root | **The v2.5 work area.** `api/v2/` (the new API), `admin-v25/` (the new console), `db/` (migrations), `tests/`, `tools/`, the plans — *plus* a second, newer marketing site (86 pages, `assets/site.css` + `assets/site.js`, enquiries posted to `/.netlify/functions/*`) that was built for the v26 redesign. | root `index.html` references `/assets/site.css`; root `contact/index.html` posts to a Netlify function |
+
+The console edits **the tree under `WX_SITE_ROOT`**, which is `dirname(dirname(api/v2))` — the repository
+root here, `public_html` on the host. So in this sandbox the console's page/hero/chrome/business screens
+read the *root* (v26) pages, while the release carries the *`frontend-v1`* pages.
+
+**Why the release is still right.** The cut-over in plan §14.2 is additive: `api/v2` is deployed beside
+`api/`, the console beside `admin/`, and nothing of the live site is replaced. Three facts make the
+console work on the live pages, and all three were checked against `frontend-v1/` before the P25 zip was
+built:
+
+- the chrome anchors the header/footer editor rewrites are present
+  (`#header-cta` ×6, `.footer-main` ×2, `nav.desktop-nav` ×6 in `frontend-v1/index.html`);
+- the form ids it recognises are present (`est-form`, `brief-form`, `fitout-hub-form`, `fitout-quote-form`);
+- the announcement bar's contract is present: `frontend-v1/assets/site.js` already fetches
+  `assets/announce.json` and applies `wx-ann--<style>` / `wx-has-ann`, `frontend-v1/assets/v1-p21.css`
+  styles it, and `frontend-v1/assets/announce.json` exists (`{"on":false,…,"v":0}`).
+
+**Open question for the owner (§9 Q7):** should the v26 pages replace the `frontend-v1` pages in the
+release, or is the v26 site the Netlify deployment and Hostinger the admin/API host? Until that is
+answered the release stays additive — it never replaces a live page.
+
+---
+
+## 3. Where everything lives
+
+```
+api/v2/                     the new API — one front controller and one file per resource
+  index.php                 router, envelope, request-id, error boundary, shutdown guard
+  .htaccess                 every path under /api/v2/ → index.php; lib/ and routes/ 404
+  lib/            (34 files) bootstrap · errors · http · store · db · settings · validate · money · audit
+                            auth · caps · approvals · router · pages · chrome · heroes · content · media
+                            library · placements · theme · redirects · forms · estimator · notify
+                            clientview · projects · clients · templates · business · announce?
+  routes/         (31 files) one per router `file` name — the router loads exactly the matched one
+  data/*.json               generated data (quote starters, section library, city templates…)
+  aliases.php               the 365 v2.1 actions and where each was served from (generated)
+db/migrations/000…014.sql   forward-only migrations; `db/migrate.php` runs them, `db/owner.php` gets you in
+tests/run.php               the API's own suite, run under php-wasm (no database)
+tests/conformance.mjs       duplicate functions, route-table parse, dead includes, gate coverage, SQL
+                            interpolation, rate limits — and the shipped browser blocks run against stubs
+admin-v25/src/
+  lib/            nav.ts · api.ts · live.ts · demo.ts · format.ts · session.tsx · theme.ts · mock.ts
+  components/     primitives.tsx · Shell.tsx · CommandPalette.tsx · charts.tsx
+  screens/        24 live screens + the mock Dashboard
+tools/            phpwasm · phplint · gen-aliases · gen-caps · gen-quote-starters · make-release
+docs/             the audit and plan documents (moved here in P25; see §7)
+frontend-v1/      the live site (§2)
+woodex-master-P25/  the release pack: README · CHANGELOG · MANIFEST.json · this file · the zip
+```
+
+`api/v2/lib/announce.php` and `lib/ai.php` do **not** exist yet — that is the next slice (§8a, §8b).
+
+House rules that the codebase now enforces, and that a new file must not break:
+
+- a library is included from `lib/bootstrap.php` in dependency order — a new `lib/*.php` needs a line there;
+- a route file's name must equal the `file` column its router rows declare (`routes/ai.php` ↔ `ai`);
+- route wrappers are two lines (`wx_appr_route(...)` + `..._do`); route files load per request through
+  `wx_route_match()`, never from `bootstrap.php`;
+- every write route goes through the approval gate with a label in `WX_APPR_LABELS` when it is policy-wrapped;
+- money is whole rupees, computed by `doc_totals()`; the screen prints, it never re-adds;
+- `wx_settings` is the only settings writer; JSON stores go through `JsonStore` (`lib/store.php`).
+
+---
+
+## 4. What is built, and where it was proved
+
+54 commits. The recent ones, newest first — the commit messages carry the reasoning, and they are worth
+reading before changing the files they touch.
+
+| Commit | Slice | The one thing it decided |
+|---|---|---|
+| `47cde56` | **Approvals screen** + the strip's stale clause | The Master's queue is a screen: read it, judge one request, decide it, change the policy. Approving replays the stored request; a preview never offers the button. |
+| `76ea06a` | Business check reports visible pairs | A sentinel pair kept the phone-number spellings working without ever being *shown* as a string that was looked for. |
+| `2cd5756` | **Business info** + **announcement bar** | The company details are read off the site, not out of a copy of the defaults; the bar is one JSON file with the site's own script fetching it. |
+| `d59427a` | **Quote templates** | The nine BOQ shapes are *generated* from the site's own `assets/js/quotation-templates.js`, never hand-typed twice. |
+| `4f9c269` | **Demo mode** | `VITE_WX_DEMO=1` / `?demo=1` only. A path with no fixture gets no answer; demo is never inferred and never a fallback. |
+| `a6abdbf`, `93c41f5`, `7081759` | **Client updates** | The client page a link opens, the seven events, the channels — and the sending is described as it really is (`sent` only with a transport). |
+| `cd368c2` | **Projects + timeline** | The money a project has actually billed, on its own date axis; a milestone-billed project is not "unbilled". |
+| `3ad9116` | Forms + rate book | Which pages carry a form, where each enquiry goes, and the figures every price starts from. |
+| `82e0b66` | Page heroes | Edit a hero where it stands (byte-range geometry), or pick one of six designs. |
+| `b2945b5`, `750a59e`, `0114426` | Sign in + build stamp | Sign in with the name you have; the bundle names itself; the door says what is true before it is pressed. |
+| `c67d564` | City pages | An address rule and a furniture rule, not copy-and-edit. |
+| `f4ae6b9` | Builder bridge | v2.1's 19 builder actions: 17 served, 2 named as decisions; parameter names translated (`path` → `rel`). |
+| `b78e054` … `876a9c3` | Fetchers, media upload, theme, page editor, section library | The Phase 3 gate's three sentences became one undoable write each. |
+| `3deb37d`, `b97d3d8`, `81bb80d` | Header & footer, content CMS, chrome across pages | The header is one edit across every page; the article is composed by the server. |
+| `158346e`, `7f8deb1`, `ba060b0`, `a031f93` | Redirects, media library, library, placements | The first Phase 3 screens, and the verdict keyed by the rule the API names. |
+
+Measured at `47cde56`: **995** API tests · **84** conformance checks · **157** PHP files lint clean ·
+**147** smoke checks over **65** console routes · `tsc` clean · 365 legacy actions bridged, 150 through
+the bridge itself.
+
+---
+
+## 5. The gate, and what each part of it catches
+
+| Command | Catches |
+|---|---|
+| `node tools/phpwasm/run-php.cjs tests/run.php` | behaviour: validation, approvals, money, page writes, the content composer, the announce block, the client page |
+| `node tests/conformance.mjs` | the mistakes a compiler cannot see: a duplicated function name, a route row pointing at a missing handler, a dead `include`, a write route with no approval gate, SQL built by interpolation, the shipped browser blocks run against stubs |
+| `node tools/phplint/php-lint.mjs` | PHP 8 grammar over `api/v2`, `db/`, `tests/` (the shipped command-line tools are shipped code) |
+| `cd admin-v25 && npm run typecheck` | TypeScript, screens included |
+| `cd admin-v25 && npm run smoke` | every route renders: offline-honest, demo-labelled, and no screen showing invented numbers |
+| `node tools/gen-aliases.mjs --check`, `gen-caps.mjs --check` | generated artefacts drifted from their source (365 actions; `001_roles.sql` byte-identical to v2.1's matrix) |
+
+Two habits worth keeping: run `tests/conformance.mjs` after touching a route table, and rebuild the
+smoke bundle after touching a screen — the smoke test reads a *built* bundle, so a stale `.smoke/`
+proves nothing.
+
+**The real gate is on the host** (plan §11, Appendix A): an editor publishes an article, changes the
+header across 150 pages, and rolls the change back from page history. Migrations 000–014 are written and
+re-runnable, but they have never run against MySQL — `php db/migrate.php --dry-run` is the first thing to
+run there.
+
+---
+
+## 6. Traps — the ones that cost time, with the fix
+
+**The sandbox**
+- No PHP, no MySQL, no PHP extensions. `node tools/phpwasm/run-php.cjs <script>` mounts a *filtered* tree
+  (plus `MOUNT_FILES`), excludes dot-directories, and does not mount `/tmp`.
+- `npx tsc --noEmit` works only from inside `admin-v25/`.
+- The API through the 5173 proxy answers `502 UPSTREAM` — by design. The console's answer to a missing
+  API is a sentence, never data.
+- Stale preview servers must be stopped before restarting (`pkill -f "vite --host 0.0.0.0 --port 5173"`).
+- A turn can come back re-cloned at the base commit: check `git log --oneline -1` before assuming.
+
+**The console**
+- React does not run effects during `renderToString`: a screen must feed its state from the fetched value
+  (`draft ?? server`), never from an effect, or the smoke test sees an empty screen.
+- Assertions in `smoke.tsx` read module-scope `let`s; a `const` declared inside the render pass is invisible.
+- `at()`, the helper that renders a screen against a session, is declared *inside* one try block in
+  `smoke.tsx` — a new render goes there too, or TypeScript says `TS2304`.
+- Primitives: `Btn` is `default|primary|ghost` (plus `size`, `iconOnly`, `icon`) — there is no `danger`;
+  there is no `.icon-btn` and no `.field`. Two-up rows are `.grid.grid-2`; wrappers are `className="stack"`.
+- `ErrorCode` accepts only real codes — narrow an envelope with `isPending(r)` before reading it.
+- SSR entity-encodes apostrophes and inserts `<!-- -->` between adjacent text children: interpolate into
+  one template literal.
+- `App.tsx` must import every primitive a screen renders, and a screen is not real until its id is in
+  `BUILT_IDS` *and* it has a `<Route>` — otherwise the link opens the build-plan card (§8f).
+
+**The API**
+- Never call a helper without checking it exists; the v2.1 names are close enough to invent plausibly.
+- `$a + $b` does not override keys — `array_merge()` does.
+- `wx_doc_put`/`wx_doc_get` throw outside `WX_DOC_TABLES`.
+- PHP single-quoted strings: a literal `'` or an unquoted word after `, ` is a parse error;
+  `php-lint --verbose` names file:line.
+- A JSON body is not a validation: every write goes through `wx_v_*`, and a refusal names the *field*.
+
+**The shell**
+- A failed command inside a compound `&&` line does not stop the next command (a pipeline's exit code is
+  the last command's). Re-grep after every patch.
+- Backticks in `git commit -m` are substituted — write the message to a file and use `-F`.
+- `git status --porcelain` needs `--untracked-files=no` to mean "tracked edits only".
+- Python patch scripts must match their anchor exactly and write at the end; an `AssertionError` aborts
+  before the write while the shell carries on.
+
+---
+
+## 7. The P25 release pack
+
+`woodex-master-P25/` — `README.md` (install + upgrade), `CHANGELOG.md`, `MANIFEST.json`, this document, and
+`woodex-master-P25.zip` (27.9 MB, 720 files, 43.1 MB uncompressed).
+
+**What the zip is.** The Hostinger payload: the live 150-page site (`frontend-v1/`) untouched, plus
+`api/v2/`, `db/` (migrations + `migrate.php` + `owner.php`), and `admin-next/` — the built console at
+`/admin-next/` per plan §14.2 step 2. The only site file the pack edits is `.htaccess`, and only by
+appending a marked block that serves the console's deep links its own `index.html`.
+
+**What the zip is not.** It is not the v26 marketing site (§2) and it does not replace any live page. It
+is not an install: on a host that has never run v2.1 there is no database, and `wx-install.php` (included)
+is the way to make one.
+
+**How it is built.** `node tools/make-release.mjs` — deterministic, refuses to ship a credential
+(`_private/db.json`, `.env`, `*.pem` except the CA bundle, anything named like a secret), refuses to build
+if the console's build fails, appends the `.htaccess` block, zips with `-X` (no host metadata) and writes
+`MANIFEST.json` with the git SHA, the console's own build stamp, file counts, SHA-256 of `api/v2/index.php`,
+the console's `index.html`, and the zip itself, plus the migration list. `--dry-run` lists without copying;
+`--skip-console` reuses an existing build.
+
+**Upgrading a live site** (File Manager, not Hostinger's "Import website" tool):
+
+1. back up `public_html` and the database;
+2. upload the zip, extract over `public_html` (Overwrite), delete the zip;
+3. `php db/migrate.php --status` → `--dry-run` → run it (it needs `_private/db.json`, which v2.1's install
+   wrote);
+4. open `/admin-next/` — sign in with an existing `wx_users` account (or `php db/owner.php --status`);
+5. leave `/admin/` alone: it is the v2.1 admin and the rollback path until coverage is complete;
+6. check the three generation facts from §2 on the host once, then roll back by restoring the previous
+   release zip.
+
+Rollback for any single file: `git show <sha>:<path>` on this branch — the manifest records the SHA the
+payload was built from.
+
+---
+
+## 8. What is next, in order
+
+### a. AI settings (`cms_ai_*`) — the next slice
+
+v2.1 lives in `frontend-v1/api/content-lib.php` (the `cms_ai_get`, `cms_ai_save`, `cms_ai_models`
+cases) and the console's shape is the Content screen. The specification, read off v2.1 and to be kept
+exactly:
+
+- `AI_DEF` = `customKey`, `customModel`, `customUrl`; provider list with `anthropic` as the default;
+  per-provider keys `<provider>Key` and `<provider>Model` (`anthropic` → `claude-sonnet-4-5`, `openai` →
+  `gpt-4o-mini`, `openrouter` → `nousresearch/hermes-3-llama-3.1-405b`);
+- `voice` — the studio's writing voice: **800 characters** (every other setting 300);
+- secrets are write-only: a read returns `Set` / empty, never the key; a save with the field empty keeps
+  what is stored, and `<key>Clear` erases it;
+- a custom provider URL must start `http(s)://`;
+- `cms_ai_models` lists a provider's models: keep ids matching `^(gpt|o\d|chatgpt)`, drop anything matching
+  `embed|whisper|tts|dall-e|image|audio|realtime|moderation|transcribe|search`, return at most 400;
+- `ai_call()` is one POST with a 60-second timeout and `max_tokens 6000`; the text is `content[].text`
+  joined, or `choices[0].message.content`;
+- the settings live in `_private/content.json` (v2.1's store) and must keep working for v2.1 while the
+  strangler runs — the same rule as business info, where the v2.5 write is what the live site reads.
+
+Shape for v2.5: `lib/ai.php` + `routes/ai.php` (`GET|POST /ai/settings`, `POST /ai/models`), masked reads,
+`wx_ai_pub()`, provider/model/voice validation, a label in `WX_APPR_LABELS` if the save is policy-wrapped,
+`LiveContent.tsx` gains the panel (owner/admin; a permission refusal says so in one line). Test the pure
+parts — the model filter and the request builder — separately from the network call, because this sandbox
+cannot reach a provider.
+
+### b. The announcement bar (`cms_announce_*`)
+
+Same family, same pattern: `assets/announce.json` — `{on, text, link, linkText, style, v}`; text ≤ 160,
+linkText ≤ 40; link must match `^(/[^\s"<>]*|https://[^\s"<>]+|tel:\+?[0-9 ]+|mailto:[^\s"<>]+)$`; styles
+`navy|wood|cream`; `on` with empty text is a validation error naming the field; `v` is the visitor's
+dismissal key and moves only when the announcement changes. The site already reads that file (§2). The
+console's screen is Header & footer. Written with `wx_write_file_atomic()` and a backup — v2.1 truncated
+before it locked.
+
+Order matters: the announcement is the smaller slice and the site side is already verified; the AI
+settings are larger and need the panel decision.
+
+### c. Then the rest of Phase 3
+
+Services & cities (the address rule and the furniture rule already exist — `lib/content.php`,
+`wx_content_rel()`, `wx_content_shell_rel()`; what is missing is the screen), the SEO screens
+(`seo-lib.php` → titles, descriptions, sitemap, the audit), and integrations (`conn-lib.php`'s 22
+connectors and their keys — the largest remaining piece of the phase, and the one that needs a host to
+test against).
+
+### d. Phases 4–6
+
+Read plan §12 for the schedule: 4 — AI centre, automation, WhatsApp hub; 5 — SEO and the marketing
+surfaces; 6 — the client portal (tokenised, no login; the HMAC pattern already exists in
+`quote-view.php`). Nothing in those phases is started. `cms_ai_*` (§8a) is the first thing Phase 4 needs.
+
+### e. The host run — the only thing that proves the phase
+
+On the host, after the upgrade in §7: publish an article as an editor; change the header through the
+console and watch 150 pages change as one batch; roll that batch back from page history; check
+`/api/v2/health`; check that `/admin/` (v2.1) still works. Record the numbers in the plan's §11 table —
+they are the reason the table exists.
+
+### f. Housekeeping, in the order it hurts
+
+1. **The dashboard is still the prototype's mock screen.** It reads `lib/mock.ts` — the counts are samples
+   and the banner now says "in this sample". Wiring it is the last screen of Phase 2 and it cannot be done
+   honestly without the API: it needs `GET /dashboard` plus the shell's badges (the approvals badge is
+   `GET /approvals/count`).
+2. **Four admin generations coexist** (`admin/`, `wf-admin/`, `frontend-v1/admin/`, and history's v2.1) —
+   plan §2's finding. Nothing is deleted until Phase 6; the names belong in the README so nobody guesses.
+3. **The old release zips** (`deploy/p17…p20`, `woodex-master-P22/`, `woodex-vlive-P20/`) were removed from
+   the tree in P25 to keep the repository navigable. Their record is in `CHANGELOG.md` and their bytes are
+   recoverable from history (`git log --diff-filter=A -- <path>`, then `git show <sha>:<path>`).
+4. The v26 pages at the root are not the release's pages (§2). Either they replace the live ones later, or
+   the release should stop carrying the older generation — an owner decision, not a build decision.
+
+---
+
+## 9. Open questions for the owner
+
+The plan's §17 six decisions are still open and still block *design sign-off*, not the build: the
+navigation model, the density/typography direction, the dashboard's one job, the client-facing document
+design, the search & command palette's scope, and the portal's branding. They were deliberately not
+re-asked.
+
+New, found while packaging:
+
+1. **Which generation of pages is the live site?** (§2) — the release currently ships both, additively.
+2. **Do the sections' enquiries keep going to Netlify on the Hostinger copy, or move to `api/v2`?** The
+   forms screen names the address each page posts to; Phase 4 is where the address changes.
+3. **Should `/admin/` be repointed at the console now?** Plan §14.2 step 4 says when coverage is complete;
+   with Phase 3 half-built, the honest answer is not yet — but the 302 is a five-minute change.
+
+---
+
+## 10. Working agreements
+
+These were all learned the hard way in this project; they are the difference between a fix and a second bug.
+
+1. **Fix the function that produces a label, not the string.** When something wrong appears on screen,
+   find the one place that computes it (`linkLabel()`, `wx_notify_*`) and make *that* true, so the same
+   wrongness cannot appear from a second screen.
+2. **The console never presents a prototype as the product**, and never invents a number. `demo data` only
+   in demo mode, `not answering` with a reason when the host is silent, `live · api/v2 <version>` when it
+   is not.
+3. **A pasted label is evidence, not a complaint to be deleted.** Trace it to the code, then fix the code.
+4. **The preview must be current, and proving it is part of restarting it** — fetch a module, not the HTML
+   shell, and say which commit it is serving.
+5. **A bare phase signal is approval to build.** Don't re-ask the plan's decisions; don't stop for the host
+   gate; the next slice follows without a pause.
+6. **The server is the only place a number is computed.** Screens print; they never re-add, round or
+   re-derive money, counts or totals.
+7. **Write the reasoning in the commit message.** `git log` is the project's other document — the plans say
+   what should be true, the commits say why it is.
