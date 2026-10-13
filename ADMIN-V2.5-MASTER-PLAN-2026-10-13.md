@@ -515,6 +515,10 @@ working as intended, not a gap hidden by a fallback.
 
 ### Phase 3 — Content, assets and delivery · **in progress** · 4 weeks
 
+*Measured at this commit:* `tests/run.php` **337 passed · 0 failed · 6 skipped** · `tests/conformance.mjs`
+**69 · 0** · php-lint **131 files** · `admin-v25` smoke **84 checks · 65 routes** · legacy bridge **130 of 365
+actions** (36%). Migrations **000–012** are written and none has run on a database yet.
+
 Pages · builder bridge · section library · header/footer · heroes · redirects · the full content CMS ·
 media with alt-text queue · forms · estimator · client updates · projects and the Gantt timeline ·
 quote templates · business info · integrations rebuilt on real connector state · page versioning.
@@ -532,18 +536,23 @@ back from page history — all through v2.5.
 | The content CMS: an editor writes an article, the server composes the page | `lib/content.php`, `routes/content.php`, `db/migrations/012_content.sql` | v2.1's builder ran in the browser and posted finished HTML; here an item is content and the page is composed at publish time from the site's own page furniture — so a new article inherits the *current* header, scheduling is a row with a time rather than 3 MB of prepared HTML, and drafts are a query rather than a loop |
 | Five screens | `admin-v25/src/screens/{LiveRedirects,LiveMedia,LiveContent,LiveGlobal}.tsx` on `/redirects`, `/media`, `/blog`, `/portfolio`, `/global` | live-only by design; with no API they say so in a sentence and offer no buttons that would lie |
 
-The two halves of the gate are in place and tested: **publishing** (`POST /content/{id}/publish`
-composes the page and returns the batch that undoes it) and **the site-wide header** (`POST /chrome`
-returns the same kind of batch from `wx_page_write_many()`). What the gate still needs is the last
-sentence — *rolls the change back from page history* — which the platform has had since Phase 1
-(`wx_page_rollback_batch()`) and which now has no screen. **The page-history screen is the next thing to
-build**, and the gate runs on a host with PHP and MySQL.
+**All three sentences of the gate are now wired**, and the wiring is asserted (`tests/run.php`, "the gate,
+as wiring"): `POST /content/{id}/publish` composes and writes the article and returns the batch that undoes
+it; `POST /chrome` changes the header across the site through the same versioned writer; `GET /pages/history`
+groups the result as one change and `POST /pages/rollback` puts every page in it back — the undo is itself a
+batch, so it can be undone. Running the gate itself needs PHP and MySQL: **migrations 000–012 have still
+never run**, and there is no PHP in the build sandbox, so the gate is a host run on the checklist above.
 
-**Still to come in this phase:** the page-history screen (the gate's last sentence), the pages screen,
-the section library and globals (`builder.php`'s 19 actions), placements and designs (testimonials and
-team appear *inside* pages — the API exists, the renderer does not yet), city pages (their publish path
-is root-level, unlike posts and case studies), forms, the estimator, projects and the Gantt timeline,
-quote templates, business info (`cms_biz_*`), announcements, the AI settings screen, and integrations.
+| Delivered — the history screen | Where | Note |
+|---|---|---|
+| Every page, every change, one undo | `admin-v25/src/screens/LivePages.tsx`, `lib/pages.php#wx_page_changes_grouped()` | the change that rewrote 148 pages is one entry with one button; per-page versions sit beside it |
+
+**Still to come in this phase:** the section library and globals (`builder.php`'s 19 actions), placements
+and designs (testimonials and team appear *inside* pages — the API exists, the renderer does not yet), the
+page editor (writing a page body by hand — the pages API is done, the screen is not), city pages (their
+publish path is root-level, unlike posts and case studies), heroes, forms, the estimator, projects and the
+Gantt timeline, quote templates, business info (`cms_biz_*`), announcements, the AI settings screen, SEO
+screens and integrations.
 
 ### Phase 4 — Automation and intelligence · 3 weeks
 
