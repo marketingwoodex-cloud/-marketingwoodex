@@ -166,6 +166,18 @@ function wx_routes(): array
         ['POST',   'security/recovery',               'security', 'wx_route_security_recovery',       'sec_recovery_new'],
         ['POST',   'security/alerts',                 'security', 'wx_route_security_alerts',         'sec_alerts'],
 
+        /* ------------------------------------------------- the visitor's widget
+           Public on purpose: these five are what the website widget calls, and a visitor has no session
+           to begin with. Auth here is the chat token in the body — 20 random bytes whose sha256 is the
+           only thing stored — plus the per-IP limit inside each handler, so a request that guesses is
+           cheap to refuse and a bot that scrapes is expensive to keep. `chat.php` was v2.1's entry point;
+           the old URL keeps working until the widget itself is re-pointed in Phase 3. */
+        ['GET',    'chat/config',                     'chat_public', 'wx_route_chat_cfg',    null],
+        ['POST',   'chat/send',                       'chat_public', 'wx_route_chat_send',   null],
+        ['POST',   'chat/poll',                       'chat_public', 'wx_route_chat_poll',   null],
+        ['POST',   'chat/typing',                     'chat_public', 'wx_route_chat_typing', null],
+        ['POST',   'chat/file',                       'chat_public', 'wx_route_chat_file',   null],
+
         /* ---------------------------------------------------------- system */
         ['GET',    'system/health',                   'system', 'wx_route_sys_health',    'sys_check'],
         ['GET',    'system/schema',                   'system', 'wx_route_sys_schema',    'dbx_browse'],
@@ -184,6 +196,30 @@ function wx_routes(): array
  * so the pattern-a-capture test in tests/run.php now walks the register and asserts every brace in
  * every pattern resolves.
  */
+/**
+ * The patterns that answer without a session. One list, in one place, because two things need to agree
+ * about it: the dispatcher's own review (tests/conformance.mjs reads this function) and anyone asking
+ * "what can a stranger reach?".
+ *
+ * The rule for being on this list is that the route authenticates by something other than a session, and
+ * says what: `health` and `version` are monitors with nothing to leak; `auth/*` is how a session is
+ * obtained; `me` answers "who am I" and so must be able to say "nobody" with a clean 401; the booking
+ * form and the chat widget are used by people who have never signed in — they carry a rate limit and, in
+ * the chat's case, a per-conversation token instead.
+ *
+ * Anything not on this list must call wx_require_user() in its handler. That is checked, not assumed.
+ */
+function wx_public_routes(): array
+{
+    return [
+        'health', 'version',
+        'auth/login', 'auth/login/2fa', 'auth/logout',
+        'me',
+        'book/config', 'book/slots', 'book',
+        'chat/config', 'chat/send', 'chat/poll', 'chat/typing', 'chat/file',
+    ];
+}
+
 function wx_route_match(string $method, array $segments): ?array
 {
     $path = implode('/', $segments);

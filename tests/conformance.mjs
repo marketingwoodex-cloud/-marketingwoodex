@@ -90,7 +90,10 @@ const routeFiles = readdirSync(join(ROOT, "api/v2/routes")).filter((f) => f.ends
 function parseRoutes() {
   const body = router.slice(router.indexOf("$routes = ["), router.indexOf("];", router.indexOf("$routes = [")));
   const routes = [];
-  for (const m of body.matchAll(/\[\s*'([A-Z]+)',\s*'([^']+)',\s*'([a-z_]+)',\s*'([a-z_]+)',\s*(null|'[a-z_0-9]+')\s*\]/g)) {
+  /* Digits matter: `wx_route_login_2fa` and the two-factor routes in routes/security.php were invisible
+     to every check in this file while the handler pattern was [a-z_]+ — the checks that should have
+     covered the newest, most security-sensitive routes were silently skipping them. */
+  for (const m of body.matchAll(/\[\s*'([A-Z]+)',\s*'([^']+)',\s*'([a-z0-9_]+)',\s*'([a-z0-9_]+)',\s*(null|'[a-z0-9_]+')\s*\]/g)) {
     routes.push({ method: m[1], pattern: m[2], file: m[3], fn: m[4], action: m[5] === "null" ? null : m[5].slice(1, -1) });
   }
   return routes;
@@ -99,9 +102,34 @@ const routes = parseRoutes();
 
 check("router declares routes", () => assert(routes.length >= 15, `only ${routes.length} routes parsed`));
 
+check("the route table is parsed completely", () => {
+  /* A parser that quietly skips a line makes every check below it weaker without saying so. Count the
+     lines that look like route registrations and require the parse to have found all of them. */
+  const src = readCode("api/v2/lib/router.php");
+  const starts = (src.match(/\n\s*\['(GET|POST|PATCH|PUT|DELETE)',/g) || []).length;
+  assertEq(routes.length, starts, `parsed ${routes.length} of ${starts} route lines`);
+});
+
 check("every route file exists", () => {
   const missing = [...new Set(routes.map((r) => r.file))].filter((f) => !routeFiles.includes(`${f}.php`));
   assertEq(missing.length, 0, `route files that do not exist: ${missing.join(", ")}`);
+});
+
+check("no file declares the same function twice", () => {
+  /* PHP dies with "Cannot redeclare" the moment the file is loaded, so a duplicate is not a subtle
+     bug — but it is an invisible one, because route files are only loaded when a request reaches them.
+     bookings.php carried a duplicate copy of two functions that way: lint-clean, conformance-clean,
+     and fatal on the first booking anyone tried to create. */
+  const offenders = [];
+  for (const f of [...routeFiles.map((x) => `api/v2/routes/${x}`), ...readdirSync(join(ROOT, "api/v2/lib")).filter((x) => x.endsWith(".php")).map((x) => `api/v2/lib/${x}`)]) {
+    const names = [...readCode(f).matchAll(/^function\s+([a-z0-9_]+)\s*\(/gm)].map((m) => m[1]);
+    const seen = new Set();
+    for (const n of names) {
+      if (seen.has(n)) offenders.push(`${f} → ${n}`);
+      seen.add(n);
+    }
+  }
+  assertEq(offenders.length, 0, `functions declared twice: ${offenders.join(", ")}`);
 });
 
 check("every route handler is declared in its file", () => {
@@ -113,19 +141,25 @@ check("every route handler is declared in its file", () => {
   assertEq(missing.length, 0, `handlers not found: ${missing.join(", ")}`);
 });
 
-check("every non-public handler enforces authentication", () => {
-  /* /me is the deliberate exception: it answers "who am I", so a signed-out caller must get a clean
-     401 rather than a permission error. It authenticates by calling wx_current_user() and throwing
-     ApiError::auth() — which is why it is listed here rather than having a call bolted on to satisfy
-     this check. */
-  /* Public on purpose, each for a reason: health/version are monitors, auth/* is how you sign in,
-     /me answers "who am I" with a clean 401, and the three book* routes are the website's booking
-     form — they carry no session by design and are rate-limited instead (see routes/bookings.php). */
-  const publicRoutes = new Set(["health", "version", "me", "auth/login", "auth/login/2fa", "auth/logout",
-    "book/config", "book/slots", "book"]);
+/* The public list is read from router.php rather than repeated here: a second copy of it is a second
+   thing to forget, and the failure mode of forgetting is a route that quietly stops asking who you are. */
+function publicRoutes() {
+  const src = readCode("api/v2/lib/router.php");
+  const at = src.indexOf("function wx_public_routes(");
+  assert(at >= 0, "router.php must declare wx_public_routes()");
+  const body = src.slice(at, src.indexOf("\n}", at));
+  const out = new Set();
+  for (const m of body.matchAll(/'([a-z0-9_/{}.\-]+)'/g)) out.add(m[1]);
+  return out;
+}
+
+check("every route that is not declared public enforces authentication", () => {
+  const publicList = publicRoutes();
+  const patterns = new Set(routes.map((r) => r.pattern));
+  for (const p of publicList) assert(patterns.has(p), `wx_public_routes() names /${p}, which is not a registered route`);
   const offenders = [];
   for (const r of routes) {
-    if (publicRoutes.has(r.pattern)) continue;
+    if (publicList.has(r.pattern)) continue;
     const src = readCode(`api/v2/routes/${r.file}.php`);
     const at = src.indexOf(`function ${r.fn}(`);
     assert(at >= 0, `${r.fn} not found in its file`);
@@ -138,6 +172,31 @@ check("every non-public handler enforces authentication", () => {
     }
   }
   assertEq(offenders.length, 0, `these routes never call wx_require_user(): ${offenders.join(", ")}`);
+});
+
+check("public write routes are rate-limited instead of authenticated", () => {
+  /* A session is what protects a signed-in route. A stranger's POST has no session to check, so the
+     control has to be the rate limit plus whatever token the route carries — otherwise "public" means
+     "unprotected", which is how a contact form becomes a way to send ten thousand emails. */
+  const exempt = new Set([
+    "book/config", "chat/config",        // reads
+    "chat/poll",                          // reads; the widget polls every few seconds by design
+    "auth/login", "auth/login/2fa",       // throttled by wx_throttle() + wx_login_attempts in lib/auth.php
+    "auth/logout",                        // ends the caller's own session; nothing to spend
+    "me",                                 // reads, or writes only the caller's own row
+    "health", "version",                  // GET only
+  ]);
+  const offenders = [];
+  for (const r of routes) {
+    if (r.method === "GET" || exempt.has(r.pattern)) continue;
+    const src = readCode(`api/v2/routes/${r.file}.php`);
+    const at = src.indexOf(`function ${r.fn}(`);
+    const body = src.slice(at, src.indexOf("\nfunction ", at + 10) === -1 ? undefined : src.indexOf("\nfunction ", at + 10));
+    const publicList = publicRoutes();
+    /* wx_book_rate() is wx_rate() with the booking form's wording; either counts. */
+    if (publicList.has(r.pattern) && !/wx_(\w*_)?rate\s*\(/.test(body)) offenders.push(`${r.fn} (${r.method} /${r.pattern})`);
+  }
+  assertEq(offenders.length, 0, `public writes with no rate limit: ${offenders.join(", ")}`);
 });
 
 check("every route's permission action exists in the generated alias table", () => {
@@ -420,6 +479,15 @@ check("C7: writes must be audited", () => {
   const offenders = [];
   for (const f of routeFiles) {
     const src = readCode(`api/v2/routes/${f}`);
+    /* Helpers that audit on their caller's behalf. wx_chat_lead_from() writes the lead and its audit row
+       together, so a handler calling it has recorded the change — and the row is written in the right
+       place, beside the row it describes rather than in the handler that asked for it. */
+    const publicFns = new Set(routes.filter((rt) => publicRoutes().has(rt.pattern)).map((rt) => rt.fn));
+    const auditingHelpers = new Set();
+    for (const block of src.split(/\nfunction /).slice(1)) {
+      const n = block.slice(0, block.indexOf("("));
+      if (/wx_audit\s*\(/.test(block)) auditingHelpers.add(n);
+    }
     /* The obligation is on the handler, not on every helper it uses: wx_chat_add() appends a message
        and is called by handlers that audit the change it belongs to (chat.reply, chat.note). Scanning
        helpers too would push an audit row into the middle of a transaction that is already covered. */
@@ -427,7 +495,8 @@ check("C7: writes must be audited", () => {
       const name = block.slice(0, block.indexOf("("));
       if (!name.startsWith("wx_route_")) continue;
       const writes = /wx_(insert|update|q)\(\s*['"`]?(INSERT|UPDATE|DELETE)/i.test(block) || /wx_doc_put|wx_insert|wx_update/.test(block);
-      const audits = /wx_audit\s*\(/.test(block);
+      const audits = /wx_audit\s*\(/.test(block)
+        || [...auditingHelpers].some((h) => h !== name && new RegExp(`\\b${h}\\s*\\(`).test(block));
       /* Two kinds of exception, both of which would be noise in the audit trail rather than facts in
          it: approval and login routes (the approval row and the session row are the record), and the
          infrastructure writers — the notification log and the rate-limit counter, which record that a
@@ -436,7 +505,11 @@ check("C7: writes must be audited", () => {
          two presence writes — clearing the unread badge and setting a typing timestamp. None of them is
          a change to the business, and an audit row for each would bury the ones that are. */
       const infra = /^(wx_route_chats_get|wx_route_chats_typing)$/.test(name);
-      if (writes && !audits && !infra && !/approval|auth|health/.test(f)) offenders.push(`${f} → ${name}`);
+      /* A visitor has no identity to attribute an audit row to. What protects those routes is the rate
+         limit (checked separately above), and what records them is the conversation itself: wx_chats,
+         wx_chat_msgs, and — the moment a phone number or an email appears — the lead and its audit row. */
+      const anonRoute = publicFns.has(name);
+      if (writes && !audits && !infra && !anonRoute && !/approval|auth|health/.test(f)) offenders.push(`${f} → ${name}`);
     }
   }
   assertEq(offenders.length, 0, `handlers that write without auditing: ${offenders.join(", ")}`);

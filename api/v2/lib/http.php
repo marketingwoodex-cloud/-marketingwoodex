@@ -160,6 +160,36 @@ function wx_ip(): string
     return substr((string) ($_SERVER['REMOTE_ADDR'] ?? ''), 0, 64);
 }
 
+/**
+ * A per-key request limit, kept in `wx_throttle` — the same table and the same namespaced-key trick
+ * v2.1 used (`c|1.2.3.4`, `book:1.2.3.4`), because the live widget and the old admin share this table
+ * and neither should see the other's counters.
+ *
+ * The key is the caller's idea of identity: an IP for a public form, something more specific when a
+ * limit is about one thing rather than one person. Callers pass a namespaced key so two features cannot
+ * spend each other's budget.
+ *
+ * `n` counts up to `max` inside `window` seconds, then refuses until the window rolls over. A refusal is
+ * a 429 with a sentence a person can act on — never a silent drop.
+ */
+function wx_rate(string $key, int $max, int $window, string $message = 'Too many requests — please wait a few minutes'): void
+{
+    $row = wx_one('SELECT n, t FROM wx_throttle WHERE ip = ?', [$key]);
+    $now = time();
+    if ($row === null) {
+        wx_insert('wx_throttle', ['ip' => $key, 'n' => 1, 't' => $now]);
+        return;
+    }
+    if ($now - (int) $row['t'] >= $window) {
+        wx_q('UPDATE wx_throttle SET n = 1, t = ? WHERE ip = ?', [$now, $key]);
+        return;
+    }
+    if ((int) $row['n'] >= $max) {
+        throw new ApiError('RATE_LIMIT', $message, 429);
+    }
+    wx_q('UPDATE wx_throttle SET n = n + 1 WHERE ip = ?', [$key]);
+}
+
 function wx_ua(): string
 {
     return substr((string) ($_SERVER['HTTP_USER_AGENT'] ?? ''), 0, 200);

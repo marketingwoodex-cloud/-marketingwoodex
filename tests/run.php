@@ -409,6 +409,90 @@ ok(wx_route_match('GET', ['nope']) === null, 'an unknown path does not match');
 $m = wx_route_match('GET', ['leads']);
 ok($m !== null && $m[0]['fn'] === 'wx_route_leads_list', 'the list route resolves to its handler');
 
+/* ---- the table itself: every route must be reachable, and reach its own handler ----------------
+   This is where a route goes wrong without anyone noticing. `DELETE /invoices/{id}/payments/{payment}`
+   was unreachable for a while because the matcher only understood `{id}`; nothing failed, the endpoint
+   simply answered 404 and the reversal path in the money test never ran. The checks below ask the
+   matcher for a path built from each registered pattern and require the answer to be that same route. */
+
+$routes = wx_routes();
+/* The dispatcher loads a route file only when it has chosen a route from it, so nothing here exists yet.
+   Loading all of them first — which is also a test that each one parses and declares what it should. */
+$routeFiles = glob(dirname(__DIR__) . '/api/v2/routes/*.php') ?: [];
+sort($routeFiles);
+$loaded = [];
+foreach ($routeFiles as $file) {
+    try {
+        require_once $file;
+        $loaded[] = basename($file);
+    } catch (Throwable $e) {
+        $loaded[] = basename($file) . ' ✗ ' . $e->getMessage();
+    }
+}
+ok(count($loaded) === count($routeFiles), 'every file in api/v2/routes loads without error');
+$seen = [];
+$unreachable = [];
+$wrong = [];
+foreach ($routes as $r) {
+    $key = $r[0] . ' ' . $r[1];
+    if (isset($seen[$key])) {
+        $seen[$key]++;
+        continue;
+    }
+    $seen[$key] = 1;
+    $segments = [];
+    foreach (explode('/', $r[1]) as $seg) {
+        $segments[] = preg_match('~^\{([a-z0-9_]+)\}$~', $seg) ? ($seg === '{id}' ? '7' : 'sample') : $seg;
+    }
+    $hit = wx_route_match($r[0], $segments);
+    if ($hit === null) {
+        $unreachable[] = $key;
+    } elseif ($hit[0]['fn'] !== $r[3]) {
+        $wrong[] = $key . ' → ' . $hit[0]['fn'];
+    }
+}
+eq($unreachable, [], 'every registered pattern can be matched by a path built from it');
+eq($wrong, [], 'every pattern resolves to its own handler, not to an earlier one that shadows it');
+$dupes = array_keys(array_filter($seen, static fn($n) => $n > 1));
+eq($dupes, [], 'no route is registered twice (a duplicate would shadow the second one)');
+
+/* Two parameters in one pattern, and the second one is a string, not an id. */
+$m = wx_route_match('DELETE', ['invoices', '12', 'payments', 'R-4']);
+ok($m !== null && $m[1]['id'] === 12 && $m[1]['payment'] === 'R-4', 'a two-parameter pattern captures both, with the id typed');
+ok(wx_route_match('DELETE', ['invoices', '12', 'payments']) === null, 'a pattern does not match when a segment is missing');
+
+/* A handler name that does not exist is a 500 in production and a typo at review time. */
+$missing = [];
+foreach ($routes as $r) {
+    if (!function_exists($r[3])) {
+        $missing[] = $r[3];
+    }
+}
+eq($missing, [], 'every registered handler is a function that exists');
+
+/* ---- the legacy bridge -------------------------------------------------------------------------
+   The bridge is an array literal, and a repeated key in one is not an error: PHP keeps the last and
+   says nothing. Counting the keys against the lines that define them is the only way to notice. */
+$bridged = wx_legacy_bridged();
+$lines = substr_count(file_get_contents(__DIR__ . '/../api/v2/routes/legacy.php'), "=> ['");
+eq(count($bridged), $lines, 'every bridge key is distinct (a duplicate would silently replace one)');
+$bad = [];
+foreach ($bridged as $action => $spec) {
+    if (!function_exists($spec[1])) {
+        $bad[] = $action . ' → ' . $spec[1];
+    }
+}
+eq($bad, [], 'every bridged action points at a handler that exists');
+ok(count($bridged) > 60, 'the bridge covers the ported families (' . count($bridged) . ' actions)');
+
+/* ---- public routes -----------------------------------------------------------------------------
+   Every route that answers without a session has to be declared, and the declaration has to be true:
+   a public pattern that is not registered is a typo, and a registered route that is not public must
+   ask who is calling (conformance checks the handler; this checks the table). */
+$patterns = array_column($routes, 1);
+$unknown = array_values(array_diff(wx_public_routes(), $patterns));
+eq($unknown, [], 'every pattern in wx_public_routes() is a registered route');
+
 /* ============================================================== JSON store */
 group('Atomic JSON store');
 

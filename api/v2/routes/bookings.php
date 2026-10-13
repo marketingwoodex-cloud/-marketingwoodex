@@ -292,22 +292,16 @@ function wx_book_notify(array $r, string $event): array
  * @param int    $max  how many are allowed inside the window
  * @param int    $window seconds
  */
+/**
+ * The booking form's own limit, with the booking form's own wording.
+ *
+ * The counting lives in wx_rate() (lib/http.php) so the visitor chat and the booking form cannot
+ * disagree about what a limit is; this wrapper exists because "please WhatsApp us instead" is the right
+ * thing to say to someone trying to book a visit and the wrong thing to say to someone mid-conversation.
+ */
 function wx_book_rate(string $key, int $max, int $window): void
 {
-    $row = wx_one('SELECT n, t FROM wx_throttle WHERE ip = ?', [$key]);
-    $now = time();
-    if ($row === null) {
-        wx_insert('wx_throttle', ['ip' => $key, 'n' => 1, 't' => $now]);
-        return;
-    }
-    if ($now - (int) $row['t'] >= $window) {
-        wx_q('UPDATE wx_throttle SET n = 1, t = ? WHERE ip = ?', [$now, $key]);
-        return;
-    }
-    if ((int) $row['n'] >= $max) {
-        throw new ApiError('RATE_LIMIT', 'Too many bookings from this connection — please WhatsApp us instead', 429);
-    }
-    wx_q('UPDATE wx_throttle SET n = n + 1 WHERE ip = ?', [$key]);
+    wx_rate($key, $max, $window, 'Too many bookings from this connection — please WhatsApp us instead');
 }
 
 /* ============================================================== team screens */

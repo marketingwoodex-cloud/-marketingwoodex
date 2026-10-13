@@ -213,6 +213,258 @@ function wx_chat_recent(?string $t): bool
     return $t !== null && $t !== '' && strtotime($t) >= time() - 6;
 }
 
+/* ============================================================== the assistant's rules
+   Everything below is what answers a visitor when no person is at the keyboard. v2.1 had two sources:
+   the operator's saved answers in `chat.cfg` (Q&A and quick replies) and a shipped file of bilingual
+   rules, `api/chat-rules.json`, used when the AI was off or unreachable. Both are kept, because the
+   file is not an implementation detail — its seventeen patterns and their answers are written in the
+   company's voice, in English and Urdu, and they were tuned against real conversations.
+
+   The one deliberate change: the file is now a *default*, and `wx_settings['chat.rules']` overrides it.
+   That is the seam the AI centre (Phase 4) needs to let someone edit an answer without a deploy, and it
+   means today's behaviour is exactly v2.1's. */
+
+/** Is the office open right now? Asia/Karachi, the same clock v2.1 used, independent of host timezone. */
+function wx_chat_open_now(): bool
+{
+    $c = wx_chat_cfg();
+    $d = new DateTime('now', new DateTimeZone('Asia/Karachi'));
+    $minutes = (int) $d->format('G') * 60 + (int) $d->format('i');
+    $hm = static function ($t): int {
+        return preg_match('~^(\d{1,2}):(\d{2})$~', (string) $t, $m) ? (int) $m[1] * 60 + (int) $m[2] : 0;
+    };
+    return in_array((int) $d->format('w'), array_map('intval', (array) $c['days']), true)
+        && $minutes >= $hm($c['openFrom'])
+        && $minutes < $hm($c['openTo']);
+}
+
+/** The rule set: a setting if one has been saved, otherwise the file shipped with the API. */
+function wx_chat_rules(): array
+{
+    static $rules = null;
+    if ($rules !== null) {
+        return $rules;
+    }
+    $saved = wx_setting('chat.rules', '');
+    if (is_string($saved) && $saved !== '') {
+        $decoded = json_decode($saved, true);
+        if (is_array($decoded) && !empty($decoded['rules'])) {
+            return $rules = $decoded;
+        }
+    }
+    $file = WX_V2_DIR . '/data/chat-rules.json';
+    $rules = is_file($file) ? (array) json_decode((string) file_get_contents($file), true) : [];
+    return $rules;
+}
+
+/**
+ * The words worth matching on: short ones and the grammar of a question are dropped, then two questions
+ * are compared by how much of the saved one the visitor's message covers.
+ */
+function wx_chat_words(string $s): array
+{
+    $stop = ['the', 'and', 'you', 'your', 'for', 'are', 'can', 'what', 'how', 'does', 'with', 'have', 'this', 'that', 'from', 'kya', 'hai', 'aap', 'mein', 'please'];
+    $parts = preg_split('~[^\p{L}\p{N}]+~u', mb_strtolower($s)) ?: [];
+    $out = [];
+    foreach ($parts as $w) {
+        if (mb_strlen($w) > 2 && !in_array($w, $stop, true)) {
+            $out[] = $w;
+        }
+    }
+    return $out;
+}
+
+/**
+ * The best answer the rules can give, or '' — and '' means a person must pick it up.
+ *
+ * v2.1's ladder, in the same order, with its two rules that matter most in practice:
+ *
+ *   · **Never the same answer twice in one conversation.** A visitor who asks twice is a visitor whose
+ *     question was not answered, and repeating the paragraph proves nobody is listening. The old code
+ *     checked the message table before reusing an answer, and this does too.
+ *   · **Never silence.** When nothing matches, the caller does not leave the bubble empty: the visitor
+ *     gets the after-hours line and the conversation is flagged `needs` for a person. (v2.1 sent the
+ *     unanswered question to `aia_unans()` when the AI centre was present; that arrives with Phase 4.)
+ */
+function wx_chat_rule_reply(array $c, string $text): string
+{
+    $cfg = wx_chat_cfg();
+    $needle = mb_strtolower(trim($text));
+    $tw = wx_chat_words($needle);
+    $best = '';
+    $score = 0.0;
+
+    /* The operator's own answers first: a person wrote these for their business, so they outrank the
+       shipped file. The comparison is deliberately loose — half the saved question's words, or any word
+       at all when the question is two words long ("3d design", "site visit"). */
+    $qa = (array) $cfg['qa'];
+    foreach ($qa as $x) {
+        $q = trim((string) ($x['q'] ?? ''));
+        $a = trim((string) ($x['a'] ?? ''));
+        if ($q === '' || $a === '') {
+            continue;
+        }
+        $qw = wx_chat_words(mb_strtolower($q));
+        if (!$qw) {
+            continue;
+        }
+        $hit = count(array_intersect($qw, $tw));
+        $s = $hit / count($qw);
+        if (($hit >= 2 || ($hit >= 1 && count($qw) <= 2)) && $s > $score) {
+            $score = $s;
+            $best = $a;
+        }
+    }
+    if ($score >= 0.5 && $best !== '' && !wx_chat_said_before((int) ($c['id'] ?? 0), $best)) {
+        return $best;
+    }
+
+    $R = wx_chat_rules();
+    if (!$R) {
+        return '';
+    }
+    $later = wx_chat_open_now() ? 'in a little while' : 'as soon as the office opens (' . (string) $cfg['hours'] . ')';
+    $co = wx_company_fill();
+    $fill = static function (string $s) use ($co, $cfg, $later): string {
+        return strtr($s, [
+            '{address}' => (string) ($co['address'] ?? ''),
+            '{phones}' => (string) ($co['phones'] ?? ''),
+            '{email}' => (string) ($co['email'] ?? ''),
+            '{hours}' => (string) $cfg['hours'],
+            '{later}' => $later,
+        ]);
+    };
+    $fresh = static function (array $options) use ($fill, $c): string {
+        $options = array_values(array_filter(array_map($fill, $options), static function ($x) use ($c) {
+            return $x !== '' && !wx_chat_said_before((int) ($c['id'] ?? 0), $x);
+        }));
+        return $options ? (string) $options[array_rand($options)] : '';
+    };
+
+    if (preg_match('~(\+?92|0)3\d{2}-?\d{7}~', (string) preg_replace('~[\s-]+~', '', ($text)))) {
+        $a = $fresh((array) ($R['phone'] ?? []));
+        if ($a !== '') {
+            return $a;
+        }
+    }
+    $body = trim((string) preg_replace(
+        '~^\W*(hi+|hello|hey|salam|assalam\w*(\s*o?\s*-?\s*alaikum)?|aoa|a\.o\.a|asalam\w*|good (morning|afternoon|evening))\b[\s,.!]*~iu',
+        '',
+        $text
+    ));
+    if ($body === '' || mb_strlen($body) < 3) {
+        return $fresh((array) ($R['greeting'] ?? []));
+    }
+
+    $wa = (string) ($c['channel'] ?? 'web') !== 'web';
+    $hasPhone = !empty($c['phone']);
+    foreach ((array) ($R['rules'] ?? []) as $r) {
+        if (empty($r['re']) || !@preg_match('~' . $r['re'] . '~iu', $body)) {
+            continue;
+        }
+        $a = $fresh((array) ($r['a'] ?? []));
+        if ($a === '') {
+            continue;
+        }
+        /* On the website, before a number is known, the answer ends with the ask. It is the one place the
+           assistant pushes for contact details, and it is why the inbox fills up on its own. */
+        if (!$wa && !$hasPhone && empty($r['noask']) && empty($r['human']) && substr(rtrim($a), -1) !== '?') {
+            $a .= (string) ($R['askPhone'] ?? '');
+        }
+        return $a . (!empty($r['human']) ? ' [HUMAN]' : '');
+    }
+    return '';
+}
+
+/** Has the assistant already said this in this conversation? One query, and only when there is a chat. */
+function wx_chat_said_before(int $chatId, string $text): bool
+{
+    if ($chatId <= 0 || $text === '') {
+        return false;
+    }
+    return (bool) wx_val("SELECT COUNT(*) FROM wx_chat_msgs WHERE chat_id = ? AND who = 'ai' AND text = ?", [$chatId, $text]);
+}
+
+/** Company details for the {placeholders}. Read once; missing settings simply fill with nothing. */
+function wx_company_fill(): array
+{
+    static $c = null;
+    if ($c === null) {
+        $c = [
+            'address' => (string) (wx_setting('company.address', '') ?? ''),
+            'phones' => (string) (wx_setting('company.phones', '') ?? ''),
+            'email' => (string) (wx_setting('company.email', '') ?? ''),
+        ];
+    }
+    return $c;
+}
+
+/**
+ * Pull a name, phone or email out of what the visitor just typed.
+ *
+ * This is v2.1's chat_capture(), and it is the reason a website chat turns into a lead without anyone
+ * typing anything into a form. The patterns are unchanged: a Pakistani mobile in any spacing, any
+ * international-looking number, an email address, and a handful of ways people introduce themselves.
+ * Nothing already known is overwritten, and a lead is only created when `autoLead` is on and there is
+ * something to contact.
+ */
+function wx_chat_capture(array $c, string $text): array
+{
+    $set = [];
+    $phoneRe = '~((?:\+?92|0)\s?3\d{2}[\s-]?\d{7}|\+?\d[\d\s-]{8,14}\d)~';
+    if (empty($c['phone']) && preg_match($phoneRe, $text, $m)) {
+        $set['phone'] = (string) preg_replace('~[^\d+]~', '', $m[0]);
+    }
+    if (empty($c['email']) && preg_match('~[\w.+-]+@[\w-]+\.[\w.]{2,}~', $text, $m)) {
+        $set['email'] = strtolower($m[0]);
+    }
+    if (empty($c['name']) && preg_match('~\b(?:my name is|this is|i am|i\'m|name:)\s+([a-z][a-z]+(?:\s[a-z][a-z]+)?)~i', $text, $m)
+        && !preg_match('~^(looking|interested|from|here|planning|a|an|the)\b~i', $m[1])) {
+        $set['name'] = ucwords(strtolower($m[1]));
+    }
+    if ($set) {
+        wx_update('wx_chats', $set, ['id' => (int) $c['id']]);
+        $c = array_merge($c, $set);
+    }
+    if (empty($c['lead_id']) && (trim((string) ($c['phone'] ?? '')) !== '' || trim((string) ($c['email'] ?? '')) !== '')
+        && !empty(wx_chat_cfg()['autoLead'])) {
+        $id = wx_chat_lead_from($c);
+        wx_update('wx_chats', ['lead_id' => $id], ['id' => (int) $c['id']]);
+        $c['lead_id'] = $id;
+    }
+    return $c;
+}
+
+/**
+ * Create the lead a chat has earned. One implementation for the two callers that need it: the agent's
+ * "make a lead" button and the capture above. The visitor's messages go in with it, so the enquiry
+ * arrives with its context instead of as a name and a phone number.
+ *
+ * Audited as anonymous when nothing is signed in — which is the truth of a public form — and the chat
+ * id is in the metadata either way, so the two can always be joined back up.
+ */
+function wx_chat_lead_from(array $c, ?array $actor = null): int
+{
+    $msgs = array_filter(wx_chat_msgs((int) $c['id'], 0, false), static fn($m) => $m['who'] === 'visitor');
+    $text = mb_substr(implode("\n", array_map(static fn($m) => '• ' . (string) $m['text'], $msgs)), 0, 3900);
+    $leadId = wx_insert('wx_leads', [
+        'created_at' => wx_now(),
+        'source' => (string) ($c['channel'] ?? 'web') === 'web' ? 'chat' : (string) $c['channel'],
+        'page' => (string) ($c['page'] ?? ''),
+        'name' => trim((string) ($c['name'] ?? '')) !== '' ? (string) $c['name'] : 'Chat visitor #' . (int) $c['id'],
+        'phone' => (string) ($c['phone'] ?? ''),
+        'email' => trim((string) ($c['email'] ?? '')) !== '' ? (string) $c['email'] : null,
+        'service' => '',
+        'message' => $text,
+        'fields' => json_encode(['chat' => (int) $c['id']], JSON_UNESCAPED_UNICODE),
+        'stage' => 'new',
+        'is_read' => 0,
+        'ip' => (string) ($c['ip'] ?? wx_ip()),
+    ]);
+    wx_audit($actor, 'chat.lead', 'chat:' . (int) $c['id'], ['lead' => $leadId, 'auto' => $actor === null]);
+    return $leadId;
+}
+
 /* ============================================================== reads */
 
 /**
@@ -493,25 +745,9 @@ function wx_route_chats_lead(array $ctx): array
                 throw ApiError::validation('A lead needs a phone number or an email address — add one first', 'phone');
             }
 
-            $msgs = array_filter(wx_chat_msgs((int) $c['id'], 0, false), static fn($m) => $m['who'] === 'visitor');
-            $text = mb_substr(implode("\n", array_map(static fn($m) => '• ' . $m['text'], $msgs)), 0, 3900);
-            $leadId = wx_insert('wx_leads', [
-                'created_at' => wx_now(),
-                'source' => 'chat',
-                'page' => (string) ($c['page'] ?? ''),
-                'name' => (string) ($c['name'] ?? '') !== '' ? (string) $c['name'] : 'Chat visitor #' . (int) $c['id'],
-                'phone' => (string) ($c['phone'] ?? ''),
-                'email' => (string) ($c['email'] ?? '') !== '' ? (string) $c['email'] : null,
-                'service' => '',
-                'message' => $text,
-                'fields' => json_encode(['chat' => (int) $c['id']], JSON_UNESCAPED_UNICODE),
-                'stage' => 'new',
-                'is_read' => 0,
-                'ip' => (string) ($c['ip'] ?? wx_ip()),
-            ]);
+            $leadId = wx_chat_lead_from($c, $u);
             wx_update('wx_chats', ['lead_id' => $leadId], ['id' => $id]);
             $c['lead_id'] = $leadId;
-            wx_audit($u, 'chat.lead', 'chat:' . $id, ['lead' => $leadId]);
 
             return ['data' => ['chat' => wx_chat_public($c), 'leadId' => $leadId, 'created' => true]];
         });
@@ -550,48 +786,13 @@ function wx_route_chats_file(array $ctx): array
             if ((string) ($c['channel'] ?? 'web') !== 'web') {
                 throw ApiError::validation('Attachments work in website chats — for WhatsApp or Telegram, send the file from the app', 'channel');
             }
-            $b64 = (string) ($ctx['body']['data'] ?? '');
-            if (strpos($b64, 'base64,') !== false) {
-                $b64 = substr($b64, (int) strpos($b64, 'base64,') + 7);
-            }
-            $bin = base64_decode($b64, true);
-            if ($bin === false || $bin === '') {
-                throw ApiError::validation('The file is empty or unreadable', 'data');
-            }
-            if (strlen($bin) > 8 * 1024 * 1024) {
-                throw ApiError::validation('Files must be 8 MB or smaller', 'data');
-            }
-            $kind = wx_chat_sniff($bin);
-            if ($kind === null) {
-                throw ApiError::validation('That file type is not supported (photos, PDFs and voice notes only)', 'data');
-            }
             $voice = !empty($ctx['body']['voice']);
-            if ($voice && $kind[1] !== 'voice') {
-                throw ApiError::validation('That is not a voice note format', 'data');
-            }
-            if (!$voice && $kind[1] === 'voice') {
-                throw ApiError::validation('Only photos and PDF files can be attached', 'data');
-            }
-
-            $dir = WX_SITE_ROOT . '/assets/uploads/chat/' . date('Ym');
-            if (!is_dir($dir) && !@mkdir($dir, 0755, true) && !is_dir($dir)) {
-                throw ApiError::internal('The upload directory could not be created');
-            }
-            $file = bin2hex(random_bytes(12)) . '.' . $kind[0];
-            if (@file_put_contents($dir . '/' . $file, $bin, LOCK_EX) === false) {
-                throw ApiError::internal('The file could not be saved');
-            }
-            $att = [
-                'u' => '/assets/uploads/chat/' . date('Ym') . '/' . $file,
-                'n' => mb_substr((string) ($ctx['body']['name'] ?? ''), 0, 120) ?: ($kind[1] === 'voice' ? 'Voice note' : 'file.' . $kind[0]),
-                'k' => $kind[1],
-                's' => strlen($bin),
-            ];
+            $att = wx_chat_save_att((string) ($ctx['body']['data'] ?? ''), (string) ($ctx['body']['name'] ?? ''), $voice);
             $caption = wx_v_opt_string($ctx['body']['text'] ?? null, 'text', 500) ?? '';
             if ((string) $c['mode'] === 'ai') {
                 wx_chat_add($id, 'sys', '', (string) $u['name'] . ' joined the chat');
             }
-            $mid = wx_chat_add($id, 'agent', (string) $u['name'], $caption !== '' ? $caption : ($kind[1] === 'voice' ? '🎤 Voice note' : ($kind[1] === 'img' ? '📷 Photo' : '📎 ' . $att['n'])), $att);
+            $mid = wx_chat_add($id, 'agent', (string) $u['name'], $caption !== '' ? $caption : wx_chat_att_text($att), $att);
             wx_update('wx_chats', [
                 'mode' => 'human',
                 'handoff' => '',
@@ -601,11 +802,74 @@ function wx_route_chats_file(array $ctx): array
                 'needs' => 0,
                 'atype' => null,
             ], ['id' => $id]);
-            wx_audit($u, 'chat.file', 'chat:' . $id, ['kind' => $kind[1], 'bytes' => strlen($bin)]);
+            wx_audit($u, 'chat.file', 'chat:' . $id, ['kind' => (string) $att['k'], 'bytes' => (int) $att['s']]);
 
             return ['data' => ['id' => $mid, 'att' => $att, 'chat' => wx_chat_public(wx_chat_or_404($id))]];
         });
     });
+}
+
+/**
+ * Save a base64 attachment and return its message shape: where, what to call it, which kind it is, how
+ * big. Shared by the agent's file button and the visitor's upload — one path, so an 8 MB limit and a
+ * content sniff cannot drift between the two directions of the same conversation.
+ *
+ * The name the browser sent is never used as a filename: it is reduced to a label, and the file itself
+ * is named from random bytes. A visitor-supplied filename is how `../` arrives at a web host.
+ */
+function wx_chat_save_att(string $b64, string $name, bool $voice): array
+{
+    if (strpos($b64, 'base64,') !== false) {
+        $b64 = substr($b64, (int) strpos($b64, 'base64,') + 7);
+    }
+    $bin = base64_decode($b64, true);
+    if ($bin === false || $bin === '') {
+        throw ApiError::validation('The file is empty or unreadable', 'data');
+    }
+    if (strlen($bin) > 8 * 1024 * 1024) {
+        throw ApiError::validation('Files must be 8 MB or smaller', 'data');
+    }
+    $kind = wx_chat_sniff($bin);
+    if ($kind === null) {
+        throw ApiError::validation('That file type is not supported (photos, PDFs and voice notes only)', 'data');
+    }
+    if ($voice && $kind[1] !== 'voice') {
+        throw ApiError::validation('That is not a voice note format', 'data');
+    }
+    if (!$voice && $kind[1] === 'voice') {
+        throw ApiError::validation('Only photos and PDF files can be attached', 'data');
+    }
+
+    $month = date('Ym');
+    $dir = WX_SITE_ROOT . '/assets/uploads/chat/' . $month;
+    if (!is_dir($dir) && !@mkdir($dir, 0755, true) && !is_dir($dir)) {
+        throw ApiError::internal('The upload directory could not be created');
+    }
+    $file = bin2hex(random_bytes(12)) . '.' . $kind[0];
+    if (@file_put_contents($dir . '/' . $file, $bin, LOCK_EX) === false) {
+        throw ApiError::internal('The file could not be saved');
+    }
+    /* The label keeps the visitor's words but loses everything that is not a character a person typed:
+       it is printed next to the bubble, never used as a path. */
+    $label = trim((string) preg_replace('~[^\w .()\-]+~u', '', $name));
+    return [
+        'u' => '/assets/uploads/chat/' . $month . '/' . $file,
+        'n' => mb_substr($label !== '' ? $label : ($kind[1] === 'voice' ? 'Voice note' : 'file.' . $kind[0]), 0, 120),
+        'k' => $kind[1],
+        's' => strlen($bin),
+    ];
+}
+
+/** The line a message carries when its body is a file: v2.1's words, so the old messages still match. */
+function wx_chat_att_text(array $a): string
+{
+    if ((string) $a['k'] === 'voice') {
+        return '🎤 Voice note';
+    }
+    if ((string) $a['k'] === 'img') {
+        return '📷 Photo';
+    }
+    return '📎 ' . (string) $a['n'];
 }
 
 /** What a file actually is, from its first bytes. Returns [extension, kind] or null. */
