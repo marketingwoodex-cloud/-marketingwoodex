@@ -581,3 +581,76 @@ table.data tr.is-selected { background: var(--accent-soft, rgba(0, 0, 0, 0.05));
   margin-top: var(--s-2); color: var(--text-3); font-size: var(--fs-11);
   font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
 }
+
+/* ------------------------------------------------------------------- projects
+   The KPI strip is a grid rather than a row of cards so a laptop shows six numbers without a scroll, and it
+   wraps to two lines on a phone. The drawer is the project's working surface: the table stays where it is
+   behind it, so a person can move through a list and open the next project without losing their place. */
+.kpi-row {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: var(--s-3); margin-bottom: var(--s-4);
+}
+.kpi-row .kpi {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r-lg); padding: var(--s-3) var(--s-4);
+}
+.kpi-row .kpi.bad { border-color: color-mix(in srgb, var(--danger) 45%, var(--border)); }
+.kpi-row .kpi-value { font-size: var(--fs-20); }
+
+/* A row a person has to act on: the handover date has gone by and the work has not finished. */
+tr.is-late td { background: color-mix(in srgb, var(--danger) 6%, transparent); }
+.cell-danger { color: var(--danger); font-weight: 600; }
+tr.is-late td:first-child { box-shadow: inset 3px 0 0 var(--danger); }
+
+.drawer-backdrop {
+  position: fixed; inset: 0; z-index: 60;
+  background: color-mix(in srgb, var(--ink-900) 35%, transparent);
+  display: flex; justify-content: flex-end;
+}
+.drawer {
+  width: min(760px, 96vw); height: 100%; overflow-y: auto;
+  background: var(--surface-2); border-left: 1px solid var(--border);
+  padding: var(--s-4) var(--s-5) var(--s-8);
+  display: flex; flex-direction: column; gap: var(--s-3);
+}
+.side-h {
+  font-size: var(--fs-12); font-weight: 680; text-transform: uppercase; letter-spacing: 0.04em;
+  color: var(--text-muted); margin-top: var(--s-4);
+}
+.feed-dot.is-sys { background: var(--accent-soft); color: var(--accent-ink); }
+
+/* -------------------------------------------------------------------- Gantt
+   A bar per project from its start to its handover. The label column is fixed and the track scrolls, so a
+   long axis does not carry the project names off the screen — the names are what a person is looking for. */
+.gantt { position: relative; }
+.gantt-scroll { overflow-x: auto; padding-bottom: var(--s-2); }
+.gantt-grid { position: relative; min-width: 100%; }
+.gantt-head { position: relative; height: 22px; margin-left: 220px; border-bottom: 1px solid var(--border); }
+.gantt-month {
+  position: absolute; top: 0; height: 22px; font-size: var(--fs-11); color: var(--text-subtle);
+  border-left: 1px solid var(--border); padding-left: 4px; white-space: nowrap; overflow: hidden;
+}
+.gantt-row { display: flex; align-items: center; height: 34px; border-bottom: 1px dashed var(--border); }
+.gantt-label {
+  width: 220px; flex: 0 0 220px; text-align: left; background: none; border: 0; cursor: pointer;
+  padding: 0 var(--s-2) 0 0; color: var(--text); display: flex; flex-direction: column; overflow: hidden;
+}
+.gantt-label b { font-size: var(--fs-12); font-weight: 620; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.gantt-label span { font-size: var(--fs-11); color: var(--text-subtle); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.gantt-track { position: relative; height: 34px; }
+.gantt-bar {
+  position: absolute; top: 8px; height: 18px; border-radius: var(--r-sm);
+  background: var(--surface-3); border: 1px solid var(--border-strong);
+  display: flex; align-items: center; overflow: hidden;
+}
+.gantt-bar i { position: absolute; inset: 0 auto 0 0; background: var(--accent); opacity: 0.85; }
+.gantt-bar em {
+  position: relative; font-size: var(--fs-10); font-style: normal; font-weight: 650;
+  color: var(--text); padding: 0 4px; white-space: nowrap;
+}
+.gantt-bar.is-late { border-color: var(--danger); }
+.gantt-bar.is-late i { background: var(--danger); }
+.gantt-today { position: absolute; top: 22px; bottom: 0; width: 0; border-left: 2px dashed var(--warn); }
+.gantt-today span {
+  position: absolute; top: -20px; left: 2px; font-size: var(--fs-10); color: var(--warn); font-weight: 650;
+}

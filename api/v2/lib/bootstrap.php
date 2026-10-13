@@ -48,6 +48,20 @@ if (!defined('WX_ROLE_LABELS')) define('WX_ROLE_LABELS', [
    file is only defined once that file has been loaded, which is exactly the kind of ordering dependency
    that turns into "notification sent twice" or "fatal: undefined constant". */
 if (!defined('WX_PROJECT_STAGES')) define('WX_PROJECT_STAGES', ['planning', 'design', 'production', 'installation', 'handover', 'closed']);
+/* What the six stages are called on screen, and the three business lines a project belongs to. Both are
+   v2.1's own vocabulary (`sales-lib.php`'s SALES_PSTAGES and `sales17-lib.php`'s S17_LINES), held here so
+   the list, the detail, the timeline and the save route cannot disagree about the words — the save route's
+   validation list used to be typed out inline, which is one edit away from accepting a line the screens do
+   not know about. */
+if (!defined('WX_PROJECT_STAGE_LABELS')) define('WX_PROJECT_STAGE_LABELS', [
+    'planning'     => 'Planning',
+    'design'       => 'Design',
+    'production'   => 'Production',
+    'installation' => 'Installation',
+    'handover'     => 'Handover',
+    'closed'       => 'Closed',
+]);
+if (!defined('WX_PROJECT_LINES')) define('WX_PROJECT_LINES', ['furniture' => 'Furniture', 'interior' => 'Interior', 'project' => 'Project']);
 
 if (!defined('WX_PERM_GROUPS')) define('WX_PERM_GROUPS', [
     'sales'         => 'Leads, pipeline, clients, quotes, invoices, projects, bookings',

@@ -879,3 +879,124 @@ export interface EstSaveResult {
 export interface EstTemplateResult {
   templates: EstTemplate[];
 }
+
+/* --------------------------------------------------------- projects, and the timeline
+   A project is the point where work becomes money: it is created by an approved quotation, billed one
+   milestone at a time, and it is the thing a client rings up about. The screens read one row shape, built
+   on the server by `wx_proj_row()` — so the table and the drawer cannot disagree about how far a project
+   has got or what it has billed. */
+
+export interface ProjMilestone {
+  label: string;
+  pct: number;
+  amount: number;
+  amountDisplay: string;
+  inv_id: number | null;
+  inv_no: string;
+  paid: number;
+  /** unbilled | billed | partial | paid | missing — "missing" is an invoice that was deleted */
+  status: string;
+}
+
+export interface ProjRow {
+  id: number;
+  no: string;
+  name: string;
+  client_id: number;
+  client_name: string;
+  site: string;
+  line: string;
+  ptype: string;
+  area: number;
+  stage: string;
+  start: string;
+  target: string;
+  late: boolean;
+  /** how far along the studio's stages, as a bar */
+  stageProgress: number;
+  /** how much of the contract has been invoiced */
+  billedPct: number;
+  value: number;
+  valueDisplay: string;
+  invoiced: number;
+  invoicedDisplay: string;
+  received: number;
+  receivedDisplay: string;
+  balance: number;
+  balanceDisplay: string;
+  unbilled: number;
+  unbilledDisplay: string;
+  milestones: ProjMilestone[];
+  milestonesDone: number;
+  milestoneCount: number;
+  manager: number | null;
+  manager_name: string;
+  team: number[];
+  team_names: string[];
+  quote_id: number | null;
+  invoice_id: number | null;
+  photos: number;
+  last: { t: string; text: string } | null;
+}
+
+export interface ProjKpi {
+  active: number;
+  value: number;
+  late: number;
+  invoiced: number;
+  received: number;
+  balance: number;
+  receivedPct: number;
+  valueDisplay: string;
+  invoicedDisplay: string;
+  receivedDisplay: string;
+  balanceDisplay: string;
+}
+
+export interface ProjList {
+  projects: ProjRow[];
+  total: number;
+  limit: number;
+  offset: number;
+  stages: string[];
+  stageLabels: Record<string, string>;
+  lines: Record<string, string>;
+  kpi: ProjKpi;
+  view: string;
+  stage: string;
+  line: string;
+  team: { id: number; name: string }[];
+}
+
+export interface ProjInvoice {
+  id: number;
+  no: string;
+  total: number;
+  totalDisplay: string;
+  paid: number;
+  paidDisplay: string;
+  balance: number;
+  balanceDisplay: string;
+  status: string;
+  issued: string;
+  due: string;
+}
+
+export interface ProjUpdate { t: string; user: string; text: string; photo: string; sys: boolean }
+
+export interface ProjDetail {
+  project: ProjRow;
+  invoices: ProjInvoice[];
+  updates: ProjUpdate[];
+  photos: { url?: string; caption?: string }[];
+  document: {
+    name: string; no: string; site: string; start: string; target: string; value: number;
+    line: string; ptype: string; area: number; manager: number | null; team: number[];
+    plan: { label: string; pct: number }[];
+  };
+  stages: string[];
+  stageLabels: Record<string, string>;
+  lines: Record<string, string>;
+  team: { id: number; name: string }[];
+  full_invoice: boolean;
+}

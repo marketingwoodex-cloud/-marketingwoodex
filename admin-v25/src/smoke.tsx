@@ -26,6 +26,8 @@ import { LivePlacements } from "./screens/LivePlacements";
 import { LiveHeroes } from "./screens/LiveHeroes";
 import { LiveForms } from "./screens/LiveForms";
 import { LiveEstimator } from "./screens/LiveEstimator";
+import { LiveProjects } from "./screens/LiveProjects";
+import { LiveTimeline } from "./screens/LiveTimeline";
 import { SessionCtx, type SessionValue } from "./lib/session";
 import { linkLabel, linkPill } from "./lib/live";
 
@@ -154,6 +156,12 @@ let htmlFormsRoute = "";
 let htmlEstOffline = "";
 let htmlEstLive = "";
 let htmlEstRoute = "";
+let htmlProjOffline = "";
+let htmlProjLive = "";
+let htmlProjRoute = "";
+let htmlTimeOffline = "";
+let htmlTimeLive = "";
+let htmlTimeRoute = "";
 let htmlGlobal = "";
 let htmlGlobalOffline = "";
 let htmlPages = "";
@@ -397,6 +405,56 @@ try {
   );
 } catch (err) {
   failures.push(`the estimator screen → ${(err as Error).message}`);
+}
+
+/* Projects and the timeline. Both read the same rows; the assertions that matter are about what must not
+   be claimed — no project list with no API, and no date axis drawn from nothing. */
+try {
+  htmlProjOffline = renderToString(
+    <MemoryRouter initialEntries={["/projects"]}>
+      <SessionCtx.Provider value={session("offline", null)}>
+        <LiveProjects />
+      </SessionCtx.Provider>
+    </MemoryRouter>,
+  );
+  htmlProjLive = renderToString(
+    <MemoryRouter initialEntries={["/projects"]}>
+      <SessionCtx.Provider value={session("live", asUser)}>
+        <LiveProjects />
+      </SessionCtx.Provider>
+    </MemoryRouter>,
+  );
+  htmlProjRoute = renderToString(
+    <MemoryRouter initialEntries={["/projects"]}>
+      <App />
+    </MemoryRouter>,
+  );
+} catch (err) {
+  failures.push(`the projects screen → ${(err as Error).message}`);
+}
+
+try {
+  htmlTimeOffline = renderToString(
+    <MemoryRouter initialEntries={["/timeline"]}>
+      <SessionCtx.Provider value={session("offline", null)}>
+        <LiveTimeline />
+      </SessionCtx.Provider>
+    </MemoryRouter>,
+  );
+  htmlTimeLive = renderToString(
+    <MemoryRouter initialEntries={["/timeline"]}>
+      <SessionCtx.Provider value={session("live", asUser)}>
+        <LiveTimeline />
+      </SessionCtx.Provider>
+    </MemoryRouter>,
+  );
+  htmlTimeRoute = renderToString(
+    <MemoryRouter initialEntries={["/timeline"]}>
+      <App />
+    </MemoryRouter>,
+  );
+} catch (err) {
+  failures.push(`the timeline screen → ${(err as Error).message}`);
 }
 
 /* Through the app's own routing: `/heroes` must reach the screen, not the build-plan placeholder. */
@@ -744,6 +802,46 @@ for (const [name, ok] of [
   [
     "and the estimator route reaches the screen rather than a build plan",
     htmlEstRoute.includes("The figures every price starts from") && !htmlEstRoute.includes("Build plan for this screen"),
+  ],
+  /* Projects. The KPI strip is the part that must not be invented: it is read from every project, so with no
+     API there is no strip at all — not six zeros presented as your business. */
+  [
+    "the projects screen with no API says so, and shows no list or totals it cannot read",
+    htmlProjOffline.includes("api/v2 is not answering") &&
+      !htmlProjOffline.includes("Active projects") &&
+      !htmlProjOffline.includes("Rs 0"),
+  ],
+  [
+    "and while it is reading the projects it says that, rather than showing an empty table",
+    htmlProjLive.includes("Reading the projects") && !htmlProjLive.includes("Nothing matches this filter"),
+  ],
+  [
+    /* The route reaches the real screen — not the build-plan placeholder. Without a session the screen says
+       what is behind the door rather than drawing a table, so that is the sentence asserted. */
+    "and the projects route reaches the screen rather than a build plan",
+    htmlProjRoute.includes("Sign in to see live projects, their milestones and their invoicing") &&
+      !htmlProjRoute.includes("Build plan for this screen"),
+  ],
+  [
+    "and the projects screen offers no save with no API behind it",
+    !htmlProjOffline.includes("Save the plan") && !htmlProjOffline.includes("Save details"),
+  ],
+  /* The timeline. A chart is the easiest thing in a dashboard to draw from nothing, so the offline state has
+     to say there is no axis — and must not render a Gantt frame that looks like a schedule. */
+  [
+    "the timeline with no API says so, and draws no axis",
+    htmlTimeOffline.includes("api/v2 is not answering") &&
+      !htmlTimeOffline.includes("gantt-bar") &&
+      !htmlTimeOffline.includes("today"),
+  ],
+  [
+    "and while it is reading it says that, rather than drawing an empty chart",
+    htmlTimeLive.includes("Reading the projects") && !htmlTimeLive.includes("gantt-grid"),
+  ],
+  [
+    "and the timeline route reaches the screen rather than a build plan",
+    htmlTimeRoute.includes("on one axis") &&
+      !htmlTimeRoute.includes("Build plan for this screen"),
   ],
 ] as [string, boolean][]) {
   if (ok) pass++;

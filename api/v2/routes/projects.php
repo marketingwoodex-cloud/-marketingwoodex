@@ -19,35 +19,309 @@
 
 declare(strict_types=1);
 
-function wx_route_projects_list(array $ctx): array
+/* ============================================================ the three pure pieces
+   The list below is one SQL page, one money query and one aggregate; everything that *means* something
+   about a project — its progress, its lateness, whether a milestone is billed, and the site-wide totals —
+   is computed here, from data, with no database and no clock of its own. That is what makes the rules
+   assertable: `tests/run.php` feeds these functions a project and its invoices and checks the answer,
+   including the cases v2.1 got wrong on screen. */
+
+/**
+ * The WHERE a list request asks for, as fragments and bound parameters.
+ *
+ * Pure, and that is the point: the caller's string never reaches SQL. A filter the screen did not offer is
+ * *ignored* rather than guessed at, so `?view=whatever` returns the default list instead of an error — and
+ * the parameters come back separately, so "is anything interpolated?" is a question a test can answer.
+ *
+ * `$cols` is the caller's own column expressions, passed in rather than built here. That is not tidiness:
+ * building them means asking the database which payload column this install uses (`payload` after
+ * migration 003, `data` before it), and a function that reaches for a database cannot be tested in the
+ * sandbox that has none — which is where every one of these rules is actually asserted.
+ *
+ * @param array<string,string> $cols keys: stage, target, line, name, no, client, site, ptype, invoice_id, invoice_project
+ * @return array{where:array<int,string>, params:array<int,mixed>, view:string, stage:string, line:string}
+ */
+function wx_proj_filter(array $q, string $today, array $cols): array
 {
-    wx_require_user('projs_table');
-    $limit = wx_limit($ctx['query']['limit'] ?? 50);
-    $offset = wx_offset($ctx['query']['offset'] ?? 0);
-    $stage = $ctx['query']['stage'] ?? null;
-    $q = trim((string) ($ctx['query']['q'] ?? ''));
+    $stages = WX_PROJECT_STAGES;
+    $stage = (string) ($q['stage'] ?? '');
+    if ($stage !== '' && !in_array($stage, $stages, true)) {
+        $stage = '';
+    }
+    $views = ['all', 'active', 'late', 'due', 'closed'];
+    $view = (string) ($q['view'] ?? 'active');
+    if (!in_array($view, $views, true)) {
+        $view = 'active';
+    }
+    $line = (string) ($q['line'] ?? '');
+    if ($line !== '' && !preg_match('~^[a-z0-9_-]{1,20}$~', $line)) {
+        $line = '';
+    }
 
     $where = [];
     $params = [];
-    if ($stage && in_array($stage, WX_PROJECT_STAGES, true)) {
-        $where[] = wx_doc_json('wx_projects', '$.stage') . ' = ?';
+    $stageSql = $cols['stage'];
+    $targetSql = $cols['target'];
+    $closed = 'closed'; // the last stage: a project that is finished is not late, and is not active
+
+    if ($stage !== '') {
+        $where[] = $stageSql . ' = ?';
         $params[] = $stage;
+    } elseif ($view === 'active') {
+        $where[] = $stageSql . ' <> ?';
+        $params[] = $closed;
+    } elseif ($view === 'closed') {
+        $where[] = $stageSql . ' = ?';
+        $params[] = $closed;
+    } elseif ($view === 'late') {
+        /* Late is a rule about an unfinished project whose handover date has gone by, so both halves are in
+           the query — a filter that forgot the first half would list finished projects as late forever. */
+        $where[] = $stageSql . ' <> ?';
+        $params[] = $closed;
+        $where[] = '(' . $targetSql . " <> '' AND " . $targetSql . ' < ?)';
+        $params[] = $today;
+    } elseif ($view === 'due') {
+        /* Billed money that has not arrived yet, over both ways an invoice can belong to a project. The
+           payments subquery is correlated, so an invoice with no payments row counts as unpaid rather than
+           dropping out of the filter — a project whose only invoice has never been paid is exactly the one
+           this view exists to show. */
+        $where[] = '(EXISTS (SELECT 1 FROM wx_invoices i WHERE (i.id = ' . $cols['invoice_id'] . ' OR ' . $cols['invoice_project'] . ' = wx_projects.id)'
+            . ' AND i.total > COALESCE((SELECT SUM(ip.amount) FROM wx_invoice_payments ip WHERE ip.invoice_id = i.id AND ip.reversed_at IS NULL), 0)))';
     }
-    if ($q !== '') {
-        $where[] = '(' . wx_doc_json('wx_projects', '$.name') . ' LIKE ? OR ' . wx_doc_json('wx_projects', '$.no') . ' LIKE ?)';
-        $params[] = '%' . $q . '%';
-        $params[] = '%' . $q . '%';
+    if ($line !== '') {
+        $where[] = $cols['line'] . ' = ?';
+        $params[] = $line;
     }
-    $sqlWhere = $where ? ' WHERE ' . implode(' AND ', $where) : '';
-    $total = (int) wx_val('SELECT COUNT(*) FROM wx_projects' . $sqlWhere, $params);
+    /* The search is the one place a person's text arrives: two bound parameters, never a fragment. */
+    $text = trim((string) ($q['q'] ?? ''));
+    if ($text !== '') {
+        $like = '%' . mb_substr($text, 0, 60) . '%';
+        $where[] = '(' . $cols['name'] . ' LIKE ?'
+            . ' OR ' . $cols['no'] . ' LIKE ?'
+            . ' OR ' . $cols['client'] . ' LIKE ?'
+            . ' OR ' . $cols['site'] . ' LIKE ?'
+            . ' OR ' . $cols['ptype'] . ' LIKE ?)';
+        for ($i = 0; $i < 5; $i++) {
+            $params[] = $like;
+        }
+    }
+    return ['where' => $where, 'params' => $params, 'view' => $view, 'stage' => $stage, 'line' => $line];
+}
+
+/** Where a stage sits in the studio's own order, as a percentage — the bar beside the stage name. */
+function wx_proj_stage_pct(string $stage): int
+{
+    $at = array_search($stage, WX_PROJECT_STAGES, true);
+    $last = count(WX_PROJECT_STAGES) - 1;
+    return ($at === false || $last < 1) ? 0 : (int) round($at / $last * 100);
+}
+
+/**
+ * One project, as the screens read it.
+ *
+ * $inv is every invoice belonging to this project — both kinds, because a project can be billed two ways:
+ * one invoice for the whole contract (`invoice_id` on the project) or one invoice per milestone (each
+ * invoice carries `project_id`). v2.1's own row read both; reading only the first would show a project
+ * billed in three milestones as having invoiced nothing, which is the kind of wrong number that gets
+ * chased for a week.
+ *
+ * @param array<string,mixed> $p     a decoded project document
+ * @param array<int,array>    $inv   its invoices, each ['id','no','total','paid']
+ * @param array<int,string>   $names user id → name, for the manager and the team
+ */
+function wx_proj_row(array $p, array $inv = [], array $names = [], string $today = ''): array
+{
+    $today = $today !== '' ? $today : date('Y-m-d');
+    $value = (int) ($p['value'] ?? 0);
+    $invoiced = 0;
+    $received = 0;
+    foreach ($inv as $i) {
+        $invoiced += (int) ($i['total'] ?? 0);
+        $received += (int) ($i['paid'] ?? 0);
+    }
+    $byId = [];
+    foreach ($inv as $i) {
+        $byId[(int) ($i['id'] ?? 0)] = $i;
+    }
+
+    $stage = (string) ($p['stage'] ?? 'planning');
+    if (!in_array($stage, WX_PROJECT_STAGES, true)) {
+        $stage = 'planning';
+    }
+    $target = (string) ($p['target'] ?? '');
+    $late = $stage !== 'closed' && $target !== '' && $target < $today;
+
+    /* Milestones are percentages of the contract. The amount, the invoice that billed it and whether that
+       invoice is paid are three different facts, and the screen has to be able to tell them apart:
+       a milestone whose invoice was deleted must not look unbilled (`inv_id` is set) and must not look
+       paid (`missing`). */
+    $milestones = [];
+    $done = 0;
+    foreach (is_array($p['milestones'] ?? null) ? $p['milestones'] : [] as $m) {
+        if (!is_array($m)) {
+            continue;
+        }
+        $pct = (float) ($m['pct'] ?? 0);
+        $invId = (int) ($m['inv_id'] ?? 0);
+        $i = $invId ? ($byId[$invId] ?? null) : null;
+        $paid = (int) ($i['paid'] ?? 0);
+        $total = (int) ($i['total'] ?? 0);
+        $status = !$invId ? 'unbilled' : ($i === null ? 'missing' : ($paid >= $total ? 'paid' : ($paid > 0 ? 'partial' : 'billed')));
+        if ($invId) {
+            $done++;
+        }
+        $milestones[] = [
+            'label' => (string) ($m['label'] ?? ''),
+            'pct' => $pct,
+            'amount' => (int) round($value * $pct / 100),
+            'amountDisplay' => wx_pkr_out((int) round($value * $pct / 100)),
+            'inv_id' => $invId ?: null,
+            'inv_no' => (string) ($i['no'] ?? ''),
+            'paid' => $paid,
+            'status' => $status,
+        ];
+    }
+
+    $updates = is_array($p['updates'] ?? null) ? $p['updates'] : [];
+    $last = $updates ? $updates[count($updates) - 1] : null;
+    $team = [];
+    foreach (is_array($p['team'] ?? null) ? $p['team'] : [] as $t) {
+        $id = (int) $t;
+        if ($id > 0) {
+            $team[] = $id;
+        }
+    }
+    $manager = (int) ($p['manager'] ?? 0);
+
+    return [
+        'id' => (int) ($p['id'] ?? 0),
+        'no' => (string) ($p['no'] ?? ''),
+        'name' => (string) ($p['name'] ?? ''),
+        'client_id' => (int) ($p['client_id'] ?? 0),
+        'client_name' => (string) ($p['client_name'] ?? ''),
+        'site' => (string) ($p['site'] ?? ''),
+        'line' => (string) ($p['line'] ?? ''),
+        'ptype' => (string) ($p['ptype'] ?? ''),
+        'area' => (int) ($p['area'] ?? 0),
+        'stage' => $stage,
+        'start' => (string) ($p['start'] ?? ''),
+        'target' => $target,
+        'late' => $late,
+        /* Two progress numbers, named for what each one is: how far along the studio's stages the project
+           has moved, and how much of the contract has been billed. v2.1 used one field for the first and
+           printed the second beside the money; a single `progress` meant neither could be read honestly. */
+        'stageProgress' => wx_proj_stage_pct($stage),
+        'billedPct' => $value > 0 ? (int) round(min(100, 100 * $invoiced / $value)) : 0,
+        'value' => $value,
+        'valueDisplay' => wx_pkr_out($value),
+        'invoiced' => $invoiced,
+        'invoicedDisplay' => wx_pkr_out($invoiced),
+        'received' => $received,
+        'receivedDisplay' => wx_pkr_out($received),
+        'balance' => max(0, $invoiced - $received),
+        'balanceDisplay' => wx_pkr_out(max(0, $invoiced - $received)),
+        'unbilled' => max(0, $value - $invoiced),
+        'unbilledDisplay' => wx_pkr_out(max(0, $value - $invoiced)),
+        'milestones' => $milestones,
+        'milestonesDone' => $done,
+        'milestoneCount' => count($milestones),
+        'manager' => $manager ?: null,
+        'manager_name' => $manager ? (string) ($names[$manager] ?? '') : '',
+        'team' => $team,
+        'team_names' => array_values(array_filter(array_map(static fn($t) => (string) ($names[$t] ?? ''), $team))),
+        'quote_id' => (int) ($p['quote_id'] ?? 0) ?: null,
+        'invoice_id' => (int) ($p['invoice_id'] ?? 0) ?: null,
+        'photos' => is_array($p['photos'] ?? null) ? count($p['photos']) : 0,
+        'last' => $last === null ? null : ['t' => (string) ($last['t'] ?? ''), 'text' => (string) ($last['text'] ?? '')],
+    ];
+}
+
+/**
+ * The six numbers at the top of the screen, from SQL aggregates rather than from the page on screen.
+ *
+ * A "contract value" computed from the fifty rows a screen happens to be holding is a lie the moment there
+ * are fifty-one projects. So the counts and the money come from two grouped queries over **every** project,
+ * and this function only arranges them. Money is summed over every project, exactly as v2.1 summed it,
+ * because "invoiced" is not a property of the active ones.
+ *
+ * @param array<int,array> $stages rows of ['stage','n','value','late'] — one per stage in the table
+ * @param array<string,int> $money  ['invoiced'=>int,'received'=>int]
+ */
+function wx_proj_kpi(array $stages, array $money): array
+{
+    $kpi = ['active' => 0, 'value' => 0, 'late' => 0, 'invoiced' => (int) ($money['invoiced'] ?? 0), 'received' => (int) ($money['received'] ?? 0)];
+    foreach ($stages as $row) {
+        $stage = (string) ($row['stage'] ?? '');
+        if ($stage === 'closed') {
+            continue;
+        }
+        $kpi['active'] += (int) ($row['n'] ?? 0);
+        $kpi['value'] += (int) ($row['value'] ?? 0);
+        $kpi['late'] += (int) ($row['late'] ?? 0);
+    }
+    $kpi['balance'] = max(0, $kpi['invoiced'] - $kpi['received']);
+    $kpi['receivedPct'] = $kpi['invoiced'] > 0 ? (int) round(100 * $kpi['received'] / $kpi['invoiced']) : 0;
+    foreach (['value', 'invoiced', 'received', 'balance'] as $k) {
+        $kpi[$k . 'Display'] = wx_pkr_out((int) $kpi[$k]);
+    }
+    return $kpi;
+}
+
+/**
+ * id → name for every user, so a row prints its manager and its team without a query per project.
+ *
+ * Deliberately every user, not the assignable ones: a team list saved years ago can name somebody who has
+ * since changed role, and a project showing "—" where a person's name belongs would be the screen losing
+ * information the database still has.
+ */
+function wx_proj_names(): array
+{
+    $names = [];
+    foreach (wx_all('SELECT id, name FROM wx_users') as $u) {
+        $names[(int) $u['id']] = (string) $u['name'];
+    }
+    return $names;
+}
+
+/** Who a project can be assigned to: v2.1 offered owner, admin and sales, for the manager and the team. */
+function wx_proj_team(): array
+{
+    $team = [];
+    foreach (wx_all("SELECT id, name FROM wx_users WHERE active = 1 AND role IN ('owner','admin','sales') ORDER BY name") as $u) {
+        $team[] = ['id' => (int) $u['id'], 'name' => (string) $u['name']];
+    }
+    return $team;
+}
+
+function wx_route_projects_list(array $ctx): array
+{
+    wx_require_user('projs_table');
+    $limit = wx_limit($ctx['query']['limit'] ?? 50, 200);
+    $offset = wx_offset($ctx['query']['offset'] ?? 0);
+    $today = date('Y-m-d');
+    $f = wx_proj_filter(is_array($ctx['query']) ? $ctx['query'] : [], $today, [
+        'stage' => wx_doc_json('wx_projects', '$.stage'),
+        'target' => wx_doc_json('wx_projects', '$.target'),
+        'line' => wx_doc_json('wx_projects', '$.line'),
+        'name' => wx_doc_json('wx_projects', '$.name'),
+        'no' => wx_doc_json('wx_projects', '$.no'),
+        'client' => wx_doc_json('wx_projects', '$.client_name'),
+        'site' => wx_doc_json('wx_projects', '$.site'),
+        'ptype' => wx_doc_json('wx_projects', '$.ptype'),
+        'invoice_id' => wx_doc_json('wx_projects', '$.invoice_id'),
+        'invoice_project' => wx_doc_json('wx_invoices', '$.project_id'),
+    ]);
+    $sqlWhere = $f['where'] ? ' WHERE ' . implode(' AND ', $f['where']) : '';
+
+    $total = (int) wx_val('SELECT COUNT(*) FROM wx_projects' . $sqlWhere, $f['params']);
     $rows = wx_all(
         'SELECT id, ' . wx_doc_payload_sql('wx_projects') . ' FROM wx_projects' . $sqlWhere . ' ORDER BY id DESC LIMIT ' . $limit . ' OFFSET ' . $offset,
-        $params
+        $f['params']
     );
 
-    // One query for the money of every project on this page, keyed by invoice id.
-    $invoiceIds = [];
     $projects = [];
+    $ids = [];
+    $linked = [];
     foreach ($rows as $row) {
         $p = json_decode((string) $row['payload'], true);
         if (!is_array($p)) {
@@ -55,94 +329,177 @@ function wx_route_projects_list(array $ctx): array
         }
         $p['id'] = (int) $row['id'];
         $projects[] = $p;
+        $ids[] = (int) $row['id'];
         if (!empty($p['invoice_id'])) {
-            $invoiceIds[] = (int) $p['invoice_id'];
-        }
-    }
-    $money = [];
-    if ($invoiceIds) {
-        $in = implode(',', array_fill(0, count($invoiceIds), '?'));
-        foreach (wx_all('SELECT id, total FROM wx_invoices WHERE id IN (' . $in . ')', $invoiceIds) as $r) {
-            $money[(int) $r['id']] = ['billed' => (int) $r['total'], 'received' => 0];
-        }
-        foreach (wx_all('SELECT invoice_id, COALESCE(SUM(amount),0) AS paid FROM wx_invoice_payments WHERE invoice_id IN (' . $in . ') AND reversed_at IS NULL GROUP BY invoice_id', $invoiceIds) as $r) {
-            $money[(int) $r['invoice_id']]['received'] = (int) $r['paid'];
+            $linked[] = (int) $p['invoice_id'];
         }
     }
 
-    $out = [];
-    foreach ($projects as $p) {
-        $m = $money[(int) ($p['invoice_id'] ?? 0)] ?? ['billed' => 0, 'received' => 0];
-        $milestones = is_array($p['milestones'] ?? null) ? $p['milestones'] : [];
-        // Progress is the share of the contract value that has been billed and paid for, which is the
-        // number the client asks about — not "how many rows are ticked".
-        $done = 0;
-        $billedPct = 0;
-        foreach ($milestones as $ms) {
-            if (!empty($ms['inv_id'])) {
-                $done++;
-                $billedPct += (float) ($ms['pct'] ?? 0);
+    /* Two ways an invoice can belong to a project, and both are read here: the project points at one
+       (`invoice_id`, a whole-contract invoice) or the invoice points at the project (`project_id`, what
+       milestone billing writes). One query either way, keyed by project, with the payments summed in SQL. */
+    $byProject = [];
+    if ($ids) {
+        $ph = implode(',', array_fill(0, count($ids), '?'));
+        $paySql = wx_table_exists('wx_invoice_payments')
+            ? 'COALESCE((SELECT SUM(ip.amount) FROM wx_invoice_payments ip WHERE ip.invoice_id = i.id AND ip.reversed_at IS NULL), 0)'
+            : '0';
+        $sql = 'SELECT i.id, i.no, i.total, ' . $paySql . ' AS paid,'
+            . ' ' . wx_doc_json('wx_invoices', '$.project_id') . ' AS project_id'
+            . ' FROM wx_invoices i WHERE ' . wx_doc_json('wx_invoices', '$.project_id') . ' IN (' . $ph . ')'
+            . ($linked ? ' OR i.id IN (' . implode(',', array_fill(0, count($linked), '?')) . ')' : '');
+        $params = array_merge($ids, $linked);
+        foreach (wx_all($sql, $params) as $i) {
+            $pid = (int) ($i['project_id'] ?? 0);
+            $row = ['id' => (int) $i['id'], 'no' => (string) $i['no'], 'total' => (int) $i['total'], 'paid' => (int) $i['paid']];
+            if ($pid > 0) {
+                $byProject[$pid][] = $row;
+            }
+            foreach ($projects as $p) {
+                if ((int) ($p['invoice_id'] ?? 0) === (int) $i['id'] && !in_array($row, $byProject[(int) $p['id']] ?? [], true)) {
+                    $byProject[(int) $p['id']][] = $row;
+                }
             }
         }
+    }
+
+    $names = wx_proj_names();
+    $out = [];
+    foreach ($projects as $p) {
+        $out[] = wx_proj_row($p, $byProject[(int) $p['id']] ?? [], $names, $today);
+    }
+
+    /* The site-wide numbers: one grouped query for the stages and one for the money — not a read of every
+       project into PHP, which is the 1.4-second table the plan set out to replace. */
+    $stageSql = wx_doc_json('wx_projects', '$.stage');
+    $valueSql = wx_doc_json('wx_projects', '$.value');
+    $targetSql = wx_doc_json('wx_projects', '$.target');
+    $stageRows = wx_all(
+        'SELECT COALESCE(' . $stageSql . ", 'planning') AS stage, COUNT(*) AS n,"
+        . ' COALESCE(SUM(CAST(' . $valueSql . ' AS SIGNED)), 0) AS value,'
+        . ' SUM(CASE WHEN ' . $targetSql . " <> '' AND " . $targetSql . ' < ? THEN 1 ELSE 0 END) AS late'
+        . ' FROM wx_projects GROUP BY stage',
+        [$today]
+    );
+    $paySqlAll = wx_table_exists('wx_invoice_payments')
+        ? 'COALESCE((SELECT SUM(ip.amount) FROM wx_invoice_payments ip WHERE ip.invoice_id = i.id AND ip.reversed_at IS NULL), 0)'
+        : '0';
+    $money = wx_one('SELECT COALESCE(SUM(i.total), 0) AS invoiced, COALESCE(SUM(' . $paySqlAll . '), 0) AS received FROM wx_invoices i') ?? [];
+    $kpi = wx_proj_kpi($stageRows, ['invoiced' => (int) ($money['invoiced'] ?? 0), 'received' => (int) ($money['received'] ?? 0)]);
+
+    return ['data' => [
+        'projects' => $out,
+        'total' => $total,
+        'limit' => $limit,
+        'offset' => $offset,
+        'stages' => WX_PROJECT_STAGES,
+        'stageLabels' => WX_PROJECT_STAGE_LABELS,
+        'lines' => WX_PROJECT_LINES,
+        'kpi' => $kpi,
+        'view' => $f['view'],
+        'stage' => $f['stage'],
+        'line' => $f['line'],
+        'team' => wx_proj_team(),
+    ]];
+}
+
+/** The invoices of one project, with their payments summed — the single-project form of the list's batch. */
+function wx_proj_invoices(int $projectId, int $linkedId = 0): array
+{
+    $paySql = wx_table_exists('wx_invoice_payments')
+        ? 'COALESCE((SELECT SUM(ip.amount) FROM wx_invoice_payments ip WHERE ip.invoice_id = i.id AND ip.reversed_at IS NULL), 0)'
+        : '0';
+    $rows = wx_all(
+        'SELECT i.id, i.no, i.total, ' . $paySql . ' AS paid, i.due_at, i.issued_at, '
+        . wx_doc_json('wx_invoices', '$.project_id') . ' AS project_id'
+        . ' FROM wx_invoices i WHERE ' . wx_doc_json('wx_invoices', '$.project_id') . ' = ?'
+        . ($linkedId > 0 ? ' OR i.id = ?' : '')
+        . ' ORDER BY i.id ASC',
+        $linkedId > 0 ? [$projectId, $linkedId] : [$projectId]
+    );
+    $out = [];
+    foreach ($rows as $r) {
+        $total = (int) $r['total'];
+        $paid = (int) $r['paid'];
         $out[] = [
-            'id' => $p['id'],
-            'no' => (string) ($p['no'] ?? ''),
+            'id' => (int) $r['id'],
+            'no' => (string) $r['no'],
+            'total' => $total,
+            'totalDisplay' => wx_pkr_out($total),
+            'paid' => $paid,
+            'paidDisplay' => wx_pkr_out($paid),
+            'balance' => max(0, $total - $paid),
+            'balanceDisplay' => wx_pkr_out(max(0, $total - $paid)),
+            'status' => $paid <= 0 ? 'unpaid' : ($paid >= $total ? 'paid' : 'partial'),
+            'issued' => (string) ($r['issued_at'] ?? ''),
+            'due' => (string) ($r['due_at'] ?? ''),
+        ];
+    }
+    return $out;
+}
+
+/**
+ * GET /projects/{id} — one project, in the same shape the list uses, plus the whole document.
+ *
+ * The row is built by `wx_proj_row()` and not by a second mapping written next to it: the drawer and the
+ * table showing different progress for the same project is the kind of disagreement nobody reports and
+ * everybody half-notices. `document` carries the fields the editor writes (name, site, dates, value, line,
+ * type, area, team, manager, and the milestone plan's labels and percentages).
+ */
+function wx_route_projects_get(array $ctx): array
+{
+    wx_require_user('proj_meta');
+    $id = (int) $ctx['params']['id'];
+    $p = wx_doc_get_row('wx_projects', $id);
+    if ($p === null) {
+        throw ApiError::notFound('That project does not exist');
+    }
+    $p['id'] = $id;
+    $invoices = wx_proj_invoices($id, (int) ($p['invoice_id'] ?? 0));
+    $row = wx_proj_row($p, $invoices, wx_proj_names(), date('Y-m-d'));
+
+    $updates = is_array($p['updates'] ?? null) ? $p['updates'] : [];
+    $log = [];
+    foreach (array_slice(array_reverse($updates), 0, 40) as $u) {
+        if (!is_array($u)) {
+            continue;
+        }
+        $log[] = [
+            't' => (string) ($u['t'] ?? ''),
+            'user' => (string) ($u['user'] ?? ''),
+            'text' => (string) ($u['text'] ?? ''),
+            'photo' => (string) ($u['photo'] ?? ''),
+            'sys' => !empty($u['sys']),
+        ];
+    }
+
+    return ['data' => [
+        'project' => $row,
+        'invoices' => $invoices,
+        'updates' => $log,
+        'photos' => is_array($p['photos'] ?? null) ? array_values($p['photos']) : [],
+        'document' => [
             'name' => (string) ($p['name'] ?? ''),
-            'client_id' => (int) ($p['client_id'] ?? 0),
-            'client_name' => (string) ($p['client_name'] ?? ''),
-            'stage' => (string) ($p['stage'] ?? 'planning'),
+            'no' => (string) ($p['no'] ?? ''),
             'site' => (string) ($p['site'] ?? ''),
             'start' => (string) ($p['start'] ?? ''),
             'target' => (string) ($p['target'] ?? ''),
             'value' => (int) ($p['value'] ?? 0),
-            'valueDisplay' => wx_pkr_out((int) ($p['value'] ?? 0)),
-            'billed' => $m['billed'],
-            'received' => $m['received'],
-            'outstanding' => max(0, $m['billed'] - $m['received']),
-            'billedDisplay' => wx_pkr_out($m['billed']),
-            'receivedDisplay' => wx_pkr_out($m['received']),
-            'outstandingDisplay' => wx_pkr_out(max(0, $m['billed'] - $m['received'])),
-            'milestones' => count($milestones),
-            'milestonesDone' => $done,
-            'progress' => (int) round(min(100, $billedPct)),
             'line' => (string) ($p['line'] ?? ''),
             'ptype' => (string) ($p['ptype'] ?? ''),
-            'team' => is_array($p['team'] ?? null) ? array_values($p['team']) : [],
-            'late' => ($p['target'] ?? '') !== '' && ($p['stage'] ?? '') !== 'closed' && (string) $p['target'] < date('Y-m-d'),
-            'manager' => $p['manager'] ?? null,
-        ];
-    }
-
-    return ['data' => ['projects' => $out, 'total' => $total, 'limit' => $limit, 'offset' => $offset, 'stages' => WX_PROJECT_STAGES]];
-}
-
-function wx_route_projects_get(array $ctx): array
-{
-    wx_require_user('proj_meta');
-    $p = wx_doc_get_row('wx_projects', (int) $ctx['params']['id']);
-    if ($p === null) {
-        throw ApiError::notFound('That project does not exist');
-    }
-    $billed = 0;
-    $received = 0;
-    if (!empty($p['invoice_id'])) {
-        $inv = wx_doc_get('wx_invoices', (int) $p['invoice_id']);
-        if ($inv !== null) {
-            $payments = wx_invoice_payments((int) $inv['id']) ?: wx_invoice_payments_legacy($inv);
-            $public = wx_inv_public($inv, $payments);
-            $billed = (int) $public['total'];
-            $received = (int) $public['paid'];
-            $p['invoice'] = ['id' => $public['id'], 'no' => $public['no'], 'total' => $billed, 'paid' => $received, 'balance' => (int) $public['balance'], 'payStatus' => $public['payStatus']];
-        }
-    }
-    $p['billed'] = $billed;
-    $p['received'] = $received;
-    $p['outstanding'] = max(0, $billed - $received);
-    $p['billedDisplay'] = wx_pkr_out($billed);
-    $p['receivedDisplay'] = wx_pkr_out($received);
-    $p['outstandingDisplay'] = wx_pkr_out(max(0, $billed - $received));
-    $p['stages'] = WX_PROJECT_STAGES;
-    return ['data' => ['project' => $p]];
+            'area' => (int) ($p['area'] ?? 0),
+            'manager' => (int) ($p['manager'] ?? 0) ?: null,
+            'team' => $row['team'],
+            'plan' => array_map(static fn($m) => ['label' => $m['label'], 'pct' => $m['pct']], $row['milestones']),
+        ],
+        'stages' => WX_PROJECT_STAGES,
+        'stageLabels' => WX_PROJECT_STAGE_LABELS,
+        'lines' => WX_PROJECT_LINES,
+        'team' => wx_proj_team(),
+        /* True when the project carries one invoice for the whole contract: the drawer asks before the first
+           milestone replaces it, which is exactly the question the bill route asks on the server. */
+        'full_invoice' => $row['invoice_id'] !== null && count($invoices) === 1,
+    ]];
 }
 
 /** Projects are not created here — an invoice creates one (see quotations.invoice). This edits it. */
@@ -224,7 +581,7 @@ function wx_route_projects_save_do(array $ctx): array
             /* The business line and the team belong to the project, not to the invoice (v2.1's
                proj_meta). `line` decides which invoice series project billing draws from. */
             if (array_key_exists('line', $b)) {
-                $p['line'] = wx_v_enum((string) $b['line'], ['', 'furniture', 'interior', 'project'], 'line');
+                $p['line'] = wx_v_enum((string) $b['line'], array_merge([''], array_keys(WX_PROJECT_LINES)), 'line');
             }
             if (array_key_exists('ptype', $b)) {
                 $p['ptype'] = wx_v_opt_string($b['ptype'], 'ptype', 60) ?? '';

@@ -2101,6 +2101,117 @@ eq(wx_est_reload('<p>a page with no script</p>', '2610141530'), null, 'and a pag
 eq(count(WX_FORMS_WEB), 6, 'six forms, the same six v2.1 named');
 ok(isset(WX_FORMS_WEB['office-fitout']) && isset(WX_FORM_MARKS['office-fitout']), 'including the office fit-out quote, whose form id is what the page carries');
 
+/* ---- projects: the row the screens read, computed from the project and its invoices (v2.1's s17_proj_row) */
+require_once WX_V2_DIR . '/routes/projects.php';
+
+/* A project billed one invoice per milestone. v2.1's own row read both link shapes; reading only the
+   project's own `invoice_id` — which is what the v2.5 route did before this slice — reported a project
+   billed in three milestones as having invoiced nothing. That is the assertion below that matters most. */
+$p_milestoned = [
+    'id' => 7, 'no' => 'WI-10120', 'name' => 'Office fit-out — Zainab Tower', 'client_name' => 'Platinum Ventures',
+    'site' => 'Model Town Link Road', 'value' => 1000000, 'stage' => 'installation',
+    'start' => '2026-08-01', 'target' => '2026-11-30', 'line' => 'project', 'ptype' => 'Office fit-out',
+    'manager' => 2, 'team' => [2, 5],
+    'milestones' => [
+        ['label' => 'Advance', 'pct' => 50, 'inv_id' => 41],
+        ['label' => 'On completion of wood work', 'pct' => 30, 'inv_id' => 42],
+        ['label' => 'On handover', 'pct' => 20],
+    ],
+];
+$inv_milestoned = [
+    ['id' => 41, 'no' => 'WI-10120-1', 'total' => 500000, 'paid' => 500000],
+    ['id' => 42, 'no' => 'WI-10120-2', 'total' => 300000, 'paid' => 100000],
+];
+$names = [2 => 'Imtiaz', 5 => 'Sana'];
+
+$row = wx_proj_row($p_milestoned, $inv_milestoned, $names, '2026-10-14');
+eq($row['invoiced'], 800000, 'invoiced is every invoice of the project, not only the one it points at');
+eq($row['received'], 600000, 'received is what has actually been paid');
+eq($row['balance'], 200000, 'balance is the difference, never negative');
+eq($row['unbilled'], 200000, 'and what is left to bill is the contract minus what has been invoiced');
+eq($row['billedPct'], 80, 'so a project billed in milestones shows its progress, not zero');
+eq($row['stageProgress'], 60, 'while the stage bar is where the project stands in the studio\'s own order');
+eq($row['valueDisplay'], '1,000,000', 'money is printed by wx_pkr_out, which is what every other screen and document uses — one formatter, not two');
+eq($row['manager_name'], 'Imtiaz', 'a manager id is a name on screen');
+eq($row['team_names'], ['Imtiaz', 'Sana'], 'and so is each member of the team');
+eq($row['late'], false, 'a project whose handover date is still ahead is not late');
+
+/* Each milestone, with the three separate facts the screen has to tell apart. */
+eq(array_column($row['milestones'], 'status'), ['paid', 'partial', 'unbilled'], 'paid, partly paid, and not yet billed are three different things');
+eq($row['milestones'][0]['amount'], 500000, 'a milestone\'s amount is its share of the contract');
+eq($row['milestones'][0]['inv_no'], 'WI-10120-1', 'and the invoice that billed it is named');
+eq($row['milestonesDone'], 2, 'two of the three milestones have been billed');
+
+/* An invoice that has gone missing: the milestone must not read as unbilled (it has an id) nor as paid. */
+$missing = wx_proj_row($p_milestoned, [$inv_milestoned[1]], $names, '2026-10-14');
+eq($missing['milestones'][0]['status'], 'missing', 'a milestone whose invoice was deleted says so, rather than looking unbilled');
+eq($missing['milestones'][1]['status'], 'partial', 'and the one still there is unaffected');
+
+/* Late, and the rule that keeps it meaningful: a finished project is never late, however old its date. */
+eq(wx_proj_row(array_merge($p_milestoned, ['target' => '2026-09-30']), [], $names, '2026-10-14')['late'], true, 'a handover date that has gone by on unfinished work is late');
+eq(wx_proj_row(array_merge($p_milestoned, ['target' => '2026-09-30', 'stage' => 'closed']), [], $names, '2026-10-14')['late'], false, 'but a closed project is not late, or the number would only ever grow');
+eq(wx_proj_row(array_merge($p_milestoned, ['target' => '']), [], $names, '2026-10-14')['late'], false, 'and a project with no date set is not late either');
+eq(wx_proj_row(array_merge($p_milestoned, ['stage' => 'nonsense']), [], $names, '2026-10-14')['stage'], 'planning', 'an unknown stage falls back rather than printing a word the studio does not use');
+
+/* A contract with no value yet: percentages are not computed against zero. */
+$novalue = wx_proj_row(['id' => 9, 'name' => 'New', 'value' => 0, 'stage' => 'planning', 'milestones' => [['label' => 'Advance', 'pct' => 50]]], [], [], '2026-10-14');
+eq($novalue['billedPct'], 0, 'a project with no contract value has no billing percentage — not a division by zero');
+eq($novalue['milestones'][0]['amount'], 0, 'and a milestone of a contract worth nothing is worth nothing');
+
+/* ---- projects: the filters. The one place a person's text reaches SQL.
+   The column expressions are handed in exactly as the route hands them in, so what is asserted here is the
+   shape of the query the route builds — not a paraphrase of it. */
+$cols = [
+    'stage' => 'S', 'target' => 'T', 'line' => 'L', 'name' => 'N', 'no' => 'O',
+    'client' => 'C', 'site' => 'P', 'ptype' => 'Y', 'invoice_id' => 'I', 'invoice_project' => 'J',
+];
+$f = wx_proj_filter(['view' => 'late'], '2026-10-14', $cols);
+ok(count($f['where']) === 2, 'the late filter is two conditions: unfinished, and past its date');
+ok(in_array('closed', $f['params'], true) && in_array('2026-10-14', $f['params'], true), 'both as bound parameters, never spliced into the SQL');
+$f = wx_proj_filter(['view' => 'active'], '2026-10-14', $cols);
+eq(count($f['where']), 1, 'active is one condition');
+$f = wx_proj_filter(['view' => 'whatever'], '2026-10-14', $cols);
+eq($f['view'], 'active', 'a view nobody offered falls back to the default rather than erroring or, worse, meaning something else');
+$f = wx_proj_filter(['stage' => 'nonsense'], '2026-10-14', $cols);
+eq($f['stage'], '', 'so does an unknown stage');
+$f = wx_proj_filter(['stage' => 'design'], '2026-10-14', $cols);
+ok(str_contains(implode(' ', $f['where']), 'S = ?') && $f['params'] === ['design'], 'a stage the studio does have is filtered on, and by value');
+$f = wx_proj_filter(['line' => 'furniture'], '2026-10-14', $cols);
+ok(in_array('furniture', $f['params'], true), 'the business line is filtered on too — beside the default "not closed" condition rather than instead of it');
+$f = wx_proj_filter(['line' => "furniture' OR 1=1 --"], '2026-10-14', $cols);
+eq($f['line'], '', 'and a line that is not a line is dropped, so nothing of it can reach the query');
+$f = wx_proj_filter(['stage' => 'design', 'view' => 'late', 'q' => 'zainab'], '2026-10-14', $cols);
+eq(count($f['where']), 2, 'a stage filter replaces the view rather than fighting it: one project cannot be both "design" and "every unfinished stage"');
+eq(count($f['params']), 6, 'and the parameters match the clauses exactly: the stage, then the five places the search looks');
+$f = wx_proj_filter(['q' => "100% OR 1=1 --"], '2026-10-14', $cols);
+eq(array_values(array_filter($f['params'], static fn($v) => $v !== 'closed')), array_fill(0, 5, '%100% OR 1=1 --%'), 'a search string is a bound LIKE parameter in all five places, percent sign and all');
+ok(!str_contains(implode(' ', $f['where']), '100%'), 'and it appears in no SQL fragment at all');
+
+/* ---- projects: the six numbers at the top of the screen */
+$kpi = wx_proj_kpi([
+    ['stage' => 'planning', 'n' => 3, 'value' => 300000, 'late' => 0],
+    ['stage' => 'installation', 'n' => 2, 'value' => 1700000, 'late' => 1],
+    ['stage' => 'closed', 'n' => 9, 'value' => 5000000, 'late' => 4],
+], ['invoiced' => 900000, 'received' => 450000]);
+eq($kpi['active'], 5, 'active counts the unfinished projects and nothing else');
+eq($kpi['value'], 2000000, 'and the contract value on the screen is the active work, not every project ever');
+eq($kpi['late'], 1, 'a closed project with a passed date is not a late handover');
+eq($kpi['invoiced'], 900000, 'invoiced is every invoice, because money does not stop being invoiced when work closes');
+eq($kpi['balance'], 450000, 'the balance is what the studio is owed');
+eq($kpi['receivedPct'], 50, 'and the received bar is the share of the invoiced total that has arrived');
+eq(wx_proj_kpi([], [])['receivedPct'], 0, 'with nothing invoiced there is no percentage, rather than a division by zero');
+eq(wx_proj_kpi([], ['invoiced' => 0, 'received' => 0])['balance'], 0, 'and no balance');
+
+/* ---- projects: the stage bar */
+eq(wx_proj_stage_pct('planning'), 0, 'the first stage is the start of the bar');
+eq(wx_proj_stage_pct('closed'), 100, 'the last is the end of it');
+ok(wx_proj_stage_pct('production') > wx_proj_stage_pct('design'), 'and the order is the studio\'s own');
+eq(wx_proj_stage_pct('nonsense'), 0, 'a stage that is not on the list sits at the start, visibly');
+
+/* The save route validates the business line against the same list the screens are given. */
+ok(array_keys(WX_PROJECT_LINES) === ['furniture', 'interior', 'project'], 'the three lines are v2.1\'s, in its order');
+eq(count(WX_PROJECT_STAGE_LABELS), count(WX_PROJECT_STAGES), 'every stage has a name to print, or a screen would print a slug');
+
 /* Nothing here touches the network: the default transport is only reached when a route calls it. */
 skip('the real transport (wx_fetch_get) needs a network and is exercised on the host');
 

@@ -981,6 +981,32 @@ check("the designs the admin writes are in the stylesheet the site loads", () =>
   }
 });
 
+check("the projects screens read the fields the server actually sends", () => {
+  /* A row is built once, on the server (`wx_proj_row()`), and read by two screens — the table and the
+     timeline. This is the drift check: every field those screens read has to be a key the server sets, or a
+     column silently renders blank and somebody reports "the balance column is empty" months later. It runs
+     the other way too — the two progress numbers are asserted by name, because v2.1 shipped one field that
+     meant two different things and printed it as both. */
+  const php = readCode("api/v2/routes/projects.php");
+  const row = php.slice(php.indexOf("function wx_proj_row("), php.indexOf("function wx_proj_kpi("));
+  const keys = new Set([...row.matchAll(/^\s{8}'([A-Za-z_][A-Za-z0-9_]*)' =>/gm)].map((m) => m[1]));
+  for (const k of ["stageProgress", "billedPct", "invoiced", "received", "balance", "unbilled", "late", "milestones"]) {
+    assert(keys.has(k), `wx_proj_row() has to set "${k}" — the screens read it by that name`);
+  }
+  assert(!/^\s{8}'progress' =>/m.test(row), "and there is no bare `progress`: two different answers cannot share one name");
+
+  const screen = readCode("admin-v25/src/screens/LiveProjects.tsx") + readCode("admin-v25/src/screens/LiveTimeline.tsx");
+  for (const k of ["stageProgress", "billedPct", "invoicedDisplay", "balanceDisplay", "unbilledDisplay", "milestones" ]) {
+    assert(screen.includes(k), `the screens read "${k}" — so the server must keep sending it`);
+  }
+  /* The filters are the one place a person's text reaches SQL, and the parameters are built separately
+     exactly so this can be checked. */
+  const filter = php.slice(php.indexOf("function wx_proj_filter("), php.indexOf("function wx_proj_row("));
+  assert(/\$params\[\] = \$line/.test(filter), "a filter value is a bound parameter");
+  assert(!/\$where\[\] = .*\$line\b(?!.*\?)/.test(filter.replace(/\$cols\['line'\]/g, "")), "and never part of a SQL fragment");
+  assert(!/\$text\b.*\$where\[\] = [^;]*\$text/.test(filter), "neither is the search string");
+});
+
 /* ============================================================== report */
 
 if (process.argv.includes("--json")) {

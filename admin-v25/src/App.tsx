@@ -24,6 +24,8 @@ import { LivePlacements } from "./screens/LivePlacements";
 import { LiveHeroes } from "./screens/LiveHeroes";
 import { LiveForms } from "./screens/LiveForms";
 import { LiveEstimator } from "./screens/LiveEstimator";
+import { LiveProjects } from "./screens/LiveProjects";
+import { LiveTimeline } from "./screens/LiveTimeline";
 import { linkLabel, useLive, type BellData } from "./lib/live";
 import { Btn, Card, PageHead } from "./components/primitives";
 
@@ -31,7 +33,7 @@ import { Btn, Card, PageHead } from "./components/primitives";
 const BUILT_IDS = new Set([
   "dashboard", "leads", "enquiries", "pipeline", "quotes", "theme", "redirects", "media", "blog", "portfolio", "cities", "global", "pages", "library", "site-theme",
   "testimonials", "team", "heroes",
-  "forms", "estimator",
+  "forms", "estimator", "projects", "timeline",
 ]);
 
 /** The public entry point: one provider, then the app proper. */
@@ -202,6 +204,11 @@ function Frame({ demo }: { demo: boolean }) {
           <Route path="/forms" element={<LiveForms />} />
           {/* The rate book behind /estimator/ and the quotation builder — a file, written as JavaScript. */}
           <Route path="/estimator" element={<LiveEstimator />} />
+          {/* Live work: stages and milestones, and the money each one bills. A project is opened by an
+              approved quotation, so there is no "new" here — only what is already running. */}
+          <Route path="/projects" element={<LiveProjects />} />
+          {/* The same projects on a date axis: start to handover, filled by what has been invoiced. */}
+          <Route path="/timeline" element={<LiveTimeline />} />
           {/* The header and the footer: one edit, every page, one undo. */}
           <Route path="/global" element={<LiveGlobal />} />
           {/* Every page and every change — where the header change across 150 pages is undone. */}

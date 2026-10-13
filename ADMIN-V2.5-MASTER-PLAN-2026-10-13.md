@@ -515,8 +515,8 @@ working as intended, not a gap hidden by a fallback.
 
 ### Phase 3 — Content, assets and delivery · **in progress** · 4 weeks
 
-*Measured at this commit:* `tests/run.php` **754 passed · 0 failed · 12 skipped** · `tests/conformance.mjs`
-**74 · 0** · php-lint **151 files** · `admin-v25` smoke **117 checks · 65 routes** · legacy bridge **150 of 365
+*Measured at this commit:* `tests/run.php` **802 passed · 0 failed · 12 skipped** · `tests/conformance.mjs`
+**75 · 0** · php-lint **151 files** · `admin-v25` smoke **124 checks · 65 routes** · legacy bridge **150 of 365
 actions** (41%). Migrations **000–014** are written and none has run on a database yet.
 
 Pages · builder bridge · section library · header/footer · heroes · redirects · the full content CMS ·
@@ -610,7 +610,15 @@ already did.
 |---|---|---|
 | The figures `/estimator/` and the quotation builder price from, edited in one place | `lib/forms.php`, `routes/estimator.php`, `LiveEstimator.tsx` on `/estimator` | Kept v2.1's shape on purpose: the book is written out as JavaScript (`assets/js/estimator-rates.js`, `window.WX_RATES`) because the public page reads it **with no request** — which is why the calculator works on a phone with one bar of signal. The rules a quote can be wrong by are checked and named (unique keys, rates above zero and rising Essential ≤ Standard ≤ Premium, a catalog line without a description dropped), and the reload of every reading page is one `wx_page_write_many()` batch — where v2.1 rewrote each page with a file write of its own, outside the page history. Saved sets (v2.1's P19 templates) keep a whole book under a name |
 
-**Still to come in this phase:** projects and the Gantt timeline, quote templates,
+| Delivered — projects | Where | Note |
+|---|---|---|
+| Every project, its stage and its money, with a drawer that moves the stage, edits the milestone plan and bills one | `routes/projects.php` (`wx_proj_row()`, `wx_proj_filter()`, `wx_proj_kpi()`), `admin-v25/src/screens/LiveProjects.tsx` on `/projects` | Two numbers a project has two answers to — where it stands among the stages, and how much of the contract has been billed — were one field in v2.1 and are two named ones here (`stageProgress`, `billedPct`), because a single `progress` printed as both is how a screen ends up half right. The **money fix**: a project can be billed two ways (one invoice for the contract, or one per milestone), and the v2.5 list route originally read only the first — a project billed in three milestones reported invoiced **nothing**. Both link shapes are read now, and the assertion that covers it is the one that would have caught it. The six figures at the top come from SQL aggregates over **every** project, not from the page on screen: a contract value totalled from the fifty rows a table happens to hold is a lie the moment there are fifty-one, and v2.1 read all of them into PHP to avoid it (the plan's 1.4-second table). Milestone statuses keep three facts apart — billed, partly paid, and *invoice deleted* — because a milestone whose invoice vanished must not look unbilled |
+
+| Delivered — the timeline | Where | Note |
+|---|---|---|
+| Every project on a date axis, from its start to its handover, filled by what has been invoiced | `admin-v25/src/screens/LiveTimeline.tsx` on `/timeline`, reading `GET /projects?view=all` | The plan asks for a Gantt; the data holds two dates per project and a milestone plan that is **percentages of the contract**, not dated tasks. So the chart draws what exists — a bar per project, a today line, late in red — and says so, rather than inventing a task schedule nobody agreed to and somebody promising a handover from. A project with no dates cannot be a bar, so it is **listed underneath** with its stage and money instead of being dropped: a chart that silently omits work looks complete and is not. The axis spans the work's own range (extended to today, so "everything is behind us" is visible), the label column stays fixed while the track scrolls, and each zoom level names its unit |
+
+**Still to come in this phase:** quote templates,
 business info (`cms_biz_*`), announcements (`cms_announce_*`), the AI settings in the CMS (`cms_ai_*`), SEO
 screens and integrations. The builder's 19 actions are all accounted for: 17 bridged, 2 named above as
 decisions.
@@ -799,7 +807,7 @@ Everything in `admin-v25/` runs today:
 | Evidence | Result |
 |---|---|
 | Type check | clean, strict, `noUnusedLocals` |
-| Render smoke | **117 checks · 65 routes · 0 failures** |
+| Render smoke | **124 checks · 65 routes · 0 failures** |
 | Production build | 3 chunks, content-hashed, sourcemaps on |
 | Token contract | switching theme, accent and density re-themes all charts and screens |
 | Routing defects | AD-3, AD-4 and AD-12 structurally impossible in the registry |
