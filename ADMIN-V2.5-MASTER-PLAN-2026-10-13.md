@@ -516,7 +516,7 @@ working as intended, not a gap hidden by a fallback.
 ### Phase 3 — Content, assets and delivery · **in progress** · 4 weeks
 
 *Measured at this commit:* `tests/run.php` **582 passed · 0 failed · 12 skipped** · `tests/conformance.mjs`
-**72 · 0** · php-lint **139 files** · `admin-v25` smoke **92 checks · 65 routes** · legacy bridge **150 of 365
+**72 · 0** · php-lint **139 files** · `admin-v25` smoke **102 checks · 65 routes** · legacy bridge **150 of 365
 actions** (41%). Migrations **000–014** are written and none has run on a database yet.
 
 Pages · builder bridge · section library · header/footer · heroes · redirects · the full content CMS ·
@@ -748,7 +748,7 @@ Everything in `admin-v25/` runs today:
 | Evidence | Result |
 |---|---|
 | Type check | clean, strict, `noUnusedLocals` |
-| Render smoke | **92 checks · 65 routes · 0 failures** |
+| Render smoke | **102 checks · 65 routes · 0 failures** |
 | Production build | 3 chunks, content-hashed, sourcemaps on |
 | Token contract | switching theme, accent and density re-themes all charts and screens |
 | Routing defects | AD-3, AD-4 and AD-12 structurally impossible in the registry |
