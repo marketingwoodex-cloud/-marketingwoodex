@@ -118,7 +118,11 @@ check("every non-public handler enforces authentication", () => {
      401 rather than a permission error. It authenticates by calling wx_current_user() and throwing
      ApiError::auth() — which is why it is listed here rather than having a call bolted on to satisfy
      this check. */
-  const publicRoutes = new Set(["health", "version", "me", "auth/login", "auth/login/2fa", "auth/logout"]);
+  /* Public on purpose, each for a reason: health/version are monitors, auth/* is how you sign in,
+     /me answers "who am I" with a clean 401, and the three book* routes are the website's booking
+     form — they carry no session by design and are rate-limited instead (see routes/bookings.php). */
+  const publicRoutes = new Set(["health", "version", "me", "auth/login", "auth/login/2fa", "auth/logout",
+    "book/config", "book/slots", "book"]);
   const offenders = [];
   for (const r of routes) {
     if (publicRoutes.has(r.pattern)) continue;
@@ -126,7 +130,10 @@ check("every non-public handler enforces authentication", () => {
     const at = src.indexOf(`function ${r.fn}(`);
     assert(at >= 0, `${r.fn} not found in its file`);
     const body = src.slice(at, src.indexOf("\nfunction ", at + 10) === -1 ? undefined : src.indexOf("\nfunction ", at + 10));
-    if (!/wx_require_user\s*\(/.test(body)) {
+    /* wx_appr_route() calls wx_require_user() itself, first thing, before it can queue anything —
+       that order is the point of it (see lib/approvals.php), so a handler that delegates to it has
+       authenticated the caller. */
+    if (!/wx_require_user\s*\(/.test(body) && !/wx_appr_route\s*\(/.test(body)) {
       offenders.push(`${r.fn} (${r.method} /${r.pattern})`);
     }
   }
@@ -417,8 +424,12 @@ check("C7: writes must be audited", () => {
       const name = block.slice(0, block.indexOf("("));
       const writes = /wx_(insert|update|q)\(\s*['"`]?(INSERT|UPDATE|DELETE)/i.test(block) || /wx_doc_put|wx_insert|wx_update/.test(block);
       const audits = /wx_audit\s*\(/.test(block);
-      // Approval and login routes have their own audit paths (approval rows are themselves the record).
-      if (writes && !audits && !/approval|auth|health/.test(f)) offenders.push(`${f} → ${name}`);
+      /* Two kinds of exception, both of which would be noise in the audit trail rather than facts in
+         it: approval and login routes (the approval row and the session row are the record), and the
+         infrastructure writers — the notification log and the rate-limit counter, which record that a
+         message was queued or a request was refused, not that the business changed. */
+      const infra = /^(wx_book_notify|wx_book_rate|wx_activity_page)$/.test(name);
+      if (writes && !audits && !infra && !/approval|auth|health/.test(f)) offenders.push(`${f} → ${name}`);
     }
   }
   assertEq(offenders.length, 0, `handlers that write without auditing: ${offenders.join(", ")}`);
@@ -653,6 +664,26 @@ check("only the Master decides", () => {
   assert(/function wx_is_master\(/.test(readCode("api/v2/lib/auth.php")), "wx_is_master must be the one definition of the Master role");
 });
 
+check("every unsafe route either passes the approval gate or is explicitly never queued", () => {
+  /* The list of actions the policy never queues lives in approvals.php and is asserted to match v2.1's
+     byte for byte above. Reading it here means a route cannot be ungated by accident, and an action
+     cannot be quietly dropped from the queue by adding a row to a regex — the two have to agree. */
+  const skip = /WX_APPR_SKIP\s*=\s*'(~[\s\S]*?~)'/.exec(read("api/v2/lib/approvals.php"))[1];
+  const skipRe = new RegExp(skip.slice(1, -1));
+  const ungated = [];
+  for (const r of routes) {
+    if (r.action === null || ["GET", "HEAD", "OPTIONS"].includes(r.method)) continue;
+    const src = readCode(`api/v2/routes/${r.file}.php`);
+    const at = src.indexOf(`function ${r.fn}(`);
+    if (at < 0) continue;
+    const next = src.indexOf("\nfunction ", at + 10);
+    const body = src.slice(at, next === -1 ? undefined : next);
+    if (/wx_appr_route\s*\(|wx_appr_wrap\s*\(/.test(body) || skipRe.test(r.action)) continue;
+    ungated.push(`${r.method} /${r.pattern} (${r.action})`);
+  }
+  assertEq(ungated.length, 0, `unsafe routes that bypass the queue without the policy saying so: ${ungated.join(", ")}`);
+});
+
 check("a change is permission-checked before it is filed for approval", () => {
   const offenders = [];
   for (const f of readdirSync(join(ROOT, "api/v2/routes"))) {
@@ -660,7 +691,9 @@ check("a change is permission-checked before it is filed for approval", () => {
     for (const block of src.split(/\nfunction /).slice(1)) {
       if (!/wx_appr_wrap\(/.test(block)) continue;
       const name = block.slice(0, block.indexOf("("));
-      if (!/wx_require_user\(/.test(block)) offenders.push(`${f} → ${name}`);
+      /* wx_appr_route() is wx_appr_wrap() with the permission check built in; calling the raw wrapper
+         without one is what this check exists to catch. */
+      if (!/wx_require_user\(/.test(block) && !/wx_appr_route\(/.test(block)) offenders.push(`${f} → ${name}`);
     }
   }
   assertEq(offenders.length, 0, `these queue a request without checking the requester may make it: ${offenders.join(", ")}`);

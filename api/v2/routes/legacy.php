@@ -62,7 +62,6 @@ function wx_legacy_bridged(): array
         'projs_table'     => ['projects', 'wx_route_projects_list', []],
         'proj_meta'       => ['projects', 'wx_route_projects_get', ['id']],
         'proj_milestones' => ['projects', 'wx_route_projects_save', ['id']],
-        'proj_bill'       => ['projects', 'wx_route_projects_get', ['id']],
         'appr_list'       => ['approvals', 'wx_route_approvals_list', []],
         'appr_count'      => ['approvals', 'wx_route_approvals_count', []],
         'appr_get'        => ['approvals', 'wx_route_approvals_get', ['id']],
@@ -71,6 +70,23 @@ function wx_legacy_bridged(): array
         'appr_cancel'     => ['approvals', 'wx_route_approvals_cancel', ['id']],
         'appr_cfg_get'    => ['approvals', 'wx_route_approvals_cfg_get', []],
         'appr_cfg_save'   => ['approvals', 'wx_route_approvals_cfg_save', []],
+        /* Phase 2 — clients. The old admin's three client screens and the page that opens one. */
+        'clients_list'    => ['clients', 'wx_route_clients_list', []],
+        'list_clients'    => ['clients', 'wx_route_clients_list', []],
+        'clients_master'  => ['clients', 'wx_route_clients_list', []],
+        'client_360'      => ['clients', 'wx_route_clients_get', ['id']],
+        'client_save'     => ['clients', 'wx_route_clients_save', ['id']],
+        'client_delete'   => ['clients', 'wx_route_clients_delete', ['id']],
+        'clients_merge'   => ['clients', 'wx_route_clients_merge', ['id']],
+        'clients_link'    => ['clients', 'wx_route_clients_link', []],
+        'client_comms'    => ['clients', 'wx_route_clients_comms', ['id']],
+        /* Phase 2 — bookings. */
+        'bk_list'         => ['bookings', 'wx_route_bookings_list', []],
+        'bk_save'         => ['bookings', 'wx_route_bookings_save', ['id']],
+        'bk_status'       => ['bookings', 'wx_route_bookings_status', ['id']],
+        'bk_slots'        => ['bookings', 'wx_route_bookings_slots', []],
+        'bk_cfg'          => ['bookings', 'wx_route_bookings_cfg_get', []],
+        'bk_cfg_save'     => ['bookings', 'wx_route_bookings_cfg_save', []],
         'sys_check'       => ['system', 'wx_route_sys_health', []],
     ];
 }

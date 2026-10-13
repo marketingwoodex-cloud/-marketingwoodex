@@ -126,6 +126,13 @@ function wx_route_leads_get(array $ctx): array
 /** POST /leads and PATCH /leads/{id} — one code path, so create and update cannot disagree. */
 function wx_route_leads_save(array $ctx): array
 {
+    /* Two lines, and deliberately the only place this route decides anything: the change itself
+       lives in wx_route_leads_save_do() below. */
+    return wx_appr_route('lead_save', $ctx, 'leads', 'wx_route_leads_save_do', static fn() => wx_route_leads_save_do($ctx));
+}
+
+function wx_route_leads_save_do(array $ctx): array
+{
     $id = isset($ctx['params']['id']) ? (int) $ctx['params']['id'] : 0;
     $u = wx_require_user('lead_save');
 
@@ -241,6 +248,13 @@ function wx_route_leads_save(array $ctx): array
  * the lead and orphan its notes and bookings; keeping the row keeps the history.
  */
 function wx_route_leads_delete(array $ctx): array
+{
+    /* Two lines, and deliberately the only place this route decides anything: the change itself
+       lives in wx_route_leads_delete_do() below. */
+    return wx_appr_route('lead_delete', $ctx, 'leads', 'wx_route_leads_delete_do', static fn() => wx_route_leads_delete_do($ctx));
+}
+
+function wx_route_leads_delete_do(array $ctx): array
 {
     $u = wx_require_user('lead_delete');
     $id = (int) $ctx['params']['id'];

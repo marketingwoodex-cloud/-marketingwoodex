@@ -101,6 +101,34 @@ function wx_routes(): array
         ['POST',   'approvals/{id}/reject',           'approvals', 'wx_route_approvals_reject',    'appr_reject'],
         ['POST',   'approvals/{id}/cancel',           'approvals', 'wx_route_approvals_cancel',    'appr_cancel'],
 
+        /* ----------------------------------------------------------- clients
+           Three read shapes of one resource: the list, one client in full, and the conversations.
+           `clients_master` and `client_360` are v2.1's own action names, so the permission each route
+           asks for is the permission v2.1 already granted — a salesperson who could open the client
+           master still can, and support's read-only view of client_360 is still read-only. */
+        ['GET',    'clients',                         'clients', 'wx_route_clients_list',    'clients_master'],
+        ['POST',   'clients',                         'clients', 'wx_route_clients_save',    'client_save'],
+        ['POST',   'clients/link',                    'clients', 'wx_route_clients_link',    'clients_link'],
+        ['GET',    'clients/{id}',                    'clients', 'wx_route_clients_get',     'client_360'],
+        ['PATCH',  'clients/{id}',                    'clients', 'wx_route_clients_save',    'client_save'],
+        ['DELETE', 'clients/{id}',                    'clients', 'wx_route_clients_delete',  'client_delete'],
+        ['POST',   'clients/{id}/merge',              'clients', 'wx_route_clients_merge',   'clients_merge'],
+        ['GET',    'clients/{id}/comms',              'clients', 'wx_route_clients_comms',   'client_comms'],
+
+        /* ---------------------------------------------------------- bookings
+           The last three are the public booking form: no session, so they are rate-limited and
+           honeypot-aware, and they create the lead as well as the booking. */
+        ['GET',    'bookings',                        'bookings', 'wx_route_bookings_list',      'bk_list'],
+        ['POST',   'bookings',                        'bookings', 'wx_route_bookings_save',      'bk_save'],
+        ['GET',    'bookings/availability',           'bookings', 'wx_route_bookings_slots',     'bk_slots'],
+        ['GET',    'bookings/settings',               'bookings', 'wx_route_bookings_cfg_get',   'bk_cfg'],
+        ['POST',   'bookings/settings',               'bookings', 'wx_route_bookings_cfg_save',  'bk_cfg_save'],
+        ['PATCH',  'bookings/{id}',                   'bookings', 'wx_route_bookings_save',      'bk_save'],
+        ['POST',   'bookings/{id}/status',            'bookings', 'wx_route_bookings_status',    'bk_status'],
+        ['GET',    'book/config',                     'bookings', 'wx_route_book_config',         null],
+        ['GET',    'book/slots',                      'bookings', 'wx_route_book_slots',          null],
+        ['POST',   'book',                            'bookings', 'wx_route_book_create',         null],
+
         /* ---------------------------------------------------------- system */
         ['GET',    'system/health',                   'system', 'wx_route_sys_health',    'sys_check'],
         ['GET',    'system/schema',                   'system', 'wx_route_sys_schema',    'dbx_browse'],
@@ -108,7 +136,17 @@ function wx_routes(): array
     return $routes;
 }
 
-/** Find a route for method+segments. Returns [route, params] or null. */
+/**
+ * Find a route for method+segments. Returns [route, params] or null.
+ *
+ * Every `{name}` in a pattern captures: `{id}` as an integer (digits only, so `invoices/summary`
+ * cannot be read as invoice "summary"), anything else as a slug-ish string. Until this was
+ * generalised the only brace the matcher knew was `{id}`, which meant
+ * `DELETE invoices/{id}/payments/{payment}` was a route no request could ever reach — the pattern
+ * stayed literal and the deletion 404'd. That is the sort of bug a test finds and a review does not,
+ * so the pattern-a-capture test in tests/run.php now walks the register and asserts every brace in
+ * every pattern resolves.
+ */
 function wx_route_match(string $method, array $segments): ?array
 {
     $path = implode('/', $segments);
@@ -123,11 +161,19 @@ function wx_route_match(string $method, array $segments): ?array
         if (strpos($pattern, '{') === false) {
             continue;
         }
-        $regex = '~^' . str_replace(['\{id\}', '/'], ['(\d+)', '\/'], preg_quote($pattern, '~')) . '$~';
+        $names = [];
+        $regex = '~^' . preg_replace_callback(
+            '~\\\\\{([a-z0-9_]+)\\\\\}~',
+            static function (array $mm) use (&$names): string {
+                $names[] = $mm[1];
+                return $mm[1] === 'id' ? '(\\d+)' : '([A-Za-z0-9_.-]+)';
+            },
+            preg_quote($pattern, '~')
+        ) . '$~';
         if (preg_match($regex, $path, $mm)) {
             $params = [];
-            if (strpos($pattern, '{id}') !== false) {
-                $params['id'] = (int) $mm[1];
+            foreach ($names as $i => $name) {
+                $params[$name] = $name === 'id' ? (int) $mm[$i + 1] : (string) $mm[$i + 1];
             }
             return [['method' => $m, 'pattern' => $pattern, 'file' => $file, 'fn' => $fn, 'action' => $action], $params];
         }

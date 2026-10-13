@@ -93,6 +93,13 @@ function wx_route_quotes_get(array $ctx): array
  */
 function wx_route_quotes_save(array $ctx): array
 {
+    /* Two lines, and deliberately the only place this route decides anything: the change itself
+       lives in wx_route_quotes_save_do() below. */
+    return wx_appr_route('quote_save', $ctx, 'quotations', 'wx_route_quotes_save_do', static fn() => wx_route_quotes_save_do($ctx));
+}
+
+function wx_route_quotes_save_do(array $ctx): array
+{
     $u = wx_require_user('quote_save');
     $id = isset($ctx['params']['id']) ? (int) $ctx['params']['id'] : (int) ($ctx['body']['id'] ?? 0);
 
@@ -195,6 +202,13 @@ function wx_route_quotes_save(array $ctx): array
 /** A status move. Each transition is deliberate; an unknown one is refused rather than stored. */
 function wx_route_quotes_status(array $ctx): array
 {
+    /* Two lines, and deliberately the only place this route decides anything: the change itself
+       lives in wx_route_quotes_status_do() below. */
+    return wx_appr_route('quote_status', $ctx, 'quotations', 'wx_route_quotes_status_do', static fn() => wx_route_quotes_status_do($ctx));
+}
+
+function wx_route_quotes_status_do(array $ctx): array
+{
     $u = wx_require_user('quote_status');
     $id = (int) $ctx['params']['id'];
     $to = wx_v_enum($ctx['body']['status'] ?? '', WX_QUOTE_STATUSES, 'status');
@@ -242,6 +256,13 @@ function wx_route_quotes_status(array $ctx): array
  * draft; the original is left exactly as it was.
  */
 function wx_route_quotes_revise(array $ctx): array
+{
+    /* Two lines, and deliberately the only place this route decides anything: the change itself
+       lives in wx_route_quotes_revise_do() below. */
+    return wx_appr_route('create_quote_draft', $ctx, 'quotations', 'wx_route_quotes_revise_do', static fn() => wx_route_quotes_revise_do($ctx));
+}
+
+function wx_route_quotes_revise_do(array $ctx): array
 {
     $u = wx_require_user('create_quote_draft');
     $id = (int) $ctx['params']['id'];

@@ -81,6 +81,13 @@ function wx_route_invoices_get(array $ctx): array
 /** Edit an invoice. Same rule as a quotation: the totals are recomputed, never trusted. */
 function wx_route_invoices_save(array $ctx): array
 {
+    /* Two lines, and deliberately the only place this route decides anything: the change itself
+       lives in wx_route_invoices_save_do() below. */
+    return wx_appr_route('inv_save', $ctx, 'invoices', 'wx_route_invoices_save_do', static fn() => wx_route_invoices_save_do($ctx));
+}
+
+function wx_route_invoices_save_do(array $ctx): array
+{
     $u = wx_require_user('inv_save');
     $id = (int) $ctx['params']['id'];
 

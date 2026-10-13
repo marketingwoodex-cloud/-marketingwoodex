@@ -151,6 +151,13 @@ function wx_route_projects_get(array $ctx): array
 /** Projects are not created here — an invoice creates one (see quotations.invoice). This edits it. */
 function wx_route_projects_save(array $ctx): array
 {
+    /* Two lines, and deliberately the only place this route decides anything: the change itself
+       lives in wx_route_projects_save_do() below. */
+    return wx_appr_route('proj_meta', $ctx, 'projects', 'wx_route_projects_save_do', static fn() => wx_route_projects_save_do($ctx));
+}
+
+function wx_route_projects_save_do(array $ctx): array
+{
     $u = wx_require_user('proj_meta');
     $id = (int) $ctx['params']['id'];
 
@@ -402,6 +409,13 @@ function wx_route_projects_bill_do(array $ctx): array
  * shape means the client link and the v2.1 screens keep rendering it.
  */
 function wx_route_projects_update(array $ctx): array
+{
+    /* Two lines, and deliberately the only place this route decides anything: the change itself
+       lives in wx_route_projects_update_do() below. */
+    return wx_appr_route('proj_update', $ctx, 'projects', 'wx_route_projects_update_do', static fn() => wx_route_projects_update_do($ctx));
+}
+
+function wx_route_projects_update_do(array $ctx): array
 {
     $u = wx_require_user('proj_meta');
     $id = (int) $ctx['params']['id'];

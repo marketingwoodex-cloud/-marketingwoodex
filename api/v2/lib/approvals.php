@@ -336,6 +336,27 @@ function wx_appr_gate(string $action, array $payload, callable $run)
 }
 
 /**
+ * The one way a route files a change for approval.
+ *
+ * It checks the requester's permission **before** it queues anything, and that order is the whole
+ * point: writing a request into the queue must never be a way to acquire a permission the requester
+ * does not have. Otherwise "ask the Master" becomes privilege escalation with extra steps.
+ *
+ * The paragraph above the function it wraps stays honest — every route in this file is a two-line
+ * wrapper around a `_do` function, and the `_do` function repeats the permission check because the
+ * replay runs it as the requester, not as the Master who approved it.
+ *
+ * @param string $file the route file the replay must require before calling $fn
+ * @param string $fn   the handler that performs the change (never the wrapper: a replay is already decided)
+ */
+function wx_appr_route(string $action, array $ctx, string $file, string $fn, callable $run): array
+{
+    wx_require_user($action);
+    $body = is_array($ctx['body'] ?? null) ? $ctx['body'] : [];
+    return wx_appr_wrap($action, $file, $fn, $ctx, wx_appr_summary('admin', $action, $body), $run);
+}
+
+/**
  * Wrap one route in the gate, so the route itself stays about the change it makes.
  *
  * The payload a replay needs is the request: which file, which handler, which params, which body.
