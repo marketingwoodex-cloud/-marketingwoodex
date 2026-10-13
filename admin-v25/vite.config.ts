@@ -34,6 +34,13 @@ const API_TARGET = process.env.WX_API_TARGET ?? "http://127.0.0.1:8080";
  * the bundle names itself. So it does, in the sidebar and on the sign-in card.
  */
 const BUILD = (() => {
+  /* A release build passes its own stamp. `tools/make-release.mjs` knows the code state — it excludes the
+     three artifacts it is about to write from the dirty test — so it can say whether the *code* differs
+     from the commit, which `git status` here cannot: by the time a rebuild runs, the pack's own generated
+     files are modified and every release bundle would carry a `+` that means nothing. One string, one
+     fact: the manifest records the same stamp the bundle shows. */
+  const given = process.env.WX_BUILD_STAMP;
+  if (given) return given;
   try {
     const sha = execSync("git rev-parse --short HEAD").toString().trim();
     /* A `+` when the tree is dirty, because "is this the new build?" is usually asked about edits that

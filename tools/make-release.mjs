@@ -149,9 +149,15 @@ function buildConsole() {
       /* `/admin-next/` is where §14.2 step 2 puts it. The base has to be absolute: the console has
          routes like `/projects/42`, and a relative base would resolve the bundle one directory too deep
          on exactly those screens. Repointing `/admin/` is a rebuild with `--base=/admin/` or a 302. */
+      /* The stamp the bundle carries. Derived from the commit, not from the clock, for two reasons: the
+         manifest records this exact string, and the console's own dirty test would mark every release
+         build with a `+` (the pack's generated files are modified by definition at this point). */
+      const at = new Date(git("log", "-1", "--format=%cI")).toISOString().slice(0, 16).replace("T", " ");
+      const stamp = `${git("rev-parse", "--short", "HEAD")} · built ${at}Z`;
       execFileSync("npm", ["run", "build", "--", "--base=/admin-next/"], {
         cwd: path.join(ROOT, "admin-v25"),
         stdio: ["ignore", "inherit", "inherit"],
+        env: { ...process.env, WX_BUILD_STAMP: stamp },
       });
     }
   }
