@@ -126,6 +126,12 @@ function wx_legacy_bridged(): array
         'notify_test'     => ['notifications', 'wx_route_notify_test', []],
         'notify_proj_send' => ['notifications', 'wx_route_notify_proj_send', ['id']],
         'sys_check'       => ['system', 'wx_route_sys_health', []],
+        /* Phase 3 — delivery: the addresses that moved and the ones nobody found. */
+        'redirects'       => ['redirects', 'wx_route_redirects_list', []],
+        'redirects_save'  => ['redirects', 'wx_route_redirects_save', []],
+        'redirects_plan'  => ['redirects', 'wx_route_redirects_plan', []],
+        'r404_list'       => ['redirects', 'wx_route_r404_list', []],
+        'r404_clear'      => ['redirects', 'wx_route_r404_clear', []],
     ];
 }
 

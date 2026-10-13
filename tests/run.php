@@ -636,6 +636,58 @@ if (!$WITH_DB) {
     }
 }
 
+/* ==================================================== Phase 3 · redirects */
+
+/* The rules that stop a redirect from breaking the site are pure functions, so they are tested without
+   a database — which matters, because the failure they prevent (a redirect that takes over /admin, or
+   one that points at itself) is only visible in production. */
+
+eq(wx_rd_one(['from' => 'design-planning', 'to' => '/interior-design/', 'type' => 301])['from'], '/design-planning/', 'a rule is normalised to have both slashes');
+eq(wx_rd_one(['from' => '/Page/', 'to' => '/blog/'])['from'], '/page/', 'the old address is lower-cased — MySQL compares paths case-insensitively');
+eq(wx_rd_one(['from' => '/x/', 'to' => '/y/', 'type' => 410])['to'], '', '410 is gone: it carries no target');
+eq(wx_rd_one(['from' => '/x/', 'to' => '/y/', 'type' => 999])['type'], 301, 'an unknown status code falls back to 301, not to a 500');
+eq(wx_rd_one(['from' => '/x/', 'to' => '/y/', 'match' => 'prefix'])['match'], 'prefix', 'prefix matching survives');
+eq(wx_rd_one(['from' => '/x/', 'to' => '/y/', 'match' => 'regex'])['match'], 'exact', 'anything that is not "prefix" is exact — there is no third kind');
+
+$ok = wx_rd_clean([['from' => '/a/', 'to' => '/b/'], ['from' => '/a/', 'to' => '/c/']]);
+eq(count($ok), 1, 'the same address twice collapses to the first rule — the one the unique key would keep');
+eq($ok[0]['to'], '/b/', 'the first rule is the one kept');
+
+$threw = '';
+try { wx_rd_clean([['from' => '/a/', 'to' => '/a/']]); } catch (Throwable $e) { $threw = $e->getMessage(); }
+ok(str_contains($threw, 'itself'), 'a redirect that points at itself is refused by name');
+
+$threw = '';
+try { wx_rd_clean([['from' => '/admin/', 'to' => '/']]); } catch (Throwable $e) { $threw = $e->getMessage(); }
+ok(str_contains($threw, 'system folder'), 'a system folder cannot be redirected');
+
+$threw = '';
+try { wx_rd_clean([['from' => '/', 'to' => '/home/']]); } catch (Throwable $e) { $threw = $e->getMessage(); }
+ok(str_contains($threw, 'home page'), 'the home page cannot be redirected');
+
+$threw = '';
+try { wx_rd_clean([['from' => '/a/', 'to' => '']]); } catch (Throwable $e) { $threw = $e->getMessage(); }
+ok(str_contains($threw, 'Choose a new address'), 'a redirect with nowhere to go is refused');
+eq(count(wx_rd_clean([['from' => '/a/', 'to' => '', 'type' => 410]])), 1, 'the same rule with 410 is allowed — gone needs no target');
+
+$plan = wx_rd_plan();
+ok(count($plan) >= 30, 'the verified redirect plan ships with the product (' . count($plan) . ' addresses)');
+$merged = wx_rd_merge([['from' => '/page/', 'to' => '/blog/', 'type' => 301, 'match' => 'prefix', 'src' => 'mine', 'on' => true]], $plan);
+ok($merged['added'] < count($plan), 'merging the plan skips an address that already has a rule');
+eq($merged['added'] + 1, count($plan), 'only the already-decided address was skipped');
+$pageRule = array_values(array_filter($merged['list'], static fn($r) => $r['from'] === '/page/'))[0] ?? null;
+eq($pageRule['to'] ?? '', '/blog/', 'the existing decision wins over the shipped plan');
+
+/* The .htaccess lines read the two switches and the saved rules, so this part needs the tables. */
+if ($WITH_DB && is_file(WX_DB_FILE) && wx_table_exists('wx_redirects')) {
+    $lines = implode("\n", wx_rd_lines());
+    ok(str_contains($lines, 'RewriteRule ^design-planning/?$ /interior-design/ [R=301,L]'), 'an exact rule becomes one RewriteRule with the right status');
+    ok(str_contains($lines, '[G,L]'), 'the spam cleanup answers 410, so Google drops the URL');
+    ok(str_contains($lines, '^www\\\\.'), 'the published block forces one official hostname');
+} else {
+    skip('the .htaccess lines need the redirect tables — run with --db after db/migrate.php');
+}
+
 /* ============================================================== report */
 echo "\n";
 if ($failures) {

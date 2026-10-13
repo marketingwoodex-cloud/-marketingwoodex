@@ -166,6 +166,17 @@ function wx_routes(): array
         ['POST',   'security/recovery',               'security', 'wx_route_security_recovery',       'sec_recovery_new'],
         ['POST',   'security/alerts',                 'security', 'wx_route_security_alerts',         'sec_alerts'],
 
+        /* ------------------------------------------------------- delivery and SEO
+           The redirect list is a file on the public server (`.htaccess`), so writing it is a change to
+           what the world sees; the 404 report is public because the people who hit a 404 are exactly
+           the people who have no session. Both are described in routes/redirects.php. */
+        ['GET',    'redirects',                       'redirects', 'wx_route_redirects_list',  'redirects'],
+        ['POST',   'redirects',                       'redirects', 'wx_route_redirects_save',  'redirects_save'],
+        ['POST',   'redirects/plan',                  'redirects', 'wx_route_redirects_plan',  'redirects_plan'],
+        ['GET',    '404s',                            'redirects', 'wx_route_r404_list',       'r404_list'],
+        ['DELETE', '404s',                            'redirects', 'wx_route_r404_clear',      'r404_clear'],
+        ['POST',   'r404',                            'redirects', 'wx_route_r404_report',     null],
+
         /* ------------------------------------------------- the visitor's widget
            Public on purpose: these five are what the website widget calls, and a visitor has no session
            to begin with. Auth here is the chat token in the body — 20 random bytes whose sha256 is the
@@ -226,6 +237,7 @@ function wx_public_routes(): array
         'auth/login', 'auth/login/2fa', 'auth/logout',
         'me',
         'book/config', 'book/slots', 'book',
+        'r404',
         'chat/config', 'chat/send', 'chat/poll', 'chat/typing', 'chat/file',
     ];
 }

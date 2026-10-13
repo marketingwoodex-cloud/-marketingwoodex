@@ -232,8 +232,20 @@ check("public write routes are rate-limited instead of authenticated", () => {
     const at = src.indexOf(`function ${r.fn}(`);
     const body = src.slice(at, src.indexOf("\nfunction ", at + 10) === -1 ? undefined : src.indexOf("\nfunction ", at + 10));
     const publicList = publicRoutes();
-    /* wx_book_rate() is wx_rate() with the booking form's wording; either counts. */
-    if (publicList.has(r.pattern) && !/wx_(\w*_)?rate\s*\(/.test(body)) offenders.push(`${r.fn} (${r.method} /${r.pattern})`);
+    if (!publicList.has(r.pattern)) continue;
+    /* Same one-level rule as the audit check: a handler that calls a helper which limits is limited,
+       and requiring the call in the handler as well would spend the budget twice. wx_book_rate() is
+       wx_rate() with the booking form's wording; wx_r404_log() limits per IP before it writes. */
+    const limitingHelpers = new Set();
+    const libText = readdirSync(join(ROOT, "api/v2/lib")).filter((f) => f.endsWith(".php"))
+      .map((l) => readCode(`api/v2/lib/${l}`)).join("\n");
+    for (const block of (src + "\n" + libText).split(/\nfunction /).slice(1)) {
+      const n = block.slice(0, block.indexOf("("));
+      if (/wx_(\w*_)?rate\s*\(/.test(block)) limitingHelpers.add(n);
+    }
+    const limited = /wx_(\w*_)?rate\s*\(/.test(body)
+      || [...limitingHelpers].some((h) => h !== r.fn && new RegExp(`\\b${h}\\s*\\(`).test(body));
+    if (!limited) offenders.push(`${r.fn} (${r.method} /${r.pattern})`);
   }
   assertEq(offenders.length, 0, `public writes with no rate limit: ${offenders.join(", ")}`);
 });

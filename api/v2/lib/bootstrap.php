@@ -78,6 +78,7 @@ require_once WX_V2_DIR . '/lib/validate.php';
 require_once WX_V2_DIR . '/lib/money.php';
 require_once WX_V2_DIR . '/lib/audit.php';
 require_once WX_V2_DIR . '/lib/notify.php';
+require_once WX_V2_DIR . '/lib/redirects.php';
 require_once WX_V2_DIR . '/lib/auth.php';
 require_once WX_V2_DIR . '/lib/caps.php';
 require_once WX_V2_DIR . '/lib/approvals.php';
