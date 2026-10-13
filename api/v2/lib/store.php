@@ -217,5 +217,11 @@ final class JsonStore
 /** Convenience: the store for a file in _private, e.g. wx_store('security.json'). */
 function wx_store(string $name, bool $optional = false): JsonStore
 {
+    /* The name becomes a filesystem path, so it is validated rather than trusted. Every caller passes a
+       literal ('security.json', 'demo.json'), which means a failure here is a bug in our code or an
+       attempt that reached further than it should have — either way it stops before touching the disk. */
+    if (!preg_match('~^[A-Za-z0-9][A-Za-z0-9._-]*\.json$~', $name) || str_contains($name, '..')) {
+        throw ApiError::internal('Refused a store name outside _private: ' . $name);
+    }
     return new JsonStore(WX_PRIVATE_DIR . '/' . ltrim($name, '/'), $optional);
 }

@@ -42,7 +42,8 @@ function wx_caps_load(): array
     foreach (wx_all('SELECT action, grp FROM wx_action_shared') as $r) {
         $caps['shared'][(string) $r['action']][] = (string) $r['grp'];
     }
-    foreach (wx_all('SELECT pattern, grp, is_regex FROM wx_action_groups') as $r) {
+    // Ordered: two patterns can match the same action, and v2.1 answers with the first in its array.
+    foreach (wx_all('SELECT pattern, grp, is_regex FROM wx_action_groups ORDER BY ord ASC') as $r) {
         if ((int) $r['is_regex'] === 1) {
             $caps['regex'][] = [(string) $r['pattern'], (string) $r['grp']];
         } else {
@@ -52,8 +53,8 @@ function wx_caps_load(): array
     foreach (wx_all('SELECT action, role FROM wx_action_roles') as $r) {
         $caps['roles'][(string) $r['action']][] = (string) $r['role'];
     }
-    foreach (wx_all('SELECT code, label FROM wx_roles') as $r) {
-        $caps['labels'][(string) $r['code']] = (string) $r['label'];
+    foreach (wx_all('SELECT id, label FROM wx_roles') as $r) {
+        $caps['labels'][(string) $r['id']] = (string) $r['label'];
     }
     return $caps;
 }
@@ -124,9 +125,9 @@ function wx_can(array $user, string $action, array $legacyRoles = []): bool
         return !$legacyRoles || in_array($role, $legacyRoles, true);
     }
 
-    // Screens that stay owner+admin even though a broader group matches them. v2.1 hardcoded this
-    // list inside wx_allowed(); it is wx_action_roles now, seeded by tools/gen-caps.mjs from that
-    // same list, so the answer is unchanged and the rule is visible in the database.
+    // Screens that stay owner+admin even though a broader group pattern also matches them. v2.1
+    // hardcoded this list inside wx_allowed(); it is wx_action_roles now, generated from that same
+    // list by tools/gen-caps.mjs — so the answer is unchanged, and a change to it is a reviewable row.
     if (!empty($caps['roles'][$action])) {
         return in_array($role, $caps['roles'][$action], true);
     }

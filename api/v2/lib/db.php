@@ -101,9 +101,26 @@ function wx_tx(callable $fn)
     }
 }
 
+/**
+ * A table name, checked before it is concatenated into SQL.
+ *
+ * Every call site passes a literal today, so this never fires — which is exactly the point. The day
+ * someone writes wx_insert($table, …) with a name that came off a request, the name is refused here
+ * instead of being pasted into a statement. Table names cannot be bound as parameters, so a check is
+ * the only guard available.
+ */
+function wx_table_name(string $table): string
+{
+    if ($table === '' || !preg_match('~^[a-z][a-z0-9_]{2,64}$~', $table)) {
+        throw ApiError::internal('Refused an invalid table name');
+    }
+    return $table;
+}
+
 /** INSERT from a column=>value map, returning the new id. */
 function wx_insert(string $table, array $row): int
 {
+    wx_table_name($table);
     $cols = array_keys($row);
     $sql = 'INSERT INTO `' . $table . '` (' . implode(',', array_map(static function ($c) { return '`' . $c . '`'; }, $cols)) . ')'
         . ' VALUES (' . implode(',', array_fill(0, count($cols), '?')) . ')';
@@ -117,6 +134,7 @@ function wx_insert(string $table, array $row): int
  */
 function wx_update(string $table, array $set, array $where): int
 {
+    wx_table_name($table);
     if (!$set || !$where) {
         throw ApiError::internal('Refused an unbounded UPDATE on ' . $table);
     }
@@ -136,6 +154,7 @@ function wx_update(string $table, array $set, array $where): int
 
 function wx_table_exists(string $table): bool
 {
+    wx_table_name($table);
     static $cache = [];
     if (!array_key_exists($table, $cache)) {
         $cache[$table] = (bool) wx_val('SHOW TABLES LIKE ?', [$table]);

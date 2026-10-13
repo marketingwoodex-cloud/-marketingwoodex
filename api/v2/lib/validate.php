@@ -76,34 +76,46 @@ function wx_v_opt_int($v, string $field, int $min = PHP_INT_MIN, int $max = PHP_
     return wx_v_int($v, $field, $min, $max);
 }
 
-/** Money as an integer number of paisa (1/100 rupee): floating point never touches a ledger. */
-function wx_v_money($v, string $field, $min = null, $max = null): int
+/**
+ * Money as a whole number of rupees (PKR).
+ *
+ * Why whole rupees and not paisa: every money field in this product already lives in v2.1 in whole
+ * rupees — `doc_totals()` rounds document totals with `(int)round(...)`, and `pay_add` does
+ * `(int)round(numv($in['amount']))`. The old admin keeps running during the cut-over and reads the
+ * same columns, so a v2.5 that wrote paisa would be read back as rupees: every invoice off by 100x.
+ * Matching the existing unit is worth more than sub-rupee precision nothing in the product uses.
+ *
+ * Line-item rates inside a document payload keep two decimals, exactly as v2.1 stores them; only the
+ * stored totals are whole rupees. `wx_doc_totals()` in lib/money.php is the single implementation of
+ * that arithmetic, and it is a deliberate port, not a redesign.
+ */
+function wx_v_pkr($v, string $field, ?int $min = null, ?int $max = null): int
 {
     if (is_int($v)) {
-        $paisa = $v;
+        $rupees = $v;
     } elseif (is_float($v)) {
-        $paisa = (int) round($v * 100);
+        $rupees = (int) round($v);
     } else {
         $s = trim((string) $v);
-        $s = str_replace([',', ' ', "\u{00A0}"], '', $s);
-        if ($s === '' || !preg_match('~^-?\d+(\.\d{1,6})?$~', $s)) {
+        $s = str_replace([',', ' ', "\xC2\xA0"], '', $s);
+        if ($s === '' || !preg_match('~^-?\d+(\.\d{1,4})?$~', $s)) {
             throw ApiError::validation('Expected an amount', $field);
         }
-        $paisa = (int) round(((float) $s) * 100);
+        $rupees = (int) round((float) $s);
     }
-    if ($min !== null && $paisa < $min) {
+    if ($min !== null && $rupees < $min) {
         throw ApiError::validation('Amount is too low', $field);
     }
-    if ($max !== null && $paisa > $max) {
+    if ($max !== null && $rupees > $max) {
         throw ApiError::validation('Amount is too high', $field);
     }
-    return $paisa;
+    return $rupees;
 }
 
-/** paisa → the string a person reads: 123456 → "1234.56" */
-function wx_money_out(int $paisa): string
+/** A stored amount, written the way a document writes it: 1234 -> "1,234" */
+function wx_pkr_out(int $rupees): string
 {
-    return number_format($paisa / 100, 2, '.', '');
+    return number_format($rupees);
 }
 
 function wx_v_bool($v, string $field): bool

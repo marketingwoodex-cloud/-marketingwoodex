@@ -53,15 +53,21 @@ if (!defined('WX_PERM_GROUPS')) define('WX_PERM_GROUPS', [
 ]);
 
 /* ------------------------------------------------------------------ includes
-   Order matters: errors → http → store/db → validate → audit → auth → caps → router. */
+   Order matters: errors → http → store/db → settings → validate → money → audit → auth → caps →
+   approvals → router.
+   money.php calls wx_v_* (validate) and wx_secret (auth), so caps/router come last but money is
+   safe to place after validate because PHP resolves function calls at call time, not at include. */
 require_once WX_V2_DIR . '/lib/errors.php';
 require_once WX_V2_DIR . '/lib/http.php';
 require_once WX_V2_DIR . '/lib/store.php';
+require_once WX_V2_DIR . '/lib/settings.php';
 require_once WX_V2_DIR . '/lib/db.php';
 require_once WX_V2_DIR . '/lib/validate.php';
+require_once WX_V2_DIR . '/lib/money.php';
 require_once WX_V2_DIR . '/lib/audit.php';
 require_once WX_V2_DIR . '/lib/auth.php';
 require_once WX_V2_DIR . '/lib/caps.php';
+require_once WX_V2_DIR . '/lib/approvals.php';
 require_once WX_V2_DIR . '/lib/router.php';
 
 /**

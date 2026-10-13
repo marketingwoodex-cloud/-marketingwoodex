@@ -109,6 +109,15 @@ function wx_session_set_cookie(string $sid): void
  * happens to run — cheap housekeeping that keeps the table from growing forever on a shared host
  * with no cron.
  */
+/**
+ * The Master. v2.1 calls this role `owner`, and the approval feature is built entirely around it:
+ * the owner acts, everyone else proposes. Kept as a named check so "who may do this" has one answer.
+ */
+function wx_is_master(array $u): bool
+{
+    return (string) ($u['role'] ?? '') === 'owner';
+}
+
 function wx_current_user(): ?array
 {
     static $resolved = false;

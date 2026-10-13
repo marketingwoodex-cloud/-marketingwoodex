@@ -60,6 +60,47 @@ function wx_routes(): array
         /* ---------------------------------------------------------- activity */
         ['GET',    'activity',                        'dashboard', 'wx_route_activity',   'activity'],
 
+        /* ------------------------------------------------------- quotations
+           The chain the Phase 2 gate names: a lead is quoted, the quotation is approved, it becomes
+           an invoice, the invoice is paid — all without the v2.1 admin. */
+        ['GET',    'quotations',                      'quotations', 'wx_route_quotes_list',    'list_quotes'],
+        ['POST',   'quotations',                      'quotations', 'wx_route_quotes_save',    'quote_save'],
+        ['GET',    'quotations/{id}',                 'quotations', 'wx_route_quotes_get',     'get_quote'],
+        ['PATCH',  'quotations/{id}',                 'quotations', 'wx_route_quotes_save',    'quote_save'],
+        ['DELETE', 'quotations/{id}',                 'quotations', 'wx_route_quotes_delete',  'quote_delete'],
+        ['POST',   'quotations/{id}/status',          'quotations', 'wx_route_quotes_status',  'quote_status'],
+        ['POST',   'quotations/{id}/revise',          'quotations', 'wx_route_quotes_revise',  'create_quote_draft'],
+        ['POST',   'quotations/{id}/invoice',         'quotations', 'wx_route_quotes_invoice', 'quote_invoice'],
+
+        /* --------------------------------------------------------- invoices */
+        ['GET',    'invoices',                        'invoices', 'wx_route_invoices_list',    'invs_list'],
+        ['GET',    'invoices/{id}',                   'invoices', 'wx_route_invoices_get',     'inv_get'],
+        ['PATCH',  'invoices/{id}',                   'invoices', 'wx_route_invoices_save',    'inv_save'],
+        ['DELETE', 'invoices/{id}',                   'invoices', 'wx_route_invoices_delete',  'inv_save'],
+        ['GET',    'invoices/summary',                'invoices', 'wx_route_invoices_summary', 'invs_tracker'],
+        ['POST',   'invoices/{id}/payments',          'invoices', 'wx_route_invoices_pay',     'pay_add'],
+        ['DELETE', 'invoices/{id}/payments/{payment}','invoices', 'wx_route_invoices_pay_delete', 'pay_delete'],
+
+        /* ---------------------------------------------------------- payments */
+        ['GET',    'payments',                        'invoices', 'wx_route_payments_list',    'invs_tracker'],
+
+        /* ---------------------------------------------------------- projects */
+        ['GET',    'projects',                        'projects', 'wx_route_projects_list',    'projs_table'],
+        ['GET',    'projects/{id}',                   'projects', 'wx_route_projects_get',     'proj_meta'],
+        ['PATCH',  'projects/{id}',                   'projects', 'wx_route_projects_save',    'proj_meta'],
+        ['POST',   'projects/{id}/updates',           'projects', 'wx_route_projects_update',  'proj_meta'],
+        ['POST',   'projects/{id}/bill',              'projects', 'wx_route_projects_bill',    'proj_bill'],
+
+        /* --------------------------------------------------------- approvals */
+        ['GET',    'approvals',                       'approvals', 'wx_route_approvals_list',      'appr_list'],
+        ['GET',    'approvals/count',                 'approvals', 'wx_route_approvals_count',     'appr_count'],
+        ['GET',    'approvals/config',                'approvals', 'wx_route_approvals_cfg_get',   'appr_cfg_get'],
+        ['POST',   'approvals/config',                'approvals', 'wx_route_approvals_cfg_save',  'appr_cfg_save'],
+        ['GET',    'approvals/{id}',                  'approvals', 'wx_route_approvals_get',       'appr_get'],
+        ['POST',   'approvals/{id}/approve',          'approvals', 'wx_route_approvals_approve',   'appr_apply'],
+        ['POST',   'approvals/{id}/reject',           'approvals', 'wx_route_approvals_reject',    'appr_reject'],
+        ['POST',   'approvals/{id}/cancel',           'approvals', 'wx_route_approvals_cancel',    'appr_cancel'],
+
         /* ---------------------------------------------------------- system */
         ['GET',    'system/health',                   'system', 'wx_route_sys_health',    'sys_check'],
         ['GET',    'system/schema',                   'system', 'wx_route_sys_schema',    'dbx_browse'],

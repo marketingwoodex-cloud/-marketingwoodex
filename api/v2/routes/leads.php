@@ -49,7 +49,7 @@ function wx_lead_shape(array $r): array
         'assigned_to' => isset($r['assigned_to']) ? (int) $r['assigned_to'] : null,
         'followup' => $r['followup'] ?? null,
         'value' => (int) $r['value'],
-        'valueDisplay' => wx_money_out((int) $r['value']),
+        'valueDisplay' => wx_pkr_out((int) $r['value']),
         'lost_reason' => $r['lost_reason'] ?? null,
         'client_id' => isset($r['client_id']) ? (int) $r['client_id'] : null,
         'is_read' => (bool) $r['is_read'],
@@ -163,7 +163,7 @@ function wx_route_leads_save(array $ctx): array
                 $set['line'] = wx_v_opt_string($raw['line'], 'line', 20);
             }
             if (array_key_exists('value', $raw)) {
-                $set['value'] = wx_v_money($raw['value'], 'value', 0);
+                $set['value'] = wx_v_pkr($raw['value'], 'value', 0);
             }
             if (array_key_exists('assigned_to', $raw)) {
                 $set['assigned_to'] = wx_v_opt_int($raw['assigned_to'], 'assigned_to', 1);
