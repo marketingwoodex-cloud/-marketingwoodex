@@ -175,6 +175,8 @@ function wx_legacy_bridged(): array
         'cms_tpl_list'     => ['content', 'wx_route_content_tpl_list', []],
         'cms_tpl_save'     => ['content', 'wx_route_content_tpl_save', []],
         'cms_tpl_delete'   => ['content', 'wx_route_content_tpl_delete', []],
+        'cms_placements'   => ['placements', 'wx_route_place_get', []],
+        'cms_placements_save' => ['placements', 'wx_route_place_save', []],
         /* Phase 3 — the section library. The builder's own six library actions; the rest of the builder
            (page load/save, uploads, the theme file) is its own slice. */
         'blocks_list'      => ['blocks', 'wx_route_blocks_list', []],

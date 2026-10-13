@@ -537,3 +537,32 @@ table.data tr.is-selected { background: var(--accent-soft, rgba(0, 0, 0, 0.05));
 .theme-field { display: grid; gap: 4px; }
 .theme-field .input { width: 100%; }
 .theme-field input[type="color"] { width: 40px; height: 30px; padding: 2px; border: 1px solid var(--border); border-radius: var(--r-sm); background: var(--surface-2); }
+
+/* Where the sections appear: the page picker, the design chips, and the preview frame.
+   The picker is a scrollable list rather than a table because the question it answers is "which pages" —
+   a checkbox per page, the ones that already carry the section called out, and a design override beside
+   each chosen page. */
+.pager-filter { max-width: 200px; padding: 6px 10px; border: 1px solid var(--border); border-radius: var(--r-sm); background: var(--surface-2); color: var(--text); font-size: var(--fs-12); }
+.page-picker { max-height: 420px; overflow: auto; border: 1px solid var(--line); border-radius: 10px; }
+.page-pick { display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-bottom: 1px solid var(--line); font-size: var(--fs-12); }
+.page-pick:last-child { border-bottom: 0; }
+.page-pick.is-on { background: var(--accent-soft, rgba(0, 0, 0, 0.04)); }
+.page-pick label { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; }
+.page-pick .rel { font-family: var(--font-mono, ui-monospace, monospace); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.page-pick select { max-width: 160px; padding: 4px 6px; border: 1px solid var(--border); border-radius: var(--r-sm); background: var(--surface-2); color: var(--text); font-size: var(--fs-12); }
+
+.chip-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { padding: 5px 10px; border: 1px solid var(--border); border-radius: 999px; background: var(--surface-2); color: var(--text-2); font-size: var(--fs-12); cursor: pointer; }
+.chip.is-on { border-color: var(--accent); background: var(--accent-soft, rgba(0, 0, 0, 0.05)); color: var(--accent); font-weight: 600; }
+.hint { font-size: var(--fs-12); color: var(--text-muted); margin: 0; }
+
+/* What the check found: a list of counts and the pages that are unusual, not 150 rows. */
+.plan { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; font-size: var(--fs-12); }
+.plan li { display: flex; align-items: center; gap: 8px; }
+.plan code, .code { font-family: var(--font-mono, ui-monospace, monospace); font-size: var(--fs-12); }
+.code { margin: 0; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface-2); white-space: pre-wrap; word-break: break-word; max-height: 320px; overflow: auto; }
+.code.around { margin-top: 8px; color: var(--text-muted); }
+
+/* The preview is the site's own stylesheet drawn around the section the push would write, so it is an
+   iframe with the real /assets/site.css in it rather than a re-creation. */
+.preview-frame { width: 100%; min-height: 420px; border: 1px solid var(--line); border-radius: 10px; background: #fff; }

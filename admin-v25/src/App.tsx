@@ -20,12 +20,14 @@ import { LiveGlobal } from "./screens/LiveGlobal";
 import { LivePages } from "./screens/LivePages";
 import { LiveLibrary } from "./screens/LiveLibrary";
 import { LiveSiteTheme } from "./screens/LiveSiteTheme";
+import { LivePlacements } from "./screens/LivePlacements";
 import { linkLabel, useLive, type BellData } from "./lib/live";
 import { Btn, Card, PageHead } from "./components/primitives";
 
 /** Route ids implemented by a real screen in this prototype (Phase 0). */
 const BUILT_IDS = new Set([
   "dashboard", "leads", "enquiries", "pipeline", "quotes", "theme", "redirects", "media", "blog", "portfolio", "global", "pages", "library", "site-theme",
+  "testimonials", "team",
 ]);
 
 /** The public entry point: one provider, then the app proper. */
@@ -190,6 +192,10 @@ function Frame() {
           <Route path="/library" element={<LiveLibrary />} />
           {/* The site's own colours and type — the file every page is drawn from, not the admin's palette. */}
           <Route path="/site-theme" element={<LiveSiteTheme />} />
+          {/* Two nav entries, one screen: what changes between them is which kind it opens on. Testimonials
+              and the team are placed *inside* pages rather than living at addresses of their own. */}
+          <Route path="/testimonials" element={<LivePlacements initialKind="testimonial" />} />
+          <Route path="/team" element={<LivePlacements initialKind="member" />} />
           <Route
             path="/theme"
             element={

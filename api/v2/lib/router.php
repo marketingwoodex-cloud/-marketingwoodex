@@ -262,6 +262,18 @@ function wx_routes(): array
         ['POST',   'blocks/{blk}/sync',               'blocks',  'wx_route_blocks_sync',   'blocks_sync'],
         ['DELETE', 'blocks/{blk}',                    'blocks',  'wx_route_blocks_delete', 'blocks_delete'],
 
+        /* ---------------------------------------------- the sections the CMS places
+           Testimonials and team members do not become pages: they appear *inside* pages, wrapped in
+           `<!--wx:testimonials-->` marker pairs that v2.1's builder also writes. The push composes the
+           sections server-side and writes every changed page as one batch, so the whole push is one entry
+           in the page history and one undo. `cms_placements` and `cms_placements_save` are v2.1's own
+           action names, so the permission matrix and the approval policy are the ones already agreed to. */
+        ['GET',    'placements',           'placements', 'wx_route_place_get',     'cms_placements'],
+        ['GET',    'placements/preview',   'placements', 'wx_route_place_preview', null],
+        ['GET',    'placements/plan',      'placements', 'wx_route_place_plan',    null],
+        ['POST',   'placements',           'placements', 'wx_route_place_save',    'cms_placements_save'],
+        ['POST',   'placements/push',      'placements', 'wx_route_place_push',    'save'],
+
         /* ------------------------------------------------------ the content CMS
            An editor's list, an editor, and a publish button that composes the page server-side out of
            the site's own page furniture. `?filter=draft|scheduled|due|live` is answered in SQL. */

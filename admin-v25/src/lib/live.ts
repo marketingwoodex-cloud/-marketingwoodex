@@ -584,3 +584,84 @@ export interface ThemeRollback {
   vars: Record<string, string>;
   meta: ThemeMeta;
 }
+
+/* ------------------------------------------- the sections the CMS places (routes/placements.php)
+   Testimonials and the team do not become pages: they are written *inside* pages, wrapped in a marker pair
+   that says the section is generated. The state below is deliberately v2.1's own shape — `placements` with a
+   list per kind and a `<kind>Set` record beside it — because the v2.1 admin reads the same thing through
+   `cms_placements` and two shapes would drift while both admins are live. */
+
+export interface PlaceKind {
+  kind: string;
+  title: string;
+  one: string;
+}
+
+export interface PlaceDesign {
+  id: string;
+  label: string;
+  note: string;
+}
+
+export interface PlaceItem {
+  id: number;
+  title: string;
+  rating: number;
+  order: number;
+}
+
+export interface PlaceSet {
+  kicker: string;
+  heading: string;
+  design: string;
+  max: number;
+  designs: Record<string, string>;
+}
+
+export interface PlacementsData {
+  /** v2.1's shape: `testimonial` → pages, `testimonialSet` → the settings, and the same for `member`. */
+  placements: Record<string, string[] | PlaceSet>;
+  kinds: PlaceKind[];
+  designs: PlaceDesign[];
+  counts: Record<string, number>;
+  /** Pages that carry the marker right now — found by looking, not by asking the settings. */
+  markerPages: Record<string, string[]>;
+  anchors: string[];
+  items: Record<string, PlaceItem[]>;
+  import: { imported: boolean; why?: string; placements?: Record<string, number> } | null;
+}
+
+/** What would happen to one page: replaced, inserted, removed, already right, or nowhere to put it. */
+export interface PlaceStep {
+  kind: string;
+  action: string;
+  anchor: string;
+  bytes: number;
+}
+
+export interface PlacePlan {
+  pages: { rel: string; kinds: PlaceStep[] }[];
+  changed: number;
+  unchanged: number;
+  blocked: number;
+  bytes: number;
+}
+
+export interface PlacePreview {
+  kind: string;
+  design: string;
+  items: number;
+  html: string;
+  bytes: number;
+  marker: string;
+  plan: { action: string; anchor: string; at: number | null; block: number; changed: boolean } | null;
+  around: { before: string; after: string; at: string } | null;
+}
+
+export interface PlacePush {
+  batch: string;
+  changed: string[];
+  skipped: number;
+  versions: Record<string, number>;
+  items: Record<string, number>;
+}

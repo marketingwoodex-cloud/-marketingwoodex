@@ -22,6 +22,7 @@ import { LiveGlobal } from "./screens/LiveGlobal";
 import { LivePages } from "./screens/LivePages";
 import { LiveLibrary } from "./screens/LiveLibrary";
 import { LiveSiteTheme } from "./screens/LiveSiteTheme";
+import { LivePlacements } from "./screens/LivePlacements";
 import { SessionCtx, type SessionValue } from "./lib/session";
 
 /* This file is built by vite for Node (see package.json#scripts.smoke), so `process` exists at run
@@ -355,6 +356,36 @@ try {
   failures.push(`site theme without an API → ${(err as Error).message}`);
 }
 
+/* The placements screen: testimonials and the team are placed *inside* pages, so the two things that must
+   never happen are an empty map that reads as "nothing appears anywhere" and a page list rendered before the
+   server has answered. Both are checked with the API absent, which is how they would look if the host were
+   down while somebody was mid-change. */
+let htmlPlace = "";
+let htmlPlaceOffline = "";
+try {
+  htmlPlace = renderToString(
+    <MemoryRouter initialEntries={["/testimonials"]}>
+      <SessionCtx.Provider value={session("live", asUser)}>
+        <LivePlacements />
+      </SessionCtx.Provider>
+    </MemoryRouter>,
+  );
+} catch (err) {
+  failures.push(`live placements → ${(err as Error).message}`);
+}
+
+try {
+  htmlPlaceOffline = renderToString(
+    <MemoryRouter initialEntries={["/team"]}>
+      <SessionCtx.Provider value={session("offline", null)}>
+        <LivePlacements initialKind="member" />
+      </SessionCtx.Provider>
+    </MemoryRouter>,
+  );
+} catch (err) {
+  failures.push(`placements without an API → ${(err as Error).message}`);
+}
+
 /* A signed-out app must not leak a namespace behind an "everyone gets one" banner, and a live screen
    must not render while it is still loading, or the first paint would show an empty table as truth. */
 for (const [name, ok] of [
@@ -390,6 +421,15 @@ for (const [name, ok] of [
     !htmlPagesOffline.includes("New page") && !htmlPagesOffline.includes("Save page"),
   ],
   ["the site theme screen renders its loading state", htmlTheme.includes("Reading the stylesheet")],
+  ["the placements screen renders its loading state", htmlPlace.includes("Loading…")],
+  [
+    "the placements screen with no API does not claim nothing appears anywhere",
+    htmlPlaceOffline.includes("api/v2 is not answering") && !htmlPlaceOffline.includes("Save choices"),
+  ],
+  [
+    "and it does not offer Update website either",
+    !htmlPlaceOffline.includes("Update website"),
+  ],
   [
     "the site theme with no API says so and offers no Save",
     htmlThemeOffline.includes("Not connected") && !htmlThemeOffline.includes("Save the theme")

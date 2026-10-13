@@ -1566,6 +1566,118 @@ eq(wx_fetch_page('https://stock.example/post', $world([
     'https://stock.example/post' => ['code' => 200, 'body' => '<html><body>x</body></html>', 'location' => '', 'type' => 'text/html'],
 ]))['hops'], 0, 'and accepts a page, at no more than three hops');
 
+
+/* ============================================================== placements */
+group('A section goes into a page, or the page is left alone');
+
+/* The kinds and their markers: v2.1's own names, because v2.1's admin writes the same markers during the
+   cut-over and two conventions would mean two sections appearing where there should be one. */
+eq(wx_place_marker('testimonial'), '<!--wx:testimonials-->', 'a review section is marked the way v2.1 marked it');
+eq(wx_place_marker('member', true), '<!--/wx:team-->', 'and the team closes with its own marker');
+throws('VALIDATION', 'kind', static fn() => wx_place_kind('posts'), 'a kind that does not appear inside a page is refused');
+
+/* Where a section may be placed: an .html file, and not one of the site's own machinery folders. */
+ok(wx_place_rel_ok('about/index.html'), 'a page in a folder is a page');
+ok(!wx_place_rel_ok('_private/secret.html'), 'a file in the private folder is not');
+ok(!wx_place_rel_ok('assets/report.html'), 'nor is anything under assets');
+ok(!wx_place_rel_ok('../outside.html'), 'nor is a path that climbs out of the site');
+
+/* --- the reviews section ------------------------------------------------------------------------------- */
+$items = [
+    ['id' => 1, 'type' => 'testimonial', 'title' => 'Ayesha Khan', 'order' => 1, 'data' => ['text' => 'Quick, tidy, and they explained the price before starting.', 'rating' => 5, 'city' => 'Lahore', 'role' => 'Homeowner', 'photo' => '/assets/img/a.webp']],
+    ['id' => 2, 'type' => 'testimonial', 'title' => 'Bilal <script>alert(1)</script>', 'order' => 2, 'data' => ['text' => 'Good work', 'rating' => 4, 'city' => 'Karachi']],
+    ['id' => 3, 'type' => 'testimonial', 'title' => 'Nadia Iqbal', 'order' => 3, 'data' => ['text' => 'Second project with them.', 'rating' => 4]],
+];
+$set = ['kicker' => '', 'heading' => '', 'design' => 'cards', 'max' => 0];
+
+$block = wx_place_block('testimonial', $items, $set);
+ok(str_contains($block, '<!--wx:testimonials-->') && str_contains($block, '<!--/wx:testimonials-->'), 'the block is wrapped in the marker pair');
+ok(str_contains($block, 'class="wx-tst wx-tst--cards"'), 'and carries the design class the stylesheet keys on');
+ok(str_contains($block, 'aria-labelledby="wx-tst-title"') && str_contains($block, 'id="wx-tst-title"'), 'the heading is what labels the section for a screen reader');
+ok(str_contains($block, 'aria-label="5 out of 5"'), 'the stars say what they mean out loud');
+ok(!str_contains($block, '<script>') && str_contains($block, '&lt;script&gt;'), 'a review title cannot become markup');
+ok(str_contains($block, 'wx-av'), 'a review with no photograph gets initials');
+ok(str_contains($block, '<img src="/assets/img/a.webp"') && str_contains($block, 'loading="lazy"'), 'and one with a photograph gets the picture, lazily');
+eq(substr_count($block, 'class="wx-tst-card'), 3, 'every live review is in the section');
+
+/* The five designs are the ones the studio reviewed in v2.1 — not a new interpretation of them. */
+foreach (['cards', 'spotlight', 'slider', 'wall', 'band'] as $d) {
+    ok(str_contains(wx_place_block('testimonial', $items, ['design' => $d] + $set), 'wx-tst--' . $d), 'the ' . $d . ' design is the one that was asked for');
+}
+ok(str_contains(wx_place_block('testimonial', $items, ['design' => 'nope'] + $set), 'wx-tst--cards'), 'a design the list does not know falls back to cards rather than to nothing');
+eq(substr_count(wx_place_block('testimonial', $items, ['max' => 2] + $set), 'class="wx-tst-card'), 2, 'a maximum is a maximum');
+ok(str_contains(wx_place_block('testimonial', $items, ['design' => 'band'] + $set), '>4.3<'), 'the band shows the average rating');
+ok(!str_contains($block, 'wx-tst-avg'), 'and the cards design does not');
+eq(wx_place_block('testimonial', [], $set), '', 'no live reviews means no section at all');
+eq(wx_place_block('member', [], $set), '', 'and no live people means no team');
+
+/* --- the team ------------------------------------------------------------------------------------------ */
+$team = [
+    ['id' => 1, 'type' => 'member', 'title' => 'Sara Malik', 'order' => 1, 'data' => ['role' => 'Interior lead', 'featured' => false, 'showContact' => true, 'phone' => '0300 1234567', 'email' => 'sara@woodex.com.pk', 'linkedin' => 'https://www.linkedin.com/in/sara']],
+    ['id' => 2, 'type' => 'member', 'title' => 'Omar Riaz', 'order' => 2, 'data' => ['role' => 'Site lead', 'dept' => 'Build', 'featured' => true, 'showContact' => false, 'phone' => '0300 9999999']],
+];
+$teamBlock = wx_place_block('member', $team, ['kicker' => '', 'heading' => '']);
+ok(strpos($teamBlock, 'Omar Riaz') < strpos($teamBlock, 'Sara Malik'), 'the featured person is printed first');
+ok(str_contains($teamBlock, 'wx-team-card is-featured'), 'and marked as featured');
+ok(str_contains($teamBlock, 'Interior lead &middot; ') || str_contains($teamBlock, 'Interior lead'), 'a role is printed');
+ok(str_contains($teamBlock, 'tel:03001234567'), 'a chosen phone number is a call link');
+ok(!str_contains($teamBlock, '0300 9999999'), 'an unchosen one is not printed at all');
+ok(str_contains($teamBlock, '>LinkedIn</a>'), 'the LinkedIn link is printed whenever there is one');
+eq(substr_count($teamBlock, 'mailto:'), 1, 'only the person with an address gets a mail link');
+
+/* --- placing it: replace what is there, insert where it goes, remove when the page is taken off -------- */
+$page = "<!doctype html>\n<html><body><main>\n<section class=\"hm-hero\">x</section>\n</main>\n</body></html>";
+$applied = wx_place_apply($page, 'testimonial', $block);
+eq($applied['plan']['action'], 'insert', 'a page with no section gets one');
+eq($applied['plan']['anchor'], 'the end of main content', 'inserted at the end of main, as v2.1 did');
+ok(strpos($applied['html'], $block) !== false, 'and the block is in the page verbatim');
+ok(strpos($applied['html'], $block) < strpos($applied['html'], '</main>'), 'before the closing main, which is where v2.1 put it');
+
+$again = wx_place_apply($applied['html'], 'testimonial', $block);
+eq($again['plan']['action'], 'replace', 'a second push replaces the section rather than adding another');
+eq(substr_count($again['html'], '<!--wx:testimonials-->'), 1, 'so there is still exactly one marker');
+eq($again['html'], $applied['html'], 'and pushing the same thing again writes the same bytes, so nothing is versioned');
+
+$removed = wx_place_apply($applied['html'], 'testimonial', '');
+eq($removed['plan']['action'], 'remove', 'taking the page off the list removes the section');
+eq($removed['html'], $page, 'and gives the page back exactly as it was');
+
+/* A page that has the trust strip gets the section above it — v2.1's first anchor. */
+$trust = "<html><body><main>\n<section class=\"wx-trust\">trust</section>\n</main></body></html>";
+$inTrust = wx_place_apply($trust, 'member', $teamBlock);
+eq($inTrust['plan']['anchor'], 'the trust strip', 'a page with a trust strip is anchored on it');
+ok(strpos($inTrust['html'], '<!--wx:team-->') < strpos($inTrust['html'], 'wx-trust'), 'and the team goes above it');
+
+/* Two kinds on one page do not eat each other. */
+$both = wx_place_apply(wx_place_apply($page, 'testimonial', $block)['html'], 'member', $teamBlock)['html'];
+eq(substr_count($both, '<!--wx:testimonials-->'), 1, 'the reviews keep their marker');
+eq(substr_count($both, '<!--wx:team-->'), 1, 'and the team keeps its own');
+ok(strpos($both, '<!--wx:testimonials-->') < strpos($both, '<!--wx:team-->'), 'in the order they were placed');
+
+/* A page with nowhere to put a section is refused, not appended to the end of the document where nobody
+   would ever see it. */
+$bare = "<html><body><p>hello</p></body></html>";
+eq(wx_place_apply($bare, 'testimonial', $block)['plan']['action'], 'no-anchor', 'a page with no anchor cannot take a section');
+eq(wx_place_apply($bare, 'testimonial', $block)['html'], $bare, 'and is left exactly as it was');
+eq(wx_place_plan($page, 'testimonial', '')['action'], 'none', 'removing a section that was never there is nothing to do');
+
+/* The excerpt the preview screen shows: a sentence either side, not the whole page. */
+$at = (int) wx_place_plan($applied['html'], 'testimonial', $block)['at'];
+$ex = wx_place_excerpt($applied['html'], $at);
+ok(str_contains($ex['at'], 'wx:testimonials'), 'the preview points at the marker');
+ok($ex['before'] !== '' && strlen($ex['before']) <= 200, 'with what comes before it');
+ok(strlen($ex['after']) <= 300 && strlen($ex['after']) < strlen($applied['html']), 'and only as much of the page as shows where it lands');
+
+/* --- the settings -------------------------------------------------------------------------------------- */
+/* v2.1's shape, kept so the old admin screen reads the same truth during the cut-over: the state carries
+   `placements`, one list of pages per kind plus a `<kind>Set` record beside it. The names come from the map
+   itself — a kind that is not in it has no marker, and so could not be written into a page at all. */
+eq(array_keys(WX_PLACE_KINDS), ['testimonial', 'member'], 'the two kinds are v2.1\'s two kinds');
+eq(WX_PLACE_KINDS['testimonial']['marker'], 'testimonials', 'and the key the old admin reads is the one it wrote');
+eq(array_keys(WX_PLACE_DESIGNS), ['cards', 'spotlight', 'slider', 'wall', 'band'], 'with the five designs it offered, in its order');
+skip('reading and saving placements needs the database (wx_place_state reads, wx_place_save replaces the map)');
+skip('the push writes pages through wx_page_write_many and needs the site tree and the database');
+
 /* Nothing here touches the network: the default transport is only reached when a route calls it. */
 skip('the real transport (wx_fetch_get) needs a network and is exercised on the host');
 

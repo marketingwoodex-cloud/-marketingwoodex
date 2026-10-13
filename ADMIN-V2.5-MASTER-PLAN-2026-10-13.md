@@ -509,15 +509,15 @@ and paid without touching the v2.1 admin. Money totals match the server.
 | The gate itself, against MySQL | `php tests/roundtrip.php` | written; runs in CI, needs a database |
 | The admin | `npm run verify` | 78 render checks · 65 routes · build clean |
 
-**Coverage:** 113 of the 365 v2.1 actions are served by api/v2 today and the rest answer
+**Coverage:** 149 of the 365 v2.1 actions are served by api/v2 today and the rest answer
 `NOT_FOUND` naming the action and the v2.1 file that still serves it — the strangler pattern
 working as intended, not a gap hidden by a fallback.
 
 ### Phase 3 — Content, assets and delivery · **in progress** · 4 weeks
 
-*Measured at this commit:* `tests/run.php` **511 passed · 0 failed · 10 skipped** · `tests/conformance.mjs`
-**70 · 0** · php-lint **137 files** · `admin-v25` smoke **89 checks · 65 routes** · legacy bridge **147 of 365
-actions** (40%). Migrations **000–013** are written and none has run on a database yet.
+*Measured at this commit:* `tests/run.php` **567 passed · 0 failed · 12 skipped** · `tests/conformance.mjs`
+**70 · 0** · php-lint **139 files** · `admin-v25` smoke **92 checks · 65 routes** · legacy bridge **149 of 365
+actions** (41%). Migrations **000–014** are written and none has run on a database yet.
 
 Pages · builder bridge · section library · header/footer · heroes · redirects · the full content CMS ·
 media with alt-text queue · forms · estimator · client updates · projects and the Gantt timeline ·
@@ -534,7 +534,7 @@ back from page history — all through v2.5.
 | File manager over `assets/` | `lib/files.php`, `routes/files.php` | four shared folders read-only; a file a page uses is refused before it is renamed or deleted |
 | The header, the menu and the footer across every page | `lib/chrome.php`, `routes/chrome.php`, `db/migrations/011_chrome.sql` | one edit for the whole site, keeping what is per-page: the current page's own link, the home page's brand, the mobile button's target, each page's footer anchors and its own intro sentence. A check that writes nothing and an apply that returns the batch id, so *the header across 150 pages* is one undo |
 | The content CMS: an editor writes an article, the server composes the page | `lib/content.php`, `routes/content.php`, `db/migrations/012_content.sql` | v2.1's builder ran in the browser and posted finished HTML; here an item is content and the page is composed at publish time from the site's own page furniture — so a new article inherits the *current* header, scheduling is a row with a time rather than 3 MB of prepared HTML, and drafts are a query rather than a loop |
-| Five screens | `admin-v25/src/screens/{LiveRedirects,LiveMedia,LiveContent,LiveGlobal}.tsx` on `/redirects`, `/media`, `/blog`, `/portfolio`, `/global` | live-only by design; with no API they say so in a sentence and offer no buttons that would lie |
+| Eight live screens, ten routes | `admin-v25/src/screens/Live*.tsx` on `/redirects`, `/media`, `/blog`, `/portfolio`, `/global`, `/pages`, `/library`, `/site-theme`, `/testimonials`, `/team` | live-only by design; with no API they say so in a sentence and offer no buttons that would lie. `/blog` and `/portfolio` are one screen (the CMS, opened on a kind), and so are `/testimonials` and `/team` |
 
 **All three sentences of the gate are now wired**, and the wiring is asserted (`tests/run.php`, "the gate,
 as wiring"): `POST /content/{id}/publish` composes and writes the article and returns the batch that undoes
@@ -552,6 +552,11 @@ never run**, and there is no PHP in the build sandbox, so the gate is a host run
 | Delivered — the site theme | Where | Note |
 |---|---|---|
 | v2.1's Theme settings, written into the stylesheet the site actually loads | `lib/theme.php`, `routes/theme.php`, `admin-v25/src/screens/LiveSiteTheme.tsx` on `/site-theme` | v2.1's builder wrote `assets/theme.css` and every page linked it. **This site has no such file** — the live pages link `/assets/site.css` and nothing else — so the port keeps the design surface (the same list of variables, the same validation, value for value) and changes only where the values land: two marked blocks in that stylesheet, the Google-font `@import` at the top where the spec allows it, the values and their aliases at the end where they win by order. Every version is a normal entry in `wx_page_versions` keyed by `assets/site.css`, so the theme is covered by the same history and the same undo as the pages, and clearing every setting removes the blocks and gives the file back byte for byte |
+
+| Delivered — where the sections appear | Where | Note |
+|---|---|---|
+| Testimonials and the team, placed inside pages | `db/migrations/014_placements.sql`, `lib/placements.php`, `routes/placements.php`, `admin-v25/src/screens/LivePlacements.tsx` on `/testimonials` and `/team` | These two kinds never become pages: they are written *inside* them, between v2.1's own markers (`<!--wx:testimonials--> … <!--/wx:testimonials-->`), which is what lets a push replace yesterday's section instead of adding a second one — and what removes it when a page comes off the list. The studio's choices travel value for value from v2.1 (`cms_placements`: the pages per kind, the small label, the heading, a maximum, and the five testimonial designs) and the section is composed **on the server** by the same function that writes it, so the preview is the push rather than a mock-up beside it. Adopting this landed two things v2.1 could not do: the push writes every changed page in **one batch** (v2.1 posted one page per request from the browser, so a failure halfway left the site in two states; here the whole push is one entry in the page history and one undo), and a page is refused rather than guessed at when it has no anchor to put the section in |
+| The section designs, in the stylesheet the site loads | `assets/site.css` | The `wx-tst-*`, `wx-team-*`, `wx-stars` and `wx-kicker` rules existed only in a second stylesheet the live pages do not link, so a section written without them would have landed **unstyled** — the same failure shape as the removed `theme.css`, in the other direction. They now sit in `assets/site.css`, reading the theme's `--wx-*` values where a theme has been saved and this stylesheet's own tokens where it has not |
 
 **An audit of the approval policy, and what it found.** Checking that every write route is gated is not
 enough — a gate whose action the policy would never queue is decoration. Two directions are now asserted in
@@ -571,13 +576,13 @@ already did.
 |---|---|---|
 | v2.1's `fetch_page` and `import_url`, with the SSRF rules that came with them | `lib/fetch.php`, `routes/pages.php` (`POST /pages/fetch`), `routes/media.php` (`POST /media/import`) | A server-side request to an address the user pasted is the definition of SSRF, and v2.1's audit F-06 grew a set of rules for it — https only, no credentials or ports in the URL, a name rather than a numeric address, every resolved address public, **every redirect hop re-checked**, 3 MB of HTML and 8 MB of image, the certificate and the name verified. All of them are ported, one hardening is added on top (`::ffff:127.0.0.1` is *reserved* rather than private, so PHP's own flags pass it), and the transport is injectable — so the refusal that matters, a public link redirecting to `169.254.169.254`, is asserted against a fake transport rather than hoped for. The image lands through the same `wx_media_upload()` the upload button uses, so what may be stored is decided once |
 
-**Still to come in this phase:** the rest of the builder bridge — `media_delete` and `media_usage` (v2.5 has a
-trash rather than a delete and a usage field rather than a usage action, so these are decisions about what
-the old names now mean rather than mappings) and `backups` — placements and designs (testimonials and team appear
-*inside* pages — the API exists, the renderer does not yet), city pages (their
-publish path is root-level, unlike posts and case studies), heroes, forms, the estimator, projects and the
-Gantt timeline, quote templates, business info (`cms_biz_*`), announcements, the AI settings screen, SEO
-screens and integrations.
+**Still to come in this phase:** the last three builder names — `media_delete` and `media_usage` (v2.5 has a
+trash rather than a delete and a usage field rather than a usage action, so these are decisions about what the
+old names now mean rather than mappings) and `backups` (v2.5 keeps a page's history as rows with an author,
+a note and a batch, which is the question `backups` was asking) — city pages (their publish path is
+root-level, unlike posts and case studies), heroes, forms, the estimator, projects and the Gantt timeline,
+quote templates, business info (`cms_biz_*`), announcements, the AI settings screen, SEO screens and
+integrations.
 
 ### Phase 4 — Automation and intelligence · 3 weeks
 
@@ -726,7 +731,7 @@ Everything in `admin-v25/` runs today:
 | Evidence | Result |
 |---|---|
 | Type check | clean, strict, `noUnusedLocals` |
-| Render smoke | **70 checks · 65 routes · 0 failures** |
+| Render smoke | **92 checks · 65 routes · 0 failures** |
 | Production build | 3 chunks, content-hashed, sourcemaps on |
 | Token contract | switching theme, accent and density re-themes all charts and screens |
 | Routing defects | AD-3, AD-4 and AD-12 structurally impossible in the registry |
