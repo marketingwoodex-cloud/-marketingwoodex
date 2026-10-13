@@ -516,7 +516,7 @@ working as intended, not a gap hidden by a fallback.
 ### Phase 3 — Content, assets and delivery · **in progress** · 4 weeks
 
 *Measured at this commit:* `tests/run.php` **615 passed · 0 failed · 12 skipped** · `tests/conformance.mjs`
-**72 · 0** · php-lint **146 files** · `admin-v25` smoke **105 checks · 65 routes** · legacy bridge **150 of 365
+**72 · 0** · php-lint **146 files** · `admin-v25` smoke **106 checks · 65 routes** · legacy bridge **150 of 365
 actions** (41%). Migrations **000–014** are written and none has run on a database yet.
 
 Pages · builder bridge · section library · header/footer · heroes · redirects · the full content CMS ·
@@ -746,7 +746,10 @@ php db/owner.php --dry-run                        with any of the above, change 
 
 It cannot read a password back (they are bcrypt hashes), it refuses a role the capability matrix does not
 know rather than quietly creating one, it stores names lower-case because that is how sign-in looks them
-up, and it prints a generated password **once**. A password change bumps `pw_ver`, which ends every
+up, and it prints a generated password **once**. The sign-in field takes an address *or* a bare name —
+v2.1's own first run writes `admin`, the live database has it, and an `input[type=email]` refuses to submit
+it; the server looks the name up as written, so the form does not get to decide what a sign-in name may
+look like. A password change bumps `pw_ver`, which ends every
 session minted under the old one, and a reset also clears a login lockout — usually the real reason the
 command is being run. The address, password and role rules are asserted in `tests/run.php`; the connection
 half needs a database and is exercised on the host.
@@ -784,7 +787,7 @@ Everything in `admin-v25/` runs today:
 | Evidence | Result |
 |---|---|
 | Type check | clean, strict, `noUnusedLocals` |
-| Render smoke | **105 checks · 65 routes · 0 failures** |
+| Render smoke | **106 checks · 65 routes · 0 failures** |
 | Production build | 3 chunks, content-hashed, sourcemaps on |
 | Token contract | switching theme, accent and density re-themes all charts and screens |
 | Routing defects | AD-3, AD-4 and AD-12 structurally impossible in the registry |

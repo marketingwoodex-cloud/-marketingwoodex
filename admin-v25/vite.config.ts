@@ -39,7 +39,9 @@ const BUILD = (() => {
     /* A `+` when the tree is dirty, because "is this the new build?" is usually asked about edits that
        are not committed yet — and a stamp that shows a clean commit over edited files would be worse
        than no stamp at all. */
-    const dirty = execSync("git status --porcelain").toString().trim() !== "";
+    /* Tracked edits only: an untracked scratch file is not "the build may differ from the commit", and a
+       stamp that cries wolf every time something writes a cache is a stamp nobody reads. */
+    const dirty = execSync("git status --porcelain --untracked-files=no").toString().trim() !== "";
     const at = new Date().toISOString().slice(0, 16).replace("T", " ");
     return `${sha}${dirty ? "+" : ""} · built ${at}Z`;
   } catch {

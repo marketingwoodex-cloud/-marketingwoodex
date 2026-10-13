@@ -115,11 +115,16 @@ export function SignIn() {
         <form onSubmit={submit}>
           {ticket === null ? (
             <>
-              <label className="field-label" htmlFor="email">Email</label>
+              {/* `type="text"`, not `type="email"`: the account the studio actually signs in with is the
+                  one v2.1's first run wrote, and its name is `admin` — a bare name the browser refuses to
+                  submit from an email field. The server looks the name up as written, so the form must not
+                  be the thing that decides what a sign-in name may look like. */}
+              <label className="field-label" htmlFor="email">Email or sign-in name</label>
               <Input
                 id="email"
                 name="email"
-                type="email"
+                type="text"
+                inputMode="email"
                 autoComplete="username"
                 autoCapitalize="none"
                 spellCheck={false}

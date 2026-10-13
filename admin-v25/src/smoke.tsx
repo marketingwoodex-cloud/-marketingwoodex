@@ -506,6 +506,12 @@ for (const [name, ok] of [
        label in the markup — it is still adjacent on the screen, which is the thing being asserted. */
     /v2\.5 · (<!-- -->)?[^<]{4,}/.test(htmlSignedOutOffline),
   ],
+  /* v2.1's first run wrote an owner called `admin` — a bare name an `input[type=email]` refuses to submit.
+     The field has to take what the server can look up, not what a validator prefers. */
+  [
+    "the sign-in field takes a sign-in name as well as an address",
+    /id="email"[^>]*type="text"/.test(htmlSignedOutOffline),
+  ],
   [
     "and the foot names nobody rather than somebody who is not signed in",
     htmlSignedOutOffline.includes("Nobody signed in") && !/Imtiaz/.test(htmlSignedOutOffline),
