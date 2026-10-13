@@ -78,3 +78,35 @@ through the more specific `.it-mo.on small` rule.
 
 Screens in `screens/`: sidebar, sidebar collapsed+hovered, Leads, pipeline — light and dark, plus
 the Invoices screen showing the `All 1` chip readable.
+
+---
+
+## 4. Build marker and cache-busting
+
+Every stylesheet and script link now carries `?v=ui-7` (72 links, one version) and the sidebar
+brand reads **`ADMIN V2.1.1 · UI7`**, so the running build is identified on screen instead of
+being inferred. Served build verified: brand `ADMIN V2.1.1 · UI7`, all asset links `v=ui-7`,
+0 empty badges in the nav.
+
+## 5. Pending inventory — measured, not estimated
+
+Full sweep of **all 59 admin routes** (`design-sweep.mjs`, both of the previous passes' gates
+included): **0 page errors on every route.** What is left is inline styling, not broken screens:
+
+| route | inline colour styles | route | inline colour styles |
+|---|---|---|---|
+| `/pages` | 149 | `/users` | 34 |
+| `/settings` | 94 | `/activity` | 30 |
+| `/social` | 42 | `/backups` · `/system` | 23 |
+| `/security` | 41 | `/settings/connections` | 22 |
+| `/dashboard` | 38 | `/telegram` · `/aicenter` | 15 |
+| `/enquiries` | 12 | `/theme` | 12 |
+| `/wahub` · `/wainsights` | 10 | | |
+
+16 of 59 routes carry inline colours; the other 43 are clean. Fonts across all 59 routes:
+**Inter** 18 458 nodes, `ui-monospace` 71 (code blocks), one node is the theme screen's own
+font-picker sample. Full data: `gates/route-sweep-59.json`.
+
+Motion: the design sheets carry 16 transitions and 5 keyframe animations (sidebar rail, drawer,
+overlays). A Preline-style motion layer for dropdowns, accordions, tabs and rows is proposed,
+not yet built.

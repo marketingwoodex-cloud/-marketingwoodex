@@ -1,0 +1,2165 @@
+[
+ {
+  "route": "dashboard",
+  "title": "Good evening, Managing",
+  "nodes": 381,
+  "inlineAny": 94,
+  "inlineColour": 38,
+  "legacyTop": [
+   "seg",
+   "btn",
+   "btn-preline-cyan",
+   "card",
+   "kpi-ic",
+   "card-h",
+   "card-b",
+   "badge",
+   "tbl-wrap",
+   "tbl"
+  ],
+  "radius": [
+   [
+    "6px",
+    31
+   ],
+   [
+    "8px",
+    22
+   ],
+   [
+    "9999px",
+    18
+   ]
+  ],
+  "fonts": [
+   [
+    "Inter",
+    381
+   ]
+  ],
+  "bg": "rgb(250, 250, 249)",
+  "emptyMsg": null,
+  "errors": []
+ },
+ {
+  "route": "approvals",
+  "title": "Approvals",
+  "nodes": 43,
+  "inlineAny": 6,
+  "inlineColour": 0,
+  "legacyTop": [
+   "seg",
+   "card",
+   "card-b",
+   "card-h"
+  ],
+  "radius": [
+   [
+    "12px",
+    3
+   ],
+   [
+    "6px",
+    2
+   ],
+   [
+    "8px",
+    1
+   ]
+  ],
+  "fonts": [
+   [
+    "Inter",
+    43
+   ]
+  ],
+  "bg": "rgb(250, 250, 249)",
+  "emptyMsg": null,
+  "errors": []
+ },
+ {
+  "route": "enquiries",
+  "title": "Leads",
+  "nodes": 396,
+  "inlineAny": 36,
+  "inlineColour": 12,
+  "legacyTop": [
+   "btn",
+   "btn-preline-cyan",
+   "crm-kpi-card",
+   "crm-kpi-head",
+   "crm-kpi-lbl",
+   "crm-kpi-badge",
+   "crm-kpi-val",
+   "crm-block-card",
+   "crm-block-h",
+   "s17-bar"
+  ],
+  "radius": [
+   [
+    "999px",
+    28
+   ],
+   [
+    "50%",
+    12
+   ],
+   [
+    "12px",
+    12
+   ]
+  ],
+  "fonts": [
+   [
+    "Inter",
+    396
+   ]
+  ],
+  "bg": "rgb(250, 250, 249)",
+  "emptyMsg": null,
+  "errors": []
+ },
+ {
+  "route": "pipeline",
+  "title": "Pipeline",
+  "nodes": 242,
+  "inlineAny": 7,
+  "inlineColour": 6,
+  "legacyTop": [
+   "btn"
+  ],
+  "radius": [
+   [
+    "8px",
+    18
+   ],
+   [
+    "14px",
+    11
+   ],
+   [
+    "50%",
+    11
+   ]
+  ],
+  "fonts": [
+   [
+    "Inter",
+    242
+   ]
+  ],
+  "bg": "rgb(250, 250, 249)",
+  "emptyMsg": null,
+  "errors": []
+ },
+ {
+  "route": "bookings",
+  "title": "Bookings",
+  "nodes": 149,
+  "inlineAny": 1,
+  "inlineColour": 0,
+  "legacyTop": [
+   "btn",
+   "card",
+   "seg",
+   "card-h",
+   "badge",
+   "card-b"
+  ],
+  "radius": [
+   [
+    "50%",
+    45
+   ],
+   [
+    "8px",
+    6
+   ],
+   [
+    "6px",
+    3
+   ]
+  ],
+  "fonts": [
+   [
+    "Inter",
+    149
+   ]
+  ],
+  "bg": "rgb(250, 250, 249)",
+  "emptyMsg": null,
+  "errors": []
+ },
+ {
+  "route": "clients",
+  "title": "Clients",
+  "nodes": 127,
+  "inlineAny": 0,
+  "inlineColour": 0,
+  "legacyTop": [
+   "btn",
+   "kpis",
+   "card",
+   "kpi",
+   "kpi-ic",
+   "kpi-row",
+   "badge",
+   "s17-filters",
+   "tbl-wrap",
+   "tbl"
+  ],
+  "radius": [
+   [
+    "12px",
+    6
+   ],
+   [
+    "8px",
+    5
+   ],
+   [
+    "9999px",
+    5
+   ]
+  ],
+  "fonts": [
+   [
+    "Inter",
+    127
+   ]
+  ],
+  "bg": "rgb(250, 250, 249)",
+  "emptyMsg": null,
+  "errors": []
+ },
+ {
+  "route": "quotes",
+  "title": "Quotations",
+  "nodes": 112,
+  "inlineAny": 14,
+  "inlineColour": 1,
+  "legacyTop": [
+   "btn",
+   "kpis",
+   "card",
+   "kpi",
+   "kpi-ic",
+   "kpi-row",
+   "badge",
+   "card-b",
+   "pill",
+   "tbl-wrap"
+  ],
+  "radius": [
+   [
+    "8px",
+    9
+   ],
+   [
+    "12px",
+    6
+   ],
+   [
+    "10px",
+    4
+   ]
+  ],
+  "fonts": [
+   [
+    "Inter",
+    112
+   ]
+  ],
+  "bg": "rgb(250, 250, 249)",
+  "emptyMsg": null,
+  "errors": []
+ },
+ {
+  "route": "invoices",
+  "title": "Invoice tracking",
+  "nodes": 203,
+  "inlineAny": 26,
+  "inlineColour": 0,
+  "legacyTop": [
+   "btn",
+   "s17-bar",
+   "s17-month",
+   "seg",
+   "s17-bar2",
+   "card",
+   "s17-filters",
+   "tbl-wrap",
+   "tbl",
+   "s17-tbl"
+  ],
+  "radius": [
+   [
+    "4px",
+    24
+   ],
+   [
+    "12px",
+    15
+   ],
+   [
+    "8px",
+    11
+   ]
+  ],
+  "fonts": [
+   [
+    "Inter",
+    203
+   ]
+  ],
+  "bg": "rgb(250, 250, 249)",
+  "emptyMsg": null,
+  "errors": []
+ },
+ {
+  "route": "transactions",
+  "title": "Transactions",
+  "nodes": 76,
+  "inlineAny": 0,
+  "inlineColour": 0,
+  "legacyTop": [
+   "btn",
+   "card",
+   "s17-filters",
+   "tbl-wrap",
+   "tbl",
+   "badge"
+  ],
+  "radius": [
+   [
+    "12px",
+    6
+   ],
+   [
+    "8px",
+    5
+   ],
+   [
+    "9999px",
+    1
+   ]
+  ],
+  "fonts": [
+   [
+    "Inter",
+    76
+   ]
+  ],
+  "bg": "rgb(250, 250, 249)",
+  "emptyMsg": null,
+  "errors": []
+ },
+ {
+  "route": "templates",
+  "title": "Quotation templates",
+  "nodes": 101,
+  "inlineAny": 25,
+  "inlineColour": 4,
+  "legacyTop": [
+   "btn",
+   "card",
+   "card-b",
+   "badge"
+  ],
+  "radius": [
+   [
+    "8px",
+    16
+   ],
+   [
+    "6px",
+    10
+   ],
+   [
+    "12px",
+    4
+   ]
+  ],
+  "fonts": [
+   [
+    "Inter",
+    101
+   ]
+  ],
+  "bg": "rgb(250, 250, 249)",
+  "emptyMsg": null,
+  "errors": []
+ },
+ {
+  "route": "projects",
+  "title": "Projects",
+  "nodes": 92,
+  "inlineAny": 4,
+  "inlineColour": 0,
+  "legacyTop": [
+   "btn",
+   "s17-bar2",
+   "card",
+   "s17-filters",
+   "seg",
+   "tbl-wrap",
+   "tbl",
+   "s17-tbl",
+   "badge",
+   "s17-red"
+  ],
+  "radius": [
+   [
+    "6px",
+    9
+   ],
+   [
+    "8px",
+    5
+   ],
+   [
+    "9px",
+    3
+   ]
+  ],
+  "fonts": [
+   [
+    "Inter",
+    92
+   ]
+  ],
+  "bg": "rgb(250, 250, 249)",
+  "emptyMsg": null,
+  "errors": []
+ },
+ {
+  "route": "gantt",
+  "title": "Timeline",
+  "nodes": 12,
+  "inlineAny": 1,
+  "inlineColour": 0,
+  "legacyTop": [
+   "card",
+   "card-h",
+   "card-b"
+  ],
+  "radius": [
+   [
+    "12px",
+    1
+   ]
+  ],
+  "fonts": [
+   [
+    "Inter",
+    12
+   ]
+  ],
+  "bg": "rgb(250, 250, 249)",
+  "emptyMsg": null,
+  "errors": []
+ },
+ {
+  "route": "chat",
+  "title": "Inbox",
+  "nodes": 95,
+  "inlineAny": 1,
+  "inlineColour": 1,
+  "legacyTop": [
+   "btn",
+   "btn-preline-cyan",
+   "card"
+  ],
+  "radius": [
+   [
+    "50%",
+    10
+   ],
+   [
+    "999px",
+    7
+   ],
+   [
+    "8px",
+    6
+   ]
+  ],
+  "fonts": [
+   [
+    "Inter",
+    95
+   ]
+  ],
+  "bg": "rgb(250, 250, 249)",
+  "emptyMsg": null,
+  "errors": []
+ },
+ {
+  "route": "team-feed",
+  "title": "Team feed",
+  "nodes": 55,
+  "inlineAny": 6,
+  "inlineColour": 0,
+  "legacyTop": [
+   "card",
+   "card-b",
+   "card-h",
+   "btn"
+  ],
+  "radius": [
+   [
+    "12px",
+    7
+   ],
+   [
+    "50%",
+    5
+   ],
+   [
+    "8px",
+    2
+   ]
+  ],
+  "fonts": [
+   [
+    "Inter",
+    55
+   ]
+  ],
+  "bg": "rgb(250, 250, 249)",
+  "emptyMsg": null,
+  "errors": []
+ },
+ {
+  "route": "wahub",
+  "title": "WhatsApp hub",
+  "nodes": 150,
+  "inlineAny": 31,
+  "inlineColour": 10,
+  "legacyTop": [
+   "btn",
+   "card",
+   "card-b",
+   "card-h",
+   "btn-preline-cyan"
+  ],
+  "radius": [
+   [
+    "12px",
+    16
+   ],
+   [
+    "8px",
+    9
+   ],
+   [
+    "50%",
+    7
+   ]
+  ],
+  "fonts": [
+   [
+    "Inter",
+    150
+   ]
+  ],
+  "bg": "rgb(250, 250, 249)",
+  "emptyMsg": null,
+  "errors": []
+ },
+ {
+  "route": "wainsights",
+  "title": "Insights",
+  "nodes": 200,
+  "inlineAny": 39,
+  "inlineColour": 10,
+  "legacyTop": [
+   "card",
+   "card-b",
+   "card-h",
+   "btn"
+  ],
+  "radius": [
+   [
+    "99px",
+    22
+   ],
+   [
+    "12px",
+    17
+   ],
+   [
+    "50%",
+    7
+   ]
+  ],
+  "fonts": [
+   [
+    "Inter",
+    200
+   ]
+  ],
+  "bg": "rgb(250, 250, 249)",
+  "emptyMsg": null,
+  "errors": []
+ },
+ {
+  "route": "wauto",
+  "title": "WhatsApp automation",
+  "nodes": 122,
+  "inlineAny": 2,
+  "inlineColour": 1,
+  "legacyTop": [
+   "btn",
+   "card",
+   "card-b"
+  ],
+  "radius": [
+   [
+    "50%",
+    14
+   ],
+   [
+    "12px",
+    13
+   ],
+   [
+    "9999px",
+    6
+   ]
+  ],
+  "fonts": [
+   [
+    "Inter",
+    122
+   ]
+  ],
+  "bg": "rgb(250, 250, 249)",
+  "emptyMsg": null,
+  "errors": []
+ },
+ {
+  "route": "offers",
+  "title": "WhatsApp offers",
+  "nodes": 98,
+  "inlineAny": 2,
+  "inlineColour": 1,
+  "legacyTop": [
+   "btn",
+   "card",
+   "card-b"
+  ],
+  "radius": [
+   [
+    "50%",
+    15
+   ],
+   [
+    "12px",
+    9
+   ],
+   [
+    "9px",
+    4
+   ]
+  ],
+  "fonts": [
+   [
+    "Inter",
+    98
+   ]
+  ],
+  "bg": "rgb(250, 250, 249)",
+  "emptyMsg": null,
+  "errors": []
+ },
+ {
+  "route": "settings/connections",
+  "title": "Integrations & APIs",
+  "nodes": 113,
+  "inlineAny": 49,
+  "inlineColour": 22,
+  "legacyTop": [
+   "btn",
+   "btn-preline-cyan",
+   "seg",
+   "card",
+   "badge",
+   "card-h"
+  ],
+  "radius": [
+   [
+    "6px",
+    8
+   ],
+   [
+    "9999px",
+    7
+   ],
+   [
+    "8px",
+    6
+   ]
+  ],
+  "fonts": [
+   [
+    "Inter",
+    107
+   ],
+   [
+    "ui-monospace",
+    5
+   ],
+   [
+    "monospace",
+    1
+   ]
+  ],
+  "bg": "rgb(250, 250, 249)",
+  "emptyMsg": "Integrations & APIs Home / Settings Reset defaults Save changes Integrations System status",
+  "errors": []
+ },
+ {
+  "route": "telegram",
+  "title": "Telegram",
+  "nodes": 171,
+  "inlineAny": 59,
+  "inlineColour": 15,
+  "legacyTop": [
+   "card",
+   "card-h",
+   "card-b",
+   "seg",
+   "btn"
+  ],
+  "radius": [
+   [
+    "12px",
+    12
+   ],
+   [
+    "8px",
+    11
+   ],
+   [
+    "4px",
+    10
+   ]
+  ],
+  "fonts": [
+   [
+    "Inter",
+    161
+   ],
+   [
+    "ui-monospace",
+    10
+   ]
+  ],
+  "bg": "rgb(250, 250, 249)",
+  "emptyMsg": null,
+  "errors": []
+ },
+ {
+  "route": "social",
+  "title": "Social Media & Community Aut",
+  "nodes": 290,
+  "inlineAny": 110,
+  "inlineColour": 42,
+  "legacyTop": [
+   "btn",
+   "btn-preline-cyan",
+   "card",
+   "card-b",
+   "seg",
+   "badge",
+   "kpi-ic"
+  ],
+  "radius": [
+   [
+    "8px",
+    21
+   ],
+   [
+    "9999px",
+    13
+   ],
+   [
+    "14px",
+    10
+   ]
+  ],
+  "fonts": [
+   [
+    "Inter",
+    290
+   ]
+  ],
+  "bg": "rgb(250, 250, 249)",
+  "emptyMsg": null,
+  "errors": []
+ },
+ {
+  "route": "updates",
+  "title": "Client updates",
+  "nodes": 317,
+  "inlineAny": 29,
+  "inlineColour": 1,
+  "legacyTop": [
+   "btn",
+   "card"
+  ],
+  "radius": [
+   [
+    "4px",
+    42
+   ],
+   [
+    "8px",
+    32
+   ],
+   [
+    "12px",
+    17
+   ]
+  ],
+  "fonts": [
+   [
+    "Inter",
+    273
+   ],
+   [
+    "ui-monospace",
+    44
+   ]
+  ],
+  "bg": "rgb(250, 250, 249)",
+  "emptyMsg": null,
+  "errors": []
+ },
+ {
+  "route": "aicenter",
+  "title": "AI Assistant",
+  "nodes": 353,
+  "inlineAny": 42,
+  "inlineColour": 15,
+  "legacyTop": [
+   "badge",
+   "btn"
+  ],
+  "radius": [
+   [
+    "8px",
+    32
+   ],
+   [
+    "50%",
+    17
+   ],
+   [
+    "14px",
+    12
+   ]
+  ],
+  "fonts": [
+   [
+    "Inter",
+    353
+   ]
+  ],
+  "bg": "rgb(250, 250, 249)",
+  "emptyMsg": null,
+  "errors": []
+ },
+ {
+  "route": "train",
+  "title": "AI Assistant & Knowledge Tra",
+  "nodes": 152,
+  "inlineAny": 17,
+  "inlineColour": 4,
+  "legacyTop": [
+   "btn",
+   "btn-preline-cyan",
+   "card",
+   "card-b",
+   "seg",
+   "badge",
+   "card-h"
+  ],
+  "radius": [
+   [
+    "50%",
+    14
+   ],
+   [
+    "12px",
+    8
+   ],
+   [
+    "8px",
+    8
+   ]
+  ],
+  "fonts": [
+   [
+    "Inter",
+    152
+   ]
+  ],
+  "bg": "rgb(250, 250, 249)",
+  "emptyMsg": null,
+  "errors": []
+ },
+ {
+  "route": "aireport",
+  "title": "AI report",
+  "nodes": 130,
+  "inlineAny": 21,
+  "inlineColour": 0,
+  "legacyTop": [
+   "seg",
+   "btn",
+   "card",
+   "card-b",
+   "card-h"
+  ],
+  "radius": [
+   [
+    "12px",
+    20
+   ],
+   [
+    "50%",
+    5
+   ],
+   [
+    "6px",
+    5
+   ]
+  ],
+  "fonts": [
+   [
+    "Inter",
+    130
+   ]
+  ],
+  "bg": "rgb(250, 250, 249)",
+  "emptyMsg": null,
+  "errors": []
+ },
+ {
+  "route": "pages",
+  "title": "Pages",
+  "nodes": 3532,
+  "inlineAny": 426,
+  "inlineColour": 149,
+  "legacyTop": [
+   "btn",
+   "kpis",
+   "card",
+   "kpi",
+   "kpi-ic",
+   "kpi-row",
+   "badge",
+   "card-h",
+   "tbl-wrap",
+   "tbl"
+  ],
+  "radius": [
+   [
+    "8px",
+    174
+   ],
+   [
+    "9999px",
+    120
+   ],
+   [
+    "12px",
+    6
+   ]
+  ],
+  "fonts": [
+   [
+    "Inter",
+    1400
+   ]
+  ],
+  "bg": "rgb(250, 250, 249)",
+  "emptyMsg": null,
+  "errors": []
+ },
+ {
+  "route": "builder",
+  "title": "?",
+  "nodes": 1,
+  "inlineAny": 0,
+  "inlineColour": 0,
+  "legacyTop": [],
+  "radius": [],
+  "fonts": [
+   [
+    "Inter",
+    1
+   ]
+  ],
+  "bg": "rgb(250, 250, 249)",
+  "emptyMsg": null,
+  "errors": []
+ },
+ {
+  "route": "library",
+  "title": "Section library",
+  "nodes": 810,
+  "inlineAny": 101,
+  "inlineColour": 0,
+  "legacyTop": [
+   "btn",
+   "seg",
+   "card"
+  ],
+  "radius": [
+   [
+    "8px",
+    102
+   ],
+   [
+    "12px",
+    51
+   ],
+   [
+    "10px",
+    51
+   ]
+  ],
+  "fonts": [
+   [
+    "Inter",
+    810
+   ]
+  ],
+  "bg": "rgb(250, 250, 249)",
+  "emptyMsg": null,
+  "errors": []
+ },
+ {
+  "route": "global",
+  "title": "Header & footer",
+  "nodes": 462,
+  "inlineAny": 125,
+  "inlineColour": 2,
+  "legacyTop": [
+   "btn",
+   "badge",
+   "card",
+   "card-h",
+   "card-b"
+  ],
+  "radius": [
+   [
+    "8px",
+    116
+   ],
+   [
+    "12px",
+    6
+   ],
+   [
+    "9999px",
+    3
+   ]
+  ],
+  "fonts": [
+   [
+    "Inter",
+    462
+   ]
+  ],
+  "bg": "rgb(250, 250, 249)",
+  "emptyMsg": null,
+  "errors": []
+ },
+ {
+  "route": "heroes",
+  "title": "Hero slides",
+  "nodes": 277,
+  "inlineAny": 13,
+  "inlineColour": 6,
+  "legacyTop": [
+   "btn",
+   "seg",
+   "card"
+  ],
+  "radius": [
+   [
+    "8px",
+    89
+   ],
+   [
+    "12px",
+    7
+   ],
+   [
+    "14px",
+    6
+   ]
+  ],
+  "fonts": [
+   [
+    "Inter",
+    277
+   ]
+  ],
+  "bg": "rgb(250, 250, 249)",
+  "emptyMsg": null,
+  "errors": []
+ },
+ {
+  "route": "redirects",
+  "title": "Redirects",
+  "nodes": 1273,
+  "inlineAny": 22,
+  "inlineColour": 0,
+  "legacyTop": [
+   "btn",
+   "kpis",
+   "card",
+   "kpi",
+   "kpi-ic",
+   "kpi-row",
+   "badge",
+   "card-b",
+   "seg",
+   "tbl-wrap"
+  ],
+  "radius": [
+   [
+    "8px",
+    183
+   ],
+   [
+    "9999px",
+    44
+   ],
+   [
+    "12px",
+    11
+   ]
+  ],
+  "fonts": [
+   [
+    "Inter",
+    1273
+   ]
+  ],
+  "bg": "rgb(250, 250, 249)",
+  "emptyMsg": null,
+  "errors": []
+ },
+ {
+  "route": "blog",
+  "title": "Blog & insights",
+  "nodes": 561,
+  "inlineAny": 120,
+  "inlineColour": 0,
+  "legacyTop": [
+   "btn",
+   "card",
+   "card-h",
+   "tbl-wrap",
+   "tbl",
+   "badge"
+  ],
+  "radius": [
+   [
+    "8px",
+    105
+   ],
+   [
+    "9999px",
+    50
+   ],
+   [
+    "12px",
+    4
+   ]
+  ],
+  "fonts": [
+   [
+    "Inter",
+    561
+   ]
+  ],
+  "bg": "rgb(250, 250, 249)",
+  "emptyMsg": null,
+  "errors": []
+ },
+ {
+  "route": "portfolio",
+  "title": "Portfolio",
+  "nodes": 51,
+  "inlineAny": 0,
+  "inlineColour": 0,
+  "legacyTop": [
+   "btn",
+   "card",
+   "card-h",
+   "tbl-wrap",
+   "tbl"
+  ],
+  "radius": [
+   [
+    "8px",
+    4
+   ],
+   [
+    "12px",
+    2
+   ]
+  ],
+  "fonts": [
+   [
+    "Inter",
+    51
+   ]
+  ],
+  "bg": "rgb(250, 250, 249)",
+  "emptyMsg": null,
+  "errors": []
+ },
+ {
+  "route": "services",
+  "title": "Service & site pages",
+  "nodes": 1225,
+  "inlineAny": 44,
+  "inlineColour": 0,
+  "legacyTop": [
+   "btn",
+   "card",
+   "card-h",
+   "tbl-wrap",
+   "tbl",
+   "badge"
+  ],
+  "radius": [
+   [
+    "8px",
+    147
+   ],
+   [
+    "9999px",
+    69
+   ],
+   [
+    "12px",
+    3
+   ]
+  ],
+  "fonts": [
+   [
+    "Inter",
+    1225
+   ]
+  ],
+  "bg": "rgb(250, 250, 249)",
+  "emptyMsg": null,
+  "errors": []
+ },
+ {
+  "route": "cities",
+  "title": "City pages",
+  "nodes": 311,
+  "inlineAny": 0,
+  "inlineColour": 0,
+  "legacyTop": [
+   "btn",
+   "card",
+   "card-h",
+   "tbl-wrap",
+   "tbl",
+   "badge"
+  ],
+  "radius": [
+   [
+    "8px",
+    26
+   ],
+   [
+    "9999px",
+    20
+   ],
+   [
+    "12px",
+    3
+   ]
+  ],
+  "fonts": [
+   [
+    "Inter",
+    311
+   ]
+  ],
+  "bg": "rgb(250, 250, 249)",
+  "emptyMsg": null,
+  "errors": []
+ },
+ {
+  "route": "pagetpl",
+  "title": "Page templates",
+  "nodes": 45,
+  "inlineAny": 2,
+  "inlineColour": 0,
+  "legacyTop": [
+   "btn",
+   "seg",
+   "card"
+  ],
+  "radius": [
+   [
+    "8px",
+    5
+   ],
+   [
+    "6px",
+    3
+   ],
+   [
+    "12px",
+    2
+   ]
+  ],
+  "fonts": [
+   [
+    "Inter",
+    45
+   ]
+  ],
+  "bg": "rgb(250, 250, 249)",
+  "emptyMsg": null,
+  "errors": []
+ },
+ {
+  "route": "forms",
+  "title": "Forms",
+  "nodes": 308,
+  "inlineAny": 10,
+  "inlineColour": 0,
+  "legacyTop": [
+   "btn",
+   "card",
+   "card-h",
+   "card-b"
+  ],
+  "radius": [
+   [
+    "999px",
+    36
+   ],
+   [
+    "8px",
+    26
+   ],
+   [
+    "14px",
+    6
+   ]
+  ],
+  "fonts": [
+   [
+    "Inter",
+    308
+   ]
+  ],
+  "bg": "rgb(250, 250, 249)",
+  "emptyMsg": null,
+  "errors": []
+ },
+ {
+  "route": "estimator",
+  "title": "Estimator",
+  "nodes": 331,
+  "inlineAny": 16,
+  "inlineColour": 0,
+  "legacyTop": [
+   "btn",
+   "card",
+   "card-h",
+   "card-b",
+   "tbl"
+  ],
+  "radius": [
+   [
+    "8px",
+    91
+   ],
+   [
+    "12px",
+    11
+   ],
+   [
+    "10px",
+    1
+   ]
+  ],
+  "fonts": [
+   [
+    "Inter",
+    325
+   ],
+   [
+    "ui-monospace",
+    6
+   ]
+  ],
+  "bg": "rgb(250, 250, 249)",
+  "emptyMsg": null,
+  "errors": []
+ },
+ {
+  "route": "faqs",
+  "title": "FAQ groups",
+  "nodes": 42,
+  "inlineAny": 0,
+  "inlineColour": 0,
+  "legacyTop": [
+   "btn",
+   "card",
+   "card-b"
+  ],
+  "radius": [
+   [
+    "8px",
+    2
+   ],
+   [
+    "12px",
+    2
+   ]
+  ],
+  "fonts": [
+   [
+    "Inter",
+    42
+   ]
+  ],
+  "bg": "rgb(250, 250, 249)",
+  "emptyMsg": null,
+  "errors": []
+ },
+ {
+  "route": "testimonials",
+  "title": "Testimonials",
+  "nodes": 46,
+  "inlineAny": 0,
+  "inlineColour": 0,
+  "legacyTop": [
+   "btn",
+   "card",
+   "card-b"
+  ],
+  "radius": [
+   [
+    "8px",
+    3
+   ],
+   [
+    "12px",
+    3
+   ]
+  ],
+  "fonts": [
+   [
+    "Inter",
+    46
+   ]
+  ],
+  "bg": "rgb(250, 250, 249)",
+  "emptyMsg": null,
+  "errors": []
+ },
+ {
+  "route": "logos",
+  "title": "Client logos",
+  "nodes": 172,
+  "inlineAny": 13,
+  "inlineColour": 0,
+  "legacyTop": [
+   "btn",
+   "card"
+  ],
+  "radius": [
+   [
+    "8px",
+    49
+   ],
+   [
+    "10px",
+    8
+   ],
+   [
+    "12px",
+    3
+   ]
+  ],
+  "fonts": [
+   [
+    "Inter",
+    172
+   ]
+  ],
+  "bg": "rgb(250, 250, 249)",
+  "emptyMsg": null,
+  "errors": []
+ },
+ {
+  "route": "team",
+  "title": "Team",
+  "nodes": 56,
+  "inlineAny": 0,
+  "inlineColour": 0,
+  "legacyTop": [
+   "btn",
+   "card",
+   "card-b"
+  ],
+  "radius": [
+   [
+    "8px",
+    4
+   ],
+   [
+    "12px",
+    3
+   ]
+  ],
+  "fonts": [
+   [
+    "Inter",
+    56
+   ]
+  ],
+  "bg": "rgb(250, 250, 249)",
+  "emptyMsg": null,
+  "errors": []
+ },
+ {
+  "route": "media",
+  "title": "Media library",
+  "nodes": 1300,
+  "inlineAny": 0,
+  "inlineColour": 0,
+  "legacyTop": [
+   "btn",
+   "card",
+   "seg"
+  ],
+  "radius": [
+   [
+    "12px",
+    122
+   ],
+   [
+    "4px",
+    94
+   ],
+   [
+    "8px",
+    15
+   ]
+  ],
+  "fonts": [
+   [
+    "Inter",
+    1300
+   ]
+  ],
+  "bg": "rgb(250, 250, 249)",
+  "emptyMsg": null,
+  "errors": []
+ },
+ {
+  "route": "seo",
+  "title": "SEO & AI Agent Hub",
+  "nodes": 2728,
+  "inlineAny": 10,
+  "inlineColour": 0,
+  "legacyTop": [
+   "btn",
+   "btn-preline-cyan",
+   "seg",
+   "card",
+   "badge"
+  ],
+  "radius": [
+   [
+    "8px",
+    81
+   ],
+   [
+    "9999px",
+    12
+   ],
+   [
+    "10px",
+    8
+   ]
+  ],
+  "fonts": [
+   [
+    "Inter",
+    1400
+   ]
+  ],
+  "bg": "rgb(250, 250, 249)",
+  "emptyMsg": null,
+  "errors": []
+ },
+ {
+  "route": "seoagent",
+  "title": "AI SEO Agent",
+  "nodes": 49,
+  "inlineAny": 7,
+  "inlineColour": 0,
+  "legacyTop": [
+   "btn",
+   "btn-preline-cyan",
+   "seg",
+   "card",
+   "card-b"
+  ],
+  "radius": [
+   [
+    "8px",
+    6
+   ],
+   [
+    "12px",
+    2
+   ]
+  ],
+  "fonts": [
+   [
+    "Inter",
+    49
+   ]
+  ],
+  "bg": "rgb(250, 250, 249)",
+  "emptyMsg": null,
+  "errors": []
+ },
+ {
+  "route": "speed",
+  "title": "Speed",
+  "nodes": 388,
+  "inlineAny": 2,
+  "inlineColour": 1,
+  "legacyTop": [
+   "btn",
+   "card",
+   "card-b",
+   "card-h",
+   "tbl-wrap",
+   "tbl"
+  ],
+  "radius": [
+   [
+    "8px",
+    20
+   ],
+   [
+    "12px",
+    5
+   ]
+  ],
+  "fonts": [
+   [
+    "Inter",
+    388
+   ]
+  ],
+  "bg": "rgb(250, 250, 249)",
+  "emptyMsg": null,
+  "errors": []
+ },
+ {
+  "route": "health",
+  "title": "Site health",
+  "nodes": 1424,
+  "inlineAny": 147,
+  "inlineColour": 0,
+  "legacyTop": [
+   "btn",
+   "card",
+   "card-b",
+   "card-h",
+   "badge",
+   "seg",
+   "tbl-wrap",
+   "tbl",
+   "side-hr",
+   "side-h"
+  ],
+  "radius": [
+   [
+    "8px",
+    188
+   ],
+   [
+    "999px",
+    165
+   ],
+   [
+    "12px",
+    8
+   ]
+  ],
+  "fonts": [
+   [
+    "Inter",
+    1400
+   ]
+  ],
+  "bg": "rgb(250, 250, 249)",
+  "emptyMsg": null,
+  "errors": []
+ },
+ {
+  "route": "theme",
+  "title": "Theme, colours & fonts",
+  "nodes": 138,
+  "inlineAny": 17,
+  "inlineColour": 12,
+  "legacyTop": [
+   "btn",
+   "card",
+   "card-b",
+   "side-h"
+  ],
+  "radius": [
+   [
+    "8px",
+    14
+   ],
+   [
+    "50%",
+    12
+   ],
+   [
+    "12px",
+    9
+   ]
+  ],
+  "fonts": [
+   [
+    "Inter",
+    128
+   ],
+   [
+    "ui-monospace",
+    6
+   ],
+   [
+    "Plus Jakarta Sans",
+    1
+   ]
+  ],
+  "bg": "rgb(250, 250, 249)",
+  "emptyMsg": null,
+  "errors": []
+ },
+ {
+  "route": "business",
+  "title": "Business info",
+  "nodes": 99,
+  "inlineAny": 2,
+  "inlineColour": 0,
+  "legacyTop": [
+   "card",
+   "card-b",
+   "btn",
+   "side-h"
+  ],
+  "radius": [
+   [
+    "8px",
+    20
+   ],
+   [
+    "12px",
+    4
+   ],
+   [
+    "9999px",
+    4
+   ]
+  ],
+  "fonts": [
+   [
+    "Inter",
+    99
+   ]
+  ],
+  "bg": "rgb(250, 250, 249)",
+  "emptyMsg": null,
+  "errors": []
+ },
+ {
+  "route": "settings",
+  "title": "Integrations & APIs",
+  "nodes": 335,
+  "inlineAny": 249,
+  "inlineColour": 94,
+  "legacyTop": [
+   "btn",
+   "btn-preline-cyan",
+   "seg",
+   "card",
+   "badge",
+   "card-h"
+  ],
+  "radius": [
+   [
+    "8px",
+    43
+   ],
+   [
+    "10px",
+    23
+   ],
+   [
+    "12px",
+    22
+   ]
+  ],
+  "fonts": [
+   [
+    "Inter",
+    335
+   ]
+  ],
+  "bg": "rgb(250, 250, 249)",
+  "emptyMsg": null,
+  "errors": []
+ },
+ {
+  "route": "users",
+  "title": "Team & Roles",
+  "nodes": 347,
+  "inlineAny": 144,
+  "inlineColour": 34,
+  "legacyTop": [
+   "btn",
+   "card",
+   "card-b",
+   "badge",
+   "card-h"
+  ],
+  "radius": [
+   [
+    "9999px",
+    28
+   ],
+   [
+    "8px",
+    24
+   ],
+   [
+    "14px",
+    11
+   ]
+  ],
+  "fonts": [
+   [
+    "Inter",
+    347
+   ]
+  ],
+  "bg": "rgb(250, 250, 249)",
+  "emptyMsg": null,
+  "errors": []
+ },
+ {
+  "route": "profile",
+  "title": "My account",
+  "nodes": 154,
+  "inlineAny": 3,
+  "inlineColour": 0,
+  "legacyTop": [
+   "card",
+   "btn",
+   "card-h",
+   "card-b",
+   "badge"
+  ],
+  "radius": [
+   [
+    "12px",
+    10
+   ],
+   [
+    "8px",
+    6
+   ],
+   [
+    "50%",
+    2
+   ]
+  ],
+  "fonts": [
+   [
+    "Inter",
+    154
+   ]
+  ],
+  "bg": "rgb(250, 250, 249)",
+  "emptyMsg": null,
+  "errors": []
+ },
+ {
+  "route": "security",
+  "title": "My Security & Approvals",
+  "nodes": 151,
+  "inlineAny": 58,
+  "inlineColour": 41,
+  "legacyTop": [
+   "btn",
+   "btn-preline-cyan",
+   "card",
+   "badge",
+   "card-h"
+  ],
+  "radius": [
+   [
+    "8px",
+    10
+   ],
+   [
+    "14px",
+    5
+   ],
+   [
+    "12px",
+    4
+   ]
+  ],
+  "fonts": [
+   [
+    "Inter",
+    151
+   ]
+  ],
+  "bg": "rgb(250, 250, 249)",
+  "emptyMsg": null,
+  "errors": []
+ },
+ {
+  "route": "backups",
+  "title": "System Utilities & Maintenan",
+  "nodes": 98,
+  "inlineAny": 38,
+  "inlineColour": 23,
+  "legacyTop": [
+   "btn",
+   "btn-preline-cyan",
+   "card",
+   "card-h",
+   "badge"
+  ],
+  "radius": [
+   [
+    "8px",
+    6
+   ],
+   [
+    "10px",
+    5
+   ],
+   [
+    "12px",
+    4
+   ]
+  ],
+  "fonts": [
+   [
+    "Inter",
+    98
+   ]
+  ],
+  "bg": "rgb(250, 250, 249)",
+  "emptyMsg": null,
+  "errors": []
+ },
+ {
+  "route": "database",
+  "title": "Database",
+  "nodes": 460,
+  "inlineAny": 8,
+  "inlineColour": 0,
+  "legacyTop": [
+   "btn",
+   "card",
+   "card-h",
+   "card-b",
+   "tbl"
+  ],
+  "radius": [
+   [
+    "8px",
+    33
+   ],
+   [
+    "12px",
+    4
+   ]
+  ],
+  "fonts": [
+   [
+    "Inter",
+    460
+   ]
+  ],
+  "bg": "rgb(250, 250, 249)",
+  "emptyMsg": null,
+  "errors": []
+ },
+ {
+  "route": "files",
+  "title": "File manager",
+  "nodes": 63,
+  "inlineAny": 3,
+  "inlineColour": 1,
+  "legacyTop": [
+   "btn",
+   "card",
+   "tbl"
+  ],
+  "radius": [
+   [
+    "8px",
+    9
+   ],
+   [
+    "6px",
+    2
+   ],
+   [
+    "12px",
+    2
+   ]
+  ],
+  "fonts": [
+   [
+    "Inter",
+    63
+   ]
+  ],
+  "bg": "rgb(250, 250, 249)",
+  "emptyMsg": null,
+  "errors": []
+ },
+ {
+  "route": "maintenance",
+  "title": "Maintenance & error pages",
+  "nodes": 89,
+  "inlineAny": 20,
+  "inlineColour": 0,
+  "legacyTop": [
+   "card",
+   "card-b",
+   "seg",
+   "btn"
+  ],
+  "radius": [
+   [
+    "8px",
+    15
+   ],
+   [
+    "12px",
+    7
+   ],
+   [
+    "6px",
+    2
+   ]
+  ],
+  "fonts": [
+   [
+    "Inter",
+    89
+   ]
+  ],
+  "bg": "rgb(250, 250, 249)",
+  "emptyMsg": null,
+  "errors": []
+ },
+ {
+  "route": "activity",
+  "title": "Activity log",
+  "nodes": 414,
+  "inlineAny": 65,
+  "inlineColour": 30,
+  "legacyTop": [
+   "card",
+   "tbl-wrap",
+   "tbl",
+   "btn"
+  ],
+  "radius": [
+   [
+    "8px",
+    8
+   ],
+   [
+    "12px",
+    2
+   ]
+  ],
+  "fonts": [
+   [
+    "Inter",
+    414
+   ]
+  ],
+  "bg": "rgb(250, 250, 249)",
+  "emptyMsg": null,
+  "errors": []
+ },
+ {
+  "route": "system",
+  "title": "System Utilities & Maintenan",
+  "nodes": 98,
+  "inlineAny": 38,
+  "inlineColour": 23,
+  "legacyTop": [
+   "btn",
+   "btn-preline-cyan",
+   "card",
+   "card-h",
+   "badge"
+  ],
+  "radius": [
+   [
+    "8px",
+    6
+   ],
+   [
+    "10px",
+    5
+   ],
+   [
+    "12px",
+    4
+   ]
+  ],
+  "fonts": [
+   [
+    "Inter",
+    98
+   ]
+  ],
+  "bg": "rgb(250, 250, 249)",
+  "emptyMsg": null,
+  "errors": []
+ }
+]
