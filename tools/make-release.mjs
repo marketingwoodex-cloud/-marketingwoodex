@@ -289,7 +289,13 @@ function main() {
     release: NAME,
     builtAt: new Date().toISOString().slice(0, 16) + "Z",
     gitSha: git("rev-parse", "HEAD"),
-    gitDirty: git("status", "--porcelain", "--untracked-files=no") !== "",
+    /* Whether the *code* differs from the commit. The three files this script generates are excluded, or
+       every run would report the tree dirty for the crime of having been run before: the manifest would be
+       describing itself, and a field that is always true is a field nobody reads. */
+    gitDirty: git(
+      "status", "--porcelain", "--untracked-files=no", "--",
+      ".", `:!${NAME}/MANIFEST.json`, `:!${NAME}/${NAME}.zip`, `:!${NAME}/MEMORY-PLAN.md`,
+    ) !== "",
     branch: git("rev-parse", "--abbrev-ref", "HEAD"),
     apiVersion: (fs.readFileSync(path.join(ROOT, "api", "v2", "lib", "bootstrap.php"), "utf8").match(/WX_V2_VERSION',\s*'([^']+)'/) ?? [])[1] ?? null,
     console: consoleInfo.stamp ?? null,
