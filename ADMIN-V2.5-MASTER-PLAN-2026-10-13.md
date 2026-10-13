@@ -581,8 +581,9 @@ already did.
 |---|---|---|
 | v2.1's `fetch_page` and `import_url`, with the SSRF rules that came with them | `lib/fetch.php`, `routes/pages.php` (`POST /pages/fetch`), `routes/media.php` (`POST /media/import`) | A server-side request to an address the user pasted is the definition of SSRF, and v2.1's audit F-06 grew a set of rules for it — https only, no credentials or ports in the URL, a name rather than a numeric address, every resolved address public, **every redirect hop re-checked**, 3 MB of HTML and 8 MB of image, the certificate and the name verified. All of them are ported, one hardening is added on top (`::ffff:127.0.0.1` is *reserved* rather than private, so PHP's own flags pass it), and the transport is injectable — so the refusal that matters, a public link redirecting to `169.254.169.254`, is asserted against a fake transport rather than hoped for. The image lands through the same `wx_media_upload()` the upload button uses, so what may be stored is decided once |
 
-**Still to come in this phase:** city pages (their publish path is root-level, unlike posts and case
-studies — the one item in the content family that is close to done and is not), heroes, forms, the estimator,
+**Still to come in this phase:** city pages (a slice of their own: the address is root-level
+(`/<slug>/`, as v2.1 wrote it and Google has it) and v2.1's model was *copy an existing city page and
+rewrite each string*, which is a template problem rather than an editor one), heroes, forms, the estimator,
 projects and the Gantt timeline, quote templates, business info (`cms_biz_*`), announcements
 (`cms_announce_*`), the AI settings in the CMS (`cms_ai_*`), SEO screens and integrations. The builder's 19
 actions are all accounted for: 17 bridged, 2 named above as decisions.
