@@ -1,8 +1,17 @@
 <?php
 /* WOODEX V20 one-page installer (PHP 7.4+).
    https://woodex.com.pk/wx-install.php → enter the database password → Install.
-   Writes _private/db.json, creates all 20 tables from _database/woodex-v20.sql, creates the login admin / admin.
-   Nothing is ever deleted. Delete this file after installing. */
+   Writes _private/db.json, creates all 20 tables from _database/woodex-v20.sql, creates the owner login you
+   choose on the form. No default password is ever seeded (see SECURITY note below).
+   Nothing is ever deleted. Delete this file after installing.
+
+   ── SECURITY (2026-10-13) ────────────────────────────────────────────────────────────────
+   This installer used to create the well-known login `admin / admin` on a fresh site and print it
+   on screen. Anyone who reached this URL before the owner finished setup could sign in and keep
+   access. Closed by: a first install now requires the owner to choose the login on the form, the
+   password must be 10+ characters, `admin` and common passwords are refused, and the dump's own
+   INSERT INTO wx_users statement is never executed. Re-running on an existing site still leaves
+   every existing password untouched. Delete this file when setup is done. */
 error_reporting(E_ALL); ini_set('display_errors', '0');
 header('Content-Type: text/html; charset=utf-8'); header('X-Robots-Tag: noindex'); header('Cache-Control: no-store');
 $root = __DIR__; $priv = $root . '/_private'; $dbf = $priv . '/db.json'; $sqlf = $root . '/_database/woodex-v20.sql';
@@ -22,8 +31,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$locked) {
         $lock['n'] = ($lock['n'] ?? 0) + 1; if ($lock['n'] >= 5) $lock = array('n' => 0, 'until' => time() + 900);
         @file_put_contents($lockf, json_encode($lock)); usleep(600000);
         $err = 'This site is already installed and that is not its database password.';
-    } elseif ($ownSet && ($own['name'] === '' || !filter_var($own['email'], FILTER_VALIDATE_EMAIL) || strlen($own['pass']) < 8)) {
-        $err = 'Owner account: enter your name, a valid email and a password of 8+ characters (or leave all 3 empty).';
+    } elseif (!$ownSet) {
+        /* SECURITY (2026-10-13): this installer used to seed the well-known login admin / admin whenever
+           the user table was empty, and print it on screen. A public URL with a default credential is a
+           full takeover on a site that is reachable before the owner finishes setup, so a first install
+           now requires the owner to choose a real password. Re-runs on an existing install are unaffected. */
+        $err = 'Choose your owner login: name, a valid email and a password of 8+ characters. The installer no longer creates a default login.';
+    } elseif ($own['name'] === '' || !filter_var($own['email'], FILTER_VALIDATE_EMAIL) || strlen($own['pass']) < 10) {
+        $err = 'Owner account: enter your name, a valid email and a password of 10+ characters.';
+    } elseif (strtolower($own['email']) === 'admin' || in_array(strtolower($own['pass']), array('admin', 'admin123', 'password', '1234567890'), true)) {
+        $err = 'That email or password is a well-known default and is refused. Choose something unique.';
     } elseif (!is_file($sqlf)) {
         $err = 'Missing file _database/woodex-v20.sql. Upload the full V20 zip again (Extract + Overwrite).';
     } else {
@@ -33,7 +50,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$locked) {
             $sql = preg_replace('~^--.*$~m', '', (string)file_get_contents($sqlf));
             $n = 0; $seed = '';
             foreach (preg_split('~;\s*\n~', $sql) as $st) { $st = trim($st); if ($st === '') continue; if (stripos($st, 'INSERT INTO wx_users') === 0) { $seed = $st; continue; } $pdo->exec($st); $n++; }
-            /* P21 fix: never reset existing passwords. Create your owner login, or admin/admin only on an empty user table. */
+            /* P21 fix: never reset existing passwords.
+               SECURITY (2026-10-13): the empty-table branch no longer seeds admin / admin — a first install
+               must supply the owner account (validated above). The dump's own INSERT is skipped entirely,
+               so no known credential is ever written. */
             $users = (int)$pdo->query('SELECT COUNT(*) FROM wx_users')->fetchColumn();
             if ($ownSet) {
                 $hash = password_hash($own['pass'], PASSWORD_DEFAULT);
@@ -41,8 +61,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$locked) {
                 if ($id = $ex->fetchColumn()) { $pdo->prepare("UPDATE wx_users SET name=?, pass_hash=?, role='owner', active=1, pw_ver=pw_ver+1 WHERE id=?")->execute(array($own['name'], $hash, $id)); $log[] = 'Owner login updated: ' . $own['email']; }
                 else { $pdo->prepare("INSERT INTO wx_users (name,email,role,pass_hash,active,pw_ver,created_at) VALUES (?,?,'owner',?,1,1,NOW())")->execute(array($own['name'], $own['email'], $hash)); $log[] = 'Owner login created: ' . $own['email']; }
                 $login = $own['email'];
-            } elseif ($users === 0 && $seed !== '') { $pdo->exec(preg_replace('~ON DUPLICATE KEY UPDATE.*$~s', '', $seed)); $log[] = 'Login created: admin / admin'; $login = 'admin';
             } else { $log[] = 'Existing logins kept (' . $users . ' users, passwords unchanged)'; $login = ''; }
+            if ($users === 0 && $login === '') { $log[] = 'No login yet — reload this page and fill in the Owner account block.'; }
             $tables = $pdo->query("SHOW TABLES LIKE 'wx\\_%'")->fetchAll(PDO::FETCH_COLUMN);
             $log[] = $n . ' SQL statements run · ' . count($tables) . ' tables ready';
             if (!is_dir($priv)) @mkdir($priv, 0755, true);
@@ -66,7 +86,7 @@ button,.btn{display:inline-block;font:inherit;font-weight:700;border:0;border-ra
 <h1>Woodex V20 installer</h1><p class="m">Connects the website to your database, creates all tables and the admin login. Your existing data is kept.</p>
 <?php if ($done): ?>
 <div class="ok"><b>Installed.</b><br><?php echo implode('<br>', array_map($h, $log)); ?></div>
-<p><b>Sign in:</b> <?php echo $login === 'admin' ? 'email <code>admin</code> · password <code>admin</code> (change it at once)' : ($login !== '' ? 'email <code>' . $h($login) . '</code> with the password you just chose' : 'with your existing login'); ?></p>
+<p><b>Sign in:</b> <?php echo $login !== '' ? 'email <code>' . $h($login) . '</code> with the password you just chose' : 'with your existing login'; ?></p>
 <a class="btn" href="/admin/">Open admin →</a><script>setTimeout(function(){location.href="/admin/"},4000)</script>
 <p class="m">Next: change the password in <b>My security</b>, then delete <code>wx-install.php</code> in File Manager.</p>
 <?php else: ?>
@@ -77,10 +97,10 @@ button,.btn{display:inline-block;font:inherit;font-weight:700;border:0;border-ra
 <label>Database user<input name="user" value="<?php echo $h($v['user']); ?>" required></label>
 <label>Database password <span class="m">(hPanel → Databases → MySQL)</span><input type="password" name="pass" required autofocus></label>
 <h3 style="margin:22px 0 0">Owner account <span class="m">(your admin login)</span></h3>
-<p class="m" style="margin:4px 0 0">Fill in to create your own login. Leave empty to keep existing logins (a new site then gets admin / admin).</p>
+<p class="m" style="margin:4px 0 0">Required on a new site — this is the login you will use. On an already-installed site you can leave all three empty to keep the existing logins.</p>
 <label>Your name<input name="oname" value="<?php echo $h($_POST['oname'] ?? ''); ?>"></label>
 <label>Email<input type="email" name="oemail" value="<?php echo $h($_POST['oemail'] ?? ''); ?>"></label>
-<label>Password <span class="m">(8+ characters)</span><input type="password" name="opass" minlength="8" autocomplete="new-password"></label>
+<label>Password <span class="m">(10+ characters)</span><input type="password" name="opass" minlength="10" autocomplete="new-password"></label>
 <button>Install</button></form>
 <?php endif; ?>
 </main></body></html>
