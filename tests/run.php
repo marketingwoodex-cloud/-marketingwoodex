@@ -1108,6 +1108,106 @@ eq(wx_appr_needed('admin', 'cms_published'), false, 'publishing an article is no
 eq(wx_appr_needed('admin', 'global_replace'), true, 'find-and-replace across the site is a change');
 eq(wx_appr_needed('owner', 'global_chrome'), false, 'the Master\'s own changes are never queued');
 
+/* ================================================= Phase 3 · the section library
+   `wx_block_ranges()` is the function that finds a global section inside a page by balancing tags. It is
+   the one piece of this slice that can destroy a live page, so it is tested the way it will be used: a
+   global section that contains elements of its own, including another one of its own tag. */
+
+$sec = '<section class="band" data-wx-global="abc123"><h2>Hello</h2><p>Text</p></section>';
+eq(count(wx_block_ranges($sec, 'abc123')), 1, 'a global section is found by its token');
+[$a, $b] = wx_block_ranges($sec, 'abc123')[0];
+eq(trim(substr($sec, $a, $b - $a)), $sec, 'and the range covers exactly the element, not a byte more');
+
+/* Nested elements, including the same tag name — this is what depth counting is for. If the walk closed on
+   the first `</section>` it found, everything after the second one's start would be swallowed. */
+$nested = '<div class="page">'
+    . '<section data-wx-global="a1b2c3"><div class="wrap"><section class="inner"><p>One</p></section>'
+    . '<p>Two</p></div></section>'
+    . '<p>After the section</p></div>';
+$ranges = wx_block_ranges($nested, 'a1b2c3');
+eq(count($ranges), 1, 'a section containing a section is one range');
+[$a, $b] = $ranges[0];
+ok(str_contains(substr($nested, $a, $b - $a), '<section class="inner">'), 'the range includes the nested element');
+ok(!str_contains(substr($nested, $a, $b - $a), 'After the section'), 'and stops at the outer closing tag — a premature close would take the rest of the page with it');
+
+/* Two instances on one page, and the replacement keeps the text between them. */
+$twice = '<header>x</header>' . $sec . '<p>Middle</p>' . str_replace('Hello', 'Again', $sec) . '<footer>y</footer>';
+eq(count(wx_block_ranges($twice, 'abc123')), 2, 'a section used twice on one page is two ranges');
+$replaced = wx_block_replace($twice, 'abc123', '<section data-wx-global="abc123"><h2>New</h2></section>');
+eq(substr_count($replaced, '<h2>New</h2>'), 2, 'both instances are replaced');
+ok(str_contains($replaced, '<p>Middle</p>') && str_contains($replaced, '<footer>y</footer>'), 'and the page around them survives');
+
+/* Tokens that share a prefix, and tokens that are not there. */
+$long = str_replace('abc123', 'abc1234', $sec);
+eq(count(wx_block_ranges($long, 'abc123')), 0, 'a token that is a prefix of another does not match it');
+$sibling = $sec . '<section data-wx-global="abcdef"></section>';
+eq(count(wx_block_ranges($sibling, 'abc123')), 1, 'and a page holding both tokens only gives up the one asked for');
+eq(count(wx_block_ranges($sec, 'nothing')), 0, 'a token the page does not carry gives no range');
+eq(wx_block_replace($sec, 'nothing', '<p>x</p>'), $sec, 'and replacing nothing changes nothing');
+
+/* An element that never closes is refused rather than guessed at. */
+$broken = '<section data-wx-global="abc123"><p>Nothing closes this';
+eq(count(wx_block_ranges($broken, 'abc123')), 0, 'an unclosed element gives no range — the push leaves that page alone');
+eq(wx_block_replace($broken, 'abc123', '<section>new</section>'), $broken, 'and does not rewrite the page');
+
+/* Self-closing and void elements inside the section must not unbalance the count. */
+$selfclose = '<section data-wx-global="abc123"><img src="/assets/img/a.webp"><br><input type="text"></section>';
+[$a, $b] = wx_block_ranges($selfclose, 'abc123')[0];
+ok(str_ends_with(substr($selfclose, $a, $b - $a), '</section>'), 'void elements do not end the range early');
+
+/* ---- stamping: the token goes on the block's own root, on the copy that goes into pages */
+$block = '<section class="hero"><h1>We build interiors</h1></section>';
+$stamped = wx_block_stamp($block, '3f9a2c1b8d4e');
+/* The attribute goes immediately after the tag name — v2.1 wrote it there too, and attribute order is
+   not meaningful in HTML. What matters is that it lands on the root and only once. */
+ok(str_starts_with(trim($stamped), '<section data-wx-global="3f9a2c1b8d4e"'), 'the token is added to the block\'s root element');
+ok(str_contains($stamped, 'class="hero"'), 'and the rest of the opening tag is kept');
+eq(wx_block_stamp($block, '3f9a2c1b8d4e'), $stamped, 'stamping is idempotent — a pushed page does not collect attributes');
+try {
+    wx_block_stamp('Just some text, no element', 'abc123');
+    ok(false, 'a block that is not a single element should be refused');
+} catch (Throwable $e) {
+    ok(str_contains($e->getMessage(), 'single element'), 'and it is refused in words a person can act on: ' . $e->getMessage());
+}
+
+/* ---- the block rules: the library refuses what would become a page's problem */
+$clean = wx_block_clean(['name' => '  Services grid  ', 'html' => '<section>' . str_repeat('x', 10) . '</section>', 'cat' => 'Services', 'tags' => 'grid, SERVICES , grid', 'global' => true], null);
+eq($clean['name'], 'Services grid', 'a block name is trimmed');
+eq($clean['cat'], 'Services', 'a known category is kept');
+eq($clean['tags'], 'grid,services', 'tags are lower-cased and deduplicated');
+ok(preg_match('~^[a-f0-9]{12}$~', $clean['blk']) === 1, 'a new block gets a 12-hex token — the token that goes into pages');
+eq(wx_block_clean(['name' => 'x', 'html' => '<section>y</section>', 'cat' => 'Not A Category'], null)['cat'], 'Custom',
+    'an unknown category falls back to Custom rather than failing the save');
+$kept = wx_block_clean(['tags' => 'one'], ['blk' => 'abc123abc123', 'name' => 'Old name', 'html' => '<section>old</section>', 'cat' => 'Hero', 'is_global' => 1]);
+eq($kept['name'], 'Old name', 'an edit that carries no name keeps the stored one');
+eq($kept['blk'], 'abc123abc123', 'and keeps the token, because the pages are carrying it');
+ok($kept['is_global'] === 1, 'and keeps being global unless the request says otherwise');
+foreach ([
+    ['name' => 'x', 'html' => '<script>alert(1)</script>'],
+    ['name' => 'x', 'html' => '<div onclick="go()">x</div>'],
+    ['name' => 'x', 'html' => '<div style="background:url(javascript:alert(1))">x</div>'],
+    ['name' => '', 'html' => '<section>x</section>'],
+    ['name' => 'x', 'html' => '<div contenteditable="true">editing</div>'],
+] as $i => $bad) {
+    try {
+        wx_block_clean($bad, null);
+        ok(false, 'a block that breaks a rule should be refused (case ' . $i . ')');
+    } catch (Throwable $e) {
+        ok(true, 'refused: ' . substr($e->getMessage(), 0, 64));
+    }
+}
+try {
+    wx_block_clean(['name' => 'Loose text', 'html' => 'Just words', 'global' => true], null);
+    ok(false, 'loose text cannot be a global section');
+} catch (Throwable $e) {
+    ok(str_contains($e->getMessage(), 'single element'), 'loose text is refused as a global section: ' . $e->getMessage());
+}
+ok(wx_block_clean(['name' => 'Loose text', 'html' => 'Just words'], null)['is_global'] === 0,
+    'but the same text is a perfectly good library block — a snippet people paste, without a token');
+
+/* TODO-DB: the library table, usage walking the site and the push need migration 013 and the site tree. */
+skip('the block library table, usage and the push need migration 013 and the site tree');
+
 /* ============================================================== report */
 echo "\n";
 if ($failures) {

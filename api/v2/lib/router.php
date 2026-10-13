@@ -228,6 +228,17 @@ function wx_routes(): array
         ['POST',   'chrome/replace',                  'chrome', 'wx_route_chrome_replace',  'global_replace'],
         ['POST',   'chrome/versions/{id}',            'chrome', 'wx_route_chrome_restore',  'chrome_save'],
 
+        /* --------------------------------------------------- the section library
+           The reusable pieces a page is assembled from, and the global sections that live inside pages by
+           reference: editing one block and pushing it rewrites every page that carries its token, as one
+           change with one undo. */
+        ['GET',    'blocks',                          'blocks',  'wx_route_blocks_list',   'blocks_list'],
+        ['GET',    'blocks/usage',                    'blocks',  'wx_route_blocks_usage',  'blocks_usage'],
+        ['POST',   'blocks',                          'blocks',  'wx_route_blocks_save',   'blocks_save'],
+        ['POST',   'blocks/import',                   'blocks',  'wx_route_blocks_import', 'blocks_import'],
+        ['POST',   'blocks/{blk}/sync',               'blocks',  'wx_route_blocks_sync',   'blocks_sync'],
+        ['DELETE', 'blocks/{blk}',                    'blocks',  'wx_route_blocks_delete', 'blocks_delete'],
+
         /* ------------------------------------------------------ the content CMS
            An editor's list, an editor, and a publish button that composes the page server-side out of
            the site's own page furniture. `?filter=draft|scheduled|due|live` is answered in SQL. */

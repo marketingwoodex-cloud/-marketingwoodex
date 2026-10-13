@@ -20,6 +20,7 @@ import { LiveMedia } from "./screens/LiveMedia";
 import { LiveContent } from "./screens/LiveContent";
 import { LiveGlobal } from "./screens/LiveGlobal";
 import { LivePages } from "./screens/LivePages";
+import { LiveLibrary } from "./screens/LiveLibrary";
 import { SessionCtx, type SessionValue } from "./lib/session";
 
 /* This file is built by vite for Node (see package.json#scripts.smoke), so `process` exists at run
@@ -138,6 +139,8 @@ let htmlGlobal = "";
 let htmlGlobalOffline = "";
 let htmlPages = "";
 let htmlPagesOffline = "";
+let htmlLibrary = "";
+let htmlLibraryOffline = "";
 try {
   htmlSignedOut = renderToString(
     <MemoryRouter initialEntries={["/dashboard"]}>
@@ -297,6 +300,32 @@ try {
   failures.push(`pages without an API → ${(err as Error).message}`);
 }
 
+try {
+  htmlLibrary = renderToString(
+    <MemoryRouter initialEntries={["/library"]}>
+      <SessionCtx.Provider value={session("live", asUser)}>
+        <LiveLibrary />
+      </SessionCtx.Provider>
+    </MemoryRouter>,
+  );
+} catch (err) {
+  failures.push(`live section library → ${(err as Error).message}`);
+}
+
+/* With no API, the library must not show an empty shelf: "no blocks" is a claim about the site, and the
+   screen cannot know it. Nor may it offer a New block button that would fail on the first click. */
+try {
+  htmlLibraryOffline = renderToString(
+    <MemoryRouter initialEntries={["/library"]}>
+      <SessionCtx.Provider value={session("offline", null)}>
+        <LiveLibrary />
+      </SessionCtx.Provider>
+    </MemoryRouter>,
+  );
+} catch (err) {
+  failures.push(`section library without an API → ${(err as Error).message}`);
+}
+
 /* A signed-out app must not leak a namespace behind an "everyone gets one" banner, and a live screen
    must not render while it is still loading, or the first paint would show an empty table as truth. */
 for (const [name, ok] of [
@@ -318,6 +347,11 @@ for (const [name, ok] of [
   ],
   ["the header & footer screen renders its loading state", htmlGlobal.includes("Loading…")],
   ["the pages screen renders its loading state", htmlPages.includes("Loading…")],
+  ["the section library renders its loading state", htmlLibrary.includes("Loading…")],
+  [
+    "the section library with no API does not render an empty shelf",
+    htmlLibraryOffline.includes("api/v2 is not answering") && !htmlLibraryOffline.includes("New block"),
+  ],
   [
     "the pages screen with no API does not claim the site has no history",
     htmlPagesOffline.includes("api/v2 is not answering") && !htmlPagesOffline.includes("Recent changes"),

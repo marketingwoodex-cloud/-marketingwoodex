@@ -445,6 +445,57 @@ export interface RollbackResult {
   errors: { rel: string; message: string }[];
 }
 
+/* ------------------------------------------------------------ the section library
+   A block is a piece of a page. A *global* block is inserted by reference — its root element carries
+   `data-wx-global="<token>"` in the page — and editing it and pushing rewrites every page that carries
+   that token, as one change with one undo. */
+
+export interface Block {
+  blk: string;
+  name: string;
+  kind: "section" | "element";
+  cat: string;
+  tags: string[];
+  global: boolean;
+  bytes: number;
+  html: string;
+  createdAt: string;
+  updatedAt: string;
+  updatedBy: string;
+}
+
+export interface BlocksData {
+  blocks: Block[];
+  cats: string[];
+  counts: Record<string, number>;
+  globals: number;
+  total: number;
+  limit: number;
+  import: { blocks: number } | null;
+}
+
+export interface BlocksUsage {
+  usage: Record<string, { name: string; pages: string[] }>;
+  globals: number;
+  placements: number;
+  pages: number;
+}
+
+export interface BlockSaveResult {
+  block: Block;
+  usedOn: string[];
+  canPush: boolean;
+}
+
+export interface BlockSyncResult {
+  blk: string;
+  usedOn: string[];
+  batch: string;
+  changed: string[];
+  skipped: number;
+  pages: number;
+}
+
 /** What a write returns when the v2.1 policy says a Manager's change waits for the Master. */
 export interface PendingResult {
   pending: true;

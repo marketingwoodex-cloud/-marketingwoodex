@@ -175,6 +175,14 @@ function wx_legacy_bridged(): array
         'cms_tpl_list'     => ['content', 'wx_route_content_tpl_list', []],
         'cms_tpl_save'     => ['content', 'wx_route_content_tpl_save', []],
         'cms_tpl_delete'   => ['content', 'wx_route_content_tpl_delete', []],
+        /* Phase 3 — the section library. The builder's own six library actions; the rest of the builder
+           (page load/save, uploads, the theme file) is its own slice. */
+        'blocks_list'      => ['blocks', 'wx_route_blocks_list', []],
+        'blocks_usage'     => ['blocks', 'wx_route_blocks_usage', []],
+        'blocks_save'      => ['blocks', 'wx_route_blocks_save', []],
+        'blocks_import'    => ['blocks', 'wx_route_blocks_import', []],
+        'blocks_delete'    => ['blocks', 'wx_route_blocks_delete', []],
+        'blocks_sync'      => ['blocks', 'wx_route_blocks_sync', []],
     ];
 }
 

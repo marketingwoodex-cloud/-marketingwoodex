@@ -18,12 +18,13 @@ import { LiveMedia } from "./screens/LiveMedia";
 import { LiveContent } from "./screens/LiveContent";
 import { LiveGlobal } from "./screens/LiveGlobal";
 import { LivePages } from "./screens/LivePages";
+import { LiveLibrary } from "./screens/LiveLibrary";
 import { linkLabel, useLive, type BellData } from "./lib/live";
 import { Btn, Card, PageHead } from "./components/primitives";
 
 /** Route ids implemented by a real screen in this prototype (Phase 0). */
 const BUILT_IDS = new Set([
-  "dashboard", "leads", "enquiries", "pipeline", "quotes", "theme", "redirects", "media", "blog", "portfolio", "global", "pages",
+  "dashboard", "leads", "enquiries", "pipeline", "quotes", "theme", "redirects", "media", "blog", "portfolio", "global", "pages", "library",
 ]);
 
 /** The public entry point: one provider, then the app proper. */
@@ -184,6 +185,8 @@ function Frame() {
           <Route path="/global" element={<LiveGlobal />} />
           {/* Every page and every change — where the header change across 150 pages is undone. */}
           <Route path="/pages" element={<LivePages />} />
+          {/* The reusable pieces a page is assembled from, and the global sections pushed from one edit. */}
+          <Route path="/library" element={<LiveLibrary />} />
           <Route
             path="/theme"
             element={
