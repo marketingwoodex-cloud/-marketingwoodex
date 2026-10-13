@@ -3,7 +3,7 @@
    typing into it during that window silently does nothing (focus is refused while the
    boot overlay owns the page). Set the values directly, dispatch input events, then press
    the button until a session token appears. */
-export async function signIn(p, base='http://127.0.0.1:8080', opt={}) {
+export async function signIn(p, base=process.env.PREVIEW_BASE || 'http://127.0.0.1:8080', opt={}) {
   const email = opt.email || process.env.PREVIEW_EMAIL, pass = opt.pass || process.env.PREVIEW_PASS;
   if (!email || !pass) throw new Error('signIn: PREVIEW_EMAIL / PREVIEW_PASS not set');
   await p.goto(base + '/admin/', { waitUntil: 'domcontentloaded' });

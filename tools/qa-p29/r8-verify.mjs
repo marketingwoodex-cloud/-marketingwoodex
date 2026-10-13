@@ -4,7 +4,7 @@
 import pptr from 'puppeteer-core'; import cm from '@sparticuz/chromium';
 import fs from 'node:fs'; import path from 'node:path'; import { pathToFileURL } from 'node:url';
 import { signIn } from './lib-signin.mjs';
-const BASE = 'http://127.0.0.1:8080';
+const BASE = process.env.PREVIEW_BASE || 'http://127.0.0.1:8080';
 const OUT = '/tmp/r8'; fs.mkdirSync(OUT, { recursive: true });
 const ROOT = path.resolve('node_modules');
 const { inflate } = await import(pathToFileURL(path.join(ROOT, '@sparticuz/chromium/build/lambdafs.js')).href);
