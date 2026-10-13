@@ -28,7 +28,8 @@ import { LiveProjects } from "./screens/LiveProjects";
 import { LiveTimeline } from "./screens/LiveTimeline";
 import { LiveUpdates } from "./screens/LiveUpdates";
 import { linkLabel, useLive, type BellData } from "./lib/live";
-import { Btn, Card, PageHead } from "./components/primitives";
+import { demoOn, setDemo } from "./lib/demo";
+import { Btn, Card, Note, PageHead } from "./components/primitives";
 
 /** Route ids implemented by a real screen in this prototype (Phase 0). */
 const BUILT_IDS = new Set([
@@ -39,11 +40,11 @@ const BUILT_IDS = new Set([
 
 /** The public entry point: one provider, then the app proper. */
 export default function App() {
-  /* `?demo=1` (or a build with VITE_WX_DEMO=1) is the static-preview mode: no API is called at all,
-     which is what a design review or a Netlify/Vercel preview wants. Everything else tries the API. */
-  const demo =
-    import.meta.env.VITE_WX_DEMO === "1" ||
-    (typeof window !== "undefined" && new URLSearchParams(window.location.search).has("demo"));
+  /* `?demo=1` (or a build with VITE_WX_DEMO=1) is the static-preview mode: no API is called at all, and the
+     screens that have sample data answer from it. The flag lives in `lib/demo.ts` because it has to survive a
+     click — a query string does not, and a preview that stops working on the first navigation is a puzzle
+     rather than a preview. Everything else tries the API. */
+  const demo = demoOn();
   return (
     <SessionProvider demo={demo}>
       <Frame demo={demo} />
@@ -155,7 +156,7 @@ function Frame({ demo }: { demo: boolean }) {
         user={null}
         onSignOut={() => void signOut()}
       >
-        <SignIn />
+        <SignIn door={<DemoDoor on={demo} />} />
       </Shell>
     );
   }
@@ -179,6 +180,10 @@ function Frame({ demo }: { demo: boolean }) {
         user={user ? { name: user.name, roleLabel: user.roleLabel } : null}
         onSignOut={() => void signOut()}
       >
+        {/* A host that is not answering is the other place the door belongs: every screen below is about to say
+            it cannot read anything, and the person should not have to guess that a preview mode exists. */}
+        {link === "offline" && !demo ? <DemoDoor on={false} /> : null}
+        <DemoBanner on={demo} />
         <Routes>
           {/* Phase 0 — screens implemented in this prototype */}
           <Route path="/dashboard" element={<Dashboard role={effectiveRole} />} />
@@ -270,5 +275,54 @@ function NotFound({ path, onHome }: { path: string; onHome: () => void }) {
         </div>
       </Card>
     </>
+  );
+}
+
+/**
+ * The door into demo mode, and the banner that keeps it honest.
+ *
+ * Exported for the render smoke test, exactly like `SessionCtx`: they are the two elements that carry the
+ * promise "this is not your data", and a promise nobody can test is a promise nobody keeps.
+ *
+ * Both exist because of the same repeated experience: a console that reads a real API shows nothing at all
+ * where there is no API — a laptop, this sandbox, a hosted preview — and the person looking at it cannot tell
+ * whether the product is broken or the host is. The door is offered **by name**, and the banner is impossible
+ * to mistake for the product: it says the data is made up, it names where it came from, and it offers the way
+ * back out. Nothing here turns itself on.
+ */
+export function DemoDoor({ on }: { on: boolean }) {
+  return (
+    <Note tone="info" title={on ? "Demo mode is on" : "No server here?"}>
+      {on ? (
+        <>
+          This console is showing sample data so its design can be reviewed. Turn it off to read your own
+          server again.{" "}
+          <button type="button" className="link-btn" onClick={() => setDemo(false)}>
+            Leave demo mode
+          </button>
+        </>
+      ) : (
+        <>
+          If this is a preview with no PHP and no MySQL behind it,{" "}
+          <button type="button" className="link-btn" onClick={() => setDemo(true)}>
+            open the console with sample data
+          </button>{" "}
+          — same screens, invented figures, and it says so on every one of them.
+        </>
+      )}
+    </Note>
+  );
+}
+
+export function DemoBanner({ on }: { on: boolean }) {
+  if (!on) return null;
+  return (
+    <div className="demo-banner" role="status">
+      <b>Demo data.</b> Everything on this screen is a sample written for the design review — no part of it came
+      from your server. Turn it off to read the real thing.{" "}
+      <button type="button" className="link-btn" onClick={() => setDemo(false)}>
+        Leave demo mode
+      </button>
+    </div>
   );
 }

@@ -29,6 +29,8 @@ export type LinkState = "checking" | "offline" | "signedOut" | "live";
 
 export interface SessionValue {
   link: LinkState;
+  /** Sample-data mode, asked for by `?demo=1` or the build flag — never a fallback for a missing API. */
+  demo: boolean;
   /** Why the link is offline, in words a person can act on. Empty when it is not. */
   reason: string;
   health: Health | null;
@@ -97,7 +99,8 @@ export function SessionProvider({ children, demo }: { children: ReactNode; demo:
         setReason("demo mode was requested");
         return;
       }
-      const up = await probe();
+      let reachable = await probe();
+      const up = reachable;
       if (!alive.current) return;
       if (!up) {
         /* Three quick attempts, then stop: a static preview should not hammer a host that is not there. */
@@ -105,7 +108,10 @@ export function SessionProvider({ children, demo }: { children: ReactNode; demo:
           await new Promise((r) => window.setTimeout(r, 400 * (i + 1)));
           if (!alive.current) return;
           // eslint-disable-next-line no-await-in-loop
-          if (await probe()) break;
+          if (await probe()) {
+            reachable = true;
+            break;
+          }
         }
       }
       if (!alive.current) return;
@@ -120,7 +126,11 @@ export function SessionProvider({ children, demo }: { children: ReactNode; demo:
           setLink("signedOut");
         }
       } catch {
-        if (alive.current) setLink("signedOut");
+        /* A `/me` that *failed* is not a "/me that said no". When the health probe has already concluded
+           the host is unreachable, this must not turn into a sign-in form: a door that cannot open is worse
+           than a notice that says the host is not answering, because it invites a password into nothing.
+           (This is exactly what a preview with no PHP behind it used to do.) */
+        if (alive.current && reachable) setLink("signedOut");
       }
     })();
     return () => {
@@ -180,8 +190,8 @@ export function SessionProvider({ children, demo }: { children: ReactNode; demo:
   }, [probe]);
 
   const value = useMemo<SessionValue>(
-    () => ({ link, reason, health, me, user: me?.user ?? null, signIn, signInTwoFactor, signOut, refreshHealth }),
-    [link, reason, health, me, signIn, signInTwoFactor, signOut, refreshHealth],
+    () => ({ link, demo, reason, health, me, user: me?.user ?? null, signIn, signInTwoFactor, signOut, refreshHealth }),
+    [link, demo, reason, health, me, signIn, signInTwoFactor, signOut, refreshHealth],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

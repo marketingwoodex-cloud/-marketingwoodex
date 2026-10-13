@@ -38,10 +38,10 @@ function toDraft(c: NotifyCfg, id: string): Draft {
 }
 
 export function LiveUpdates() {
-  const { link, reason } = useSession();
+  const { link, reason, demo } = useSession();
   const live = useLive<NotifyData>("/notifications");
 
-  if (link !== "live") {
+  if (link !== "live" && !demo) {
     return (
       <>
         <PageHead title="Client updates" sub="What your clients are told, and where it is on the file." />

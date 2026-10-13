@@ -516,7 +516,7 @@ working as intended, not a gap hidden by a fallback.
 ### Phase 3 — Content, assets and delivery · **in progress** · 4 weeks
 
 *Measured at this commit:* `tests/run.php` **848 passed · 0 failed · 13 skipped** · `tests/conformance.mjs`
-**77 · 0** · php-lint **153 files** · `admin-v25` smoke **127 checks · 65 routes** · legacy bridge **150 of 365
+**78 · 0** · php-lint **153 files** · `admin-v25` smoke **135 checks · 65 routes** · legacy bridge **150 of 365
 actions** (41%). Migrations **000–014** are written and none has run on a database yet.
 
 Pages · builder bridge · section library · header/footer · heroes · redirects · the full content CMS ·
@@ -621,6 +621,10 @@ already did.
 | Delivered — client updates | Where | Note |
 |---|---|---|
 | The seven events and their bilingual wording, the channels, the log — and the page the client opens | `lib/notify.php`, `lib/clientview.php`, `routes/notifications.php`, `routes/client_view.php`, `LiveUpdates.tsx` on `/notifications`, the drawer on `/projects` | Two halves, and the honest one is the smaller. **The page**: `/api/v2/client/project/{id}?t=…` — an HMAC of the project's id and number, the construction v2.1's quotation link has always used, compared with `hash_equals`, no session, no script tag, and the first view recorded once every twelve hours so the studio can see the link was opened. It renders `updates[]` entries marked `toClient` and nothing else: *one* record, so there is no second copy of a sentence to drift and no "what did we actually tell them?". **The sending**: v2.5 has no WhatsApp or SMTP transport, and the plan puts it in Phase 4 with the WhatsApp suite — so the send path reports `no transport yet` rather than v2.1's `queued`, the once-only stage marks are set only when a message *left*, and the screen says who sends today instead of implying it is us. That last part is not decoration: marking a stage "told" on the strength of a log row would silence that news for good the day the channels are connected. A stage message has two shapes — the photo links, or, when a stage has no photos yet, the same words pointing at the client's page — and the update a person types in the drawer is the studio's own until they tick *Show the client* |
+
+| Delivered — demo mode, so a preview shows the console | Where | Note |
+|---|---|---|
+| The screens built in this phase, with sample data behind a label that cannot be missed | `admin-v25/src/lib/demo.ts` (fixtures keyed by API path), `useLive()`, `DemoDoor`/`DemoBanner` in `App.tsx` | A console that reads a real API shows nothing at all where there is no API — a laptop, a sandbox, a hosted preview — and the one thing a preview must never do is let somebody think they are looking at their own figures. So demo mode is *asked for* (`?demo=1`, or the door on any screen that is saying the host is not answering) and never inferred; the shell says **demo data**; a banner above every screen says no part of it came from the server and offers the way out; and a screen whose data nobody has invented yet keeps its honest "not answering" notice, which is how the next slice announces itself. The fixtures are typed against the same interfaces the server's answers are, so when a shape changes the sample stops compiling rather than quietly becoming a nicer product than the product. Also fixed here: a failed `GET /me` used to turn a settled "host not answering" into a sign-in form — a door that cannot open, inviting a password into nothing |
 
 **Still to come in this phase:** quote templates,
 business info (`cms_biz_*`), announcements (`cms_announce_*`), the AI settings in the CMS (`cms_ai_*`), SEO
@@ -811,7 +815,7 @@ Everything in `admin-v25/` runs today:
 | Evidence | Result |
 |---|---|
 | Type check | clean, strict, `noUnusedLocals` |
-| Render smoke | **127 checks · 65 routes · 0 failures** |
+| Render smoke | **135 checks · 65 routes · 0 failures** |
 | Production build | 3 chunks, content-hashed, sourcemaps on |
 | Token contract | switching theme, accent and density re-themes all charts and screens |
 | Routing defects | AD-3, AD-4 and AD-12 structurally impossible in the registry |

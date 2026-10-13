@@ -62,12 +62,12 @@ function toDraft(s: HeroSlide, i: number): SlideDraft {
 }
 
 export function LiveHeroes() {
-  const { link, reason } = useSession();
+  const { link, reason, demo } = useSession();
   const home = useLive<HeroHomeData>("/heroes/home");
   const scan = useLive<HeroScanData>("/heroes");
   const [tab, setTab] = useState<Tab>("home");
 
-  if (link !== "live") {
+  if (link !== "live" && !demo) {
     return (
       <>
         <PageHead title="Hero slides" sub="The hero at the top of every page, and the home page's slider" />

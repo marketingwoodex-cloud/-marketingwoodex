@@ -12,11 +12,19 @@
  */
 import { useState } from "react";
 import { KeyRound, LogIn, ShieldCheck, WifiOff } from "lucide-react";
+import type { ReactNode } from "react";
 import { Btn, Input, Note, PageHead } from "../components/primitives";
 import { useSession } from "../lib/session";
 import { ApiFailure } from "../lib/api";
 
-export function SignIn() {
+/**
+ * `door` is the way into demo mode, rendered by the shell.
+ *
+ * It is a prop rather than an import because the door belongs with the *shell's* other states (offline, not
+ * answering, signed out) and is the same element in all of them — one component, so the sentence about sample
+ * data cannot differ between the three places a person can get stuck.
+ */
+export function SignIn({ door }: { door?: ReactNode } = {}) {
   const { link, reason, health, signIn, signInTwoFactor, refreshHealth } = useSession();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -97,6 +105,10 @@ export function SignIn() {
             </Note>
           </div>
         )}
+
+        {/* The same door the offline state offers. A form is the worst place to find out there is no server:
+            the person has already typed a password by then. */}
+        {door ? <div style={{ marginBottom: "var(--s-4)" }}>{door}</div> : null}
 
         {health && !health.ready && !offline && (
           <div style={{ marginBottom: "var(--s-4)" }}>

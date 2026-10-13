@@ -9,6 +9,7 @@
  * even parse, so VIEWS.settings never registered and the router fell through).
  */
 import { renderToString } from "react-dom/server";
+import type { ReactElement } from "react";
 import { MemoryRouter } from "react-router-dom";
 import App from "./App";
 import { Shell } from "./components/Shell";
@@ -29,6 +30,7 @@ import { LiveEstimator } from "./screens/LiveEstimator";
 import { LiveProjects } from "./screens/LiveProjects";
 import { LiveTimeline } from "./screens/LiveTimeline";
 import { LiveUpdates } from "./screens/LiveUpdates";
+import { DemoBanner, DemoDoor } from "./App";
 import { SessionCtx, type SessionValue } from "./lib/session";
 import { linkLabel, linkPill } from "./lib/live";
 
@@ -116,9 +118,10 @@ try {
    of the app that no test touched, which is exactly where the v2.1 admin's blank screens lived. */
 
 const noopAsync = async () => ({ need2fa: false });
-const session = (link: SessionValue["link"], user: SessionValue["user"]): SessionValue => ({
+const session = (link: SessionValue["link"], user: SessionValue["user"], demo = false): SessionValue => ({
   link,
-  reason: link === "offline" ? "the server could not be reached" : "",
+  demo,
+  reason: link === "offline" ? (demo ? "demo mode was requested" : "the server could not be reached") : "",
   health: link === "offline" ? null : {
     service: "woodex-api", version: "2.5.0-p1", php: "8.2.33", ready: true,
     db: { reachable: true, migrated: true }, time: "2026-10-14T00:00:00Z",
@@ -166,6 +169,12 @@ let htmlTimeRoute = "";
 let htmlNotifOffline = "";
 let htmlNotifLive = "";
 let htmlNotifRoute = "";
+let htmlDemoProjects = "";
+let htmlDemoTimeline = "";
+let htmlDemoNotif = "";
+let htmlDemoForms = "";
+let htmlDemoHeroes = "";
+let htmlDemoOffline = "";
 let htmlGlobal = "";
 let htmlGlobalOffline = "";
 let htmlPages = "";
@@ -487,6 +496,70 @@ try {
   );
 } catch (err) {
   failures.push(`the client updates screen → ${(err as Error).message}`);
+}
+
+/* Demo mode. This is the state the person evaluating the console actually sees on a preview with no PHP and
+   no MySQL behind it, so it is the state that must be *useful*: the screens render their sample data, and the
+   banner above them says in words that none of it came from a server. The offline copy — the same screens with
+   demo off — is asserted just below to be sure the two cannot be confused. */
+try {
+  const at = (path: string, screen: ReactElement) =>
+    renderToString(
+      <MemoryRouter initialEntries={[path]}>
+        <SessionCtx.Provider value={session("offline", null, true)}>
+          {screen}
+        </SessionCtx.Provider>
+      </MemoryRouter>,
+    );
+  htmlDemoProjects = at("/projects", <LiveProjects />);
+  htmlDemoTimeline = at("/timeline", <LiveTimeline />);
+  htmlDemoNotif = at("/notifications", <LiveUpdates />);
+  htmlDemoForms = at("/forms", <LiveForms />);
+  htmlDemoHeroes = at("/heroes", <LiveHeroes />);
+  htmlDemoOffline = renderToString(
+    <MemoryRouter initialEntries={["/projects"]}>
+      <SessionCtx.Provider value={session("offline", null)}>
+        <LiveProjects />
+      </SessionCtx.Provider>
+    </MemoryRouter>,
+  );
+} catch (err) {
+  failures.push(`the demo screens → ${(err as Error).message}`);
+}
+
+/* The whole entry point, in demo mode, the way a person opens a preview with no server: `demoOn()` reads the
+   URL and the tab's storage, so this stubs both for the length of one render and then puts the globals back.
+   It is the only assertion here that exercises `App` → `Frame` → the banner → a screen with sample data, which
+   is the journey that produced "still not showing page". */
+let htmlDemoApp = "";
+try {
+  const real = (globalThis as Record<string, unknown>)["window"];
+  const store = new Map<string, string>();
+  const fakeWindow = {
+    location: { href: "http://localhost:5173/projects?demo=1", search: "?demo=1", pathname: "/projects", origin: "http://localhost:5173" },
+    sessionStorage: {
+      getItem: (k: string) => (store.has(k) ? (store.get(k) as string) : null),
+      setItem: (k: string, v: string) => store.set(k, v),
+      removeItem: (k: string) => store.delete(k),
+    },
+    localStorage: { getItem: () => null, setItem: () => {}, removeItem: () => {} },
+    matchMedia: () => ({ matches: false, addEventListener: () => {}, removeEventListener: () => {} }),
+    addEventListener: () => {},
+    removeEventListener: () => {},
+    setTimeout: (fn: () => void, ms?: number) => setTimeout(fn, ms) as unknown as number,
+    clearTimeout: (id: number) => clearTimeout(id),
+    innerWidth: 1280,
+    innerHeight: 800,
+  };
+  (globalThis as Record<string, unknown>)["window"] = fakeWindow;
+  htmlDemoApp = renderToString(
+    <MemoryRouter initialEntries={["/projects"]}>
+      <App />
+    </MemoryRouter>,
+  );
+  (globalThis as Record<string, unknown>)["window"] = real;
+} catch (err) {
+  failures.push(`the demo entry point → ${(err as Error).message}`);
 }
 
 /* Through the app's own routing: `/heroes` must reach the screen, not the build-plan placeholder. */
@@ -893,6 +966,64 @@ for (const [name, ok] of [
     "and the route reaches the screen rather than a build plan",
     htmlNotifRoute.includes("Sign in to see what your clients are told") &&
       !htmlNotifRoute.includes("Build plan for this screen"),
+  ],
+  /* Demo mode, screen by screen: the sample has to actually reach the screen, or "demo mode" is a promise
+     about a page that shows nothing. Each assertion names a figure only that screen's fixture contains. */
+  [
+    "the projects screen in demo mode shows the sample projects, not a notice",
+    htmlDemoProjects.includes("Zainab Tower") &&
+      htmlDemoProjects.includes("4,680,000") &&
+      !htmlDemoProjects.includes("api/v2 is not answering"),
+  ],
+  [
+    "the timeline in demo mode draws its bars from the sample",
+    htmlDemoTimeline.includes("gantt-bar") && htmlDemoTimeline.includes("Bedian"),
+  ],
+  [
+    "the client updates screen in demo mode shows the seven events and the log",
+    htmlDemoNotif.includes("The seven events") &&
+      htmlDemoNotif.includes("no transport yet") &&
+      htmlDemoNotif.includes("Phase 4"),
+  ],
+  [
+    "the forms and heroes screens in demo mode show their samples too",
+    htmlDemoForms.includes("Netlify function") && htmlDemoHeroes.includes("Home slider"),
+  ],
+  [
+    /* The journey that was reported broken: opening the app with `?demo=1` and a host that is not answering
+       must land on a screen with sample data on it, under a banner that says the data is invented. */
+    "opening the console with ?demo=1 lands on a screen with sample data, under the banner",
+    htmlDemoApp.includes("Demo data.") &&
+      htmlDemoApp.includes("Zainab Tower") &&
+      !htmlDemoApp.includes("api/v2 is not answering"),
+  ],
+  [
+    /* The two elements that carry the promise. The banner must say what it is and offer the way out; the door
+       must say what it is for; and neither may appear when neither is true. */
+    "the demo banner says the data is invented, and offers the way out",
+    renderToString(<DemoBanner on />).includes("Demo data") &&
+      renderToString(<DemoBanner on />).includes("Leave demo mode") &&
+      renderToString(<DemoBanner on={false} />) === "",
+  ],
+  [
+    "the door explains demo mode in both directions",
+    renderToString(<DemoDoor on={false} />).includes("open the console with sample data") &&
+      renderToString(<DemoDoor on />).includes("Leave demo mode"),
+  ],
+  [
+    /* The one thing demo mode must never do: invent data for a screen nobody wrote a sample for. The pages and
+       media screens have no fixture on purpose, so they keep the honest notice even with demo mode on — while
+       the same project screen, with demo off, still says the host is not answering. */
+    "a screen with no sample still says the host is not answering, and demo off is unchanged",
+    renderToString(
+      <MemoryRouter initialEntries={["/pages"]}>
+        <SessionCtx.Provider value={session("offline", null, true)}>
+          <LivePages />
+        </SessionCtx.Provider>
+      </MemoryRouter>,
+    ).includes("api/v2 is not answering") &&
+      htmlDemoOffline.includes("api/v2 is not answering") &&
+      !htmlDemoProjects.includes("api/v2 is not answering"),
   ],
 ] as [string, boolean][]) {
   if (ok) pass++;

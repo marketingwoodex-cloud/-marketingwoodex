@@ -13,6 +13,7 @@
  */
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ApiFailure, api } from "./api";
+import { demoFixture } from "./demo";
 import { useSession } from "./session";
 
 export interface Health {
@@ -28,6 +29,8 @@ export interface LiveState<T> {
   data: T | null;
   error: ApiFailure | null;
   loading: boolean;
+  /** True when what is on screen is the sample data from `lib/demo.ts`, not a server's answer. */
+  demo: boolean;
   reload: () => void;
 }
 
@@ -38,9 +41,13 @@ export interface LiveState<T> {
  * @param key  a value to watch (a filter, a page number); it is not sent, it only triggers a reload
  */
 export function useLive<T>(path: string | null, key: unknown = null): LiveState<T> {
-  const { link, me } = useSession();
+  const { link, me, demo } = useSession();
   const enabled = link === "live" && me !== null && path !== null;
-  const [data, setData] = useState<T | null>(null);
+  /* Demo mode answers from `lib/demo.ts` instead of the network. Only a path with a fixture gets an answer:
+     a screen whose data nobody has invented yet keeps its own honest "not answering" state, which is how the
+     next slice announces itself. */
+  const sample = demo && path !== null ? demoFixture(path) : null;
+  const [data, setData] = useState<T | null>((sample as T | null) ?? null);
   const [error, setError] = useState<ApiFailure | null>(null);
   /* Starts true whenever a request is actually going to happen: between mount and the first reply the
      honest answer is "loading", and a screen that renders zeros in that window has shown a number that
@@ -87,7 +94,9 @@ export function useLive<T>(path: string | null, key: unknown = null): LiveState<
   }, [enabled, path, key, nonce]);
 
   const reload = useCallback(() => setNonce((n) => n + 1), []);
-  return { data, error, loading, reload };
+  /* In demo mode there is nothing to reload: the sample does not come from anywhere, and a screen that
+     pretended to fetch it again would be pretending twice. */
+  return { data, error, loading: sample !== null ? false : loading, demo: sample !== null, reload };
 }
 
 /* ------------------------------------------------------------------ response shapes

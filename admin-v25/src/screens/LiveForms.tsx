@@ -37,10 +37,10 @@ function toDraft(c: FormCfg): Draft {
 }
 
 export function LiveForms() {
-  const { link, reason } = useSession();
+  const { link, reason, demo } = useSession();
   const live = useLive<FormsData>("/forms");
 
-  if (link !== "live") {
+  if (link !== "live" && !demo) {
     return (
       <>
         <PageHead title="Forms" sub="Where each form is, and where its enquiries go." />

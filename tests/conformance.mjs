@@ -1047,6 +1047,47 @@ check("a message this console cannot carry is never recorded as sent", () => {
   assert(/transport\.wired/.test(screen), "the screen reads which events this build composes from the API");
 });
 
+check("demo mode answers exactly the screens that have a sample", () => {
+  /* Demo mode is what a design review sees where there is no PHP and no MySQL, so it has two failure modes and
+     this check is here for both. A screen that reads a path with no sample silently goes back to "not
+     answering" — the preview looks broken and nobody knows why. And a sample keyed by a path no screen reads is
+     data that will rot, because nothing will ever fail when it stops matching the server's shape.
+     Both directions, then: the sample must cover what the six newest screens read, and every sample key must be
+     a path one of them reads. */
+  const demo = readCode("admin-v25/src/lib/demo.ts");
+  const keys = new Set([...demo.matchAll(/^\s{2}"([^"]+)":/gm)].map((m) => m[1]));
+  assert(keys.size >= 6, `the fixtures must be keyed by path (found ${keys.size})`);
+  for (const k of ["/projects", "/projects/{id}", "/notifications", "/forms", "/estimator", "/heroes"]) {
+    assert(keys.has(k), `there is a sample for ${k}, so a design review can open that screen`);
+  }
+  const screens = ["LiveProjects", "LiveTimeline", "LiveUpdates", "LiveForms", "LiveEstimator", "LiveHeroes"];
+  const want = [];
+  for (const name of screens) {
+    const src = readCode(`admin-v25/src/screens/${name}.tsx`);
+    for (const m of src.matchAll(/useLive<[^>]*>\(\s*[`"]([^`"$]+)/g)) want.push([name, m[1]]);
+  }
+  assert(want.length >= 6, `the screens read paths at all (found ${want.length})`);
+  const covered = (p) =>
+    keys.has(p) ||
+    /* A path built with a value in it (`/projects/${id}`) is the `{id}` sample. */
+    keys.has(`${p}{id}`) ||
+    (p.includes("?") && keys.has(p.slice(0, p.indexOf("?")))) ||
+    [...keys].some((k) => k.endsWith("*") && p.startsWith(k.slice(0, -1)));
+  const missing = want.filter(([, p]) => !covered(p)).map(([n, p]) => `${n} → ${p}`);
+  assertEq(missing.length, 0, `screens reading a path with no sample: ${missing.join(", ")}`);
+  /* Every sample key must be read by a screen, or be the `{id}` form of one that is. */
+  const orphans = [...keys].filter((k) => {
+    /* `/projects/{id}` stands in for the screen that builds `/projects/${id}`: same read, a value in it. */
+    const base = k.replace("{id}", "").replace(/\*$/, "");
+    return !want.some(([, p]) => p === base || p.startsWith(base) || (k.endsWith("*") && p.startsWith(base)));
+  });
+  assertEq(orphans.length, 0, `samples no screen reads: ${orphans.join(", ")}`);
+  /* And the shell must never turn it on by itself: the flag is asked for by name. */
+  assert(/VITE_WX_DEMO === "1"/.test(demo), "demo mode is requested, not inferred");
+  const app = readCode("admin-v25/src/App.tsx");
+  assert(/demoOn\(\)/.test(app), "the flag comes from one place");
+});
+
 /* ============================================================== report */
 
 if (process.argv.includes("--json")) {
