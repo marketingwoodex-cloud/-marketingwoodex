@@ -13,11 +13,13 @@ import { useAppearance } from "./lib/theme";
 import { approvals, leads } from "./lib/mock";
 import { SessionProvider, useSession } from "./lib/session";
 import { SignIn } from "./screens/SignIn";
+import { LiveRedirects } from "./screens/LiveRedirects";
+import { LiveMedia } from "./screens/LiveMedia";
 import { linkLabel, useLive, type BellData } from "./lib/live";
 import { Btn, Card, PageHead } from "./components/primitives";
 
 /** Route ids implemented by a real screen in this prototype (Phase 0). */
-const BUILT_IDS = new Set(["dashboard", "leads", "enquiries", "pipeline", "quotes", "theme"]);
+const BUILT_IDS = new Set(["dashboard", "leads", "enquiries", "pipeline", "quotes", "theme", "redirects", "media"]);
 
 /** The public entry point: one provider, then the app proper. */
 export default function App() {
@@ -163,6 +165,12 @@ function Frame() {
           <Route path="/enquiries" element={<Leads />} />
           <Route path="/pipeline" element={<Pipeline />} />
           <Route path="/quotes" element={<Quotations />} />
+          {/* Phase 3 — delivery. These have no demo layout on purpose: a design of the redirect table
+              that is not connected to a redirect table teaches nobody anything, and the two screens
+              read the site's own files. Offline they say so, in words, rather than showing an empty
+              table that looks like data. */}
+          <Route path="/redirects" element={<LiveRedirects />} />
+          <Route path="/media" element={<LiveMedia />} />
           <Route
             path="/theme"
             element={

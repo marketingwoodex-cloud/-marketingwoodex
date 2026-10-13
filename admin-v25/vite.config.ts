@@ -28,6 +28,11 @@ export default defineConfig(({ isSsrBuild }) => ({
     cors: true,
     proxy: {
       "/api": { target: API_TARGET, changeOrigin: false, secure: false },
+      /* The media library shows pictures at the addresses the pages use (`/assets/img/…`). They are
+         served by the same host in production, and by the dev PHP server (its document root is the
+         repository root) in development — so proxying them is what makes the library look the same in
+         both. Without it a designer reviews the media screen as a wall of broken images. */
+      "/assets": { target: API_TARGET, changeOrigin: false, secure: false },
     },
   },
   preview: {

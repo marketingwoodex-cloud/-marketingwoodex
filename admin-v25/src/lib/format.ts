@@ -38,5 +38,12 @@ export function timeAgo(iso: string, now = new Date()): string {
   return d.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
 }
 
+/** A file size in the unit a person would say it in. */
+export const bytes = (n: number) => {
+  if (n < 1024) return `${n} B`;
+  if (n < 1024 * 1024) return `${(n / 1024).toFixed(n < 10240 ? 1 : 0)} KB`;
+  return `${(n / 1024 / 1024).toFixed(1)} MB`;
+};
+
 export const dateShort = (iso: string) =>
   new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "2-digit" });

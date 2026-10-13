@@ -468,3 +468,49 @@ table.data td.num { font-variant-numeric: tabular-nums; text-align: right; }
   font-size: var(--fs-12);
 }
 .prototype-banner b { font-weight: 700; }
+
+/* ============================================================== PHASE 3 · delivery */
+
+/* The ok tone: "the server said…" after a save. Green and quiet — a save is not an alarm. */
+.note.ok {
+  background: var(--ok-soft, var(--accent-soft));
+  color: var(--ok, var(--accent-ink));
+  border-color: color-mix(in srgb, var(--ok, var(--accent)) 30%, transparent);
+}
+.note-title { display: block; font-weight: 650; margin-bottom: 2px; }
+
+/* ------------------------------------------------------------------ media library
+   A grid of real files. The tile is a fixed 4:3 frame so a library of mixed sizes reads as a library
+   rather than as a wall of different heights; `object-fit: cover` crops instead of distorting, and the
+   caption carries what a grid of pictures cannot say: size, folder, derivatives, alt text, and the pages
+   that would break if this file moved. */
+.media-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: var(--s-3);
+}
+.media-tile {
+  margin: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+  overflow: hidden;
+}
+.media-tile img {
+  display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover;
+  background: repeating-conic-gradient(var(--surface-2) 0% 25%, var(--surface-3, var(--surface-2)) 0% 50%) 50% / 16px 16px;
+}
+.media-tile figcaption { padding: var(--s-2) var(--s-3) var(--s-3); }
+
+/* The alt queue: one image, one sentence, one decision. It is a list and not a grid because the work is
+   reading and writing, and a grid invites clicking without reading. */
+.alt-queue { display: flex; flex-direction: column; gap: var(--s-2); }
+.alt-row {
+  display: flex; align-items: flex-start; gap: var(--s-3);
+  padding: var(--s-3); border: 1px solid var(--border); border-radius: var(--r-md);
+  background: var(--surface);
+}
+.alt-row img {
+  width: 96px; height: 72px; flex: 0 0 96px; object-fit: cover;
+  border-radius: var(--r-sm); border: 1px solid var(--border);
+}

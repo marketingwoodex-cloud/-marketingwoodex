@@ -154,6 +154,94 @@ export interface LeadsData {
   stages?: string[];
 }
 
+export interface RedirectRule {
+  id: number;
+  from: string;
+  to: string;
+  type: number;
+  match: "exact" | "prefix";
+  src: string;
+  on: boolean;
+  hits: number;
+  lastHit: string | null;
+}
+
+export interface RedirectsData {
+  redirects: RedirectRule[];
+  cfg: { www: boolean; spam: boolean };
+  planCount: number;
+  /** One verdict per rule, in the same order as `redirects`. */
+  test: { i: number; status: "ok" | "off" | "warn" | "bad"; msg: string }[];
+  missed: number;
+  imported: { rules: number; misses: number } | null;
+  htaccess: { exists: boolean; writable: boolean; published: boolean };
+  lines: number;
+}
+
+export interface MissRow {
+  path: string;
+  n: number;
+  last: string;
+  ref: string;
+  redirect: { to: string; type: number; on: boolean } | null;
+}
+
+export interface MissesData {
+  rows: MissRow[];
+  total: number;
+  suggestions: { from: string; to: string; type: number; match: "exact"; src: string; on: boolean; n: number }[];
+}
+
+export interface MediaFile {
+  url: string;
+  name: string;
+  folder: string;
+  size: number;
+  mtime: string;
+  alt: string;
+  checked: boolean;
+  sizes: number[];
+  used: string[];
+}
+
+export interface MediaData {
+  files: MediaFile[];
+  folders: string[];
+  trash: number;
+  missingAlt: number;
+  tree: { rel: string; label: string; writable: boolean }[];
+  import: { alt: number; trash: number } | null;
+}
+
+export interface AltQueueData {
+  missing: MediaFile[];
+  usedOn: Record<string, number>;
+  total: number;
+  checked: number;
+}
+
+export interface TrashRow {
+  id: number;
+  url: string;
+  bytes: number;
+  why: string;
+  at: string;
+  by: string;
+  onDisk: boolean;
+  addressFree: boolean;
+}
+
+/** What a write returns when the v2.1 policy says a Manager's change waits for the Master. */
+export interface PendingResult {
+  pending: true;
+  message: string;
+  approval: { id: number; summary: string; at: string };
+}
+
+export function isPending(v: unknown): v is PendingResult {
+  return typeof v === "object" && v !== null && (v as PendingResult).pending === true;
+}
+
 /** One line for the shell: what the API is, whether it is usable, and why not if it is not. */
 export function linkLabel(health: Health | null, link: string, reason: string): string {
   if (link === "checking") return "Checking api/v2…";

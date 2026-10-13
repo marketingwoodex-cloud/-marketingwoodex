@@ -15,6 +15,8 @@ import { Shell } from "./components/Shell";
 import { SignIn } from "./screens/SignIn";
 import { LiveDashboard } from "./screens/LiveDashboard";
 import { LiveLeads } from "./screens/LiveLeads";
+import { LiveRedirects } from "./screens/LiveRedirects";
+import { LiveMedia } from "./screens/LiveMedia";
 import { SessionCtx, type SessionValue } from "./lib/session";
 
 /* This file is built by vite for Node (see package.json#scripts.smoke), so `process` exists at run
@@ -124,6 +126,9 @@ const asUser = {
 let htmlSignedOut = "";
 let htmlLiveDash = "";
 let htmlLiveLeads = "";
+let htmlRedirects = "";
+let htmlRedirectsOffline = "";
+let htmlMedia = "";
 try {
   htmlSignedOut = renderToString(
     <MemoryRouter initialEntries={["/dashboard"]}>
@@ -167,6 +172,44 @@ try {
   failures.push(`live leads → ${(err as Error).message}`);
 }
 
+try {
+  htmlRedirects = renderToString(
+    <MemoryRouter initialEntries={["/redirects"]}>
+      <SessionCtx.Provider value={session("live", asUser)}>
+        <LiveRedirects />
+      </SessionCtx.Provider>
+    </MemoryRouter>,
+  );
+} catch (err) {
+  failures.push(`live redirects → ${(err as Error).message}`);
+}
+
+/* The same screen with no API: it must not render an empty rules table that reads as "there are no
+   redirects", because the whole point of the screen is that the list is the server's. */
+try {
+  htmlRedirectsOffline = renderToString(
+    <MemoryRouter initialEntries={["/redirects"]}>
+      <SessionCtx.Provider value={session("offline", null)}>
+        <LiveRedirects />
+      </SessionCtx.Provider>
+    </MemoryRouter>,
+  );
+} catch (err) {
+  failures.push(`redirects without an API → ${(err as Error).message}`);
+}
+
+try {
+  htmlMedia = renderToString(
+    <MemoryRouter initialEntries={["/media"]}>
+      <SessionCtx.Provider value={session("live", asUser)}>
+        <LiveMedia />
+      </SessionCtx.Provider>
+    </MemoryRouter>,
+  );
+} catch (err) {
+  failures.push(`live media → ${(err as Error).message}`);
+}
+
 /* A signed-out app must not leak a namespace behind an "everyone gets one" banner, and a live screen
    must not render while it is still loading, or the first paint would show an empty table as truth. */
 for (const [name, ok] of [
@@ -175,6 +218,12 @@ for (const [name, ok] of [
   ["the live dashboard renders its loading state, not zeros", htmlLiveDash.includes("Loading…")],
   ["the live dashboard does not claim numbers before the server answers", !htmlLiveDash.includes("kpi-value")],
   ["the live leads screen renders its loading state", htmlLiveLeads.includes("Loading…")],
+  ["the live redirects screen renders its loading state", htmlRedirects.includes("Loading…")],
+  [
+    "a redirects screen with no API says so instead of showing an empty table",
+    htmlRedirectsOffline.includes("api/v2 is not answering") && !htmlRedirectsOffline.includes("Publish"),
+  ],
+  ["the live media screen renders its loading state", htmlMedia.includes("Loading…")],
 ] as [string, boolean][]) {
   if (ok) pass++;
   else failures.push(`assertion failed: ${name}`);

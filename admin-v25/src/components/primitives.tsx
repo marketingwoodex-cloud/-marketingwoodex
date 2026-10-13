@@ -1,7 +1,7 @@
 /* Small, dependency-free primitives. Styling comes entirely from tokens.css. */
 import type { ReactNode, ButtonHTMLAttributes, InputHTMLAttributes } from "react";
 import clsx from "clsx";
-import { AlertTriangle, Info, Inbox } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Info, Inbox } from "lucide-react";
 
 export function Card({
   title,
@@ -41,13 +41,16 @@ export function Pill({
   children,
   tone = "neutral",
   plain,
+  title,
 }: {
   children: ReactNode;
   tone?: "neutral" | "ok" | "warn" | "danger" | "info" | "accent";
   plain?: boolean;
+  /** The full text when the pill shows an abbreviation — a tooltip, not a second line. */
+  title?: string;
 }) {
   return (
-    <span className={clsx("pill", plain && "plain")} data-tone={tone}>
+    <span className={clsx("pill", plain && "plain")} data-tone={tone} title={title}>
       {children}
     </span>
   );
@@ -89,9 +92,11 @@ type BtnProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: "default" | "primary" | "ghost";
   size?: "md" | "sm";
   iconOnly?: boolean;
+  /** A leading icon, or the only content of an `iconOnly` button. */
+  icon?: ReactNode;
 };
 
-export function Btn({ variant = "default", size = "md", iconOnly, className, ...rest }: BtnProps) {
+export function Btn({ variant = "default", size = "md", iconOnly, icon, className, children, ...rest }: BtnProps) {
   return (
     <button
       {...rest}
@@ -102,7 +107,10 @@ export function Btn({ variant = "default", size = "md", iconOnly, className, ...
         iconOnly && "icon",
         className,
       )}
-    />
+    >
+      {icon}
+      {children}
+    </button>
   );
 }
 
@@ -196,17 +204,30 @@ export function Empty({ title, sub }: { title: string; sub?: string }) {
   );
 }
 
+/**
+ * An honest message in the page — not a toast, because the thing it says is usually a *reason*: why the
+ * numbers are empty, why a rule cannot be published, what the server did after a save.
+ *
+ * `title` exists because the sentence a person needs first should not be buried in a paragraph: "3 rules
+ * point nowhere" is the message, and the explanation belongs under it.
+ */
 export function Note({
   children,
   tone = "info",
+  title,
 }: {
-  children: ReactNode;
-  tone?: "info" | "warn" | "danger";
+  children?: ReactNode;
+  tone?: "info" | "ok" | "warn" | "danger";
+  title?: ReactNode;
 }) {
+  const Icon = tone === "warn" || tone === "danger" ? AlertTriangle : tone === "ok" ? CheckCircle2 : Info;
   return (
-    <div className={clsx("note", tone === "warn" && "warn")}>
-      {tone === "warn" ? <AlertTriangle size={16} /> : <Info size={16} />}
-      <div>{children}</div>
+    <div className={clsx("note", tone !== "info" && tone)}>
+      <Icon size={16} />
+      <div>
+        {title ? <strong className="note-title">{title}</strong> : null}
+        {children}
+      </div>
     </div>
   );
 }
