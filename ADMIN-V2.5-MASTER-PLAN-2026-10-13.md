@@ -2,7 +2,7 @@
 
 **Target version:** Admin **v2.5 Pro** — the React + TypeScript rebuild of the Woodex master dashboard
 **Strategy:** rewrite the front end · version the back end · preserve the data
-**Based on:** `PROJECT-ANALYSIS-REPORT-2026-10-13.pdf` (26 pages, 13 branches, 365 API actions measured)
+**Based on:** `docs/PROJECT-ANALYSIS-REPORT-2026-10-13.pdf` (26 pages, 13 branches, 365 API actions measured)
 **Prototype:** `admin-v25/` — 5 working screens, all 65 routes registered, 70 render checks passing
 **Date:** 13 October 2026 · **Branch:** `arena/4150341e-marketingwoodex`
 
@@ -871,7 +871,7 @@ Six weeks of work gets the entire daily-operations surface — leads, pipeline, 
 chat, approvals — onto the new admin with the Critical findings closed. Nine more weeks add content,
 automation, system control and the v2.5 features that make the product worth paying for.
 
-Everything measured here is in `PROJECT-ANALYSIS-REPORT-2026-10-13.pdf`; everything designed here is
+Everything measured here is in `docs/PROJECT-ANALYSIS-REPORT-2026-10-13.pdf`; everything designed here is
 runnable in `admin-v25/`.
 
 ---
