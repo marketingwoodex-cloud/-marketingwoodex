@@ -517,7 +517,7 @@ working as intended, not a gap hidden by a fallback.
 ### Phase 3 — Content, assets and delivery · **in progress** · 4 weeks
 
 *Measured at this commit:* `tests/run.php` **995 passed · 0 failed · 13 skipped** · `tests/conformance.mjs`
-**83 · 0** · php-lint **157 files** · `admin-v25` smoke **146 checks · 65 routes** · legacy bridge **150 of 365
+**84 · 0** · php-lint **157 files** · `admin-v25` smoke **147 checks · 65 routes** · legacy bridge **150 of 365
 actions** (41%). Migrations **000–014** are written and none has run on a database yet.
 
 Three generators are part of this phase's gate rather than a convention, because each one replaces a second
@@ -769,6 +769,17 @@ At every step the v2.1 admin remains functional against the same data.
 One zip per release with a manifest: git SHA, build hash, asset hashes, migration list applied, QA
 result summary, and the rollback commit. The v2.1 audit's packaging gate failed because QA results
 did not match a packaged artifact; the manifest is the fix.
+
+**The first such artifact exists.** `node tools/make-release.mjs` builds `woodex-master-P25/` — the live
+150-page site untouched, plus `api/v2/`, `db/` and the built console at `admin-next/` — refuses to ship a
+credential or to build on a broken console, appends the one `.htaccess` block the console's deep links need,
+and writes `MANIFEST.json`: the git SHA, the console's own build stamp (the same string the bundle shows,
+passed to the build so the two cannot disagree), file counts and sizes, the SHA-256 of the zip and of
+`api/v2/index.php`, the migration list, and a hash per pack document. It is published as release
+[`p25`](https://github.com/marketingwoodex-cloud/-marketingwoodex/releases/tag/p25) and committed in the
+repository; a public Drive copy of the same bytes is linked from the pack's README. Rebuilding one commit
+differs by exactly one line — the build stamp, which carries the minute it was built — so the artifact is
+bound to *commit + stamp*, and both are recorded rather than assumed.
 
 ### 14.4 Getting in, and knowing which build you are looking at
 

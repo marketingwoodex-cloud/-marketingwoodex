@@ -1,18 +1,18 @@
 {
   "release": "woodex-master-P25",
-  "builtAt": "2026-10-13T23:51Z",
-  "gitSha": "67c4aa5be5cbe6bff7ac18cc8926d88973a373d9",
-  "gitDirty": true,
+  "builtAt": "2026-10-13T23:55Z",
+  "gitSha": "6afa0ecece8b0d6219a7bfe42db91f346c9519da",
+  "gitDirty": false,
   "branch": "arena/4150341e-marketingwoodex",
   "apiVersion": "2.5.0-p1",
-  "console": "67c4aa5+ · built 2026-10-13 23:51Z",
+  "console": "6afa0ec · built 2026-10-13 23:54Z",
   "consoleBase": "/admin-next/",
   "payload": {
     "zip": "woodex-master-P25.zip",
-    "zipBytes": 29221054,
-    "zipSha256": "5be77ca38bb3635edb23a0bf3132830d578306fc6f693ce91dfdc12b37fab438",
+    "zipBytes": 29221051,
+    "zipSha256": "8b0be6911a9aae26a8cb3ec9b9a116d37a265caea6b480547fad3794fdffe7e4",
     "files": 720,
-    "bytes": 45184554,
+    "bytes": 45184552,
     "byArea": {
       "assets": 335,
       "api": 114,
@@ -118,7 +118,7 @@
   },
   "files": {
     "api/v2/index.php": "87a1f801943f6ccc805473e118db9309780bfe6bcdda0d2d7aa1c3f484404e7c",
-    "admin-next/index.html": "38ac9973043260cb8aeaa454a483cf4ab108e642f2edc5139089a4fa1cef2a43"
+    "admin-next/index.html": "0deaa17f0fa9ad90c34d36d6c9ffae8f55378e5e487c3c5f2f9161000e8fc8b8"
   },
   "migrations": [
     "000_platform.sql",
@@ -139,13 +139,13 @@
   ],
   "docs": {
     "MEMORY-PLAN.md": {
-      "sha256": "edffda2a0c6f26cdca393c7be74ff5b6226f412751dea4af16812673edd1f6f2",
-      "bytes": 24049,
+      "sha256": "ffd01f9169d3b7f9178ce812f0b99d482dd8998683c1fe5d36655d3e2f108fe0",
+      "bytes": 25401,
       "from": "WORK-SANDBOX-MEMORY.md"
     },
     "README.md": {
-      "sha256": "07c8572c97b429f3c19c67df7a7961cedba3aae1f51f9398921b8907de36850e",
-      "bytes": 4402
+      "sha256": "0108b9b5b3c41afd4ceb032e3cb8621edc570ee6d0cc4fe7ac339d38e001e658",
+      "bytes": 4881
     },
     "CHANGELOG.md": {
       "sha256": "ee99e296f32dee37ab8ba305650914d44fdb6b52a067d32efbbc62af42cecaf6",

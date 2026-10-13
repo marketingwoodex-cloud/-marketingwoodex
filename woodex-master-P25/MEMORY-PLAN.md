@@ -221,12 +221,16 @@ appending a marked block that serves the console's deep links its own `index.htm
 is not an install: on a host that has never run v2.1 there is no database, and `wx-install.php` (included)
 is the way to make one.
 
-**How it is built.** `node tools/make-release.mjs` — deterministic, refuses to ship a credential
+**How it is built.** `node tools/make-release.mjs` — repeatable, refuses to ship a credential
 (`_private/db.json`, `.env`, `*.pem` except the CA bundle, anything named like a secret), refuses to build
 if the console's build fails, appends the `.htaccess` block, zips with `-X` (no host metadata) and writes
 `MANIFEST.json` with the git SHA, the console's own build stamp, file counts, SHA-256 of `api/v2/index.php`,
 the console's `index.html`, and the zip itself, plus the migration list. `--dry-run` lists without copying;
-`--skip-console` reuses an existing build.
+`--skip-console` reuses an existing build. Two builds of one commit differ by exactly one line — the
+console's build stamp, which carries the minute the bundle was built and is deliberately kept (it is what
+makes a screenshot arguable). The payload is therefore bound to *commit + stamp*, and the manifest records
+both, so no claim of byte-identical rebuilds is being made: an earlier claim in this project was wrong, and
+the comment in `tools/make-release.mjs` says why.
 
 **Upgrading a live site** (File Manager, not Hostinger's "Import website" tool):
 
@@ -238,6 +242,14 @@ the console's `index.html`, and the zip itself, plus the migration list. `--dry-
 5. leave `/admin/` alone: it is the v2.1 admin and the rollback path until coverage is complete;
 6. check the three generation facts from §2 on the host once, then roll back by restoring the previous
    release zip.
+
+**Where the pack lives.** Committed in this repository at `woodex-master-P25/` (so the GitHub link is the
+file's own page: <https://github.com/marketingwoodex-cloud/-marketingwoodex/tree/arena/4150341e-marketingwoodex/woodex-master-P25>, direct download <https://github.com/marketingwoodex-cloud/-marketingwoodex/raw/arena/4150341e-marketingwoodex/woodex-master-P25/woodex-master-P25.zip>), published as release
+[`p25`](https://github.com/marketingwoodex-cloud/-marketingwoodex/releases/tag/p25), and copied to a public Drive folder for sharing:
+<https://drive.google.com/drive/folders/12rpZKxUpHibqPZNMLi1VBMxlmWgTpBuz>. The release carries notes and a
+tag rather than the file as an asset: `uploads.github.com` is blocked from the build sandbox (`github.com`
+and `api.github.com` are not), so the payload was committed and pushed instead — the same bytes, with the
+SHA-256 in the manifest to check either copy against.
 
 Rollback for any single file: `git show <sha>:<path>` on this branch — the manifest records the SHA the
 payload was built from.
