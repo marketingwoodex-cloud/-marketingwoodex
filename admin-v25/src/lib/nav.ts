@@ -101,6 +101,7 @@ export const ROUTES: NavRoute[] = [
   { id: "builder", label: "Page builder", icon: SquarePen, section: "website", group: "Pages & builder", roles: OAE, hint: "Visual canvas and block editor" },
   { id: "library", label: "Section library", icon: Blocks, section: "website", group: "Pages & builder", roles: OAE, hint: "51 reusable section blocks" },
   { id: "global", label: "Header & footer", icon: PanelLeft, section: "website", group: "Pages & builder", roles: OAE, hint: "Site-wide chrome and menus" },
+  { id: "site-theme", label: "Site theme", icon: Palette, section: "website", group: "Pages & builder", roles: OAE, hint: "The colours and type every page is drawn from" },
   { id: "heroes", label: "Hero slides", icon: Rows3, section: "website", group: "Pages & builder", roles: OAE, hint: "Home page hero carousel" },
   { id: "redirects", label: "Redirects", icon: RefreshCw, section: "website", group: "Pages & builder", roles: OAE, hint: "36-rule plan and 404 log" },
   { id: "blog", label: "Blog", icon: BookOpen, section: "website", group: "Content", roles: OAE, hint: "48 published articles" },

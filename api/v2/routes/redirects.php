@@ -90,10 +90,16 @@ function wx_route_redirects_save_do(array $ctx): array
  *
  * Idempotent: addresses that already have a rule are skipped and counted, because somebody's decision
  * about where `/page/` goes is newer information than a list compiled from an export.
+ *
+ * The gate carries `redirects_save`, not `redirects_plan`. Both are real v2.1 actions in the same
+ * permission group, but only `save` matches a verb the policy queues — so in v2.1 a Manager could merge
+ * 36 addresses and rewrite `.htaccess` with no approval, while typing the same rules by hand did need one.
+ * Nothing about the business rule suggests that; it was a gap, and this is the deliberate tightening of it.
+ * The route's own `wx_require_user('redirects_plan', …)` in the handler is unchanged.
  */
 function wx_route_redirects_plan(array $ctx): array
 {
-    return wx_appr_route('redirects_plan', $ctx, 'redirects', 'wx_route_redirects_plan_do', static fn() => wx_route_redirects_plan_do($ctx));
+    return wx_appr_route('redirects_save', $ctx, 'redirects', 'wx_route_redirects_plan_do', static fn() => wx_route_redirects_plan_do($ctx));
 }
 
 function wx_route_redirects_plan_do(array $ctx): array

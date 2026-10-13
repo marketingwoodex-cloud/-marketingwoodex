@@ -21,6 +21,7 @@ import { LiveContent } from "./screens/LiveContent";
 import { LiveGlobal } from "./screens/LiveGlobal";
 import { LivePages } from "./screens/LivePages";
 import { LiveLibrary } from "./screens/LiveLibrary";
+import { LiveSiteTheme } from "./screens/LiveSiteTheme";
 import { SessionCtx, type SessionValue } from "./lib/session";
 
 /* This file is built by vite for Node (see package.json#scripts.smoke), so `process` exists at run
@@ -141,6 +142,8 @@ let htmlPages = "";
 let htmlPagesOffline = "";
 let htmlLibrary = "";
 let htmlLibraryOffline = "";
+let htmlTheme = "";
+let htmlThemeOffline = "";
 try {
   htmlSignedOut = renderToString(
     <MemoryRouter initialEntries={["/dashboard"]}>
@@ -326,6 +329,32 @@ try {
   failures.push(`section library without an API → ${(err as Error).message}`);
 }
 
+try {
+  htmlTheme = renderToString(
+    <MemoryRouter initialEntries={["/site-theme"]}>
+      <SessionCtx.Provider value={session("live", asUser)}>
+        <LiveSiteTheme />
+      </SessionCtx.Provider>
+    </MemoryRouter>,
+  );
+} catch (err) {
+  failures.push(`live site theme → ${(err as Error).message}`);
+}
+
+/* With no API the theme screen must not show a form: the values it would show are the *current* colours of
+   the live stylesheet, and inventing them would be inventing the site's design. Nor may it offer Save. */
+try {
+  htmlThemeOffline = renderToString(
+    <MemoryRouter initialEntries={["/site-theme"]}>
+      <SessionCtx.Provider value={session("offline", null)}>
+        <LiveSiteTheme />
+      </SessionCtx.Provider>
+    </MemoryRouter>,
+  );
+} catch (err) {
+  failures.push(`site theme without an API → ${(err as Error).message}`);
+}
+
 /* A signed-out app must not leak a namespace behind an "everyone gets one" banner, and a live screen
    must not render while it is still loading, or the first paint would show an empty table as truth. */
 for (const [name, ok] of [
@@ -359,6 +388,12 @@ for (const [name, ok] of [
   [
     "the pages screen with no API offers no editor to save into",
     !htmlPagesOffline.includes("New page") && !htmlPagesOffline.includes("Save page"),
+  ],
+  ["the site theme screen renders its loading state", htmlTheme.includes("Reading the stylesheet")],
+  [
+    "the site theme with no API says so and offers no Save",
+    htmlThemeOffline.includes("Not connected") && !htmlThemeOffline.includes("Save the theme")
+      && !htmlThemeOffline.includes("Back to the site's own theme"),
   ],
   [
     "the header & footer screen offers no Apply when it cannot reach the API",

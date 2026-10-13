@@ -185,11 +185,28 @@ function wx_routes(): array
         ['GET',    'pages',                           'pages', 'wx_route_pages_list',      null],
         ['GET',    'pages/search',                    'pages', 'wx_route_pages_search',    null],
         ['GET',    'pages/history',                   'pages', 'wx_route_pages_changes',   null],
-        ['POST',   'pages',                           'pages', 'wx_route_pages_write',     null],
+        /* The write carries v2.1's builder action `save`, not an invented one: v2.1 queued a Manager's page
+           save for the Master (`APPR_BUILDER_WRITE`), and a route named `page_write` would have slipped past
+           the policy's verbs and quietly stopped asking — a Manager could edit any of the 150 pages while
+           needing approval to change a section block. */
+        ['POST',   'pages',                           'pages', 'wx_route_pages_write',     'save'],
+        /* `null` in this column means "no v2.1 action to check the permission against" — a v2.5-only route,
+           checked by role in its handler. The approval action it passes to the gate is a different thing and
+           is `page_rollback`, which the policy names as never queued with its reason. */
         ['POST',   'pages/rollback',                  'pages', 'wx_route_pages_rollback',  null],
         ['POST',   'pages/new',                       'pages', 'wx_route_pages_new',       'page_new'],
         ['GET',    'pages/{rel}',                     'pages', 'wx_route_pages_get',       null],
-        ['POST',   'pages/{rel}/restore',             'pages', 'wx_route_pages_restore',   null],
+        ['POST',   'pages/{rel}/restore',             'pages', 'wx_route_pages_restore',   'restore'],
+
+        /* ------------------------------------------------------------- the site theme
+           v2.1's builder wrote a `theme.css` every page linked. This site has no such file — the live pages
+           load `/assets/site.css` — so the port keeps the settings and their validation and writes a marked
+           block into the stylesheet the site actually reads. `theme` is on the builder's write list, and the
+           gate is told so: a Manager's theme change waits for the Master here as it did there.
+           The rollback's action is named in `WX_APPR_NEVER` with its reason — an undo does not queue. */
+        ['GET',    'theme',                           'theme', 'wx_route_theme_get',       'theme_get'],
+        ['POST',   'theme',                           'theme', 'wx_route_theme_save',      'theme'],
+        ['POST',   'theme/rollback',                  'theme', 'wx_route_theme_rollback',  null],
 
         ['GET',    'media',                           'media', 'wx_route_media_list',      'media_list'],
         ['GET',    'media/alt',                       'media', 'wx_route_media_alt_queue', 'media_alt'],

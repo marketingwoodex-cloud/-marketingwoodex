@@ -192,6 +192,10 @@ function wx_legacy_bridged(): array
         'save'             => ['pages', 'wx_route_pages_write', []],
         'page_new'         => ['pages', 'wx_route_pages_new', []],
         'restore'          => ['pages', 'wx_route_pages_restore', []],
+        /* Phase 3 — the site theme. v2.1's builder screen called these two names; the theme itself now lands
+           in the stylesheet the live pages load, which is why the port is not a copy of the old file. */
+        'theme_get'        => ['theme', 'wx_route_theme_get', []],
+        'theme'            => ['theme', 'wx_route_theme_save', []],
     ];
 }
 

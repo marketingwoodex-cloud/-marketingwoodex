@@ -251,9 +251,64 @@ ok(wx_appr_needed('editor', 'media_save'), 'turning the developer switch on gate
 ok(!wx_appr_needed('editor', 'blocks_theme'), 'a builder action not on the list is not gated');
 ok(wx_appr_needed('editor', 'media_delete', 'builder'), 'a builder write on the list is gated');
 ok(!wx_appr_needed('editor', 'builder_me', 'builder'), 'reading the builder is never gated');
+
+
 eq(wx_appr_cfg()['expire_days'], 30, 'the expiry window is configurable');
 unset($GLOBALS['WX_ONCE'][wx_request_generation()]['settings.all']);
 
+/* The audit that found a gate with nothing behind it. POST /pages arrived with the action `page_write` — a
+   name no v2.1 verb matches — so a Manager would have edited any of the 150 pages with no approval while
+   needing one to change a section block. The route now carries the builder's own `save`, and these tests
+   are what keeps the pair honest: the action queues in the source the route says it is. */
+ok(wx_appr_needed('admin', 'save', 'builder'), 'a manager saving a page waits, exactly as in the builder');
+/* The policy is keyed on the *pair* of action and source, and this is the pair that shows it: `theme` is a
+   builder action and not an admin verb, `proj_meta` is the other way round. Losing the source in
+   `wx_appr_route()` would have made the builder's theme change stop queueing without a single test failing. */
+ok(!wx_appr_needed('admin', 'theme'), 'the builder theme name is not an admin verb');
+ok(wx_appr_needed('admin', 'theme', 'builder'), 'but as a builder action it queues');
+ok(!wx_appr_needed('admin', 'proj_meta', 'builder'), 'and an admin-only change is not queued as a builder one');
+ok(!wx_appr_needed('owner', 'save', 'builder'), 'the Master does not queue for their own page save');
+ok(wx_appr_needed('admin', 'restore', 'builder'), 'restoring a page version waits');
+ok(wx_appr_needed('admin', 'page_new', 'builder'), 'adding a page waits');
+ok(!wx_appr_needed('admin', 'page_rollback', 'builder'), 'a rollback is an undo, so it does not wait for the Master');
+
+/* v2.5's never-queued list. Every entry is a decision with a reason, and a route that passes one of these
+   actions has a gate that is a pass-through *on purpose* rather than by accident. */
+ok(!wx_appr_needed('admin', 'cms_published'), 'publishing an article does not queue — it never did in v2.1');
+ok(!wx_appr_needed('admin', 'media_sizes'), 'regenerating image derivatives does not queue');
+ok(!wx_appr_needed('admin', 'create_quote_draft'), 'a draft revision of a quotation does not queue');
+ok(wx_appr_needed('admin', 'quote_status'), 'but sending the revised quotation does');
+ok(wx_appr_needed('admin', 'redirects_save'), 'merging the redirect plan queues under the rule it rewrites');
+ok(!wx_appr_needed('admin', 'pages_export'), 'an unknown action still falls through to the verb rules');
+{
+    /* Read the list out of the policy itself rather than restating it here: a test that hard-codes the
+       entries passes after somebody adds a fifth one *without* a reason, which is the failure that matters.
+       The reason is anything after the arrow — a bare `true` or a one-word value would be tautology, so the
+       check is that each key maps to a sentence, and that each key really does skip the queue. */
+    $src = (string) file_get_contents(__DIR__ . '/../api/v2/lib/approvals.php');
+    $body = '';
+    if (preg_match('/const WX_APPR_NEVER = \[(.*?)\n\];/s', $src, $m)) {
+        $body = $m[1];
+    }
+    $entries = [];
+    preg_match_all("/'([a-z0-9_]+)'\s*=>\s*'([^']+)'/", $body, $m2, PREG_SET_ORDER);
+    foreach ($m2 as $row) {
+        $entries[$row[1]] = $row[2];
+    }
+    ok(count($entries) >= 4, 'the never-queued list reads back out of the policy: ' . implode(', ', array_keys($entries)));
+    $queuedByMistake = [];
+    $tooShort = [];
+    foreach ($entries as $action => $reason) {
+        if (wx_appr_needed('admin', (string) $action)) {
+            $queuedByMistake[] = (string) $action;
+        }
+        if (strlen($reason) < 20) {
+            $tooShort[] = (string) $action;
+        }
+    }
+    eq(implode(',', $queuedByMistake), '', 'every entry in the never-queued list really does skip the queue');
+    eq(implode(',', $tooShort), '', 'every entry says why, in a sentence');
+}
 group('An approval request says what it is');
 eq(wx_appr_summary('admin', 'media_save', ['title' => 'Hero photo']), 'Change media: Hero photo', 'a save reads as a plain sentence');
 eq(wx_appr_summary('admin', 'page_delete', ['title' => 'Winter offers']), 'Delete page: Winter offers', 'a delete says delete');
@@ -1304,6 +1359,97 @@ try {
    is the part that decides whether a save is allowed at all — the part that has to be right before it can
    touch a file. */
 skip('saving, creating and restoring pages need migration 010 and the site tree');
+
+/* ============================================================== the site theme */
+group('The site theme lands in the stylesheet the site actually loads');
+
+/* The file the live pages read. v2.1's builder wrote `assets/theme.css`, which this site does not have and
+   nothing links — a port that wrote it would have looked finished and changed nothing on the site. */
+eq(WX_THEME_FILE, 'assets/site.css', 'the theme is written into the stylesheet the pages link');
+ok(!is_file(WX_SITE_ROOT . '/assets/theme.css'), 'and not into the theme.css that nothing loads any more');
+
+$css = "/*! Woodex */\n:root{--navy:#0b1b33;--ink:#12212f}\nbody{color:var(--ink)}\nmain h1{font-size:44px}\n";
+
+/* --- v2.1's validation, value for value ------------------------------------------------------------------ */
+$clean = wx_theme_clean(['--wx-navy' => '#0b1b33']);
+eq($clean['vars']['--wx-navy'], '#0b1b33', 'a colour comes through as chosen');
+eq($clean['import'], '', 'no Google font chosen means no import line');
+eq($clean['faces'], '', 'and no font files');
+eq(wx_theme_clean(['--wx-navy' => '   '])['vars'], [], 'an empty value clears the setting instead of writing a blank');
+
+throws('VALIDATION', 'vars', static fn() => wx_theme_clean(['--wx-navy' => 'navy']), 'a colour must be a hex value');
+throws('VALIDATION', 'vars', static fn() => wx_theme_clean(['--wx-navy' => '#0b1b33;} body{display:none']), 'a colour cannot close the block');
+throws('VALIDATION', 'vars', static fn() => wx_theme_clean(['--wx-h1' => '44']), 'a size must carry its unit');
+throws('VALIDATION', 'vars', static fn() => wx_theme_clean(['--wx-h1' => '44px;} html{display:none']), 'a size cannot close the block either');
+throws('VALIDATION', 'vars', static fn() => wx_theme_clean(['--wx-preset' => 'Ink Theme']), 'a preset name is letters, numbers and dashes');
+throws('VALIDATION', 'vars', static fn() => wx_theme_clean(['--wx-font' => 'Comic Sans']), 'a font must be one the site can serve');
+throws('VALIDATION', 'vars', static fn() => wx_theme_clean(['--wx-navy' => '#0b1b33', '--wx-nope' => '1']), 'a setting that is not in the list is refused');
+
+/* A Google font is a family and a weight list, and the family goes into the import rather than the value. */
+$g = wx_theme_clean(['--wx-font' => 'g:Playfair Display:400;700']);
+ok(str_contains($g['import'], 'family=Playfair+Display:wght@400;700'), 'a Google font becomes an import URL');
+eq($g['vars']['--wx-font'], '"Playfair Display",system-ui,sans-serif', 'and the value stored is the family itself');
+
+/* A self-hosted family brings its own faces; Plus Jakarta Sans is the site's own, so it brings none. */
+$localFont = wx_theme_clean(['--wx-font' => 'poppins']);
+eq(substr_count($localFont['faces'], '@font-face'), 4, 'a self-hosted family brings four weights');
+ok(str_contains($localFont['faces'], '/assets/fonts/poppins-600.woff2'), 'with the file names the site already has');
+eq(wx_theme_clean(['--wx-font-head' => 'jakarta'])['faces'], '', 'the site\'s own font needs no faces of its own');
+
+/* --- what the generated block says ----------------------------------------------------------------------- */
+$block = wx_theme_block(['--wx-navy' => '#143a5c'], '', '');
+ok(str_contains($block, '--wx-navy:#143a5c;'), 'the block carries the value');
+ok(str_contains($block, '--navy:var(--wx-navy)'), 'and the alias that makes the site read it');
+ok(str_contains($block, '--navy-2:var(--wx-navy)'), 'including the second name v2.1 gave the same colour');
+
+/* v2.1 accepted a surface colour and only used it when a cream was chosen as well — a control that did
+   nothing. The surface is aliased on its own here, and the cream still wins when both are set. */
+$surface = wx_theme_block(['--wx-surface' => '#f4efe6'], '', '');
+ok(str_contains($surface, '--surface:var(--wx-surface)'), 'a surface colour reaches --surface on its own');
+$cream = wx_theme_block(['--wx-surface' => '#f4efe6', '--wx-cream' => '#efe6d6'], '', '');
+ok(substr_count($cream, '--surface:') === 2 && strpos($cream, '--surface:var(--wx-cream)') > strpos($cream, '--surface:var(--wx-surface)'),
+    'and a cream overrides it rather than fighting it');
+
+/* The preset names the set of values; it is not a value the design reads, so it stays out of the CSS. */
+$withPreset = wx_theme_block(wx_theme_clean(['--wx-navy' => '#0b1b33', '--wx-preset' => 'ink'])['vars'], '', '');
+ok(!str_contains($withPreset, '--wx-preset'), 'the preset name is kept out of the stylesheet');
+
+/* --- applying, reading back, and removing ---------------------------------------------------------------- */
+$applied = wx_theme_apply($css, wx_theme_clean(['--wx-navy' => '#143a5c']));
+ok(str_starts_with($applied, '/*! Woodex */'), 'the stylesheet keeps its own first byte');
+ok(str_contains($applied, ':root{--navy:#0b1b33;--ink:#12212f}'), 'and its own token block, untouched');
+ok(str_contains($applied, 'var(--wx-navy)'), 'while adding the chosen value below it');
+eq(wx_theme_apply($applied, wx_theme_clean(['--wx-navy' => '#143a5c'])), $applied, 'applying the same settings twice changes nothing');
+eq(wx_theme_strip($applied), $css, 'and removing the theme gives the file back byte for byte');
+eq(wx_theme_strip(wx_theme_apply($applied, wx_theme_clean(['--wx-navy' => '#143a5c']))), $css, 'including after it has been applied twice');
+ok(!str_contains(wx_theme_apply($css, ['vars' => [], 'faces' => '', 'import' => '']), 'wx:theme'), 'clearing every setting leaves no marker behind');
+
+$readBack = wx_theme_vars($applied);
+eq($readBack['--wx-navy'], '#143a5c', 'the settings read back out of the file the site is using');
+eq(wx_theme_vars($css), [], 'and a stylesheet with no theme block reads back as nothing chosen');
+eq(wx_theme_meta($applied)['theme'], true, 'the file is known to carry a theme');
+eq(wx_theme_meta($css)['theme'], false, 'and a file without one is not');
+ok(wx_theme_balanced($applied), 'the block is balanced');
+ok(!wx_theme_balanced("a/* wx:theme:start */\nb"), 'a start marker with no end marker is refused, never guessed at');
+ok(!wx_theme_balanced("/* wx:theme:start */a/* wx:theme:end */\n/* wx:theme:start */b/* wx:theme:end */"), 'and two blocks where there should be one is refused as well');
+
+/* The import goes at the top because @import is only valid before any rule; the values go at the end so
+   they win by order. Both are marked, so a person reading the file can see what the admin wrote. */
+$withImport = wx_theme_apply($css, wx_theme_clean(['--wx-font' => 'g:Inter:400', '--wx-navy' => '#143a5c']));
+ok(str_starts_with($withImport, '/* wx:theme:import:start */'), 'the font import comes before every rule');
+ok(strpos($withImport, '@import') < strpos($withImport, ':root{--navy:#0b1b33'), 'because the spec requires it there');
+ok(strpos($withImport, '/* wx:theme:end */') > strpos($withImport, 'body{color:var(--ink)}'), 'and the values come last, so they win');
+eq(wx_theme_strip($withImport), $css, 'the import is removable too');
+
+/* What the screen is told: which tokens are inside the theme, which are not, and whether the file agrees
+   with the choice. A screen that showed only one of "chosen" and "live" would be confidently wrong. */
+$tokens = wx_theme_tokens();
+ok(isset($tokens['--wx-navy'], $tokens['--wx-font-head'], $tokens['--wx-preset']), 'the settings list is v2.1\'s');
+eq(count(array_filter($tokens, static fn(array $t) => $t['type'] === 'color')), 13, 'with its thirteen colours');
+ok(in_array('--line', wx_theme_untouched(), true), 'and the structural tokens are named as outside the theme');
+
+/* TODO-DB: reading the file, writing it, the record and the history need the site tree and migration 010. */
+skip('applying a theme needs the site tree, the version store and the audit table');
 
 /* ============================================================== report */
 echo "\n";

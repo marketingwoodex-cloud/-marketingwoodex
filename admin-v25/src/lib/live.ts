@@ -522,3 +522,65 @@ export function linkLabel(health: Health | null, link: string, reason: string): 
   }
   return `Live · api/v2 ${health.version} · PHP ${health.php}`;
 }
+
+/* ---------------------------------------------------------------- the site theme (routes/theme.php) */
+
+/** One setting the Theme screen offers, with what it is called, what it does and what the file says. */
+export interface ThemeToken {
+  name: string;
+  type: "color" | "len" | "font" | "name";
+  label: string;
+  /** The custom properties in `assets/site.css` this value is aliased onto. */
+  targets: string[];
+  /** What `_private/theme.json` remembers. */
+  chosen: string;
+  /** What is actually written in the stylesheet the site is serving. */
+  live: string;
+}
+
+export interface ThemeMeta {
+  bytes: number;
+  sha: string;
+  lines: number;
+  theme: boolean;
+  markers: boolean;
+  mtime: string;
+  mtimeEpoch: number;
+}
+
+export interface ThemeVersion {
+  id: number;
+  bytes: number;
+  note: string;
+  at: string;
+  by: string;
+}
+
+export interface ThemeState {
+  file: string;
+  exists: boolean;
+  meta: ThemeMeta | null;
+  chosen: Record<string, string>;
+  live: Record<string, string>;
+  drift: boolean;
+  tokens: ThemeToken[];
+  untouched: string[];
+  fonts: Record<string, string>;
+  local: Record<string, string[]>;
+  history: ThemeVersion[];
+}
+
+export interface ThemeSave {
+  changed: boolean;
+  vars: Record<string, string>;
+  version: number;
+  bytes: number;
+  meta: ThemeMeta;
+}
+
+export interface ThemeRollback {
+  rolledBackTo: number;
+  saved: number;
+  vars: Record<string, string>;
+  meta: ThemeMeta;
+}

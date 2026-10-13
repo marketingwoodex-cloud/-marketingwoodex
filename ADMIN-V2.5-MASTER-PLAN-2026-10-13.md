@@ -515,8 +515,8 @@ working as intended, not a gap hidden by a fallback.
 
 ### Phase 3 — Content, assets and delivery · **in progress** · 4 weeks
 
-*Measured at this commit:* `tests/run.php` **401 passed · 0 failed · 8 skipped** · `tests/conformance.mjs`
-**69 · 0** · php-lint **134 files** · `admin-v25` smoke **87 checks · 65 routes** · legacy bridge **141 of 365
+*Measured at this commit:* `tests/run.php` **463 passed · 0 failed · 9 skipped** · `tests/conformance.mjs`
+**70 · 0** · php-lint **136 files** · `admin-v25` smoke **89 checks · 65 routes** · legacy bridge **143 of 365
 actions** (39%). Migrations **000–013** are written and none has run on a database yet.
 
 Pages · builder bridge · section library · header/footer · heroes · redirects · the full content CMS ·
@@ -549,13 +549,31 @@ never run**, and there is no PHP in the build sandbox, so the gate is a host run
 | The section library, and global sections pushed from one edit | `lib/blocks.php`, `routes/blocks.php`, `db/migrations/013_blocks.sql`, `admin-v25/src/screens/LiveLibrary.tsx` | a block is a piece of a page; a *global* block is inserted **by reference** — the page carries its token — so editing it and pushing rewrites every page that uses it as one batch with one undo. The token is 12 hex and lives in the HTML files, not the row id, which is why a database restore cannot orphan a section |
 | The page editor, and the script rule that guards it | `lib/pageedit.php`, `routes/pages.php` (`POST /pages`, `POST /pages/new`), the editor panel in `LivePages.tsx` | v2.1's audit finding F-05 kept as a rule about *additions*: only the owner may add scripts, embeds or `on…=` handlers to a page, anybody may keep what is there, and a tag the site already uses elsewhere is the site's. Tokens are compared after entity-decoding and whitespace-stripping, so `java&#115;cript:` is the same token as `javascript:`. Plus the optimistic-concurrency rule: a page that changed on the server since it was opened is refused with a 409 rather than overwritten |
 
-**Still to come in this phase:** the last of the builder bridge (`theme_get` and the theme file, the
-builder's own `media`/`media_delete`/`media_usage`/`upload` — the media library already answers those — and
-`fetch_page`/`import_url`, which fetch a public page for the section picker and need the SSRF rules ported
-with them), placements and designs (testimonials and team appear *inside* pages — the API exists, the
-renderer does not yet), the page editor screen, city pages (their publish path is root-level, unlike posts
-and case studies), heroes, forms, the estimator, projects and the Gantt timeline, quote templates, business
-info (`cms_biz_*`), announcements, the AI settings screen, SEO screens and integrations.
+| Delivered — the site theme | Where | Note |
+|---|---|---|
+| v2.1's Theme settings, written into the stylesheet the site actually loads | `lib/theme.php`, `routes/theme.php`, `admin-v25/src/screens/LiveSiteTheme.tsx` on `/site-theme` | v2.1's builder wrote `assets/theme.css` and every page linked it. **This site has no such file** — the live pages link `/assets/site.css` and nothing else — so the port keeps the design surface (the same list of variables, the same validation, value for value) and changes only where the values land: two marked blocks in that stylesheet, the Google-font `@import` at the top where the spec allows it, the values and their aliases at the end where they win by order. Every version is a normal entry in `wx_page_versions` keyed by `assets/site.css`, so the theme is covered by the same history and the same undo as the pages, and clearing every setting removes the blocks and gives the file back byte for byte |
+
+**An audit of the approval policy, and what it found.** Checking that every write route is gated is not
+enough — a gate whose action the policy would never queue is decoration. Two directions are now asserted in
+`tests/conformance.mjs`: every non-GET route either calls the gate or matches `WX_APPR_SKIP`, *and* every
+gated route's action either queues or appears in a new `WX_APPR_NEVER` map with the reason written next to
+it. That found one real hole: `POST /pages` carried the invented action `page_write`, so a Manager could
+edit any of the 150 pages with no approval while needing one to change a section block. The routes that came
+out of the builder now carry the builder's own action names (`save`, `restore`, `page_new`, `theme`) and the
+gate is told the *source* is `builder`, which is the pair v2.1's policy is keyed on. Four actions are gated
+on purpose and never queue, each with its reason in the policy: a rollback is an undo of a change that
+already passed, publishing an article never queued in v2.1, regenerating image derivatives changes nothing
+anybody reads, and a draft revision of a quotation is a copy. One deliberate tightening is recorded as such:
+merging the 36-address redirect plan now queues under `redirects_save`, because typing the same rules by hand
+already did.
+
+**Still to come in this phase:** the last of the builder bridge (the builder's own `media`/`media_delete`/
+`media_usage`/`upload` — the media library already answers those — and `fetch_page`/`import_url`, which fetch
+a public page for the section picker and need the SSRF rules ported with them), placements and designs
+(testimonials and team appear *inside* pages — the API exists, the renderer does not yet), city pages (their
+publish path is root-level, unlike posts and case studies), heroes, forms, the estimator, projects and the
+Gantt timeline, quote templates, business info (`cms_biz_*`), announcements, the AI settings screen, SEO
+screens and integrations.
 
 ### Phase 4 — Automation and intelligence · 3 weeks
 

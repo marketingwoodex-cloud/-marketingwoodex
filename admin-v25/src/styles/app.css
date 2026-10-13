@@ -531,3 +531,9 @@ table.data tr.is-selected { background: var(--accent-soft, rgba(0, 0, 0, 0.05));
 .sec-row { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; display: grid; gap: 8px; }
 .sec-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .sec-head strong { font-size: 13px; }
+
+/* The site theme: one field per token, in the groups the API's own list defines. */
+.theme-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; margin-top: 10px; }
+.theme-field { display: grid; gap: 4px; }
+.theme-field .input { width: 100%; }
+.theme-field input[type="color"] { width: 40px; height: 30px; padding: 2px; border: 1px solid var(--border); border-radius: var(--r-sm); background: var(--surface-2); }

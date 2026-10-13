@@ -31,6 +31,31 @@ const WX_APPR_WRITE = '~(save|submit|delete|send|_new|restore|import|import2|mer
 /** Ones the name does not catch. */
 const WX_APPR_EXTRA_WRITE = ['global_menu', 'global_chrome', 'media_alt', 'proj_meta', 'proj_milestones', 'dbx_row'];
 const WX_APPR_READS = ['crm_wa_status', 'gdata_status'];
+
+/**
+ * v2.5's own decisions about what never waits for the Master — with the reason, in the entry.
+ *
+ * The lists above are v2.1's and are asserted byte-for-byte; this one is where a *new* route records that it
+ * deliberately does not queue, so the decision is visible in the policy instead of being an accident of a
+ * verb not matching a regex. Every entry carries a reason, because the entry is the only thing standing
+ * between a route and silently skipping the queue — and `tests/conformance.mjs` checks both directions:
+ * every gated route's action either queues or appears here, and every entry here has its reason.
+ */
+const WX_APPR_NEVER = [
+    /* A rollback restores a version that was itself written under this policy. It is an undo, not a change,
+       and asking the Master first would leave a mistake live while somebody reads a queue. */
+    'page_rollback' => 'a rollback is an undo of a change that already passed this policy',
+    'theme_rollback' => 'the same undo, for the stylesheet: the version being restored already passed this policy',
+    /* Publishing was never queued in v2.1: "published" is not one of the queued verbs, so an editor's job —
+       write it, publish it — has never needed the Master. Named here so the next person reads a decision. */
+    'cms_published' => 'publishing an article was never queued in v2.1 - "published" is not a queued verb',
+    /* Regenerating an image's derivatives writes files the site derives; it changes no page, no text and no
+       address. It is a repair, and the audit log records it. */
+    'media_sizes' => 'derivatives are files the site derives - repairing them changes nothing anybody reads',
+    /* A draft revision of a quotation is a copy: not the document a client is looking at. Publishing the
+       revision is the change that matters, and that one is queued. */
+    'create_quote_draft' => 'a draft revision is a copy of a document - publishing it is the change',
+];
 const WX_APPR_BUILDER_WRITE = ['save', 'restore', 'theme', 'page_new', 'media_delete', 'blocks_save', 'blocks_delete', 'blocks_import', 'blocks_sync'];
 
 /** The v2.1 defaults, used verbatim when the settings cannot be read. */
@@ -80,6 +105,9 @@ function wx_appr_needed(string $role, string $action, string $src = 'admin'): bo
     }
     if ($src === 'builder') {
         return in_array($action, WX_APPR_BUILDER_WRITE, true);
+    }
+    if (isset(WX_APPR_NEVER[$action])) {
+        return false;
     }
     if (preg_match(WX_APPR_SKIP, $action) || in_array($action, WX_APPR_READS, true)) {
         return false;
@@ -365,11 +393,11 @@ function wx_appr_gate(string $action, array $payload, callable $run)
  * @param string $file the route file the replay must require before calling $fn
  * @param string $fn   the handler that performs the change (never the wrapper: a replay is already decided)
  */
-function wx_appr_route(string $action, array $ctx, string $file, string $fn, callable $run): array
+function wx_appr_route(string $action, array $ctx, string $file, string $fn, callable $run, string $src = 'admin'): array
 {
     wx_require_user($action);
     $body = is_array($ctx['body'] ?? null) ? $ctx['body'] : [];
-    return wx_appr_wrap($action, $file, $fn, $ctx, wx_appr_summary('admin', $action, $body), $run);
+    return wx_appr_wrap($action, $file, $fn, $ctx, wx_appr_summary($src, $action, $body), $run, $src);
 }
 
 /**
@@ -378,10 +406,13 @@ function wx_appr_route(string $action, array $ctx, string $file, string $fn, cal
  * The payload a replay needs is the request: which file, which handler, which params, which body.
  * Nothing else - a rendered page or a signed-in session must never be stored in the queue.
  */
-function wx_appr_wrap(string $action, string $file, string $fn, array $ctx, ?string $summary, callable $run)
+function wx_appr_wrap(string $action, string $file, string $fn, array $ctx, ?string $summary, callable $run, string $src = 'admin')
 {
     return wx_appr_gate($action, [
-        'src' => 'admin',
+        /* The source matters as much as the action: v2.1 had one list for the admin screens and another for
+           the page builder, and the same action name can be queued in one and not the other. Routes that came
+           from the builder say `builder` so the business rule those screens carried travels with them. */
+        'src' => $src,
         'file' => $file,
         'fn' => $fn,
         'method' => (string) ($ctx['method'] ?? 'POST'),

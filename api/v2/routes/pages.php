@@ -94,9 +94,11 @@ function wx_route_pages_get(array $ctx): array
  * `<!doctype html>` is a page somebody is about to publish broken, so it is refused before the file is
  * touched. This is the "publish an article" path.
  */
+/* The action is v2.1's builder `save`, and the source is `builder`: that is the pair the policy is keyed
+   on, and it is what makes a Manager's page edit wait for the Master exactly as it did in the builder. */
 function wx_route_pages_write(array $ctx): array
 {
-    return wx_appr_route('page_write', $ctx, 'pages', 'wx_route_pages_write_do', static fn() => wx_route_pages_write_do($ctx));
+    return wx_appr_route('save', $ctx, 'pages', 'wx_route_pages_write_do', static fn() => wx_route_pages_write_do($ctx), 'builder');
 }
 
 function wx_route_pages_write_do(array $ctx): array
@@ -128,7 +130,7 @@ function wx_route_pages_write_do(array $ctx): array
 /** POST /pages/new — a page that does not exist yet, at an address nobody has taken. */
 function wx_route_pages_new(array $ctx): array
 {
-    return wx_appr_route('page_new', $ctx, 'pages', 'wx_route_pages_new_do', static fn() => wx_route_pages_new_do($ctx));
+    return wx_appr_route('page_new', $ctx, 'pages', 'wx_route_pages_new_do', static fn() => wx_route_pages_new_do($ctx), 'builder');
 }
 
 function wx_route_pages_new_do(array $ctx): array
@@ -153,7 +155,7 @@ function wx_route_pages_new_do(array $ctx): array
 /** POST /pages/{rel}/restore — put one version back (the restore is itself a version). */
 function wx_route_pages_restore(array $ctx): array
 {
-    return wx_appr_route('page_restore', $ctx, 'pages', 'wx_route_pages_restore_do', static fn() => wx_route_pages_restore_do($ctx));
+    return wx_appr_route('restore', $ctx, 'pages', 'wx_route_pages_restore_do', static fn() => wx_route_pages_restore_do($ctx), 'builder');
 }
 
 function wx_route_pages_restore_do(array $ctx): array
@@ -168,6 +170,11 @@ function wx_route_pages_restore_do(array $ctx): array
  *
  * This is the header-across-150-pages undo. `batch` is what the write returned, so the person undoes
  * *that change* and not "the last five minutes", which may contain a colleague's work.
+ */
+/**
+ * The one gate in the API that is deliberately a pass-through, and it says so in the policy: a rollback
+ * restores a version that was itself written under this policy, so it is an undo rather than a change
+ * (`WX_APPR_NEVER`). Asking the Master first would leave a mistake live while somebody reads a queue.
  */
 function wx_route_pages_rollback(array $ctx): array
 {

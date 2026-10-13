@@ -825,6 +825,60 @@ check("every unsafe route either passes the approval gate or is explicitly never
   assertEq(ungated.length, 0, `unsafe routes that bypass the queue without the policy saying so: ${ungated.join(", ")}`);
 });
 
+/* The mirror image, and it was a real bug: a route wrapped in the gate whose action the policy would never
+   queue has a gate that is decoration. POST /pages passed `page_write` — a name no verb matches — so a
+   Manager could edit any of the 150 pages with no approval, while needing one to change a section block.
+   The same read now checks the direction the first check cannot see. */
+check("a gated route's action can actually be queued, or the policy says why not", () => {
+  const approvals = read("api/v2/lib/approvals.php");
+  const write = /WX_APPR_WRITE\s*=\s*'(~[\s\S]*?~)'/.exec(approvals)[1];
+  const writeRe = new RegExp(write.slice(1, -1));
+  const skip = /WX_APPR_SKIP\s*=\s*'(~[\s\S]*?~)'/.exec(approvals)[1];
+  const skipRe = new RegExp(skip.slice(1, -1));
+  const listOf = (name) => {
+    const m = new RegExp(name + "\\s*=\\s*\\[([^\\]]*)\\]").exec(approvals);
+    return m ? m[1].split(",").map((x) => x.trim().replace(/^'|'$/g, "")).filter(Boolean) : [];
+  };
+  /* `WX_APPR_NEVER` is a map of action → reason, with comments between the entries, so its keys are read
+     with a pattern rather than by splitting on commas: an entry whose reason stopped parsing would silently
+     turn into an "unexplained" entry, which is the one thing the list must never contain. */
+  const neverBody = /const WX_APPR_NEVER = \[([\s\S]*?)\n\];/.exec(approvals);
+  const never = neverBody ? [...neverBody[1].matchAll(/'([a-z0-9_]+)'\s*=>/g)].map((m) => m[1]) : [];
+  const entries = neverBody ? [...neverBody[1].matchAll(/'([a-z0-9_]+)'\s*=>\s*'([^']{10,})'/g)].map((m) => m[1]) : [];
+  const extra = listOf("WX_APPR_EXTRA_WRITE");
+  const builder = listOf("WX_APPR_BUILDER_WRITE");
+  const reads = listOf("WX_APPR_READS");
+  const queued = (action, src) => {
+    if (never.includes(action) || skipRe.test(action) || reads.includes(action)) return false;
+    if (src === "builder") return builder.includes(action);
+    return extra.includes(action) || writeRe.test(action);
+  };
+  /* "The policy says why not" has three forms, and all three are checked facts rather than absences: the
+     never-queued map (with its reason), v2.1's own skip/read lists (asserted byte-identical above), and a
+     queued action for either source. Anything else is a gate that cannot fire. */
+  const whyNot = (action) => never.includes(action) || skipRe.test(action) || reads.includes(action);
+
+  const decorative = [];
+  for (const r of routes) {
+    if (["GET", "HEAD", "OPTIONS"].includes(r.method)) continue;
+    const src = readCode(`api/v2/routes/${r.file}.php`);
+    const at = src.indexOf(`function ${r.fn}(`);
+    if (at < 0) continue;
+    const next = src.indexOf("\nfunction ", at + 10);
+    const body = src.slice(at, next === -1 ? undefined : next);
+    const m = /wx_appr_route\s*\(\s*'([a-z0-9_]+)'/.exec(body);
+    if (!m) continue;
+    const action = m[1];
+    if (queued(action, "admin") || queued(action, "builder") || whyNot(action)) continue;
+    decorative.push(`${r.method} /${r.pattern} (${action})`);
+  }
+  assertEq(decorative.length, 0, `gated routes whose action can never be queued: ${decorative.join(", ")}`);
+
+  /* Every entry in the never-queued list has to carry a reason. The list is the only place standing between
+     a route and a silent skip, and "we do not queue this" without a why is how that happens. */
+  assertEq(entries.length, never.length, `WX_APPR_NEVER entries without a reason: ${never.filter((a) => !entries.includes(a)).join(", ")}`);
+});
+
 check("a change is permission-checked before it is filed for approval", () => {
   const offenders = [];
   for (const f of readdirSync(join(ROOT, "api/v2/routes"))) {
