@@ -293,3 +293,43 @@
   s.defer = true;
   document.head.appendChild(s);
 })();
+
+/* Announcement bar — one file the console writes (Header & footer → Announcement bar).
+   The bar is fetched rather than built into 150 pages, so switching it on, editing it or hiding it again
+   is one write and no page is rewritten. `v` is the version: it busts the fetch cache and it is the key a
+   visitor's dismissal is remembered under, so an edit shows the new bar to everyone who closed the old one.
+   Progressive: with no file, no network or no JavaScript, the page is exactly what it is now. */
+(function () {
+  if (!window.fetch || /^\/(admin|builder)\//.test(location.pathname)) return;
+  fetch("/assets/announce.json", { cache: "no-cache" }).then(function (r) { return r.ok ? r.json() : null; }).then(function (a) {
+    if (!a || !a.on || !a.text) return;
+    var k = "wx-ann-" + (a.v || 0);
+    try { if (sessionStorage.getItem(k)) return; } catch (e) {}
+    var b = document.createElement("div");
+    b.className = "wx-ann wx-ann--" + (a.style || "navy");
+    b.setAttribute("role", "region");
+    b.setAttribute("aria-label", "Announcement");
+    var t = document.createElement("span");
+    t.textContent = a.text;
+    b.appendChild(t);
+    if (a.link) {
+      var l = document.createElement("a");
+      l.href = a.link;
+      l.textContent = a.linkText || "Learn more";
+      if (/^https:/.test(a.link) && a.link.indexOf(location.host) < 0) { l.target = "_blank"; l.rel = "noopener"; }
+      b.appendChild(l);
+    }
+    var x = document.createElement("button");
+    x.type = "button";
+    x.setAttribute("aria-label", "Close announcement");
+    x.innerHTML = "&times;";
+    b.appendChild(x);
+    x.onclick = function () {
+      b.remove();
+      document.documentElement.classList.remove("wx-has-ann");
+      try { sessionStorage.setItem(k, "1"); } catch (e) {}
+    };
+    document.body.insertBefore(b, document.body.firstChild);
+    document.documentElement.classList.add("wx-has-ann");
+  }).catch(function () {});
+})();

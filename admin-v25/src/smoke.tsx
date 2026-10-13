@@ -19,7 +19,7 @@ import { LiveLeads } from "./screens/LiveLeads";
 import { LiveRedirects } from "./screens/LiveRedirects";
 import { LiveMedia } from "./screens/LiveMedia";
 import { LiveContent } from "./screens/LiveContent";
-import { LiveGlobal } from "./screens/LiveGlobal";
+import { AnnounceBar, LiveGlobal } from "./screens/LiveGlobal";
 import { LivePages } from "./screens/LivePages";
 import { LiveLibrary } from "./screens/LiveLibrary";
 import { LiveSiteTheme } from "./screens/LiveSiteTheme";
@@ -28,6 +28,7 @@ import { LiveHeroes } from "./screens/LiveHeroes";
 import { LiveForms } from "./screens/LiveForms";
 import { LiveEstimator } from "./screens/LiveEstimator";
 import { LiveTemplates } from "./screens/LiveTemplates";
+import { LiveBusiness } from "./screens/LiveBusiness";
 import { DocPreview, numberedItems } from "./components/DocPreview";
 import { amountInWords } from "./lib/format";
 import { demoFixture } from "./lib/demo";
@@ -37,6 +38,7 @@ import { LiveUpdates } from "./screens/LiveUpdates";
 import { DemoBanner, DemoDoor } from "./App";
 import { SessionCtx, type SessionValue } from "./lib/session";
 import { linkLabel, linkPill } from "./lib/live";
+import type { BizData, CompanyData } from "./lib/live";
 
 /* This file is built by vite for Node (see package.json#scripts.smoke), so `process` exists at run
    time. TypeScript does not know that without @types/node, and pulling a Node type package into a
@@ -181,10 +183,16 @@ let htmlDemoHeroes = "";
 let htmlDemoOffline = "";
 let htmlTplOffline = "";
 let htmlTplDemo = "";
+let htmlBizOffline = "";
+let htmlBizDemo = "";
+let bzBiz: BizData | null = null;
+let bzCompany: CompanyData | null = null;
 let htmlDoc = "";
 let wordsTests: [string, boolean][] = [];
 let htmlGlobal = "";
 let htmlGlobalOffline = "";
+let htmlAnnOffline = "";
+let htmlAnnDemo = "";
 let htmlPages = "";
 let htmlPagesOffline = "";
 let htmlLibrary = "";
@@ -547,6 +555,19 @@ try {
     );
   htmlTplOffline = at(session("offline", null), <LiveTemplates />);
   htmlTplDemo = at(session("offline", null, true), <LiveTemplates />);
+
+  /* The business info screen, and the same two states. Its fixtures are read directly for the company half:
+     the letterhead is behind a tab, and a server render cannot click one. */
+  htmlBizOffline = at(session("offline", null), <LiveBusiness />);
+  htmlBizDemo = at(session("offline", null, true), <LiveBusiness />);
+
+  /* The announcement bar's own panel: on this host there is no API and no fixture for `/chrome/announce`,
+     and the honest answer in both cases is that it cannot be read — not a preview strip of a bar nobody
+     saved, and no button that would pretend to save it. */
+  htmlAnnOffline = at(session("offline", null), <AnnounceBar />);
+  htmlAnnDemo = at(session("offline", null, true), <AnnounceBar />);
+  bzBiz = demoFixture("/business") as BizData;
+  bzCompany = demoFixture("/business/company") as CompanyData;
 
   const tpls = demoFixture("/quotations/templates") as {
     company: { name: string; tagline: string; address: string; phones: string; email: string; web: string; signName: string; signTitle: string };
@@ -944,6 +965,17 @@ for (const [name, ok] of [
     "the header & footer screen offers no Apply when it cannot reach the API",
     htmlGlobalOffline.includes("api/v2 is not answering") && !htmlGlobalOffline.includes("Check what would change"),
   ],
+  /* The announcement panel. Its two failure modes are opposite and both were real: a screen that draws a
+     bar it cannot save, and a save that reports success about a bar the site has no code to draw. Neither
+     half can be invented here — with no answer there is nothing to preview, and no button that pretends. */
+  [
+    "the announcement panel does not draw a bar it cannot read",
+    htmlAnnOffline.includes("api/v2 is not answering") &&
+      !htmlAnnOffline.includes("What the site draws") &&
+      !htmlAnnOffline.includes("Save &amp; publish") &&
+      htmlAnnDemo.includes("api/v2 is not answering") &&
+      !htmlAnnDemo.includes("What the site draws"),
+  ],
   /* The Forms screen. Two facts per page, not one — and the one that decides the screen is where a page's
      enquiry goes. Without an API it must show neither a form list nor a zero. */
   [
@@ -1058,6 +1090,30 @@ for (const [name, ok] of [
   [
     "the forms and heroes screens in demo mode show their samples too",
     htmlDemoForms.includes("Netlify function") && htmlDemoHeroes.includes("Home slider"),
+  ],
+  /* The business info screen: offline-honest, and in demo mode it says where what the website says came
+     from — the one thing v2.1 could not show, and the reason a change could update nothing and still
+     report success. */
+  [
+    "the business info screen is offline-honest, and shows where the website's details were read from",
+    htmlBizOffline.includes("api/v2 is not answering") &&
+      !htmlBizOffline.includes("Main phone") &&
+      htmlBizDemo.includes("Main phone") &&
+      htmlBizDemo.includes("Read off index.html") &&
+      htmlBizDemo.includes("+92 322 4000768") &&
+      htmlBizDemo.includes("Check the site") &&
+      htmlBizDemo.includes("Update the website") &&
+      !htmlBizDemo.includes("api/v2 is not answering"),
+  ],
+  [
+    "the letterhead the sample bills with: two banks, the wallets, the highest number already used",
+    bzCompany?.company.banks.length === 2 &&
+      String(bzCompany?.company.wallets[0].name) === "JazzCash" &&
+      String(bzCompany?.company.signers[0].name) === "Imtiaz Ahmad" &&
+      bzCompany?.used === 10143 &&
+      bzCompany?.bankUse.includes("interior") === true &&
+      bzBiz?.site.socialRow === 0 &&
+      bzBiz?.days.includes("Mon–Sat") === true,
   ],
   /* The templates screen and the document it produces. The screen is offline-honest like the rest; in demo it
      shows the samples; and the document is drawn with the sample's own numbers rather than a stub. */

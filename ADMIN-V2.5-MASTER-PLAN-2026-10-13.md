@@ -299,7 +299,8 @@ Phase **P0** is the prototype already in this repository.
 | `updates`, `notify` | Client updates | P3 | `admin-notify.js` | `/notifications` |
 | `projects`, `timeline` | Delivery | P3 | `admin-sales.js`, new | `/projects` |
 | `templates` | Quote templates | **P3 ✓** | `admin-print*.js`, `admin-sales.js` Templates | `/quotations/templates` (alias of `/templates`) |
-| `business`, `integrations` | Company and connectors | P3 | `admin-fields.js`, `admin-settings.js` | `/company`, `/connectors` |
+| `business` | Company, banks, legal details and the letterhead | **P3 ✓** | `admin-fields.js` (business), `sales-lib.php` (`company_save`) | `/business` (alias `/company`) and `/business/company` |
+| `integrations` | 22 connectors and API keys | P3 | `admin-settings.js` (rewritten from hard-coded cards) | `/connectors` |
 | `seo`, `speed`, `health`, `seoagent` | Findability and quality | P4 | `admin-seo.js`, `admin-seo38.js`, `admin-speed.js`, `admin-media.js`, `admin-seoagent.js` | `/seo`, `/speed`, `/health`, `/seo/agent` |
 | `aicenter`, `train`, `aireport` | AI control | P4 | `admin-aicenter.js`, `admin-train.js`, `admin-aia.js` | `/ai`, `/ai/knowledge`, `/ai/report` |
 | `whahub`, `wainsights`, `wauto`, `offers`, `connections` | WhatsApp suite | P4 | `admin-wahub.js`, `admin-wains.js`, `admin-p18g.js`, `admin-offers.js`, `admin-p38wa.js` | `/whatsapp/*` |
@@ -515,8 +516,8 @@ working as intended, not a gap hidden by a fallback.
 
 ### Phase 3 — Content, assets and delivery · **in progress** · 4 weeks
 
-*Measured at this commit:* `tests/run.php` **887 passed · 0 failed · 13 skipped** · `tests/conformance.mjs`
-**79 · 0** · php-lint **154 files** · `admin-v25` smoke **143 checks · 65 routes** · legacy bridge **150 of 365
+*Measured at this commit:* `tests/run.php` **995 passed · 0 failed · 13 skipped** · `tests/conformance.mjs`
+**83 · 0** · php-lint **157 files** · `admin-v25` smoke **146 checks · 65 routes** · legacy bridge **150 of 365
 actions** (41%). Migrations **000–014** are written and none has run on a database yet.
 
 Three generators are part of this phase's gate rather than a convention, because each one replaces a second
@@ -635,10 +636,16 @@ already did.
 |---|---|---|
 | The screens built in this phase, with sample data behind a label that cannot be missed | `admin-v25/src/lib/demo.ts` (fixtures keyed by API path), `useLive()`, `DemoDoor`/`DemoBanner` in `App.tsx` | A console that reads a real API shows nothing at all where there is no API — a laptop, a sandbox, a hosted preview — and the one thing a preview must never do is let somebody think they are looking at their own figures. So demo mode is *asked for* (`?demo=1`, or the door on any screen that is saying the host is not answering) and never inferred; the shell says **demo data**; a banner above every screen says no part of it came from the server and offers the way out; and a screen whose data nobody has invented yet keeps its honest "not answering" notice, which is how the next slice announces itself. The fixtures are typed against the same interfaces the server's answers are, so when a shape changes the sample stops compiling rather than quietly becoming a nicer product than the product. Also fixed here: a failed `GET /me` used to turn a settled "host not answering" into a sign-in form — a door that cannot open, inviting a password into nothing |
 
+| Delivered — business info, read off the site instead of out of a copy of the defaults | Where | Note |
+|---|---|---|
+| The phone number, the address, the hours and the socials on every page, and the letterhead every document prints | `api/v2/lib/business.php` (`wx_biz_*`, `wx_company_*`), `api/v2/routes/business.php` (`/business`, `/business/company`), `admin-v25/src/screens/LiveBusiness.tsx` on `/business` (alias `/company`) | v2.1 answered *"what does the website say?"* out of its own stored copy of the defaults — on this site, whose footer opens at 9:30 while that record said 10:00, every replacement matched nothing and the screen still reported success. The baseline is the site now: what a real page says, or what was last applied, and the answer carries `source` so the screen can name which one it is showing. The edit goes through the pair engine as **one batch that returns its own undo** (`POST /pages/history/{batch}/rollback`), with the WhatsApp number swapped through a sentinel so the digits-only phone pairs can never paste the office number into a `wa.me` link, and pairs deduped by `from\0to`. The second half is the letterhead documents print from: banks, wallets, signers and the next quote/invoice number, refused when it is at or below the highest number already used |
+| Delivered — the announcement bar, and both halves of the site that draw it | Where | Note |
+|---|---|---|
+| The thin bar above the header — on or off, the words, an optional link, three colours — the same file v2.1's site read | `api/v2/lib/announce.php`, `api/v2/routes/chrome.php` (`GET\|POST /chrome/announce`), `admin-v25/src/screens/LiveGlobal.tsx` (Header & footer → Announcement bar), `assets/site.js` + `assets/site.css` (the two halves), `assets/announce.json` (runtime state, not in git) | The feature was working in the **older copy** of this site and absent from the files `index.html` actually links, so the console could save an announcement no page could draw — the exact shape of "the screen says saved and nothing appeared". Both halves ship here, re-aimed at this design: the header is `position:fixed`, so the bar offsets it by its own 36px (and the mobile menu with it) rather than pushing a flowing header down with a margin. The screen reports which half is missing, and how many pages load the script, instead of promising a bar. The write is the atomic JSON store — v2.1's `file_put_contents(…, LOCK_EX)` truncated before it locked, so a page fetched during a save could get half a file and show nothing — the **version moves only when the announcement changed**, because it is the key a visitor's dismissal is remembered under, and the record is v2.1's six keys so the older site still renders the same file. A conformance check runs the shipped block against a stub browser and asserts the bar it puts on the page |
+
 **Still to come in this phase:**
-business info (`cms_biz_*`), announcements (`cms_announce_*`), the AI settings in the CMS (`cms_ai_*`), SEO
-screens and integrations. The builder's 19 actions are all accounted for: 17 bridged, 2 named above as
-decisions.
+the AI settings in the CMS (`cms_ai_*`), SEO screens and integrations. The builder's 19 actions are all
+accounted for: 17 bridged, 2 named above as decisions.
 
 ### Phase 4 — Automation and intelligence · 3 weeks
 

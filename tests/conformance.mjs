@@ -18,6 +18,7 @@ import { readFileSync, readdirSync, existsSync, statSync } from "node:fs";
 import { join, dirname, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { execFileSync } from "node:child_process";
+import { runInNewContext } from "node:vm";
 
 /* The starter-template generator is imported rather than run as a subprocess: `check()` is synchronous and
    would swallow a promise, which is how an async check passes without asserting anything. Importing it here
@@ -1065,7 +1066,7 @@ check("demo mode answers exactly the screens that have a sample", () => {
   for (const k of ["/projects", "/projects/{id}", "/notifications", "/forms", "/estimator", "/heroes"]) {
     assert(keys.has(k), `there is a sample for ${k}, so a design review can open that screen`);
   }
-  const screens = ["LiveProjects", "LiveTimeline", "LiveUpdates", "LiveForms", "LiveEstimator", "LiveHeroes", "LiveTemplates"];
+  const screens = ["LiveProjects", "LiveTimeline", "LiveUpdates", "LiveForms", "LiveEstimator", "LiveHeroes", "LiveTemplates", "LiveBusiness"];
   const want = [];
   for (const name of screens) {
     const src = readCode(`admin-v25/src/screens/${name}.tsx`);
@@ -1120,6 +1121,205 @@ check("the starter quotation templates are generated from the file the site load
   );
   const kinds = new Set(["design", "fitout", "renovation", "other"]);
   assert(rows.every((t) => kinds.has(t.kind)), "and a kind the server accepts, so nothing is filed under Other by accident");
+});
+
+check("the business details are read off the site, and written as one undoable batch", () => {
+  /* The two things v2.1's Business info screen got wrong, asserted as properties of the code rather than
+     described in a comment. First: it believed a stored copy of its own defaults was what the website
+     said, so on this site — where the footer opens at 9:30 and the default record said 10:00 — every
+     replacement matched nothing and the screen reported success. Second: it wrote the pages one at a time
+     from the browser, so a tab closed halfway left half the pages updated with nothing recording which. */
+  const lib = readCode("api/v2/lib/business.php");
+  const routes = readCode("api/v2/routes/business.php");
+
+  /* The baseline, in the order that makes it honest: what this console applied, else what a real page
+     says, else the defaults — and it says which of the three it used. */
+  const applied = lib.slice(lib.indexOf("function wx_biz_applied("));
+  const body = applied.slice(0, applied.indexOf("\n}\n"));
+  assert(/wx_biz_stored\(WX_BIZ_SETTING_APPLIED\)/.test(body), "the applied copy is read first");
+  assert(/wx_biz_from_site\(/.test(body), "and when nobody has applied anything, a real page is read");
+  assert(/source/.test(body), "the answer carries where it came from, so a screen can name it");
+  assert(/function wx_biz_read_html\(/.test(lib), "reading what a page says is a function, not an assumption");
+
+  /* One batch, one undo: the pages go through the same writer the header/footer screen uses, and the two
+     asset files through the only writer of a non-page file. */
+  const apply = lib.slice(lib.indexOf("function wx_biz_apply("));
+  const applyBody = apply.slice(0, apply.indexOf("\n}\n"));
+  assert(/wx_page_write_many\(/.test(applyBody), "the pages are written as one batch, so the change is one rollback");
+  assert(/wx_write_file_atomic\(/.test(applyBody), "and the site's scripts through the atomic file writer");
+  assert(/wx_biz_store\(WX_BIZ_SETTING_APPLIED/.test(applyBody), "the applied copy is recorded after the write, not before it");
+  assert(/wx_audit\s*\(/.test(routes), "the change is audited by the route that makes it");
+});
+
+check("a business pair is never built out of an empty string", () => {
+  /* The one mistake in this port that would have been catastrophic rather than wrong: `str_replace('', 'x')`
+     inserts between every byte of every page. v2.1 guarded its `add()` helper and nothing else; the
+     sentinel pairs it pushed by hand are guarded here too. Asserted structurally because the property is
+     about a combination of inputs a test can only sample. */
+  const lib = readCode("api/v2/lib/business.php");
+  const fn = lib.slice(lib.indexOf("function wx_biz_pairs("));
+  const body = fn.slice(0, fn.indexOf("\n}\n"));
+  assert(/\$a === '' \|\| \$b === ''/.test(body) || /=== ''/.test(body), "the pair builder refuses an empty side");
+  assert(/\$seen\[/.test(body), "and refuses to emit the same pair twice");
+  assert(/\$sentinel/.test(body), "the WhatsApp number travels through a sentinel, as v2.1's did");
+  /* Every pair goes through `$add()` — the guarded helper. A bare `$pairs[] =` is how an unguarded pair
+     gets in, and the sentinel swap is the one place it would be tempting. */
+  const pushes = (body.match(/\$pairs\[\]\s*=/g) || []).length;
+  assertEq(pushes, 1, "there is exactly one place a pair is pushed — the guarded helper");
+  assert(body.indexOf("=== ''") < body.indexOf("$pairs[] ="), "and the guard is above it, so no pair can skip it");
+  assert((body.match(/\$sentinel/g) || []).length >= 3, "the swap needs both halves and the restore, all through $add()");
+  assert(/\$guard = /.test(body), "and the swap only runs when there is something for it to protect");
+});
+
+check("the announcement bar is one file the site draws, and both halves of it ship", () => {
+  /* The failure this check exists for was structural, and it was real: an announcement could be saved
+     into a file that no page read. The bar's script and its styles lived in the older copy of this site
+     and never made it into the files `index.html` actually links — so "saved" and "the site shows it"
+     were two different facts with nothing tying them together. This ties them: the file the server
+     writes, the script that fetches it, and the stylesheet that dresses it, sharing one set of colour
+     ids, plus the check that the screen reads the endpoint whose file it edits. */
+  const lib = readCode("api/v2/lib/announce.php");
+  const routes = readCode("api/v2/routes/chrome.php");
+  const router = readCode("api/v2/lib/router.php");
+  const screen = readCode("admin-v25/src/screens/LiveGlobal.tsx");
+  const js = read("assets/site.js");
+  const css = read("assets/site.css");
+
+  /* One file, named once, in the server's constant and in the script's fetch. */
+  assert(/WX_ANN_REL = 'assets\/announce\.json'/.test(lib), "the server names the file the browser fetches");
+  assert(js.includes('"/assets/announce.json"'), "and the site's own script fetches exactly that path");
+
+  /* The three colours, in the server's list, the script's class name and the stylesheet's rules — the
+     same three, or a saved colour would arrive unstyled. */
+  const styles = (/WX_ANN_STYLES = \[([^\]]*)\]/.exec(lib)?.[1] || "").match(/'[a-z]+'/g)?.map((x) => x.slice(1, -1)) || [];
+  assertEq(styles.join(","), "navy,wood,cream", "the server's three colours are v2.1's three");
+  assert(js.includes('"wx-ann wx-ann--" + (a.style || "navy")'), "the script builds the class from the stored colour");
+  assert(css.includes(".wx-ann{") && css.includes(".wx-ann a{") && css.includes(".wx-ann button{"), "the stylesheet dresses the bar, its link and its close button");
+  for (const c of styles) {
+    assert(css.includes(`.wx-ann--${c}`), `the ${c} colour has its own rule`);
+  }
+
+  /* The header offset is this design's, not v2.1's: this header is fixed, so the bar moves it down. */
+  assert(/wx-has-ann \.site-header\{top:/.test(css), "the fixed header is moved down by the bar's height, not by a margin");
+  assert(/wx-has-ann \.mobile-panel\{top:/.test(css), "and the mobile menu with it");
+
+  /* Six keys, v2.1's — the older site reads this same file. */
+  assert(/WX_ANN_DEF = \['on' => false, 'text' => '', 'link' => '', 'linkText' => '', 'style' => 'navy', 'v' => 0\]/.test(lib), "the record is v2.1's six keys, so the file stays readable by both consoles");
+  assert(/function wx_ann_clean/.test(lib) && /WX_ANN_LINK_RE/.test(lib), "one validator, with the link rule in one place");
+
+  /* A file, not 150 pages: nothing here may write a page, and the store must be the atomic one — and it
+     must be readable by the web server, which is why the mode is 0644 rather than the private 0640. */
+  assert(!/wx_page_write_many\(|wx_page_write\(/.test(lib), "the announcement never rewrites a page");
+  assert(/new JsonStore\(wx_ann_path\(\), true, 0644\)/.test(lib), "it is written through the atomic store, world-readable");
+
+  /* The site's two halves are the ones this console serves, and it says which half is missing. */
+  assert(/WX_ANN_SCRIPT = 'assets\/site\.js'/.test(lib) && /WX_ANN_STYLE = 'assets\/site\.css'/.test(lib), "both halves are named, so the screen can say which one is absent");
+  assert(/function wx_ann_site_ready/.test(lib) && /function wx_ann_pages/.test(lib), "and both are checked at read time rather than promised");
+
+  /* The endpoints keep v2.1's action names, because the role map and the approval policy are written in
+     terms of them: an Editor may read, a Manager's save waits for the Master. */
+  assert(/wx_require_user\('cms_announce_get', \['owner', 'admin', 'editor'\]\)/.test(routes), "an Editor can see what the bar says");
+  assert(/wx_require_user\('cms_announce_save', \['owner', 'admin'\]\)/.test(routes), "and only a Manager or the Master can change it");
+  assert(/wx_appr_route\('cms_announce_save'/.test(routes), "a Manager's change is queued, as v2.1 queued it");
+  assert(router.includes("'chrome/announce'") && router.includes("'cms_announce_get'") && router.includes("'cms_announce_save'"), "the route table carries both rows under the action names");
+  assert(/'cms_announce_save' =>/.test(readCode("api/v2/lib/approvals.php")), "and the queue names it in words the Master reads");
+  assert(/useLive<AnnounceData>\("\/chrome\/announce"\)/.test(screen), "the screen reads the endpoint it saves to");
+});
+
+/**
+ * The announcement block of `assets/site.js`, run against a stub browser.
+ *
+ * A test that only reads the source can say the class name is spelled the same in three files and nothing
+ * about whether a bar appears. This runs the shipped block — the real bytes of `assets/site.js` — with the
+ * smallest document it needs, and asks what it put on the page. The promise chain is made synchronous on
+ * purpose: `check()` in this file is synchronous, and an async check that never asserts is worse than none.
+ */
+function runAnnounceBlock(file, ann, opts = {}) {
+  const src = file.slice(file.indexOf("/* Announcement bar"));
+  const made = [];
+  const store = new Map(Object.entries(opts.saved || {}));
+  const node = (tag) => {
+    const n = {
+      tag, attrs: {}, children: [], className: "", textContent: "", innerHTML: "", style: {}, parent: null,
+      setAttribute(k, v) { n.attrs[k] = v; },
+      appendChild(c) { c.parent = n; n.children.push(c); return c; },
+      insertBefore(c, ref) {
+        c.parent = n;
+        const i = ref ? n.children.indexOf(ref) : -1;
+        if (i < 0) n.children.unshift(c); else n.children.splice(i, 0, c);
+        return c;
+      },
+      remove() {
+        if (n.parent) n.parent.children = n.parent.children.filter((x) => x !== n);
+      },
+      classList: {
+        set: new Set(),
+        add(c) { this.set.add(c); },
+        remove(c) { this.set.delete(c); },
+        contains(c) { return this.set.has(c); },
+      },
+    };
+    made.push(n);
+    return n;
+  };
+  const documentElement = node("html");
+  const document = {
+    documentElement,
+    body: node("body"),
+    createElement: node,
+  };
+  /* A promise stand-in whose handlers run immediately and whose value flows down the chain. */
+  const sync = (value) => ({ then: (h) => sync(h(value)), catch: () => sync(value) });
+  const fetcher = () => sync({ ok: true, json: () => ann });
+  const context = {
+    document,
+    /* The block asks `window.fetch` whether it can, then calls `fetch` — which is how a browser exposes it. */
+    fetch: fetcher,
+    location: { pathname: "/", host: "woodex.com.pk" },
+    sessionStorage: {
+      getItem: (k) => (store.has(k) ? store.get(k) : null),
+      setItem: (k, v) => store.set(k, v),
+    },
+    window: { fetch: fetcher },
+    sessionStorageKeys: store,
+  };
+  runInNewContext(src, context);
+  return { body: document.body, html: documentElement, store, made };
+}
+
+check("the bar the console writes is the bar the browser draws", () => {
+  const js = read("assets/site.js");
+  const base = { on: true, text: "Free site visit in Lahore this month", link: "/contact/", linkText: "Book now", style: "wood", v: 7 };
+
+  const out = runAnnounceBlock(js, base);
+  assertEq(out.body.children.length, 1, "one bar is inserted, above everything else");
+  const bar = out.body.children[0];
+  assertEq(bar.className, "wx-ann wx-ann--wood", "with the class the stylesheet dresses, in the colour that was saved");
+  assertEq(bar.children[0].textContent, base.text, "the words are the words");
+  assertEq(bar.children[1].href, "/contact/", "the link goes where it was typed");
+  assertEq(bar.children[1].textContent, "Book now", "and is called what it was called");
+  assertEq(bar.attrs["aria-label"], "Announcement", "the region is announced to a screen reader");
+  assertEq(bar.children[2].attrs["aria-label"], "Close announcement", "as is the way to close it");
+  assert(out.html.classList.contains("wx-has-ann"), "and the page is marked, which is what moves the fixed header down");
+
+  /* Off, and nothing is inserted — not an empty bar, not a hidden one. */
+  const off = runAnnounceBlock(js, { ...base, on: false });
+  assertEq(off.body.children.length, 0, "with the bar off nothing is put on the page");
+  assertEq(off.html.classList.contains("wx-has-ann"), false, "and the header is not moved down for it");
+
+  /* A visitor who closed this version is not shown it again; a new version is shown to everyone. */
+  const closed = runAnnounceBlock(js, base, { saved: { ["wx-ann-" + base.v]: "1" } });
+  assertEq(closed.body.children.length, 0, "a bar this visitor already closed stays closed");
+  const edited = runAnnounceBlock(js, { ...base, v: base.v + 1 }, { saved: { ["wx-ann-" + base.v]: "1" } });
+  assertEq(edited.body.children.length, 1, "and an edit — a new version — is shown again, to everybody");
+
+  /* The one design detail that is this site's and not v2.1's: an external link opens in a new tab with
+     `noopener`, an internal one does not. */
+  const ext = runAnnounceBlock(js, { ...base, link: "https://woodex.com.pk/offer/" });
+  assertEq(ext.body.children[0].children[1].target, undefined, "a link to this same host stays in the tab");
+  const other = runAnnounceBlock(js, { ...base, link: "https://example.com/offer/" });
+  assertEq(other.body.children[0].children[1].target, "_blank", "an outside link opens in a new tab");
+  assertEq(other.body.children[0].children[1].rel, "noopener", "without handing it the window");
 });
 
 /* ============================================================== report */

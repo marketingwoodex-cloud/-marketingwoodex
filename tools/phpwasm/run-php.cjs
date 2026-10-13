@@ -92,6 +92,12 @@ if (!fs.existsSync(path.join(process.cwd(), wasmRel))) {
  */
 const MOUNT = ["api", "tests", "db", "frontend-v1/api", "frontend-v1/_database"];
 
+/* Whole files from the site itself, mounted so a test can assert what the console *reads off the site*
+ * rather than against a constant: the home page's footer is where the business details live, and the two
+ * scripts beside it are the files an apply rewrites. Without them the sandbox skips that leg and the only
+ * place it runs is a host — which is the same as never running it in the gate. */
+const MOUNT_FILES = ["index.html", "assets/site.js", "assets/site.css", "assets/js/whatsapp-widget.js"];
+
 function copyTree(from, to, php, stats) {
   for (const entry of fs.readdirSync(from)) {
     if (entry === "node_modules" || entry === ".git" || entry.startsWith(".")) continue;
@@ -121,6 +127,19 @@ function copyTree(from, to, php, stats) {
   // A script outside the mounted trees (an ad-hoc probe at the repo root) still has to be present.
   if (!MOUNT.some((m) => scriptRel.startsWith(m + "/") || scriptRel === m)) {
     try { php.writeFile("/wx/" + scriptRel, fs.readFileSync(scriptAbs)); stats.files += 1; } catch { /* nested dirs handled below */ }
+  }
+  for (const rel of MOUNT_FILES) {
+    const abs = path.join(ROOT, rel);
+    if (!fs.existsSync(abs)) continue;
+    const parts = rel.split("/");
+    let dir = "/wx";
+    for (const p of parts.slice(0, -1)) {
+      dir += "/" + p;
+      try { php.mkdir(dir); } catch { /* exists */ }
+    }
+    php.writeFile("/wx/" + rel, fs.readFileSync(abs));
+    stats.files += 1;
+    stats.bytes += fs.statSync(abs).size;
   }
   for (const rel of MOUNT) {
     const abs = path.join(ROOT, rel);

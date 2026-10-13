@@ -1142,3 +1142,163 @@ export interface ProjClientLink {
   shared: number;
   hasContact: boolean;
 }
+
+/* --------------------------------------- the business's own details (routes/business.php) */
+
+/** The contact details, the hours and the social profiles, as the server stores them. */
+export interface BizRecord {
+  email: string;
+  phone1: string;
+  phone2: string;
+  wa: string;
+  addr1: string;
+  addr2: string;
+  city: string;
+  country: string;
+  days: string;
+  open: string;
+  close: string;
+  facebook: string;
+  instagram: string;
+  linkedin: string;
+  youtube: string;
+  tiktok: string;
+  pinterest: string;
+  x: string;
+  /** Where the "what the site says" copy came from: `stored`, a page's `rel`, or `defaults`. */
+  source?: string;
+  found?: string[];
+}
+
+export interface BizData {
+  /** What the form holds — the draft when there is one, otherwise what the site says. */
+  biz: BizRecord;
+  applied: BizRecord;
+  draft: BizRecord | null;
+  /** `stored` | `index.html` | `defaults` — never a claim, so the screen can name it. */
+  source: string;
+  found: string[];
+  same: boolean;
+  contact: string[];
+  hours: string[];
+  days: string[];
+  socials: Record<string, string>;
+  assets: string[];
+  sample: string;
+  site: { pages: number; socialRow: number };
+}
+
+/** One search/replace pair, and whether applying it is a visible change. */
+export interface BizPair { 0: string; 1: string; 2?: number }
+
+export interface BizScan {
+  pairs: number;
+  scanned: number;
+  skipped: number;
+  changed: { rel: string; url: string; places: number; social: boolean }[];
+  pages: number;
+  places: number;
+  /** Search strings that matched nowhere — the honest half of v2.1's "1,500 places". */
+  none: string[];
+  social: { rows: number; pages: number };
+  truncated: boolean;
+}
+
+export interface BizCheckResult {
+  biz: BizRecord;
+  pairs: BizPair[];
+  scan: BizScan;
+}
+
+export interface BizApplyResult {
+  biz: BizRecord;
+  applied: BizRecord;
+  batch: string;
+  pages: number;
+  places: number;
+  scanned: number;
+  social: number;
+  assets: { rel: string; changed: boolean; reason: string }[];
+  pairs: number;
+  undo: string;
+}
+
+export interface BizFromSite {
+  rel: string;
+  url: string;
+  values: Partial<BizRecord>;
+  found: string[];
+  known: string[];
+  missing: string[];
+}
+
+/** The letterhead documents are printed with, plus the lists and the next number. */
+export interface CompanyRecord {
+  name: string;
+  tagline: string;
+  address: string;
+  phones: string;
+  email: string;
+  web: string;
+  ntn: string;
+  bankName: string;
+  bankTitle: string;
+  bankAccount: string;
+  bankIban: string;
+  signName: string;
+  signTitle: string;
+  prefix: string;
+  wfPrefix: string;
+  nextNo: number;
+  wfNext: number;
+  validDays: number;
+  consultant: string;
+  banks: Record<string, string>[];
+  wallets: Record<string, string>[];
+  signers: Record<string, string>[];
+}
+
+export interface CompanyData {
+  company: CompanyRecord;
+  fields: string[];
+  lists: Record<string, string[]>;
+  bankUse: string[];
+  used: number;
+}
+
+export interface CompanySaveResult {
+  company: CompanyRecord;
+  changed: string[];
+  used: number;
+}
+
+/* ---------------------------------------------------- the announcement bar (routes/chrome.php) */
+
+/**
+ * The six keys v2.1 wrote into `assets/announce.json`, unchanged — the site's own script reads this file
+ * in the browser, so the shape is the contract, not a convenience.
+ */
+export interface AnnounceRecord {
+  on: boolean;
+  text: string;
+  link: string;
+  linkText: string;
+  /** `navy` | `wood` | `cream` — the three the stylesheet dresses. */
+  style: string;
+  /** The version: the fetch cache-buster, and the key under which a visitor's dismissal is remembered. */
+  v: number;
+}
+
+export interface AnnounceData {
+  ann: AnnounceRecord;
+  styles: { id: string; label: string }[];
+  limits: { text: number; link: number; linkText: number };
+  /** The file the browser fetches, which is the one the console writes. */
+  file: string;
+  /** Whether anything has ever been saved, so the screen can say that instead of "off". */
+  exists: boolean;
+  /** Whether the site this console serves carries the code that draws the bar — both halves separately. */
+  site: { script: boolean; style: boolean; ready: boolean; scriptFile: string; styleFile: string };
+  /** How many pages the walker finds, and how many of them load the site's script. */
+  pages: { total: number; script: number };
+}

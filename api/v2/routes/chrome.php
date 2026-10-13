@@ -8,6 +8,7 @@
  *   2. `POST /chrome/preview` — *what would change*, page by page, with the before/after of the region.
  *   3. `POST /chrome` — apply it, as one batch, and answer with the batch id that undoes it.
  *   4. `POST /chrome/replace` — find and replace inside one region, with a dry run.
+ *   5. `GET|POST /chrome/announce` — the announcement bar: one file the site's own script fetches.
  *
  * The preview and the apply are the same edit through the same function, so the number on the button is
  * the number of pages that change. `apply` is the only one that writes.
@@ -216,4 +217,41 @@ function wx_chrome_edit_from_body(array $body): array
         $edit['introAll'] = (bool) $body['introAll'];
     }
     return $edit;
+}
+
+/**
+ * GET /chrome/announce — the bar, the colours it can be, and whether the site can draw it at all.
+ *
+ * A read, so an Editor may open the screen: the announcement is part of the site's chrome, and seeing
+ * what it says is the same permission as seeing the header. Saving it is the Manager's.
+ */
+function wx_route_announce_get(array $ctx): array
+{
+    wx_require_user('cms_announce_get', ['owner', 'admin', 'editor']);
+    return ['data' => wx_ann_state()];
+}
+
+/**
+ * POST /chrome/announce — publish or hide the bar.
+ *
+ * Queued for a Manager like every other change to what the company says in public: the words go on all
+ * 150 pages at once, and there is no draft state to look at first.
+ */
+function wx_route_announce_save(array $ctx): array
+{
+    return wx_appr_route('cms_announce_save', $ctx, 'chrome', 'wx_route_announce_save_do', static fn() => wx_route_announce_save_do($ctx));
+}
+
+function wx_route_announce_save_do(array $ctx): array
+{
+    $u = wx_require_user('cms_announce_save', ['owner', 'admin']);
+    $in = is_array($ctx['body']['ann'] ?? null) ? $ctx['body']['ann'] : [];
+
+    return wx_guard('announce.save', static function () use ($u, $in) {
+        $saved = wx_ann_save($in);
+        /* v2.1's own audit action and its two-word summary, so the activity log reads the same as it did
+           before the screens moved. */
+        wx_audit($u, 'announce.save', $saved['on'] ? 'on' : 'off', ['text' => $saved['text'], 'style' => $saved['style']]);
+        return ['data' => wx_ann_state()];
+    });
 }

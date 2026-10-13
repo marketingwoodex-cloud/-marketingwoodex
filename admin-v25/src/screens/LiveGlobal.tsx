@@ -20,22 +20,26 @@
  * The coverage line at the top is the other number that matters: if 12 pages have no `<footer
  * class="footer">`, a footer edit cannot reach them, and a screen that said "150 pages · done" would be
  * telling the person something untrue.
+ *
+ * The fifth tab is the announcement bar — chrome, but not a region of a page: the site fetches one small
+ * file and draws the bar itself, so that tab writes a file instead of 150 pages and says so.
  */
 import { useEffect, useMemo, useState } from "react";
 import { ArrowRightLeft, Eye, History, RefreshCw, Rocket, Undo2 } from "lucide-react";
-import { Btn, Card, Empty, Note, PageHead, Pill, Seg } from "../components/primitives";
+import { Btn, Card, Empty, Input, Note, PageHead, Pill, Seg, Switch } from "../components/primitives";
 import { api, ApiFailure } from "../lib/api";
 import { useSession } from "../lib/session";
 import {
   isPending, useLive,
+  type AnnounceData, type AnnounceRecord, type PendingResult,
   type ChromeData, type ChromeDiff, type ChromeResult, type ReplaceResult,
 } from "../lib/live";
 import { timeAgo } from "../lib/format";
 
-type Tab = "header" | "menu" | "footer" | "replace";
+type Tab = "header" | "menu" | "footer" | "replace" | "announce";
 
 /** What each tab edits, and which region of the page it is. */
-const TAB_REGIONS: Record<Exclude<Tab, "replace">, string[]> = {
+const TAB_REGIONS: Record<Exclude<Tab, "replace" | "announce">, string[]> = {
   header: ["brand", "cta", "design"],
   menu: ["menu"],
   footer: ["footer"],
@@ -218,7 +222,7 @@ export function LiveGlobal() {
         actions={
           <>
             <Btn icon={<RefreshCw size={15} />} onClick={mine.reload}>Refresh</Btn>
-            <Btn variant="primary" icon={<Eye size={15} />} onClick={check} disabled={busy || tab === "replace"}>
+            <Btn variant="primary" icon={<Eye size={15} />} onClick={check} disabled={busy || tab === "replace" || tab === "announce"}>
               Check what would change
             </Btn>
           </>
@@ -242,6 +246,7 @@ export function LiveGlobal() {
             { id: "menu", label: "Menus" },
             { id: "footer", label: "Footer" },
             { id: "replace", label: "Find & replace" },
+            { id: "announce", label: "Announcement bar" },
           ]}
           value={tab}
           onChange={(t) => { setTab(t as Tab); setDiff(null); setRep(null); }}
@@ -322,6 +327,8 @@ export function LiveGlobal() {
           </div>
         </Card>
       )}
+
+      {tab === "announce" && <AnnounceBar />}
 
       {tab === "replace" && (
         <Card>
@@ -453,6 +460,283 @@ export function LiveGlobal() {
           </div>
         </Card>
       )}
+    </>
+  );
+}
+
+/* ------------------------------------------------------------- the announcement bar
+ *
+ * One small file, `assets/announce.json`, which the site's own script fetches and draws in the browser —
+ * so this tab writes a file rather than 150 pages, and the screen says so instead of implying a site-wide
+ * rewrite. Two things it has to state rather than assume:
+ *
+ *   · whether the site this console serves carries the code that draws the bar at all — both the script
+ *     that fetches it and the stylesheet that dresses it. The feature reached the older copy of this site
+ *     and never the pages this console serves, so "saved" could have meant "and nothing appeared";
+ *   · how many pages load the script, because "every page" is the promise the bar makes.
+ *
+ * The strip in the middle is the bar at the colours the stylesheet uses. It is a preview of a real file,
+ * not a mock of one: everything it draws comes from the values about to be saved.
+ */
+
+/** The three colours, at the values `assets/site.css` uses — see `.wx-ann--*` in that file. */
+const ANN_SKIN: Record<string, { bg: string; fg: string }> = {
+  navy: { bg: "#0a0f1e", fg: "#ffffff" },
+  wood: { bg: "#b8956a", fg: "#ffffff" },
+  cream: { bg: "#f4efe7", fg: "#000000" },
+};
+
+export function AnnounceBar() {
+  const { link, reason } = useSession();
+  const read = useLive<AnnounceData>("/chrome/announce");
+  const [draft, setDraft] = useState<AnnounceRecord | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [note, setNote] = useState<string | null>(null);
+  const [bad, setBad] = useState<ApiFailure | null>(null);
+
+  const data = read.data;
+  const ann = draft ?? data?.ann ?? null;
+  const set = (patch: Partial<AnnounceRecord>) => {
+    if (ann) setDraft({ ...ann, ...patch });
+  };
+  /* Only the five fields a person can change: the version belongs to the server, which moves it exactly
+     when something else here moved. */
+  const dirty =
+    !!draft &&
+    !!data &&
+    (["on", "text", "link", "linkText", "style"] as const).some((k) => draft[k] !== data.ann[k]);
+
+  async function save() {
+    if (!ann) return;
+    setBusy(true);
+    setBad(null);
+    setNote(null);
+    try {
+      const r = await api.post<AnnounceData | PendingResult>("/chrome/announce", { ann });
+      if (isPending(r)) {
+        setNote(r.message);
+      } else {
+        setDraft(null);
+        setNote(
+          r.ann.on
+            ? "Saved. The bar is on every page from the next load — nothing was written to the pages themselves."
+            : "Saved. The bar is hidden on every page from the next load.",
+        );
+        read.reload();
+      }
+    } catch (err) {
+      setBad(err instanceof ApiFailure ? err : new ApiFailure({ code: "INTERNAL", message: String(err) }, 0, "client"));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  /* Three states, and the order matters: "there is no API to ask" is not "the answer had nothing in it",
+     and a panel that said the second when the first is true would be inventing a server. */
+  if (!data && read.error) {
+    return <Note tone="danger" title="The announcement could not be read">{read.error.message}</Note>;
+  }
+  if (!data && (link !== "live" || read.loading)) {
+    return (
+      <Note tone={link === "live" ? "info" : "warn"} title={link === "live" ? "Reading…" : "Not connected"}>
+        {link === "live"
+          ? "Asking the server for the announcement."
+          : link === "offline"
+            ? "api/v2 is not answering, so the bar cannot be read or changed from here."
+            : "Sign in to edit the announcement bar."}
+        {link !== "live" && reason ? ` — ${reason}` : ""}
+      </Note>
+    );
+  }
+  if (!ann || !data) {
+    return <Empty title="No announcement in the answer" sub="The endpoint replied without an announcement, which is a bug rather than an empty site." />;
+  }
+
+  const skin = ANN_SKIN[ann.style] ?? ANN_SKIN.navy;
+  const missing = data.pages.total - data.pages.script;
+
+  return (
+    <>
+      <Card>
+        <div className="row-between">
+          <div className="stack">
+            <span className="field-label">Announcement bar</span>
+            <span className="cell-sub">
+              A thin bar above the header on every page — for offers, holidays or news. Visitors can close it.
+            </span>
+          </div>
+          <Pill tone={ann.on ? "ok" : "neutral"}>{ann.on ? "Live" : "Off"}</Pill>
+        </div>
+
+        <div className="stack" style={{ marginTop: 14 }}>
+          <Switch label="Show the bar on every page" checked={ann.on} onChange={(v) => set({ on: v })} />
+
+          <label className="stack">
+            <span className="field-label">
+              {`Text — ${ann.text.length} of ${data.limits.text} characters`}
+            </span>
+            <Input
+              value={ann.text}
+              maxLength={data.limits.text}
+              placeholder="e.g. Free site visit in Lahore this month"
+              onChange={(e) => set({ text: e.target.value })}
+            />
+          </label>
+
+          <div className="grid grid-2">
+            <label className="stack">
+              <span className="field-label">Link (optional)</span>
+              <Input
+                value={ann.link}
+                maxLength={data.limits.link}
+                placeholder="/contact/"
+                onChange={(e) => set({ link: e.target.value })}
+              />
+            </label>
+            <label className="stack">
+              <span className="field-label">Link text</span>
+              <Input
+                value={ann.linkText}
+                maxLength={data.limits.linkText}
+                placeholder="Book now"
+                onChange={(e) => set({ linkText: e.target.value })}
+              />
+            </label>
+          </div>
+
+          <label className="stack">
+            <span className="field-label">Colour</span>
+            <Seg
+              options={data.styles.map((s) => ({ id: s.id, label: s.label }))}
+              value={ann.style}
+              onChange={(id) => set({ style: id })}
+            />
+          </label>
+
+          <span className="cell-sub">
+            A link must start with <span className="mono">/</span>, <span className="mono">https://</span>,{" "}
+            <span className="mono">tel:</span> or <span className="mono">mailto:</span> — anything else is refused
+            by field rather than saved and ignored.
+          </span>
+        </div>
+      </Card>
+
+      <Card>
+        <div className="row-between">
+          <span className="field-label">What the site draws</span>
+          <span className="cell-sub">{ann.text.length === 0 ? "no words yet" : "36px tall, above the header"}</span>
+        </div>
+        <div
+          style={{
+            position: "relative",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 14,
+            height: 36,
+            padding: "0 44px",
+            marginTop: 10,
+            borderRadius: "8px 8px 0 0",
+            background: skin.bg,
+            color: skin.fg,
+            fontSize: 13,
+            lineHeight: 1.2,
+            textAlign: "center",
+          }}
+        >
+          <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+            {ann.text || "The words above appear here."}
+          </span>
+          {ann.link ? (
+            <a
+              href={ann.link}
+              onClick={(e) => e.preventDefault()}
+              style={{ color: "inherit", fontWeight: 600, textDecoration: "underline", textUnderlineOffset: 3 }}
+            >
+              {ann.linkText || "Learn more"}
+            </a>
+          ) : null}
+          <span
+            aria-hidden="true"
+            style={{
+              position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)",
+              width: 26, height: 26, lineHeight: "24px", borderRadius: 999, textAlign: "center",
+              fontSize: 20, opacity: 0.75,
+            }}
+          >
+            ×
+          </span>
+        </div>
+        <p className="cell-sub" style={{ marginTop: 8 }}>
+          The bar is fixed to the top and the header moves down by its height; the mobile menu moves with it.
+          A visitor who closes it is not shown that version again — which is why saving an edit moves the
+          version even inside the same second, and saving the same words again does not.
+        </p>
+      </Card>
+
+      <Card>
+        <div className="row-between">
+          <div className="stack">
+            <span className="field-label">Publishing</span>
+            <span className="cell-sub">
+              Written to <span className="mono">{data.file}</span>
+              {data.exists ? "" : " — nothing has been saved yet, so the site shows no bar"}
+            </span>
+          </div>
+          {ann.v > 0 && (
+            <span className="cell-sub">changed {timeAgo(new Date(ann.v * 1000).toISOString())}</span>
+          )}
+        </div>
+
+        {!data.site.ready && (
+          <div style={{ marginTop: 12 }}>
+            <Note tone="danger" title="The site cannot draw this bar yet">
+              {!data.site.script && <>{data.site.scriptFile} does not fetch the announcement. </>}
+              {!data.site.style && <>{data.site.styleFile} has no rules for it. </>}
+              Saving still writes the file, but nothing appears on a page until that half is in place — which
+              is why it is said here rather than discovered after a save.
+            </Note>
+          </div>
+        )}
+
+        {data.site.ready && (
+          <div style={{ marginTop: 12 }}>
+            <Note
+              tone={missing === 0 ? "ok" : "warn"}
+              title={
+                missing === 0
+                  ? "Every page can show it"
+                  : `${missing} of ${data.pages.total} pages do not load the script`
+              }
+            >
+              {`${data.pages.script} of ${data.pages.total} pages load ${data.site.scriptFile}, which is what draws the bar.`}
+            </Note>
+          </div>
+        )}
+
+        {bad && <Note tone="danger" title="Not saved">{bad.message}{bad.detail ? ` — ${bad.detail}` : ""}</Note>}
+        {note && <Note tone="ok">{note}</Note>}
+
+        <div className="row" style={{ marginTop: 12 }}>
+          <Btn
+            variant="primary"
+            icon={<Rocket size={15} />}
+            onClick={save}
+            disabled={busy || !dirty}
+            title={dirty ? undefined : "Nothing has changed yet"}
+          >
+            Save &amp; publish
+          </Btn>
+          {dirty && (
+            <Btn icon={<Undo2 size={14} />} onClick={() => setDraft(null)} disabled={busy}>
+              Discard my edit
+            </Btn>
+          )}
+          <Btn icon={<RefreshCw size={15} />} onClick={read.reload} disabled={busy}>
+            Re-read
+          </Btn>
+        </div>
+      </Card>
     </>
   );
 }

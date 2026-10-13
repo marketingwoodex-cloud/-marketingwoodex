@@ -127,7 +127,7 @@ export const ROUTES: NavRoute[] = [
   { id: "seoagent", label: "SEO agent", icon: Wand2, section: "automation", roles: OAE, hint: "Scans pages and proposes fixes" },
 
   /* -------------------------------------------------------------- SYSTEM */
-  { id: "business", label: "Business info", icon: Building2, section: "system", aliases: ["settings/business"], hint: "Company, banks and legal details" },
+  { id: "business", label: "Business info", icon: Building2, section: "system", aliases: ["company", "settings/business"], hint: "Company, banks and legal details" },
   { id: "integrations", label: "Integrations", icon: Network, section: "system", aliases: ["settings", "connections-apps"], hint: "22 connectors and API keys" },
   { id: "users", label: "Users & roles", icon: Users, section: "system", roles: OA, hint: "Accounts, roles and permissions" },
   { id: "theme", label: "Theme", icon: Palette, section: "system", hint: "Design tokens, accent and density" },

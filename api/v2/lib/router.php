@@ -260,6 +260,11 @@ function wx_routes(): array
         ['POST',   'chrome/preview',                  'chrome', 'wx_route_chrome_preview',  null],
         ['POST',   'chrome/replace',                  'chrome', 'wx_route_chrome_replace',  'global_replace'],
         ['POST',   'chrome/versions/{id}',            'chrome', 'wx_route_chrome_restore',  'chrome_save'],
+        /* The announcement bar: chrome, but not a region of the page — the site fetches one file and draws
+           the bar itself, so these two write a file rather than 150 pages. The v2.1 action names are kept
+           because the approval policy and the role map are written in terms of them. */
+        ['GET',    'chrome/announce',                 'chrome', 'wx_route_announce_get',    'cms_announce_get'],
+        ['POST',   'chrome/announce',                 'chrome', 'wx_route_announce_save',   'cms_announce_save'],
 
         /* --------------------------------------------------- the section library
            The reusable pieces a page is assembled from, and the global sections that live inside pages by
@@ -357,6 +362,20 @@ function wx_routes(): array
         ['POST',   'notifications/settings',          'notifications', 'wx_route_notify_save',       'notify_save'],
         ['POST',   'notifications/test',              'notifications', 'wx_route_notify_test',       'notify_test'],
         ['POST',   'notifications/project/{id}',      'notifications', 'wx_route_notify_proj_send',  'notify_proj_send'],
+
+        /* -------------------------------------------- the business's own details
+           Two halves of the screen v2.1 called Business info. The website half changes 150 pages in one
+           batch (`wx_page_write_many`, the same undo the header/footer screen uses); the company half is
+           the letterhead every quotation and invoice is printed with, which is why `company_save` is its
+           own approval action — a Manager changing the bank account on every future invoice is exactly
+           the kind of change the Master wants to see first. `check` and `from-site` write nothing, so
+           they carry no approval action at all. */
+        ['GET',    'business',                        'business', 'wx_route_biz_get',       'cms_biz_get'],
+        ['POST',   'business',                        'business', 'wx_route_biz_apply',     'cms_biz_save'],
+        ['POST',   'business/check',                  'business', 'wx_route_biz_check',     null],
+        ['GET',    'business/from-site',              'business', 'wx_route_biz_from_site', 'cms_biz_get'],
+        ['GET',    'business/company',                'business', 'wx_route_company_get',   'company_get'],
+        ['POST',   'business/company',                'business', 'wx_route_company_save',  'company_save'],
 
         /* ---------------------------------------------------------- system */
         ['GET',    'system/health',                   'system', 'wx_route_sys_health',    'sys_check'],

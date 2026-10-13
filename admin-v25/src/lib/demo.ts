@@ -13,6 +13,7 @@
  * stops type-checking, and the sample cannot quietly become a nicer version of the product than the product.
  */
 import type {
+  BizData, BizRecord, CompanyData, CompanyRecord,
   EstData, FormsData, HeroHomeData, HeroPageData, HeroScanData,
   NotifyData, ProjDetail, ProjList, ProjRow, TplsData,
 } from "./live";
@@ -377,7 +378,92 @@ const TEMPLATES: TplsData = {
   ],
 };
 
+/* Business info. The sample says what the live site says — read off the footer, not off v2.1's defaults —
+   because the interesting part of this screen is the difference between the two: the footer opens at 9:30
+   and the default record was 10:00. The provenance line says the same thing here as on a host nobody has
+   applied a change on. */
+const BIZ: BizRecord = {
+  email: "info@woodex.com.pk",
+  phone1: "+92 322 4000768",
+  phone2: "+92 321 4686884",
+  wa: "+92 322 4000768",
+  addr1: "M-71, Zainab Tower",
+  addr2: "Model Town Link Road",
+  city: "Lahore",
+  country: "Pakistan",
+  days: "Mon–Sat",
+  open: "09:30",
+  close: "18:30",
+  facebook: "",
+  instagram: "",
+  linkedin: "",
+  youtube: "",
+  tiktok: "",
+  pinterest: "",
+  x: "",
+};
+
+const BIZ_DATA: BizData = {
+  biz: BIZ,
+  applied: { ...BIZ, source: "index.html", found: ["phone1", "phone2", "wa", "email", "addr1", "addr2", "city", "country", "days", "open", "close"] },
+  draft: null,
+  source: "index.html",
+  found: ["phone1", "phone2", "wa", "email", "addr1", "addr2", "city", "country", "days", "open", "close"],
+  same: false,
+  contact: ["email", "phone1", "phone2", "wa", "addr1", "addr2", "city", "country"],
+  hours: ["days", "open", "close"],
+  days: ["Mon–Sat", "Mon–Fri", "Mon–Sun"],
+  socials: { facebook: "Facebook", instagram: "Instagram", linkedin: "LinkedIn", youtube: "YouTube", tiktok: "TikTok", pinterest: "Pinterest", x: "X (Twitter)" },
+  assets: ["assets/site.js", "assets/js/whatsapp-widget.js"],
+  sample: "index.html",
+  site: { pages: 187, socialRow: 0 },
+};
+
+const COMPANY: CompanyRecord = {
+  name: "Woodex Interior",
+  tagline: "Design · Build · Furniture",
+  address: "M-71, Zainab Tower, Model Town Link Road, Lahore",
+  phones: "+92 322 4000768 · +92 321 4686884",
+  email: "info@woodex.com.pk",
+  web: "woodex.com.pk",
+  ntn: "7230491-6",
+  bankName: "",
+  bankTitle: "",
+  bankAccount: "",
+  bankIban: "",
+  signName: "Imtiaz Ahmad",
+  signTitle: "Director",
+  prefix: "WI-",
+  wfPrefix: "WF-",
+  nextNo: 10144,
+  wfNext: 10050,
+  validDays: 15,
+  consultant: "Woodex Interior",
+  banks: [
+    { bank: "Bank Alfalah", title: "WOODEX INTERIOR", account: "02931007869105", iban: "PK06ALFH0293001007869105", branch: "Link Rd Model Town Br: Lahore", code: "0293", use: "interior" },
+    { bank: "Meezan Bank", title: "WOODEX FURNITURE", account: "02810111519091", iban: "PK43MEZN0002810111519091", branch: "Model Town Link Road, Lahore", code: "", use: "furniture" },
+  ],
+  wallets: [
+    { name: "JazzCash", number: "+92 321 3656096" },
+    { name: "Easypaisa", number: "+92 321 3656096" },
+  ],
+  signers: [
+    { name: "Imtiaz Ahmad", title: "Director" },
+    { name: "Nabeel Afzal", title: "Marketing Manager" },
+  ],
+};
+
+const COMPANY_DATA: CompanyData = {
+  company: COMPANY,
+  fields: ["name", "tagline", "address", "phones", "email", "web", "ntn", "bankName", "bankTitle", "bankAccount", "bankIban", "signName", "signTitle", "prefix", "validDays", "consultant"],
+  lists: { banks: ["bank", "title", "account", "iban", "branch", "code", "use"], wallets: ["name", "number"], signers: ["name", "title"] },
+  bankUse: ["all", "interior", "furniture"],
+  used: 10143,
+};
+
 const FIXTURES: Record<string, unknown> = {
+  "/business": BIZ_DATA,
+  "/business/company": COMPANY_DATA,
   "/projects": PROJ_LIST,
   "/projects/{id}": PROJ_DETAIL,
   "/notifications": NOTIFY,
@@ -406,5 +492,5 @@ export function demoFixture(path: string): unknown | null {
 /** The paths the newest screens read — the ones a design review must be able to open. Used by the checks. */
 export const DEMO_COVERED = [
   "/projects", "/projects/{id}", "/notifications", "/forms", "/estimator", "/heroes", "/heroes/home", "/heroes/page*",
-  "/quotations/templates",
+  "/quotations/templates", "/business", "/business/company",
 ];

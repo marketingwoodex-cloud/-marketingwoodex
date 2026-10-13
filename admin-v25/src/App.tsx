@@ -28,6 +28,7 @@ import { LiveProjects } from "./screens/LiveProjects";
 import { LiveTimeline } from "./screens/LiveTimeline";
 import { LiveUpdates } from "./screens/LiveUpdates";
 import { LiveTemplates } from "./screens/LiveTemplates";
+import { LiveBusiness } from "./screens/LiveBusiness";
 import { linkLabel, useLive, type BellData } from "./lib/live";
 import { demoOn, setDemo } from "./lib/demo";
 import { Btn, Card, Note, PageHead } from "./components/primitives";
@@ -37,6 +38,7 @@ const BUILT_IDS = new Set([
   "dashboard", "leads", "enquiries", "pipeline", "quotes", "theme", "redirects", "media", "blog", "portfolio", "cities", "global", "pages", "library", "site-theme",
   "testimonials", "team", "heroes",
   "forms", "estimator", "projects", "timeline", "notifications", "templates",
+  "business",
 ]);
 
 /** The public entry point: one provider, then the app proper. */
@@ -223,6 +225,7 @@ function Frame({ demo }: { demo: boolean }) {
           {/* Quotation templates — the shapes every quotation is built from. The plan calls this route
               `/quotations/templates`; the registry declares that as an alias and the redirect below opens it. */}
           <Route path="/templates" element={<LiveTemplates />} />
+          <Route path="/business" element={<LiveBusiness />} />
           <Route path="/global" element={<LiveGlobal />} />
           {/* Every page and every change — where the header change across 150 pages is undone. */}
           <Route path="/pages" element={<LivePages />} />

@@ -135,6 +135,9 @@ const WX_APPR_LABELS = [
     'tpl_save' => 'Save a quotation template',
     'tpl_delete' => 'Delete a quotation template',
     'tpl_import' => 'Import quotation templates',
+    'cms_biz_save' => 'Change the business details on the website',
+    'company_save' => 'Change the company details on documents',
+    'cms_announce_save' => 'Change the announcement bar on every page',
 ];
 
 /**

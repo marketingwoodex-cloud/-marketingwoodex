@@ -2456,6 +2456,262 @@ eq(array_column($rows_marked, 'imported'), [true, false, false, false, true, fal
    'the import button knows which starters are already saved, so it can say six of nine rather than offering nine');
 ok(!isset($rows_marked[0]['id']), 'and a starter that is not saved yet has no id — it is not a row in the database');
 
+/* ============================================================== business info
+ *
+ * The details that are on every page, and the pairs that change them. Two properties are worth testing
+ * above all: a pair can never be built with an empty search string (str_replace('' , 'x') would paste the
+ * new phone number into every byte boundary of 150 pages), and the WhatsApp number is swapped through a
+ * sentinel so that the digits-only phone pairs cannot paste the office number into a wa.me link.
+ */
+
+group('The pairs that change every page, and the sentinel that keeps the WhatsApp link intact');
+$before = wx_biz_defaults();
+$after = $before;
+$after['phone1'] = '+92 300 1234567';
+$after['email'] = 'hello@woodex.com.pk';
+$after['addr1'] = 'M-72, Zainab Tower';
+$pairs = wx_biz_pairs($before, $after);
+$asMap = [];
+foreach ($pairs as $p) {
+    $asMap[$p[0]] = $p[1];
+}
+ok(isset($asMap['+92 322 4000768']), 'the old phone number as it is written on the page is a pair');
+eq($asMap['+92 322 4000768'], '+92 300 1234567', 'and it becomes the new one');
+ok(isset($asMap['923224000768']), 'so are the bare digits, because a tel: href carries them');
+eq($asMap['923224000768'], '923001234567', 'and they become the new digits');
+eq($asMap['info@woodex.com.pk'], 'hello@woodex.com.pk', 'the email is a pair');
+eq($asMap['M-71, Zainab Tower'], 'M-72, Zainab Tower', 'and so is the address line');
+$froms = array_column($pairs, 0);
+eq(count($froms), count(array_unique($froms)), 'no search string appears twice — a duplicate pair would double a count a person reads as places changed');
+ok(strlen($before['wa']) > 0 && wx_biz_digits($before['wa']) === wx_biz_digits($after['wa']), 'the WhatsApp number did not change in this test');
+$page = '<a href="https://wa.me/923224000768">WhatsApp</a> <a href="tel:+923224000768">+92 322 4000768</a>';
+$moved = wx_biz_apply_pairs($page, $pairs);
+ok(str_contains($moved, 'wa.me/923224000768'), 'the WhatsApp link keeps its own number when the office phone moves');
+ok(str_contains($moved, 'tel:+923001234567'), 'while the telephone link moves');
+ok(!str_contains($moved, "\x01"), 'and no sentinel ever reaches a page');
+
+group('A WhatsApp change is swapped through the sentinel, in v2.1\'s order');
+$wa = $after;
+$wa['wa'] = '+92 300 1234567';
+$pairs = wx_biz_pairs($after, $wa);
+$moved = wx_biz_apply_pairs('<a href="https://wa.me/923224000768">Chat</a><span>+92 322 4000768</span>', $pairs);
+ok(str_contains($moved, 'wa.me/923001234567'), 'the number inside wa.me/ is the new WhatsApp number, not the office one');
+ok(!str_contains($moved, "\x01"), 'and the sentinel is gone by the time the page is written');
+
+group('A pair is never built with an empty search string');
+$odd = [
+    ['email' => '', 'phone1' => '', 'phone2' => '', 'wa' => '', 'addr1' => '', 'addr2' => ''],
+    ['email' => 'a@b.pk', 'phone1' => '1', 'phone2' => '2', 'wa' => '3', 'addr1' => 'x', 'addr2' => 'y'],
+    wx_biz_defaults(),
+];
+$empty = [];
+foreach ($odd as $from) {
+    foreach ($odd as $to) {
+        foreach (wx_biz_pairs($from, $to) as $p) {
+            if ($p[0] === '' || $p[1] === '') {
+                $empty[] = $from['email'] . '→' . $to['email'];
+            }
+        }
+    }
+}
+eq($empty, [], 'no combination of blank and odd records can produce an empty search or an empty replacement');
+eq(wx_biz_pairs(wx_biz_defaults(), wx_biz_defaults()), [], 'and a record that has not changed produces no pairs at all');
+
+group('The hours the site writes are among the spellings the pairs look for');
+$v = wx_biz_hours_variants(['days' => 'Mon–Sat', 'open' => '09:30', 'close' => '18:30']);
+eq(count($v), 7, 'seven spellings, as v2.1 had');
+ok(in_array('Mon–Sat 9:30–6:30', $v, true), 'including the one the live footer actually carries');
+ok(in_array('Mo-Sa 09:30-18:30', $v, true), 'and v2.1\'s 24-hour spelling, truncation and all — the days are cut to two letters, which is what its own screen compared against');
+ok(!in_array('Mon-Sat 09:30-18:30', $v, true), 'while the spelling v2.1 never produced is not invented here: a variant that matches nothing costs nothing, but only if it is one the site could have written');
+$site_pair = wx_biz_hours_variants(['days' => 'Mon–Sat', 'open' => '09:30', 'close' => '18:30']);
+$new_pair = wx_biz_hours_variants(['days' => 'Mon–Fri', 'open' => '10:00', 'close' => '19:30']);
+eq(array_search('Mon–Sat 9:30–6:30', $site_pair, true), 0, 'the first variant is the one a pair will hit');
+eq($new_pair[0], 'Mon–Fri 10:00–7:30', 'and its replacement keeps the same shape, so the footer still reads like a footer');
+
+group('Reading what the site says, rather than trusting a copy of the defaults');
+$footer = '<footer><div class="footer-column footer-contact"><h3>Get in touch</h3>'
+    . '<a href="mailto:info@woodex.com.pk">info@woodex.com.pk</a>'
+    . '<a href="https://wa.me/923224000768">WhatsApp Woodex</a>'
+    . '<a href="tel:+923224000768">+92 322 4000768</a><a href="tel:+923214686884">+92 321 4686884</a>'
+    . '<address>M-71, Zainab Tower<br>Model Town Link Road<br>Lahore, Pakistan</address>'
+    . '<p><strong>Mon–Sat 9:30–6:30</strong></p>'
+    . '<div class="footer-social"><a data-soc="facebook" href="https://facebook.com/woodex">f</a></div>'
+    . '</div></footer>';
+$read = wx_biz_read_html($footer);
+eq($read['values']['phone1'], '+92 322 4000768', 'the first tel: link is the main phone, as the footer writes it');
+eq($read['values']['phone2'], '+92 321 4686884', 'the second is the second phone');
+eq($read['values']['wa'], '+92 322 4000768', 'the WhatsApp button gives the WhatsApp number, formatted the way the site writes it');
+eq($read['values']['email'], 'info@woodex.com.pk', 'the mailto: link gives the email');
+eq($read['values']['addr1'], 'M-71, Zainab Tower', 'the address block gives the first line');
+eq($read['values']['addr2'], 'Model Town Link Road', 'and the second');
+eq([$read['values']['city'], $read['values']['country']], ['Lahore', 'Pakistan'], 'and the third line is the city and the country');
+eq([$read['values']['days'], $read['values']['open'], $read['values']['close']], ['Mon–Sat', '09:30', '18:30'],
+   'the hours are read back as the 24-hour times the record stores — 6:30 in an hours block is the evening');
+eq($read['values']['facebook'], 'https://facebook.com/woodex', 'and the social row is read when the page carries one');
+ok(in_array('open', $read['found'], true) && in_array('country', $read['found'], true), 'what was found is reported, not assumed');
+$bare = wx_biz_read_html('<html><body><p>No details on this page.</p></body></html>');
+eq($bare['values'], [], 'a page with none of these markers gives nothing back');
+eq($bare['found'], [], 'and says it found nothing, so a caller can tell "no hours" from "no page"');
+
+group('A change to the business details is refused by field, like every other write');
+$ok_clean = wx_biz_clean(['email' => '  hello@woodex.com.pk ', 'phone1' => '+92 300 1234567', 'facebook' => 'https://facebook.com/woodex'], wx_biz_defaults());
+eq($ok_clean['email'], 'hello@woodex.com.pk', 'a value is trimmed before it is stored');
+eq($ok_clean['phone2'], '+92 322 4000768', 'and a field the caller left blank keeps what was there');
+eq($ok_clean['open'], '10:00', 'including the hours, which are stored not recomputed');
+foreach ([
+    ['email' => 'not-an-email', 'field' => 'email'],
+    ['phone1' => '+92 300', 'field' => 'phone1'],
+    ['facebook' => 'facebook.com/woodex', 'field' => 'facebook'],
+    ['days' => 'Mon–Thu', 'field' => 'days'],
+    ['open' => '25:00', 'field' => 'open'],
+] as $bad) {
+    try {
+        wx_biz_clean($bad, wx_biz_defaults());
+        ok(false, 'the bad ' . $bad['field'] . ' was accepted');
+    } catch (ApiError $e) {
+        eq($e->field, $bad['field'], 'a malformed ' . $bad['field'] . ' is refused, naming the field');
+    }
+}
+eq(wx_biz_clean(['open' => '9:30'], wx_biz_defaults())['open'], '09:30', 'a one-digit hour is normalised rather than refused');
+eq(wx_biz_hhmm('0930'), '09:30', 'and so is a time typed without the colon');
+
+group('One page through the whole edit: the pairs, then the social row');
+$phone_pairs = wx_biz_pairs($before, $after);
+$change = wx_biz_change('<div class="footer-social"><a data-soc="facebook" href="https://old">x</a></div><a href="tel:+923224000768">+92 322 4000768</a>', $phone_pairs, $after);
+ok($change['changed'], 'the page changed');
+eq($change['places'], 2, 'and the count is the number of places the pairs matched, per page');
+ok(str_contains($change['html'], 'tel:'), 'the telephone link is still a link');
+eq(wx_biz_change('<p>Nothing here.</p>', [], wx_biz_defaults())['changed'], false, 'a page with nothing to change reports that rather than being written back');
+$touched = null;
+$row = wx_biz_social_block('<div class="footer-social"><a data-soc="facebook" href="https://old">x</a></div>', ['facebook' => 'https://facebook.com/woodex', 'instagram' => 'https://instagram.com/woodex'], $touched);
+ok($touched === true, 'a page that carries the social row says so');
+ok(str_contains($row, 'data-soc="instagram"'), 'and the row gains the profile that was added');
+ok(!str_contains($row, 'https://old'), 'while the link that is no longer set is dropped');
+
+group('The live site says what the console reads from it');
+if (is_file(WX_SITE_ROOT . '/' . WX_BIZ_SAMPLE)) {
+    $page = (string) file_get_contents(WX_SITE_ROOT . '/' . WX_BIZ_SAMPLE);
+    $live = wx_biz_from_site(WX_BIZ_SAMPLE);
+    eq($live['rel'], WX_BIZ_SAMPLE, 'the baseline is read off the site\'s own home page');
+    ok(str_contains($page, $live['values']['phone1']), 'the main phone it reports is the one written on the page');
+    ok(str_contains($page, $live['values']['addr1']), 'and so is the address');
+    ok(str_contains($page, $live['values']['email']), 'and the email');
+    ok(in_array('open', $live['found'], true) && in_array('close', $live['found'], true),
+       'the opening hours are read from the footer rather than taken from the default record');
+    /* The heart of the slice, against the real page: change the telephone number and see what happens to
+       the WhatsApp button. On this site the two are the same number, so a digits-only replacement would
+       re-point the button at the office line while it still said WhatsApp. */
+    $from = array_merge(wx_biz_defaults(), $live['values']);
+    $to = $from;
+    $to['phone1'] = '+92 300 1234567';
+    $pairs = wx_biz_pairs($from, $to);
+    ok($pairs[0][0] === wx_biz_defaults()['phone1'] || str_contains($pairs[0][0], 'wa.me/'), 'the pairs start from what the site says, not from the defaults');
+    $moved = wx_biz_apply_pairs($page, $pairs);
+    ok(str_contains($moved, '+92 300 1234567'), 'the new number reaches the page');
+    ok(!str_contains($moved, '+92 322 4000768'), 'and the old spelling of it is gone from every place it appeared');
+    ok(str_contains($moved, 'wa.me/923224000768'), 'while the WhatsApp button still dials the WhatsApp number — the office line moved, the WhatsApp line did not');
+    ok(!str_contains($moved, "\x01"), 'with no sentinel left in the page');
+    $live['values']['phone1'] = '+92 300 1234567';
+    $change = wx_biz_change($page, $pairs, $live['values']);
+    ok($change['places'] >= 2, 'the count of places is taken from the live page (' . $change['places'] . ')');
+} else {
+    skip('the site\'s home page is not in this checkout, so the read-off-the-site leg is skipped');
+}
+
+group('The letterhead keeps v2.1\'s rules for its lists');
+$banks = wx_company_list('banks', [
+    ['bank' => 'Bank Alfalah', 'title' => 'WOODEX INTERIOR', 'account' => '02931007869105', 'iban' => 'PK06ALFH0293001007869105', 'branch' => 'Link Rd Model Town Br: Lahore', 'code' => '0293', 'use' => 'interior'],
+    ['bank' => 'Meezan Bank', 'title' => 'WOODEX FURNITURE', 'account' => '1', 'iban' => '2', 'branch' => 'Model Town', 'code' => '', 'use' => 'nonsense'],
+    ['bank' => '', 'title' => '', 'account' => '', 'iban' => '', 'branch' => '', 'code' => '', 'use' => 'all'],
+]);
+eq(count($banks), 2, 'a bank row with no name and no title is dropped rather than stored empty');
+eq($banks[0]['use'], 'interior', 'the line a bank is for is kept when it is one of the three');
+eq($banks[1]['use'], 'all', 'and a use v2.1 did not have becomes all, because a bank that belongs to nobody is unusable');
+$signers = wx_company_list('signers', [['name' => 'Imtiaz Ahmad', 'title' => 'Director'], ['name' => '', 'title' => ''], 'nonsense']);
+eq($signers, [['name' => 'Imtiaz Ahmad', 'title' => 'Director']], 'the signatories are the rows that name somebody, and nothing else survives');
+eq(wx_company_list('wallets', [['name' => 'JazzCash', 'number' => '+92 321 3656096']])[0]['name'], 'JazzCash', 'and the wallets are kept in the order they were sent');
+eq(wx_company_list('nothing', [['a' => 1]]), [], 'an unknown list is empty rather than an error');
+
+/* ============================================================== the announcement bar
+ *
+ * One file, `assets/announce.json`, fetched by the site's own script. Three properties are worth more
+ * than the field list: the record is exactly v2.1's six keys (so the file the older site reads stays
+ * readable by both), the version only moves when the announcement did (it is the key a visitor's
+ * dismissal is remembered under, so a version that moves on an unchanged save re-shows a closed bar to
+ * everybody), and the store is the atomic one — v2.1's `file_put_contents(…, LOCK_EX)` truncated before
+ * it locked, so a page fetched during a save could get half a file and show no bar at all.
+ */
+
+group('The announcement is a file the site reads, and every save is a whole file');
+@unlink(wx_ann_path());
+eq(wx_ann_exists(), false, 'nothing is saved yet, and that is not an error');
+eq(wx_ann_read()['on'], false, 'a site with no announcement file has the bar off');
+eq(wx_ann_read()['style'], 'navy', 'and the default colour, which the stylesheet falls back to as well');
+
+$saved = wx_ann_save(['on' => true, 'text' => ' Free site visit in Lahore this month ', 'link' => '/contact/', 'linkText' => 'Book now', 'style' => 'wood'], 1700000000);
+eq($saved['text'], 'Free site visit in Lahore this month', 'the words are trimmed before they are stored');
+eq($saved['v'], 1700000000, 'the version is the save time');
+eq(wx_ann_exists(), true, 'the file is on disk now');
+eq(wx_ann_read()['on'], true, 'and reads back as on');
+eq(array_keys(wx_ann_read()), ['on', 'text', 'link', 'linkText', 'style', 'v'], "v2.1's six keys, in its order — the older site reads this same file");
+
+$raw = (string) file_get_contents(wx_ann_path());
+$decoded = json_decode($raw, true);
+ok(is_array($decoded), 'what is on disk is valid JSON');
+eq($decoded['linkText'] ?? '', 'Book now', 'with the link text in it');
+ok(substr_count($raw, '{') === 1, 'and one object, not a fragment of an older one');
+
+/* The version is the dismissal key, so it must not move for an unchanged save — and must move for a
+   changed one, even inside the same second. */
+$again = wx_ann_save(['on' => true, 'text' => 'Free site visit in Lahore this month', 'link' => '/contact/', 'linkText' => 'Book now', 'style' => 'wood'], 1700000000);
+eq($again['v'], 1700000000, 'saving the same announcement again keeps the version, so a closed bar stays closed');
+$edited = wx_ann_save(['on' => true, 'text' => 'Eid timings: closed 30 March', 'link' => '', 'linkText' => '', 'style' => 'cream'], 1700000000);
+eq($edited['v'], 1700000001, 'an edit within the same second still gets a new version, so the new bar is shown');
+$again2 = wx_ann_save(['on' => true, 'text' => 'Eid timings: closed 30 March', 'link' => '', 'linkText' => '', 'style' => 'cream'], 1700000000);
+eq($again2['v'], $edited['v'], 'and an unchanged save after that still does not move it');
+
+group('An announcement is refused by field, not clipped into something else');
+throws('VALIDATION', 'text', static function () { wx_ann_clean(['on' => true, 'text' => '', 'style' => 'navy']); }, 'turning the bar on with no words is refused');
+eq(wx_ann_clean(['on' => false, 'text' => ''])['on'], false, 'and off with no words is fine — that is how a bar is hidden');
+throws('VALIDATION', 'text', static function () { wx_ann_clean(['on' => true, 'text' => str_repeat('x', 161)]); }, 'a sentence longer than the bar is refused rather than cut');
+eq(mb_strlen(wx_ann_clean(['on' => true, 'text' => str_repeat('x', 160)])['text']), 160, 'and the longest one that fits is kept whole');
+throws('VALIDATION', 'linkText', static function () { wx_ann_clean(['on' => true, 'text' => 'x', 'link' => '/contact/', 'linkText' => str_repeat('y', 41)]); }, 'link text longer than the button is refused');
+throws('VALIDATION', 'style', static function () { wx_ann_clean(['on' => true, 'text' => 'x', 'style' => 'chartreuse']); }, 'a colour that is not one of the three is refused, not silently replaced');
+
+/* The four kinds of link a bar may carry, and the ones a browser must never be handed. */
+foreach (['/contact/', 'https://woodex.com.pk/offer/', 'tel:+92 322 4000768', 'mailto:info@woodex.com.pk'] as $good) {
+    eq(wx_ann_clean(['on' => true, 'text' => 'x', 'link' => $good])['link'], $good, 'a link like ' . $good . ' is kept as typed');
+}
+foreach (['http://woodex.com.pk/', 'contact/', 'javascript:alert(1)', "/x\" onmouseover=\"alert(1)", '/x?y=<b>'] as $bad) {
+    throws('VALIDATION', 'link', static function () use ($bad) { wx_ann_clean(['on' => true, 'text' => 'x', 'link' => $bad]); }, 'a link like ' . $bad . ' is refused');
+}
+eq(wx_ann_clean(['on' => true, 'text' => 'x'], ['style' => 'cream'])['style'], 'cream', 'a save that does not mention the colour keeps the one that is live');
+
+group("The site this console serves carries the bar's own code");
+$ready = wx_ann_site_ready();
+ok($ready['script'], $ready['scriptFile'] . ' fetches the announcement and draws the bar');
+ok($ready['style'], $ready['styleFile'] . ' dresses it — the rules were in the older sheet only, so a bar written today would have arrived unstyled');
+ok($ready['ready'], 'both halves, which is what the screen reports');
+ok(str_contains((string) file_get_contents(WX_SITE_ROOT . '/' . WX_ANN_SCRIPT), 'wx-ann'), 'the class the script adds is the class the stylesheet styles');
+$state = wx_ann_state();
+eq(count($state['styles']), 3, 'the three colours v2.1 offered');
+eq(array_column($state['styles'], 'id'), WX_ANN_STYLES, 'named with the same ids the file stores');
+eq($state['limits']['text'], 160, 'the field limit the screen enforces is the one the server enforces');
+eq($state['file'], 'assets/announce.json', 'the file the browser fetches is the one the console writes');
+ok($state['pages']['total'] >= 1 && $state['pages']['script'] === $state['pages']['total'], 'every page the walker finds loads the script, so every page can show the bar');
+
+/* A damaged file is not "off": the one person who could fix it must not be told the bar is hidden. */
+file_put_contents(wx_ann_path(), '{"on":true,"text":"half a fi');
+$msg = '';
+try {
+    wx_ann_read();
+} catch (Throwable $e) {
+    $msg = $e->getMessage();
+}
+ok(str_contains($msg, 'damaged'), 'a half-written file is reported as damaged rather than read as off');
+@unlink(wx_ann_path());
+eq(wx_ann_exists(), false, 'and the test leaves no announcement behind');
+
 /* ============================================================== report */
 echo "\n";
 if ($failures) {

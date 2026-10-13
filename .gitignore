@@ -11,6 +11,9 @@ _private/db.json
 _private/security.json
 _private/demo.json
 
+# The announcement bar: live state the console writes and the site's own script fetches
+assets/announce.json
+
 # Tooling dependencies (installed per machine; see tools/*/package.json)
 tools/phplint/node_modules/
 tools/phpwasm/node_modules/
