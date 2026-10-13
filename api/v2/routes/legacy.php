@@ -183,6 +183,15 @@ function wx_legacy_bridged(): array
         'blocks_import'    => ['blocks', 'wx_route_blocks_import', []],
         'blocks_delete'    => ['blocks', 'wx_route_blocks_delete', []],
         'blocks_sync'      => ['blocks', 'wx_route_blocks_sync', []],
+        /* Phase 3 — the page editor half of the builder bridge: list, load, save, create, restore. The
+           response shapes are v2.5's (`routes/pages.php`); what is preserved is the action name, because
+           the permission matrix and the approval policy are keyed on it. `load` is the GET route that
+           already answered it. */
+        'pages'            => ['pages', 'wx_route_pages_list', []],
+        'load'             => ['pages', 'wx_route_pages_get', []],
+        'save'             => ['pages', 'wx_route_pages_write', []],
+        'page_new'         => ['pages', 'wx_route_pages_new', []],
+        'restore'          => ['pages', 'wx_route_pages_restore', []],
     ];
 }
 

@@ -111,9 +111,42 @@ function wx_route_pages_write_do(array $ctx): array
         throw ApiError::validation('A page must be a complete HTML document (from <!doctype html>)', 'html');
     }
     return wx_guard('page.write', static function () use ($rel, $html, $u, $ctx) {
-        $title = isset($ctx['body']['title']) ? (string) $ctx['body']['title'] : wx_page_title_of($html);
-        $r = wx_page_write($rel, $html, $u, ['note' => (string) ($ctx['body']['note'] ?? 'edit'), 'title' => $title]);
-        return ['data' => $r + ['title' => $title]];
+        /* The four rules from v2.1's builder live in one place (`lib/pageedit.php`) rather than in this
+           handler: the complete-document check, the size check, the editor-marker check and the script
+           rule. The script rule asks for the *role* of the person saving, because only the owner may add
+           code to a page — see the note in that file. */
+        $opt = [
+            'mtime' => isset($ctx['body']['mtime']) ? (int) $ctx['body']['mtime'] : null,
+            'force' => !empty($ctx['body']['force']),
+            'note' => (string) ($ctx['body']['note'] ?? 'edit'),
+        ];
+        $r = wx_page_save_html($rel, $html, $u, (string) $u['role'], $opt);
+        return ['data' => $r];
+    });
+}
+
+/** POST /pages/new — a page that does not exist yet, at an address nobody has taken. */
+function wx_route_pages_new(array $ctx): array
+{
+    return wx_appr_route('page_new', $ctx, 'pages', 'wx_route_pages_new_do', static fn() => wx_route_pages_new_do($ctx));
+}
+
+function wx_route_pages_new_do(array $ctx): array
+{
+    $u = wx_require_user(null, WX_PAGES_EDIT);
+    $html = (string) ($ctx['body']['html'] ?? '');
+    if ($html === '') {
+        throw ApiError::validation('A new page needs its HTML — start from a copy of a page that already looks right', 'html');
+    }
+    return wx_guard('page.new', static function () use ($ctx, $html, $u) {
+        return ['data' => wx_page_new(
+            (string) ($ctx['body']['folder'] ?? ''),
+            (string) ($ctx['body']['slug'] ?? ''),
+            $html,
+            $u,
+            (string) $u['role'],
+            ['note' => 'new page: ' . trim((string) ($ctx['body']['folder'] ?? '') . '/' . (string) ($ctx['body']['slug'] ?? ''), '/')]
+        )];
     });
 }
 

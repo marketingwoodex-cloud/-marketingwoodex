@@ -18,7 +18,7 @@
  * put back.
  */
 import { useEffect, useMemo, useState } from "react";
-import { FileStack, History, RefreshCw, Undo2 } from "lucide-react";
+import { FileStack, History, RefreshCw, SquarePen, Undo2, X } from "lucide-react";
 import { Btn, Card, Empty, Note, PageHead, Pill, Seg } from "../components/primitives";
 import { api, ApiFailure } from "../lib/api";
 import { useSession } from "../lib/session";
@@ -45,9 +45,20 @@ export function LivePages() {
   const [bad, setBad] = useState<ApiFailure | null>(null);
   const [busy, setBusy] = useState(false);
 
+  /* The editor: the page's HTML and the `mtime` it was loaded at. Sending that mtime back is what turns
+     "two people edited one page" from a silent overwrite into a refusal — see the conflict branch below. */
+  const [edit, setEdit] = useState<{ rel: string; html: string; mtime: number | null } | null>(null);
+  const [conflict, setConflict] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [newFolder, setNewFolder] = useState("");
+  const [newSlug, setNewSlug] = useState("");
+  const [newHtml, setNewHtml] = useState("");
+
   useEffect(() => {
     setResult(null);
     setBad(null);
+    setEdit(null);
+    setConflict(false);
   }, [tab, rel]);
 
   async function run<T>(fn: () => Promise<T>): Promise<T | null> {
@@ -84,6 +95,63 @@ export function LivePages() {
       );
       history.reload();
       pages.reload();
+    }
+  }
+
+  /** Start editing a page: its HTML and the mtime it is being edited from. */
+  function startEdit(d: PageDetail) {
+    setEdit({ rel: d.rel, html: d.html, mtime: d.mtime ? Math.floor(new Date(d.mtime.replace(" ", "T") + "Z").getTime() / 1000) : null });
+    setConflict(false);
+    setResult(null);
+  }
+
+  /**
+   * Save the page.
+   *
+   * A 409 is the interesting case and it is not an error to hide: the page changed on the server since it
+   * was opened, so the API refuses rather than overwriting somebody else's work. The screen then offers the
+   * same two things the message does — reload, or save again to replace what is there.
+   */
+  async function savePage(force: boolean) {
+    if (!edit) return;
+    const r = await run(
+      () => api.post<{ rel: string; bytes: number; batch: string; version: number; mtime: number } | { pending: true; message: string }>(
+        "/pages", { rel: edit.rel, html: edit.html, mtime: force ? null : edit.mtime, force, note: "edited in the admin" },
+      ),
+    );
+    if (r && isPending(r)) {
+      setResult(r.message);
+      return;
+    }
+    if (r && "bytes" in r) {
+      setConflict(false);
+      setResult(`Saved ${edit.rel} (${r.bytes.toLocaleString()} bytes). It is version ${r.version} in the history, so this edit is one undo — batch ${r.batch.slice(0, 8)}.`);
+      setEdit((e) => (e ? { ...e, mtime: r.mtime } : e));
+      detail.reload();
+      pages.reload();
+      history.reload();
+    } else if (bad?.status === 409) {
+      setConflict(true);
+    }
+  }
+
+  /** Create a page at an address nobody has taken. */
+  async function createPage() {
+    const r = await run(
+      () => api.post<{ rel: string; url: string; batch: string } | { pending: true; message: string }>(
+        "/pages/new", { folder: newFolder, slug: newSlug, html: newHtml },
+      ),
+    );
+    if (r && isPending(r)) {
+      setResult(r.message);
+      return;
+    }
+    if (r && "rel" in r) {
+      setCreating(false);
+      setNewSlug("");
+      setResult(`Created ${r.url} — version ${r.batch.slice(0, 8)} in the history.`);
+      pages.reload();
+      setRel(r.rel);
     }
   }
 
@@ -158,7 +226,26 @@ export function LivePages() {
             ? `${data.count} pages${data.missing.length ? ` · ${data.missing.length} indexed and no longer on disk` : ""}${data.stale ? ` · ${data.stale} changed outside v2.5` : ""}`
             : ""
         }
-        actions={<Btn icon={<RefreshCw size={15} />} onClick={() => { pages.reload(); history.reload(); }}>Refresh</Btn>}
+        actions={
+          <>
+            <Btn icon={<RefreshCw size={15} />} onClick={() => { pages.reload(); history.reload(); }}>Refresh</Btn>
+            <Btn
+              variant="primary"
+              icon={<FileStack size={15} />}
+              onClick={() => {
+                setTab("pages");
+                setCreating(true);
+                /* Starting from the page that is already open is the honest default: a new page that looks
+                   like the site is a copy of the site, not a blank document. */
+                setNewHtml(detail.data?.html ?? "");
+                setNewFolder("");
+                setNewSlug("");
+              }}
+            >
+              New page
+            </Btn>
+          </>
+        }
       />
 
       {data && data.missing.length > 0 && (
@@ -250,6 +337,78 @@ export function LivePages() {
         </Card>
       )}
 
+      {tab === "pages" && creating && (
+        <Card>
+          <div className="row-between">
+            <h2 className="cell-main">New page</h2>
+            <Btn iconOnly icon={<X size={14} />} title="Cancel" onClick={() => setCreating(false)} />
+          </div>
+          <div className="grid-2">
+            <label className="stack">
+              <span className="field-label">Folder (leave empty for the site root)</span>
+              <input className="input mono" value={newFolder} placeholder="interior-design" onChange={(e) => setNewFolder(e.target.value)} />
+            </label>
+            <label className="stack">
+              <span className="field-label">Address</span>
+              <input className="input mono" value={newSlug} placeholder="lahore-fit-out" onChange={(e) => setNewSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))} />
+              <span className="cell-sub">
+                The page will live at /{newFolder ? `${newFolder}/` : ""}{newSlug || "…"}/index.html — the address is the directory, so it cannot be changed later without moving the page.
+              </span>
+            </label>
+          </div>
+          <label className="stack">
+            <span className="field-label">HTML — a complete document</span>
+            <textarea className="input mono" rows={12} value={newHtml} onChange={(e) => setNewHtml(e.target.value)} />
+            <span className="cell-sub">
+              {newHtml.trim() === ""
+                ? "Pick a page on the left first and press New page again to start from a copy of it — a new page that looks like the site is a copy of the site."
+                : `${newHtml.length.toLocaleString()} characters. Only the owner can add scripts, embeds or on…= handlers; keeping what the copied page already has is always allowed.`}
+            </span>
+          </label>
+          <div className="row">
+            <Btn variant="primary" onClick={createPage} disabled={busy || newSlug.trim() === "" || newHtml.trim() === ""}>Create the page</Btn>
+            <Btn onClick={() => setCreating(false)} disabled={busy}>Cancel</Btn>
+          </div>
+        </Card>
+      )}
+
+      {tab === "pages" && edit && (
+        <Card>
+          <div className="row-between">
+            <h2 className="cell-main">Editing <span className="mono">/{edit.rel}</span></h2>
+            <div className="row">
+              <Btn variant="primary" onClick={() => savePage(false)} disabled={busy}>Save page</Btn>
+              <Btn iconOnly icon={<X size={14} />} title="Close without saving" onClick={() => setEdit(null)} disabled={busy} />
+            </div>
+          </div>
+          {conflict && (
+            <Note tone="warn" title="This page changed on the server since you opened it">
+              <div className="row-between">
+                <span>
+                  Saving now would replace somebody else's edit. Reload to see what is there and make your
+                  change again — or save anyway, and this edit replaces theirs.
+                </span>
+                <div className="row">
+                  <Btn onClick={() => { setEdit(null); detail.reload(); }}>Reload the page</Btn>
+                  <Btn variant="primary" onClick={() => savePage(true)} disabled={busy}>Save anyway</Btn>
+                </div>
+              </div>
+            </Note>
+          )}
+          <textarea
+            className="input mono"
+            rows={20}
+            value={edit.html}
+            onChange={(e) => setEdit({ ...edit, html: e.target.value })}
+            spellCheck={false}
+          />
+          <p className="cell-sub">
+            {edit.html.length.toLocaleString()} characters. Saving writes the page through the versioned
+            writer: the version it replaces is kept, and the whole write is one batch in the history.
+          </p>
+        </Card>
+      )}
+
       {tab === "pages" && (
         <div className="content-split">
           <Card>
@@ -292,7 +451,7 @@ export function LivePages() {
             ) : detail.data ? (
               /* The panel is its own component: the narrowing of `detail.data` cannot travel into the
                  callbacks defined in the same render, and a prop is a better answer than a cast. */
-              <PagePanel p={detail.data} busy={busy} onRestore={restore} />
+              <PagePanel p={detail.data} busy={busy} onRestore={restore} onEdit={startEdit} />
             ) : null}
           </Card>
         </div>
@@ -302,7 +461,14 @@ export function LivePages() {
 }
 
 /** One page's versions, with the restore button for each. */
-function PagePanel({ p, busy, onRestore }: { p: PageDetail; busy: boolean; onRestore: (rel: string, versionId: number) => void }) {
+function PagePanel({
+  p, busy, onRestore, onEdit,
+}: {
+  p: PageDetail;
+  busy: boolean;
+  onRestore: (rel: string, versionId: number) => void;
+  onEdit: (d: PageDetail) => void;
+}) {
   return (
 <div className="stack">
                 <div className="row-between">
@@ -311,6 +477,9 @@ function PagePanel({ p, busy, onRestore }: { p: PageDetail; busy: boolean; onRes
                 </div>
                 <div className="row">
                   <Pill tone="neutral">{bytes(p.bytes)}</Pill>
+                  <Btn icon={<SquarePen size={14} />} onClick={() => onEdit(p)} disabled={busy} title="Edit this page's HTML">
+                    Edit HTML
+                  </Btn>
                   <Pill tone={p.fresh ? "ok" : "warn"} title={p.fresh ? "The index agrees with the file on disk" : "The file on disk differs from the index"}>
                     {p.fresh ? "index agrees with disk" : "changes outside v2.5"}
                   </Pill>

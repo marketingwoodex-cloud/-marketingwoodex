@@ -1208,6 +1208,103 @@ ok(wx_block_clean(['name' => 'Loose text', 'html' => 'Just words'], null)['is_gl
 /* TODO-DB: the library table, usage walking the site and the push need migration 013 and the site tree. */
 skip('the block library table, usage and the push need migration 013 and the site tree');
 
+/* ============================================ Phase 3 · the page editor and the script rule
+   The audit's finding F-05 was that a Manager could paste a script into a page through the builder, and the
+   builder previews pages inside an authenticated session. The fix is a rule about *additions*, and these
+   tests are the evidence that it is a rule about additions — not a sanitiser that rewrites pages, and not a
+   blocklist that a page's own tags trip over. */
+
+$plain = '<!doctype html><html><head><title>About</title></head><body><h1>About us</h1></body></html>';
+$withTag = '<!doctype html><html><head><script async src="https://www.googletagmanager.com/gtag/js?id=G-1"></script></head><body><h1>About us</h1></body></html>';
+
+/* Keeping what a page already has is always allowed: editing a headline must not mean rewriting the
+   analytics tag. */
+eq(wx_code_new_tokens($withTag, $withTag), [], 'a page that keeps its own script adds no tokens');
+wx_code_guard($withTag, $withTag, 'admin');
+ok(true, 'and a Manager may save it — keeping is not adding');
+
+/* Adding one is not. */
+$adds = wx_code_new_tokens($withTag, $plain);
+eq(count($adds), 1, 'adding a script tag to a page that had none is one new token');
+try {
+    wx_code_guard($withTag, $plain, 'admin', ['siteTokens' => []]);
+    ok(false, 'a Manager adding a script should be refused');
+} catch (Throwable $e) {
+    ok(str_contains($e->getMessage(), 'Only the owner') && str_contains($e->getMessage(), 'googletagmanager'),
+        'a Manager is refused, and the message names the thing to remove: ' . mb_substr($e->getMessage(), 0, 110));
+}
+wx_code_guard($withTag, $plain, 'owner', ['siteTokens' => []]);
+ok(true, 'the owner may add it');
+/* And a tag the site already uses elsewhere is the site's, not a privilege — otherwise every new page
+   would need the owner to paste the same analytics tag again. */
+wx_code_guard($withTag, $plain, 'editor', ['siteTokens' => wx_code_tokens($withTag)]);
+ok(true, 'and anybody may add a tag the site already uses somewhere else');
+
+/* The tokens are the exact pieces, so a *different* script is still new. */
+$other = str_replace('G-1', 'G-2', $withTag);
+eq(count(wx_code_new_tokens($other, $withTag)), 1, 'a different analytics id is a different token, not a repeat');
+
+/* Event handlers, script URLs and embeds are code too — and the encoded forms are the same token. */
+$cases = [
+    '<div onclick="steal()">x</div>' => 'onclick',
+    '<a href="javascript:alert(1)">x</a>' => 'javascript',
+    '<a href="java&#115;cript:alert(1)">x</a>' => 'entity-encoded javascript',
+    '<a href="jAvA sCrIpT&#58;alert(1)">x</a>' => 'mixed case and an encoded colon',
+    '<iframe src="https://example.com"></iframe>' => 'iframe',
+    '<meta http-equiv="refresh" content="0;url=https://evil.example.com">' => 'meta refresh',
+    '<svg><a xlink:href="javascript:alert(1)">x</a></svg>' => 'xlink:href',
+    '<object data="/x"></object>' => 'object',
+];
+foreach ($cases as $fragment => $what) {
+    $html = str_replace('<h1>About us</h1>', '<h1>About us</h1>' . $fragment, $plain);
+    $new = wx_code_new_tokens($html, $plain);
+    ok(count($new) >= 1, 'adding ' . $what . ' is detected as new code');
+    try {
+        wx_code_guard($html, $plain, 'admin', ['siteTokens' => []]);
+        ok(false, $what . ' should be refused for a Manager');
+    } catch (Throwable $e) {
+        ok(true, $what . ' is refused for a Manager');
+    }
+}
+
+/* A paragraph that *talks* about code is text. This is the false-positive half of the rule, and it matters:
+   a guard that refuses a blog post about javascript: would be turned off within a week. */
+$prose = str_replace('<h1>About us</h1>', '<h1>About us</h1><p>We use javascript: links nowhere, and we never write onclick= handlers. An &lt;iframe&gt; is not allowed either.</p>', $plain);
+eq(wx_code_new_tokens($prose, $plain), [], 'text that mentions scripts and handlers is not code');
+wx_code_guard($prose, $plain, 'admin', ['siteTokens' => []]);
+ok(true, 'and saving it is allowed for anybody');
+
+/* Structured data is data, not code — the site writes its own schema.org blocks by hand. */
+$ld = str_replace('</head>', '<script type="application/ld+json">{"@type":"LocalBusiness"}</script></head>', $plain);
+eq(wx_code_new_tokens($ld, $plain), [], 'an application/ld+json block is not a script for this rule');
+
+/* ---- the page rules: a document, not a fragment; not somebody's editing session */
+wx_page_html_ok($plain);
+ok(true, 'a complete document passes');
+try {
+    wx_page_html_ok('<section>just a fragment</section>');
+    ok(false, 'a fragment should be refused');
+} catch (Throwable $e) {
+    ok(str_contains($e->getMessage(), 'complete document'), 'a fragment is refused: ' . mb_substr($e->getMessage(), 0, 80));
+}
+try {
+    wx_page_html_ok(str_replace('<h1>About us</h1>', '<h1 contenteditable="true">About us</h1>', $plain));
+    ok(false, 'editor markers should be refused');
+} catch (Throwable $e) {
+    ok(str_contains($e->getMessage(), 'editor markers'), 'editor markers are refused, and the message says why: ' . mb_substr($e->getMessage(), 0, 80));
+}
+try {
+    wx_page_html_ok('<html><body><div data-wx-ed="1">x</div></body></html>');
+    ok(false, 'data-wx-ed should be refused');
+} catch (Throwable $e) {
+    ok(true, 'the builder\'s own editing marker is refused too');
+}
+
+/* TODO-DB: saving, creating and restoring a page need the tables and the site tree. What is asserted above
+   is the part that decides whether a save is allowed at all — the part that has to be right before it can
+   touch a file. */
+skip('saving, creating and restoring pages need migration 010 and the site tree');
+
 /* ============================================================== report */
 echo "\n";
 if ($failures) {

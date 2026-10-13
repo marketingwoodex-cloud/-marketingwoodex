@@ -357,6 +357,10 @@ for (const [name, ok] of [
     htmlPagesOffline.includes("api/v2 is not answering") && !htmlPagesOffline.includes("Recent changes"),
   ],
   [
+    "the pages screen with no API offers no editor to save into",
+    !htmlPagesOffline.includes("New page") && !htmlPagesOffline.includes("Save page"),
+  ],
+  [
     "the header & footer screen offers no Apply when it cannot reach the API",
     htmlGlobalOffline.includes("api/v2 is not answering") && !htmlGlobalOffline.includes("Check what would change"),
   ],

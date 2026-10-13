@@ -85,6 +85,7 @@ require_once WX_V2_DIR . '/lib/files.php';
 require_once WX_V2_DIR . '/lib/chrome.php';
 require_once WX_V2_DIR . '/lib/content.php';
 require_once WX_V2_DIR . '/lib/blocks.php';
+require_once WX_V2_DIR . '/lib/pageedit.php';
 require_once WX_V2_DIR . '/lib/auth.php';
 require_once WX_V2_DIR . '/lib/caps.php';
 require_once WX_V2_DIR . '/lib/approvals.php';

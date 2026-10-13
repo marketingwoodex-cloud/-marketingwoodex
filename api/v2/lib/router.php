@@ -187,6 +187,7 @@ function wx_routes(): array
         ['GET',    'pages/history',                   'pages', 'wx_route_pages_changes',   null],
         ['POST',   'pages',                           'pages', 'wx_route_pages_write',     null],
         ['POST',   'pages/rollback',                  'pages', 'wx_route_pages_rollback',  null],
+        ['POST',   'pages/new',                       'pages', 'wx_route_pages_new',       'page_new'],
         ['GET',    'pages/{rel}',                     'pages', 'wx_route_pages_get',       null],
         ['POST',   'pages/{rel}/restore',             'pages', 'wx_route_pages_restore',   null],
 

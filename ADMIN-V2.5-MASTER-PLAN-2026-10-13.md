@@ -515,9 +515,9 @@ working as intended, not a gap hidden by a fallback.
 
 ### Phase 3 — Content, assets and delivery · **in progress** · 4 weeks
 
-*Measured at this commit:* `tests/run.php` **371 passed · 0 failed · 7 skipped** · `tests/conformance.mjs`
-**69 · 0** · php-lint **133 files** · `admin-v25` smoke **86 checks · 65 routes** · legacy bridge **136 of 365
-actions** (37%). Migrations **000–013** are written and none has run on a database yet.
+*Measured at this commit:* `tests/run.php` **401 passed · 0 failed · 8 skipped** · `tests/conformance.mjs`
+**69 · 0** · php-lint **134 files** · `admin-v25` smoke **87 checks · 65 routes** · legacy bridge **141 of 365
+actions** (39%). Migrations **000–013** are written and none has run on a database yet.
 
 Pages · builder bridge · section library · header/footer · heroes · redirects · the full content CMS ·
 media with alt-text queue · forms · estimator · client updates · projects and the Gantt timeline ·
@@ -547,10 +547,12 @@ never run**, and there is no PHP in the build sandbox, so the gate is a host run
 |---|---|---|
 | Every page, every change, one undo | `admin-v25/src/screens/LivePages.tsx`, `lib/pages.php#wx_page_changes_grouped()` | the change that rewrote 148 pages is one entry with one button; per-page versions sit beside it |
 | The section library, and global sections pushed from one edit | `lib/blocks.php`, `routes/blocks.php`, `db/migrations/013_blocks.sql`, `admin-v25/src/screens/LiveLibrary.tsx` | a block is a piece of a page; a *global* block is inserted **by reference** — the page carries its token — so editing it and pushing rewrites every page that uses it as one batch with one undo. The token is 12 hex and lives in the HTML files, not the row id, which is why a database restore cannot orphan a section |
+| The page editor, and the script rule that guards it | `lib/pageedit.php`, `routes/pages.php` (`POST /pages`, `POST /pages/new`), the editor panel in `LivePages.tsx` | v2.1's audit finding F-05 kept as a rule about *additions*: only the owner may add scripts, embeds or `on…=` handlers to a page, anybody may keep what is there, and a tag the site already uses elsewhere is the site's. Tokens are compared after entity-decoding and whitespace-stripping, so `java&#115;cript:` is the same token as `javascript:`. Plus the optimistic-concurrency rule: a page that changed on the server since it was opened is refused with a 409 rather than overwritten |
 
-**Still to come in this phase:** the rest of the builder bridge (`load`, `save`, `pages`, `page_new`,
-`restore`, `theme_get`, `media*`, `upload`, `fetch_page`, `import_url`, `backups` — 13 actions; the library's
-six are done), placements and designs (testimonials and team appear *inside* pages — the API exists, the
+**Still to come in this phase:** the last of the builder bridge (`theme_get` and the theme file, the
+builder's own `media`/`media_delete`/`media_usage`/`upload` — the media library already answers those — and
+`fetch_page`/`import_url`, which fetch a public page for the section picker and need the SSRF rules ported
+with them), placements and designs (testimonials and team appear *inside* pages — the API exists, the
 renderer does not yet), the page editor screen, city pages (their publish path is root-level, unlike posts
 and case studies), heroes, forms, the estimator, projects and the Gantt timeline, quote templates, business
 info (`cms_biz_*`), announcements, the AI settings screen, SEO screens and integrations.
