@@ -132,6 +132,29 @@ function wx_legacy_bridged(): array
         'redirects_plan'  => ['redirects', 'wx_route_redirects_plan', []],
         'r404_list'       => ['redirects', 'wx_route_r404_list', []],
         'r404_clear'      => ['redirects', 'wx_route_r404_clear', []],
+        /* Phase 3 — the library: pictures and files. media_restore and media_purge take the trash id in
+           the body, as v2.1's screen sent it. */
+        'media_list'      => ['media', 'wx_route_media_list', []],
+        'media_sizes'     => ['media', 'wx_route_media_sizes', []],
+        'media_folder'    => ['media', 'wx_route_media_folder', []],
+        'media_upload'    => ['media', 'wx_route_media_upload', []],
+        'media_replace'   => ['media', 'wx_route_media_replace', []],
+        'media_alt'       => ['media', 'wx_route_media_alt_save', []],
+        'media_move'      => ['media', 'wx_route_media_move', []],
+        'media_trash'     => ['media', 'wx_route_media_trash', []],
+        'media_trash_list' => ['media', 'wx_route_media_trash_list', []],
+        'media_restore'   => ['media', 'wx_route_media_restore', ['id']],
+        'media_purge'     => ['media', 'wx_route_media_purge', ['id']],
+        'fm_list'         => ['files', 'wx_route_files_list', []],
+        'fm_upload'       => ['files', 'wx_route_files_upload', []],
+        'fm_mkdir'        => ['files', 'wx_route_files_folder', []],
+        'fm_rename'       => ['files', 'wx_route_files_rename', []],
+        'fm_delete'       => ['files', 'wx_route_files_delete', []],
+        'fm_trash'        => ['files', 'wx_route_files_trash', []],
+        /* fm_restore's id is a timestamp-and-random string, not a number, so it is read from the body by
+           the handler rather than cast to an int here. */
+        'fm_restore'      => ['files', 'wx_route_files_restore', []],
+        'fm_zip'          => ['files', 'wx_route_files_zip', []],
     ];
 }
 

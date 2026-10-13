@@ -177,6 +177,42 @@ function wx_routes(): array
         ['DELETE', '404s',                            'redirects', 'wx_route_r404_clear',      'r404_clear'],
         ['POST',   'r404',                            'redirects', 'wx_route_r404_report',     null],
 
+        /* ------------------------------------------------------------- the library
+           Phase 3: the pages, the pictures and the files. `pages` has no v2.1 alias (v2.1 had no pages
+           API — screens wrote HTML directly and kept a copy), so its routes carry a null action and are
+           checked by role. The media and file actions keep their v2.1 names, because the policy that
+           decides what a Manager must ask the Master about is written in those names. */
+        ['GET',    'pages',                           'pages', 'wx_route_pages_list',      null],
+        ['GET',    'pages/search',                    'pages', 'wx_route_pages_search',    null],
+        ['GET',    'pages/history',                   'pages', 'wx_route_pages_changes',   null],
+        ['POST',   'pages',                           'pages', 'wx_route_pages_write',     null],
+        ['POST',   'pages/rollback',                  'pages', 'wx_route_pages_rollback',  null],
+        ['GET',    'pages/{rel}',                     'pages', 'wx_route_pages_get',       null],
+        ['POST',   'pages/{rel}/restore',             'pages', 'wx_route_pages_restore',   null],
+
+        ['GET',    'media',                           'media', 'wx_route_media_list',      'media_list'],
+        ['GET',    'media/alt',                       'media', 'wx_route_media_alt_queue', 'media_alt'],
+        ['POST',   'media/alt',                       'media', 'wx_route_media_alt_save',  'media_alt'],
+        ['POST',   'media/upload',                    'media', 'wx_route_media_upload',    'media_upload'],
+        ['POST',   'media/replace',                   'media', 'wx_route_media_replace',   'media_replace'],
+        ['POST',   'media/sizes',                     'media', 'wx_route_media_sizes',     'media_sizes'],
+        ['POST',   'media/folder',                    'media', 'wx_route_media_folder',    'media_folder'],
+        ['POST',   'media/move',                      'media', 'wx_route_media_move',      'media_move'],
+        ['GET',    'media/trash',                     'media', 'wx_route_media_trash_list', 'media_trash_list'],
+        ['DELETE', 'media',                           'media', 'wx_route_media_trash',     'media_trash'],
+        ['POST',   'media/trash/{id}/restore',        'media', 'wx_route_media_restore',   'media_restore'],
+        ['DELETE', 'media/trash',                     'media', 'wx_route_media_purge',     'media_purge'],
+        ['DELETE', 'media/trash/{id}',                'media', 'wx_route_media_purge',     'media_purge'],
+
+        ['GET',    'files',                           'files', 'wx_route_files_list',      'fm_list'],
+        ['GET',    'files/trash',                     'files', 'wx_route_files_trash',     'fm_trash'],
+        ['GET',    'files/zip',                       'files', 'wx_route_files_zip',       'fm_zip'],
+        ['POST',   'files/upload',                    'files', 'wx_route_files_upload',    'fm_upload'],
+        ['POST',   'files/folder',                    'files', 'wx_route_files_folder',    'fm_mkdir'],
+        ['POST',   'files/rename',                    'files', 'wx_route_files_rename',    'fm_rename'],
+        ['DELETE', 'files',                           'files', 'wx_route_files_delete',    'fm_delete'],
+        ['POST',   'files/trash/{id}/restore',        'files', 'wx_route_files_restore',   'fm_restore'],
+
         /* ------------------------------------------------- the visitor's widget
            Public on purpose: these five are what the website widget calls, and a visitor has no session
            to begin with. Auth here is the chat token in the body — 20 random bytes whose sha256 is the
@@ -352,6 +388,12 @@ function wx_dispatch_legacy(string $action, string $method): array
 /** A handler may return its payload, or a full ['data'=>…,'meta'=>…] shape. */
 function wx_normalise_result($result): array
 {
+    /* A handler may answer with a file instead of data — the file manager's zip download is the case
+       that exists today. `__file` is deliberately not a word any handler would return by accident, and
+       it is pulled out before the envelope is built so a file response can never carry a JSON body. */
+    if (is_array($result) && isset($result['__file']) && is_array($result['__file'])) {
+        return ['data' => null, 'meta' => [], 'file' => $result['__file']];
+    }
     if (!is_array($result)) {
         return ['data' => $result, 'meta' => []];
     }

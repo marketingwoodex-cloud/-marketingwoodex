@@ -688,6 +688,94 @@ if ($WITH_DB && is_file(WX_DB_FILE) && wx_table_exists('wx_redirects')) {
     skip('the .htaccess lines need the redirect tables — run with --db after db/migrate.php');
 }
 
+/* ========================================== Phase 3 · pages, media, files */
+
+/* Pages are written through one function, and the parts of it that say no are pure — no database, no
+   filesystem change — which is exactly why they can be tested here. The cases below are the ones that
+   would otherwise be found in production: a path that escapes the site, a system folder, and a page path
+   that is not a page. */
+
+/* `about/` is a real folder in the site tree; inside the wasm harness only the PHP trees are mounted,
+   so it is created when it is missing. Nothing is written — the guard only resolves the folder. */
+@mkdir(WX_SITE_ROOT . '/about', 0755, true);
+eq(wx_page_rel('about/index.html'), 'about/index.html', 'a sub-folder page path is accepted');
+eq(wx_page_rel('/about/index.html'), 'about/index.html', 'a leading slash is normalised away');
+
+foreach ([
+    '../../etc/passwd'        => 'escapes the site',
+    'about/../../index.html'  => 'escapes the site',
+    'admin/index.html'        => 'is a system folder',
+    'api/v2/x.html'           => 'is a system folder',
+    'assets/img/x.html'       => 'is a system folder',
+    'index.php'               => 'is not a page',
+] as $bad => $why) {
+    $threw = '';
+    try { wx_page_rel($bad); } catch (Throwable $e) { $threw = $e->getMessage(); }
+    ok($threw !== '', '"' . $bad . '" ' . $why . ' and is refused');
+}
+
+eq(wx_page_title_of('<html><head><TITLE> Woodex  Interiors </TITLE></head>'), 'Woodex Interiors', 'the title is read out of a page for the index');
+eq(wx_page_title_of('<html><head></head>'), '', 'a page with no title reports an empty one rather than a notice');
+
+/* A batch id has to be a real UUID: it travels in URLs and the history groups by it. */
+$uuid = wx_uuid();
+ok((bool) preg_match('~^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$~', $uuid), 'a batch id is a version-4 UUID');
+ok(wx_uuid() !== $uuid, 'two batch ids are not the same');
+
+/* The site's own pages are found by the walk that the header-across-150-pages change relies on. In the
+   wasm harness only the PHP trees are mounted, so this part runs where the site is actually present. */
+$pages = wx_page_walk(WX_SITE_ROOT);
+if (count($pages) > 10) {
+    ok(count($pages) > 50, 'the page walk finds the site\'s pages (' . count($pages) . ')');
+    ok(!in_array('api/v2/index.php', $pages, true), 'the walk does not enter system folders');
+    ok(in_array('about/index.html', $pages, true), 'the walk finds a page in a sub-folder');
+} else {
+    skip('the page walk needs the site tree — only the PHP trees are mounted in the wasm harness');
+}
+
+/* ------------------------------------------------ images */
+ok(wx_media_ok('/assets/img/kitchen-1.webp'), 'an image URL in assets/img is valid');
+ok(wx_media_ok('/assets/uploads/2026-10/kitchen-1.jpeg'), 'an image URL in an uploads sub-folder is valid');
+ok(!wx_media_ok('/assets/img/../_private/db.json'), 'an image URL cannot walk up out of its folder');
+ok(!wx_media_ok('/assets/img/logo.php'), 'an image URL is an image extension, not any file');
+ok(!wx_media_ok('/uploads/logo.webp'), 'an image outside assets is not valid');
+
+eq(wx_media_sniff("\xFF\xD8\xFF\xE0rest"), 'jpg', 'JPEG bytes are recognised by their marker');
+eq(wx_media_sniff("\x89PNG\r\n"), 'png', 'PNG bytes are recognised');
+eq(wx_media_sniff('RIFFxxxxWEBPVP8 '), 'webp', 'RIFF/WEBP is recognised');
+eq(wx_media_sniff('GIF89a'), 'gif', 'GIF is recognised');
+eq(wx_media_sniff("\x00\x00\x00 ftypavif"), 'avif', 'AVIF is recognised by its brand');
+eq(wx_media_sniff('<?php echo 1;'), null, 'a PHP file uploaded as an image is not an image');
+eq(wx_media_sniff('<svg xmlns="http://www.w3.org/2000/svg"></svg>'), null, 'an SVG is not accepted as an image upload — it is HTML, and assets are same-origin');
+
+eq(wx_media_variant('/assets/img/kitchen-1.webp', 960), '/assets/img/kitchen-1.w960.webp', 'the derivative name is the width, not a folder');
+eq(count(WX_MEDIA_RS_W), 3, 'three widths are generated, as v2.1 did');
+
+$threw = '';
+try { wx_media_b64(''); } catch (Throwable $e) { $threw = $e->getMessage(); }
+ok(str_contains($threw, 'base64'), 'empty image data is refused by name');
+eq(strlen(wx_media_b64('data:image/png;base64,' . base64_encode('hello'))), 5, 'the browser\'s data: URL prefix is stripped before decoding');
+$threw = '';
+try { wx_media_b64('not base64 at all !!'); } catch (Throwable $e) { $threw = $e->getMessage(); }
+ok($threw !== '', 'data that is not base64 is refused before anything is written');
+
+/* ------------------------------------------------ the file manager */
+ok(wx_fm_ro('assets'), 'the assets root is read-only');
+ok(wx_fm_ro('assets/css/app.css'), 'the stylesheet folder is read-only');
+ok(!wx_fm_ro('assets/uploads'), 'uploads is writable');
+ok(!wx_fm_ro('assets/uploads/2026-10'), 'a folder inside uploads is writable');
+
+eq(wx_fm_clean('My File Name.PNG'), 'my-file-name.png', 'an uploaded name is normalised, not trusted');
+eq(wx_fm_clean('../../x'), 'x', 'dots and slashes do not survive a name');
+
+foreach (['../etc/passwd', 'assets/../_private/db.json', 'api/v2/index.php', 'assets/.hidden/x'] as $bad) {
+    $threw = '';
+    try { wx_fm_path($bad, false); } catch (Throwable $e) { $threw = $e->getMessage(); }
+    ok($threw !== '', 'the file manager refuses "' . $bad . '"');
+}
+ok(!in_array('php', WX_FM_EXT, true), 'PHP is not an uploadable file type');
+ok(in_array('svg', WX_FM_EXT, true) && in_array('pdf', WX_FM_EXT, true), 'the document and image types v2.1 allowed are still allowed');
+
 /* ============================================================== report */
 echo "\n";
 if ($failures) {

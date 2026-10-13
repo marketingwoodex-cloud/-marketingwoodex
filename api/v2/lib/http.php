@@ -235,6 +235,50 @@ function wx_respond(array $envelope, int $status = 200): void
     exit;
 }
 
+/**
+ * Send a file as the response body instead of JSON.
+ *
+ * There are exactly two places in the product that have to answer with bytes: the file manager's zip
+ * download, and — in Phase 5 — a backup download. Both are "the browser asked for a file and the admin
+ * has already decided the person may have it", so the rule is that a route never streams: it returns a
+ * spec (`path`, `name`, `mime`, and whether to delete the file afterwards) and this is the single place
+ * that writes it out. Keeping the readfile() here, next to the one JSON output, is what makes "only the
+ * front controller writes output" still true.
+ *
+ * The name is stripped to a safe set before it reaches the header: a file name is attacker-influenced
+ * text, and a newline in a Content-Disposition filename is a header injection.
+ */
+function wx_send_file(array $spec): void
+{
+    $path = (string) ($spec['path'] ?? '');
+    $delete = !empty($spec['delete']);
+    if ($path === '' || !is_file($path)) {
+        throw ApiError::notFound('That file is no longer there');
+    }
+    $name = (string) preg_replace('~[^a-zA-Z0-9._ -]~', '-', (string) ($spec['name'] ?? basename($path)));
+    $mime = (string) ($spec['mime'] ?? 'application/octet-stream');
+    while (ob_get_level() > 0) {
+        ob_end_clean();
+    }
+    if (defined('WX_RESPOND_CAPTURE')) {
+        $GLOBALS['WX_RESPONSES'][] = ['status' => 200, 'file' => ['name' => $name, 'size' => (int) filesize($path), 'mime' => $mime], 'headers' => wx_test_headers()];
+        if ($delete) {
+            @unlink($path);
+        }
+        return;
+    }
+    header('Content-Type: ' . $mime);
+    header('Content-Length: ' . (string) filesize($path));
+    header('Content-Disposition: attachment; filename="' . $name . '"');
+    header('X-WX-Request-Id: ' . wx_request_id());
+    header('Cache-Control: private, no-store');
+    readfile($path);
+    if ($delete) {
+        @unlink($path);
+    }
+    exit;
+}
+
 /** The headers a response would have sent, for the capture mode above and for tests. */
 function wx_test_headers(): array
 {
