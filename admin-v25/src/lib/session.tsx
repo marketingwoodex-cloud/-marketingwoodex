@@ -10,9 +10,11 @@
  *   · `live` — the API answered `/me`. Screens call api/v2 and show what it sent.
  *   · `signedOut` — the API is there and healthy, nobody is signed in. The sign-in screen.
  *   · `offline` — no API (a static preview, a host that has not been migrated, a network failure).
- *     The prototype's demo data is shown, with a line in the shell saying so and why.
+ *     Nothing is invented: the shell names the state, and each screen says the same thing in its own words.
  *
- * Falling back to demo data when the API is *reachable* was the one option ruled out. A screen that
+ * Falling back to demo data was ruled out in both directions: while the API is *reachable* a screen
+ * showing mock numbers is worse than no screen, because somebody will believe the numbers — and saying
+ * "demo data" about a host that is merely down is the same lie told the other way round. A screen that
  * shows mock numbers while a real backend is answering is worse than no screen: someone will believe
  * the numbers. When the API answers and is not ready, the shell says which check failed.
  *

@@ -24,6 +24,7 @@ import { LiveLibrary } from "./screens/LiveLibrary";
 import { LiveSiteTheme } from "./screens/LiveSiteTheme";
 import { LivePlacements } from "./screens/LivePlacements";
 import { SessionCtx, type SessionValue } from "./lib/session";
+import { linkLabel, linkPill } from "./lib/live";
 
 /* This file is built by vite for Node (see package.json#scripts.smoke), so `process` exists at run
    time. TypeScript does not know that without @types/node, and pulling a Node type package into a
@@ -131,6 +132,7 @@ const asUser = {
 
 let htmlSignedOut = "";
 let htmlSignedOutOffline = "";
+let htmlSignedOutDemo = "";
 let htmlSignedOutChecking = "";
 let htmlLiveDash = "";
 let htmlLiveLeads = "";
@@ -155,7 +157,7 @@ try {
           role="owner" setRole={noop} theme="light" toggleTheme={noop} density="comfortable" setDensity={noop}
           badges={{ leads: 0, chat: 0, approvals: 0, total: 0 }} onOpenPalette={noop}
           routeId="dashboard" crumbs={[{ label: "Today" }]} link="signedOut"
-          linkText="api/v2 2.5.0-p1 · not signed in" countsFrom="demo" user={null} onSignOut={noop}
+          linkText={linkLabel(null, "signedOut", "")} demo={false} user={null} onSignOut={noop}
         >
           <SignIn />
         </Shell>
@@ -164,6 +166,28 @@ try {
   );
 } catch (err) {
   failures.push(`sign-in screen → ${(err as Error).message}`);
+}
+
+/* The same strip in demo mode, where the label *is* true — the point is not to delete the words "demo
+   data", it is to say them only when there is a demo behind them. */
+try {
+  htmlSignedOutDemo = renderToString(
+    <MemoryRouter initialEntries={["/dashboard"]}>
+      <SessionCtx.Provider value={session("offline", null)}>
+        <Shell
+          role="owner" setRole={noop} theme="light" toggleTheme={noop} density="comfortable" setDensity={noop}
+          badges={{ leads: 0, chat: 0, approvals: 0, total: 0 }} onOpenPalette={noop}
+          routeId="dashboard" crumbs={[{ label: "Today" }]} link="offline"
+          linkText={linkLabel(null, "offline", "demo mode was requested", true)} demo
+          user={null} onSignOut={noop}
+        >
+          <SignIn />
+        </Shell>
+      </SessionCtx.Provider>
+    </MemoryRouter>,
+  );
+} catch (err) {
+  failures.push(`sign-in screen in demo mode → ${(err as Error).message}`);
 }
 
 /* The door on its first paint, while the health probe is still in flight: no note has been decided yet and
@@ -176,7 +200,7 @@ try {
           role="owner" setRole={noop} theme="light" toggleTheme={noop} density="comfortable" setDensity={noop}
           badges={{ leads: 0, chat: 0, approvals: 0, total: 0 }} onOpenPalette={noop}
           routeId="dashboard" crumbs={[{ label: "Today" }]} link="checking"
-          linkText="api/v2 · checking" countsFrom="demo" user={null} onSignOut={noop}
+          linkText={linkLabel(null, "checking", "")} demo={false} user={null} onSignOut={noop}
         >
           <SignIn />
         </Shell>
@@ -198,7 +222,7 @@ try {
           role="owner" setRole={noop} theme="light" toggleTheme={noop} density="comfortable" setDensity={noop}
           badges={{ leads: 0, chat: 0, approvals: 0, total: 0 }} onOpenPalette={noop}
           routeId="dashboard" crumbs={[{ label: "Today" }]} link="offline"
-          linkText="api/v2 is not answering" countsFrom="demo" user={null} onSignOut={noop}
+          linkText={linkLabel(null, "offline", "the server could not be reached")} demo={false} user={null} onSignOut={noop}
         >
           <SignIn />
         </Shell>
@@ -451,6 +475,35 @@ for (const [name, ok] of [
   [
     "and it says it is still looking for the server, instead of opening against one that has not answered",
     htmlSignedOutChecking.includes("Checking the server…") && /<button type="submit" disabled/.test(htmlSignedOutChecking),
+  ],
+  /* The strip is where "demo data" was being said about a host that was simply unreachable. */
+  [
+    "an unreachable API is not called demo data",
+    htmlSignedOutOffline.includes("not answering") &&
+      !htmlSignedOutOffline.includes(">demo data<") &&
+      !htmlSignedOutOffline.includes("v2.5 Pro plan"),
+  ],
+  [
+    "and the sentence does not claim any of it comes from the site",
+    htmlSignedOutOffline.includes("Nothing on these screens is read from your site"),
+  ],
+  [
+    "demo mode still says so, because there it is true",
+    htmlSignedOutDemo.includes("demo data") && htmlSignedOutDemo.includes("v2.5 Pro plan"),
+  ],
+  ["the pill follows the state", linkPill("offline", false).label === "not answering" && linkPill("offline", true).label === "demo data"],
+  [
+    "and so does the sentence",
+    !linkLabel(null, "offline", "the server could not be reached").includes("Demo data") &&
+      linkLabel(null, "offline", "demo mode was requested", true).includes("Demo data"),
+  ],
+  [
+    "an API that answers but cannot work is not a demo either",
+    !linkLabel(
+      { service: "woodex-api", version: "2.5.0-p1", php: "8.2.33", ready: false, db: { reachable: false, migrated: true }, time: "" },
+      "offline",
+      "",
+    ).includes("demo data"),
   ],
   ["the live dashboard renders its loading state, not zeros", htmlLiveDash.includes("Loading…")],
   ["the live dashboard does not claim numbers before the server answers", !htmlLiveDash.includes("kpi-value")],

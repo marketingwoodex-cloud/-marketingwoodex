@@ -507,20 +507,50 @@ export function isPending(v: unknown): v is PendingResult {
   return typeof v === "object" && v !== null && (v as PendingResult).pending === true;
 }
 
-/** One line for the shell: what the API is, whether it is usable, and why not if it is not. */
-export function linkLabel(health: Health | null, link: string, reason: string): string {
-  if (link === "checking") return "Checking api/v2…";
-  if (link === "offline") return `Demo data · api/v2 not reachable${reason ? ` — ${reason}` : ""}`;
-  if (!health) return "Demo data";
+/**
+ * The label the shell carries for the link, and the sentence beside it — one function each, and they are
+ * built from the same two facts: is the API answering, and is any of this demo data?
+ *
+ * The distinction the strip has to keep is between **"we cannot reach your site"** and **"this is a design
+ * preview"**. v2.5's first strip said "Demo data" for both, which is a claim about where the numbers came
+ * from — and during a cut-over the API is unreachable most of the time for reasons that have nothing to do
+ * with a demo: the host is down, the database has not been migrated, the deploy half-finished. Saying
+ * "demo data" then is not a harmless hedge; it tells the person their admin is a mock-up when it is really
+ * a door that cannot open yet.
+ *
+ * `demo` is only ever true when demo mode was asked for (`?demo=1` or `VITE_WX_DEMO=1`). Everything else
+ * that ends up offline says so in the words that are true of it.
+ */
+export function linkLabel(health: Health | null, link: string, reason: string, demo = false): string {
+  if (link === "checking") return "Looking for api/v2…";
+  if (link === "offline") {
+    return demo
+      ? "Demo data — a design preview. Nothing on these screens is read from your site."
+      : `api/v2 is not answering${reason ? ` — ${reason}` : ""}. Nothing on these screens is read from your site.`;
+  }
+  if (link === "signedOut") {
+    return health
+      ? `api/v2 ${health.version} is answering · PHP ${health.php} · sign in to see your site`
+      : "api/v2 is answering · sign in to see your site";
+  }
+  if (!health) return "api/v2 is answering";
   if (!health.ready) {
     const why = !health.db.reachable
       ? "the database is not reachable"
       : !health.db.migrated
         ? "the database has not been migrated"
         : "the platform is not ready";
-    return `api/v2 ${health.version} is answering, but ${why} — screens are showing demo data`;
+    return `api/v2 ${health.version} is answering, but ${why} — the screens say so rather than show numbers that may be out of date`;
   }
   return `Live · api/v2 ${health.version} · PHP ${health.php}`;
+}
+
+/** The pill the strip leads with, which has to agree with the sentence beside it. */
+export function linkPill(link: string, demo = false): { tone: "ok" | "info" | "warn" | "danger"; label: string } {
+  if (link === "live") return { tone: "ok", label: "live" };
+  if (link === "checking") return { tone: "info", label: "checking" };
+  if (link === "signedOut") return { tone: "info", label: "signed out" };
+  return demo ? { tone: "warn", label: "demo data" } : { tone: "danger", label: "not answering" };
 }
 
 /* ---------------------------------------------------------------- the site theme (routes/theme.php) */

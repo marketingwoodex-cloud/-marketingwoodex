@@ -39,7 +39,7 @@ export default function App() {
     (typeof window !== "undefined" && new URLSearchParams(window.location.search).has("demo"));
   return (
     <SessionProvider demo={demo}>
-      <Frame />
+      <Frame demo={demo} />
     </SessionProvider>
   );
 }
@@ -47,12 +47,16 @@ export default function App() {
 /**
  * The frame: health, session, badges, routes.
  *
- * Three states, and the sign-in screen is one of them rather than an overlay:
- *   · the API is not answering  → the design renders from demo data, and the strip says so
+ * Four states, and the sign-in screen is one of them rather than an overlay:
+ *   · the API is being looked for → the strip says so, and the door will not open yet
+ *   · the API is not answering  → the strip says that, in those words, and nothing is invented for it
  *   · the API is there, nobody is signed in → SignIn
  *   · signed in → the app, with the role and the counts the *server* reported
+ *
+ * `demo` (from `?demo=1` or the build flag) is the only thing any of this calls a demo; without it, an
+ * unreachable host is reported as an unreachable host.
  */
-function Frame() {
+function Frame({ demo }: { demo: boolean }) {
   const appearance = useAppearance();
   const [role, setRole] = useState<Role>("owner");
   const [paletteOpen, setPaletteOpen] = useState(false);
@@ -93,8 +97,9 @@ function Frame() {
     };
   }, [bell.data, role]);
 
-  const countsFrom: "server" | "demo" = bell.data ? "server" : "demo";
-  const strip = linkLabel(health, link, reason);
+  /* `demo` is the only thing that may be called a demo: it is set by `?demo=1` or the build flag, and the
+     strip, the pill and the plan label are all derived from it together with the link state. */
+  const strip = linkLabel(health, link, reason, demo);
 
   /* The role the *server* says, when there is one. The demo switcher still drives the design preview. */
   const effectiveRole = live && user ? (user.role as Role) : role;
@@ -139,7 +144,7 @@ function Frame() {
         crumbs={crumbs}
         link={link}
         linkText={strip}
-        countsFrom="demo"
+        demo={demo}
         user={null}
         onSignOut={() => void signOut()}
       >
@@ -163,7 +168,7 @@ function Frame() {
         crumbs={crumbs}
         link={link}
         linkText={strip}
-        countsFrom={countsFrom}
+        demo={demo}
         user={user ? { name: user.name, roleLabel: user.roleLabel } : null}
         onSignOut={() => void signOut()}
       >

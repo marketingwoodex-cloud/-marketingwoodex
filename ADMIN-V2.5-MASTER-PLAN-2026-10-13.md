@@ -540,11 +540,14 @@ back from page history — all through v2.5.
 spinner: the API is being looked for, it is not answering, it is answering and you are not signed in, or you are
 signed in. The first one is the state nobody could see — the door used to render a live Sign in button against a
 server that had not answered yet — so it now says it is still looking and stays closed. The third one is where a prototype lies by habit — it falls back to mock data under a green
-label. Here the shell names the state and labels the layout a demo, and each screen then says only what is true
-about *itself*: the sign-in screen shows no site data whatever, so it says there is nothing behind the form to
+label. Here the shell names the state — its pill reads `live`, `checking`, `signed out`, `not answering` or `demo data`,
+and the pill and the sentence beside it are derived from the same two facts so they cannot disagree — and each
+screen then says only what is true about *itself*: the sign-in screen shows no site data whatever, so it says there is nothing behind the form to
 open a session rather than telling the person they are "looking at the UI with demo data" — a sentence that was
-true of the prototype with a mock behind it and false of a real door with a disabled button. A screen that cannot
-load its data offers no button that would pretend to work, and the smoke test asserts both halves of that.
+true of the prototype with a mock behind it and false of a real door with a disabled button. The words "demo data", and the label naming the v2.5 Pro plan, appear in **demo mode only**: an admin that
+cannot reach its own host is reported as an unreachable host, because calling that a demo tells the person their
+console is a mock-up when it is really a door that cannot open yet. A screen that cannot load its data offers no
+button that would pretend to work, and the smoke test asserts both halves of that.
 
 **All three sentences of the gate are now wired**, and the wiring is asserted (`tests/run.php`, "the gate,
 as wiring"): `POST /content/{id}/publish` composes and writes the article and returns the batch that undoes

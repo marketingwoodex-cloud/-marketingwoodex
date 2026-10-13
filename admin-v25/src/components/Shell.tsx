@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import clsx from "clsx";
 import { SECTIONS, sectionRoutes, type Role } from "../lib/nav";
+import { linkPill } from "../lib/live";
 import type { Theme, Density } from "../lib/theme";
 import { Avatar, Btn, Pill } from "./primitives";
 
@@ -29,7 +30,8 @@ export function Shell({
   crumbs,
   link,
   linkText,
-  countsFrom,
+  /** True only in demo mode (`?demo=1`): the strip may label a design preview as one, and nothing else. */
+  demo,
   user,
   onSignOut,
 }: {
@@ -47,13 +49,14 @@ export function Shell({
   /** live | signedOut | offline | checking — decides the strip, and whether the role switcher is real */
   link: "checking" | "offline" | "signedOut" | "live";
   linkText: string;
-  /** where the badge counts came from, so nobody has to guess whether the numbers are real */
-  countsFrom: "server" | "demo";
+  demo?: boolean;
   user: { name: string; roleLabel: string } | null;
   onSignOut: () => void;
 }) {
   const [mini, setMini] = useState(false);
   const loc = useLocation();
+  /* One label for the link, derived here so the pill and the sentence it leads can never disagree. */
+  const pill = linkPill(link, demo);
 
   // expanded sub-groups; the group holding the current route opens by itself
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
@@ -184,7 +187,7 @@ export function Shell({
                 value={role}
                 onChange={(e) => setRole(e.target.value as Role)}
                 aria-label="Preview as role"
-                title="Preview the dashboard as another role (demo data)"
+                title={demo ? "Preview the console as another role (demo data)" : "Preview the console as another role — the layouts, not what the account can do"}
               >
                 {(Object.keys(ROLE_LABEL) as Role[]).map((r) => (
                   <option key={r} value={r}>{ROLE_LABEL[r]}</option>
@@ -245,15 +248,11 @@ export function Shell({
           role="status"
           aria-live="polite"
         >
-          {link === "live" ? (
-            <Pill tone="ok" plain>live</Pill>
-          ) : link === "checking" ? (
-            <Pill tone="info" plain>checking</Pill>
-          ) : (
-            <Pill tone="warn" plain>demo data</Pill>
-          )}
+          <Pill tone={pill.tone} plain>{pill.label}</Pill>
           <span>{linkText}</span>
-          {countsFrom === "demo" && link !== "live" && (
+          {/* The plan label belongs to demo mode and to nothing else: an admin that cannot reach its own
+              host is not a design preview, and saying so would be the strip's version of a lie. */}
+          {demo && link !== "live" && (
             <span className="muted">· layouts and interactions from the v2.5 Pro plan</span>
           )}
         </div>
