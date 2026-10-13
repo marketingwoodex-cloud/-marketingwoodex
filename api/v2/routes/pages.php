@@ -218,3 +218,28 @@ function wx_route_pages_search(array $ctx): array
         'pages' => array_slice($hits, 0, 20),
     ]];
 }
+
+/**
+ * POST /pages/fetch — read another site's page so sections can be picked out of it (v2.1's `fetch_page`).
+ *
+ * This is the one route in the API that deliberately returns somebody else's HTML to the browser. It is
+ * returned as *data for the section picker*, never written to a page: nothing here composes, and the page
+ * editor still has to pass the script rule when the picked sections are saved.
+ */
+function wx_route_pages_fetch(array $ctx): array
+{
+    return wx_appr_route('fetch_page', $ctx, 'pages', 'wx_route_pages_fetch_do', static fn() => wx_route_pages_fetch_do($ctx));
+}
+
+function wx_route_pages_fetch_do(array $ctx): array
+{
+    $u = wx_require_user('fetch_page', WX_PAGES_EDIT);
+    $r = wx_fetch_page((string) ($ctx['body']['url'] ?? ''));
+    wx_audit($u, 'page.fetch', mb_substr($r['url'], 0, 300), ['bytes' => strlen($r['body']), 'hops' => $r['hops']]);
+    return ['data' => [
+        'html' => $r['body'],
+        'url' => $r['url'],
+        'bytes' => strlen($r['body']),
+        'reachedIn' => $r['hops'],
+    ]];
+}

@@ -215,3 +215,38 @@ function wx_media_tree(): array
     }
     return $folders;
 }
+
+/**
+ * POST /media/import — pull a stock image in from a public https link (v2.1's `import_url`).
+ *
+ * The two interesting parts are not in this function: which links may be requested at all is
+ * `lib/fetch.php` (https only, no credentials, no port, a name rather than an address, every resolved
+ * address public, every redirect hop re-checked), and what may be *stored* is the same `wx_media_upload()`
+ * the upload button uses — so a link that answers with an HTML page, a zip or an SVG is refused by the
+ * content check rather than by this handler remembering to look.
+ */
+function wx_route_media_import(array $ctx): array
+{
+    return wx_appr_route('import_url', $ctx, 'media', 'wx_route_media_import_do', static fn() => wx_route_media_import_do($ctx));
+}
+
+function wx_route_media_import_do(array $ctx): array
+{
+    $u = wx_require_user('import_url', WX_MEDIA_EDIT);
+    $url = (string) ($ctx['body']['url'] ?? '');
+    $name = (string) ($ctx['body']['name'] ?? 'stock');
+    $folder = (string) ($ctx['body']['folder'] ?? '');
+    $alt = (string) ($ctx['body']['alt'] ?? '');
+    $img = wx_fetch_image($url);
+    $stored = wx_guard('media.import', static fn(): array => wx_media_upload(
+        base64_encode($img['body']),
+        $name,
+        $folder,
+        $alt,
+        $u
+    ));
+    /* The receipt says where the bytes came from: an image whose origin is not written down is an image
+       nobody can check later. */
+    wx_audit($u, 'media.import', $stored['url'], ['from' => mb_substr($img['url'], 0, 300), 'bytes' => $stored['bytes']]);
+    return ['data' => $stored + ['from' => $img['url']]];
+}

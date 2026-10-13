@@ -515,9 +515,9 @@ working as intended, not a gap hidden by a fallback.
 
 ### Phase 3 — Content, assets and delivery · **in progress** · 4 weeks
 
-*Measured at this commit:* `tests/run.php` **463 passed · 0 failed · 9 skipped** · `tests/conformance.mjs`
-**70 · 0** · php-lint **136 files** · `admin-v25` smoke **89 checks · 65 routes** · legacy bridge **145 of 365
-actions** (39%). Migrations **000–013** are written and none has run on a database yet.
+*Measured at this commit:* `tests/run.php` **511 passed · 0 failed · 10 skipped** · `tests/conformance.mjs`
+**70 · 0** · php-lint **137 files** · `admin-v25` smoke **89 checks · 65 routes** · legacy bridge **147 of 365
+actions** (40%). Migrations **000–013** are written and none has run on a database yet.
 
 Pages · builder bridge · section library · header/footer · heroes · redirects · the full content CMS ·
 media with alt-text queue · forms · estimator · client updates · projects and the Gantt timeline ·
@@ -567,13 +567,13 @@ anybody reads, and a draft revision of a quotation is a copy. One deliberate tig
 merging the 36-address redirect plan now queues under `redirects_save`, because typing the same rules by hand
 already did.
 
-**Still to come in this phase:** the rest of the builder bridge — `fetch_page`/`import_url` (a public page
-and a remote image, both of which need v2.1's SSRF rules ported with them: https only, no credentials or
-ports in the URL, every resolved address checked against the private ranges, every redirect hop re-checked,
-3 MB), `media_delete` and `media_usage` (v2.5 has a trash rather than a delete and a usage field rather than
-a usage action, so these are decisions about what the old names now mean rather than mappings), and
-`backups`, the builder's media family in the admin (`media` and `upload` are bridged onto the media
-screen's handlers; the other two are named above), placements and designs (testimonials and team appear
+| Delivered — the two fetchers | Where | Note |
+|---|---|---|
+| v2.1's `fetch_page` and `import_url`, with the SSRF rules that came with them | `lib/fetch.php`, `routes/pages.php` (`POST /pages/fetch`), `routes/media.php` (`POST /media/import`) | A server-side request to an address the user pasted is the definition of SSRF, and v2.1's audit F-06 grew a set of rules for it — https only, no credentials or ports in the URL, a name rather than a numeric address, every resolved address public, **every redirect hop re-checked**, 3 MB of HTML and 8 MB of image, the certificate and the name verified. All of them are ported, one hardening is added on top (`::ffff:127.0.0.1` is *reserved* rather than private, so PHP's own flags pass it), and the transport is injectable — so the refusal that matters, a public link redirecting to `169.254.169.254`, is asserted against a fake transport rather than hoped for. The image lands through the same `wx_media_upload()` the upload button uses, so what may be stored is decided once |
+
+**Still to come in this phase:** the rest of the builder bridge — `media_delete` and `media_usage` (v2.5 has a
+trash rather than a delete and a usage field rather than a usage action, so these are decisions about what
+the old names now mean rather than mappings) and `backups` — placements and designs (testimonials and team appear
 *inside* pages — the API exists, the renderer does not yet), city pages (their
 publish path is root-level, unlike posts and case studies), heroes, forms, the estimator, projects and the
 Gantt timeline, quote templates, business info (`cms_biz_*`), announcements, the AI settings screen, SEO

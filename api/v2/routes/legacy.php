@@ -206,6 +206,11 @@ function wx_legacy_bridged(): array
            teach the caller something untrue. */
         'media'            => ['media', 'wx_route_media_list', []],
         'upload'           => ['media', 'wx_route_media_upload', []],
+        /* The two fetchers. Both are in the policy's skip list, as they were in v2.1 — looking at a public
+           page or pulling an image changes nothing on the site, so there is nothing for the Master to
+           approve. What they do need is the SSRF rules, which travel with them in `lib/fetch.php`. */
+        'import_url'       => ['media', 'wx_route_media_import', []],
+        'fetch_page'       => ['pages', 'wx_route_pages_fetch', []],
     ];
 }
 

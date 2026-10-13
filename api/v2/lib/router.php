@@ -195,6 +195,8 @@ function wx_routes(): array
            is `page_rollback`, which the policy names as never queued with its reason. */
         ['POST',   'pages/rollback',                  'pages', 'wx_route_pages_rollback',  null],
         ['POST',   'pages/new',                       'pages', 'wx_route_pages_new',       'page_new'],
+        /* v2.1's `fetch_page`: read another site's page so sections can be picked out of it. */
+        ['POST',   'pages/fetch',                     'pages', 'wx_route_pages_fetch',     'fetch_page'],
         ['GET',    'pages/{rel}',                     'pages', 'wx_route_pages_get',       null],
         ['POST',   'pages/{rel}/restore',             'pages', 'wx_route_pages_restore',   'restore'],
 
@@ -214,6 +216,9 @@ function wx_routes(): array
         ['POST',   'media/upload',                    'media', 'wx_route_media_upload',    'media_upload'],
         ['POST',   'media/replace',                   'media', 'wx_route_media_replace',   'media_replace'],
         ['POST',   'media/sizes',                     'media', 'wx_route_media_sizes',     'media_sizes'],
+        /* v2.1's `import_url`: pull a stock image in from a public https link. It answers v2.1's action name
+           because that is what the permission matrix knows; the fetching rules live in `lib/fetch.php`. */
+        ['POST',   'media/import',                    'media', 'wx_route_media_import',    'import_url'],
         ['POST',   'media/folder',                    'media', 'wx_route_media_folder',    'media_folder'],
         ['POST',   'media/move',                      'media', 'wx_route_media_move',      'media_move'],
         ['GET',    'media/trash',                     'media', 'wx_route_media_trash_list', 'media_trash_list'],

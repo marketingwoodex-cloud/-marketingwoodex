@@ -1451,6 +1451,124 @@ ok(in_array('--line', wx_theme_untouched(), true), 'and the structural tokens ar
 /* TODO-DB: reading the file, writing it, the record and the history need the site tree and migration 010. */
 skip('applying a theme needs the site tree, the version store and the audit table');
 
+/* ============================================================== reaching out to another server */
+group('A fetch goes where it is told and nowhere else');
+
+/* Rule 1-3: the URL itself, before anything is resolved. These are v2.1's rules (audit F-06) with the
+   reasons written next to them, because a rule about what may be requested is a rule somebody will one day
+   want to relax. */
+eq(wx_fetch_url_ok('https://www.woodex.pk/assets/img/hero.webp')['ok'], true, 'a public https link is allowed');
+eq(wx_fetch_url_ok('https://WWW.Woodex.pk/x.jpg')['host'], 'www.woodex.pk', 'the host is read case-insensitively');
+foreach ([
+    'http://www.woodex.pk/x.jpg' => 'plain http is refused',
+    'https://user:pw@www.woodex.pk/x.jpg' => 'credentials in the link are refused',
+    'https://www.woodex.pk:8080/x.jpg' => 'a port other than 443 is refused',
+    'https://127.0.0.1/x.jpg' => 'an IPv4 address is refused before it is resolved',
+    'https://[::1]/x.jpg' => 'an IPv6 address is refused too',
+    'https://localhost/x.jpg' => 'localhost is refused',
+    'https://api.local/x.jpg' => '*.local is refused',
+    'https://mail.internal/x.jpg' => '*.internal is refused',
+    'https://v2.localhost/x.jpg' => '*.localhost is refused',
+    'https://not a host/x.jpg' => 'a name that is not a name is refused',
+    'ftp://www.woodex.pk/x.jpg' => 'another scheme is refused',
+] as $url => $what) {
+    eq(wx_fetch_url_ok($url)['ok'], false, $what);
+}
+
+/* Rule 4: the address. `::ffff:127.0.0.1` is the one that matters — it is *reserved* rather than private,
+   so PHP's own flags pass it, which is exactly how a check like this gets walked around. */
+foreach ([
+    '8.8.8.8' => true, '1.1.1.1' => true, '2606:4700:4700::1111' => true,
+    '127.0.0.1' => false, '10.1.2.3' => false, '172.16.5.5' => false, '192.168.1.1' => false,
+    '169.254.169.254' => false, '0.0.0.0' => false, '::1' => false, '::' => false,
+    '::ffff:127.0.0.1' => false, '::ffff:169.254.169.254' => false, 'fc00::1' => false, 'fe80::1' => false,
+    '' => false, 'not-an-ip' => false,
+] as $ip => $allowed) {
+    eq(wx_fetch_ip_ok((string) $ip), $allowed, ($allowed ? 'public' : 'internal') . ' address ' . ($ip === '' ? '(empty)' : $ip));
+}
+
+/* Rule 6 and the shape check: a JSON answer is not a page to pick sections from, and 3 MB is the limit. */
+eq(wx_fetch_html_ok("<div class=\"x\">hi</div>"), true, 'a fragment of HTML counts as a page');
+eq(wx_fetch_html_ok('{"ok":true,"data":[]}'), false, 'a JSON answer is not a page');
+eq(wx_fetch_html_ok(''), false, 'an empty answer is not a page');
+eq(wx_fetch_html_ok(str_repeat('x', WX_FETCH_MAX_HTML + 1)), false, 'and neither is one past the size limit');
+
+/* The transport, with a fake one: the rules are the part that has to be right, and they can be exercised
+   without a network call. The map below is "what the world answers", so each test reads as one story. */
+$world = static function (array $pages, array $dns = []): array {
+    return [
+        'resolve' => static fn(string $h): array => isset($dns[$h])
+            ? ['ok' => true, 'why' => '', 'ips' => $dns[$h]]
+            : ['ok' => true, 'why' => '', 'ips' => ['93.184.216.34']],
+        'get' => static fn(string $u, int $max, string $accept): array => $pages[$u]
+            ?? ['code' => 0, 'body' => '', 'location' => '', 'type' => ''],
+    ];
+};
+
+$ok = wx_fetch_https('https://stock.example/photo.jpg', 1024, 'image/*', $world([
+    'https://stock.example/photo.jpg' => ['code' => 200, 'body' => 'IMG', 'location' => '', 'type' => 'image/jpeg'],
+]));
+eq($ok['body'], 'IMG', 'a 200 comes back with its bytes');
+eq($ok['hops'], 0, 'and with no redirect used');
+
+/* The important one: a public link that redirects to the cloud metadata address. The first hop is fine, so
+   a check that only looked at the first URL would follow this straight into the network it came from. */
+throws('VALIDATION', 'url', static fn() => wx_fetch_https('https://stock.example/go', 1024, 'image/*', $world([
+    'https://stock.example/go' => ['code' => 302, 'body' => '', 'location' => 'http://169.254.169.254/latest/meta-data/', 'type' => ''],
+])), 'a redirect into the cloud metadata address is refused');
+
+/* The same walk-around with a public-looking name whose address is internal: the name passes the URL rules
+   and the address does not, and the address is what is checked at every hop. */
+throws('VALIDATION', 'url', static fn() => wx_fetch_https('https://stock.example/go', 1024, 'image/*', $world(
+    ['https://stock.example/go' => ['code' => 302, 'body' => '', 'location' => 'https://intranet.example/x', 'type' => '']],
+    ['intranet.example' => ['10.0.0.5']]
+)), 'a redirect to a name that resolves inside the network is refused');
+throws('VALIDATION', 'url', static fn() => wx_fetch_https('https://mixed.example/x', 1024, 'image/*', $world(
+    [],
+    ['mixed.example' => ['93.184.216.34', '10.0.0.5']]
+)), 'a name that resolves to a public and a private address is refused');
+throws('VALIDATION', 'url', static fn() => wx_fetch_https('https://gone.example/x', 1024, 'image/*', $world(
+    [],
+    ['gone.example' => []]
+)), 'and a name that does not resolve is refused, not guessed at');
+
+/* A chain of redirects is followed to a point, then refused: an endless one holds a request open. */
+throws('VALIDATION', 'url', static fn() => wx_fetch_https('https://loop.example/a', 1024, 'image/*', $world([
+    'https://loop.example/a' => ['code' => 301, 'body' => '', 'location' => '/b', 'type' => ''],
+    'https://loop.example/b' => ['code' => 301, 'body' => '', 'location' => '/c', 'type' => ''],
+    'https://loop.example/c' => ['code' => 301, 'body' => '', 'location' => '/d', 'type' => ''],
+    'https://loop.example/d' => ['code' => 301, 'body' => '', 'location' => '/e', 'type' => ''],
+])), 'a redirect chain longer than three hops is refused');
+
+/* A relative Location is resolved against what was asked for, so a site that redirects within itself works. */
+$rel = wx_fetch_https('https://stock.example/a', 1024, 'image/*', $world([
+    'https://stock.example/a' => ['code' => 302, 'body' => '', 'location' => '/b.jpg', 'type' => ''],
+    'https://stock.example/b.jpg' => ['code' => 200, 'body' => 'IMG', 'location' => '', 'type' => 'image/jpeg'],
+]));
+eq($rel['url'], 'https://stock.example/b.jpg', 'a relative redirect lands on the resolved address');
+eq($rel['hops'], 1, 'and counts as one hop');
+
+throws('VALIDATION', 'url', static fn() => wx_fetch_https('https://stock.example/missing.jpg', 1024, 'image/*', $world([
+    'https://stock.example/missing.jpg' => ['code' => 404, 'body' => 'not here', 'location' => '', 'type' => 'text/html'],
+])), 'a 404 is refused with the code in the message');
+throws('VALIDATION', 'url', static fn() => wx_fetch_https('https://stock.example/empty', 1024, 'image/*', $world([
+    'https://stock.example/empty' => ['code' => 200, 'body' => '', 'location' => '', 'type' => 'text/html'],
+])), 'an empty answer is refused');
+throws('VALIDATION', 'url', static fn() => wx_fetch_https('https://stock.example/huge', 10, 'image/*', $world([
+    'https://stock.example/huge' => ['code' => 200, 'body' => str_repeat('x', 50), 'location' => '', 'type' => 'text/plain'],
+])), 'an answer past the cap is refused rather than truncated in silence');
+
+/* The two wrappers the routes use: a page must look like a page, and both keep the rules. */
+throws('VALIDATION', 'url', static fn() => wx_fetch_page('https://stock.example/api.json', $world([
+    'https://stock.example/api.json' => ['code' => 200, 'body' => '{"a":1}', 'location' => '', 'type' => 'application/json'],
+])), 'the section picker refuses a JSON answer');
+eq(wx_fetch_page('https://stock.example/post', $world([
+    'https://stock.example/post' => ['code' => 200, 'body' => '<html><body>x</body></html>', 'location' => '', 'type' => 'text/html'],
+]))['hops'], 0, 'and accepts a page, at no more than three hops');
+
+/* Nothing here touches the network: the default transport is only reached when a route calls it. */
+skip('the real transport (wx_fetch_get) needs a network and is exercised on the host');
+
 /* ============================================================== report */
 echo "\n";
 if ($failures) {
