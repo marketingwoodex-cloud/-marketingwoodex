@@ -515,8 +515,8 @@ working as intended, not a gap hidden by a fallback.
 
 ### Phase 3 — Content, assets and delivery · **in progress** · 4 weeks
 
-*Measured at this commit:* `tests/run.php` **582 passed · 0 failed · 12 skipped** · `tests/conformance.mjs`
-**72 · 0** · php-lint **139 files** · `admin-v25` smoke **102 checks · 65 routes** · legacy bridge **150 of 365
+*Measured at this commit:* `tests/run.php` **600 passed · 0 failed · 12 skipped** · `tests/conformance.mjs`
+**72 · 0** · php-lint **139 files** · `admin-v25` smoke **103 checks · 65 routes** · legacy bridge **150 of 365
 actions** (41%). Migrations **000–014** are written and none has run on a database yet.
 
 Pages · builder bridge · section library · header/footer · heroes · redirects · the full content CMS ·
@@ -594,12 +594,14 @@ already did.
 |---|---|---|
 | v2.1's `fetch_page` and `import_url`, with the SSRF rules that came with them | `lib/fetch.php`, `routes/pages.php` (`POST /pages/fetch`), `routes/media.php` (`POST /media/import`) | A server-side request to an address the user pasted is the definition of SSRF, and v2.1's audit F-06 grew a set of rules for it — https only, no credentials or ports in the URL, a name rather than a numeric address, every resolved address public, **every redirect hop re-checked**, 3 MB of HTML and 8 MB of image, the certificate and the name verified. All of them are ported, one hardening is added on top (`::ffff:127.0.0.1` is *reserved* rather than private, so PHP's own flags pass it), and the transport is injectable — so the refusal that matters, a public link redirecting to `169.254.169.254`, is asserted against a fake transport rather than hoped for. The image lands through the same `wx_media_upload()` the upload button uses, so what may be stored is decided once |
 
-**Still to come in this phase:** city pages (a slice of their own: the address is root-level
-(`/<slug>/`, as v2.1 wrote it and Google has it) and v2.1's model was *copy an existing city page and
-rewrite each string*, which is a template problem rather than an editor one), heroes, forms, the estimator,
-projects and the Gantt timeline, quote templates, business info (`cms_biz_*`), announcements
-(`cms_announce_*`), the AI settings in the CMS (`cms_ai_*`), SEO screens and integrations. The builder's 19
-actions are all accounted for: 17 bridged, 2 named above as decisions.
+| Delivered — city pages | Where | Note |
+|---|---|---|
+| A city page is **root-level** (`/<address>/`), and its furniture comes from a template rather than from a copy someone edited | `wx_content_rel()`, `wx_content_shell_rel()` in `lib/content.php`, the `/cities` route in `App.tsx` | v2.1's model was *copy an existing city page and rewrite each string* — 150 pages of drift with a person in the middle. Here the address and the furniture are two rules: one function returns `/<slug>/index.html` for a city and `/<section>/<slug>/index.html` for a post or a case study (so the address is answered in one place for the item, the publish and the tick), and one function decides which page the furniture is read from — the template's `source` city if it names one, otherwise the front page, with `content.shell.city` to override both. The guard list is v2.1's (`insights`, `projects`, the machinery folders), and it is applied twice: when the address is typed and again at publish, because an item imported from v2.1 never passed through the form. Eleven assertions cover the rule itself; the publish path needs a database |
+
+**Still to come in this phase:** heroes, forms, the estimator, projects and the Gantt timeline, quote
+templates, business info (`cms_biz_*`), announcements (`cms_announce_*`), the AI settings in the CMS
+(`cms_ai_*`), SEO screens and integrations. The builder's 19 actions are all accounted for: 17 bridged, 2
+named above as decisions.
 
 ### Phase 4 — Automation and intelligence · 3 weeks
 
@@ -748,7 +750,7 @@ Everything in `admin-v25/` runs today:
 | Evidence | Result |
 |---|---|
 | Type check | clean, strict, `noUnusedLocals` |
-| Render smoke | **102 checks · 65 routes · 0 failures** |
+| Render smoke | **103 checks · 65 routes · 0 failures** |
 | Production build | 3 chunks, content-hashed, sourcemaps on |
 | Token contract | switching theme, accent and density re-themes all charts and screens |
 | Routing defects | AD-3, AD-4 and AD-12 structurally impossible in the registry |

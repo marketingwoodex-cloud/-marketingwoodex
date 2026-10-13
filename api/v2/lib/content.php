@@ -32,8 +32,30 @@ declare(strict_types=1);
 
 const WX_CONTENT_TYPES = ['post', 'study', 'testimonial', 'member', 'faq', 'city'];
 
-/** The types that become a page of their own. The rest appear inside pages (Phase 3 continues). */
 const WX_CONTENT_PAGES = ['post' => 'insights', 'study' => 'projects'];
+
+/** Folders a city page may not claim: v2.1 refused them too, because both are section index pages. */
+const WX_CONTENT_CITY_SKIP = ['insights', 'projects'];
+
+/**
+ * Where an item's page goes — the address rule, in one place.
+ *
+ * A post and a case study live under the index page of their section. A city page is **root-level**,
+ * `/<slug>/`: that is the address v2.1 wrote, that Google indexed and that somebody put on a card.
+ * `null` means "this kind does not become a page of its own" (testimonials, team members, FAQs), and this
+ * is the only place that question is answered — the item, the publish and the tick all ask it here.
+ *
+ * Pure: it takes the item and returns an address, so the rule can be tested without a database.
+ */
+function wx_content_rel(array $item): ?string
+{
+    $type = (string) ($item['type'] ?? '');
+    $slug = (string) ($item['slug'] ?? '');
+    if ($slug === '' || (!isset(WX_CONTENT_PAGES[$type]) && $type !== 'city')) {
+        return null;
+    }
+    return $type === 'city' ? $slug . '/index.html' : WX_CONTENT_PAGES[$type] . '/' . $slug . '/index.html';
+}
 
 /** The sections an article body may contain, in the order they are offered. */
 const WX_CONTENT_SECTIONS = ['lead', 'heading', 'para', 'list', 'image', 'quote', 'facts', 'faq', 'cta', 'related'];
@@ -78,7 +100,7 @@ function wx_content_clean(array $in, ?array $existing = null): array
         if (!preg_match('~^[a-z0-9][a-z0-9-]{0,59}$~', $slug)) {
             throw ApiError::validation('The page address is lower-case letters, numbers and dashes', 'slug');
         }
-        if ($type === 'city' && in_array($slug, WX_PAGE_SKIP, true)) {
+        if ($type === 'city' && (in_array($slug, WX_PAGE_SKIP, true) || in_array($slug, WX_CONTENT_CITY_SKIP, true))) {
             throw ApiError::validation('"' . $slug . '" is a folder the site uses', 'slug');
         }
         if ($existing !== null && (string) ($existing['rel'] ?? '') !== '' && (string) $existing['slug'] !== $slug) {
@@ -128,8 +150,8 @@ function wx_content_item(array $row): array
         'title' => (string) $row['title'],
         'rel' => $row['rel'],
         'url' => $row['rel'] !== null ? wx_page_url((string) $row['rel']) : null,
-        'where' => isset(WX_CONTENT_PAGES[$type]) || $type === 'city'
-            ? (isset(WX_CONTENT_PAGES[$type]) ? WX_CONTENT_PAGES[$type] . '/' : '') . (string) ($row['slug'] ?? '') . '/'
+        'where' => ($rel = wx_content_rel(['type' => $type, 'slug' => (string) ($row['slug'] ?? '')])) !== null
+            ? substr($rel, 0, -strlen('index.html'))
             : null,
         'data' => is_array($data) ? $data : [],
         'seo' => is_array($seo) ? $seo : [],
@@ -237,6 +259,30 @@ function wx_content_save(array $clean, ?array $existing, array $me): array
 /* ============================================================ the page shell */
 
 /**
+ * Which page a kind of item copies its furniture from — the order of answers, pure.
+ *
+ * For a city page v2.1's model was *copy an existing city page and rewrite each string*; that is a
+ * template, so here the template says which city it copies (`source`) and the furniture is read from that
+ * page at publish time. With no source it is the front page, because a city page is a rewrite of the front
+ * page for one city. `content.shell.city` overrides both, for a site whose city pages copy something else.
+ *
+ * Split out from `wx_content_shell()` so the priority can be tested without a database or a site tree.
+ */
+function wx_content_shell_rel(string $type, string $override = '', string $source = ''): string
+{
+    if (!isset(WX_CONTENT_PAGES[$type]) && $type !== 'city') {
+        return '';
+    }
+    if ($override !== '') {
+        return $override;
+    }
+    if ($type === 'city') {
+        return $source !== '' ? $source . '/index.html' : 'index.html';
+    }
+    return WX_CONTENT_PAGES[$type] . '/index.html';
+}
+
+/**
  * The shell a kind of article is published into: the site's own page furniture, and the one page name
  * that has to be right for this site.
  *
@@ -245,12 +291,22 @@ function wx_content_save(array $clean, ?array $existing, array $me): array
  *
  * @return array{rel:string, before:string, after:string, has_main:bool}
  */
-function wx_content_shell(string $type): array
+function wx_content_shell(string $type, array $item = []): array
 {
-    $rel = (string) wx_setting('content.shell.' . $type, isset(WX_CONTENT_PAGES[$type]) ? WX_CONTENT_PAGES[$type] . '/index.html' : '');
+    $override = (string) wx_setting('content.shell.' . $type, '');
+    $source = '';
+    if ($type === 'city' && isset($item['tpl'])) {
+        $row = wx_one('SELECT tpl FROM wx_content_tpl WHERE id = ?', [(int) $item['tpl']]);
+        $tpl = $row === null ? null : json_decode((string) $row['tpl'], true);
+        $source = is_array($tpl) ? (string) ($tpl['source'] ?? '') : '';
+    }
+    $rel = wx_content_shell_rel($type, $override, $source);
     if ($rel === '' || !is_file(WX_SITE_ROOT . '/' . $rel)) {
         throw ApiError::conflict(
-            'There is no page to copy the page furniture from for a "' . $type . '". Set it on this screen — it should be the index page of the section this item is published into.',
+            'There is no page to copy the page furniture from for a "' . $type . '". '
+                . ($type === 'city'
+                    ? 'A city page copies the front page unless its template names a city page as the source; content.shell.city names one directly.'
+                    : 'Set it on this screen — it should be the index page of the section this item is published into.'),
             ['setting' => 'content.shell.' . $type, 'looked' => $rel]
         );
     }
@@ -331,7 +387,7 @@ function wx_content_head(string $head, array $item): string
 function wx_content_render(array $item, string $body, ?string $shellHtml = null): string
 {
     if ($shellHtml === null) {
-        $shell = wx_content_shell($item['type']);
+        $shell = wx_content_shell($item['type'], $item);
         $html = $shell['before'] . '<main id="main-content">' . $body . '</main>' . $shell['after'];
     } else {
         /* A test (or a caller with a specific shell) can pass one in. */
@@ -613,13 +669,18 @@ function wx_content_publish(int $id, array $me): array
         throw ApiError::notFound('That item is not in the list');
     }
     $item = wx_content_item($row);
-    if (!isset(WX_CONTENT_PAGES[$item['type']])) {
+    $rel = wx_content_rel($item);
+    if ($rel === null) {
         throw ApiError::validation('A "' . $item['type'] . '" is not published as a page of its own', 'type');
     }
     if ($item['slug'] === '') {
         throw ApiError::validation('This item has no page address yet', 'slug');
     }
-    $rel = WX_CONTENT_PAGES[$item['type']] . '/' . $item['slug'] . '/index.html';
+    /* The guard again, at the moment it matters: `wx_content_clean()` refuses these on save, and an item
+       imported from v2.1 never passed through it. */
+    if ($item['type'] === 'city' && (in_array($item['slug'], WX_PAGE_SKIP, true) || in_array($item['slug'], WX_CONTENT_CITY_SKIP, true))) {
+        throw ApiError::validation('"' . $item['slug'] . '" is a folder the site uses', 'slug');
+    }
     if ($item['rel'] !== null && $item['rel'] !== $rel) {
         throw ApiError::conflict('This item is live at ' . $item['url'] . ' — a published address cannot be moved', ['rel' => $item['rel']]);
     }

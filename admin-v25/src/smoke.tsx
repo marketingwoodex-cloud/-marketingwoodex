@@ -141,6 +141,7 @@ let htmlRedirectsOffline = "";
 let htmlMedia = "";
 let htmlContent = "";
 let htmlContentOffline = "";
+let htmlCityOffline = "";
 let htmlGlobal = "";
 let htmlGlobalOffline = "";
 let htmlPages = "";
@@ -319,6 +320,20 @@ try {
   );
 } catch (err) {
   failures.push(`content without an API → ${(err as Error).message}`);
+}
+
+/* `/cities` is the same screen opened on another kind. What has to be true of it offline is the same as
+   for an article: it says which kind it is, and it does not show an empty list of city pages. */
+try {
+  htmlCityOffline = renderToString(
+    <MemoryRouter initialEntries={["/cities"]}>
+      <SessionCtx.Provider value={session("offline", null)}>
+        <LiveContent presetType="city" />
+      </SessionCtx.Provider>
+    </MemoryRouter>,
+  );
+} catch (err) {
+  failures.push(`the city screen without an API → ${(err as Error).message}`);
 }
 
 try {
@@ -518,6 +533,13 @@ for (const [name, ok] of [
   [
     "a content screen with no API says so instead of showing an empty article list",
     htmlContentOffline.includes("api/v2 is not answering") && !htmlContentOffline.includes("New article"),
+  ],
+  [
+    "and the city route is the same screen on another kind, not a placeholder",
+    htmlCityOffline.includes("City pages") &&
+      htmlCityOffline.includes("api/v2 is not answering") &&
+      !htmlCityOffline.includes("New article") &&
+      !htmlCityOffline.includes("build plan"),
   ],
   ["the header & footer screen renders its loading state", htmlGlobal.includes("Loading…")],
   ["the pages screen renders its loading state", htmlPages.includes("Loading…")],

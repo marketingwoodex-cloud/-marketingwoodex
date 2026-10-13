@@ -284,7 +284,7 @@ export interface ContentData {
   import: { items: number; tpls: number } | null;
   types: string[];
   sections: string[];
-  shells: { post?: string; study?: string; hint?: string };
+  shells: { post?: string; study?: string; city?: string; hint?: string; cityHint?: string };
 }
 
 export interface ContentSaveResult {

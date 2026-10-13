@@ -26,7 +26,7 @@ import { Btn, Card, PageHead } from "./components/primitives";
 
 /** Route ids implemented by a real screen in this prototype (Phase 0). */
 const BUILT_IDS = new Set([
-  "dashboard", "leads", "enquiries", "pipeline", "quotes", "theme", "redirects", "media", "blog", "portfolio", "global", "pages", "library", "site-theme",
+  "dashboard", "leads", "enquiries", "pipeline", "quotes", "theme", "redirects", "media", "blog", "portfolio", "cities", "global", "pages", "library", "site-theme",
   "testimonials", "team",
 ]);
 
@@ -185,10 +185,12 @@ function Frame({ demo }: { demo: boolean }) {
               table that looks like data. */}
           <Route path="/redirects" element={<LiveRedirects />} />
           <Route path="/media" element={<LiveMedia />} />
-          {/* The content CMS. Two routes, one screen: an article and a case study are the same kind of
-              thing — the difference is which page furniture they publish into. */}
+          {/* The content CMS. Three routes, one screen: an article, a case study and a city page are the
+              same kind of thing — the difference is the address they take and the page furniture they
+              publish into. A city page is root-level, because that is where v2.1 put them. */}
           <Route path="/blog" element={<LiveContent presetType="post" />} />
           <Route path="/portfolio" element={<LiveContent presetType="study" />} />
+          <Route path="/cities" element={<LiveContent presetType="city" />} />
           {/* The header and the footer: one edit, every page, one undo. */}
           <Route path="/global" element={<LiveGlobal />} />
           {/* Every page and every change — where the header change across 150 pages is undone. */}

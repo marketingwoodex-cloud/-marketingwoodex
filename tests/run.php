@@ -1116,6 +1116,40 @@ foreach ([['type' => 'shoe', 'name' => 'x'], ['type' => 'post', 'name' => '  '],
 $city = wx_content_tpl_clean(['type' => 'city', 'name' => 'Lahore', 'source' => 'interior-design', 'order' => [['id' => 'hero', 'on' => true, 'label' => 'Hero'], ['id' => 'bad id!', 'on' => true]]]);
 eq(count($city['order']), 1, 'a city template keeps only well-formed section ids');
 
+/* ---- city pages: the address and the furniture are rules, not a copy-and-edit */
+eq(wx_content_rel(['type' => 'post', 'slug' => 'kitchen-cost']), 'insights/kitchen-cost/index.html', 'an article lives under its section');
+eq(wx_content_rel(['type' => 'study', 'slug' => 'gulberg-home']), 'projects/gulberg-home/index.html', 'a case study lives under its section');
+eq(wx_content_rel(['type' => 'city', 'slug' => 'johar-town']), 'johar-town/index.html', 'a city page is root-level, where v2.1 wrote it and where the addresses are indexed');
+eq(wx_content_rel(['type' => 'testimonial', 'slug' => 'ayesha']), null, 'a testimonial has no address of its own — the same rule says so');
+eq(wx_content_rel(['type' => 'city', 'slug' => '']), null, 'nor has an item with no address yet');
+$cityItem = wx_content_item([
+    'id' => 7, 'type' => 'city', 'status' => 'draft', 'slug' => 'johar-town', 'title' => 'Interior Design in Johar Town',
+    'rel' => null, 'data' => '{}', 'seo' => '{}', 'tpl_id' => null, 'flag_order' => 0, 'imported' => 0,
+    'publish_at' => null, 'published_at' => null, 'created_at' => '2026-10-14 09:00:00', 'created_by' => 'Ayesha',
+    'updated_at' => null, 'updated_by' => null,
+]);
+eq($cityItem['where'], 'johar-town/', 'a city page reads back at its root-level address');
+eq($cityItem['url'], null, 'and a draft has no URL yet — the address belongs to the page, not the draft');
+eq(wx_content_item(['id' => 8, 'type' => 'city', 'status' => 'published', 'slug' => 'johar-town', 'title' => 'Interior Design in Johar Town',
+    'rel' => 'johar-town/index.html', 'data' => '{}', 'seo' => '{}', 'tpl_id' => null, 'flag_order' => 0, 'imported' => 0,
+    'publish_at' => null, 'published_at' => '2026-10-14 09:00:00', 'created_at' => '2026-10-14 09:00:00', 'created_by' => 'Ayesha',
+    'updated_at' => null, 'updated_by' => null])['url'], '/johar-town/', 'and once it is live, that is the address a person types');
+/* Slugs that survive the address rule but name a folder the site uses — `_private` never gets this far,
+   because an address may not begin with an underscore. */
+foreach (['insights', 'projects', 'assets', 'builder', 'admin-v25'] as $bad) {
+    try {
+        wx_content_clean(['type' => 'city', 'title' => 'Interior Design in ' . $bad, 'slug' => $bad, 'data' => []]);
+        ok(false, 'a city page must not take the address "' . $bad . '"');
+    } catch (Throwable $e) {
+        ok(str_contains($e->getMessage(), 'folder the site uses'), 'a city page may not take the address "' . $bad . '"');
+    }
+}
+eq(wx_content_shell_rel('city'), 'index.html', 'with nothing chosen, a city page copies the front page — it is a rewrite of it for one city');
+eq(wx_content_shell_rel('city', '', 'interior-design'), 'interior-design/index.html', 'a template that names a city copies that page, which is v2.1\'s model made explicit');
+eq(wx_content_shell_rel('city', 'landing/index.html', 'interior-design'), 'landing/index.html', 'and the setting overrides the template');
+eq(wx_content_shell_rel('post'), 'insights/index.html', 'an article still copies its section index');
+eq(wx_content_shell_rel('member'), '', 'and a kind that is not a page has no shell at all');
+
 /* TODO-DB: the publish path needs the tables (012) and the site tree, which the wasm harness has neither
    of. The sitemap rules are the same insertion v2.1 shipped, with the `unlisted` rule kept. */
 skip('publishing an article, the sitemap and the tick need migration 012 and the site tree');

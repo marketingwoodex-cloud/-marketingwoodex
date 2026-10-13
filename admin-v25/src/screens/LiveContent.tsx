@@ -69,7 +69,14 @@ const TYPE_LABELS: Record<string, string> = {
 };
 
 /** Only the types that become a page of their own can be published. */
-const PAGE_TYPES = new Set(["post", "study"]);
+/* Kinds that become a page of their own — the ones with a Publish button and an address. */
+const PAGE_TYPES = new Set(["post", "study", "city"]);
+
+/** What this route calls the things it edits. `/blog` says article, `/cities` says city page — one table,
+ *  one screen, and the words follow the kind the route opened on rather than assuming a blog. */
+const KIND_TITLE: Record<string, string> = { post: "Articles", study: "Case studies", city: "City pages" };
+const KIND_NOUN: Record<string, string> = { post: "article", study: "case study", city: "city page" };
+const KIND_PLURAL: Record<string, string> = { post: "articles", study: "case studies", city: "city pages" };
 
 const STATUS_TONE: Record<ContentStatus, "neutral" | "warn" | "ok"> = {
   draft: "neutral",
@@ -168,8 +175,12 @@ function textToRows(kind: string, text: string): unknown[] {
 
 /**
  * @param presetType the kind this route is about — `/blog` is the article list, `/portfolio` the case
- *   studies. One screen owns both because one table does: the difference between an article and a case
- *   study is which page it publishes into and what the kind is called, not a different program.
+ *   studies, `/cities` the city pages. One screen owns all three because one table does, and the words on
+ *   the screen follow the kind it opened on. The differences that matter are two: which page furniture a
+ *   published page copies, and its address. A post and a case study go under their section's index
+ *   (`/insights/…`, `/projects/…`); a city page is **root-level** (`/<address>/`), which is where v2.1 put
+ *   them and where the addresses are indexed. One screen owns all three because one table does — the
+ *   difference between an article, a case study and a city page is an address, not a different program.
  */
 export function LiveContent({ presetType = "" }: { presetType?: string }) {
   const { link, reason } = useSession();
@@ -323,7 +334,7 @@ export function LiveContent({ presetType = "" }: { presetType?: string }) {
   if (link !== "live") {
     return (
       <>
-        <PageHead title="Content" sub="Articles, case studies and the pages they publish to" />
+        <PageHead title={KIND_TITLE[presetType] ?? "Content"} sub="The list, the editor and the publish button — one table, whichever kind you opened it on." />
         <Note tone="warn" title="Not connected">
           {link === "offline"
             ? "api/v2 is not answering, so the content list cannot be read. This screen shows nothing rather than an empty list, because an empty list is a claim about your articles."
@@ -337,7 +348,7 @@ export function LiveContent({ presetType = "" }: { presetType?: string }) {
   if (!data && list.loading) {
     return (
       <>
-        <PageHead title="Content" sub="Articles, case studies and the pages they publish to" />
+        <PageHead title={KIND_TITLE[presetType] ?? "Content"} sub="The list, the editor and the publish button — one table, whichever kind you opened it on." />
         <Card><div className="muted" style={{ padding: 18 }}>Loading…</div></Card>
       </>
     );
@@ -346,7 +357,7 @@ export function LiveContent({ presetType = "" }: { presetType?: string }) {
   if (!data && list.error) {
     return (
       <>
-        <PageHead title="Content" sub="Articles, case studies and the pages they publish to" />
+        <PageHead title={KIND_TITLE[presetType] ?? "Content"} sub="The list, the editor and the publish button — one table, whichever kind you opened it on." />
         <Note tone="danger" title="The content list could not be read">
           {list.error.message}
         </Note>
@@ -370,8 +381,8 @@ export function LiveContent({ presetType = "" }: { presetType?: string }) {
         title="Content"
         sub={
           data
-            ? `${data.total} item${data.total === 1 ? "" : "s"} · the list is the server's`
-            : "Articles, case studies and the pages they publish to"
+            ? `${data.total} ${data.total === 1 ? KIND_NOUN[presetType] ?? "item" : KIND_PLURAL[presetType] ?? "items"} · the list is the server's`
+            : "Articles, case studies and city pages — and the pages they publish to"
         }
         actions={
           <>
@@ -390,10 +401,10 @@ export function LiveContent({ presetType = "" }: { presetType?: string }) {
                   visibility: "listed",
                 });
                 setPreview(null);
-                setNote("New article — nothing is created until you save.");
+                setNote(`New ${KIND_NOUN[presetType] ?? "article"} — nothing is created until you save.`);
               }}
             >
-              New article
+              New {KIND_NOUN[presetType] ?? "article"}
             </Btn>
           </>
         }
@@ -477,12 +488,12 @@ export function LiveContent({ presetType = "" }: { presetType?: string }) {
 
         <Card>
           {!draft ? (
-            <Empty title="Nothing selected" sub="Pick an item on the left, or start a new article." />
+            <Empty title="Nothing selected" sub={`Pick something on the left, or start a new ${KIND_NOUN[presetType] ?? "article"}.`} />
           ) : (
             <div className="stack">
               <div className="row-between">
                 <h2 className="cell-main">
-                  {draft.id === 0 ? "New article" : draft.title || "(untitled)"}
+                  {draft.id === 0 ? `New ${KIND_NOUN[draft.type] ?? "article"}` : draft.title || "(untitled)"}
                   {dirty && <Pill tone="warn" title="You have changes that are not saved yet">Unsaved</Pill>}
                 </h2>
                 <div className="row">
@@ -536,7 +547,9 @@ export function LiveContent({ presetType = "" }: { presetType?: string }) {
                 <span className="cell-sub">
                   {selected?.url
                     ? `Live at ${selected.url} — a published address cannot be changed, because it is already indexed and on somebody's card.`
-                    : PAGE_TYPES.has(draft.type)
+                    : draft.type === "city"
+                      ? `Will publish to /${draft.slug || "…"}/ — root level, next to the homepage, where v2.1 put city pages and where the addresses are indexed. The furniture comes from ${data?.shells.city || "index.html"} (or the city page its template names), so the page always carries the current header and footer.`
+                      : PAGE_TYPES.has(draft.type)
                       ? `Will publish to /${draft.type === "post" ? "insights" : "projects"}/${draft.slug || "…"}/ — a copy of ${draft.type === "post" ? data?.shells.post : data?.shells.study} gives it the site's header and footer.`
                       /* eslint-disable-next-line no-irregular-whitespace */
                       : "This kind appears inside pages rather than at an address of its own."}
@@ -572,7 +585,7 @@ export function LiveContent({ presetType = "" }: { presetType?: string }) {
                 </div>
               </div>
 
-              {draft.sections.length === 0 && <Empty title="No sections yet" sub="An article with no body cannot be published — the server refuses to write an empty page." />}
+              {draft.sections.length === 0 && <Empty title="No sections yet" sub="This item has no body yet, and the server refuses to write an empty page — add a section to publish it." />}
 
               {draft.sections.map((sec, i) => (
                 <div className="sec-row" key={i}>

@@ -36,9 +36,11 @@ function wx_route_content_list(array $ctx): array
         'types' => WX_CONTENT_TYPES,
         'sections' => WX_CONTENT_SECTIONS,
         'shells' => [
-            'post' => (string) wx_setting('content.shell.post', 'insights/index.html'),
-            'study' => (string) wx_setting('content.shell.study', 'projects/index.html'),
+            'post' => wx_content_shell_rel('post'),
+            'study' => wx_content_shell_rel('study'),
+            'city' => wx_content_shell_rel('city', (string) wx_setting('content.shell.city', '')),
             'hint' => 'An article is published into a copy of this page\'s furniture — read at publish time, so it always has the current header.',
+            'cityHint' => 'A city page is the same furniture with this city\'s words, and it publishes to /<address>/ — root level, where v2.1 put them and where the addresses are indexed.',
         ],
     ]];
 }
@@ -55,7 +57,7 @@ function wx_route_content_get(array $ctx): array
     /* A live item can be previewed as it *would* look: composing the page is a pure function of the item
        and the shell, so the editor can see the change before publishing it. */
     $preview = null;
-    if (!empty($ctx['query']['preview']) && isset(WX_CONTENT_PAGES[$item['type']])) {
+    if (!empty($ctx['query']['preview']) && wx_content_rel($item) !== null) {
         $item['publishedAt'] = $item['publishedAt'] ?: wx_now();
         $preview = wx_content_body($item)['html'];
     }
