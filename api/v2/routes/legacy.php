@@ -161,6 +161,20 @@ function wx_legacy_bridged(): array
         'global_replace'  => ['chrome', 'wx_route_chrome_replace', []],
         'chrome_save'     => ['chrome', 'wx_route_chrome_apply', []],
         'chrome_versions' => ['chrome', 'wx_route_chrome_get', []],
+        /* Phase 3 — the content CMS. The v2.1 action names are kept because the permission matrix and the
+           approval policy are keyed on them; the screens use the routes. */
+        'cms_list'         => ['content', 'wx_route_content_list', []],
+        'cms_get'          => ['content', 'wx_route_content_get', []],
+        'cms_save'         => ['content', 'wx_route_content_save', []],
+        'cms_published'    => ['content', 'wx_route_content_publish', []],
+        'cms_status'       => ['content', 'wx_route_content_status', []],
+        'cms_reorder'      => ['content', 'wx_route_content_reorder', []],
+        'cms_delete'       => ['content', 'wx_route_content_delete', []],
+        'cms_page_kinds'   => ['content', 'wx_route_content_page_kinds', []],
+        'cms_sitemap_add'  => ['content', 'wx_route_content_sitemap_add', []],
+        'cms_tpl_list'     => ['content', 'wx_route_content_tpl_list', []],
+        'cms_tpl_save'     => ['content', 'wx_route_content_tpl_save', []],
+        'cms_tpl_delete'   => ['content', 'wx_route_content_tpl_delete', []],
     ];
 }
 

@@ -15,11 +15,14 @@ import { SessionProvider, useSession } from "./lib/session";
 import { SignIn } from "./screens/SignIn";
 import { LiveRedirects } from "./screens/LiveRedirects";
 import { LiveMedia } from "./screens/LiveMedia";
+import { LiveContent } from "./screens/LiveContent";
 import { linkLabel, useLive, type BellData } from "./lib/live";
 import { Btn, Card, PageHead } from "./components/primitives";
 
 /** Route ids implemented by a real screen in this prototype (Phase 0). */
-const BUILT_IDS = new Set(["dashboard", "leads", "enquiries", "pipeline", "quotes", "theme", "redirects", "media"]);
+const BUILT_IDS = new Set([
+  "dashboard", "leads", "enquiries", "pipeline", "quotes", "theme", "redirects", "media", "blog", "portfolio",
+]);
 
 /** The public entry point: one provider, then the app proper. */
 export default function App() {
@@ -171,6 +174,10 @@ function Frame() {
               table that looks like data. */}
           <Route path="/redirects" element={<LiveRedirects />} />
           <Route path="/media" element={<LiveMedia />} />
+          {/* The content CMS. Two routes, one screen: an article and a case study are the same kind of
+              thing — the difference is which page furniture they publish into. */}
+          <Route path="/blog" element={<LiveContent presetType="post" />} />
+          <Route path="/portfolio" element={<LiveContent presetType="study" />} />
           <Route
             path="/theme"
             element={

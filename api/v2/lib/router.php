@@ -228,6 +228,25 @@ function wx_routes(): array
         ['POST',   'chrome/replace',                  'chrome', 'wx_route_chrome_replace',  'global_replace'],
         ['POST',   'chrome/versions/{id}',            'chrome', 'wx_route_chrome_restore',  'chrome_save'],
 
+        /* ------------------------------------------------------ the content CMS
+           An editor's list, an editor, and a publish button that composes the page server-side out of
+           the site's own page furniture. `?filter=draft|scheduled|due|live` is answered in SQL. */
+        ['GET',    'content',                         'content', 'wx_route_content_list',       'cms_list'],
+        ['GET',    'content/pages',                   'content', 'wx_route_content_page_kinds', 'cms_page_kinds'],
+        ['GET',    'content/sitemap',                 'content', 'wx_route_content_sitemap',    'cms_sitemap_add'],
+        ['GET',    'content/templates',               'content', 'wx_route_content_tpl_list',   'cms_tpl_list'],
+        ['GET',    'content/{id}',                    'content', 'wx_route_content_get',        'cms_get'],
+        ['POST',   'content',                         'content', 'wx_route_content_save',       'cms_save'],
+        ['POST',   'content/sitemap',                 'content', 'wx_route_content_sitemap_add', 'cms_sitemap_add'],
+        ['POST',   'content/templates',               'content', 'wx_route_content_tpl_save',   'cms_tpl_save'],
+        ['POST',   'content/tick',                    'content', 'wx_route_content_tick',       'cms_published'],
+        ['POST',   'content/reorder',                 'content', 'wx_route_content_reorder',    'cms_reorder'],
+        ['POST',   'content/{id}/publish',            'content', 'wx_route_content_publish',    'cms_published'],
+        ['POST',   'content/{id}/schedule',           'content', 'wx_route_content_schedule',   'cms_save'],
+        ['POST',   'content/{id}/status',             'content', 'wx_route_content_status',     'cms_status'],
+        ['DELETE', 'content/{id}',                    'content', 'wx_route_content_delete',     'cms_delete'],
+        ['DELETE', 'content/templates/{id}',          'content', 'wx_route_content_tpl_delete', 'cms_tpl_delete'],
+
         /* ------------------------------------------------- the visitor's widget
            Public on purpose: these five are what the website widget calls, and a visitor has no session
            to begin with. Auth here is the chat token in the body — 20 random bytes whose sha256 is the

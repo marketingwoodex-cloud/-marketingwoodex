@@ -448,6 +448,33 @@ function wx_page_rewrite_all(string $needle, callable $transform, array $me, str
     return wx_page_write_many($rels, $transform, $me, $note) + ['scanned' => count($rels)];
 }
 
+/**
+ * Write a generated file that is not a page — the sitemap today, the launch announcement next.
+ *
+ * Same discipline as a page write (temporary file, rename, chmod) without a version row: these files are
+ * *derived* from data that is itself versioned or queryable, so keeping history here would be history of
+ * a cache. What it does keep is the property that matters on a live server — a reader never sees a
+ * half-written file.
+ */
+function wx_write_file_atomic(string $abs, string $contents): bool
+{
+    $dir = realpath(dirname($abs)) ?: '';
+    $root = realpath(WX_SITE_ROOT) ?: '';
+    if ($dir === '' || $root === '' || ($dir !== $root && !str_starts_with($dir, $root . '/'))) {
+        throw ApiError::validation('That file is outside the site', 'path');
+    }
+    $tmp = $abs . '.wx' . bin2hex(random_bytes(4));
+    if (@file_put_contents($tmp, $contents, LOCK_EX) === false) {
+        throw ApiError::internal('Could not write ' . basename($abs) . ' — is the site folder writable?');
+    }
+    if (!@rename($tmp, $abs)) {
+        @unlink($tmp);
+        throw ApiError::internal('Could not replace ' . basename($abs));
+    }
+    @chmod($abs, 0644);
+    return true;
+}
+
 /** A batch id that is a real UUID v4 — the history groups by it and it travels in URLs. */
 function wx_uuid(): string
 {

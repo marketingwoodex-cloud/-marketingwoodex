@@ -904,6 +904,167 @@ if (count(wx_page_walk(WX_SITE_ROOT)) > 10 && wx_table_exists('wx_page_versions'
     skip('the chrome coverage and diff need the site tree and migration 011');
 }
 
+/* ================================================== Phase 3 · the content CMS
+   The claim this slice makes is narrow and testable: **nothing a browser sends reaches a published page
+   as markup.** v2.1 took a composed HTML document from the browser and stored it; here an item is data
+   and the server renders it. These tests are the evidence for that sentence. */
+
+/** An item in the shape the editor sends, ready to render. */
+function wx_test_item(array $over = []): array
+{
+    return array_replace([
+        'id' => 7,
+        'type' => 'post',
+        'status' => 'draft',
+        'slug' => 'how-we-quote',
+        'title' => 'How we quote a project',
+        'rel' => null,
+        'url' => null,
+        'data' => [
+            'hero' => ['kicker' => 'Process', 'dek' => 'From first call to a signed quote.', 'category' => 'Process', 'readTime' => '5 min read'],
+            'sections' => [
+                ['kind' => 'lead', 'text' => 'A quote is a promise.'],
+                ['kind' => 'heading', 'text' => 'What we measure'],
+                ['kind' => 'para', 'text' => "First line.\nSame paragraph, next line.\n\nSecond paragraph."],
+                ['kind' => 'list', 'items' => ['Site visit', 'Measurements']],
+            ],
+        ],
+        'seo' => ['title' => 'How we quote', 'desc' => 'The quoting process.', 'og' => '', 'kw' => 'quoting', 'related' => []],
+        'tpl' => null,
+        'order' => 0,
+        'imported' => false,
+        'publishAt' => null,
+        'publishedAt' => '2026-10-14 09:00:00',
+        'createdAt' => '2026-10-01 10:00:00',
+        'createdBy' => 'Owner',
+        'updatedAt' => null,
+        'updatedBy' => '',
+    ], $over);
+}
+
+/* ---- the body renders, and what it renders is escaped */
+$body = wx_content_body(wx_test_item());
+ok(str_contains($body['html'], '<h1 id="dx-title">How we quote a project</h1>'), 'the article title becomes the page h1');
+ok(str_contains($body['html'], '<p class="dx-lead">A quote is a promise.</p>'), 'the lead renders');
+ok(str_contains($body['html'], '<h2>What we measure</h2>'), 'a level-2 heading renders as h2');
+ok(substr_count($body['html'], '<p>') >= 2, 'a blank line in a paragraph becomes two paragraphs');
+ok(str_contains($body['html'], '<br>'), 'and a single newline becomes a line break');
+ok(str_contains($body['html'], '<ul class="dx-list"><li>Site visit</li><li>Measurements</li></ul>'), 'a list renders as a list');
+
+$evil = wx_test_item(['title' => 'Fees & <script>alert(1)</script>', 'data' => ['sections' => [['kind' => 'para', 'text' => 'Pay <b>now</b> — 5 < 10']]]]);
+$evilBody = wx_content_body($evil);
+ok(!str_contains($evilBody['html'], '<script'), 'a script tag in the title is not a script tag in the page');
+ok(str_contains($evilBody['html'], '&lt;script&gt;'), 'it is the text the editor typed, escaped');
+ok(str_contains($evilBody['html'], '&lt;b&gt;now&lt;/b&gt;') && str_contains($evilBody['html'], '5 &lt; 10'),
+    'and markup inside a paragraph is text too — the server renders, the browser never composes');
+$ampTitle = wx_content_body(wx_test_item(['title' => 'Fees & charges', 'seo' => ['title' => 'Fees & charges', 'desc' => 'Rates.', 'og' => '', 'kw' => '', 'related' => []]]));
+ok(str_contains($ampTitle['html'], 'Fees &amp; charges'), 'an ampersand in a title is escaped as an entity');
+
+/* ---- the refusals: a section the renderer does not know, an empty body, a javascript: link */
+try {
+    wx_content_section(['kind' => 'iframe', 'text' => 'x']);
+    ok(false, 'an unknown section kind should be refused');
+} catch (Throwable $e) {
+    ok(str_contains($e->getMessage(), 'Unknown section'), 'an unknown section is refused rather than silently dropped: ' . $e->getMessage());
+}
+try {
+    wx_content_body(wx_test_item(['data' => ['sections' => []]]));
+    ok(false, 'an article with no body should be refused');
+} catch (Throwable $e) {
+    ok(str_contains($e->getMessage(), 'no body'), 'an article with no sections is refused: ' . $e->getMessage());
+}
+try {
+    wx_content_section(['kind' => 'cta', 'label' => 'Call', 'href' => 'javascript:alert(1)']);
+    ok(false, 'a javascript: link should be refused');
+} catch (Throwable $e) {
+    ok(str_contains($e->getMessage(), 'https://'), 'a button that runs code is refused: ' . $e->getMessage());
+}
+ok(wx_content_section(['kind' => 'cta', 'label' => 'Call the studio', 'href' => '/contact/']) ===
+    '<aside class="dx-cta"><a class="btn" href="/contact/">Call the studio</a></aside>', 'and a real button renders');
+ok(wx_content_url('https://example.com/quote') === 'https://example.com/quote', 'an https link is allowed');
+try {
+    wx_content_url('//evil.example.com/x');
+    ok(false, 'a protocol-relative link should be refused');
+} catch (Throwable $e) {
+    ok(true, 'a protocol-relative link is refused');
+}
+
+/* ---- images come from the media library, and nothing else */
+try {
+    wx_content_section(['kind' => 'image', 'url' => '/assets/js/site.js']);
+    ok(false, 'a script path should not pass as an image');
+} catch (Throwable $e) {
+    ok(str_contains($e->getMessage(), 'media library'), 'an image section only accepts a media-library image: ' . $e->getMessage());
+}
+$img = wx_content_section(['kind' => 'image', 'url' => '/assets/img/kitchen.webp', 'alt' => 'A kitchen']);
+ok(str_contains($img, 'src="/assets/img/kitchen.webp"') && str_contains($img, 'alt="A kitchen"'), 'a real image renders with its alt text');
+ok(!str_contains($img, 'srcset'), 'and no srcset for derivatives the site does not have');
+try {
+    wx_content_body(wx_test_item(['data' => ['hero' => ['image' => '/assets/css/site.css'], 'sections' => [['kind' => 'lead', 'text' => 'x']]]]));
+    ok(false, 'a stylesheet should not pass as a hero image');
+} catch (Throwable $e) {
+    ok(str_contains($e->getMessage(), 'media library'), 'the hero image has to be an image: ' . $e->getMessage());
+}
+
+/* ---- the shell: the site's page furniture, with the article's head and main */
+$shell = '<!doctype html><html><head><title>Insights — Woodex</title><meta name="description" content="Notes."></head>'
+    . '<body class="page-insights"><header class="site-header"><nav class="desktop-nav"></nav></header>'
+    . '<main id="main-content"><section class="hx-hero">the list page hero</section></main>'
+    . '<footer class="footer"></footer></body></html>';
+$item = wx_test_item(['url' => '/insights/how-we-quote/', 'rel' => 'insights/how-we-quote/index.html', 'status' => 'published']);
+$page = wx_content_render($item, wx_content_body($item)['html'], $shell);
+ok(str_contains($page, '<header class="site-header">'), 'the published page keeps the site header');
+ok(str_contains($page, '<footer class="footer">'), 'and the footer');
+ok(!str_contains($page, 'the list page hero'), 'and does not keep the list page\'s hero — the <main> is replaced whole');
+ok(str_contains($page, '<title>How we quote · Woodex Interiors</title>'), 'the title comes from the item\'s SEO title');
+ok(str_contains($page, '<link rel="canonical" href="https://woodex.com.pk/insights/how-we-quote/">'), 'the canonical address is the page\'s own');
+ok(str_contains($page, '<meta property="og:description" content="The quoting process.">'), 'a social card tag the shell did not have is added');
+ok(substr_count($page, '<main') === 1, 'the page has exactly one main element');
+
+/* ---- the item rules: addresses are the ones the site can serve */
+$clean = wx_content_clean(['type' => 'post', 'title' => '  How we quote  ', 'slug' => 'How-We-Quote', 'data' => ['sections' => []], 'seo' => ['desc' => 'x']]);
+eq($clean['slug'], 'how-we-quote', 'a slug is lower-cased');
+eq($clean['title'], 'How we quote', 'a title is trimmed');
+ok(strlen($clean['seo']['desc']) <= 200, 'the description is clipped to what a search result shows');
+foreach ([['type' => 'widget', 'title' => 'x', 'slug' => 'y'], ['type' => 'post', 'title' => '', 'slug' => 'y'], ['type' => 'post', 'title' => 'x', 'slug' => '-bad-']] as $i => $bad) {
+    try {
+        wx_content_clean($bad, null);
+        ok(false, 'an invalid item should be refused (case ' . $i . ')');
+    } catch (Throwable $e) {
+        ok(true, 'refused case ' . $i . ': ' . substr($e->getMessage(), 0, 70));
+    }
+}
+$published = ['id' => 3, 'slug' => 'how-we-quote', 'rel' => 'insights/how-we-quote/index.html'];
+try {
+    wx_content_clean(['type' => 'post', 'title' => 'T', 'slug' => 'a-new-address', 'data' => [], 'seo' => []], $published);
+    ok(false, 'a published page\'s address should be immutable');
+} catch (Throwable $e) {
+    ok(str_contains($e->getMessage(), 'cannot be changed'), 'a live address cannot be rewritten: ' . $e->getMessage());
+}
+ok(wx_content_clean(['type' => 'testimonial', 'title' => 'A happy client', 'data' => [], 'seo' => []])['slug'] === '',
+    'a testimonial has no address of its own — it appears inside pages, not as a page');
+
+/* ---- templates: the v2.1 rules, kept */
+$tpl = wx_content_tpl_clean(['type' => 'post', 'name' => '  Deep dive  ', 'hero' => 'navy', 'sections' => [['k' => 'body', 'on' => false], ['k' => 'body', 'on' => true], ['k' => 'nonsense', 'on' => true]]]);
+eq($tpl['name'], 'Deep dive', 'a template name is trimmed');
+eq($tpl['hero'], 'navy', 'the hero style is kept');
+eq(count($tpl['sections']), 5, 'every known section appears once, in order, even the ones the editor did not list');
+ok($tpl['sections'][0]['k'] === 'body' && $tpl['sections'][0]['on'] === false, 'and the editor\'s own switch wins');
+foreach ([['type' => 'shoe', 'name' => 'x'], ['type' => 'post', 'name' => '  '], ['type' => 'city', 'name' => 'Lahore', 'order' => []]] as $i => $bad) {
+    try {
+        wx_content_tpl_clean($bad);
+        ok(false, 'an invalid template should be refused (case ' . $i . ')');
+    } catch (Throwable $e) {
+        ok(true, 'template refused case ' . $i . ': ' . substr($e->getMessage(), 0, 60));
+    }
+}
+$city = wx_content_tpl_clean(['type' => 'city', 'name' => 'Lahore', 'source' => 'interior-design', 'order' => [['id' => 'hero', 'on' => true, 'label' => 'Hero'], ['id' => 'bad id!', 'on' => true]]]);
+eq(count($city['order']), 1, 'a city template keeps only well-formed section ids');
+
+/* TODO-DB: the publish path needs the tables (012) and the site tree, which the wasm harness has neither
+   of. The sitemap rules are the same insertion v2.1 shipped, with the `unlisted` rule kept. */
+skip('publishing an article, the sitemap and the tick need migration 012 and the site tree');
+
 /* ============================================================== report */
 echo "\n";
 if ($failures) {

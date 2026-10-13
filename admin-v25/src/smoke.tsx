@@ -17,6 +17,7 @@ import { LiveDashboard } from "./screens/LiveDashboard";
 import { LiveLeads } from "./screens/LiveLeads";
 import { LiveRedirects } from "./screens/LiveRedirects";
 import { LiveMedia } from "./screens/LiveMedia";
+import { LiveContent } from "./screens/LiveContent";
 import { SessionCtx, type SessionValue } from "./lib/session";
 
 /* This file is built by vite for Node (see package.json#scripts.smoke), so `process` exists at run
@@ -129,6 +130,8 @@ let htmlLiveLeads = "";
 let htmlRedirects = "";
 let htmlRedirectsOffline = "";
 let htmlMedia = "";
+let htmlContent = "";
+let htmlContentOffline = "";
 try {
   htmlSignedOut = renderToString(
     <MemoryRouter initialEntries={["/dashboard"]}>
@@ -210,6 +213,32 @@ try {
   failures.push(`live media → ${(err as Error).message}`);
 }
 
+try {
+  htmlContent = renderToString(
+    <MemoryRouter initialEntries={["/blog"]}>
+      <SessionCtx.Provider value={session("live", asUser)}>
+        <LiveContent presetType="post" />
+      </SessionCtx.Provider>
+    </MemoryRouter>,
+  );
+} catch (err) {
+  failures.push(`live content → ${(err as Error).message}`);
+}
+
+/* The content screen with no API must not render an empty article list: "no articles" and "I cannot
+   reach the server" are different sentences, and only one of them is true. */
+try {
+  htmlContentOffline = renderToString(
+    <MemoryRouter initialEntries={["/blog"]}>
+      <SessionCtx.Provider value={session("offline", null)}>
+        <LiveContent presetType="post" />
+      </SessionCtx.Provider>
+    </MemoryRouter>,
+  );
+} catch (err) {
+  failures.push(`content without an API → ${(err as Error).message}`);
+}
+
 /* A signed-out app must not leak a namespace behind an "everyone gets one" banner, and a live screen
    must not render while it is still loading, or the first paint would show an empty table as truth. */
 for (const [name, ok] of [
@@ -224,6 +253,11 @@ for (const [name, ok] of [
     htmlRedirectsOffline.includes("api/v2 is not answering") && !htmlRedirectsOffline.includes("Publish"),
   ],
   ["the live media screen renders its loading state", htmlMedia.includes("Loading…")],
+  ["the live content screen renders its loading state", htmlContent.includes("Loading…")],
+  [
+    "a content screen with no API says so instead of showing an empty article list",
+    htmlContentOffline.includes("api/v2 is not answering") && !htmlContentOffline.includes("New article"),
+  ],
 ] as [string, boolean][]) {
   if (ok) pass++;
   else failures.push(`assertion failed: ${name}`);

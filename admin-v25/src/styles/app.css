@@ -514,3 +514,20 @@ table.data td.num { font-variant-numeric: tabular-nums; text-align: right; }
   width: 96px; height: 72px; flex: 0 0 96px; object-fit: cover;
   border-radius: var(--r-sm); border: 1px solid var(--border);
 }
+
+/* ---------------------------------------------- the content CMS (Phase 3)
+   Two columns: the list on the left, the editor on the right. The list is narrow on purpose — an
+   editor's screen is the editor, and the list is there to get to the next item. */
+.content-split { display: grid; grid-template-columns: minmax(280px, 380px) minmax(0, 1fr); gap: 16px; align-items: start; }
+@media (max-width: 1100px) { .content-split { grid-template-columns: minmax(0, 1fr); } }
+
+.grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+@media (max-width: 860px) { .grid-2, .grid-3 { grid-template-columns: minmax(0, 1fr); } }
+
+table.data tr.is-selected { background: var(--accent-soft, rgba(0, 0, 0, 0.05)); }
+
+/* One section of an article: a strip that says what it is, then its fields. */
+.sec-row { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; display: grid; gap: 8px; }
+.sec-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.sec-head strong { font-size: 13px; }

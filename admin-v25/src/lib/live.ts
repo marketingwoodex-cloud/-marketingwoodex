@@ -231,6 +231,88 @@ export interface TrashRow {
   addressFree: boolean;
 }
 
+/* ------------------------------------------------------------------ content (Phase 3)
+   An item is its *content*. The page is composed by the server at publish time out of the site's own
+   page furniture, so nothing here is HTML the browser made. */
+
+export type ContentStatus = "draft" | "scheduled" | "published";
+
+export interface ContentSection {
+  kind: string;
+  text?: string;
+  level?: number;
+  items?: string[];
+  ordered?: boolean;
+  url?: string;
+  alt?: string;
+  caption?: string;
+  by?: string;
+  q?: string;
+  a?: string;
+  label?: string;
+  href?: string;
+  links?: { label: string; href: string }[];
+}
+
+export interface ContentItem {
+  id: number;
+  type: string;
+  status: ContentStatus;
+  slug: string;
+  title: string;
+  rel: string | null;
+  url: string | null;
+  where: string | null;
+  data: { hero?: Record<string, string>; sections?: ContentSection[]; visibility?: string };
+  seo: { title?: string; desc?: string; og?: string; kw?: string; related?: string[] };
+  tpl: number | null;
+  order: number;
+  imported: boolean;
+  publishAt: string | null;
+  publishedAt: string | null;
+  createdAt: string;
+  createdBy: string;
+  updatedAt: string | null;
+  updatedBy: string;
+}
+
+export interface ContentData {
+  items: ContentItem[];
+  counts: Record<string, Record<string, number>>;
+  due: number;
+  total: number;
+  import: { items: number; tpls: number } | null;
+  types: string[];
+  sections: string[];
+  shells: { post?: string; study?: string; hint?: string };
+}
+
+export interface ContentSaveResult {
+  item: ContentItem;
+}
+
+export interface ContentPublishResult {
+  item: ContentItem;
+  rel: string;
+  url: string;
+  bytes: number;
+  batch: string;
+  version: number;
+  sections: number;
+}
+
+export interface ContentPreview {
+  item: ContentItem;
+  preview: string | null;
+  tpls: { id: number; type: string; name: string; default: boolean; tpl: Record<string, unknown> }[];
+}
+
+export interface TickResult {
+  published: { id: number; title: string; url: string }[];
+  failed: { id: number; title: string; message: string }[];
+  checked: number;
+}
+
 /** What a write returns when the v2.1 policy says a Manager's change waits for the Master. */
 export interface PendingResult {
   pending: true;
