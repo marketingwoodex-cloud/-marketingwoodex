@@ -26,6 +26,11 @@ export function SignIn() {
   const [error, setError] = useState<{ message: string; detail: string } | null>(null);
 
   const offline = link === "offline";
+  /* The first paint is a fourth state, and it used to be the one nobody could see: the health probe is
+     still in flight, no note is shown yet, and the button is live — so the first person to arrive after a
+     deploy can press Sign in against a server that has not been found yet, and reads a request error rather
+     than the truth. While the probe is running, the button says so and stays closed. */
+  const checking = link === "checking";
 
   const fail = (err: unknown) => {
     if (err instanceof ApiFailure) {
@@ -81,6 +86,14 @@ export function SignIn() {
               <div className="row" style={{ marginTop: "var(--s-3)" }}>
                 <Btn size="sm" onClick={refreshHealth}>Try again</Btn>
               </div>
+            </Note>
+          </div>
+        )}
+
+        {checking && (
+          <div style={{ marginBottom: "var(--s-4)" }}>
+            <Note tone="info">
+              <b>Looking for api/v2…</b> The form is ready; the button opens as soon as the API answers.
             </Note>
           </div>
         )}
@@ -161,9 +174,9 @@ export function SignIn() {
           )}
 
           <div className="row" style={{ marginTop: "var(--s-4)", gap: "var(--s-2)" }}>
-            <Btn variant="primary" type="submit" disabled={busy || offline}>
+            <Btn variant="primary" type="submit" disabled={busy || offline || checking}>
               {ticket ? <KeyRound size={15} /> : <LogIn size={15} />}
-              {busy ? "Working…" : ticket ? "Verify code" : "Sign in"}
+              {busy ? "Working…" : checking ? "Checking the server…" : ticket ? "Verify code" : "Sign in"}
             </Btn>
             {ticket && (
               <Btn type="button" onClick={() => { setTicket(null); setCode(""); setError(null); }}>

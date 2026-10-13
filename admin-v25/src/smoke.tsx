@@ -131,6 +131,7 @@ const asUser = {
 
 let htmlSignedOut = "";
 let htmlSignedOutOffline = "";
+let htmlSignedOutChecking = "";
 let htmlLiveDash = "";
 let htmlLiveLeads = "";
 let htmlRedirects = "";
@@ -163,6 +164,27 @@ try {
   );
 } catch (err) {
   failures.push(`sign-in screen → ${(err as Error).message}`);
+}
+
+/* The door on its first paint, while the health probe is still in flight: no note has been decided yet and
+   the button must not be pressable until the answer is in. */
+try {
+  htmlSignedOutChecking = renderToString(
+    <MemoryRouter initialEntries={["/dashboard"]}>
+      <SessionCtx.Provider value={session("checking", null)}>
+        <Shell
+          role="owner" setRole={noop} theme="light" toggleTheme={noop} density="comfortable" setDensity={noop}
+          badges={{ leads: 0, chat: 0, approvals: 0, total: 0 }} onOpenPalette={noop}
+          routeId="dashboard" crumbs={[{ label: "Today" }]} link="checking"
+          linkText="api/v2 · checking" countsFrom="demo" user={null} onSignOut={noop}
+        >
+          <SignIn />
+        </Shell>
+      </SessionCtx.Provider>
+    </MemoryRouter>,
+  );
+} catch (err) {
+  failures.push(`sign-in screen while checking → ${(err as Error).message}`);
 }
 
 /* The door with the API down, which is the state the sign-in screen spends most of its life in during a
@@ -425,6 +447,10 @@ for (const [name, ok] of [
   [
     "the door cannot be opened while the API is down",
     /<button type="submit" disabled[^>]*class="btn primary"/.test(htmlSignedOutOffline),
+  ],
+  [
+    "and it says it is still looking for the server, instead of opening against one that has not answered",
+    htmlSignedOutChecking.includes("Checking the server…") && /<button type="submit" disabled/.test(htmlSignedOutChecking),
   ],
   ["the live dashboard renders its loading state, not zeros", htmlLiveDash.includes("Loading…")],
   ["the live dashboard does not claim numbers before the server answers", !htmlLiveDash.includes("kpi-value")],
