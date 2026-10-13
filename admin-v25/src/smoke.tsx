@@ -28,6 +28,7 @@ import { LiveForms } from "./screens/LiveForms";
 import { LiveEstimator } from "./screens/LiveEstimator";
 import { LiveProjects } from "./screens/LiveProjects";
 import { LiveTimeline } from "./screens/LiveTimeline";
+import { LiveUpdates } from "./screens/LiveUpdates";
 import { SessionCtx, type SessionValue } from "./lib/session";
 import { linkLabel, linkPill } from "./lib/live";
 
@@ -56,7 +57,7 @@ const ROUTES = [
   "/dashboard", "/leads", "/enquiries", "/pipeline", "/quotes", "/theme",
   "/approvals", "/timeline", "/bookings", "/clients", "/invoices", "/transactions",
   "/templates", "/projects", "/chat", "/wahub", "/wainsights", "/wauto", "/offers",
-  "/connections", "/telegram", "/social", "/updates", "/pages", "/builder",
+  "/connections", "/telegram", "/social", "/notifications", "/pages", "/builder",
   "/library", "/global", "/heroes", "/redirects", "/blog", "/portfolio", "/services",
   "/cities", "/pagetpl", "/forms", "/estimator", "/faqs", "/testimonials", "/logos",
   "/team", "/media", "/seo", "/speed", "/health", "/aicenter", "/train", "/aireport",
@@ -162,6 +163,9 @@ let htmlProjRoute = "";
 let htmlTimeOffline = "";
 let htmlTimeLive = "";
 let htmlTimeRoute = "";
+let htmlNotifOffline = "";
+let htmlNotifLive = "";
+let htmlNotifRoute = "";
 let htmlGlobal = "";
 let htmlGlobalOffline = "";
 let htmlPages = "";
@@ -455,6 +459,34 @@ try {
   );
 } catch (err) {
   failures.push(`the timeline screen → ${(err as Error).message}`);
+}
+
+/* Client updates. The screen's whole point is a sentence it must never drop: that this console records and
+   shares on the client's page, while the sending itself is still v2.1's until Phase 4. With no API there is
+   nothing to say about channels or wording, and the honest answer is that the settings could not be read
+   rather than seven events presented as configured. */
+try {
+  htmlNotifOffline = renderToString(
+    <MemoryRouter initialEntries={["/notifications"]}>
+      <SessionCtx.Provider value={session("offline", null)}>
+        <LiveUpdates />
+      </SessionCtx.Provider>
+    </MemoryRouter>,
+  );
+  htmlNotifLive = renderToString(
+    <MemoryRouter initialEntries={["/notifications"]}>
+      <SessionCtx.Provider value={session("live", asUser)}>
+        <LiveUpdates />
+      </SessionCtx.Provider>
+    </MemoryRouter>,
+  );
+  htmlNotifRoute = renderToString(
+    <MemoryRouter initialEntries={["/notifications"]}>
+      <App />
+    </MemoryRouter>,
+  );
+} catch (err) {
+  failures.push(`the client updates screen → ${(err as Error).message}`);
 }
 
 /* Through the app's own routing: `/heroes` must reach the screen, not the build-plan placeholder. */
@@ -842,6 +874,25 @@ for (const [name, ok] of [
     "and the timeline route reaches the screen rather than a build plan",
     htmlTimeRoute.includes("on one axis") &&
       !htmlTimeRoute.includes("Build plan for this screen"),
+  ],
+  /* Client updates. The screen is allowed to be confident about exactly one thing — that it records and
+     shares on the client's page — and must say the other half in words. These assertions hold it to that:
+     the transport sentence is present in the live read, and the seven events are never drawn as configured
+     when the settings could not be read. */
+  [
+    "the client updates screen with no API says so, and draws no events or log",
+    htmlNotifOffline.includes("api/v2 is not answering") &&
+      !htmlNotifOffline.includes("The seven events") &&
+      !htmlNotifOffline.includes("Save channels"),
+  ],
+  [
+    "and while it is reading it says that, rather than presenting seven configured events",
+    htmlNotifLive.includes("Loading…") && !htmlNotifLive.includes("no transport yet"),
+  ],
+  [
+    "and the route reaches the screen rather than a build plan",
+    htmlNotifRoute.includes("Sign in to see what your clients are told") &&
+      !htmlNotifRoute.includes("Build plan for this screen"),
   ],
 ] as [string, boolean][]) {
   if (ok) pass++;

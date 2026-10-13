@@ -982,7 +982,7 @@ export interface ProjInvoice {
   due: string;
 }
 
-export interface ProjUpdate { t: string; user: string; text: string; photo: string; sys: boolean }
+export interface ProjUpdate { t: string; user: string; text: string; photo: string; sys: boolean; toClient?: boolean; stage?: string }
 
 export interface ProjDetail {
   project: ProjRow;
@@ -999,4 +999,53 @@ export interface ProjDetail {
   lines: Record<string, string>;
   team: { id: number; name: string }[];
   full_invoice: boolean;
+  client: ProjClientLink;
+}
+
+/* -------------------------------------------------------------- client updates */
+
+/** One event's wording. `textNoPhotos` is the shipped second shape for a stage with nothing to show yet. */
+export interface NotifyEvent {
+  on: boolean;
+  subject: string;
+  text: string;
+  textNoPhotos?: string;
+  tpl?: string;
+}
+
+export interface NotifyCfg {
+  email: boolean;
+  wa: boolean;
+  waLang: string;
+  ev: Record<string, NotifyEvent>;
+}
+
+export interface NotifyLogRow {
+  id: number;
+  t: string;
+  event: string;
+  ref: string;
+  name: string;
+  channel: string;
+  dest: string;
+  result: string;
+}
+
+export interface NotifyData {
+  cfg: NotifyCfg;
+  events: Record<string, string>;
+  ready: { whatsapp: boolean; email: boolean };
+  /** Whether this build can carry a message at all, and who sends today. See lib/notify.php. */
+  transport: { ready: boolean; sentBy: string; phase: number };
+  log: NotifyLogRow[];
+}
+
+/** The client's own page for a project: the link, and whether it has ever been opened. */
+export interface ProjClientLink {
+  link: string;
+  path: string;
+  views: number;
+  viewedAt: string;
+  shared: number;
+  hasContact: boolean;
 }

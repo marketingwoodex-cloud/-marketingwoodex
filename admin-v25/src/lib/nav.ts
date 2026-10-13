@@ -94,7 +94,7 @@ export const ROUTES: NavRoute[] = [
   { id: "connections", label: "Connect WhatsApp", icon: Network, section: "conversations", group: "WhatsApp", aliases: ["settings/connections"], hint: "Number, token and templates" },
   { id: "telegram", label: "Telegram", icon: Send, section: "conversations", roles: OAE, hint: "Bot, alerts and DM routing" },
   { id: "social", label: "Social media", icon: Image, section: "conversations", roles: OA, hint: "Facebook and Instagram planner" },
-  { id: "updates", label: "Client updates", icon: Bell, section: "conversations", hint: "4-stage bilingual status messages" },
+  { id: "notifications", label: "Client updates", icon: Bell, section: "conversations", aliases: ["updates"], hint: "Bilingual messages, the seven events and the log" },
 
   /* ------------------------------------------------------------- WEBSITE */
   { id: "pages", label: "All pages", icon: FileStack, section: "website", group: "Pages & builder", roles: OAE, hint: "150 public pages, metadata and status" },

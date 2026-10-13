@@ -404,6 +404,35 @@ function wx_route_projects_list(array $ctx): array
 }
 
 /** The invoices of one project, with their payments summed — the single-project form of the list's batch. */
+/**
+ * One invoice as the project screens and the client's page both read it.
+ *
+ * One function, because these four derived figures are what "paid", "balance" and "outstanding" mean
+ * everywhere in the product: the drawer's invoice table, the milestone statuses and the client's page all
+ * ask this and get the same answer. The console and the client disagreeing about what is owed is the most
+ * expensive kind of bug this codebase can ship.
+ *
+ * @param array $r     id, no, issued_at, due_at (the row)
+ * @param int   $total the invoice total
+ * @param int   $paid  what has arrived against it
+ */
+function wx_proj_invoice_row(array $r, int $total, int $paid): array
+{
+    return [
+        'id' => (int) $r['id'],
+        'no' => (string) $r['no'],
+        'total' => $total,
+        'totalDisplay' => wx_pkr_out($total),
+        'paid' => $paid,
+        'paidDisplay' => wx_pkr_out($paid),
+        'balance' => max(0, $total - $paid),
+        'balanceDisplay' => wx_pkr_out(max(0, $total - $paid)),
+        'status' => $paid <= 0 ? 'unpaid' : ($paid >= $total ? 'paid' : 'partial'),
+        'issued' => (string) ($r['issued_at'] ?? ''),
+        'due' => (string) ($r['due_at'] ?? ''),
+    ];
+}
+
 function wx_proj_invoices(int $projectId, int $linkedId = 0): array
 {
     $paySql = wx_table_exists('wx_invoice_payments')
@@ -419,21 +448,7 @@ function wx_proj_invoices(int $projectId, int $linkedId = 0): array
     );
     $out = [];
     foreach ($rows as $r) {
-        $total = (int) $r['total'];
-        $paid = (int) $r['paid'];
-        $out[] = [
-            'id' => (int) $r['id'],
-            'no' => (string) $r['no'],
-            'total' => $total,
-            'totalDisplay' => wx_pkr_out($total),
-            'paid' => $paid,
-            'paidDisplay' => wx_pkr_out($paid),
-            'balance' => max(0, $total - $paid),
-            'balanceDisplay' => wx_pkr_out(max(0, $total - $paid)),
-            'status' => $paid <= 0 ? 'unpaid' : ($paid >= $total ? 'paid' : 'partial'),
-            'issued' => (string) ($r['issued_at'] ?? ''),
-            'due' => (string) ($r['due_at'] ?? ''),
-        ];
+        $out[] = wx_proj_invoice_row($r, (int) $r['total'], (int) $r['paid']);
     }
     return $out;
 }
@@ -470,6 +485,10 @@ function wx_route_projects_get(array $ctx): array
             'text' => (string) ($u['text'] ?? ''),
             'photo' => (string) ($u['photo'] ?? ''),
             'sys' => !empty($u['sys']),
+            /* Whether this entry is on the client's page. The drawer says so per entry, because "I wrote it
+               here" and "the client read it" are different facts and the screen used to imply the second. */
+            'toClient' => !empty($u['toClient']),
+            'stage' => (string) ($u['stage'] ?? ''),
         ];
     }
 
@@ -477,6 +496,16 @@ function wx_route_projects_get(array $ctx): array
         'project' => $row,
         'invoices' => $invoices,
         'updates' => $log,
+        /* The client's page: the link the studio sends, and whether it has been opened. `shared` counts the
+           entries a client can read, so the screen can say how much of the feed is theirs without guessing. */
+        'client' => [
+            'link' => wx_cv_link($p),
+            'path' => wx_cv_path($p),
+            'views' => (int) ($p['views'] ?? 0),
+            'viewedAt' => (string) ($p['viewed_at'] ?? ''),
+            'shared' => count(wx_cv_visible($p)),
+            'hasContact' => wx_notify_contacts($p)['phone'] !== '' || wx_notify_contacts($p)['email'] !== '',
+        ],
         'photos' => is_array($p['photos'] ?? null) ? array_values($p['photos']) : [],
         'document' => [
             'name' => (string) ($p['name'] ?? ''),
@@ -794,21 +823,24 @@ function wx_route_projects_update_do(array $ctx): array
             if (($text === null || $text === '') && !$photo) {
                 throw ApiError::validation('Write the update, or attach a photo', 'text');
             }
-            $p['updates'] = is_array($p['updates'] ?? null) ? $p['updates'] : [];
-            if (count($p['updates']) > 500) {
-                $p['updates'] = array_slice($p['updates'], -500);
-            }
-            $entry = ['t' => wx_now(), 'user' => (string) $u['name'], 'text' => (string) ($text ?? '')];
-            if ($photo) {
-                $entry['photo'] = $photo;
-            }
-            $p['updates'][] = $entry;
+            /* Off by default: an update typed here is a note on the project until somebody says it goes to
+               the client, and the box it was typed in says exactly which of the two happened. */
+            $toClient = !empty($ctx['body']['sendToClient']);
+            $posted = wx_proj_update_post($p, (string) $u['name'], (string) ($text ?? ''), $photo !== null && $photo !== '' ? [$photo] : [], $toClient);
+            $p = $posted['project'];
 
             $json = json_encode($p, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
             wx_update('wx_projects', ['payload' => $json], ['id' => $id]);
-            wx_audit($u, 'project.update', 'project:' . $id, ['photo' => (bool) $photo]);
+            wx_audit($u, 'project.update', 'project:' . $id, ['photo' => (bool) $photo, 'to_client' => $toClient, 'result' => $posted['result']]);
             $p['id'] = $id;
-            return ['data' => ['project_id' => $id, 'updates' => count($p['updates']), 'entry' => $entry]];
+            $last = $p['updates'] ? $p['updates'][count($p['updates']) - 1] : null;
+            return ['data' => [
+                'project_id' => $id,
+                'updates' => count($p['updates']),
+                'entry' => $last,
+                'toClient' => $toClient,
+                'result' => $posted['result'],
+            ]];
         });
     });
 }

@@ -2212,6 +2212,109 @@ eq(wx_proj_stage_pct('nonsense'), 0, 'a stage that is not on the list sits at th
 ok(array_keys(WX_PROJECT_LINES) === ['furniture', 'interior', 'project'], 'the three lines are v2.1\'s, in its order');
 eq(count(WX_PROJECT_STAGE_LABELS), count(WX_PROJECT_STAGES), 'every stage has a name to print, or a screen would print a slug');
 
+/* ============================================================== client updates */
+
+group('The client sees only what the studio shared');
+/* One project with three updates: a stage change nobody announced, a note somebody shared, and a
+   sentence a staff member shared without a photo. The rule this asserts is the whole design of the
+   client's page — internal notes are not a weaker version of shared ones, they are simply not there. */
+$p_client = array_merge($p_milestoned, [
+    'updates' => [
+        ['t' => '2026-10-01 09:00', 'user' => 'System', 'text' => 'Stage: design → production'],
+        ['t' => '2026-10-03 11:00', 'user' => 'Imtiaz', 'text' => 'Frames are up on the east side.', 'toClient' => true, 'photo' => '/assets/uploads/projects/frame-01.jpg', 'stage' => 'production'],
+        ['t' => '2026-10-05 15:00', 'user' => 'Imtiaz', 'text' => 'Client asked to move the pantry wall.'],
+        ['t' => '2026-10-06 10:00', 'user' => 'Imtiaz', 'text' => 'We are now installing the ceiling.', 'toClient' => true, 'stage' => 'installation'],
+    ],
+]);
+$vis = wx_cv_visible($p_client);
+eq(count($vis), 2, 'two of the four entries are the client\'s; the rest are the studio\'s own record');
+ok($vis[0]['text'] === 'Frames are up on the east side.' && $vis[1]['photo'] === '', 'and they read in the order they were written');
+ok(!str_contains(implode(' ', array_column($vis, 'text')), 'pantry'), 'an internal note never reaches the page, whatever it says');
+eq(wx_cv_visible(['updates' => 'not an array']), [], 'a project whose feed is not a list shows an empty page rather than an error');
+
+group('The page carries the console\'s own numbers');
+/* The rows exactly as the route builds them — from the same columns the database returns and the same
+   function, so this asserts the client's page is reading the console's shape rather than a lookalike. */
+$inv_rows = [];
+foreach ($inv_milestoned as $i) {
+    $inv_rows[] = wx_proj_invoice_row(['id' => $i['id'], 'no' => $i['no'], 'issued_at' => '2026-08-05 10:00:00', 'due_at' => ''], (int) $i['total'], (int) $i['paid']);
+}
+$page = wx_cv_page($p_client, $inv_rows, ['name' => 'Woodex Interior', 'phones' => '+92 322 4000768', 'whatsapp' => '']);
+eq($page['invoicedDisplay'], $row['invoicedDisplay'], 'the client reads the invoice total the console shows, from the same function');
+eq($page['balanceDisplay'], $row['balanceDisplay'], 'and the same balance — a client page that disagreed with the studio would be a support call');
+eq($page['billedPct'], $row['billedPct'], 'and the same progress figure');
+eq(count($page['updates']), 2, 'the page lists the shared updates, newest first');
+eq($page['invoices'][0]['no'], 'WI-10120-1', 'with the invoices that belong to the project');
+eq($page['invoices'][1]['status'], 'partial', 'each one carrying what is owed on it, derived once, in wx_proj_invoice_row');
+eq($page['invoices'][0]['issued'], '2026-08-05', 'and the day it was issued, not the timestamp');
+eq($page['invoices'][0]['total'], '500,000', 'printed the way every other document prints money');
+eq($page['stages'][0]['label'], 'Planning', 'every stage is on the bar');
+eq($page['stages'][count($page['stages']) - 1]['id'], 'closed', 'including the last one');
+ok($page['stages'][3]['current'] && $page['stages'][2]['done'], 'the current stage is marked, and the ones behind it are done');
+eq($page['stageLabel'], 'Installation', 'and the stage is named, not shown as a slug');
+
+group('The page is a document, and a note cannot write into it');
+$html = wx_cv_html($page);
+ok(str_contains($html, 'Frames are up on the east side.'), 'the shared note is on the page');
+ok(!str_contains($html, 'pantry'), 'the internal one is not');
+ok(!str_contains($html, '<script') && !str_contains($html, '<iframe'), 'the page carries no script and no frame — there is nothing on it to run');
+ok(!preg_match('~<img[^>]*src="(?!\/assets\/uploads\/projects\/)~', $html), 'and every image it does carry is a site photo from the uploads folder');
+$nasty = wx_cv_page(array_merge($p_client, ['name' => 'Flat <script>alert(1)</script>', 'updates' => [
+    ['t' => '2026-10-07 12:00', 'user' => 'Imtiaz', 'text' => '<img src=x onerror=alert(1)>', 'toClient' => true, 'photo' => '/assets/uploads/projects/../../etc/passwd'],
+]]), [], ['name' => 'Woodex']);
+$html_nasty = wx_cv_html($nasty);
+ok(!str_contains($html_nasty, '<script>alert(1)</script>'), 'a project name carrying markup is escaped, not printed');
+ok(!str_contains($html_nasty, '<img'), 'so is an update that tries to become an image tag — there is no tag for a browser to run');
+ok(!str_contains($html_nasty, 'passwd'), 'and a photo path that climbs out of the uploads folder is not turned into a src');
+ok(str_contains($html_nasty, '&lt;img src=x onerror=alert(1)&gt;'), 'the note still reads as the text somebody typed');
+
+group('The link: one token, one page, no session');
+try {
+    $tok = wx_cv_token(['id' => 7, 'no' => 'WI-10120']);
+    eq(strlen($tok), 32, 'a project link token is 32 characters, like the quotation link it is built from');
+    eq($tok, wx_cv_token(['id' => 7, 'no' => 'WI-10120']), 'the same project always produces the same token, so a link sent last month still opens');
+    ok($tok !== wx_cv_token(['id' => 8, 'no' => 'WI-10120']), 'another project gets another token');
+    ok($tok !== wx_cv_token(['id' => 7, 'no' => 'WI-10121']), 'and so does the same project under a different number');
+    ok($tok !== wx_quote_view_token(['id' => 7, 'no' => 'WI-10120']), 'a project link is never a quotation link, even for the same id and number');
+    $path = wx_cv_path(['id' => 7, 'no' => 'WI-10120']);
+    ok(str_starts_with($path, '/api/v2/client/project/7?t='), 'the link names the project and carries the token: ' . $path);
+} catch (ApiError $e) {
+    skip('the project link token needs the application secret (run with --db)');
+}
+ok(wx_cv_token_ok(str_repeat('a', 32)) && !wx_cv_token_ok('short') && !wx_cv_token_ok(str_repeat('z', 32)),
+   'the token shape is checked before any query, so a fuzzed token costs nothing');
+
+group('Opening the page is recorded once, and is not an update the client sees');
+$p_view = wx_cv_mark_viewed($p_client, '2026-10-10 09:00');
+ok($p_view !== null, 'the first view is worth recording');
+eq($p_view['views'], 1, 'and counted');
+eq(count($p_view['updates']), count($p_client['updates']) + 1, 'as an entry in the project\'s own feed');
+eq(count(wx_cv_visible($p_view)), 2, 'which the client cannot see — it is a fact about them, not a message to them');
+ok(wx_cv_mark_viewed($p_view, '2026-10-10 11:00') === null, 'a second look an hour later is not recorded again, or a refresh would be a notification');
+$p_later = wx_cv_mark_viewed($p_view, '2026-10-11 08:00');
+ok($p_later !== null && $p_later['views'] === 2, 'but a look the next day is, so the studio can see the link was opened');
+ok(wx_cv_mark_viewed(array_merge($p_view, ['viewed_at' => 'nonsense']), '2026-10-10 12:00') !== null, 'an unreadable stamp is treated as never viewed rather than blocking the record');
+
+group('The message the client gets carries the link to their page');
+eq(wx_notify_with_page('Dear Ali, hello.', 'https://woodex.com.pk/api/v2/client/project/7?t=abc'),
+   "Dear Ali, hello.\n\nFollow the work: https://woodex.com.pk/api/v2/client/project/7?t=abc",
+   'the link is one sentence, appended — and every sender that has it appends the same words');
+eq(wx_notify_with_page('Dear Ali, hello.', ''), 'Dear Ali, hello.', 'with no link there is no dangling line');
+eq(wx_notify_without_link("Dear Ali,\nFrames are up.\nSite photos: {link}\n\nWoodex Interior · +92 322 4000768"),
+   "Dear Ali,\nFrames are up.\n\nWoodex Interior · +92 322 4000768",
+   'what the page keeps is the message minus the line that pointed at the photographs, because there the photograph is the page');
+eq(wx_notify_without_link("Dear Ali,\nProgress.\n\nFollow the work: {link}\n\nWoodex · 0322"),
+   "Dear Ali,\nProgress.\n\nWoodex · 0322", 'and minus the link line when the page link was the only link in it');
+eq(wx_notify_without_link('No placeholder here.\n\nWoodex'), 'No placeholder here.\n\nWoodex',
+   'a message that never had a link is unchanged — the rule is about the text, not about what a URL looks like');
+ok(isset(wx_notify_defaults()['ev']['stage']['textNoPhotos']), 'the shipped stage wording has a shape for a stage with no photos yet');
+ok(str_contains(wx_notify_defaults()['ev']['stage']['textNoPhotos'], '{link}'), 'which points at the client\'s page instead of an empty photo line');
+
+/* A project with no contact details cannot be sent to, and says so rather than quietly succeeding. */
+eq(wx_notify_contacts(['client_name' => 'Nobody', 'no' => 'WI-1', 'name' => 'A project']),
+   ['name' => 'Nobody', 'phone' => '', 'email' => '', 'ref' => 'WI-1', 'project' => 'A project'],
+   'contacts come back in one shape, with empty strings rather than missing keys — so a caller can add to them with + and never lose one');
+
 /* Nothing here touches the network: the default transport is only reached when a route calls it. */
 skip('the real transport (wx_fetch_get) needs a network and is exercised on the host');
 

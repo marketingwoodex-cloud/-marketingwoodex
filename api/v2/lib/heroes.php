@@ -336,9 +336,9 @@ function wx_hero_fields(string $section): array
         'img' => $p['img'] === null ? '' : substr($section, $p['img'][0], $p['img'][1] - $p['img'][0]),
         'alt' => $p['alt'] === null ? '' : substr($section, $p['alt'][0], $p['alt'][1] - $p['alt'][0]),
         'b1t' => wx_hero_text($section, $p['btns'][0]['text'] ?? null),
-        'b1h' => $p['btns'][0]['href'] === null ? '' : substr($section, $p['btns'][0]['href'][0], $p['btns'][0]['href'][1] - $p['btns'][0]['href'][0]),
+        'b1h' => ($p['btns'][0]['href'] ?? null) === null ? '' : substr($section, $p['btns'][0]['href'][0], $p['btns'][0]['href'][1] - $p['btns'][0]['href'][0]),
         'b2t' => wx_hero_text($section, $p['btns'][1]['text'] ?? null),
-        'b2h' => $p['btns'][1]['href'] === null ? '' : substr($section, $p['btns'][1]['href'][0], $p['btns'][1]['href'][1] - $p['btns'][1]['href'][0]),
+        'b2h' => ($p['btns'][1]['href'] ?? null) === null ? '' : substr($section, $p['btns'][1]['href'][0], $p['btns'][1]['href'][1] - $p['btns'][1]['href'][0]),
         'crumbs' => $p['crumbs'],
     ];
 }

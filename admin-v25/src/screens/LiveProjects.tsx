@@ -20,7 +20,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { AlertTriangle, CalendarClock, FileText, Plus, RefreshCw, Save, Search, Trash2, Wallet } from "lucide-react";
-import { Bar, Btn, Card, Empty, Note, PageHead, Pill, Seg } from "../components/primitives";
+import { Bar, Btn, Card, Empty, Note, PageHead, Pill, Seg, Switch } from "../components/primitives";
 import { api, ApiFailure } from "../lib/api";
 import { useSession } from "../lib/session";
 import {
@@ -284,6 +284,9 @@ function ProjectDrawer({ id, onClose, onSaved }: { id: number; onClose: () => vo
   const [dirty, setDirty] = useState(false);
   const [details, setDetails] = useState<ProjDetail["document"] | null>(null);
   const [update, setUpdate] = useState("");
+  /* Off by default: what somebody types here is a note on the project until they say the client is to read it. */
+  const [share, setShare] = useState(false);
+  const [copied, setCopied] = useState(false);
   const [replaceAsk, setReplaceAsk] = useState<{ k: number; message: string } | null>(null);
 
   const data = live.data;
@@ -407,9 +410,16 @@ function ProjectDrawer({ id, onClose, onSaved }: { id: number; onClose: () => vo
       setBad(new ApiFailure({ code: "VALIDATION", message: "Write the update first.", field: "text" }, 0, "client"));
       return;
     }
-    const r = await run(() => api.post<{ entry: { text: string } } | PendingResult>(`/projects/${id}/updates`, { text }), "Update recorded — the client sees this on their link.");
+    /* Two different changes, and the answer says which one happened. Sharing an update puts it on the page
+       the client opens — that works today, with no transport — while the WhatsApp and e-mail copies are
+       recorded and sent by v2.1 until Phase 4, which is what the notifications screen explains in full. */
+    const r = await run(
+      () => api.post<{ entry: { text: string }; toClient: boolean } | PendingResult>(`/projects/${id}/updates`, { text, sendToClient: share }),
+      share ? "Shared — it is on the client's page." : "Recorded on the project.",
+    );
     if (r) {
       setUpdate("");
+      setShare(false);
       live.reload();
       onSaved();
     }
@@ -742,17 +752,51 @@ function ProjectDrawer({ id, onClose, onSaved }: { id: number; onClose: () => vo
               </>
             ) : null}
 
-            <h3 className="side-h">Client updates</h3>
+            <h3 className="side-h">The client's page</h3>
+            <div className="row">
+              <input className="input mono" readOnly value={data?.client?.link ?? ""} onFocus={(e) => e.currentTarget.select()} />
+              <Btn
+                disabled={!data?.client?.link}
+                onClick={() => {
+                  navigator.clipboard?.writeText(data?.client?.link ?? "");
+                  setCopied(true);
+                }}
+              >
+                {copied ? "Copied" : "Copy link"}
+              </Btn>
+              <Btn disabled={!data?.client?.link} onClick={() => window.open(data?.client?.link, "_blank", "noopener")}>
+                Open
+              </Btn>
+            </div>
+            <p className="cell-sub">
+              {data?.client?.views
+                ? `Opened ${data.client.views} time${data.client.views === 1 ? "" : "s"}${data.client.viewedAt ? ` — last ${data.client.viewedAt}` : ""}.`
+                : "Never opened yet."}{" "}
+              {data?.client?.shared
+                ? `${data.client.shared} update${data.client.shared === 1 ? "" : "s"} on their page; `
+                : "No update is on their page yet; "}
+              the rest of the feed is the studio's own record and never leaves this screen.
+              {data?.client?.hasContact ? "" : " This project has no client phone or email yet — the link still works if you send it another way."}
+            </p>
+
+            <h3 className="side-h">Add an update</h3>
             <div className="row">
               <input
                 className="input"
-                placeholder="What happened on site — the client sees this on their link"
+                placeholder="What happened on site"
                 value={update}
                 onChange={(e) => setUpdate(e.target.value)}
               />
               <Btn disabled={busy} onClick={addUpdate}>
-                Record update
+                {share ? "Share with the client" : "Record update"}
               </Btn>
+            </div>
+            <div className="row" style={{ alignItems: "center" }}>
+              <Switch label="Show the client" checked={share} onChange={setShare} />
+              <span className="cell-sub">
+                Show the client — it appears on their page, and the WhatsApp and e-mail copies are recorded for
+                Phase 4. Off, it stays here.
+              </span>
             </div>
             {data?.updates.length ? (
               <div className="data">
@@ -765,6 +809,11 @@ function ProjectDrawer({ id, onClose, onSaved }: { id: number; onClose: () => vo
                         {u.user} · {u.t}
                         {u.photo ? " · photo attached" : ""}
                       </span>
+                      {u.toClient ? (
+                        <Pill tone="info">on the client's page</Pill>
+                      ) : (
+                        <Pill>internal</Pill>
+                      )}
                     </div>
                   </div>
                 ))}

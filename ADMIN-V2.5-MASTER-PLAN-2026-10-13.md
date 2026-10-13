@@ -515,12 +515,12 @@ working as intended, not a gap hidden by a fallback.
 
 ### Phase 3 — Content, assets and delivery · **in progress** · 4 weeks
 
-*Measured at this commit:* `tests/run.php` **802 passed · 0 failed · 12 skipped** · `tests/conformance.mjs`
-**75 · 0** · php-lint **151 files** · `admin-v25` smoke **124 checks · 65 routes** · legacy bridge **150 of 365
+*Measured at this commit:* `tests/run.php` **842 passed · 0 failed · 13 skipped** · `tests/conformance.mjs`
+**77 · 0** · php-lint **153 files** · `admin-v25` smoke **127 checks · 65 routes** · legacy bridge **150 of 365
 actions** (41%). Migrations **000–014** are written and none has run on a database yet.
 
 Pages · builder bridge · section library · header/footer · heroes · redirects · the full content CMS ·
-media with alt-text queue · forms · estimator · client updates · projects and the Gantt timeline ·
+media with alt-text queue · forms · estimator · projects and the Gantt timeline · client updates ·
 quote templates · business info · integrations rebuilt on real connector state · page versioning.
 
 **Gate:** an editor publishes an article, changes the header across 150 pages, and rolls the change
@@ -617,6 +617,10 @@ already did.
 | Delivered — the timeline | Where | Note |
 |---|---|---|
 | Every project on a date axis, from its start to its handover, filled by what has been invoiced | `admin-v25/src/screens/LiveTimeline.tsx` on `/timeline`, reading `GET /projects?view=all` | The plan asks for a Gantt; the data holds two dates per project and a milestone plan that is **percentages of the contract**, not dated tasks. So the chart draws what exists — a bar per project, a today line, late in red — and says so, rather than inventing a task schedule nobody agreed to and somebody promising a handover from. A project with no dates cannot be a bar, so it is **listed underneath** with its stage and money instead of being dropped: a chart that silently omits work looks complete and is not. The axis spans the work's own range (extended to today, so "everything is behind us" is visible), the label column stays fixed while the track scrolls, and each zoom level names its unit |
+
+| Delivered — client updates | Where | Note |
+|---|---|---|
+| The seven events and their bilingual wording, the channels, the log — and the page the client opens | `lib/notify.php`, `lib/clientview.php`, `routes/notifications.php`, `routes/client_view.php`, `LiveUpdates.tsx` on `/notifications`, the drawer on `/projects` | Two halves, and the honest one is the smaller. **The page**: `/api/v2/client/project/{id}?t=…` — an HMAC of the project's id and number, the construction v2.1's quotation link has always used, compared with `hash_equals`, no session, no script tag, and the first view recorded once every twelve hours so the studio can see the link was opened. It renders `updates[]` entries marked `toClient` and nothing else: *one* record, so there is no second copy of a sentence to drift and no "what did we actually tell them?". **The sending**: v2.5 has no WhatsApp or SMTP transport, and the plan puts it in Phase 4 with the WhatsApp suite — so the send path reports `no transport yet` rather than v2.1's `queued`, the once-only stage marks are set only when a message *left*, and the screen says who sends today instead of implying it is us. That last part is not decoration: marking a stage "told" on the strength of a log row would silence that news for good the day the channels are connected. A stage message has two shapes — the photo links, or, when a stage has no photos yet, the same words pointing at the client's page — and the update a person types in the drawer is the studio's own until they tick *Show the client* |
 
 **Still to come in this phase:** quote templates,
 business info (`cms_biz_*`), announcements (`cms_announce_*`), the AI settings in the CMS (`cms_ai_*`), SEO
@@ -807,7 +811,7 @@ Everything in `admin-v25/` runs today:
 | Evidence | Result |
 |---|---|
 | Type check | clean, strict, `noUnusedLocals` |
-| Render smoke | **124 checks · 65 routes · 0 failures** |
+| Render smoke | **127 checks · 65 routes · 0 failures** |
 | Production build | 3 chunks, content-hashed, sourcemaps on |
 | Token contract | switching theme, accent and density re-themes all charts and screens |
 | Routing defects | AD-3, AD-4 and AD-12 structurally impossible in the registry |

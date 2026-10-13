@@ -169,6 +169,7 @@ function wx_route_notify_get(array $ctx): array
         'cfg' => wx_notify_cfg(),
         'events' => WX_NOTIFY_EVENTS,
         'ready' => wx_notify_ready(),
+        'transport' => wx_notify_transport_info(),
         'log' => wx_all('SELECT * FROM wx_notify_log ORDER BY id DESC LIMIT 60'),
     ]];
 }
@@ -277,32 +278,13 @@ function wx_route_notify_proj_send_do(array $ctx): array
                 }
             }
             $note = wx_v_opt_string($ctx['body']['note'] ?? null, 'note', 1000) ?? '';
-            $contacts = wx_notify_contacts($p);
-            $default = wx_notify_defaults()['ev']['stage']['text'];
-            $tpl = $note !== ''
-                ? "Dear {name},\n" . $note . "\nSite photos: {link}\n\n{company} · {phone}"
-                : $default;
-            $result = wx_notify_send('stage', $contacts + [
-                'stage' => wx_notify_stage_label((string) $p['stage']),
-                'link' => $urls ? wx_notify_photos($p, $urls) : wx_notify_photos($p),
-                'tpl' => $tpl,
-            ], true);
-            if (($result['skipped'] ?? '') === 'no phone or email') {
-                throw ApiError::validation('This project has no client phone number or email address yet', 'photos');
-            }
-            $parts = [];
-            foreach ($result as $channel => $what) {
-                $parts[] = $channel . ': ' . $what;
-            }
-            $p['updates'] = is_array($p['updates'] ?? null) ? $p['updates'] : [];
-            $p['updates'][] = [
-                't' => wx_now(),
-                'user' => (string) $u['name'],
-                'text' => 'Progress update sent to the client' . ($urls ? ' with ' . count($urls) . ' photo' . (count($urls) > 1 ? 's' : '') : '')
-                    . ' (' . implode(', ', $parts) . ')',
-            ];
+            /* The same call the project screen's update box makes. The only difference between the two
+               screens is which photos the person picked and whether they typed anything. */
+            $posted = wx_proj_update_post($p, (string) $u['name'], $note, $urls, true);
+            $p = $posted['project'];
+            $result = $posted['result'];
             wx_doc_put('wx_projects', $p);
-            wx_audit($u, 'notify.project', 'project:' . $id, ['photos' => count($urls), 'result' => $result]);
+            wx_audit($u, 'notify.project', 'project:' . $id, ['photos' => count($posted['photos']), 'result' => $result]);
             return ['data' => ['result' => $result, 'project' => $p]];
         });
     });

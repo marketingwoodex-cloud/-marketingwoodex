@@ -279,6 +279,42 @@ function wx_send_file(array $spec): void
     exit;
 }
 
+/**
+ * Send a page as the response body instead of JSON.
+ *
+ * The third and last exit, and it exists for the same reason as the file one: the client's progress page is
+ * a document a person opens in a browser, not an API response, and a route must not `echo` it — the rule
+ * that only this file writes output is what makes "a stray warning can never corrupt the response"
+ * checkable. The handler decides *whether* the caller may see it (it holds the token); this decides how it
+ * leaves.
+ *
+ * The headers are the client-link headers v2.1's quotation page set: not indexed, no referrer, no framing,
+ * and no caching — a page about somebody's project should not sit in a shared cache, and a view that was
+ * recorded should be the view that happened.
+ */
+function wx_send_html(array $spec): void
+{
+    $body = (string) ($spec['body'] ?? '');
+    $status = (int) ($spec['status'] ?? 200);
+    while (ob_get_level() > 0) {
+        ob_end_clean();
+    }
+    if (defined('WX_RESPOND_CAPTURE')) {
+        $GLOBALS['WX_RESPONSES'][] = ['status' => $status, 'html' => $body, 'headers' => wx_test_headers()];
+        return;
+    }
+    header('Content-Type: text/html; charset=utf-8');
+    header('X-Robots-Tag: noindex, nofollow');
+    header('Referrer-Policy: no-referrer');
+    header('X-Frame-Options: DENY');
+    header('Cache-Control: private, no-store, must-revalidate');
+    header('X-Content-Type-Options: nosniff');
+    header('X-WX-Request-Id: ' . wx_request_id());
+    http_response_code($status);
+    echo $body;
+    exit;
+}
+
 /** The headers a response would have sent, for the capture mode above and for tests. */
 function wx_test_headers(): array
 {

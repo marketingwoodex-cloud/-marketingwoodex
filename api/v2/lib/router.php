@@ -327,6 +327,12 @@ function wx_routes(): array
            only thing stored — plus the per-IP limit inside each handler, so a request that guesses is
            cheap to refuse and a bot that scrapes is expensive to keep. `chat.php` was v2.1's entry point;
            the old URL keeps working until the widget itself is re-pointed in Phase 3. */
+        /* ------------------------------------------------------ the client's page
+           A project's progress page, opened from a WhatsApp message or an email with no session. The token
+           is the credential and it answers with a page rather than an envelope (see
+           routes/client_view.php), so there is no v2.1 action to translate. */
+        ['GET',    'client/project/{id}',             'client_view', 'wx_route_client_project', null],
+
         ['GET',    'chat/config',                     'chat_public', 'wx_route_chat_cfg',    null],
         ['POST',   'chat/send',                       'chat_public', 'wx_route_chat_send',   null],
         ['POST',   'chat/poll',                       'chat_public', 'wx_route_chat_poll',   null],
@@ -383,6 +389,9 @@ function wx_public_routes(): array
         'book/config', 'book/slots', 'book',
         'r404',
         'chat/config', 'chat/send', 'chat/poll', 'chat/typing', 'chat/file',
+        /* The client's project page. No session by design: the token in the link is the credential, and it is
+           the same construction the quotation link has always used (see lib/clientview.php). */
+        'client/project/{id}',
     ];
 }
 
@@ -501,6 +510,11 @@ function wx_normalise_result($result): array
        it is pulled out before the envelope is built so a file response can never carry a JSON body. */
     if (is_array($result) && isset($result['__file']) && is_array($result['__file'])) {
         return ['data' => null, 'meta' => [], 'file' => $result['__file']];
+    }
+    /* …and with a page instead of data — the client's progress link. Same construction, same reason:
+       one word a handler would never return by accident, pulled out before the envelope is built. */
+    if (is_array($result) && isset($result['__html']) && is_array($result['__html'])) {
+        return ['data' => null, 'meta' => [], 'html' => $result['__html']];
     }
     if (!is_array($result)) {
         return ['data' => $result, 'meta' => []];

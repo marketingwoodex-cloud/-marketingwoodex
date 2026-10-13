@@ -64,6 +64,12 @@ try {
         wx_send_file($result['file']);
     }
 
+    /* A route may answer with a page (the client's progress link). Same rule as the file above: the handler
+       decided whether the caller may have it, the front controller decides how it leaves. */
+    if (!empty($result['html'])) {
+        wx_send_html($result['html']);
+    }
+
     /* Two doors, two response shapes. A request that arrived as ?action=… came from a v2.1 client,
        which reads payload keys at the top level and `error` as a string; a resource request gets the
        v2 envelope. This is the only branch in the API that knows about the old shape, and it can be

@@ -26,6 +26,7 @@ import { LiveForms } from "./screens/LiveForms";
 import { LiveEstimator } from "./screens/LiveEstimator";
 import { LiveProjects } from "./screens/LiveProjects";
 import { LiveTimeline } from "./screens/LiveTimeline";
+import { LiveUpdates } from "./screens/LiveUpdates";
 import { linkLabel, useLive, type BellData } from "./lib/live";
 import { Btn, Card, PageHead } from "./components/primitives";
 
@@ -33,7 +34,7 @@ import { Btn, Card, PageHead } from "./components/primitives";
 const BUILT_IDS = new Set([
   "dashboard", "leads", "enquiries", "pipeline", "quotes", "theme", "redirects", "media", "blog", "portfolio", "cities", "global", "pages", "library", "site-theme",
   "testimonials", "team", "heroes",
-  "forms", "estimator", "projects", "timeline",
+  "forms", "estimator", "projects", "timeline", "notifications",
 ]);
 
 /** The public entry point: one provider, then the app proper. */
@@ -209,6 +210,9 @@ function Frame({ demo }: { demo: boolean }) {
           <Route path="/projects" element={<LiveProjects />} />
           {/* The same projects on a date axis: start to handover, filled by what has been invoiced. */}
           <Route path="/timeline" element={<LiveTimeline />} />
+          {/* Client updates: the seven events and their wording, the channels, the log — and the sentence the
+              screen refuses to hide, that the sending itself is still v2.1's until Phase 4. */}
+          <Route path="/notifications" element={<LiveUpdates />} />
           {/* The header and the footer: one edit, every page, one undo. */}
           <Route path="/global" element={<LiveGlobal />} />
           {/* Every page and every change — where the header change across 150 pages is undone. */}

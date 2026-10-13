@@ -1007,6 +1007,43 @@ check("the projects screens read the fields the server actually sends", () => {
   assert(!/\$text\b.*\$where\[\] = [^;]*\$text/.test(filter), "neither is the search string");
 });
 
+check("the client's page is one page and cannot be scripted into", () => {
+  /* The page a client opens with no session is the one place in the product that renders text a member of
+     staff typed to somebody outside the company. Two properties keep it safe and they are both structural:
+     it carries no JavaScript at all (so a note cannot become code, whatever it contains), and every attribute
+     it writes goes through htmlspecialchars. Asserted on the source, so a later edit that adds a script tag to
+     "make it nicer" fails here rather than in a client's browser. */
+  const cv = readCode("api/v2/lib/clientview.php");
+  assert(!/<script/i.test(cv), "the client's page carries no script tag");
+  assert(!/onclick=|onerror=|onload=/i.test(cv), "and no inline handler");
+  assert(/htmlspecialchars\(/.test(cv), "every value it prints is escaped");
+  /* The update it shows is decided by one function, which is what makes "did the client see this?" answerable. */
+  assert(/function wx_cv_visible\(/.test(cv), "what the client may read is one function");
+  assert(/empty\(\$u\['toClient'\]\)/.test(cv), "and an entry without the mark is not it");
+  /* The link token is the same construction as the quotation link: an HMAC over the id and the number, and a
+     shape check before any query runs. */
+  assert(/hash_hmac\('sha256', WX_CV_PREFIX/.test(cv), "the link is an HMAC, not a guessable id");
+  assert(/function wx_cv_token_ok\(/.test(cv), "and its shape is checked before the database is asked");
+});
+
+check("a message this console cannot carry is never recorded as sent", () => {
+  /* v2.5 has no WhatsApp or SMTP transport yet — the plan puts it in Phase 4 with the WhatsApp suite — and the
+     plan's own record (v2.1's notify-lib.php) is the live sender. The failure mode to guard against is a log
+     that says "queued" while nothing left the building: a studio that believes a customer was told when
+     nobody was, and a once-only mark that silences the message for good. So the word does not appear. */
+  const notify = readCode("api/v2/lib/notify.php");
+  assert(!/'queued'/.test(notify), "the notify library never records a message as queued");
+  assert(/const WX_NOTIFY_TRANSPORT = false;/.test(notify), "the transport is declared, not implied");
+  assert(/no transport yet/.test(notify), "and a channel that is configured but cannot send says so");
+  /* The mark that means "the client has been told" is only set when something was actually carried. */
+  const stage = notify.slice(notify.indexOf("function wx_notify_project_stage("));
+  assert(/\$r\['carried'\]/.test(stage), "the once-only mark waits for a message that left");
+  /* The screen has to say it too, in words, or the operator never learns it. */
+  const screen = readCode("admin-v25/src/screens/LiveUpdates.tsx");
+  assert(/Phase 4/.test(screen) && /records/.test(screen), "the notifications screen explains who sends today");
+  assert(/client’s own page/.test(screen) || /client's own page/.test(screen), "and that the page is what works now");
+});
+
 /* ============================================================== report */
 
 if (process.argv.includes("--json")) {
