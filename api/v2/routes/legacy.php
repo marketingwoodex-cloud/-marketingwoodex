@@ -62,6 +62,13 @@ function wx_legacy_bridged(): array
         'projs_table'     => ['projects', 'wx_route_projects_list', []],
         'proj_meta'       => ['projects', 'wx_route_projects_get', ['id']],
         'proj_milestones' => ['projects', 'wx_route_projects_save', ['id']],
+        /* v2.1's older project names, which the sales screen still uses. They map onto the same handlers
+           as the resource routes rather than onto a second implementation: `proj_save` is PATCH
+           /projects/{id}, `proj_update` posts a stage update, `projs_list` is the list. */
+        'proj_save'       => ['projects', 'wx_route_projects_save', ['id']],
+        'proj_update'     => ['projects', 'wx_route_projects_update', ['id']],
+        'projs_list'      => ['projects', 'wx_route_projects_list', []],
+        'quote_get'       => ['quotations', 'wx_route_quotes_get', ['id']],
         'appr_list'       => ['approvals', 'wx_route_approvals_list', []],
         'appr_count'      => ['approvals', 'wx_route_approvals_count', []],
         'appr_get'        => ['approvals', 'wx_route_approvals_get', ['id']],
