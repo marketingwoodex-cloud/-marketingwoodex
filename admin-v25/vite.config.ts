@@ -15,8 +15,57 @@ import react from "@vitejs/plugin-react";
 */
 /* `process` exists in this file (vite loads it in Node) but @types/node is not a dependency of a
    browser app — declaring the one member used is cheaper than adding 2 MB of Node typings for it. */
-declare const process: { env: Record<string, string | undefined> };
+declare const process: {
+  env: Record<string, string | undefined>;
+  /* one line of stderr when the API is down, instead of a stack trace per request */
+  stderr: { write(s: string): void };
+};
 const API_TARGET = process.env.WX_API_TARGET ?? "http://127.0.0.1:8080";
+
+/**
+ * When the API is not running, say so in the API's own words.
+ *
+ * Vite's default behaviour is to log a proxy stack trace and answer an empty 500 — which the browser
+ * reports as "the server responded with a status of 500", a sentence that sends the reader looking for a
+ * bug in the API. This is a development server whose upstream is simply not up (no PHP, no MySQL, or
+ * `dev:api` not started), so the truthful answer is an envelope in the same shape the API uses, with a
+ * status of 502 and a message naming the command that fixes it.
+ *
+ * It answers no *data*: `ready: false` with a reason, never a made-up health response. A dev server that
+ * invents an API is how a screen ends up looking correct in development and broken on the host.
+ */
+/* At most one line every 30 seconds, however many requests fail. The health probe and a grid of broken
+   images are both "the same fact, repeatedly", and a console full of it hides the next real error. */
+let guardNoteAt = 0;
+
+function upstreamGuard(name: string, note = true) {
+  return (proxy: { on: (e: string, cb: (...a: any[]) => void) => void }) => {
+    proxy.on("error", (err: { code?: string; message?: string }, _req: unknown, res: unknown) => {
+      const r = res as { writeHead?: (code: number, headers: Record<string, string>) => void; end?: (b: string) => void; headersSent?: boolean };
+      if (!r || typeof r.writeHead !== "function" || r.headersSent) return;
+      const down = err?.code === "ECONNREFUSED" || err?.code === "ECONNRESET" || err?.code === "ENOTFOUND";
+      const body = JSON.stringify({
+        ok: false,
+        error: {
+          code: "UPSTREAM",
+          message: down
+            ? `${name} is not answering at ${API_TARGET}. Start it with \`npm run dev:api\` (that needs PHP and a configured MySQL), or set WX_API_TARGET to a running host.`
+            : `${name} request failed: ${err?.message ?? "unknown error"}`,
+          field: null,
+        },
+        meta: { requestId: "dev-proxy", target: API_TARGET },
+      });
+      r.writeHead(down ? 502 : 504, { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" });
+      r.end?.(body);
+      /* One line, not a stack trace: the shell's status strip already says the same thing, and a wall of
+         frames on every poll buries the errors that are the developer's. */
+      if (note && Date.now() - guardNoteAt > 30_000) {
+        guardNoteAt = Date.now();
+        process.stderr.write(`\n  [vite] api/v2 is not reachable at ${API_TARGET} — the app falls back to demo data and says so.\n`);
+      }
+    });
+  };
+}
 
 export default defineConfig(({ isSsrBuild }) => ({
   plugins: [react()],
@@ -27,12 +76,18 @@ export default defineConfig(({ isSsrBuild }) => ({
     allowedHosts: true, // preview is proxied under *.e2b.app
     cors: true,
     proxy: {
-      "/api": { target: API_TARGET, changeOrigin: false, secure: false },
+      "/api": { target: API_TARGET, changeOrigin: false, secure: false, configure: upstreamGuard("api/v2") },
       /* The media library shows pictures at the addresses the pages use (`/assets/img/…`). They are
          served by the same host in production, and by the dev PHP server (its document root is the
          repository root) in development — so proxying them is what makes the library look the same in
          both. Without it a designer reviews the media screen as a wall of broken images. */
-      "/assets": { target: API_TARGET, changeOrigin: false, secure: false },
+      "/assets": {
+        target: API_TARGET,
+        changeOrigin: false,
+        secure: false,
+        /* Same guard, without the note: a grid of images failing is one fact, not forty. */
+        configure: upstreamGuard("the site's images", false),
+      },
     },
   },
   preview: {

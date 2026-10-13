@@ -34,6 +34,20 @@ else with `WX_API_TARGET=https://… npm run dev`.
 **Demo mode** (`?demo=1`, or `VITE_WX_DEMO=1` in the build environment — which is what the Netlify and
 Vercel previews should use) skips the API entirely and renders the mock layouts.
 
+**When the API is not running**, the dev server says so in the API's own envelope. `/api` and `/assets`
+answer `502 UPSTREAM` with the command that fixes it, instead of an empty 500 that reads like a bug in
+the API:
+
+```json
+{"ok":false,"error":{"code":"UPSTREAM","message":"api/v2 is not answering at http://127.0.0.1:8080. Start it with `npm run dev:api` …"}}
+```
+
+Vite still logs its own `http proxy error` line for each request — that is vite's dev logging, not the
+app. The front end is unaffected: it settles into the offline state, renders the design from demo data,
+and the status strip carries the reason. A sandbox with no PHP and no MySQL (the build sandbox, for
+instance) therefore runs the front end quite happily and shows nothing from the server — which is why
+`npm run dev:api` is the one script here that needs the host.
+
 ## What works
 
 | Screen | Route | What it demonstrates |
