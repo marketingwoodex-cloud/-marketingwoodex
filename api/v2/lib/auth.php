@@ -432,27 +432,144 @@ function wx_login_2fa(string $ticket, string $code): array
 }
 
 /* ------------------------------------------------------------------ security state
-   Per-user 2FA state stays in _private/security.json for now, where v2.1 kept it, but all writes
-   go through JsonStore so they are atomic. Migration 010 moves it into MySQL (plan §9.2). */
+   The two-factor secret, the recovery hashes, the replay guard and the alerts preference live on the
+   user row (`wx_users.totp_secret`, `totp_on`, `recovery_json`, `totp_last`, `alerts` — migration 000
+   and 008). v2.1 kept them in `_private/security.json`, keyed by user id, which meant a lost file locked
+   everyone out and a read-modify-write race could drop a recovery code.
+
+   Rows written before the move are read from the file **once**, returned as they were, and written back
+   to the columns on the next write: no backfill script, no window where both copies disagree, and the
+   file empties itself out as people use the screens. */
 
 function wx_security_store(): JsonStore
 {
     return wx_store('security.json', true);
 }
 
+/** The 2FA state for one user, in the column shape, whoever wrote it. */
+function wx_security_state(int $userId): array
+{
+    static $cache = [];
+    if (isset($cache[$userId])) {
+        return $cache[$userId];
+    }
+    $row = wx_one('SELECT totp_secret, totp_on, recovery_json, totp_last, alerts FROM wx_users WHERE id = ?', [$userId]);
+    $state = [
+        'secret' => (string) ($row['totp_secret'] ?? ''),
+        'on' => !empty($row['totp_on']),
+        'recovery' => is_string($row['recovery_json'] ?? null) && $row['recovery_json'] !== ''
+            ? (array) json_decode((string) $row['recovery_json'], true)
+            : [],
+        'last' => (int) ($row['totp_last'] ?? 0),
+        'alerts' => !isset($row['alerts']) || (int) $row['alerts'] === 1,
+        'legacy' => false,
+    ];
+    if ($state['secret'] === '' && $state['recovery'] === [] && wx_table_exists('wx_migrations')) {
+        $old = wx_security_store()->tryRead() ?? [];
+        $prev = is_array($old[(string) $userId] ?? null) ? $old[(string) $userId] : null;
+        if ($prev !== null) {
+            $state['secret'] = (string) ($prev['totp'] ?? ($prev['secret'] ?? ''));
+            $state['on'] = !empty($prev['totp_on']) || !empty($prev['twofa']);
+            $state['recovery'] = array_values((array) ($prev['recovery'] ?? []));
+            $state['last'] = (int) ($prev['totp_last'] ?? 0);
+            $state['alerts'] = !isset($prev['alerts']) || !empty($prev['alerts']);
+            $state['legacy'] = true;
+        }
+    }
+    $cache[$userId] = $state;
+    return $state;
+}
+
+/** Write the state back to the user row, and drop the legacy file row it came from. */
+function wx_security_state_put(int $userId, array $state): void
+{
+    $recovery = array_values(array_filter(array_map('strval', (array) ($state['recovery'] ?? []))));
+    wx_update('wx_users', [
+        'totp_secret' => (string) ($state['secret'] ?? '') !== '' ? (string) $state['secret'] : null,
+        'totp_on' => !empty($state['on']) ? 1 : 0,
+        'recovery_json' => $recovery ? json_encode($recovery) : null,
+        'totp_last' => (int) ($state['last'] ?? 0) ?: null,
+        'alerts' => array_key_exists('alerts', $state) ? (!empty($state['alerts']) ? 1 : 0) : 1,
+    ], ['id' => $userId]);
+
+    /* Always offer to drop the legacy row: the columns are now the truth, and a stale copy of a secret
+       in a file is exactly the kind of thing that outlives its reason. The update is a no-op when the
+       file has no row for this user. */
+    wx_security_store()->update(static function (array $all) use ($userId) {
+        unset($all[(string) $userId]);
+        return $all;
+    });
+}
+
+/* The names v2.1 used, kept as thin aliases so a call site that reads `wx_user_security()` keeps
+   working while there is exactly one implementation. `twofa` is the flag the UI reads. */
 function wx_user_security(int $userId): array
 {
-    $all = wx_security_store()->tryRead() ?? [];
-    $row = $all[(string) $userId] ?? [];
-    return is_array($row) ? $row : [];
+    $s = wx_security_state($userId);
+    return [
+        'totp' => $s['secret'],
+        'totp_on' => $s['on'],
+        'twofa' => $s['on'],
+        'recovery' => $s['recovery'],
+        'totp_last' => $s['last'],
+        'alerts' => $s['alerts'],
+    ];
 }
 
 function wx_user_security_put(int $userId, array $state): void
 {
-    wx_security_store()->update(static function (array $all) use ($userId, $state) {
-        $all[(string) $userId] = $state;
-        return $all;
-    });
+    wx_security_state_put($userId, [
+        'secret' => (string) ($state['totp'] ?? ($state['secret'] ?? '')),
+        'on' => !empty($state['totp_on']) || !empty($state['twofa']),
+        'recovery' => (array) ($state['recovery'] ?? []),
+        'last' => (int) ($state['totp_last'] ?? 0),
+        'alerts' => array_key_exists('alerts', $state) ? !empty($state['alerts']) : true,
+    ]);
+}
+
+/** Recovery codes: eight, in the format v2.1 printed and people photographed. */
+function wx_recovery_codes(int $count = 8): array
+{
+    $out = [];
+    for ($i = 0; $i < $count; $i++) {
+        $raw = strtoupper(bin2hex(random_bytes(4)));
+        $out[] = substr($raw, 0, 4) . '-' . substr($raw, 4, 4);
+    }
+    return $out;
+}
+
+/** What is stored is a hash, never the code itself — the same rule as a password. */
+function wx_recovery_hash(string $code): string
+{
+    return hash('sha256', strtoupper((string) preg_replace('~\s+~', '', $code)));
+}
+
+/** The otpauth:// URI the QR code is drawn from. */
+function wx_2fa_uri(string $secret, string $email): string
+{
+    return 'otpauth://totp/' . rawurlencode('Woodex Admin:' . $email)
+        . '?secret=' . $secret . '&issuer=' . rawurlencode('Woodex Admin') . '&algorithm=SHA1&digits=6&period=30';
+}
+
+/**
+ * The last few sign-ins and 2FA events for one account.
+ *
+ * Read from `wx_activity`, which has recorded them all along — v2.1 kept a copy in its security file as
+ * well, so the two could disagree about whether a login happened.
+ */
+function wx_login_alerts(int $userId, int $limit = 10): array
+{
+    $rows = wx_all(
+        "SELECT action, ip, created_at FROM wx_activity
+          WHERE user_id = ? AND (action = 'login' OR action LIKE 'login.%' OR action LIKE '2fa.%')
+          ORDER BY id DESC LIMIT " . max(1, min(50, $limit)),
+        [$userId]
+    );
+    $out = [];
+    foreach ($rows as $r) {
+        $out[] = ['action' => (string) $r['action'], 'ip' => (string) ($r['ip'] ?? ''), 'at' => (string) $r['created_at']];
+    }
+    return $out;
 }
 
 /* ------------------------------------------------------------------ TOTP (RFC 6238)
@@ -476,6 +593,21 @@ function wx_b32_dec(string $b32): string
         if (strlen($byte) === 8) {
             $out .= chr((int) bindec($byte));
         }
+    }
+    return $out;
+}
+
+/** Base32 (RFC 4648, no padding) — what an authenticator app expects. Ported from b32_enc(). */
+function wx_b32_enc(string $bin): string
+{
+    $alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+    $bits = '';
+    foreach (str_split($bin) as $c) {
+        $bits .= str_pad(decbin(ord($c)), 8, '0', STR_PAD_LEFT);
+    }
+    $out = '';
+    foreach (str_split($bits, 5) as $chunk) {
+        $out .= $alphabet[(int) bindec(str_pad($chunk, 5, '0'))];
     }
     return $out;
 }
@@ -557,6 +689,18 @@ function wx_session_list(int $userId): array
 }
 
 /** Ends every session except the current one. */
+/**
+ * End every session for one user — including the one making the request.
+ *
+ * The difference from wx_session_revoke_others() is the word "others". This one is used when a password
+ * changes, an account is switched off, or an owner resets someone's two-factor: in all three cases the
+ * point is that nobody stays signed in, and "nobody" has to include whoever is holding the keyboard.
+ */
+function wx_session_revoke_user(int $userId): int
+{
+    return wx_q('UPDATE wx_sessions SET revoked_at = ? WHERE user_id = ? AND revoked_at IS NULL', [wx_now(), $userId])->rowCount();
+}
+
 function wx_session_revoke_others(int $userId): int
 {
     $current = (string) (wx_session_row()['id'] ?? '');

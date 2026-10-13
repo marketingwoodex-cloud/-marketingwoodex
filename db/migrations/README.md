@@ -37,6 +37,8 @@ is `db/backfill_payments.php`, deliberately not part of `006`.
 | `004_fk.sql` | foreign keys where they are safe: orphans repaired first, `CASCADE` only where the child is meaningless without the parent |
 | `005_settings_seed.sql` | the settings v2.5 reads, seeded with v2.1's values. `INSERT IGNORE` throughout: a seed adds what is missing and never overwrites a decision a person has made |
 | `006_payments_approvals.sql` | `wx_invoice_payments` (a receipt is a record, not an array element) and `wx_approvals` (the queue, with who decided what) |
+| `007_inbox_columns.sql` | the four columns the unified inbox needs on `wx_chats` (`assigned_to`, `tags`, `handoff`, `ext`) plus its two index shapes. v2.1 created these on first use inside a try/catch; a schema that three hosts disagree about is the result — this file is the same columns, created once, recorded like everything else |
+| `008_security_state.sql` | two columns on `wx_users`: `totp_last` (a code cannot be replayed inside its own 30-second window) and `alerts` (one person's preference, not a settings row named after them). This is the last of the security state that v2.1 kept in `_private/security.json` |
 
 ## Money
 

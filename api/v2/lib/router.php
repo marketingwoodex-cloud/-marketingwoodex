@@ -115,6 +115,25 @@ function wx_routes(): array
         ['POST',   'clients/{id}/merge',              'clients', 'wx_route_clients_merge',   'clients_merge'],
         ['GET',    'clients/{id}/comms',              'clients', 'wx_route_clients_comms',   'client_comms'],
 
+        /* ------------------------------------------------------------ inbox
+           One conversation list for the widget, WhatsApp and Telegram. `chat_*` is in the approval
+           policy's never-queue list: answering a customer cannot wait for the Master to wake up. */
+        ['GET',    'chats',                        'chats', 'wx_route_chats_list',     'chat_list'],
+        ['GET',    'chats/settings',               'chats', 'wx_route_chats_cfg_get',  'chat_cfg_get'],
+        ['POST',   'chats/settings',               'chats', 'wx_route_chats_cfg_save', 'chat_cfg_save'],
+        ['POST',   'chats/test',                   'chats', 'wx_route_chats_test',     'chat_test'],
+        ['GET',    'chats/{id}',                   'chats', 'wx_route_chats_get',      'chat_get'],
+        ['POST',   'chats/{id}/reply',             'chats', 'wx_route_chats_reply',    'chat_reply'],
+        ['POST',   'chats/{id}/note',              'chats', 'wx_route_chats_note',     'chat_note'],
+        ['POST',   'chats/{id}/mode',              'chats', 'wx_route_chats_mode',     'chat_mode'],
+        ['POST',   'chats/{id}/assign',            'chats', 'wx_route_chats_assign',   'chat_assign'],
+        ['POST',   'chats/{id}/close',             'chats', 'wx_route_chats_close',    'chat_close'],
+        ['POST',   'chats/{id}/tags',              'chats', 'wx_route_chats_tags',     'chat_tags'],
+        ['POST',   'chats/{id}/lead',              'chats', 'wx_route_chats_lead',     'chat_lead'],
+        ['POST',   'chats/{id}/typing',            'chats', 'wx_route_chats_typing',   'chat_typing'],
+        ['POST',   'chats/{id}/file',              'chats', 'wx_route_chats_file',     'chat_file'],
+        ['POST',   'chats/{id}/suggest',           'chats', 'wx_route_chats_suggest',  'chat_suggest'],
+
         /* ---------------------------------------------------------- bookings
            The last three are the public booking form: no session, so they are rate-limited and
            honeypot-aware, and they create the lead as well as the booking. */
@@ -128,6 +147,24 @@ function wx_routes(): array
         ['GET',    'book/config',                     'bookings', 'wx_route_book_config',         null],
         ['GET',    'book/slots',                      'bookings', 'wx_route_book_slots',          null],
         ['POST',   'book',                            'bookings', 'wx_route_book_create',         null],
+
+        /* -------------------------------------------------- people and security
+           `users` and `user_save` are the two v2.1 action names for this screen; the capability matrix
+           already restricts them to owner and admin (wx_action_roles), and user_save's group is
+           `master`, which only the owner holds — so an admin can read the list and cannot change it.
+           The security block is the `self` group: a person always manages their own account. */
+        ['GET',    'users',                           'users',    'wx_route_users_list',              'users'],
+        ['POST',   'users',                           'users',    'wx_route_users_save',              'user_save'],
+        ['PATCH',  'users/{id}',                      'users',    'wx_route_users_save',              'user_save'],
+        ['POST',   'users/{id}/2fa-reset',            'users',    'wx_route_users_2fa_reset',         'sec_2fa_reset'],
+        ['DELETE', 'users/{id}/sessions',             'users',    'wx_route_users_sessions_revoke',   'sec_revoke'],
+
+        ['GET',    'security',                        'security', 'wx_route_security_get',            'sec_get'],
+        ['POST',   'security/2fa/begin',              'security', 'wx_route_security_2fa_begin',      'sec_2fa_begin'],
+        ['POST',   'security/2fa/enable',             'security', 'wx_route_security_2fa_enable',     'sec_2fa_enable'],
+        ['POST',   'security/2fa/disable',            'security', 'wx_route_security_2fa_disable',    'sec_2fa_disable'],
+        ['POST',   'security/recovery',               'security', 'wx_route_security_recovery',       'sec_recovery_new'],
+        ['POST',   'security/alerts',                 'security', 'wx_route_security_alerts',         'sec_alerts'],
 
         /* ---------------------------------------------------------- system */
         ['GET',    'system/health',                   'system', 'wx_route_sys_health',    'sys_check'],
