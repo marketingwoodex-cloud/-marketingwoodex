@@ -2,7 +2,7 @@
 
 **Target version:** Admin **v2.5 Pro** — the React + TypeScript rebuild of the Woodex master dashboard
 **Strategy:** rewrite the front end · version the back end · preserve the data
-**Based on:** `PROJECT-ANALYSIS-REPORT-2026-10-13.pdf` (26 pages, 13 branches, 364 API actions measured)
+**Based on:** `PROJECT-ANALYSIS-REPORT-2026-10-13.pdf` (26 pages, 13 branches, 365 API actions measured)
 **Prototype:** `admin-v25/` — 5 working screens, all 65 routes registered, 70 render checks passing
 **Date:** 13 October 2026 · **Branch:** `arena/4150341e-marketingwoodex`
 
@@ -10,7 +10,7 @@
 
 ## 1. Executive summary
 
-Woodex already has the hard part: 364 working server actions, a 20-table database holding
+Woodex already has the hard part: 365 working server actions, a 20-table database holding
 real leads, quotations and invoices, 150 public pages, and integrations with WhatsApp, Telegram,
 Google and an AI assistant. What it does not have is an interface architecture that can carry the
 next five years, and it has never had a clean production boundary.
@@ -20,7 +20,7 @@ This plan keeps everything that works and replaces what does not:
 | Layer | Decision | Why |
 |---|---|---|
 | **Front end** | **Rewrite** in React 18 + TypeScript + Vite | The current admin is 60 IIFE modules, 10,502 lines, sharing 56 mutable `VIEWS` keys and loading in script order. Three of the four shipped admin copies contain duplicate fragments that break parsing. Nothing about that is repairable in place. |
-| **Back end** | **Version, don't rewrite** — `api/v2/` in PHP 8.2 over the same MySQL | The 364 actions encode years of business rules that already work. Rewriting them buys nothing and risks everything. Instead: one front controller, a typed envelope, safe persistence, and a capability table. |
+| **Back end** | **Version, don't rewrite** — `api/v2/` in PHP 8.2 over the same MySQL | The 365 actions encode years of business rules that already work. Rewriting them buys nothing and risks everything. Instead: one front controller, a typed envelope, safe persistence, and a capability table. |
 | **Data** | **Preserve** — same MySQL, migrate the JSON side-stores in with SQL | `wx_leads` (32 columns, 4 indexes) is real business data. It is extended, not replaced. |
 | **Design** | **One token contract, two first-class themes** ("Woodex Ink") | Ends the v2.1 defect where the sidebar was pinned dark with `!important` and 21 modules carried 343 literal colours, so the obsidian theme only half-applied. |
 | **Delivery** | **Incremental** — v2.1 stays live while v2.5 is built screen by screen | A working studio system must never go dark. Cut over one route at a time behind a flag. |
@@ -54,7 +54,7 @@ PHP + MySQL. The React build is static files. That keeps hosting cost at zero an
 
 Measured in the analysis report. The short version:
 
-**Strong.** 364 server actions across 40 PHP files; 20 MySQL tables / 161 columns; 150 public pages
+**Strong.** 365 server actions across 40 PHP files; 20 MySQL tables / 161 columns; 150 public pages
 with 142 sitemap URLs; working WhatsApp Cloud API, Telegram bot, Google Analytics 4 + Search
 Console, Google Sheets sync, MCP endpoint for Claude/Codex/Cursor, and a 25-document audit pack.
 
@@ -175,7 +175,7 @@ other screen follows, including the charts.
 |---|---|
 | Keep vanilla JS, add discipline | The failure is structural: mutable global view registry + script-order routing. Discipline does not survive 60 contributors-months |
 | Move to Node/Next in production | Hostinger is shared Apache/PHP. Adds a runtime, a deploy pipeline and a cost, for no user-visible gain |
-| Rewrite the PHP domain too | 364 actions encode working business rules. Rewriting them is risk without benefit |
+| Rewrite the PHP domain too | 365 actions encode working business rules. Rewriting them is risk without benefit |
 | Ant Design / MUI | 300 kB+ of opinionated components that fight the brand tokens; we need ~25 primitives, which is 600 lines |
 
 ### 5.2 Repository layout (proposed, additive)
@@ -223,7 +223,7 @@ Error codes are a closed set: `AUTH`, `FORBIDDEN`, `VALIDATION`, `NOT_FOUND`, `C
 `RATE_LIMIT`, `UPSTREAM`, `INTERNAL`. The v2.1 envelope had none of this — `admin.php` caught only
 `PDOException`, so every other throw produced a blank failure with `display_errors=0`.
 
-### 6.2 Resource mapping — 364 actions become ~120 endpoints
+### 6.2 Resource mapping — 365 actions become ~120 endpoints
 
 The rule: **a noun is a resource; a verb becomes a method or a sub-resource.** The v2.1 action
 names are preserved as an alias table so nothing breaks during migration.
@@ -253,7 +253,7 @@ dispatcher so it cannot drift.
 | CSRF | Builder only | `X-WX-CSRF` double-submit on every non-GET |
 | XSS impact | token readable → full account takeover | token unreadable by script |
 | 2FA | TOTP, retained | TOTP, retained, plus recovery codes shown once |
-| Roles | `owner/admin/editor/sales/support` + runtime-created capability tables | same codes, one seeded capability matrix in `db/migrations` |
+| Roles | `owner/admin/editor/sales/support`, matrix hardcoded in `roles-lib.php` + JSON grants | same codes, one seeded capability matrix in `db/migrations` |
 | Rate limit | `wx_throttle` by IP | same table, plus per-account lockout and an audit entry |
 
 ### 6.4 Persistence rules
@@ -366,16 +366,20 @@ Full schema in the analysis report §7. The three structural problems to fix:
 1. **Financial documents are opaque.** `wx_quotes`, `wx_invoices`, `wx_projects`, `wx_templates`
    store payloads as `LONGTEXT` JSON, so the database cannot index, query or validate the
    substance of the business's money.
-2. **Five tables are created at runtime** by `roles-lib.php` (`wx_allowed`, `wx_caps`,
-   `wx_user_perms`, `wx_action_group`, `wx_role_groups`) and are absent from the shipped dump, so a
-   fresh install has an incomplete schema.
+2. **Authorisation is code, not data.** `roles-lib.php` hardcodes the entire capability matrix
+   (`wx_role_groups()`, `wx_action_group()`, `SHARED`, `EXPAND`) and per-user grants live in the JSON
+   side-store `_private/security.json`, so permissions cannot be inspected, audited or changed
+   without a deploy.
+   *Correction:* an earlier revision of the analysis report called these five *tables* created at
+   runtime and missing from the dump. They are PHP **functions**; the dump's 20 tables are complete.
+   The matrix is still the wrong shape — `001_roles.sql` moves it into seeded tables.
 3. **`wx_leads` has 32 columns** and no foreign keys anywhere — integrity is application-only.
 
 ### 9.2 Migration set (forward-only, numbered, one transaction each)
 
 | # | Migration | Purpose |
 |---|---|---|
-| `001_roles.sql` | Create the 5 runtime capability tables explicitly, seed the matrix | Closes DB-1 |
+| `001_roles.sql` | Move the capability matrix out of `roles-lib.php` into seeded tables (`wx_roles`, `wx_role_groups`, `wx_action_groups`, `wx_user_perms`); seed the 5 roles × 9 groups matrix | Closes DB-1 |
 | `002_indexes.sql` | Composite indexes: `leads(stage, created_at)`, `leads(next_at, stage)`, `chats(status, updated_at)`, `invoices(no)`, `quotes(no, status)`, `bookings(d, status)`, `activity(created_at, user_id)` | Fixes the N+1 and full-scan behaviour reported in the audit |
 | `003_document_columns.sql` | Add real columns beside the JSON blobs: `wx_quotes(client_id, project, subtotal, tax, total, currency, status, issued_at, valid_until, pdf_sha256)`, same for invoices; backfill from JSON with a one-way script; keep the JSON as `payload` for compatibility | Makes money queryable |
 | `004_fk.sql` | Add FKs after cleaning orphans: `lead_notes.lead_id → leads.id`, `chat_msgs.chat_id → chats.id`, `invoices.quote_id → quotes.id`, `bookings.lead_id → leads.id` (all `ON DELETE CASCADE` or `SET NULL` as appropriate) | Integrity at the database, not in code |
@@ -390,7 +394,7 @@ Full schema in the analysis report §7. The three structural problems to fix:
 
 | | Today | After P6 |
 |---|---|---|
-| Tables | 20 (+5 runtime) | **38** |
+| Tables | 20 | **38** |
 | Columns | 161 | ~330 |
 | Foreign keys | 0 | 14 |
 | JSON side-stores | 28 | **0 for business state** (5 remain for caches only) |
@@ -448,19 +452,36 @@ start the next one.
 
 **Gate:** `npm run verify` passes — typecheck, 65-route render test, production build.
 
-### Phase 1 — Platform · 2 weeks
+### Phase 1 — Platform · **built** · 2 weeks
 
-| Work | Detail |
-|---|---|
-| `api/v2` front controller | router, envelope, error boundary, request-id, CORS-free same-origin |
-| Auth v2 | HttpOnly cookie session, CSRF, 2FA preserved, role capability table |
-| `store.php` | atomic JSON access; typed read failure |
-| Client `api.ts` | typed fetch wrapper, error-code mapping, retry policy, request-id surfaced in errors |
-| `db/migrations/001–005` | roles, indexes, document columns, FKs, settings seed |
-| CI | `npm run verify` + PHP lint + migration dry-run on every push |
+| Work | Deliverable | Status |
+|---|---|---|
+| `api/v2` front controller | `index.php` + `lib/{bootstrap,errors,http,store,db,validate,audit,auth,caps,router}.php` — router, one envelope, closed error set, error boundary, request-id, CORS-free same-origin | ✓ 19 files, PHP lint clean |
+| Auth v2 | `wx_sid` HttpOnly · Secure · SameSite=Lax cookie, `X-WX-CSRF` bound to the session row, 2FA + recovery codes preserved, capability matrix in tables | ✓ |
+| `store.php` | `JsonStore` — sidecar lock, temp+fsync+rename, a corrupt store raises instead of reading as empty | ✓ |
+| Client `api.ts` | typed fetch, closed error union, request-id on every failure, timeout, retries on GET only, token in memory | ✓ |
+| `db/migrations/000–005` | platform tables, generated role matrix, 12 indexes, document columns, 10 FKs, settings seed — with `db/migrate.php --dry-run/--status/--verify` | ✓ |
+| CI | `npm run verify` + PHP lint + conformance + behavioural tests + migration dry-run | ✓ `.github/workflows/verify.yml` |
 
 **Gate:** a signed-in request round-trips cookie → CSRF → controller → MySQL → envelope; the eight
 Critical findings are closed and verified.
+
+| Verification | Command | Result |
+|---|---|---|
+| PHP parses (no runtime in the build sandbox) | `node tools/phplint/php-lint.mjs` | **103 files clean** |
+| Structural invariants (47 checks: auth on every route, envelope discipline, lock discipline, cookie flags, SQL safety, migration guards, the 8 Criticals) | `node tests/conformance.mjs` | **47 passed · 0 failed** |
+| Behaviour (84 assertions: paisa money, validation, RFC 6238 TOTP vectors, envelope, aliases, routing, atomic store) | `node tools/phpwasm/run-php.cjs tests/run.php` | **84 passed · 0 failed · 1 skipped** |
+| The gate itself, against MySQL | `php tests/roundtrip.php` | written; runs in CI, needs a database |
+| Prototype | `npm run verify` | 70 render checks · 65 routes · build clean |
+
+The two-sided verification is deliberate: `tools/phpwasm/run-php.cjs` executes the real PHP in the
+build sandbox (a WebAssembly 8.2 build — the ESM/CJS trap that makes it fail has a note in
+`tools/phpwasm/README.md`), and the MySQL leg runs in CI where a real server exists.
+
+**Also closed in this phase:** the capability matrix moved out of `roles-lib.php` into seeded tables
+(`tools/gen-caps.mjs` regenerates them from the file v2.1 enforced, so the answers cannot differ);
+the public demo-credential page and the `admin/admin` installer default are gone; findings 5–8 have
+executable checks rather than a claim.
 
 ### Phase 2 — Core operations · 3 weeks
 
@@ -609,7 +630,7 @@ did not match a packaged artifact; the manifest is the fix.
 | # | Risk | Likelihood | Impact | Mitigation |
 |---|---|---|---|---|
 | R1 | Credentials leak is exploited before rotation | Medium | Severe | Rotation is step 1 of P1, owner-owned, before any code deploys |
-| R2 | Rewrite drifts from the 364 existing actions | Medium | High | The alias table is generated from the live dispatcher, not written by hand |
+| R2 | Rewrite drifts from the 365 existing actions | Medium | High | The alias table is generated from the live dispatcher, not written by hand |
 | R3 | Team keeps using the old admin during the transition | High | Medium | Old admin shows a banner once a screen has a v2.5 equivalent |
 | R4 | Migration corrupts documents during backfill | Low | Severe | Dry-run + checksums + restore-tested on a copy; JSON kept as `payload` |
 | R5 | Bundle grows past budget | Medium | Low | Budget enforced in CI; charts lazy-loaded |

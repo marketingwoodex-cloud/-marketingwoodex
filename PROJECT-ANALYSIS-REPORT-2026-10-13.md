@@ -6,6 +6,20 @@
 **Author:** Arena agent session `arena/4150341e-marketingwoodex`
 **Report type:** static, whole-repository analysis — frontend · backend · database · PHP admin · branches · dashboard versions
 
+> **Corrections applied 13 October 2026, during the Phase 1 build.** Three claims in the first issue
+> were wrong and are corrected in place below:
+> 1. **The "five runtime-created tables" (DB-1) were not tables.** `wx_allowed`, `wx_caps`,
+>    `wx_user_perms`, `wx_action_group` and `wx_role_groups` are PHP **functions** in
+>    `roles-lib.php`; the shipped dump's 20 tables are complete. The real finding — the capability
+>    matrix is hardcoded in PHP and unauditable — stands, and migration `001_roles.sql` moves it into
+>    seeded tables. See the note in §7.1.
+> 2. **The action count is 365, not 364.** The Phase 1 alias generator extracts from `case` labels,
+>    `$action ===` comparisons and guard lists; the original count missed the two-letter action `me`.
+>    Both figures are method-dependent, so the number that matters is the generated table:
+>    `api/v2/aliases.php` maps all 365, verified by `node tools/gen-aliases.mjs --check`.
+> 3. **The permission model was described as "runtime-created tables" in two more places**; those
+>    lines now read "hardcoded in PHP + `_private/security.json` grants".
+
 ---
 
 ## 1. Executive Summary
@@ -28,9 +42,9 @@ repository alone.
 |---|---|---|
 | Repository size | 314 MB · 2,674 tracked files | `main` tree; 460 MB of Git objects |
 | Public pages | 150 HTML documents in `frontend-v1` | 79 content pages + 48 articles + 6 case studies + hubs |
-| Backend action surface | 364 distinct server actions | 40 PHP files · 6,830 lines |
+| Backend action surface | 365 distinct server actions | 40 PHP files · 6,830 lines |
 | Database | 20 MySQL tables · 161 columns | plus 17 Postgres/Supabase tables |
-| Admin dashboard | 60 JS modules · 10,502 lines · 57 routes | 297 of the 364 actions are reachable from the UI |
+| Admin dashboard | 60 JS modules · 10,502 lines · 57 routes | 297 of the 365 actions are reachable from the UI |
 | Serverless stack | 39 Netlify/Vercel functions · 3,495 lines | mirrors a parallel Supabase CMS |
 | Branches analysed | 13 (1 main + 12 arena) | 12 PRs / 6 open, 2 merged |
 | Release trees | 16 copies of the site | 4 distinct generations of the admin |
@@ -232,7 +246,7 @@ GEN 3  frontend-v1/                      PHP 8 API + MySQL + vanilla-JS SPA admi
 |---|---|
 | PHP files in `frontend-v1/api/` | 40 |
 | Lines of PHP in the API | 6,830 |
-| Distinct server actions | **364** |
+| Distinct server actions | **365** |
 | Actions reachable from the admin UI | 297 |
 | Actions used only by public forms, webhooks, cron or MCP | 58 |
 | PHP files repo-wide | 87 (13,110 lines) |
@@ -367,9 +381,17 @@ canonicalises them — a fix recorded on `arena/7f38fddd`.
 after the initial `CREATE TABLE` — a schema that has outgrown its design.
 `wx_quotes`, `wx_invoices`, `wx_projects` and `wx_templates` store their real payload as JSON in a
 `LONGTEXT` column, so the database cannot query, index or validate the substance of the business's
-financial records. Five tables referenced in code (`wx_allowed`, `wx_caps`, `wx_user_perms`,
-`wx_action_group`, `wx_role_groups`) are created lazily at runtime by `roles-lib.php` and **do not
-appear in the shipped SQL dump**, so a fresh install has an incomplete schema in the dump.
+financial records. The entire permission model — which role may call which action — is **hardcoded
+in PHP** (`roles-lib.php`: `wx_role_groups()`, `wx_action_group()`, `SHARED`, `EXPAND`) and the
+per-user extra grants live in the JSON side-store `_private/security.json`. Nothing about
+authorisation is in the database, so it cannot be inspected, audited or changed without a deploy.
+
+> **Correction (2026-10-13, during Phase 1 build).** An earlier revision of this report stated that
+> five *tables* (`wx_allowed`, `wx_caps`, `wx_user_perms`, `wx_action_group`, `wx_role_groups`) were
+> created at runtime and missing from the dump. That was wrong: those five names are **PHP functions**
+> declared in `roles-lib.php`, not tables. The shipped dump's 20 tables are complete. The real
+> finding is the one stated above — the capability matrix lives in code, not in the database — and
+> migration `001_roles.sql` now moves it into seeded tables.
 
 ### 7.2 Postgres / Supabase schema
 
@@ -406,7 +428,7 @@ not been verified.
 
 | ID | Finding | Severity |
 |---|---|---|
-| DB-1 | Five runtime-created tables are absent from the shipped schema dump | Medium |
+| DB-1 | The role/capability matrix is hardcoded in PHP; per-user grants live in `_private/security.json` (corrected — see note in §7.1) | Medium |
 | DB-2 | Financial documents stored as unqueryable `LONGTEXT` JSON | Medium |
 | DB-3 | `_private/*.json` holds secrets and business state reachable through web-server config alone | Critical |
 | DB-4 | Three SQL dumps of live data are tracked in Git (the pro tree untracked `_private/` records on 2026-10-11, but dumps remain) | High |
@@ -667,7 +689,7 @@ so `main` is a snapshot from 8 October and **does not contain the current produc
 | Week 2 | Move API keys, approvals, maintenance tokens and opt-outs from JSON files into MySQL | Removes the availability + secrecy dependency on `.htaccess` | Agent |
 | Week 2 | Declare the PHP stack authoritative and archive `netlify/`, `api/router.mjs`, `wf-admin/` | Ends double maintenance (BE-5) | Owner |
 | Week 3 | Version every admin script (`?v=<hash>`), remove the legacy `admin/` dashboard, add a build step | Fixes AD-7, FE-1 | Agent |
-| Week 3 | Add the five runtime-created tables to the shipped schema; export a fresh, secret-free dump | Fixes DB-1 | Agent |
+| Week 3 | Move the capability matrix into seeded tables (`db/migrations/001_roles.sql`); export a fresh, secret-free dump | Fixes DB-1 | Agent |
 | Week 4 | Cut a release artifact whose manifest matches the QA run; re-run the readiness gates | Turns "BLOCK" into "conditional" | Agent |
 | Month 2 | Execute the v2.5 Pro roadmap only after the above: multi-theme, WebSocket collaboration, AI scope generator, client portal, payment gateways, inventory | The roadmap assumes a clean base | Owner + agent |
 
@@ -716,7 +738,7 @@ down, verified and waiting.
 | `conn-lib.php` | 7 | `forms.php` | 2 |
 | `seo-lib.php` | 7 | `telegram.php` | 2 |
 | `wahub-lib.php` | 7 | | |
-| `booking-lib.php` | 6 | **Total distinct** | **364** |
+| `booking-lib.php` | 6 | **Total distinct** | **365** |
 | `ai-agent-lib.php` | 5 | | |
 | `p18e-lib.php` | 5 | | |
 
