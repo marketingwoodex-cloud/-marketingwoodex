@@ -18,7 +18,7 @@ import { ApiFailure } from "../lib/api";
 
 export function SignIn() {
   const { link, reason, health, signIn, signInTwoFactor, refreshHealth } = useSession();
-  const [email, setEmail] = useState(health?.ready ? "" : "");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [code, setCode] = useState("");
   const [ticket, setTicket] = useState<string | null>(null);
@@ -64,7 +64,11 @@ export function SignIn() {
     <>
       <PageHead
         title={ticket ? "Two-factor code" : "Sign in to Woodex Admin"}
-        sub={ticket ? "Open your authenticator app and enter the six-digit code." : "api/v2 · Woodex Admin v2.5"}
+        sub={
+          ticket
+            ? "Open your authenticator app and enter the six-digit code."
+            : "The studio's own console — website, quotes, projects and clients."
+        }
       />
       <div style={{ maxWidth: 420 }}>
         {offline && (
@@ -72,8 +76,8 @@ export function SignIn() {
             <Note tone="warn">
               <b><WifiOff size={13} /> api/v2 is not answering.</b>{" "}
               {reason ? `Reason: ${reason}. ` : ""}
-              You are looking at the UI with demo data. To use the product, the API has to be reachable
-              — check the host, then try again.
+              Signing in needs it: there is nothing behind this form to open a session. Nothing here is
+              pre-filled and no session is being shown — check the host, then try again.
               <div className="row" style={{ marginTop: "var(--s-3)" }}>
                 <Btn size="sm" onClick={refreshHealth}>Try again</Btn>
               </div>
@@ -101,8 +105,11 @@ export function SignIn() {
               <label className="field-label" htmlFor="email">Email</label>
               <Input
                 id="email"
+                name="email"
                 type="email"
                 autoComplete="username"
+                autoCapitalize="none"
+                spellCheck={false}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@woodex.com.pk"
@@ -114,6 +121,7 @@ export function SignIn() {
               </label>
               <Input
                 id="password"
+                name="password"
                 type="password"
                 autoComplete="current-password"
                 value={password}
@@ -128,6 +136,7 @@ export function SignIn() {
               </label>
               <Input
                 id="code"
+                name="code"
                 inputMode="numeric"
                 autoComplete="one-time-code"
                 value={code}
@@ -152,7 +161,7 @@ export function SignIn() {
           )}
 
           <div className="row" style={{ marginTop: "var(--s-4)", gap: "var(--s-2)" }}>
-            <Btn className="primary" type="submit" disabled={busy || offline}>
+            <Btn variant="primary" type="submit" disabled={busy || offline}>
               {ticket ? <KeyRound size={15} /> : <LogIn size={15} />}
               {busy ? "Working…" : ticket ? "Verify code" : "Sign in"}
             </Btn>
@@ -165,9 +174,9 @@ export function SignIn() {
         </form>
 
         <p style={{ fontSize: "var(--fs-12)", color: "var(--text-3)", marginTop: "var(--s-4)" }}>
-          The session is a cookie the browser holds; nothing is kept in localStorage. After twelve hours
-          of inactivity you will be asked to sign in again, and every screen that was open will say so
-          instead of showing stale numbers.
+          The session lives in a cookie this browser holds — no token is written into the page. After
+          twelve hours of inactivity you will be asked to sign in again, and any screen that was open
+          will say so rather than keep showing numbers that may have moved.
         </p>
       </div>
     </>

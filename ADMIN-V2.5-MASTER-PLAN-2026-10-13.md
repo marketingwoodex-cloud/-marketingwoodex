@@ -536,6 +536,15 @@ back from page history — all through v2.5.
 | The content CMS: an editor writes an article, the server composes the page | `lib/content.php`, `routes/content.php`, `db/migrations/012_content.sql` | v2.1's builder ran in the browser and posted finished HTML; here an item is content and the page is composed at publish time from the site's own page furniture — so a new article inherits the *current* header, scheduling is a row with a time rather than 3 MB of prepared HTML, and drafts are a query rather than a loop |
 | Eight live screens, ten routes | `admin-v25/src/screens/Live*.tsx` on `/redirects`, `/media`, `/blog`, `/portfolio`, `/global`, `/pages`, `/library`, `/site-theme`, `/testimonials`, `/team` | live-only by design; with no API they say so in a sentence and offer no buttons that would lie. `/blog` and `/portfolio` are one screen (the CMS, opened on a kind), and so are `/testimonials` and `/team` |
 
+**What a screen may claim when the server is not there.** Three states are visible rather than hidden behind a
+spinner: the API is answering and you are signed in, the API is answering and you are not, or the API is not
+answering at all. The third one is where a prototype lies by habit — it falls back to mock data under a green
+label. Here the shell names the state and labels the layout a demo, and each screen then says only what is true
+about *itself*: the sign-in screen shows no site data whatever, so it says there is nothing behind the form to
+open a session rather than telling the person they are "looking at the UI with demo data" — a sentence that was
+true of the prototype with a mock behind it and false of a real door with a disabled button. A screen that cannot
+load its data offers no button that would pretend to work, and the smoke test asserts both halves of that.
+
 **All three sentences of the gate are now wired**, and the wiring is asserted (`tests/run.php`, "the gate,
 as wiring"): `POST /content/{id}/publish` composes and writes the article and returns the batch that undoes
 it; `POST /chrome` changes the header across the site through the same versioned writer; `GET /pages/history`

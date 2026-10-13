@@ -130,6 +130,7 @@ const asUser = {
 };
 
 let htmlSignedOut = "";
+let htmlSignedOutOffline = "";
 let htmlLiveDash = "";
 let htmlLiveLeads = "";
 let htmlRedirects = "";
@@ -162,6 +163,28 @@ try {
   );
 } catch (err) {
   failures.push(`sign-in screen → ${(err as Error).message}`);
+}
+
+/* The door with the API down, which is the state the sign-in screen spends most of its life in during a
+   cut-over. What it must not do is tell the person they are looking at demo data: this screen shows no
+   site data at all, and the sentence was a leftover from the prototype that had a mock behind it. */
+try {
+  htmlSignedOutOffline = renderToString(
+    <MemoryRouter initialEntries={["/dashboard"]}>
+      <SessionCtx.Provider value={session("offline", null)}>
+        <Shell
+          role="owner" setRole={noop} theme="light" toggleTheme={noop} density="comfortable" setDensity={noop}
+          badges={{ leads: 0, chat: 0, approvals: 0, total: 0 }} onOpenPalette={noop}
+          routeId="dashboard" crumbs={[{ label: "Today" }]} link="offline"
+          linkText="api/v2 is not answering" countsFrom="demo" user={null} onSignOut={noop}
+        >
+          <SignIn />
+        </Shell>
+      </SessionCtx.Provider>
+    </MemoryRouter>,
+  );
+} catch (err) {
+  failures.push(`sign-in screen without an API → ${(err as Error).message}`);
 }
 
 try {
@@ -391,6 +414,18 @@ try {
 for (const [name, ok] of [
   ["the sign-in screen renders a form", htmlSignedOut.includes("<form") && htmlSignedOut.includes("Password")],
   ["sign-in is not a blank page", htmlSignedOut.length > 800],
+  [
+    "the sign-in screen with no API says there is nothing behind the form",
+    htmlSignedOutOffline.includes("there is nothing behind this form to open a session"),
+  ],
+  [
+    "and it does not tell the person they are looking at demo data",
+    !htmlSignedOutOffline.includes("You are looking at the UI with demo data"),
+  ],
+  [
+    "the door cannot be opened while the API is down",
+    /<button type="submit" disabled[^>]*class="btn primary"/.test(htmlSignedOutOffline),
+  ],
   ["the live dashboard renders its loading state, not zeros", htmlLiveDash.includes("Loading…")],
   ["the live dashboard does not claim numbers before the server answers", !htmlLiveDash.includes("kpi-value")],
   ["the live leads screen renders its loading state", htmlLiveLeads.includes("Loading…")],
