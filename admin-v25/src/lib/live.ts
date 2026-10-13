@@ -1049,6 +1049,90 @@ export interface NotifyData {
   log: NotifyLogRow[];
 }
 
+/* ------------------------------------------------------------------ quotation templates
+
+   A template is a quotation with no client. The server sends the whole document (it is how v2.1's
+   `tpl_list` answered) because the screen edits it in place, and the four figures a list card shows —
+   sections, lines, how many lines are priced, the total — are derived there, once, by the same
+   arithmetic a quotation uses. */
+
+export interface TplItem {
+  desc: string;
+  qty: number;
+  unit: string;
+  rate: number;
+  amount?: number;
+  kind?: string;
+  code?: string;
+}
+
+export interface TplSection {
+  name: string;
+  note?: string;
+  area?: number;
+  items: TplItem[];
+  subtotal?: number;
+}
+
+export interface TplRow {
+  id?: number;
+  name: string;
+  kind: string;
+  kindLabel: string;
+  description: string;
+  sections: TplSection[];
+  sectionCount: number;
+  lineCount: number;
+  pricedCount: number;
+  subtotal: number;
+  total: number;
+  totalDisplay: string;
+  terms: string;
+  termsFirst: string;
+  created_at?: string;
+  updated_at?: string;
+  /** On a starter row: whether a template with this name is already saved. */
+  imported?: boolean;
+  /** A row in the database whose JSON would not decode — shown, not hidden. */
+  broken?: boolean;
+}
+
+/** The letterhead a document prints under: the studio's own settings, sent with the list so a preview draws
+    the real header rather than a placeholder. */
+export interface TplCompany {
+  name: string;
+  tagline?: string;
+  address?: string;
+  phones?: string;
+  email?: string;
+  web?: string;
+  ntn?: string;
+  signName?: string;
+  signTitle?: string;
+}
+
+export interface TplsData {
+  templates: TplRow[];
+  company: TplCompany;
+  kinds: Record<string, string>;
+  starter: TplRow[];
+  units: string[];
+  itemKinds: string[];
+}
+
+export interface TplSaveResult {
+  template: TplRow;
+  created: boolean;
+}
+
+export interface TplImportResult {
+  source: string;
+  imported: number;
+  names: string[];
+  skipped: string[];
+  refused: string[];
+}
+
 /** The client's own page for a project: the link, and whether it has ever been opened. */
 export interface ProjClientLink {
   link: string;

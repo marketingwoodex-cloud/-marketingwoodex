@@ -682,3 +682,112 @@ tr.is-late td:first-child { box-shadow: inset 3px 0 0 var(--danger); }
   text-decoration: underline;
   cursor: pointer;
 }
+
+/* ---------------------------------------------------------------- quotation templates
+   The grid is v2.1's `.tp-grid`: a card per template, wide enough for the section names to be read
+   without opening it. `minmax(280px, 1fr)` rather than a fixed column count because the sidebar can be
+   minimised and a three-across grid at 1100px is three unreadable columns. */
+.tpl-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--s-4);
+  align-items: start;
+}
+
+.tpl-grid > .card { display: flex; flex-direction: column; gap: var(--s-2); }
+
+/* ---------------------------------------------------------------- the printed document
+   The document is drawn on paper: white, A4 proportions, one accent per design. It is a *preview* —
+   `--doc-*` variables are the only thing the three designs change, so the layout cannot drift between
+   them, which is what v2.1's three designs did in three copies of the same CSS string. */
+.doc-wrap { overflow-x: auto; padding: var(--s-4) 0; background: var(--surface-3); border-radius: var(--r-lg); }
+
+.doc {
+  --doc-ink: #0c1628;
+  --doc-accent: #b8956a;
+  --doc-accent-2: #8a6a40;
+  --doc-line: #e3e1dc;
+  --doc-soft: #f4efe7;
+  --doc-head: #ffffff;
+  position: relative;
+  width: 210mm;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 12mm 12mm 14mm;
+  background: #fff;
+  color: var(--doc-ink);
+  font-size: 9.4pt;
+  line-height: 1.45;
+  box-shadow: 0 8px 34px rgba(12, 22, 40, 0.16);
+}
+
+.doc-minimal { --doc-ink: #111111; --doc-accent: #111111; --doc-accent-2: #4b5563; --doc-line: #e5e7eb; --doc-soft: #f9fafb; --doc-head: #ffffff; }
+.doc-premium { --doc-ink: #2b2118; --doc-accent: #b8956a; --doc-accent-2: #8a6a40; --doc-line: #e8dfd1; --doc-soft: #f4efe7; --doc-head: #f7f1e8; }
+
+.doc-sample {
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: 2mm 4mm;
+  background: var(--warn-soft);
+  border-right: 1px solid var(--warn);
+  border-bottom: 1px solid var(--warn);
+  color: #6b4a06;
+  font-size: 7.4pt;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  max-width: 62%;
+}
+
+.doc-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 8mm; background: var(--doc-head); padding-bottom: 4mm; margin-bottom: 5mm; border-bottom: 1.5px solid var(--doc-ink); }
+.doc-brand b { display: block; font-size: 15pt; letter-spacing: 0.18em; text-transform: uppercase; }
+.doc-brand small { display: block; font-size: 6.6pt; letter-spacing: 0.34em; text-transform: uppercase; color: var(--doc-accent-2); margin-top: 1.4mm; }
+.doc-brand em { display: block; font-style: normal; font-size: 7.4pt; color: #6b7280; margin-top: 1.2mm; }
+.doc-titles { text-align: right; }
+.doc-titles h1 { margin: 0; font-size: 21pt; letter-spacing: 0.14em; text-transform: uppercase; }
+.doc-meta { display: flex; flex-direction: column; gap: 0.6mm; margin-top: 2.4mm; font-size: 8.6pt; }
+
+.doc-boxes { display: grid; grid-template-columns: 1fr 1fr; gap: 4mm; margin-bottom: 5mm; }
+.doc-box { border: 1px solid var(--doc-line); border-radius: 2.4mm; padding: 3.4mm 4mm; background: var(--doc-soft); }
+.doc-box small { display: block; font-size: 6.8pt; letter-spacing: 0.16em; text-transform: uppercase; color: var(--doc-accent-2); font-weight: 700; margin-bottom: 1.2mm; }
+.doc-box b { font-size: 10.5pt; }
+
+.doc-table { width: 100%; border-collapse: collapse; }
+.doc-table th { background: var(--doc-ink); color: #fff; font-size: 7.6pt; letter-spacing: 0.08em; text-transform: uppercase; padding: 2mm 2.4mm; text-align: left; }
+.doc-minimal .doc-table th { background: #fff; color: var(--doc-ink); border-bottom: 1.5px solid var(--doc-ink); }
+.doc-table td { padding: 1.6mm 2.4mm; border-bottom: 1px solid var(--doc-line); vertical-align: top; }
+.doc-table .c-code { width: 12mm; color: var(--doc-accent-2); }
+.doc-table .c-qty, .doc-table .c-unit, .doc-table .c-rate, .doc-table .c-amt { width: 18mm; text-align: right; white-space: nowrap; }
+.doc-table th.c-qty, .doc-table th.c-unit, .doc-table th.c-rate, .doc-table th.c-amt { text-align: right; }
+.doc-table .row-section td { background: var(--doc-soft); font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; font-size: 8.4pt; border-bottom: 1px solid var(--doc-line); }
+.doc-table .row-note td { font-size: 8.2pt; color: #6b7280; }
+.doc-table .row-head td { font-weight: 700; border-bottom: 0; padding-top: 2.4mm; }
+.doc-table .row-spec td { font-size: 8.6pt; color: #4b5563; border-bottom: 0; }
+
+.doc-totals { display: flex; justify-content: space-between; align-items: flex-end; gap: 8mm; margin-top: 4mm; }
+.doc-words small, .doc-terms small { display: block; font-size: 6.8pt; letter-spacing: 0.16em; text-transform: uppercase; color: var(--doc-accent-2); font-weight: 700; margin-bottom: 1mm; }
+.doc-words div { font-size: 9pt; max-width: 95mm; }
+.doc-totals table { border-collapse: collapse; min-width: 62mm; }
+.doc-totals th, .doc-totals td { padding: 1.4mm 2.4mm; text-align: right; font-weight: 500; }
+.doc-totals th { text-align: left; color: #6b7280; }
+.doc-totals .row-total th, .doc-totals .row-total td { background: var(--doc-ink); color: #fff; font-size: 12pt; font-weight: 700; }
+.doc-premium .doc-totals .row-total th, .doc-premium .doc-totals .row-total td { color: #f4efe7; }
+
+.doc-terms { margin-top: 5mm; border-top: 1px solid var(--doc-line); padding-top: 3mm; }
+.doc-terms ol { margin: 0; padding-left: 5mm; font-size: 8.6pt; color: #4b5563; }
+.doc-note { margin: 3mm 0 0; font-size: 8.4pt; color: #6b7280; font-style: italic; }
+
+.doc-foot { display: flex; justify-content: space-between; align-items: flex-end; gap: 8mm; margin-top: 10mm; border-top: 1px solid var(--doc-line); padding-top: 3mm; }
+.doc-sign b { display: block; border-top: 1px solid var(--doc-ink); padding-top: 2mm; min-width: 55mm; font-size: 9pt; }
+.doc-sign small { color: #6b7280; }
+.doc-contact { text-align: right; font-size: 8pt; color: #6b7280; }
+
+/* A4 on paper. The preview is a document, so printing it prints the document and nothing else: the shell
+   white-lists nothing, and `@media print` is where that is decided rather than in a stylesheet a screen
+   might not load. */
+@media print {
+  .side, .topbar, .demo-banner, .page-head, .btn, .chip-row { display: none !important; }
+  .doc-wrap { background: #fff; padding: 0; }
+  .doc { width: auto; box-shadow: none; padding: 0; }
+  @page { size: A4; margin: 12mm; }
+}

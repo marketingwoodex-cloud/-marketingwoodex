@@ -132,6 +132,9 @@ const WX_APPR_LABELS = [
     'invoice_save' => 'Change an invoice',
     'quote_save' => 'Change a quotation',
     'quote_status' => 'Change a quotation\'s status',
+    'tpl_save' => 'Save a quotation template',
+    'tpl_delete' => 'Delete a quotation template',
+    'tpl_import' => 'Import quotation templates',
 ];
 
 /**

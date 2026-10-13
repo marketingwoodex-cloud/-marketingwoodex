@@ -27,6 +27,10 @@ import { LivePlacements } from "./screens/LivePlacements";
 import { LiveHeroes } from "./screens/LiveHeroes";
 import { LiveForms } from "./screens/LiveForms";
 import { LiveEstimator } from "./screens/LiveEstimator";
+import { LiveTemplates } from "./screens/LiveTemplates";
+import { DocPreview, numberedItems } from "./components/DocPreview";
+import { amountInWords } from "./lib/format";
+import { demoFixture } from "./lib/demo";
 import { LiveProjects } from "./screens/LiveProjects";
 import { LiveTimeline } from "./screens/LiveTimeline";
 import { LiveUpdates } from "./screens/LiveUpdates";
@@ -175,6 +179,10 @@ let htmlDemoNotif = "";
 let htmlDemoForms = "";
 let htmlDemoHeroes = "";
 let htmlDemoOffline = "";
+let htmlTplOffline = "";
+let htmlTplDemo = "";
+let htmlDoc = "";
+let wordsTests: [string, boolean][] = [];
 let htmlGlobal = "";
 let htmlGlobalOffline = "";
 let htmlPages = "";
@@ -525,6 +533,68 @@ try {
   );
 } catch (err) {
   failures.push(`the demo screens → ${(err as Error).message}`);
+}
+
+/* Quotation templates: the screen, and the document a template produces.
+   The document is rendered from the same sample the screen shows (`lib/demo.ts`), so the numbering and the
+   words under the total are exercised against real content rather than against a hand-built stub. */
+try {
+  const at = (sessionValue: SessionValue, screen: ReactElement) =>
+    renderToString(
+      <MemoryRouter initialEntries={["/templates"]}>
+        <SessionCtx.Provider value={sessionValue}>{screen}</SessionCtx.Provider>
+      </MemoryRouter>,
+    );
+  htmlTplOffline = at(session("offline", null), <LiveTemplates />);
+  htmlTplDemo = at(session("offline", null, true), <LiveTemplates />);
+
+  const tpls = demoFixture("/quotations/templates") as {
+    company: { name: string; tagline: string; address: string; phones: string; email: string; web: string; signName: string; signTitle: string };
+    templates: { name: string; sections: never[]; subtotal: number; taxPct: number; discount: number; tax: number; total: number; terms: string }[];
+  };
+  const t0 = tpls.templates[0];
+  htmlDoc = renderToString(
+    <DocPreview
+      title="Quotation"
+      no="WI-10120"
+      date="2026-10-14"
+      client={{ name: "Platinum Ventures", company: "Platinum Ventures (Pvt) Ltd", address: "Gulberg III, Lahore" }}
+      project={t0.name}
+      site="Office fit-out, 3rd floor"
+      sections={t0.sections}
+      subtotal={t0.subtotal}
+      discount={t0.discount}
+      taxPct={t0.taxPct}
+      tax={t0.tax}
+      total={t0.total}
+      terms={t0.terms}
+      design="classic"
+      company={tpls.company}
+    />,
+  );
+
+  /* The words under the total are the studio's promise that the figure appears twice and agrees; the
+     sub-continent's units are what the printed document has always used. */
+  const codes = numberedItems(
+    { name: "S", items: [
+      { desc: "a", qty: 1, unit: "nos", rate: 1 },
+      { desc: "b", qty: 1, unit: "nos", rate: 1 },
+      { desc: "Heading", qty: 0, unit: "job", rate: 0, kind: "head" },
+      { desc: "c", qty: 1, unit: "nos", rate: 1 },
+      { desc: "Spec text", qty: 0, unit: "job", rate: 0, kind: "spec" },
+      { desc: "d", qty: 1, unit: "nos", rate: 1, code: "9.9" },
+    ] },
+    2,
+  );
+  wordsTests = [
+    ["the words are the sub-continent's, in lakh and crore", amountInWords(1250000) === "Twelve lakh fifty thousand rupees only"],
+    ["a crore is a crore, not a hundred lakh", amountInWords(10000000) === "One crore rupees only"],
+    ["zero still reads as a sentence", amountInWords(0) === "Zero rupees only"],
+    ["hundreds read as hundreds", amountInWords(101) === "One hundred one rupees only"],
+    ["the numbering is v2.1's: headings 3.1, their lines 3.1.1, specs unnumbered", codes.map((c) => c.code).join("|") === "3.1|3.2|3.1|3.1.1||9.9"],
+  ];
+} catch (err) {
+  failures.push(`the quotation templates screen → ${(err as Error).message}`);
 }
 
 /* The whole entry point, in demo mode, the way a person opens a preview with no server: `demoOn()` reads the
@@ -989,6 +1059,52 @@ for (const [name, ok] of [
     "the forms and heroes screens in demo mode show their samples too",
     htmlDemoForms.includes("Netlify function") && htmlDemoHeroes.includes("Home slider"),
   ],
+  /* The templates screen and the document it produces. The screen is offline-honest like the rest; in demo it
+     shows the samples; and the document is drawn with the sample's own numbers rather than a stub. */
+  [
+    "the templates screen is offline-honest, and shows the samples in demo mode",
+    htmlTplOffline.includes("api/v2 is not answering") &&
+      htmlTplOffline.includes("Not connected") &&
+      !htmlTplOffline.includes("Renovation") &&
+      htmlTplDemo.includes("Renovation") &&
+      htmlTplDemo.includes("Design Consultancy") &&
+      htmlTplDemo.includes("The starter set") &&
+      htmlTplDemo.includes("Import the starter set (7 of 9)") &&
+      !htmlTplDemo.includes("api/v2 is not answering"),
+  ],
+  [
+    "the preview draws a document: the letterhead, the numbered lines, the words under the total",
+    htmlDoc.includes("Woodex Interior") &&
+      htmlDoc.includes("WI-10120") &&
+      htmlDoc.includes("Prepared for") &&
+      htmlDoc.includes("Platinum Ventures") &&
+      htmlDoc.includes("2.1.1") &&
+      htmlDoc.includes("In words") &&
+      htmlDoc.includes("Twelve lakh eighty four thousand rupees only") &&
+      htmlDoc.includes("50% advance payment with work order") &&
+      htmlDoc.includes("Imtiaz Ahmad"),
+  ],
+  [
+    "and the document says it is a sample when it is one, on the page rather than above it",
+    renderToString(
+      <DocPreview
+        title="Quotation"
+        no="WI-XXXXX"
+        date="2026-10-14"
+        client={{ name: "Client name" }}
+        sections={[]}
+        subtotal={0}
+        discount={0}
+        taxPct={0}
+        tax={0}
+        total={0}
+        design="premium"
+        company={{ name: "Woodex Interior" }}
+        sample="Sample — a template has no client."
+      />,
+    ).includes("Sample — a template has no client."),
+  ],
+  ...wordsTests,
   [
     /* The journey that was reported broken: opening the app with `?demo=1` and a host that is not answering
        must land on a screen with sample data on it, under a banner that says the data is invented. */

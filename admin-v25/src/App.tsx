@@ -27,6 +27,7 @@ import { LiveEstimator } from "./screens/LiveEstimator";
 import { LiveProjects } from "./screens/LiveProjects";
 import { LiveTimeline } from "./screens/LiveTimeline";
 import { LiveUpdates } from "./screens/LiveUpdates";
+import { LiveTemplates } from "./screens/LiveTemplates";
 import { linkLabel, useLive, type BellData } from "./lib/live";
 import { demoOn, setDemo } from "./lib/demo";
 import { Btn, Card, Note, PageHead } from "./components/primitives";
@@ -35,7 +36,7 @@ import { Btn, Card, Note, PageHead } from "./components/primitives";
 const BUILT_IDS = new Set([
   "dashboard", "leads", "enquiries", "pipeline", "quotes", "theme", "redirects", "media", "blog", "portfolio", "cities", "global", "pages", "library", "site-theme",
   "testimonials", "team", "heroes",
-  "forms", "estimator", "projects", "timeline", "notifications",
+  "forms", "estimator", "projects", "timeline", "notifications", "templates",
 ]);
 
 /** The public entry point: one provider, then the app proper. */
@@ -219,6 +220,9 @@ function Frame({ demo }: { demo: boolean }) {
               screen refuses to hide, that the sending itself is still v2.1's until Phase 4. */}
           <Route path="/notifications" element={<LiveUpdates />} />
           {/* The header and the footer: one edit, every page, one undo. */}
+          {/* Quotation templates — the shapes every quotation is built from. The plan calls this route
+              `/quotations/templates`; the registry declares that as an alias and the redirect below opens it. */}
+          <Route path="/templates" element={<LiveTemplates />} />
           <Route path="/global" element={<LiveGlobal />} />
           {/* Every page and every change — where the header change across 150 pages is undone. */}
           <Route path="/pages" element={<LivePages />} />
@@ -243,6 +247,14 @@ function Frame({ demo }: { demo: boolean }) {
               />
             }
           />
+          {/* Aliases are declared once, in the registry, and open the screen they name here. Without this a
+              path somebody was given — `#/quotations/templates`, `#/settings/connections` — landed on the
+              not-found page while the screen existed, which is the AD-4 defect in a new coat. */}
+          {ROUTES.flatMap((r) =>
+            (r.aliases ?? []).map((alias) => (
+              <Route key={alias} path={`/${alias}`} element={<Navigate to={`/${r.id}`} replace />} />
+            )),
+          )}
           {/* every other registered route renders its build plan */}
           {ROUTES.filter((r) => !BUILT_IDS.has(r.id)).map((r) => (
             <Route key={r.id} path={`/${r.id}`} element={<Placeholder route={r} />} />

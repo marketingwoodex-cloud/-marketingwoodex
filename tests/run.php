@@ -2325,6 +2325,137 @@ eq(wx_notify_contacts(['client_name' => 'Nobody', 'no' => 'WI-1', 'name' => 'A p
 /* Nothing here touches the network: the default transport is only reached when a route calls it. */
 skip('the real transport (wx_fetch_get) needs a network and is exercised on the host');
 
+/* ============================================================== quotation templates
+ *
+ * A template is a quotation with no client, and the rules that matter are the ones that keep the two
+ * from diverging: the same section cleaner, the same arithmetic, the same four kinds v2.1 had. The
+ * starter set is content — it is generated from the file the live site loads — so what is tested here
+ * is that every one of those nine templates is one the server would accept and give back unchanged. */
+
+group('A template is cleaned like a quotation, and refused by name');
+eq(wx_tpl_clean(['name' => '  Renovation  '])['name'], 'Renovation', 'a name is trimmed before it is stored');
+try {
+    wx_tpl_clean(['name' => '   ']);
+    ok(false, 'a template with no name is accepted');
+} catch (ApiError $e) {
+    eq($e->field, 'name', 'and the refusal names the field a screen has to highlight');
+}
+try {
+    wx_tpl_clean(['name' => str_repeat('x', 81)]);
+    ok(false, 'a name longer than the column is accepted');
+} catch (ApiError $e) {
+    eq($e->code, 'VALIDATION', 'a name over v2.1\'s eighty characters is refused rather than truncated');
+}
+try {
+    wx_tpl_clean(['name' => 'Ok', 'description' => str_repeat('d', 401)]);
+    ok(false, 'a four-hundred-and-one character description is accepted');
+} catch (ApiError $e) {
+    eq($e->field, 'description', 'and the description is the field it names');
+}
+$t_clean = wx_tpl_clean([
+    'name' => 'Fit-out',
+    'kind' => 'FITOUT',
+    'terms' => "50% advance with work order.",
+    'sections' => [[
+        'name' => 'Electrical',
+        'items' => [
+            ['desc' => 'DB upgrade', 'qty' => 2, 'unit' => 'nos', 'rate' => 15000],
+            ['desc' => 'Notes for the site team', 'kind' => 'spec', 'qty' => 5, 'rate' => 500],
+        ],
+    ]],
+]);
+eq($t_clean['kind'], 'fitout', 'the kind is matched without regard to case, as v2.1\'s select sent it');
+eq($t_clean['sections'][0]['items'][0]['unit'], 'nos', 'a unit on the list is kept');
+eq(count($t_clean['sections'][0]['items']), 2, 'and the section keeps both of the lines it was given');
+eq($t_clean['sections'][0]['items'][1]['qty'], 0.0, 'a specification line carries no quantity — it is a sentence, not a price');
+ok($t_clean['sections'][0]['items'][1]['rate'] === 0.0, 'nor a price, even when the console sent one');
+try {
+    wx_tpl_clean(['name' => 'Fit-out', 'sections' => [['name' => 'Electrical', 'items' => [['desc' => '', 'qty' => 1, 'unit' => 'nos']]]]]);
+    ok(false, 'a line with no description is accepted');
+} catch (ApiError $e) {
+    eq($e->field, 'sections.0.items.0.desc', 'a line with no description is refused by field — the same cleaner a quotation goes through');
+}
+eq(wx_tpl_kind('plumbing'), 'other', 'a kind the console does not know files under Other rather than refusing the save');
+eq(wx_tpl_kind(null), 'other', 'and so does no kind at all');
+
+group('A template\'s figures are derived, and a template with no rates says so');
+$t_row = wx_tpl_row(['id' => 4, 'name' => 'Renovation', 'kind' => 'renovation', 'sections' => [
+    ['name' => 'Flooring', 'items' => [
+        ['desc' => 'Vitrified tiles 600x1200', 'qty' => 1200, 'unit' => 'sft', 'rate' => 465],
+        ['desc' => 'Skirting', 'qty' => 0, 'unit' => 'rft', 'rate' => 0],
+    ]],
+    ['name' => 'Paint', 'items' => [
+        ['desc' => 'Emulsion, two coats', 'qty' => 3000, 'unit' => 'sft', 'rate' => 78],
+    ]],
+]]);
+eq($t_row['subtotal'], 792000, 'the subtotal is the sum of the lines, in whole rupees');
+eq($t_row['total'], $t_row['subtotal'], 'and with no discount or tax the total is the same number');
+eq($t_row['totalDisplay'], '792,000', 'formatted the one way money is formatted on every screen');
+eq($t_row['sectionCount'], 2, 'the list can say how many sections without opening the template');
+eq($t_row['lineCount'], 3, 'and how many lines');
+eq($t_row['pricedCount'], 2, 'and how many of them carry a rate — the other is a line to price per job');
+eq($t_row['kindLabel'], 'Renovation', 'with the label the screen shows, from the server so the two cannot differ');
+eq(wx_tpl_row(['name' => 'Empty', 'kind' => 'other', 'sections' => [], 'terms' => "\n\n  Fifty percent advance.  \n"])['termsFirst'],
+   'Fifty percent advance.', 'the line a card shows is the first real line of the terms, not the indentation');
+
+group('The nine starter templates are ones the server would accept');
+$starters = wx_tpl_starters();
+eq(count($starters), 9, 'nine templates ship, as the studio\'s own file has');
+eq(array_column($starters, 'name'), ['Renovation', 'Civil Work', 'Interior Designing', 'Interior', 'Fit-out', 'Architecture', '3D Visualization', 'Furniture', 'Design Consultancy'],
+   'in the order the file lists them, so the import reads predictably');
+eq(array_column($starters, 'kind'), ['renovation', 'renovation', 'design', 'other', 'fitout', 'design', 'design', 'other', 'design'],
+   'each with the kind v2.1\'s own rule gives its name');
+$s_items = array_sum(array_map(static fn(array $s): int => count($s['sections']), $starters));
+ok($s_items >= 20, 'they carry real BOQ sections rather than placeholders (' . $s_items . ' sections)');
+$s_lines = 0;
+foreach ($starters as $s) {
+    foreach ($s['sections'] as $sec) {
+        $s_lines += count($sec['items']);
+    }
+}
+ok($s_lines >= 80, 'and the line items the studio quotes from (' . $s_lines . ' lines)');
+$raw = json_decode((string) file_get_contents(WX_V2_DIR . WX_TPL_STARTER_FILE), true);
+ok(is_array($raw) && count($raw) === 9, 'the generated file holds the nine templates as JSON');
+/* The server adds bookkeeping beside each line (an `amount`, a `kind`, a `code`) — those are derived. What
+   must survive from the file untouched is the content somebody typed: the wording, the unit, the quantity,
+   the rate, the order. This projects both sides onto that content and compares those. */
+$content = static function (array $t): array {
+    $out = ['name' => $t['name'], 'kind' => $t['kind'], 'description' => (string) ($t['description'] ?? ''), 'terms' => (string) ($t['terms'] ?? ''), 'sections' => []];
+    foreach ($t['sections'] as $s) {
+        $lines = [];
+        foreach ($s['items'] as $it) {
+            $lines[] = [(string) $it['desc'], (float) $it['qty'], (string) $it['unit'], (float) $it['rate'], (string) ($it['kind'] ?? '')];
+        }
+        $out['sections'][] = [(string) $s['name'], $lines];
+    }
+    return $out;
+};
+$stable = [];
+foreach (is_array($raw) ? $raw : [] as $r) {
+    /* The property that matters: what the file says is what the server would store. A starter with a unit
+       outside v2.1's list, a heading carrying a price, a line with no description or a name over eighty
+       characters would be silently repaired on import — the studio would be quoting from something other
+       than the file it maintains. This is the assertion that says nothing is repaired. */
+    if ($content(wx_tpl_clean($r)) !== $content($r)) {
+        $stable[] = (string) ($r['name'] ?? '?');
+    }
+}
+eq($stable, [], 'every starter is already in the shape the server stores — nothing is repaired on import');
+$again = [];
+foreach ($starters as $s) {
+    if (wx_tpl_clean($s) !== $s) {
+        $again[] = $s['name'];
+    }
+}
+eq($again, [], 'and a starter that has been through the cleaner is unchanged by a second pass, so a re-import is a no-op rather than an edit');
+foreach ($starters as $s) {
+    ok(trim($s['name']) !== '' && count($s['sections']) > 0, 'the template "' . $s['name'] . '" has a name and sections');
+}
+$rows_marked = wx_tpl_starter_rows(['Renovation', 'Fit-out']);
+eq(array_column($rows_marked, 'imported'), [true, false, false, false, true, false, false, false, false],
+   'the import button knows which starters are already saved, so it can say six of nine rather than offering nine');
+ok(!isset($rows_marked[0]['id']), 'and a starter that is not saved yet has no id — it is not a row in the database');
+
 /* ============================================================== report */
 echo "\n";
 if ($failures) {

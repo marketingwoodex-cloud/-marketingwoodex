@@ -298,7 +298,7 @@ Phase **P0** is the prototype already in this repository.
 | `media`, `forms`, `estimator` | Assets and capture | P3 | `admin-media.js`, `admin-p18e.js` | `/media`, `/forms`, `/estimator` |
 | `updates`, `notify` | Client updates | P3 | `admin-notify.js` | `/notifications` |
 | `projects`, `timeline` | Delivery | P3 | `admin-sales.js`, new | `/projects` |
-| `templates` | Quote templates | P3 | `admin-print*.js` | `/quotations/templates` |
+| `templates` | Quote templates | **P3 ✓** | `admin-print*.js`, `admin-sales.js` Templates | `/quotations/templates` (alias of `/templates`) |
 | `business`, `integrations` | Company and connectors | P3 | `admin-fields.js`, `admin-settings.js` | `/company`, `/connectors` |
 | `seo`, `speed`, `health`, `seoagent` | Findability and quality | P4 | `admin-seo.js`, `admin-seo38.js`, `admin-speed.js`, `admin-media.js`, `admin-seoagent.js` | `/seo`, `/speed`, `/health`, `/seo/agent` |
 | `aicenter`, `train`, `aireport` | AI control | P4 | `admin-aicenter.js`, `admin-train.js`, `admin-aia.js` | `/ai`, `/ai/knowledge`, `/ai/report` |
@@ -515,9 +515,14 @@ working as intended, not a gap hidden by a fallback.
 
 ### Phase 3 — Content, assets and delivery · **in progress** · 4 weeks
 
-*Measured at this commit:* `tests/run.php` **848 passed · 0 failed · 13 skipped** · `tests/conformance.mjs`
-**78 · 0** · php-lint **153 files** · `admin-v25` smoke **135 checks · 65 routes** · legacy bridge **150 of 365
+*Measured at this commit:* `tests/run.php` **887 passed · 0 failed · 13 skipped** · `tests/conformance.mjs`
+**79 · 0** · php-lint **154 files** · `admin-v25` smoke **143 checks · 65 routes** · legacy bridge **150 of 365
 actions** (41%). Migrations **000–014** are written and none has run on a database yet.
+
+Three generators are part of this phase's gate rather than a convention, because each one replaces a second
+hand-typed copy of something the site already owns: `tools/gen-aliases.mjs --check` (365 actions),
+`tools/gen-caps.mjs --check` (the permission matrix) and `tools/gen-quote-starters.mjs --check` (the nine
+starter BOQ templates, extracted from `assets/js/quotation-templates.js` — the file the website loads).
 
 Pages · builder bridge · section library · header/footer · heroes · redirects · the full content CMS ·
 media with alt-text queue · forms · estimator · projects and the Gantt timeline · client updates ·
@@ -622,11 +627,15 @@ already did.
 |---|---|---|
 | The seven events and their bilingual wording, the channels, the log — and the page the client opens | `lib/notify.php`, `lib/clientview.php`, `routes/notifications.php`, `routes/client_view.php`, `LiveUpdates.tsx` on `/notifications`, the drawer on `/projects` | Two halves, and the honest one is the smaller. **The page**: `/api/v2/client/project/{id}?t=…` — an HMAC of the project's id and number, the construction v2.1's quotation link has always used, compared with `hash_equals`, no session, no script tag, and the first view recorded once every twelve hours so the studio can see the link was opened. It renders `updates[]` entries marked `toClient` and nothing else: *one* record, so there is no second copy of a sentence to drift and no "what did we actually tell them?". **The sending**: v2.5 has no WhatsApp or SMTP transport, and the plan puts it in Phase 4 with the WhatsApp suite — so the send path reports `no transport yet` rather than v2.1's `queued`, the once-only stage marks are set only when a message *left*, and the screen says who sends today instead of implying it is us. That last part is not decoration: marking a stage "told" on the strength of a log row would silence that news for good the day the channels are connected. A stage message has two shapes — the photo links, or, when a stage has no photos yet, the same words pointing at the client's page — and the update a person types in the drawer is the studio's own until they tick *Show the client* |
 
+| Delivered — quotation templates and the document | Where | Note |
+|---|---|---|
+| The nine BOQ templates the studio has quoted from for years, the editor for the section tree, and the quotation a template produces — drawn, not described | `lib/templates.php` (`wx_tpl_clean()`, `wx_tpl_row()`, `wx_tpl_starters()`), `routes/quotations.php` (`wx_route_tpl_*`), `api/v2/data/quote-starters.json`, `tools/gen-quote-starters.mjs`, `LiveTemplates.tsx` on `/templates` (alias `/quotations/templates`), `components/DocPreview.tsx` | v2.1 kept templates in `wx_templates` as JSON blobs and printed from a browser script (`admin-print17.js`) that built the page with `document.write`. Four things were wrong with that, and each one is a decision here. **The content existed twice** — nine templates, eighty line items — as the site's `assets/js/quotation-templates.js` and as whatever somebody had typed into the admin; the shipped set is now *generated* from the site's own file (`node tools/gen-quote-starters.mjs`), and a conformance check re-runs the extraction, so a rate edited in one copy and not the other fails the gate instead of becoming a quotation with the old price in it. **A template was only as valid as the browser that wrote it**: sections now go through `wx_clean_sections()`, the same cleaner a quotation's own sections go through (a line with no description is refused by field, a unit outside v2.1's list becomes `job`, a heading carries no numbers), and the total is derived by `wx_doc_totals()` — the one implementation of document arithmetic. **Imports overwrote by name**: existing names are skipped, never replaced, and the reply names what was added, skipped and refused, because "9 imported" when six were skipped is how a list looks wrong on the next load. **Nothing but a browser could produce a quotation**: the document is now a component (`DocPreview`) that computes nothing — every figure arrives from the server — keeps v2.1's numbering exactly (headings `5.1`, their lines `5.1.1`, specification lines unnumbered, a hand-numbered line keeps its number), and carries the three designs (Classic, Minimal, Premium) as one set of variables rather than three copies of a CSS string. Saving a template runs through the same approval gate as a quotation, with labels the Master reads in words ("Save a quotation template: Renovation") |
+
 | Delivered — demo mode, so a preview shows the console | Where | Note |
 |---|---|---|
 | The screens built in this phase, with sample data behind a label that cannot be missed | `admin-v25/src/lib/demo.ts` (fixtures keyed by API path), `useLive()`, `DemoDoor`/`DemoBanner` in `App.tsx` | A console that reads a real API shows nothing at all where there is no API — a laptop, a sandbox, a hosted preview — and the one thing a preview must never do is let somebody think they are looking at their own figures. So demo mode is *asked for* (`?demo=1`, or the door on any screen that is saying the host is not answering) and never inferred; the shell says **demo data**; a banner above every screen says no part of it came from the server and offers the way out; and a screen whose data nobody has invented yet keeps its honest "not answering" notice, which is how the next slice announces itself. The fixtures are typed against the same interfaces the server's answers are, so when a shape changes the sample stops compiling rather than quietly becoming a nicer product than the product. Also fixed here: a failed `GET /me` used to turn a settled "host not answering" into a sign-in form — a door that cannot open, inviting a password into nothing |
 
-**Still to come in this phase:** quote templates,
+**Still to come in this phase:**
 business info (`cms_biz_*`), announcements (`cms_announce_*`), the AI settings in the CMS (`cms_ai_*`), SEO
 screens and integrations. The builder's 19 actions are all accounted for: 17 bridged, 2 named above as
 decisions.
@@ -815,7 +824,7 @@ Everything in `admin-v25/` runs today:
 | Evidence | Result |
 |---|---|
 | Type check | clean, strict, `noUnusedLocals` |
-| Render smoke | **135 checks · 65 routes · 0 failures** |
+| Render smoke | **143 checks · 65 routes · 0 failures** |
 | Production build | 3 chunks, content-hashed, sourcemaps on |
 | Token contract | switching theme, accent and density re-themes all charts and screens |
 | Routing defects | AD-3, AD-4 and AD-12 structurally impossible in the registry |

@@ -72,6 +72,15 @@ function wx_routes(): array
         ['POST',   'quotations/{id}/revise',          'quotations', 'wx_route_quotes_revise',  'create_quote_draft'],
         ['POST',   'quotations/{id}/invoice',         'quotations', 'wx_route_quotes_invoice', 'quote_invoice'],
 
+        /* Quotation templates. Declared before `quotations/{id}` reads them, and the paths are their own
+           segment (`templates`) rather than a number, so a template id can never be mistaken for a
+           quotation's. */
+        ['GET',    'quotations/templates',            'quotations', 'wx_route_tpl_list',       'tpl_list'],
+        ['POST',   'quotations/templates',            'quotations', 'wx_route_tpl_save',       'tpl_save'],
+        ['POST',   'quotations/templates/import',     'quotations', 'wx_route_tpl_import',     'tpl_import'],
+        ['PATCH',  'quotations/templates/{id}',       'quotations', 'wx_route_tpl_save',       'tpl_save'],
+        ['DELETE', 'quotations/templates/{id}',       'quotations', 'wx_route_tpl_delete',     'tpl_delete'],
+
         /* --------------------------------------------------------- invoices */
         ['GET',    'invoices',                        'invoices', 'wx_route_invoices_list',    'invs_list'],
         ['GET',    'invoices/{id}',                   'invoices', 'wx_route_invoices_get',     'inv_get'],

@@ -82,7 +82,7 @@ export const ROUTES: NavRoute[] = [
   { id: "quotes", label: "Quotations", icon: FileText, section: "sales", group: "Quotes & invoices", roles: SALES, hint: "BOQ quotations and templates" },
   { id: "invoices", label: "Invoices", icon: Receipt, section: "sales", group: "Quotes & invoices", roles: SALES, hint: "Invoices, tracker and payments" },
   { id: "transactions", label: "Payments", icon: CreditCard, section: "sales", group: "Quotes & invoices", roles: SALES, hint: "Receipts against invoices" },
-  { id: "templates", label: "Quote templates", icon: Layers, section: "sales", group: "Quotes & invoices", roles: SALES, hint: "8 starter BOQ templates" },
+  { id: "templates", label: "Quote templates", icon: Layers, section: "sales", group: "Quotes & invoices", roles: SALES, aliases: ["quotations/templates"], hint: "Nine starter BOQ templates, editable" },
   { id: "projects", label: "Projects", icon: Briefcase, section: "sales", roles: SALES, hint: "Live projects and milestones" },
 
   /* ------------------------------------------------------- CONVERSATIONS */

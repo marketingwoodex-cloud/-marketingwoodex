@@ -14,7 +14,7 @@
  */
 import type {
   EstData, FormsData, HeroHomeData, HeroPageData, HeroScanData,
-  NotifyData, ProjDetail, ProjList, ProjRow,
+  NotifyData, ProjDetail, ProjList, ProjRow, TplsData,
 } from "./live";
 
 const KEY = "wx-demo";
@@ -304,6 +304,79 @@ const HERO_PAGE: HeroPageData = {
  * fixture here shows its honest "not answering" state in demo mode too — which is how the next slice announces
  * itself rather than being forgotten.
  */
+/* Quotation templates. Two of the nine the studio ships are saved, and the starter rows carry the same
+   `imported` flags the server computes — so the button says "six of nine" here for the same reason it does
+   on the host, rather than because the sample chose a number. */
+const TEMPLATES: TplsData = {
+  company: {
+    name: "Woodex Interior",
+    tagline: "Design · Build · Furniture",
+    address: "M-71, Zainab Tower, Model Town Link Road, Lahore",
+    phones: "+92 322 4000768",
+    email: "info@woodex.com.pk",
+    web: "woodex.com.pk",
+    signName: "Imtiaz Ahmad",
+    signTitle: "Director",
+  },
+  kinds: { design: "Interior design", fitout: "Fit-out", renovation: "Renovation", other: "Other" },
+  units: ["sft", "rft", "sqmt", "nos", "each", "set", "point", "job", "lumpsum"],
+  itemKinds: ["head", "spec"],
+  templates: [
+    {
+      id: 3, name: "Renovation", kind: "renovation", kindLabel: "Renovation",
+      description: "Full home or office renovation in our standard BOQ format. Ten work sections with a summary rollup.",
+      sectionCount: 2, lineCount: 5, pricedCount: 4, subtotal: 1_284_000, total: 1_284_000, totalDisplay: "1,284,000",
+      termsFirst: "50% advance payment with work order.",
+      terms: "50% advance payment with work order.\nPayment will be charged on the actual dimension / size of area.\nRates are valid for 15 days as per market rates.",
+      updated_at: "2026-10-06 11:20",
+      sections: [
+        {
+          name: "Civil Work", note: "Demolition and debris removal included.", subtotal: 384_000,
+          items: [
+            { desc: "Removal of existing windows, marble and brick walls wherever required", qty: 1, unit: "lumpsum", rate: 50_000, amount: 50_000, kind: "", code: "" },
+            { desc: "A class brick work, beam/girder and slab pouring 1:4:8, PCC and plaster as per drawing", qty: 256, unit: "sft", rate: 1_250, amount: 320_000, kind: "", code: "" },
+            { desc: "Debris removal and disposal off site", qty: 1, unit: "job", rate: 14_000, amount: 14_000, kind: "", code: "" },
+          ],
+        },
+        {
+          name: "Flooring", note: "", subtotal: 900_000,
+          items: [
+            { desc: "Flooring and wall tiling", qty: 0, unit: "job", rate: 0, amount: 0, kind: "head", code: "" },
+            { desc: "Vitrified tiles 600x1200, supply and laying with skirting", qty: 1_500, unit: "sft", rate: 600, amount: 900_000, kind: "", code: "" },
+          ],
+        },
+      ],
+    },
+    {
+      id: 7, name: "Design Consultancy", kind: "design", kindLabel: "Interior design",
+      description: "Complete interior design consultancy from layouts to detail drawings.",
+      sectionCount: 1, lineCount: 1, pricedCount: 1, subtotal: 250_000, total: 250_000, totalDisplay: "250,000",
+      termsFirst: "75% advance payment with work order.",
+      terms: "75% advance payment with work order.\n25% on approval of project.\nAbove quote is exclusive of all applicable taxes.",
+      updated_at: "2026-09-28 15:02",
+      sections: [
+        {
+          name: "Consultancy", note: "", subtotal: 250_000,
+          items: [
+            { desc: "Complete interior design consultancy: 2D layouts, 3D design, mood boards and detail drawings", qty: 2_500, unit: "sft", rate: 100, amount: 250_000, kind: "", code: "" },
+          ],
+        },
+      ],
+    },
+  ],
+  starter: [
+    { name: "Renovation", kind: "renovation", kindLabel: "Renovation", imported: true, description: "", termsFirst: "", terms: "", sections: [], sectionCount: 10, lineCount: 42, pricedCount: 42, subtotal: 0, total: 0, totalDisplay: "0" },
+    { name: "Civil Work", kind: "renovation", kindLabel: "Renovation", imported: false, description: "", termsFirst: "", terms: "", sections: [], sectionCount: 3, lineCount: 9, pricedCount: 9, subtotal: 0, total: 0, totalDisplay: "0" },
+    { name: "Interior Designing", kind: "design", kindLabel: "Interior design", imported: false, description: "", termsFirst: "", terms: "", sections: [], sectionCount: 3, lineCount: 7, pricedCount: 7, subtotal: 0, total: 0, totalDisplay: "0" },
+    { name: "Interior", kind: "other", kindLabel: "Other", imported: false, description: "", termsFirst: "", terms: "", sections: [], sectionCount: 3, lineCount: 6, pricedCount: 6, subtotal: 0, total: 0, totalDisplay: "0" },
+    { name: "Fit-out", kind: "fitout", kindLabel: "Fit-out", imported: false, description: "", termsFirst: "", terms: "", sections: [], sectionCount: 3, lineCount: 8, pricedCount: 8, subtotal: 0, total: 0, totalDisplay: "0" },
+    { name: "Architecture", kind: "design", kindLabel: "Interior design", imported: false, description: "", termsFirst: "", terms: "", sections: [], sectionCount: 2, lineCount: 4, pricedCount: 4, subtotal: 0, total: 0, totalDisplay: "0" },
+    { name: "3D Visualization", kind: "design", kindLabel: "Interior design", imported: false, description: "", termsFirst: "", terms: "", sections: [], sectionCount: 1, lineCount: 2, pricedCount: 2, subtotal: 0, total: 0, totalDisplay: "0" },
+    { name: "Furniture", kind: "other", kindLabel: "Other", imported: false, description: "", termsFirst: "", terms: "", sections: [], sectionCount: 1, lineCount: 5, pricedCount: 5, subtotal: 0, total: 0, totalDisplay: "0" },
+    { name: "Design Consultancy", kind: "design", kindLabel: "Interior design", imported: true, description: "", termsFirst: "", terms: "", sections: [], sectionCount: 1, lineCount: 1, pricedCount: 1, subtotal: 0, total: 0, totalDisplay: "0" },
+  ],
+};
+
 const FIXTURES: Record<string, unknown> = {
   "/projects": PROJ_LIST,
   "/projects/{id}": PROJ_DETAIL,
@@ -313,6 +386,7 @@ const FIXTURES: Record<string, unknown> = {
   "/heroes": HEROES,
   "/heroes/home": HERO_HOME,
   "/heroes/page*": HERO_PAGE,
+  "/quotations/templates": TEMPLATES,
 };
 
 /** The sample for a path, or null when this screen has none yet. */
@@ -332,4 +406,5 @@ export function demoFixture(path: string): unknown | null {
 /** The paths the newest screens read — the ones a design review must be able to open. Used by the checks. */
 export const DEMO_COVERED = [
   "/projects", "/projects/{id}", "/notifications", "/forms", "/estimator", "/heroes", "/heroes/home", "/heroes/page*",
+  "/quotations/templates",
 ];

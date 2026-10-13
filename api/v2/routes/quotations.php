@@ -448,3 +448,205 @@ function wx_route_quotes_invoice_do(array $ctx): array
         });
     });
 }
+
+/* ------------------------------------------------------------------ templates
+ *
+ * A template is the shape of a quotation — ten sections of BOQ, the terms the studio always uses — saved
+ * once and reused. v2.1 had four actions for them (`tpl_list`, `tpl_save`, `tpl_delete`, `tpl_import`) and
+ * the same shape is kept here, with one addition the studio asked the audit for: a template can be saved
+ * *from* a quotation, so the good quotation somebody just built becomes the next one's starting point
+ * instead of being retyped.
+ *
+ * Two rules travel with the money path even though a template carries no client: the sections go through the
+ * same cleaner a quotation's sections do, and the total is derived, never accepted. A template is what a
+ * quotation will be, so it is held to what a quotation is held to.
+ */
+
+/** GET /quotations/templates — every template whole, plus what the starter import would add. */
+function wx_route_tpl_list(array $ctx): array
+{
+    wx_require_user('tpl_list');
+    $rows = [];
+    /* One query, and the payload column is named by the function that knows what it is called on this host
+       (`payload` after migration 003, `data` before it) — naming it by hand is how a list works on the
+       converted host and throws on the live one. */
+    $sql = 'SELECT id, ' . wx_doc_payload_sql('wx_templates') . ' FROM wx_templates ORDER BY name';
+    foreach (wx_all($sql) as $r) {
+        $t = json_decode((string) $r['payload'], true);
+        if (!is_array($t)) {
+            /* A template whose JSON will not decode is a corrupted row. Skipping it silently would hide a
+               template the studio can see in v2.1, so it is reported by name — it can then be re-saved or
+               deleted from the screen rather than being invisible here and present there. */
+            $rows[] = ['id' => (int) $r['id'], 'broken' => true, 'name' => '(unreadable row ' . (int) $r['id'] . ')'];
+            continue;
+        }
+        $t['id'] = (int) $r['id'];
+        $rows[] = wx_tpl_row($t);
+    }
+
+    /* The letterhead travels with the list so a preview draws the document the studio actually sends, not a
+       placeholder header. Only the fields a document prints are taken, and `wx_company()` already falls back
+       to the shipped defaults on a host where the settings row is missing. */
+    $c = wx_company();
+    $letter = [];
+    foreach (['name', 'tagline', 'address', 'phones', 'email', 'web', 'ntn', 'signName', 'signTitle'] as $k) {
+        if (isset($c[$k])) {
+            $letter[$k] = (string) $c[$k];
+        }
+    }
+
+    return ['data' => [
+        'templates' => $rows,
+        'company' => $letter,
+        'kinds' => WX_TPL_KINDS,
+        'starter' => wx_tpl_starter_rows(array_column($rows, 'name')),
+        'units' => WX_UNITS,
+        'itemKinds' => WX_ITEM_KINDS,
+    ]];
+}
+
+/**
+ * POST /quotations/templates — create or update one, by id.
+ *
+ * Gated: a template is what every future quotation is built from, so saving one is exactly the kind of
+ * change that waits for the Master when a Manager makes it. `tpl_save` matches v2.1's write policy.
+ */
+function wx_route_tpl_save(array $ctx): array
+{
+    /* Two lines, and deliberately the only place this route decides anything: the change itself lives in
+       wx_route_tpl_save_do() below. */
+    return wx_appr_route('tpl_save', $ctx, 'quotations', 'wx_route_tpl_save_do', static fn() => wx_route_tpl_save_do($ctx));
+}
+
+function wx_route_tpl_save_do(array $ctx): array
+{
+    /* v2.1 kept the write to owner/admin even though `tpl_*` sits in the sales group — a sales user reads
+       templates, the studio's owner decides what the studio quotes from. */
+    $u = wx_require_user('tpl_save', ['owner', 'admin']);
+    $id = isset($ctx['params']['id']) ? (int) $ctx['params']['id'] : (int) ($ctx['body']['id'] ?? 0);
+
+    return wx_guard('tpl.save', static function () use ($ctx, $u, $id) {
+        return wx_tx(static function () use ($ctx, $u, $id) {
+            $old = [];
+            if ($id > 0) {
+                $old = wx_doc_get('wx_templates', $id, true) ?? [];
+                if ($old === []) {
+                    throw ApiError::notFound('That template does not exist');
+                }
+            }
+            $t = wx_tpl_clean(is_array($ctx['body']) ? $ctx['body'] : [], $old);
+            if (wx_one('SELECT id FROM wx_templates WHERE name = ? AND id <> ?', [$t['name'], $id]) !== null) {
+                throw ApiError::conflict('Another template already has that name — ' . $t['name'], 'name');
+            }
+            $now = wx_now();
+            $t = wx_doc_put('wx_templates', array_merge([
+                'id' => $id > 0 ? $id : null,
+                'created_at' => (string) ($old['created_at'] ?? $now),
+                'updated_at' => $now,
+            ], $t), ['name' => $t['name']]);
+            wx_audit($u, $id > 0 ? 'template.save' : 'template.create', 'template:' . $t['id'], [
+                'name' => $t['name'],
+                'sections' => count($t['sections']),
+            ]);
+            return ['data' => ['template' => wx_tpl_row($t), 'created' => $id === 0]];
+        });
+    });
+}
+
+/** DELETE /quotations/templates/{id} — remove one. Quotations made from it are untouched, as in v2.1. */
+function wx_route_tpl_delete(array $ctx): array
+{
+    return wx_appr_route('tpl_delete', $ctx, 'quotations', 'wx_route_tpl_delete_do', static fn() => wx_route_tpl_delete_do($ctx));
+}
+
+function wx_route_tpl_delete_do(array $ctx): array
+{
+    $u = wx_require_user('tpl_delete', ['owner', 'admin']);
+    $id = (int) $ctx['params']['id'];
+
+    return wx_guard('tpl.delete', static function () use ($u, $id) {
+        return wx_tx(static function () use ($u, $id) {
+            $t = wx_doc_get('wx_templates', $id, true);
+            if ($t === null) {
+                throw ApiError::notFound('That template does not exist');
+            }
+            /* Deleting a template is not deleting the quotations made from it, and the screen says so before
+               it asks. A quotation carries its own sections — that was true in v2.1 and it is the reason a
+               template can be replaced without touching a client's document. */
+            wx_q('DELETE FROM wx_templates WHERE id = ?', [$id]);
+            wx_audit($u, 'template.delete', 'template:' . $id, ['name' => (string) $t['name']]);
+            return ['data' => ['deleted' => $id, 'name' => (string) $t['name']]];
+        });
+    });
+}
+
+/**
+ * POST /quotations/templates/import — the shipped starter set, or a file the studio exported.
+ *
+ * Existing names are skipped, never overwritten: the studio's own edit to "Renovation" is a decision, and an
+ * import is how the other eight arrive. The reply says which were added, which were skipped and which were
+ * refused, because "9 imported" when six were skipped makes the list look wrong the next time it loads.
+ */
+function wx_route_tpl_import(array $ctx): array
+{
+    return wx_appr_route('tpl_import', $ctx, 'quotations', 'wx_route_tpl_import_do', static fn() => wx_route_tpl_import_do($ctx));
+}
+
+function wx_route_tpl_import_do(array $ctx): array
+{
+    $u = wx_require_user('tpl_import', ['owner', 'admin']);
+    $b = is_array($ctx['body']) ? $ctx['body'] : [];
+    $source = !empty($b['starter']) ? 'starter' : 'file';
+    $list = $source === 'starter'
+        ? wx_tpl_starters()
+        : array_slice(array_values(is_array($b['templates'] ?? null) ? $b['templates'] : []), 0, WX_TPL_IMPORT_MAX);
+    if (!$list) {
+        throw ApiError::validation('There is nothing in that file to import', 'templates');
+    }
+
+    return wx_guard('tpl.import', static function () use ($u, $list, $source) {
+        return wx_tx(static function () use ($u, $list, $source) {
+            $saved = [];
+            foreach (wx_all('SELECT name FROM wx_templates') as $r) {
+                $saved[(string) $r['name']] = true;
+            }
+            $added = [];
+            $skipped = [];
+            $refused = [];
+            foreach ($list as $i => $raw) {
+                if (!is_array($raw)) {
+                    $refused[] = 'row ' . ($i + 1);
+                    continue;
+                }
+                try {
+                    $t = $source === 'starter' ? $raw : wx_tpl_clean($raw);
+                } catch (ApiError $e) {
+                    /* A row the studio's own file got wrong is named by whatever it did have, so the person
+                       fixing the export knows which one was left out. */
+                    $refused[] = trim((string) ($raw['name'] ?? '')) !== '' ? (string) $raw['name'] : 'row ' . ($i + 1);
+                    continue;
+                }
+                if (isset($saved[$t['name']])) {
+                    $skipped[] = $t['name'];
+                    continue;
+                }
+                $now = wx_now();
+                wx_doc_put('wx_templates', array_merge(['created_at' => $now, 'updated_at' => $now], $t), ['name' => $t['name']]);
+                $saved[$t['name']] = true;
+                $added[] = $t['name'];
+            }
+            wx_audit($u, 'template.import', $source, [
+                'imported' => count($added),
+                'skipped' => count($skipped),
+                'refused' => count($refused),
+            ]);
+            return ['data' => [
+                'source' => $source,
+                'imported' => count($added),
+                'names' => $added,
+                'skipped' => $skipped,
+                'refused' => $refused,
+            ]];
+        });
+    });
+}

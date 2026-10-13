@@ -20,6 +20,10 @@ declare(strict_types=1);
 const WX_DOC_TABLES = [
     'wx_quotes' => ['key' => 'no', 'columns' => ['no', 'status', 'client_id', 'project', 'subtotal', 'tax', 'total', 'currency', 'issued_at', 'valid_until', 'pdf_sha256']],
     'wx_invoices' => ['key' => 'no', 'columns' => ['no', 'quote_id', 'client_id', 'project', 'subtotal', 'tax', 'total', 'paid', 'currency', 'issued_at', 'due_at', 'pdf_sha256']],
+    /* Templates are documents too, and v2.1's `doc_put()` wrote them the same way: the JSON is the template,
+       the name is mirrored into the UNIQUE column the list is ordered by. No totals are indexed — a
+       template's total is derived when it is read (wx_tpl_row), because a template is a shape, not a bill. */
+    'wx_templates' => ['key' => 'name', 'columns' => ['name']],
 ];
 
 /**
