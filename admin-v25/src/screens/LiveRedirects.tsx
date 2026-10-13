@@ -32,7 +32,7 @@ const BLANK: Draft = { id: 0, from: "", to: "", type: 301, match: "exact", src: 
 const TYPE_LABEL: Record<number, string> = { 301: "301 permanent", 302: "302 temporary", 410: "410 gone" };
 
 export function LiveRedirects() {
-  const { link } = useSession();
+  const { link, reason } = useSession();
   const redirects = useLive<RedirectsData>("/redirects?import=1");
   const misses = useLive<MissesData>("/404s?limit=100");
 
@@ -139,7 +139,7 @@ export function LiveRedirects() {
           sub={
             link === "offline"
               ? "This screen edits the redirect rules on the server, so there is nothing here to show from demo data."
-              : "The API answered, but this screen needs a session."
+              : `The API answered${reason ? ` but ${reason}` : ""}, and this screen needs a session.`
           }
         />
       </>

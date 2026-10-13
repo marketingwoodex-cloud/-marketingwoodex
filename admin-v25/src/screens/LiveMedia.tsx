@@ -24,7 +24,7 @@ import { useLive, isPending, type AltQueueData, type MediaData, type MediaFile, 
 import { bytes, timeAgo } from "../lib/format";
 
 export function LiveMedia() {
-  const { link } = useSession();
+  const { link, reason } = useSession();
   const media = useLive<MediaData>("/media?import=1");
   const queue = useLive<AltQueueData>("/media/alt?limit=100");
   const trash = useLive<{ items: TrashRow[]; bytes: number }>("/media/trash");
@@ -106,7 +106,7 @@ export function LiveMedia() {
           sub={
             link === "offline"
               ? "The library is the site's own image folders, so there is nothing to show without the API."
-              : "The API answered, but this screen needs a session."
+              : `The API answered${reason ? ` but ${reason}` : ""}, and this screen needs a session.`
           }
         />
       </>

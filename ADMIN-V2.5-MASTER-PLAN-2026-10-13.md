@@ -483,7 +483,7 @@ build sandbox (a WebAssembly 8.2 build — the ESM/CJS trap that makes it fail h
 the public demo-credential page and the `admin/admin` installer default are gone; findings 5–8 have
 executable checks rather than a claim.
 
-### Phase 2 — Core operations · 3 weeks
+### Phase 2 — Core operations · **built** · 3 weeks
 
 Approvals · clients · bookings · invoices · payments · unified inbox · users and roles · activity ·
 profile · security · leads and pipeline and quotations **port from the prototype to real data**.
@@ -491,7 +491,29 @@ profile · security · leads and pipeline and quotations **port from the prototy
 **Gate:** a lead can be created on the website, appear in the inbox, be quoted, approved, invoiced
 and paid without touching the v2.1 admin. Money totals match the server.
 
-### Phase 3 — Content, assets and delivery · 4 weeks
+| Built | Where |
+|---|---|
+| Money, documents, totals, quote-view tokens, receipts | `api/v2/lib/{money,docs}.php` — the invoice's displayed total is the stored total |
+| Approvals (the policy copied from v2.1 and verified as a copy) | `lib/approvals.php` + `routes/approvals.php` |
+| Bookings, clients, projects, quotations, invoices, payments | `routes/{bookings,clients,projects,quotations,invoices}.php` |
+| Unified inbox (widget, WhatsApp, Telegram shapes), the bell | `routes/chats.php`, `routes/chat_public.php`, `lib/notify.php`, `routes/notifications.php` |
+| Users, roles, 2FA, recovery codes, sessions | `routes/{users,security}.php` + `lib/auth.php` |
+| Leads, pipeline, dashboard, me, activity, system, health | `routes/{leads,dashboard,me,system}.php` |
+| The dashboard that talks to it | `admin-v25/src/lib/live.ts`, `screens/{SignIn,LiveDashboard,LiveLeads}.tsx` |
+
+| Verification | Command | Result |
+|---|---|---|
+| PHP parses | `node tools/phplint/php-lint.mjs` | 127 files clean |
+| Structural invariants | `node tests/conformance.mjs` | 69 passed · 0 failed |
+| Behaviour | `node tools/phpwasm/run-php.cjs tests/run.php` | 254 passed · 0 failed · 4 skipped |
+| The gate itself, against MySQL | `php tests/roundtrip.php` | written; runs in CI, needs a database |
+| The admin | `npm run verify` | 78 render checks · 65 routes · build clean |
+
+**Coverage:** 113 of the 365 v2.1 actions are served by api/v2 today and the rest answer
+`NOT_FOUND` naming the action and the v2.1 file that still serves it — the strangler pattern
+working as intended, not a gap hidden by a fallback.
+
+### Phase 3 — Content, assets and delivery · **in progress** · 4 weeks
 
 Pages · builder bridge · section library · header/footer · heroes · redirects · the full content CMS ·
 media with alt-text queue · forms · estimator · client updates · projects and the Gantt timeline ·
@@ -499,6 +521,18 @@ quote templates · business info · integrations rebuilt on real connector state
 
 **Gate:** an editor publishes an article, changes the header across 150 pages, and rolls the change
 back from page history — all through v2.5.
+
+| Delivered | Where | Note |
+|---|---|---|
+| Redirect rules as rows, the 404 log, a safe `.htaccess` publish | `db/migrations/009_redirects.sql`, `lib/redirects.php`, `routes/redirects.php` | the rules are validated as a whole and published from that same list; a copy of the file precedes every write |
+| Pages, versioning and rollback | `db/migrations/010_media_pages.sql`, `lib/pages.php`, `routes/pages.php` | one batch per change, so *the header across 150 pages* is one undo |
+| Media library: usage, derivatives, alt-text queue, trash | `lib/media.php`, `routes/media.php` | alt text and the check that it was looked at are recorded separately |
+| File manager over `assets/` | `lib/files.php`, `routes/files.php` | four shared folders read-only; a file a page uses is refused before it is renamed or deleted |
+| Two screens | `admin-v25/src/screens/{LiveRedirects,LiveMedia}.tsx` | live-only by design; with no API they say so in a sentence |
+
+**Still to come in this phase:** article publishing UI, the header/footer editor and the section
+library (the other half of the gate), forms, the estimator, projects and the Gantt timeline, quote
+templates, business info, integrations, and the page-history screen.
 
 ### Phase 4 — Automation and intelligence · 3 weeks
 
