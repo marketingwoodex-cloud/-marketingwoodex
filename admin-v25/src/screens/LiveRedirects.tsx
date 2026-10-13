@@ -63,8 +63,11 @@ export function LiveRedirects() {
   }, [draft, cfg, redirects.data]);
 
   const verdict = useMemo(() => {
+    /* Keyed by the rule index the API sends (`t.i`), not by the position in the verdict array: the two
+       happen to agree today because both come from the same list, and a screen that quietly depends on
+       that agreement would put the wrong verdict next to the wrong rule the day one of them is sorted. */
     const map = new Map<number, { status: string; msg: string }>();
-    redirects.data?.test.forEach((t, i) => map.set(i, { status: t.status, msg: t.msg }));
+    redirects.data?.test.forEach((t) => map.set(t.i, { status: t.status, msg: t.msg }));
     return map;
   }, [redirects.data]);
 
