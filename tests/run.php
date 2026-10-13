@@ -1980,6 +1980,127 @@ ok(str_ends_with(wx_page_backup_dir('index.html'), '/backups/index_html'), 'and 
 throws('VALIDATION', 'file', static fn() => wx_page_backup_read('index.html', 'nope.html'), 'reading a copy whose name is not a name is refused');
 throws('VALIDATION', 'rel', static fn() => wx_page_backup_dir('../outside.html'), 'and a page path is validated before it is turned into a folder');
 
+/* ---- forms: what the pages actually do with an enquiry (v2.1's Forms screen, `p18e-lib.php`) */
+/* The markup below is lifted from the live pages. That matters more here than anywhere else: v2.1's screen
+   looked for its OWN patterns (`WXForms.send('contact')`, `data-form="…"`) and would have found nothing on a
+   site whose forms post to Netlify functions — six forms, "0 submissions", no reason given. These assertions
+   are what makes the reader's second half (where the enquiry really goes) checkable. */
+
+$live_contact = <<<'HTML'
+<form class="ct-form" id="visit-form" novalidate>
+  <div class="ct-field"><label for="cf-name">Name</label><input id="cf-name" name="name" type="text" required></div>
+</form>
+<script>f.addEventListener('submit',function(e){e.preventDefault();
+fetch('/.netlify/functions/enquiry-submit',{method:'POST',headers:{'content-type':'application/json'},
+body:JSON.stringify({name:name,phone:phone})})});</script>
+HTML;
+
+$live_brief = <<<'HTML'
+<form class="form-card" id="brief-form" data-anim=""><h3>Send your brief</h3>
+<p class="form-status" id="form-status" role="status">Your email app will open with the brief ready to review and send.</p></form>
+<script>var to='mailto:info@woodex.com.pk?subject='+encodeURIComponent(brief);</script>
+HTML;
+
+$live_estimator = <<<'HTML'
+<form id="est-form" novalidate>
+  <input id="est-name" type="text"><input id="est-phone" type="tel">
+  <button class="est-btn" type="submit" id="est-submit">Get my detailed quote</button>
+</form>
+<script>fetch("/.netlify/functions/estimator-submit", { method: "POST" });</script>
+HTML;
+
+$live_fitout = <<<'HTML'
+<form class="hub-form" id="fitout-hub-form"><button class="btn" type="submit">Send</button></form>
+HTML;
+$live_quote = <<<'HTML'
+<form class="fitout-quote-form" id="fitout-quote-form"><button type="submit">Send</button></form>
+HTML;
+$live_v21 = <<<'HTML'
+<script>WXForms.send('contact', {name: n});</script>
+HTML;
+
+$ev = wx_form_evidence($live_contact);
+eq($ev['forms'], ['contact'], 'the contact page is found by the id its form carries — not by a pattern this site never wrote');
+eq($ev['endpoints'], ['/.netlify/functions/enquiry-submit'], 'and the address it posts to is named, in full');
+$land = wx_form_landing($ev['endpoints']);
+ok(!$land['lands'], 'a Netlify function is not a place whose leads arrive in this console');
+eq($land['label'], 'A Netlify function', 'so the screen has something true to say instead of "0 submissions"');
+ok(!wx_form_landing(['/api/forms.php'])['lands'] === false, 'this site\'s own API is one whose leads do land here');
+ok(wx_form_landing(['/api/forms.php'])['lands'], 'and it says so');
+ok(wx_form_landing([])['label'] === 'Nothing — no form posts anywhere', 'a page whose form posts nowhere says that, and is not confused with a page that posts elsewhere');
+ok(str_contains(wx_form_landing(['https://formspree.io/f/xyz'])['label'], 'Formspree') || wx_form_landing(['https://formspree.io/f/xyz'])['lands'] === false, 'a third-party form host is not mistaken for this site');
+
+eq(wx_form_evidence($live_brief)['forms'], ['brief'], 'the 3D brief page carries the brief form');
+eq(wx_form_landing(wx_form_evidence($live_brief)['endpoints'])['label'], 'The visitor\'s mail app (mailto)', 'and its "send" opens the visitor\'s own mail app, which no console ever sees');
+eq(wx_form_evidence($live_estimator)['forms'], ['estimator'], 'the estimator page is the estimator form');
+eq(wx_form_evidence($live_fitout)['forms'], ['fitout-hub'], 'the fit-out hub form answers to its own name');
+eq(wx_form_evidence($live_quote)['forms'], ['office-fitout'], 'and the office fit-out quote form to its own');
+eq(wx_form_evidence($live_v21)['forms'], ['contact'], 'v2.1\'s own pattern still finds a form, so a page not yet moved is not lost');
+ok(!wx_form_marked('<form id="est-form-2">', 'est-form'), 'a similar id does not answer for the form itself');
+ok(wx_form_marked('<form class="ct-wrap ct-form" id="x">', 'ct-form'), 'and a class among others does');
+ok(!wx_form_evidence('<p>no form here</p>')['forms'], 'a page with no form has no forms');
+
+/* The reader refuses to guess: an address it does not know is reported as itself. */
+$odd = wx_form_evidence('<script>fetch("/submit-enquiry.php", {method:"POST"})</script>');
+ok(in_array('/submit-enquiry.php', $odd['unmanaged'], true), 'a submit address nobody listed is shown by name, not swallowed');
+ok(!in_array('/assets/js/estimator-rates.js', wx_form_evidence('<script src="/assets/js/estimator-rates.js"></script>')['unmanaged'], true), 'while an ordinary script is not mistaken for an endpoint');
+
+/* The settings. Checked here because these addresses are where a lead is announced: a typo is a lead nobody hears about. */
+$clean = wx_form_clean(['alertTo' => 'Nabeel@woodex.com.pk, sales@woodex.com.pk', 'waTo' => '+92 322 4000768', 'waAlert' => 1, 'reply' => 'yes', 'replyText' => 'Thanks — we will call you back.'], 'Contact form');
+eq($clean['alertTo'], 'nabeel@woodex.com.pk, sales@woodex.com.pk', 'addresses are lower-cased and kept in the order they were typed');
+eq($clean['waTo'], '923224000768', 'a WhatsApp number is kept as digits with the country code, which is what the link needs');
+eq($clean['reply'], true, 'a checkbox that came back as anything truthy is on');
+eq($clean['waAlert'], true, 'and so is the WhatsApp alert');
+throws('VALIDATION', 'alertTo', static fn() => wx_form_clean(['alertTo' => 'not-an-email'], 'Contact form'), 'something that is not an address is refused, by the field');
+throws('VALIDATION', 'waTo', static fn() => wx_form_clean(['waTo' => '0300 123'], 'Contact form'), 'and a number without a country code is refused rather than dialled');
+throws('VALIDATION', 'replyText', static fn() => wx_form_clean(['replyText' => str_repeat('x', 1001)], 'Contact form'), 'an auto-reply longer than a thousand characters is refused');
+eq(wx_form_clean([], 'Contact form')['alertTo'], '', 'an empty form is a valid form — alerts off is a choice, not an error');
+
+/* ---- the rate book: the figures every quotation starts from */
+$rates = json_decode(<<<'JSON'
+{"services":[
+ {"key":"interior-design","label":"Interior Design","hint":"Concept and drawings","unit":"sqft","rates":{"essential":150,"standard":250,"premium":400}},
+ {"label":"Office Fit-Out","unit":"views","ratings":{},"rates":{"essential":900,"standard":1200,"premium":1600}}
+],"finishes":[{"key":"premium","label":"Premium Plus"}],"terms":["50% on order, 50% on handover"],
+ "catalog":[{"cat":"Civil","desc":"Wall demolition","rate":45000},{"cat":"","desc":"","rate":10}]}
+JSON, true);
+$est = wx_est_clean($rates);
+eq(count($est['services']), 2, 'every service is kept');
+eq($est['services'][1]['key'], 'office-fit-out', 'a service with no key is keyed from its name, so the page can read it');
+eq($est['services'][1]['unit'], 'views', 'a unit of views is the paid-ads one');
+eq($est['services'][0]['rates']['standard'], 250, 'and the three rates are whole rupees');
+eq(array_column($est['finishes'], 'key'), ['essential', 'standard', 'premium'], 'the three finishes are always present, in order, cheapest first');
+eq($est['finishes'][2]['label'], 'Premium Plus', 'a renamed one keeps its new name');
+eq($est['finishes'][0]['label'], 'Essential', 'and one that was never renamed falls back to its own');
+eq(count($est['catalog']), 1, 'a catalog line with no description is dropped rather than shown blank');
+eq($est['terms'], ['50% on order, 50% on handover'], 'the terms travel with the figures, because a quote prints them');
+
+throws('VALIDATION', 'services', static fn() => wx_est_clean(['services' => [], 'finishes' => []]), 'a rate book with no services is refused');
+throws('VALIDATION', 'services', static fn() => wx_est_clean(['services' => [['label' => 'Design', 'rates' => ['essential' => 300, 'standard' => 200, 'premium' => 400]]], 'finishes' => []]), 'rates that go DOWN are refused — Essential ≤ Standard ≤ Premium');
+throws('VALIDATION', 'services', static fn() => wx_est_clean(['services' => [['label' => 'Design', 'rates' => ['essential' => 0, 'standard' => 200, 'premium' => 400]]], 'finishes' => []]), 'and a zero rate is refused: it is how a service gets quietly dropped from every quote');
+throws('VALIDATION', 'services', static fn() => wx_est_clean(['services' => [['label' => 'Design', 'rates' => ['essential' => 1, 'standard' => 2, 'premium' => 3]], ['label' => 'design', 'rates' => ['essential' => 1, 'standard' => 2, 'premium' => 3]]], 'finishes' => []]), 'two services with the same name are refused, because they would share one key and one would vanish');
+
+/* The file the public estimator reads: written as JavaScript, and read back as the same figures. */
+$js = wx_est_js($est);
+ok(str_starts_with($js, '/* Woodex estimator rate book'), 'the generated file says what it is');
+ok(str_contains($js, 'window.WX_RATES = '), 'and is the assignment the public page reads, so no request is needed to show a price');
+ok(str_contains($js, 'overwritten by the next save'), 'and warns that hand edits are lost, because that is how a rate book goes missing');
+eq(wx_est_parse($js), $est, 'what is written is exactly what is read back — the round trip, asserted');
+eq(wx_est_parse('/* nothing here */'), null, 'a file in another shape reads as nothing');
+eq(wx_est_parse('window.WX_RATES = {oops'), null, 'and so does a truncated one, rather than half a rate book');
+ok(str_contains(wx_est_js($est), 'JSON') === false, 'the sheet itself is not in the file: figures and layout do not belong together here');
+
+/* Reloading the readers: the version stamp v2.1 wrote page by page. */
+$reader = '<script src="/assets/js/estimator-rates.js"></script>';
+eq(wx_est_reload($reader, '2610141530'), '<script src="/assets/js/estimator-rates.js?v=2610141530"></script>', 'a page that reads the rate book is pointed at the new version');
+eq(wx_est_reload('<script src="/assets/js/estimator-rates.js?v=2610141530"></script>', '2610141530'), null, 'a page already on that version is left alone — no version written for nothing');
+eq(wx_est_reload('<script src="/assets/js/estimator-rates.js?v=old"></script>', '2610141530'), '<script src="/assets/js/estimator-rates.js?v=2610141530"></script>', 'an older stamp is replaced, not appended to');
+eq(wx_est_reload('<p>a page with no script</p>', '2610141530'), null, 'and a page that does not read it is not touched at all');
+
+/* The six forms are v2.1's own list; the marker table is read off this site. */
+eq(count(WX_FORMS_WEB), 6, 'six forms, the same six v2.1 named');
+ok(isset(WX_FORMS_WEB['office-fitout']) && isset(WX_FORM_MARKS['office-fitout']), 'including the office fit-out quote, whose form id is what the page carries');
+
 /* Nothing here touches the network: the default transport is only reached when a route calls it. */
 skip('the real transport (wx_fetch_get) needs a network and is exercised on the host');
 

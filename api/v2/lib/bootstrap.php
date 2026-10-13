@@ -87,6 +87,7 @@ require_once WX_V2_DIR . '/lib/content.php';
 require_once WX_V2_DIR . '/lib/blocks.php';
 require_once WX_V2_DIR . '/lib/placements.php';
 require_once WX_V2_DIR . '/lib/heroes.php';
+require_once WX_V2_DIR . '/lib/forms.php';
 require_once WX_V2_DIR . '/lib/pageedit.php';
 require_once WX_V2_DIR . '/lib/theme.php';
 require_once WX_V2_DIR . '/lib/fetch.php';

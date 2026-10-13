@@ -515,8 +515,8 @@ working as intended, not a gap hidden by a fallback.
 
 ### Phase 3 — Content, assets and delivery · **in progress** · 4 weeks
 
-*Measured at this commit:* `tests/run.php` **701 passed · 0 failed · 12 skipped** · `tests/conformance.mjs`
-**74 · 0** · php-lint **148 files** · `admin-v25` smoke **110 checks · 65 routes** · legacy bridge **150 of 365
+*Measured at this commit:* `tests/run.php` **754 passed · 0 failed · 12 skipped** · `tests/conformance.mjs`
+**74 · 0** · php-lint **151 files** · `admin-v25` smoke **117 checks · 65 routes** · legacy bridge **150 of 365
 actions** (41%). Migrations **000–014** are written and none has run on a database yet.
 
 Pages · builder bridge · section library · header/footer · heroes · redirects · the full content CMS ·
@@ -602,7 +602,15 @@ already did.
 |---|---|---|
 | The hero at the top of every page, and the home page's slider: read as geometry, edited **in place**, or switched to one of six designs | `lib/heroes.php`, `routes/heroes.php`, `LiveHeroes.tsx` on `/heroes`, `assets/site.css`, `assets/site.js` | v2.1's last big screen that lived only in a browser. It read the page into the DOM, edited nodes and posted the whole document back — and a field with no node in that page's hero (a kicker a design does not have) was silently dropped. Here the geometry is computed first: every field's text or attribute is a byte range, and the new values are spliced in, so a field the request wants to set that has no home is **refused by name**, and nothing else in the page is touched because nothing else is written. The reader and the writer share one function for the same reason — the bytes a field is read from are the bytes it is written at. Six templates (`data-wxh`) for a page whose hero should be the studio's own design; the gallery draws each one with sample words through the same renderer that writes a page. Both writes go through the page writer, so a hero change is one version and one undo |
 
-**Still to come in this phase:** forms, the estimator, projects and the Gantt timeline, quote templates,
+| Delivered — the website's forms | Where | Note |
+|---|---|---|
+| Six forms: which pages carry one, **where each page's enquiry actually goes**, and the alert settings | `lib/forms.php`, `routes/forms.php`, `LiveForms.tsx` on `/forms` | v2.1's screen looked for its own markup (`WXForms.send('contact')`, `data-form="…"`) to say which pages carried a form. On this site that answer is worse than useless: the pages post their enquiries to **Netlify functions**, so the screen would have shown six forms, six zeros and no reason. So the read names the address each page posts to and whether that address is one whose leads land here — a form going elsewhere is labelled as such, by address. A page's form is found by the id it sends *or* by the id its own markup carries (read off the live pages: `est-form`, `brief-form`, `fitout-hub-form`, `fitout-quote-form`), and the WhatsApp widget is described as what it is: loaded by `assets/site.js` on every page, posting nothing |
+
+| Delivered — the rate book | Where | Note |
+|---|---|---|
+| The figures `/estimator/` and the quotation builder price from, edited in one place | `lib/forms.php`, `routes/estimator.php`, `LiveEstimator.tsx` on `/estimator` | Kept v2.1's shape on purpose: the book is written out as JavaScript (`assets/js/estimator-rates.js`, `window.WX_RATES`) because the public page reads it **with no request** — which is why the calculator works on a phone with one bar of signal. The rules a quote can be wrong by are checked and named (unique keys, rates above zero and rising Essential ≤ Standard ≤ Premium, a catalog line without a description dropped), and the reload of every reading page is one `wx_page_write_many()` batch — where v2.1 rewrote each page with a file write of its own, outside the page history. Saved sets (v2.1's P19 templates) keep a whole book under a name |
+
+**Still to come in this phase:** projects and the Gantt timeline, quote templates,
 business info (`cms_biz_*`), announcements (`cms_announce_*`), the AI settings in the CMS (`cms_ai_*`), SEO
 screens and integrations. The builder's 19 actions are all accounted for: 17 bridged, 2 named above as
 decisions.
@@ -791,7 +799,7 @@ Everything in `admin-v25/` runs today:
 | Evidence | Result |
 |---|---|
 | Type check | clean, strict, `noUnusedLocals` |
-| Render smoke | **110 checks · 65 routes · 0 failures** |
+| Render smoke | **117 checks · 65 routes · 0 failures** |
 | Production build | 3 chunks, content-hashed, sourcemaps on |
 | Token contract | switching theme, accent and density re-themes all charts and screens |
 | Routing defects | AD-3, AD-4 and AD-12 structurally impossible in the registry |

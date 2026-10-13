@@ -1165,7 +1165,7 @@ function wx_hero_preview(string $tpl, ?string $rel = null): string
         $two = $f;
         $two['title'] = 'Workplaces that work';
         $two['kicker'] = 'Commercial · Lahore';
-        $two['img'] = '/assets/img/img-1d6ad6c77d0f-960.webp';
+        $two['img'] = '/assets/img/img-1d6ad6c77d0f.webp';
         $f['slides'] = [$f, $two];
     }
     $body = wx_hero_render($tpl, $f, $rel ?? 'services/demo/index.html');

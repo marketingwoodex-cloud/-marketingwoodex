@@ -22,6 +22,8 @@ import { LiveLibrary } from "./screens/LiveLibrary";
 import { LiveSiteTheme } from "./screens/LiveSiteTheme";
 import { LivePlacements } from "./screens/LivePlacements";
 import { LiveHeroes } from "./screens/LiveHeroes";
+import { LiveForms } from "./screens/LiveForms";
+import { LiveEstimator } from "./screens/LiveEstimator";
 import { linkLabel, useLive, type BellData } from "./lib/live";
 import { Btn, Card, PageHead } from "./components/primitives";
 
@@ -29,6 +31,7 @@ import { Btn, Card, PageHead } from "./components/primitives";
 const BUILT_IDS = new Set([
   "dashboard", "leads", "enquiries", "pipeline", "quotes", "theme", "redirects", "media", "blog", "portfolio", "cities", "global", "pages", "library", "site-theme",
   "testimonials", "team", "heroes",
+  "forms", "estimator",
 ]);
 
 /** The public entry point: one provider, then the app proper. */
@@ -195,6 +198,10 @@ function Frame({ demo }: { demo: boolean }) {
           {/* The hero at the top of every page, and the home page's slider. Three tabs over one idea:
               the first thing a visitor sees, written as rules rather than by hand in 150 files. */}
           <Route path="/heroes" element={<LiveHeroes />} />
+          {/* The forms: which pages carry one, where the enquiry goes, and what the visitor is told back. */}
+          <Route path="/forms" element={<LiveForms />} />
+          {/* The rate book behind /estimator/ and the quotation builder — a file, written as JavaScript. */}
+          <Route path="/estimator" element={<LiveEstimator />} />
           {/* The header and the footer: one edit, every page, one undo. */}
           <Route path="/global" element={<LiveGlobal />} />
           {/* Every page and every change — where the header change across 150 pages is undone. */}

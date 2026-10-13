@@ -288,6 +288,20 @@ function wx_routes(): array
         ['POST',   'heroes/page',          'heroes',     'wx_route_hero_save_page',   'save'],
         ['POST',   'heroes/home',          'heroes',     'wx_route_hero_save_home',   'save'],
 
+        /* ------------------------------------------------------------ forms and the rate book
+           Two screens, five routes, and v2.1's own action names for all of them (`p18e-lib.php`), so the
+           permission groups and the approval policy travel unchanged: a Manager's save waits for the Master,
+           and the people who quote from the rate book are the ones who may edit it.
+           Both path literals (`estimator` and `estimator/templates`) are listed here; a literal can only be
+           matched exactly, so no `{rel}`-shaped row can swallow either one — unlike `pages/history`, which has
+           to stay above `pages/{rel}`. */
+        ['GET',    'forms',                   'forms',     'wx_route_forms_get',        'forms_get'],
+        ['POST',   'forms',                   'forms',     'wx_route_forms_save',       'forms_save'],
+        ['GET',    'estimator',               'estimator', 'wx_route_est_get',          'est_tpls'],
+        ['GET',    'estimator/templates',     'estimator', 'wx_route_est_tpl_list',     'est_tpls'],
+        ['POST',   'estimator',               'estimator', 'wx_route_est_save',         'est_save'],
+        ['POST',   'estimator/templates',     'estimator', 'wx_route_est_tpl_save',     'est_tpl_save'],
+
         /* ------------------------------------------------------ the content CMS
            An editor's list, an editor, and a publish button that composes the page server-side out of
            the site's own page furniture. `?filter=draft|scheduled|due|live` is answered in SQL. */

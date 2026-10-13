@@ -24,6 +24,8 @@ import { LiveLibrary } from "./screens/LiveLibrary";
 import { LiveSiteTheme } from "./screens/LiveSiteTheme";
 import { LivePlacements } from "./screens/LivePlacements";
 import { LiveHeroes } from "./screens/LiveHeroes";
+import { LiveForms } from "./screens/LiveForms";
+import { LiveEstimator } from "./screens/LiveEstimator";
 import { SessionCtx, type SessionValue } from "./lib/session";
 import { linkLabel, linkPill } from "./lib/live";
 
@@ -146,6 +148,12 @@ let htmlCityOffline = "";
 let htmlHeroesOffline = "";
 let htmlHeroesLive = "";
 let htmlHeroesRoute = "";
+let htmlFormsOffline = "";
+let htmlFormsLive = "";
+let htmlFormsRoute = "";
+let htmlEstOffline = "";
+let htmlEstLive = "";
+let htmlEstRoute = "";
 let htmlGlobal = "";
 let htmlGlobalOffline = "";
 let htmlPages = "";
@@ -338,6 +346,57 @@ try {
   );
 } catch (err) {
   failures.push(`heroes without an API → ${(err as Error).message}`);
+}
+
+/* The two screens that read the site rather than a table: the forms, and the rate book. Each is rendered in
+   all three states, because the assertion that matters for each is about what is NOT shown — no invented form
+   list without an API, and no empty rate book drawn as though the figures had been read and found to be zero. */
+try {
+  htmlFormsOffline = renderToString(
+    <MemoryRouter initialEntries={["/forms"]}>
+      <SessionCtx.Provider value={session("offline", null)}>
+        <LiveForms />
+      </SessionCtx.Provider>
+    </MemoryRouter>,
+  );
+  htmlFormsLive = renderToString(
+    <MemoryRouter initialEntries={["/forms"]}>
+      <SessionCtx.Provider value={session("live", asUser)}>
+        <LiveForms />
+      </SessionCtx.Provider>
+    </MemoryRouter>,
+  );
+  htmlFormsRoute = renderToString(
+    <MemoryRouter initialEntries={["/forms"]}>
+      <App />
+    </MemoryRouter>,
+  );
+} catch (err) {
+  failures.push(`the forms screen → ${(err as Error).message}`);
+}
+
+try {
+  htmlEstOffline = renderToString(
+    <MemoryRouter initialEntries={["/estimator"]}>
+      <SessionCtx.Provider value={session("offline", null)}>
+        <LiveEstimator />
+      </SessionCtx.Provider>
+    </MemoryRouter>,
+  );
+  htmlEstLive = renderToString(
+    <MemoryRouter initialEntries={["/estimator"]}>
+      <SessionCtx.Provider value={session("live", asUser)}>
+        <LiveEstimator />
+      </SessionCtx.Provider>
+    </MemoryRouter>,
+  );
+  htmlEstRoute = renderToString(
+    <MemoryRouter initialEntries={["/estimator"]}>
+      <App />
+    </MemoryRouter>,
+  );
+} catch (err) {
+  failures.push(`the estimator screen → ${(err as Error).message}`);
 }
 
 /* Through the app's own routing: `/heroes` must reach the screen, not the build-plan placeholder. */
@@ -651,6 +710,40 @@ for (const [name, ok] of [
   [
     "the header & footer screen offers no Apply when it cannot reach the API",
     htmlGlobalOffline.includes("api/v2 is not answering") && !htmlGlobalOffline.includes("Check what would change"),
+  ],
+  /* The Forms screen. Two facts per page, not one — and the one that decides the screen is where a page's
+     enquiry goes. Without an API it must show neither a form list nor a zero. */
+  [
+    "the forms screen with no API says so, and shows no form list it cannot read",
+    htmlFormsOffline.includes("api/v2 is not answering") &&
+      !htmlFormsOffline.includes("Contact form") &&
+      !htmlFormsOffline.includes("0 enquiries"),
+  ],
+  [
+    "and while it is reading the pages it says that, rather than listing six forms as not found",
+    htmlFormsLive.includes("Loading…") && !htmlFormsLive.includes("No forms found"),
+  ],
+  [
+    "and the forms route reaches the screen rather than a build plan",
+    htmlFormsRoute.includes("Where each form is, and where its enquiries go") &&
+      !htmlFormsRoute.includes("Build plan for this screen"),
+  ],
+  ["and the forms screen offers no save with no API behind it", !htmlFormsOffline.includes("Save contact form")],
+  /* The Estimator. The rate book is a file: the offline state must not draw an empty table as though the
+     figures had been read and found to be zero. */
+  [
+    "the estimator screen with no API says so, and does not draw an empty rate book",
+    htmlEstOffline.includes("api/v2 is not answering") &&
+      !htmlEstOffline.includes("Essential ≤ Standard ≤ Premium") &&
+      !htmlEstOffline.includes("Save the rate book"),
+  ],
+  [
+    "and while it is reading the file it says that, rather than showing no services",
+    htmlEstLive.includes("Loading…") && !htmlEstLive.includes("No catalog lines yet"),
+  ],
+  [
+    "and the estimator route reaches the screen rather than a build plan",
+    htmlEstRoute.includes("The figures every price starts from") && !htmlEstRoute.includes("Build plan for this screen"),
   ],
 ] as [string, boolean][]) {
   if (ok) pass++;

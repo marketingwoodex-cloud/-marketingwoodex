@@ -772,3 +772,110 @@ export interface PlacePush {
   versions: Record<string, number>;
   items: Record<string, number>;
 }
+
+/* --------------------------------------------------------- the website's forms, and the rate book
+   Two screens that answer two questions a person actually asks: "is my contact form reaching me?" and
+   "what do we charge?". Both read the site rather than a table — a form is markup on a page, and the
+   rate book is a file the public page reads — so what the screens show is what the site does. */
+
+/** One form's alert settings. The keys are v2.1's own. */
+export interface FormCfg {
+  alertTo: string;
+  waTo: string;
+  waAlert: boolean;
+  reply: boolean;
+  replyText: string;
+}
+
+/** One page that carries a form, and where its enquiry goes. */
+export interface FormPage {
+  rel: string;
+  url: string;
+  forms: string[];
+  formLabels: string[];
+  endpoints: string[];
+  /** Does an enquiry from this page arrive in this console? */
+  lands: boolean;
+  landsLabel: string;
+  managed: boolean;
+}
+
+export interface FormRow {
+  id: string;
+  label: string;
+  pages: string[];
+  pageCount: number;
+  total: number;
+  month: number;
+  last: string | null;
+  fields: string[];
+  cfg: FormCfg;
+  note: string;
+}
+
+export interface FormsData {
+  forms: FormRow[];
+  web: Record<string, string>;
+  scan: { pages: FormPage[] };
+}
+
+export interface FormSaveResult {
+  forms: Record<string, FormCfg>;
+}
+
+/* ---- the rate book */
+
+export interface EstService {
+  key: string;
+  label: string;
+  hint: string;
+  unit: "sqft" | "views";
+  unitLabel: string;
+  rates: { essential: number; standard: number; premium: number };
+}
+
+export interface EstFinish { key: string; label: string; hint: string }
+
+export interface EstCatalog { cat: string; desc: string; unit: string; rate: number }
+
+export interface EstRates {
+  services: EstService[];
+  finishes: EstFinish[];
+  catalog: EstCatalog[];
+  terms: string[];
+}
+
+export interface EstTemplate {
+  name: string;
+  at: string;
+  by: string;
+  rates: EstRates;
+}
+
+export interface EstData {
+  rel: string;
+  url: string;
+  exists: boolean;
+  rates: EstRates | null;
+  bytes: number;
+  mtime: string | null;
+  pages: string[];
+  units: Record<string, string>;
+  finishes: Record<string, string>;
+  templates: EstTemplate[];
+}
+
+export interface EstSaveResult {
+  rates: EstRates;
+  before: number;
+  bytes: number;
+  version: string;
+  pages: string[];
+  batch: string;
+  changed: number;
+  same: boolean;
+}
+
+export interface EstTemplateResult {
+  templates: EstTemplate[];
+}
