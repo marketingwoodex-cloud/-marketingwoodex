@@ -141,7 +141,6 @@ function wx_cv_page(array $p, array $invoices, array $company): array
             'issued' => substr((string) $i['issued'], 0, 10),
         ], $invoices),
         'updates' => array_reverse(wx_cv_visible($p)),
-        'photoCount' => count(array_filter(wx_cv_visible($p), static fn(array $u): bool => $u['photo'] !== '')),
         'company' => [
             'name' => (string) ($company['name'] ?? 'Woodex Interior'),
             'phones' => (string) ($company['phones'] ?? ''),
@@ -162,7 +161,7 @@ function wx_cv_page(array $p, array $invoices, array $company): array
 function wx_cv_html(array $d): string
 {
     $e = static fn($v): string => htmlspecialchars((string) $v, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
-    $wa = (string) preg_replace('~\D~', '', (string) ($d['company']['whatsapp'] !== '' ? $d['company']['whatsapp'] : $d['company']['phones']));
+    $wa = (string) preg_replace('~\D~', '', (string) (($d['company']['whatsapp'] ?? '') !== '' ? $d['company']['whatsapp'] : ($d['company']['phones'] ?? '')));
     if (str_starts_with($wa, '0')) {
         $wa = '92' . substr($wa, 1);
     }

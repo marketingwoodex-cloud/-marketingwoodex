@@ -34,7 +34,7 @@ function wx_route_client_project(array $ctx): array
         'stage' => 'planning', 'stageLabel' => '', 'stages' => [],
         'start' => '', 'target' => '', 'late' => false,
         'valueDisplay' => '', 'invoicedDisplay' => '', 'receivedDisplay' => '', 'balanceDisplay' => '',
-        'billedPct' => 0, 'invoices' => [], 'updates' => [], 'photoCount' => 0,
+        'billedPct' => 0, 'invoices' => [], 'updates' => [],
         'company' => $company, 'generated' => date('Y-m-d H:i'),
     ])]];
 
