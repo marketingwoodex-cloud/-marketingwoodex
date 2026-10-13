@@ -63,12 +63,33 @@
     }
   }
 
+  /* Template slider heroes (.wxh--slider) — the design the admin can give any page.
+     v2.1's P38 block, ported with it: the interval comes from the section, the first slide is the one that
+     is on, and a visitor who has asked for reduced motion still gets a working slider they can click. */
+  Array.prototype.forEach.call(doc.querySelectorAll('.wxh--slider'), function (h) {
+    var ss = Array.prototype.slice.call(h.querySelectorAll('.wxh-slide')), ds = Array.prototype.slice.call(h.querySelectorAll('.wxh-dot')), i = 0, t = null;
+    if (ss.length < 2) return;
+    var rm = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+      ms = Math.max(3, Math.min(15, Number(h.getAttribute('data-interval')) || 6)) * 1000;
+    function go(n) { i = (n + ss.length) % ss.length; ss.forEach(function (s, k) { s.classList.toggle('is-on', k === i); s.setAttribute('aria-hidden', String(k !== i)); }); ds.forEach(function (d, k) { d.classList.toggle('is-on', k === i); d.setAttribute('aria-current', String(k === i)); }); }
+    function run() { if (!rm && !t) t = setInterval(function () { if (doc.visibilityState === 'visible') go(i + 1); }, ms); }
+    function halt() { if (t) { clearInterval(t); t = null; } }
+    ds.forEach(function (d, k) { d.addEventListener('click', function () { go(k); halt(); run(); }); });
+    h.addEventListener('mouseenter', halt); h.addEventListener('mouseleave', run);
+    go(0); run();
+  });
+
   /* Home hero slider — first slide is active in markup; this adds rotation. */
   var hero = doc.getElementById('hm-hero');
   if (hero) {
-    var slides = Array.prototype.slice.call(hero.querySelectorAll('[data-home-slide]'));
+    /* `:not([data-hm-off])` is the whole point of the Hide button: the admin writes a hidden slide back
+       into the file (so its words are not lost), and this is what keeps it off the screen. */
+    var slides = Array.prototype.slice.call(hero.querySelectorAll('[data-home-slide]:not([data-hm-off])'));
     var dots = Array.prototype.slice.call(hero.querySelectorAll('[data-home-dot]'));
     var prev = doc.getElementById('hm-hero-prev'), next = doc.getElementById('hm-hero-next');
+    /* The interval the admin writes on the section. It used to be a constant here, which meant the screen
+       could say eight seconds and the site would take six and a half — a setting nobody could observe. */
+    var ms = Math.max(3, Math.min(15, Number(hero.getAttribute('data-interval')) || 6)) * 1000;
     var idx = 0, paused = false, timer = null;
     function show(i, user) {
       if (!slides.length) return;
@@ -90,7 +111,7 @@
       if (reduceMotion || paused || timer || !slides.length) return;
       timer = setInterval(function () {
         if (doc.visibilityState === 'visible') show(idx + 1, false);
-      }, 6500);
+      }, ms);
     }
     function restart() { stop(); start(); }
     dots.forEach(function (d) {

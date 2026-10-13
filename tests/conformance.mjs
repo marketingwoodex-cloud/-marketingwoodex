@@ -952,6 +952,35 @@ check("the payments backfill can be run twice without changing anything", () => 
   assert(/--verify/.test(src), "the backfill must be able to prove the two stores agree");
 });
 
+check("the site's own script drives what the admin writes", () => {
+  /* Two of the three hero features are markup plus styles; the third is behaviour, and behaviour lives in
+     `assets/site.js` — a file the admin never touches and no test had ever looked at. It was wrong in three
+     ways when this check was written, and all three were invisible from the admin: a hidden slide was still
+     rotated into view, the interval the screen sets was ignored in favour of a constant, and a page switched
+     to the slider design had no driver at all — it would sit on slide one forever. */
+  const js = read("assets/site.js");
+  assert(/:not\(\[data-hm-off\]\)/.test(js), "a slide the admin hid must not be rotated back into view");
+  assert(/getAttribute\('data-interval'\)/.test(js), "the interval the screen writes must be the interval the site uses");
+  assert(/\.wxh--slider/.test(js) && /querySelectorAll\('\.wxh-slide'/.test(js), "the slider design the admin can give any page needs its driver");
+  assert(/prefers-reduced-motion/.test(js), "and a visitor who asked for less motion must not get a slideshow anyway");
+});
+
+check("the designs the admin writes are in the stylesheet the site loads", () => {
+  /* The same class of bug from the other side: markup written into a page is only a design if a stylesheet
+     the page actually links draws it. `assets/site.css` is the only sheet a live page loads, so every class
+     the hero renderer writes has to be in there. */
+  const css = read("assets/site.css");
+  const php = read("api/v2/lib/heroes.php");
+  const wanted = ["wxh", "wxh-in", "wxh-media", "wxh-copy", "wxh-crumbs", "wxh-k", "wxh-t", "wxh-lead", "wxh-btns", "wxh-btn", "wxh-btn--ghost", "wxh-dots", "wxh-dot"];
+  for (const cls of wanted) {
+    assert(css.includes(`.${cls}`), `the hero designs write .${cls}, so assets/site.css has to draw it`);
+  }
+  for (const tpl of ["image", "split", "center", "plain", "compact", "slider"]) {
+    assert(php.includes(`'${tpl}' =>`), `the ${tpl} design is one of the six and has to be declared`);
+    assert(css.includes(`.wxh--${tpl}`), `and the stylesheet has to draw .wxh--${tpl}`);
+  }
+});
+
 /* ============================================================== report */
 
 if (process.argv.includes("--json")) {

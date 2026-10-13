@@ -275,6 +275,19 @@ function wx_routes(): array
         ['POST',   'placements',           'placements', 'wx_route_place_save',    'cms_placements_save'],
         ['POST',   'placements/push',      'placements', 'wx_route_place_push',    'save'],
 
+        /* ------------------------------------------------------------ page heroes
+           The hero at the top of a page, and the home page's slider. v2.1's own hero screen called the
+           builder's `load` and `save` through `bapi` with no actions of its own, so these carry the same
+           two names: a hero change waits for the Master on exactly the policy a page edit already had.
+           `heroes/page` and `heroes/home` are static segments, so no `{rel}` row can swallow them — order
+           matters here the same way it does under `pages/`. */
+        ['GET',    'heroes',               'heroes',     'wx_route_hero_list',        'load'],
+        ['GET',    'heroes/page',          'heroes',     'wx_route_hero_page',        'load'],
+        ['GET',    'heroes/home',          'heroes',     'wx_route_hero_home',        'load'],
+        ['GET',    'heroes/preview',       'heroes',     'wx_route_hero_preview',     null],
+        ['POST',   'heroes/page',          'heroes',     'wx_route_hero_save_page',   'save'],
+        ['POST',   'heroes/home',          'heroes',     'wx_route_hero_save_home',   'save'],
+
         /* ------------------------------------------------------ the content CMS
            An editor's list, an editor, and a publish button that composes the page server-side out of
            the site's own page furniture. `?filter=draft|scheduled|due|live` is answered in SQL. */

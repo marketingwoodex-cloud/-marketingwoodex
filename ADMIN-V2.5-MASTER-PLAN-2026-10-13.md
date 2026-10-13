@@ -515,8 +515,8 @@ working as intended, not a gap hidden by a fallback.
 
 ### Phase 3 — Content, assets and delivery · **in progress** · 4 weeks
 
-*Measured at this commit:* `tests/run.php` **615 passed · 0 failed · 12 skipped** · `tests/conformance.mjs`
-**72 · 0** · php-lint **146 files** · `admin-v25` smoke **106 checks · 65 routes** · legacy bridge **150 of 365
+*Measured at this commit:* `tests/run.php` **701 passed · 0 failed · 12 skipped** · `tests/conformance.mjs`
+**74 · 0** · php-lint **148 files** · `admin-v25` smoke **110 checks · 65 routes** · legacy bridge **150 of 365
 actions** (41%). Migrations **000–014** are written and none has run on a database yet.
 
 Pages · builder bridge · section library · header/footer · heroes · redirects · the full content CMS ·
@@ -598,10 +598,14 @@ already did.
 |---|---|---|
 | A city page is **root-level** (`/<address>/`), and its furniture comes from a template rather than from a copy someone edited | `wx_content_rel()`, `wx_content_shell_rel()` in `lib/content.php`, the `/cities` route in `App.tsx` | v2.1's model was *copy an existing city page and rewrite each string* — 150 pages of drift with a person in the middle. Here the address and the furniture are two rules: one function returns `/<slug>/index.html` for a city and `/<section>/<slug>/index.html` for a post or a case study (so the address is answered in one place for the item, the publish and the tick), and one function decides which page the furniture is read from — the template's `source` city if it names one, otherwise the front page, with `content.shell.city` to override both. The guard list is v2.1's (`insights`, `projects`, the machinery folders), and it is applied twice: when the address is typed and again at publish, because an item imported from v2.1 never passed through the form. Eleven assertions cover the rule itself; the publish path needs a database |
 
-**Still to come in this phase:** heroes, forms, the estimator, projects and the Gantt timeline, quote
-templates, business info (`cms_biz_*`), announcements (`cms_announce_*`), the AI settings in the CMS
-(`cms_ai_*`), SEO screens and integrations. The builder's 19 actions are all accounted for: 17 bridged, 2
-named above as decisions.
+| Delivered — page heroes | Where | Note |
+|---|---|---|
+| The hero at the top of every page, and the home page's slider: read as geometry, edited **in place**, or switched to one of six designs | `lib/heroes.php`, `routes/heroes.php`, `LiveHeroes.tsx` on `/heroes`, `assets/site.css`, `assets/site.js` | v2.1's last big screen that lived only in a browser. It read the page into the DOM, edited nodes and posted the whole document back — and a field with no node in that page's hero (a kicker a design does not have) was silently dropped. Here the geometry is computed first: every field's text or attribute is a byte range, and the new values are spliced in, so a field the request wants to set that has no home is **refused by name**, and nothing else in the page is touched because nothing else is written. The reader and the writer share one function for the same reason — the bytes a field is read from are the bytes it is written at. Six templates (`data-wxh`) for a page whose hero should be the studio's own design; the gallery draws each one with sample words through the same renderer that writes a page. Both writes go through the page writer, so a hero change is one version and one undo |
+
+**Still to come in this phase:** forms, the estimator, projects and the Gantt timeline, quote templates,
+business info (`cms_biz_*`), announcements (`cms_announce_*`), the AI settings in the CMS (`cms_ai_*`), SEO
+screens and integrations. The builder's 19 actions are all accounted for: 17 bridged, 2 named above as
+decisions.
 
 ### Phase 4 — Automation and intelligence · 3 weeks
 
@@ -787,7 +791,7 @@ Everything in `admin-v25/` runs today:
 | Evidence | Result |
 |---|---|
 | Type check | clean, strict, `noUnusedLocals` |
-| Render smoke | **106 checks · 65 routes · 0 failures** |
+| Render smoke | **110 checks · 65 routes · 0 failures** |
 | Production build | 3 chunks, content-hashed, sourcemaps on |
 | Token contract | switching theme, accent and density re-themes all charts and screens |
 | Routing defects | AD-3, AD-4 and AD-12 structurally impossible in the registry |

@@ -21,13 +21,14 @@ import { LivePages } from "./screens/LivePages";
 import { LiveLibrary } from "./screens/LiveLibrary";
 import { LiveSiteTheme } from "./screens/LiveSiteTheme";
 import { LivePlacements } from "./screens/LivePlacements";
+import { LiveHeroes } from "./screens/LiveHeroes";
 import { linkLabel, useLive, type BellData } from "./lib/live";
 import { Btn, Card, PageHead } from "./components/primitives";
 
 /** Route ids implemented by a real screen in this prototype (Phase 0). */
 const BUILT_IDS = new Set([
   "dashboard", "leads", "enquiries", "pipeline", "quotes", "theme", "redirects", "media", "blog", "portfolio", "cities", "global", "pages", "library", "site-theme",
-  "testimonials", "team",
+  "testimonials", "team", "heroes",
 ]);
 
 /** The public entry point: one provider, then the app proper. */
@@ -191,6 +192,9 @@ function Frame({ demo }: { demo: boolean }) {
           <Route path="/blog" element={<LiveContent presetType="post" />} />
           <Route path="/portfolio" element={<LiveContent presetType="study" />} />
           <Route path="/cities" element={<LiveContent presetType="city" />} />
+          {/* The hero at the top of every page, and the home page's slider. Three tabs over one idea:
+              the first thing a visitor sees, written as rules rather than by hand in 150 files. */}
+          <Route path="/heroes" element={<LiveHeroes />} />
           {/* The header and the footer: one edit, every page, one undo. */}
           <Route path="/global" element={<LiveGlobal />} />
           {/* Every page and every change — where the header change across 150 pages is undone. */}

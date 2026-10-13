@@ -23,6 +23,7 @@ import { LivePages } from "./screens/LivePages";
 import { LiveLibrary } from "./screens/LiveLibrary";
 import { LiveSiteTheme } from "./screens/LiveSiteTheme";
 import { LivePlacements } from "./screens/LivePlacements";
+import { LiveHeroes } from "./screens/LiveHeroes";
 import { SessionCtx, type SessionValue } from "./lib/session";
 import { linkLabel, linkPill } from "./lib/live";
 
@@ -142,6 +143,9 @@ let htmlMedia = "";
 let htmlContent = "";
 let htmlContentOffline = "";
 let htmlCityOffline = "";
+let htmlHeroesOffline = "";
+let htmlHeroesLive = "";
+let htmlHeroesRoute = "";
 let htmlGlobal = "";
 let htmlGlobalOffline = "";
 let htmlPages = "";
@@ -320,6 +324,43 @@ try {
   );
 } catch (err) {
   failures.push(`content without an API → ${(err as Error).message}`);
+}
+
+/* The heroes screen with no API must not render an empty list of pages: "no pages have heroes" and "I
+   cannot reach the server" are different sentences, and only one of them is true. */
+try {
+  htmlHeroesOffline = renderToString(
+    <MemoryRouter initialEntries={["/heroes"]}>
+      <SessionCtx.Provider value={session("offline", null)}>
+        <LiveHeroes />
+      </SessionCtx.Provider>
+    </MemoryRouter>,
+  );
+} catch (err) {
+  failures.push(`heroes without an API → ${(err as Error).message}`);
+}
+
+/* Through the app's own routing: `/heroes` must reach the screen, not the build-plan placeholder. */
+try {
+  htmlHeroesRoute = renderToString(
+    <MemoryRouter initialEntries={["/heroes"]}>
+      <App />
+    </MemoryRouter>,
+  );
+} catch (err) {
+  failures.push(`the heroes route → ${(err as Error).message}`);
+}
+
+try {
+  htmlHeroesLive = renderToString(
+    <MemoryRouter initialEntries={["/heroes"]}>
+      <SessionCtx.Provider value={session("live", asUser)}>
+        <LiveHeroes />
+      </SessionCtx.Provider>
+    </MemoryRouter>,
+  );
+} catch (err) {
+  failures.push(`heroes live → ${(err as Error).message}`);
 }
 
 /* `/cities` is the same screen opened on another kind. What has to be true of it offline is the same as
@@ -551,6 +592,24 @@ for (const [name, ok] of [
   [
     "a content screen with no API says so instead of showing an empty article list",
     htmlContentOffline.includes("api/v2 is not answering") && !htmlContentOffline.includes("New article"),
+  ],
+  [
+    "the heroes screen with no API says so, and does not claim the site has no heroes",
+    htmlHeroesOffline.includes("api/v2 is not answering") &&
+      !htmlHeroesOffline.includes("0 page") &&
+      !htmlHeroesOffline.includes("No hero"),
+  ],
+  [
+    "and while it is reading the pages it says that, rather than showing an empty slider",
+    htmlHeroesLive.includes("Loading…"),
+  ],
+  [
+    "and the heroes route reaches the screen rather than a build plan",
+    htmlHeroesRoute.includes("Hero slides") && !htmlHeroesRoute.includes("Build plan for this screen"),
+  ],
+  [
+    "the heroes screen offers no save with no API behind it",
+    !htmlHeroesOffline.includes("Save &amp; publish") && !htmlHeroesOffline.includes("Replace the hero"),
   ],
   [
     "and the city route is the same screen on another kind, not a placeholder",

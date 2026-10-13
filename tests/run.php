@@ -1106,6 +1106,219 @@ try {
 ok(wx_content_clean(['type' => 'testimonial', 'title' => 'A happy client', 'data' => [], 'seo' => []])['slug'] === '',
     'a testimonial has no address of its own — it appears inside pages, not as a page');
 
+
+/* ---- heroes: the geometry is read once and written at the same bytes (v2.1's Hero slides screen) */
+/* The three heroes below are lifted verbatim from the live site: a city page, the insights hub, and the
+   home page's slider (two of its three slides, with the arrows dropped). Nothing here is invented
+   markup — the point of the rule is that it reads the pages that exist. */
+$BAH = <<<'WXHERO'
+<section class="ct-hero" aria-labelledby="city-hero-title">
+      <figure class="ct-hero-media" aria-hidden="true"><img src="/assets/img/img-469cf01b2548.jpg" alt="" width="3000" height="4000" loading="lazy" decoding="async"></figure>
+      <div class="ct-wrap ct-hero-grid">
+        <div class="ct-hero-copy" data-ct-reveal="">
+          <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span>→</span><span>Bahawalpur</span></nav>
+          <p class="ct-label">Where we work</p>
+          <h1 id="city-hero-title">Interior design in Bahawalpur</h1>
+        </div>
+        <div class="ct-hero-note" data-ct-reveal="">
+          <p>Our studio is at M-71, Zainab Tower, Model Town Link Road, Lahore, and we serve Bahawalpur from it. Site visits are grouped into planned rounds covering each stage of the work.</p>
+          <div class="actions"><a class="btn" href="/contact/">Start a Bahawalpur project</a><a class="btn btn-light" href="/insights/design-process-explained/">How we work</a></div>
+        </div>
+      </div>
+    </section>
+WXHERO;
+$INS = <<<'WXHERO'
+<section class="hx-hero" aria-labelledby="insights-hero-title">
+      <div class="hx-wrap">
+        <p class="hx-kicker" data-ih-reveal="">Notes from the studio</p>
+        <h1 id="insights-hero-title" data-ih-reveal="">Ideas for better spaces.</h1>
+        <p class="hx-intro" data-ih-reveal="">Practical reading on cost, process and planning, from our Lahore studio.</p>
+      </div>
+      <div class="hx-wordmark" aria-hidden="true">INSIGHTS</div>
+    </section>
+WXHERO;
+$HOME = <<<'WXHERO'
+<section class="hm-hero" id="hm-hero" aria-roledescription="carousel" aria-label="Woodex services">
+      <div class="hm-slides" id="hm-slides" aria-live="off">
+        <article class="hm-slide is-active" data-home-slide="0" aria-hidden="false">
+          <figure class="hm-slide-image"><img src="/assets/img/img-c349a92a4ae0.webp" alt="Warm contemporary living room with timber detailing and wide city views" fetchpriority="high" width="2240" height="1120"></figure>
+          <div class="hm-wrap hm-hero-content">
+            <div class="hm-hero-copy hm-slide-copy">
+              <div class="hm-slide-text"><p class="hm-kicker">Design and build · Lahore</p><h1 class="hm-hero-title" id="home-hero-title">Spaces shaped by purpose and identity</h1></div>
+              <div class="hm-hero-aside"><p>From the first sketch to final handover, design, build and furniture stay with one accountable team.</p><div class="actions"><a class="hm-btn hm-btn-light" href="/contact/" data-page-route="contact">Start your project</a><a class="hm-btn hm-btn-ghost" href="#home-services">Explore services</a></div></div>
+            </div>
+            <strong class="hm-display" aria-hidden="true">INTERIORS</strong>
+            <div class="hm-hero-footer"><div class="hm-hero-meta"><span>Interior design · Fit-out · Renovation</span><span>Architecture · 3D Studio · Furniture</span></div></div>
+          </div>
+        </article>
+        <article class="hm-slide" data-home-slide="1" aria-hidden="true">
+          <figure class="hm-slide-image"><img src="/assets/img/img-1d6ad6c77d0f.webp" alt="Contemporary office interior with workstations and warm timber finishes" width="1920" height="1280" loading="lazy" decoding="async"></figure>
+          <div class="hm-wrap hm-hero-content">
+            <div class="hm-hero-copy hm-slide-copy">
+              <div class="hm-slide-text"><p class="hm-kicker">Commercial spaces · Built to work</p><h2 class="hm-hero-title">Workplaces planned around people and performance</h2></div>
+              <div class="hm-hero-aside"><p>Clear layouts, coordinated services and practical details turn an empty shell into a workplace ready for day one.</p><div class="actions"><a class="hm-btn hm-btn-light" href="/contact/" data-page-route="contact">Start your project</a><a class="hm-btn hm-btn-ghost" href="/fit-out/" data-page-route="fitout-hub">Explore fit-out</a></div></div>
+            </div>
+            <strong class="hm-display" aria-hidden="true">WORKPLACE</strong>
+            <div class="hm-hero-footer"><div class="hm-hero-meta"><span>Strategy · Planning · Delivery</span><span>One team from shell to handover</span></div></div>
+          </div>
+        </article>
+        
+      </div>
+      <div class="hm-wrap hm-slider-controls" aria-label="Hero slider controls">
+        <div class="hm-slider-dots" role="group" aria-label="Choose a slide"><button class="hm-slider-dot is-active" type="button" data-home-dot="0" aria-label="Show interiors slide" aria-current="true"></button><button class="hm-slider-dot" type="button" data-home-dot="1" aria-label="Show workplace slide" aria-current="false"></button></div>
+        
+      </div>
+    </section>
+WXHERO;
+
+$hs = wx_hero_section($BAH);
+ok($hs !== null, 'the hero of a city page is found');
+eq(substr($BAH, $hs['start'], 8), '<section', 'and it starts at the <section>');
+eq(substr($BAH, $hs['end'] - 10, 10), '</section>', 'and ends at its own closing tag, not the first one on the page');
+eq($hs['family'][0], 'ct-hero', 'a city page hero is named for its design');
+eq($hs['family'][1], 'City page', 'and the name is the one a person reads');
+$hf = wx_hero_fields($hs['body']);
+eq($hf['title'], 'Interior design in Bahawalpur', 'the heading is the title');
+eq($hf['kicker'], 'Where we work', 'the label paragraph above the heading is the kicker');
+eq($hf['lead'], 'Our studio is at M-71, Zainab Tower, Model Town Link Road, Lahore, and we serve Bahawalpur from it. Site visits are grouped into planned rounds covering each stage of the work.', 'the paragraph beside it is the lead');
+eq($hf['img'], '/assets/img/img-469cf01b2548.jpg', 'the photograph is the first image in the hero');
+eq($hf['alt'], '', 'and its description is read as it is written, empty included');
+eq($hf['b1t'], 'Start a Bahawalpur project', 'the first button is read');
+eq($hf['b1h'], '/contact/', 'with its link');
+eq($hf['b2t'], 'How we work', 'and so is the second');
+ok($hf['crumbs'] === true, 'the breadcrumb trail is noticed');
+
+$is = wx_hero_section($INS);
+eq($is['family'][0], 'hx-hero', 'the insights hub has its own design');
+$if = wx_hero_fields($is['body']);
+eq($if['kicker'], 'Notes from the studio', 'a hub header has a kicker');
+eq($if['lead'], 'Practical reading on cost, process and planning, from our Lahore studio.', 'a hub header has a lead');
+eq($if['img'], '', 'and no photograph — which the reader says rather than guessing at');
+eq($if['b1t'], '', 'nor buttons');
+
+/* The one design a page can be switched to is marked, and v2.1 marked it with `data-wxh`. */
+eq(wx_hero_family('<section class="wxh wxh--split" data-wxh="split">')[0], 'tpl-split', 'a page switched to a design says so on its section');
+eq(wx_hero_family('<section class="wxh wxh--split" data-wxh="split">')[1], 'Template: Split', 'and the list reads the design name');
+eq(wx_hero_family('<section class="ab-hero">')[0], 'custom', 'a hero with a design of its own is a one-off, not an error');
+eq(wx_hero_family('<section class="ab-hero">')[2], 'ab-hero', 'and the class it carries is kept as the note');
+eq(wx_hero_family('<section class="hm-hero" id="hm-hero">')[1], 'Home slider', 'the home page is named as the slider it is');
+eq(wx_hero_family('<section class="wrap">')[0], 'none', 'a section that is not a hero is not one');
+
+/* ---- editing in place: only the bytes of the field that changed */
+$one = wx_hero_apply($hs['body'], ['title' => 'Interior design in Multan']);
+eq(wx_hero_fields(wx_hero_section($one)['body'])['title'], 'Interior design in Multan', 'a title set in place is read back');
+ok(str_contains($one, 'data-ct-reveal=""') && str_contains($one, 'img-469cf01b2548.jpg'), 'and nothing else in the section moved');
+eq(wx_hero_apply($hs['body'], ['title' => 'Interior design in Bahawalpur']), $hs['body'], 'a value that is already there is not a change');
+$esc = wx_hero_apply($hs['body'], ['title' => 'Paint & varnish <script>alert(1)</script>']);
+ok(str_contains($esc, '&amp;') && !str_contains($esc, '<script>'), 'a title going into a page is escaped, always');
+$multi = wx_hero_apply($hs['body'], ['kicker' => 'Where we build', 'lead' => 'A shorter line.', 'b1t' => 'Talk to us', 'b1h' => '/contact-us/']);
+$mf = wx_hero_fields(wx_hero_section($multi)['body']);
+ok($mf['kicker'] === 'Where we build' && $mf['lead'] === 'A shorter line.', 'several fields can change at once');
+ok($mf['b1t'] === 'Talk to us' && $mf['b1h'] === '/contact-us/', 'buttons included');
+ok(str_contains($multi, 'How we work'), 'and the button that did not change is untouched');
+try {
+    wx_hero_apply($is['body'], ['img' => '/assets/img/photo.webp']);
+    ok(false, 'setting a field this hero has no place for must be refused');
+} catch (Throwable $e) {
+    ok(str_contains($e->getMessage(), 'no place for') && str_contains($e->getMessage(), 'img'), 'a field with no home is refused by name: ' . substr($e->getMessage(), 0, 60));
+}
+eq(wx_hero_apply($is['body'], ['img' => '']), $is['body'], 'and asking for its absence is not an error');
+
+/* ---- the home slider, read and written as slides */
+$home = wx_hero_section($HOME);
+eq($home['family'][1], 'Home slider', 'the home page hero is the slider');
+$read = wx_hero_read_home($home['body']);
+eq(count($read['slides']), 2, 'two slides are read');
+eq($read['slides'][0]['title'], 'Spaces shaped by purpose and identity', 'the first slide keeps its words');
+eq($read['slides'][0]['word'], 'INTERIORS', 'the big word is read');
+eq($read['slides'][0]['m1'], 'Interior design · Fit-out · Renovation', 'and the first info line');
+eq($read['slides'][0]['m2'], 'Architecture · 3D Studio · Furniture', 'and the second');
+eq($read['slides'][0]['off'], false, 'a slide with no switch is showing — `aria-hidden` is not the switch');
+ok(wx_hero_slide_off('<article class="hm-slide" data-hm-off hidden>') === true, 'and the attribute the site\'s script reads is the switch');
+eq($read['interval'], 5, 'with no interval written down the default is five seconds');
+ok(str_contains($read['slides'][1]['title'], 'Workplaces'), 'the second slide is its own');
+
+$slide = wx_hero_build_slide(['title' => 'A new slide', 'kicker' => 'New', 'lead' => 'Words.', 'img' => '/a.webp', 'alt' => '', 'b1t' => 'Go', 'b1h' => '/contact/', 'word' => 'NEW', 'm1' => 'one', 'm2' => 'two'], 2, false);
+ok(str_contains($slide, '<h2 class="hm-hero-title">A new slide</h2>'), 'a slide that is not first carries an h2, not a second h1');
+ok(str_contains($slide, 'loading="lazy"'), 'and its photograph is lazy — only the first one matters to the visitor');
+ok(str_contains($slide, 'data-home-slide="2"'), 'the index the site\'s script navigates by is written');
+$first = wx_hero_build_slide(['title' => 'First', 'img' => '/a.webp'], 0, true);
+ok(str_contains($first, '<h1 class="hm-hero-title" id="home-hero-title">First</h1>'), 'the first slide carries the page\'s one h1');
+ok(str_contains($first, 'fetchpriority="high"') && str_contains($first, 'is-active'), 'and is the one the browser loads first');
+
+$off = wx_hero_slide_toggle($slide, true);
+ok(str_contains($off, 'data-hm-off hidden'), 'hiding a slide marks it in both ways the browser and the script need');
+ok(str_contains($off, 'A new slide'), 'and keeps its words, so hiding is not deleting');
+$on = wx_hero_slide_toggle($off, false);
+ok(!str_contains($on, 'data-hm-off') && !preg_match('~\shidden(?=[\s>])~', $on), 'showing it again leaves no trace of the hiding');
+eq(wx_hero_slide_index($on, 0), str_replace('data-home-slide="2"', 'data-home-slide="0"', $on), 'a slide that moves up has its index rewritten');
+
+$head = wx_hero_slide_head($slide, true);
+ok(str_contains($head, '<h1 class="hm-hero-title" id="home-hero-title">A new slide</h1>'), 'promoting a slide makes it the h1');
+ok(str_contains($head, 'is-active'), 'and the active one');
+ok(str_contains($head, 'aria-hidden="false"'), 'and the one a screen reader is told about');
+$demoted = wx_hero_slide_head($head, false);
+ok(str_contains($demoted, '<h2 class="hm-hero-title">A new slide</h2>') && !str_contains($demoted, 'id="home-hero-title"'), 'and demoting it takes the id with it — two h1s on a page is two answers');
+
+$dots = wx_hero_dots([['kicker' => 'One'], ['title' => 'Two']], 'hm-slider-dot', 'data-home-dot', 'hm-slider-dots');
+eq(substr_count($dots, '<button'), 2, 'one dot per showing slide');
+ok(str_contains($dots, 'is-active') && str_contains($dots, 'aria-current="true"') && str_contains($dots, 'aria-current="false"'), 'the first dot is the current one');
+
+/* ---- the six designs */
+eq(count(wx_hero_templates()), 6, 'six designs, as v2.1 had');
+foreach (['image', 'split', 'center', 'plain', 'compact', 'slider'] as $t) {
+    $html = wx_hero_render($t, wx_hero_sample(), 'services/demo/index.html');
+    ok(str_contains($html, 'data-wxh="' . $t . '"'), 'the ' . $t . ' design can be written');
+}
+$img = wx_hero_render('image', wx_hero_sample(), 'services/demo/index.html');
+ok(str_contains($img, 'wxh-media') && str_contains($img, '<h1 id="wxh-title">Spaces shaped by purpose</h1>'), 'the full-image design puts the photo behind the title');
+$split = wx_hero_render('split', wx_hero_sample(), 'services/demo/index.html');
+ok(strpos($split, '<div class="wxh-in">') < strpos($split, 'wxh-media'), 'the split design puts the photo inside the grid, after the copy');
+ok(str_contains($split, 'wxh-crumbs'), 'and a page below the root gets a breadcrumb trail');
+$plain = wx_hero_render('plain', array_merge(wx_hero_sample(), ['img' => '']), 'services/demo/index.html');
+ok(!str_contains($plain, '<img'), 'the plain design needs no photograph, and writes none');
+$slider = wx_hero_render('slider', array_merge(wx_hero_sample(), ['slides' => [wx_hero_sample(), array_merge(wx_hero_sample(), ['title' => 'Second'])]]), 'services/demo/index.html');
+eq(substr_count($slider, 'wxh-slide"'), 1, 'a slider writes one active slide and the rest hidden');
+ok(str_contains($slider, 'wxh-dots'), 'with dots when there is more than one');
+eq(substr_count(wx_hero_render('slider', wx_hero_sample(), ''), 'wxh-dots'), 0, 'and no dots when there is only one');
+try {
+    wx_hero_render('carousel', wx_hero_sample(), '');
+    ok(false, 'a design that does not exist must be refused');
+} catch (Throwable $e) {
+    ok(str_contains($e->getMessage(), 'Unknown hero template'), 'a design that does not exist is refused');
+}
+try {
+    wx_hero_render('split', array_merge(wx_hero_sample(), ['title' => '']), '');
+    ok(false, 'a hero with no title must be refused');
+} catch (Throwable $e) {
+    ok(str_contains($e->getMessage(), 'needs a title'), 'a hero with no title is refused — it is the h1');
+}
+$esc2 = wx_hero_render('image', array_merge(wx_hero_sample(), ['title' => 'A "quoted" & <b>bold</b> claim']), '');
+ok(str_contains($esc2, '&amp;') && !str_contains($esc2, '<b>'), 'every word of a design is escaped on the way in');
+
+/* ---- one h1 per page, and where a hero goes when a page has none */
+$two = '<html><body><main><h1>Old heading</h1>' . $hs['body'] . '<section class="x"><h1>Another</h1></section></main></body></html>';
+$fixed = wx_hero_one_h1($two);
+eq(substr_count($fixed, '<h1'), 1, 'only the hero keeps its h1');
+ok(str_contains($fixed, '<h2>Old heading</h2>') && str_contains($fixed, '<h2>Another</h2>'), 'the others are demoted in place, not deleted');
+eq(wx_hero_crumbs('Interior design in Bahawalpur', 'bahawalpur/index.html'), '<nav class="wxh-crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span>→</span><span>Interior design in Bahawalpur</span></nav>', 'a root-level page gets a two-part trail');
+ok(str_contains(wx_hero_crumbs('Cost', 'insights/cost/index.html'), 'href="/insights/"'), 'a page in a section names the section');
+eq(wx_hero_crumbs('Home', 'index.html'), '', 'and the home page gets none, because it is the top of the trail');
+ok(wx_hero_insert('<html><body><main id="main-content"><p>x</p></main></body></html>', '<section class="wxh"></section>') === '<html><body><main id="main-content">' . "\n" . '<section class="wxh"></section><p>x</p></main></body></html>', 'a page with no hero gets one directly inside main');
+
+/* ---- the pages a hero may live in */
+ok(wx_hero_rel_ok('bahawalpur/index.html') && wx_hero_rel_ok('index.html'), 'pages are editable');
+ok(!wx_hero_rel_ok('_private/backups/x/index.html') && !wx_hero_rel_ok('api/v2/index.php') && !wx_hero_rel_ok('../../etc/passwd'), 'and the machinery folders, and anything that climbs out, are not');
+
+/* ---- what a request may say */
+eq(array_keys(wx_hero_updates(['title' => '  Spaced  ', 'b1h' => '/x/', 'nonsense' => 'no'])), ['title', 'b1h'], 'a hero write carries the fields a hero has, trimmed, and nothing else');
+try {
+    wx_hero_updates(['title' => str_repeat('x', 201)]);
+    ok(false, 'a title nobody can read on the page must be refused');
+} catch (Throwable $e) {
+    ok(str_contains($e->getMessage(), 'longer than'), 'and a field too long for the design is refused');
+}
+
 /* ---- the account command: the rules it refuses to guess */
 ok(owner_login_ok('owner@woodex.com.pk'), 'an address is a sign-in name');
 ok(owner_login_ok('admin'), 'and so is the bare name v2.1\'s first run wrote — the live host has one');

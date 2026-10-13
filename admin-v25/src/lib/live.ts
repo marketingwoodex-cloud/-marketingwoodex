@@ -317,6 +317,83 @@ export interface TickResult {
    One edit, every page, as one batch — and the same call previews it, so the number on the button is
    the number of pages that change. */
 
+/* ---- heroes: the top of every page, and the home slider ---- */
+
+/** One slide of the home slider, as the server reads it out of the page. `i` is its place in the file. */
+export interface HeroSlide {
+  kicker: string; title: string; lead: string;
+  img: string; alt: string;
+  b1t: string; b1h: string; b2t: string; b2h: string;
+  word: string; m1: string; m2: string;
+  off: boolean;
+  crumbs?: boolean;
+}
+
+export interface HeroTemplate { id: string; label: string; desc: string }
+
+export interface HeroHomeData {
+  rel: string; url: string; title: string;
+  present: boolean;
+  slides: HeroSlide[];
+  interval: number;
+  hidden?: number;
+  /** [id, label, note] — the design the hero carries now. */
+  family: [string, string, string];
+  templates: HeroTemplate[];
+}
+
+export interface HeroPageFields {
+  kicker: string; title: string; lead: string;
+  img: string; alt: string;
+  b1t: string; b1h: string; b2t: string; b2h: string;
+  crumbs: boolean;
+}
+
+export interface HeroPageData {
+  rel: string; url: string; title: string; bytes: number;
+  family: [string, string, string];
+  tpl: string;
+  hasHero: boolean;
+  fields: HeroPageFields;
+  templates: HeroTemplate[];
+}
+
+export interface HeroPageRow {
+  rel: string; url: string; title: string;
+  family: string; familyLabel: string; familyNote: string;
+  heroTitle: string; home: boolean;
+}
+
+export interface HeroScanData {
+  pages: HeroPageRow[];
+  counts: Record<string, number>;
+  total: number;
+  without: number;
+  templates: HeroTemplate[];
+  home: string;
+  families: Record<string, string>;
+}
+
+export interface HeroPageSave {
+  rel: string; url: string; changed: boolean;
+  how?: string;
+  family: [string, string, string];
+  tpl: string;
+  fields?: HeroPageFields;
+  bytes?: number; version?: number; batch: string;
+}
+
+export interface HeroHomeSave {
+  rel: string; url?: string; changed: boolean;
+  slides: number; showing?: number; interval: number;
+  bytes?: number; version?: number; batch: string;
+  read?: HeroSlide[];
+}
+
+export interface HeroTemplatePreview {
+  tpl: string; label: string; desc: string; html: string;
+}
+
 export interface ChromeData {
   chrome: {
     brand: string;
