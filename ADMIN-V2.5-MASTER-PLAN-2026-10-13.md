@@ -509,14 +509,14 @@ and paid without touching the v2.1 admin. Money totals match the server.
 | The gate itself, against MySQL | `php tests/roundtrip.php` | written; runs in CI, needs a database |
 | The admin | `npm run verify` | 78 render checks · 65 routes · build clean |
 
-**Coverage:** 149 of the 365 v2.1 actions are served by api/v2 today and the rest answer
+**Coverage:** 150 of the 365 v2.1 actions are served by api/v2 today and the rest answer
 `NOT_FOUND` naming the action and the v2.1 file that still serves it — the strangler pattern
 working as intended, not a gap hidden by a fallback.
 
 ### Phase 3 — Content, assets and delivery · **in progress** · 4 weeks
 
-*Measured at this commit:* `tests/run.php` **567 passed · 0 failed · 12 skipped** · `tests/conformance.mjs`
-**70 · 0** · php-lint **139 files** · `admin-v25` smoke **92 checks · 65 routes** · legacy bridge **149 of 365
+*Measured at this commit:* `tests/run.php` **582 passed · 0 failed · 12 skipped** · `tests/conformance.mjs`
+**72 · 0** · php-lint **139 files** · `admin-v25` smoke **92 checks · 65 routes** · legacy bridge **150 of 365
 actions** (41%). Migrations **000–014** are written and none has run on a database yet.
 
 Pages · builder bridge · section library · header/footer · heroes · redirects · the full content CMS ·
@@ -558,6 +558,11 @@ never run**, and there is no PHP in the build sandbox, so the gate is a host run
 | Testimonials and the team, placed inside pages | `db/migrations/014_placements.sql`, `lib/placements.php`, `routes/placements.php`, `admin-v25/src/screens/LivePlacements.tsx` on `/testimonials` and `/team` | These two kinds never become pages: they are written *inside* them, between v2.1's own markers (`<!--wx:testimonials--> … <!--/wx:testimonials-->`), which is what lets a push replace yesterday's section instead of adding a second one — and what removes it when a page comes off the list. The studio's choices travel value for value from v2.1 (`cms_placements`: the pages per kind, the small label, the heading, a maximum, and the five testimonial designs) and the section is composed **on the server** by the same function that writes it, so the preview is the push rather than a mock-up beside it. Adopting this landed two things v2.1 could not do: the push writes every changed page in **one batch** (v2.1 posted one page per request from the browser, so a failure halfway left the site in two states; here the whole push is one entry in the page history and one undo), and a page is refused rather than guessed at when it has no anchor to put the section in |
 | The section designs, in the stylesheet the site loads | `assets/site.css` | The `wx-tst-*`, `wx-team-*`, `wx-stars` and `wx-kicker` rules existed only in a second stylesheet the live pages do not link, so a section written without them would have landed **unstyled** — the same failure shape as the removed `theme.css`, in the other direction. They now sit in `assets/site.css`, reading the theme's `--wx-*` values where a theme has been saved and this stylesheet's own tokens where it has not |
 
+| Delivered — the builder bridge, complete | Where | Note |
+|---|---|---|
+| The last of v2.1's 19 builder actions | `api/v2/routes/legacy.php` (`wx_legacy_params()`), `lib/pages.php` (`wx_page_backup_*`), `routes/pages.php` (`GET /pages/backups`) | v2.1 names a page `path` and the route that reads it says `rel`, so the bridge now *translates* parameter names instead of hoping they match — the old page screen loads and saves through `/api/v2` again, and a missing parameter names the key the caller used. Two of the three left were bugs of exactly that shape. `backups` answers with both stores, each labelled: the copies v2.1 saved before every change (validated as names, readable and restorable by `restore {path, file}`, going back through the page writer so a restore is a versioned change with an author and an undo) and the versions this API has written since. Two new conformance checks keep it honest: **every bridge entry's handler exists in the file it names and in the route table** — a renamed handler is a 500 for whoever called the old name, and nothing else catches it — and the parameter aliases are asserted to be present rather than incidental |
+| The two that are decisions, not gaps | `media_delete`, `media_usage` | Neither is mapped, and the reason is in the code next to them. Deleting an image in v2.5 is a *trash with a 30-day window that refuses to touch a file a page uses*, so answering v2.1's name with a trash call would teach the caller something untrue about what just happened to their file; and usage is not an action in v2.5, it is a field of the library read. Both keep working through `/api/builder.php` until the screens that use them are gone |
+
 **An audit of the approval policy, and what it found.** Checking that every write route is gated is not
 enough — a gate whose action the policy would never queue is decoration. Two directions are now asserted in
 `tests/conformance.mjs`: every non-GET route either calls the gate or matches `WX_APPR_SKIP`, *and* every
@@ -576,13 +581,11 @@ already did.
 |---|---|---|
 | v2.1's `fetch_page` and `import_url`, with the SSRF rules that came with them | `lib/fetch.php`, `routes/pages.php` (`POST /pages/fetch`), `routes/media.php` (`POST /media/import`) | A server-side request to an address the user pasted is the definition of SSRF, and v2.1's audit F-06 grew a set of rules for it — https only, no credentials or ports in the URL, a name rather than a numeric address, every resolved address public, **every redirect hop re-checked**, 3 MB of HTML and 8 MB of image, the certificate and the name verified. All of them are ported, one hardening is added on top (`::ffff:127.0.0.1` is *reserved* rather than private, so PHP's own flags pass it), and the transport is injectable — so the refusal that matters, a public link redirecting to `169.254.169.254`, is asserted against a fake transport rather than hoped for. The image lands through the same `wx_media_upload()` the upload button uses, so what may be stored is decided once |
 
-**Still to come in this phase:** the last three builder names — `media_delete` and `media_usage` (v2.5 has a
-trash rather than a delete and a usage field rather than a usage action, so these are decisions about what the
-old names now mean rather than mappings) and `backups` (v2.5 keeps a page's history as rows with an author,
-a note and a batch, which is the question `backups` was asking) — city pages (their publish path is
-root-level, unlike posts and case studies), heroes, forms, the estimator, projects and the Gantt timeline,
-quote templates, business info (`cms_biz_*`), announcements, the AI settings screen, SEO screens and
-integrations.
+**Still to come in this phase:** city pages (their publish path is root-level, unlike posts and case
+studies — the one item in the content family that is close to done and is not), heroes, forms, the estimator,
+projects and the Gantt timeline, quote templates, business info (`cms_biz_*`), announcements
+(`cms_announce_*`), the AI settings in the CMS (`cms_ai_*`), SEO screens and integrations. The builder's 19
+actions are all accounted for: 17 bridged, 2 named above as decisions.
 
 ### Phase 4 — Automation and intelligence · 3 weeks
 

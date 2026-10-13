@@ -324,6 +324,71 @@ function wx_page_write_many(array $rels, callable $edit, array $me, string $note
     return ['batch' => $batch, 'changed' => $changed, 'skipped' => $skipped, 'versions' => $versions];
 }
 
+/**
+ * The copies v2.1's builder kept, which are still on disk and still readable.
+ *
+ * v2.1 wrote a copy of a page into `_private/backups/<page>/<stamp>.html` before every save and kept the
+ * last few. Those files are the only record of changes made *before* this API existed, so they are read
+ * here rather than imported and forgotten: the version table answers "what has this page been since we cut
+ * over", and these answer "what was it before". Both are returned by the same route, and each one says
+ * which store it came from — a caller that cannot tell them apart would restore the wrong thing.
+ *
+ * The name is validated as a whole (`20261013-141530-482.html`) rather than sanitised, because the caller
+ * supplies it and a file name is a path.
+ */
+/** v2.1's own mangling of a page path into one folder name — kept exactly, or its files are not found. */
+function wx_page_backup_slug(string $rel): string
+{
+    return (string) preg_replace('~[^a-z0-9]+~i', '_', trim($rel, '/'));
+}
+
+function wx_page_backup_dir(string $rel): string
+{
+    return WX_PRIVATE_DIR . '/backups/' . wx_page_backup_slug(wx_page_rel($rel));
+}
+
+function wx_page_backup_name_ok(string $name): bool
+{
+    return preg_match('~^\d{8}-\d{6}(-\d{3})?\.html$~', $name) === 1;
+}
+
+/** @return array<int,array{file:string,size:int,at:string}> newest first, as v2.1 listed them. */
+function wx_page_backup_files(string $rel): array
+{
+    $dir = wx_page_backup_dir($rel);
+    if (!is_dir($dir)) {
+        return [];
+    }
+    $out = [];
+    foreach (glob($dir . '/*.html') ?: [] as $f) {
+        $name = basename($f);
+        if (!wx_page_backup_name_ok($name)) {
+            continue;
+        }
+        $out[] = ['file' => $name, 'size' => (int) filesize($f), 'at' => gmdate('Y-m-d H:i:s', (int) filemtime($f))];
+    }
+    /* The names sort chronologically by construction, so the newest is the largest string. */
+    usort($out, static fn(array $a, array $b): int => strcmp($b['file'], $a['file']));
+    return $out;
+}
+
+/** One copy's HTML, with the same promise the editor makes: a page is a whole document or it is refused. */
+function wx_page_backup_read(string $rel, string $file): string
+{
+    if (!wx_page_backup_name_ok($file)) {
+        throw ApiError::validation('That is not the name of a saved copy', 'file');
+    }
+    $path = wx_page_backup_dir($rel) . '/' . $file;
+    if (!is_file($path)) {
+        throw ApiError::notFound('There is no saved copy of that page with that name');
+    }
+    $html = (string) file_get_contents($path);
+    if ($html === '' || preg_match('~^\s*(<!doctype html|<html)~i', $html) !== 1) {
+        throw ApiError::validation('That saved copy is not a whole page', 'file');
+    }
+    return $html;
+}
+
 /** Page history, newest first, with the batch each version belongs to. */
 function wx_page_history(string $rel, int $limit = 50): array
 {

@@ -171,6 +171,40 @@ check("no file declares the same function twice", () => {
   assertEq(offenders.length, 0, `functions declared twice: ${offenders.join(", ")}`);
 });
 
+check("every bridged action points at a handler that exists", () => {
+  /* A bridge entry is a promise that a v2.1 caller still works. A typo in it — a function renamed, a route
+     deleted — is not a lint error and not a test failure anywhere else: it is a 500 for whoever called the
+     old name. This reads the list and checks each entry against the file it names and the route table. */
+  const legacy = readCode("api/v2/routes/legacy.php");
+  const body = legacy.match(/function wx_legacy_bridged\(\): array\s*\{([\s\S]*?)\n\}/);
+  assert(body, "the bridged list must be readable");
+  const entries = [...body[1].matchAll(/'([a-z0-9_]+)'\s*=>\s*\[\s*'([a-z0-9_]+)'\s*,\s*'([a-z0-9_]+)'/g)];
+  assert(entries.length >= 140, `only ${entries.length} bridged actions parsed`);
+  const bad = [];
+  for (const [, action, file, fn] of entries) {
+    const path = `api/v2/routes/${file}.php`;
+    if (!existsSync(join(ROOT, path))) {
+      bad.push(`${action} -> ${path} (no such file)`);
+    } else if (!new RegExp(`function ${fn}\\(`).test(readCode(path))) {
+      bad.push(`${action} -> ${fn}() is not in ${path}`);
+    } else if (!routes.some((r) => r.fn === fn)) {
+      bad.push(`${action} -> ${fn}() is not in the route table`);
+    }
+  }
+  assertEq(bad.length, 0, bad.join(" | "));
+});
+
+check("a bridged caller's parameter names are translated, not guessed", () => {
+  /* v2.1 says `path`, the route says `rel`. Passing the body through unchanged is how a bridged action
+     answers "Missing rel" to a caller that never had one — the bridge has to say which legacy name maps to
+     which route name, and there has to be more than one of them for this to be more than a coincidence. */
+  const legacy = readCode("api/v2/routes/legacy.php");
+  assert(/function wx_legacy_params\(/.test(legacy), "the bridge must translate v2.1's parameter names");
+  assert(/wx_legacy_params\(\$paramKeys/.test(legacy), "and it must be used for every bridged action");
+  const aliased = [...legacy.matchAll(/'[a-z0-9_]+'\s*=>\s*\[\s*'[a-z0-9_]+'\s*,\s*'[a-z0-9_]+'\s*,\s*\[[^\]]*=>[^\]]*\]/g)];
+  assert(aliased.length >= 3, `only ${aliased.length} entries declare an alias; the page actions take a path`);
+});
+
 check("every route handler is declared in its file", () => {
   const missing = [];
   for (const r of routes) {

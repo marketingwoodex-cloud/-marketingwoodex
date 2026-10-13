@@ -190,10 +190,14 @@ function wx_legacy_bridged(): array
            the permission matrix and the approval policy are keyed on it. `load` is the GET route that
            already answered it. */
         'pages'            => ['pages', 'wx_route_pages_list', []],
-        'load'             => ['pages', 'wx_route_pages_get', []],
-        'save'             => ['pages', 'wx_route_pages_write', []],
+        /* `path` is v2.1's word for a page and `rel` is the route's. The alias is what lets the old page
+           screen keep loading and saving: without it the route sees an empty `rel` and the caller gets a
+           validation error about a parameter it never knew it had. */
+        'load'             => ['pages', 'wx_route_pages_get', ['path' => 'rel']],
+        'save'             => ['pages', 'wx_route_pages_write', ['path' => 'rel']],
+        'backups'          => ['pages', 'wx_route_pages_backups', ['path' => 'rel']],
         'page_new'         => ['pages', 'wx_route_pages_new', []],
-        'restore'          => ['pages', 'wx_route_pages_restore', []],
+        'restore'          => ['pages', 'wx_route_pages_restore', ['path' => 'rel']],
         /* Phase 3 — the site theme. v2.1's builder screen called these two names; the theme itself now lands
            in the stylesheet the live pages load, which is why the port is not a copy of the old file. */
         'theme_get'        => ['theme', 'wx_route_theme_get', []],
@@ -216,6 +220,39 @@ function wx_legacy_bridged(): array
     ];
 }
 
+/**
+ * The parameters a bridged action carries, in the names the route reads.
+ *
+ * v2.1's callers use v2.1's words — a page is a `path`, not a `rel` — and the route is written against a
+ * v2.5 URL. Two forms, because both exist in the map:
+ *
+ *   · `['id']`              an integer the route reads from `params`;
+ *   · `['path' => 'rel']`   the legacy name => the route's name, copied as a string.
+ *
+ * The old client sends both kinds in the body or the query string, never in the path. A missing one is a
+ * validation error naming the key the *caller* used, because that is the key they can do something about.
+ */
+function wx_legacy_params(array $keys, array $body, array $query): array
+{
+    $params = [];
+    foreach ($keys as $k => $v) {
+        if (is_int($k)) {
+            $val = $body[$v] ?? $query[$v] ?? null;
+            if ($val === null || $val === '') {
+                throw ApiError::validation('Missing ' . $v, $v);
+            }
+            $params[$v] = (int) $val;
+            continue;
+        }
+        $val = $body[$k] ?? $query[$k] ?? '';
+        if ($val === '' || $val === null) {
+            throw ApiError::validation('Missing ' . $k, $k);
+        }
+        $params[$v] = (string) $val;
+    }
+    return $params;
+}
+
 function wx_route_legacy(string $action, string $resource, string $method): array
 {
     $map = wx_legacy_bridged();
@@ -229,15 +266,7 @@ function wx_route_legacy(string $action, string $resource, string $method): arra
     require_once WX_V2_DIR . '/routes/' . $file . '.php';
 
     $body = wx_body();
-    $params = [];
-    foreach ($paramKeys as $k) {
-        // The old client sends ids in the body or the query string, never in the path.
-        $v = $body[$k] ?? $_GET[$k] ?? null;
-        if ($v === null || $v === '') {
-            throw ApiError::validation('Missing ' . $k, $k);
-        }
-        $params[$k] = (int) $v;
-    }
+    $params = wx_legacy_params($paramKeys, $body, $_GET);
     $ctx = [
         'method' => $method,
         'path' => '/' . $action,
@@ -245,7 +274,10 @@ function wx_route_legacy(string $action, string $resource, string $method): arra
         'params' => $params,
         'action' => $action,
         'query' => $_GET,
-        'body' => $body,
+        /* The aliased names are available in the body too, because a route written against a URL (`{rel}`)
+           often reads the body as well — `POST /pages` does. Adding the alias does not change any name the
+           caller sent: `path` is still there beside `rel`. */
+        'body' => $params + $body,
         'user' => null,
         'legacy' => true,
     ];

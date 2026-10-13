@@ -63,7 +63,7 @@ function wx_route_pages_changes(array $ctx): array
 function wx_route_pages_get(array $ctx): array
 {
     wx_require_user(null, WX_PAGES_EDIT);
-    $rel = (string) ($ctx['params']['rel'] ?? '');
+    $rel = (string) ($ctx['params']['rel'] ?? $ctx['query']['rel'] ?? '');
     $version = isset($ctx['query']['version']) ? (int) $ctx['query']['version'] : null;
     $page = wx_page_get($rel, $version);
     $data = [
@@ -104,7 +104,7 @@ function wx_route_pages_write(array $ctx): array
 function wx_route_pages_write_do(array $ctx): array
 {
     $u = wx_require_user(null, WX_PAGES_EDIT);
-    $rel = (string) ($ctx['body']['rel'] ?? '');
+    $rel = (string) ($ctx['params']['rel'] ?? $ctx['body']['rel'] ?? '');
     $html = (string) ($ctx['body']['html'] ?? '');
     if ($html === '') {
         throw ApiError::validation('The page is empty', 'html');
@@ -161,8 +161,43 @@ function wx_route_pages_restore(array $ctx): array
 function wx_route_pages_restore_do(array $ctx): array
 {
     $u = wx_require_user(null, WX_PAGES_EDIT);
+    /* v2.1's caller names a copy rather than a version: `{path, file}` from the page it was reading. That
+       call keeps working, and the copy comes back through the same writer the editor uses — so putting a
+       pre-cut-over page back is itself a versioned change with an author and an undo, not a file swap. */
+    $file = (string) ($ctx['body']['file'] ?? '');
+    if ($file !== '') {
+        $rel = (string) ($ctx['params']['rel'] ?? $ctx['body']['path'] ?? $ctx['body']['rel'] ?? '');
+        if ($rel === '') {
+            throw ApiError::validation('Say which page the saved copy belongs to', 'path');
+        }
+        return wx_guard('page.restore', static function () use ($rel, $file, $u) {
+            $html = wx_page_backup_read($rel, $file);
+            $r = wx_page_save_html(wx_page_rel($rel), $html, $u, (string) $u['role'], ['note' => 'restored the copy saved ' . $file, 'force' => false]);
+            return ['data' => $r + ['from' => 'backup:' . $file]];
+        });
+    }
     $id = (int) ($ctx['body']['version'] ?? $ctx['params']['version'] ?? 0);
     return wx_guard('page.restore', static fn() => ['data' => wx_page_restore($id, $u)]);
+}
+
+/**
+ * GET /pages/backups — what this page has been, from both stores.
+ *
+ * Asked by v2.1's page screens as `backups {path}`. It answers with the copies v2.1 kept *and* the versions
+ * this API has written since, each labelled, because "put back the previous version" is a question about
+ * the page rather than about the store somebody happened to look in.
+ */
+function wx_route_pages_backups(array $ctx): array
+{
+    wx_require_user(null, WX_PAGES_EDIT);
+    $rel = wx_page_rel((string) ($ctx['params']['rel'] ?? $ctx['query']['rel'] ?? $ctx['body']['path'] ?? ''));
+    return ['data' => [
+        'rel' => $rel,
+        'backups' => wx_page_backup_files($rel),
+        'versions' => wx_page_history($rel, 20),
+        'note' => '`backups` are the copies v2.1 saved before each change (readable and restorable by file '
+            . 'name); `versions` are what this API has written since, with the author, the note and the batch.',
+    ]];
 }
 
 /**

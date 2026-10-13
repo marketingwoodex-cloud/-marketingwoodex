@@ -197,6 +197,7 @@ function wx_routes(): array
         ['POST',   'pages/new',                       'pages', 'wx_route_pages_new',       'page_new'],
         /* v2.1's `fetch_page`: read another site's page so sections can be picked out of it. */
         ['POST',   'pages/fetch',                     'pages', 'wx_route_pages_fetch',     'fetch_page'],
+        ['GET',    'pages/backups',                 'pages', 'wx_route_pages_backups',   'backups'],
         ['GET',    'pages/{rel}',                     'pages', 'wx_route_pages_get',       null],
         ['POST',   'pages/{rel}/restore',             'pages', 'wx_route_pages_restore',   'restore'],
 

@@ -1678,6 +1678,30 @@ eq(array_keys(WX_PLACE_DESIGNS), ['cards', 'spotlight', 'slider', 'wall', 'band'
 skip('reading and saving placements needs the database (wx_place_state reads, wx_place_save replaces the map)');
 skip('the push writes pages through wx_page_write_many and needs the site tree and the database');
 
+
+/* ============================================================== the legacy bridge's parameter names */
+group('A v2.1 caller keeps its own words');
+
+/* v2.1 names a page `path`; the route that reads it says `rel`. Translating is the whole job of this
+   function, and getting it wrong is invisible until somebody opens the old page screen. */
+eq(wx_legacy_params(['path' => 'rel'], ['path' => 'about/index.html'], []), ['rel' => 'about/index.html'], 'v2.1\'s `path` arrives as the route\'s `rel`');
+eq(wx_legacy_params(['path' => 'rel'], [], ['path' => 'insights/a-post/index.html']), ['rel' => 'insights/a-post/index.html'], 'and is found in the query string when the caller sent it there');
+eq(wx_legacy_params(['id'], ['id' => '17'], []), ['id' => 17], 'an integer parameter stays an integer');
+eq(wx_legacy_params(['id'], [], ['id' => '17']), ['id' => 17], 'from the query too');
+throws('VALIDATION', 'path', static fn() => wx_legacy_params(['path' => 'rel'], [], []), 'a missing parameter names the key the caller used, not the route\'s');
+throws('VALIDATION', 'id', static fn() => wx_legacy_params(['id'], ['id' => ''], []), 'and an empty id is missing, not zero');
+
+/* The copies v2.1 saved. The name is the caller's, so it is validated as a whole rather than cleaned up. */
+ok(wx_page_backup_name_ok('20261013-141530-482.html'), 'a saved copy is named by its stamp');
+ok(wx_page_backup_name_ok('20261013-141530.html'), 'with or without milliseconds');
+ok(!wx_page_backup_name_ok('../../index.html'), 'a path that climbs out of the backup folder is not a name');
+ok(!wx_page_backup_name_ok('index.html'), 'nor is a page');
+ok(!wx_page_backup_name_ok('20261013-141530-482.html.bak'), 'nor is a copy of a copy');
+eq(wx_page_backup_slug('insights/my-post/index.html'), 'insights_my_post_index_html', 'the folder per page is v2.1\'s own mangling, so its files are still found');
+ok(str_ends_with(wx_page_backup_dir('index.html'), '/backups/index_html'), 'and it sits where v2.1 kept it, under _private/backups');
+throws('VALIDATION', 'file', static fn() => wx_page_backup_read('index.html', 'nope.html'), 'reading a copy whose name is not a name is refused');
+throws('VALIDATION', 'rel', static fn() => wx_page_backup_dir('../outside.html'), 'and a page path is validated before it is turned into a folder');
+
 /* Nothing here touches the network: the default transport is only reached when a route calls it. */
 skip('the real transport (wx_fetch_get) needs a network and is exercised on the host');
 
