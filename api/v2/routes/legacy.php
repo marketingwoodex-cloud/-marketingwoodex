@@ -196,6 +196,16 @@ function wx_legacy_bridged(): array
            in the stylesheet the live pages load, which is why the port is not a copy of the old file. */
         'theme_get'        => ['theme', 'wx_route_theme_get', []],
         'theme'            => ['theme', 'wx_route_theme_save', []],
+        /* Two more of the builder's names, and the two that are *not* here are named for a reason.
+           `media` is the builder's file list and `upload` is its image upload — both land on the handlers the
+           media screen already uses, which is what the one-implementation rule asks for.
+           `media_delete` and `media_usage` are left out on purpose: v2.5 has no delete (it has a trash with a
+           30-day window, so the v2.1 request needs an adapter from `url` to `urls[]`), and it has no separate
+           usage action (usage is a field of the library read). Neither is a mapping — they are a decision
+           about what deleting an image should mean now, and half-answering them under the old name would
+           teach the caller something untrue. */
+        'media'            => ['media', 'wx_route_media_list', []],
+        'upload'           => ['media', 'wx_route_media_upload', []],
     ];
 }
 

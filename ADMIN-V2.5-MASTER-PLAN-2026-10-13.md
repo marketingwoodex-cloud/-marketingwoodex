@@ -516,7 +516,7 @@ working as intended, not a gap hidden by a fallback.
 ### Phase 3 — Content, assets and delivery · **in progress** · 4 weeks
 
 *Measured at this commit:* `tests/run.php` **463 passed · 0 failed · 9 skipped** · `tests/conformance.mjs`
-**70 · 0** · php-lint **136 files** · `admin-v25` smoke **89 checks · 65 routes** · legacy bridge **143 of 365
+**70 · 0** · php-lint **136 files** · `admin-v25` smoke **89 checks · 65 routes** · legacy bridge **145 of 365
 actions** (39%). Migrations **000–013** are written and none has run on a database yet.
 
 Pages · builder bridge · section library · header/footer · heroes · redirects · the full content CMS ·
@@ -567,10 +567,14 @@ anybody reads, and a draft revision of a quotation is a copy. One deliberate tig
 merging the 36-address redirect plan now queues under `redirects_save`, because typing the same rules by hand
 already did.
 
-**Still to come in this phase:** the last of the builder bridge (the builder's own `media`/`media_delete`/
-`media_usage`/`upload` — the media library already answers those — and `fetch_page`/`import_url`, which fetch
-a public page for the section picker and need the SSRF rules ported with them), placements and designs
-(testimonials and team appear *inside* pages — the API exists, the renderer does not yet), city pages (their
+**Still to come in this phase:** the rest of the builder bridge — `fetch_page`/`import_url` (a public page
+and a remote image, both of which need v2.1's SSRF rules ported with them: https only, no credentials or
+ports in the URL, every resolved address checked against the private ranges, every redirect hop re-checked,
+3 MB), `media_delete` and `media_usage` (v2.5 has a trash rather than a delete and a usage field rather than
+a usage action, so these are decisions about what the old names now mean rather than mappings), and
+`backups`, the builder's media family in the admin (`media` and `upload` are bridged onto the media
+screen's handlers; the other two are named above), placements and designs (testimonials and team appear
+*inside* pages — the API exists, the renderer does not yet), city pages (their
 publish path is root-level, unlike posts and case studies), heroes, forms, the estimator, projects and the
 Gantt timeline, quote templates, business info (`cms_biz_*`), announcements, the AI settings screen, SEO
 screens and integrations.
