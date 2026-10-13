@@ -17,8 +17,9 @@ the install/upgrade notes in its `README.md`.
 | Link | What |
 |---|---|
 | [Repository](https://github.com/marketingwoodex-cloud/-marketingwoodex) | this code, public |
+| [Payload zip](https://github.com/marketingwoodex-cloud/-marketingwoodex/raw/arena/4150341e-marketingwoodex/woodex-master-P25/woodex-master-P25.zip) | the P25 release, 29.2 MB — also in [`woodex-master-P25/`](https://github.com/marketingwoodex-cloud/-marketingwoodex/tree/arena/4150341e-marketingwoodex/woodex-master-P25) |
 | [Pull request #7](https://github.com/marketingwoodex-cloud/-marketingwoodex/pull/7) | the v2.5 build, phase by phase, with the reasoning in the commit messages |
-| [Release `p25`](https://github.com/marketingwoodex-cloud/-marketingwoodex/releases/tag/p25) | the payload zip as a release asset |
+| [Release `p25`](https://github.com/marketingwoodex-cloud/-marketingwoodex/releases/tag/p25) | what this release is, and where to check its bytes |
 | [Google Drive](https://drive.google.com/drive/folders/12rpZKxUpHibqPZNMLi1VBMxlmWgTpBuz) | the same pack, for sharing: the zip, the manifest, the memory plan and the install notes |
 
 ## The map

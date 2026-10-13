@@ -251,10 +251,16 @@ function main() {
     process.exit(1);
   }
 
-  /* Every staged file gets the commit's own timestamp before the zip is written. Not cosmetic: zip
-     records modification times, so the same payload built twice used to hash differently — and a release
-     whose hash changes for no reason cannot be checked against the QA run that approved it. With the
-     timestamps normalised, `make-release.mjs` on the same commit produces the same bytes. */
+  /* Every staged file gets the commit's own timestamp before the zip is written, so the *file times* are
+     not a source of difference between two builds of one commit.
+
+     Two builds still differ by one line, and this comment exists because the first version of this script
+     claimed otherwise: the console bakes a build stamp into its bundle ("<sha> · built <time>Z"), that
+     stamp is what makes a screenshot arguable, and it carries the minute the bundle was built. So the
+     payload is bound to the commit *and* the build stamp — which is exactly what the manifest records, and
+     why it records it. Byte-identical rebuilds would cost the stamp; the stamp is worth more than the
+     rebuilding convenience. Without this normalisation the difference would be hundreds of file times
+     rather than that one line, which is the difference between a diffable pair of builds and a mystery. */
   if (!DRY) {
     const at = execFileSync("git", ["log", "-1", "--format=%cd", "--date=format:%Y%m%d%H%M.%S"], { cwd: ROOT, encoding: "utf8" }).trim();
     const stamp = (dir) => {

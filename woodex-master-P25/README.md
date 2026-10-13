@@ -69,7 +69,9 @@ counts, the SHA-256 of `api/v2/index.php` and of the zip itself, and the migrati
 - `MEMORY-PLAN.md` — the work-sandbox memory: state, traps, the next slice, the pending tasks.
 - `CHANGELOG.md` — this release and the phases before it.
 - Source, plan and pull request: <https://github.com/marketingwoodex-cloud/-marketingwoodex> ·
-  <https://github.com/marketingwoodex-cloud/-marketingwoodex/pull/7> ·
-  <https://github.com/marketingwoodex-cloud/-marketingwoodex/releases/tag/p25>
+  <https://github.com/marketingwoodex-cloud/-marketingwoodex/pull/7>
+- The release: <https://github.com/marketingwoodex-cloud/-marketingwoodex/releases/tag/p25> — the payload is committed in the repository rather than attached to the release,
+  because the asset upload endpoint is not reachable from the sandbox this pack was built in. Download it
+  here: <https://github.com/marketingwoodex-cloud/-marketingwoodex/raw/arena/4150341e-marketingwoodex/woodex-master-P25/woodex-master-P25.zip>, or open the folder: <https://github.com/marketingwoodex-cloud/-marketingwoodex/tree/arena/4150341e-marketingwoodex/woodex-master-P25>.
 - The same pack, for sharing: **<https://drive.google.com/drive/folders/12rpZKxUpHibqPZNMLi1VBMxlmWgTpBuz>** (the zip, this README, the manifest, the memory plan
   and the master plan PDF).
