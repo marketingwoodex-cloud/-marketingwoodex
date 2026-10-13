@@ -1,301 +1,344 @@
 <?php
 /**
- * db/migrate.php — the migration runner. Forward-only, numbered, recorded, dry-runnable.
+ * db/migrate.php — apply db/migrations/*.sql, in order, exactly once.
  *
- * Master plan §9.2: "Applied by db/migrate.php", and §12: data safety means "every migration is
- * applied to a restored copy first, with a row-count and checksum comparison before and after, and a
- * dry-run mode."
+ * Why not a migration framework: the host is shared PHP/MySQL with no composer and no deploy pipeline,
+ * and the whole product's promise is that it runs on the hosting it already pays for. So the runner is
+ * one file, the migrations are plain SQL a person can read, and the only state is one table.
  *
- * Usage (CLI only — it refuses to run from the web):
+ * What it guarantees, and why each one matters here:
  *
- *   php db/migrate.php --status                 what is applied, what is pending
- *   php db/migrate.php --dry-run                print every statement that would run, change nothing
- *   php db/migrate.php                          apply pending migrations, one transaction each
- *   php db/migrate.php --only 003               apply one migration (for a staged rollout)
- *   php db/migrate.php --checksum               record before/after table row counts and checksums
+ *   · **Applied once.** Every file is recorded in wx_migrations with the checksum it had when applied.
+ *   · **An edited migration is an error, not a surprise.** If a recorded file's checksum changes, the
+ *     runner stops. The alternative is a database that no longer matches the repository, which is how
+ *     staging and production start disagreeing about the schema.
+ *   · **No transaction around DDL.** MySQL implicitly commits DDL, so a transaction here would give the
+ *     illusion of atomicity and none of the reality. Each statement stands alone; the migration files
+ *     are written to be re-runnable instead (guarded ALTERs, INSERT IGNORE) — which is a property a
+ *     transaction could never provide anyway.
+ *   · **A dry run that plans, not guesses.** `--dry-run` connects, reads the schema, and reports what
+ *     each file would do (including which statements are already satisfied), touching nothing.
  *
- * Design notes that matter:
- *
- *   · **Each statement is independently safe to repeat.** MySQL implicitly commits around DDL, so a
- *     transaction around a migration file would give false comfort. Instead every statement is
- *     conditional (CREATE TABLE IF NOT EXISTS, ALTER guarded through information_schema), and the
- *     version row is written only after the last statement succeeds — so a partial run is resumed by
- *     running the file again.
- *   · **Statements are split on `;` at line ends** the same way the v2.1 installer split the dump,
- *     with comments stripped first. It is not a general SQL parser and does not pretend to be — the
- *     migration files are written to this rule, and the splitter reports what it executed.
- *   · **A checksum is recorded per file**, so editing an applied migration is detected rather than
- *     silently ignored: that is how a "fixed" migration causes two databases to diverge.
- *   · **Dry-run talks to the database** to report what is already present — a dry run that cannot see
- *     reality would print the same thing on every install and be worthless.
+ * Usage:
+ *   php db/migrate.php                 apply everything pending
+ *   php db/migrate.php --status        what has been applied, and what has not
+ *   php db/migrate.php --dry-run       plan only; change nothing
+ *   php db/migrate.php --verify        fail if unsatisfied work is pending, or if an applied file changed
+ *   php db/migrate.php --checksum      print each file's sha256
+ *   php db/migrate.php --only 003      apply (or dry-run) a single migration
+ *   php db/migrate.php --baseline      record the files as applied **without running them** — for a
+ *                                      host that already has these tables from an earlier release
  */
 
 declare(strict_types=1);
 
-/* 'wasm' is the php-wasm SAPI (tools/phpwasm/run-php.cjs). Everything else — including a web
-   request that found this file — is refused: a migration runner reachable over HTTP is a way to
-   destroy a database with a URL. */
+/* 'wasm' is the php-wasm SAPI (tools/phpwasm/run-php.cjs): a command line in every way that matters. */
 if (!in_array(PHP_SAPI, ['cli', 'phpdbg', 'wasm'], true)) {
     http_response_code(403);
-    header('Content-Type: text/plain; charset=utf-8');
     echo "db/migrate.php runs from the command line only.\n";
-    exit;
+    exit(1);
 }
 
 require_once dirname(__DIR__) . '/api/v2/lib/bootstrap.php';
 
-$opts = ['status' => false, 'dry' => false, 'checksum' => false, 'only' => null, 'verify' => false];
-foreach (array_slice($argv, 1) as $i => $arg) {
-    if ($arg === '--status') {
-        $opts['status'] = true;
-    } elseif ($arg === '--dry-run' || $arg === '-n') {
-        $opts['dry'] = true;
-    } elseif ($arg === '--checksum') {
-        $opts['checksum'] = true;
-    } elseif ($arg === '--verify') {
-        $opts['verify'] = true;
-    } elseif ($arg === '--only') {
-        $opts['only'] = $argv[$i + 2] ?? null;
-    } elseif ($arg === '--help' || $arg === '-h') {
-        echo "Usage: php db/migrate.php [--status] [--dry-run] [--checksum] [--only 003] [--verify]\n";
-        exit(0);
+$DIR = __DIR__ . '/migrations';
+$argvFlags = array_slice($argv, 1);
+$has = static fn(string $f): bool => in_array($f, $argvFlags, true);
+
+$DRY = $has('--dry-run');
+$STATUS = $has('--status');
+$VERIFY = $has('--verify');
+$CHECKSUM = $has('--checksum');
+$BASELINE = $has('--baseline');
+$ONLY = null;
+foreach ($argvFlags as $i => $a) {
+    if ($a === '--only' && isset($argvFlags[$i + 1])) {
+        $ONLY = (string) $argvFlags[$i + 1];
     }
 }
 
-/* ------------------------------------------------------------------ output */
-function say(string $m): void { fwrite(STDOUT, $m . "\n"); }
-function warn(string $m): void { fwrite(STDERR, $m . "\n"); }
-
-/* ------------------------------------------------------- migration bookkeeping */
-function ensure_migrations_table(): void
+/* Output through echo, not fwrite(STDOUT): the php-wasm command line (tools/phpwasm/run-php.cjs) has
+   no STDOUT/STDERR constants, and a migration runner that cannot report why it stopped is worse than
+   one that reports it on stdout. */
+function say(string $m = ''): void
 {
-    wx_q('CREATE TABLE IF NOT EXISTS wx_migrations (
-        version VARCHAR(10) NOT NULL PRIMARY KEY,
-        name VARCHAR(120) NOT NULL,
-        checksum CHAR(64) NOT NULL,
-        statements INT NOT NULL DEFAULT 0,
-        applied_at DATETIME NOT NULL,
-        took_ms INT NOT NULL DEFAULT 0
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4');
+    echo $m . "\n";
+}
+function bad(string $m): void
+{
+    echo '✗ ' . $m . "\n";
 }
 
-/** @return array<string,array> applied versions keyed by version */
-function applied(): array
+/** The migration files, in order. 000_… first; anything not matching the pattern is ignored loudly. */
+function migration_files(string $dir): array
 {
     $out = [];
-    foreach (wx_all('SELECT * FROM wx_migrations') as $r) {
-        $out[(string) $r['version']] = $r;
-    }
-    return $out;
-}
-
-/** All migration files, ordered by their numeric prefix. */
-function migration_files(): array
-{
-    $dir = __DIR__ . '/migrations';
-    $files = [];
-    foreach (glob($dir . '/*.sql') ?: [] as $f) {
-        $base = basename($f);
-        if (preg_match('~^(\d{3})_~', $base, $m)) {
-            $files[$m[1]] = $f;
+    foreach (scandir($dir) ?: [] as $f) {
+        if ($f === '.' || $f === '..') {
+            continue;
+        }
+        if (preg_match('~^(\d{3})_[a-z0-9_]+\.sql$~', $f, $m)) {
+            $out[$m[1]] = $f;
+            continue;
+        }
+        if (str_ends_with($f, '.sql')) {
+            bad('ignoring ' . $f . ' — migrations are named NNN_name.sql');
         }
     }
-    ksort($files);
-    return $files;
+    ksort($out);
+    return $out;
 }
 
 /**
  * Split a migration file into statements.
  *
- * The rule the migration files follow: one statement ends at `;\n` (semicolon, optionally whitespace,
- * newline). That keeps the `PREPARE stmt FROM @sql; EXECUTE stmt;` triples working while not being
- * fooled by a semicolon inside a string, because no string in these files contains a newline.
- * `--` comments and /* *\/ block comments are removed first; a `--` inside a string literal would
- * break this, and there are none by construction.
+ * MySQL's own client would do this, but it is not always installed on a shared host, and the splitting
+ * rules that matter here are only three: single-quoted strings (which contain the escaped quotes in
+ * 003's ADD COLUMN … DEFAULT 'PKR'), `--` comments, and `/* … *​/` comments. A naive explode(';') would
+ * cut a statement in half and produce a syntax error at the worst possible moment.
  */
-function split_statements(string $sql): array
+function split_sql(string $sql): array
 {
-    $sql = preg_replace('~/\*.*?\*/~s', '', $sql) ?? $sql;
-    $lines = explode("\n", $sql);
-    $clean = [];
-    foreach ($lines as $line) {
-        $trim = ltrim($line);
-        if (str_starts_with($trim, '--')) {
+    $out = [];
+    $buf = '';
+    $len = strlen($sql);
+    $inSingle = false;
+    $inDouble = false;
+    $inLineComment = false;
+    $inBlockComment = false;
+    for ($i = 0; $i < $len; $i++) {
+        $c = $sql[$i];
+        $next = $i + 1 < $len ? $sql[$i + 1] : '';
+        if ($inLineComment) {
+            if ($c === "\n") {
+                $inLineComment = false;
+                $buf .= $c;
+            }
             continue;
         }
-        $clean[] = $line;
-    }
-    $text = implode("\n", $clean);
-    $parts = preg_split('~;\s*\n~', $text) ?: [];
-    $out = [];
-    foreach ($parts as $p) {
-        $p = trim($p);
-        if ($p !== '') {
-            $out[] = $p;
+        if ($inBlockComment) {
+            if ($c === '*' && $next === '/') {
+                $inBlockComment = false;
+                $i++;
+            }
+            continue;
         }
+        if (!$inSingle && !$inDouble && $c === '-' && $next === '-') {
+            $inLineComment = true;
+            $i++;
+            continue;
+        }
+        if (!$inSingle && !$inDouble && $c === '/' && $next === '*') {
+            $inBlockComment = true;
+            $i++;
+            continue;
+        }
+        if ($c === "'" && !$inDouble) {
+            // A backslash escape only matters inside a string, and MySQL honours it by default.
+            if ($inSingle && $i > 0 && $sql[$i - 1] === '\\') {
+                $buf .= $c;
+                continue;
+            }
+            $inSingle = !$inSingle;
+            $buf .= $c;
+            continue;
+        }
+        if ($c === '"' && !$inSingle) {
+            $inDouble = !$inDouble;
+            $buf .= $c;
+            continue;
+        }
+        if ($c === ';' && !$inSingle && !$inDouble) {
+            $stmt = trim($buf);
+            if ($stmt !== '') {
+                $out[] = $stmt;
+            }
+            $buf = '';
+            continue;
+        }
+        $buf .= $c;
+    }
+    $trimmed = trim($buf);
+    if ($trimmed !== '') {
+        $out[] = $trimmed;
     }
     return $out;
 }
 
-/** Row counts per table, for the before/after comparison. */
-function table_snapshot(): array
+/** Applied migrations, from the database. */
+function applied(): array
 {
-    $snap = [];
-    $rows = wx_all('SELECT table_name AS t FROM information_schema.tables WHERE table_schema = DATABASE() ORDER BY table_name');
-    foreach ($rows as $r) {
-        $t = (string) $r['t'];
-        try {
-            $snap[$t] = (int) wx_val('SELECT COUNT(*) FROM `' . $t . '`');
-        } catch (Throwable $e) {
-            $snap[$t] = -1;
-        }
+    if (!wx_table_exists('wx_migrations')) {
+        return [];
     }
-    return $snap;
+    $rows = [];
+    foreach (wx_all('SELECT file, sha256, applied_at, ms FROM wx_migrations') as $r) {
+        $rows[(string) $r['file']] = $r;
+    }
+    return $rows;
 }
 
-function print_snapshot_diff(array $before, array $after): void
+function ensure_bookkeeping(): void
 {
-    $added = array_diff_key($after, $before);
-    $removed = array_diff_key($before, $after);
-    $changed = [];
-    foreach ($after as $t => $n) {
-        if (isset($before[$t]) && $before[$t] !== $n) {
-            $changed[] = $t . ' ' . $before[$t] . '→' . $n;
-        }
-    }
-    if ($added) {
-        say('  tables created:  ' . implode(', ', array_keys($added)));
-    }
-    foreach ($added as $t => $n) {
-        say('    ' . $t . ': ' . $n . ' row(s)');
-    }
-    if ($removed) {
-        say('  tables dropped:  ' . implode(', ', array_keys($removed)));
-    }
-    if ($changed) {
-        say('  row counts changed: ' . implode(', ', $changed));
-    }
-    if (!$added && !$removed && !$changed) {
-        say('  row counts unchanged.');
-    }
+    wx_q(
+        'CREATE TABLE IF NOT EXISTS wx_migrations (
+           file VARCHAR(80) NOT NULL PRIMARY KEY,
+           sha256 CHAR(64) NOT NULL,
+           applied_at DATETIME NOT NULL,
+           ms INT NOT NULL DEFAULT 0
+         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4'
+    );
 }
 
-/* ------------------------------------------------------------------ main */
+/* ------------------------------------------------------------------ can we run? */
 try {
-    $files = migration_files();
-    if (!$files) {
-        warn('No migration files found in db/migrations.');
-        exit(1);
-    }
+    wx_db();
+} catch (Throwable $e) {
+    bad('no database: ' . $e->getMessage());
+    bad('expected _private/db.json pointing at the MySQL this host uses');
+    exit(1);
+}
 
-    if ($opts['status'] || $opts['verify']) {
-        ensure_migrations_table();
-        $done = applied();
-        say('');
-        say('  Woodex v2 migrations — ' . count($files) . ' file(s)');
-        say('');
-        foreach ($files as $version => $file) {
-            $base = basename($file);
-            $sum = hash_file('sha256', $file);
-            if (isset($done[$version])) {
-                $drift = !hash_equals((string) $done[$version]['checksum'], (string) $sum) ? '  ← CHANGED SINCE APPLIED' : '';
-                say(sprintf('  ✓ %s  %-28s applied %s%s', $version, $base, $done[$version]['applied_at'], $drift));
-            } else {
-                say(sprintf('  · %s  %-28s pending', $version, $base));
-            }
+$files = migration_files($DIR);
+if (!$files) {
+    bad('no migrations found in ' . $DIR);
+    exit(1);
+}
+
+if ($CHECKSUM) {
+    foreach ($files as $n => $f) {
+        say($f . '  ' . hash_file('sha256', $DIR . '/' . $f));
+    }
+    exit(0);
+}
+
+if (!$DRY && !$STATUS && !$VERIFY) {
+    ensure_bookkeeping();
+}
+/* applied() reports nothing when the bookkeeping table does not exist yet, which is the correct
+   answer for a first run in every mode, including --dry-run. */
+$done = applied();
+
+/* ------------------------------------------------------------------ status */
+if ($STATUS) {
+    say('');
+    say('  Migration status');
+    say('');
+    $pending = 0;
+    foreach ($files as $n => $f) {
+        $sha = hash_file('sha256', $DIR . '/' . $f);
+        if (!isset($done[$f])) {
+            say('  · ' . $f . '  pending');
+            $pending++;
+            continue;
         }
-        say('');
-        if ($opts['verify']) {
-            $pending = array_diff_key($files, $done);
-            $drifted = [];
-            foreach ($done as $v => $row) {
-                if (isset($files[$v]) && !hash_equals((string) $row['checksum'], (string) hash_file('sha256', $files[$v]))) {
-                    $drifted[] = $v;
-                }
-            }
-            if ($pending || $drifted) {
-                warn('✗ verify failed: ' . count($pending) . ' pending, ' . count($drifted) . ' drifted (' . implode(',', $drifted) . ')');
-                exit(1);
-            }
-            say('✓ all migrations applied and unchanged');
+        $same = hash_equals((string) $done[$f]['sha256'], $sha);
+        say('  ✓ ' . $f . '  applied ' . (string) $done[$f]['applied_at'] . (($done[$f]['ms'] ?? 0) ? ' (' . (int) $done[$f]['ms'] . ' ms)' : '') . ($same ? '' : '  ⚠ EDITED SINCE'));
+    }
+    foreach ($done as $f => $r) {
+        if (!in_array($f, $files, true)) {
+            say('  ? ' . $f . '  recorded but not in db/migrations');
         }
+    }
+    say('');
+    say('  ' . $pending . ' pending, ' . count($done) . ' applied');
+    say('');
+    exit(0);
+}
+
+/* ------------------------------------------------------------------ verify */
+if ($VERIFY) {
+    $problems = [];
+    foreach ($files as $n => $f) {
+        $sha = hash_file('sha256', $DIR . '/' . $f);
+        if (!isset($done[$f])) {
+            $problems[] = $f . ' is not applied';
+            continue;
+        }
+        if (!hash_equals((string) $done[$f]['sha256'], $sha)) {
+            $problems[] = $f . ' was edited after it was applied';
+        }
+    }
+    if (!$problems) {
+        say('✓ all ' . count($files) . ' migrations are applied and unchanged');
         exit(0);
     }
-
-    ensure_migrations_table();
-    $done = applied();
-    $before = $opts['checksum'] ? table_snapshot() : [];
-
-    foreach ($files as $version => $file) {
-        if ($opts['only'] !== null && $version !== $opts['only']) {
-            continue;
-        }
-        $base = basename($file);
-        $sum = hash_file('sha256', $file);
-
-        if (isset($done[$version])) {
-            if (!hash_equals((string) $done[$version]['checksum'], (string) $sum)) {
-                warn('✗ ' . $base . ' was applied on ' . $done[$version]['applied_at'] . ' but the file has changed since.');
-                warn('  A migration is history: add a new file instead of editing an applied one.');
-                exit(1);
-            }
-            say('· ' . $version . ' ' . $base . ' — already applied');
-            continue;
-        }
-
-        $statements = split_statements((string) file_get_contents($file));
-
-        if ($opts['dry']) {
-            say('');
-            say('DRY RUN — ' . $base . ' (' . count($statements) . ' statement(s), nothing will change)');
-            foreach ($statements as $i => $st) {
-                say(sprintf('  %2d. %s', $i + 1, preg_replace('~\s+~', ' ', substr($st, 0, 150)) . (strlen($st) > 150 ? ' …' : '')));
-            }
-            continue;
-        }
-
-        say('');
-        say('Applying ' . $base . ' (' . count($statements) . ' statement(s))…');
-        $t0 = microtime(true);
-        /* Deliberately NOT wrapped in a transaction. MySQL issues an implicit COMMIT before and after
-           every DDL statement, so a `BEGIN … COMMIT` around this loop would be theatre: a failure on
-           statement 7 of 12 would leave 1–6 applied and the client believing it rolled back. The
-           migration files are therefore written so that every statement is independently safe to
-           repeat (CREATE TABLE IF NOT EXISTS; ALTER guarded through information_schema), and the
-           version is recorded only after the last statement succeeds. A partial run is resumed by
-           running the file again, which is what the operators will actually do. */
-        foreach ($statements as $st) {
-            try {
-                wx_db()->exec($st);
-            } catch (PDOException $e) {
-                throw ApiError::internal('In ' . $base . ': ' . $e->getMessage(), ['statement' => substr($st, 0, 300)]);
-            }
-        }
-        $took = (int) round((microtime(true) - $t0) * 1000);
-        wx_q('INSERT INTO wx_migrations (version, name, checksum, statements, applied_at, took_ms) VALUES (?,?,?,?,?,?)', [
-            $version, $base, $sum, count($statements), wx_now(), $took,
-        ]);
-        say('  ✓ applied in ' . $took . ' ms');
+    foreach ($problems as $p) {
+        bad($p);
     }
-
-    if ($opts['checksum'] && !$opts['dry']) {
-        $after = table_snapshot();
-        say('');
-        say('Row counts before → after:');
-        print_snapshot_diff($before, $after);
-    }
-
-    if (!$opts['dry']) {
-        say('');
-        say('Done. Check: php db/migrate.php --status');
-    }
-} catch (ApiError $e) {
-    warn('✗ ' . $e->code . ': ' . $e->getMessage());
-    foreach ($e->context as $k => $v) {
-        warn('    ' . $k . ': ' . (is_scalar($v) ? (string) $v : json_encode($v)));
-    }
-    exit(1);
-} catch (Throwable $e) {
-    warn('✗ ' . get_class($e) . ': ' . $e->getMessage());
     exit(1);
 }
+
+/* ------------------------------------------------------------------ apply */
+say('');
+say($DRY ? '  Dry run — nothing will be written' : '  Applying migrations');
+say('');
+
+$appliedNow = 0;
+$skipped = 0;
+$failed = 0;
+
+foreach ($files as $n => $f) {
+    if ($ONLY !== null && !str_starts_with($f, $ONLY)) {
+        continue;
+    }
+    $path = $DIR . '/' . $f;
+    $sha = hash_file('sha256', $path);
+    $sql = (string) file_get_contents($path);
+
+    if (isset($done[$f])) {
+        if (!hash_equals((string) $done[$f]['sha256'], $sha)) {
+            bad($f . ' was edited after it was applied — the database would no longer match the '
+                . 'migrations. Create a new migration for the change instead.');
+            $failed++;
+            continue;
+        }
+        $skipped++;
+        continue;
+    }
+
+    if ($BASELINE) {
+        wx_insert('wx_migrations', ['file' => $f, 'sha256' => $sha, 'applied_at' => wx_now(), 'ms' => 0]);
+        say('  · ' . $f . '  recorded as applied (baseline — not run)');
+        $appliedNow++;
+        continue;
+    }
+
+    if ($DRY) {
+        $stmts = split_sql($sql);
+        say('  → ' . $f . '  would run ' . count($stmts) . ' statement(s)');
+        foreach ($stmts as $i => $s) {
+            $head = trim((string) preg_replace('~\s+~', ' ', $s));
+            say('      ' . ($i + 1) . '. ' . substr($head, 0, 96) . (strlen($head) > 96 ? ' …' : ''));
+        }
+        $appliedNow++;
+        continue;
+    }
+
+    $stmts = split_sql($sql);
+    $t0 = microtime(true);
+    try {
+        foreach ($stmts as $i => $s) {
+            wx_q($s);
+        }
+    } catch (Throwable $e) {
+        bad($f . ' failed at statement ' . ($i + 1) . ': ' . $e->getMessage());
+        bad('nothing was recorded for this file; fix it and re-run (the migrations are re-runnable)');
+        $failed++;
+        continue;
+    }
+    $ms = (int) round((microtime(true) - $t0) * 1000);
+    wx_insert('wx_migrations', ['file' => $f, 'sha256' => $sha, 'applied_at' => wx_now(), 'ms' => $ms]);
+    say('  ✓ ' . $f . '  ' . count($stmts) . ' statement(s), ' . $ms . ' ms');
+    $appliedNow++;
+}
+
+say('');
+if ($DRY) {
+    say('  ' . $appliedNow . ' file(s) would run, ' . $skipped . ' already applied. Nothing was written.');
+} else {
+    say('  ' . $appliedNow . ' applied, ' . $skipped . ' already applied' . ($failed ? ', ' . $failed . ' FAILED' : ''));
+}
+say('');
+
+exit($failed ? 1 : 0);

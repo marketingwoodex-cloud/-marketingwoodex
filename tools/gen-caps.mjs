@@ -1,218 +1,226 @@
 #!/usr/bin/env node
 /**
- * gen-caps.mjs — generate db/migrations/001_roles.sql from the LIVE permission code.
+ * tools/gen-caps.mjs — generate db/migrations/001_roles.sql from the live v2.1 authority.
  *
- * The plan's promise is that authorisation becomes data. The risk in that change is a silent
- * behaviour difference: a role loses a screen nobody tested. So the seed rows are not typed by hand
- * — they are extracted from frontend-v1/api/roles-lib.php, the file v2.1 actually enforces, and this
- * script re-derives them on demand. Same trick as tools/gen-aliases.mjs: the artefact that must not
- * drift is generated from the artefact that cannot lie.
+ * The capability matrix decides who may do what. It exists today in `frontend-v1/api/roles-lib.php`
+ * (consts and a switch) and it will exist in v2.5 as six MySQL tables. Those two must be the same
+ * answer, and the only way to be sure is to extract one from the other rather than type it twice.
  *
- * Extracted:
- *   wx_role_groups    ← wx_role_groups() switch   + EXPAND
- *   wx_action_groups  ← the $map inside wx_action_group(), order preserved (order decides overlaps)
- *   wx_action_shared  ← SHARED
- *   wx_action_roles   ← the owner/admin-only list inside wx_allowed()
+ * So this reads v2.1's code and writes the migration. `--check` re-extracts and compares against the
+ * file on disk (CI runs it), which is what makes "the matrix did not change" a fact rather than a hope.
  *
- * Usage:  node tools/gen-caps.mjs [--check]
+ *   node tools/gen-caps.mjs            write db/migrations/001_roles.sql
+ *   node tools/gen-caps.mjs --check    fail if the file on disk differs from the generated one
+ *   node tools/gen-caps.mjs --json     print the extracted matrix (for review)
  */
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
-const SRC = join(ROOT, "frontend-v1", "api", "roles-lib.php");
-const OUT = join(ROOT, "db", "migrations", "001_roles.sql");
+const SOURCE = join(ROOT, "frontend-v1/api/roles-lib.php");
+const TARGET = join(ROOT, "db/migrations/001_roles.sql");
 
-const php = readFileSync(SRC, "utf8");
+const check = process.argv.includes("--check");
+const asJson = process.argv.includes("--json");
 
-/* ------------------------------------------------------------------ extract */
+const src = readFileSync(SOURCE, "utf8");
+const fail = (msg) => {
+  console.error("✗ " + msg);
+  process.exit(1);
+};
 
-/* Scoped to the ROLE_LABELS const: the action-group map below also contains `'sales' => '~^…$~'`,
-   and an unscoped match silently labels the Sales role with a regex. */
-const labelBlock = php.match(/const\s+ROLE_LABELS\s*=\s*\[([\s\S]*?)\];/);
-if (!labelBlock) throw new Error("could not read ROLE_LABELS from roles-lib.php");
-const roleLabels = {};
-for (const m of labelBlock[1].matchAll(/'(\w+)'\s*=>\s*'([^']+)'/g)) {
-  roleLabels[m[1]] = m[2];
-}
-for (const role of ["owner", "admin", "editor", "sales", "support"]) {
-  if (!roleLabels[role] || roleLabels[role].includes("~^")) {
-    throw new Error(`ROLE_LABELS is missing a usable label for "${role}"`);
-  }
-}
+/* ------------------------------------------------------------------ extraction */
 
-/** wx_role_groups(): case 'role': return ['a','b']; */
-const roleGroups = [];
-for (const m of php.matchAll(/case\s+'(\w+)'\s*:\s*return\s*\[([^\]]*)\]\s*;/g)) {
-  const groups = [...m[2].matchAll(/'([a-z_]+)'/g)].map((x) => x[1]);
-  roleGroups.push([m[1], groups]);
-}
-if (!roleGroups.length) throw new Error("could not read wx_role_groups() from roles-lib.php");
-
-/** const EXPAND = ['grp' => ['role', …], …]; */
-function parseMapOfLists(name) {
-  const re = new RegExp(`const\\s+${name}\\s*=\\s*\\[([\\s\\S]*?)\\];`);
-  const block = php.match(re);
-  if (!block) throw new Error(`could not read ${name}`);
+/** const NAME = ['a' => 'b', ...]; → [[a, b], ...] */
+function pairs(name) {
+  const m = new RegExp(`const ${name}\\s*=\\s*\\[([\\s\\S]*?)\\];`).exec(src);
+  if (!m) fail(`could not find const ${name} in ${SOURCE}`);
   const out = [];
-  for (const m of block[1].matchAll(/'([a-z_0-9]+)'\s*=>\s*\[([^\]]*)\]/g)) {
-    out.push([m[1], [...m[2].matchAll(/'([a-z_0-9]+)'/g)].map((x) => x[1])]);
-  }
+  for (const p of m[1].matchAll(/'([^']+)'\s*=>\s*'([^']*)'/g)) out.push([p[1], p[2]]);
+  if (!out.length) fail(`const ${name} parsed to nothing`);
   return out;
 }
-const expand = parseMapOfLists("EXPAND");
-const shared = parseMapOfLists("SHARED");
 
-/** The $map inside wx_action_group(), in order — order decides which rule wins on an overlap. */
-const mapBlock = php.match(/if \(\$map === null\) \$map = \[([\s\S]*?)\n    \];/);
-if (!mapBlock) throw new Error("could not read the $map in wx_action_group()");
-const actionGroups = [];
-for (const m of mapBlock[1].matchAll(/'([a-z_]+)'\s*=>\s*'(~\^[\s\S]*?\$~)'/g)) {
-  actionGroups.push([m[1], m[2]]);
-}
-if (actionGroups.length < 8) throw new Error(`only ${actionGroups.length} action groups parsed — expected the full map`);
-
-/** wx_allowed(): the owner/admin-only list. */
-const strictBlock = php.match(/in_array\(\$action,\s*\[([^\]]*)\],\s*true\)\)\s*return\s*in_array\(\$role,\s*\[([^\]]*)\]/);
-if (!strictBlock) throw new Error("could not read the owner/admin-only list in wx_allowed()");
-const strictActions = [...strictBlock[1].matchAll(/'([a-z_0-9]+)'/g)].map((x) => x[1]);
-const strictRoles = [...strictBlock[2].matchAll(/'([a-z_]+)'/g)].map((x) => x[1]);
-
-/* -------------------------------------------------------------------- emit */
-
-const q = (s) => `'${String(s).replace(/'/g, "''")}'`;
-
-const roleGroupRows = [];
-for (const [role, groups] of roleGroups) {
-  for (const g of groups) {
-    const isExpand = expand.some(([grp, roles]) => grp === g && roles.includes(role));
-    roleGroupRows.push(`(${q(role)}, ${q(g)}, ${isExpand ? 1 : 0})`);
+/** const NAME = ['a' => ['b', 'c'], ...]; → [[a, [b, c]], ...] */
+function mapLists(name) {
+  const m = new RegExp(`const ${name}\\s*=\\s*\\[([\\s\\S]*?)\\];`).exec(src);
+  if (!m) fail(`could not find const ${name}`);
+  const out = [];
+  for (const p of m[1].matchAll(/'([^']+)'\s*=>\s*\[([^\]]*)\]/g)) {
+    out.push([p[1], [...p[2].matchAll(/'([^']+)'/g)].map((x) => x[1])]);
   }
+  if (!out.length) fail(`const ${name} parsed to nothing`);
+  return out;
 }
 
-const actionGroupRows = actionGroups.map(([grp, pattern], i) => `(${q(pattern)}, ${q(grp)}, 1, ${i + 1})`);
-
-const sharedRows = [];
-for (const [action, groups] of shared) {
-  for (const g of groups) sharedRows.push(`(${q(action)}, ${q(g)})`);
+/** The role → groups switch. */
+function roleGroups() {
+  const fn = /function wx_role_groups\(string \$role\): array \{([\s\S]*?)\n\}/.exec(src);
+  if (!fn) fail("could not find wx_role_groups()");
+  const out = [];
+  for (const c of fn[1].matchAll(/case '([a-z]+)':\s*return \[([^\]]*)\];/g)) {
+    out.push([c[1], [...c[2].matchAll(/'([^']+)'/g)].map((x) => x[1])]);
+  }
+  if (!out.length) fail("wx_role_groups() has no cases");
+  return out;
 }
 
-const roleRows = [];
-for (const action of strictActions) {
-  for (const role of strictRoles) roleRows.push(`(${q(action)}, ${q(role)})`);
+/** The ordered action → pattern map inside wx_action_group(). */
+function actionGroups() {
+  const fn = /function wx_action_group\(string \$a\): \?string \{([\s\S]*?)\n\}/.exec(src);
+  if (!fn) fail("could not find wx_action_group()");
+  const block = fn[1].slice(fn[1].indexOf("$map = ["), fn[1].indexOf("\n    ];"));
+  const out = [];
+  for (const line of block.split("\n")) {
+    const m = /^\s*'([a-z_]+)'\s*=>\s*'(~[\s\S]*~)',?\s*$/.exec(line.replace(/\/\/.*$/, ""));
+    if (m) out.push([m[1], m[2]]);
+  }
+  if (!out.length) fail("wx_action_group() has no patterns");
+  return out;
 }
 
-const sql = `-- db/migrations/001_roles.sql — GENERATED FILE, DO NOT EDIT BY HAND.
---
---   regenerate:  node tools/gen-caps.mjs
---   verify:      node tools/gen-caps.mjs --check
---
--- Authorisation stops being code. v2.1's matrix lived in frontend-v1/api/roles-lib.php as a switch, a
--- list of regexes and two consts — unreadable outside a deploy, unauditable, and (as the analysis
--- report found) mistaken for database tables by the first read of the codebase. These tables hold the
--- same rules, extracted from that file so the behaviour cannot differ, and seeded in the same order
--- because rule order decides which group wins when an action matches two patterns.
---
--- The five role codes are unchanged so existing users keep working: owner, admin, editor, sales, support.
---
--- Applied by db/migrate.php. Idempotent: CREATE TABLE IF NOT EXISTS, and the seed inserts use
--- INSERT ... ON DUPLICATE KEY UPDATE so a re-run converges instead of duplicating.
+/** The role list a screen is restricted to, where v2.1 hardcodes it inside wx_allowed(). */
+function restrictedActions() {
+  const fn = /function wx_allowed\(([\s\S]*?)\n\}/.exec(src);
+  if (!fn) fail("could not find wx_allowed()");
+  const m = /in_array\(\$action,\s*\[([^\]]*)\],\s*true\)\)\s*return in_array\(\$role,\s*\[([^\]]*)\],\s*true\);/.exec(fn[1]);
+  if (!m) fail("wx_allowed() no longer has a role-restricted list — read it before regenerating");
+  const actions = [...m[1].matchAll(/'([^']+)'/g)].map((x) => x[1]);
+  const roles = [...m[2].matchAll(/'([^']+)'/g)].map((x) => x[1]);
+  const out = [];
+  for (const a of actions) for (const r of roles) out.push([a, r]);
+  return out;
+}
 
-/* ---------------------------------------------------------------- roles */
+const roles = pairs("ROLE_LABELS");
+const roleGroupsMap = roleGroups();
+const expand = mapLists("EXPAND");
+const shared = mapLists("SHARED");
+const groups = actionGroups();
+const restricted = restrictedActions();
+
+const expandSet = new Set();
+for (const [grp, roleList] of expand) for (const r of roleList) expandSet.add(r + "|" + grp);
+
+const sqlStr = (s) => "'" + String(s).replace(/'/g, "''") + "'";
+
+const groupRows = roleGroupsMap.flatMap(([role, list]) =>
+  list.map((grp) => `  (${sqlStr(role)}, ${sqlStr(grp)}, ${expandSet.has(role + "|" + grp) ? 1 : 0})`),
+);
+const sharedRows = shared.flatMap(([action, list]) => list.map((grp) => `  (${sqlStr(action)}, ${sqlStr(grp)})`));
+const restrictedRows = restricted.map(([action, role]) => `  (${sqlStr(action)}, ${sqlStr(role)})`);
+const actionRows = groups.map(
+  ([grp, pattern], i) => `  ('${String(i + 1).padStart(2, "0")}', ${sqlStr(grp)}, ${sqlStr(pattern)})`,
+);
+
+const generated = `-- db/migrations/001_roles.sql
+--
+-- GENERATED FILE — do not edit by hand.
+-- Source: frontend-v1/api/roles-lib.php (the live v2.1 authority) via tools/gen-caps.mjs.
+-- Regenerate:  node tools/gen-caps.mjs
+-- Verify:      node tools/gen-caps.mjs --check   (CI fails when this file drifts from v2.1)
+--
+-- Why a generated file rather than a table someone edits: the capability answer must not change when
+-- v2.1 is replaced. v2.1 built its matrix out of five consts and two functions; if v2.5 typed that
+-- matrix out again the two would disagree within a release, and the disagreement would show up as
+-- somebody losing access they have today — or keeping access they should not. So the matrix is
+-- extracted from the code that is running in production right now.
+--
+-- What each table is:
+--
+--   wx_roles          role id → the word a person reads
+--   wx_role_groups    what each role may do in general, plus \`expand\` (see below)
+--   wx_action_groups  group → the pattern its actions match, in evaluation order
+--   wx_action_shared  screens of more than one group: allowed when the user has ANY of them
+--   wx_action_roles   screens restricted to named roles, overriding the group answer
+--   wx_user_perms     per-user grants on top of the role, which v2.1 kept in a JSON column
+--
+-- \`expand\` is v2.1's EXPAND const: it lets a role perform an action whose own role list was narrower,
+-- where the *screen* belongs to that role. It is the mechanism that lets a developer save a page
+-- without holding the permissions of whoever wrote the page list.
+--
+-- Re-running this file is safe: every row is INSERT IGNORE and nothing is ever deleted, so a host that
+-- has granted per-user permissions keeps them.
+
 CREATE TABLE IF NOT EXISTS wx_roles (
-  code VARCHAR(20) NOT NULL PRIMARY KEY,
+  id VARCHAR(20) NOT NULL PRIMARY KEY,
   label VARCHAR(40) NOT NULL,
-  rank_ INT NOT NULL DEFAULT 0
+  sort INT NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-INSERT INTO wx_roles (code, label, rank_) VALUES
-${roleGroups.map(([role], i) => `  (${q(role)}, ${q(roleLabels[role] ?? role)}, ${i + 1})`).join(",\n")}
-ON DUPLICATE KEY UPDATE label = VALUES(label), rank_ = VALUES(rank_);
-
-/* ---------------------------------------------- role => permission group
-   expand = 1 marks the groups EXPAND opened to a role on purpose, even where an older action-level
-   role list was narrower. Keeping the flag means the decision stays identical to v2.1's. */
 CREATE TABLE IF NOT EXISTS wx_role_groups (
   role VARCHAR(20) NOT NULL,
-  grp VARCHAR(30) NOT NULL,
+  grp VARCHAR(40) NOT NULL,
   expand TINYINT(1) NOT NULL DEFAULT 0,
   PRIMARY KEY (role, grp)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-INSERT INTO wx_role_groups (role, grp, expand) VALUES
-${roleGroupRows.map((r) => "  " + r).join(",\n")}
-ON DUPLICATE KEY UPDATE expand = VALUES(expand);
-
-/* ------------------------------------------------- action => group rules
-   ord preserves the evaluation order of the v2.1 $map: the first matching pattern wins, and
-   several actions match more than one pattern, so order is behaviour, not cosmetics. */
+/* 400 characters: one of the patterns below is longer than 300, and a truncated pattern is a
+   permission that quietly stops matching. */
 CREATE TABLE IF NOT EXISTS wx_action_groups (
-  pattern VARCHAR(190) NOT NULL PRIMARY KEY,
-  grp VARCHAR(30) NOT NULL,
+  ord VARCHAR(4) NOT NULL PRIMARY KEY,
+  grp VARCHAR(40) NOT NULL,
+  pattern VARCHAR(400) NOT NULL,
   is_regex TINYINT(1) NOT NULL DEFAULT 1,
-  ord INT NOT NULL DEFAULT 0,
-  INDEX (ord)
+  INDEX wx_action_groups_grp (grp)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-INSERT INTO wx_action_groups (pattern, grp, is_regex, ord) VALUES
-${actionGroupRows.map((r) => "  " + r).join(",\n")}
-ON DUPLICATE KEY UPDATE grp = VALUES(grp), is_regex = VALUES(is_regex), ord = VALUES(ord);
-
-/* ------------------------------------------- actions shared across groups
-   A screen used by two teams: allowed when the user holds ANY of the listed groups. */
 CREATE TABLE IF NOT EXISTS wx_action_shared (
-  action VARCHAR(60) NOT NULL,
-  grp VARCHAR(30) NOT NULL,
+  action VARCHAR(80) NOT NULL,
+  grp VARCHAR(40) NOT NULL,
   PRIMARY KEY (action, grp)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-INSERT INTO wx_action_shared (action, grp) VALUES
-${sharedRows.map((r) => "  " + r).join(",\n")}
-ON DUPLICATE KEY UPDATE grp = VALUES(grp);
-
-/* --------------------------------------------- action => explicit role list
-   The screens that stay owner+admin even though a broader group would otherwise match them. */
 CREATE TABLE IF NOT EXISTS wx_action_roles (
-  action VARCHAR(60) NOT NULL,
+  action VARCHAR(80) NOT NULL,
   role VARCHAR(20) NOT NULL,
   PRIMARY KEY (action, role)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-INSERT INTO wx_action_roles (action, role) VALUES
-${roleRows.map((r) => "  " + r).join(",\n")}
-ON DUPLICATE KEY UPDATE role = VALUES(role);
-
-/* ------------------------------------------------ per-user extra grants
-   Replaces the "perms" array that v2.1 kept in _private/security.json, which needed a lock file and
-   could not be queried. A row here grants one group to one user, on top of their role. */
 CREATE TABLE IF NOT EXISTS wx_user_perms (
   user_id INT NOT NULL,
-  grp VARCHAR(30) NOT NULL,
+  grp VARCHAR(40) NOT NULL,
   granted_at DATETIME NULL,
   granted_by INT NULL,
   PRIMARY KEY (user_id, grp)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+/* ---------------------------------------------------------------- generated content */
+INSERT IGNORE INTO wx_roles (id, label, sort) VALUES
+${roles.map(([id, label], i) => `  (${sqlStr(id)}, ${sqlStr(label)}, ${i + 1})`).join(",\n")};
+
+INSERT IGNORE INTO wx_role_groups (role, grp, expand) VALUES
+${groupRows.join(",\n")};
+
+INSERT IGNORE INTO wx_action_shared (action, grp) VALUES
+${sharedRows.join(",\n")};
+
+/* Screens that stay owner+admin even where a broader pattern also matches them. v2.1 hardcoded this
+   list inside wx_allowed(); it is data here so the answer is visible without reading PHP. */
+INSERT IGNORE INTO wx_action_roles (action, role) VALUES
+${restrictedRows.join(",\n")};
+
+/* The patterns, in the order wx_action_group() evaluates them. Order decides the answer where two
+   patterns match the same action, which is why \`ord\` is part of the table rather than a comment. */
+INSERT IGNORE INTO wx_action_groups (ord, grp, pattern, is_regex) VALUES
+${actionRows.join(",\n")};
 `;
 
-const summary = {
-  roles: roleGroups.length,
-  roleGroupRows: roleGroupRows.length,
-  actionGroups: actionGroups.length,
-  sharedRows: sharedRows.length,
-  roleRows: roleRows.length,
-};
-
-if (process.argv.includes("--check")) {
-  const current = existsSync(OUT) ? readFileSync(OUT, "utf8") : "";
-  if (current !== sql) {
-    console.error("✗ db/migrations/001_roles.sql is stale — run: node tools/gen-caps.mjs");
-    process.exit(1);
-  }
-  console.log(`✓ 001_roles.sql up to date (${summary.roles} roles, ${summary.actionGroups} action groups, ${summary.sharedRows} shared rows)`);
+if (asJson) {
+  console.log(JSON.stringify({ roles, roleGroups: roleGroupsMap, expand, shared, groups: groups.map(([g]) => g), restricted }, null, 2));
   process.exit(0);
 }
 
-writeFileSync(OUT, sql);
-console.log("✓ db/migrations/001_roles.sql written");
-console.log(`  ${summary.roles} roles · ${summary.roleGroupRows} role-group rows · ${summary.actionGroups} action groups · ${summary.sharedRows} shared rows · ${summary.roleRows} role-restricted actions`);
+if (check) {
+  const current = existsSync(TARGET) ? readFileSync(TARGET, "utf8") : "";
+  if (current !== generated) {
+    fail("db/migrations/001_roles.sql is out of date with frontend-v1/api/roles-lib.php — run: node tools/gen-caps.mjs");
+  }
+  console.log(`✓ 001_roles.sql matches v2.1 (${roles.length} roles · ${groupRows.length} role/group rows · ${groups.length} group patterns · ${sharedRows.length} shared rows · ${restrictedRows.length} role-restricted rows)`);
+  process.exit(0);
+}
+
+writeFileSync(TARGET, generated);
+console.log(`✓ wrote db/migrations/001_roles.sql (${generated.length} bytes)`);
+console.log(`  ${roles.length} roles · ${groupRows.length} role/group rows · ${groups.length} group patterns · ${sharedRows.length} shared rows · ${restrictedRows.length} restricted rows`);
