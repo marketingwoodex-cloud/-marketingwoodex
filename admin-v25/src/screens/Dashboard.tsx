@@ -72,8 +72,12 @@ function DemoDashboard({ role }: { role: Role }) {
       {approvals.length > 0 && role !== "support" && (
         <div style={{ marginBottom: "var(--s-4)" }}>
           <Note tone="warn">
-            <b>{approvals.length} changes are waiting for the master.</b> Managers can request edits
-            but only the master can approve them.{" "}
+            {/* The count is the design's own sample. Saying "3 changes are waiting for the master" in a
+                preview is a claim about somebody's business, and this screen is the one that must not make
+                one: it is the dashboard, and a number on it is read as the truth about the studio. */}
+            <b>In this sample, {approvals.length} changes are waiting for the master.</b> With api/v2
+            connected this counts what is really queued. Managers can request edits; only the master
+            approves them.{" "}
             <Link to="/approvals" style={{ textDecoration: "underline" }}>Open approvals →</Link>
           </Note>
         </div>

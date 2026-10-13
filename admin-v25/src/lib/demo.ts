@@ -13,6 +13,7 @@
  * stops type-checking, and the sample cannot quietly become a nicer version of the product than the product.
  */
 import type {
+  ApprData, ApprDetailData,
   BizData, BizRecord, CompanyData, CompanyRecord,
   EstData, FormsData, HeroHomeData, HeroPageData, HeroScanData,
   NotifyData, ProjDetail, ProjList, ProjRow, TplsData,
@@ -461,7 +462,63 @@ const COMPANY_DATA: CompanyData = {
   used: 10143,
 };
 
+/**
+ * The Master's queue. Three requests waiting, one decided — enough to show the screen's three jobs
+ * (read the queue, read one request, change the policy) without inventing a wall of rows. The bodies are
+ * shaped like real ones: a template save, a chrome apply and a page edit, each with the fields the replay
+ * would send.
+ */
+const APPR: ApprData = {
+  pending: 3,
+  status: "pending",
+  canDecide: true,
+  cfg: { manager: true, developer: false, notify: true, expire_days: 14 },
+  approvals: [
+    {
+      id: 41, src: "admin", action: "tpl_save", summary: "Save a quotation template: Renovation",
+      by: "Nadia Iqbal", by_id: 4, role: "admin", at: new Date(Date.now() - 2 * 3600e3).toISOString(),
+      status: "pending", decidedBy: null, decidedAt: null, note: null, result: null, ageHours: 2,
+    },
+    {
+      id: 40, src: "admin", action: "global_chrome", summary: "Change the header on every page",
+      by: "Nadia Iqbal", by_id: 4, role: "admin", at: new Date(Date.now() - 27 * 3600e3).toISOString(),
+      status: "pending", decidedBy: null, decidedAt: null, note: null, result: null, ageHours: 27,
+    },
+    {
+      id: 39, src: "admin", action: "cms_save", summary: "Publish an article: Kitchen layouts that last",
+      by: "Bilal Ahmed", by_id: 6, role: "editor", at: new Date(Date.now() - 50 * 3600e3).toISOString(),
+      status: "pending", decidedBy: null, decidedAt: null, note: null, result: null, ageHours: 50,
+    },
+    {
+      id: 38, src: "admin", action: "quote_save", summary: "Change a quotation: WI-10137",
+      by: "Nadia Iqbal", by_id: 4, role: "admin", at: new Date(Date.now() - 76 * 3600e3).toISOString(),
+      status: "approved", decidedBy: "Imtiaz Ahmad", decidedAt: new Date(Date.now() - 74 * 3600e3).toISOString(),
+      note: null, result: "ok", ageHours: 76,
+    },
+  ],
+};
+
+/** The example in front of every command on this screen: one request waiting, with its own body. */
+const APPR_ONE: ApprDetailData = {
+  canDecide: true,
+  approval: {
+    ...APPR.approvals[0],
+    request: { file: "quotations", fn: "wx_route_tpl_save", method: "POST", params: { id: "0" }, summary: "Save a quotation template: Renovation" },
+    body: {
+      name: "Renovation",
+      kind: "renovation",
+      description: "Strip-out, ceilings, joinery and finishes for a 10-marla house.",
+      terms: "50% on order, 40% on delivery, 10% on handover.",
+      sections: [
+        { name: "1. Preliminaries", items: [{ desc: "Site protection and clearance", qty: 1, unit: "job", rate: 85000 }] },
+      ],
+    },
+  },
+};
+
 const FIXTURES: Record<string, unknown> = {
+  "/approvals": APPR,
+  "/approvals/{id}": APPR_ONE,
   "/business": BIZ_DATA,
   "/business/company": COMPANY_DATA,
   "/projects": PROJ_LIST,
@@ -492,5 +549,5 @@ export function demoFixture(path: string): unknown | null {
 /** The paths the newest screens read — the ones a design review must be able to open. Used by the checks. */
 export const DEMO_COVERED = [
   "/projects", "/projects/{id}", "/notifications", "/forms", "/estimator", "/heroes", "/heroes/home", "/heroes/page*",
-  "/quotations/templates", "/business", "/business/company",
+  "/quotations/templates", "/business", "/business/company", "/approvals", "/approvals/{id}",
 ];

@@ -1305,3 +1305,59 @@ export interface AnnounceData {
   /** How many pages the walker finds, and how many of them load the site's script. */
   pages: { total: number; script: number };
 }
+
+/* ------------------------------------------------------- the master's queue (routes/approvals.php) */
+
+export type ApprStatus = "pending" | "approved" | "rejected" | "expired" | "applying" | "all";
+
+/**
+ * One request waiting for the Master, as the queue reports it (`wx_appr_public()`).
+ *
+ * `summary` is the sentence a person reads — "Save a quotation template: Renovation" — and `action` is
+ * the v2.1 action behind it. The payload that will be replayed is deliberately not in the list: reading a
+ * request is a separate read (`/approvals/{id}`), because 200 rows carrying 200 request bodies is a page
+ * nobody can scroll and nothing can audit.
+ */
+export interface ApprRow {
+  id: number;
+  src: "admin" | "builder" | string;
+  action: string;
+  summary: string;
+  by: string;
+  by_id: number | null;
+  role: string;
+  at: string;
+  status: string;
+  decidedBy: string | null;
+  decidedAt: string | null;
+  note: string | null;
+  result: string | null;
+  /** Hours since it was requested — the age the Master uses to decide what to read first. */
+  ageHours: number;
+}
+
+export interface ApprCfg {
+  manager: boolean;
+  developer: boolean;
+  notify?: boolean;
+  expire_days?: number;
+}
+
+export interface ApprData {
+  approvals: ApprRow[];
+  pending: number;
+  status: string;
+  canDecide: boolean;
+  cfg: ApprCfg;
+}
+
+/** One item with the request that would be replayed, so the Master can read it before deciding. */
+export interface ApprDetail extends Omit<ApprRow, "payload"> {
+  request: { file: string | null; fn: string | null; method: string | null; params: Record<string, unknown>; summary: string };
+  body: Record<string, unknown>;
+}
+
+export interface ApprDetailData {
+  approval: ApprDetail;
+  canDecide: boolean;
+}

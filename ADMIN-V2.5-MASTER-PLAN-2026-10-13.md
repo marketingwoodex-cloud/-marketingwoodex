@@ -284,7 +284,7 @@ Phase **P0** is the prototype already in this repository.
 | `pipeline` | Stage board | **P0 ✓** | `admin-p19f.js` | `/leads?view=board` |
 | `quotes` | Quotations + BOQ builder | **P0 ✓** | `admin-sales.js` | `/quotations` |
 | `theme` | Design tokens | **P0 ✓** | new | — |
-| `approvals` | Master approval queue | P2 | `admin-appr.js` | `/approvals` |
+| `approvals` | Master approval queue | **P2 ✓** | `admin-appr.js` | `/approvals` |
 | `clients` | Client master + 360 | P2 | `admin-sales17.js` | `/clients` |
 | `bookings` | Site visits and slots | P2 | `admin-booking.js` | `/bookings` |
 | `invoices` | Invoices + tracker | P2 | `admin-sales.js` | `/invoices` |

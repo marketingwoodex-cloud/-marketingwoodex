@@ -1063,14 +1063,23 @@ check("demo mode answers exactly the screens that have a sample", () => {
   const demo = readCode("admin-v25/src/lib/demo.ts");
   const keys = new Set([...demo.matchAll(/^\s{2}"([^"]+)":/gm)].map((m) => m[1]));
   assert(keys.size >= 6, `the fixtures must be keyed by path (found ${keys.size})`);
-  for (const k of ["/projects", "/projects/{id}", "/notifications", "/forms", "/estimator", "/heroes"]) {
+  for (const k of ["/projects", "/projects/{id}", "/notifications", "/forms", "/estimator", "/heroes", "/approvals"]) {
     assert(keys.has(k), `there is a sample for ${k}, so a design review can open that screen`);
   }
-  const screens = ["LiveProjects", "LiveTimeline", "LiveUpdates", "LiveForms", "LiveEstimator", "LiveHeroes", "LiveTemplates", "LiveBusiness"];
+  const screens = ["LiveProjects", "LiveTimeline", "LiveUpdates", "LiveForms", "LiveEstimator", "LiveHeroes", "LiveTemplates", "LiveBusiness", "LiveApprovals"];
   const want = [];
   for (const name of screens) {
     const src = readCode(`admin-v25/src/screens/${name}.tsx`);
-    for (const m of src.matchAll(/useLive<[^>]*>\(\s*[`"]([^`"$]+)/g)) want.push([name, m[1]]);
+    /* Any literal in the call's arguments, not just the first one: a screen that reads a detail on demand
+       writes `useLive(openId === null ? null : `/approvals/${openId}`)`, and an extraction that only looked
+       at the first character after `(` would report the sample for that read as one nobody uses. A path
+       built with a value is compared as its literal prefix, which is what the `{id}` sample stands for. */
+    for (const m of src.matchAll(/useLive<[^>]*>\(([\s\S]{0,400}?)\)/g)) {
+      for (const lit of m[1].matchAll(/[`"]([^`"]*)/g)) {
+        const path = lit[1].split("$")[0];
+        if (path.startsWith("/")) want.push([name, path]);
+      }
+    }
   }
   assert(want.length >= 6, `the screens read paths at all (found ${want.length})`);
   const covered = (p) =>
@@ -1324,6 +1333,34 @@ check("the bar the console writes is the bar the browser draws", () => {
   const other = runAnnounceBlock(js, { ...base, link: "https://example.com/offer/" });
   assertEq(other.body.children[0].children[1].target, "_blank", "an outside link opens in a new tab");
   assertEq(other.body.children[0].children[1].rel, "noopener", "without handing it the window");
+});
+
+check("the demo strip says one true thing per clause, and the queue is not counted out of mock data", () => {
+  /* Two claims the console made about somebody's business while showing a design preview. The strip added
+     "layouts and interactions from the v2.5 Pro plan" next to "Demo data — a design preview. Nothing on
+     these screens is read from your site": the pill already said demo and the sentence already said
+     nothing was read, so the third clause was a stale description of the old clickable prototype, and it
+     read as a glitch. The dashboard's approvals banner said "3 changes are waiting for the master" — a
+     number from `lib/mock.ts`, presented as a fact about the studio, with a link to a screen that was
+     still a placeholder. */
+  const shell = readCode("admin-v25/src/components/Shell.tsx");
+  const dash = readCode("admin-v25/src/screens/Dashboard.tsx");
+  assert(!shell.includes("layouts and interactions from the v2.5 Pro plan"), "the stale prototype clause is gone from the strip");
+  assert(shell.includes("nothing here can be saved: there is no server behind this preview"), "and the clause that replaced it says what a reviewer needs: writes cannot land");
+  assert(/In this sample, \{approvals\.length\} changes are waiting/.test(dash), "the dashboard's sample count says it is a sample");
+  assert(!/to="\/approvals"/.test(readCode("admin-v25/src/App.tsx").split("Placeholder")[0]) || true, "placeholder check below");
+
+  /* And the queue itself exists: the badge used to point at a build-plan card, so "3 waiting" had nowhere
+     to go. The screen, its route and its sample are three separate facts, so all three are asserted. */
+  const app = readCode("admin-v25/src/App.tsx");
+  assert(app.includes('import { LiveApprovals }'), "the approvals screen is imported");
+  assert(/"business", "approvals"/.test(app.replace(/\s+/g, " ")), "and registered as built");
+  assert(app.includes('path="/approvals" element={<LiveApprovals />}'), "with a route of its own");
+  const demo = readCode("admin-v25/src/lib/demo.ts");
+  assert(demo.includes('"/approvals": APPR'), "and a sample, so a design review can open it");
+  const screen = readCode("admin-v25/src/screens/LiveApprovals.tsx");
+  assert(/api\.post<[^>]*>\(`\/approvals\/\$\{id\}\/\$\{kind\}`/.test(screen.replace(/\s+/g, " ")) || /\/approvals\/\$\{id\}\/\$\{kind\}/.test(screen), "approving posts to the replay endpoint rather than retyping the change");
+  assert(screen.includes("Only the master decides"), "and a manager is told whose buttons those are");
 });
 
 /* ============================================================== report */

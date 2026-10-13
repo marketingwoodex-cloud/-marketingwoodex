@@ -266,10 +266,13 @@ export function Shell({
         >
           <Pill tone={pill.tone} plain>{pill.label}</Pill>
           <span>{linkText}</span>
-          {/* The plan label belongs to demo mode and to nothing else: an admin that cannot reach its own
-              host is not a design preview, and saying so would be the strip's version of a lie. */}
+          {/* One clause, one fact, and no repetition: the pill already says "demo data" and the sentence
+              beside it already says nothing was read from your site. What a reviewer still needs to know is
+              that nothing here can be *written* either — the buttons are live, and the API behind them is
+              not there. (It used to add "layouts and interactions from the v2.5 Pro plan", which described
+              the old clickable prototype and read, next to the demo sentence, like a glitch.) */}
           {demo && link !== "live" && (
-            <span className="muted">· layouts and interactions from the v2.5 Pro plan</span>
+            <span className="muted">· nothing here can be saved: there is no server behind this preview</span>
           )}
         </div>
 

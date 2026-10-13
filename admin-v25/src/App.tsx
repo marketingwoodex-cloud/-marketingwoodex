@@ -29,6 +29,7 @@ import { LiveTimeline } from "./screens/LiveTimeline";
 import { LiveUpdates } from "./screens/LiveUpdates";
 import { LiveTemplates } from "./screens/LiveTemplates";
 import { LiveBusiness } from "./screens/LiveBusiness";
+import { LiveApprovals } from "./screens/LiveApprovals";
 import { linkLabel, useLive, type BellData } from "./lib/live";
 import { demoOn, setDemo } from "./lib/demo";
 import { Btn, Card, Note, PageHead } from "./components/primitives";
@@ -38,7 +39,7 @@ const BUILT_IDS = new Set([
   "dashboard", "leads", "enquiries", "pipeline", "quotes", "theme", "redirects", "media", "blog", "portfolio", "cities", "global", "pages", "library", "site-theme",
   "testimonials", "team", "heroes",
   "forms", "estimator", "projects", "timeline", "notifications", "templates",
-  "business",
+  "business", "approvals",
 ]);
 
 /** The public entry point: one provider, then the app proper. */
@@ -190,6 +191,10 @@ function Frame({ demo }: { demo: boolean }) {
         <Routes>
           {/* Phase 0 — screens implemented in this prototype */}
           <Route path="/dashboard" element={<Dashboard role={effectiveRole} />} />
+          {/* The Master's queue. A Phase 2 screen that was still a placeholder: the gate, the replay and the
+              audit were built and tested, but the only way to *decide* anything was calling the API by hand
+              — and the shell linked to it from a badge counted out of the prototype's mock data. */}
+          <Route path="/approvals" element={<LiveApprovals />} />
           <Route path="/leads" element={<Leads />} />
           <Route path="/enquiries" element={<Leads />} />
           <Route path="/pipeline" element={<Pipeline />} />

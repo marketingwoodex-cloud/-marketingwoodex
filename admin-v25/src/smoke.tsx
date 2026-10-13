@@ -20,6 +20,7 @@ import { LiveRedirects } from "./screens/LiveRedirects";
 import { LiveMedia } from "./screens/LiveMedia";
 import { LiveContent } from "./screens/LiveContent";
 import { AnnounceBar, LiveGlobal } from "./screens/LiveGlobal";
+import { LiveApprovals } from "./screens/LiveApprovals";
 import { LivePages } from "./screens/LivePages";
 import { LiveLibrary } from "./screens/LiveLibrary";
 import { LiveSiteTheme } from "./screens/LiveSiteTheme";
@@ -193,6 +194,8 @@ let htmlGlobal = "";
 let htmlGlobalOffline = "";
 let htmlAnnOffline = "";
 let htmlAnnDemo = "";
+let htmlApprOffline = "";
+let htmlApprDemo = "";
 let htmlPages = "";
 let htmlPagesOffline = "";
 let htmlLibrary = "";
@@ -566,6 +569,11 @@ try {
      saved, and no button that would pretend to save it. */
   htmlAnnOffline = at(session("offline", null), <AnnounceBar />);
   htmlAnnDemo = at(session("offline", null, true), <AnnounceBar />);
+
+  /* The Master's queue: offline it must not invent a single request, and in demo mode it shows the sample
+     queue with no decision buttons — a preview must not offer to approve something that does not exist. */
+  htmlApprOffline = at(session("offline", null), <LiveApprovals />);
+  htmlApprDemo = at(session("offline", null, true), <LiveApprovals />);
   bzBiz = demoFixture("/business") as BizData;
   bzCompany = demoFixture("/business/company") as CompanyData;
 
@@ -875,8 +883,13 @@ for (const [name, ok] of [
     htmlSignedOutOffline.includes("Nothing on these screens is read from your site"),
   ],
   [
+    /* The clause used to read "layouts and interactions from the v2.5 Pro plan" — a leftover from the
+       clickable prototype, next to a sentence that already said demo data, which read as a glitch. What a
+       reviewer needs from that strip is the fact neither of the others states: nothing here can be saved. */
     "demo mode still says so, because there it is true",
-    htmlSignedOutDemo.includes("demo data") && htmlSignedOutDemo.includes("v2.5 Pro plan"),
+    htmlSignedOutDemo.includes("demo data") &&
+      htmlSignedOutDemo.includes("nothing here can be saved") &&
+      !htmlSignedOutDemo.includes("v2.5 Pro plan"),
   ],
   ["the pill follows the state", linkPill("offline", false).label === "not answering" && linkPill("offline", true).label === "demo data"],
   [
@@ -968,6 +981,18 @@ for (const [name, ok] of [
   /* The announcement panel. Its two failure modes are opposite and both were real: a screen that draws a
      bar it cannot save, and a save that reports success about a bar the site has no code to draw. Neither
      half can be invented here — with no answer there is nothing to preview, and no button that pretends. */
+  /* The queue. A dashboard once said "3 changes are waiting for the master" out of mock data, and the link
+     went to a build-plan card; the number and the screen have to agree, and neither may appear without an
+     API to ask. */
+  [
+    "the approvals queue is offline-honest and demo-labelled",
+    htmlApprOffline.includes("api/v2 is not answering") &&
+      !htmlApprOffline.includes("Save a quotation template") &&
+      htmlApprDemo.includes("Save a quotation template: Renovation") &&
+      htmlApprDemo.includes("3 waiting") &&
+      !htmlApprDemo.includes("api/v2 is not answering") &&
+      !htmlApprDemo.includes("Approve and run it"),
+  ],
   [
     "the announcement panel does not draw a bar it cannot read",
     htmlAnnOffline.includes("api/v2 is not answering") &&
