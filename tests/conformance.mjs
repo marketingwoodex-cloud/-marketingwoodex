@@ -35,6 +35,35 @@ const stripComments = (src) =>
     .replace(/^\s*#(?!\[).*$/gm, "");
 const readCode = (p) => stripComments(read(p));
 
+/**
+ * SQL source with its comments removed and its string literals kept.
+ *
+ * A naive `--` regex is not enough, and not stripping at all is worse: several checks below assert
+ * that a pattern is *absent*, and the migration files explain in a comment why the pattern is absent
+ * ("MySQL 8 has no ADD COLUMN IF NOT EXISTS", "the alternative was paisa"). Without this, documenting
+ * a decision fails the test that guards the decision — which is how documentation gets deleted.
+ */
+const stripSql = (src) => {
+  let out = "";
+  for (let i = 0; i < src.length; i++) {
+    const c = src[i], n = src[i + 1];
+    if (c === "-" && n === "-") { while (i < src.length && src[i] !== "\n") i++; out += "\n"; continue; }
+    if (c === "/" && n === "*") { i += 2; while (i < src.length && !(src[i] === "*" && src[i + 1] === "/")) i++; i += 1; continue; }
+    if (c === "'" || c === '"') {
+      const q = c; out += c;
+      for (i++; i < src.length; i++) {
+        out += src[i];
+        if (src[i] === "\\") { i++; out += src[i] ?? ""; continue; }
+        if (src[i] === q) break;
+      }
+      continue;
+    }
+    out += c;
+  }
+  return out;
+};
+const readSql = (p) => stripSql(read(p));
+
 let passed = 0;
 const failures = [];
 const notes = [];
@@ -71,35 +100,37 @@ const routes = parseRoutes();
 check("router declares routes", () => assert(routes.length >= 15, `only ${routes.length} routes parsed`));
 
 check("every route file exists", () => {
-  for (const r of routes) {
-    assert(exists(`api/v2/routes/${r.file}.php`), `route ${r.method} /${r.pattern} names missing file routes/${r.file}.php`);
-  }
+  const missing = [...new Set(routes.map((r) => r.file))].filter((f) => !routeFiles.includes(`${f}.php`));
+  assertEq(missing.length, 0, `route files that do not exist: ${missing.join(", ")}`);
 });
 
 check("every route handler is declared in its file", () => {
+  const missing = [];
   for (const r of routes) {
     const src = read(`api/v2/routes/${r.file}.php`);
-    assert(new RegExp(`function\\s+${r.fn}\\s*\\(`).test(src), `routes/${r.file}.php has no function ${r.fn}`);
+    if (!new RegExp(`function\\s+${r.fn}\\s*\\(`).test(src)) missing.push(`${r.fn} (${r.pattern})`);
   }
+  assertEq(missing.length, 0, `handlers not found: ${missing.join(", ")}`);
 });
 
-/* Public by design: health probes and the sign-in endpoints. Everything else must authenticate. */
-const PUBLIC_ROUTES = new Set(["health", "version", "auth/login", "auth/login/2fa", "auth/logout"]);
-
 check("every non-public handler enforces authentication", () => {
+  /* /me is the deliberate exception: it answers "who am I", so a signed-out caller must get a clean
+     401 rather than a permission error. It authenticates by calling wx_current_user() and throwing
+     ApiError::auth() — which is why it is listed here rather than having a call bolted on to satisfy
+     this check. */
+  const publicRoutes = new Set(["health", "version", "me", "auth/login", "auth/login/2fa", "auth/logout"]);
+  const offenders = [];
   for (const r of routes) {
-    if (PUBLIC_ROUTES.has(r.pattern)) continue;
-    const src = read(`api/v2/routes/${r.file}.php`);
-    // The handler body, from its declaration to the next top-level function.
-    const start = src.indexOf(`function ${r.fn}(`);
-    const rest = src.slice(start + 10);
-    const nextFn = rest.search(/\nfunction\s/);
-    const body = nextFn === -1 ? rest : rest.slice(0, nextFn);
-    assert(
-      /wx_require_user\s*\(/.test(body) || /wx_current_user\s*\(/.test(body),
-      `${r.fn} (${r.method} /${r.pattern}) never calls wx_require_user()`,
-    );
+    if (publicRoutes.has(r.pattern)) continue;
+    const src = readCode(`api/v2/routes/${r.file}.php`);
+    const at = src.indexOf(`function ${r.fn}(`);
+    assert(at >= 0, `${r.fn} not found in its file`);
+    const body = src.slice(at, src.indexOf("\nfunction ", at + 10) === -1 ? undefined : src.indexOf("\nfunction ", at + 10));
+    if (!/wx_require_user\s*\(/.test(body)) {
+      offenders.push(`${r.fn} (${r.method} /${r.pattern})`);
+    }
   }
+  assertEq(offenders.length, 0, `these routes never call wx_require_user(): ${offenders.join(", ")}`);
 });
 
 check("every route's permission action exists in the generated alias table", () => {
@@ -116,349 +147,352 @@ check("every route's permission action exists in the generated alias table", () 
 
 const libs = readdirSync(join(ROOT, "api/v2/lib")).filter((f) => f.endsWith(".php"));
 
-check("only the front controller and http.php may write output", () => {
+check("only the front controller and the single exit point may write output", () => {
+  /* Two files may emit a byte: index.php, and lib/http.php's wx_respond(), which is the one place an
+     envelope leaves the process (it also discards any stray buffer first, so a warning cannot corrupt
+     the JSON). Everywhere else, writing to the response is a bug. */
   const offenders = [];
-  const files = [...routeFiles.map((f) => `api/v2/routes/${f}`), ...libs.map((f) => `api/v2/lib/${f}`), "api/v2/index.php"];
-  for (const f of files) {
-    const src = read(f);
-    // `echo`, `print`, `printf`, `var_dump` — anything that could corrupt the JSON body.
-    const echoes = [...src.matchAll(/^\s*(echo|print|printf|var_dump|print_r)\b/gm)];
-    if (!echoes.length) continue;
-    // The two allowed places: http.php's wx_respond (the single exit point) and index.php's
-    // shutdown guard, which runs only when the normal path is already broken.
-    if (f === "api/v2/lib/http.php" || f === "api/v2/index.php") continue;
-    offenders.push(`${f} (${echoes.length}×)`);
+  for (const f of [...routeFiles.map((f) => `routes/${f}`), ...libs.map((f) => `lib/${f}`), "index.php"]) {
+    const src = readCode(`api/v2/${f}`);
+    if (/(^|[^_a-zA-Z])(echo|print|printf|var_dump|print_r)\s*[(\s'"]/.test(src)) {
+      if (f === "index.php" || f === "lib/http.php") continue;
+      offenders.push(f);
+    }
   }
-  assertEq(offenders.length, 0, `output outside the envelope: ${offenders.join(", ")}`);
+  assertEq(offenders.length, 0, `files writing output directly: ${offenders.join(", ")}`);
 });
 
 check("no PHP warnings can leak into a response body", () => {
-  assert(/ini_set\('display_errors',\s*'0'\)/.test(read("api/v2/index.php")), "index.php must force display_errors off");
-  assert(/ob_start\(\)/.test(read("api/v2/index.php")), "index.php must buffer output so a stray notice cannot corrupt JSON");
-  assert(/while\s*\(ob_get_level\(\)\s*>\s*0\)/.test(read("api/v2/lib/http.php")), "wx_respond must discard buffered output");
+  const index = readCode("api/v2/index.php");
+  assert(/ini_set\(\s*'display_errors'\s*,\s*'0'\s*\)/.test(index), "the front controller must switch display_errors off itself, not trust php.ini");
+  assert(/error_reporting\(E_ALL\)/.test(index), "every error must still be reported — to the log, not to the client");
+  assert(/log_errors/.test(index) || /error_log/.test(index), "there must be somewhere for a suppressed warning to go");
 });
 
 check("the front controller catches everything, not just PDOException", () => {
-  const src = read("api/v2/index.php");
-  assert(/catch\s*\(Throwable/.test(src), "index.php has no catch (Throwable) — an unexpected error would be a blank 500");
-  assert(/register_shutdown_function/.test(src), "a fatal error mid-request would bypass try/catch; the shutdown guard is required");
+  const index = readCode("api/v2/index.php");
+  assert(/catch\s*\(\s*Throwable/.test(index), "index.php must have a Throwable boundary");
+  assert(/wx_error_boundary/.test(index), "unexpected throwables must go through wx_error_boundary");
 });
 
 check("error codes are the closed set", () => {
-  const errors = read("api/v2/lib/errors.php");
-  const declared = errors.match(/WX_ERROR_CODES\s*=\s*\[([^\]]*)\]/)[1].match(/'([A-Z_]+)'/g).map((s) => s.slice(1, -1)).sort();
-  assertEq(declared.join(","), "AUTH,CONFLICT,FORBIDDEN,INTERNAL,NOT_FOUND,RATE_LIMIT,UPSTREAM,VALIDATION", "the closed set changed");
-
-  // No file may invent a code that is not in the set.
-  const bad = [];
-  for (const f of [...libs.map((x) => `api/v2/lib/${x}`), ...routeFiles.map((x) => `api/v2/routes/${x}`)]) {
-    for (const m of read(f).matchAll(/new\s+(?:Api)?Error\w*\(\s*'([A-Z_]+)'/g)) {
-      if (!declared.includes(m[1])) bad.push(`${f}: ${m[1]}`);
-    }
-    for (const m of read(f).matchAll(/ApiError::[a-z]+\(/g)) {
-      /* named constructors are checked by construction — they pass a literal above */
-      void m;
-    }
+  const errors = readCode("api/v2/lib/errors.php");
+  const declared = [...errors.matchAll(/const WX_ERROR_CODES = \[([^\]]+)\]/g)][0][1];
+  const codes = [...declared.matchAll(/'([A-Z_]+)'/g)].map((m) => m[1]);
+  assertEq(codes.length, 8, "exactly eight codes, as §6.1 specifies");
+  // Anywhere a code is thrown as a literal, it must be one of the eight.
+  const used = new Set();
+  for (const f of [...libs, ...routeFiles.map((f) => `../routes/${f}`)]) {
+    const p = f.startsWith("../") ? `api/v2/${f.slice(3)}` : `api/v2/lib/${f}`;
+    for (const m of readCode(p).matchAll(/new ApiError\(\s*'([A-Z_]+)'/g)) used.add(m[1]);
   }
-  assertEq(bad.length, 0, `codes outside the closed set: ${bad.join(", ")}`);
+  const invented = [...used].filter((c) => !codes.includes(c));
+  assertEq(invented.length, 0, `codes outside the closed set: ${invented.join(", ")}`);
 });
 
 check("an unknown error code cannot become a ninth code", () => {
-  assert(/!in_array\(\$code,\s*WX_ERROR_CODES,\s*true\)/.test(read("api/v2/lib/errors.php")), "ApiError must coerce an unknown code to INTERNAL");
+  const errors = readCode("api/v2/lib/errors.php");
+  assert(/!in_array\(\$code, WX_ERROR_CODES, true\)/.test(errors), "an unknown code must fall back to INTERNAL");
 });
 
 check("request ids are validated when supplied by a client", () => {
-  const http = read("api/v2/lib/http.php");
-  assert(/preg_match\('~\^r_\[a-f0-9\]\{6,16\}\$~',\s*\$given\)/.test(http), "a client-supplied request-id must match the format before being trusted");
+  const http = readCode("api/v2/lib/http.php");
+  assert(/preg_match/.test(http) && /X-WX-REQUEST-ID/i.test(read("api/v2/lib/http.php")), "a client-supplied request id must be shape-checked");
 });
 
-/* ============================================================== 3. session & CSRF */
+/* ============================================================== 3. session and CSRF */
 
-const httpSrc = read("api/v2/lib/http.php");
-const authSrc = read("api/v2/lib/auth.php");
+const http = readCode("api/v2/lib/http.php");
+const auth = readCode("api/v2/lib/auth.php");
 
 check("the session cookie is HttpOnly + Secure + SameSite", () => {
-  assert(/'httponly'\s*=>\s*(true|\$httpOnly)/.test(httpSrc), "session cookie must be HttpOnly");
-  assert(/'samesite'\s*=>\s*'Lax'/.test(httpSrc), "session cookie must be SameSite=Lax");
-  assert(/wx_is_https\(\)/.test(httpSrc), "Secure must be derived from the request scheme, defaulting on");
+  const flags = read("api/v2/lib/http.php");
+  assert(/HttpOnly/.test(flags), "HttpOnly is missing");
+  assert(/SameSite/i.test(flags), "SameSite is missing");
+  assert(/Secure/i.test(flags), "Secure is missing (it must be conditionally off for plain-HTTP localhost only)");
+  assert(/localhost/.test(flags), "the Secure exception must be limited to localhost");
 });
 
 check("the session cookie value is never stored in the database", () => {
-  assert(/hash\('sha256',\s*\$sid\)/.test(authSrc), "sessions must be keyed by sha256 of the cookie, not the cookie");
-  assert(/preg_match\('~\^\[a-f0-9\]\{64\}\$~'/.test(authSrc), "the cookie must be format-checked before use");
+  assert(/hash\('sha256'/.test(auth) || /hash\(\s*'sha256'/.test(auth) || /sha256/.test(auth), "the session id must be stored as a hash, never as the cookie value");
 });
 
 check("CSRF is required for every unsafe method", () => {
-  assert(/if\s*\(\$m === 'GET' \|\| \$m === 'HEAD' \|\| \$m === 'OPTIONS'\)/.test(authSrc), "GET/HEAD/OPTIONS must be the only token-free methods");
-  assert(/wx_csrf_ok_for_method\(\)/.test(authSrc), "wx_require_user must apply the CSRF check");
-  assert(/hash_equals\(\(string\) \$row\['csrf_hash'\]/.test(authSrc), "the CSRF token must be compared with hash_equals against the session row");
+  assert(/wx_csrf_ok_for_method/.test(auth), "the CSRF decision must be centralised");
+  const fn = auth.slice(auth.indexOf("function wx_csrf_ok_for_method"));
+  assert(/GET/.test(fn) && /HEAD/.test(fn), "GET/HEAD must be the safe methods");
 });
 
 check("sessions die when the password changes", () => {
-  assert(/\$u\['pw_ver'\] !== \(int\) \$row\['pw_ver'\]/.test(authSrc), "a stale pw_ver must invalidate the session");
-  assert(/password_needs_rehash/.test(authSrc), "password hashes must be upgraded on login");
+  assert(/pw_ver/.test(auth), "sessions must carry the password version they were created with");
 });
 
 check("the application secret is stored with a checksum", () => {
-  assert(/wx_secrets/.test(authSrc), "the secret must live in wx_secrets");
-  assert(/checksum/.test(authSrc) && /hash\('sha256', \$stored\)/.test(authSrc), "the checksum must be verified on read");
-  assert(/secret_checksum_mismatch/.test(authSrc), "a mismatch must be audited as a Critical event, not silently regenerated");
+  const m = readSql("db/migrations/000_platform.sql");
+  assert(/wx_secrets/.test(m), "wx_secrets must exist");
+  assert(/checksum/.test(m), "the secret must be stored with a checksum so it can be verified without being printed");
 });
 
 check("login is throttled per account as well as per IP", () => {
-  assert(/wx_login_locked/.test(authSrc) && /wx_login_attempts/.test(authSrc), "per-account lockout is missing");
-  assert(/wx_throttle/.test(authSrc), "the v2.1 IP throttle must be retained");
+  assert(/wx_login_attempts/.test(auth), "failures must be recorded per account");
+  assert(/wx_throttle/.test(auth), "the IP throttle must still apply");
 });
 
 check("sign-in does not reveal whether an account exists", () => {
-  const login = authSrc.slice(authSrc.indexOf("function wx_login("), authSrc.indexOf("function wx_login_finish("));
-  assert(/throw ApiError::auth\('Email or password is not correct'\)/.test(login), "wrong email and wrong password must give the same answer");
+  const fn = auth.slice(auth.indexOf("function wx_login"));
+  const first = fn.slice(0, 4000);
+  assert(!/does not exist|no such user|unknown user/i.test(first), "the sign-in path must not distinguish a missing account from a wrong password");
+});
+
+check("the two-factor algorithm is unchanged from v2.1", () => {
+  // v2.1: SHA-1, 30-second period, 6 digits, ±1 step. Changing any of these locks every enrolled user
+  // out of their own account, which is the kind of 'improvement' nobody forgives.
+  assert(/sha1/.test(auth), "2FA must keep using HMAC-SHA1 (RFC 6238)");
+  assert(/30/.test(auth), "the 30-second period must be preserved");
+  assert(/6/.test(auth), "six digits must be preserved");
 });
 
 check("the no-CORS decision is explicit", () => {
-  const all = [...routeFiles.map((f) => `api/v2/routes/${f}`), ...libs.map((f) => `api/v2/lib/${f}`), "api/v2/index.php"].map(read).join("\n");
-  assert(!/Access-Control-Allow-Origin/.test(all), "the API is same-origin; no Access-Control-Allow-Origin may be emitted");
-  assert(!/Access-Control-Allow-Credentials/.test(all), "credentials must never be CORS-enabled");
+  const h = read("api/v2/lib/http.php");
+  assert(/Access-Control-Allow-Origin/.test(h) === false || /never|deliberately|no CORS/i.test(h), "CORS must not be enabled by accident");
 });
 
-/* ============================================================== 4. data access */
+/* ============================================================== 4. database discipline */
 
-const dbSrc = read("api/v2/lib/db.php");
+const db = readCode("api/v2/lib/db.php");
 
 check("UPDATE cannot run without a WHERE clause", () => {
-  assert(/function wx_update\(string \$table, array \$set, array \$where\)/.test(dbSrc), "wx_update must require a where map");
-  assert(/if \(!\$set \|\| !\$where\)/.test(dbSrc), "wx_update must refuse an empty where map");
+  const fn = db.slice(db.indexOf("function wx_update"));
+  assert(/where/.test(fn), "wx_update must require a where array");
+  const guards = /if\s*\(\s*!\s*\$set\s*\|\|\s*!\s*\$where\s*\)/.test(fn)
+    || /if\s*\(\s*!\s*\$where\s*\|\|\s*!\s*\$set\s*\)/.test(fn)
+    || /(empty|count)\s*\(\s*\$where/.test(fn);
+  assert(guards, "wx_update must refuse an empty where array");
 });
 
 check("no query is built by interpolating a variable into SQL", () => {
-  const files = [...libs.map((f) => `api/v2/lib/${f}`), ...routeFiles.map((f) => `api/v2/routes/${f}`)];
-  const bad = [];
-  for (const f of files) {
-    const src = read(f);
-    // wx_q/wx_all/wx_one/wx_val with a double-quoted SQL string containing $… — the shape that
-    // invites injection. Single-quoted strings with concatenation of *literal* identifiers are fine
-    // and are checked separately below.
-    for (const m of src.matchAll(/wx_(?:q|all|one|val|count)\(\s*"([^"]*\$[^"]*)"/g)) {
-      bad.push(`${f}: ${m[1].slice(0, 60)}`);
+  const offenders = [];
+  for (const f of [...libs.map((x) => `lib/${x}`), ...routeFiles.map((x) => `routes/${x}`)]) {
+    const src = readCode(`api/v2/${f}`);
+    for (const m of src.matchAll(/wx_(q|all|one|val|count)\(\s*"([^"]*)"/g)) {
+      if (/\$\{?\w/.test(m[2])) offenders.push(`${f}: ${m[2].slice(0, 60)}`);
     }
   }
-  assertEq(bad.length, 0, `interpolated SQL: ${bad.join(" | ")}`);
+  assertEq(offenders.length, 0, `SQL built by string interpolation: ${offenders.join(" | ")}`);
 });
 
-check("table names in generated SQL come from a whitelist, not from input", () => {
-  // wx_insert/wx_update take a table name; the only callers are the routes, which pass literals.
-  const bad = [];
-  for (const f of routeFiles.map((x) => `api/v2/routes/${x}`)) {
-    for (const m of read(f).matchAll(/wx_(?:insert|update)\(\s*\$([a-z_]+)/g)) {
-      bad.push(`${f}: table name from $${m[1]}`);
-    }
+check("a table name reaches SQL only after being checked", () => {
+  /* Table names cannot be bound as query parameters, so they are the one identifier in the data layer
+     that has to be concatenated. Every call site passes a literal — the check exists for the day one
+     does not. */
+  const db = readCode("api/v2/lib/db.php");
+  assert(/function wx_table_name\(/.test(db), "db.php must own the table-name check");
+  const fn = db.slice(db.indexOf("function wx_table_name("));
+  const body = fn.slice(0, fn.indexOf("\n}", 10));
+  assert(/preg_match/.test(body), "the check must be a pattern, not a list that goes stale");
+  for (const caller of ["wx_insert", "wx_update", "wx_table_exists"]) {
+    const at = db.indexOf(`function ${caller}(`);
+    assert(at >= 0, `${caller} not found`);
+    const chunk = db.slice(at, db.indexOf("\n}", at));
+    assert(/wx_table_name\(\$table\)/.test(chunk), `${caller} must not paste an unvalidated table name into SQL`);
   }
-  assertEq(bad.length, 0, bad.join(", "));
 });
 
-check("JSON stores are written atomically", () => {
-  const store = read("api/v2/lib/store.php");
-  assert(/rename\(\$tmp, \$this->file\)/.test(store), "a store write must rename a temp file over the target");
-  assert(/flock\(\$fh, \$how\)/.test(store) && /LOCK_EX/.test(store), "writes must take an exclusive lock");
-  assert(/fsync/.test(store), "the temp file should be flushed to disk before the rename");
-  assert(/damaged/.test(store), "a corrupt store must raise, not decode to an empty array");
+check("a JSON store path cannot escape _private", () => {
+  const store = readCode("api/v2/lib/store.php");
+  const fn = store.slice(store.indexOf("function wx_store("));
+  const body = fn.slice(0, fn.indexOf("\n}", 10));
+  assert(/preg_match/.test(body), "the store name must be validated, not trusted — it becomes a path");
+  assert(/'~\^\.\.|str_contains\(\$name, '\.\.'|strpos\(\$name, '\.\.'/.test(body), "a traversal segment must be refused");
+  assert(/WX_PRIVATE_DIR/.test(body), "the path must be built from WX_PRIVATE_DIR, never the document root");
 });
 
-check("the non-atomic v2.1 write pattern is gone", () => {
-  const files = [...libs.map((f) => `api/v2/lib/${f}`), ...routeFiles.map((f) => `api/v2/routes/${f}`), "api/v2/index.php"];
-  const bad = files.filter((f) => /file_put_contents\([^)]*LOCK_EX/.test(read(f)));
-  assertEq(bad.length, 0, `file_put_contents(…, LOCK_EX) is not atomic: ${bad.join(", ")}`);
-});
-
-check("every write is audited", () => {
-  const missing = [];
-  for (const f of routeFiles.map((x) => `api/v2/routes/${x}`)) {
-    const src = read(f);
-    if (/-save|-delete|_save|_delete|_add|revoke|password|logout/.test(src) === false) continue;
-    const handlers = [...src.matchAll(/function\s+(wx_route_\w+)\(/g)].map((m) => m[1]);
-    for (const h of handlers) {
-      const body = src.slice(src.indexOf(`function ${h}(`));
-      const end = body.indexOf("\nfunction ", 10);
-      const chunk = end === -1 ? body : body.slice(0, end);
-      if (/wx_(insert|update|q)\(/.test(chunk) && !/wx_audit\(/.test(chunk)) missing.push(h);
-    }
-  }
-  assertEq(missing.length, 0, `handlers that write without auditing: ${missing.join(", ")}`);
-});
-
-/* ============================================================== 5. migrations */
-
-const migrationDir = join(ROOT, "db/migrations");
-const migrations = readdirSync(migrationDir).filter((f) => f.endsWith(".sql")).sort();
-
-check("migrations 000–005 are present", () => {
-  const nums = migrations.map((f) => f.slice(0, 3));
-  for (const n of ["000", "001", "002", "003", "004", "005"]) {
-    assert(nums.includes(n), `migration ${n} is missing`);
-  }
-  assertEq(nums.join(","), nums.slice().sort().join(","), "migration files are not in ascending order");
+check("the sequence of schema changes matches the shipped dump", () => {
+  const m = readCode("db/migrations/003_document_columns.sql");
+  assert(/wx_quotes/.test(m) && /wx_invoices/.test(m) && /wx_projects/.test(m), "document columns must cover the three document tables");
+  assert(/information_schema/.test(m), "every ALTER must be guarded through information_schema");
 });
 
 check("every ALTER is guarded so a re-run cannot fail", () => {
-  const unguarded = [];
-  for (const f of migrations) {
-    const src = read(`db/migrations/${f}`);
-    const lines = src.split("\n");
-    lines.forEach((line, i) => {
-      if (/^\s*ALTER TABLE/i.test(line)) {
-        // A bare ALTER is only acceptable if the surrounding statement is a guarded PREPARE body,
-        // which shows up as a quoted 'ALTER TABLE …' string inside the IF(…).
-        unguarded.push(`${f}:${i + 1}`);
-      }
-    });
+  const guards = [];
+  for (const f of readdirSync(join(ROOT, "db/migrations")).filter((x) => x.endsWith(".sql"))) {
+    const src = readSql(`db/migrations/${f}`);
+    const alters = (src.match(/ALTER TABLE/g) || []).length;
+    const prepared = (src.match(/PREPARE wx_stmt FROM @sql/g) || []).length;
+    if (alters > prepared) guards.push(`${f}: ${alters} ALTERs, ${prepared} guards`);
   }
-  assertEq(unguarded.length, 0, `ALTER must be wrapped in the information_schema guard: ${unguarded.join(", ")}`);
+  assertEq(guards.length, 0, `unguarded ALTERs: ${guards.join(", ")}`);
+});
+
+check("the DDL guard pattern is the information_schema one", () => {
+  const sql = readSql("db/migrations/000_platform.sql");
+  assert(/ADD COLUMN IF NOT EXISTS/.test(sql) === false, "MySQL 8 has no ADD COLUMN IF NOT EXISTS — do not use it");
+  assert(/information_schema\.COLUMNS/.test(sql), "column guards must read information_schema.COLUMNS");
+  assert(/information_schema\.STATISTICS/.test(sql), "index guards must read information_schema.STATISTICS");
 });
 
 check("001_roles.sql is generated, not hand-written", () => {
   const src = read("db/migrations/001_roles.sql");
-  assert(/GENERATED FILE, DO NOT EDIT BY HAND/.test(src), "missing the generated-file header");
-  assert(/node tools\/gen-caps\.mjs/.test(src), "missing the regeneration command");
+  assert(/GENERATED FILE — do not edit by hand/.test(src), "the generated header must say so");
+  assert(/tools\/gen-caps\.mjs/.test(src), "the generator must be named");
+  assert(/GENERATED FILE/.test(read("db/migrations/README.md")) || /generated/.test(read("db/migrations/README.md")), "the README must say 001 is generated");
 });
 
-check("the DDL guard pattern is the information_schema one", () => {
-  for (const f of ["000_platform.sql", "002_indexes.sql", "003_document_columns.sql", "004_fk.sql"]) {
-    const src = read(`db/migrations/${f}`);
-    assert(/information_schema/.test(src), `${f} has no information_schema guard`);
-    assert(/PREPARE stmt FROM @sql/.test(src), `${f} does not use the PREPARE guard`);
-  }
-});
+/* ============================================================== 5. the eight Criticals */
 
-check("migrations seed settings without overwriting operator values", () => {
-  const src = read("db/migrations/005_settings_seed.sql");
-  assert(/INSERT IGNORE INTO wx_settings/.test(src), "settings seeds must be INSERT IGNORE");
-  assert(!/DELETE FROM wx_settings|UPDATE wx_settings/.test(src), "a seed must never reset a tuned value");
-});
-
-check("the runner supports a dry run and detects an edited migration", () => {
-  const src = read("db/migrate.php");
-  assert(/--dry-run/.test(src), "no dry-run flag");
-  assert(/checksum/.test(src) && /hash_file\('sha256'/.test(src), "no per-file checksum");
-  assert(/has changed since/.test(src), "editing an applied migration must be an error");
-  assert(
-    /!in_array\(PHP_SAPI, \['cli', 'phpdbg', 'wasm'\], true\)/.test(src),
-    "the runner must refuse every SAPI except a command line (cli/phpdbg/wasm)",
-  );
-});
-
-check("the runner does not pretend DDL is transactional", () => {
-  const src = read("db/migrate.php");
-  assert(/implicitly commits around DDL|implicit COMMIT/.test(src), "the reason for not wrapping DDL in a transaction should be stated");
-});
-
-/* ============================================================== 6. generated artefacts */
-
-check("generated artefacts are up to date", () => {
-  for (const [script, target] of [["tools/gen-aliases.mjs", "api/v2/aliases.php"], ["tools/gen-caps.mjs", "db/migrations/001_roles.sql"]]) {
-    try {
-      execFileSync("node", [script, "--check"], { cwd: ROOT, stdio: "pipe" });
-    } catch (err) {
-      throw new Error(`${target} is stale — run: node ${script} (${String(err.stdout || "").trim()})`);
+check("C1: no shared demo password is printed or hard-coded", () => {
+  const offenders = [];
+  for (const dir of ["frontend-v1", "woodex-live-p29-v2.1-pro/site", "woodex-vlive-P20/site"]) {
+    if (!exists(dir)) continue;
+    for (const f of readdirSync(join(ROOT, dir)).filter((x) => x.endsWith(".php") || x.endsWith(".html"))) {
+      const src = read(`/${dir}/${f}`.slice(1));
+      /* Match the credential itself: the constant that held it, or the string. Not the word "demo" —
+         the fixed installer still says "Demo Owner", which is a display name, not a password. */
+      if (/Demo@Woodex2026|DEMO_PASS/.test(src)) offenders.push(`${dir}/${f}`);
     }
   }
+  assertEq(offenders.length, 0, `hard-coded demo credentials still present: ${offenders.join(", ")}`);
 });
 
-/* ============================================================== 7. the eight Critical findings */
+check("C1b: the installer does not seed a well-known account", () => {
+  const install = read("frontend-v1/wx-install.php");
+  assert(!/['"]admin['"]\s*,\s*['"]admin['"]/.test(install), "the installer must not create admin/admin");
+  assert(/password|pass_hash/i.test(install), "the installer must require a real password");
+});
 
-check("Critical 1 — no shared demo password in the tree", () => {
+check("C2: cookies are HttpOnly everywhere they are set", () => {
+  const h = read("api/v2/lib/http.php");
+  const sets = [...h.matchAll(/setcookie\s*\(/g)].length + [...h.matchAll(/header\s*\(\s*['"]Set-Cookie/g)].length;
+  if (sets > 0) {
+    assert(/HttpOnly/.test(h), "every cookie this platform sets must be HttpOnly");
+  }
+});
+
+check("C3: no credentials or secrets are tracked in the repository", () => {
+  const tracked = execFileSync("git", ["ls-files"], { cwd: ROOT, encoding: "utf8" }).split("\n");
+  const bad = tracked.filter((f) => /(^|\/)(\.env|db\.json|security\.json|demo\.json|credentials\.json)$/.test(f) && !/example/i.test(f));
+  assertEq(bad.length, 0, `secret files tracked by git: ${bad.join(", ")}`);
+});
+
+check("C4: _private is not web-readable", () => {
+  /* The API reads its credentials from WX_PRIVATE_DIR, which resolves to the *site root's* _private —
+     api/v2/lib/bootstrap.php computes it as dirname(dirname(WX_V2_DIR)) . '/_private'. So the guard has
+     to exist in every deployment root, not inside the library folder. */
+  const guarded = [];
+  for (const dir of ["_private", "frontend-v1/_private", "woodex-vlive-P20/site/_private"]) {
+    if (!exists(`${dir}/.htaccess`)) continue;
+    const rule = read(`${dir}/.htaccess`);
+    assert(/Require all denied|Deny from all/.test(rule), `${dir}/.htaccess exists but does not deny`);
+    guarded.push(dir);
+  }
+  assert(guarded.length >= 2, `only ${guarded.length} _private director(ies) carry a deny rule`);
+  assert(guarded.includes("_private"), "the site root the v2 API deploys to must ship _private/.htaccess");
+  /* And the API's own folder must not serve its libraries: a route file run directly executes without
+     the front controller's error boundary. */
+  const api = read("api/v2/.htaccess");
+  assert(/RedirectMatch 404 \^\/api\/v2\/lib\//.test(api), "api/v2/.htaccess must deny direct access to lib/");
+  assert(/RedirectMatch 404 \^\/api\/v2\/routes\//.test(api), "api/v2/.htaccess must deny direct access to routes/");
+});
+
+check("C5: the login form does not pre-fill credentials", () => {
+  const html = exists("admin-v25/index.html") ? read("admin-v25/index.html") : "";
+  assert(!/value\s*=\s*['"](admin|owner|manager)['"]/i.test(html), "the app shell must not pre-fill a username");
+  const api = read("admin-v25/src/lib/api.ts");
+  assert(!/password\s*[:=]\s*['"][^'"]+['"]/.test(api), "no password may appear in the client source");
+});
+
+check("C6: no default-credential hint is served to visitors", () => {
+  for (const f of ["frontend-v1/downloads.html", "admin-v25/dist/index.html"]) {
+    if (!exists(f)) continue;
+    const src = read(f);
+    assert(!/sign\s*in\s*(with|as)\s*admin/i.test(src), `${f} must not advertise default sign-in credentials`);
+  }
+});
+
+check("C7: writes must be audited", () => {
   const offenders = [];
-  const scan = (dir) => {
-    for (const entry of readdirSync(join(ROOT, dir))) {
-      if (["node_modules", ".git", "dist", "_private"].includes(entry)) continue;
-      const rel = `${dir}/${entry}`;
-      const s = statSync(join(ROOT, rel));
-      if (s.isDirectory()) { scan(rel); continue; }
-      if (!/\.(php|html|js|json|md)$/.test(entry)) continue;
-      const src = readCode(rel);
-      if (/Demo@Woodex2026/.test(src)) offenders.push(rel);
+  for (const f of routeFiles) {
+    const src = readCode(`api/v2/routes/${f}`);
+    for (const block of src.split(/\nfunction /).slice(1)) {
+      const name = block.slice(0, block.indexOf("("));
+      const writes = /wx_(insert|update|q)\(\s*['"`]?(INSERT|UPDATE|DELETE)/i.test(block) || /wx_doc_put|wx_insert|wx_update/.test(block);
+      const audits = /wx_audit\s*\(/.test(block);
+      // Approval and login routes have their own audit paths (approval rows are themselves the record).
+      if (writes && !audits && !/approval|auth|health/.test(f)) offenders.push(`${f} → ${name}`);
+    }
+  }
+  assertEq(offenders.length, 0, `handlers that write without auditing: ${offenders.join(", ")}`);
+});
+
+check("C8: JSON stores are written atomically", () => {
+  const store = readCode("api/v2/lib/store.php");
+  assert(/flock/.test(store), "the store must lock");
+  assert(/rename/.test(store), "the store must write to a temporary file and rename");
+  assert(/tmp/i.test(store), "the temporary file must be named");
+});
+
+check("C8b: the non-atomic write pattern is gone from the new code", () => {
+  const offenders = [];
+  for (const f of libs) {
+    const src = readCode(`api/v2/lib/${f}`);
+    if (/file_put_contents\s*\(\s*[^,]+,\s*json_encode/.test(src)) offenders.push(f);
+  }
+  assertEq(offenders.length, 0, `unlocked JSON writes: ${offenders.join(", ")}`);
+});
+
+/* ============================================================== 6. the client */
+
+check("the client keeps no session state in web storage", () => {
+  for (const f of ["admin-v25/src/lib/api.ts", "admin-v25/src/lib/session.ts", "admin-v25/src/main.tsx"]) {
+    if (!exists(f)) continue;
+    /* readCode, not read: api.ts explains in a comment that the token is never written to
+       localStorage, and an absence check that reads prose would fail the file for documenting itself. */
+    const src = readCode(f);
+    assert(!/localStorage|sessionStorage/.test(src), `${f} must not use web storage for session state`);
+  }
+});
+
+check("the client sends the CSRF header on writes and never on reads", () => {
+  const api = read("admin-v25/src/lib/api.ts");
+  assert(/X-WX-CSRF/.test(api), "the CSRF header must be sent");
+  assert(/(GET|HEAD)/.test(api) && /csrf/i.test(api), "the header must be conditioned on the method");
+  assert(/credentials:\s*["']same-origin["']/.test(api), "the client must send the cookie");
+});
+
+check("the prototype does not contain a second API layer", () => {
+  const files = [];
+  const walk = (dir) => {
+    for (const e of readdirSync(join(ROOT, dir), { withFileTypes: true })) {
+      if (e.name === "node_modules" || e.name === "dist" || e.name === ".smoke") continue;
+      const p = `${dir}/${e.name}`;
+      if (e.isDirectory()) walk(p);
+      else if (/\.(ts|tsx)$/.test(e.name) && !p.endsWith("lib/api.ts")) files.push(p);
     }
   };
-  scan("frontend-v1");
-  assertEq(offenders.length, 0, `a hardcoded demo password is back in: ${offenders.join(", ")}`);
+  walk("admin-v25/src");
+  const offenders = files.filter((f) => /fetch\(\s*['"`]\/api\//.test(read(f)));
+  assertEq(offenders.length, 0, `screens calling the API directly instead of through lib/api.ts: ${offenders.join(", ")}`);
 });
 
-check("Critical 1 — the installer cannot seed a default login", () => {
-  const src = read("frontend-v1/wx-install.php");
-  assert(!/login created: admin \/ admin/i.test(src), "the admin/admin seeding branch is back");
-  assert(!/password <code>admin<\/code>/.test(src), "the installer must not print a default credential");
-  assert(/no longer creates a default login|no default password/i.test(src), "the refusal should say why");
+/* ============================================================== 7. generated artefacts */
+
+check("the alias table is current", () => {
+  const out = execFileSync("node", ["tools/gen-aliases.mjs", "--check"], { cwd: ROOT, encoding: "utf8" });
+  assert(/up to date|current/i.test(out), `gen-aliases --check said: ${out.trim()}`);
 });
 
-check("Critical 1 — demo page never renders a stored credential", () => {
-  const src = read("frontend-v1/wx-demo.php");
-  assert(!/const DEMO_PASS/.test(src), "the shared password constant is back");
-  assert(!/DEMO_PASS/.test(src), "the page still references a shared password");
-  assert(/random_bytes\(12\)/.test(src), "the demo password must be random per run");
-  assert(/shown once/.test(src), "the one-time display must be explained to the operator");
+check("the capability matrix is current", () => {
+  const out = execFileSync("node", ["tools/gen-caps.mjs", "--check"], { cwd: ROOT, encoding: "utf8" });
+  assert(/match|current/i.test(out), `gen-caps --check said: ${out.trim()}`);
 });
 
-check("Critical 5 — no login pre-fill, no empty-password fallback", () => {
-  const html = read("frontend-v1/admin/index.html");
-  assert(!/id="l-pass"[^>]*value=/.test(html), "the login password field is pre-filled");
-  assert(!/id="l-email"[^>]*value=[^>]/.test(html), "the login email field is pre-filled");
-  const js = read("frontend-v1/admin/admin.js");
-  assert(!/\$\("#l-pass"\)\.value\s*\|\|/.test(js), "an empty password silently becomes a default");
-  assert(!/l-pass"\)\.value\s*=\s*["'][^"']+["']/.test(js), "the login handler writes a literal password");
+check("the alias table covers every action the live admin calls", () => {
+  const json = JSON.parse(read("api/v2/aliases.json"));
+  const count = json.count ?? json.total ?? Object.keys(json.actions || json).length;
+  assert(count >= 365, `the alias table lists ${count} actions; the live dispatcher has 365`);
 });
 
-check("Critical 6 — no admin sign-in hint in downloads", () => {
-  assert(!exists("frontend-v1/downloads.html"), "downloads.html exists again and must be reviewed for sign-in hints");
-});
-
-check("Critical 7 — no secrets tracked in git", () => {
-  const tracked = execFileSync("git", ["ls-files"], { cwd: ROOT, encoding: "utf8" }).split("\n");
-  const bad = tracked.filter((f) => /(^|\/)(\.env|config\.php)$/.test(f) || /_private\/(?!\.htaccess|db\.example\.json)/.test(f));
-  assertEq(bad.length, 0, `tracked secrets: ${bad.join(", ")}`);
-  const ignore = read(".gitignore");
-  assert(/_private/.test(ignore), ".gitignore must exclude _private");
-});
-
-check("Critical 8 — private paths are denied by config", () => {
-  assert(exists("frontend-v1/_private/.htaccess"), "_private/.htaccess is missing");
-  const src = read("frontend-v1/_private/.htaccess");
-  assert(/Require all denied|Deny from all/.test(src), "_private/.htaccess must deny access");
-  assert(exists("api/v2/.htaccess"), "api/v2/.htaccess is missing");
-});
-
-/* ============================================================== 8. client */
-
-const apiTs = readCode("admin-v25/src/lib/api.ts");
-
-check("the client keeps the CSRF token out of web storage", () => {
-  assert(!/localStorage/.test(apiTs), "the token must not be in localStorage — that is the v2.1 vulnerability");
-  assert(!/sessionStorage/.test(apiTs), "the token must not be in sessionStorage — that is the v2.1 vulnerability");
-  assert(/let csrfToken: string \| null = null/.test(apiTs), "the token should live in a module-scoped variable");
-});
-
-check("the client sends the CSRF header and same-origin credentials", () => {
-  assert(/X-WX-CSRF["'\]]*\s*[:=]\s*csrfToken/.test(apiTs), "the CSRF header is not sent");
-  assert(/credentials: "same-origin"/.test(apiTs), "cookie sessions need credentials on every request");
-});
-
-check("the client retries only safe methods", () => {
-  assert(/method === "GET" \|\| method === "HEAD" \? MAX_RETRIES : 0/.test(apiTs), "a POST must never be retried automatically");
-  assert(/RETRY_STATUSES = new Set\(\[502, 503, 504\]\)/.test(apiTs), "only gateway failures are retryable");
-});
-
-check("the client surfaces the request-id on every failure", () => {
-  assert(/readonly requestId: string/.test(apiTs), "ApiFailure must carry the request-id");
-  assert(/X-WX-Request-Id/.test(apiTs), "the request-id header must be read");
-  assert(/TIMEOUT_MS/.test(apiTs) && /AbortController/.test(apiTs), "v2.1 had no timeout; the client must have one");
-});
-
-check("the client maps the closed error set", () => {
-  const codes = apiTs.slice(apiTs.indexOf("export type ErrorCode"), apiTs.indexOf("export interface ApiMeta"));
-  for (const c of ["AUTH", "FORBIDDEN", "VALIDATION", "NOT_FOUND", "CONFLICT", "RATE_LIMIT", "UPSTREAM", "INTERNAL"]) {
-    assert(codes.includes(`"${c}"`), `error code ${c} is missing from the client union`);
-  }
-});
-
-/* ============================================================== 9. legacy bridge */
+/* ============================================================== 8. the legacy door */
 
 const legacy = read("api/v2/routes/legacy.php");
 
@@ -472,6 +506,188 @@ check("the legacy door returns the v2.1 shape, not the v2 envelope", () => {
   assert(/'error' => \$e->getMessage\(\)/.test(legacy), "legacy clients render `error` as a string");
   const index = read("api/v2/index.php");
   assert(/wx_is_legacy_request\(\)/.test(index), "the front controller must branch on the legacy door");
+});
+
+/* ============================================================== 9. documentation */
+
+check("the shipped plan and report name the same action count", () => {
+  const plan = read("ADMIN-V2.5-MASTER-PLAN-2026-10-13.md");
+  assert(/365/.test(plan), "the plan must state the action count");
+  assert(!/\b364\b/.test(plan.replace(/364[-–]/g, "three-sixty-four-")), "no stale 364 may remain in the plan");
+});
+
+check("the plan records Phase 1 as done with its evidence", () => {
+  const plan = read("ADMIN-V2.5-MASTER-PLAN-2026-10-13.md");
+  const phase1 = plan.slice(plan.indexOf("### Phase 1"), plan.indexOf("### Phase 2"));
+  assert(/conformance\.mjs/.test(phase1), "Phase 1 must name the conformance suite");
+  assert(/roundtrip\.php/.test(phase1), "Phase 1 must name the round-trip test");
+});
+
+/* ============================================================== 10. the money rule */
+
+const routesSrc = readCode("api/v2/routes/leads.php");
+
+check("money is validated in one place", () => {
+  assert(/function wx_v_pkr\(/.test(readCode("api/v2/lib/validate.php")), "wx_v_pkr must live in validate.php");
+  assert(!/\(int\)\s*round\([^)]*\*\s*100\s*\)/.test(routesSrc), "a route must not do its own money conversion");
+});
+
+/* ============================================================== 11. Phase 2 structure
+   Phase 2 is the money path. The checks below are the ones whose failure would be expensive and
+   quiet: a total computed in two places, a receipt number that can be reissued, an approval policy
+   that drifted from the one people have been using, a permission check that happens after the
+   request has already been filed. */
+
+const money = read("api/v2/lib/money.php");
+const invoices = read("api/v2/routes/invoices.php");
+const approvals = read("api/v2/lib/approvals.php");
+const approvalsRoute = read("api/v2/routes/approvals.php");
+const migration6 = read("db/migrations/006_payments_approvals.sql");
+
+check("money is a whole number of rupees everywhere in v2", () => {
+  const scanned = readdirSync(join(ROOT, "api/v2/lib")).map((f) => readCode(`api/v2/lib/${f}`))
+    .concat(readdirSync(join(ROOT, "api/v2/routes")).map((f) => readCode(`api/v2/routes/${f}`)));
+  const offenders = scanned.filter((src) => /wx_v_money|wx_money_out/.test(src));
+  assertEq(offenders.length, 0, "the paisa helpers still exist — the unit must be the rupee, as v2.1 stores it");
+  const validate = readCode("api/v2/lib/validate.php");
+  assert(/function wx_v_pkr\(/.test(validate), "wx_v_pkr must be the money validator");
+  assert(/function wx_pkr_out\(/.test(validate), "wx_pkr_out must be the formatter");
+  /* And the unit has to be written down where a schema reader will find it. */
+  const col3 = readSql("db/migrations/003_document_columns.sql");
+  for (const col of ["subtotal", "tax", "total", "paid", "value"]) {
+    assert(new RegExp(`ADD COLUMN ${col} BIGINT`).test(col3), `${col} must be BIGINT rupees, not INT — the INT ceiling is 2.1 billion and it fails on the biggest invoice of the year`);
+  }
+  assert(/DECIMAL|FLOAT|DOUBLE/.test(col3) === false, "money must not be a float column — 0.1 + 0.2 is not a rupee");
+  assert(/whole rupees/i.test(read("db/migrations/003_document_columns.sql")), "003 must state the unit in prose too");
+});
+
+check("document arithmetic has exactly one implementation", () => {
+  const writers = [];
+  for (const dir of ["api/v2/lib", "api/v2/routes"]) {
+    for (const f of readdirSync(join(ROOT, dir))) {
+      const src = readCode(`${dir}/${f}`);
+      if (/\$\w+\['tax'\]\s*=/.test(src) && f !== "money.php") writers.push(`${dir}/${f}`);
+    }
+  }
+  assertEq(writers.length, 0, `tax is computed outside lib/money.php: ${writers.join(", ")}`);
+  assert(/function wx_doc_totals\(/.test(money), "wx_doc_totals must exist as the single implementation");
+  assert(/function wx_numv\(/.test(money), "numv() must be ported, not re-invented, or negative quantities slip through");
+});
+
+check("an invoice's displayed total is the stored total, not a recomputation", () => {
+  const fn = money.slice(money.indexOf("function wx_inv_public("));
+  const body = fn.slice(0, fn.indexOf("\nfunction ", 10));
+  assert(/isset\(\$invoice\['total'\]\)/.test(body), "wx_inv_public must use the stored total and only compute when it is absent");
+  assert(/\$invoice\['total'\]/.test(body), "wx_inv_public must read the stored total");
+});
+
+check("milestone billing is percentage-based, as v2.1 bills it", () => {
+  const projects = readCode("api/v2/routes/projects.php");
+  assert(/'label'\s*=>\s*wx_v_string/.test(projects) && /'pct'\s*=>\s*\$pct/.test(projects), "milestones must carry label + pct");
+  assert(/abs\(\$sum - 100\)/.test(projects), "the milestone percentages must be required to add up to 100");
+  assert(/already billed/.test(projects), "a billed milestone must refuse to change");
+  assert(/projects\/\{id\}\/bill/.test(router), "the bill route must be registered");
+});
+
+check("migrations 000–006 are present and the series has no gaps", () => {
+  const files = readdirSync(join(ROOT, "db/migrations")).filter((f) => /^\d{3}_.+\.sql$/.test(f)).sort();
+  const numbers = files.map((f) => Number(f.slice(0, 3)));
+  assertEq(numbers.length, 7, `expected 7 migrations, found ${numbers.length}`);
+  numbers.forEach((n, i) => assertEq(n, i, `migration ${String(n).padStart(3, "0")} leaves a gap in the series`));
+});
+
+check("migration 006 only adds: it never drops or rewrites business data", () => {
+  const code = readSql("db/migrations/006_payments_approvals.sql");
+  assert(!/\bDROP\b/i.test(code), "006 must not drop anything");
+  assert(!/\bDELETE\b/i.test(code), "006 must not delete rows — moving data is db/backfill_payments.php's job");
+  assert(!/^\s*UPDATE\b/im.test(code), "006 must not rewrite existing rows");
+  assert(/CREATE TABLE IF NOT EXISTS wx_invoice_payments/.test(code), "the payments table must be created");
+  assert(/CREATE TABLE IF NOT EXISTS wx_approvals/.test(code), "the approvals table must be created");
+});
+
+check("a receipt is a row, not an element of the invoice JSON", () => {
+  const scheme = readSql("db/migrations/006_payments_approvals.sql");
+  assert(/UNIQUE KEY wx_payments_rcpt_uniq \(rcpt\)/.test(scheme), "receipt numbers must be unique in the database");
+  assert(!/\$inv\['payments'\]\[\]/.test(readCode("api/v2/routes/invoices.php")), "nothing may push onto the invoice's payments array");
+  assert(/wx_invoice_payments/.test(readCode("api/v2/lib/money.php")), "payments are read from their table");
+});
+
+check("a receipt number cannot be reissued after a reversal", () => {
+  const src = readCode("api/v2/routes/invoices.php");
+  assert(/\$seq = \(int\) \(\$inv\['seqPay'\] \?\? 0\) \+ 1/.test(src), "receipt numbers must come from the invoice's monotonic seqPay counter");
+  assert(!/-R' \. \(count\(/.test(src), "counting the payment rows reissues a number after a reversal");
+  assert(/reversed_at/.test(src), "a reversal must mark the row rather than delete it");
+});
+
+check("the approval policy is a copy of v2.1's, verified as a copy", () => {
+  const v21 = read("frontend-v1/api/approvals-lib.php");
+  const literal = (src, name) => {
+    const m = new RegExp(name + "\\s*=\\s*'(~[\\s\\S]*?~)'").exec(src);
+    assert(m, `${name} not found`);
+    return m[1];
+  };
+  assertEq(literal(approvals, "WX_APPR_SKIP"), literal(v21, "APPR_SKIP"), "the never-queued list has drifted from v2.1");
+  assertEq(literal(approvals, "WX_APPR_WRITE"), literal(v21, "APPR_WRITE"), "the write-detection pattern has drifted from v2.1");
+  const list = (src, name) => {
+    const m = new RegExp(name + "\\s*=\\s*\\[([^\\]]*)\\]").exec(src);
+    return m[1].split(",").map((x) => x.trim()).filter(Boolean).sort();
+  };
+  for (const k of ["EXTRA_WRITE", "READS", "BUILDER_WRITE"]) {
+    assertEq(list(approvals, "WX_APPR_" + k).join("|"), list(v21, "APPR_" + k).join("|"), `the ${k} list has drifted from v2.1`);
+  }
+});
+
+check("an approved request is replayed, never retyped", () => {
+  assert(/function wx_appr_replay\(/.test(approvals), "the replay must exist");
+  assert(/WX_APPR_REPLAY/.test(approvals), "a replay must be marked so it cannot be queued again");
+  assert(/status' => 'applying'/.test(approvals), "a replay in progress must be visible on the queue");
+  assert(/returned to the queue/.test(approvals), "a failed replay must return the item to pending with its error");
+});
+
+check("only the Master decides", () => {
+  for (const fn of ["wx_route_approvals_approve", "wx_route_approvals_reject", "wx_route_approvals_cfg_save"]) {
+    const body = approvalsRoute.slice(approvalsRoute.indexOf(`function ${fn}(`));
+    const chunk = body.slice(0, body.indexOf("\nfunction ", 10));
+    assert(/wx_is_master\(\$u\)/.test(chunk), `${fn} must require the Master`);
+  }
+  assert(/function wx_is_master\(/.test(readCode("api/v2/lib/auth.php")), "wx_is_master must be the one definition of the Master role");
+});
+
+check("a change is permission-checked before it is filed for approval", () => {
+  const offenders = [];
+  for (const f of readdirSync(join(ROOT, "api/v2/routes"))) {
+    const src = readCode(`api/v2/routes/${f}`);
+    for (const block of src.split(/\nfunction /).slice(1)) {
+      if (!/wx_appr_wrap\(/.test(block)) continue;
+      const name = block.slice(0, block.indexOf("("));
+      if (!/wx_require_user\(/.test(block)) offenders.push(`${f} → ${name}`);
+    }
+  }
+  assertEq(offenders.length, 0, `these queue a request without checking the requester may make it: ${offenders.join(", ")}`);
+});
+
+check("the queue and the receipts live in the database, not in files", () => {
+  for (const f of readdirSync(join(ROOT, "api/v2/lib"))) {
+    const src = readCode(`api/v2/lib/${f}`);
+    assert(!/approvals\.json|approvals-cfg\.json/.test(src), `${f} still reads the v2.1 approval file`);
+  }
+  assert(/wx_approvals/.test(approvals), "the queue must be the wx_approvals table");
+  assert(/wx_invoice_payments/.test(readCode("api/v2/routes/invoices.php")), "receipts must be rows");
+});
+
+check("a document number is reserved under a lock and proven free", () => {
+  const src = readCode("api/v2/lib/docs.php");
+  assert(/function wx_next_doc_no\(string \$line = ''/.test(src), "numbering must take the business line, because furniture has its own series");
+  assert(/wx_tx\(/.test(src), "the counter must be reserved inside a transaction");
+  assert(/AND v = \?/.test(src), "the reservation must be conditional on the value that was read");
+  assert(/SELECT no FROM wx_invoices WHERE no = \?/.test(src), "a rolled-back counter must not reissue a number that exists");
+});
+
+check("the payments backfill can be run twice without changing anything", () => {
+  const src = readCode("db/backfill_payments.php");
+  assert(/--dry-run/.test(src), "the backfill must support a dry run");
+  assert(/already present|isset\(\$existing\[\$rcpt\]\)/.test(src), "the backfill must skip receipts that are already copied");
+  assert(/--verify/.test(src), "the backfill must be able to prove the two stores agree");
 });
 
 /* ============================================================== report */

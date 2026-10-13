@@ -46,86 +46,9 @@ $passed = 0;
 $failed = 0;
 $created = ['user_id' => null, 'lead_id' => null];
 
-function step(string $n, string $what): void
-{
-    echo "\n  " . $n . '. ' . $what . "\n";
-}
-function ok(bool $cond, string $what): void
-{
-    global $passed, $failed;
-    if ($cond) {
-        $passed++;
-        echo "     ✓ " . $what . "\n";
-        return;
-    }
-    $failed++;
-    echo "     ✗ " . $what . "\n";
-}
-function eq($a, $b, string $what): void
-{
-    if ($a !== $b) {
-        echo "       got:      " . var_export($a, true) . "\n";
-        echo "       expected: " . var_export($b, true) . "\n";
-    }
-    ok($a === $b, $what);
-}
-
-/**
- * Build a request and run it through the dispatch + envelope path, exactly as index.php does.
- * Returns the response the front controller would have written.
- */
-function request(string $method, array $segments, array $options = []): array
-{
-    $GLOBALS['WX_RESPONSES'] = [];
-    $GLOBALS['WX_TEST_SET_COOKIE'] = null;
-
-    $_SERVER['REQUEST_METHOD'] = $method;
-    $_SERVER['REQUEST_URI'] = '/api/v2/' . implode('/', $segments);
-    $_SERVER['SCRIPT_NAME'] = '/api/v2/index.php';
-    $_SERVER['PATH_INFO'] = '/' . implode('/', $segments);
-    $_SERVER['REMOTE_ADDR'] = '127.0.0.1';
-    $_SERVER['HTTP_USER_AGENT'] = 'woodex-roundtrip/1.0';
-    $_SERVER['HTTP_X_WX_REQUEST_ID'] = 'r_' . bin2hex(random_bytes(4));
-
-    $_GET = $options['query'] ?? [];
-    $_POST = [];
-    $_COOKIE = $options['cookie'] ?? [];
-    if (isset($options['csrf'])) {
-        $_SERVER['HTTP_X_WX_CSRF'] = $options['csrf'];
-    } else {
-        unset($_SERVER['HTTP_X_WX_CSRF']);
-    }
-
-    // The body is read from php://input, which a test cannot write to, so hand it over directly.
-    $GLOBALS['WX_TEST_BODY'] = $options['body'] ?? [];
-
-    // wx_body() caches per request; the static cache must not leak between simulated requests.
-    wx_reset_request_cache();
-
-    try {
-        $result = wx_dispatch();
-        wx_ok($result['data'], $result['meta']);
-    } catch (ApiError $e) {
-        wx_fail($e);
-    } catch (Throwable $e) {
-        wx_fail(wx_error_boundary($e, wx_request_id()));
-    }
-    $response = $GLOBALS['WX_RESPONSES'][0] ?? ['status' => 0, 'body' => null];
-    $response['cookie'] = $GLOBALS['WX_TEST_SET_COOKIE'];
-    return $response;
-}
-
-/** Pull the session cookie out of a Set-Cookie header value. */
-function cookie_from(?string $setCookie): array
-{
-    if (!$setCookie) {
-        return [];
-    }
-    if (preg_match('~^' . WX_SESSION_COOKIE . '=([^;]*)~', $setCookie, $m)) {
-        return $m[1] === '' ? [] : [WX_SESSION_COOKIE => $m[1]];
-    }
-    return [];
-}
+/* The step/ok/eq/request helpers live in tests/harness.php — the Phase 2 gate uses the same
+   harness, so there is one definition of how a request is formed. */
+require_once __DIR__ . '/harness.php';
 
 /* ------------------------------------------------------------------ can we run? */
 echo "\n  Woodex api/v2 — Phase 1 round trip\n";
@@ -234,7 +157,7 @@ $withId = wx_one("SELECT req_id FROM wx_activity WHERE action = 'me.save' AND ta
 ok(!empty($withId['req_id']), 'the audit row carries the request-id');
 
 /* ------------------------------------------------------------------ 7. a real resource */
-step('7', 'POST /leads — a row through MySQL, with money as integer paisa');
+step('7', 'POST /leads — a row through MySQL, with money as whole rupees');
 $r = request('POST', ['leads'], ['cookie' => $cookie, 'csrf' => $csrf, 'body' => [
     'name' => 'Round Trip Lead',
     'phone' => '03001234567',
@@ -245,8 +168,8 @@ $r = request('POST', ['leads'], ['cookie' => $cookie, 'csrf' => $csrf, 'body' =>
 eq($r['status'], 200, 'the lead is created');
 $created['lead_id'] = (int) ($r['body']['data']['lead']['id'] ?? 0);
 ok($created['lead_id'] > 0, 'an id comes back');
-eq($r['body']['data']['lead']['value'], 123456, 'the amount is stored as paisa');
-eq($r['body']['data']['lead']['valueDisplay'], '1234.56', 'and rendered back as an amount');
+eq($r['body']['data']['lead']['value'], 1235, 'a rupee amount with a fraction is rounded to the rupee on the way in');
+eq($r['body']['data']['lead']['valueDisplay'], '1,235', 'and rendered back the way a document writes it');
 
 $r = request('POST', ['leads'], ['cookie' => $cookie, 'csrf' => $csrf, 'body' => ['name' => 'x']]);
 eq($r['status'], 422, 'an incomplete lead is refused');

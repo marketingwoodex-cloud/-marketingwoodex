@@ -11,8 +11,8 @@
  *   php tests/run.php --verbose    print every assertion, not just failures
  *
  * The pure set deliberately covers the parts where a mistake is expensive and invisible:
- * money conversion, date validation, the TOTP algorithm, the permission decision table, and the
- * envelope contract. Those are exactly the places v2.1 was wrong and where nobody noticed, because
+ * document arithmetic, date validation, the TOTP algorithm, the permission and approval decision
+ * tables, and the envelope contract. Those are exactly the places v2.1 was wrong and where nobody noticed, because
  * nothing tested them.
  */
 
@@ -102,22 +102,180 @@ function throws(string $code, ?string $field, callable $fn, string $what): void
 echo "\n  Woodex api/v2 — behavioural tests" . ($WITH_DB ? ' (with database)' : '') . "\n";
 
 /* ============================================================== money
-   v2.1 did money in JavaScript with floating point and rounded per screen. The audit found totals
-   that differed by a rupee depending on which screen you opened. */
-group('Money is integer paisa');
+   The unit is whole rupees, because that is what v2.1 stores — see db/migrations/README.md for why
+   changing it would be worse than keeping it. What is tested here is that the unit is unambiguous:
+   a client sending "12,345.4" gets 12345 and never 1234540. */
+group('Money is a whole number of rupees');
+eq(wx_v_pkr('1234', 'v'), 1234, 'a whole number is itself');
+eq(wx_v_pkr(1234, 'v'), 1234, 'an integer is itself');
+eq(wx_v_pkr('1,234', 'v'), 1234, 'thousands separators are accepted');
+eq(wx_v_pkr('1,234.4', 'v'), 1234, 'a fraction of a rupee rounds down when small');
+eq(wx_v_pkr('1,234.6', 'v'), 1235, 'a fraction of a rupee rounds up when large');
+eq(wx_v_pkr(1234.56, 'v'), 1235, 'a float is rounded, never truncated');
+eq(wx_v_pkr('1234.56', 'v'), 1235, 'a decimal string rounds to the rupee');
+eq(wx_pkr_out(1234), '1,234', 'an amount formats the way a document writes it');
+eq(wx_pkr_out(0), '0', 'zero formats correctly');
+eq(wx_pkr_out(1234567), '1,234,567', 'a large amount groups correctly');
+throws('VALIDATION', 'v', static function () { wx_v_pkr('12.3.4', 'v'); }, 'a malformed amount is refused');
+throws('VALIDATION', 'v', static function () { wx_v_pkr('abc', 'v'); }, 'a non-number is refused');
+throws('VALIDATION', 'v', static function () { wx_v_pkr('-5', 'v', 0); }, 'a negative amount is refused when a floor is set');
+throws('VALIDATION', 'v', static function () { wx_v_pkr('999', 'v', null, 100); }, 'an amount above a ceiling is refused');
 
-eq(wx_v_money('1234.56', 'v'), 123456, 'a decimal string becomes paisa');
-eq(wx_v_money('1234', 'v'), 123400, 'a whole number is rupees');
-eq(wx_v_money('1,234.56', 'v'), 123456, 'thousands separators are accepted');
-eq(wx_v_money('0.01', 'v'), 1, 'the smallest unit survives');
-eq(wx_v_money(1234.56, 'v'), 123456, 'a float is rounded to paisa, not truncated');
-eq(wx_v_money('1.005', 'v'), 101, 'sub-paisa precision rounds half up');
-eq(wx_money_out(123456), '1234.56', 'paisa formats back to a readable amount');
-eq(wx_money_out(1), '0.01', 'one paisa formats correctly');
-eq(wx_money_out(0), '0.00', 'zero formats correctly');
-throws('VALIDATION', 'v', static function () { wx_v_money('12.3.4', 'v'); }, 'a malformed amount is refused');
-throws('VALIDATION', 'v', static function () { wx_v_money('abc', 'v'); }, 'a non-number is refused');
-throws('VALIDATION', 'v', static function () { wx_v_money('-5', 'v', 0); }, 'a negative amount is refused when a floor is set');
+/* ====================================================== document arithmetic
+   This group is the money rule of Phase 2. wx_doc_totals() is a port of v2.1's doc_totals() — the
+   point of these assertions is that the port did not change the arithmetic, because a document made
+   in v2.5 is printed by the v2.1 admin during the cut-over. */
+group('Document totals are computed, not trusted');
+
+$d = wx_doc_totals([
+    'sections' => [
+        ['name' => 'Living room', 'items' => [
+            ['desc' => 'TV unit', 'qty' => 8, 'unit' => 'sft', 'rate' => 1250.5],
+            ['desc' => 'Wall panel', 'qty' => 3, 'unit' => 'nos', 'rate' => 999.75],
+        ]],
+        ['name' => 'Bedroom', 'items' => [
+            ['desc' => 'Wardrobe', 'qty' => 1, 'unit' => 'job', 'rate' => 85000],
+        ]],
+    ],
+    'discount' => 0, 'taxPct' => 0, 'rent' => 0, 'advance' => 0,
+]);
+eq(round($d['sections'][0]['items'][0]['amount'], 2), 10004.0, 'an item amount is qty x rate to two decimals');
+eq(round($d['sections'][0]['subtotal'], 2), 13003.25, 'a section subtotal is the sum of its items');
+eq($d['subtotal'], 98003, 'the document subtotal is a whole number of rupees');
+eq($d['tax'], 0, 'no tax percentage means no tax');
+eq($d['total'], 98003, 'total = subtotal - discount + rent + tax');
+eq($d['taxPct'], 0.0, 'the tax percentage is echoed back');
+
+$t = wx_doc_totals(['sections' => [['name' => 'A', 'items' => [['desc' => 'x', 'qty' => 1, 'rate' => 100000]]]], 'discount' => 5000, 'taxPct' => 17, 'rent' => 2500, 'advance' => 0]);
+eq($t['subtotal'], 100000, 'subtotal before deductions');
+eq($t['discount'], 5000, 'the discount is kept');
+eq($t['tax'], (int) round((100000 - 5000 + 2500) * 17 / 100), 'tax is charged on subtotal - discount + rent');
+eq($t['total'], 100000 - 5000 + 2500 + (int) round(97500 * 17 / 100), 'the total adds the tax');
+
+$clamp = wx_doc_totals(['sections' => [['name' => 'A', 'items' => [['desc' => 'x', 'qty' => 1, 'rate' => 1000]]]], 'discount' => 999999, 'taxPct' => 90, 'advance' => 999999]);
+eq($clamp['discount'], 1000, 'a discount above the subtotal is clamped to it');
+eq((float) $clamp['taxPct'], 50.0, 'the tax percentage is capped at 50');
+eq($clamp['advance'], $clamp['total'], 'an advance is clamped to the total, never above it');
+eq($clamp['total'], 0, 'a discount equal to the subtotal leaves nothing to pay');
+
+$head = wx_doc_totals(['sections' => [['name' => 'A', 'items' => [
+    ['desc' => 'SECTION HEADING', 'qty' => 0, 'rate' => 0, 'kind' => 'head'],
+    ['desc' => 'Real item', 'qty' => 2, 'rate' => 500],
+]]]]);
+eq($head['sections'][0]['items'][0]['amount'], 0.0, 'a heading carries no amount even if numbers are sent');
+eq($head['subtotal'], 1000, 'a heading does not inflate the subtotal');
+
+$neg = wx_doc_totals(['sections' => [['name' => 'A', 'items' => [['desc' => 'x', 'qty' => -5, 'rate' => 100]]]], 'rent' => -500]);
+eq($neg['subtotal'], 0, 'a negative quantity is treated as zero, not as a credit');
+eq($neg['rent'], 0, 'a negative rent is floored at zero');
+
+group('Sections are cleaned and bounded');
+$many = [];
+for ($i = 0; $i < 60; $i++) {
+    $many[] = ['name' => 'S' . $i, 'items' => [['desc' => 'item ' . $i, 'qty' => 1, 'rate' => 10]]];
+}
+$clean = wx_clean_sections($many);
+eq(count($clean), 40, 'at most 40 sections are kept, as v2.1 enforces');
+eq($clean[0]['name'], 'S0', 'the order is preserved');
+$units = wx_clean_sections([['name' => 'A', 'items' => [['desc' => 'x', 'qty' => 1, 'rate' => 1, 'unit' => 'cubic-parsec']]]]);
+eq($units[0]['items'][0]['unit'], 'job', 'an unknown unit falls back to job rather than being stored');
+throws('VALIDATION', 'sections.0.items.0.desc', static function () {
+    wx_clean_sections([['name' => 'A', 'items' => [['desc' => '', 'qty' => 1, 'rate' => 1]]]]);
+}, 'a line with no description is refused, not saved blank');
+
+/* ======================================================== invoice position
+   paid / balance / payStatus / overdue are derived. These five values are what the invoice tracker,
+   the printed invoice and the client link all read, so they are asserted against the same inputs
+   v2.1 computed them from. */
+group('An invoice derives paid, balance, payStatus and overdue');
+$inv = ['id' => 7, 'no' => 'WI-10123', 'total' => 98003, 'due_date' => date('Y-m-d', time() + 7 * 86400), 'sections' => [], 'discount' => 0, 'taxPct' => 0, 'rent' => 0];
+$p0 = wx_inv_public($inv, []);
+eq($p0['paid'], 0, 'no payments means nothing paid');
+eq($p0['balance'], 98003, 'the whole total is outstanding');
+eq($p0['payStatus'], 'unpaid', 'an invoice with no payments is unpaid');
+ok(!$p0['overdue'], 'an invoice due in the future is not overdue');
+eq($p0['totalDisplay'], '98,003', 'the total is formatted for printing');
+
+$p1 = wx_inv_public($inv, [['id' => 1, 'amount' => 40000, 'rcpt' => 'WI-10123-R1']]);
+eq($p1['paid'], 40000, 'a partial payment is counted');
+eq($p1['balance'], 58003, 'the balance is total minus paid');
+eq($p1['payStatus'], 'partial', 'a part payment makes the invoice partial');
+
+$p2 = wx_inv_public($inv, [['id' => 1, 'amount' => 40000], ['id' => 2, 'amount' => 58003]]);
+eq($p2['paid'], 98003, 'payments add up');
+eq($p2['balance'], 0, 'a fully paid invoice has no balance');
+eq($p2['payStatus'], 'paid', 'and reads as paid');
+ok(!$p2['overdue'], 'a fully paid invoice is never overdue');
+
+$late = wx_inv_public(['id' => 8, 'no' => 'WI-10124', 'total' => 5000, 'due_date' => '2020-01-01', 'sections' => [], 'discount' => 0, 'taxPct' => 0, 'rent' => 0], [['id' => 3, 'amount' => 1000]]);
+ok($late['overdue'], 'a balance past its due date is overdue');
+eq($late['balance'], 4000, 'the overdue amount is part of the balance');
+
+/* ======================================================= approval policy
+   These copy v2.1's appr_needed() case for case. The rule is the product's central permission
+   idea — a Manager proposes, the Master decides — so it is asserted rather than assumed. */
+group("A Manager's change waits for the Master");
+ok(wx_appr_needed('admin', 'media_save'), 'a manager saving media needs approval');
+ok(wx_appr_needed('admin', 'page_delete'), 'a manager deleting a page needs approval');
+ok(wx_appr_needed('admin', 'quote_invoice'), 'a manager invoicing a quotation needs approval');
+ok(wx_appr_needed('admin', 'pay_add'), 'a manager recording a payment needs approval');
+ok(wx_appr_needed('admin', 'proj_meta'), 'a manager editing a project needs approval (the extra list)');
+ok(wx_appr_needed('admin', 'blocks_sync'), 'a manager syncing sections needs approval');
+ok(!wx_appr_needed('owner', 'media_save'), 'the Master never waits for the Master');
+ok(!wx_appr_needed('admin', 'me_save'), 'a manager editing their own profile does not wait');
+ok(!wx_appr_needed('admin', 'chat_reply'), 'a manager answering a chat does not wait');
+ok(!wx_appr_needed('admin', 'crm_wa_status'), 'a read that looks like a write does not wait');
+ok(!wx_appr_needed('admin', 'login'), 'logging in does not wait');
+ok(!wx_appr_needed('admin', 'media_upload'), 'an upload is not live until used, so it does not wait');
+ok(!wx_appr_needed('admin', 'leads_list'), 'reading the pipeline does not wait');
+ok(!wx_appr_needed('editor', 'media_save'), 'an editor is not gated while the developer switch is off');
+ok(!wx_appr_needed('sales', 'media_save'), 'a sales role is not gated by the manager switch');
+$GLOBALS['WX_APPR_REPLAY'] = true;
+ok(!wx_appr_needed('admin', 'media_save'), 'an approved replay is not queued again');
+$GLOBALS['WX_APPR_REPLAY'] = false;
+
+/* The switches themselves. Without a database the conservative defaults apply, which is the point:
+   an unreadable policy must never mean "no approval needed". */
+group('The approval switches default to the safe answer');
+$cfg = wx_appr_cfg();
+ok($cfg['manager'], 'with no readable settings, a manager is still gated');
+ok(!$cfg['developer'], 'and an editor is not, matching the v2.1 default');
+ok($cfg['notify'], 'the Master is notified by default');
+eq($cfg['expire_days'], 14, 'the queue expires after 14 days');
+/* Simulate a configured host: the per-request settings cache is what wx_setting_bool() reads. */
+$GLOBALS['WX_ONCE'][wx_request_generation()]['settings.all'] = [
+    'approval.manager' => '0', 'approval.developer' => '1', 'approval.notify' => '0', 'approval.expire_days' => '30',
+];
+ok(!wx_appr_needed('admin', 'media_save'), 'turning the manager switch off lets a manager act');
+ok(wx_appr_needed('editor', 'media_save'), 'turning the developer switch on gates an editor');
+ok(!wx_appr_needed('editor', 'blocks_theme'), 'a builder action not on the list is not gated');
+ok(wx_appr_needed('editor', 'media_delete', 'builder'), 'a builder write on the list is gated');
+ok(!wx_appr_needed('editor', 'builder_me', 'builder'), 'reading the builder is never gated');
+eq(wx_appr_cfg()['expire_days'], 30, 'the expiry window is configurable');
+unset($GLOBALS['WX_ONCE'][wx_request_generation()]['settings.all']);
+
+group('An approval request says what it is');
+eq(wx_appr_summary('admin', 'media_save', ['title' => 'Hero photo']), 'Change media: Hero photo', 'a save reads as a plain sentence');
+eq(wx_appr_summary('admin', 'page_delete', ['title' => 'Winter offers']), 'Delete page: Winter offers', 'a delete says delete');
+eq(wx_appr_summary('admin', 'page_new', ['title' => 'About us']), 'Add page: About us', 'a new page says add');
+eq(wx_appr_summary('builder', 'blocks_import', []), 'Add section library', 'a builder import names its area');
+eq(wx_appr_summary('builder', 'theme', ['name' => 'Woodex Ink']), 'Change website theme: Woodex Ink', 'a theme change names the theme');
+eq(wx_appr_summary('admin', 'quote_invoice', ['no' => 'WI-10123']), 'Invoice a quotation: WI-10123', 'the v2.5 labels read better than the raw action');
+eq(wx_appr_summary('admin', 'pay_add', ['no' => 'WI-10123-R2']), 'Record a payment: WI-10123-R2', 'a payment names its receipt');
+
+group('A document carries a label and a link that cannot be guessed');
+eq(wx_doc_label(['no' => 'WI-10123', 'version' => 1, 'option' => '']), 'WI-10123', 'a first version has no version suffix');
+eq(wx_doc_label(['no' => 'WI-10123', 'version' => 3, 'option' => 'B']), 'WI-10123 · V3 · B', 'a revision shows its version and option');
+try {
+    $tok = wx_quote_view_token(['id' => 5, 'no' => 'WI-10123']);
+    eq(strlen($tok), 32, 'the client link token is 32 characters');
+    eq($tok, wx_quote_view_token(['id' => 5, 'no' => 'WI-10123']), 'the same quotation always produces the same token, so old links keep working');
+    ok($tok !== wx_quote_view_token(['id' => 6, 'no' => 'WI-10123']), 'a different quotation gets a different token');
+    ok($tok !== wx_quote_view_token(['id' => 5, 'no' => 'WI-10124']), 'and so does a different number');
+} catch (ApiError $e) {
+    /* signing needs the application secret, which lives in wx_secrets — a database test */
+    skip('the client link token needs the application secret (run with --db)');
+}
 
 /* ============================================================== validation */
 group('Validation names the offending field');
@@ -318,9 +476,9 @@ if (!$WITH_DB) {
         $db = wx_db();
         $db->beginTransaction();
         try {
-            $id = wx_insert('wx_leads', ['created_at' => wx_now(), 'source' => 'manual', 'name' => 'ZZ Test Lead', 'stage' => 'new', 'value' => 123456]);
+            $id = wx_insert('wx_leads', ['created_at' => wx_now(), 'source' => 'manual', 'name' => 'ZZ Test Lead', 'stage' => 'new', 'value' => 98450]);
             ok($id > 0, 'a lead can be inserted');
-            eq((int) wx_val('SELECT value FROM wx_leads WHERE id = ?', [$id]), 123456, 'paisa round-trips through the database');
+            eq((int) wx_val('SELECT value FROM wx_leads WHERE id = ?', [$id]), 98450, 'an amount round-trips through the database unchanged');
             $n = wx_update('wx_leads', ['stage' => 'contacted'], ['id' => $id]);
             eq($n, 1, 'wx_update reports one row changed');
             eq((string) wx_val('SELECT stage FROM wx_leads WHERE id = ?', [$id]), 'contacted', 'the update landed');
