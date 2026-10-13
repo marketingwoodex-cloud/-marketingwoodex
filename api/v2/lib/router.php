@@ -178,6 +178,16 @@ function wx_routes(): array
         ['POST',   'chat/typing',                     'chat_public', 'wx_route_chat_typing', null],
         ['POST',   'chat/file',                       'chat_public', 'wx_route_chat_file',   null],
 
+        /* ----------------------------------------------------------- the bell
+           Polled by the shell, so it is in the `self` group: everyone gets their own bell, and what is
+           in it depends on what they can see (see routes/notifications.php). The settings half is
+           owner/admin — the `settings` group in the matrix. */
+        ['GET',    'notifications/poll',              'notifications', 'wx_route_notif_poll',        'notif_poll'],
+        ['GET',    'notifications',                   'notifications', 'wx_route_notify_get',        'notify_get'],
+        ['POST',   'notifications/settings',          'notifications', 'wx_route_notify_save',       'notify_save'],
+        ['POST',   'notifications/test',              'notifications', 'wx_route_notify_test',       'notify_test'],
+        ['POST',   'notifications/project/{id}',      'notifications', 'wx_route_notify_proj_send',  'notify_proj_send'],
+
         /* ---------------------------------------------------------- system */
         ['GET',    'system/health',                   'system', 'wx_route_sys_health',    'sys_check'],
         ['GET',    'system/schema',                   'system', 'wx_route_sys_schema',    'dbx_browse'],

@@ -115,6 +115,45 @@ check("every route file exists", () => {
   assertEq(missing.length, 0, `route files that do not exist: ${missing.join(", ")}`);
 });
 
+check("every library is included, or nothing uses it", () => {
+  /* A lib that nothing includes is dead code that looks alive: `docs.php` held wx_doc_get,
+     wx_doc_put and wx_payload_column — the document layer the whole money path calls — and no file
+     required it. Lint passes, conformance passes, and every one of those calls is a fatal at runtime.
+     Until this check existed, the only way to find it was to run a request that touched a document. */
+  const bootstrap = readCode("api/v2/lib/bootstrap.php");
+  const included = new Set([...bootstrap.matchAll(/\/lib\/([a-z0-9_]+\.php)/g)].map((m) => m[1]));
+  const tree = [];
+  const walk = (dir) => {
+    for (const e of readdirSync(join(ROOT, dir), { withFileTypes: true })) {
+      const rel = `${dir}/${e.name}`;
+      if (e.isDirectory()) {
+        if (!["node_modules", ".git", "dist", "build", "_private"].includes(e.name)) walk(rel);
+      } else if (e.name.endsWith(".php")) tree.push(rel);
+    }
+  };
+  for (const d of ["api/v2", "tests", "db"]) walk(d);
+
+  const offenders = [];
+  for (const file of readdirSync(join(ROOT, "api/v2/lib"))) {
+    if (!file.endsWith(".php") || included.has(file)) continue;
+    const src = readCode(`api/v2/lib/${file}`);
+    for (const m of src.matchAll(/^function\s+([a-z0-9_]+)\s*\(/gm)) {
+      const fn = m[1];
+      for (const f of tree) {
+        const other = read(f);
+        if (!other.includes(fn + "(")) continue;
+        const lines = other.split("\n").filter((l) => l.includes(fn + "(") && !/^\s*(\*|\/\/|#)/.test(l));
+        const real = lines.filter((l) => !new RegExp(`function\\s+${fn}\\s*\\(`).test(l));
+        if (real.length) {
+          offenders.push(`lib/${file} defines ${fn}(), which ${f} calls, but bootstrap.php never includes it`);
+          break;
+        }
+      }
+    }
+  }
+  assertEq(offenders.length, 0, offenders.slice(0, 4).join(" | "));
+});
+
 check("no file declares the same function twice", () => {
   /* PHP dies with "Cannot redeclare" the moment the file is loaded, so a duplicate is not a subtle
      bug — but it is an invisible one, because route files are only loaded when a request reaches them.

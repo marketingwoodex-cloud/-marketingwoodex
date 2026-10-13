@@ -112,6 +112,12 @@ function wx_legacy_bridged(): array
         'sec_2fa_disable' => ['security', 'wx_route_security_2fa_disable', []],
         'sec_recovery_new' => ['security', 'wx_route_security_recovery', []],
         'sec_alerts'      => ['security', 'wx_route_security_alerts', []],
+        /* Phase 2 — the bell and what the client is told. */
+        'notif_poll'      => ['notifications', 'wx_route_notif_poll', []],
+        'notify_get'      => ['notifications', 'wx_route_notify_get', []],
+        'notify_save'     => ['notifications', 'wx_route_notify_save', []],
+        'notify_test'     => ['notifications', 'wx_route_notify_test', []],
+        'notify_proj_send' => ['notifications', 'wx_route_notify_proj_send', ['id']],
         'sys_check'       => ['system', 'wx_route_sys_health', []],
     ];
 }

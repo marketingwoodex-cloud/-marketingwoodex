@@ -40,6 +40,28 @@ function wx_payload_column(string $table): string
     });
 }
 
+/**
+ * The payload column, aliased back to `payload`, for the SQL that has to name it by hand.
+ *
+ * Every screen that lists documents selects this column; naming it literally is how a query works on a
+ * converted host and throws "Unknown column 'payload'" on the live one, where the column is still
+ * `data` until the cleanup phase. There is one place that knows the name (wx_payload_column()), and this
+ * is the only string builder that pastes it into a query.
+ */
+function wx_doc_payload_sql(string $table, string $alias = '', string $as = 'payload'): string
+{
+    $col = '`' . wx_payload_column($table) . '`';
+    return ($alias !== '' ? $alias . '.' : '') . $col . ' AS `' . $as . '`';
+}
+
+/** A JSON expression over the payload column, for filter, sort and search clauses. `$path` is a literal from our own code. */
+function wx_doc_json(string $table, string $path, bool $unquote = true): string
+{
+    $col = '`' . wx_payload_column($table) . '`';
+    $extract = 'JSON_EXTRACT(' . $col . ", '" . $path . "')";
+    return $unquote ? 'JSON_UNQUOTE(' . $extract . ')' : $extract;
+}
+
 /** One document, decoded, with its id and the indexed columns merged in. */
 function wx_doc_get(string $table, int $id, bool $forUpdate = false): ?array
 {

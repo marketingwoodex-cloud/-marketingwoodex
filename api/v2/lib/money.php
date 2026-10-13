@@ -280,7 +280,7 @@ function wx_money_summary(): array
     $received = 0;
     $overdue = 0;
     if (wx_table_exists('wx_invoices')) {
-        $rows = wx_all('SELECT id, payload FROM wx_invoices');
+        $rows = wx_all('SELECT id, ' . wx_doc_payload_sql('wx_invoices') . ' FROM wx_invoices');
         $paidByInvoice = [];
         if (wx_table_exists('wx_invoice_payments')) {
             foreach (wx_all('SELECT invoice_id, COALESCE(SUM(amount),0) AS paid FROM wx_invoice_payments GROUP BY invoice_id') as $r) {

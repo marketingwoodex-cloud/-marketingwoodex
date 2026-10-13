@@ -156,11 +156,8 @@ function wx_route_approvals_count(array $ctx): array
 {
     wx_require_user('appr_count');
     $days = wx_appr_cfg()['expire_days'];
-    $pending = (int) wx_val(
-        "SELECT COUNT(*) FROM wx_approvals WHERE status = 'pending' AND requested_at >= DATE_SUB(NOW(), INTERVAL ? DAY)",
-        [$days]
-    );
-    return ['data' => ['pending' => $pending, 'expiresAfterDays' => $days]];
+    /* The same count the bell shows, from the same function — see wx_appr_pending_count(). */
+    return ['data' => ['pending' => wx_appr_pending_count(), 'expiresAfterDays' => $days]];
 }
 
 /**

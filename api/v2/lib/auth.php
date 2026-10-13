@@ -367,6 +367,32 @@ function wx_login_finish(array $u): array
     ];
 }
 
+/* ------------------------------------------------------------------ recovery codes
+   Eight one-time codes, in v2.1's format: eight hex characters shown as `xxxx-xxxx`, stored as the
+   sha256 of the undashed string. The dashed form is what a person reads off a printout and types; the
+   undashed form is what is hashed. Both sides go through the three functions below, because the bug
+   they exist to prevent is a comparison that hashes the dashes or the case differently from the
+   enrolment that stored it — a code that looks right and is silently refused. */
+
+function wx_recovery_codes(int $count = 8): array
+{
+    $out = [];
+    for ($i = 0; $i < $count; $i++) {
+        $out[] = bin2hex(random_bytes(4));
+    }
+    return $out;
+}
+
+function wx_recovery_fmt(array $codes): array
+{
+    return array_map(static fn($x) => substr((string) $x, 0, 4) . '-' . substr((string) $x, 4), $codes);
+}
+
+function wx_recovery_hash(string $code): string
+{
+    return hash('sha256', strtolower(str_replace('-', '', trim($code))));
+}
+
 /* ------------------------------------------------------------------ 2FA tickets */
 
 /** A short-lived, signed ticket that carries "password already verified for user N". */
@@ -408,10 +434,13 @@ function wx_login_2fa(string $ticket, string $code): array
     if (!$okTotp) {
         $codes = $sec['recovery'] ?? [];
         $found = null;
-        foreach ((array) $codes as $i => $hash) {
-            if (hash_equals((string) $hash, hash('sha256', strtoupper(preg_replace('~\s+~', '', $code))))) {
-                $found = $i;
-                break;
+        if (preg_match('~^[a-z0-9]{4}-?[a-z0-9]{4}$~i', $code)) {
+            $want = wx_recovery_hash($code);
+            foreach ((array) $codes as $i => $hash) {
+                if (hash_equals((string) $hash, $want)) {
+                    $found = $i;
+                    break;
+                }
             }
         }
         if ($found === null) {
@@ -447,9 +476,18 @@ function wx_security_store(): JsonStore
 }
 
 /** The 2FA state for one user, in the column shape, whoever wrote it. */
-function wx_security_state(int $userId): array
+/** The per-request cache for the state below. A static local cannot be cleared from outside, and a
+    write that leaves a stale read behind is how a screen shows "two-factor off" right after turning it
+    on. Held by reference so wx_security_state_put() can drop one user's entry. */
+function &wx_security_cache(): array
 {
     static $cache = [];
+    return $cache;
+}
+
+function wx_security_state(int $userId): array
+{
+    $cache = &wx_security_cache();
     if (isset($cache[$userId])) {
         return $cache[$userId];
     }
@@ -476,6 +514,7 @@ function wx_security_state(int $userId): array
             $state['legacy'] = true;
         }
     }
+    $cache = &wx_security_cache();
     $cache[$userId] = $state;
     return $state;
 }
@@ -483,6 +522,8 @@ function wx_security_state(int $userId): array
 /** Write the state back to the user row, and drop the legacy file row it came from. */
 function wx_security_state_put(int $userId, array $state): void
 {
+    $cache = &wx_security_cache();
+    unset($cache[$userId]);
     $recovery = array_values(array_filter(array_map('strval', (array) ($state['recovery'] ?? []))));
     wx_update('wx_users', [
         'totp_secret' => (string) ($state['secret'] ?? '') !== '' ? (string) $state['secret'] : null,
@@ -525,23 +566,6 @@ function wx_user_security_put(int $userId, array $state): void
         'last' => (int) ($state['totp_last'] ?? 0),
         'alerts' => array_key_exists('alerts', $state) ? !empty($state['alerts']) : true,
     ]);
-}
-
-/** Recovery codes: eight, in the format v2.1 printed and people photographed. */
-function wx_recovery_codes(int $count = 8): array
-{
-    $out = [];
-    for ($i = 0; $i < $count; $i++) {
-        $raw = strtoupper(bin2hex(random_bytes(4)));
-        $out[] = substr($raw, 0, 4) . '-' . substr($raw, 4, 4);
-    }
-    return $out;
-}
-
-/** What is stored is a hash, never the code itself — the same rule as a password. */
-function wx_recovery_hash(string $code): string
-{
-    return hash('sha256', strtoupper((string) preg_replace('~\s+~', '', $code)));
 }
 
 /** The otpauth:// URI the QR code is drawn from. */

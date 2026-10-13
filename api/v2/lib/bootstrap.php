@@ -42,6 +42,13 @@ if (!defined('WX_ROLES')) define('WX_ROLES', ['owner', 'admin', 'editor', 'sales
 if (!defined('WX_ROLE_LABELS')) define('WX_ROLE_LABELS', [
     'owner' => 'Master', 'admin' => 'Manager', 'editor' => 'Developer', 'sales' => 'Sales', 'support' => 'Support',
 ]);
+/* The stages a project moves through — the same list the v2.1 project screen used, under the names
+   v2.5 gives them. It lives here rather than in a route file because two things need it: the projects
+   screen, and the client notifications that fire when a project passes a stage. A constant in a route
+   file is only defined once that file has been loaded, which is exactly the kind of ordering dependency
+   that turns into "notification sent twice" or "fatal: undefined constant". */
+if (!defined('WX_PROJECT_STAGES')) define('WX_PROJECT_STAGES', ['planning', 'design', 'production', 'installation', 'handover', 'closed']);
+
 if (!defined('WX_PERM_GROUPS')) define('WX_PERM_GROUPS', [
     'sales'         => 'Leads, pipeline, clients, quotes, invoices, projects, bookings',
     'conversations' => 'Inbox (website chat + WhatsApp)',
@@ -62,9 +69,15 @@ require_once WX_V2_DIR . '/lib/http.php';
 require_once WX_V2_DIR . '/lib/store.php';
 require_once WX_V2_DIR . '/lib/settings.php';
 require_once WX_V2_DIR . '/lib/db.php';
+/* docs.php was written but never included, which meant wx_doc_get()/wx_doc_put()/wx_payload_column()
+   — the whole document layer the money path is built on — were undefined at runtime. Nothing caught it:
+   a lint sees a valid file, and the tests that call into the document layer need a database. The check
+   that would have caught it ("every lib is included, or nothing uses it") is in tests/conformance.mjs. */
+require_once WX_V2_DIR . '/lib/docs.php';
 require_once WX_V2_DIR . '/lib/validate.php';
 require_once WX_V2_DIR . '/lib/money.php';
 require_once WX_V2_DIR . '/lib/audit.php';
+require_once WX_V2_DIR . '/lib/notify.php';
 require_once WX_V2_DIR . '/lib/auth.php';
 require_once WX_V2_DIR . '/lib/caps.php';
 require_once WX_V2_DIR . '/lib/approvals.php';

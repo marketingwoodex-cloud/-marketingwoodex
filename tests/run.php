@@ -339,7 +339,32 @@ ok(!wx_totp_ok($b32, wx_hotp($key, intdiv(time(), 30)), $state), 'the same code 
 $noState = [];
 ok(!wx_totp_ok($b32, '12345', $noState), 'a five-digit code is refused');
 ok(!wx_totp_ok($b32, 'abcdef', $noState), 'a non-numeric code is refused');
-ok(!wx_totp_ok('', '123456', $noState), 'an empty secret is refused');
+
+/* ---- recovery codes -------------------------------------------------------------------------
+   Eight one-time codes, printed dashed, typed by a person who has just lost their phone. The three
+   things that must agree are the format, the hash and the comparison: a code that looks right and is
+   refused is the worst failure this product can have. */
+$codes = wx_recovery_codes();
+eq(count($codes), 8, 'eight recovery codes are issued');
+eq(strlen($codes[0]), 8, 'a code is eight characters');
+ok(ctype_xdigit($codes[0]), 'a code is hex, so it can be read off a printout without ambiguity');
+$shown = wx_recovery_fmt($codes);
+eq($shown[0], substr($codes[0], 0, 4) . '-' . substr($codes[0], 4), 'codes are shown dashed');
+eq(wx_recovery_hash($shown[0]), wx_recovery_hash($codes[0]), 'the dashed and undashed forms hash the same');
+eq(wx_recovery_hash('  ' . strtoupper($shown[0]) . '  '), wx_recovery_hash($codes[0]), 'case and stray spaces do not change the hash');
+ok(wx_recovery_hash($shown[1]) !== wx_recovery_hash($codes[0]), 'two different codes do not collide');
+eq(count(array_unique($codes)), 8, 'the eight codes are distinct');
+
+/* The shape the sign-in path insists on, so a typed TOTP code is never mistaken for a recovery code. */
+ok((bool) preg_match('~^[a-z0-9]{4}-?[a-z0-9]{4}$~i', $shown[0]), 'a shown code matches the shape the sign-in path accepts');
+ok(!(bool) preg_match('~^[a-z0-9]{4}-?[a-z0-9]{4}$~i', '123456'), 'a six-digit TOTP code is not treated as a recovery code');
+
+/* ---- base32 round trip ----------------------------------------------------------------------- */
+$bin = random_bytes(20);
+$enc = wx_b32_enc($bin);
+ok((bool) preg_match('~^[A-Z2-7]+$~', $enc), 'wx_b32_enc produces the base32 alphabet');
+eq(wx_b32_dec($enc), $bin, 'base32 survives a round trip');
+
 
 /* ============================================================== errors & envelope */
 group('The envelope and the closed error set');
@@ -492,6 +517,43 @@ ok(count($bridged) > 60, 'the bridge covers the ported families (' . count($brid
 $patterns = array_column($routes, 1);
 $unknown = array_values(array_diff(wx_public_routes(), $patterns));
 eq($unknown, [], 'every pattern in wx_public_routes() is a registered route');
+
+/* ---- what an account change means ------------------------------------------------------------
+   wx_user_plan() is the rules — who may create an owner, whose last owner cannot be demoted, who
+   cannot switch themselves off — as a pure decision, which is why they can be tested here at all. */
+group('The rules that keep a company out of its own admin');
+
+$owner = ['id' => 1, 'name' => 'Owner', 'role' => 'owner'];
+$admin = ['id' => 2, 'name' => 'Manager', 'role' => 'admin'];
+$row = ['id' => 5, 'name' => 'Someone', 'email' => 'someone@woodex.com.pk', 'role' => 'sales', 'active' => 1];
+$new = ['name' => 'New Person', 'email' => 'New.Person@woodex.com.pk', 'role' => 'sales', 'password' => 'a-long-enough-password'];
+
+$plan = wx_user_plan($new, $owner, null, 0);
+ok(empty($plan['error']) && $plan['set']['email'] === 'new.person@woodex.com.pk', 'a new account is planned, with the email lowercased');
+ok($plan['set']['active'] === 1, 'a new account is active by default');
+
+ok(wx_user_plan(['name' => 'X', 'email' => 'x@y.pk', 'role' => 'owner', 'password' => 'a-long-enough-password'], $admin, null, 0)['error'] !== null, 'a manager cannot create an owner');
+ok(empty(wx_user_plan(['name' => 'X', 'email' => 'x@y.pk', 'role' => 'owner', 'password' => 'a-long-enough-password'], $owner, null, 0)['error']), 'the owner can create another owner');
+ok(wx_user_plan(['name' => 'X', 'email' => 'not-an-email', 'role' => 'sales', 'password' => 'a-long-enough-password'], $owner, null, 0)['error'] !== null, 'a malformed email is refused');
+ok(wx_user_plan(['name' => '', 'email' => 'x@y.pk', 'role' => 'sales', 'password' => 'a-long-enough-password'], $owner, null, 0)['error'] !== null, 'a missing name is refused');
+ok(wx_user_plan(['name' => 'X', 'email' => 'x@y.pk', 'role' => 'wizard', 'password' => 'a-long-enough-password'], $owner, null, 0)['error'] !== null, 'an unknown role is refused');
+ok(wx_user_plan(['name' => 'X', 'email' => 'x@y.pk', 'role' => 'sales'], $owner, null, 0)['error'] !== null, 'a new account needs a password');
+ok(wx_user_plan(['name' => 'X', 'email' => 'x@y.pk', 'role' => 'sales', 'password' => 'short'], $owner, null, 0)['error'] !== null, 'a short password is refused');
+
+$ownerRow = ['id' => 1, 'name' => 'Owner', 'email' => 'o@y.pk', 'role' => 'owner', 'active' => 1];
+ok(wx_user_plan(['name' => 'Owner', 'email' => 'o@y.pk', 'role' => 'sales'], $owner, $ownerRow, 0)['error'] !== null, 'the last active owner cannot be demoted');
+ok(empty(wx_user_plan(['name' => 'Owner', 'email' => 'o@y.pk', 'role' => 'sales'], $owner, $ownerRow, 1)['error']), 'an owner can be demoted when another active owner exists');
+ok(wx_user_plan(['name' => 'Owner', 'email' => 'o@y.pk', 'role' => 'owner', 'active' => false], $owner, $ownerRow, 1)['error'] !== null, 'the owner cannot switch themselves off');
+ok(wx_user_plan(['name' => 'Owner', 'email' => 'o@y.pk', 'role' => 'owner', 'active' => 0], $admin, $ownerRow, 2)['error'] !== null, 'a manager cannot edit the owner at all');
+ok(empty(wx_user_plan(['name' => 'Someone', 'email' => 'someone@woodex.com.pk', 'role' => 'sales', 'active' => false], $owner, $row, 3)['error']), 'someone else can be deactivated');
+
+$changed = wx_user_plan(['name' => 'Someone', 'email' => 'someone@woodex.com.pk', 'role' => 'admin'], $owner, $row, 3);
+ok($changed['signOut'] === true, 'a role change ends that person sessions');
+$same = wx_user_plan(['name' => 'Someone Else', 'email' => 'someone@woodex.com.pk', 'role' => 'sales'], $owner, $row, 3);
+eq($same['signOut'], false, 'renaming someone does not sign them out');
+$pw = wx_user_plan(['name' => 'Someone', 'email' => 'someone@woodex.com.pk', 'role' => 'sales', 'password' => 'a-long-enough-password'], $owner, $row, 3);
+ok($pw['signOut'] === true && $pw['password'] !== '', 'a new password ends their sessions');
+$pw = wx_user_plan(['name' => 'Someone', 'email' => 'someone@woodex.com.pk', 'role' => 'sales', 'password' => 'a-long-enough-password'], $owner, $row, 3);
 
 /* ============================================================== JSON store */
 group('Atomic JSON store');

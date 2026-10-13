@@ -19,9 +19,6 @@
 
 declare(strict_types=1);
 
-/** The stages a project moves through. Same list as the v2.1 project screen. */
-const WX_PROJECT_STAGES = ['planning', 'design', 'production', 'installation', 'handover', 'closed'];
-
 function wx_route_projects_list(array $ctx): array
 {
     wx_require_user('projs_table');
@@ -33,18 +30,18 @@ function wx_route_projects_list(array $ctx): array
     $where = [];
     $params = [];
     if ($stage && in_array($stage, WX_PROJECT_STAGES, true)) {
-        $where[] = "JSON_UNQUOTE(JSON_EXTRACT(payload, '$.stage')) = ?";
+        $where[] = wx_doc_json('wx_projects', '$.stage') . ' = ?';
         $params[] = $stage;
     }
     if ($q !== '') {
-        $where[] = "(JSON_UNQUOTE(JSON_EXTRACT(payload, '$.name')) LIKE ? OR JSON_UNQUOTE(JSON_EXTRACT(payload, '$.no')) LIKE ?)";
+        $where[] = '(' . wx_doc_json('wx_projects', '$.name') . ' LIKE ? OR ' . wx_doc_json('wx_projects', '$.no') . ' LIKE ?)';
         $params[] = '%' . $q . '%';
         $params[] = '%' . $q . '%';
     }
     $sqlWhere = $where ? ' WHERE ' . implode(' AND ', $where) : '';
     $total = (int) wx_val('SELECT COUNT(*) FROM wx_projects' . $sqlWhere, $params);
     $rows = wx_all(
-        'SELECT id, payload FROM wx_projects' . $sqlWhere . ' ORDER BY id DESC LIMIT ' . $limit . ' OFFSET ' . $offset,
+        'SELECT id, ' . wx_doc_payload_sql('wx_projects') . ' FROM wx_projects' . $sqlWhere . ' ORDER BY id DESC LIMIT ' . $limit . ' OFFSET ' . $offset,
         $params
     );
 
@@ -173,6 +170,7 @@ function wx_route_projects_save_do(array $ctx): array
                     $p[$k] = wx_v_opt_string($b[$k], $k, $max) ?? '';
                 }
             }
+            $beforeStage = (string) ($p['stage'] ?? '');
             if (array_key_exists('stage', $b)) {
                 $to = wx_v_enum($b['stage'], WX_PROJECT_STAGES, 'stage');
                 if ($to !== ($p['stage'] ?? '')) {
@@ -247,8 +245,16 @@ function wx_route_projects_save_do(array $ctx): array
                 throw ApiError::internal('Could not encode the project', ['json_error' => json_last_error_msg()]);
             }
             wx_update('wx_projects', ['payload' => $json], ['id' => $id]);
-            wx_audit($u, 'project.save', 'project:' . $id, ['stage' => $p['stage'] ?? null]);
             $p['id'] = $id;
+            /* A stage change is a thing the client is told about — "work has started" the first time the
+               project reaches production, "ready for handover" at handover, a progress update for the
+               stages in between — and each one is sent once. The decision lives in lib/notify.php,
+               including the per-project marks that keep it once-only; inside the transaction, so a
+               failed save cannot send a notification about a change that did not happen. */
+            if ((string) $p['stage'] !== $beforeStage) {
+                $p = wx_notify_project_stage($p, $beforeStage);
+            }
+            wx_audit($u, 'project.save', 'project:' . $id, ['stage' => $p['stage'] ?? null, 'from' => $beforeStage]);
             return ['data' => ['project' => $p]];
         });
     });
@@ -273,7 +279,7 @@ function wx_route_projects_bill(array $ctx): array
     wx_require_user('proj_bill');
     $id = (int) $ctx['params']['id'];
     $k = (int) ($ctx['body']['k'] ?? -1);
-    $name = (string) (wx_val('SELECT JSON_UNQUOTE(JSON_EXTRACT(payload, "$.name")) FROM wx_projects WHERE id = ?', [$id]) ?? '');
+    $name = (string) (wx_val('SELECT ' . wx_doc_json('wx_projects', '$.name') . ' FROM wx_projects WHERE id = ?', [$id]) ?? '');
     return wx_appr_wrap('proj_bill', 'projects', 'wx_route_projects_bill_do', $ctx,
         'Bill milestone ' . ($k + 1) . ($name !== '' ? ' on ' . $name : ''), static fn() => wx_route_projects_bill_do($ctx));
 }

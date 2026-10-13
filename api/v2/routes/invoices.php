@@ -209,7 +209,7 @@ function wx_route_invoices_delete_do(array $ctx): array
 function wx_route_invoices_summary(array $ctx): array
 {
     wx_require_user('invs_tracker');
-    $rows = wx_all('SELECT id, payload FROM wx_invoices');
+    $rows = wx_all('SELECT id, ' . wx_doc_payload_sql('wx_invoices') . ' FROM wx_invoices');
     $byClient = [];
     $byMonth = [];
     foreach ($rows as $row) {
@@ -358,7 +358,7 @@ function wx_route_invoices_pay_do(array $ctx): array
             $inv = wx_doc_put('wx_invoices', $inv, wx_doc_columns('wx_invoices', $inv));
 
             // The project sees the money too — v2.1 logged it against the job.
-            $pid = (int) wx_val('SELECT id FROM wx_projects WHERE JSON_EXTRACT(payload, "$.invoice_id") = ? LIMIT 1', [$id]) ?: 0;
+            $pid = (int) wx_val('SELECT id FROM wx_projects WHERE ' . wx_doc_json('wx_projects', '$.invoice_id', false) . ' = ? LIMIT 1', [$id]) ?: 0;
             if ($pid) {
                 wx_audit($u, 'payment.project', 'project:' . $pid, ['invoice' => $id, 'amount' => $amount]);
             }
@@ -427,7 +427,7 @@ function wx_route_payments_list(array $ctx): array
     $from = wx_v_opt_date($ctx['query']['from'] ?? null, 'from') ?? date('Y-m-01');
     $to = wx_v_opt_date($ctx['query']['to'] ?? null, 'to') ?? date('Y-m-d');
     $rows = wx_all(
-        'SELECT p.*, i.payload AS invoice_payload FROM wx_invoice_payments p
+        'SELECT p.*, ' . wx_doc_payload_sql('wx_invoices', 'i', 'invoice_payload') . ' FROM wx_invoice_payments p
          LEFT JOIN wx_invoices i ON i.id = p.invoice_id
          WHERE p.paid_on BETWEEN ? AND ? AND p.reversed_at IS NULL
          ORDER BY p.paid_on DESC, p.id DESC LIMIT 500',

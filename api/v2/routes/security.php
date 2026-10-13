@@ -76,7 +76,7 @@ function wx_route_security_2fa_enable(array $ctx): array
 
     /* The only time the plain codes exist is in this response. If they are lost, the only way back in
        is a recovery-code reissue (which needs the password) or an owner's reset. */
-    return ['data' => ['twofa' => true, 'codes' => $codes]];
+    return ['data' => ['twofa' => true, 'codes' => wx_recovery_fmt($codes)]];
 }
 
 /** POST /security/2fa/disable — password required. Turning off a second factor is a security change. */
@@ -119,7 +119,7 @@ function wx_route_security_recovery(array $ctx): array
     /* Every code that was in the old list stops working now — which is the point of reissuing, and the
        line the screen prints. */
     wx_audit($u, '2fa.recovery_new', 'user:' . (int) $u['id'], ['count' => count($codes)]);
-    return ['data' => ['codes' => $codes, 'previousCodesInvalidated' => true]];
+    return ['data' => ['codes' => wx_recovery_fmt($codes), 'previousCodesInvalidated' => true]];
 }
 
 /** POST /security/alerts — "tell me when someone signs in as me". */

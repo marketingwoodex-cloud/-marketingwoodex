@@ -137,6 +137,22 @@ function wx_appr_summary(string $src, string $action, array $in): string
 }
 
 /**
+ * How many changes are waiting, under the current expiry window.
+ *
+ * One function for the approvals screen and the bell. Two queries carrying the same expiry rule would
+ * eventually disagree about what "pending" means, and the bell is exactly where the disagreement would
+ * be noticed by someone who cannot fix it.
+ */
+function wx_appr_pending_count(): int
+{
+    return (int) wx_val(
+        "SELECT COUNT(*) FROM wx_approvals WHERE status = 'pending' AND requested_at >= DATE_SUB(NOW(), INTERVAL ? DAY)",
+        [wx_appr_cfg()['expire_days']]
+    );
+}
+
+
+/**
  * File a request. Only the parts needed to replay it are stored: the route, the function, the params
  * and the body — never a rendered page.
  *
