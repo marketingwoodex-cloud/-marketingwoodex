@@ -313,6 +313,138 @@ export interface TickResult {
   checked: number;
 }
 
+/* --------------------------------------------------------- the header and the footer
+   One edit, every page, as one batch — and the same call previews it, so the number on the button is
+   the number of pages that change. */
+
+export interface ChromeData {
+  chrome: {
+    brand: string;
+    cta: string;
+    footer: string;
+    menuDesktop: string;
+    menuMobile: string;
+    style: string;
+    phone: string;
+    version: number;
+    updatedAt: string;
+    updatedBy: string;
+  };
+  coverage: { pages: number; skipped: number; regions: Record<string, number> };
+  versions: { id: number; version: number; note: string; at: string; by: string }[];
+  fromPage: null | {
+    rel: string;
+    brand: string;
+    footer: string;
+    menuDesktop: string;
+    menuMobile: string;
+    style: string;
+    phone: string;
+  };
+}
+
+export interface ChromeChange {
+  rel: string;
+  url: string;
+  bytes: string;
+  before: Record<string, string>;
+  after: Record<string, string>;
+}
+
+export interface ChromeDiff {
+  scanned: number;
+  changed: ChromeChange[];
+  skipped: number;
+  missing: string[];
+  pages: number;
+  truncated?: boolean;
+}
+
+export interface ChromeResult extends Omit<ChromeDiff, "truncated"> {
+  batch: string;
+  note: string;
+  chrome?: ChromeData["chrome"];
+  versions?: ChromeData["versions"];
+}
+
+export interface ReplacePage {
+  rel: string;
+  count: number;
+}
+
+export interface ReplaceResult {
+  pages: ReplacePage[];
+  total: number;
+  dry: boolean;
+  batch: string | null;
+  scanned: number;
+}
+
+/* --------------------------------------------------------------- pages and history
+   The history is grouped by *change*, because the change that rewrote 148 pages is one entry with one
+   undo — not 148 entries that each look like a file edit. */
+
+export interface PageRow {
+  rel: string;
+  title: string;
+  folder: string;
+  bytes: number;
+  mtime: string;
+  updatedAt: string | null;
+  updatedBy: string | null;
+  stale: boolean;
+  versions: number;
+}
+
+export interface PagesData {
+  pages: PageRow[];
+  missing: string[];
+  folders: Record<string, number>;
+  count: number;
+  stale: number;
+}
+
+export interface PageChange {
+  batch: string;
+  note: string;
+  by: string;
+  at: string;
+  pages: number;
+  bytes: number;
+  sample: string[];
+  undoable: boolean;
+}
+
+export interface PageVersion {
+  id: number;
+  bytes: number;
+  note: string;
+  batch: string | null;
+  restoredFrom: number | null;
+  at: string;
+  by: string;
+  byId: number | null;
+}
+
+export interface PageDetail {
+  rel: string;
+  html: string;
+  bytes: number;
+  version: number;
+  versions: PageVersion[];
+  fresh: boolean;
+  index: { title: string; bytes: number; updatedAt: string | null; updatedBy: string | null } | null;
+  mtime: string | null;
+}
+
+export interface RollbackResult {
+  batch: string;
+  undoBatch: string;
+  restored: string[];
+  missing: string[];
+  errors: { rel: string; message: string }[];
+}
+
 /** What a write returns when the v2.1 policy says a Manager's change waits for the Master. */
 export interface PendingResult {
   pending: true;

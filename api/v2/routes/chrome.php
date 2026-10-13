@@ -96,15 +96,11 @@ function wx_route_chrome_apply_do(array $ctx): array
     $note = (string) ($ctx['body']['note'] ?? '');
 
     return wx_guard('chrome.apply', static function () use ($edit, $u, $note, $ctx) {
-        $saved = wx_chrome_put([
-            'brand' => $edit['brand'] ?? null,
-            'cta' => $edit['cta'] ?? null,
-            'footer' => $edit['footer'] ?? null,
-            'menuDesktop' => $edit['menuDesktop'] ?? null,
-            'menuMobile' => $edit['menuMobile'] ?? null,
-            'style' => $edit['style'] ?? null,
-            'phone' => $edit['phone'] ?? null,
-        ], $u, $note);
+        /* Only the fields this request carried are saved. Passing an absent key through as null would
+           *clear* it (`wx_chrome_put` writes what it is given), so applying a footer would wipe the
+           stored brand — the kind of data loss a "save" that means "replace the whole object" causes. */
+        $fields = array_intersect_key($edit, array_flip(['brand', 'cta', 'footer', 'menuDesktop', 'menuMobile', 'style', 'phone']));
+        $saved = wx_chrome_put($fields, $u, $note);
         $result = wx_chrome_apply($edit, $u, $note);
         return ['data' => $result + ['chrome' => $saved, 'versions' => wx_chrome_versions_list()]];
     });
@@ -150,8 +146,15 @@ function wx_route_chrome_restore_do(array $ctx): array
         $saved = wx_chrome_put($data, $u, 'restored version ' . (int) $row['version']);
         /* Deliberately not applied to the pages: restoring what the editor *holds* and pushing it to 150
            files are two decisions, and this route only does the first. The screen offers the second as
-           the Apply button it already has. */
-        return ['data' => ['chrome' => $saved, 'applied' => false, 'hint' => 'Press Apply to write this across the site.', 'versions' => wx_chrome_versions_list()]];
+           the Apply button it already has. `restored` is the version that was put back — not the new
+           counter value, which is a different number and would make the screen's sentence wrong. */
+        return ['data' => [
+            'chrome' => $saved,
+            'restored' => (int) $row['version'],
+            'applied' => false,
+            'hint' => 'Press Apply to write this across the site.',
+            'versions' => wx_chrome_versions_list(),
+        ]];
     });
 }
 

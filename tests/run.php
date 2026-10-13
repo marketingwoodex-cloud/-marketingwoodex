@@ -1065,6 +1065,49 @@ eq(count($city['order']), 1, 'a city template keeps only well-formed section ids
    of. The sitemap rules are the same insertion v2.1 shipped, with the `unlisted` rule kept. */
 skip('publishing an article, the sitemap and the tick need migration 012 and the site tree');
 
+/* ==================================================== Phase 3 · the gate, as wiring
+   The gate's three sentences, each one a route that exists with the permission and approval action the
+   business already agreed to. The behaviour behind them is tested above (the chrome transformations, the
+   composer) and in the host run (the tables); what this asserts is that nothing was renamed into a route
+   the policy does not know. */
+
+$table = wx_routes();
+/** Find one route by method + pattern. */
+$find = static function (string $method, string $pattern) use ($table): ?array {
+    foreach ($table as $r) {
+        if ($r[0] === $method && $r[1] === $pattern) {
+            return ['handler' => $r[3], 'action' => $r[4], 'family' => $r[2]];
+        }
+    }
+    return null;
+};
+
+$publish = $find('POST', 'content/{id}/publish');
+ok($publish !== null && $publish['handler'] === 'wx_route_content_publish', 'the gate\'s first sentence is a route: POST content/{id}/publish');
+eq($publish['action'] ?? null, 'cms_published', 'and it carries the v2.1 action that means "put this article on the site"');
+$chrome = $find('POST', 'chrome');
+ok($chrome !== null && $chrome['handler'] === 'wx_route_chrome_apply', 'the second: POST chrome changes the header across the site');
+eq($chrome['action'] ?? null, 'global_chrome', 'through the action v2.1 used for the site-wide chrome');
+$rollback = $find('POST', 'pages/rollback');
+ok($rollback !== null && $rollback['handler'] === 'wx_route_pages_rollback', 'the third: POST pages/rollback undoes a whole change');
+ok($find('GET', 'pages/history') !== null, 'and the history that names the change to undo is readable');
+ok($find('GET', 'chrome') !== null && $find('POST', 'chrome/preview') !== null,
+    'the chrome can be read and previewed before it is applied');
+ok($find('POST', 'content/tick') !== null, 'and scheduled items can be published when their time comes');
+
+/* The preview must not be a route the approval policy queues: it is a read that happens to be a POST,
+   and putting it in the Master's queue would train people to approve without reading. */
+/* `wx_appr_needed(role, action)`: a Manager's changes are the ones the default policy queues. */
+eq(wx_appr_needed('admin', 'global_chrome'), true, 'applying the chrome is a change that can need the Master\'s approval');
+eq(wx_appr_needed('admin', 'chrome_versions'), false, 'reading the chrome versions is not a change and is never queued');
+eq(wx_appr_needed('admin', 'cms_save'), true, 'saving an article is a change');
+/* Publishing is *not* queued, and that is v2.1's own decision kept verbatim: "published" is not one of the
+   verbs the policy queues, so a Manager publishes without waiting for the Master — which is the whole point
+   of having an editor who can publish. Asserting the opposite would be rewriting the business rule. */
+eq(wx_appr_needed('admin', 'cms_published'), false, 'publishing an article is not queued — the policy is the one v2.1 shipped');
+eq(wx_appr_needed('admin', 'global_replace'), true, 'find-and-replace across the site is a change');
+eq(wx_appr_needed('owner', 'global_chrome'), false, 'the Master\'s own changes are never queued');
+
 /* ============================================================== report */
 echo "\n";
 if ($failures) {

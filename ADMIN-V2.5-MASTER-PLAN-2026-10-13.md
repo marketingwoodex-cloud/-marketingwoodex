@@ -528,11 +528,22 @@ back from page history — all through v2.5.
 | Pages, versioning and rollback | `db/migrations/010_media_pages.sql`, `lib/pages.php`, `routes/pages.php` | one batch per change, so *the header across 150 pages* is one undo |
 | Media library: usage, derivatives, alt-text queue, trash | `lib/media.php`, `routes/media.php` | alt text and the check that it was looked at are recorded separately |
 | File manager over `assets/` | `lib/files.php`, `routes/files.php` | four shared folders read-only; a file a page uses is refused before it is renamed or deleted |
-| Two screens | `admin-v25/src/screens/{LiveRedirects,LiveMedia}.tsx` | live-only by design; with no API they say so in a sentence |
+| The header, the menu and the footer across every page | `lib/chrome.php`, `routes/chrome.php`, `db/migrations/011_chrome.sql` | one edit for the whole site, keeping what is per-page: the current page's own link, the home page's brand, the mobile button's target, each page's footer anchors and its own intro sentence. A check that writes nothing and an apply that returns the batch id, so *the header across 150 pages* is one undo |
+| The content CMS: an editor writes an article, the server composes the page | `lib/content.php`, `routes/content.php`, `db/migrations/012_content.sql` | v2.1's builder ran in the browser and posted finished HTML; here an item is content and the page is composed at publish time from the site's own page furniture — so a new article inherits the *current* header, scheduling is a row with a time rather than 3 MB of prepared HTML, and drafts are a query rather than a loop |
+| Five screens | `admin-v25/src/screens/{LiveRedirects,LiveMedia,LiveContent,LiveGlobal}.tsx` on `/redirects`, `/media`, `/blog`, `/portfolio`, `/global` | live-only by design; with no API they say so in a sentence and offer no buttons that would lie |
 
-**Still to come in this phase:** article publishing UI, the header/footer editor and the section
-library (the other half of the gate), forms, the estimator, projects and the Gantt timeline, quote
-templates, business info, integrations, and the page-history screen.
+The two halves of the gate are in place and tested: **publishing** (`POST /content/{id}/publish`
+composes the page and returns the batch that undoes it) and **the site-wide header** (`POST /chrome`
+returns the same kind of batch from `wx_page_write_many()`). What the gate still needs is the last
+sentence — *rolls the change back from page history* — which the platform has had since Phase 1
+(`wx_page_rollback_batch()`) and which now has no screen. **The page-history screen is the next thing to
+build**, and the gate runs on a host with PHP and MySQL.
+
+**Still to come in this phase:** the page-history screen (the gate's last sentence), the pages screen,
+the section library and globals (`builder.php`'s 19 actions), placements and designs (testimonials and
+team appear *inside* pages — the API exists, the renderer does not yet), city pages (their publish path
+is root-level, unlike posts and case studies), forms, the estimator, projects and the Gantt timeline,
+quote templates, business info (`cms_biz_*`), announcements, the AI settings screen, and integrations.
 
 ### Phase 4 — Automation and intelligence · 3 weeks
 

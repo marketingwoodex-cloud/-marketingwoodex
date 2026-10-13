@@ -409,7 +409,58 @@ function wx_page_rollback_batch(string $batch, array $me): array
     return ['batch' => $batch, 'undoBatch' => $undo, 'restored' => array_keys($restored), 'missing' => $missing, 'errors' => $errors];
 }
 
-/** Recent changes across every page, newest first — the history screen. */
+/**
+ * Recent changes, **grouped by batch** — what the history screen shows.
+ *
+ * The rows in `wx_page_versions` are one per file, so the change that rewrote 148 pages is 148 rows with
+ * the same batch id. Listing the rows is why a history screen is useless in practice: the first screenful
+ * is one change, and "undo that change" looks like an operation on a single file. Grouping turns it back
+ * into the thing the person did.
+ *
+ * Grouped in PHP from the recent rows rather than with SQL aggregates, because the values are the *same*
+ * in every row of a batch and MIN()/MAX() over a note would be a way to hide a bug rather than a way to
+ * be correct. The reads are bounded (a multiple of the requested number of changes).
+ *
+ * @return array<int, array{batch:string, note:string, by:string, at:string, pages:int, bytes:int, sample:string[], undoable:bool}>
+ */
+function wx_page_changes_grouped(int $limit = 40): array
+{
+    $limit = max(1, min(100, $limit));
+    $rows = wx_all(
+        'SELECT rel, bytes, note, batch, created_at, created_by_name FROM wx_page_versions ORDER BY id DESC LIMIT ' . ($limit * 40)
+    );
+    $groups = [];
+    foreach ($rows as $r) {
+        $batch = (string) ($r['batch'] ?? '');
+        /* A version with no batch is a single-page write from before batches existed, or one the writer
+           chose not to group. It is its own change, keyed by the row — this keeps that honest instead of
+           lumping every unbatched version into one fake change. */
+        $key = $batch !== '' ? $batch : 'single:' . (string) $r['rel'] . ':' . (string) $r['created_at'];
+        if (!isset($groups[$key])) {
+            if (count($groups) >= $limit) {
+                continue;
+            }
+            $groups[$key] = [
+                'batch' => $batch,
+                'note' => (string) ($r['note'] ?? ''),
+                'by' => (string) ($r['created_by_name'] ?? ''),
+                'at' => (string) $r['created_at'],
+                'pages' => 0,
+                'bytes' => 0,
+                'sample' => [],
+                'undoable' => $batch !== '',
+            ];
+        }
+        $groups[$key]['pages']++;
+        $groups[$key]['bytes'] += (int) $r['bytes'];
+        if (count($groups[$key]['sample']) < 8) {
+            $groups[$key]['sample'][] = (string) $r['rel'];
+        }
+    }
+    return array_values($groups);
+}
+
+/** Recent changes across every page, newest first — one row per file, for callers that want the detail. */
 function wx_page_changes(int $limit = 100): array
 {
     $out = [];

@@ -51,7 +51,12 @@ function wx_route_pages_changes(array $ctx): array
         }
         return ['data' => ['batch' => $batch, 'files' => $rows, 'count' => count($rows)]];
     }
-    return ['data' => ['changes' => wx_page_changes((int) ($ctx['query']['limit'] ?? 100))]];
+    /* Grouped by default: a change that rewrote 148 pages is one entry, because that is what the person
+       did. `?flat=1` returns the rows, one per file, for anyone who wants the detail. */
+    if (!empty($ctx['query']['flat'])) {
+        return ['data' => ['changes' => wx_page_changes((int) ($ctx['query']['limit'] ?? 100)), 'grouped' => false]];
+    }
+    return ['data' => ['changes' => wx_page_changes_grouped((int) ($ctx['query']['limit'] ?? 40)), 'grouped' => true]];
 }
 
 /** GET /pages/{rel} — one page's HTML, or one version of it (`?version=`). */
