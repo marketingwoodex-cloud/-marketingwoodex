@@ -1376,6 +1376,26 @@ check("the demo strip says one true thing per clause, and the queue is not count
   assert(screen.includes("Only the master decides"), "and a manager is told whose buttons those are");
 });
 
+check("the pages screen publishes through the API, and reads the three facts rather than working them out", () => {
+  /* Publishing a page is a decision with two consequences a person cannot see: the address leaves
+     `sitemap.xml`, and search engines are told not to index it. The failure modes this guards are the two
+     that look fine in a screenshot — a screen that decided a page's status from the HTML it is editing (so
+     its answer drifts from the file the server keeps), and a screen that wrote the head tags itself instead
+     of calling the route, which would leave `_private/pages.json` — v2.1's file — disagreeing with the page. */
+  const screen = readCode("admin-v25/src/screens/LivePages.tsx").replace(/\s+/g, " ");
+  assert(/api\.post<[^>]*>\(`\/pages\/\$\{/.test(screen) && /\/publish`/.test(screen), "the status is changed through the publish endpoint");
+  assert(!/<meta\b/i.test(screen), "and the screen never writes a meta tag itself");
+  assert(/state\.inSitemap/.test(screen) && /state\.indexable/.test(screen) && /state\.status/.test(screen), "the three facts are read from the server's answer");
+  assert(/status: "draft"/.test(screen), "a new page is saved as a draft, as v2.1 started them");
+  const lib = readCode("api/v2/lib/pages.php");
+  assert(/function wx_page_head_plan\(/.test(lib), "the rules are one pure function, so a host without a database can still test them");
+  assert(/function wx_page_sitemap_set\(/.test(lib), "and the sitemap follows the status both ways");
+  const route = readCode("api/v2/routes/pages.php");
+  assert(/wx_appr_route\('page_meta_save'/.test(route), "the route keeps v2.1's action name, so the queue reads what it always read");
+  const legacy = readCode("api/v2/routes/legacy.php");
+  assert(/'page_meta_save'\s*=>\s*\['pages'/.test(legacy), "and v2.1's own call for it lands on the same handler");
+});
+
 /* ============================================================== report */
 
 if (process.argv.includes("--json")) {

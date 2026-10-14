@@ -531,6 +531,8 @@ export interface PagesData {
   folders: Record<string, number>;
   count: number;
   stale: number;
+  /** Only the pages that are *not* published: `rel => {status}`, v2.1's `pages.json`. */
+  state: Record<string, { status: string }>;
 }
 
 export interface PageChange {
@@ -564,6 +566,46 @@ export interface PageDetail {
   fresh: boolean;
   index: { title: string; bytes: number; updatedAt: string | null; updatedBy: string | null } | null;
   mtime: string | null;
+  /** Whether the page is public, whether search engines are told to skip it, and whether the sitemap lists it. */
+  state: PageState;
+}
+
+/** The three facts about a page that live outside its HTML — read from the server, never parsed here. */
+export interface PageState {
+  rel: string;
+  status: "published" | "hidden" | "draft";
+  title: string;
+  description: string;
+  robots: string;
+  indexable: boolean;
+  inSitemap: boolean;
+}
+
+/** `POST /pages/{rel}/publish` — what the change was, and what it did to the sitemap. */
+export interface PublishResult {
+  rel: string;
+  url: string;
+  status: string;
+  noindex: boolean;
+  title: string;
+  description: string;
+  listed: boolean;
+  inSitemap: boolean;
+  sitemapChanged: boolean;
+  /** False when the page's bytes were already what was asked for — a publish must not rewrite a file it is not changing. */
+  wrote: boolean;
+  version: number;
+  batch: string | null;
+  bytes: number;
+  note: string;
+}
+
+/** `GET /content/pages` — each page's own `<body data-page>`, which is what v2.1 called its kind. */
+export interface PageKindsView {
+  kinds: Record<string, string>;
+  count: number;
+  byKind: Record<string, string[]>;
+  shells: Record<string, string>;
 }
 
 export interface RollbackResult {

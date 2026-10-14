@@ -19,16 +19,44 @@
  */
 import { useEffect, useMemo, useState } from "react";
 import { FileStack, History, RefreshCw, SquarePen, Undo2, X } from "lucide-react";
-import { Btn, Card, Empty, Note, PageHead, Pill, Seg } from "../components/primitives";
+import { Btn, Card, Empty, Note, PageHead, Pill, Seg, Switch } from "../components/primitives";
 import { api, ApiFailure } from "../lib/api";
 import { useSession } from "../lib/session";
 import {
   isPending, useLive,
-  type PageChange, type PageDetail, type PagesData, type RollbackResult,
+  type PageChange, type PageDetail, type PageKindsView, type PageState, type PagesData,
+  type PublishResult, type RollbackResult,
 } from "../lib/live";
 import { bytes, timeAgo } from "../lib/format";
 
 type Tab = "pages" | "history";
+type ViewId = "all" | "service" | "city" | "articles" | "machinery";
+type StatusWord = "published" | "hidden" | "draft";
+
+/**
+ * Which view of the site a page belongs to.
+ *
+ * v2.1's "services" screen was not a collection of its own: it was a *view* of the pages — every page whose
+ * kind is not a city, that is not an article or a case study, and that is not the machinery — and "cities"
+ * was the same list filtered the other way. The kind is the page's own `<body data-page="…">`, so it is read
+ * from `/content/pages` rather than decided here, and a page nobody classified reads as a service page
+ * because that is what it most likely is; the row shows the kind it actually has.
+ */
+function pageView(rel: string, kind: string): Exclude<ViewId, "all"> {
+  if (/^(insights|projects)\//.test(rel)) return "articles";
+  if (/^(404|500|503|coming-soon)\.html$/.test(rel) || rel.startsWith("builder/")) return "machinery";
+  return kind === "city" ? "city" : "service";
+}
+
+/** A page's status, with the words v2.1 used for the same three states. */
+function statusLabel(status: string): string {
+  return status === "draft" ? "Draft" : status === "hidden" ? "Hidden" : "Published";
+}
+
+/** Where a draft starts: the page's own facts, as the server reported them. */
+function draftOf(s: PageState): { status: StatusWord; noindex: boolean; title: string; description: string } {
+  return { status: s.status, noindex: !s.indexable, title: s.title, description: s.description };
+}
 
 export function LivePages() {
   const { link, reason } = useSession();
@@ -38,6 +66,9 @@ export function LivePages() {
   const [rel, setRel] = useState<string | null>(null);
 
   const pages = useLive<PagesData>("/pages");
+  /* The kind of every page, from its own `<body data-page>`: the one read behind the service/city views.
+     With no answer the screen says so and shows every page — it does not guess a classification. */
+  const kinds = useLive<PageKindsView>("/content/pages");
   const history = useLive<{ changes: PageChange[]; grouped: boolean }>(tab === "history" ? "/pages/history?limit=40" : null, tab);
   const detail = useLive<PageDetail>(rel === null ? null : `/pages/${rel}`, rel);
 
@@ -53,11 +84,21 @@ export function LivePages() {
   const [newFolder, setNewFolder] = useState("");
   const [newSlug, setNewSlug] = useState("");
   const [newHtml, setNewHtml] = useState("");
+  const [copyFrom, setCopyFrom] = useState("");
+  /* The title of the page a copy came from, so the copy can be named "<title> (copy)" rather than carrying
+     the original's title into Google beside it. */
+  const [copyTitle, setCopyTitle] = useState("");
+  const [view, setView] = useState<ViewId>("all");
+  /* What the publish card is about to do. Held here, cleared when another page is opened or the publish
+     succeeds, and re-filled from the server's own answer — the screen never carries a status forward from
+     one page to the next. */
+  const [draft, setDraft] = useState<{ status: StatusWord; noindex: boolean; title: string; description: string } | null>(null);
 
   useEffect(() => {
     setResult(null);
     setBad(null);
     setEdit(null);
+    setDraft(null);
     setConflict(false);
   }, [tab, rel]);
 
@@ -72,6 +113,74 @@ export function LivePages() {
     } finally {
       setBusy(false);
     }
+  }
+
+  /* The publish card starts from what the server says about the page, and only once: after that it holds
+     what the person has changed. Opening another page clears it (the effect above), so a status can never
+     travel from one page to the next. */
+  useEffect(() => {
+    const d = detail.data;
+    if (!d) return;
+    setDraft((cur) => (cur === null ? draftOf(d.state) : cur));
+  }, [detail.data]);
+
+  /**
+   * Publish, hide or draft the open page — v2.1's page settings screen, which is where its `page_meta_save`
+   * was called from.
+   *
+   * The title and the description travel with it because that is when somebody is looking at the page's line
+   * in Google, and because the route treats an absent field as "leave it alone": this screen sends what the
+   * person can see, and nothing it does not know about.
+   */
+  async function publish() {
+    if (!detail.data || !draft) return;
+    const rel = detail.data.rel;
+    const r = await run(
+      () => api.post<PublishResult | { pending: true; message: string }>(`/pages/${rel}/publish`, { ...draft }),
+    );
+    if (r && isPending(r)) {
+      setResult(r.message);
+      return;
+    }
+    if (r && "status" in r) {
+      const what = r.status === "published"
+        ? (r.noindex ? "published, and kept out of search" : "published")
+        : r.status === "hidden" ? "hidden from the site" : "saved as a draft";
+      setResult(
+        `/${r.rel} is ${what}. ${r.listed ? "Its address is in the sitemap" : "Its address is not in the sitemap"}` +
+        `${r.sitemapChanged ? " — that just changed" : ""}. ` +
+        `${r.wrote ? `The head was written as version ${r.version}, so the change is one undo in the history.` : "Nothing in the file itself had to change."} ` +
+        "Publishing it again is how this is reversed; the change is in the audit log either way.",
+      );
+      setDraft(null);
+      detail.reload();
+      pages.reload();
+      history.reload();
+    }
+  }
+
+  /**
+   * Start from a page that already looks right.
+   *
+   * v2.1's Duplicate, and the reason its "new service page" produced a page that matched the site: the copy
+   * *is* the other page — header, footer, styling and all — so a new page never starts as a blank document.
+   * The address is suggested the way v2.1 suggested it (`<name>-copy` beside the original).
+   */
+  async function loadCopy(from: string) {
+    setCopyFrom(from);
+    if (from === "") {
+      return;
+    }
+    const d = await run(() => api.get<PageDetail>(`/pages/${from}`));
+    if (!d) return;
+    setNewHtml(d.html);
+    const bare = from.replace(/\/?index\.html$/, "");
+    const parts = bare.split("/");
+    const name = parts.pop() ?? "";
+    setNewFolder(parts.join("/"));
+    setNewSlug(`${name}-copy`);
+    setCopyTitle(d.state?.title ?? "");
+    setResult(`${d.rel} copied into the box below${d.state ? ` — it is ${statusLabel(d.state.status).toLowerCase()}` : ""}. Change the address, then create it: it is saved as a draft.`);
   }
 
   /** Undo a whole change — the gate's last sentence, in one call. */
@@ -149,9 +258,28 @@ export function LivePages() {
     if (r && "rel" in r) {
       setCreating(false);
       setNewSlug("");
-      setResult(`Created ${r.url} — version ${r.batch.slice(0, 8)} in the history.`);
-      pages.reload();
+      setCopyFrom("");
       setRel(r.rel);
+      pages.reload();
+      /* v2.1 started a new page as a draft, and that is not a detail: a page that is public the moment it is
+         created is a page in the sitemap before anybody has looked at it. The title is set to say what it
+         is — a copy otherwise carries the original's title, and two pages with one title is a search result
+         decided by a coin toss. */
+      const asDraft = await run(
+        () => api.post<PublishResult | { pending: true; message: string }>(`/pages/${r.rel}/publish`, {
+          status: "draft",
+          ...(copyTitle ? { title: `${copyTitle} (copy)` } : {}),
+        }),
+      );
+      setCopyTitle("");
+      const draftLine = asDraft === null
+        ? ""
+        : isPending(asDraft)
+          ? ` ${asDraft.message}`
+          : " It is a draft: not in the sitemap, and search engines are told to skip it until you publish it.";
+      setResult(`Created ${r.url} — version ${r.batch.slice(0, 8)} in the history.${draftLine}`);
+      detail.reload();
+      history.reload();
     }
   }
 
@@ -174,12 +302,27 @@ export function LivePages() {
     }
   }
 
+  /** What each view holds, so the filter says how much is in it before it is picked. */
+  const viewCounts = useMemo(() => {
+    const out: Record<ViewId, number> = { all: 0, service: 0, city: 0, articles: 0, machinery: 0 };
+    for (const p of pages.data?.pages ?? []) {
+      out.all++;
+      out[pageView(p.rel, kinds.data?.kinds[p.rel] ?? "")]++;
+    }
+    return out;
+  }, [pages.data, kinds.data]);
+
   const filtered = useMemo(() => {
     const list = pages.data?.pages ?? [];
     return list
+      .filter((p) => (view === "all" ? true : pageView(p.rel, kinds.data?.kinds[p.rel] ?? "") === view))
       .filter((p) => (folder === "" ? true : (p.folder === "" ? "(root)" : p.folder) === folder))
       .filter((p) => (q === "" ? true : p.rel.toLowerCase().includes(q.toLowerCase()) || (p.title ?? "").toLowerCase().includes(q.toLowerCase())));
-  }, [pages.data, folder, q]);
+  }, [pages.data, kinds.data, folder, q, view]);
+
+  /** A page's status and its kind, both from the server: the list shows them without a request per row. */
+  const statusOf = (rel: string) => pages.data?.state?.[rel]?.status ?? "published";
+  const kindOf = (rel: string) => kinds.data?.kinds[rel] ?? "";
 
   /* ---------------- the states that must not lie ---------------- */
 
@@ -273,6 +416,24 @@ export function LivePages() {
         {tab === "pages" && (
           <>
             <div className="grow" />
+            {kinds.data ? (
+              <Seg
+                options={[
+                  { id: "all", label: `Every page (${viewCounts.all})` },
+                  { id: "service", label: `Service pages (${viewCounts.service})` },
+                  { id: "city", label: `City pages (${viewCounts.city})` },
+                  { id: "articles", label: `Articles & studies (${viewCounts.articles})` },
+                ]}
+                value={view === "machinery" ? "all" : view}
+                onChange={(v) => setView(v as ViewId)}
+              />
+            ) : (
+              /* The kinds come from each page's own `<body data-page>`. With no answer the screen says so:
+                 a filter that guessed which pages were services would be a second opinion about the site. */
+              <span className="cell-sub" title={kinds.error?.message}>
+                {kinds.loading ? "Reading the page kinds…" : "The page kinds could not be read, so this is every page."}
+              </span>
+            )}
             <Seg
               options={[{ id: "", label: "Every folder" }, ...Object.entries(data?.folders ?? {}).map(([f, n]) => ({ id: f, label: `${f} (${n})` }))]}
               value={folder}
@@ -343,6 +504,20 @@ export function LivePages() {
             <h2 className="cell-main">New page</h2>
             <Btn iconOnly icon={<X size={14} />} title="Cancel" onClick={() => setCreating(false)} />
           </div>
+          <label className="stack">
+            <span className="field-label">Start from</span>
+            <select className="input" value={copyFrom} onChange={(e) => loadCopy(e.target.value)} disabled={busy}>
+              <option value="">{newHtml.trim() === "" ? "Type the HTML below" : "Keep what is in the box"}</option>
+              {(pages.data?.pages ?? []).map((p) => (
+                <option key={p.rel} value={p.rel}>{`${p.title || p.rel} — /${p.rel}`}</option>
+              ))}
+            </select>
+            <span className="cell-sub">
+              A copy keeps the page's header, footer and styling, because it *is* that page — v2.1's answer to
+              "make a new service page", and the reason a new page never starts as a blank document. The copy
+              is saved as a draft under a “(copy)” title.
+            </span>
+          </label>
           <div className="grid-2">
             <label className="stack">
               <span className="field-label">Folder (leave empty for the site root)</span>
@@ -425,8 +600,15 @@ export function LivePages() {
                     {filtered.map((p) => (
                       <tr key={p.rel} className={rel === p.rel ? "is-selected" : undefined} style={{ cursor: "pointer" }} onClick={() => setRel(p.rel)}>
                         <td>
-                          <span className="cell-main">{p.title || p.rel}</span>
-                          <span className="cell-sub mono truncate">/{p.rel}</span>
+                          <span className="cell-main">
+                            {p.title || p.rel}
+                            {statusOf(p.rel) !== "published" && (
+                              <Pill tone={statusOf(p.rel) === "draft" ? "warn" : "neutral"}>{statusLabel(statusOf(p.rel))}</Pill>
+                            )}
+                          </span>
+                          <span className="cell-sub mono truncate">
+                            /{p.rel}{kindOf(p.rel) ? ` · ${kindOf(p.rel)}` : ""}
+                          </span>
                         </td>
                         <td className="nowrap mono">{bytes(p.bytes)}</td>
                         <td className="nowrap">
@@ -449,14 +631,110 @@ export function LivePages() {
             ) : detail.error ? (
               <Note tone="danger" title="That page could not be read">{detail.error.message}</Note>
             ) : detail.data ? (
-              /* The panel is its own component: the narrowing of `detail.data` cannot travel into the
+              /* Both panels are their own components: the narrowing of `detail.data` cannot travel into the
                  callbacks defined in the same render, and a prop is a better answer than a cast. */
-              <PagePanel p={detail.data} busy={busy} onRestore={restore} onEdit={startEdit} />
+              <div className="stack">
+                <PublishPanel
+                  p={detail.data}
+                  busy={busy}
+                  draft={draft}
+                  onDraft={(patch) => setDraft((d) => (d ? { ...d, ...patch } : d))}
+                  onPublish={publish}
+                />
+                <PagePanel p={detail.data} busy={busy} onRestore={restore} onEdit={startEdit} />
+              </div>
             ) : null}
           </Card>
         </div>
       )}
     </>
+  );
+}
+
+/**
+ * Where one page is public.
+ *
+ * Three facts, and all three come from the server: whether the page is published, whether search engines are
+ * told to skip it, and whether `sitemap.xml` lists it. v2.1's page settings screen was this card — status,
+ * title, description, one checkbox about search — and the sentence under the status buttons is the point of
+ * it: "hidden" and "not in the sitemap" are the same decision, made once, and a person should be able to read
+ * what pressing the button does before they press it.
+ */
+function PublishPanel({
+  p, busy, draft, onDraft, onPublish,
+}: {
+  p: PageDetail;
+  busy: boolean;
+  draft: { status: StatusWord; noindex: boolean; title: string; description: string } | null;
+  onDraft: (patch: Partial<{ status: StatusWord; noindex: boolean; title: string; description: string }>) => void;
+  onPublish: () => void;
+}) {
+  if (!draft) {
+    return <div className="muted" style={{ padding: 18 }}>Loading…</div>;
+  }
+  const changed =
+    draft.status !== p.state.status ||
+    draft.noindex !== !p.state.indexable ||
+    draft.title !== p.state.title ||
+    draft.description !== p.state.description;
+  const consequence = draft.status !== "published"
+    ? `A ${draft.status} page is not public: search engines are told not to index it, and its address comes out of sitemap.xml.`
+    : draft.noindex
+      ? "The page stays public, but search engines are told to skip it and its address comes out of sitemap.xml."
+      : "Public, open to search engines, and listed in sitemap.xml.";
+
+  return (
+    <div className="stack">
+      <div className="row-between">
+        <h2 className="cell-main">Where this page is public</h2>
+        <div className="row">
+          <Pill tone={p.state.status === "published" ? "ok" : "warn"}>{statusLabel(p.state.status)}</Pill>
+          <Pill tone={p.state.inSitemap ? "ok" : "neutral"}>{p.state.inSitemap ? "in the sitemap" : "not in the sitemap"}</Pill>
+          <Pill tone={p.state.indexable ? "ok" : "neutral"}>{p.state.indexable ? "open to search" : "search told to skip"}</Pill>
+        </div>
+      </div>
+
+      <div className="grid-2">
+        <label className="stack">
+          <span className="field-label">Title — the line Google shows</span>
+          <input className="input" value={draft.title} onChange={(e) => onDraft({ title: e.target.value })} />
+        </label>
+        <label className="stack">
+          <span className="field-label">Description</span>
+          <input className="input" value={draft.description} onChange={(e) => onDraft({ description: e.target.value })} />
+        </label>
+      </div>
+
+      <label className="stack">
+        <span className="field-label">Status</span>
+        <Seg
+          options={[
+            { id: "published", label: "Published" },
+            { id: "hidden", label: "Hidden" },
+            { id: "draft", label: "Draft" },
+          ]}
+          value={draft.status}
+          onChange={(v) => onDraft({ status: v as StatusWord })}
+        />
+        <span className="cell-sub">{consequence}</span>
+      </label>
+
+      {draft.status === "published" && (
+        <label className="row" style={{ gap: 8, alignItems: "center" }}>
+          <Switch checked={draft.noindex} onChange={(v) => onDraft({ noindex: v })} label="Keep this page out of search engines" />
+          <span className="cell-sub">Keep it out of search engines without unpublishing it</span>
+        </label>
+      )}
+
+      <div className="row-between">
+        <Btn variant="primary" onClick={onPublish} disabled={busy || !changed}>
+          {busy ? "Working…" : changed ? "Publish this change" : "Nothing to publish"}
+        </Btn>
+        <span className="cell-sub">
+          The page is written through the versioned writer, so a publish is one undo in the history below.
+        </span>
+      </div>
+    </div>
   );
 }
 

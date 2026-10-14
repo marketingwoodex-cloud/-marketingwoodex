@@ -33,6 +33,10 @@ function wx_route_pages_list(array $ctx): array
         'folders' => $folders,
         'count' => count($r['pages']),
         'stale' => count(array_filter($r['pages'], static fn($p) => $p['stale'])),
+        /* Which pages are not simply published, so a list can say so without a request per row. v2.1's
+           cities screen had a Status column for the same reason: a draft nobody notices is a page nobody
+           publishes, and a hidden page nobody notices is one nobody misses until a client asks. */
+        'state' => wx_page_state_map(),
     ]];
 }
 
