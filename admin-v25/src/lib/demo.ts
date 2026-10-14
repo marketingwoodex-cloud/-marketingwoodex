@@ -17,7 +17,7 @@ import type {
   AiModels, AiState,
   BizData, BizRecord, CompanyData, CompanyRecord,
   EstData, FormsData, HeroHomeData, HeroPageData, HeroScanData,
-  NotifyData, ProjDetail, ProjList, ProjRow, TplsData,
+  NotifyData, ProjDetail, ProjList, ProjRow, TplsData, ConnState,
 } from "./live";
 
 const KEY = "wx-demo";
@@ -517,6 +517,45 @@ const APPR_ONE: ApprDetailData = {
   },
 };
 
+/* The connectors, as the server answers them. Every address is a placeholder, every hint is four invented
+   characters, and no secret exists anywhere in this file: the screen is shown what the server would show. */
+const CONN_STATE: ConnState = {
+  items: [
+    {
+      id: "c1a2b3c4d5e", key: "github", name: "GitHub backups", cat: "Code & backups",
+      account: "studio-owner/website", url: "https://github.com/studio-owner/website", notes: "Nightly copy of the site",
+      on: true, status: "connected", note: "Backup uploaded to GitHub: backups/woodex-backup-sample.zip (2310 KB)",
+      hasSecret: true, hint: "7Xq2", added: 1760000000, updated: 1760400000, checked: 1760400000, lastPush: 1760400000, pushOk: true,
+    },
+    {
+      id: "c2b3c4d5e6f", key: "gdrive", name: "Google Drive backups", cat: "Backups",
+      account: "https://drive.google.com/drive/folders/sample-folder", url: "https://script.google.com/macros/s/sample/exec",
+      notes: "", on: true, status: "connected", note: "Backup saved in Google Drive: woodex-backup-sample.zip (2310 KB)",
+      hasSecret: true, hint: "k9Pz", added: 1760000000, updated: 1760300000, checked: 1760300000, lastPush: 1760300000, pushOk: true,
+    },
+    {
+      id: "c3c4d5e6f7a", key: "gmail", name: "Gmail for alerts", cat: "Email",
+      account: "studio@example.com", url: "", notes: "Sends alerts and password resets",
+      on: true, status: "error", note: "Gmail: the server refused the app password",
+      hasSecret: true, hint: "1a2b", added: 1760000000, updated: 1760200000, checked: 1760500000, lastPush: 0, pushOk: null,
+    },
+    {
+      id: "c4d5e6f7a8b", key: "facebook", name: "Facebook page", cat: "Social",
+      account: "", url: "", notes: "", on: true, status: "setup", note: "",
+      hasSecret: false, hint: "", added: 1760000000, updated: 1760000000, checked: 0, lastPush: 0, pushOk: null,
+    },
+    {
+      id: "c5e6f7a8b9c", key: "instagram", name: "Instagram", cat: "Social",
+      account: "", url: "", notes: "", on: false, status: "setup", note: "",
+      hasSecret: false, hint: "", added: 1760000000, updated: 1760000000, checked: 0, lastPush: 0, pushOk: null,
+    },
+  ],
+  counts: { total: 5, connected: 2, setup: 2, error: 1, off: 1 },
+  file: "connectors.json",
+  exists: true,
+  server: { curl: true, live: false },
+};
+
 const AI_STATE: AiState = {
   ai: {
     provider: "anthropic",
@@ -550,6 +589,7 @@ const FIXTURES: Record<string, unknown> = {
   "/approvals": APPR,
   "/approvals/{id}": APPR_ONE,
   "/business": BIZ_DATA,
+  "/connectors": CONN_STATE,
   "/business/company": COMPANY_DATA,
   "/projects": PROJ_LIST,
   "/projects/{id}": PROJ_DETAIL,
@@ -582,5 +622,5 @@ export function demoFixture(path: string): unknown | null {
 export const DEMO_COVERED = [
   "/projects", "/projects/{id}", "/notifications", "/forms", "/estimator", "/heroes", "/heroes/home", "/heroes/page*",
   "/quotations/templates", "/business", "/business/company", "/approvals", "/approvals/{id}",
-  "/ai/settings", "/ai/models",
+  "/ai/settings", "/ai/models", "/connectors",
 ];

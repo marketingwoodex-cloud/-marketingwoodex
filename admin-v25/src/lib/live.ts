@@ -1446,3 +1446,44 @@ export interface ApprDetailData {
   approval: ApprDetail;
   canDecide: boolean;
 }
+
+/* ------------------------------------------------------------------ Integrations (/connectors) */
+
+/** One connector as the server answers it. The secret is never here: `hasSecret` and the last four characters are. */
+export interface ConnItem {
+  id: string;
+  key: string;
+  name: string;
+  cat: string;
+  account: string;
+  url: string;
+  notes: string;
+  on: boolean;
+  status: "connected" | "setup" | "error";
+  /** The server's last word on the connector: a check's or a push's message. */
+  note: string;
+  hasSecret: boolean;
+  /** The last four characters of the stored key, or empty. */
+  hint: string;
+  added: number;
+  updated: number;
+  checked: number;
+  lastPush: number;
+  pushOk: boolean | null;
+}
+
+export interface ConnState {
+  items: ConnItem[];
+  /** Counted once, on the server, so the screen never adds them up itself. */
+  counts: { total: number; connected: number; setup: number; error: number; off: number };
+  file: string;
+  exists: boolean;
+  /** `live` is false while connector tests and backup pushes still run only in the v2.1 admin. */
+  server: { curl: boolean; live: boolean };
+}
+
+export interface ConnSaveResult extends ConnState {
+  item: ConnItem;
+  /** The fields that changed, by name — never their values. */
+  changed: string[];
+}

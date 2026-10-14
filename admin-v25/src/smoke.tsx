@@ -31,6 +31,7 @@ import { LiveForms } from "./screens/LiveForms";
 import { LiveEstimator } from "./screens/LiveEstimator";
 import { LiveTemplates } from "./screens/LiveTemplates";
 import { LiveBusiness } from "./screens/LiveBusiness";
+import { LiveIntegrations } from "./screens/LiveIntegrations";
 import { DocPreview, numberedItems } from "./components/DocPreview";
 import { amountInWords } from "./lib/format";
 import { demoFixture } from "./lib/demo";
@@ -189,6 +190,9 @@ let htmlBizOffline = "";
 let htmlBizDemo = "";
 let htmlAi = "";
 let htmlAiEditor = "";
+let htmlConnOffline = "";
+let htmlConnDemo = "";
+let htmlConnEditor = "";
 let bzBiz: BizData | null = null;
 let bzCompany: CompanyData | null = null;
 let htmlDoc = "";
@@ -573,6 +577,12 @@ try {
   const asEditor = { ...asUser, role: "editor" as const, roleLabel: "Editor" };
   htmlAi = at(session("offline", asUser, true), <AiSettings />);
   htmlAiEditor = at(session("live", asEditor), <AiSettings />);
+
+  /* The Integrations screen: offline it shows none of the connectors; in demo it shows the sample list with no
+     controls that would save a key; an editor is told whose keys these are. */
+  htmlConnOffline = at(session("offline", null), <LiveIntegrations />);
+  htmlConnDemo = at(session("offline", asUser, true), <LiveIntegrations />);
+  htmlConnEditor = at(session("live", asEditor), <LiveIntegrations />);
 
   /* The announcement bar's own panel: on this host there is no API and no fixture for `/chrome/announce`,
      and the honest answer in both cases is that it cannot be read — not a preview strip of a bar nobody
@@ -1250,6 +1260,24 @@ for (const [name, ok] of [
     htmlAiEditor.includes("owner &amp; admins") &&
       htmlAiEditor.includes("signed in as Editor") &&
       !htmlAiEditor.includes("Paste the key"),
+  ],
+  [
+    "integrations: offline it lists no connector, and says the API is not answering",
+    htmlConnOffline.includes("api/v2 is not answering") && !htmlConnOffline.includes("GitHub backups"),
+  ],
+  [
+    "integrations: demo shows the sample connectors, masked, with the server's counts and no way to save a key",
+    htmlConnDemo.includes("GitHub backups") &&
+      htmlConnDemo.includes("5 on the list") &&
+      htmlConnDemo.includes("key stored, ends …7Xq2") &&
+      htmlConnDemo.includes("needs setup") &&
+      htmlConnDemo.includes("Saving here does not test anything") &&
+      !htmlConnDemo.includes("Add connector") &&
+      !htmlConnDemo.includes("Save connector"),
+  ],
+  [
+    "integrations: an editor is told the owner and admins hold the keys, and sees no connector",
+    htmlConnEditor.includes("Owner and admins") && !htmlConnEditor.includes("GitHub backups"),
   ],
 ] as [string, boolean][]) {
   if (ok) pass++;

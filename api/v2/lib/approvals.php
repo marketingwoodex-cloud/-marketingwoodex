@@ -147,6 +147,8 @@ const WX_APPR_LABELS = [
        Master should read in a sentence before agreeing to it. */
     'page_meta_save' => 'Publish or hide a page',
     'cms_ai_save' => 'Change the AI settings (keys, models, writing voice)',
+    'conn_save' => 'Change a connector: its account, address, or key',
+    'conn_delete' => 'Remove a connector and its key',
 ];
 
 /**

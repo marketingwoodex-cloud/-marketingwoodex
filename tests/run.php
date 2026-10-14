@@ -2935,6 +2935,94 @@ if (!function_exists('curl_init')) {
 }
 @unlink(WX_AI_TEST_FILE);
 
+/* ============================================================== the connectors
+ *
+ * v2.1 kept the studio's connectors and their keys in `_private/connectors.json`, and the old admin still reads
+ * that file. The rules that matter are the ones a mistake would cost money or access over: a key never leaves
+ * the server, a save that does not send a key keeps the one stored, and only an explicit Clear erases it.
+ * The scratch file matters for the same reason as the AI settings: the real one holds live keys. */
+
+define('WX_CONN_TEST_FILE', sys_get_temp_dir() . '/wx-conn-test-' . bin2hex(random_bytes(4)) . '.json');
+@unlink(WX_CONN_TEST_FILE);
+
+group('A new connector needs a name and an address that is https');
+throws('VALIDATION', 'name', static fn() => wx_conn_clean(['name' => '   '], null, 'c1', 100), 'a connector with no name is refused, and the refusal names the field');
+throws('VALIDATION', 'name', static fn() => wx_conn_clean(['name' => str_repeat('n', 61)], null, 'c1', 100), 'a name longer than 60 characters is refused, not clipped');
+throws('VALIDATION', 'url', static fn() => wx_conn_clean(['name' => 'Site', 'url' => 'javascript:alert(1)'], null, 'c1', 100), 'an address that is not http(s) is refused');
+[$new, $newChanged] = wx_conn_clean(['name' => 'GitHub <b>backups</b>', 'key' => 'GitHub!', 'url' => 'https://github.com/x/y'], null, 'c9', 100);
+eq($new['name'], 'GitHub backups', 'tags are stripped from a name, as v2.1 stripped them');
+eq($new['key'], 'github', 'the key is reduced to lower-case letters, digits, dash and underscore');
+eq($new['status'], 'setup', 'with no key and no account, a connector is set up, not connected');
+ok(in_array('name', $newChanged, true) && in_array('key', $newChanged, true), 'and every field of a new connector is reported as changed');
+
+group('A key never leaves the server, and the screen is told which one is in place');
+[$keyed] = wx_conn_clean(['name' => 'Gmail', 'key' => 'gmail', 'account' => 'studio@example.com', 'secret' => 'abcd efgh ijkl mnop'], null, 'c2', 100);
+eq($keyed['secret'], 'abcd efgh ijkl mnop', 'the secret is stored, trimmed, as the connector needs it');
+eq($keyed['status'], 'connected', 'an account and a key make a connector connected');
+$pub = wx_conn_pub($keyed);
+eq($pub['hasSecret'], true, 'the public record says a secret is set');
+eq($pub['hint'], 'mnop', 'and shows only its last four characters, as v2.1 did');
+ok(!str_contains((string) json_encode($pub), 'abcd efgh'), 'and the secret appears nowhere in the public record');
+ok(!array_key_exists('secret', $pub), 'the secret field is not in the public record at all');
+
+group('Absent and empty mean keep; only Clear erases a key');
+[$kept, $k1] = wx_conn_clean(['name' => 'Gmail', 'account' => 'studio@example.com'], $keyed, 'c2', 200);
+eq($kept['secret'], 'abcd efgh ijkl mnop', 'a save that sends no key keeps the stored one');
+ok(!in_array('secret', $k1, true), 'and does not report the key as changed');
+[$kept2] = wx_conn_clean(['name' => 'Gmail', 'secret' => '   '], $keyed, 'c2', 200);
+eq($kept2['secret'], 'abcd efgh ijkl mnop', 'a key field that is only spaces also keeps it');
+[$cleared, $k3] = wx_conn_clean(['name' => 'Gmail', 'secretClear' => true], $keyed, 'c2', 200);
+ok(!array_key_exists('secret', $cleared), 'an explicit Clear erases the key');
+eq($cleared['status'], 'connected', 'and the account still counts, so the connector stays connected');
+ok(in_array('secret', $k3, true), 'a Clear is reported as a change of the secret');
+[$replaced, $k4] = wx_conn_clean(['name' => 'Gmail', 'secret' => 'new-app-password-1234'], $keyed, 'c2', 200);
+eq($replaced['hint'] ?? wx_conn_pub($replaced)['hint'], '1234', 'a new key replaces the old one, and the hint follows it');
+ok(in_array('secret', $k4, true), 'and is reported as a change');
+[$off] = wx_conn_clean(['name' => 'Gmail', 'on' => false], $keyed, 'c2', 200);
+eq($off['on'], false, 'turning a connector off is saved when it is asked for');
+[$still] = wx_conn_clean(['name' => 'Gmail'], $off, 'c2', 200);
+eq($still['on'], false, 'and a save that does not mention it leaves it off');
+[$fresh] = wx_conn_clean(['name' => 'Facebook'], null, 'c5', 100);
+eq($fresh['on'], true, 'a new connector starts on, as v2.1 started it');
+
+group('Long values are refused by field, and the secret limit is the one written down');
+throws('VALIDATION', 'notes', static fn() => wx_conn_clean(['name' => 'X', 'notes' => str_repeat('x', 401)], null, 'c1', 100), 'notes over 400 characters are refused by name');
+throws('VALIDATION', 'secret', static fn() => wx_conn_clean(['name' => 'X', 'secret' => str_repeat('s', 2001)], null, 'c1', 100), 'a secret over 2000 characters is refused by name');
+throws('VALIDATION', 'account', static fn() => wx_conn_clean(['name' => 'X', 'account' => str_repeat('a', 161)], null, 'c1', 100), 'an account over 160 characters is refused by name');
+
+group('The routes name the connector by key, and the gate covers every write');
+$dm = wx_route_match('POST', ['connectors', 'c0a1b2c3d4e', 'delete']);
+ok($dm !== null, 'POST connectors/{conn}/delete is routed');
+eq($dm[1]['conn'] ?? null, 'c0a1b2c3d4e', 'and the connector id is captured as text, not refused as not-a-number');
+eq($dm[0]['file'], 'connectors', 'to the connectors route file');
+eq($dm[0]['action'], 'conn_delete', 'under the conn_delete action, which the policy queues');
+ok(wx_route_match('GET', ['connectors']) !== null && wx_route_match('POST', ['connectors']) !== null, 'the list and the save are routed');
+ok(wx_appr_needed('admin', 'conn_save') && wx_appr_needed('admin', 'conn_delete'), 'a Manager saving or deleting a connector waits for the Master');
+ok(!wx_appr_needed('admin', 'conn_list'), 'reading the list never waits');
+ok(!wx_appr_needed('owner', 'conn_save'), 'the owner is not queued by their own policy');
+
+group('The store keeps v2.1s file, survives a save, and reports what it holds');
+file_put_contents(WX_CONN_TEST_FILE, (string) json_encode(['items' => [], 'legacy' => ['keep' => true]]));
+[$a] = wx_conn_save(['name' => 'GitHub', 'key' => 'github', 'account' => 'studio/site', 'secret' => 'ghp_TESTTOKEN9876']);
+eq($a['hint'], '9876', 'a save returns the public record, with the hint');
+ok(!str_contains((string) json_encode($a), 'ghp_TESTTOKEN'), 'and the returned record carries no token');
+$disk = json_decode((string) file_get_contents(WX_CONN_TEST_FILE), true);
+eq($disk['legacy']['keep'] ?? false, true, 'keys in the file that this API does not own survive a save');
+eq(count($disk['items'] ?? []), 1, 'and the connector is in v2.1s list');
+$state = wx_conn_state();
+eq($state['counts']['total'], 1, 'the screen is given the total');
+eq($state['counts']['connected'], 1, 'and how many are connected, counted once, on the server');
+ok(!str_contains((string) json_encode($state), 'ghp_TESTTOKEN'), 'the state the screen reads never contains the token');
+[$b] = wx_conn_save(['id' => $a['id'], 'notes' => 'nightly']);
+eq($b['notes'], 'nightly', 'a save by id changes the record it names');
+eq($b['hint'], '9876', 'and keeps its key');
+throws('NOT_FOUND', null, static fn() => wx_conn_save(['id' => 'c0000000000', 'name' => 'Ghost']), 'a save naming a connector that is gone says so, and does not create one');
+[$gone] = wx_conn_delete($a['id']);
+eq($gone['name'], 'GitHub', 'a delete returns the connector it removed, so the audit can name it');
+throws('NOT_FOUND', null, static fn() => wx_conn_delete($a['id']), 'deleting it twice says it is not on the list any more');
+eq(wx_conn_state()['counts']['total'], 0, 'and the list is empty again');
+@unlink(WX_CONN_TEST_FILE);
+
 /* ============================================================== report */
 echo "\n";
 if ($failures) {

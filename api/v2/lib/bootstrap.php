@@ -100,6 +100,7 @@ require_once WX_V2_DIR . '/lib/chrome.php';
 require_once WX_V2_DIR . '/lib/announce.php';
 require_once WX_V2_DIR . '/lib/content.php';
 require_once WX_V2_DIR . '/lib/ai.php';
+require_once WX_V2_DIR . '/lib/connectors.php';
 require_once WX_V2_DIR . '/lib/blocks.php';
 require_once WX_V2_DIR . '/lib/placements.php';
 require_once WX_V2_DIR . '/lib/heroes.php';

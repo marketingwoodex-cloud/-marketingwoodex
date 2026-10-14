@@ -339,6 +339,11 @@ function wx_routes(): array
         ['POST',   'ai/settings',                     'ai', 'wx_route_ai_save',            'cms_ai_save'],
         ['POST',   'ai/models',                       'ai', 'wx_route_ai_models',          'cms_ai_models'],
         ['POST',   'ai/test',                         'ai', 'wx_route_ai_test',            'ai_test'],
+
+        /* ---------------------------------------------------------- integrations (the Integrations screen) */
+        ['GET',    'connectors',                      'connectors', 'wx_route_conn_list',   'conn_list'],
+        ['POST',   'connectors',                      'connectors', 'wx_route_conn_save',   'conn_save'],
+        ['POST',   'connectors/{conn}/delete',        'connectors', 'wx_route_conn_delete', 'conn_delete'],
         ['POST',   'content/{id}/schedule',           'content', 'wx_route_content_schedule',   'cms_save'],
         ['POST',   'content/{id}/status',             'content', 'wx_route_content_status',     'cms_status'],
         ['DELETE', 'content/{id}',                    'content', 'wx_route_content_delete',     'cms_delete'],

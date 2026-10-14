@@ -149,6 +149,7 @@ reading before changing the files they touch.
 
 | Commit | Slice | The one thing it decided |
 |---|---|---|
+| (this slice) | **Integrations — connectors and keys** | `api/v2/lib/connectors.php`, `routes/connectors.php` (`GET/POST /connectors`, `POST /connectors/{conn}/delete`), `admin-v25/src/screens/LiveIntegrations.tsx` on `/integrations` (alias `/settings`). v2.1's `_private/connectors.json`, shape kept. A key is write-only: the server returns `hasSecret` and the last four characters; a save sends a key only when one is typed; only `secretClear` erases. Counts are computed on the server. Connector **tests and backup pushes still run in v2.1** — the screen says so. |
 | `4bbefe5` | **The pages screen** listens to publishing | Where a page is public, in three facts read from the server, with the consequence written under the buttons; the service and city views are filters over the pages, not collections. |
 | `e2ab209` | **Publishing a page** | v2.1's `page_meta_save` with one repair: the sitemap now follows the status both ways, so unpublishing takes the address out instead of leaving Google a promise. The rules are one pure function. |
 | `93b66f0` | **The AI settings** | v2.1's record in v2.1's file; the key never leaves the server; and the request, the response and the model filter are three pure functions, which is the only reason the first outward call this API makes is tested at all. |
@@ -225,6 +226,9 @@ run there.
 - `ErrorCode` accepts only real codes — narrow an envelope with `isPending(r)` before reading it.
 - SSR entity-encodes apostrophes and inserts `<!-- -->` between adjacent text children: interpolate into
   one template literal.
+- **The console uses `BrowserRouter`, so routes are `/integrations?demo=1`, not `/#/integrations`.** A hash URL falls back to the dashboard, and a crawl built on it reports every route as passing. Check the `<h1>` per route, not just the absence of errors.
+- **A headless browser exists without the CDN:** `@sparticuz/chromium` from npm, with `al2023.tar.br` brotli-decompressed and extracted to `lib/`, then `LD_LIBRARY_PATH` set to it, and `puppeteer-core` pointed at `/tmp/chromium`. Playwright's own download is blocked.
+- **To exercise the live path without PHP,** a stub API on :8081 (in-memory, logging each request body) and a second Vite with `WX_API_TARGET=http://127.0.0.1:8081`. It proves what the browser sends, which the demo cannot.
 - `App.tsx` must import every primitive a screen renders, and a screen is not real until its id is in
   `BUILT_IDS` *and* it has a `<Route>` — otherwise the link opens the build-plan card (§8f).
 
@@ -360,6 +364,12 @@ the pages screen, `POST /pages/{rel}/publish` (v2.1's `page_meta_save`, bridged 
 function for the rules and one thin function that writes the page, `_private/pages.json` and the sitemap.
 
 ### c2. Then the rest of Phase 3
+
+**Integrations is delivered as the save/list/delete half** (see the §4 row). Still open in this slice, in order:
+1. Connector **test** (`conn_test`: GitHub, Gmail, Drive address checks) and **push** (`conn_push`: off-site backup to GitHub or Drive, `p22_push()` / `conn_tick()`). Both make outward calls with live credentials, so they need the host. Port them as pure request builders first, as `wx_ai_request()` was done.
+2. Gmail send and "use Gmail for mail" (`conn_gmail_send`, `conn_gmail_use`) — needs the SMTP transport, which v2.5 does not have yet.
+3. The gallery of 22 connectors (v2.1 `admin-settings.js` cards) — the screen only offers a free "Kind" field today.
+4. **Security, open:** the approval gate stores the request body verbatim in the queue (`wx_appr_wrap()` → `'body'`). A Manager's `conn_save` with a key therefore writes the key into the approvals table until it is decided. `cms_ai_save` has the same exposure today. Decide: encrypt the queued body, or strip secrets from the queued body and ask the Master to re-enter them on approval.
 
 The SEO screens (`seo-lib.php` → titles, descriptions, sitemap, the audit) and integrations (`conn-lib.php`'s
 22 connectors and their keys — the largest remaining piece of the phase, and the one that needs a host to

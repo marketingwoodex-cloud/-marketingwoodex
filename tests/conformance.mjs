@@ -1069,7 +1069,7 @@ check("demo mode answers exactly the screens that have a sample", () => {
   /* A screen is not only a file in `screens/`: the panels live in `components/`, and the AI settings — which
      read a path on mount and offer two on-demand calls — are one of them. The list below is the files a
      design review would open, wherever they sit. */
-  const screens = ["LiveProjects", "LiveTimeline", "LiveUpdates", "LiveForms", "LiveEstimator", "LiveHeroes", "LiveTemplates", "LiveBusiness", "LiveApprovals", "AiSettings"];
+  const screens = ["LiveProjects", "LiveTimeline", "LiveUpdates", "LiveForms", "LiveEstimator", "LiveHeroes", "LiveTemplates", "LiveBusiness", "LiveApprovals", "AiSettings", "LiveIntegrations"];
   const want = [];
   const served = new Set();
   for (const name of screens) {

@@ -651,8 +651,10 @@ already did.
 | Whether a page is public, and everything that follows from it: the head's tags, one word in `_private/pages.json` (v2.1's file), the sitemap, and a screen that shows all three | `api/v2/lib/pages.php` (`wx_page_head_plan()` pure · `wx_page_publish()` · `wx_page_state()` · `wx_page_sitemap_set()`), `POST /pages/{rel}/publish` (action `page_meta_save`), the bridge row in `routes/legacy.php`, the card on `admin-v25/src/screens/LivePages.tsx` | v2.1's `page_meta_save`, kept under its own name because the Master's queue reads it, with one repair: v2.1 had `sitemap_add()` and nothing that took an address out, so "unpublish" went on telling Google the page was current — the sitemap now follows the status both ways. The rules are one pure function, which is the only reason they are tested at all in a sandbox with no database, and a new page is still saved as a draft: a page that is public the moment it is created is a page in the sitemap before anybody has looked at it |
 | The service and city views, built from the pages the site actually has | the same screen, over `/content/pages` — every page's own `<body data-page>` | v2.1's services screen was never a collection: it was a view of the pages (kind ≠ city, minus articles, studies and the machinery), and cities the same list the other way round. The kind is read from the page rather than decided by the screen, and with no answer the screen shows every page and says so. The city *content* model — the address rule and the furniture rule — is the plan's own model, already delivered |
 
+**Integrations (save, list, delete) — delivered** at `/integrations`: connectors and keys, write-only secrets, server-computed counts. Connector tests, backup pushes and Gmail send remain in v2.1 until the host run.
+
 **Still to come in this phase:**
-the SEO screens and the integrations. The builder's 19 actions are all
+the SEO screens and the rest of the integrations (tests, pushes, Gmail send, the 22-connector gallery). The builder's 19 actions are all
 accounted for: 17 bridged, 2 named above as decisions.
 
 ### Phase 4 — Automation and intelligence · 3 weeks
