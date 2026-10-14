@@ -52,6 +52,10 @@ function wx_route_chrome_get(array $ctx): array
         'coverage' => $coverage,
         'versions' => wx_chrome_versions_list(),
         'fromPage' => $guess,
+        /* What the pages say, link by link: the email, the phone and the WhatsApp number, with the studio
+           record beside them. It is a walk of the site on every load of this screen, which is what "read off
+           the pages" costs — and it is the only way this screen can say whether the site agrees with itself. */
+        'identity' => wx_chrome_identity(),
     ]];
 }
 
@@ -213,6 +217,45 @@ function wx_chrome_edit_from_body(array $body): array
             throw ApiError::validation('The phone must be <a class="wx-hphone" href="tel:…">…</a>', 'phone');
         }
     }
+    /* The three facts in the footer's contact lines. Sent as `identity`, and asking for them is asking for
+       that region: a caller that sends the fields and no `regions` gets the identity swapped and nothing
+       else, which is the difference between a 150-page phone-number change and a 150-page rewrite of
+       whatever else the form happened to be holding. */
+    if (array_key_exists('identity', $body) && is_array($body['identity'])) {
+        $id = [];
+        foreach (['email', 'phone', 'display', 'whatsapp'] as $k) {
+            if (!array_key_exists($k, $body['identity'])) {
+                continue;
+            }
+            $v = trim((string) $body['identity'][$k]);
+            wx_chrome_no_scripts($v, 'identity.' . $k);
+            $id[$k] = $v;
+        }
+        if ($id === []) {
+            throw ApiError::validation('Nothing to change — send an email, a phone or a WhatsApp number', 'identity');
+        }
+        if (($id['email'] ?? '') !== '' && !filter_var($id['email'], FILTER_VALIDATE_EMAIL)) {
+            throw ApiError::validation('That is not an email address', 'identity.email');
+        }
+        if (($id['phone'] ?? '') !== '' && !preg_match('~^\+?[0-9]{7,20}$~', (string) $id['phone'])) {
+            throw ApiError::validation(
+                'The phone is the digits the link points at — country code first, a + if you use one, no spaces. '
+                . 'The words on the page are formatted from it.',
+                'identity.phone'
+            );
+        }
+        if (($id['display'] ?? '') !== '' && !preg_match('~^[0-9+ ()-]{6,24}$~', (string) $id['display'])) {
+            throw ApiError::validation('The phone as it should read on the page — digits, spaces and + only', 'identity.display');
+        }
+        if (($id['whatsapp'] ?? '') !== '' && !preg_match('~^[0-9]{7,20}$~', (string) $id['whatsapp'])) {
+            throw ApiError::validation('The WhatsApp number is digits only, country code first, no +', 'identity.whatsapp');
+        }
+        $edit['identity'] = $id;
+        if (!in_array('identity', $edit['regions'], true)) {
+            $edit['regions'][] = 'identity';
+        }
+    }
+
     if (array_key_exists('introAll', $body)) {
         $edit['introAll'] = (bool) $body['introAll'];
     }

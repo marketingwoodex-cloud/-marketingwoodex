@@ -201,6 +201,8 @@ let wordsTests: [string, boolean][] = [];
 let badgeTests: [string, boolean][] = [];
 let htmlGlobal = "";
 let htmlGlobalOffline = "";
+let htmlGlobalDemo = "";
+let htmlGlobalDemoFooter = "";
 let htmlAnnOffline = "";
 let htmlAnnDemo = "";
 let htmlApprOffline = "";
@@ -774,6 +776,34 @@ try {
   failures.push(`header & footer without an API → ${(err as Error).message}`);
 }
 
+/* The header & footer screen in demo mode: the sample chrome, and the identity survey read off the sample
+   pages. It is the same component with `demo` set, so the difference between this render and the offline one
+   below cannot be a comment. */
+try {
+  htmlGlobalDemo = renderToString(
+    <MemoryRouter initialEntries={["/global"]}>
+      <SessionCtx.Provider value={session("offline", null, true)}>
+        <LiveGlobal />
+      </SessionCtx.Provider>
+    </MemoryRouter>,
+  );
+} catch (err) {
+  failures.push(`header & footer in demo mode → ${(err as Error).message}`);
+}
+
+
+try {
+  htmlGlobalDemoFooter = renderToString(
+    <MemoryRouter initialEntries={["/global?tab=footer"]}>
+      <SessionCtx.Provider value={session("offline", null, true)}>
+        <LiveGlobal />
+      </SessionCtx.Provider>
+    </MemoryRouter>,
+  );
+} catch (err) {
+  failures.push(`the footer tab in demo mode → ${(err as Error).message}`);
+}
+
 try {
   htmlPages = renderToString(
     <MemoryRouter initialEntries={["/pages"]}>
@@ -1133,6 +1163,23 @@ for (const [name, ok] of [
       && !htmlThemeOffline.includes("Back to the site's own theme"),
   ],
   [
+    "in demo mode the header & footer screen opens the design rather than a refusal",
+    htmlGlobalDemo.includes("Brand (the logo link in the header)") && htmlGlobalDemo.includes("Check what would change"),
+  ],
+  [
+    "and it says the sample is a sample, in so many words",
+    htmlGlobalDemo.includes("Demo mode") && htmlGlobalDemo.includes("drawn because no api/v2 is answering"),
+  ],
+  [
+    "the footer tab carries the identity survey, read off the sample pages",
+    htmlGlobalDemoFooter.includes("Get in touch") && htmlGlobalDemoFooter.includes("the pages match the record")
+      && htmlGlobalDemoFooter.includes("Apply to the site") && htmlGlobalDemoFooter.includes("info@woodex.com.pk"),
+  ],
+  [
+    "and it says where the words on the page come from",
+    htmlGlobalDemoFooter.includes("Read off") && htmlGlobalDemoFooter.includes("is not a link"),
+  ],
+  [
     "the header & footer screen offers no Apply when it cannot reach the API",
     htmlGlobalOffline.includes("api/v2 is not answering") && !htmlGlobalOffline.includes("Check what would change"),
   ],
@@ -1152,12 +1199,13 @@ for (const [name, ok] of [
       !htmlApprDemo.includes("Approve and run it"),
   ],
   [
-    "the announcement panel does not draw a bar it cannot read",
+    "the announcement panel draws no bar it cannot read, and draws the sample when one was asked for",
     htmlAnnOffline.includes("api/v2 is not answering") &&
       !htmlAnnOffline.includes("What the site draws") &&
       !htmlAnnOffline.includes("Save &amp; publish") &&
-      htmlAnnDemo.includes("api/v2 is not answering") &&
-      !htmlAnnDemo.includes("What the site draws"),
+      htmlAnnDemo.includes("What the site draws") &&
+      htmlAnnDemo.includes("Ramzan timings") &&
+      !htmlAnnDemo.includes("api/v2 is not answering"),
   ],
   /* The Forms screen. Two facts per page, not one — and the one that decides the screen is where a page's
      enquiry goes. Without an API it must show neither a form list nor a zero. */

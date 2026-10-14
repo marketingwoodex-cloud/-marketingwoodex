@@ -953,6 +953,46 @@ eq($restyled, null, 'applying the same design twice leaves the page alone — on
 $spans = wx_chrome_spans($aboutPage);
 ok(isset($spans['brand'], $spans['footer'], $spans['menuDesktop'], $spans['menuMobile']), 'every region of a real page is found by the span reader');
 
+/* ---- the identity in the footer's contact lines: three facts, three spellings each
+   The same shapes the site's own footer uses, including the `<span class="fl">E</span>` in front of the words:
+   that span is why the survey reads the *last* text node inside the anchor and not the whole of it. */
+$idPage = '<!doctype html><html><head><title>Contact</title></head><body>'
+    . '<footer class="footer"><div class="footer-main"><div class="footer-social">'
+    . '<a href="https://wa.me/923224000768" aria-label="WhatsApp"><svg viewBox="0 0 24 24"></svg></a>'
+    . '<a href="tel:+923224000768" aria-label="Call"><svg viewBox="0 0 24 24"></svg></a>'
+    . '<a href="mailto:info@woodex.com.pk" aria-label="Email"><svg viewBox="0 0 24 24"></svg></a></div>'
+    . '<nav class="footer-column footer-contact"><h3>Get in touch</h3>'
+    . '<a href="mailto:info@woodex.com.pk"><span class="fl" aria-hidden="true">E</span>info@woodex.com.pk</a>'
+    . '<a href="tel:+923224000768"><span class="fl" aria-hidden="true">P</span>+92 322 4000768</a>'
+    . '</nav></div></footer></body></html>';
+
+$idLinks = wx_chrome_identity_links($idPage);
+eq(array_keys($idLinks['email']), ['info@woodex.com.pk'], 'the survey reads the email out of the mailto links');
+eq($idLinks['email']['info@woodex.com.pk'], 2, 'and counts every one of them, icon and words');
+eq(array_keys($idLinks['phone']), ['+923224000768'], 'the phone out of the tel links');
+eq($idLinks['labels']['+923224000768'] ?? null, '+92 322 4000768', 'and the words a visitor reads beside it, past the "P" span');
+eq(array_map('strval', array_keys($idLinks['whatsapp'])), ['923224000768'],
+    'and the WhatsApp number — the same number in its third spelling (a digit-only key is an int to PHP, so the test casts)');
+
+$idSwapped = wx_chrome_identity_html($idPage, ['email' => 'hello@woodex.com.pk', 'phone' => '+923001234567']);
+ok($idSwapped !== null && !str_contains((string) $idSwapped, 'info@woodex.com.pk'), 'the swap takes the old address off the page');
+ok(str_contains((string) $idSwapped, 'href="mailto:hello@woodex.com.pk"'), 'including the link');
+ok(str_contains((string) $idSwapped, '>hello@woodex.com.pk<'), 'and the address somebody reads');
+ok(str_contains((string) $idSwapped, 'href="tel:+923001234567"'), 'the phone link carries the new number');
+ok(str_contains((string) $idSwapped, '>+92 300 1234567<'), 'and the words beside it are formatted from it');
+ok(str_contains((string) $idSwapped, 'wa.me/923001234567'), 'and the WhatsApp link follows the phone when none was sent');
+eq(wx_chrome_identity_html((string) $idSwapped, ['email' => 'hello@woodex.com.pk', 'phone' => '+923001234567', 'whatsapp' => '923001234567']), null,
+    'swapping to what the page already says writes nothing');
+eq(wx_chrome_identity_html('<p>Ring +923224000768 or write to info@woodex.com.pk.</p>', ['email' => 'hello@woodex.com.pk', 'phone' => '+923001234567']), null,
+    'a number written into a sentence is left alone — the swap follows links, and the survey is what says so');
+
+/* The identity is a region of the same apply, not a path somebody has to remember to call: a request that
+   asks for the header must not quietly rewrite the footer's phone number. */
+$idRegion = wx_chrome_apply_html('contact/index.html', $idPage, ['regions' => ['identity'], 'identity' => ['email' => 'hello@woodex.com.pk']]);
+ok(str_contains((string) $idRegion, 'mailto:hello@woodex.com.pk'), 'the identity rides the apply the header uses');
+eq(wx_chrome_apply_html('contact/index.html', $idPage, ['regions' => ['brand'], 'identity' => ['email' => 'hello@woodex.com.pk']]), null,
+    'and asking for another region does not change it');
+
 /* TODO-DB: coverage, the diff walk and the batch write need the site tree and the tables. */
 if (count(wx_page_walk(WX_SITE_ROOT)) > 10 && wx_table_exists('wx_page_versions')) {
     $cov = wx_chrome_coverage();
@@ -962,6 +1002,17 @@ if (count(wx_page_walk(WX_SITE_ROOT)) > 10 && wx_table_exists('wx_page_versions'
     $diff = wx_chrome_diff(['regions' => ['cta'], 'cta' => 'Get a quote'], ['limit' => 3]);
     eq(count($diff['changed']), 3, 'the preview stops at the limit it was given');
     ok($diff['scanned'] > 3, 'and reports how many pages it read to find them');
+    /* The survey is the same walk, read for the three facts instead of the regions. It is the only place in
+       the API that says what the *site* says, as opposed to what a setting says. */
+    $survey = wx_chrome_identity();
+    eq($survey['email'], 'info@woodex.com.pk', 'the identity survey finds the address the pages themselves carry');
+    eq($survey['phone'], '+923224000768', 'and the number the links point at');
+    eq($survey['phoneDisplay'], '+92 322 4000768', 'and the words beside it, as the page spells them');
+    ok($survey['withEmail'] > 50, 'and says how many pages carry it (' . $survey['withEmail'] . ' of ' . $survey['scanned'] . ')');
+    ok($survey['links']['phone'] >= $survey['withPhone'], 'the link count can never be below the page count');
+    ok(count($survey['others']['email']) >= 1 && $survey['others']['email'][0]['value'] === 'info@woodex.com.pk',
+        'and the values it found, most common first');
+    ok($survey['company']['email'] !== '' && array_key_exists('matches', $survey), 'with the studio record beside them, compared');
 } else {
     skip('the chrome coverage and diff need the site tree and migration 011');
 }

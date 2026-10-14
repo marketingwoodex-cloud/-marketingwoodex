@@ -26,6 +26,7 @@
  */
 import { useEffect, useMemo, useState } from "react";
 import { ArrowRightLeft, Eye, History, RefreshCw, Rocket, Undo2 } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
 import { Btn, Card, Empty, Input, Note, PageHead, Pill, Seg, Switch } from "../components/primitives";
 import { api, ApiFailure } from "../lib/api";
 import { useSession } from "../lib/session";
@@ -46,10 +47,20 @@ const TAB_REGIONS: Record<Exclude<Tab, "replace" | "announce">, string[]> = {
 };
 
 export function LiveGlobal() {
-  const { link, reason } = useSession();
+  const { link, reason, demo } = useSession();
   const mine = useLive<ChromeData>("/chrome");
 
-  const [tab, setTab] = useState<Tab>("header");
+  /* The tab lives in the address as well as in the state, so `/global?tab=footer` opens the footer — a link
+     somebody can send, and the only way a render test can look at a tab that is not the first one. */
+  const [params, setParams] = useSearchParams();
+  const askedTab = params.get("tab");
+  const [tab, setTab] = useState<Tab>(
+    askedTab === "menu" || askedTab === "footer" || askedTab === "replace" || askedTab === "announce" ? askedTab : "header",
+  );
+  const pickTab = (next: Tab) => {
+    setTab(next);
+    setParams(next === "header" ? {} : { tab: next }, { replace: true });
+  };
   const [brand, setBrand] = useState("");
   const [cta, setCta] = useState("");
   const [phone, setPhone] = useState("");
@@ -58,6 +69,9 @@ export function LiveGlobal() {
   const [menuMobile, setMenuMobile] = useState("");
   const [footer, setFooter] = useState("");
   const [introAll, setIntroAll] = useState(false);
+  const [idEmail, setIdEmail] = useState("");
+  const [idPhone, setIdPhone] = useState("");
+  const [idWa, setIdWa] = useState("");
 
   const [find, setFind] = useState("");
   const [replace, setReplace] = useState("");
@@ -86,6 +100,12 @@ export function LiveGlobal() {
     setMenuDesktop((m) => m || stored.menuDesktop || source?.menuDesktop || "");
     setMenuMobile((m) => m || stored.menuMobile || source?.menuMobile || "");
     setFooter((f) => f || stored.footer || source?.footer || "");
+    /* The identity fields start from what the pages say, so the box shows the site's own number rather than
+       an empty field somebody has to go and look up. */
+    const id = data?.identity;
+    setIdEmail((v) => v || id?.email || id?.company.email || "");
+    setIdPhone((v) => v || id?.phone || "");
+    setIdWa((v) => v || id?.whatsapp || "");
     /* Fields are filled once, from the first answer: typing must not be overwritten by a refresh, and an
        editor who clears a field means it. */
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -138,6 +158,44 @@ export function LiveGlobal() {
     }
   }
 
+  /**
+   * The three facts in the footer's contact lines — its own request.
+   *
+   * Not folded into the footer tab's Apply: a footer rewrite and a phone-number change are two decisions,
+   * and one button that quietly did both would make the preview of either a lie about the other.
+   */
+  const idEdit = useMemo(
+    () => ({ regions: ["identity"], identity: { email: idEmail, phone: idPhone, whatsapp: idWa } }),
+    [idEmail, idPhone, idWa],
+  );
+
+  async function checkIdentity() {
+    const r = await run(() => api.post<ChromeDiff | { pending: true; message: string }>("/chrome/preview", { ...idEdit, limit: 40 }));
+    setRep(null);
+    if (r && isPending(r)) setResult(r.message);
+    else setDiff(r as ChromeDiff);
+  }
+
+  async function applyIdentity() {
+    const r = await run(() => api.post<ChromeResult | { pending: true; message: string }>("/chrome", {
+      ...idEdit,
+      note: "the footer contact details updated from the admin",
+    }));
+    if (r && isPending(r)) {
+      setResult(r.message);
+      return;
+    }
+    if (r && "batch" in r) {
+      setDiff(null);
+      const skipped = r.skipped ? ` ${r.skipped} page${r.skipped === 1 ? "" : "s"} already said it and were left alone.` : "";
+      setResult(
+        `${r.pages} page${r.pages === 1 ? "" : "s"} now say the new details, out of ${r.scanned} read.${skipped} ` +
+        `The change is batch ${r.batch.slice(0, 8)} in page history — one call rolls all of it back.`,
+      );
+      mine.reload();
+    }
+  }
+
   async function dryRun() {
     const r = await run(() => api.post<ReplaceResult | { pending: true; message: string }>("/chrome/replace", { find, replace, scope, dry: true }));
     if (r && isPending(r)) setResult(r.message);
@@ -176,7 +234,11 @@ export function LiveGlobal() {
 
   /* ---------------- the states that must not lie ---------------- */
 
-  if (link !== "live") {
+  /* Without a server there is nothing this screen's buttons could do, so it says so instead of drawing them.
+     Demo mode is the one exception: a preview whose whole purpose is to show the design has to be able to
+     open this screen, the sample is labelled by the shell above it, and a press still tells the truth (the
+     write fails, and the failure is shown). */
+  if (link !== "live" && !demo) {
     return (
       <>
         <PageHead title="Header & footer" sub="One change, every page" />
@@ -212,6 +274,14 @@ export function LiveGlobal() {
 
   return (
     <>
+      {demo && link !== "live" && (
+        <Note tone="warn" title="Demo mode">
+          The header, the footer and the identity below are the design's own sample, drawn because no api/v2 is
+          answering. Check and Apply will fail honestly: nothing can be written to a site this console is not
+          talking to.
+        </Note>
+      )}
+
       <PageHead
         title="Header & footer"
         sub={
@@ -249,7 +319,7 @@ export function LiveGlobal() {
             { id: "announce", label: "Announcement bar" },
           ]}
           value={tab}
-          onChange={(t) => { setTab(t as Tab); setDiff(null); setRep(null); }}
+          onChange={(t) => { pickTab(t as Tab); setDiff(null); setRep(null); }}
         />
         {data?.versions && data.versions.length > 0 && (
           <span className="cell-sub">
@@ -309,6 +379,59 @@ export function LiveGlobal() {
       )}
 
       {tab === "footer" && (
+        <>
+        {data?.identity && (
+          <Card>
+            <div className="row-between">
+              <h2 className="cell-main">Get in touch</h2>
+              <Pill tone={data.identity.matches ? "ok" : "warn"}>
+                {data.identity.matches ? "the pages match the record" : "the pages and the record differ"}
+              </Pill>
+            </div>
+            <p className="cell-sub">
+              Read off {data.identity.pages} of {data.identity.scanned} pages, link by link: the email is in{" "}
+              {data.identity.links.email} link{data.identity.links.email === 1 ? "" : "s"}, the phone in{" "}
+              {data.identity.links.phone}, the WhatsApp link in {data.identity.links.whatsapp}. The studio record
+              says {data.identity.company.email} · {data.identity.company.phones} — that is the address documents
+              print, and it is edited on the Business screen. Where the two disagree, one of them is out of date.
+            </p>
+            {data.identity.others.email.length > 1 && (
+              <Note tone="warn" title="More than one email is on the site">
+                {data.identity.others.email.map((v) => `${v.value} (${v.count})`).join(", ")}. The fields below
+                start from the most common one; applying writes that value into the others.
+              </Note>
+            )}
+            <div className="grid-2">
+              <label className="stack">
+                <span className="field-label">Email</span>
+                <Input value={idEmail} onChange={(e) => setIdEmail(e.target.value)} placeholder="info@woodex.com.pk" />
+                <span className="cell-sub">Every mailto: link, and the words beside it.</span>
+              </label>
+              <label className="stack">
+                <span className="field-label">Phone</span>
+                <Input value={idPhone} onChange={(e) => setIdPhone(e.target.value)} placeholder="+923224000768" />
+                <span className="cell-sub">The digits the link points at. The words on the page are formatted from them.</span>
+              </label>
+              <label className="stack">
+                <span className="field-label">WhatsApp</span>
+                <Input value={idWa} onChange={(e) => setIdWa(e.target.value)} placeholder="923224000768" />
+                <span className="cell-sub">Digits only, as wa.me wants them. Empty follows the phone above.</span>
+              </label>
+            </div>
+            <p className="cell-sub">
+              Applied the way everything here is: every page walked, each one versioned, and a page's history can
+              put it back. A number written into a sentence, a map link or a PDF is not a link — this changes the
+              links, and the count above is how you see what it found.
+            </p>
+            <div className="row">
+              <Btn icon={<Eye size={15} />} onClick={checkIdentity} disabled={busy}>Check first</Btn>
+              <Btn variant="primary" icon={<Rocket size={15} />} onClick={applyIdentity} disabled={busy}
+                title="One change to every page, with one undo">
+                Apply to the site
+              </Btn>
+            </div>
+          </Card>
+        )}
         <Card>
           <div className="stack">
             <label className="stack">
@@ -326,6 +449,7 @@ export function LiveGlobal() {
             </span>
           </div>
         </Card>
+        </>
       )}
 
       {tab === "announce" && <AnnounceBar />}
@@ -487,7 +611,7 @@ const ANN_SKIN: Record<string, { bg: string; fg: string }> = {
 };
 
 export function AnnounceBar() {
-  const { link, reason } = useSession();
+  const { link, reason, demo } = useSession();
   const read = useLive<AnnounceData>("/chrome/announce");
   const [draft, setDraft] = useState<AnnounceRecord | null>(null);
   const [busy, setBusy] = useState(false);
@@ -532,7 +656,8 @@ export function AnnounceBar() {
   }
 
   /* Three states, and the order matters: "there is no API to ask" is not "the answer had nothing in it",
-     and a panel that said the second when the first is true would be inventing a server. */
+     and a panel that said the second when the first is true would be inventing a server. Demo mode answers
+     from the sample, so it draws the design — with the sample's own words, and the shell's banner above it. */
   if (!data && read.error) {
     return <Note tone="danger" title="The announcement could not be read">{read.error.message}</Note>;
   }
@@ -557,6 +682,12 @@ export function AnnounceBar() {
 
   return (
     <>
+      {demo && link !== "live" && (
+        <Note tone="warn" title="Demo mode">
+          The bar below is the design's own sample, drawn because no api/v2 is answering. Saving will fail
+          honestly: there is no server to publish to.
+        </Note>
+      )}
       <Card>
         <div className="row-between">
           <div className="stack">

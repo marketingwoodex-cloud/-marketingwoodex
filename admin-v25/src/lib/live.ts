@@ -460,6 +460,8 @@ export interface ChromeData {
     updatedBy: string;
   };
   coverage: { pages: number; skipped: number; regions: Record<string, number> };
+  /** The three facts in the footer's contact lines, read off the pages. */
+  identity: ChromeIdentity;
   versions: { id: number; version: number; note: string; at: string; by: string }[];
   fromPage: null | {
     rel: string;
@@ -478,6 +480,36 @@ export interface ChromeChange {
   bytes: string;
   before: Record<string, string>;
   after: Record<string, string>;
+}
+
+/**
+ * `GET /chrome` — the identity block: what the pages themselves say, link by link, beside the studio record.
+ *
+ * Both halves are needed to read it honestly. `email`/`phone`/`whatsapp` are the values found on the site
+ * (the most common one, and `others` lists the rest — a stray page is a finding, not noise); `company` is
+ * what the record says. `matches` is the server's own opinion of whether the two agree, computed there so
+ * the screen does not have to guess at phone formatting.
+ */
+export interface ChromeIdentity {
+  email: string | null;
+  phone: string | null;
+  phoneDisplay: string | null;
+  whatsapp: string | null;
+  digits: string;
+  pages: number;
+  scanned: number;
+  withEmail: number;
+  withPhone: number;
+  links: { email: number; phone: number; whatsapp: number };
+  others: { email: ChromeIdentityValue[]; phone: ChromeIdentityValue[]; whatsapp: ChromeIdentityValue[] };
+  company: { name: string; email: string; phones: string; address: string };
+  matches: boolean;
+  note: string;
+}
+
+export interface ChromeIdentityValue {
+  value: string;
+  count: number;
 }
 
 export interface ChromeDiff {

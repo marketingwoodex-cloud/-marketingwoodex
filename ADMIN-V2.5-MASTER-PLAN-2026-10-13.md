@@ -516,8 +516,8 @@ working as intended, not a gap hidden by a fallback.
 
 ### Phase 3 — Content, assets and delivery · **in progress** · 4 weeks
 
-*Measured at this commit:* `tests/run.php` **1222 passed · 0 failed · 14 skipped** · `tests/conformance.mjs`
-**86 · 0** · php-lint **161 files** · `admin-v25` smoke **160 checks · 65 routes** · legacy bridge **158 of 365
+*Measured at this commit:* `tests/run.php` **1237 passed · 0 failed · 14 skipped** · `tests/conformance.mjs`
+**86 · 0** · php-lint **161 files** · `admin-v25` smoke **171 checks · 65 routes** · legacy bridge **158 of 365
 actions** (43%). Migrations **000–014** are written and none has run on a database yet.
 
 Three generators are part of this phase's gate rather than a convention, because each one replaces a second
@@ -538,7 +538,7 @@ back from page history — all through v2.5.
 | Pages, versioning and rollback | `db/migrations/010_media_pages.sql`, `lib/pages.php`, `routes/pages.php` | one batch per change, so *the header across 150 pages* is one undo |
 | Media library: usage, derivatives, alt-text queue, trash | `lib/media.php`, `routes/media.php` | alt text and the check that it was looked at are recorded separately |
 | File manager over `assets/` | `lib/files.php`, `routes/files.php` | four shared folders read-only; a file a page uses is refused before it is renamed or deleted |
-| The header, the menu and the footer across every page | `lib/chrome.php`, `routes/chrome.php`, `db/migrations/011_chrome.sql` | one edit for the whole site, keeping what is per-page: the current page's own link, the home page's brand, the mobile button's target, each page's footer anchors and its own intro sentence. A check that writes nothing and an apply that returns the batch id, so *the header across 150 pages* is one undo |
+| The header, the menu and the footer across every page — and the three facts in its contact lines | `lib/chrome.php`, `routes/chrome.php`, `db/migrations/011_chrome.sql`, `admin-v25/src/screens/LiveGlobal.tsx` (Header & footer → Footer → *Get in touch*) | one edit for the whole site, keeping what is per-page: the current page's own link, the home page's brand, the mobile button's target, each page's footer anchors and its own intro sentence. A check that writes nothing and an apply that returns the batch id, so *the header across 150 pages* is one undo. The identity is a fifth region of the same apply, not a screen of its own: `mailto:`, `tel:` and `wa.me` are how a page states the email, the phone and the WhatsApp number, each with more than one spelling (`+923224000768` in the link, `+92 322 4000768` on the screen), so one function reads a page and one writes it — links, not prose, and the count it reports is how you see what it found. `GET /chrome` walks the site and answers what the *pages* say beside what the studio record says; the console shows both and applies the difference through the same preview, the same batch write and the same per-page history |
 | The content CMS: an editor writes an article, the server composes the page | `lib/content.php`, `routes/content.php`, `db/migrations/012_content.sql` | v2.1's builder ran in the browser and posted finished HTML; here an item is content and the page is composed at publish time from the site's own page furniture — so a new article inherits the *current* header, scheduling is a row with a time rather than 3 MB of prepared HTML, and drafts are a query rather than a loop |
 | Eight live screens, ten routes | `admin-v25/src/screens/Live*.tsx` on `/redirects`, `/media`, `/blog`, `/portfolio`, `/global`, `/pages`, `/library`, `/site-theme`, `/testimonials`, `/team` | live-only by design; with no API they say so in a sentence and offer no buttons that would lie. `/blog` and `/portfolio` are one screen (the CMS, opened on a kind), and so are `/testimonials` and `/team` |
 
@@ -638,7 +638,7 @@ already did.
 
 | Delivered — demo mode, so a preview shows the console | Where | Note |
 |---|---|---|
-| The screens built in this phase, with sample data behind a label that cannot be missed | `admin-v25/src/lib/demo.ts` (fixtures keyed by API path), `useLive()`, `DemoDoor`/`DemoBanner` in `App.tsx` | A console that reads a real API shows nothing at all where there is no API — a laptop, a sandbox, a hosted preview — and the one thing a preview must never do is let somebody think they are looking at their own figures. So demo mode is *asked for* (`?demo=1`, or the door on any screen that is saying the host is not answering) and never inferred; the shell says **demo data**; a banner above every screen says no part of it came from the server and offers the way out; and a screen whose data nobody has invented yet keeps its honest "not answering" notice, which is how the next slice announces itself. The fixtures are typed against the same interfaces the server's answers are, so when a shape changes the sample stops compiling rather than quietly becoming a nicer product than the product. Also fixed here: a failed `GET /me` used to turn a settled "host not answering" into a sign-in form — a door that cannot open, inviting a password into nothing |
+| The screens built in this phase, with sample data behind a label that cannot be missed | `admin-v25/src/lib/demo.ts` (fixtures keyed by API path), `useLive()`, `DemoDoor`/`DemoBanner` in `App.tsx` | A console that reads a real API shows nothing at all where there is no API — a laptop, a sandbox, a hosted preview — and the one thing a preview must never do is let somebody think they are looking at their own figures. So demo mode is *asked for* (`?demo=1`, or the door on any screen that is saying the host is not answering) and never inferred; the shell says **demo data**; a banner above every screen says no part of it came from the server and offers the way out; and a screen whose data nobody has invented yet keeps its honest "not answering" notice, which is how the next slice announces itself. **Three states, not two, is the rule that came out of this**: a screen with neither a server nor a request for a sample shows a sentence and no figures at all — the dashboard drew the design's KPI row beside a strip saying the host was not answering, and a row of names that are not your clients is worse than an empty screen. The pipeline board and the quotation builder read no API at all, so outside demo mode they render their own build plan and the nav marks them SOON; the four screens that used to be one branch now render twice in the smoke test, with and without demo mode, and the difference is asserted rather than commented. The fixtures are typed against the same interfaces the server's answers are, so when a shape changes the sample stops compiling rather than quietly becoming a nicer product than the product. Also fixed here: a failed `GET /me` used to turn a settled "host not answering" into a sign-in form — a door that cannot open, inviting a password into nothing |
 
 | Delivered — business info, read off the site instead of out of a copy of the defaults | Where | Note |
 |---|---|---|
@@ -858,7 +858,7 @@ Everything in `admin-v25/` runs today:
 | Evidence | Result |
 |---|---|
 | Type check | clean, strict, `noUnusedLocals` |
-| Render smoke | **143 checks · 65 routes · 0 failures** |
+| Render smoke | **171 checks · 65 routes · 0 failures** |
 | Production build | 3 chunks, content-hashed, sourcemaps on |
 | Token contract | switching theme, accent and density re-themes all charts and screens |
 | Routing defects | AD-3, AD-4 and AD-12 structurally impossible in the registry |

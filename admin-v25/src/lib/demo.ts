@@ -13,11 +13,12 @@
  * stops type-checking, and the sample cannot quietly become a nicer version of the product than the product.
  */
 import type {
-  ApprData, ApprDetailData,
+  AnnounceData, ApprData, ApprDetailData,
   AiModels, AiState,
   BizData, BizRecord, CompanyData, CompanyRecord,
   EstData, FormsData, HeroHomeData, HeroPageData, HeroScanData,
   NotifyData, ProjDetail, ProjList, ProjRow, TplsData,
+  ChromeData, ChromeIdentity,
   SeoPageView, SeoPagesData, SeoSitemapView,
 } from "./live";
 
@@ -669,7 +670,66 @@ const SEO_SITEMAP: SeoSitemapView = {
   ],
 };
 
+/** The site's own identity, as the survey finds it: one email, one phone, one WhatsApp link per page. */
+const CHROME_IDENTITY: ChromeIdentity = {
+  email: "info@woodex.com.pk",
+  phone: "+923224000768",
+  phoneDisplay: "+92 322 4000768",
+  whatsapp: "923224000768",
+  digits: "923224000768",
+  pages: 149,
+  scanned: 150,
+  withEmail: 149,
+  withPhone: 149,
+  links: { email: 302, phone: 302, whatsapp: 149 },
+  others: {
+    email: [{ value: "info@woodex.com.pk", count: 149 }, { value: "sales@woodex.com.pk", count: 3 }],
+    phone: [{ value: "+923224000768", count: 149 }],
+    whatsapp: [{ value: "923224000768", count: 149 }],
+  },
+  company: {
+    name: "Woodex Interior",
+    email: "info@woodex.com.pk",
+    phones: "+92 322 4000768",
+    address: "M-71, Zainab Tower, Model Town Link Road, Lahore",
+  },
+  matches: true,
+  note: "Read off the pages themselves, link by link — not from a setting. The studio record is shown beside it: where the two disagree, one of them is out of date.",
+};
+
+const CHROME: ChromeData = {
+  chrome: {
+    brand: '<a class="brand" href="/">WOODEX</a>',
+    cta: "Get a quote",
+    footer: '<footer class="footer">Get in touch · info@woodex.com.pk</footer>',
+    menuDesktop: '<nav class="desktop-nav">Home</nav>',
+    menuMobile: '<nav class="mobile-panel">Home</nav>',
+    style: '<style id="wx-chrome-style" data-cfg="sample">.site-header{--h:72px}</style>',
+    phone: '<a class="wx-hphone" href="tel:+923224000768">+92 322 4000768</a>',
+    version: 6,
+    updatedAt: "2026-10-12T09:20:00Z",
+    updatedBy: "Imtiaz Ahmad",
+  },
+  coverage: { pages: 150, skipped: 1, regions: { brand: 150, cta: 150, menuDesktop: 149, menuMobile: 149, footer: 150, style: 12, phone: 1 } },
+  versions: [{ id: 6, version: 6, note: "footer updated from the admin", at: "2026-10-12T09:20:00Z", by: "Imtiaz Ahmad" }],
+  fromPage: null,
+  identity: CHROME_IDENTITY,
+};
+
+/** The announcement bar: a bar the site fetches, and the two files that draw it. */
+const ANNOUNCE: AnnounceData = {
+  ann: { on: true, text: "Ramzan timings: 10am – 4pm, Monday to Saturday.", link: "/contact/", linkText: "Book a visit", style: "navy", v: 4 },
+  styles: [{ id: "navy", label: "Navy" }, { id: "wood", label: "Wood" }, { id: "cream", label: "Cream" }],
+  limits: { text: 140, link: 200, linkText: 24 },
+  file: "/assets/announce.json",
+  exists: true,
+  site: { script: true, style: true, ready: true, scriptFile: "/assets/site.js", styleFile: "/assets/site.css" },
+  pages: { total: 150, script: 150 },
+};
+
 const FIXTURES: Record<string, unknown> = {
+  "/chrome": CHROME,
+  "/chrome/announce": ANNOUNCE,
   "/approvals": APPR,
   "/approvals/{id}": APPR_ONE,
   "/business": BIZ_DATA,
@@ -707,6 +767,8 @@ export function demoFixture(path: string): unknown | null {
 
 /** The paths the newest screens read — the ones a design review must be able to open. Used by the checks. */
 export const DEMO_COVERED = [
+  "/chrome",
+  "/chrome/announce",
   "/projects", "/projects/{id}", "/notifications", "/forms", "/estimator", "/heroes", "/heroes/home", "/heroes/page*",
   "/quotations/templates", "/business", "/business/company", "/approvals", "/approvals/{id}",
   "/ai/settings", "/ai/models", "/seo/pages", "/seo/pages/*", "/seo/sitemap", "/seo/robots",

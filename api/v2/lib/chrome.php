@@ -39,7 +39,7 @@
 declare(strict_types=1);
 
 /** The regions of a page this file knows how to replace. */
-const WX_CHROME_REGIONS = ['brand', 'cta', 'menu', 'footer', 'design'];
+const WX_CHROME_REGIONS = ['brand', 'cta', 'menu', 'footer', 'design', 'identity'];
 
 /** The pages whose header/footer is deliberately different: 404 has disabled links. */
 const WX_CHROME_SKIP = ['404.html'];
@@ -320,6 +320,241 @@ function wx_chrome_apply_html(string $rel, string $html, array $edit): ?string
             $keepIntro = empty($edit['introAll']);
             $f = wx_chrome_footer((string) $edit['footer'], $html, $spans['footer'][2], $keepIntro);
             $out = (string) preg_replace_callback('~<footer class="footer">.*?</footer>~s', static fn() => $f, $out, 1);
+        }
+    }
+
+    /* Last, deliberately: a footer template applied in the same request carries the *old* email and phone
+       inside it, so the swap has to run after every region that writes words into the page. */
+    if (in_array('identity', $regions, true) && isset($edit['identity']) && is_array($edit['identity'])) {
+        $swapped = wx_chrome_identity_html($out, $edit['identity']);
+        if ($swapped !== null) {
+            $out = $swapped;
+        }
+    }
+
+    return $out === $html ? null : $out;
+}
+
+/**
+ * The identity links a page carries: the email, the phone and the WhatsApp number in its chrome.
+ *
+ * Three facts about the studio are written by hand into 150 files, and each of them has more than one
+ * spelling: the phone is `tel:+923224000768` in the link and `+92 322 4000768` on the screen, and the same
+ * number is `wa.me/923224000768` in the footer's social row. The survey and the swap below have to agree
+ * about what counts as one, so both read a page the same way — the value in the href, and the last piece of
+ * text inside the anchor, which is the words a visitor reads.
+ *
+ * @return array{email:array<string,int>, phone:array<string,int>, whatsapp:array<string,int>, labels:array<string,string>}
+ */
+function wx_chrome_identity_links(string $html): array
+{
+    $out = ['email' => [], 'phone' => [], 'whatsapp' => [], 'labels' => []];
+    if (preg_match_all('~href="mailto:([^"?]+)(?:\?[^"]*)?"~i', $html, $m)) {
+        foreach ($m[1] as $v) {
+            $v = trim((string) $v);
+            if ($v !== '') {
+                $out['email'][$v] = ($out['email'][$v] ?? 0) + 1;
+            }
+        }
+    }
+    /* The words a visitor reads are the *last* run of text inside the anchor, not the whole of it: the
+       footer's links open with a `<span class="fl">P</span>`, so the anchor's content is "P+92 322 4000768".
+       The anchor is matched first and its content read after — a pattern that reached for the last text
+       before some `</a>` instead ran straight past an icon-only link into the *next* anchor and labelled a
+       phone number with an email address. */
+    if (preg_match_all('~<a[^>]+href="tel:([^"]+)"[^>]*>(.*?)</a>~is', $html, $m, PREG_SET_ORDER)) {
+        foreach ($m as $a) {
+            $href = trim((string) $a[1]);
+            if ($href === '') {
+                continue;
+            }
+            $out['phone'][$href] = ($out['phone'][$href] ?? 0) + 1;
+            if (!isset($out['labels'][$href]) && preg_match('~([^<>]+)\s*$~', (string) $a[2], $t)) {
+                $label = trim((string) $t[1]);
+                if ($label !== '') {
+                    $out['labels'][$href] = $label;
+                }
+            }
+        }
+    } elseif (preg_match_all('~href="tel:([^"]+)"~i', $html, $m)) {
+        /* An anchor whose words are an icon — the social row — still counts as a phone link. */
+        foreach ($m[1] as $v) {
+            $out['phone'][(string) $v] = ($out['phone'][(string) $v] ?? 0) + 1;
+        }
+    }
+    if (preg_match_all('~wa\.me/(\d+)~i', $html, $m)) {
+        foreach ($m[1] as $v) {
+            $out['whatsapp'][(string) $v] = ($out['whatsapp'][(string) $v] ?? 0) + 1;
+        }
+    }
+    return $out;
+}
+
+/** A phone number as digits, no `+`: what `wa.me` wants. */
+function wx_chrome_phone_digits(string $phone): string
+{
+    return (string) preg_replace('~\D~', '', $phone);
+}
+
+/** The same number as words: `+923224000768` reads as `+92 322 4000768`. */
+function wx_chrome_phone_display(string $phone): string
+{
+    $digits = wx_chrome_phone_digits($phone);
+    $plus = str_starts_with(trim($phone), '+') || strlen($digits) > 11;
+    if (strlen($digits) === 12 && str_starts_with($digits, '92')) {
+        return '+92 ' . substr($digits, 2, 3) . ' ' . substr($digits, 5);
+    }
+    return ($plus ? '+' : '') . preg_replace('~(\d{4})(?=\d)~', '$1 ', $digits);
+}
+
+/**
+ * What the site says today: which email, which phone, which WhatsApp number, read off every page.
+ *
+ * Not from a setting — that is the point. The studio's record (`wx_company()`) says one thing and the 150
+ * pages each say what an editor typed, so the honest answer to "what does my site say" is a walk. It is one
+ * read per page and no writes, and the console shows the two side by side; where the record and the pages
+ * disagree, that disagreement is the finding.
+ *
+ * @return array{email:?string, phone:?string, phoneDisplay:?string, whatsapp:?string, digits:string,
+ *               pages:int, scanned:int, withEmail:int, withPhone:int, links:array<string,int>,
+ *               others:array<string,array<int,array{value:string,count:int}>>, company:array<string,string>,
+ *               matches:bool, note:string}
+ */
+function wx_chrome_identity(): array
+{
+    $tally = ['email' => [], 'phone' => [], 'whatsapp' => []];
+    $labels = [];
+    $pages = 0;
+    $scanned = 0;
+    $withEmail = 0;
+    $withPhone = 0;
+    $links = ['email' => 0, 'phone' => 0, 'whatsapp' => 0];
+    foreach (wx_page_walk(WX_SITE_ROOT) as $rel) {
+        if (in_array($rel, WX_CHROME_SKIP, true)) {
+            continue;
+        }
+        $file = WX_SITE_ROOT . '/' . $rel;
+        if (!is_file($file)) {
+            continue;
+        }
+        $scanned++;
+        $found = wx_chrome_identity_links((string) file_get_contents($file));
+        if ($found['email'] !== []) {
+            $withEmail++;
+        }
+        if ($found['phone'] !== []) {
+            $withPhone++;
+        }
+        if ($found['email'] !== [] || $found['phone'] !== [] || $found['whatsapp'] !== []) {
+            $pages++;
+        }
+        foreach (['email', 'phone', 'whatsapp'] as $k) {
+            foreach ($found[$k] as $v => $n) {
+                $tally[$k][(string) $v] = ($tally[$k][(string) $v] ?? 0) + (int) $n;
+                $links[$k] += (int) $n;
+            }
+        }
+        $labels += $found['labels'];
+    }
+    /* Most common first: a value on 149 pages of 150 is the site's answer, and the odd page out is worth
+       seeing in `others` rather than being averaged away. */
+    $others = [];
+    foreach (['email', 'phone', 'whatsapp'] as $k) {
+        $counts = $tally[$k];
+        arsort($counts);
+        $list = [];
+        foreach (array_slice($counts, 0, 4, true) as $v => $n) {
+            $list[] = ['value' => (string) $v, 'count' => (int) $n];
+        }
+        $others[$k] = $list;
+    }
+    $email = $others['email'][0]['value'] ?? null;
+    $phone = $others['phone'][0]['value'] ?? null;
+    $wa = $others['whatsapp'][0]['value'] ?? null;
+    $co = wx_company();
+    $display = $phone !== null ? (string) ($labels[$phone] ?? wx_chrome_phone_display($phone)) : null;
+    $matches = $email !== null && $phone !== null
+        && strcasecmp($email, (string) $co['email']) === 0
+        && wx_chrome_phone_digits($phone) === wx_chrome_phone_digits((string) $co['phones']);
+    return [
+        'email' => $email,
+        'phone' => $phone,
+        'phoneDisplay' => $display,
+        'whatsapp' => $wa,
+        'digits' => $phone !== null ? wx_chrome_phone_digits($phone) : '',
+        'pages' => $pages,
+        'scanned' => $scanned,
+        'withEmail' => $withEmail,
+        'withPhone' => $withPhone,
+        'links' => $links,
+        'others' => $others,
+        'company' => [
+            'name' => (string) $co['name'],
+            'email' => (string) $co['email'],
+            'phones' => (string) $co['phones'],
+            'address' => (string) $co['address'],
+        ],
+        'matches' => $matches,
+        'note' => 'Read off the pages themselves, link by link — not from a setting. The studio record is '
+            . 'shown beside it: where the two disagree, one of them is out of date.',
+    ];
+}
+
+/**
+ * Swap the identity inside one page, and answer null when it already says it.
+ *
+ * Every occurrence and every spelling: the href, the words beside it, and the WhatsApp link. Which is why
+ * this writes through `wx_page_write_many()` like any other chrome change — one page, one version, one undo,
+ * and a 150-page swap that can be rolled back page by page from the history screen.
+ *
+ * What it will not do is claim to have found every mention: a number written into a sentence, a map link's
+ * query, a PDF's letterhead are not links, so they are left alone. The survey says how many links each value
+ * appears in, and the difference between that and "the site says it everywhere" is the editor's to see.
+ *
+ * @param array{email?:string, phone?:string, display?:string, whatsapp?:string} $id
+ */
+function wx_chrome_identity_html(string $html, array $id): ?string
+{
+    $out = $html;
+    $links = wx_chrome_identity_links($html);
+
+    $email = trim((string) ($id['email'] ?? ''));
+    if ($email !== '') {
+        foreach (array_keys($links['email']) as $from) {
+            if (strcasecmp((string) $from, $email) === 0) {
+                continue;
+            }
+            $out = str_replace('mailto:' . $from, 'mailto:' . $email, $out);
+            $out = str_replace('>' . $from . '<', '>' . $email . '<', $out);
+        }
+    }
+
+    $phone = trim((string) ($id['phone'] ?? ''));
+    if ($phone !== '') {
+        $display = trim((string) ($id['display'] ?? ''));
+        if ($display === '') {
+            $display = wx_chrome_phone_display($phone);
+        }
+        foreach (array_keys($links['phone']) as $from) {
+            if ((string) $from !== $phone) {
+                $out = str_replace('href="tel:' . $from . '"', 'href="tel:' . $phone . '"', $out);
+            }
+            $label = (string) ($links['labels'][(string) $from] ?? '');
+            if ($label !== '' && $label !== $display) {
+                $out = str_replace('>' . $label . '<', '>' . $display . '<', $out);
+            }
+        }
+    }
+
+    $wa = wx_chrome_phone_digits((string) ($id['whatsapp'] ?? ''));
+    if ($wa === '' && $phone !== '') {
+        $wa = wx_chrome_phone_digits($phone);
+    }
+    if ($wa !== '') {
+        foreach (array_keys($links['whatsapp']) as $from) {
+            if ((string) $from !== $wa) {
+                $out = str_replace('wa.me/' . $from, 'wa.me/' . $wa, $out);
+            }
         }
     }
 
