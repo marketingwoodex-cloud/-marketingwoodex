@@ -2393,6 +2393,10 @@ try {
 }
 ok(wx_cv_token_ok(str_repeat('a', 32)) && !wx_cv_token_ok('short') && !wx_cv_token_ok(str_repeat('z', 32)),
    'the token shape is checked before any query, so a fuzzed token costs nothing');
+/* The router loads only the route file a request matches, so the page must load the project helpers it calls.
+   A valid link returned 500 for want of wx_proj_invoices() until this was added. */
+ok(str_contains((string) file_get_contents(dirname(__DIR__) . '/api/v2/routes/client_view.php'), "require_once __DIR__ . '/projects.php'"),
+   'the client page loads the project helpers it calls (a valid link was a 500 without them)');
 
 group('Opening the page is recorded once, and is not an update the client sees');
 $p_view = wx_cv_mark_viewed($p_client, '2026-10-10 09:00');
