@@ -26,3 +26,6 @@ admin-v25/.smoke/
 # TypeScript build info (incremental cache)
 admin-v25/tsconfig.tsbuildinfo
 admin-v25/.smoke/
+
+# Python bytecode from tools/*.py
+__pycache__/
