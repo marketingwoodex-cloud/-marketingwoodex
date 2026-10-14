@@ -38,10 +38,10 @@ import { demoFixture } from "./lib/demo";
 import { LiveProjects } from "./screens/LiveProjects";
 import { LiveTimeline } from "./screens/LiveTimeline";
 import { LiveUpdates } from "./screens/LiveUpdates";
-import { DemoBanner, DemoDoor } from "./App";
+import { DemoBanner, DemoDoor, badgeCounts } from "./App";
 import { SessionCtx, type SessionValue } from "./lib/session";
 import { linkLabel, linkPill } from "./lib/live";
-import type { BizData, CompanyData } from "./lib/live";
+import type { BellData, BizData, CompanyData } from "./lib/live";
 
 /* This file is built by vite for Node (see package.json#scripts.smoke), so `process` exists at run
    time. TypeScript does not know that without @types/node, and pulling a Node type package into a
@@ -194,6 +194,7 @@ let bzBiz: BizData | null = null;
 let bzCompany: CompanyData | null = null;
 let htmlDoc = "";
 let wordsTests: [string, boolean][] = [];
+let badgeTests: [string, boolean][] = [];
 let htmlGlobal = "";
 let htmlGlobalOffline = "";
 let htmlAnnOffline = "";
@@ -638,6 +639,21 @@ try {
   ];
 } catch (err) {
   failures.push(`the quotation templates screen → ${(err as Error).message}`);
+}
+
+/* The sidebar's counts — the one place the console used to state a number it could not know. It is a
+   function so it can be asserted here without a browser: the server's answer when there is one, the sample
+   only when somebody asked for a sample, and nothing at all when neither is true. */
+{
+  const server: BellData = { leads: 42, chats: 7, approvals: 2, total: 51, items: [], stamp: "2026-10-14 09:00:00" };
+  const none = badgeCounts(null, false, "owner");
+  badgeTests = [
+    ["the sidebar's counts are the server's when the server answered", JSON.stringify(badgeCounts(server, false, "owner")) === JSON.stringify({ leads: 42, chat: 7, approvals: 2, total: 51 })],
+    ["and the server's even in demo mode — a sample never overrides a real number", JSON.stringify(badgeCounts(server, true, "owner")) === JSON.stringify({ leads: 42, chat: 7, approvals: 2, total: 51 })],
+    ["with no answer and no sample there are no counts at all, rather than the design's mock ones", none.leads === 0 && none.chat === 0 && none.approvals === 0 && none.total === 0],
+    ["in demo mode the sample fills them, so a preview has a sidebar", badgeCounts(null, true, "owner").leads > 0 && badgeCounts(null, true, "owner").total > 0],
+    ["and a support role is still shown no approval count", badgeCounts(null, true, "support").approvals === 0],
+  ];
 }
 
 /* The whole entry point, in demo mode, the way a person opens a preview with no server: `demoOn()` reads the
@@ -1261,6 +1277,7 @@ for (const [name, ok] of [
     ).includes("Sample — a template has no client."),
   ],
   ...wordsTests,
+  ...badgeTests,
   [
     /* The journey that was reported broken: opening the app with `?demo=1` and a host that is not answering
        must land on a screen with sample data on it, under a banner that says the data is invented. */

@@ -57,6 +57,28 @@ export default function App() {
   );
 }
 
+/* The sidebar's counts, as a function of the three things that can know them — a function rather than a
+ * block inside the component so it can be asserted without a browser.
+ *
+ * A count beside *Leads* is a claim about the studio's day. Three sources may answer it and they are not
+ * interchangeable: the server (`/notifications/poll`, one poll a minute), the design's own sample — only in
+ * demo mode, where the shell says **demo data** in words above every screen — and, when neither is there,
+ * nothing. The third state is the one that used to be a claim: the mock's three approvals and its new-lead
+ * count were drawn whenever the API was not answering, beside a strip that said the host was not answering.
+ * A zero renders no badge at all, so the honest answer is a sidebar with no numbers on it. */
+export function badgeCounts(bell: BellData | null, demo: boolean, role: Role): Badges {
+  if (bell) {
+    return { leads: bell.leads, chat: bell.chats, approvals: bell.approvals, total: bell.total };
+  }
+  if (!demo) {
+    return { leads: 0, chat: 0, approvals: 0, total: 0 };
+  }
+  const fresh = leads.filter((l) => l.stage === "new").length;
+  const chat = 3;
+  const appr = role === "support" ? 0 : approvals.length;
+  return { leads: fresh, chat, approvals: appr, total: fresh + chat + appr };
+}
+
 /**
  * The frame: health, session, badges, routes.
  *
@@ -91,24 +113,7 @@ function Frame({ demo }: { demo: boolean }) {
      the SPA will use, and the first screen that proves `GET /notifications/poll` end to end. */
   const bell = useLive<BellData>(live ? "/notifications/poll" : null, role);
 
-  const badges: Badges = useMemo(() => {
-    if (bell.data) {
-      return {
-        leads: bell.data.leads,
-        chat: bell.data.chats,
-        approvals: bell.data.approvals,
-        total: bell.data.total,
-      };
-    }
-    /* Demo counts, from the design's own mock data — used only while the API is not answering, and
-       labelled as such in the strip. */
-    return {
-      leads: leads.filter((l) => l.stage === "new").length,
-      chat: 3,
-      approvals: role === "support" ? 0 : approvals.length,
-      total: leads.filter((l) => l.stage === "new").length + 3 + approvals.length,
-    };
-  }, [bell.data, role]);
+  const badges: Badges = useMemo(() => badgeCounts(bell.data, demo, role), [bell.data, demo, role]);
 
   /* `demo` is the only thing that may be called a demo: it is set by `?demo=1` or the build flag, and the
      strip, the pill and the plan label are all derived from it together with the link state. */
