@@ -1,6 +1,6 @@
 # Woodex admin v2.5 — work-sandbox memory
 
-*Written 14 October 2026, at `13d37db`, on branch `arena/4150341e-marketingwoodex`.*
+*Written 14 October 2026, at `c0d661b`, on branch `arena/4150341e-marketingwoodex`.*
 *The design authority is `ADMIN-V2.5-MASTER-PLAN-2026-10-13.md` (the 18-page plan, also as PDF). This
 document is the memory: where things are, what is already true, what is next, and what bit us on the way.
 Where the two disagree, the plan wins for design and this file wins for state.*
@@ -16,9 +16,9 @@ cd tools/phpwasm && npm ci && cd ../..          # php-wasm (the only PHP this sa
 cd tools/phplint && npm ci && cd ../..
 
 # the gate, in the order that fails fastest
-node tools/phpwasm/run-php.cjs tests/run.php            # 1237 passed · 0 failed · 14 skipped
+node tools/phpwasm/run-php.cjs tests/run.php            # 1283 passed · 0 failed · 14 skipped
 node tests/conformance.mjs                              # 86 passed · 0 failed
-node tools/phplint/php-lint.mjs                         # 161 PHP files parse clean
+node tools/phplint/php-lint.mjs                         # 163 PHP files parse clean
 cd admin-v25 && npm run typecheck && npm run smoke && cd ..   # tsc clean · 171 checks · 65 routes
 node tools/gen-aliases.mjs --check && node tools/gen-caps.mjs --check
 
@@ -173,9 +173,10 @@ reading before changing the files they touch.
 
 | `13d37db` | **The demo rule, and the identity in the chrome** | Three states, not two (see §8c3); the identity (`mailto:`, `tel:`, `wa.me`) as a fifth region of the chrome apply, with one preview, one batch and one undo for 150 pages. |
 | `c058f12` | Connectors groundwork | The 24-card gallery generated from `admin-conn.js`, and the API's only outward call moved to `lib/http.php` (`wx_http_call()`), which the connector tests need next. |
+| `c0d661b` | **The integrations, API half** | Five of the seven `conn_*` actions with routes, the 0600 store and its write-only secret, `conn_test` reporting statuses instead of raising them, the off-site backup asserted by opening it, and the two Gmail actions named as the remainder (§8c4). |
 
-Measured at `13d37db`: **1237** API tests · **86** conformance checks · **161** PHP files lint clean ·
-**171** smoke checks over **65** console routes · `tsc` clean · 365 legacy actions named, **158** bridged
+Measured at `c0d661b`: **1283** API tests · **86** conformance checks · **163** PHP files lint clean ·
+**171** smoke checks over **65** console routes · `tsc` clean · 365 legacy actions named, **163** bridged
 (43% — the seven `seo_*` actions are the newest, and `page_meta_save` was the first *pages* one to cross).
 
 ---
@@ -184,7 +185,7 @@ Measured at `13d37db`: **1237** API tests · **86** conformance checks · **161*
 
 | Command | Catches |
 |---|---|
-| `node tools/phpwasm/run-php.cjs tests/run.php` | behaviour: validation, approvals, money, page writes, publishing a page, the content composer, the announce block, the AI settings, the client page, the audit's rules, the seo store and the two public files, and the identity swap the chrome screen applies |
+| `node tools/phpwasm/run-php.cjs tests/run.php` | behaviour: validation, approvals, money, page writes, publishing a page, the content composer, the announce block, the AI settings, the client page, the audit's rules, the seo store and the two public files, the identity swap the chrome screen applies, and the connector store with the backup it builds |
 | `node tests/conformance.mjs` | the mistakes a compiler cannot see: a duplicated function name, a route row pointing at a missing handler, a dead `include`, a write route with no approval gate, SQL built by interpolation, the shipped browser blocks run against stubs |
 | `node tools/phplint/php-lint.mjs` | PHP 8 grammar over `api/v2`, `db/`, `tests/` (the shipped command-line tools are shipped code) |
 | `cd admin-v25 && npm run typecheck` | TypeScript, screens included |
@@ -244,6 +245,9 @@ run there.
 - PHP single-quoted strings: a literal `'` or an unquoted word after `, ` is a parse error;
   `php-lint --verbose` names file:line.
 - A JSON body is not a validation: every write goes through `wx_v_*`, and a refusal names the *field*.
+- **A bridged id that is a string must be mapped as `['id' => 'id']`, not `['id']`.** The bridge's shorthand
+  casts to int, so a connector id (`c` + ten hex characters) would arrive as `0` and every bridged call would
+  address the first record — the same trap as the digit-key one below, wearing different clothes.
 - **A PHP array key that looks like a number is an int.** `wa.me/923224000768` collected into a count map
   comes back as `[923224000768 => 1]`, so `array_keys()` is `[int]` and a test comparing it to `['…']` fails
   while the code is right. The survey casts everywhere it reads a key (`(string) $v`); the test casts too.
@@ -462,9 +466,17 @@ prose: a number in a sentence, a map link or a PDF is left alone, and the counts
 
 ### c4. What is left of Phase 3
 
-Integrations (`conn-lib.php`'s 22 connectors and their keys — the largest remaining piece of the phase, and
-the one that needs a host to test against; plan §11). The groundwork is in: the 24-card gallery is generated
-into `api/v2/data/connectors.json` and the API's outward call is `wx_http_call()` in `lib/http.php`. The pages screen's remaining v2.1 action is
+**The integrations, from the console side.** The API half is in (`c0d661b`): five routes —
+`GET /connectors`, `POST /connectors`, `DELETE /connectors/{id}`, `POST /connectors/{id}/test`,
+`POST /connectors/{id}/push` — the 0600 store with its write-only secret, the generated 24-card gallery, and
+the off-site backup. What is left is **`/connectors` itself**: a screen replacing the `Placeholder` tile at
+`App.tsx:277` (the tile already names the actions, and `Placeholder.tsx` carries the `integrations:` row), with
+demo fixtures for the two reads it makes. Then, separately, `conn_gmail_send`/`conn_gmail_use`, which need an
+SMTP client this API does not have yet — they are named in `wx_conn_list()['unported']` so the screen can say
+which half it has.
+
+Still open elsewhere in the phase: `page_delete` (trash + redirect) has no route, and
+`LiveServices`/`LiveCities` as screens of their own stay unbuilt on purpose — both are views over the pages. The pages screen's remaining v2.1 action is
 `page_delete` (trash + a redirect): the API has no route for it yet, and it is the one destructive page action
 nobody has asked for. `LiveServices`/`LiveCities` as screens of their own are still unbuilt and probably
 should stay that way — both are views over the pages, and the pages screen already offers them as filters.
