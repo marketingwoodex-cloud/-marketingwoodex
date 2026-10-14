@@ -423,7 +423,7 @@ table.data td.num { font-variant-numeric: tabular-nums; text-align: right; }
 .note.danger { background: var(--danger-soft); color: var(--danger); border-color: color-mix(in srgb, var(--danger) 32%, transparent); }
 
 /* The strip under the topbar: which API this build is talking to, and whether it answered. It replaces
-   the prototype's "no backend" banner, because the answer is no longer always "no backend". */
+   the old "no backend" banner, because the answer is no longer always "no backend". */
 .status-strip {
   display: flex; align-items: center; gap: var(--s-2); flex-wrap: wrap;
   padding: var(--s-2) var(--s-page);
@@ -436,7 +436,7 @@ table.data td.num { font-variant-numeric: tabular-nums; text-align: right; }
 .status-strip[data-link="offline"] { background: var(--warn-soft); color: var(--warn); border-bottom-color: color-mix(in srgb, var(--warn) 30%, transparent); }
 .status-strip .muted { color: inherit; opacity: .7; }
 
-/* Sign-in fields sit above their inputs; the design system had no label style because the prototype
+/* Sign-in fields sit above their inputs; the design system had no label style because the first design
    had no forms. */
 .field-label {
   display: flex; align-items: center; gap: var(--s-1);
@@ -469,14 +469,6 @@ table.data td.num { font-variant-numeric: tabular-nums; text-align: right; }
 }
 @keyframes slide { from { transform: translateY(8px); opacity: 0; } to { transform: none; opacity: 1; } }
 
-.prototype-banner {
-  display: flex; align-items: center; gap: var(--s-3);
-  padding: var(--s-2) var(--s-page);
-  background: var(--warn-soft); color: var(--warn);
-  border-bottom: 1px solid color-mix(in srgb, var(--warn) 30%, transparent);
-  font-size: var(--fs-12);
-}
-.prototype-banner b { font-weight: 700; }
 
 /* ============================================================== PHASE 3 · delivery */
 
@@ -655,34 +647,6 @@ tr.is-late td:first-child { box-shadow: inset 3px 0 0 var(--danger); }
   position: absolute; top: -20px; left: 2px; font-size: var(--fs-10); color: var(--warn); font-weight: 650;
 }
 
-/* ---------------------------------------------------------------- demo mode
-   The banner is deliberately not subtle, and it is the same words on every screen: what is on screen did
-   not come from the server. `link-btn` is the way out (or in) without pretending to be a primary action. */
-.demo-banner {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 6px;
-  margin: 0 0 var(--s-4);
-  padding: 10px 14px;
-  border: 1px dashed color-mix(in srgb, var(--warn) 55%, transparent);
-  border-radius: var(--r-2);
-  background: color-mix(in srgb, var(--warn) 10%, transparent);
-  color: var(--text-1);
-  font-size: var(--fs-13);
-}
-
-.link-btn {
-  padding: 0;
-  border: 0;
-  background: none;
-  color: var(--accent);
-  font: inherit;
-  font-weight: 600;
-  text-decoration: underline;
-  cursor: pointer;
-}
-
 /* ---------------------------------------------------------------- quotation templates
    The grid is v2.1's `.tp-grid`: a card per template, wide enough for the section names to be read
    without opening it. `minmax(280px, 1fr)` rather than a fixed column count because the sidebar can be
@@ -786,7 +750,7 @@ tr.is-late td:first-child { box-shadow: inset 3px 0 0 var(--danger); }
    white-lists nothing, and `@media print` is where that is decided rather than in a stylesheet a screen
    might not load. */
 @media print {
-  .side, .topbar, .demo-banner, .page-head, .btn, .chip-row { display: none !important; }
+  .side, .topbar, .page-head, .btn, .chip-row { display: none !important; }
   .doc-wrap { background: #fff; padding: 0; }
   .doc { width: auto; box-shadow: none; padding: 0; }
   @page { size: A4; margin: 12mm; }

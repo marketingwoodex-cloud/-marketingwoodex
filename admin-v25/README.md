@@ -29,7 +29,7 @@ npm run db:owner -- --email owner@woodex.local --name "Woodex Owner"   # prints 
                                                                        # into _private/dev-owner.txt (name: and password: lines)
 npm run dev:api                 # api/v2 on 127.0.0.1:8080
 npm run db:seed                 # 5 clients, 12 leads, 3 quotations (one invoiced, one part-paid), 3 bookings
-npm run dashboard:verify        # every /dashboard figure against the SQLite file, plus the stale-lead rule
+npm run dashboard:verify        # every /dashboard figure against the SQLite file, plus the three attention rules
 ```
 
 `db:seed` writes only through the API, so it also exercises the write routes. It refuses to run on a database
@@ -103,7 +103,7 @@ leads. The last pair is the assertion that matters — it is the test that fails
 
 ```
 npm run typecheck   → clean (strict, noUnusedLocals, noUnusedParameters)
-npm run smoke       → 70 checks · 65 routes · 0 failures
+npm run smoke       → 138 checks · 65 routes · 0 failures
 npm run build       → index 80 kB · vendor 160 kB · icons 36 kB · charts 388 kB (lazy)
 ```
 

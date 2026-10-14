@@ -48,10 +48,10 @@ release is additive until that is decided.
 ```bash
 cd admin-v25 && npm ci && cd tools/phpwasm && npm ci && cd ../phplint && npm ci && cd ../..
 
-node tools/phpwasm/run-php.cjs tests/run.php    # 995 passed · 0 failed · 13 skipped
-node tests/conformance.mjs                      # 84 passed · 0 failed
-node tools/phplint/php-lint.mjs                 # 157 PHP files parse clean
-cd admin-v25 && npm run typecheck && npm run smoke && cd ..   # tsc clean · 147 checks · 65 routes
+node tools/phpwasm/run-php.cjs tests/run.php    # 1133 passed · 0 failed · 14 skipped
+node tests/conformance.mjs                      # 85 passed · 0 failed
+node tools/phplint/php-lint.mjs                 # 162 PHP files parse clean
+cd admin-v25 && npm run typecheck && npm run smoke && cd ..   # tsc clean · 138 checks · 65 routes
 
 cd admin-v25 && npm run dev   # the console, reading api/v2 (the sample-data mode has been removed)
 ```

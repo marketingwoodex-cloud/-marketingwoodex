@@ -164,15 +164,15 @@ function Frame() {
         onSignOut={() => void signOut()}
       >
         <Routes>
-          {/* Phase 0 — screens implemented in this prototype */}
+          {/* Phase 0 — screens built first */}
           <Route path="/dashboard" element={<LiveDashboard role={effectiveRole} />} />
           {/* The Master's queue. A Phase 2 screen that was still a placeholder: the gate, the replay and the
               audit were built and tested, but the only way to *decide* anything was calling the API by hand
-              — and the shell linked to it from a badge counted out of the prototype's mock data. */}
+              — and the shell linked to it from a badge counted out of mock data. */}
           <Route path="/approvals" element={<LiveApprovals />} />
           <Route path="/leads" element={<LiveLeads />} />
           <Route path="/enquiries" element={<LiveLeads />} />
-          {/* Phase 3 — delivery. These have no demo layout on purpose: a design of the redirect table
+          {/* Phase 3 — delivery. These have no sample layout on purpose: a design of the redirect table
               that is not connected to a redirect table teaches nobody anything, and the two screens
               read the site's own files. Offline they say so, in words, rather than showing an empty
               table that looks like data. */}

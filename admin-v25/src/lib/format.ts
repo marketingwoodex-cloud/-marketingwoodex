@@ -24,7 +24,7 @@ export const initials = (name: string) =>
     .join("");
 
 /** "3m ago" · "2h ago" · "12 Oct" ·
- *  The clock defaults to *now*. The prototype pinned it to the day the mock data was written, which
+ *  The clock defaults to *now*. An early version pinned it to the day the mock data was written, which
  *  made every relative time correct against the mock and wrong against a live row. */
 export function timeAgo(iso: string, now = new Date()): string {
   const d = new Date(iso);

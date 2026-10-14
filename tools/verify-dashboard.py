@@ -8,15 +8,19 @@ computes each figure with its own SQL, signs in to the running API, and compares
 
   python3 tools/verify-dashboard.py                 # against http://127.0.0.1:8080/api/v2
   python3 tools/verify-dashboard.py --stale-check   # also backdates one lead, checks the stale rule, restores it
+  python3 tools/verify-dashboard.py --rules-check   # also checks the expiring-quote and overdue-invoice rules
 
 Exit status 0 when every figure agrees, 1 when one does not, 2 when the setup is wrong.
 
 Notes on what is and is not checked:
   · `quotes.value` is returned as 0 by design ("values inside the documents, not summed here"). It is reported
     as information next to the figure the database would give, and it is not counted as a failure.
-  · The attention list is compared for the rule it implements (stale leads and the unread-enquiries line). The
-    settings also name an expiring-quote rule and an overdue-invoice rule; the API does not list those yet, and
-    the script says so rather than pretending they pass.
+  · The attention list is compared for every rule: stale leads, unread enquiries, chats that need a person,
+    open quotations expiring within `quote_expiry_days`, and invoices `unpaid_days` past due with a balance.
+    The two document rules are worked out from the JSON documents, not from the indexed columns, so a column
+    that has drifted from its document is caught here.
+  · `--rules-check` backdates one open quotation and one invoice for the check, confirms both are listed, and
+    restores both documents and columns exactly.
   · The API and this script both use UTC for "today" and for the stale cut-off (the health probe reports +00:00).
 """
 import argparse
@@ -156,6 +160,30 @@ def expected(db):
     e["stale_total"] = q(
         "SELECT COUNT(*) FROM wx_leads WHERE stage NOT IN ('won','lost') AND COALESCE(last_contact, created_at) < ?",
         (cut,))[0][0]
+    today_d = dt.date.fromisoformat(today)
+    # Open quotations, read from their documents: valid_until within the window, or already past.
+    qcut = today_d + dt.timedelta(days=rules["quote_expiry_days"])
+    e["quotes_expiring"] = []
+    for qid, status, raw in q("SELECT id, status, data FROM wx_quotes"):
+        if status not in ("sent", "viewed"):
+            continue
+        valid = (json.loads(raw or "{}").get("valid_until") or "")
+        if valid and dt.date.fromisoformat(valid) <= qcut:
+            e["quotes_expiring"].append((valid, qid))
+    e["quotes_expiring"] = [qid for _, qid in sorted(e["quotes_expiring"])]
+    # Invoices past due by `unpaid_days` with a balance, the balance from the receipts not reversed.
+    icut = today_d - dt.timedelta(days=rules["unpaid_days"])
+    e["invoices_overdue"] = []
+    for iid, total, raw in q("SELECT id, total, data FROM wx_invoices"):
+        doc = json.loads(raw or "{}")
+        due = doc.get("due_date") or ""
+        if not due or dt.date.fromisoformat(due) > icut:
+            continue
+        paid = q("SELECT COALESCE(SUM(amount),0) FROM wx_invoice_payments WHERE invoice_id = ? AND reversed_at IS NULL", (iid,))[0][0]
+        if not paid and not q("SELECT 1 FROM wx_invoice_payments WHERE invoice_id = ?", (iid,)):
+            paid = sum(int(p.get("amount", 0)) for p in doc.get("payments", []) or [])
+        if max(0, int(total or 0) - int(paid or 0)) > 0:
+            e["invoices_overdue"].append(iid)
     return e
 
 
@@ -193,8 +221,16 @@ def compare(api, e, check):
     # The headline the screen builds from these (LiveDashboard): chats that need a person + unread + pending.
     needs = e["chats"]["needs"] + e["unread"] + e["bookings"]["pending"]
     check.info("headline: things needing a person", needs, needs, "computed by the screen from the figures above")
-    check.gap("attention: expiring quotes", "rule `quote_expiring_days` is configured but not listed by the API")
-    check.gap("attention: overdue invoices", "rule `invoice_overdue_days` is configured but not listed by the API")
+    # The two document rules. The list is capped at 8 and ordered by the indexed date, so the check is: every
+    # listed row is a real candidate, and the count is the smaller of 8 and the number that qualify.
+    for kind, expected, label in (("quote_expiring", e["quotes_expiring"], "attention.quotes expiring"),
+                                  ("invoice_overdue", e["invoices_overdue"], "attention.invoices overdue")):
+        listed = [a["id"] for a in d["attention"] if a["kind"] == kind]
+        ok = set(listed) <= set(expected) and len(listed) == min(8, len(expected))
+        check.add(label, len(listed), min(8, len(expected)), f"{len(expected)} qualify; a listed row must be one of them")
+        if not ok:
+            check.rows.append(("FAIL", label + " (ids)", json.dumps(listed), json.dumps(expected), "listed rows are not all qualifying"))
+            check.failed += 1
 
 
 def stale_check(api, db_path):
@@ -218,10 +254,44 @@ def stale_check(api, db_path):
         con.close()
 
 
+def rules_check(api, db_path):
+    """Backdate one open quotation into the expiry window and one invoice past the due window, expect both to be
+    listed, then put the documents and indexed columns back byte for byte."""
+    con = sqlite3.connect(db_path)
+    try:
+        qrow = con.execute("SELECT id, data, valid_until FROM wx_quotes WHERE status IN ('sent','viewed') ORDER BY id LIMIT 1").fetchone()
+        irow = con.execute("SELECT id, data, due_at FROM wx_invoices WHERE due_at IS NOT NULL AND due_at <> '' ORDER BY id LIMIT 1").fetchone()
+        if qrow is None or irow is None:
+            return None, "no sent quotation or no invoice to backdate"
+        rules = api.call("GET", "/dashboard")["rules"]
+        today_d = dt.datetime.now(dt.timezone.utc).replace(tzinfo=None).date()
+        soon = (today_d + dt.timedelta(days=max(0, rules["quote_expiry_days"] - 1))).isoformat()
+        late = (today_d - dt.timedelta(days=rules["unpaid_days"] + 4)).isoformat()
+        qid, qdata, qvalid = qrow
+        iid, idata, idue = irow
+        qdoc = json.loads(qdata); qdoc["valid_until"] = soon
+        idoc = json.loads(idata); idoc["due_date"] = late
+        try:
+            con.execute("UPDATE wx_quotes SET data = ?, valid_until = ? WHERE id = ?", (json.dumps(qdoc), soon, qid))
+            con.execute("UPDATE wx_invoices SET data = ?, due_at = ? WHERE id = ?", (json.dumps(idoc), late, iid))
+            con.commit()
+            listed = api.call("GET", "/dashboard")["attention"]
+            kinds = {(a["kind"], a["id"]) for a in listed}
+            return {"quote": qid, "quote_listed": ("quote_expiring", qid) in kinds,
+                    "invoice": iid, "invoice_listed": ("invoice_overdue", iid) in kinds}, None
+        finally:
+            con.execute("UPDATE wx_quotes SET data = ?, valid_until = ? WHERE id = ?", (qdata, qvalid, qid))
+            con.execute("UPDATE wx_invoices SET data = ?, due_at = ? WHERE id = ?", (idata, idue, iid))
+            con.commit()
+    finally:
+        con.close()
+
+
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("--base", default="http://127.0.0.1:8080/api/v2")
     p.add_argument("--stale-check", action="store_true")
+    p.add_argument("--rules-check", action="store_true")
     args = p.parse_args()
 
     db_path = database_path()
@@ -258,6 +328,16 @@ def main():
                   f" (stale count now {result['count']})")
             if not result["found"]:
                 status = 1
+    if args.rules_check:
+        print("\nexpiring-quote and overdue-invoice rules: backdating one document each for the check, then restoring both")
+        result, err = rules_check(api, db_path)
+        if err:
+            print("  skipped:", err)
+        else:
+            for label, key, ok in (("quote", "quote", result["quote_listed"]), ("invoice", "invoice", result["invoice_listed"])):
+                print(f"  {label} {result[key]} is listed: {'ok' if ok else 'FAIL'}")
+                if not ok:
+                    status = 1
     print(f"\n{'all figures agree' if check.failed == 0 else str(check.failed) + ' figure(s) disagree'}")
     return status
 

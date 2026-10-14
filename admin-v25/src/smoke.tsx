@@ -233,8 +233,8 @@ try {
 }
 
 /* The door with the API down, which is the state the sign-in screen spends most of its life in during a
-   cut-over. What it must not do is tell the person they are looking at demo data: this screen shows no
-   site data at all, and the sentence was a leftover from the prototype that had a mock behind it. */
+   cut-over. What it must not do is tell the person they are looking at sample data: this screen shows no
+   site data at all, and the sentence was a leftover from the first build. */
 try {
   htmlSignedOutOffline = renderToString(
     <MemoryRouter initialEntries={["/dashboard"]}>
@@ -495,7 +495,7 @@ try {
 }
 
 /* Quotation templates: the screen, and the document a template produces.
-   The document is rendered from the same sample the screen shows (`lib/demo.ts`), so the numbering and the
+   The document is rendered from the same sample the screen shows, so the numbering and the
    words under the total are exercised against real content rather than against a hand-built stub. */
 try {
   const at = (sessionValue: SessionValue, screen: ReactElement) =>
@@ -517,8 +517,8 @@ try {
   htmlAi = at(session("offline", asUser), <AiSettings />);
   htmlAiEditor = at(session("live", asEditor), <AiSettings />);
 
-  /* The Integrations screen: offline it shows none of the connectors; in demo it shows the sample list with no
-     controls that would save a key; an editor is told whose keys these are. */
+  /* The Integrations screen: offline it shows none of the connectors and no control that would save a key; an
+     editor is told whose keys these are. */
   htmlConnOffline = at(session("offline", null), <LiveIntegrations />);
   htmlConnEditor = at(session("live", asEditor), <LiveIntegrations />);
 
@@ -527,8 +527,8 @@ try {
      saved, and no button that would pretend to save it. */
   htmlAnnOffline = at(session("offline", null), <AnnounceBar />);
 
-  /* The Master's queue: offline it must not invent a single request, and in demo mode it shows the sample
-     queue with no decision buttons — a preview must not offer to approve something that does not exist. */
+  /* The Master's queue: offline it must not invent a single request, and it must not offer a decision button —
+     a preview must not offer to approve something that does not exist. */
   htmlApprOffline = at(session("offline", null), <LiveApprovals />);
 
   /* A quotation the document renderer is given. It is test input, not sample data the console shows. */
@@ -995,8 +995,7 @@ for (const [name, ok] of [
     "the business info screen is offline-honest",
     htmlBizOffline.includes("api/v2 is not answering") && !htmlBizOffline.includes("Main phone"),
   ],
-  /* The templates screen and the document it produces. The screen is offline-honest like the rest; in demo it
-     shows the samples; and the document is drawn with the sample's own numbers rather than a stub. */
+  /* The templates screen and the document it produces. The screen is offline-honest like the rest; and the document is drawn with the sample's own numbers rather than a stub. */
   [
     "the templates screen is offline-honest",
     htmlTplOffline.includes("api/v2 is not answering") &&
