@@ -22,16 +22,32 @@ const ICONS: Record<string, typeof Inbox> = {
 };
 
 /**
- * Two dashboards, one route.
+ * Three states, not two — which is the difference between a sample and a lie.
  *
- * When api/v2 answers, the screen shows the server's numbers (LiveDashboard). When there is no API —
- * a static preview, a host that has not been migrated — the original design renders from `mock.ts`,
- * because a layout with nothing in it teaches nobody anything. Which one you are looking at is stated
- * in the shell, always; the failure mode this avoids is a mock number wearing a live label.
+ * When api/v2 answers, the screen shows the server's numbers (`LiveDashboard`). When somebody *asked* for a
+ * sample (`?demo=1`, `VITE_WX_DEMO=1`), the design renders from `mock.ts` under the shell's own **demo data**
+ * banner, because a layout with nothing in it teaches nobody anything. With neither, it says so.
+ *
+ * Until this, "no API" and "demo mode" were one branch: a laptop with no PHP drew the design's figures beside
+ * a strip that said the host was not answering. A dashboard is the one screen where a made-up number reads as
+ * a real one, so the third state is deliberately empty.
  */
 export function Dashboard({ role }: { role: Role }) {
-  const { link, me } = useSession();
-  return link === "live" && me ? <LiveDashboard role={role} /> : <DemoDashboard role={role} />;
+  const { link, me, demo, reason } = useSession();
+  if (link === "live" && me) return <LiveDashboard role={role} />;
+  if (demo) return <DemoDashboard role={role} />;
+  return (
+    <>
+      <PageHead title="Dashboard" sub="Studio KPIs, revenue and what needs attention" />
+      <Note tone="warn" title="Not connected">
+        {link === "checking"
+          ? "Still looking for api/v2 — the console has not heard back from its own host yet, so there are no numbers to show. Demo mode (?demo=1) draws the design's sample instead."
+          : link === "offline"
+            ? `api/v2 is not answering, so the studio's figures cannot be read. The design's sample is not standing in for them: a dashboard is the one screen where an invented number reads as a real one.${reason ? ` (${reason})` : ""}`
+            : "Sign in to see the studio's numbers."}
+      </Note>
+    </>
+  );
 }
 
 function DemoDashboard({ role }: { role: Role }) {

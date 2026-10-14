@@ -8,13 +8,31 @@ import { Btn, Card, Delta, PageHead, Pill, Seg, statusTone } from "../components
 import { ConversionLine } from "../components/charts";
 import { leads as seed, STAGES, type Lead, type Stage } from "../lib/mock";
 import { money, timeAgo } from "../lib/format";
+import { useSession } from "../lib/session";
+import { ROUTES } from "../lib/nav";
+import { Placeholder } from "./Placeholder";
 
 const CONV = [
   { m: "May", conv: 16.2 }, { m: "Jun", conv: 17.8 }, { m: "Jul", conv: 15.9 },
   { m: "Aug", conv: 19.4 }, { m: "Sep", conv: 18.1 }, { m: "Oct", conv: 18.7 },
 ];
 
+/**
+ * Demo mode, or the build plan.
+ *
+ * The board is still the design: it moves the sample's cards and saves nothing, because the live stage board
+ * has no route yet (`leads_list` gives the rows; a stage change is `lead_save`). Drawing sample cards with no
+ * store behind them, on a host where the real pipeline exists in the database, is the demo-data problem in
+ * its purest form — so outside demo mode this screen is the build plan for the screen it will become.
+ */
 export function Pipeline() {
+  const { demo } = useSession();
+  const route = ROUTES.find((r) => r.id === "pipeline");
+  if (demo && route) return <DemoPipeline />;
+  return route ? <Placeholder route={route} /> : null;
+}
+
+function DemoPipeline() {
   const [items, setItems] = useState<Lead[]>(seed);
   const [dragId, setDragId] = useState<string | null>(null);
   const [overStage, setOverStage] = useState<Stage | null>(null);

@@ -23,6 +23,10 @@ import { AiSettings } from "./components/AiSettings";
 import { AnnounceBar, LiveGlobal } from "./screens/LiveGlobal";
 import { LiveApprovals } from "./screens/LiveApprovals";
 import { LiveSeo } from "./screens/LiveSeo";
+import { Dashboard } from "./screens/Dashboard";
+import { Leads } from "./screens/Leads";
+import { Pipeline } from "./screens/Pipeline";
+import { Quotations } from "./screens/Quotations";
 import { LivePages } from "./screens/LivePages";
 import { LiveLibrary } from "./screens/LiveLibrary";
 import { LiveSiteTheme } from "./screens/LiveSiteTheme";
@@ -206,6 +210,14 @@ let htmlPagesOffline = "";
 let htmlSeo = "";
 let htmlSeoOffline = "";
 let htmlSeoDemo = "";
+let htmlDashOff = "";
+let htmlDashDemo = "";
+let htmlLeadsOff = "";
+let htmlLeadsDemo = "";
+let htmlPipeOff = "";
+let htmlPipeDemo = "";
+let htmlQuotesOff = "";
+let htmlQuotesDemo = "";
 let htmlLibrary = "";
 let htmlLibraryOffline = "";
 let htmlTheme = "";
@@ -661,6 +673,7 @@ try {
    It is the only assertion here that exercises `App` → `Frame` → the banner → a screen with sample data, which
    is the journey that produced "still not showing page". */
 let htmlDemoApp = "";
+let htmlDemoDashApp = "";
 try {
   const real = (globalThis as Record<string, unknown>)["window"];
   const store = new Map<string, string>();
@@ -683,6 +696,13 @@ try {
   (globalThis as Record<string, unknown>)["window"] = fakeWindow;
   htmlDemoApp = renderToString(
     <MemoryRouter initialEntries={["/projects"]}>
+      <App />
+    </MemoryRouter>,
+  );
+  /* The same entry point, opened on the dashboard: the banner above it and the design below it, which is the
+     path the owner takes when they open a preview with `?demo=1`. */
+  htmlDemoDashApp = renderToString(
+    <MemoryRouter initialEntries={["/dashboard"]}>
       <App />
     </MemoryRouter>,
   );
@@ -764,6 +784,30 @@ try {
   );
 } catch (err) {
   failures.push(`live pages → ${(err as Error).message}`);
+}
+
+/* The four screens that were *one* branch ("live or not"), and are three now. A screen that draws the
+   design's sample when an API is merely missing is the demo-data problem: the numbers look like the studio's
+   and the only sentence saying otherwise is the shell's. Each pair below is the same component rendered with
+   and without demo mode, so the difference cannot be a comment. */
+const at2 = (node: ReactElement, demo: boolean, path: string) =>
+  renderToString(
+    <MemoryRouter initialEntries={[path]}>
+      <SessionCtx.Provider value={session("offline", null, demo)}>{node}</SessionCtx.Provider>
+    </MemoryRouter>,
+  );
+
+try {
+  htmlDashOff = at2(<Dashboard role="owner" />, false, "/dashboard");
+  htmlDashDemo = at2(<Dashboard role="owner" />, true, "/dashboard");
+  htmlLeadsOff = at2(<Leads />, false, "/leads");
+  htmlLeadsDemo = at2(<Leads />, true, "/leads");
+  htmlPipeOff = at2(<Pipeline />, false, "/pipeline");
+  htmlPipeDemo = at2(<Pipeline />, true, "/pipeline");
+  htmlQuotesOff = at2(<Quotations />, false, "/quotes");
+  htmlQuotesDemo = at2(<Quotations />, true, "/quotes");
+} catch (err) {
+  failures.push(`the demo-mode split → ${(err as Error).message}`);
 }
 
 /* The SEO screen: three renders, because its three states are different claims. Live is reading; with no
@@ -1024,6 +1068,29 @@ for (const [name, ok] of [
     "and offers no save and no score to save it against",
     !htmlSeoOffline.includes("Write robots.txt") && !htmlSeoOffline.includes("What the audit found"),
   ],
+  [
+    "with no API and no demo the dashboard is a sentence, not the design's figures",
+    htmlDashOff.includes("api/v2 is not answering") && !htmlDashOff.includes("kpi-value") && !htmlDashOff.includes("Zainab Tower"),
+  ],
+  [
+    "in demo mode it draws the design, sample counts and all",
+    htmlDashDemo.includes("kpi-value") && htmlDashDemo.includes("In this sample"),
+  ],
+  [
+    "the enquiries table with no API is not a list of strangers",
+    htmlLeadsOff.includes("api/v2 is not answering") && !htmlLeadsOff.includes("Raza Textiles") && !htmlLeadsOff.includes("L-4821"),
+  ],
+  ["in demo mode it is the sample table", htmlLeadsDemo.includes("Raza Textiles")],
+  [
+    "the pipeline board outside demo mode is its build plan, not sample cards",
+    htmlPipeOff.includes("Build plan for this screen") && !htmlPipeOff.includes("Ahsan Raza") && htmlPipeOff.includes("v2.5 roadmap"),
+  ],
+  ["in demo mode the board draws its cards again", htmlPipeDemo.includes("Ahsan Raza")],
+  [
+    "and the quotation list outside demo mode is its build plan too",
+    htmlQuotesOff.includes("Build plan for this screen") && !htmlQuotesOff.includes("WX-Q-2026-148"),
+  ],
+  ["in demo mode the quotations are the design's own list again", htmlQuotesDemo.includes("WX-Q-2026-148")],
   [
     "in demo mode the seo screen draws the sample audit, from the fixture rather than from a guess",
     htmlSeoDemo.includes("What the audit found") &&
@@ -1341,9 +1408,13 @@ for (const [name, ok] of [
 const assertions: [string, boolean][] = [
   ["dashboard renders an H1 (U1.1 fix)", /<h1[^>]*>/.test(htmlDashboard)],
   ["dashboard renders a breadcrumb", htmlDashboard.includes("crumbs")],
-  ["KPI row is present", htmlDashboard.includes("kpi-value")],
-  ["charts mount without throwing", htmlDashboard.includes("recharts") || htmlDashboard.includes("spark") || true],
-  ["activity feed renders", htmlDashboard.includes("feed-item")],
+  /* The dashboard renders as a *sentence* outside demo mode: a KPI row is a claim about the studio's day and
+     there is no API here to license one. The design's row and feed are asserted against the demo render. */
+  ["the dashboard with nowhere to read from shows no numbers at all", !htmlDashboard.includes("kpi-value") && !htmlDashboard.includes("feed-item")],
+  [
+    "and the demo-mode entry point draws the design dashboard under its banner",
+    htmlDemoDashApp.includes("kpi-value") && htmlDemoDashApp.includes("feed-item") && htmlDemoDashApp.includes("Demo data."),
+  ],
 ];
 
 for (const [name, ok] of assertions) {

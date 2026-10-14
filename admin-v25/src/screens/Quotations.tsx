@@ -11,6 +11,9 @@ import {
 import { Btn, Card, Input, PageHead, Pill, Seg, statusTone } from "../components/primitives";
 import { quotations, type Quotation } from "../lib/mock";
 import { dateShort, money } from "../lib/format";
+import { useSession } from "../lib/session";
+import { ROUTES } from "../lib/nav";
+import { Placeholder } from "./Placeholder";
 
 interface Line {
   id: number;
@@ -31,7 +34,21 @@ const SEED_LINES: Line[] = [
   { id: 8, desc: "Paint — premium emulsion, 2 coats plus primer", unit: "sq ft", qty: 3_100, rate: 78 },
 ];
 
+/**
+ * Demo mode, or the build plan — the same rule as the pipeline board beside it.
+ *
+ * The builder here is the design for the screen that will write quotations (`quote_save`), and it computes
+ * its total in the browser to make the point that the server's figure is the authoritative one. Nothing on it
+ * is read from the studio's data, so on a host where that data exists it would be a document-shaped lie.
+ */
 export function Quotations() {
+  const { demo } = useSession();
+  const route = ROUTES.find((r) => r.id === "quotes");
+  if (demo && route) return <DemoQuotations />;
+  return route ? <Placeholder route={route} /> : null;
+}
+
+function DemoQuotations() {
   const [tab, setTab] = useState<"list" | "builder">("list");
   const [lines, setLines] = useState<Line[]>(SEED_LINES);
   const [bank, setBank] = useState<"alfalah" | "meezan">("alfalah");

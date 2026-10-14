@@ -76,10 +76,12 @@ export const ROUTES: NavRoute[] = [
 
   /* --------------------------------------------------------------- SALES */
   { id: "enquiries", label: "Leads", icon: Inbox, section: "sales", roles: SALES, badge: "leads", hint: "Every enquiry from every channel" },
-  { id: "pipeline", label: "Pipeline", icon: Kanban, section: "sales", roles: SALES, hint: "Drag-and-drop stage board" },
+  /* The board and the quotation builder are still the design: they read no API, so outside demo mode they
+     render their build plan and the nav says SOON. `analytics`/`admin-p19f.js` name what they replace. */
+  { id: "pipeline", label: "Pipeline", icon: Kanban, section: "sales", roles: SALES, status: "planned", hint: "Drag-and-drop stage board" },
   { id: "bookings", label: "Bookings", icon: Clock, section: "sales", roles: SALES, hint: "Site visits, office meetings, calls" },
   { id: "clients", label: "Clients", icon: Contact, section: "sales", roles: SALES, hint: "Client master records" },
-  { id: "quotes", label: "Quotations", icon: FileText, section: "sales", group: "Quotes & invoices", roles: SALES, hint: "BOQ quotations and templates" },
+  { id: "quotes", label: "Quotations", icon: FileText, section: "sales", group: "Quotes & invoices", roles: SALES, status: "planned", hint: "BOQ quotations and templates" },
   { id: "invoices", label: "Invoices", icon: Receipt, section: "sales", group: "Quotes & invoices", roles: SALES, hint: "Invoices, tracker and payments" },
   { id: "transactions", label: "Payments", icon: CreditCard, section: "sales", group: "Quotes & invoices", roles: SALES, hint: "Receipts against invoices" },
   { id: "templates", label: "Quote templates", icon: Layers, section: "sales", group: "Quotes & invoices", roles: SALES, aliases: ["quotations/templates"], hint: "Nine starter BOQ templates, editable" },

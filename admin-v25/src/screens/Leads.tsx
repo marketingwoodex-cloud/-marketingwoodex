@@ -7,7 +7,7 @@ import {
   ArrowUpDown, Check, Download, Filter, Inbox, Plus, Search, SlidersHorizontal, X,
 } from "lucide-react";
 import clsx from "clsx";
-import { Avatar, Btn, Card, Input, PageHead, Pill, Seg, statusTone } from "../components/primitives";
+import { Avatar, Btn, Card, Input, Note, PageHead, Pill, Seg, statusTone } from "../components/primitives";
 import { leads, STAGES, type Lead, type Stage } from "../lib/mock";
 import { money, timeAgo } from "../lib/format";
 import { useSession } from "../lib/session";
@@ -16,12 +16,26 @@ import { LiveLeads } from "./LiveLeads";
 type SortKey = "updated" | "value" | "name";
 
 /**
- * The same split as the dashboard: real rows from `GET /leads` when the API answers, the design's own
- * demo rows when it does not. `LiveLeads` does its filtering and paging on the server.
+ * The same three states as the dashboard: real rows from `GET /leads` when the API answers, the design's own
+ * rows in demo mode — asked for by name — and nothing at all otherwise. `LiveLeads` does its filtering and
+ * paging on the server; the answer here is about what may be *shown*, not about what may be fetched.
  */
 export function Leads() {
-  const { link, me } = useSession();
-  return link === "live" && me ? <LiveLeads /> : <DemoLeads />;
+  const { link, me, demo, reason } = useSession();
+  if (link === "live" && me) return <LiveLeads />;
+  if (demo) return <DemoLeads />;
+  return (
+    <>
+      <PageHead title="Enquiries" sub="Every enquiry, from every channel" />
+      <Note tone="warn" title="Not connected">
+        {link === "checking"
+          ? "Still looking for api/v2 — the console has not heard back from its own host yet, so there are no rows to show. Demo mode (?demo=1) draws the design's sample instead."
+          : link === "offline"
+            ? `api/v2 is not answering, so the enquiries cannot be read. A table of names and phone numbers that are not your clients is worse than an empty screen, so nothing is shown.${reason ? ` (${reason})` : ""}`
+            : "Sign in to see the enquiries."}
+      </Note>
+    </>
+  );
 }
 
 function DemoLeads() {
