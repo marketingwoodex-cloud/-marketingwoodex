@@ -1,6 +1,6 @@
 # Woodex admin v2.5 — work-sandbox memory
 
-*Written 14 October 2026, at `ac4156d`, on branch `arena/4150341e-marketingwoodex`.*
+*Written 14 October 2026, at `13d37db`, on branch `arena/4150341e-marketingwoodex`.*
 *The design authority is `ADMIN-V2.5-MASTER-PLAN-2026-10-13.md` (the 18-page plan, also as PDF). This
 document is the memory: where things are, what is already true, what is next, and what bit us on the way.
 Where the two disagree, the plan wins for design and this file wins for state.*
@@ -16,10 +16,10 @@ cd tools/phpwasm && npm ci && cd ../..          # php-wasm (the only PHP this sa
 cd tools/phplint && npm ci && cd ../..
 
 # the gate, in the order that fails fastest
-node tools/phpwasm/run-php.cjs tests/run.php            # 1222 passed · 0 failed · 14 skipped
+node tools/phpwasm/run-php.cjs tests/run.php            # 1237 passed · 0 failed · 14 skipped
 node tests/conformance.mjs                              # 86 passed · 0 failed
 node tools/phplint/php-lint.mjs                         # 161 PHP files parse clean
-cd admin-v25 && npm run typecheck && npm run smoke && cd ..   # tsc clean · 160 checks · 65 routes
+cd admin-v25 && npm run typecheck && npm run smoke && cd ..   # tsc clean · 171 checks · 65 routes
 node tools/gen-aliases.mjs --check && node tools/gen-caps.mjs --check
 
 # the console, with sample data (the API cannot run here — see §3)
@@ -171,8 +171,11 @@ reading before changing the files they touch.
 | `3deb37d`, `b97d3d8`, `81bb80d` | Header & footer, content CMS, chrome across pages | The header is one edit across every page; the article is composed by the server. |
 | `158346e`, `7f8deb1`, `ba060b0`, `a031f93` | Redirects, media library, library, placements | The first Phase 3 screens, and the verdict keyed by the rule the API names. |
 
-Measured at `ac4156d`: **1222** API tests · **86** conformance checks · **161** PHP files lint clean ·
-**160** smoke checks over **65** console routes · `tsc` clean · 365 legacy actions named, **158** bridged
+| `13d37db` | **The demo rule, and the identity in the chrome** | Three states, not two (see §8c3); the identity (`mailto:`, `tel:`, `wa.me`) as a fifth region of the chrome apply, with one preview, one batch and one undo for 150 pages. |
+| `c058f12` | Connectors groundwork | The 24-card gallery generated from `admin-conn.js`, and the API's only outward call moved to `lib/http.php` (`wx_http_call()`), which the connector tests need next. |
+
+Measured at `13d37db`: **1237** API tests · **86** conformance checks · **161** PHP files lint clean ·
+**171** smoke checks over **65** console routes · `tsc` clean · 365 legacy actions named, **158** bridged
 (43% — the seven `seo_*` actions are the newest, and `page_meta_save` was the first *pages* one to cross).
 
 ---
@@ -181,11 +184,11 @@ Measured at `ac4156d`: **1222** API tests · **86** conformance checks · **161*
 
 | Command | Catches |
 |---|---|
-| `node tools/phpwasm/run-php.cjs tests/run.php` | behaviour: validation, approvals, money, page writes, publishing a page, the content composer, the announce block, the AI settings, the client page, the audit's rules, the seo store and the two public files |
+| `node tools/phpwasm/run-php.cjs tests/run.php` | behaviour: validation, approvals, money, page writes, publishing a page, the content composer, the announce block, the AI settings, the client page, the audit's rules, the seo store and the two public files, and the identity swap the chrome screen applies |
 | `node tests/conformance.mjs` | the mistakes a compiler cannot see: a duplicated function name, a route row pointing at a missing handler, a dead `include`, a write route with no approval gate, SQL built by interpolation, the shipped browser blocks run against stubs |
 | `node tools/phplint/php-lint.mjs` | PHP 8 grammar over `api/v2`, `db/`, `tests/` (the shipped command-line tools are shipped code) |
 | `cd admin-v25 && npm run typecheck` | TypeScript, screens included |
-| `cd admin-v25 && npm run smoke` | every route renders: offline-honest, demo-labelled, and no screen showing invented numbers — including the sidebar's counts, which are the server's, the sample's in demo mode, or absent |
+| `cd admin-v25 && npm run smoke` | every route renders: offline-honest, demo-labelled, and no screen showing invented numbers — including the sidebar's counts, which are the server's, the sample's in demo mode, or absent. Since `13d37db` it also renders the four screens that *had* a mock fallback twice, with and without demo mode, and asserts the difference |
 | `node tools/gen-aliases.mjs --check`, `gen-caps.mjs --check` | generated artefacts drifted from their source (365 actions; `001_roles.sql` byte-identical to v2.1's matrix) |
 
 Two habits worth keeping: run `tests/conformance.mjs` after touching a route table, and rebuild the
@@ -241,6 +244,13 @@ run there.
 - PHP single-quoted strings: a literal `'` or an unquoted word after `, ` is a parse error;
   `php-lint --verbose` names file:line.
 - A JSON body is not a validation: every write goes through `wx_v_*`, and a refusal names the *field*.
+- **A PHP array key that looks like a number is an int.** `wa.me/923224000768` collected into a count map
+  comes back as `[923224000768 => 1]`, so `array_keys()` is `[int]` and a test comparing it to `['…']` fails
+  while the code is right. The survey casts everywhere it reads a key (`(string) $v`); the test casts too.
+- **A regex looking for "the last text before `</a>`" can run into the *next* anchor.** The identity reader
+  first matched `.*?([^<>]+)</a>`, which skipped an icon-only `tel:` link and captured the following mailto's
+  address as that phone's label — a swap would then have written a phone number over an email address. Match
+  the anchor first (`>(.*?)</a>`) and read the label out of its own content.
 
 **The shell**
 - **`tests/conformance.mjs` reads PHP and TSX as text, and its own reader can hide data.** It stripped
@@ -308,8 +318,8 @@ and `api.github.com` are not), so the payload was committed and pushed instead �
 SHA-256 in the manifest to check either copy against.
 
 **What the pack does not contain.** It was built at `93b66f0` (the AI slice), so the payload that is committed
-and on Drive is *behind* this branch by publishing a page, the services/cities views, findability and the
-sidebar fix — the pack is bound to commit + stamp (§7) and cannot be patched in place. Rebuilding it for the
+and on Drive is *behind* this branch by publishing a page, the services/cities views, findability, the sidebar
+fix, the demo rule and the identity — the pack is bound to commit + stamp (§7) and cannot be patched in place. Rebuilding it for the
 owner is one command (`node tools/make-release.mjs`) plus the same three publishing steps (commit, `gh
 release`, Drive); nothing about the pack is stale in a way that misleads, but a link to it will not contain
 the newest screens.
@@ -429,10 +439,32 @@ has to write real files — its explanations come from pages on disk, so it crea
 files that are not addresses (`404`, `500`, `503`, `coming-soon`) are one constant; the shipped
 `sitemap.xml` lists exactly the 142 pages that remain.
 
-### c3. What is left of Phase 3
+### c3. The demo rule, and the identity in the chrome — delivered
+
+**Three states, not two.** Four screens (`/dashboard`, `/leads`, `/pipeline`, `/quotes`) were one branch —
+"the API answers, or draw the design's sample" — so anywhere without an API they showed names and figures that
+were nobody's beside a strip saying the host was not answering. The rule now, everywhere: the server's numbers
+when there is a server; the design's own sample **in demo mode only** (`?demo=1`, `VITE_WX_DEMO=1`), under the
+shell's banner; and otherwise a sentence saying which of the three it is, with no figures at all. Pipeline and
+quotations read no API at all, so outside demo mode they render their build plan and the nav says SOON. The
+smoke test renders all four twice and asserts the difference, and opens `?demo=1` through `App` to check the
+sample is under the banner. Demo mode itself is *not* removed and must not be without asking the owner.
+
+**The identity.** `mailto:`, `tel:` and `wa.me` are the three facts a page states, each with more than one
+spelling. `wx_chrome_identity_links()` reads a page (value, count, and the words a visitor reads — the last
+text run inside the anchor, which is why the footer's `<span class="fl">E</span>` does not leak into it),
+`wx_chrome_identity()` walks the site and answers what the *pages* say beside what the studio record says
+(`matches` is computed server-side), and `wx_chrome_identity_html()` swaps href, words and the WhatsApp link.
+It is a fifth `regions` value on `POST /chrome`, so it rides the existing preview, batch write and per-page
+history — "the header across 150 pages" now includes the phone number, with one undo. The console shows it as
+*Get in touch* on the Footer tab of `/global` (which now also takes `?tab=footer`). It follows links, not
+prose: a number in a sentence, a map link or a PDF is left alone, and the counts say what it found.
+
+### c4. What is left of Phase 3
 
 Integrations (`conn-lib.php`'s 22 connectors and their keys — the largest remaining piece of the phase, and
-the one that needs a host to test against; plan §11). The pages screen's remaining v2.1 action is
+the one that needs a host to test against; plan §11). The groundwork is in: the 24-card gallery is generated
+into `api/v2/data/connectors.json` and the API's outward call is `wx_http_call()` in `lib/http.php`. The pages screen's remaining v2.1 action is
 `page_delete` (trash + a redirect): the API has no route for it yet, and it is the one destructive page action
 nobody has asked for. `LiveServices`/`LiveCities` as screens of their own are still unbuilt and probably
 should stay that way — both are views over the pages, and the pages screen already offers them as filters.
@@ -454,13 +486,10 @@ they are the reason the table exists.
 
 ### f. Housekeeping, in the order it hurts
 
-1. **Four screens still fall back to the design's mock when the API does not answer** (`/dashboard`,
-   `/leads`, `/pipeline`, `/quotes`): `Dashboard.tsx`/`Leads.tsx` switch to the demo layout when `link` is not
-   live. That is deliberate — a layout with nothing in it teaches nobody anything — and it is labelled
-   ("In this sample, …" on the dashboard, the door note above every screen, and the strip says the host is not
-   answering). The one place that inferred a sample *unlabelled* was the sidebar's counts, and `ac4156d` fixed
-   that (`badgeCounts()`). If the owner wants the mock fallback gone entirely, that is a decision to ask for:
-   a blank console on a laptop is worse than a labelled sample.
+1. ~~Four screens fall back to the design's mock when the API does not answer.~~ **Done at `13d37db`**: the
+   fallback is demo mode only, and outside it those four screens show a sentence and no figures (§8c3). What is
+   left of this question is only whether demo mode itself should be retired — a decision to ask for, not to
+   take: the owner reviews the console through it.
 2. **Four admin generations coexist** (`admin/`, `wf-admin/`, `frontend-v1/admin/`, and history's v2.1) —
    plan §2's finding. Nothing is deleted until Phase 6; the names belong in the README so nobody guesses.
 3. **The old release zips** (`deploy/p17…p20`, `woodex-master-P22/`, `woodex-vlive-P20/`) were removed from
@@ -497,7 +526,8 @@ These were all learned the hard way in this project; they are the difference bet
    wrongness cannot appear from a second screen.
 2. **The console never presents a prototype as the product**, and never invents a number. `demo data` only
    in demo mode, `not answering` with a reason when the host is silent, `live · api/v2 <version>` when it
-   is not.
+   is not. With neither a server nor a demo request, a screen shows a sentence and **no figures at all** —
+   the third state is the default; the sample appears only because somebody asked for it.
 3. **A pasted label is evidence, not a complaint to be deleted.** Trace it to the code, then fix the code.
 4. **The preview must be current, and proving it is part of restarting it** — fetch a module, not the HTML
    shell, and say which commit it is serving.
