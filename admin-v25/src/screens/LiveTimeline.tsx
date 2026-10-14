@@ -46,8 +46,8 @@ function label(date: string): string {
 }
 
 export function LiveTimeline() {
-  const { link, reason, demo } = useSession();
-  if (link !== "live" && !demo) {
+  const { link, reason } = useSession();
+  if (link !== "live") {
     return (
       <>
         <PageHead title="Timeline" sub="Every project on a date axis." />

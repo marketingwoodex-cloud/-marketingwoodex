@@ -1053,67 +1053,42 @@ check("a message this console cannot carry is never recorded as sent", () => {
   assert(/transport\.wired/.test(screen), "the screen reads which events this build composes from the API");
 });
 
-check("demo mode answers exactly the screens that have a sample", () => {
-  /* Demo mode is what a design review sees where there is no PHP and no MySQL, so it has two failure modes and
-     this check is here for both. A screen that reads a path with no sample silently goes back to "not
-     answering" — the preview looks broken and nobody knows why. And a sample keyed by a path no screen reads is
-     data that will rot, because nothing will ever fail when it stops matching the server's shape.
-     Both directions, then: the sample must cover what the six newest screens read, and every sample key must be
-     a path one of them reads. */
-  const demo = readCode("admin-v25/src/lib/demo.ts");
-  const keys = new Set([...demo.matchAll(/^\s{2}"([^"]+)":/gm)].map((m) => m[1]));
-  assert(keys.size >= 6, `the fixtures must be keyed by path (found ${keys.size})`);
-  for (const k of ["/projects", "/projects/{id}", "/notifications", "/forms", "/estimator", "/heroes", "/approvals"]) {
-    assert(keys.has(k), `there is a sample for ${k}, so a design review can open that screen`);
-  }
-  /* A screen is not only a file in `screens/`: the panels live in `components/`, and the AI settings — which
-     read a path on mount and offer two on-demand calls — are one of them. The list below is the files a
-     design review would open, wherever they sit. */
-  const screens = ["LiveProjects", "LiveTimeline", "LiveUpdates", "LiveForms", "LiveEstimator", "LiveHeroes", "LiveTemplates", "LiveBusiness", "LiveApprovals", "AiSettings", "LiveIntegrations"];
-  const want = [];
-  const served = new Set();
-  for (const name of screens) {
-    const src = readCode(name === "AiSettings" ? "admin-v25/src/components/AiSettings.tsx" : `admin-v25/src/screens/${name}.tsx`);
-    /* Any literal in the call's arguments, not just the first one: a screen that reads a detail on demand
-       writes `useLive(openId === null ? null : `/approvals/${openId}`)`, and an extraction that only looked
-       at the first character after `(` would report the sample for that read as one nobody uses. A path
-       built with a value is compared as its literal prefix, which is what the `{id}` sample stands for. */
-    for (const m of src.matchAll(/useLive<[^>]*>\(([\s\S]{0,400}?)\)/g)) {
-      for (const lit of m[1].matchAll(/[`"]([^`"]*)/g)) {
-        const path = lit[1].split("$")[0];
-        if (path.startsWith("/")) want.push([name, path]);
-      }
+check("there is no sample-data mode: the prototype and its demo switch are gone from the console", () => {
+  /* The console used to have a second source of truth: `?demo=1` and `VITE_WX_DEMO=1` answered from invented
+     fixtures, and the prototype screens (`Dashboard`, `Leads`, `Pipeline`, `Quotations`) counted from
+     `lib/mock.ts`. Both are removed. A screen with no API says so, and every number it shows came from the server.
+     This check keeps them from coming back: the files are gone, and nothing in the console can turn sample data on. */
+  const gone = [
+    "admin-v25/src/lib/demo.ts",
+    "admin-v25/src/lib/mock.ts",
+    "admin-v25/src/screens/Dashboard.tsx",
+    "admin-v25/src/screens/Leads.tsx",
+    "admin-v25/src/screens/Pipeline.tsx",
+    "admin-v25/src/screens/Quotations.tsx",
+  ];
+  for (const f of gone) assert(!existsSync(join(ROOT, f)), `${f} is removed`);
+  const files = [];
+  const walk = (dir) => {
+    for (const e of readdirSync(dir, { withFileTypes: true })) {
+      const full = join(dir, e.name);
+      if (e.isDirectory()) walk(full);
+      else if (/\.(tsx?|css|html)$/.test(e.name)) files.push(full);
     }
-    /* On-demand calls: the model list is fetched when somebody presses a button, never on mount, so it can
-       never appear in `want` — and it still deserves a sample, because the picker is part of the screen a
-       design review is looking at. This set is what the orphan test consults; `want` remains what the
-       coverage test consults, because a screen that *mounts* on a path with no sample goes back to "not
-       answering" in every preview, which is the failure the coverage half exists for. */
-    for (const m of src.matchAll(/api\.(?:get|post)<[^>]*>\(\s*[`"]([^`"]*)/g)) {
-      served.add(m[1].split("$")[0]);
+  };
+  walk(join(ROOT, "admin-v25", "src"));
+  const hits = [];
+  for (const f of files) {
+    const src = readFileSync(f, "utf8");
+    if (/VITE_WX_DEMO|demoOn\(|setDemo\(|DemoBanner|DemoDoor|from ["'][^"']*\/lib\/(demo|mock)["']/.test(src)) {
+      hits.push(relative(ROOT, f));
     }
   }
-  assert(want.length >= 6, `the screens read paths at all (found ${want.length})`);
-  const covered = (p) =>
-    keys.has(p) ||
-    /* A path built with a value in it (`/projects/${id}`) is the `{id}` sample. */
-    keys.has(`${p}{id}`) ||
-    (p.includes("?") && keys.has(p.slice(0, p.indexOf("?")))) ||
-    [...keys].some((k) => k.endsWith("*") && p.startsWith(k.slice(0, -1)));
-  const missing = want.filter(([, p]) => !covered(p)).map(([n, p]) => `${n} → ${p}`);
-  assertEq(missing.length, 0, `screens reading a path with no sample: ${missing.join(", ")}`);
-  /* Every sample key must be read by a screen, or be the `{id}` form of one that is. */
-  const orphans = [...keys].filter((k) => {
-    /* `/projects/{id}` stands in for the screen that builds `/projects/${id}`: same read, a value in it. */
-    const base = k.replace("{id}", "").replace(/\*$/, "");
-    const used = [...want.map(([, p]) => p), ...served];
-    return !used.some((p) => p === base || p.startsWith(base) || (k.endsWith("*") && p.startsWith(base)));
-  });
-  assertEq(orphans.length, 0, `samples no screen reads: ${orphans.join(", ")}`);
-  /* And the shell must never turn it on by itself: the flag is asked for by name. */
-  assert(/VITE_WX_DEMO === "1"/.test(demo), "demo mode is requested, not inferred");
+  assertEq(hits.length, 0, `demo switch or prototype fixtures still referenced in: ${hits.join(", ")}`);
+  /* The strip never calls anything "demo data": an unreachable host is an unreachable host. */
+  const live = readCode("admin-v25/src/lib/live.ts");
+  assert(!/demo data/i.test(live), "linkLabel and linkPill say nothing about sample data");
   const app = readCode("admin-v25/src/App.tsx");
-  assert(/demoOn\(\)/.test(app), "the flag comes from one place");
+  assert(/const badges: Badges = useMemo/.test(app) && /return \{ leads: 0, chat: 0, approvals: 0, total: 0 \};/.test(app), "without a server the shell's badges are zero, not counted from fixtures");
 });
 
 check("the starter quotation templates are generated from the file the site loads", () => {
@@ -1348,31 +1323,19 @@ check("the bar the console writes is the bar the browser draws", () => {
   assertEq(other.body.children[0].children[1].rel, "noopener", "without handing it the window");
 });
 
-check("the demo strip says one true thing per clause, and the queue is not counted out of mock data", () => {
-  /* Two claims the console made about somebody's business while showing a design preview. The strip added
-     "layouts and interactions from the v2.5 Pro plan" next to "Demo data — a design preview. Nothing on
-     these screens is read from your site": the pill already said demo and the sentence already said
-     nothing was read, so the third clause was a stale description of the old clickable prototype, and it
-     read as a glitch. The dashboard's approvals banner said "3 changes are waiting for the master" — a
-     number from `lib/mock.ts`, presented as a fact about the studio, with a link to a screen that was
-     still a placeholder. */
+check("the strip never claims sample data, and the approvals queue is reached through its own route", () => {
+  /* Two claims the console used to make while showing a preview: the strip said "demo data" about a host that
+     was simply unreachable, and the dashboard counted \"3 changes are waiting\" out of a mock file, with a link
+     to a screen that was still a placeholder. Neither is possible now: the strip reports the link state, and the
+     badges are the server's own counts. */
   const shell = readCode("admin-v25/src/components/Shell.tsx");
-  const dash = readCode("admin-v25/src/screens/Dashboard.tsx");
-  assert(!shell.includes("layouts and interactions from the v2.5 Pro plan"), "the stale prototype clause is gone from the strip");
-  assert(shell.includes("nothing here can be saved: there is no server behind this preview"), "and the clause that replaced it says what a reviewer needs: writes cannot land");
-  assert(/In this sample, \{approvals\.length\} changes are waiting/.test(dash), "the dashboard's sample count says it is a sample");
-  assert(!/to="\/approvals"/.test(readCode("admin-v25/src/App.tsx").split("Placeholder")[0]) || true, "placeholder check below");
-
-  /* And the queue itself exists: the badge used to point at a build-plan card, so "3 waiting" had nowhere
-     to go. The screen, its route and its sample are three separate facts, so all three are asserted. */
+  assert(!/demo/i.test(shell), "the shell carries no demo wording, and no demo switch");
   const app = readCode("admin-v25/src/App.tsx");
-  assert(app.includes('import { LiveApprovals }'), "the approvals screen is imported");
+  assert(app.includes("import { LiveApprovals }"), "the approvals screen is imported");
   assert(/"business", "approvals"/.test(app.replace(/\s+/g, " ")), "and registered as built");
   assert(app.includes('path="/approvals" element={<LiveApprovals />}'), "with a route of its own");
-  const demo = readCode("admin-v25/src/lib/demo.ts");
-  assert(demo.includes('"/approvals": APPR'), "and a sample, so a design review can open it");
   const screen = readCode("admin-v25/src/screens/LiveApprovals.tsx");
-  assert(/api\.post<[^>]*>\(`\/approvals\/\$\{id\}\/\$\{kind\}`/.test(screen.replace(/\s+/g, " ")) || /\/approvals\/\$\{id\}\/\$\{kind\}/.test(screen), "approving posts to the replay endpoint rather than retyping the change");
+  assert(/\/approvals\/\$\{id\}\/\$\{kind\}/.test(screen), "approving posts to the replay endpoint rather than a sample");
   assert(screen.includes("Only the master decides"), "and a manager is told whose buttons those are");
 });
 

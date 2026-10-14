@@ -45,7 +45,7 @@ const NEW_SECTION: TplSection = { name: "", note: "", items: [{ desc: "", qty: 1
 const BLANK_ITEM: TplItem = { desc: "", qty: 1, unit: "sft", rate: 0 };
 
 export function LiveTemplates() {
-  const { link, reason, demo } = useSession();
+  const { link, reason } = useSession();
   const live = useLive<TplsData>("/quotations/templates");
   const [editing, setEditing] = useState<Draft | null>(null);
   const [preview, setPreview] = useState<TplRow | null>(null);
@@ -54,7 +54,7 @@ export function LiveTemplates() {
   const [bad, setBad] = useState<ApiFailure | null>(null);
   const fileRef = useRef<HTMLInputElement | null>(null);
 
-  if (link !== "live" && !demo) {
+  if (link !== "live") {
     return (
       <>
         <PageHead title="Quote templates" sub="One template per type of work — the shapes every quotation is built from" />

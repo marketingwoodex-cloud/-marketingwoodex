@@ -72,7 +72,7 @@ const SIGNER_FIELDS = ["name", "title"];
 const blank = (fields: string[]) => Object.fromEntries(fields.map((f) => [f, f === "use" ? "all" : ""]));
 
 export function LiveBusiness() {
-  const { link, reason, demo } = useSession();
+  const { link, reason } = useSession();
   const mine = useLive<BizData>("/business");
   const companyLive = useLive<CompanyData>("/business/company");
 
@@ -188,7 +188,7 @@ export function LiveBusiness() {
 
   /* ---------------- the states that must not lie ---------------- */
 
-  if (link !== "live" && !demo) {
+  if (link !== "live") {
     return (
       <>
         <PageHead title="Business info" sub="The details on every page, and the letterhead on every document" />

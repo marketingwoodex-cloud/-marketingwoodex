@@ -11,7 +11,7 @@ you are in:
 |---|---|---|
 | **live** | api/v2 answers and someone is signed in | `GET /dashboard`, `GET /leads`, `GET /notifications/poll` — real rows, server-side filters and paging, the counts on the page are the counts the server sent |
 | **signed out** | api/v2 answers, nobody signed in | the sign-in screen: password, then the two-factor code, with the API's own error text and request-id |
-| **demo data** | api/v2 is not answering | the original mock layouts, for design review — labelled as demo in the strip, with the reason |
+| **not answering** | api/v2 is not answering | the status strip says why; every screen says it cannot read anything and shows no figures |
 
 Falling back to mock data *while the API is answering* was deliberately ruled out. A screen that shows
 invented numbers beside a live backend is worse than no screen, because somebody will believe them.
@@ -23,16 +23,12 @@ npm install
 npm run dev            # http://localhost:5173  (binds 0.0.0.0, proxies /api → the API)
 npm run dev:api        # php -S 127.0.0.1:8080 api/v2/index.php — needs PHP (see below)
 npm run verify         # typecheck + 65-route render smoke + production build
-npm run dev -- --mode demo     # or open ?demo=1 — static preview, no API calls at all
 ```
 
 `/api` is **proxied, not called cross-origin** — api/v2 is same-origin by design (no CORS, a
 SameSite session cookie, a CSRF token tied to it), and a dev server that had to weaken all three to
 work would be the one place the prototype behaved differently from production. Point it somewhere
 else with `WX_API_TARGET=https://… npm run dev`.
-
-**Demo mode** (`?demo=1`, or `VITE_WX_DEMO=1` in the build environment — which is what the Netlify and
-Vercel previews should use) skips the API entirely and renders the mock layouts.
 
 **When the API is not running**, the dev server says so in the API's own envelope. `/api` and `/assets`
 answer `502 UPSTREAM` with the command that fixes it, instead of an empty 500 that reads like a bug in
@@ -43,8 +39,8 @@ the API:
 ```
 
 Vite still logs its own `http proxy error` line for each request — that is vite's dev logging, not the
-app. The front end is unaffected: it settles into the offline state, renders the design from demo data,
-and the status strip carries the reason. A sandbox with no PHP and no MySQL (the build sandbox, for
+app. The front end is unaffected: it settles into the offline state with no figures on any screen, and
+the status strip carries the reason. A sandbox with no PHP and no MySQL (the build sandbox, for
 instance) therefore runs the front end quite happily and shows nothing from the server — which is why
 `npm run dev:api` is the one script here that needs the host.
 

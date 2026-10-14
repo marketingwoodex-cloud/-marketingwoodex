@@ -53,11 +53,11 @@ node tests/conformance.mjs                      # 84 passed · 0 failed
 node tools/phplint/php-lint.mjs                 # 157 PHP files parse clean
 cd admin-v25 && npm run typecheck && npm run smoke && cd ..   # tsc clean · 147 checks · 65 routes
 
-cd admin-v25 && VITE_WX_DEMO=1 npm exec vite -- --host 0.0.0.0 --port 5173   # the console, sample data
+cd admin-v25 && npm run dev   # the console, reading api/v2 (the sample-data mode has been removed)
 ```
 
-There is no PHP and no MySQL in a build sandbox — `api/v2` cannot answer there, and every screen says so
-rather than inventing data. The real gate (an editor publishes an article, the header changes across 150
+There is no sample-data mode. Without a running `api/v2` every screen says it is not answering and shows no
+figures, rather than inventing data. The real gate (an editor publishes an article, the header changes across 150
 pages, the change rolls back from page history) is a host run; `WORK-SANDBOX-MEMORY.md` §5 and §8e have the
 steps.
 

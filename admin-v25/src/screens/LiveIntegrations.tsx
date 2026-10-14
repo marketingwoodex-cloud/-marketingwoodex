@@ -13,8 +13,6 @@
  *   · **It says what it has not done.** Testing a connector against its provider and pushing a backup still run
  *     from the v2.1 admin. The screen says so, and it does not show a green tick the console has not earned.
  *
- * Who may open it: the owner and admins, as v2.1 asked. Anyone else sees one line saying so. In demo mode the
- * list is the sample and the write controls are not shown at all — a preview must not offer to save a key.
  */
 import { useState } from "react";
 import { KeyRound, Pencil, Plus, Save, Trash2, X } from "lucide-react";
@@ -63,7 +61,7 @@ const STATUS_WORD: Record<ConnItem["status"], string> = {
 };
 
 export function LiveIntegrations() {
-  const { link, reason, demo, user } = useSession();
+  const { link, reason, user } = useSession();
   const canEdit = user?.role === "owner" || user?.role === "admin";
   const read = useLive<ConnState>(canEdit ? "/connectors" : null);
 
@@ -76,8 +74,8 @@ export function LiveIntegrations() {
   const [confirmDelete, setConfirmDelete] = useState(false);
 
   const data = read.data;
-  /* Writes are offered only to someone who may make them, against a server that will answer, and never in demo. */
-  const writable = canEdit && !demo && link === "live";
+  /* Writes are offered only to someone who may make them, against a server that will answer. */
+  const writable = canEdit && link === "live";
 
   const set = <K extends keyof Draft>(k: K, v: Draft[K]) => setDraft((d) => (d ? { ...d, [k]: v } : d));
 
@@ -158,7 +156,7 @@ export function LiveIntegrations() {
     />
   );
 
-  if (link !== "live" && !demo) {
+  if (link !== "live") {
     return (
       <>
         {head}
@@ -382,9 +380,6 @@ export function LiveIntegrations() {
                 </Btn>
               ) : null}
             </div>
-            {canEdit && !writable ? (
-              <Note tone="info">Demo data: nothing here can be saved, and no key is read from anywhere.</Note>
-            ) : null}
             <Note tone="info">
               If approvals are on for admins, a change from this screen waits for the Master&apos;s approval, and the
               message above says so.

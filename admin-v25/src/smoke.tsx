@@ -34,14 +34,11 @@ import { LiveBusiness } from "./screens/LiveBusiness";
 import { LiveIntegrations } from "./screens/LiveIntegrations";
 import { DocPreview, numberedItems } from "./components/DocPreview";
 import { amountInWords } from "./lib/format";
-import { demoFixture } from "./lib/demo";
 import { LiveProjects } from "./screens/LiveProjects";
 import { LiveTimeline } from "./screens/LiveTimeline";
 import { LiveUpdates } from "./screens/LiveUpdates";
-import { DemoBanner, DemoDoor } from "./App";
 import { SessionCtx, type SessionValue } from "./lib/session";
 import { linkLabel, linkPill } from "./lib/live";
-import type { BizData, CompanyData } from "./lib/live";
 
 /* This file is built by vite for Node (see package.json#scripts.smoke), so `process` exists at run
    time. TypeScript does not know that without @types/node, and pulling a Node type package into a
@@ -128,10 +125,9 @@ try {
    of the app that no test touched, which is exactly where the v2.1 admin's blank screens lived. */
 
 const noopAsync = async () => ({ need2fa: false });
-const session = (link: SessionValue["link"], user: SessionValue["user"], demo = false): SessionValue => ({
+const session = (link: SessionValue["link"], user: SessionValue["user"]): SessionValue => ({
   link,
-  demo,
-  reason: link === "offline" ? (demo ? "demo mode was requested" : "the server could not be reached") : "",
+  reason: link === "offline" ? "the server could not be reached" : "",
   health: link === "offline" ? null : {
     service: "woodex-api", version: "2.5.0-p1", php: "8.2.33", ready: true,
     db: { reachable: true, migrated: true }, time: "2026-10-14T00:00:00Z",
@@ -151,7 +147,6 @@ const asUser = {
 
 let htmlSignedOut = "";
 let htmlSignedOutOffline = "";
-let htmlSignedOutDemo = "";
 let htmlSignedOutChecking = "";
 let htmlLiveDash = "";
 let htmlLiveLeads = "";
@@ -179,31 +174,18 @@ let htmlTimeRoute = "";
 let htmlNotifOffline = "";
 let htmlNotifLive = "";
 let htmlNotifRoute = "";
-let htmlDemoProjects = "";
-let htmlDemoTimeline = "";
-let htmlDemoNotif = "";
-let htmlDemoForms = "";
-let htmlDemoHeroes = "";
-let htmlDemoOffline = "";
 let htmlTplOffline = "";
-let htmlTplDemo = "";
 let htmlBizOffline = "";
-let htmlBizDemo = "";
 let htmlAi = "";
 let htmlAiEditor = "";
 let htmlConnOffline = "";
-let htmlConnDemo = "";
 let htmlConnEditor = "";
-let bzBiz: BizData | null = null;
-let bzCompany: CompanyData | null = null;
 let htmlDoc = "";
 let wordsTests: [string, boolean][] = [];
 let htmlGlobal = "";
 let htmlGlobalOffline = "";
 let htmlAnnOffline = "";
-let htmlAnnDemo = "";
 let htmlApprOffline = "";
-let htmlApprDemo = "";
 let htmlPages = "";
 let htmlPagesOffline = "";
 let htmlLibrary = "";
@@ -215,10 +197,10 @@ try {
     <MemoryRouter initialEntries={["/dashboard"]}>
       <SessionCtx.Provider value={session("signedOut", null)}>
         <Shell
-          role="owner" setRole={noop} theme="light" toggleTheme={noop} density="comfortable" setDensity={noop}
+          role="owner" theme="light" toggleTheme={noop} density="comfortable" setDensity={noop}
           badges={{ leads: 0, chat: 0, approvals: 0, total: 0 }} onOpenPalette={noop}
           routeId="dashboard" crumbs={[{ label: "Today" }]} link="signedOut"
-          linkText={linkLabel(null, "signedOut", "")} demo={false} user={null} onSignOut={noop}
+          linkText={linkLabel(null, "signedOut", "")} user={null} onSignOut={noop}
         >
           <SignIn />
         </Shell>
@@ -229,28 +211,6 @@ try {
   failures.push(`sign-in screen → ${(err as Error).message}`);
 }
 
-/* The same strip in demo mode, where the label *is* true — the point is not to delete the words "demo
-   data", it is to say them only when there is a demo behind them. */
-try {
-  htmlSignedOutDemo = renderToString(
-    <MemoryRouter initialEntries={["/dashboard"]}>
-      <SessionCtx.Provider value={session("offline", null)}>
-        <Shell
-          role="owner" setRole={noop} theme="light" toggleTheme={noop} density="comfortable" setDensity={noop}
-          badges={{ leads: 0, chat: 0, approvals: 0, total: 0 }} onOpenPalette={noop}
-          routeId="dashboard" crumbs={[{ label: "Today" }]} link="offline"
-          linkText={linkLabel(null, "offline", "demo mode was requested", true)} demo
-          user={null} onSignOut={noop}
-        >
-          <SignIn />
-        </Shell>
-      </SessionCtx.Provider>
-    </MemoryRouter>,
-  );
-} catch (err) {
-  failures.push(`sign-in screen in demo mode → ${(err as Error).message}`);
-}
-
 /* The door on its first paint, while the health probe is still in flight: no note has been decided yet and
    the button must not be pressable until the answer is in. */
 try {
@@ -258,10 +218,10 @@ try {
     <MemoryRouter initialEntries={["/dashboard"]}>
       <SessionCtx.Provider value={session("checking", null)}>
         <Shell
-          role="owner" setRole={noop} theme="light" toggleTheme={noop} density="comfortable" setDensity={noop}
+          role="owner" theme="light" toggleTheme={noop} density="comfortable" setDensity={noop}
           badges={{ leads: 0, chat: 0, approvals: 0, total: 0 }} onOpenPalette={noop}
           routeId="dashboard" crumbs={[{ label: "Today" }]} link="checking"
-          linkText={linkLabel(null, "checking", "")} demo={false} user={null} onSignOut={noop}
+          linkText={linkLabel(null, "checking", "")} user={null} onSignOut={noop}
         >
           <SignIn />
         </Shell>
@@ -280,10 +240,10 @@ try {
     <MemoryRouter initialEntries={["/dashboard"]}>
       <SessionCtx.Provider value={session("offline", null)}>
         <Shell
-          role="owner" setRole={noop} theme="light" toggleTheme={noop} density="comfortable" setDensity={noop}
+          role="owner" theme="light" toggleTheme={noop} density="comfortable" setDensity={noop}
           badges={{ leads: 0, chat: 0, approvals: 0, total: 0 }} onOpenPalette={noop}
           routeId="dashboard" crumbs={[{ label: "Today" }]} link="offline"
-          linkText={linkLabel(null, "offline", "the server could not be reached")} demo={false} user={null} onSignOut={noop}
+          linkText={linkLabel(null, "offline", "the server could not be reached")} user={null} onSignOut={noop}
         >
           <SignIn />
         </Shell>
@@ -534,35 +494,6 @@ try {
   failures.push(`the client updates screen → ${(err as Error).message}`);
 }
 
-/* Demo mode. This is the state the person evaluating the console actually sees on a preview with no PHP and
-   no MySQL behind it, so it is the state that must be *useful*: the screens render their sample data, and the
-   banner above them says in words that none of it came from a server. The offline copy — the same screens with
-   demo off — is asserted just below to be sure the two cannot be confused. */
-try {
-  const at = (path: string, screen: ReactElement) =>
-    renderToString(
-      <MemoryRouter initialEntries={[path]}>
-        <SessionCtx.Provider value={session("offline", null, true)}>
-          {screen}
-        </SessionCtx.Provider>
-      </MemoryRouter>,
-    );
-  htmlDemoProjects = at("/projects", <LiveProjects />);
-  htmlDemoTimeline = at("/timeline", <LiveTimeline />);
-  htmlDemoNotif = at("/notifications", <LiveUpdates />);
-  htmlDemoForms = at("/forms", <LiveForms />);
-  htmlDemoHeroes = at("/heroes", <LiveHeroes />);
-  htmlDemoOffline = renderToString(
-    <MemoryRouter initialEntries={["/projects"]}>
-      <SessionCtx.Provider value={session("offline", null)}>
-        <LiveProjects />
-      </SessionCtx.Provider>
-    </MemoryRouter>,
-  );
-} catch (err) {
-  failures.push(`the demo screens → ${(err as Error).message}`);
-}
-
 /* Quotation templates: the screen, and the document a template produces.
    The document is rendered from the same sample the screen shows (`lib/demo.ts`), so the numbering and the
    words under the total are exercised against real content rather than against a hand-built stub. */
@@ -574,44 +505,54 @@ try {
       </MemoryRouter>,
     );
   htmlTplOffline = at(session("offline", null), <LiveTemplates />);
-  htmlTplDemo = at(session("offline", null, true), <LiveTemplates />);
 
   /* The business info screen, and the same two states. Its fixtures are read directly for the company half:
      the letterhead is behind a tab, and a server render cannot click one. */
   htmlBizOffline = at(session("offline", null), <LiveBusiness />);
-  htmlBizDemo = at(session("offline", null, true), <LiveBusiness />);
 
   /* The AI settings panel: the provider, a key reported as set or empty, and the voice. Its fixture is read
      directly because the panel sits at the foot of the Content screen and one render of that screen shows
      the list, not every field. */
   const asEditor = { ...asUser, role: "editor" as const, roleLabel: "Editor" };
-  htmlAi = at(session("offline", asUser, true), <AiSettings />);
+  htmlAi = at(session("offline", asUser), <AiSettings />);
   htmlAiEditor = at(session("live", asEditor), <AiSettings />);
 
   /* The Integrations screen: offline it shows none of the connectors; in demo it shows the sample list with no
      controls that would save a key; an editor is told whose keys these are. */
   htmlConnOffline = at(session("offline", null), <LiveIntegrations />);
-  htmlConnDemo = at(session("offline", asUser, true), <LiveIntegrations />);
   htmlConnEditor = at(session("live", asEditor), <LiveIntegrations />);
 
   /* The announcement bar's own panel: on this host there is no API and no fixture for `/chrome/announce`,
      and the honest answer in both cases is that it cannot be read — not a preview strip of a bar nobody
      saved, and no button that would pretend to save it. */
   htmlAnnOffline = at(session("offline", null), <AnnounceBar />);
-  htmlAnnDemo = at(session("offline", null, true), <AnnounceBar />);
 
   /* The Master's queue: offline it must not invent a single request, and in demo mode it shows the sample
      queue with no decision buttons — a preview must not offer to approve something that does not exist. */
   htmlApprOffline = at(session("offline", null), <LiveApprovals />);
-  htmlApprDemo = at(session("offline", null, true), <LiveApprovals />);
-  bzBiz = demoFixture("/business") as BizData;
-  bzCompany = demoFixture("/business/company") as CompanyData;
 
-  const tpls = demoFixture("/quotations/templates") as {
-    company: { name: string; tagline: string; address: string; phones: string; email: string; web: string; signName: string; signTitle: string };
-    templates: { name: string; sections: never[]; subtotal: number; taxPct: number; discount: number; tax: number; total: number; terms: string }[];
+  /* A quotation the document renderer is given. It is test input, not sample data the console shows. */
+  const company = {
+    name: "Woodex Interior", tagline: "Interior works", address: "Gulberg III, Lahore", phones: "+92 300 0000000",
+    email: "info@woodex.example", web: "woodex.example", signName: "Imtiaz Ahmad", signTitle: "Master",
   };
-  const t0 = tpls.templates[0];
+  const t0 = {
+    name: "Renovation",
+    sections: [
+      { name: "Preparation", items: [{ desc: "Site survey", qty: 1, unit: "job", rate: 0 }] },
+      {
+        name: "Civil work",
+        items: [
+          { desc: "Demolition", qty: 0, unit: "job", rate: 0, kind: "head" },
+          { desc: "Demolition and debris removal", qty: 1450, unit: "sq ft", rate: 42 },
+        ],
+      },
+      { name: "Finishes", items: [{ desc: "Wall finish", qty: 2, unit: "nos", rate: 1000 }] },
+    ],
+    subtotal: 1284000, taxPct: 0, discount: 0, tax: 0, total: 1284000,
+    terms: "50% advance payment with work order",
+  };
+  const tpls = { company, templates: [t0] };
   htmlDoc = renderToString(
     <DocPreview
       title="Quotation"
@@ -654,41 +595,6 @@ try {
   ];
 } catch (err) {
   failures.push(`the quotation templates screen → ${(err as Error).message}`);
-}
-
-/* The whole entry point, in demo mode, the way a person opens a preview with no server: `demoOn()` reads the
-   URL and the tab's storage, so this stubs both for the length of one render and then puts the globals back.
-   It is the only assertion here that exercises `App` → `Frame` → the banner → a screen with sample data, which
-   is the journey that produced "still not showing page". */
-let htmlDemoApp = "";
-try {
-  const real = (globalThis as Record<string, unknown>)["window"];
-  const store = new Map<string, string>();
-  const fakeWindow = {
-    location: { href: "http://localhost:5173/projects?demo=1", search: "?demo=1", pathname: "/projects", origin: "http://localhost:5173" },
-    sessionStorage: {
-      getItem: (k: string) => (store.has(k) ? (store.get(k) as string) : null),
-      setItem: (k: string, v: string) => store.set(k, v),
-      removeItem: (k: string) => store.delete(k),
-    },
-    localStorage: { getItem: () => null, setItem: () => {}, removeItem: () => {} },
-    matchMedia: () => ({ matches: false, addEventListener: () => {}, removeEventListener: () => {} }),
-    addEventListener: () => {},
-    removeEventListener: () => {},
-    setTimeout: (fn: () => void, ms?: number) => setTimeout(fn, ms) as unknown as number,
-    clearTimeout: (id: number) => clearTimeout(id),
-    innerWidth: 1280,
-    innerHeight: 800,
-  };
-  (globalThis as Record<string, unknown>)["window"] = fakeWindow;
-  htmlDemoApp = renderToString(
-    <MemoryRouter initialEntries={["/projects"]}>
-      <App />
-    </MemoryRouter>,
-  );
-  (globalThis as Record<string, unknown>)["window"] = real;
-} catch (err) {
-  failures.push(`the demo entry point → ${(err as Error).message}`);
 }
 
 /* Through the app's own routing: `/heroes` must reach the screen, not the build-plan placeholder. */
@@ -883,52 +789,17 @@ for (const [name, ok] of [
     "and it says it is still looking for the server, instead of opening against one that has not answered",
     htmlSignedOutChecking.includes("Checking the server…") && /<button type="submit" disabled/.test(htmlSignedOutChecking),
   ],
-  /* The strip is where "demo data" was being said about a host that was simply unreachable. */
   [
-    "an unreachable API is not called demo data",
-    htmlSignedOutOffline.includes("not answering") &&
-      !htmlSignedOutOffline.includes(">demo data<") &&
-      !htmlSignedOutOffline.includes("v2.5 Pro plan"),
-  ],
-  /* A build that cannot name itself is how a person ends up refreshing a page and arguing with a
-     screenshot. The stamp is compiled in, so the assertion is that it arrived. */
-  [
-    "the door names the build it is, not an empty stamp",
-    /* React's SSR puts an empty comment between the two text nodes, so the stamp is not adjacent to the
-       label in the markup — it is still adjacent on the screen, which is the thing being asserted. */
-    /v2\.5 · (<!-- -->)?[^<]{4,}/.test(htmlSignedOutOffline),
-  ],
-  /* v2.1's first run wrote an owner called `admin` — a bare name an `input[type=email]` refuses to submit.
-     The field has to take what the server can look up, not what a validator prefers. */
-  [
-    "the sign-in field takes a sign-in name as well as an address",
-    /id="email"[^>]*type="text"/.test(htmlSignedOutOffline),
+    "the pill and the sentence say what is true, and no demo label exists",
+    linkPill("offline").label === "not answering" && linkPill("live").label === "live",
   ],
   [
-    "and the foot names nobody rather than somebody who is not signed in",
-    htmlSignedOutOffline.includes("Nobody signed in") && !/Imtiaz/.test(htmlSignedOutOffline),
+    "an unreachable host is not called sample data",
+    !linkLabel(null, "offline", "the server could not be reached").toLowerCase().includes("demo") &&
+      !linkLabel(null, "offline", "the server could not be reached").toLowerCase().includes("sample"),
   ],
   [
-    "and the sentence does not claim any of it comes from the site",
-    htmlSignedOutOffline.includes("Nothing on these screens is read from your site"),
-  ],
-  [
-    /* The clause used to read "layouts and interactions from the v2.5 Pro plan" — a leftover from the
-       clickable prototype, next to a sentence that already said demo data, which read as a glitch. What a
-       reviewer needs from that strip is the fact neither of the others states: nothing here can be saved. */
-    "demo mode still says so, because there it is true",
-    htmlSignedOutDemo.includes("demo data") &&
-      htmlSignedOutDemo.includes("nothing here can be saved") &&
-      !htmlSignedOutDemo.includes("v2.5 Pro plan"),
-  ],
-  ["the pill follows the state", linkPill("offline", false).label === "not answering" && linkPill("offline", true).label === "demo data"],
-  [
-    "and so does the sentence",
-    !linkLabel(null, "offline", "the server could not be reached").includes("Demo data") &&
-      linkLabel(null, "offline", "demo mode was requested", true).includes("Demo data"),
-  ],
-  [
-    "an API that answers but cannot work is not a demo either",
+    "an API that answers but cannot work is not called sample data either",
     !linkLabel(
       { service: "woodex-api", version: "2.5.0-p1", php: "8.2.33", ready: false, db: { reachable: false, migrated: true }, time: "" },
       "offline",
@@ -1015,21 +886,16 @@ for (const [name, ok] of [
      went to a build-plan card; the number and the screen have to agree, and neither may appear without an
      API to ask. */
   [
-    "the approvals queue is offline-honest and demo-labelled",
+    "the approvals queue is offline-honest and offers no decision buttons",
     htmlApprOffline.includes("api/v2 is not answering") &&
       !htmlApprOffline.includes("Save a quotation template") &&
-      htmlApprDemo.includes("Save a quotation template: Renovation") &&
-      htmlApprDemo.includes("3 waiting") &&
-      !htmlApprDemo.includes("api/v2 is not answering") &&
-      !htmlApprDemo.includes("Approve and run it"),
+      !htmlApprOffline.includes("Approve and run it"),
   ],
   [
     "the announcement panel does not draw a bar it cannot read",
     htmlAnnOffline.includes("api/v2 is not answering") &&
       !htmlAnnOffline.includes("What the site draws") &&
-      !htmlAnnOffline.includes("Save &amp; publish") &&
-      htmlAnnDemo.includes("api/v2 is not answering") &&
-      !htmlAnnDemo.includes("What the site draws"),
+      !htmlAnnOffline.includes("Save &amp; publish"),
   ],
   /* The Forms screen. Two facts per page, not one — and the one that decides the screen is where a page's
      enquiry goes. Without an API it must show neither a form list nor a zero. */
@@ -1124,64 +990,18 @@ for (const [name, ok] of [
     htmlNotifRoute.includes("Sign in to see what your clients are told") &&
       !htmlNotifRoute.includes("Build plan for this screen"),
   ],
-  /* Demo mode, screen by screen: the sample has to actually reach the screen, or "demo mode" is a promise
-     about a page that shows nothing. Each assertion names a figure only that screen's fixture contains. */
+  /* The business info screen, offline: it must not show the details of a company it cannot read. */
   [
-    "the projects screen in demo mode shows the sample projects, not a notice",
-    htmlDemoProjects.includes("Zainab Tower") &&
-      htmlDemoProjects.includes("4,680,000") &&
-      !htmlDemoProjects.includes("api/v2 is not answering"),
-  ],
-  [
-    "the timeline in demo mode draws its bars from the sample",
-    htmlDemoTimeline.includes("gantt-bar") && htmlDemoTimeline.includes("Bedian"),
-  ],
-  [
-    "the client updates screen in demo mode shows the seven events and the log",
-    htmlDemoNotif.includes("The seven events") &&
-      htmlDemoNotif.includes("no transport yet") &&
-      htmlDemoNotif.includes("Phase 4"),
-  ],
-  [
-    "the forms and heroes screens in demo mode show their samples too",
-    htmlDemoForms.includes("Netlify function") && htmlDemoHeroes.includes("Home slider"),
-  ],
-  /* The business info screen: offline-honest, and in demo mode it says where what the website says came
-     from — the one thing v2.1 could not show, and the reason a change could update nothing and still
-     report success. */
-  [
-    "the business info screen is offline-honest, and shows where the website's details were read from",
-    htmlBizOffline.includes("api/v2 is not answering") &&
-      !htmlBizOffline.includes("Main phone") &&
-      htmlBizDemo.includes("Main phone") &&
-      htmlBizDemo.includes("Read off index.html") &&
-      htmlBizDemo.includes("+92 322 4000768") &&
-      htmlBizDemo.includes("Check the site") &&
-      htmlBizDemo.includes("Update the website") &&
-      !htmlBizDemo.includes("api/v2 is not answering"),
-  ],
-  [
-    "the letterhead the sample bills with: two banks, the wallets, the highest number already used",
-    bzCompany?.company.banks.length === 2 &&
-      String(bzCompany?.company.wallets[0].name) === "JazzCash" &&
-      String(bzCompany?.company.signers[0].name) === "Imtiaz Ahmad" &&
-      bzCompany?.used === 10143 &&
-      bzCompany?.bankUse.includes("interior") === true &&
-      bzBiz?.site.socialRow === 0 &&
-      bzBiz?.days.includes("Mon–Sat") === true,
+    "the business info screen is offline-honest",
+    htmlBizOffline.includes("api/v2 is not answering") && !htmlBizOffline.includes("Main phone"),
   ],
   /* The templates screen and the document it produces. The screen is offline-honest like the rest; in demo it
      shows the samples; and the document is drawn with the sample's own numbers rather than a stub. */
   [
-    "the templates screen is offline-honest, and shows the samples in demo mode",
+    "the templates screen is offline-honest",
     htmlTplOffline.includes("api/v2 is not answering") &&
       htmlTplOffline.includes("Not connected") &&
-      !htmlTplOffline.includes("Renovation") &&
-      htmlTplDemo.includes("Renovation") &&
-      htmlTplDemo.includes("Design Consultancy") &&
-      htmlTplDemo.includes("The starter set") &&
-      htmlTplDemo.includes("Import the starter set (7 of 9)") &&
-      !htmlTplDemo.includes("api/v2 is not answering"),
+      !htmlTplOffline.includes("Renovation"),
   ],
   [
     "the preview draws a document: the letterhead, the numbered lines, the words under the total",
@@ -1217,53 +1037,12 @@ for (const [name, ok] of [
   ],
   ...wordsTests,
   [
-    /* The journey that was reported broken: opening the app with `?demo=1` and a host that is not answering
-       must land on a screen with sample data on it, under a banner that says the data is invented. */
-    "opening the console with ?demo=1 lands on a screen with sample data, under the banner",
-    htmlDemoApp.includes("Demo data.") &&
-      htmlDemoApp.includes("Zainab Tower") &&
-      !htmlDemoApp.includes("api/v2 is not answering"),
+    "the AI settings panel never shows a key, and offline it says so",
+    !htmlAi.includes("sk-") && htmlAi.includes("api/v2 is not answering"),
   ],
   [
-    /* The two elements that carry the promise. The banner must say what it is and offer the way out; the door
-       must say what it is for; and neither may appear when neither is true. */
-    "the demo banner says the data is invented, and offers the way out",
-    renderToString(<DemoBanner on />).includes("Demo data") &&
-      renderToString(<DemoBanner on />).includes("Leave demo mode") &&
-      renderToString(<DemoBanner on={false} />) === "",
-  ],
-  [
-    "the door explains demo mode in both directions",
-    renderToString(<DemoDoor on={false} />).includes("open the console with sample data") &&
-      renderToString(<DemoDoor on />).includes("Leave demo mode"),
-  ],
-  [
-    /* The one thing demo mode must never do: invent data for a screen nobody wrote a sample for. The pages and
-       media screens have no fixture on purpose, so they keep the honest notice even with demo mode on — while
-       the same project screen, with demo off, still says the host is not answering. */
-    "a screen with no sample still says the host is not answering, and demo off is unchanged",
-    renderToString(
-      <MemoryRouter initialEntries={["/pages"]}>
-        <SessionCtx.Provider value={session("offline", null, true)}>
-          <LivePages />
-        </SessionCtx.Provider>
-      </MemoryRouter>,
-    ).includes("api/v2 is not answering") &&
-      htmlDemoOffline.includes("api/v2 is not answering") &&
-      !htmlDemoProjects.includes("api/v2 is not answering"),
-  ],
-  [
-    "the AI settings panel shows the provider, the masked key and the voice, and never a key",
-    htmlAi.includes("Claude (Anthropic)") &&
-      htmlAi.includes("Set — leave empty to keep it") &&
-      htmlAi.includes("of 800 characters") &&
-      !htmlAi.includes("sk-"),
-  ],
-  [
-    "and in demo mode it says so rather than offering to save or to call a provider",
-    htmlAi.includes("This is a sample") &&
-      !htmlAi.includes("Save the settings") &&
-      !htmlAi.includes("Test the key"),
+    "and offline it offers no save and no provider call",
+    !htmlAi.includes("Save the settings") && !htmlAi.includes("Test the key"),
   ],
   [
     "an editor is told the keys are the owner's, not shown a form that cannot save",
@@ -1274,16 +1053,6 @@ for (const [name, ok] of [
   [
     "integrations: offline it lists no connector, and says the API is not answering",
     htmlConnOffline.includes("api/v2 is not answering") && !htmlConnOffline.includes("GitHub backups"),
-  ],
-  [
-    "integrations: demo shows the sample connectors, masked, with the server's counts and no way to save a key",
-    htmlConnDemo.includes("GitHub backups") &&
-      htmlConnDemo.includes("5 on the list") &&
-      htmlConnDemo.includes("key stored, ends …7Xq2") &&
-      htmlConnDemo.includes("needs setup") &&
-      htmlConnDemo.includes("Saving here does not test anything") &&
-      !htmlConnDemo.includes("Add connector") &&
-      !htmlConnDemo.includes("Save connector"),
   ],
   [
     "integrations: an editor is told the owner and admins hold the keys, and sees no connector",

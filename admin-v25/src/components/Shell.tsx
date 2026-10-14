@@ -19,7 +19,6 @@ export interface Badges { leads: number; chat: number; approvals: number; total:
 export function Shell({
   children,
   role,
-  setRole,
   theme,
   toggleTheme,
   density,
@@ -30,14 +29,11 @@ export function Shell({
   crumbs,
   link,
   linkText,
-  /** True only in demo mode (`?demo=1`): the strip may label a design preview as one, and nothing else. */
-  demo,
   user,
   onSignOut,
 }: {
   children: ReactNode;
   role: Role;
-  setRole: (r: Role) => void;
   theme: Theme;
   toggleTheme: () => void;
   density: Density;
@@ -49,14 +45,13 @@ export function Shell({
   /** live | signedOut | offline | checking — decides the strip, and whether the role switcher is real */
   link: "checking" | "offline" | "signedOut" | "live";
   linkText: string;
-  demo?: boolean;
   user: { name: string; roleLabel: string } | null;
   onSignOut: () => void;
 }) {
   const [mini, setMini] = useState(false);
   const loc = useLocation();
   /* One label for the link, derived here so the pill and the sentence it leads can never disagree. */
-  const pill = linkPill(link, demo);
+  const pill = linkPill(link);
 
   // expanded sub-groups; the group holding the current route opens by itself
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
@@ -146,8 +141,7 @@ export function Shell({
         </div>
         {navBody}
         {/* The foot names the person the *server* says is signed in. It used to name a fixed person in
-            every state — including no session at all — which is the same mistake as a demo pill over a
-            dead host: a name where a name has not been read. */}
+            every state — including no session at all — which would put a name where no name has been read. */}
         <div className="side-foot">
           {user ? (
             <>
@@ -192,24 +186,9 @@ export function Shell({
           </button>
 
           <div className="row" style={{ marginLeft: "auto", gap: "var(--s-3)" }}>
-            {/* In demo mode this previews the layout as another role. When the API is answering, the
-                server decides what you may see — a switcher here would be a lie with a dropdown. */}
-            {link === "live" ? (
-              user && <Pill tone="ok" plain>{user.roleLabel}</Pill>
-            ) : (
-              <select
-                className="select"
-                style={{ width: 128 }}
-                value={role}
-                onChange={(e) => setRole(e.target.value as Role)}
-                aria-label="Preview as role"
-                title={demo ? "Preview the console as another role (demo data)" : "Preview the console as another role — the layouts, not what the account can do"}
-              >
-                {(Object.keys(ROLE_LABEL) as Role[]).map((r) => (
-                  <option key={r} value={r}>{ROLE_LABEL[r]}</option>
-                ))}
-              </select>
-            )}
+            {/* The server decides what the signed-in account may see. There is no role switcher: without a
+                server there is no account, and a dropdown over empty screens would be a preview of nothing. */}
+            {link === "live" && user && <Pill tone="ok" plain>{user.roleLabel}</Pill>}
 
             <Btn
               variant="default"
@@ -247,7 +226,7 @@ export function Shell({
             </Btn>
 
             <div className="row" style={{ gap: "var(--s-2)" }}>
-              <Avatar name={user?.name ?? "Demo user"} />
+              <Avatar name={user?.name ?? "Not signed in"} />
               {link === "live" && (
                 <Btn variant="ghost" size="sm" iconOnly title="Sign out" onClick={onSignOut}>
                   <LogOut size={16} />
@@ -266,14 +245,6 @@ export function Shell({
         >
           <Pill tone={pill.tone} plain>{pill.label}</Pill>
           <span>{linkText}</span>
-          {/* One clause, one fact, and no repetition: the pill already says "demo data" and the sentence
-              beside it already says nothing was read from your site. What a reviewer still needs to know is
-              that nothing here can be *written* either — the buttons are live, and the API behind them is
-              not there. (It used to add "layouts and interactions from the v2.5 Pro plan", which described
-              the old clickable prototype and read, next to the demo sentence, like a glitch.) */}
-          {demo && link !== "live" && (
-            <span className="muted">· nothing here can be saved: there is no server behind this preview</span>
-          )}
         </div>
 
         <main className="content">{children}</main>

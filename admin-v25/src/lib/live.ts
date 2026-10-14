@@ -1,19 +1,16 @@
 /**
  * live.ts — read api/v2 for real, or say why not.
  *
- * The prototype shipped with `mock.ts` and a banner that said so. Phase 2 gave the API every endpoint
- * the screens below need, so the rule is now: **when the API answers, the screens use it.** No screen
- * invents a number the server did not send, and no screen quietly papers over a failed request with
- * demo data — that is the difference between a prototype and a product, and it is the difference the
- * v2.1 admin never made (a failed load left the previous numbers on screen, which is how a stale
- * invoice total gets quoted to a client).
+ * The rule: **the screens show what the API answers, and nothing else.** No screen invents a number the
+ * server did not send, and no screen papers over a failed request with stand-in data — a failed load
+ * left the previous numbers on screen in v2.1, which is how a stale invoice total gets quoted to a client.
+ * There is no sample-data mode: without a server, the screens say so and show no figures.
  *
  * `useLive` therefore has three states and shows all of them: loading, ready, or the failure with its
  * request-id. Cancellation matters too — a screen that unmounts mid-flight must not setState after.
  */
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ApiFailure, api } from "./api";
-import { demoFixture } from "./demo";
 import { useSession } from "./session";
 
 export interface Health {
@@ -29,8 +26,6 @@ export interface LiveState<T> {
   data: T | null;
   error: ApiFailure | null;
   loading: boolean;
-  /** True when what is on screen is the sample data from `lib/demo.ts`, not a server's answer. */
-  demo: boolean;
   reload: () => void;
 }
 
@@ -84,13 +79,9 @@ export interface AiModels {
 }
 
 export function useLive<T>(path: string | null, key: unknown = null): LiveState<T> {
-  const { link, me, demo } = useSession();
+  const { link, me } = useSession();
   const enabled = link === "live" && me !== null && path !== null;
-  /* Demo mode answers from `lib/demo.ts` instead of the network. Only a path with a fixture gets an answer:
-     a screen whose data nobody has invented yet keeps its own honest "not answering" state, which is how the
-     next slice announces itself. */
-  const sample = demo && path !== null ? demoFixture(path) : null;
-  const [data, setData] = useState<T | null>((sample as T | null) ?? null);
+  const [data, setData] = useState<T | null>(null);
   const [error, setError] = useState<ApiFailure | null>(null);
   /* Starts true whenever a request is actually going to happen: between mount and the first reply the
      honest answer is "loading", and a screen that renders zeros in that window has shown a number that
@@ -137,9 +128,7 @@ export function useLive<T>(path: string | null, key: unknown = null): LiveState<
   }, [enabled, path, key, nonce]);
 
   const reload = useCallback(() => setNonce((n) => n + 1), []);
-  /* In demo mode there is nothing to reload: the sample does not come from anywhere, and a screen that
-     pretended to fetch it again would be pretending twice. */
-  return { data, error, loading: sample !== null ? false : loading, demo: sample !== null, reload };
+  return { data, error, loading, reload };
 }
 
 /* ------------------------------------------------------------------ response shapes
@@ -679,25 +668,14 @@ export function isPending(v: unknown): v is PendingResult {
 }
 
 /**
- * The label the shell carries for the link, and the sentence beside it — one function each, and they are
- * built from the same two facts: is the API answering, and is any of this demo data?
- *
- * The distinction the strip has to keep is between **"we cannot reach your site"** and **"this is a design
- * preview"**. v2.5's first strip said "Demo data" for both, which is a claim about where the numbers came
- * from — and during a cut-over the API is unreachable most of the time for reasons that have nothing to do
- * with a demo: the host is down, the database has not been migrated, the deploy half-finished. Saying
- * "demo data" then is not a harmless hedge; it tells the person their admin is a mock-up when it is really
- * a door that cannot open yet.
- *
- * `demo` is only ever true when demo mode was asked for (`?demo=1` or `VITE_WX_DEMO=1`). Everything else
- * that ends up offline says so in the words that are true of it.
+ * The label the shell carries for the link, and the sentence beside it, built from the same facts: is the
+ * API answering, and if so, is it ready. An unreachable host is reported as an unreachable host — never as
+ * sample data.
  */
-export function linkLabel(health: Health | null, link: string, reason: string, demo = false): string {
+export function linkLabel(health: Health | null, link: string, reason: string): string {
   if (link === "checking") return "Looking for api/v2…";
   if (link === "offline") {
-    return demo
-      ? "Demo data — a design preview. Nothing on these screens is read from your site."
-      : `api/v2 is not answering${reason ? ` — ${reason}` : ""}. Nothing on these screens is read from your site.`;
+    return `api/v2 is not answering${reason ? ` — ${reason}` : ""}. Nothing on these screens is read from your site.`;
   }
   if (link === "signedOut") {
     return health
@@ -717,11 +695,11 @@ export function linkLabel(health: Health | null, link: string, reason: string, d
 }
 
 /** The pill the strip leads with, which has to agree with the sentence beside it. */
-export function linkPill(link: string, demo = false): { tone: "ok" | "info" | "warn" | "danger"; label: string } {
+export function linkPill(link: string): { tone: "ok" | "info" | "danger"; label: string } {
   if (link === "live") return { tone: "ok", label: "live" };
   if (link === "checking") return { tone: "info", label: "checking" };
   if (link === "signedOut") return { tone: "info", label: "signed out" };
-  return demo ? { tone: "warn", label: "demo data" } : { tone: "danger", label: "not answering" };
+  return { tone: "danger", label: "not answering" };
 }
 
 /* ---------------------------------------------------------------- the site theme (routes/theme.php) */
