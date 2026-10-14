@@ -8,6 +8,10 @@ frontend-v1/_private/*
 # Live install state — never commit a database credential
 api/v2/_private/
 _private/db.json
+# The SQLite development database and its locks; the owner password note stays on this machine
+_private/woodex.sqlite*
+_private/db.json.lock
+_private/dev-owner.txt
 _private/security.json
 _private/demo.json
 

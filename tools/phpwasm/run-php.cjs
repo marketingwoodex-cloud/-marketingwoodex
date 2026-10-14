@@ -57,12 +57,14 @@ if (!fs.existsSync(scriptAbs)) fail("No such script: " + scriptRel);
 let PHP;
 let loadPHPRuntime;
 let getPHPLoaderModule;
+let createNodeFsMountHandler;
 try {
   const universal = require(path.join(HERE, "node_modules", "@php-wasm", "universal"));
   const node = require(path.join(HERE, "node_modules", "@php-wasm", "node"));
   PHP = universal.PHP;
   loadPHPRuntime = universal.loadPHPRuntime;
   getPHPLoaderModule = node.getPHPLoaderModule;
+  createNodeFsMountHandler = node.createNodeFsMountHandler;
 } catch (err) {
   fail(
     "php-wasm is not installed:\n" +
@@ -123,6 +125,13 @@ function copyTree(from, to, php, stats) {
   const php = new PHP(runtime);
 
   const stats = { files: 0, bytes: 0 };
+  /* WX_HOST_FS=1: mount the repository itself at /wx, so a write (a SQLite file, a migration's
+     bookkeeping) lands on disk and survives the process. The default copies a read-only subset into
+     memory: right for tests, wrong for anything that must persist. */
+  const hostFs = process.env.WX_HOST_FS === "1";
+  if (hostFs) {
+    await php.mount("/wx", createNodeFsMountHandler(ROOT));
+  } else {
   try { php.mkdir("/wx"); } catch { /* exists */ }
   // A script outside the mounted trees (an ad-hoc probe at the repo root) still has to be present.
   if (!MOUNT.some((m) => scriptRel.startsWith(m + "/") || scriptRel === m)) {
@@ -154,7 +163,10 @@ function copyTree(from, to, php, stats) {
     if (fs.statSync(abs).isDirectory()) copyTree(abs, dst, php, stats);
     else { php.writeFile(dst, fs.readFileSync(abs)); stats.files += 1; }
   }
-  process.stdout.write(`  php-wasm: ${stats.files} file(s), ${(stats.bytes / 1024 / 1024).toFixed(1)} MB mounted at /wx\n`);
+  }
+  process.stdout.write(hostFs
+    ? "  php-wasm: repository mounted at /wx (host filesystem)\n"
+    : `  php-wasm: ${stats.files} file(s), ${(stats.bytes / 1024 / 1024).toFixed(1)} MB mounted at /wx\n`);
 
   /* The runner: set up the CLI globals a script expects, then include it. A `require` inside a
      wasm request cannot carry argv, so the wrapper provides it. */
