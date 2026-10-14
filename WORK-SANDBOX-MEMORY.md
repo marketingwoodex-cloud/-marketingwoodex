@@ -23,7 +23,7 @@ cd admin-v25 && npm run typecheck && npm run smoke && cd ..   # tsc clean · 150
 node tools/gen-aliases.mjs --check && node tools/gen-caps.mjs --check
 
 # the console, with sample data (the API cannot run here — see §3)
-cd admin-v25 && VITE_WX_DEMO=1 npm exec vite -- --host 0.0.0.0 --port 5173
+cd admin-v25 && npx vite --host 0.0.0.0 --port 5173   # NO VITE_WX_DEMO: the flag forces demo on and Leave demo mode cannot turn it off. Demo is ?demo=1 only.
 ```
 
 The preview is proxied under the sandbox's own hostname; bind `0.0.0.0`, never `127.0.0.1`. Prove the
@@ -391,7 +391,8 @@ they are the reason the table exists.
 
 ### f. Housekeeping, in the order it hurts
 
-1. **The dashboard is still the prototype's mock screen.** It reads `lib/mock.ts` — the counts are samples
+1. **OPEN BUG — the dashboard still shows invented numbers when the API is not answering** (it reads `lib/mock.ts` on the plain URL, under a "not answering" strip). Must be replaced by the live dashboard with an honest empty/offline state; see the user's report on the preview.
+   Earlier note: the dashboard is still the prototype's mock screen. It reads `lib/mock.ts` — the counts are samples
    and the banner now says "in this sample". Wiring it is the last screen of Phase 2 and it cannot be done
    honestly without the API: it needs `GET /dashboard` plus the shell's badges (the approvals badge is
    `GET /approvals/count`).
