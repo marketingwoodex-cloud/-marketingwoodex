@@ -57,6 +57,12 @@ pages change as one batch**, then **roll that batch back from page history**. Th
 and that `/admin/` still works. Write the numbers into the plan's status table — the manifest in this folder
 records which commit they belong to.
 
+**Which commit the manifest names.** `gitSha` is the commit *the payload was built from* — `gitDirty:
+false` is the promise that the code in the zip is exactly that commit's code. The zip, `MANIFEST.json` and
+this file are themselves committed in the next commit, so `gitSha` is deliberately one step behind the
+pack's own commit: an artifact cannot contain its own hash, and a manifest that named a commit it was
+committed in could only do so by lying.
+
 ## Roll back
 
 Restore the previous release zip over `public_html`, or any single file with
@@ -70,8 +76,17 @@ counts, the SHA-256 of `api/v2/index.php` and of the zip itself, and the migrati
 - `CHANGELOG.md` — this release and the phases before it.
 - Source, plan and pull request: <https://github.com/marketingwoodex-cloud/-marketingwoodex> ·
   <https://github.com/marketingwoodex-cloud/-marketingwoodex/pull/7>
-- The release: <https://github.com/marketingwoodex-cloud/-marketingwoodex/releases/tag/p25> — the payload is committed in the repository rather than attached to the release,
-  because the asset upload endpoint is not reachable from the sandbox this pack was built in. Download it
-  here: <https://github.com/marketingwoodex-cloud/-marketingwoodex/raw/arena/4150341e-marketingwoodex/woodex-master-P25/woodex-master-P25.zip>, or open the folder: <https://github.com/marketingwoodex-cloud/-marketingwoodex/tree/arena/4150341e-marketingwoodex/woodex-master-P25>.
-- The same pack, for sharing: **<https://drive.google.com/drive/folders/12rpZKxUpHibqPZNMLi1VBMxlmWgTpBuz>** (the zip, this README, the manifest, the memory plan
-  and the master plan PDF).
+- The release: <https://github.com/marketingwoodex-cloud/-marketingwoodex/releases/tag/p25> — what it
+  contains, what its gate is, and the two links below.
+- The payload, in the repository: folder
+  <https://github.com/marketingwoodex-cloud/-marketingwoodex/tree/arena/4150341e-marketingwoodex/woodex-master-P25>
+  · direct download
+  <https://github.com/marketingwoodex-cloud/-marketingwoodex/raw/arena/4150341e-marketingwoodex/woodex-master-P25/woodex-master-P25.zip>.
+  It is committed there rather than attached to the release because the asset upload endpoint
+  (`uploads.github.com`) is not reachable from the sandbox this pack was built in.
+- The same pack, for sharing: **<https://drive.google.com/drive/folders/12rpZKxUpHibqPZNMLi1VBMxlmWgTpBuz>**
+  (the zip, this README, the manifest, the memory plan and the master plan PDF).
+
+Both copies are the same bytes. Check them against `MANIFEST.json` before uploading to the host: the
+`sizes…` line of Hostinger's File Manager popup is not a hash, but `sha256sum woodex-master-P25.zip` is,
+and it should equal `payload.zipSha256`.
