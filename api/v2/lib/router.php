@@ -204,6 +204,9 @@ function wx_routes(): array
            is `page_rollback`, which the policy names as never queued with its reason. */
         ['POST',   'pages/rollback',                  'pages', 'wx_route_pages_rollback',  null],
         ['POST',   'pages/new',                       'pages', 'wx_route_pages_new',       'page_new'],
+        /* Publishing is v2.1's `page_meta_save`: it writes the head and one word in `_private/pages.json`,
+           and the sitemap follows both ways. */
+        ['POST',   'pages/{rel}/publish',             'pages', 'wx_route_pages_publish',   'page_meta_save'],
         /* v2.1's `fetch_page`: read another site's page so sections can be picked out of it. */
         ['POST',   'pages/fetch',                     'pages', 'wx_route_pages_fetch',     'fetch_page'],
         ['GET',    'pages/backups',                 'pages', 'wx_route_pages_backups',   'backups'],

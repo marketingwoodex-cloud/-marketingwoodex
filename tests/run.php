@@ -1638,6 +1638,116 @@ try {
    touch a file. */
 skip('saving, creating and restoring pages need migration 010 and the site tree');
 
+/* ============================================================== publishing a page
+   v2.1 kept a page's publication state in two places outside the file: the tags in its `<head>`, and one
+   word in `_private/pages.json`. `page_meta_save` wrote both. All of the rules are in one pure function
+   (`wx_page_head_plan()`), which is why they can be tested on a host with no database at all — and the two
+   files it writes are named by a constant here, because the site's own sitemap and status file must not be
+   edited by a test.
+
+   One thing changes from v2.1. It had `sitemap_add()` and nothing that took an address out, so a page that
+   was hidden or drafted kept its line in `sitemap.xml` for good: the studio's own "unpublish" went on
+   telling Google the address was current. Here the sitemap follows the answer both ways, which is what the
+   middle of this block is about. */
+group('Publishing a page — the head, the status file and the sitemap');
+
+define('WX_PAGE_STATE_FILE', WX_SITE_ROOT . '/.wx-test-pages.json');
+define('WX_PAGE_SITEMAP_FILE', WX_SITE_ROOT . '/.wx-test-sitemap.xml');
+$wxPubDir = WX_SITE_ROOT . '/wx-test-publish';
+@mkdir($wxPubDir, 0755, true);
+$wxPubRel = 'wx-test-publish/index.html';
+$wxPubPage = '<!doctype html><html lang="en"><head><meta charset="utf-8">'
+    . '<title>Office interior in Lahore</title>'
+    . '<meta name="description" content="The old description">'
+    . '<link rel="canonical" href="https://woodex.com.pk/wx-test-publish/">'
+    . '</head><body><h1>Office interior</h1></body></html>';
+file_put_contents(WX_SITE_ROOT . '/' . $wxPubRel, $wxPubPage);
+file_put_contents(WX_PAGE_SITEMAP_FILE, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n"
+    . "  <url><loc>https://woodex.com.pk/about/</loc><lastmod>2026-10-07</lastmod></url>\n"
+    . "  <url><loc>https://woodex.com.pk/wx-test-publish/</loc><lastmod>2026-10-07</lastmod></url>\n"
+    . "</urlset>\n");
+@unlink(WX_PAGE_STATE_FILE);
+
+/* ---- the two head helpers */
+eq(wx_head_meta($wxPubPage, 'description'), 'The old description', 'one meta tag is read by name');
+eq(wx_head_meta($wxPubPage, 'robots'), null, 'a tag the page does not have reads as null, not as an empty string');
+$once = wx_head_set($wxPubPage, '~<title>.*?</title>~is', '<title>New</title>');
+eq(substr_count($once, '<title>'), 1, 'a title is replaced, never added a second time');
+$added = wx_head_set('<html><head></head><body>x</body></html>', '~<meta\s+name="robots"[^>]*>~i', '<meta name="robots" content="noindex, follow">');
+ok(str_contains($added, '<meta name="robots" content="noindex, follow">' . "\n</head>"), 'a tag the page has not got is added inside the head');
+
+/* ---- the rules */
+$pub = wx_page_head_plan($wxPubRel, $wxPubPage, 'published', []);
+eq($pub['title'], 'Office interior in Lahore', 'the title comes from the page when the request does not carry one');
+ok(str_contains($pub['html'], 'rel="canonical" href="https://woodex.com.pk/wx-test-publish/"'), 'a field that was not sent is left exactly as it was');
+eq($pub['listed'], true, 'a published page belongs in the sitemap');
+eq($pub['noindex'], false, 'and is not held back from search');
+throws('VALIDATION', 'title', fn() => wx_page_head_plan($wxPubRel, $wxPubPage, 'published', ['title' => '  ']), 'an empty title is refused, by field');
+throws('VALIDATION', 'canonical', fn() => wx_page_head_plan($wxPubRel, $wxPubPage, 'published', ['canonical' => 'woodex.com.pk/x']), 'a canonical that is not a link is refused, by field');
+throws('VALIDATION', 'status', fn() => wx_page_head_plan($wxPubRel, $wxPubPage, 'public', []), 'a status that is not one of the three is refused');
+throws('VALIDATION', 'status', fn() => wx_page_head_plan('index.html', $wxPubPage, 'draft', []), 'the home page cannot be a draft — it is the site');
+
+$hidden = wx_page_head_plan($wxPubRel, $wxPubPage, 'hidden', ['noindex' => false]);
+eq($hidden['noindex'], true, 'a hidden page is not indexed even when the request said it could be');
+ok(str_contains($hidden['html'], '<meta name="robots" content="noindex, follow">'), 'and its robots line says so');
+eq($hidden['listed'], false, 'and it does not belong in the sitemap');
+
+$desc = wx_page_head_plan($wxPubRel, $wxPubPage, 'published', ['description' => 'New words', 'noindex' => true]);
+ok(str_contains($desc['html'], '<meta property="og:description" content="New words">'), 'the social description follows the description');
+eq($desc['listed'], false, 'a published page held out of search is not in the sitemap either');
+ok(!str_contains($desc['html'], 'The old description'), 'and the old description is replaced, not duplicated');
+
+$blank = wx_page_head_plan($wxPubRel, $wxPubPage, 'published', ['description' => '', 'ogImage' => '']);
+ok(!str_contains($blank['html'], 'name="description"'), 'an empty description removes the tag rather than writing an empty one');
+ok(!str_contains($blank['html'], 'og:image'), 'and so does an empty social image');
+
+$was = str_replace('</head>', '<meta name="robots" content="noindex, follow">' . "\n</head>", $wxPubPage);
+$plain = wx_page_head_plan($wxPubRel, $was, 'published', []);
+ok(strpos($plain['html'], 'noindex') === false, 'publishing a page that was held back removes the noindex line');
+eq($plain['listed'], true, 'and the page goes back into the sitemap');
+
+/* ---- the status file v2.1 wrote */
+eq(wx_page_state_map(), [], "with no status file every page is published — v2.1's own default");
+wx_page_state_write(['about/index.html' => ['status' => 'draft'], $wxPubRel => ['status' => 'hidden']]);
+$map = wx_page_state_map();
+eq(array_keys($map), ['about/index.html', $wxPubRel], 'the status file is written sorted, so two hosts produce the same file');
+eq($map[$wxPubRel]['status'], 'hidden', "and a page's status is what was set");
+file_put_contents(WX_PAGE_STATE_FILE, '{not json');
+throws('INTERNAL', null, fn() => wx_page_state_map(), 'a corrupt status file is an error, not "everything is published"');
+
+/* ---- the sitemap, both ways */
+ok(wx_page_sitemap_set(WX_PAGE_SITEMAP_FILE, $wxPubRel, false), 'a page that stops being public is taken out of the sitemap');
+ok(!wx_page_sitemap_set(WX_PAGE_SITEMAP_FILE, $wxPubRel, false), 'taking it out twice changes nothing the second time');
+ok(!str_contains((string) file_get_contents(WX_PAGE_SITEMAP_FILE), 'wx-test-publish/'), 'and its address is gone from the file');
+ok(wx_page_sitemap_set(WX_PAGE_SITEMAP_FILE, $wxPubRel, true), 'publishing it again puts the address back');
+eq(substr_count((string) file_get_contents(WX_PAGE_SITEMAP_FILE), 'wx-test-publish/'), 1, 'exactly once — the sitemap is not a log');
+ok(wx_page_in_sitemap($wxPubRel), 'and the page reads as listed');
+
+/* ---- the three facts a screen shows about one page */
+file_put_contents(WX_PAGE_STATE_FILE, json_encode([$wxPubRel => ['status' => 'draft']]));
+$state = wx_page_state($wxPubRel);
+eq($state['status'], 'draft', 'the status comes from the file v2.1 wrote');
+eq($state['title'], 'Office interior in Lahore', 'the title comes from the page');
+eq($state['indexable'], true, 'a draft whose head carries no robots line still reads as indexable — the two facts are independent');
+eq($state['inSitemap'], true, 'and whether it is in the sitemap is read from the sitemap, not guessed');
+
+if (!$WITH_DB) {
+    skip('the publish write (version, audit, status file on a live page) needs migration 010 — run with --db');
+} else {
+    wx_page_state_write([]);
+    $publish = wx_page_publish($wxPubRel, 'hidden', ['title' => 'Office interior, hidden'], ['id' => 1, 'name' => 'The suite']);
+    eq($publish['status'], 'hidden', 'a publish answers with the status it set');
+    ok($publish['wrote'] === true && $publish['version'] > 0, 'and the page is a new version in the history');
+    ok(str_contains((string) file_get_contents(WX_SITE_ROOT . '/' . $wxPubRel), 'noindex'), 'the file itself carries the robots line');
+    eq(wx_page_state_map()[$wxPubRel]['status'] ?? '', 'hidden', 'and the status file names the page');
+}
+
+/* Leave nothing behind: the harness has a real filesystem when it runs on a host. */
+@unlink(WX_SITE_ROOT . '/' . $wxPubRel);
+@rmdir($wxPubDir);
+@unlink(WX_PAGE_STATE_FILE);
+@unlink(WX_PAGE_SITEMAP_FILE);
+
 /* ============================================================== the site theme */
 group('The site theme lands in the stylesheet the site actually loads');
 

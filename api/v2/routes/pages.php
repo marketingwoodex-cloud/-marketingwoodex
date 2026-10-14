@@ -83,6 +83,10 @@ function wx_route_pages_get(array $ctx): array
             'updatedBy' => $row['updated_by_name'],
         ];
         $data['mtime'] = is_file(WX_SITE_ROOT . '/' . $page['rel']) ? gmdate('Y-m-d H:i:s', (int) filemtime(WX_SITE_ROOT . '/' . $page['rel'])) : null;
+        /* Whether the page is public, whether search engines are told to skip it, and whether the sitemap
+           lists it: three facts that live outside the HTML, so the screen reads them rather than guessing
+           from the text it is editing. */
+        $data['state'] = wx_page_state($page['rel']);
     }
     return ['data' => $data];
 }
@@ -150,6 +154,32 @@ function wx_route_pages_new_do(array $ctx): array
             ['note' => 'new page: ' . trim((string) ($ctx['body']['folder'] ?? '') . '/' . (string) ($ctx['body']['slug'] ?? ''), '/')]
         )];
     });
+}
+
+/**
+ * POST /pages/{rel}/publish — published, hidden or a draft, and the two things that follow from it.
+ *
+ * The action is v2.1's own `page_meta_save`, and the source is `admin`: that is the pair this screen's
+ * approval behaviour was keyed on, so a Manager publishing a page waits for the Master exactly as they did
+ * in v2.1. Who may call it at all is v2.1's rule too — the people who edit pages, since this is editing a
+ * page's head and its place in the sitemap.
+ */
+function wx_route_pages_publish(array $ctx): array
+{
+    return wx_appr_route('page_meta_save', $ctx, 'pages', 'wx_route_pages_publish_do', static fn() => wx_route_pages_publish_do($ctx));
+}
+
+function wx_route_pages_publish_do(array $ctx): array
+{
+    $u = wx_require_user(null, WX_PAGES_EDIT);
+    $rel = (string) ($ctx['params']['rel'] ?? $ctx['body']['path'] ?? $ctx['body']['rel'] ?? '');
+    $body = is_array($ctx['body'] ?? null) ? $ctx['body'] : [];
+    return wx_guard('page.meta', static fn() => ['data' => wx_page_publish(
+        $rel,
+        (string) ($body['status'] ?? 'published'),
+        $body,
+        $u
+    )]);
 }
 
 /** POST /pages/{rel}/restore — put one version back (the restore is itself a version). */

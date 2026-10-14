@@ -142,6 +142,10 @@ const WX_APPR_LABELS = [
     'cms_biz_save' => 'Change the business details on the website',
     'company_save' => 'Change the company details on documents',
     'cms_announce_save' => 'Change the announcement bar on every page',
+    /* A v2.1 name, listed here for the same reason as the v2.5 ones: the raw name says nothing about the
+       consequence. Taking a page out of the sitemap and telling Google not to index it is a change the
+       Master should read in a sentence before agreeing to it. */
+    'page_meta_save' => 'Publish or hide a page',
     'cms_ai_save' => 'Change the AI settings (keys, models, writing voice)',
 ];
 

@@ -197,6 +197,9 @@ function wx_legacy_bridged(): array
         'save'             => ['pages', 'wx_route_pages_write', ['path' => 'rel']],
         'backups'          => ['pages', 'wx_route_pages_backups', ['path' => 'rel']],
         'page_new'         => ['pages', 'wx_route_pages_new', []],
+        /* v2.1's page settings screen: status, title, description, canonical, og image and one checkbox for
+           search. The old admin sends `path`, the route reads `rel`. */
+        'page_meta_save'   => ['pages', 'wx_route_pages_publish', ['path' => 'rel']],
         'restore'          => ['pages', 'wx_route_pages_restore', ['path' => 'rel']],
         /* Phase 3 — the site theme. v2.1's builder screen called these two names; the theme itself now lands
            in the stylesheet the live pages load, which is why the port is not a copy of the old file. */

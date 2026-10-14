@@ -599,3 +599,316 @@ function wx_uuid(): string
     $b[8] = chr((ord($b[8]) & 0x3f) | 0x80);
     return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($b), 4));
 }
+
+/* ============================================================ publishing a page
+
+   v2.1 kept two facts about a page *outside* its file: the `<meta>` tags in its `<head>`, and one word in
+   `_private/pages.json` — published, hidden or draft. Between them they decided three things a reader cares
+   about and cannot see from the text of the page: whether search engines are told not to index it, whether
+   `sitemap.xml` lists it, and whether v2.1's own screens treat it as public.
+
+   That is the whole of what `page_meta_save` did, and this is the same operation with one correction. **The
+   sitemap now follows the answer both ways.** v2.1 had `sitemap_add()` and no counterpart, so a page that was
+   hidden or drafted kept its line in the sitemap for good: the studio's own "unpublish" went on telling
+   Google that the address was current. Here a page that is not public and indexable loses its line, and gets
+   it back when it is published again, in the same change.
+
+   Two files are named by a constant as well as by their real path — `WX_PAGE_STATE_FILE` and
+   `WX_PAGE_SITEMAP_FILE` — because they are the two files this writes, and one of them is the site's own
+   sitemap. A test must be able to prove what a hidden page does to a sitemap without editing the live one.
+*/
+
+/** Published, hidden or a draft. v2.1's three words, and the absent status means the first. */
+const WX_PAGE_STATUS = ['published', 'hidden', 'draft'];
+
+/** The page-status map — v2.1's own file, which the old admin still reads and writes. */
+function wx_page_state_file(): string
+{
+    return defined('WX_PAGE_STATE_FILE') ? (string) WX_PAGE_STATE_FILE : WX_PRIVATE_DIR . '/pages.json';
+}
+
+/** The sitemap this site publishes. */
+function wx_page_sitemap_file(): string
+{
+    return defined('WX_PAGE_SITEMAP_FILE') ? (string) WX_PAGE_SITEMAP_FILE : WX_SITE_ROOT . '/sitemap.xml';
+}
+
+/**
+ * Every page v2.1 recorded as not simply published: `rel => ['status' => …]`.
+ *
+ * A corrupt map is an error rather than an empty one. Empty would mean "every page is published", which is
+ * the one answer that cannot be wrong quietly — it would put drafts back in the sitemap and tell the screens
+ * a hidden page is live.
+ */
+function wx_page_state_map(): array
+{
+    $file = wx_page_state_file();
+    if (!is_file($file)) {
+        return [];
+    }
+    $raw = json_decode((string) file_get_contents($file), true);
+    if (!is_array($raw)) {
+        throw ApiError::internal(basename($file) . ' is not readable JSON — delete it and set the page statuses again');
+    }
+    return $raw;
+}
+
+function wx_page_state_write(array $map): bool
+{
+    ksort($map);
+    return wx_write_file_atomic(
+        wx_page_state_file(),
+        json_encode($map, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) . "\n"
+    );
+}
+
+/** The address this site publishes a page at, spelled the way the sitemap spells it. */
+function wx_page_loc(string $rel): string
+{
+    return WX_CONTENT_SITE . wx_page_url($rel);
+}
+
+/** Is one address in the sitemap? */
+function wx_page_in_sitemap(string $rel): bool
+{
+    $file = wx_page_sitemap_file();
+    if (!is_file($file)) {
+        return false;
+    }
+    $loc = wx_page_loc($rel);
+    $xml = (string) file_get_contents($file);
+    return str_contains($xml, '<loc>' . htmlspecialchars($loc, ENT_XML1) . '</loc>') || str_contains($xml, '<loc>' . $loc . '</loc>');
+}
+
+/**
+ * Add or remove one address in a sitemap, and say whether the file changed.
+ *
+ * The file is an argument rather than an assumption so that the test can use a copy; in production the caller
+ * passes `wx_page_sitemap_file()`. Both directions go through the same atomic write as every other file here,
+ * so an interruption leaves the sitemap as it was rather than half of a pair of edits.
+ */
+function wx_page_sitemap_set(string $file, string $rel, bool $listed): bool
+{
+    if (!is_file($file)) {
+        return false;
+    }
+    $xml = (string) file_get_contents($file);
+    $escaped = htmlspecialchars(wx_page_loc($rel), ENT_XML1);
+    $has = str_contains($xml, '<loc>' . $escaped . '</loc>') || str_contains($xml, '<loc>' . wx_page_loc($rel) . '</loc>');
+    if ($listed === $has) {
+        return false;
+    }
+    if ($listed) {
+        return wx_sitemap_write($file, $xml, wx_page_loc($rel));
+    }
+    $next = (string) preg_replace('~[ \t]*<url><loc>' . preg_quote($escaped, '~') . '</loc>.*?</url>\n?~s', '', $xml);
+    return $next !== $xml && wx_write_file_atomic($file, $next);
+}
+
+/**
+ * Put one `<head>` tag in a page: replace it where the page already has it, add it where it does not.
+ *
+ * v2.1's `set_meta()` — the reason it is a *replacer* rather than an appender is that a page carrying
+ * `og:image` twice is a page whose preview shows the wrong picture, and one that gains a second `<title>` is
+ * one Google reads the first of. `$pattern` is the tag as the page writes it today (matching is generous:
+ * attribute order, quoting and spacing are the page's business).
+ */
+function wx_head_set(string $html, string $pattern, string $tag): string
+{
+    if (preg_match($pattern, $html)) {
+        return (string) preg_replace($pattern, $tag, $html, 1);
+    }
+    return str_contains(strtolower($html), '</head>')
+        ? (string) preg_replace('~</head>~i', '  ' . $tag . "\n</head>", $html, 1)
+        : $html . "\n  " . $tag;
+}
+
+/** The content of one `<meta>` tag, or null when the page has none. */
+function wx_head_meta(string $html, string $name, string $attr = 'name'): ?string
+{
+    $pattern = '~<meta\b[^>]*\b' . preg_quote($attr, '~') . '\s*=\s*["\']' . preg_quote($name, '~') . '["\'][^>]*>~i';
+    if (!preg_match($pattern, $html, $m)) {
+        return null;
+    }
+    return preg_match('~\bcontent\s*=\s*(["\'])(.*?)\1~is', $m[0], $v) ? (string) $v[2] : '';
+}
+
+/**
+ * One page's publication state, in the three facts a screen has to show.
+ *
+ * `status` comes from the map (absent means published, as v2.1 meant it), `indexable` from the page's own
+ * robots line — the two are independent, because a page can be published *and* deliberately kept out of
+ * search — and `inSitemap` from the file on disk rather than from either of them, since that is the thing a
+ * person is asking about.
+ */
+function wx_page_state(string $rel): array
+{
+    $rel = wx_page_rel($rel);
+    $abs = WX_SITE_ROOT . '/' . $rel;
+    $html = is_file($abs) ? (string) file_get_contents($abs, false, null, 0, 400_000) : '';
+    $map = wx_page_state_map();
+    $status = (string) ($map[$rel]['status'] ?? 'published');
+    if (!in_array($status, WX_PAGE_STATUS, true)) {
+        $status = 'published';
+    }
+    $robots = (string) (wx_head_meta($html, 'robots') ?? '');
+    return [
+        'rel' => $rel,
+        'status' => $status,
+        'title' => wx_page_title_of($html),
+        'description' => (string) (wx_head_meta($html, 'description') ?? ''),
+        'robots' => $robots,
+        'indexable' => stripos($robots, 'noindex') === false,
+        'inSitemap' => wx_page_in_sitemap($rel),
+    ];
+}
+
+/**
+ * What publishing does to a page's `<head>` — and the refusals that come before it.
+ *
+ * Pure: page HTML in, new HTML and the facts out, no file read and no write. That is deliberate, because
+ * this is where every rule lives, and a rule inside a function that also writes files can only be tested on
+ * a host with a database attached. The harness has neither, so the rules would have gone unproven — which is
+ * how v2.1's version of this ended up sending `clip($v, 300)` at a key and treating an empty field as
+ * "erase".
+ *
+ * `$in` is the request body. **A field that is absent is left alone** — a status change sent from a screen
+ * that does not carry the canonical link must not remove the page's canonical link. The same rule as the AI
+ * keys, for the same reason: a form that erases what it was not told about is a form that loses work.
+ *
+ * @param array $in title, description, canonical, ogImage, noindex — all optional
+ * @return array{html:string, title:string, description:string, noindex:bool, listed:bool, note:string}
+ */
+function wx_page_head_plan(string $rel, string $html, string $status, array $in): array
+{
+    if (!in_array($status, WX_PAGE_STATUS, true)) {
+        throw ApiError::validation('A page is published, hidden or a draft', 'status');
+    }
+    /* v2.1's rule, and it is about the site rather than the page: the home page is what somebody typing the
+       domain gets, so there is no version of "not published" that is not a broken website. */
+    if ($status === 'draft' && wx_page_url($rel) === '/') {
+        throw ApiError::validation('The home page cannot be a draft — it is the site', 'status');
+    }
+    $title = array_key_exists('title', $in) ? trim((string) $in['title']) : wx_page_title_of($html);
+    if ($title === '') {
+        throw ApiError::validation('A page needs a title — it is the line Google shows', 'title');
+    }
+    foreach (['canonical', 'ogImage'] as $field) {
+        if (!array_key_exists($field, $in)) {
+            continue;
+        }
+        $v = trim((string) $in[$field]);
+        if ($v !== '' && !preg_match('~^(https?://|/)[^\s"<>]*$~i', $v)) {
+            throw ApiError::validation('A link here starts with https:// or /', $field);
+        }
+    }
+
+    $head = wx_head_set($html, '~<title>.*?</title>~is', '<title>' . wx_h($title) . '</title>');
+    if (array_key_exists('description', $in)) {
+        $desc = trim((string) $in['description']);
+        $head = $desc === ''
+            ? (string) preg_replace('~[ \t]*<meta\s+name="description"[^>]*>\s*~i', '', $head, 1)
+            : wx_head_set($head, '~<meta\s+name="description"[^>]*>~i', '<meta name="description" content="' . wx_h($desc) . '">');
+        /* v2.1's rule for an empty value: the tag goes, and no empty one is written in its place. An
+           `<meta … content="">` is worse than no tag — it is a tag a crawler reads. */
+        $head = $desc === ''
+            ? (string) preg_replace('~[ \t]*<meta\s+property="og:description"[^>]*>\s*~i', '', $head, 1)
+            : wx_head_set($head, '~<meta\s+property="og:description"[^>]*>~i', '<meta property="og:description" content="' . wx_h($desc) . '">');
+    }
+    $head = wx_head_set($head, '~<meta\s+property="og:title"[^>]*>~i', '<meta property="og:title" content="' . wx_h($title) . '">');
+    if (array_key_exists('ogImage', $in)) {
+        $og = trim((string) $in['ogImage']);
+        $head = $og === ''
+            ? (string) preg_replace('~[ \t]*<meta\s+property="og:image"[^>]*>\s*~i', '', $head, 1)
+            : wx_head_set($head, '~<meta\s+property="og:image"[^>]*>~i', '<meta property="og:image" content="' . wx_h($og) . '">');
+    }
+    if (array_key_exists('canonical', $in)) {
+        $can = trim((string) $in['canonical']);
+        $head = $can === ''
+            ? (string) preg_replace('~[ \t]*<link\b[^>]*rel=["\']canonical["\'][^>]*>\s*~i', '', $head, 1)
+            : wx_head_set($head, '~<link\b[^>]*rel=["\']canonical["\'][^>]*>~i', '<link rel="canonical" href="' . wx_h($can) . '">');
+    }
+
+    /* A draft and a hidden page are not indexed whatever the request said; a page going public has the
+       noindex line removed, and a robots line that says something else is the page's own business. */
+    $noindex = !empty($in['noindex']) || $status !== 'published';
+    if ($noindex) {
+        $head = wx_head_set($head, '~<meta\s+name="robots"[^>]*>~i', '<meta name="robots" content="noindex, follow">');
+    } elseif (stripos((string) (wx_head_meta($head, 'robots') ?? ''), 'noindex') !== false) {
+        $head = (string) preg_replace('~[ \t]*<meta\s+name="robots"[^>]*>\s*~i', '', $head, 1);
+    }
+
+    $note = $status === 'published'
+        ? ($noindex ? 'published, kept out of search' : 'published')
+        : ($status === 'hidden' ? 'hidden from the site' : 'draft');
+    return [
+        'html' => $head,
+        'title' => $title,
+        'description' => (string) (wx_head_meta($head, 'description') ?? ''),
+        'noindex' => $noindex,
+        'listed' => $status === 'published' && !$noindex,
+        'note' => $note,
+    ];
+}
+
+/**
+ * Publish, hide or draft a page — v2.1's `page_meta_save`, whole.
+ *
+ * The head tags, the status file and the sitemap are one change, and all three are reported: the page's HTML
+ * goes through the same versioned writer every other edit uses (so a publish is one undo in the history) and
+ * the audit log carries the status, the robots line and what happened to the sitemap.
+ *
+ * When nothing in the file changes — the page already had that title and that robots line — the file is
+ * **not** rewritten, and the answer says so. A publish is not allowed to bump a page's mtime under somebody
+ * who is editing it, and a version that contains no change is noise in the history.
+ *
+ * The rules themselves are in `wx_page_head_plan()`, which is pure; this function is the reading and the
+ * writing. No code guard runs: the transformation writes head tags and cannot introduce script.
+ */
+function wx_page_publish(string $rel, string $status, array $in, array $me): array
+{
+    $rel = wx_page_rel($rel);
+    $abs = WX_SITE_ROOT . '/' . $rel;
+    if (!is_file($abs)) {
+        throw ApiError::notFound('There is no page at /' . $rel);
+    }
+    $before = (string) file_get_contents($abs);
+    $plan = wx_page_head_plan($rel, $before, $status, $in);
+
+    $wrote = $plan['html'] !== $before;
+    $r = $wrote
+        ? wx_page_write($rel, $plan['html'], $me, ['note' => 'page ' . $plan['note']])
+        : ['batch' => null, 'version' => 0, 'bytes' => strlen($before)];
+
+    $map = wx_page_state_map();
+    if ($status === 'published') {
+        unset($map[$rel]);
+    } else {
+        $map[$rel] = ['status' => $status];
+    }
+    wx_page_state_write($map);
+
+    $sitemapChanged = wx_page_sitemap_set(wx_page_sitemap_file(), $rel, $plan['listed']);
+
+    wx_audit($me, 'page.meta', $rel, [
+        'status' => $status, 'noindex' => $plan['noindex'], 'sitemap' => $plan['listed'],
+        'sitemapChanged' => $sitemapChanged, 'wrote' => $wrote,
+    ]);
+
+    return [
+        'rel' => $rel,
+        'url' => wx_page_url($rel),
+        'status' => $status,
+        'noindex' => $plan['noindex'],
+        'title' => $plan['title'],
+        'description' => $plan['description'],
+        'listed' => $plan['listed'],
+        'inSitemap' => wx_page_in_sitemap($rel),
+        'sitemapChanged' => $sitemapChanged,
+        'wrote' => $wrote,
+        'version' => $r['version'],
+        'batch' => $r['batch'],
+        'bytes' => $r['bytes'],
+        'note' => $plan['note'],
+    ];
+}
