@@ -30,7 +30,31 @@ const STAGE_LABEL: Record<string, string> = {
 
 export function LiveDashboard({ role }: { role: string }) {
   const { data, error, loading, reload } = useLive<DashboardData>("/dashboard", role);
-  const { health } = useSession();
+  const { health, link, reason } = useSession();
+
+  /* Without the server there are no numbers, and the screen says that instead of drawing empty bars under a
+     heading that promises an overview. Nothing on this page is ever a sample: a figure here came from api/v2 or
+     it is not shown. */
+  if (link !== "live") {
+    const copy =
+      link === "offline"
+        ? {
+            title: "The server is not answering",
+            body: "Today's numbers come from api/v2 and nothing was read from it, so none are shown. Nothing here is a sample.",
+          }
+        : link === "signedOut"
+          ? { title: "Sign in to see today", body: "The overview is available once you are signed in." }
+          : { title: "Checking the server", body: "Asking api/v2 whether it is answering…" };
+    return (
+      <>
+        <PageHead title="Today" sub={copy.title} />
+        <Note tone={link === "offline" ? "danger" : "info"} title={copy.title}>
+          {copy.body}
+          {link === "offline" && reason ? <span className="mono" style={{ display: "block", fontSize: "var(--fs-11)", marginTop: 4 }}>{reason}</span> : null}
+        </Note>
+      </>
+    );
+  }
 
   if (error) {
     return (

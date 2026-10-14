@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { Shell, type Badges } from "./components/Shell";
 import { CommandPalette } from "./components/CommandPalette";
-import { Dashboard } from "./screens/Dashboard";
+import { LiveDashboard } from "./screens/LiveDashboard";
 import { Leads } from "./screens/Leads";
 import { Pipeline } from "./screens/Pipeline";
 import { Quotations } from "./screens/Quotations";
@@ -191,7 +191,7 @@ function Frame({ demo }: { demo: boolean }) {
         <DemoBanner on={demo} />
         <Routes>
           {/* Phase 0 — screens implemented in this prototype */}
-          <Route path="/dashboard" element={<Dashboard role={effectiveRole} />} />
+          <Route path="/dashboard" element={<LiveDashboard role={effectiveRole} />} />
           {/* The Master's queue. A Phase 2 screen that was still a placeholder: the gate, the replay and the
               audit were built and tested, but the only way to *decide* anything was calling the API by hand
               — and the shell linked to it from a badge counted out of the prototype's mock data. */}

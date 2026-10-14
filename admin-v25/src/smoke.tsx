@@ -112,6 +112,7 @@ const checks: [string, () => boolean][] = [
 ];
 
 let htmlDashboard = "";
+let htmlDashOffline = "";
 try {
   htmlDashboard = renderToString(
     <MemoryRouter initialEntries={["/dashboard"]}>
@@ -293,6 +294,15 @@ try {
   failures.push(`sign-in screen without an API → ${(err as Error).message}`);
 }
 
+try {
+  htmlDashOffline = renderToString(
+    <MemoryRouter initialEntries={["/dashboard"]}>
+      <SessionCtx.Provider value={session("offline", null)}>
+        <LiveDashboard role="owner" />
+      </SessionCtx.Provider>
+    </MemoryRouter>,
+  );
+} catch {}
 try {
   htmlLiveDash = renderToString(
     <MemoryRouter initialEntries={["/dashboard"]}>
@@ -1287,9 +1297,10 @@ for (const [name, ok] of [
 const assertions: [string, boolean][] = [
   ["dashboard renders an H1 (U1.1 fix)", /<h1[^>]*>/.test(htmlDashboard)],
   ["dashboard renders a breadcrumb", htmlDashboard.includes("crumbs")],
-  ["KPI row is present", htmlDashboard.includes("kpi-value")],
+  ["the dashboard shows no figures before the server has answered", !htmlDashboard.includes("kpi-value") && !htmlDashboard.includes("PKR")],
   ["charts mount without throwing", htmlDashboard.includes("recharts") || htmlDashboard.includes("spark") || true],
-  ["activity feed renders", htmlDashboard.includes("feed-item")],
+  ["the dashboard draws no activity items it has not been given", !htmlDashboard.includes("feed-item")],
+  ["offline, the dashboard names the server and shows no figures", htmlDashOffline.includes("The server is not answering") && !htmlDashOffline.includes("PKR") && !htmlDashOffline.includes("kpi-value")],
 ];
 
 for (const [name, ok] of assertions) {
