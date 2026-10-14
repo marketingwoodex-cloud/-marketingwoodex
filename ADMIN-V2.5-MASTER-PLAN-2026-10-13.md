@@ -516,8 +516,8 @@ working as intended, not a gap hidden by a fallback.
 
 ### Phase 3 — Content, assets and delivery · **in progress** · 4 weeks
 
-*Measured at this commit:* `tests/run.php` **1049 passed · 0 failed · 13 skipped** · `tests/conformance.mjs`
-**84 · 0** · php-lint **159 files** · `admin-v25` smoke **150 checks · 65 routes** · legacy bridge **150 of 365
+*Measured at this commit:* `tests/run.php` **1085 passed · 0 failed · 14 skipped** · `tests/conformance.mjs`
+**85 · 0** · php-lint **159 files** · `admin-v25` smoke **150 checks · 65 routes** · legacy bridge **151 of 365
 actions** (41%). Migrations **000–014** are written and none has run on a database yet.
 
 Three generators are part of this phase's gate rather than a convention, because each one replaces a second
@@ -646,8 +646,13 @@ already did.
 | Delivered — the AI settings, and the first call this API makes outward | Where | Note |
 |---|---|---|
 | The four providers, their keys and models, the writing voice, the model list, and one small test call | `api/v2/lib/ai.php` (`wx_ai_*`), `api/v2/routes/ai.php` (`GET\|POST /ai/settings`, `POST /ai/models`, `POST /ai/test`), `admin-v25/src/components/AiSettings.tsx` at the foot of the Content screen | The record lives in **v2.1's own file** (`_private/content.json`), so the old admin and the new one read the same settings while the strangler runs — and a save carries the rest of that file through untouched. Four things v2.1 did are each a decision here: a read could leak a key, so `wx_ai_pub()` is now the only serialiser and the tests assert the key appears nowhere in the answer; an empty key field meant *erase*, so absent and empty both mean *keep* and only `<k>Clear` deletes — with a reason, because a form that wipes keys when somebody fixes a typo in the voice is a form that loses the studio's keys; `clip($v, 300)` shortened a mistyped key into a shorter, wrong one that failed later with a provider error, so this refuses by field; and the request, the response and the model filter sat inside one function that only ran with cURL and a key, so they are three pure functions now — which is why they are tested at all in a sandbox with no cURL, no key and no route to a provider. What that leaves untested is one `curl_exec()` and the honest report of it |
+| Delivered — publishing a page, and the service and city views | Where | Note |
+|---|---|---|
+| Whether a page is public, and everything that follows from it: the head's tags, one word in `_private/pages.json` (v2.1's file), the sitemap, and a screen that shows all three | `api/v2/lib/pages.php` (`wx_page_head_plan()` pure · `wx_page_publish()` · `wx_page_state()` · `wx_page_sitemap_set()`), `POST /pages/{rel}/publish` (action `page_meta_save`), the bridge row in `routes/legacy.php`, the card on `admin-v25/src/screens/LivePages.tsx` | v2.1's `page_meta_save`, kept under its own name because the Master's queue reads it, with one repair: v2.1 had `sitemap_add()` and nothing that took an address out, so "unpublish" went on telling Google the page was current — the sitemap now follows the status both ways. The rules are one pure function, which is the only reason they are tested at all in a sandbox with no database, and a new page is still saved as a draft: a page that is public the moment it is created is a page in the sitemap before anybody has looked at it |
+| The service and city views, built from the pages the site actually has | the same screen, over `/content/pages` — every page's own `<body data-page>` | v2.1's services screen was never a collection: it was a view of the pages (kind ≠ city, minus articles, studies and the machinery), and cities the same list the other way round. The kind is read from the page rather than decided by the screen, and with no answer the screen shows every page and says so. The city *content* model — the address rule and the furniture rule — is the plan's own model, already delivered |
+
 **Still to come in this phase:**
-services and cities, the SEO screens and the integrations. The builder's 19 actions are all
+the SEO screens and the integrations. The builder's 19 actions are all
 accounted for: 17 bridged, 2 named above as decisions.
 
 ### Phase 4 — Automation and intelligence · 3 weeks

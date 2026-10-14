@@ -1,6 +1,6 @@
 # Woodex admin v2.5 — work-sandbox memory
 
-*Written 14 October 2026, at `47cde56`, on branch `arena/4150341e-marketingwoodex`.*
+*Written 14 October 2026, at `4bbefe5`, on branch `arena/4150341e-marketingwoodex`.*
 *The design authority is `ADMIN-V2.5-MASTER-PLAN-2026-10-13.md` (the 18-page plan, also as PDF). This
 document is the memory: where things are, what is already true, what is next, and what bit us on the way.
 Where the two disagree, the plan wins for design and this file wins for state.*
@@ -16,10 +16,10 @@ cd tools/phpwasm && npm ci && cd ../..          # php-wasm (the only PHP this sa
 cd tools/phplint && npm ci && cd ../..
 
 # the gate, in the order that fails fastest
-node tools/phpwasm/run-php.cjs tests/run.php            # 995 passed · 0 failed · 13 skipped
-node tests/conformance.mjs                              # 84 passed · 0 failed
-node tools/phplint/php-lint.mjs                         # 157 PHP files parse clean
-cd admin-v25 && npm run typecheck && npm run smoke && cd ..   # tsc clean · 147 checks · 65 routes
+node tools/phpwasm/run-php.cjs tests/run.php            # 1085 passed · 0 failed · 14 skipped
+node tests/conformance.mjs                              # 85 passed · 0 failed
+node tools/phplint/php-lint.mjs                         # 159 PHP files parse clean
+cd admin-v25 && npm run typecheck && npm run smoke && cd ..   # tsc clean · 150 checks · 65 routes
 node tools/gen-aliases.mjs --check && node tools/gen-caps.mjs --check
 
 # the console, with sample data (the API cannot run here — see §3)
@@ -28,11 +28,26 @@ cd admin-v25 && VITE_WX_DEMO=1 npm exec vite -- --host 0.0.0.0 --port 5173
 
 The preview is proxied under the sandbox's own hostname; bind `0.0.0.0`, never `127.0.0.1`. Prove the
 preview is *current* by fetching a source module, not the HTML shell — the build stamp lives in
-`src/components/Shell.tsx`:
+`src/components/Shell.tsx` (a `+` after the short SHA means tracked files differ from that commit, which is
+what an uncommitted screen looks like):
 
 ```bash
 curl -s http://127.0.0.1:5173/src/components/Shell.tsx | grep -o 'built [0-9-]* [0-9:]*Z'
 ```
+
+**A turn can come back re-cloned.** The workspace keeps the files but not `.git` or its `node_modules`: the
+repository arrives at the base commit `782b50b` with the branch checked out and everything committed-to-date
+sitting in the working tree as untracked or modified files, no dependencies installed, and the preview
+process dead. The recovery, in this order, and the third step is the one that loses work if it is skipped:
+
+```bash
+cp <any file you changed since the last commit> /tmp/                 # reset --hard clobbers colliding files
+git fetch origin && git reset --hard origin/arena/4150341e-marketingwoodex
+cp /tmp/<that file> back                                              # then reinstall, restart the preview
+```
+
+`php-lint` is a quick detector of a half-restored tree: it prints the number of files it parsed, so 157 where
+159 is expected means two files are missing from the working tree.
 
 **There is no PHP and no MySQL in this sandbox.** `api/v2` cannot answer here: every screen is honest
 about that (`not answering` in the status strip, `demo data` only in demo mode). Verification is by
@@ -78,11 +93,11 @@ answered the release stays additive — it never replaces a live page.
 api/v2/                     the new API — one front controller and one file per resource
   index.php                 router, envelope, request-id, error boundary, shutdown guard
   .htaccess                 every path under /api/v2/ → index.php; lib/ and routes/ 404
-  lib/            (34 files) bootstrap · errors · http · store · db · settings · validate · money · audit
+  lib/            (33 files) bootstrap · errors · http · store · db · settings · validate · money · audit
                             auth · caps · approvals · router · pages · chrome · heroes · content · media
                             library · placements · theme · redirects · forms · estimator · notify
-                            clientview · projects · clients · templates · business · announce?
-  routes/         (31 files) one per router `file` name — the router loads exactly the matched one
+                            clientview · projects · clients · templates · business · announce · ai
+  routes/         (33 files) one per router `file` name — the router loads exactly the matched one
   data/*.json               generated data (quote starters, section library, city templates…)
   aliases.php               the 365 v2.1 actions and where each was served from (generated)
 db/migrations/000…014.sql   forward-only migrations; `db/migrate.php` runs them, `db/owner.php` gets you in
@@ -91,7 +106,7 @@ tests/conformance.mjs       duplicate functions, route-table parse, dead include
                             interpolation, rate limits — and the shipped browser blocks run against stubs
 admin-v25/src/
   lib/            nav.ts · api.ts · live.ts · demo.ts · format.ts · session.tsx · theme.ts · mock.ts
-  components/     primitives.tsx · Shell.tsx · CommandPalette.tsx · charts.tsx
+  components/     primitives.tsx · Shell.tsx · CommandPalette.tsx · charts.tsx · AiSettings.tsx
   screens/        24 live screens + the mock Dashboard
 tools/            phpwasm · phplint · gen-aliases · gen-caps · gen-quote-starters · make-release
 docs/             the audit and plan documents (moved here in P25; see §7)
@@ -99,7 +114,21 @@ frontend-v1/      the live site (§2)
 woodex-master-P25/  the release pack: README · CHANGELOG · MANIFEST.json · this file · the zip
 ```
 
-`api/v2/lib/ai.php` does **not** exist yet — that is the next slice (§8a).
+Two slices have landed since P25 was packed: **the AI settings** (`lib/ai.php` + `routes/ai.php`, the panel in
+`components/AiSettings.tsx`, §8a) and **publishing a page** (`wx_page_head_plan()` / `wx_page_publish()` /
+`wx_page_state()` in `lib/pages.php`, `POST /pages/{rel}/publish`, the card in `screens/LivePages.tsx`, §8c).
+
+Rules the publish slice added, which the next slice touching pages must keep:
+
+- the *rules* of a page change live in a **pure** function (`wx_page_head_plan()` — HTML in, HTML and the
+  facts out) and the reading/writing is the thin function around it. That split is why they are tested at all
+  in a sandbox with no database;
+- **absent means keep, empty means remove** — a request that does not carry a field must not erase it;
+- the two files a page change writes besides the page are named by a constant *as well as* by their real path
+  (`WX_PAGE_STATE_FILE`, `WX_PAGE_SITEMAP_FILE`) so a test can point them at scratch paths. `_private/pages.json`
+  is v2.1's file and the old admin still reads it;
+- `wx_write_file_atomic()` refuses any path outside `WX_SITE_ROOT`, so scratch files in a test live *inside*
+  the site tree (a dot-named file is skipped by the page walk) and are deleted at the end.
 
 House rules that the codebase now enforces, and that a new file must not break:
 
@@ -115,11 +144,15 @@ House rules that the codebase now enforces, and that a new file must not break:
 
 ## 4. What is built, and where it was proved
 
-54 commits. The recent ones, newest first — the commit messages carry the reasoning, and they are worth
+66 commits. The recent ones, newest first — the commit messages carry the reasoning, and they are worth
 reading before changing the files they touch.
 
 | Commit | Slice | The one thing it decided |
 |---|---|---|
+| `4bbefe5` | **The pages screen** listens to publishing | Where a page is public, in three facts read from the server, with the consequence written under the buttons; the service and city views are filters over the pages, not collections. |
+| `e2ab209` | **Publishing a page** | v2.1's `page_meta_save` with one repair: the sitemap now follows the status both ways, so unpublishing takes the address out instead of leaving Google a promise. The rules are one pure function. |
+| `93b66f0` | **The AI settings** | v2.1's record in v2.1's file; the key never leaves the server; and the request, the response and the model filter are three pure functions, which is the only reason the first outward call this API makes is tested at all. |
+| `12d54cd` | **The P25 pack**, rebuilt | The release artifact for the commit that carries it; `gitSha` is deliberately one commit behind, because an artifact cannot contain its own hash. |
 | `47cde56` | **Approvals screen** + the strip's stale clause | The Master's queue is a screen: read it, judge one request, decide it, change the policy. Approving replays the stored request; a preview never offers the button. |
 | `76ea06a` | Business check reports visible pairs | A sentinel pair kept the phone-number spellings working without ever being *shown* as a string that was looked for. |
 | `2cd5756` | **Business info** + **announcement bar** | The company details are read off the site, not out of a copy of the defaults; the bar is one JSON file with the site's own script fetching it. |
@@ -136,9 +169,9 @@ reading before changing the files they touch.
 | `3deb37d`, `b97d3d8`, `81bb80d` | Header & footer, content CMS, chrome across pages | The header is one edit across every page; the article is composed by the server. |
 | `158346e`, `7f8deb1`, `ba060b0`, `a031f93` | Redirects, media library, library, placements | The first Phase 3 screens, and the verdict keyed by the rule the API names. |
 
-Measured at `47cde56`: **995** API tests · **84** conformance checks · **157** PHP files lint clean ·
-**147** smoke checks over **65** console routes · `tsc` clean · 365 legacy actions bridged, 150 through
-the bridge itself.
+Measured at `4bbefe5`: **1085** API tests · **85** conformance checks · **159** PHP files lint clean ·
+**150** smoke checks over **65** console routes · `tsc` clean · 365 legacy actions named, 151 bridged
+(`page_meta_save` is the first *pages* action to cross).
 
 ---
 
@@ -146,7 +179,7 @@ the bridge itself.
 
 | Command | Catches |
 |---|---|
-| `node tools/phpwasm/run-php.cjs tests/run.php` | behaviour: validation, approvals, money, page writes, the content composer, the announce block, the client page |
+| `node tools/phpwasm/run-php.cjs tests/run.php` | behaviour: validation, approvals, money, page writes, publishing a page, the content composer, the announce block, the AI settings, the client page |
 | `node tests/conformance.mjs` | the mistakes a compiler cannot see: a duplicated function name, a route row pointing at a missing handler, a dead `include`, a write route with no approval gate, SQL built by interpolation, the shipped browser blocks run against stubs |
 | `node tools/phplint/php-lint.mjs` | PHP 8 grammar over `api/v2`, `db/`, `tests/` (the shipped command-line tools are shipped code) |
 | `cd admin-v25 && npm run typecheck` | TypeScript, screens included |
@@ -172,8 +205,14 @@ run there.
 - `npx tsc --noEmit` works only from inside `admin-v25/`.
 - The API through the 5173 proxy answers `502 UPSTREAM` — by design. The console's answer to a missing
   API is a sentence, never data.
-- Stale preview servers must be stopped before restarting (`pkill -f "vite --host 0.0.0.0 --port 5173"`).
-- A turn can come back re-cloned at the base commit: check `git log --oneline -1` before assuming.
+- Stale preview servers must be stopped before restarting (`pkill -f "vite --host 0.0.0.0 --port 5173"`), and
+  a re-cloned turn leaves the old one dead — the port is free and the preview must be started again.
+- A turn can come back re-cloned at the base commit: check `git log --oneline -1` before assuming. Then
+  `git fetch origin && git reset --hard origin/<branch>` — **after backing up anything uncommitted**, because
+  `reset --hard` deletes untracked files that collide with tracked paths. Dependencies and the preview
+  process are gone too (§1).
+- The JS/CDN dependencies of `tools/*` are not part of the workspace snapshot: `npm i --prefix tools/phpwasm
+  @php-wasm/node@3.1.58`, `npm --prefix tools/phplint install`, `npm ci` in `admin-v25`.
 
 **The console**
 - React does not run effects during `renderToString`: a screen must feed its state from the fetched value
@@ -304,13 +343,28 @@ actually links, so the console could have saved an announcement no visitor could
 screen reports which half is missing — and how many pages load the script — instead of promising a bar, and
 why the site side (`assets/site.js` + `assets/site.css`) shipped in the same slice.
 
-### c. Then the rest of Phase 3
+### c. Services and cities — delivered, in the two halves it always had
 
-Services & cities (the address rule and the furniture rule already exist — `lib/content.php`,
-`wx_content_rel()`, `wx_content_shell_rel()`; what is missing is the screen), the SEO screens
-(`seo-lib.php` → titles, descriptions, sitemap, the audit), and integrations (`conn-lib.php`'s 22
-connectors and their keys — the largest remaining piece of the phase, and the one that needs a host to
-test against).
+The plan's row said "services & cities" and it turned out to be two different things, which is worth keeping
+straight:
+
+- **cities** are content items of type `city` published at a root-level address by the address rule and the
+  furniture rule (`wx_content_rel()`, `wx_content_shell_rel()`, §8's `c67d564`); the `/cities` screen is the
+  content studio with the city preset. v2.1's copy-and-rewrite flow is *not* ported, deliberately — plan §11.
+- **services** were never a collection: v2.1's services screen was a *view* of the pages (kind ≠ city, minus
+  articles and studies, minus the machinery), and the pages screen now offers exactly that filter, plus the
+  cities the other way round, with each page's own `<body data-page>` as the kind.
+
+Neither half could say whether a page was public, so **publishing a page** came with them: the status card on
+the pages screen, `POST /pages/{rel}/publish` (v2.1's `page_meta_save`, bridged for the old admin), one pure
+function for the rules and one thin function that writes the page, `_private/pages.json` and the sitemap.
+
+### c2. Then the rest of Phase 3
+
+The SEO screens (`seo-lib.php` → titles, descriptions, sitemap, the audit) and integrations (`conn-lib.php`'s
+22 connectors and their keys — the largest remaining piece of the phase, and the one that needs a host to
+test against). The pages screen's remaining v2.1 action is `page_delete` (trash + a redirect): the API has no
+route for it yet, and it is the one destructive page action nobody has asked for.
 
 ### d. Phases 4–6
 
