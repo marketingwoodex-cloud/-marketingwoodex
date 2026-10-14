@@ -86,27 +86,44 @@ function wx_route_dashboard(array $ctx): array
     ];
 }
 
-/** Thresholds live in wx_settings so the dashboard is tunable without a deploy. */
+/**
+ * Thresholds live in wx_settings so the dashboard is tunable without a deploy.
+ *
+ * The keys are the ones migration 005 seeds (`attention.*`, with v2.1's values). The screen names the rules
+ * differently, so the mapping is here, once: the response keeps the screen's names, the database keeps the
+ * settings' names. The fallbacks are the same seeded values, because a host that has not run the seed must
+ * decide exactly what a migrated host decides.
+ */
+const WX_ATTENTION_RULES = [
+    'stale_lead_days' => ['key' => 'attention.lead_stale_days', 'default' => 3],
+    'quote_expiry_days' => ['key' => 'attention.quote_expiring_days', 'default' => 2],
+    'unpaid_days' => ['key' => 'attention.invoice_overdue_days', 'default' => 1],
+];
+
 function wx_attention_rules(): array
 {
-    $defaults = ['stale_lead_days' => 7, 'quote_expiry_days' => 14, 'unpaid_days' => 30];
     static $rules = null;
     if ($rules !== null) {
         return $rules;
     }
-    $rules = $defaults;
+    $rules = [];
+    foreach (WX_ATTENTION_RULES as $name => $spec) {
+        $rules[$name] = $spec['default'];
+    }
     try {
         if (wx_table_exists('wx_settings')) {
-            $rows = wx_all("SELECT k, v FROM wx_settings WHERE k LIKE 'attention.%'");
-            foreach ($rows as $r) {
-                $key = substr((string) $r['k'], strlen('attention.'));
-                if (array_key_exists($key, $defaults)) {
-                    $rules[$key] = (int) $r['v'];
+            $stored = [];
+            foreach (wx_all("SELECT k, v FROM wx_settings WHERE k LIKE 'attention.%'") as $r) {
+                $stored[(string) $r['k']] = (string) $r['v'];
+            }
+            foreach (WX_ATTENTION_RULES as $name => $spec) {
+                if (isset($stored[$spec['key']]) && is_numeric($stored[$spec['key']])) {
+                    $rules[$name] = (int) $stored[$spec['key']];
                 }
             }
         }
     } catch (Throwable $e) {
-        // Settings are an enhancement: the defaults are always a valid answer.
+        // Settings are an enhancement: the seeded defaults are always a valid answer.
     }
     return $rules;
 }
