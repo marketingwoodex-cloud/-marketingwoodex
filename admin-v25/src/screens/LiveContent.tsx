@@ -25,6 +25,7 @@ import {
   ArrowDown, ArrowUp, CalendarClock, FileText, Plus, RefreshCw, Rocket, Save, Search, Trash2, X,
 } from "lucide-react";
 import { Btn, Card, Empty, Note, PageHead, Pill, Seg } from "../components/primitives";
+import { AiSettings } from "../components/AiSettings";
 import { api, ApiFailure } from "../lib/api";
 import { useSession } from "../lib/session";
 import {
@@ -690,6 +691,11 @@ export function LiveContent({ presetType = "" }: { presetType?: string }) {
           )}
         </Card>
       )}
+
+      {/* The AI settings sit at the foot of the Content screen: they are what the writing help uses, and
+          nothing above depends on them. The panel handles its own permission — an editor is told, in one
+          line, that the keys are the owner's, rather than being shown a form that cannot save. */}
+      <AiSettings />
     </>
   );
 }

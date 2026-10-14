@@ -19,6 +19,7 @@ import { LiveLeads } from "./screens/LiveLeads";
 import { LiveRedirects } from "./screens/LiveRedirects";
 import { LiveMedia } from "./screens/LiveMedia";
 import { LiveContent } from "./screens/LiveContent";
+import { AiSettings } from "./components/AiSettings";
 import { AnnounceBar, LiveGlobal } from "./screens/LiveGlobal";
 import { LiveApprovals } from "./screens/LiveApprovals";
 import { LivePages } from "./screens/LivePages";
@@ -186,6 +187,8 @@ let htmlTplOffline = "";
 let htmlTplDemo = "";
 let htmlBizOffline = "";
 let htmlBizDemo = "";
+let htmlAi = "";
+let htmlAiEditor = "";
 let bzBiz: BizData | null = null;
 let bzCompany: CompanyData | null = null;
 let htmlDoc = "";
@@ -563,6 +566,13 @@ try {
      the letterhead is behind a tab, and a server render cannot click one. */
   htmlBizOffline = at(session("offline", null), <LiveBusiness />);
   htmlBizDemo = at(session("offline", null, true), <LiveBusiness />);
+
+  /* The AI settings panel: the provider, a key reported as set or empty, and the voice. Its fixture is read
+     directly because the panel sits at the foot of the Content screen and one render of that screen shows
+     the list, not every field. */
+  const asEditor = { ...asUser, role: "editor" as const, roleLabel: "Editor" };
+  htmlAi = at(session("offline", asUser, true), <AiSettings />);
+  htmlAiEditor = at(session("live", asEditor), <AiSettings />);
 
   /* The announcement bar's own panel: on this host there is no API and no fixture for `/chrome/announce`,
      and the honest answer in both cases is that it cannot be read — not a preview strip of a bar nobody
@@ -1221,6 +1231,25 @@ for (const [name, ok] of [
     ).includes("api/v2 is not answering") &&
       htmlDemoOffline.includes("api/v2 is not answering") &&
       !htmlDemoProjects.includes("api/v2 is not answering"),
+  ],
+  [
+    "the AI settings panel shows the provider, the masked key and the voice, and never a key",
+    htmlAi.includes("Claude (Anthropic)") &&
+      htmlAi.includes("Set — leave empty to keep it") &&
+      htmlAi.includes("of 800 characters") &&
+      !htmlAi.includes("sk-"),
+  ],
+  [
+    "and in demo mode it says so rather than offering to save or to call a provider",
+    htmlAi.includes("This is a sample") &&
+      !htmlAi.includes("Save the settings") &&
+      !htmlAi.includes("Test the key"),
+  ],
+  [
+    "an editor is told the keys are the owner's, not shown a form that cannot save",
+    htmlAiEditor.includes("owner &amp; admins") &&
+      htmlAiEditor.includes("signed in as Editor") &&
+      !htmlAiEditor.includes("Paste the key"),
   ],
 ] as [string, boolean][]) {
   if (ok) pass++;

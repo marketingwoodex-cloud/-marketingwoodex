@@ -1066,10 +1066,14 @@ check("demo mode answers exactly the screens that have a sample", () => {
   for (const k of ["/projects", "/projects/{id}", "/notifications", "/forms", "/estimator", "/heroes", "/approvals"]) {
     assert(keys.has(k), `there is a sample for ${k}, so a design review can open that screen`);
   }
-  const screens = ["LiveProjects", "LiveTimeline", "LiveUpdates", "LiveForms", "LiveEstimator", "LiveHeroes", "LiveTemplates", "LiveBusiness", "LiveApprovals"];
+  /* A screen is not only a file in `screens/`: the panels live in `components/`, and the AI settings — which
+     read a path on mount and offer two on-demand calls — are one of them. The list below is the files a
+     design review would open, wherever they sit. */
+  const screens = ["LiveProjects", "LiveTimeline", "LiveUpdates", "LiveForms", "LiveEstimator", "LiveHeroes", "LiveTemplates", "LiveBusiness", "LiveApprovals", "AiSettings"];
   const want = [];
+  const served = new Set();
   for (const name of screens) {
-    const src = readCode(`admin-v25/src/screens/${name}.tsx`);
+    const src = readCode(name === "AiSettings" ? "admin-v25/src/components/AiSettings.tsx" : `admin-v25/src/screens/${name}.tsx`);
     /* Any literal in the call's arguments, not just the first one: a screen that reads a detail on demand
        writes `useLive(openId === null ? null : `/approvals/${openId}`)`, and an extraction that only looked
        at the first character after `(` would report the sample for that read as one nobody uses. A path
@@ -1079,6 +1083,14 @@ check("demo mode answers exactly the screens that have a sample", () => {
         const path = lit[1].split("$")[0];
         if (path.startsWith("/")) want.push([name, path]);
       }
+    }
+    /* On-demand calls: the model list is fetched when somebody presses a button, never on mount, so it can
+       never appear in `want` — and it still deserves a sample, because the picker is part of the screen a
+       design review is looking at. This set is what the orphan test consults; `want` remains what the
+       coverage test consults, because a screen that *mounts* on a path with no sample goes back to "not
+       answering" in every preview, which is the failure the coverage half exists for. */
+    for (const m of src.matchAll(/api\.(?:get|post)<[^>]*>\(\s*[`"]([^`"]*)/g)) {
+      served.add(m[1].split("$")[0]);
     }
   }
   assert(want.length >= 6, `the screens read paths at all (found ${want.length})`);
@@ -1094,7 +1106,8 @@ check("demo mode answers exactly the screens that have a sample", () => {
   const orphans = [...keys].filter((k) => {
     /* `/projects/{id}` stands in for the screen that builds `/projects/${id}`: same read, a value in it. */
     const base = k.replace("{id}", "").replace(/\*$/, "");
-    return !want.some(([, p]) => p === base || p.startsWith(base) || (k.endsWith("*") && p.startsWith(base)));
+    const used = [...want.map(([, p]) => p), ...served];
+    return !used.some((p) => p === base || p.startsWith(base) || (k.endsWith("*") && p.startsWith(base)));
   });
   assertEq(orphans.length, 0, `samples no screen reads: ${orphans.join(", ")}`);
   /* And the shell must never turn it on by itself: the flag is asked for by name. */

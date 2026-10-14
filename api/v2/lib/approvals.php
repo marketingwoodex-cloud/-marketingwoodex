@@ -55,6 +55,10 @@ const WX_APPR_NEVER = [
     /* A draft revision of a quotation is a copy: not the document a client is looking at. Publishing the
        revision is the change that matters, and that one is queued. */
     'create_quote_draft' => 'a draft revision is a copy of a document - publishing it is the change',
+    /* Listing a provider's models fetches somebody else's list and stores nothing here. v2.1 ran it from
+       the settings screen the moment a key was typed, which is exactly when it is useful — queueing it
+       would ask the Master to approve reading a web page. */
+    'cms_ai_models' => 'listing the models a provider offers reads a list and stores nothing here, as in v2.1',
 ];
 const WX_APPR_BUILDER_WRITE = ['save', 'restore', 'theme', 'page_new', 'media_delete', 'blocks_save', 'blocks_delete', 'blocks_import', 'blocks_sync'];
 
@@ -138,6 +142,7 @@ const WX_APPR_LABELS = [
     'cms_biz_save' => 'Change the business details on the website',
     'company_save' => 'Change the company details on documents',
     'cms_announce_save' => 'Change the announcement bar on every page',
+    'cms_ai_save' => 'Change the AI settings (keys, models, writing voice)',
 ];
 
 /**

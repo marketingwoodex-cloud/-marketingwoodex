@@ -258,31 +258,33 @@ payload was built from.
 
 ## 8. What is next, in order
 
-### a. AI settings (`cms_ai_*`) — the next slice
+### a. AI settings (`cms_ai_*`) — delivered, and the first outward call this API makes
 
-v2.1 lives in `frontend-v1/api/content-lib.php` (the `cms_ai_get`, `cms_ai_save`, `cms_ai_models`
-cases) and the console's shape is the Content screen. The specification, read off v2.1 and to be kept
-exactly:
+`api/v2/lib/ai.php` + `routes/ai.php` (`GET|POST /ai/settings`, `POST /ai/models`, `POST /ai/test`), the
+`AiSettings` panel at the foot of the Content screen, and the fixtures behind it. v2.1's contract is kept
+exactly, because the record lives in **v2.1's own file** (`_private/content.json`) and both admins read it:
+`AI_DEF`'s eleven keys, `anthropic` by default, the two per-provider defaults, and the writing voice with its
+own 800-character limit while every other field stops at 300.
 
-- `AI_DEF` = `customKey`, `customModel`, `customUrl`; provider list with `anthropic` as the default;
-  per-provider keys `<provider>Key` and `<provider>Model` (`anthropic` → `claude-sonnet-4-5`, `openai` →
-  `gpt-4o-mini`, `openrouter` → `nousresearch/hermes-3-llama-3.1-405b`);
-- `voice` — the studio's writing voice: **800 characters** (every other setting 300);
-- secrets are write-only: a read returns `Set` / empty, never the key; a save with the field empty keeps
-  what is stored, and `<key>Clear` erases it;
-- a custom provider URL must start `http(s)://`;
-- `cms_ai_models` lists a provider's models: keep ids matching `^(gpt|o\d|chatgpt)`, drop anything matching
-  `embed|whisper|tts|dall-e|image|audio|realtime|moderation|transcribe|search`, return at most 400;
-- `ai_call()` is one POST with a 60-second timeout and `max_tokens 6000`; the text is `content[].text`
-  joined, or `choices[0].message.content`;
-- the settings live in `_private/content.json` (v2.1's store) and must keep working for v2.1 while the
-  strangler runs — the same rule as business info, where the v2.5 write is what the live site reads.
+Four things were wrong in v2.1 and each is a decision here:
 
-Shape for v2.5: `lib/ai.php` + `routes/ai.php` (`GET|POST /ai/settings`, `POST /ai/models`), masked reads,
-`wx_ai_pub()`, provider/model/voice validation, a label in `WX_APPR_LABELS` if the save is policy-wrapped,
-`LiveContent.tsx` gains the panel (owner/admin; a permission refusal says so in one line). Test the pure
-parts — the model filter and the request builder — separately from the network call, because this sandbox
-cannot reach a provider.
+- **a read could leak a key** — `wx_ai_pub()` is the only serialiser, and a test asserts the key appears
+  nowhere in the answer;
+- **an empty key field meant *erase*** — absent and empty both mean *keep*; only `<k>Clear` deletes;
+- **`clip($v, 300)` shortened a mistyped key into a wrong one** — this refuses and names the field;
+- **the request, the response and the model filter lived inside one function** that only ran with cURL and a
+  key — they are three pure functions now (`wx_ai_request()`, `wx_ai_text()`, `wx_ai_models_clean()`).
+
+The call itself (`wx_ai_http()`) is the one `curl_exec()` in this API and **has never run**: this sandbox has
+no cURL, no key and no route to a provider. The tests pin everything up to it — the request Claude needs
+(`anthropic-version`, the voice as a top-level field, `max_tokens` 6000), the same request in OpenAI's shape
+(the voice as the first message), the custom-endpoint URL rule, the model filter (OpenAI cut to
+`^(gpt|o\d|chatgpt)`, embeddings/whisper/tts/dall-e/audio dropped, 400 maximum, the preferred default
+suggested), the two shapes an answer carries text in, and the failure that names *which* thing is missing —
+cURL or the key — instead of blaming the key.
+
+On the host, the first thing to try is **Test the key** on the Content screen: it is one small request, and
+its two failure messages are written to say which of the two it is.
 
 ### b. The announcement bar — delivered, and worth reading before touching
 

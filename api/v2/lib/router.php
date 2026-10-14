@@ -330,6 +330,12 @@ function wx_routes(): array
         ['POST',   'content/tick',                    'content', 'wx_route_content_tick',       'cms_published'],
         ['POST',   'content/reorder',                 'content', 'wx_route_content_reorder',    'cms_reorder'],
         ['POST',   'content/{id}/publish',            'content', 'wx_route_content_publish',    'cms_published'],
+        /* The AI settings behind the writing help: one record in v2.1's `_private/content.json`, four
+           providers, and two calls outward. Reads are owner/admin, as v2.1 asked. */
+        ['GET',    'ai/settings',                     'ai', 'wx_route_ai_get',             'cms_ai_get'],
+        ['POST',   'ai/settings',                     'ai', 'wx_route_ai_save',            'cms_ai_save'],
+        ['POST',   'ai/models',                       'ai', 'wx_route_ai_models',          'cms_ai_models'],
+        ['POST',   'ai/test',                         'ai', 'wx_route_ai_test',            'ai_test'],
         ['POST',   'content/{id}/schedule',           'content', 'wx_route_content_schedule',   'cms_save'],
         ['POST',   'content/{id}/status',             'content', 'wx_route_content_status',     'cms_status'],
         ['DELETE', 'content/{id}',                    'content', 'wx_route_content_delete',     'cms_delete'],

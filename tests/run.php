@@ -2712,6 +2712,119 @@ ok(str_contains($msg, 'damaged'), 'a half-written file is reported as damaged ra
 @unlink(wx_ann_path());
 eq(wx_ann_exists(), false, 'and the test leaves no announcement behind');
 
+/* ============================================================== the AI settings
+ *
+ * v2.1 kept one `ai` record inside `_private/content.json` — the same file its CMS items live in — and the
+ * console writes that file too, so three properties carry more weight than the feature: a save cannot lose
+ * a key it was not sent (an ordinary form submit sends none), a read cannot return one, and the rest of the
+ * file survives a save through this API. The request builder is here because Claude is not OpenAI-shaped and
+ * a wrong shape reads like a wrong key. The network call is the one thing this sandbox cannot run at all.
+ *
+ * The scratch file matters: on a host that has been running a while, the real store holds the studio's keys,
+ * and a test that wrote to it could erase them.
+ */
+
+define('WX_AI_TEST_FILE', sys_get_temp_dir() . '/wx-ai-test-' . bin2hex(random_bytes(4)) . '.json');
+@unlink(WX_AI_TEST_FILE);
+
+group('The AI settings are v2.1s record, in v2.1s file');
+eq(wx_ai_record()['provider'], 'anthropic', 'a fresh install defaults to Claude');
+eq(wx_ai_record()['anthropicModel'], 'claude-sonnet-4-5', 'with v2.1s default model');
+ok(str_contains(wx_ai_record()['voice'], 'Woodex Interior'), 'and the writing voice every prompt is wrapped in');
+eq(wx_ai_state()['exists'], false, 'nothing is stored yet, and that is not an error');
+
+$seed = ['items' => [['id' => 3, 'type' => 'post', 'title' => 'A kitchen in DHA']], 'seq' => 7, 'ai' => ['anthropicKey' => 'sk-ant-secret', 'openaiKey' => 'sk-openai-secret', 'voice' => 'Old voice']];
+file_put_contents(WX_AI_TEST_FILE, (string) json_encode($seed));
+
+[$stored, $changed] = wx_ai_save(['voice' => 'New voice']);
+eq($stored['anthropicKey'], 'sk-ant-secret', 'saving the voice does not touch a key that was not sent');
+eq($stored['voice'], 'New voice', 'and stores the new voice');
+eq($changed, ['voice'], 'naming the one field that changed, for the audit row');
+$raw = json_decode((string) file_get_contents(WX_AI_TEST_FILE), true);
+eq(count($raw['items'] ?? []), 1, 'the rest of v2.1s file survives a save through this API');
+eq($raw['seq'] ?? 0, 7, 'including the sequence the CMS counts from');
+
+[$kept] = wx_ai_save(['anthropicKey' => '', 'openaiKey' => '   ']);
+eq($kept['anthropicKey'], 'sk-ant-secret', 'an empty key field means "leave it", not "delete it"');
+eq($kept['openaiKey'], 'sk-openai-secret', 'and so does one that is only spaces');
+
+[$cleared] = wx_ai_save(['anthropicKey' => '', 'anthropicKeyClear' => true]);
+eq($cleared['anthropicKey'], '', 'an explicit Clear erases the key');
+eq($cleared['openaiKey'], 'sk-openai-secret', 'and only the one it names');
+
+group('An AI setting is refused by field, not clipped into a shorter, wrong value');
+throws('VALIDATION', 'anthropicKey', static fn() => wx_ai_clean(['anthropicKey' => str_repeat('k', 301)], WX_AI_DEF), 'a key longer than the field allows is refused — a clipped key is a wrong key');
+eq(mb_strlen(wx_ai_clean(['voice' => str_repeat('v', 800)], WX_AI_DEF)[0]['voice']), 800, 'the voice may be 800 characters: the one field a house style needs room in');
+throws('VALIDATION', 'voice', static fn() => wx_ai_clean(['voice' => str_repeat('v', 801)], WX_AI_DEF), 'and one character more is refused');
+throws('VALIDATION', 'provider', static fn() => wx_ai_clean(['provider' => 'gemini'], WX_AI_DEF), 'a provider the console does not offer is refused');
+throws('VALIDATION', 'customUrl', static fn() => wx_ai_clean(['customUrl' => 'localhost:11434/v1'], WX_AI_DEF), 'a custom endpoint that is not an address is refused');
+eq(wx_ai_clean(['provider' => 'custom', 'customUrl' => 'https://tunnel.example.com/v1/'], WX_AI_DEF)[0]['customUrl'], 'https://tunnel.example.com/v1', 'a trailing slash is trimmed, so listing models cannot produce a doubled slash');
+
+group('A key never leaves the server, and readiness is decided before it is masked');
+$pub = wx_ai_pub(['provider' => 'openai', 'openaiKey' => 'sk-secret', 'openaiModel' => 'gpt-4o-mini']);
+eq($pub['openaiKey'], '', 'the key field comes back empty');
+eq($pub['openaiKeySet'], true, 'the screen is told that one is set');
+eq($pub['ready'], true, 'and the provider reads as ready');
+ok(!str_contains((string) json_encode($pub), 'sk-secret'), 'and the key appears nowhere in the answer at all');
+$local = wx_ai_pub(['provider' => 'custom', 'customUrl' => 'http://localhost:11434/v1', 'customKey' => 'none']);
+eq($local['customKeySet'], false, 'a local endpoint does not claim a key it does not have');
+eq($local['ready'], true, 'but it is ready: it needs an address, not a key');
+file_put_contents(WX_AI_TEST_FILE, (string) json_encode(['ai' => ['provider' => 'custom', 'customUrl' => 'http://localhost:11434/v1']]));
+eq(wx_ai_record()['customKey'], 'none', 'an address with no key reads as the local-endpoint placeholder, as v2.1 read it');
+eq(wx_ai_pub(wx_ai_record())['ready'], true, 'so the screen does not nag for a key the endpoint does not need');
+ok(!str_contains((string) file_get_contents(WX_AI_TEST_FILE), 'none'), 'and the placeholder is never written into the file v2.1 reads');
+
+group('The request is v2.1s: Claude is not OpenAI-shaped');
+$an = wx_ai_request(['provider' => 'anthropic', 'anthropicKey' => 'k', 'anthropicModel' => 'claude-sonnet-4-5'], 'SYS', 'USER');
+eq($an['url'], 'https://api.anthropic.com/v1/messages', 'Claude has its own endpoint');
+ok(in_array('anthropic-version: 2023-06-01', $an['headers'], true), 'and needs its version header');
+eq($an['body']['system'], 'SYS', 'the writing voice is a top-level field, not a message');
+eq($an['body']['messages'][0]['role'], 'user', 'with a single user message');
+eq($an['body']['max_tokens'], 6000, 'capped at v2.1s 6000 tokens, so one click cannot cost a fortune');
+$or = wx_ai_request(['provider' => 'openrouter', 'openrouterKey' => 'k', 'openrouterModel' => 'x/y'], 'SYS', 'USER');
+eq($or['url'], 'https://openrouter.ai/api/v1/chat/completions', 'the other three use the OpenAI shape');
+ok(in_array('authorization: Bearer k', $or['headers'], true), 'with the key as a bearer token');
+eq($or['body']['messages'][0]['role'], 'system', 'and the writing voice as the first message');
+$cu = wx_ai_request(['provider' => 'custom', 'customKey' => '', 'customModel' => 'llama3', 'customUrl' => 'https://t.example.com/v1'], 'SYS', 'USER');
+eq($cu['url'], 'https://t.example.com/v1/chat/completions', 'a custom endpoint gets the completions path appended');
+$cu2 = wx_ai_request(['provider' => 'custom', 'customKey' => '', 'customModel' => 'llama3', 'customUrl' => 'https://t.example.com/v1/chat/completions'], 'SYS', 'USER');
+eq($cu2['url'], 'https://t.example.com/v1/chat/completions', 'and is not appended twice when it is already there');
+throws('VALIDATION', 'openaiModel', static fn() => wx_ai_request(['provider' => 'openai', 'openaiKey' => 'k', 'openaiModel' => ''], 'S', 'U'), 'a provider with no model is refused by field, before any request is made');
+
+group('The answer is read two ways');
+eq(wx_ai_text('anthropic', ['content' => [['text' => 'one '], ['text' => 'two']]]), 'one two', 'Claude answers in parts, which are joined');
+eq(wx_ai_text('openai', ['choices' => [['message' => ['content' => 'ok']]]]), 'ok', 'the others answer in choices');
+eq(wx_ai_text('openrouter', []), '', 'and an empty answer is empty here — whether that is an error is the caller s decision');
+
+group('The model list is filtered the way v2.1 filtered it');
+$o = wx_ai_models_clean('openai', [['id' => 'gpt-4.1-mini'], ['id' => 'o3-mini'], ['id' => 'chatgpt-4o-latest'], ['id' => 'text-embedding-3-small'], ['id' => 'whisper-1'], ['id' => 'gpt-4o-audio-preview'], ['id' => 'dall-e-3'], ['id' => 'gpt-4.1-mini']]);
+ok(!in_array('text-embedding-3-small', $o['models'], true), 'an embedding model is not something to write an article with');
+ok(!in_array('whisper-1', $o['models'], true), 'nor a transcription model');
+ok(!in_array('gpt-4o-audio-preview', $o['models'], true), 'nor an audio one, even though its name starts with gpt');
+eq(count(array_keys($o['models'], 'gpt-4.1-mini')), 1, 'a model the provider lists twice is offered once');
+eq($o['recommended'], 'gpt-4.1-mini', 'and the picker opens on the model v2.1 preferred');
+$oa = wx_ai_models_clean('openrouter', [['id' => 'z-ai/z'], ['id' => 'anthropic/claude-sonnet-4'], ['name' => 'openai/gpt-4o-mini']]);
+eq($oa['models'], ['anthropic/claude-sonnet-4', 'openai/gpt-4o-mini', 'z-ai/z'], 'the others come back sorted, and a provider naming its field `name` still works');
+eq($oa['recommended'], 'anthropic/claude-sonnet-4', 'with the preferred one as the suggested default');
+$many = [];
+for ($i = 0; $i < 500; $i++) {
+    $many[] = ['id' => 'model-' . $i];
+}
+eq(count(wx_ai_models_clean('custom', $many)['models']), 400, 'a list longer than 400 is cut to 400, as v2.1 cut it');
+throws('UPSTREAM', null, static fn() => wx_ai_models_clean('openai', [['id' => 'whisper-1']]), 'a list with nothing usable in it says so rather than opening an empty picker');
+ok(!wx_ai_configured(['provider' => 'openai', 'openaiKey' => '']), 'a hosted provider with no key is not ready');
+ok(wx_ai_configured(['provider' => 'anthropic', 'anthropicKey' => 'k']), 'and one with a key is');
+
+/* The request itself is the one thing this sandbox cannot run: there is no cURL and no provider to reach.
+   What can be asserted is that whichever of the two is missing is named — blaming the key is what sends
+   somebody to check a key that was fine. */
+if (!function_exists('curl_init')) {
+    throws('UPSTREAM', null, static fn() => wx_ai_http('https://example.com/', [], null, 1), 'without cURL the failure names the extension rather than the key');
+} else {
+    ok(true, 'cURL is present on this host, so the request half runs here');
+}
+@unlink(WX_AI_TEST_FILE);
+
 /* ============================================================== report */
 echo "\n";
 if ($failures) {

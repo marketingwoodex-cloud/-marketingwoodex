@@ -516,8 +516,8 @@ working as intended, not a gap hidden by a fallback.
 
 ### Phase 3 — Content, assets and delivery · **in progress** · 4 weeks
 
-*Measured at this commit:* `tests/run.php` **995 passed · 0 failed · 13 skipped** · `tests/conformance.mjs`
-**84 · 0** · php-lint **157 files** · `admin-v25` smoke **147 checks · 65 routes** · legacy bridge **150 of 365
+*Measured at this commit:* `tests/run.php` **1049 passed · 0 failed · 13 skipped** · `tests/conformance.mjs`
+**84 · 0** · php-lint **159 files** · `admin-v25` smoke **150 checks · 65 routes** · legacy bridge **150 of 365
 actions** (41%). Migrations **000–014** are written and none has run on a database yet.
 
 Three generators are part of this phase's gate rather than a convention, because each one replaces a second
@@ -643,8 +643,11 @@ already did.
 |---|---|---|
 | The thin bar above the header — on or off, the words, an optional link, three colours — the same file v2.1's site read | `api/v2/lib/announce.php`, `api/v2/routes/chrome.php` (`GET\|POST /chrome/announce`), `admin-v25/src/screens/LiveGlobal.tsx` (Header & footer → Announcement bar), `assets/site.js` + `assets/site.css` (the two halves), `assets/announce.json` (runtime state, not in git) | The feature was working in the **older copy** of this site and absent from the files `index.html` actually links, so the console could save an announcement no page could draw — the exact shape of "the screen says saved and nothing appeared". Both halves ship here, re-aimed at this design: the header is `position:fixed`, so the bar offsets it by its own 36px (and the mobile menu with it) rather than pushing a flowing header down with a margin. The screen reports which half is missing, and how many pages load the script, instead of promising a bar. The write is the atomic JSON store — v2.1's `file_put_contents(…, LOCK_EX)` truncated before it locked, so a page fetched during a save could get half a file and show nothing — the **version moves only when the announcement changed**, because it is the key a visitor's dismissal is remembered under, and the record is v2.1's six keys so the older site still renders the same file. A conformance check runs the shipped block against a stub browser and asserts the bar it puts on the page |
 
+| Delivered — the AI settings, and the first call this API makes outward | Where | Note |
+|---|---|---|
+| The four providers, their keys and models, the writing voice, the model list, and one small test call | `api/v2/lib/ai.php` (`wx_ai_*`), `api/v2/routes/ai.php` (`GET\|POST /ai/settings`, `POST /ai/models`, `POST /ai/test`), `admin-v25/src/components/AiSettings.tsx` at the foot of the Content screen | The record lives in **v2.1's own file** (`_private/content.json`), so the old admin and the new one read the same settings while the strangler runs — and a save carries the rest of that file through untouched. Four things v2.1 did are each a decision here: a read could leak a key, so `wx_ai_pub()` is now the only serialiser and the tests assert the key appears nowhere in the answer; an empty key field meant *erase*, so absent and empty both mean *keep* and only `<k>Clear` deletes — with a reason, because a form that wipes keys when somebody fixes a typo in the voice is a form that loses the studio's keys; `clip($v, 300)` shortened a mistyped key into a shorter, wrong one that failed later with a provider error, so this refuses by field; and the request, the response and the model filter sat inside one function that only ran with cURL and a key, so they are three pure functions now — which is why they are tested at all in a sandbox with no cURL, no key and no route to a provider. What that leaves untested is one `curl_exec()` and the honest report of it |
 **Still to come in this phase:**
-the AI settings in the CMS (`cms_ai_*`), SEO screens and integrations. The builder's 19 actions are all
+services and cities, the SEO screens and the integrations. The builder's 19 actions are all
 accounted for: 17 bridged, 2 named above as decisions.
 
 ### Phase 4 — Automation and intelligence · 3 weeks

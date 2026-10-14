@@ -40,6 +40,49 @@ export interface LiveState<T> {
  * @param path the resource path, e.g. "/dashboard" — or null to stay idle
  * @param key  a value to watch (a filter, a page number); it is not sent, it only triggers a reload
  */
+/** `GET /ai/settings` — v2.1's record with every key reported as *set or empty*, never as a value. */
+export interface AiRecord {
+  provider: string;
+  voice: string;
+  customUrl: string;
+  customModel: string;
+  customKeySet: boolean;
+  anthropicModel: string;
+  anthropicKeySet: boolean;
+  openaiModel: string;
+  openaiKeySet: boolean;
+  openrouterModel: string;
+  openrouterKeySet: boolean;
+  ready: boolean;
+}
+
+/** One of the four providers, with what is stored for it. */
+export interface AiProvider {
+  id: string;
+  label: string;
+  model: string;
+  keySet: boolean;
+  ready: boolean;
+}
+
+/** `GET /ai/settings` */
+export interface AiState {
+  ai: AiRecord;
+  providers: AiProvider[];
+  limits: { voice: number; field: number };
+  file: string;
+  exists: boolean;
+  server: { curl: boolean; cafile: boolean; ready: boolean; provider: string };
+  /** Which fields the last save actually changed — absent on a read. */
+  changed?: string[];
+}
+
+/** `POST /ai/models` */
+export interface AiModels {
+  models: string[];
+  recommended: string;
+}
+
 export function useLive<T>(path: string | null, key: unknown = null): LiveState<T> {
   const { link, me, demo } = useSession();
   const enabled = link === "live" && me !== null && path !== null;

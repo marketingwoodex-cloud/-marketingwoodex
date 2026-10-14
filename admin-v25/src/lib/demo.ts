@@ -14,6 +14,7 @@
  */
 import type {
   ApprData, ApprDetailData,
+  AiModels, AiState,
   BizData, BizRecord, CompanyData, CompanyRecord,
   EstData, FormsData, HeroHomeData, HeroPageData, HeroScanData,
   NotifyData, ProjDetail, ProjList, ProjRow, TplsData,
@@ -516,6 +517,35 @@ const APPR_ONE: ApprDetailData = {
   },
 };
 
+const AI_STATE: AiState = {
+  ai: {
+    provider: "anthropic",
+    voice:
+      "Calm, plain, confident British English. Short sentences. No hype, no exclamation marks. Woodex Interior is a design, fit-out and renovation studio in Lahore, Pakistan.",
+    customUrl: "", customModel: "", customKeySet: false,
+    anthropicModel: "claude-sonnet-4-5", anthropicKeySet: true,
+    openaiModel: "gpt-4o-mini", openaiKeySet: true,
+    openrouterModel: "nousresearch/hermes-3-llama-3.1-405b", openrouterKeySet: false,
+    ready: true,
+  },
+  providers: [
+    { id: "anthropic", label: "Claude (Anthropic)", model: "claude-sonnet-4-5", keySet: true, ready: true },
+    { id: "openai", label: "OpenAI", model: "gpt-4o-mini", keySet: true, ready: true },
+    { id: "openrouter", label: "OpenRouter", model: "nousresearch/hermes-3-llama-3.1-405b", keySet: false, ready: false },
+    { id: "custom", label: "Custom / local endpoint", model: "", keySet: false, ready: false },
+  ],
+  limits: { voice: 800, field: 300 },
+  file: "content.json",
+  exists: true,
+  server: { curl: true, cafile: true, ready: true, provider: "anthropic" },
+};
+
+/** What a provider would answer: the chat families only, as the API filters them. */
+const AI_MODELS: AiModels = {
+  models: ["claude-sonnet-4-5", "claude-opus-4-1", "claude-3-7-sonnet-latest"],
+  recommended: "claude-sonnet-4-5",
+};
+
 const FIXTURES: Record<string, unknown> = {
   "/approvals": APPR,
   "/approvals/{id}": APPR_ONE,
@@ -530,6 +560,8 @@ const FIXTURES: Record<string, unknown> = {
   "/heroes/home": HERO_HOME,
   "/heroes/page*": HERO_PAGE,
   "/quotations/templates": TEMPLATES,
+  "/ai/settings": AI_STATE,
+  "/ai/models": AI_MODELS,
 };
 
 /** The sample for a path, or null when this screen has none yet. */
@@ -550,4 +582,5 @@ export function demoFixture(path: string): unknown | null {
 export const DEMO_COVERED = [
   "/projects", "/projects/{id}", "/notifications", "/forms", "/estimator", "/heroes", "/heroes/home", "/heroes/page*",
   "/quotations/templates", "/business", "/business/company", "/approvals", "/approvals/{id}",
+  "/ai/settings", "/ai/models",
 ];
