@@ -240,6 +240,19 @@ function wx_routes(): array
         ['POST',   'seo/pages/{rel:any}/suggest',     'seo',   'wx_route_seo_suggest',     'seo_ai'],
         ['POST',   'seo/pages/{rel:any}',             'seo',   'wx_route_seo_save',        'seo_save'],
 
+        /* ------------------------------------------------------------ the studio's integrations
+           v2.1's Settings → Integrations: 24 cards in a gallery and the records behind seven actions. Five of
+           the seven have a route — the other two (`conn_gmail_send`, `conn_gmail_use`) are a real SMTP client
+           this API does not have yet, and `wx_conn_list()` says so where the screen can read it. The action
+           names are v2.1's: `conn_save`/`conn_delete` queue for a Manager, `conn_test` is skipped by the
+           policy's `_test` rule, and `conn_push` is in `WX_APPR_NEVER` with its reason (the cron calls the
+           same function). */
+        ['GET',    'connectors',                      'connectors', 'wx_route_connectors_list',   'conn_list'],
+        ['POST',   'connectors',                      'connectors', 'wx_route_connectors_save',   'conn_save'],
+        ['DELETE', 'connectors/{id}',                 'connectors', 'wx_route_connectors_delete', 'conn_delete'],
+        ['POST',   'connectors/{id}/test',            'connectors', 'wx_route_connectors_test',   'conn_test'],
+        ['POST',   'connectors/{id}/push',            'connectors', 'wx_route_connectors_push',   'conn_push'],
+
         ['GET',    'media',                           'media', 'wx_route_media_list',      'media_list'],
         ['GET',    'media/alt',                       'media', 'wx_route_media_alt_queue', 'media_alt'],
         ['POST',   'media/alt',                       'media', 'wx_route_media_alt_save',  'media_alt'],

@@ -3293,6 +3293,140 @@ foreach (['seo_list', 'seo_page', 'seo_save', 'seo_scores', 'seo_robots_save', '
         'v2.1\'s ' . $seoAction . ' still lands on a handler');
 }
 
+/* ================================================== the studio's integrations
+   The store holds credentials, so these tests never touch the real file: `WX_CONN_TEST_FILE` is the seam, and
+   the first thing asserted about the file itself is its mode. The two test branches that decide from the shape
+   of what was saved run here; the branch that calls out does not, because a test must not depend on a network
+   to prove that "the token was rejected" is a sentence rather than an exception. */
+
+define('WX_CONN_TEST_FILE', sys_get_temp_dir() . '/wx-conn-test.json');
+@unlink(WX_CONN_TEST_FILE);
+
+$connMe = ['name' => 'Test Owner', 'role' => 'owner'];
+throws('VALIDATION', 'name', static fn() => wx_conn_save(['name' => '   '], $connMe),
+    'a connector with no name is refused, and the field is named');
+throws('VALIDATION', 'url', static fn() => wx_conn_save(['name' => 'Slack', 'url' => 'slack.com/hooks'], $connMe),
+    'an address that is not http(s) is refused');
+
+$connSaved = wx_conn_save(['name' => 'GitHub backups', 'key' => 'github', 'cat' => 'Backups',
+    'account' => 'woodex/site', 'secret' => 'ghp_ABCDEFGH1234'], $connMe);
+$connItem = $connSaved['item'];
+ok(!array_key_exists('secret', $connItem) && $connItem['hasSecret'] === true,
+    'the record comes back without the secret, saying there is one');
+eq($connItem['hint'] ?? null, '1234', 'and with its last four characters, which is all a screen needs');
+eq($connItem['status'], 'connected', 'a record with a token and an account reads as connected');
+$connId = (string) $connItem['id'];
+eq(substr(sprintf('%o', fileperms(WX_CONN_TEST_FILE)), -4), '0600',
+    'and the file holding it is readable only by the account that owns it');
+
+$connEdit = wx_conn_save(['id' => $connId, 'name' => 'GitHub backup repo', 'key' => 'github'], $connMe);
+ok($connEdit['item']['hasSecret'] === true, 'saving without sending a secret keeps the one already there');
+$connCleared = wx_conn_save(['id' => $connId, 'name' => 'GitHub backup repo', 'key' => 'github', 'secret' => ''], $connMe);
+ok($connCleared['item']['hasSecret'] === false,
+    'and sending an empty one clears it — v2.1 could not, so a revoked token could only be fixed by deleting the record');
+eq($connCleared['item']['hint'] ?? null, null, 'with no last-four hint left behind');
+
+/* The checks that decide from the shape of what was saved. */
+$connBad = wx_conn_save(['name' => 'GH wrong', 'key' => 'github', 'account' => 'not-a-repo'], $connMe);
+$connT = wx_conn_test((string) $connBad['item']['id'], $connMe);
+ok($connT['pass'] === false && str_contains($connT['message'], 'owner/name'),
+    'a repository that is not owner/name fails its test, and the sentence says what to fix');
+$connGm = wx_conn_save(['name' => 'Gmail', 'key' => 'gmail', 'account' => 'studio@gmail.com', 'secret' => 'abcdefghijklmnop'], $connMe);
+ok(wx_conn_test((string) $connGm['item']['id'], $connMe)['pass'] === true,
+    'a Gmail address with a 16-letter app password passes, and the sentence names the mail channel');
+$connGmBad = wx_conn_save(['name' => 'Gmail 2', 'key' => 'gmail', 'account' => 'studio@gmail.com', 'secret' => 'short'], $connMe);
+ok(wx_conn_test((string) $connGmBad['item']['id'], $connMe)['pass'] === false, 'and an ordinary password fails it');
+$connDr = wx_conn_save(['name' => 'Drive', 'key' => 'gdrive', 'account' => 'https://drive.google.com/drive/folders/1AbC-xyz'], $connMe);
+ok(wx_conn_test((string) $connDr['item']['id'], $connMe)['pass'] === true, 'a Drive folder link passes its own check');
+
+/* A push refuses before it reaches a network when the record is not ready — the honest half of the action. */
+$connPush = wx_conn_push_id((string) $connDr['item']['id'], $connMe);
+ok($connPush['pass'] === false && str_contains($connPush['message'], 'Apps Script'),
+    'a push with no Apps Script address is refused, naming what is missing');
+$connCustom = wx_conn_save(['name' => 'Facebook', 'key' => 'facebook', 'account' => 'page-id'], $connMe);
+$connPushC = wx_conn_push_id((string) $connCustom['item']['id'], $connMe);
+ok($connPushC['pass'] === false && str_contains($connPushC['message'], 'GitHub and Google Drive'),
+    'and a connector that is not a backup target says which two are');
+
+/* The backup itself: the pages, the public files, and the database without the logins. */
+[$connZip, $connZipErr] = wx_conn_offsite_zip();
+if ($connZip === '') {
+    eq($connZipErr, 'The ZipArchive PHP extension is not enabled, so there is nothing to upload',
+        'without ZipArchive the backup refuses with the sentence that names it, rather than pretending');
+} else {
+    $connZ = new ZipArchive();
+    ok($connZ->open($connZip) === true, 'the off-site backup is a real zip (' . round(filesize($connZip) / 1024) . ' KB)');
+    $connNames = [];
+    for ($i = 0; $i < $connZ->numFiles; $i++) {
+        $connNames[] = (string) $connZ->getNameIndex($i);
+    }
+    ok(in_array('index.html', $connNames, true), 'holding the site pages');
+    ok(in_array('database.json', $connNames, true), 'and a database dump');
+    ok(!in_array('_private/' . WX_CONN_FILE, $connNames, true) && !in_array('_private/db.json', $connNames, true),
+        'and none of the private files a backup must never carry');
+    $connDump = json_decode((string) $connZ->getFromName('database.json'), true);
+    ok(is_array($connDump) && $connDump !== [],
+        'the dump is JSON holding the tables — or, on a host whose database cannot be read, the reason, which is the '
+        . 'one thing a silently empty backup hides');
+    ok(!array_key_exists('wx_users', (array) $connDump), 'and logins are not in it');
+    $connZ->close();
+    @unlink($connZip);
+}
+
+/* The daily rule, exercised offline: a Drive record whose push refuses before it calls out. */
+$connTick = wx_conn_save(['name' => 'Drive daily', 'key' => 'gdrive', 'on' => true, 'secret' => 'script-key-1234',
+    'account' => 'https://drive.google.com/drive/folders/1AbC-xyz'], $connMe);
+$connLines = wx_conn_tick();
+ok(count($connLines) >= 1 && str_contains(implode(' | ', $connLines), 'Drive daily'),
+    'the daily tick tries every switched-on backup target once');
+$connAfter = wx_conn_items();
+$connIdx = wx_conn_index($connAfter, (string) $connTick['item']['id']);
+ok($connIdx >= 0 && (int) $connAfter[$connIdx]['lastPush'] > 0, 'and records when it ran, so the next tick leaves it alone');
+ok(wx_conn_tick() === [], 'so running it twice does nothing — twenty hours is the rule, not "every time the cron wakes"');
+
+/* The generated gallery, and the delete. */
+$connCat = wx_conn_catalog();
+eq(count($connCat['cards']), 24, 'the generated gallery has its 24 cards');
+eq(count($connCat['tabs']), 5, 'five tabs');
+eq(count($connCat['featured']), 9, 'and nine featured');
+ok(isset($connCat['cards'][0]['key'], $connCat['cards'][0]['account'], $connCat['cards'][0]['secret'], $connCat['cards'][0]['help']),
+    'each card says what to paste into both fields and how to find it');
+$connLeft = wx_conn_delete((string) $connCustom['item']['id'], $connMe);
+ok(!in_array((string) $connCustom['item']['id'], array_column($connLeft['items'], 'id'), true),
+    'deleting a record takes it out of the list');
+throws('NOT_FOUND', null, static fn() => wx_conn_delete('c0000000000', $connMe),
+    'and an id nobody saved is a 404 rather than a silent success');
+
+/* ==================================================== integrations, as wiring
+   The path, the handler and the policy's action name, asserted together — and the two actions this API has no
+   SMTP client for asserted *absent*, so a later turn adds them on purpose rather than by accident. */
+
+$connList = $find('GET', 'connectors');
+ok($connList !== null && $connList['handler'] === 'wx_route_connectors_list', 'the screen reads GET connectors');
+eq($connList['action'] ?? null, 'conn_list', 'through v2.1\'s own action name');
+$connSaveRoute = $find('POST', 'connectors');
+ok($connSaveRoute !== null && ($connSaveRoute['action'] ?? null) === 'conn_save', 'a save is POST connectors');
+eq(wx_appr_needed('admin', 'conn_save'), true, 'and it is a change a Manager must ask the Master about');
+eq(wx_appr_needed('admin', 'conn_test'), false, 'while a test is never queued — the policy\'s own `_test` rule');
+eq(wx_appr_needed('admin', 'conn_push'), false, 'and a backup push is not queued either');
+ok(isset(WX_APPR_NEVER['conn_push']) && WX_APPR_NEVER['conn_push'] !== '',
+    'because the policy names that decision, with the reason that the same function is the scheduled daily backup');
+ok($find('DELETE', 'connectors/{id}') !== null && $find('POST', 'connectors/{id}/test') !== null
+    && $find('POST', 'connectors/{id}/push') !== null, 'with a route each for delete, test and push');
+$connUnported = wx_conn_list()['unported'];
+ok(isset($connUnported['conn_gmail_send'], $connUnported['conn_gmail_use']),
+    'and the two actions this API has no SMTP client for are named where the screen can read them');
+$connBridge = wx_legacy_bridged();
+foreach (['conn_list', 'conn_save', 'conn_delete', 'conn_test', 'conn_push'] as $connAction) {
+    ok(isset($connBridge[$connAction]) && function_exists($connBridge[$connAction][1]),
+        'v2.1\'s ' . $connAction . ' still lands on a handler');
+}
+ok(!isset($connBridge['conn_gmail_send']) && !isset($connBridge['conn_gmail_use']),
+    'and the two that are not ported are not bridged to something that does not exist');
+eq(wx_legacy_params(['id' => 'id'], ['id' => 'c1a2b3c4d5'], []), ['id' => 'c1a2b3c4d5'],
+    'a bridged connector id stays a string — `[\'id\']` would cast it to an int and address connector 0');
+@unlink(WX_CONN_TEST_FILE);
+
 /* ============================================================== report */
 echo "\n";
 if ($failures) {

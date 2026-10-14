@@ -182,6 +182,13 @@ function wx_legacy_bridged(): array
            wrote, `faq` a count) — see the note at the top of `routes/seo.php`. The one semantic difference is
            `seo_scores`: v2.1 stored the numbers a browser computed, and this recomputes them instead, which is
            why the old screen's own arithmetic still shows and the store no longer carries a second opinion. */
+        /* The studio's integrations. The id is a string (`c` + ten hex characters), so it is mapped as a
+           string — `['id']` would cast it to an int and every bridged call would address connector 0. */
+        'conn_list'       => ['connectors', 'wx_route_connectors_list', []],
+        'conn_save'       => ['connectors', 'wx_route_connectors_save', []],
+        'conn_delete'     => ['connectors', 'wx_route_connectors_delete', ['id' => 'id']],
+        'conn_test'       => ['connectors', 'wx_route_connectors_test', ['id' => 'id']],
+        'conn_push'       => ['connectors', 'wx_route_connectors_push', ['id' => 'id']],
         'seo_list'         => ['seo', 'wx_route_seo_pages', []],
         'seo_page'         => ['seo', 'wx_route_seo_page', ['path' => 'rel']],
         'seo_save'         => ['seo', 'wx_route_seo_save', ['path' => 'rel']],

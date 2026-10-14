@@ -465,7 +465,7 @@ function wx_http_cafile(): ?string
  * @param array<int,string> $headers
  * @return array{code:int,json:array,raw:string}
  */
-function wx_http_call(string $url, array $headers, ?array $body, int $timeout): array
+function wx_http_call(string $url, array $headers, ?array $body = null, int $timeout = 20, ?string $method = null, bool $throwOnStatus = true): array
 {
     if (!function_exists('curl_init')) {
         throw ApiError::upstream('This server has no cURL extension, so the console cannot reach a provider');
@@ -478,6 +478,13 @@ function wx_http_call(string $url, array $headers, ?array $body, int $timeout): 
         CURLOPT_CONNECTTIMEOUT => 8,
         CURLOPT_FOLLOWLOCATION => false,
     ];
+    /* The two options the connectors need and no AI call does. A method, because GitHub takes a file through
+       the contents API with a PUT; and the choice of whether a refused status is an exception or an answer,
+       because a *test* action exists to report "the token was rejected" — the sentence that tells somebody
+       what to fix — while a *call* action must not swallow it. One implementation either way. */
+    if ($method !== null) {
+        $opts[CURLOPT_CUSTOMREQUEST] = strtoupper($method);
+    }
     $ca = wx_http_cafile();
     if ($ca !== null) {
         $opts[CURLOPT_CAINFO] = $ca;
@@ -499,7 +506,7 @@ function wx_http_call(string $url, array $headers, ?array $body, int $timeout): 
     }
     $json = json_decode((string) $raw, true);
     $json = is_array($json) ? $json : [];
-    if ($code >= 400) {
+    if ($code >= 400 && $throwOnStatus) {
         $said = (string) ($json['error']['message'] ?? $json['message'] ?? ('HTTP ' . $code));
         throw ApiError::upstream('The provider refused it: ' . mb_substr($said, 0, 240));
     }

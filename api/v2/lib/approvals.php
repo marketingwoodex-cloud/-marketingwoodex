@@ -62,6 +62,7 @@ const WX_APPR_NEVER = [
     /* Rebuilding sitemap.xml writes a file the site derives from its pages. It takes a line out for a page
        somebody has already unpublished — a correction, not a change to approve — and v2.1 never queued it
        ("sitemap" is not a queued verb, and `seo_sitemap` ran from the SEO screen for anyone who could open it). */
+    'conn_push' => 'the same function is the scheduled daily backup - a job cannot sit in a queue waiting for the Master',
     'seo_sitemap' => 'a sitemap is derived from the pages - rebuilding it corrects the file rather than changing the site',
 ];
 const WX_APPR_BUILDER_WRITE = ['save', 'restore', 'theme', 'page_new', 'media_delete', 'blocks_save', 'blocks_delete', 'blocks_import', 'blocks_sync'];

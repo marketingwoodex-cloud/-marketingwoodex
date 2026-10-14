@@ -109,6 +109,7 @@ require_once WX_V2_DIR . '/lib/templates.php';
 require_once WX_V2_DIR . '/lib/business.php';
 require_once WX_V2_DIR . '/lib/pageedit.php';
 require_once WX_V2_DIR . '/lib/seo.php';
+require_once WX_V2_DIR . '/lib/connectors.php';
 require_once WX_V2_DIR . '/lib/theme.php';
 require_once WX_V2_DIR . '/lib/fetch.php';
 require_once WX_V2_DIR . '/lib/auth.php';

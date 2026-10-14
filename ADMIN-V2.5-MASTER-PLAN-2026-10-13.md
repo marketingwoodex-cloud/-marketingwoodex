@@ -516,9 +516,9 @@ working as intended, not a gap hidden by a fallback.
 
 ### Phase 3 — Content, assets and delivery · **in progress** · 4 weeks
 
-*Measured at this commit:* `tests/run.php` **1237 passed · 0 failed · 14 skipped** · `tests/conformance.mjs`
-**86 · 0** · php-lint **161 files** · `admin-v25` smoke **171 checks · 65 routes** · legacy bridge **158 of 365
-actions** (43%). Migrations **000–014** are written and none has run on a database yet.
+*Measured at this commit:* `tests/run.php` **1283 passed · 0 failed · 14 skipped** · `tests/conformance.mjs`
+**86 · 0** · php-lint **163 files** · `admin-v25` smoke **171 checks · 65 routes** · legacy bridge **163 of 365
+actions** (45%). Migrations **000–014** are written and none has run on a database yet.
 
 Three generators are part of this phase's gate rather than a convention, because each one replaces a second
 hand-typed copy of something the site already owns: `tools/gen-aliases.mjs --check` (365 actions),
@@ -659,9 +659,19 @@ already did.
 |---|---|---|
 | Every page audited against the rules, the phrase each page is aiming at, its structured data, `robots.txt` and `sitemap.xml` | `api/v2/lib/seo.php`, `api/v2/routes/seo.php` (`GET /seo/pages`, `POST /seo/pages/{rel}`, `POST …/suggest`, `GET\|POST /seo/robots`, `GET\|POST /seo/sitemap`), `admin-v25/src/screens/LiveSeo.tsx` on `/seo` | The audit was a browser loop — `admin-seo38.js` fetched all 150 pages six at a time, parsed them with `DOMParser` and posted its numbers back into `_private/seo.json`, so a stored score could say a page was an 82 while the page had no description. It is one server-side read now, and no score is stored: the route that used to receive one recomputes it. The rules became two functions with no I/O (`wx_seo_issues()`, `wx_seo_score()` — the findings and nothing else, error 8, warn 3, note 1, floored at zero), which is the only reason they are tested at all here. The page's own head stays `page_meta_save`'s business; this screen reads it and says what Google will do with it. A schema choice is written as one managed JSON-LD block through the versioned writer, so it is in the page's history and rolls back from there. Both public files keep v2.1's refusals (`Disallow: /` needs asking twice; a rebuild never deletes an address no page explains), and the sitemap now follows the status *out* as well as in. One router change was needed: `{rel:any}` — a page in a folder is one parameter, not three segments nobody matches |
 
-**Still to come in this phase:**
-the integrations. The builder's 19 actions are all
-accounted for: 17 bridged, 2 named above as decisions.
+| The studio's integrations: 24 gallery cards, and the connections that do work | `api/v2/lib/connectors.php`, `api/v2/routes/connectors.php` (5 routes), `api/v2/data/connectors.json` (generated from `frontend-v1/admin/admin-conn.js` by `tools/gen-connectors.mjs` — 24 cards, 5 tabs, 9 featured, drift-checked), `_private/connectors.json` (0600, runtime, never in git), `api/v2/lib/http.php` (`wx_http_call()` gained a method and a "do not throw on a status" mode) | v2.1's gallery was 24 cards of markup with the instructions to paste inside them; here the cards are read from a generated file so the console can search them and a card cannot drift from the screen that shows it. The records are the other half, and the write-only rule is why the file is 0600: a token is stored and read back as its last four characters, so it cannot be lifted out of a screenshot or a shared page. An *absent* secret keeps the stored one and an empty one clears it — v2.1 could not clear one, so a revoked token could only be fixed by deleting the record. `conn_test`'s GitHub, Gmail and Drive branches decide from the shape of what was saved (no network in a test run), and its sentences are v2.1's because those sentences are the only instructions the owner gets. The backup is built the way v2.1 built it — the pages, the public files, the database minus logins and settings — and the test asserts the zip *contains* those and not the private files. |
+
+**The integrations — the API half is in, the screen is next.** Five of v2.1's seven `conn_*` actions have a
+route and a handler: `GET /connectors` (the records, the generated 24-card gallery, and whether this host has
+ZipArchive and cURL, which is whether a backup is possible at all), `POST /connectors` (`conn_save`, queued for a
+Manager), `DELETE /connectors/{id}`, `POST /connectors/{id}/test` and `POST /connectors/{id}/push`. The store is
+`_private/connectors.json` at 0600 because it holds tokens and app passwords; the backup is the pages, the public
+files and the database without `wx_users`, `wx_throttle` or `wx_settings`; and `conn_push` is recorded in
+`WX_APPR_NEVER` with its reason — the same function is the daily tick, and a scheduled job cannot wait in a queue.
+**`conn_gmail_send` and `conn_gmail_use` are deliberately absent**: they need an SMTP client this API does not have
+yet (`lib/notify.php` says so in its own header), and they are named in `wx_conn_list()['unported']` rather than
+half-written. **Still to come: the `/connectors` console screen** — the tile it replaces already names these
+actions. The builder's 19 actions are all accounted for: 17 bridged, 2 named above as decisions.
 
 ### Phase 4 — Automation and intelligence · 3 weeks
 
