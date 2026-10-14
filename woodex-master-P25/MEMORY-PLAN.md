@@ -99,7 +99,7 @@ frontend-v1/      the live site (§2)
 woodex-master-P25/  the release pack: README · CHANGELOG · MANIFEST.json · this file · the zip
 ```
 
-`api/v2/lib/announce.php` and `lib/ai.php` do **not** exist yet — that is the next slice (§8a, §8b).
+`api/v2/lib/ai.php` does **not** exist yet — that is the next slice (§8a).
 
 House rules that the codebase now enforces, and that a new file must not break:
 
@@ -284,17 +284,23 @@ Shape for v2.5: `lib/ai.php` + `routes/ai.php` (`GET|POST /ai/settings`, `POST /
 parts — the model filter and the request builder — separately from the network call, because this sandbox
 cannot reach a provider.
 
-### b. The announcement bar (`cms_announce_*`)
+### b. The announcement bar — delivered, and worth reading before touching
 
-Same family, same pattern: `assets/announce.json` — `{on, text, link, linkText, style, v}`; text ≤ 160,
-linkText ≤ 40; link must match `^(/[^\s"<>]*|https://[^\s"<>]+|tel:\+?[0-9 ]+|mailto:[^\s"<>]+)$`; styles
-`navy|wood|cream`; `on` with empty text is a validation error naming the field; `v` is the visitor's
-dismissal key and moves only when the announcement changes. The site already reads that file (§2). The
-console's screen is Header & footer. Written with `wx_write_file_atomic()` and a backup — v2.1 truncated
-before it locked.
+Built already (`api/v2/lib/announce.php`, `GET|POST /chrome/announce`, the panel in `LiveGlobal.tsx`, the
+site's own script in `assets/site.js`), and it is the clearest example of this project's recurring shape: the
+server half is small and the honest half is smaller. The contract, kept exactly:
 
-Order matters: the announcement is the smaller slice and the site side is already verified; the AI
-settings are larger and need the panel decision.
+- `assets/announce.json` — `{on, text, link, linkText, style, v}`; text ≤ 160, linkText ≤ 40;
+- the link must match `^(/[^\s"<>]*|https://[^\s"<>]+|tel:\+?[0-9 ]+|mailto:[^\s"<>]+)$`;
+- styles `navy|wood|cream`; `on` with empty text is a validation error naming the field;
+- `v` is the visitor's dismissal key and moves only when the announcement changes;
+- the write is atomic (`wx_write_file_atomic()`) — v2.1 truncated before it locked, so a page fetched during
+  a save could get half a file and show nothing at all.
+
+The feature had been working in the *older copy* of this site and was absent from the files `index.html`
+actually links, so the console could have saved an announcement no visitor could ever see. That is why the
+screen reports which half is missing — and how many pages load the script — instead of promising a bar, and
+why the site side (`assets/site.js` + `assets/site.css`) shipped in the same slice.
 
 ### c. Then the rest of Phase 3
 
