@@ -2927,9 +2927,10 @@ ok(wx_ai_configured(['provider' => 'anthropic', 'anthropicKey' => 'k']), 'and on
 
 /* The request itself is the one thing this sandbox cannot run: there is no cURL and no provider to reach.
    What can be asserted is that whichever of the two is missing is named — blaming the key is what sends
-   somebody to check a key that was fine. */
+   somebody to check a key that was fine. Since the connectors slice the wrapper is `wx_http_call()`, in
+   `lib/http.php`: the API makes one outward call implementation, not one per slice. */
 if (!function_exists('curl_init')) {
-    throws('UPSTREAM', null, static fn() => wx_ai_http('https://example.com/', [], null, 1), 'without cURL the failure names the extension rather than the key');
+    throws('UPSTREAM', null, static fn() => wx_http_call('https://example.com/', [], null, 1), 'without cURL the failure names the extension rather than the key');
 } else {
     ok(true, 'cURL is present on this host, so the request half runs here');
 }

@@ -77,8 +77,6 @@ const WX_AI_TIMEOUT_CALL = 60;
 /** A custom endpoint has to be an address a server can dial. v2.1's rule. */
 const WX_AI_URL_RE = '~^https?://[^\s]+$~i';
 
-/** The CA bundle v2.1 shipped, relative to `api/` — the file this API lives beside. */
-const WX_AI_CAFILE = 'cacert.pem';
 
 /** Models the chat endpoints do not serve... */
 const WX_AI_MODEL_DROP = '~(embed|whisper|tts|dall-e|image|audio|realtime|moderation|transcribe|search)~i';
@@ -102,14 +100,6 @@ function wx_ai_store(): JsonStore
        it could erase them, so the tests point this at a scratch file instead. */
     $file = defined('WX_AI_TEST_FILE') ? WX_AI_TEST_FILE : WX_PRIVATE_DIR . '/' . WX_AI_FILE;
     return new JsonStore($file, true, 0600);
-}
-
-/** Where the CA bundle is, if this installation has one. cURL needs it on a host whose PHP has no system store. */
-function wx_ai_cafile(): ?string
-{
-    $p = WX_V2_DIR . '/../' . WX_AI_CAFILE;
-    $p = is_file($p) ? $p : WX_SITE_ROOT . '/api/' . WX_AI_CAFILE;
-    return is_file($p) ? $p : null;
 }
 
 /**
@@ -392,54 +382,6 @@ function wx_ai_models_clean(string $provider, array $rows): array
     return ['models' => array_slice($ids, 0, WX_AI_MODELS_MAX), 'recommended' => $best];
 }
 
-/**
- * One HTTP request. The only `curl_exec()` in this API, so everything that can be decided without the
- * network is decided elsewhere and this stays the part that cannot be tested here.
- *
- * @param array<int,string> $headers
- * @return array{code:int,json:array,raw:string}
- */
-function wx_ai_http(string $url, array $headers, ?array $body, int $timeout): array
-{
-    if (!function_exists('curl_init')) {
-        throw ApiError::upstream('This server has no cURL extension, so the console cannot reach a provider');
-    }
-    $ch = curl_init($url);
-    $opts = [
-        CURLOPT_HTTPHEADER => $headers,
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_TIMEOUT => $timeout,
-        CURLOPT_CONNECTTIMEOUT => 8,
-        CURLOPT_FOLLOWLOCATION => false,
-    ];
-    $ca = wx_ai_cafile();
-    if ($ca !== null) {
-        $opts[CURLOPT_CAINFO] = $ca;
-    }
-    if ($body !== null) {
-        $opts[CURLOPT_POST] = true;
-        $opts[CURLOPT_POSTFIELDS] = json_encode($body, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
-    }
-    curl_setopt_array($ch, $opts);
-    $raw = curl_exec($ch);
-    $code = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    $err = curl_error($ch);
-    curl_close($ch);
-
-    if ($raw === false) {
-        /* A message that names the host and the error, and never the headers — the headers carry the key. */
-        $host = (string) (parse_url($url, PHP_URL_HOST) ?: $url);
-        throw ApiError::upstream('Could not reach ' . $host . ': ' . mb_substr($err, 0, 200));
-    }
-    $json = json_decode((string) $raw, true);
-    $json = is_array($json) ? $json : [];
-    if ($code >= 400) {
-        $said = (string) ($json['error']['message'] ?? $json['message'] ?? ('HTTP ' . $code));
-        throw ApiError::upstream('The provider refused it: ' . mb_substr($said, 0, 240));
-    }
-    return ['code' => $code, 'json' => $json, 'raw' => (string) $raw];
-}
-
 /** Fetch a provider's model list. Types a key before it is saved — v2.1 let you test a key from the field. */
 function wx_ai_models_fetch(array $in): array
 {
@@ -481,7 +423,7 @@ function wx_ai_models_fetch(array $in): array
         ? ['x-api-key: ' . $key, 'anthropic-version: 2023-06-01']
         : ($key !== '' ? ['authorization: Bearer ' . $key] : []);
 
-    $res = wx_ai_http($endpoint, $headers, null, WX_AI_TIMEOUT_MODELS);
+    $res = wx_http_call($endpoint, $headers, null, WX_AI_TIMEOUT_MODELS);
     $rows = (array) ($res['json']['data'] ?? $res['json']['models'] ?? []);
     return wx_ai_models_clean($p, $rows);
 }
@@ -500,7 +442,7 @@ function wx_ai_call(array $ai, string $system, string $user): string
         throw ApiError::validation('Add a key for ' . wx_ai_provider_name($p) . ' first', $p . 'Key');
     }
     $req = wx_ai_request($ai, $system, $user);
-    $res = wx_ai_http($req['url'], $req['headers'], $req['body'], WX_AI_TIMEOUT_CALL);
+    $res = wx_http_call($req['url'], $req['headers'], $req['body'], WX_AI_TIMEOUT_CALL);
     $text = wx_ai_text($p, $res['json']);
     if (trim($text) === '') {
         throw ApiError::upstream('The provider answered with nothing to use');
@@ -542,7 +484,7 @@ function wx_ai_state(): array
            does: whether this PHP can make the request at all, and whether a key or an address is in place. */
         'server' => [
             'curl' => function_exists('curl_init'),
-            'cafile' => wx_ai_cafile() !== null,
+            'cafile' => wx_http_cafile() !== null,
             'ready' => wx_ai_configured($ai),
             'provider' => (string) $ai['provider'],
         ],

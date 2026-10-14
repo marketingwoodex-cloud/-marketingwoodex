@@ -434,3 +434,74 @@ function wx_is_https(): bool
     $host = (string) ($_SERVER['HTTP_HOST'] ?? '');
     return !preg_match('~^(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$~', $host);
 }
+
+
+/* ============================================================ the one outward call
+
+   Everything this API says to somebody else's server goes through `wx_http_call()`: the AI providers, the
+   connector tests and (later) the mail transport. It lives here rather than in whichever slice needed it
+   first, because a second cURL wrapper is how two of them drift — one grows the CA bundle, the other grows
+   the timeout, and the difference is invisible until a host with no system certificate store fails one call
+   and not the other.
+
+   It throws `ApiError::upstream` for a transport failure and for an HTTP error, with a message that names
+   the host and never the headers: the headers carry the key. What it deliberately does not do is decide
+   anything — the request that was sent is built by the caller, where it can be tested without a network. */
+
+/** The CA bundle's file name, looked for in the two places an installation may keep it. */
+const WX_HTTP_CAFILE = 'cacert.pem';
+
+/** Where the CA bundle is, if this installation has one. cURL needs it on a host whose PHP has no system store. */
+function wx_http_cafile(): ?string
+{
+    $p = WX_V2_DIR . '/../' . WX_HTTP_CAFILE;
+    $p = is_file($p) ? $p : WX_SITE_ROOT . '/api/' . WX_HTTP_CAFILE;
+    return is_file($p) ? $p : null;
+}
+
+/**
+ * One HTTP request — the API's only `curl_exec()`.
+ *
+ * @param array<int,string> $headers
+ * @return array{code:int,json:array,raw:string}
+ */
+function wx_http_call(string $url, array $headers, ?array $body, int $timeout): array
+{
+    if (!function_exists('curl_init')) {
+        throw ApiError::upstream('This server has no cURL extension, so the console cannot reach a provider');
+    }
+    $ch = curl_init($url);
+    $opts = [
+        CURLOPT_HTTPHEADER => $headers,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_TIMEOUT => $timeout,
+        CURLOPT_CONNECTTIMEOUT => 8,
+        CURLOPT_FOLLOWLOCATION => false,
+    ];
+    $ca = wx_http_cafile();
+    if ($ca !== null) {
+        $opts[CURLOPT_CAINFO] = $ca;
+    }
+    if ($body !== null) {
+        $opts[CURLOPT_POST] = true;
+        $opts[CURLOPT_POSTFIELDS] = json_encode($body, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+    }
+    curl_setopt_array($ch, $opts);
+    $raw = curl_exec($ch);
+    $code = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $err = curl_error($ch);
+    curl_close($ch);
+
+    if ($raw === false) {
+        /* A message that names the host and the error, and never the headers — the headers carry the key. */
+        $host = (string) (parse_url($url, PHP_URL_HOST) ?: $url);
+        throw ApiError::upstream('Could not reach ' . $host . ': ' . mb_substr($err, 0, 200));
+    }
+    $json = json_decode((string) $raw, true);
+    $json = is_array($json) ? $json : [];
+    if ($code >= 400) {
+        $said = (string) ($json['error']['message'] ?? $json['message'] ?? ('HTTP ' . $code));
+        throw ApiError::upstream('The provider refused it: ' . mb_substr($said, 0, 240));
+    }
+    return ['code' => $code, 'json' => $json, 'raw' => (string) $raw];
+}
