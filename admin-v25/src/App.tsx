@@ -30,6 +30,7 @@ import { LiveUpdates } from "./screens/LiveUpdates";
 import { LiveTemplates } from "./screens/LiveTemplates";
 import { LiveBusiness } from "./screens/LiveBusiness";
 import { LiveApprovals } from "./screens/LiveApprovals";
+import { LiveSeo } from "./screens/LiveSeo";
 import { linkLabel, useLive, type BellData } from "./lib/live";
 import { demoOn, setDemo } from "./lib/demo";
 import { Btn, Card, Note, PageHead } from "./components/primitives";
@@ -39,7 +40,7 @@ const BUILT_IDS = new Set([
   "dashboard", "leads", "enquiries", "pipeline", "quotes", "theme", "redirects", "media", "blog", "portfolio", "cities", "global", "pages", "library", "site-theme",
   "testimonials", "team", "heroes",
   "forms", "estimator", "projects", "timeline", "notifications", "templates",
-  "business", "approvals",
+  "business", "approvals", "seo",
 ]);
 
 /** The public entry point: one provider, then the app proper. */
@@ -234,6 +235,9 @@ function Frame({ demo }: { demo: boolean }) {
           <Route path="/global" element={<LiveGlobal />} />
           {/* Every page and every change — where the header change across 150 pages is undone. */}
           <Route path="/pages" element={<LivePages />} />
+          {/* What each page tells Google, and the two files Google reads. The audit runs on the server:
+              v2.1 ran it in the browser and stored the numbers the browser worked out. */}
+          <Route path="/seo" element={<LiveSeo />} />
           {/* The reusable pieces a page is assembled from, and the global sections pushed from one edit. */}
           <Route path="/library" element={<LiveLibrary />} />
           {/* The site's own colours and type — the file every page is drawn from, not the admin's palette. */}

@@ -206,12 +206,12 @@ function wx_routes(): array
         ['POST',   'pages/new',                       'pages', 'wx_route_pages_new',       'page_new'],
         /* Publishing is v2.1's `page_meta_save`: it writes the head and one word in `_private/pages.json`,
            and the sitemap follows both ways. */
-        ['POST',   'pages/{rel}/publish',             'pages', 'wx_route_pages_publish',   'page_meta_save'],
+        ['POST',   'pages/{rel:any}/publish',         'pages', 'wx_route_pages_publish',   'page_meta_save'],
         /* v2.1's `fetch_page`: read another site's page so sections can be picked out of it. */
         ['POST',   'pages/fetch',                     'pages', 'wx_route_pages_fetch',     'fetch_page'],
         ['GET',    'pages/backups',                 'pages', 'wx_route_pages_backups',   'backups'],
-        ['GET',    'pages/{rel}',                     'pages', 'wx_route_pages_get',       null],
-        ['POST',   'pages/{rel}/restore',             'pages', 'wx_route_pages_restore',   'restore'],
+        ['GET',    'pages/{rel:any}',                 'pages', 'wx_route_pages_get',       null],
+        ['POST',   'pages/{rel:any}/restore',         'pages', 'wx_route_pages_restore',   'restore'],
 
         /* ------------------------------------------------------------- the site theme
            v2.1's builder wrote a `theme.css` every page linked. This site has no such file — the live pages
@@ -222,6 +222,23 @@ function wx_routes(): array
         ['GET',    'theme',                           'theme', 'wx_route_theme_get',       'theme_get'],
         ['POST',   'theme',                           'theme', 'wx_route_theme_save',      'theme'],
         ['POST',   'theme/rollback',                  'theme', 'wx_route_theme_rollback',  null],
+
+        /* ------------------------------------------------------------- findability
+           Phase 3's last screen for the site itself. The `seo_*` actions are v2.1's, because the approval policy
+           is keyed on those names: `seo_save` ends in `save` and a Manager's change waits for the Master, while
+           `seo_sitemap` is named in `WX_APPR_NEVER` with its reason (a sitemap is derived from the pages).
+           A page's address is a path, so these carry `{rel:any}` — `insights/kitchens/index.html` is three
+           segments. `seo/audit` is a GET: it recomputes the scores and stores nothing, which is the one thing
+           it does differently from the v2.1 action it is named after. */
+        ['GET',    'seo/pages',                       'seo',   'wx_route_seo_pages',       'seo_list'],
+        ['GET',    'seo/audit',                       'seo',   'wx_route_seo_audit',       'seo_scores'],
+        ['GET',    'seo/robots',                      'seo',   'wx_route_seo_robots',      'seo_list'],
+        ['POST',   'seo/robots',                      'seo',   'wx_route_seo_robots_save', 'seo_robots_save'],
+        ['GET',    'seo/sitemap',                     'seo',   'wx_route_seo_sitemap',     'seo_sitemap'],
+        ['POST',   'seo/sitemap',                     'seo',   'wx_route_seo_sitemap_rebuild', 'seo_sitemap'],
+        ['GET',    'seo/pages/{rel:any}',             'seo',   'wx_route_seo_page',        'seo_page'],
+        ['POST',   'seo/pages/{rel:any}/suggest',     'seo',   'wx_route_seo_suggest',     'seo_ai'],
+        ['POST',   'seo/pages/{rel:any}',             'seo',   'wx_route_seo_save',        'seo_save'],
 
         ['GET',    'media',                           'media', 'wx_route_media_list',      'media_list'],
         ['GET',    'media/alt',                       'media', 'wx_route_media_alt_queue', 'media_alt'],
@@ -447,14 +464,7 @@ function wx_route_match(string $method, array $segments): ?array
             continue;
         }
         $names = [];
-        $regex = '~^' . preg_replace_callback(
-            '~\\\\\{([a-z0-9_]+)\\\\\}~',
-            static function (array $mm) use (&$names): string {
-                $names[] = $mm[1];
-                return $mm[1] === 'id' ? '(\\d+)' : '([A-Za-z0-9_.-]+)';
-            },
-            preg_quote($pattern, '~')
-        ) . '$~';
+        $regex = '~^' . wx_route_regex($pattern, $names) . '$~';
         if (preg_match($regex, $path, $mm)) {
             $params = [];
             foreach ($names as $i => $name) {
@@ -464,6 +474,34 @@ function wx_route_match(string $method, array $segments): ?array
         }
     }
     return null;
+}
+
+/**
+ * One route pattern as a regular expression, parametrising its placeholders.
+ *
+ * `{id}` is a number, `{name}` is one path segment — and `{rel:any}` is a *path*: one or more segments, slashes
+ * included. That last form exists because a page's address is a path: `insights/kitchens-in-lahore/index.html`
+ * has three segments, and a route that could only name one of them could not address the page at all. It is
+ * written out explicitly rather than made the meaning of every placeholder, because a pattern that quietly
+ * swallows the rest of a URL is how `POST /pages/search` would start editing a page called "search".
+ *
+ * Built a segment at a time rather than over the quoted pattern: one pass, no escaping games, and the
+ * placeholder syntax is readable in the pattern itself.
+ *
+ * @param array<int,string> $names receives the placeholder names, in the order they appear
+ */
+function wx_route_regex(string $pattern, array &$names): string
+{
+    $parts = [];
+    foreach (explode('/', $pattern) as $seg) {
+        if (preg_match('~^\{([a-z0-9_]+)(:any)?\}$~', $seg, $m)) {
+            $names[] = $m[1];
+            $parts[] = isset($m[2]) ? '(.+)' : ($m[1] === 'id' ? '(\d+)' : '([A-Za-z0-9_.-]+)');
+        } else {
+            $parts[] = preg_quote($seg, '~');
+        }
+    }
+    return implode('/', $parts);
 }
 
 /** The legacy action name, if the request came in through that door. */

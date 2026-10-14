@@ -33,12 +33,48 @@ const exists = (p) => existsSync(join(ROOT, p));
  * Source with comments removed. Several checks below assert "this pattern is absent", and a comment
  * that *explains* the pattern is not a regression — without this, documenting a fix fails its own
  * test, and the pressure is to delete the explanation.
+ *
+ * It has to walk the source rather than reach for a regex, and it had to learn that the hard way: a
+ * fixture key that ends in a star (the sample for one page of a kind) contains the two characters that
+ * open a block comment, and the regex version then deleted everything from that string to the next
+ * end-of-comment marker — in one file, both the sample the new screen reads and the list of samples
+ * that says so. The check that exists to catch a missing sample reported the file as fine, which is
+ * the worst possible failure for a tool. Strings are copied verbatim, which is what makes the rest
+ * safe: a double slash *outside* a string opens a comment whether it is at the start of a line or
+ * after code on it, while a hash only opens one at the start of a line, because a hash-bracket is a
+ * PHP attribute and a hash on its own is a private name in TypeScript.
  */
-const stripComments = (src) =>
-  src
-    .replace(/\/\*[\s\S]*?\*\//g, "")
-    .replace(/^\s*\/\/.*$/gm, "")
-    .replace(/^\s*#(?!\[).*$/gm, "");
+const stripComments = (src) => {
+  let out = "";
+  let lineStart = true;
+  for (let i = 0; i < src.length; i++) {
+    const c = src[i], n = src[i + 1];
+    if (c === '"' || c === "'" || c === "`") {
+      const q = c;
+      out += c;
+      for (i++; i < src.length; i++) {
+        out += src[i];
+        if (src[i] === "\\") { i++; out += src[i] ?? ""; continue; }
+        if (src[i] === q) break;
+        if (src[i] === "\n") lineStart = true;
+      }
+      lineStart = false;
+      continue;
+    }
+    if (c === "/" && n === "*") {
+      /* Counted, not swallowed: the newlines stay so the rest of the file keeps its line numbers. */
+      i += 2;
+      while (i < src.length && !(src[i] === "*" && src[i + 1] === "/")) { if (src[i] === "\n") out += "\n"; i++; }
+      i += 1;
+      continue;
+    }
+    if (c === "/" && n === "/") { while (i < src.length && src[i] !== "\n") i++; out += "\n"; lineStart = true; continue; }
+    if (lineStart && c === "#" && n !== "[") { while (i < src.length && src[i] !== "\n") i++; out += "\n"; lineStart = true; continue; }
+    out += c;
+    lineStart = c === "\n" || (lineStart && (c === " " || c === "\t" || c === "\r"));
+  }
+  return out;
+};
 const readCode = (p) => stripComments(read(p));
 
 /**
@@ -1053,6 +1089,19 @@ check("a message this console cannot carry is never recorded as sent", () => {
   assert(/transport\.wired/.test(screen), "the screen reads which events this build composes from the API");
 });
 
+check("the checker\u2019s own comment stripper keeps string literals", () => {
+  /* This file reads PHP and TSX as text and asserts things about it, so its own reader is part of the
+     evidence — and it was wrong in a way that hid data: a fixture key ending in a star (the sample behind
+     one page of a kind) contains the two characters that open a block comment, so the regex version
+     deleted everything from that string to the next end-of-comment marker and the check below reported
+     the file as fine. A tool that quietly drops the thing it is checking is worse than no tool. */
+  const src = 'const a = "/x/*";\n/* a comment */\nconst b = "kept"; // trailing\n';
+  const out = stripComments(src);
+  assert(out.includes('"/x/*"'), "a string that looks like a comment opener is left alone");
+  assert(out.includes('"kept"'), "and code after a real block comment survives");
+  assert(!out.includes("a comment"), "the real block comment is gone");
+  assert(!out.includes("trailing"), "and so is a line-leading one, after the quote closed");
+});
 check("demo mode answers exactly the screens that have a sample", () => {
   /* Demo mode is what a design review sees where there is no PHP and no MySQL, so it has two failure modes and
      this check is here for both. A screen that reads a path with no sample silently goes back to "not
@@ -1069,7 +1118,7 @@ check("demo mode answers exactly the screens that have a sample", () => {
   /* A screen is not only a file in `screens/`: the panels live in `components/`, and the AI settings — which
      read a path on mount and offer two on-demand calls — are one of them. The list below is the files a
      design review would open, wherever they sit. */
-  const screens = ["LiveProjects", "LiveTimeline", "LiveUpdates", "LiveForms", "LiveEstimator", "LiveHeroes", "LiveTemplates", "LiveBusiness", "LiveApprovals", "AiSettings"];
+  const screens = ["LiveProjects", "LiveTimeline", "LiveUpdates", "LiveForms", "LiveEstimator", "LiveHeroes", "LiveTemplates", "LiveBusiness", "LiveApprovals", "AiSettings", "LiveSeo"];
   const want = [];
   const served = new Set();
   for (const name of screens) {

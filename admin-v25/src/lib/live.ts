@@ -1446,3 +1446,178 @@ export interface ApprDetailData {
   approval: ApprDetail;
   canDecide: boolean;
 }
+
+/* ============================================================ findability
+
+   The SEO screen's payloads. v2.1's shapes are inside them rather than beside them: `pages` is the store
+   keyed by address (`{kw, related, schema}`), and `audit` is what the server worked out this time — one
+   entry per page, findings in sentences. The console reads the audit and never adds up a score of its own,
+   which is the one thing v2.1's screen did in the browser and this one must not. */
+
+/** One finding about one page. `field` is the input a screen can point at; `code` is what to count by. */
+export interface SeoFinding {
+  code: string;
+  level: "error" | "warn" | "note";
+  field: string;
+  message: string;
+}
+
+/** One page, as the audit read it. Every fact here came off the file — nothing is inferred on the client. */
+export interface SeoRow {
+  rel: string;
+  url: string;
+  title: string;
+  desc: string;
+  h1: string;
+  h1Count: number;
+  words: number;
+  status: "published" | "hidden" | "draft";
+  indexable: boolean;
+  inSitemap: boolean;
+  images: number;
+  imagesNoAlt: number;
+  bytes: number;
+  mtime: string | null;
+  /** Page paths this page links to that are not on the site, and how many there are. */
+  broken: string[];
+  brokenCount: number;
+  kind: string;
+  issues: SeoFinding[];
+  score: number;
+  /** From the store, keyed by the page's address. */
+  kw: string;
+  schema: string[];
+  storedAt: string | null;
+}
+
+/** What the sitemap says now, against the pages as they are. */
+export interface SeoSitemapState {
+  file: string;
+  exists: boolean;
+  count: number;
+  at: string | null;
+  listed: number;
+  /** Public pages the file is missing. */
+  missing: string[];
+  /** Entries that belong to a page nobody should arrive at from a search result. */
+  shouldNotBeListed: string[];
+  /** Addresses in the file that no page on disk explains — kept, and reported. */
+  extra: string[];
+  /** How many addresses a rebuild would leave. */
+  wanted: number;
+  skip: string[];
+}
+
+export interface SeoRobotsState {
+  text: string;
+  bytes: number;
+  exists: boolean;
+  at: string | null;
+  sitemapLine: string | null;
+  blocksAll: boolean;
+  problem: string | null;
+}
+
+export interface SeoPagesData {
+  /** v2.1's store: the focus phrase, the related phrases and the schema choice, per address. */
+  pages: Record<string, { kw?: string; related?: string[]; schema?: string[]; t?: string }>;
+  robots: string;
+  sitemap: number;
+  scanAt: string;
+  broken: number;
+  schemas: string[];
+  aiReady: boolean;
+  audit: SeoRow[];
+  count: number;
+  summary: {
+    byLevel: Record<string, number>;
+    byCode: Record<string, number>;
+    clean: number;
+    average: number;
+    inSitemap: number;
+  };
+  sitemapState: SeoSitemapState;
+  /** `mayEdit` is here as well as in `SeoRobotsView`, because the screen decides what to draw from this read. */
+  robotsState: SeoRobotsState & { mayEdit: boolean };
+  checkedAt: string;
+  limits: { kw: number; related: number; title: [number, number]; desc: [number, number]; thin: number };
+}
+
+/** `GET /seo/pages/{rel}` — one page: what it says, what is wrong with it, and what is stored for it. */
+export interface SeoPageView {
+  rel: string;
+  url: string;
+  facts: {
+    title: string;
+    desc: string;
+    h1: string;
+    h1Count: number;
+    words: number;
+    images: number;
+    imagesNoAlt: number;
+    bytes: number;
+    mtime: string | null;
+    status: string;
+    indexable: boolean;
+    inSitemap: boolean;
+    kind: string;
+    links: number;
+  };
+  issues: SeoFinding[];
+  score: number;
+  seo: { kw?: string; related?: string[]; schema?: string[]; t?: string } | null;
+  /** v2.1's four names: the stored record, the types the page declares, ours, and the question count. */
+  existing: string[];
+  managed: string[];
+  faq: number;
+  questions: { name: string; acceptedAnswer: { text: string } }[];
+  kw: string;
+  related: string[];
+  schema: string[];
+  schemas: string[];
+  checkedAt: string;
+}
+
+/** `POST /seo/pages/{rel}` — what was stored, and what the schema change did to the page. */
+export interface SeoSchemaResult {
+  rel: string;
+  wrote: boolean;
+  types: string[];
+  added: string[];
+  existing: string[];
+  version: number;
+  batch: string | null;
+}
+
+export interface SeoSaveResult {
+  rel: string;
+  page: { kw?: string; related?: string[]; schema?: string[]; t?: string };
+  schema: SeoSchemaResult | null;
+  view: SeoPageView;
+  synced: boolean;
+  ignored: string[];
+  note: string;
+}
+
+/** `POST /seo/pages/{rel}/suggest` — v2.1's `seo_ai`, whose answers land in the form rather than the store. */
+export interface SeoSuggest {
+  kw: string;
+  related: string[];
+  title: string;
+  desc: string;
+  provider: string;
+  model: string;
+  at: string;
+}
+
+export interface SeoRobotsView extends SeoRobotsState {
+  sitemap: SeoSitemapState;
+  mayEdit: boolean;
+  limits: { bytes: number };
+  roles: string[];
+}
+
+export interface SeoSitemapView extends SeoSitemapState {
+  locs: string[];
+  url: string;
+}

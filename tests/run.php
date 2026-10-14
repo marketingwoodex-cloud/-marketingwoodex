@@ -2935,6 +2935,312 @@ if (!function_exists('curl_init')) {
 }
 @unlink(WX_AI_TEST_FILE);
 
+
+/* ============================================================== findability
+
+   The SEO manager, and the one thing about it that changed: where the working out happens. v2.1 fetched every
+   page in the browser, six at a time, and posted the numbers it computed back into `_private/seo.json` for the
+   server to keep — so the rules were only exercisable by loading the whole site in a browser, which is why none
+   of them was tested anywhere. Here they are two functions with no I/O at all: `wx_seo_issues()` (findings, in
+   sentences) and `wx_seo_score()` (a number derived from those findings and nothing else).
+
+   The fixture below is a page with the furniture a real page has: a head with a title and a description, a
+   header and a footer that are not this page's content, a script, an image with no alt text, an external link,
+   a file link, a telephone link and a link to a page that does not exist. Every one of those is a rule.
+
+   The three files this screen owns — the stored phrases, `robots.txt`, `sitemap.xml` — are named by a constant
+   here, because a test that wrote to the site's own ones would be editing the live site. */
+
+group('The page declares one address, and the audit reads it out of the file');
+
+$seoHtml = '<!doctype html><html lang="en"><head><meta charset="utf-8">'
+    . '<title>Fitted kitchens in Lahore | Woodex Interior</title>'
+    . '<meta name="description" content="Fitted kitchens designed and built in Lahore — measured, made and installed by our own team.">'
+    . '<meta property="og:image" content="/assets/img/kitchen.webp">'
+    . '<script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"Woodex Interior","address":{"@type":"PostalAddress","addressLocality":"Lahore"}}</script>'
+    . '</head><body>'
+    . '<header class="site-header"><nav><a href="/">Home</a><a href="/about/">About the studio</a></nav></header>'
+    . '<main><h1>Fitted kitchens</h1><p>We build kitchens in Lahore and Islamabad.</p>'
+    . '<img src="/assets/img/kitchen.webp" alt="A fitted kitchen">'
+    . '<img src="/assets/img/plan.webp">'
+    . '<a href="/services/office-interiors/">Office interiors</a>'
+    . '<a href="/services/wardrobes/">Wardrobes</a>'
+    . '<a href="https://example.com/">Elsewhere</a>'
+    . '<a href="/assets/price-list.pdf">Price list</a>'
+    . '<a href="tel:+923224000768">Call</a>'
+    . '<script>var unused = "words that are not the page";</script>'
+    . '</main>'
+    . '<footer class="footer">' . str_repeat('words that are not this page ', 40) . '</footer>'
+    . '</body></html>';
+
+$seoT = wx_seo_text($seoHtml);
+eq($seoT['title'], 'Fitted kitchens in Lahore | Woodex Interior', 'the title is read out of the head');
+eq($seoT['h1'], 'Fitted kitchens', 'the first H1 is the headline');
+eq($seoT['h1Count'], 1, 'and the page has one of them');
+eq($seoT['desc'], 'Fitted kitchens designed and built in Lahore — measured, made and installed by our own team.', 'the description is the page\'s own meta tag, not a stored copy of it');
+ok($seoT['words'] < 20, 'the header and the footer are furniture, not this page\'s words — 40 repetitions of a sentence are not counted');
+ok($seoT['words'] >= 8, 'and the words that are this page are counted');
+ok(!str_contains($seoT['text'], 'unused'), 'a script is not text');
+
+$seoL = wx_seo_links($seoHtml, 'services/kitchens/index.html');
+ok(in_array('about/index.html', $seoL, true), 'a link to a folder is the page that folder serves');
+ok(in_array('services/office-interiors/index.html', $seoL, true), 'a nested address is a page too');
+ok(!in_array('assets/price-list.pdf', $seoL, true), 'a file is not a page');
+ok(count(array_filter($seoL, static fn($l) => str_contains($l, 'example.com') || str_contains($l, 'tel:'))) === 0, 'another site and a telephone number are not pages of ours');
+ok(!in_array('services/kitchens/index.html', $seoL, true), 'a page does not count as linking to itself');
+ok(count(array_filter($seoL, static fn($l) => str_starts_with($l, '/') || str_starts_with($l, 'assets'))) === 0, 'the header\'s own links are not this page\'s links');
+
+eq(wx_seo_existing_types($seoHtml), ['Organization', 'PostalAddress'], 'the schema types a page declares are read out of its own JSON-LD, including a nested node\'s');
+$seoManaged = str_replace('</head>', '<script type="application/ld+json" id="wx-seo-schema">{"@context":"https://schema.org","@graph":[{"@type":"Service"}]}</script>' . "\n</head>", $seoHtml);
+eq(wx_seo_existing_types($seoManaged), ['Organization', 'PostalAddress'], 'and the block this API manages is not counted as the page\'s own');
+
+$seoFaqHtml = preg_replace('~</main>~', str_repeat('<details><summary>How long does it take?</summary><p>Six to eight weeks.</p></details>', 22) . '<details><summary> </summary><p>Nothing.</p></details></main>', $seoHtml, 1);
+$seoFaqs = wx_seo_faq($seoFaqHtml);
+eq(count($seoFaqs), 20, 'at most twenty questions are taken from a page');
+eq($seoFaqs[0]['@type'], 'Question', 'a question in the page is a Question');
+eq($seoFaqs[0]['name'], 'How long does it take?', 'with the summary as its name');
+eq($seoFaqs[0]['acceptedAnswer']['text'], 'Six to eight weeks.', 'and the rest of the details as its answer');
+
+group('The audit is the findings, and the score is the findings and nothing else');
+
+$seoBase = ['rel' => 'services/kitchens/index.html', 'url' => '/services/kitchens/', 'title' => 'Fitted kitchens in Lahore | Woodex', 'desc' => 'Fitted kitchens designed and built in Lahore, measured and installed by our own team from one workshop in Model Town.', 'h1' => 'Fitted kitchens', 'h1Count' => 1, 'words' => 420, 'status' => 'published', 'indexable' => true, 'inSitemap' => true, 'broken' => [], 'images' => 4, 'imagesNoAlt' => 0];
+$seoCodes = static fn(array $f, array $counts = []): array => array_column(wx_seo_issues($f, $counts), 'code');
+
+eq($seoCodes($seoBase), [], 'a page with a title, a description, one headline, enough words and a sitemap line has nothing to report');
+eq(wx_seo_score(wx_seo_issues($seoBase)), 100, 'and scores a hundred');
+eq(wx_seo_score(wx_seo_issues(['title' => 'Two words'] + $seoBase)), 99, 'one note is one point off');
+eq(wx_seo_score(wx_seo_issues(['desc' => ''] + $seoBase)), 97, 'one warning is three');
+
+$seoTitleless = wx_seo_issues(['title' => ''] + $seoBase);
+eq($seoTitleless[0]['code'], 'title_missing', 'a page with no title is told so first');
+eq($seoTitleless[0]['level'], 'error', 'as an error, because the title is what Google shows');
+eq($seoTitleless[0]['field'], 'title', 'and the finding names the field, so a screen can point at the input');
+ok(in_array('title_long', $seoCodes(['title' => str_repeat('Office interiors in Lahore ', 4)] + $seoBase), true), 'a title Google will cut is a finding');
+ok(in_array('title_duplicate', $seoCodes($seoBase, ['title' => [$seoBase['title'] => 3]]), true), 'as is a title three pages share');
+ok(in_array('desc_missing', $seoCodes(['desc' => ''] + $seoBase), true), 'a page with no description is a finding');
+ok(in_array('desc_short', $seoCodes(['desc' => 'We build kitchens.'] + $seoBase), true), 'a description with room for a reason to click is one too');
+ok(in_array('desc_duplicate', $seoCodes($seoBase, ['desc' => [$seoBase['desc'] => 2]]), true), 'and a description two pages share is one');
+ok(in_array('h1_missing', $seoCodes(['h1Count' => 0, 'h1' => ''] + $seoBase), true), 'a page with no headline says so');
+ok(in_array('h1_multiple', $seoCodes(['h1Count' => 3] + $seoBase), true), 'and so does a page with three');
+ok(in_array('thin_text', $seoCodes(['words' => 120] + $seoBase), true), 'a hundred and twenty words reads as thin');
+ok(in_array('not_public', $seoCodes(['status' => 'draft', 'inSitemap' => false] + $seoBase), true), 'a draft is a note rather than a fault — it is not public on purpose');
+ok(in_array('noindex', $seoCodes(['indexable' => false, 'inSitemap' => false] + $seoBase), true), 'a published page held out of search is a warning');
+ok(in_array('not_in_sitemap', $seoCodes(['inSitemap' => false] + $seoBase), true), 'a public page missing from the sitemap is an error');
+ok(in_array('sitemap_noindex', $seoCodes(['indexable' => false] + $seoBase), true), 'and a page that is listed while telling Google not to index it is one — the two cannot both be right');
+ok(in_array('broken_link', $seoCodes(['broken' => ['/services/wardrobes/', '/team/']] + $seoBase), true), 'a link to a page that is not on the site is an error');
+ok(str_contains(wx_seo_issues(['broken' => ['/services/wardrobes/']] + $seoBase)[0]['message'], '/services/wardrobes/'), 'and it names the address somebody has to fix');
+ok(in_array('image_no_alt', $seoCodes(['imagesNoAlt' => 2] + $seoBase), true), 'an image with no alt text is a note');
+
+$seoAll = wx_seo_issues(['title' => '', 'desc' => '', 'h1Count' => 0, 'words' => 0, 'status' => 'published', 'indexable' => false, 'inSitemap' => true, 'broken' => ['/gone/', '/also-gone/'], 'imagesNoAlt' => 7] + $seoBase);
+$seoExpected = 100;
+foreach ($seoAll as $i) {
+    $seoExpected -= ['error' => 8, 'warn' => 3, 'note' => 1][$i['level']];
+}
+eq(wx_seo_score($seoAll), $seoExpected, 'a page with everything wrong scores the sum of what is wrong with it');
+eq(wx_seo_score(array_fill(0, 20, ['level' => 'error'])), 0, 'and the score floors at zero rather than going negative');
+
+$seoTally = wx_seo_tally([['issues' => []], ['issues' => [['code' => 'title_missing', 'level' => 'error'], ['code' => 'thin_text', 'level' => 'note']]], ['issues' => [['code' => 'thin_text', 'level' => 'note']]]]);
+eq($seoTally['clean'], 1, 'the tally counts the pages with nothing to report');
+eq($seoTally['byLevel']['error'], 1, 'the findings by how serious they are');
+eq($seoTally['byCode']['thin_text'], 2, 'and by what they are');
+eq(array_key_first($seoTally['byCode']), 'thin_text', 'with the most common first, because that is what one fix would change');
+
+group('The managed schema block is one block, and it says what the page says');
+
+$seoBlock = wx_seo_schema_block('services/kitchens/index.html', $seoHtml, ['LocalBusiness', 'Service', 'Article', 'BreadcrumbList'], wx_company(), 1770000000);
+$seoJson = json_decode((string) $seoBlock, true);
+eq($seoJson['@context'], 'https://schema.org', 'the block is schema.org');
+eq(array_column($seoJson['@graph'], '@type'), ['LocalBusiness', 'Service', 'Article', 'BreadcrumbList'], 'one node per type chosen, in the order chosen');
+eq($seoJson['@graph'][0]['name'], wx_company()['name'], 'the business node is the company record the letterhead uses');
+eq($seoJson['@graph'][0]['@id'], 'https://woodex.com.pk/#business', 'with one address for the business, the site\'s own host');
+eq($seoJson['@graph'][1]['name'], 'Fitted kitchens', 'the service is named after the page\'s own headline');
+eq($seoJson['@graph'][1]['description'], $seoT['desc'], 'and described with the page\'s own description');
+eq($seoJson['@graph'][2]['image'], 'https://woodex.com.pk/assets/img/kitchen.webp', 'the article\'s image is the page\'s og:image, as a full link');
+eq(count($seoJson['@graph'][3]['itemListElement']), 3, 'the breadcrumb of a page one folder deep is home, the folder and the page');
+eq($seoJson['@graph'][3]['itemListElement'][2]['name'], 'Fitted kitchens', 'with the headline as the last item\'s name');
+eq(wx_seo_schema_block('index.html', str_replace('"@type":"Organization"', '"@type":"LocalBusiness"', $seoHtml), ['LocalBusiness'], wx_company(), 0), null, 'a type the page already declares is not added a second time');
+eq(wx_seo_schema_block('services/kitchens/index.html', $seoHtml, ['FAQPage'], wx_company(), 0), null, 'a page with no questions declares no FAQ page');
+$seoFaqBlock = json_decode((string) wx_seo_schema_block('faq/index.html', $seoFaqHtml, ['FAQPage'], wx_company(), 0), true);
+eq(count($seoFaqBlock['@graph'][0]['mainEntity']), 20, 'and a page with twenty questions declares twenty, and no more than it has');
+
+$seoApplied = wx_seo_schema_html($seoHtml, $seoBlock);
+eq(substr_count($seoApplied, 'id="wx-seo-schema"'), 1, 'the managed block is written once');
+ok(str_contains($seoApplied, (string) $seoBlock), 'exactly as it was built');
+eq(substr_count(wx_seo_schema_html($seoApplied, $seoBlock), 'id="wx-seo-schema"'), 1, 'writing it again replaces it rather than adding a second');
+$seoCleared = wx_seo_schema_html($seoApplied, null);
+eq(substr_count($seoCleared, 'id="wx-seo-schema"'), 0, 'and choosing nothing takes it out');
+ok(str_contains($seoCleared, '"@type":"Organization"'), 'without touching the page\'s own JSON-LD');
+ok(str_contains($seoCleared, '</head>'), 'and the head is still a head');
+
+group('The phrase per page is stored in v2.1s file, and a score from a browser is not');
+
+define('WX_SEO_TEST_FILE', sys_get_temp_dir() . '/wx-seo-test-' . bin2hex(random_bytes(4)) . '.json');
+file_put_contents(WX_SEO_TEST_FILE, (string) json_encode(['pages' => [], 'scan' => ['at' => '2026-10-01 09:00:00'], 'aiReady' => true]));
+eq(wx_seo_records(), [], 'nothing is stored for a fresh install');
+
+$seoRec = wx_seo_put('about/index.html', ['kw' => str_repeat('k', 130), 'related' => ['a', 'b', '', 'c', 'd', 'e', 'a'], 'schema' => ['LocalBusiness', 'Nonsense', 'Article']]);
+eq(mb_strlen($seoRec['kw']), 120, 'a focus phrase is clipped to 120 characters');
+eq($seoRec['related'], ['a', 'b', 'c', 'd'], 'at most four related phrases, empty ones dropped and the same one kept once');
+eq($seoRec['schema'], ['LocalBusiness', 'Article'], 'and a schema type the site does not offer is not stored');
+ok(($seoRec['t'] ?? '') !== '', 'the record says when it was written');
+wx_seo_put('services/kitchens/index.html', ['kw' => 'fitted kitchens']);
+eq(wx_seo_record('services/kitchens/index.html')['kw'], 'fitted kitchens', 'a record is readable by the address of the page it is about');
+wx_seo_put('about/index.html', ['kw' => 'kitchens in lahore']);
+eq(wx_seo_record('about/index.html')['kw'], 'kitchens in lahore', 'saving one field changes that field');
+eq(wx_seo_record('about/index.html')['related'], ['a', 'b', 'c', 'd'], 'and leaves the related phrases a save did not carry — a form that erases what it was not told about is a form that loses work');
+wx_seo_put('about/index.html', ['kw' => 'kitchens in lahore', 'score' => 82]);
+ok(!array_key_exists('score', wx_seo_record('about/index.html')), 'a score sent from a browser is not stored — the audit computes it, and a stored second opinion is only ever out of date');
+$seoRaw = json_decode((string) file_get_contents(WX_SEO_TEST_FILE), true);
+eq(count($seoRaw['pages']), 2, 'saving one page keeps the others');
+eq($seoRaw['scan']['at'] ?? '', '2026-10-01 09:00:00', 'and keeps whatever else v2.1 kept in the file');
+eq(wx_seo_record('about/index.html')['schema'], ['LocalBusiness', 'Article'], 'and the schema choice a phrase-only save did not carry');
+eq(wx_seo_record('nope/index.html'), null, 'a page with nothing stored reads as null rather than as an empty record');
+
+group('robots.txt is proved, saved and refused by field');
+
+define('WX_SEO_ROBOTS_FILE', WX_SITE_ROOT . '/.wx-test-robots.txt');
+@unlink(WX_SEO_ROBOTS_FILE);
+$seoRobotMe = ['id' => 1, 'name' => 'Test owner', 'role' => 'owner'];
+eq(wx_seo_robots_problem("User-agent: *\nAllow: /\n\nSitemap: https://woodex.com.pk/sitemap.xml\n"), null, 'a normal robots.txt is fine');
+eq(wx_seo_robots_problem(''), null, 'and an empty one is allowed — it says nothing, which is not a mistake');
+ok(wx_seo_robots_problem("User-agent: *\nDisallow: /\n") !== null, 'the one line that takes the whole site out of Google is refused');
+eq(wx_seo_robots_problem("User-agent: *\nDisallow: /\n", true), null, 'and allowed when it is asked for twice');
+eq(wx_seo_robots_problem("User-agent: *\nDisallow: /admin/\n"), null, 'disallowing a folder is not disallowing the site');
+ok(wx_seo_robots_problem(str_repeat("# a line of comment\n", 300)) !== null, 'a file over 5000 characters is refused');
+ok(wx_seo_robots_read()['exists'] === false, 'nothing has been written yet');
+$seoRobots = wx_seo_robots_save("User-agent: *\r\nAllow: /\r\n\r\nSitemap: https://woodex.com.pk/sitemap.xml ", false, $seoRobotMe);
+eq($seoRobots['wrote'], true, 'writing robots.txt writes it');
+eq($seoRobots['text'], "User-agent: *\nAllow: /\n\nSitemap: https://woodex.com.pk/sitemap.xml\n", 'carriage returns are taken out and the file ends with a newline');
+eq($seoRobots['sitemapLine'], 'https://woodex.com.pk/sitemap.xml', 'and the line that points at the sitemap is read back');
+eq($seoRobots['blocksAll'], false, 'the file does not block the site');
+eq(wx_seo_robots_save($seoRobots['text'], false, $seoRobotMe)['wrote'], false, 'writing the same text a second time writes nothing');
+throws('VALIDATION', 'text', static fn() => wx_seo_robots_save("User-agent: *\nDisallow: /\n", false, $seoRobotMe), 'the refusal is by field rather than a silent trim');
+ok(str_contains((string) file_get_contents(WX_SEO_ROBOTS_FILE), 'Allow: /'), 'and a refused write leaves the file as it was');
+$seoForced = wx_seo_robots_save("User-agent: *\nDisallow: /\n", true, $seoRobotMe);
+eq($seoForced['blocksAll'], true, 'asked for twice, the whole site can be disallowed');
+eq($seoForced['forced'], true, 'and the answer says it was forced');
+
+group('The sitemap is built from the pages, and only from the pages it can explain');
+
+/* Scratch pages under the site root, because the two rules that matter here can only be proved against files:
+   a page that is no longer public must come out of the file, and an address the walk cannot explain must stay
+   in it. The file itself is the constant the publishing tests defined — never the site's own sitemap. */
+$seoDir = WX_SITE_ROOT . '/wx-test-seo';
+@mkdir($seoDir . '/deep', 0755, true);
+@mkdir($seoDir . '/hidden', 0755, true);
+@mkdir($seoDir . '/drafted', 0755, true);
+$seoShell = static fn(string $title, string $robots = ''): string => '<!doctype html><html lang="en"><head><meta charset="utf-8">'
+    . '<title>' . $title . ' | Woodex Interior</title>'
+    . '<meta name="description" content="A scratch page the test suite writes and then deletes, with a description long enough to be a description.">'
+    . ($robots !== '' ? '<meta name="robots" content="' . $robots . '">' : '') . '</head><body><h1>' . $title . '</h1></body></html>';
+file_put_contents($seoDir . '/index.html', $seoShell('A scratch page for the sitemap test'));
+file_put_contents($seoDir . '/deep/index.html', $seoShell('A nested scratch page'));
+file_put_contents($seoDir . '/hidden/index.html', $seoShell('A page held out of search', 'noindex, follow'));
+file_put_contents($seoDir . '/drafted/index.html', $seoShell('A page that is a draft'));
+file_put_contents(WX_PAGE_STATE_FILE, (string) json_encode(['wx-test-seo/drafted/index.html' => ['status' => 'draft']]));
+/* One of the four files that are not addresses, written at the site root for the length of this group. It has
+   to exist for the walk to be able to explain it: the rule is that a rebuild leaves an error page out even
+   though there is a page there. */
+$seoErrorPage = WX_SITE_ROOT . '/500.html';
+file_put_contents($seoErrorPage, $seoShell('Something went wrong'));
+$seoSmFile = WX_PAGE_SITEMAP_FILE;
+file_put_contents($seoSmFile, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n"
+    . "  <url><loc>https://woodex.com.pk/wx-test-seo/</loc><lastmod>2026-09-01</lastmod></url>\n"
+    . "  <url><loc>https://woodex.com.pk/wx-test-seo/hidden/</loc><lastmod>2026-09-01</lastmod></url>\n"
+    . "  <url><loc>https://woodex.com.pk/wx-test-seo/drafted/</loc><lastmod>2026-09-01</lastmod></url>\n"
+    . "  <url><loc>https://woodex.com.pk/500.html</loc><lastmod>2026-09-01</lastmod></url>\n"
+    . "  <url><loc>https://woodex.com.pk/press/</loc><lastmod>2026-09-01</lastmod></url>\n"
+    . "</urlset>\n");
+
+$seoRows = [
+    ['rel' => 'wx-test-seo/index.html', 'url' => '/wx-test-seo/', 'status' => 'published', 'indexable' => true, 'inSitemap' => true],
+    ['rel' => 'wx-test-seo/deep/index.html', 'url' => '/wx-test-seo/deep/', 'status' => 'published', 'indexable' => true, 'inSitemap' => false],
+    ['rel' => 'wx-test-seo/hidden/index.html', 'url' => '/wx-test-seo/hidden/', 'status' => 'published', 'indexable' => false, 'inSitemap' => true],
+    ['rel' => 'wx-test-seo/drafted/index.html', 'url' => '/wx-test-seo/drafted/', 'status' => 'draft', 'indexable' => false, 'inSitemap' => true],
+    ['rel' => '500.html', 'url' => '/500.html', 'status' => 'published', 'indexable' => true, 'inSitemap' => true],
+];
+$seoState = wx_seo_sitemap_state($seoRows);
+eq($seoState['listed'], 4, 'the state counts the addresses the file lists');
+eq($seoState['missing'], ['wx-test-seo/deep/index.html'], 'and names the public page the file is missing');
+eq($seoState['shouldNotBeListed'], ['wx-test-seo/hidden/index.html', 'wx-test-seo/drafted/index.html', '500.html'], 'and the entries that point at a page nobody should arrive at from a search result');
+eq($seoState['extra'], ['https://woodex.com.pk/press/'], 'and the address in the file that no page on disk explains — somebody\'s own addition');
+eq($seoState['wanted'], 3, 'so a rebuild would leave three: the two public pages and the one address it cannot explain');
+
+$seoXml = wx_seo_sitemap_xml([['url' => '/about/', 'lastmod' => '2026-10-07'], ['url' => '/', 'lastmod' => '2026-10-01']], ['https://woodex.com.pk/press/']);
+ok(str_starts_with($seoXml, '<?xml version="1.0" encoding="UTF-8"?>'), 'a sitemap is an XML document');
+ok(str_ends_with($seoXml, "</urlset>\n"), 'that closes its urlset');
+eq(substr_count($seoXml, '<loc>'), 3, 'with one line per address: the pages and what it cannot explain');
+ok(strpos($seoXml, '<loc>https://woodex.com.pk/</loc>') < strpos($seoXml, '<loc>https://woodex.com.pk/about/</loc>'), 'sorted by address, so a rebuild is one change rather than a reordering every time');
+ok(str_contains($seoXml, '<lastmod>2026-10-07</lastmod>'), 'and each page carries the date its file was last written');
+
+$seoListed = array_column(wx_seo_sitemap_pages(), 'rel');
+ok(in_array('wx-test-seo/index.html', $seoListed, true), 'a page that is published belongs in the sitemap');
+ok(in_array('wx-test-seo/deep/index.html', $seoListed, true), 'so does one a folder deep');
+ok(!in_array('wx-test-seo/hidden/index.html', $seoListed, true), 'a page telling Google not to index it does not');
+ok(!in_array('wx-test-seo/drafted/index.html', $seoListed, true), 'nor does a draft');
+ok(!in_array('500.html', $seoListed, true), 'and an error page is not an address a search engine should arrive at — there is a file there, and the four are named in one constant');
+
+$seoRebuilt = wx_seo_sitemap_rebuild($seoRobotMe);
+ok($seoRebuilt['wrote'], 'a rebuild writes the file');
+eq($seoRebuilt['count'], count($seoListed), 'and the count is the pages that belong in it');
+eq($seoRebuilt['kept'], ['https://woodex.com.pk/press/'], 'an address no page explains is kept — a rebuild is not a deletion');
+$seoAfter = (string) file_get_contents($seoSmFile);
+ok(str_contains($seoAfter, '<loc>https://woodex.com.pk/wx-test-seo/deep/</loc>'), 'the nested page went in');
+ok(!str_contains($seoAfter, 'wx-test-seo/hidden/'), 'the page held out of search came out');
+ok(!str_contains($seoAfter, 'wx-test-seo/drafted/'), 'and so did the draft — which is the point: the file stops advertising a page somebody took down');
+ok(!str_contains($seoAfter, '<loc>https://woodex.com.pk/500.html</loc>'), 'and the error page is left out even though the file is there');
+ok(str_contains($seoAfter, '<loc>https://woodex.com.pk/press/</loc>'), 'and the address it cannot explain is still there');
+eq(wx_seo_sitemap_rebuild($seoRobotMe)['wrote'], false, 'a rebuild with nothing to change writes nothing the second time');
+
+@unlink($seoDir . '/index.html');
+@unlink($seoDir . '/deep/index.html');
+@unlink($seoDir . '/hidden/index.html');
+@unlink($seoDir . '/drafted/index.html');
+@rmdir($seoDir . '/deep');
+@rmdir($seoDir . '/hidden');
+@rmdir($seoDir . '/drafted');
+@rmdir($seoDir);
+@unlink($seoErrorPage);
+@unlink(WX_PAGE_STATE_FILE);
+@unlink($seoSmFile);
+@unlink(WX_SEO_ROBOTS_FILE);
+@unlink(WX_SEO_TEST_FILE);
+ok(!is_file($seoDir . '/index.html') && !is_file(WX_SEO_ROBOTS_FILE), 'the test leaves no scratch page and no scratch robots.txt behind');
+
+/* ==================================================== findability, as wiring
+   Where the screen's paths meet the policy's action names. Renaming either half is how a screen quietly
+   becomes unavailable to somebody, so the path, the handler and the action are asserted together, the way
+   the gate's three sentences are. */
+
+$seoList = $find('GET', 'seo/pages');
+ok($seoList !== null && $seoList['handler'] === 'wx_route_seo_pages', 'the screen reads GET seo/pages');
+eq($seoList['action'] ?? null, 'seo_list', 'through the action v2.1 called reading the list');
+$seoOne = $find('GET', 'seo/pages/{rel:any}');
+ok($seoOne !== null && $seoOne['handler'] === 'wx_route_seo_page' && ($seoOne['action'] ?? null) === 'seo_page',
+    'and one page through a nested address: `{rel:any}` is what lets a page in a folder be addressed at all');
+eq(wx_route_match('GET', ['seo', 'pages', 'services', 'kitchens', 'index.html'])[1]['rel'] ?? null,
+    'services/kitchens/index.html', 'a nested page is one parameter, not three segments nobody matches');
+$seoSave = $find('POST', 'seo/pages/{rel:any}');
+ok($seoSave !== null && $seoSave['handler'] === 'wx_route_seo_save', 'a save is POST seo/pages/{rel}');
+eq($seoSave['action'] ?? null, 'seo_save', 'under v2.1\'s action, which the policy knows ends in `save` — so a Manager\'s change waits for the Master');
+ok($find('GET', 'seo/audit') !== null && $find('POST', 'seo/audit') === null,
+    'the audit is a GET, because it recomputes the scores and stores nothing');
+$seoSmApi = $find('POST', 'seo/sitemap');
+ok($seoSmApi !== null && $seoSmApi['handler'] === 'wx_route_seo_sitemap_rebuild', 'a rebuild is POST seo/sitemap');
+ok(isset(WX_APPR_NEVER['seo_sitemap']), 'and it is one of the writes the policy decided needs nobody: a file derived from the pages');
+$seoRobotsApi = $find('POST', 'seo/robots');
+ok($seoRobotsApi !== null && ($seoRobotsApi['action'] ?? null) === 'seo_robots_save', 'robots.txt is written under v2.1\'s action too');
+ok($find('GET', 'seo/robots') !== null && $find('GET', 'seo/sitemap') !== null, 'and both files can be read without writing anything');
+
+/* The bridged names: v2.1's screens keep calling their own actions, and every one of them has to land on a
+   handler that exists. A bridge row naming a function nobody wrote is a 500 in the old admin, not a missing
+   feature — which is why this asserts the function, not just the row. */
+$seoBridge = wx_legacy_bridged();
+foreach (['seo_list', 'seo_page', 'seo_save', 'seo_scores', 'seo_robots_save', 'seo_sitemap', 'seo_ai'] as $seoAction) {
+    ok(isset($seoBridge[$seoAction]) && function_exists($seoBridge[$seoAction][1]),
+        'v2.1\'s ' . $seoAction . ' still lands on a handler');
+}
+
 /* ============================================================== report */
 echo "\n";
 if ($failures) {

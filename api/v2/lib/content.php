@@ -256,6 +256,56 @@ function wx_content_save(array $clean, ?array $existing, array $me): array
     return wx_content_item((array) wx_one('SELECT * FROM wx_content WHERE id = ?', [$id]));
 }
 
+/* ============================================================ the SEO sync */
+
+/**
+ * The item that owns a page, by the page's address. Null when no item does.
+ *
+ * v2.1's `seo_save` walked every item comparing `($it['rel'] ?? '') === $rel` — the only lookup available,
+ * because an item's address was computed on the way out rather than kept. Here `rel` is a column with a
+ * unique key, so this is a query, and it is the lookup the SEO screen's save had been missing.
+ */
+function wx_content_by_rel(string $rel): ?array
+{
+    $row = wx_one('SELECT * FROM wx_content WHERE rel = ?', [$rel]);
+    return $row === null ? null : wx_content_item($row);
+}
+
+/**
+ * Keep the item that owns a page in step with the page's head — v2.1's CMS-sync leg of `seo_save`.
+ *
+ * A generated page's title, description and OG image live in its HTML, and the item's `seo` block is what a
+ * *re-publish* writes back into that HTML. Left alone, an SEO edit is undone the next time somebody presses
+ * publish — which is why v2.1 wrote this block on every save, inside the same try/catch that let a missing
+ * content store be only a warning.
+ *
+ * Only `seo` is touched here: an item's title, address, body and status are the content screen's business.
+ * Returns the block it wrote, or null when no item owns the page.
+ */
+function wx_content_seo_sync(string $rel, string $html, array $fields, array $me): ?array
+{
+    $item = wx_content_by_rel($rel);
+    if ($item === null) {
+        return null;
+    }
+    $t = wx_seo_text($html);
+    $og = (string) (wx_head_meta($html, 'og:image', 'property') ?? '');
+    $seo = array_merge((array) $item['seo'], [
+        'title' => mb_substr($t['title'], 0, 90),
+        'desc' => mb_substr($t['desc'], 0, 200),
+        'og' => mb_substr($og, 0, 300),
+        'kw' => (string) ($fields['kw'] ?? ''),
+        'related' => array_values((array) ($fields['related'] ?? [])),
+    ]);
+    wx_update('wx_content', [
+        'seo' => json_encode($seo, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+        'updated_at' => wx_now(),
+        'updated_by' => (string) $me['name'],
+    ], ['id' => (int) $item['id']]);
+    wx_audit($me, 'content.seo', (string) $item['rel'], ['id' => (int) $item['id'], 'kw' => $seo['kw']]);
+    return $seo;
+}
+
 /* ============================================================ the page shell */
 
 /**

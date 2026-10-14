@@ -22,6 +22,7 @@ import { LiveContent } from "./screens/LiveContent";
 import { AiSettings } from "./components/AiSettings";
 import { AnnounceBar, LiveGlobal } from "./screens/LiveGlobal";
 import { LiveApprovals } from "./screens/LiveApprovals";
+import { LiveSeo } from "./screens/LiveSeo";
 import { LivePages } from "./screens/LivePages";
 import { LiveLibrary } from "./screens/LiveLibrary";
 import { LiveSiteTheme } from "./screens/LiveSiteTheme";
@@ -201,6 +202,9 @@ let htmlApprOffline = "";
 let htmlApprDemo = "";
 let htmlPages = "";
 let htmlPagesOffline = "";
+let htmlSeo = "";
+let htmlSeoOffline = "";
+let htmlSeoDemo = "";
 let htmlLibrary = "";
 let htmlLibraryOffline = "";
 let htmlTheme = "";
@@ -746,6 +750,45 @@ try {
   failures.push(`live pages → ${(err as Error).message}`);
 }
 
+/* The SEO screen: three renders, because its three states are different claims. Live is reading; with no
+   API it must refuse to audit a site it cannot see (and offer no rebuild); in demo mode it draws the sample
+   with the shell's own "demo data" label above it. */
+try {
+  htmlSeo = renderToString(
+    <MemoryRouter initialEntries={["/seo"]}>
+      <SessionCtx.Provider value={session("live", asUser)}>
+        <LiveSeo />
+      </SessionCtx.Provider>
+    </MemoryRouter>,
+  );
+} catch (err) {
+  failures.push(`live seo → ${(err as Error).message}`);
+}
+
+try {
+  htmlSeoOffline = renderToString(
+    <MemoryRouter initialEntries={["/seo"]}>
+      <SessionCtx.Provider value={session("offline", null)}>
+        <LiveSeo />
+      </SessionCtx.Provider>
+    </MemoryRouter>,
+  );
+} catch (err) {
+  failures.push(`seo without an API → ${(err as Error).message}`);
+}
+
+try {
+  htmlSeoDemo = renderToString(
+    <MemoryRouter initialEntries={["/seo"]}>
+      <SessionCtx.Provider value={session("offline", null, true)}>
+        <LiveSeo />
+      </SessionCtx.Provider>
+    </MemoryRouter>,
+  );
+} catch (err) {
+  failures.push(`seo in demo mode → ${(err as Error).message}`);
+}
+
 /* The page-history screen with no API must not show an empty change list: "nothing has been written" is
    a statement about the site's history, and with no server it would be a lie. */
 try {
@@ -956,6 +999,28 @@ for (const [name, ok] of [
   ],
   ["the header & footer screen renders its loading state", htmlGlobal.includes("Loading…")],
   ["the pages screen renders its loading state", htmlPages.includes("Loading…")],
+  ["the seo screen renders its reading state", htmlSeo.includes("Reading every page…")],
+  [
+    "the seo screen with no API refuses to audit a site it cannot see",
+    htmlSeoOffline.includes("api/v2 is not answering") && !htmlSeoOffline.includes("Rebuild from the pages"),
+  ],
+  [
+    "and offers no save and no score to save it against",
+    !htmlSeoOffline.includes("Write robots.txt") && !htmlSeoOffline.includes("What the audit found"),
+  ],
+  [
+    "in demo mode the seo screen draws the sample audit, from the fixture rather than from a guess",
+    htmlSeoDemo.includes("What the audit found") &&
+      htmlSeoDemo.includes("description short") &&
+      htmlSeoDemo.includes("8 pages") &&
+      htmlSeoDemo.includes("2 with nothing to report"),
+  ],
+  [
+    "and the two files it may write are drawn with what they cost",
+    htmlSeoDemo.includes("Rebuild from the pages") &&
+      htmlSeoDemo.includes("Write robots.txt") &&
+      htmlSeoDemo.includes("Take the whole site out of Google".toLowerCase()) === false,
+  ],
   ["the section library renders its loading state", htmlLibrary.includes("Loading…")],
   [
     "the section library with no API does not render an empty shelf",

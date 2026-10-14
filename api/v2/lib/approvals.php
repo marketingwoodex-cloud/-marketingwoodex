@@ -59,6 +59,10 @@ const WX_APPR_NEVER = [
        the settings screen the moment a key was typed, which is exactly when it is useful — queueing it
        would ask the Master to approve reading a web page. */
     'cms_ai_models' => 'listing the models a provider offers reads a list and stores nothing here, as in v2.1',
+    /* Rebuilding sitemap.xml writes a file the site derives from its pages. It takes a line out for a page
+       somebody has already unpublished — a correction, not a change to approve — and v2.1 never queued it
+       ("sitemap" is not a queued verb, and `seo_sitemap` ran from the SEO screen for anyone who could open it). */
+    'seo_sitemap' => 'a sitemap is derived from the pages - rebuilding it corrects the file rather than changing the site',
 ];
 const WX_APPR_BUILDER_WRITE = ['save', 'restore', 'theme', 'page_new', 'media_delete', 'blocks_save', 'blocks_delete', 'blocks_import', 'blocks_sync'];
 

@@ -177,6 +177,18 @@ function wx_legacy_bridged(): array
         'cms_tpl_delete'   => ['content', 'wx_route_content_tpl_delete', []],
         'cms_placements'   => ['placements', 'wx_route_place_get', []],
         'cms_placements_save' => ['placements', 'wx_route_place_save', []],
+        /* Phase 3 — findability. Every one of these lands on the resource route's own handler, and the reply
+           carries v2.1's key names inside it (`pages` is the store keyed by address, `page` the record a save
+           wrote, `faq` a count) — see the note at the top of `routes/seo.php`. The one semantic difference is
+           `seo_scores`: v2.1 stored the numbers a browser computed, and this recomputes them instead, which is
+           why the old screen's own arithmetic still shows and the store no longer carries a second opinion. */
+        'seo_list'         => ['seo', 'wx_route_seo_pages', []],
+        'seo_page'         => ['seo', 'wx_route_seo_page', ['path' => 'rel']],
+        'seo_save'         => ['seo', 'wx_route_seo_save', ['path' => 'rel']],
+        'seo_scores'       => ['seo', 'wx_route_seo_audit', []],
+        'seo_robots_save'  => ['seo', 'wx_route_seo_robots_save', []],
+        'seo_sitemap'      => ['seo', 'wx_route_seo_sitemap_rebuild', []],
+        'seo_ai'           => ['seo', 'wx_route_seo_suggest', ['path' => 'rel']],
         /* Phase 3 — the section library. The builder's own six library actions; the rest of the builder
            (page load/save, uploads, the theme file) is its own slice. */
         'blocks_list'      => ['blocks', 'wx_route_blocks_list', []],

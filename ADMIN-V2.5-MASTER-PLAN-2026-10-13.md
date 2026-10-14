@@ -238,7 +238,7 @@ names are preserved as an alias table so nothing breaks during migration.
 | `pages_list`, `page_new`, `page_meta_save`, `page_delete` | `/api/v2/pages` |
 | `cms_list`, `cms_save`, `cms_published` | `/api/v2/content/{collection}` |
 | `wag_get`, `wag_camp_save`, `wag_camp_action` | `/api/v2/whatsapp/campaigns` |
-| `seo_list`, `seo_save`, `seo_scores` | `/api/v2/seo/pages` |
+| `seo_list`, `seo_page`, `seo_save`, `seo_scores`, `seo_robots_save`, `seo_sitemap`, `seo_ai` | `/api/v2/seo/pages`, `/seo/pages/{rel}`, `/seo/robots`, `/seo/sitemap` |
 | `media_list`, `media_upload`, `media_delete` | `/api/v2/media` |
 | `backup_list`, `backup_run`, `backup_restore` | `/api/v2/system/backups` |
 
@@ -301,7 +301,7 @@ Phase **P0** is the prototype already in this repository.
 | `templates` | Quote templates | **P3 ✓** | `admin-print*.js`, `admin-sales.js` Templates | `/quotations/templates` (alias of `/templates`) |
 | `business` | Company, banks, legal details and the letterhead | **P3 ✓** | `admin-fields.js` (business), `sales-lib.php` (`company_save`) | `/business` (alias `/company`) and `/business/company` |
 | `integrations` | 22 connectors and API keys | P3 | `admin-settings.js` (rewritten from hard-coded cards) | `/connectors` |
-| `seo`, `speed`, `health`, `seoagent` | Findability and quality | P4 | `admin-seo.js`, `admin-seo38.js`, `admin-speed.js`, `admin-media.js`, `admin-seoagent.js` | `/seo`, `/speed`, `/health`, `/seo/agent` |
+| `seo` **✓ (brought forward into P3)**, `speed`, `health`, `seoagent` | Findability and quality | P4 | `admin-seo.js`, `admin-seo38.js`, `admin-speed.js`, `admin-media.js`, `admin-seoagent.js` | `/seo`, `/speed`, `/health`, `/seo/agent` |
 | `aicenter`, `train`, `aireport` | AI control | P4 | `admin-aicenter.js`, `admin-train.js`, `admin-aia.js` | `/ai`, `/ai/knowledge`, `/ai/report` |
 | `whahub`, `wainsights`, `wauto`, `offers`, `connections` | WhatsApp suite | P4 | `admin-wahub.js`, `admin-wains.js`, `admin-p18g.js`, `admin-offers.js`, `admin-p38wa.js` | `/whatsapp/*` |
 | `telegram`, `social`, `gmail` | Other channels | P4 | `admin-tg.js`, `admin-social.js`, new | `/telegram`, `/social`, `/mail` |
@@ -516,9 +516,9 @@ working as intended, not a gap hidden by a fallback.
 
 ### Phase 3 — Content, assets and delivery · **in progress** · 4 weeks
 
-*Measured at this commit:* `tests/run.php` **1085 passed · 0 failed · 14 skipped** · `tests/conformance.mjs`
-**85 · 0** · php-lint **159 files** · `admin-v25` smoke **150 checks · 65 routes** · legacy bridge **151 of 365
-actions** (41%). Migrations **000–014** are written and none has run on a database yet.
+*Measured at this commit:* `tests/run.php` **1222 passed · 0 failed · 14 skipped** · `tests/conformance.mjs`
+**86 · 0** · php-lint **161 files** · `admin-v25` smoke **155 checks · 65 routes** · legacy bridge **158 of 365
+actions** (43%). Migrations **000–014** are written and none has run on a database yet.
 
 Three generators are part of this phase's gate rather than a convention, because each one replaces a second
 hand-typed copy of something the site already owns: `tools/gen-aliases.mjs --check` (365 actions),
@@ -651,13 +651,17 @@ already did.
 | Whether a page is public, and everything that follows from it: the head's tags, one word in `_private/pages.json` (v2.1's file), the sitemap, and a screen that shows all three | `api/v2/lib/pages.php` (`wx_page_head_plan()` pure · `wx_page_publish()` · `wx_page_state()` · `wx_page_sitemap_set()`), `POST /pages/{rel}/publish` (action `page_meta_save`), the bridge row in `routes/legacy.php`, the card on `admin-v25/src/screens/LivePages.tsx` | v2.1's `page_meta_save`, kept under its own name because the Master's queue reads it, with one repair: v2.1 had `sitemap_add()` and nothing that took an address out, so "unpublish" went on telling Google the page was current — the sitemap now follows the status both ways. The rules are one pure function, which is the only reason they are tested at all in a sandbox with no database, and a new page is still saved as a draft: a page that is public the moment it is created is a page in the sitemap before anybody has looked at it |
 | The service and city views, built from the pages the site actually has | the same screen, over `/content/pages` — every page's own `<body data-page>` | v2.1's services screen was never a collection: it was a view of the pages (kind ≠ city, minus articles, studies and the machinery), and cities the same list the other way round. The kind is read from the page rather than decided by the screen, and with no answer the screen shows every page and says so. The city *content* model — the address rule and the furniture rule — is the plan's own model, already delivered |
 
+| Delivered — findability, and the working out moved to the server | Where | Note |
+|---|---|---|
+| Every page audited against the rules, the phrase each page is aiming at, its structured data, `robots.txt` and `sitemap.xml` | `api/v2/lib/seo.php`, `api/v2/routes/seo.php` (`GET /seo/pages`, `POST /seo/pages/{rel}`, `POST …/suggest`, `GET\|POST /seo/robots`, `GET\|POST /seo/sitemap`), `admin-v25/src/screens/LiveSeo.tsx` on `/seo` | The audit was a browser loop — `admin-seo38.js` fetched all 150 pages six at a time, parsed them with `DOMParser` and posted its numbers back into `_private/seo.json`, so a stored score could say a page was an 82 while the page had no description. It is one server-side read now, and no score is stored: the route that used to receive one recomputes it. The rules became two functions with no I/O (`wx_seo_issues()`, `wx_seo_score()` — the findings and nothing else, error 8, warn 3, note 1, floored at zero), which is the only reason they are tested at all here. The page's own head stays `page_meta_save`'s business; this screen reads it and says what Google will do with it. A schema choice is written as one managed JSON-LD block through the versioned writer, so it is in the page's history and rolls back from there. Both public files keep v2.1's refusals (`Disallow: /` needs asking twice; a rebuild never deletes an address no page explains), and the sitemap now follows the status *out* as well as in. One router change was needed: `{rel:any}` — a page in a folder is one parameter, not three segments nobody matches |
+
 **Still to come in this phase:**
-the SEO screens and the integrations. The builder's 19 actions are all
+the integrations. The builder's 19 actions are all
 accounted for: 17 bridged, 2 named above as decisions.
 
 ### Phase 4 — Automation and intelligence · 3 weeks
 
-AI centre · knowledge base · AI report · SEO manager and SEO agent · speed · site health ·
+AI centre · knowledge base · AI report · SEO agent (the AI half of findability; the manager's own screen is delivered) · speed · site health ·
 the WhatsApp suite (hub, insights, broadcasts, offers, connection) · Telegram · social planner.
 
 **Gate:** an AI reply, a WhatsApp campaign and a Telegram alert are all configured, run and observed

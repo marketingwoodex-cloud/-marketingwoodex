@@ -18,6 +18,7 @@ import type {
   BizData, BizRecord, CompanyData, CompanyRecord,
   EstData, FormsData, HeroHomeData, HeroPageData, HeroScanData,
   NotifyData, ProjDetail, ProjList, ProjRow, TplsData,
+  SeoPageView, SeoPagesData, SeoSitemapView,
 } from "./live";
 
 const KEY = "wx-demo";
@@ -546,6 +547,128 @@ const AI_MODELS: AiModels = {
   recommended: "claude-sonnet-4-5",
 };
 
+/* ============================================================ findability
+
+   Eight pages rather than the site's whole tree: a sample is a sample, and the shell says "demo data" in words
+   above every screen. The *shapes* are the real ones — `pages` is the store keyed by address, `audit` is one
+   entry per page with findings the server would have written — because a fixture that drifts from the reply
+   stops type-checking, and a sample that looks better than the product is worse than no sample. */
+
+const SEO_ROW = (rel: string, url: string, title: string, desc: string, h1: string, words: number, score: number, issues: SeoPagesData["audit"][number]["issues"], extra: Partial<SeoPagesData["audit"][number]> = {}): SeoPagesData["audit"][number] => ({
+  rel, url, title, desc, h1, h1Count: 1, words,
+  status: "published", indexable: true, inSitemap: true,
+  images: 6, imagesNoAlt: 0, bytes: 24000, mtime: "2026-10-12 09:20:00",
+  broken: [], brokenCount: 0, kind: "architectureService", issues, score, kw: "", schema: [], storedAt: null,
+  ...extra,
+});
+
+const SEO_ROWS: SeoPagesData["audit"] = [
+  SEO_ROW("index.html", "/", "Woodex Interior — interior design and fit-out in Lahore", "Interior design, fit-out and furniture in Lahore: one team from drawing to handover, and a portfolio you can walk into.", "Interior design and fit-out in Lahore", 640, 100, [], { kw: "interior design lahore", storedAt: "2026-10-09 11:02:00" }),
+  SEO_ROW("office-fit-out/index.html", "/office-fit-out/", "Office fit-out in Lahore", "Office fit-out in Lahore, measured, built and installed by our own team — one contract, one site manager, one date.", "Office fit-out", 520, 97, [{ code: "desc_short", level: "note", field: "description", message: "The description is 118 characters — room for a reason to click." }], { kw: "office fit out lahore", schema: ["LocalBusiness", "Service"], storedAt: "2026-10-11 16:40:00" }),
+  SEO_ROW("insights/kitchen-cost-lahore/index.html", "/insights/kitchen-cost-lahore/", "Kitchen", "How much a kitchen costs in Lahore.", "What a kitchen costs in Lahore", 210, 76, [
+    { code: "title_short", level: "note", field: "title", message: "The title is 7 characters — short for what it could say." },
+    { code: "desc_short", level: "note", field: "description", message: "The description is 35 characters — room for a reason to click." },
+    { code: "thin_text", level: "note", field: "text", message: "About 210 words of text — one of the pages a search engine may treat as thin." },
+    { code: "not_in_sitemap", level: "error", field: "sitemap", message: "Published and open to search, but not in sitemap.xml." },
+  ], { kw: "kitchen cost lahore", inSitemap: false, kind: "insight" }),
+  SEO_ROW("bahawalpur/index.html", "/bahawalpur/", "Interior design in Bahawalpur", "Interior design and fit-out in Bahawalpur.", "Interior design in Bahawalpur", 380, 79, [
+    { code: "desc_duplicate", level: "warn", field: "description", message: "2 pages share this description, which reads as one page repeated." },
+    { code: "title_duplicate", level: "error", field: "title", message: "2 pages share this title, so Google has to choose between them." },
+  ], { kw: "interior design bahawalpur" }),
+  SEO_ROW("faq/index.html", "/faq/", "Questions we are asked before a project starts | Woodex Interior", "What a project costs, how long it takes, who draws it and who builds it — the questions we are asked before a fit-out begins, answered.", "Questions before a project starts", 700, 100, [], { kw: "interior design questions", schema: ["FAQPage"], storedAt: "2026-10-13 10:15:00" }),
+  SEO_ROW("sialkot/index.html", "/sialkot/", "Interior design in Sialkot", "Interior fit-out in Sialkot.", "Interior design in Sialkot", 150, 68, [
+    { code: "desc_short", level: "note", field: "description", message: "The description is 32 characters — room for a reason to click." },
+    { code: "title_duplicate", level: "error", field: "title", message: "2 pages share this title, so Google has to choose between them." },
+    { code: "broken_link", level: "error", field: "links", message: "1 link points at a page that is not on the site: /team/." },
+    { code: "image_no_alt", level: "note", field: "images", message: "3 images have no alt text, which is what a search engine reads instead of the picture." },
+  ], { kw: "interior design sialkot", broken: ["/team/"], brokenCount: 1, imagesNoAlt: 3 }),
+  SEO_ROW("coming-soon.html", "/coming-soon.html", "Coming soon | Woodex Interior", "A new page is on its way.", "Coming soon", 40, 84, [
+    { code: "not_public", level: "note", field: "status", message: "Hidden from the site: reachable by address only, and not in the sitemap." },
+  ], { status: "hidden", inSitemap: false }),
+  SEO_ROW("blog/draft-post/index.html", "/blog/draft-post/", "A post nobody has published yet", "Notes on a fit-out we are still writing up.", "A post nobody has published yet", 90, 82, [
+    { code: "not_public", level: "note", field: "status", message: "A draft: not public, and not in the sitemap." },
+  ], { status: "draft", indexable: false, inSitemap: false }),
+];
+
+const SEO_PAGES: SeoPagesData = {
+  pages: {
+    "index.html": { kw: "interior design lahore", t: "2026-10-09 11:02:00" },
+    "office-fit-out/index.html": { kw: "office fit out lahore", schema: ["LocalBusiness", "Service"], t: "2026-10-11 16:40:00" },
+    "insights/kitchen-cost-lahore/index.html": { kw: "kitchen cost lahore", related: ["kitchen design lahore"], t: "2026-10-08 09:30:00" },
+    "bahawalpur/index.html": { kw: "interior design bahawalpur" },
+    "faq/index.html": { kw: "interior design questions", schema: ["FAQPage"], t: "2026-10-13 10:15:00" },
+    "sialkot/index.html": { kw: "interior design sialkot" },
+  },
+  robots: "User-agent: *\nAllow: /\n\nSitemap: https://woodex.com.pk/sitemap.xml\n",
+  sitemap: 7,
+  scanAt: "2026-10-14 09:12:00",
+  broken: 1,
+  schemas: ["LocalBusiness", "Service", "Article", "FAQPage", "BreadcrumbList"],
+  aiReady: true,
+  audit: SEO_ROWS,
+  count: SEO_ROWS.length,
+  summary: {
+    byLevel: { error: 3, warn: 1, note: 9 },
+    byCode: { desc_short: 4, title_duplicate: 2, not_public: 2, thin_text: 1, broken_link: 1, desc_duplicate: 1, title_short: 1, not_in_sitemap: 1, image_no_alt: 1 },
+    clean: 2,
+    average: 86,
+    inSitemap: 7,
+  },
+  sitemapState: {
+    file: "sitemap.xml", exists: true, count: 7, at: "2026-10-13 22:04:00", listed: 7,
+    missing: ["insights/kitchen-cost-lahore/index.html"],
+    shouldNotBeListed: ["bahawalpur/index.html"],
+    extra: ["https://woodex.com.pk/press/"],
+    wanted: 8,
+    skip: ["404.html", "500.html", "503.html", "coming-soon.html"],
+  },
+  robotsState: {
+    text: "User-agent: *\nAllow: /\n\nSitemap: https://woodex.com.pk/sitemap.xml\n",
+    bytes: 66, exists: true, at: "2026-10-02 08:31:00",
+    sitemapLine: "https://woodex.com.pk/sitemap.xml", blocksAll: false, problem: null, mayEdit: true,
+  },
+  checkedAt: "2026-10-14 09:12:00",
+  limits: { kw: 120, related: 4, title: [25, 60], desc: [70, 160], thin: 300 },
+};
+
+/** One page's view, for whichever page the sample list has — the screen opens on a row and reads this. */
+const SEO_PAGE: SeoPageView = {
+  rel: "sialkot/index.html",
+  url: "/sialkot/",
+  facts: { title: "Interior design in Sialkot", desc: "Interior fit-out in Sialkot.", h1: "Interior design in Sialkot", h1Count: 1, words: 150, images: 6, imagesNoAlt: 3, bytes: 18740, mtime: "2026-10-10 14:02:00", status: "published", indexable: true, inSitemap: true, kind: "city", links: 22 },
+  issues: [
+    { code: "desc_short", level: "note", field: "description", message: "The description is 32 characters — room for a reason to click." },
+    { code: "title_duplicate", level: "error", field: "title", message: "2 pages share this title, so Google has to choose between them." },
+    { code: "broken_link", level: "error", field: "links", message: "1 link points at a page that is not on the site: /team/." },
+    { code: "image_no_alt", level: "note", field: "images", message: "3 images have no alt text, which is what a search engine reads instead of the picture." },
+  ],
+  score: 68,
+  seo: { kw: "interior design sialkot" },
+  existing: ["Organization"],
+  managed: [],
+  faq: 0,
+  questions: [],
+  kw: "interior design sialkot",
+  related: [],
+  schema: [],
+  schemas: ["LocalBusiness", "Service", "Article", "FAQPage", "BreadcrumbList"],
+  checkedAt: "2026-10-14 09:12:00",
+};
+
+const SEO_SITEMAP: SeoSitemapView = {
+  ...SEO_PAGES.sitemapState,
+  url: "/sitemap.xml",
+  locs: [
+    "https://woodex.com.pk/",
+    "https://woodex.com.pk/3d-visualization/",
+    "https://woodex.com.pk/office-fit-out/",
+    "https://woodex.com.pk/bahawalpur/",
+    "https://woodex.com.pk/faq/",
+    "https://woodex.com.pk/press/",
+    "https://woodex.com.pk/sialkot/",
+  ],
+};
+
 const FIXTURES: Record<string, unknown> = {
   "/approvals": APPR,
   "/approvals/{id}": APPR_ONE,
@@ -562,6 +685,10 @@ const FIXTURES: Record<string, unknown> = {
   "/quotations/templates": TEMPLATES,
   "/ai/settings": AI_STATE,
   "/ai/models": AI_MODELS,
+  "/seo/pages": SEO_PAGES,
+  "/seo/pages/*": SEO_PAGE,
+  "/seo/sitemap": SEO_SITEMAP,
+  "/seo/robots": SEO_PAGES.robotsState,
 };
 
 /** The sample for a path, or null when this screen has none yet. */
@@ -582,5 +709,5 @@ export function demoFixture(path: string): unknown | null {
 export const DEMO_COVERED = [
   "/projects", "/projects/{id}", "/notifications", "/forms", "/estimator", "/heroes", "/heroes/home", "/heroes/page*",
   "/quotations/templates", "/business", "/business/company", "/approvals", "/approvals/{id}",
-  "/ai/settings", "/ai/models",
+  "/ai/settings", "/ai/models", "/seo/pages", "/seo/pages/*", "/seo/sitemap", "/seo/robots",
 ];
