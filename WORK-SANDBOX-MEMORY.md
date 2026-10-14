@@ -1,6 +1,6 @@
 # Woodex admin v2.5 — work-sandbox memory
 
-*Written 14 October 2026, at `4bbefe5`, on branch `arena/4150341e-marketingwoodex`.*
+*Written 14 October 2026, at `ac4156d`, on branch `arena/4150341e-marketingwoodex`.*
 *The design authority is `ADMIN-V2.5-MASTER-PLAN-2026-10-13.md` (the 18-page plan, also as PDF). This
 document is the memory: where things are, what is already true, what is next, and what bit us on the way.
 Where the two disagree, the plan wins for design and this file wins for state.*
@@ -16,10 +16,10 @@ cd tools/phpwasm && npm ci && cd ../..          # php-wasm (the only PHP this sa
 cd tools/phplint && npm ci && cd ../..
 
 # the gate, in the order that fails fastest
-node tools/phpwasm/run-php.cjs tests/run.php            # 1085 passed · 0 failed · 14 skipped
-node tests/conformance.mjs                              # 85 passed · 0 failed
-node tools/phplint/php-lint.mjs                         # 159 PHP files parse clean
-cd admin-v25 && npm run typecheck && npm run smoke && cd ..   # tsc clean · 150 checks · 65 routes
+node tools/phpwasm/run-php.cjs tests/run.php            # 1222 passed · 0 failed · 14 skipped
+node tests/conformance.mjs                              # 86 passed · 0 failed
+node tools/phplint/php-lint.mjs                         # 161 PHP files parse clean
+cd admin-v25 && npm run typecheck && npm run smoke && cd ..   # tsc clean · 160 checks · 65 routes
 node tools/gen-aliases.mjs --check && node tools/gen-caps.mjs --check
 
 # the console, with sample data (the API cannot run here — see §3)
@@ -46,8 +46,8 @@ git fetch origin && git reset --hard origin/arena/4150341e-marketingwoodex
 cp /tmp/<that file> back                                              # then reinstall, restart the preview
 ```
 
-`php-lint` is a quick detector of a half-restored tree: it prints the number of files it parsed, so 157 where
-159 is expected means two files are missing from the working tree.
+`php-lint` is a quick detector of a half-restored tree: it prints the number of files it parsed, so 159 where
+161 is expected means two files are missing from the working tree.
 
 **There is no PHP and no MySQL in this sandbox.** `api/v2` cannot answer here: every screen is honest
 about that (`not answering` in the status strip, `demo data` only in demo mode). Verification is by
@@ -144,11 +144,13 @@ House rules that the codebase now enforces, and that a new file must not break:
 
 ## 4. What is built, and where it was proved
 
-66 commits. The recent ones, newest first — the commit messages carry the reasoning, and they are worth
+69 commits. The recent ones, newest first — the commit messages carry the reasoning, and they are worth
 reading before changing the files they touch.
 
 | Commit | Slice | The one thing it decided |
 |---|---|---|
+| `ac4156d` | **The sidebar's counts** | A count beside *Leads* is a claim about the studio's day: the server's answer, the sample **only** in demo mode, and otherwise nothing (a zero draws no badge). `badgeCounts()` is a function so all three states are asserted. |
+| `bd6e6f8` | **Findability** (the SEO screen) | The audit moved from the browser to the server, the rules became two functions with no I/O (so they are tested at all), and no score is stored — the route that used to receive one recomputes it. `{rel:any}` so a page in a folder can be addressed. |
 | `4bbefe5` | **The pages screen** listens to publishing | Where a page is public, in three facts read from the server, with the consequence written under the buttons; the service and city views are filters over the pages, not collections. |
 | `e2ab209` | **Publishing a page** | v2.1's `page_meta_save` with one repair: the sitemap now follows the status both ways, so unpublishing takes the address out instead of leaving Google a promise. The rules are one pure function. |
 | `93b66f0` | **The AI settings** | v2.1's record in v2.1's file; the key never leaves the server; and the request, the response and the model filter are three pure functions, which is the only reason the first outward call this API makes is tested at all. |
@@ -169,9 +171,9 @@ reading before changing the files they touch.
 | `3deb37d`, `b97d3d8`, `81bb80d` | Header & footer, content CMS, chrome across pages | The header is one edit across every page; the article is composed by the server. |
 | `158346e`, `7f8deb1`, `ba060b0`, `a031f93` | Redirects, media library, library, placements | The first Phase 3 screens, and the verdict keyed by the rule the API names. |
 
-Measured at `4bbefe5`: **1085** API tests · **85** conformance checks · **159** PHP files lint clean ·
-**150** smoke checks over **65** console routes · `tsc` clean · 365 legacy actions named, 151 bridged
-(`page_meta_save` is the first *pages* action to cross).
+Measured at `ac4156d`: **1222** API tests · **86** conformance checks · **161** PHP files lint clean ·
+**160** smoke checks over **65** console routes · `tsc` clean · 365 legacy actions named, **158** bridged
+(43% — the seven `seo_*` actions are the newest, and `page_meta_save` was the first *pages* one to cross).
 
 ---
 
@@ -179,11 +181,11 @@ Measured at `4bbefe5`: **1085** API tests · **85** conformance checks · **159*
 
 | Command | Catches |
 |---|---|
-| `node tools/phpwasm/run-php.cjs tests/run.php` | behaviour: validation, approvals, money, page writes, publishing a page, the content composer, the announce block, the AI settings, the client page |
+| `node tools/phpwasm/run-php.cjs tests/run.php` | behaviour: validation, approvals, money, page writes, publishing a page, the content composer, the announce block, the AI settings, the client page, the audit's rules, the seo store and the two public files |
 | `node tests/conformance.mjs` | the mistakes a compiler cannot see: a duplicated function name, a route row pointing at a missing handler, a dead `include`, a write route with no approval gate, SQL built by interpolation, the shipped browser blocks run against stubs |
 | `node tools/phplint/php-lint.mjs` | PHP 8 grammar over `api/v2`, `db/`, `tests/` (the shipped command-line tools are shipped code) |
 | `cd admin-v25 && npm run typecheck` | TypeScript, screens included |
-| `cd admin-v25 && npm run smoke` | every route renders: offline-honest, demo-labelled, and no screen showing invented numbers |
+| `cd admin-v25 && npm run smoke` | every route renders: offline-honest, demo-labelled, and no screen showing invented numbers — including the sidebar's counts, which are the server's, the sample's in demo mode, or absent |
 | `node tools/gen-aliases.mjs --check`, `gen-caps.mjs --check` | generated artefacts drifted from their source (365 actions; `001_roles.sql` byte-identical to v2.1's matrix) |
 
 Two habits worth keeping: run `tests/conformance.mjs` after touching a route table, and rebuild the
@@ -230,6 +232,10 @@ run there.
 
 **The API**
 - Never call a helper without checking it exists; the v2.1 names are close enough to invent plausibly.
+- **A path parameter matches one segment unless it says `any`.** `{rel}` is `[A-Za-z0-9_.-]+`, so
+  `/seo/pages/services/kitchens/index.html` matched nothing at all — a page in a folder could not be
+  addressed. `{rel:any}` is `(.+)`, which is what the SEO routes use (`wx_route_regex()` builds the pattern
+  segment by segment, so a placeholder can absorb the rest of the path).
 - `$a + $b` does not override keys — `array_merge()` does.
 - `wx_doc_put`/`wx_doc_get` throw outside `WX_DOC_TABLES`.
 - PHP single-quoted strings: a literal `'` or an unquoted word after `, ` is a parse error;
@@ -237,6 +243,17 @@ run there.
 - A JSON body is not a validation: every write goes through `wx_v_*`, and a refusal names the *field*.
 
 **The shell**
+- **`tests/conformance.mjs` reads PHP and TSX as text, and its own reader can hide data.** It stripped
+  comments with three regexes, so a fixture key ending in a star (the sample behind one page of a kind)
+  contains the two characters that open a block comment — and everything from that string to the next
+  end-of-comment marker vanished, including, in one file, both the sample the new screen reads and the list
+  of samples that says so. The check whose whole job is to notice a missing sample then reported the file as
+  fine. It walks strings now (`stripComments()`), strips a double slash only outside them, and has a
+  self-check. If a string in a checked file looks like a comment opener, suspect the tool, not the check.
+- **A very long table cell in the plan inflates the PDF.** A 2,000-character `Note` rendered to 18 pages
+  instead of one (32 pages → 49), and the same text split in half rendered fine — the renderer loses its
+  place on an over-long cell. Keep the plan's cells under ~1,800 characters and put the long-form reasoning
+  here; the PDF is the copy the owner reads, so `tools/md2pdf.py` and the page count are part of the gate.
 - A failed command inside a compound `&&` line does not stop the next command (a pipeline's exit code is
   the last command's). Re-grep after every patch.
 - Backticks in `git commit -m` are substituted — write the message to a file and use `-F`.
@@ -289,6 +306,13 @@ file's own page: <https://github.com/marketingwoodex-cloud/-marketingwoodex/tree
 tag rather than the file as an asset: `uploads.github.com` is blocked from the build sandbox (`github.com`
 and `api.github.com` are not), so the payload was committed and pushed instead — the same bytes, with the
 SHA-256 in the manifest to check either copy against.
+
+**What the pack does not contain.** It was built at `93b66f0` (the AI slice), so the payload that is committed
+and on Drive is *behind* this branch by publishing a page, the services/cities views, findability and the
+sidebar fix — the pack is bound to commit + stamp (§7) and cannot be patched in place. Rebuilding it for the
+owner is one command (`node tools/make-release.mjs`) plus the same three publishing steps (commit, `gh
+release`, Drive); nothing about the pack is stale in a way that misleads, but a link to it will not contain
+the newest screens.
 
 Rollback for any single file: `git show <sha>:<path>` on this branch — the manifest records the SHA the
 payload was built from.
@@ -359,18 +383,67 @@ Neither half could say whether a page was public, so **publishing a page** came 
 the pages screen, `POST /pages/{rel}/publish` (v2.1's `page_meta_save`, bridged for the old admin), one pure
 function for the rules and one thin function that writes the page, `_private/pages.json` and the sitemap.
 
-### c2. Then the rest of Phase 3
+### c2. Findability — delivered, and where the working out now lives
 
-The SEO screens (`seo-lib.php` → titles, descriptions, sitemap, the audit) and integrations (`conn-lib.php`'s
-22 connectors and their keys — the largest remaining piece of the phase, and the one that needs a host to
-test against). The pages screen's remaining v2.1 action is `page_delete` (trash + a redirect): the API has no
-route for it yet, and it is the one destructive page action nobody has asked for.
+v2.1's SEO manager had the right three parts and the working out in the wrong place. `admin-seo38.js` fetched
+all 150 pages six at a time, parsed them with `DOMParser`, counted the words and links, worked out a score and
+posted the numbers back into `_private/seo.json` for the server to keep. So "how findable is the site" was a
+question only a browser holding the whole site could answer, the answer changed with the machine, and a stored
+number could say a page was an 82 while the page had no description.
+
+Where everything is now:
+
+- `api/v2/lib/seo.php` — `wx_seo_facts()` (one page, read once: title, description, H1s, words, images and
+  the images without alt text, links, status, indexability, sitemap membership), `wx_seo_issues()` (findings,
+  in sentences, each naming the field to fix), `wx_seo_score()` (the findings and nothing else — error 8,
+  warn 3, note 1, floored at zero), `wx_seo_audit()` (all of it, worst first, with a tally), the schema
+  builders (`wx_seo_schema_block()` / `wx_seo_schema_html()`), the robots pair and the sitemap helpers.
+- `api/v2/routes/seo.php` — `GET /seo/pages`, `GET /seo/audit`, `GET|POST /seo/pages/{rel:any}`,
+  `POST …/suggest`, `GET|POST /seo/robots`, `GET|POST /seo/sitemap`. The action names are v2.1's
+  (`seo_list`, `seo_page`, `seo_save`, `seo_scores`, `seo_robots_save`, `seo_sitemap`, `seo_ai`) because the
+  permission matrix and the approval policy are keyed on them: `seo_save` ends in `save`, so a Manager's
+  change waits for the Master; `seo_sitemap` is recorded in `WX_APPR_NEVER` with its reason, because a
+  sitemap is derived from the pages.
+- `admin-v25/src/screens/LiveSeo.tsx` on `/seo` — the audit worst-first (score, page, phrase, findings), a
+  per-page panel, the robots editor and the rebuild. Every field is `draft ?? server`, never seeded in an
+  effect (PublishPanel's lesson).
+
+Four decisions worth knowing before touching it:
+
+1. **No score is stored.** `wx_seo_put()` keeps v2.1's file and v2.1's three fields (the phrase, the related
+   phrases, the schema choice) and drops anything else, so the bridged `seo_scores` still answers the old
+   screen without a second opinion about a page going stale in the store.
+2. **The page's own head is not this screen's business.** Title, description, canonical and `noindex` stay
+   `page_meta_save`'s (`POST /pages/{rel}/publish`); this screen reads them and says what Google will do.
+3. **A schema choice is a change to the page**: one managed JSON-LD block (`id="wx-seo-schema"`) written
+   through the versioned writer, so it lands in the page's history and rolls back from there. A type the page
+   already declares is never added twice, and a page with no questions declares no FAQ.
+4. **Both public files keep v2.1's refusals.** `Disallow: /` needs asking twice; a rebuild that would drop an
+   address no page explains refuses instead of deleting somebody's own addition; and the sitemap follows the
+   page status *out* as well as in.
+
+Testing it without a database: `WX_SEO_TEST_FILE` and `WX_SEO_ROBOTS_FILE` are the seams (`define()` them
+before the store/robots groups, as `WX_AI_TEST_FILE` is for the AI slice). The sitemap group is the one that
+has to write real files — its explanations come from pages on disk, so it creates a scratch tree under
+`WX_SITE_ROOT`, a scratch `_private/pages.json` and a root `500.html`, and deletes them at the end. The four
+files that are not addresses (`404`, `500`, `503`, `coming-soon`) are one constant; the shipped
+`sitemap.xml` lists exactly the 142 pages that remain.
+
+### c3. What is left of Phase 3
+
+Integrations (`conn-lib.php`'s 22 connectors and their keys — the largest remaining piece of the phase, and
+the one that needs a host to test against; plan §11). The pages screen's remaining v2.1 action is
+`page_delete` (trash + a redirect): the API has no route for it yet, and it is the one destructive page action
+nobody has asked for. `LiveServices`/`LiveCities` as screens of their own are still unbuilt and probably
+should stay that way — both are views over the pages, and the pages screen already offers them as filters.
 
 ### d. Phases 4–6
 
-Read plan §12 for the schedule: 4 — AI centre, automation, WhatsApp hub; 5 — SEO and the marketing
-surfaces; 6 — the client portal (tokenised, no login; the HMAC pattern already exists in
-`quote-view.php`). Nothing in those phases is started. `cms_ai_*` (§8a) is the first thing Phase 4 needs.
+Read plan §12 for the schedule: 4 — AI centre, automation, WhatsApp (the AI half of findability —
+`seo_agent`'s suggestions — is the SEO screen's `/suggest` route, already delivered); 5 — the rest of the
+marketing surfaces; 6 — the client portal (tokenised, no login; the HMAC pattern already exists in
+`quote-view.php`). Nothing else in those phases is started. `cms_ai_*` (§8a) was the first thing Phase 4
+needed, and it is done.
 
 ### e. The host run — the only thing that proves the phase
 
@@ -381,10 +454,13 @@ they are the reason the table exists.
 
 ### f. Housekeeping, in the order it hurts
 
-1. **The dashboard is still the prototype's mock screen.** It reads `lib/mock.ts` — the counts are samples
-   and the banner now says "in this sample". Wiring it is the last screen of Phase 2 and it cannot be done
-   honestly without the API: it needs `GET /dashboard` plus the shell's badges (the approvals badge is
-   `GET /approvals/count`).
+1. **Four screens still fall back to the design's mock when the API does not answer** (`/dashboard`,
+   `/leads`, `/pipeline`, `/quotes`): `Dashboard.tsx`/`Leads.tsx` switch to the demo layout when `link` is not
+   live. That is deliberate — a layout with nothing in it teaches nobody anything — and it is labelled
+   ("In this sample, …" on the dashboard, the door note above every screen, and the strip says the host is not
+   answering). The one place that inferred a sample *unlabelled* was the sidebar's counts, and `ac4156d` fixed
+   that (`badgeCounts()`). If the owner wants the mock fallback gone entirely, that is a decision to ask for:
+   a blank console on a laptop is worse than a labelled sample.
 2. **Four admin generations coexist** (`admin/`, `wf-admin/`, `frontend-v1/admin/`, and history's v2.1) —
    plan §2's finding. Nothing is deleted until Phase 6; the names belong in the README so nobody guesses.
 3. **The old release zips** (`deploy/p17…p20`, `woodex-master-P22/`, `woodex-vlive-P20/`) were removed from

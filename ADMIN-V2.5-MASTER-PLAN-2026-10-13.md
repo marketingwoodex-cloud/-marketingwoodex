@@ -517,7 +517,7 @@ working as intended, not a gap hidden by a fallback.
 ### Phase 3 — Content, assets and delivery · **in progress** · 4 weeks
 
 *Measured at this commit:* `tests/run.php` **1222 passed · 0 failed · 14 skipped** · `tests/conformance.mjs`
-**86 · 0** · php-lint **161 files** · `admin-v25` smoke **155 checks · 65 routes** · legacy bridge **158 of 365
+**86 · 0** · php-lint **161 files** · `admin-v25` smoke **160 checks · 65 routes** · legacy bridge **158 of 365
 actions** (43%). Migrations **000–014** are written and none has run on a database yet.
 
 Three generators are part of this phase's gate rather than a convention, because each one replaces a second
@@ -553,7 +553,11 @@ open a session rather than telling the person they are "looking at the UI with d
 true of the prototype with a mock behind it and false of a real door with a disabled button. The words "demo data", and the label naming the v2.5 Pro plan, appear in **demo mode only**: an admin that
 cannot reach its own host is reported as an unreachable host, because calling that a demo tells the person their
 console is a mock-up when it is really a door that cannot open yet. A screen that cannot load its data offers no
-button that would pretend to work, and the smoke test asserts both halves of that.
+button that would pretend to work, and the smoke test asserts both halves of that. The last thing that inferred
+a sample was the sidebar: a count beside *Leads* is a claim about the studio's day, and it was being answered
+out of the design's mock whenever `/notifications/poll` had not replied. It is the server's answer, the sample
+**only** in demo mode, and otherwise nothing at all — a zero renders no badge, so the honest answer is a
+sidebar with no numbers on it.
 
 **All three sentences of the gate are now wired**, and the wiring is asserted (`tests/run.php`, "the gate,
 as wiring"): `POST /content/{id}/publish` composes and writes the article and returns the batch that undoes
