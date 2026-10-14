@@ -391,11 +391,8 @@ they are the reason the table exists.
 
 ### f. Housekeeping, in the order it hurts
 
-1. **OPEN BUG — the dashboard still shows invented numbers when the API is not answering** (it reads `lib/mock.ts` on the plain URL, under a "not answering" strip). Must be replaced by the live dashboard with an honest empty/offline state; see the user's report on the preview.
-   Earlier note: the dashboard is still the prototype's mock screen. It reads `lib/mock.ts` — the counts are samples
-   and the banner now says "in this sample". Wiring it is the last screen of Phase 2 and it cannot be done
-   honestly without the API: it needs `GET /dashboard` plus the shell's badges (the approvals badge is
-   `GET /approvals/count`).
+1. **FIXED (0a375c9) — the plain `/dashboard` no longer shows invented numbers.** `/dashboard` renders `screens/LiveDashboard.tsx`, which shows the offline, signed-out or checking state with no figures. Verified in headless Chromium: no PKR figures, "not answering" strip shown, no errors.
+   Still open: the 'No server here?' callout offers 'open the console with sample data' (`?demo=1`). That goes with the demo-removal step.
 2. **Four admin generations coexist** (`admin/`, `wf-admin/`, `frontend-v1/admin/`, and history's v2.1) —
    plan §2's finding. Nothing is deleted until Phase 6; the names belong in the README so nobody guesses.
 3. **The old release zips** (`deploy/p17…p20`, `woodex-master-P22/`, `woodex-vlive-P20/`) were removed from
