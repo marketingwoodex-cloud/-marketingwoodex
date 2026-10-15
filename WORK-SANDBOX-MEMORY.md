@@ -291,7 +291,9 @@ run there.
 ## 7. The P25 release pack
 
 `woodex-master-P25/` — `README.md` (install + upgrade), `CHANGELOG.md`, `MANIFEST.json`, this document, and
-`woodex-master-P25.zip` (27.9 MB, 720 files, 43.1 MB uncompressed).
+`woodex-master-P25.zip` (29,158,455 bytes · 727 files in the payload · 894 entries in the zip · 42.8 MB
+uncompressed). Rebuilt in P25.1, so the zipped console is the one with no sample data in it — its bundle
+carries no `DemoBanner`, no fixture and no flag, and it does carry the sentence that replaced them.
 
 **What the zip is.** The Hostinger payload: the live 150-page site (`frontend-v1/`) untouched, plus
 `api/v2/`, `db/` (migrations + `migrate.php` + `owner.php`), and `admin-next/` — the built console at
@@ -324,7 +326,10 @@ the comment in `tools/make-release.mjs` says why.
 6. check the three generation facts from §2 on the host once, then roll back by restoring the previous
    release zip.
 
-**Where the pack lives.** Committed in this repository at `woodex-master-P25/` (so the GitHub link is the
+**Where the pack lives.** The Drive folder carries the zip, `MANIFEST.json`, `MEMORY-PLAN.md`, `CHANGELOG.md`
+and the plan's PDF; P25.1 refreshed all five, trashing the three superseded copies rather than leaving two
+generations side by side — a folder with two zips in it is a folder where somebody uploads the wrong one.
+Committed in this repository at `woodex-master-P25/` (so the GitHub link is the
 file's own page: <https://github.com/marketingwoodex-cloud/-marketingwoodex/tree/arena/4150341e-marketingwoodex/woodex-master-P25>, direct download <https://github.com/marketingwoodex-cloud/-marketingwoodex/raw/arena/4150341e-marketingwoodex/woodex-master-P25/woodex-master-P25.zip>), published as release
 [`p25`](https://github.com/marketingwoodex-cloud/-marketingwoodex/releases/tag/p25), and copied to a public Drive folder for sharing:
 <https://drive.google.com/drive/folders/12rpZKxUpHibqPZNMLi1VBMxlmWgTpBuz>. The release carries notes and a
@@ -332,12 +337,18 @@ tag rather than the file as an asset: `uploads.github.com` is blocked from the b
 and `api.github.com` are not), so the payload was committed and pushed instead — the same bytes, with the
 SHA-256 in the manifest to check either copy against.
 
-**What the pack does not contain.** It was built at `93b66f0` (the AI slice), so the payload that is committed
-and on Drive is *behind* this branch by publishing a page, the services/cities views, findability, the sidebar
-fix, the demo rule and the identity — the pack is bound to commit + stamp (§7) and cannot be patched in place. Rebuilding it for the
-owner is one command (`node tools/make-release.mjs`) plus the same three publishing steps (commit, `gh
-release`, Drive); nothing about the pack is stale in a way that misleads, but a link to it will not contain
-the newest screens.
+**What the pack does not contain.** It is bound to commit + stamp (§7), so it stops matching the branch the
+moment anything is committed after it — and one thing is deliberately true of every pack: the `gitSha` in the
+manifest is one commit behind the pack's own commit, because an artifact cannot contain its own hash. The
+pack was rebuilt twice in P25.1 (once for the demo deletion, once after this document was written); the rule
+for the next slice is the same three publishing steps, in this order — **commit every document first, then
+build, then publish** — because a pack built before its own documentation is a pack whose memory copy and
+hashes are stale on arrival.
+
+**One ordering trap, learned here.** The console's build stamp carries the *minute* it was built and the
+commit it was built at (a `+` in the stamp means tracked files differ). Patching a document after the pack is
+built therefore invalidates the pack twice over: the memory copy inside it is old, and the zip's hash changes
+on the next build because the stamp does. Commit the documents, then build.
 
 Rollback for any single file: `git show <sha>:<path>` on this branch — the manifest records the SHA the
 payload was built from.
