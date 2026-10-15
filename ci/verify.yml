@@ -88,6 +88,8 @@ jobs:
         run: |
           node tools/gen-aliases.mjs --check
           node tools/gen-caps.mjs --check
+      - name: Website identity is current (NAP, Google listing, sameAs, footer profiles)
+        run: python3 tools/apply-entity.py --check
       - name: Structural conformance (routes, envelope, auth, safety, migrations)
         run: node tests/conformance.mjs
 

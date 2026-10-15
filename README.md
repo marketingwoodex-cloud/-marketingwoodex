@@ -48,9 +48,10 @@ release is additive until that is decided.
 ```bash
 cd admin-v25 && npm ci && cd ../tools/phpwasm && npm ci && cd ../phplint && npm ci && cd ../..
 
-node tools/phpwasm/run-php.cjs tests/run.php    # 1284 passed · 0 failed · 14 skipped
+node tools/phpwasm/run-php.cjs tests/run.php    # 1290 passed · 0 failed · 14 skipped
 node tests/conformance.mjs                      # 86 passed · 0 failed
 node tools/phplint/php-lint.mjs                 # 164 PHP files parse clean
+python3 tools/apply-entity.py --check           # every page carries tools/entity.json (NAP, Google listing, sameAs)
 cd admin-v25 && npm run typecheck && npm run smoke && cd ..   # tsc clean · 154 checks · 65 routes
 
 # The database gates on SQLite in WebAssembly (no MySQL needed). This writes _private/db.json and
