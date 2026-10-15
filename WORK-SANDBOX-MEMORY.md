@@ -1,6 +1,6 @@
 # Woodex admin v2.5 — work-sandbox memory
 
-*Written 14 October 2026, at `c0d661b`, on branch `arena/4150341e-marketingwoodex`.*
+*Written 15 October 2026, at `aa2a57f`, on branch `arena/4150341e-marketingwoodex`.*
 *The design authority is `ADMIN-V2.5-MASTER-PLAN-2026-10-13.md` (the 18-page plan, also as PDF). This
 document is the memory: where things are, what is already true, what is next, and what bit us on the way.
 Where the two disagree, the plan wins for design and this file wins for state.*
@@ -19,11 +19,11 @@ cd tools/phplint && npm ci && cd ../..
 node tools/phpwasm/run-php.cjs tests/run.php            # 1283 passed · 0 failed · 14 skipped
 node tests/conformance.mjs                              # 86 passed · 0 failed
 node tools/phplint/php-lint.mjs                         # 163 PHP files parse clean
-cd admin-v25 && npm run typecheck && npm run smoke && cd ..   # tsc clean · 171 checks · 65 routes
+cd admin-v25 && npm run typecheck && npm run smoke && cd ..   # tsc clean · 154 checks · 65 routes
 node tools/gen-aliases.mjs --check && node tools/gen-caps.mjs --check
 
-# the console, with sample data (the API cannot run here — see §3)
-cd admin-v25 && VITE_WX_DEMO=1 npm exec vite -- --host 0.0.0.0 --port 5173
+# the console (the API cannot run here — see §3; there is no sample data and no flag that turns any on)
+cd admin-v25 && npm exec vite -- --host 0.0.0.0 --port 5173
 ```
 
 The preview is proxied under the sandbox's own hostname; bind `0.0.0.0`, never `127.0.0.1`. Prove the
@@ -105,14 +105,21 @@ tests/run.php               the API's own suite, run under php-wasm (no database
 tests/conformance.mjs       duplicate functions, route-table parse, dead includes, gate coverage, SQL
                             interpolation, rate limits — and the shipped browser blocks run against stubs
 admin-v25/src/
-  lib/            nav.ts · api.ts · live.ts · demo.ts · format.ts · session.tsx · theme.ts · mock.ts
+  lib/            nav.ts · api.ts · live.ts · format.ts · session.tsx · theme.ts
   components/     primitives.tsx · Shell.tsx · CommandPalette.tsx · charts.tsx · AiSettings.tsx
-  screens/        24 live screens + the mock Dashboard
-tools/            phpwasm · phplint · gen-aliases · gen-caps · gen-quote-starters · make-release
-docs/             the audit and plan documents (moved here in P25; see §7)
+  screens/        23 live screens (the two prototype screens were deleted in P25.1)
+tools/            phpwasm · phplint · gen-aliases · gen-caps · gen-quote-starters · gen-connectors · make-release
+docs/             the audit and plan documents (moved here in P25; the P19 security audit joined them in P25.1)
 frontend-v1/      the live site (§2)
 woodex-master-P25/  the release pack: README · CHANGELOG · MANIFEST.json · this file · the zip
+deploy/           one file left (`agentbridge.zip`); P15–P20 were deleted in P25.1
 ```
+
+**What is *not* here any more, and where to find it.** The retired admin generations (`admin/` — the v1
+"Woodex Dashboard" — and `wf-admin/`), the P20 site copy (`woodex-vlive-P20/`) and the superseded release
+material under `deploy/` (P15–P20) were deleted in P25.1: about 1,045 files, ~67 MB. Nothing reads them;
+`tests/conformance.mjs` used to walk two of them and now walks `frontend-v1/` alone. Any of it comes back with
+`git log --diff-filter=A -- <path>` then `git show <sha>:<path>`.
 
 Two slices have landed since P25 was packed: **the AI settings** (`lib/ai.php` + `routes/ai.php`, the panel in
 `components/AiSettings.tsx`, §8a) and **publishing a page** (`wx_page_head_plan()` / `wx_page_publish()` /
@@ -159,7 +166,7 @@ reading before changing the files they touch.
 | `76ea06a` | Business check reports visible pairs | A sentinel pair kept the phone-number spellings working without ever being *shown* as a string that was looked for. |
 | `2cd5756` | **Business info** + **announcement bar** | The company details are read off the site, not out of a copy of the defaults; the bar is one JSON file with the site's own script fetching it. |
 | `d59427a` | **Quote templates** | The nine BOQ shapes are *generated* from the site's own `assets/js/quotation-templates.js`, never hand-typed twice. |
-| `4f9c269` | **Demo mode** | `VITE_WX_DEMO=1` / `?demo=1` only. A path with no fixture gets no answer; demo is never inferred and never a fallback. |
+| `4f9c269` | **Demo mode** *(deleted in `aa2a57f`)* | `VITE_WX_DEMO=1` / `?demo=1` only. A path with no fixture gets no answer; demo is never inferred and never a fallback. |
 | `a6abdbf`, `93c41f5`, `7081759` | **Client updates** | The client page a link opens, the seven events, the channels — and the sending is described as it really is (`sent` only with a transport). |
 | `cd368c2` | **Projects + timeline** | The money a project has actually billed, on its own date axis; a milestone-billed project is not "unbilled". |
 | `3ad9116` | Forms + rate book | Which pages carry a form, where each enquiry goes, and the figures every price starts from. |
@@ -173,11 +180,15 @@ reading before changing the files they touch.
 
 | `13d37db` | **The demo rule, and the identity in the chrome** | Three states, not two (see §8c3); the identity (`mailto:`, `tel:`, `wa.me`) as a fifth region of the chrome apply, with one preview, one batch and one undo for 150 pages. |
 | `c058f12` | Connectors groundwork | The 24-card gallery generated from `admin-conn.js`, and the API's only outward call moved to `lib/http.php` (`wx_http_call()`), which the connector tests need next. |
+| `aa2a57f` | **No sample data anywhere** | The console's fixtures, its door, its banner and its flag are deleted, and so are the two screens that existed only as prototypes (Pipeline, Quotations — their routes stay registered as `planned`). The smoke test's job changed with them: instead of asserting that a sample reaches the screen it asserted the *absence* — one sweep over 28 offline renders for the sentence, and no figures and no sample words anywhere in them. The retired admin copies and the superseded P15–P20 release material went in the same pass. |
 | `c0d661b` | **The integrations, API half** | Five of the seven `conn_*` actions with routes, the 0600 store and its write-only secret, `conn_test` reporting statuses instead of raising them, the off-site backup asserted by opening it, and the two Gmail actions named as the remainder (§8c4). |
 
-Measured at `c0d661b`: **1283** API tests · **86** conformance checks · **163** PHP files lint clean ·
-**171** smoke checks over **65** console routes · `tsc` clean · 365 legacy actions named, **163** bridged
+Measured at `aa2a57f`: **1283** API tests · **86** conformance checks · **163** PHP files lint clean ·
+**154** smoke checks over **65** console routes · `tsc` clean · 365 legacy actions named, **163** bridged
 (43% — the seven `seo_*` actions are the newest, and `page_meta_save` was the first *pages* one to cross).
+The smoke count *fell* by 17 in P25.1 while the suite got stricter: 24 checks that rendered a screen twice —
+once with a sample, once without — were replaced by one sweep over 28 offline renders that fails if any of
+them shows a figure.
 
 ---
 
@@ -189,7 +200,7 @@ Measured at `c0d661b`: **1283** API tests · **86** conformance checks · **163*
 | `node tests/conformance.mjs` | the mistakes a compiler cannot see: a duplicated function name, a route row pointing at a missing handler, a dead `include`, a write route with no approval gate, SQL built by interpolation, the shipped browser blocks run against stubs |
 | `node tools/phplint/php-lint.mjs` | PHP 8 grammar over `api/v2`, `db/`, `tests/` (the shipped command-line tools are shipped code) |
 | `cd admin-v25 && npm run typecheck` | TypeScript, screens included |
-| `cd admin-v25 && npm run smoke` | every route renders: offline-honest, demo-labelled, and no screen showing invented numbers — including the sidebar's counts, which are the server's, the sample's in demo mode, or absent. Since `13d37db` it also renders the four screens that *had* a mock fallback twice, with and without demo mode, and asserts the difference |
+| `cd admin-v25 && npm run smoke` | every route renders, and every state a server can cause is rendered by hand: signed out, checking, live, and **28 renders with no API behind them** — one sweep asserting each names the state it is in and that none of them shows a figure, or the words `Demo data` / `In this sample`. The sweep is the check that would catch a sample creeping back in, which is why it is written as a list of named renders rather than a count |
 | `node tools/gen-aliases.mjs --check`, `gen-caps.mjs --check` | generated artefacts drifted from their source (365 actions; `001_roles.sql` byte-identical to v2.1's matrix) |
 
 Two habits worth keeping: run `tests/conformance.mjs` after touching a route table, and rebuild the
@@ -443,16 +454,25 @@ has to write real files — its explanations come from pages on disk, so it crea
 files that are not addresses (`404`, `500`, `503`, `coming-soon`) are one constant; the shipped
 `sitemap.xml` lists exactly the 142 pages that remain.
 
-### c3. The demo rule, and the identity in the chrome — delivered
+### c3. The demo rule, and the identity in the chrome — delivered, and the sample data deleted in P25.1
 
 **Three states, not two.** Four screens (`/dashboard`, `/leads`, `/pipeline`, `/quotes`) were one branch —
 "the API answers, or draw the design's sample" — so anywhere without an API they showed names and figures that
-were nobody's beside a strip saying the host was not answering. The rule now, everywhere: the server's numbers
-when there is a server; the design's own sample **in demo mode only** (`?demo=1`, `VITE_WX_DEMO=1`), under the
-shell's banner; and otherwise a sentence saying which of the three it is, with no figures at all. Pipeline and
-quotations read no API at all, so outside demo mode they render their build plan and the nav says SOON. The
-smoke test renders all four twice and asserts the difference, and opens `?demo=1` through `App` to check the
-sample is under the banner. Demo mode itself is *not* removed and must not be without asking the owner.
+were nobody's beside a strip saying the host was not answering. The rule became three states: the server's
+numbers when there is a server, a sentence saying which state it is in when there is not, and — for two
+releases — the design's own sample in demo mode for a design review on a host with no PHP. Pipeline and
+quotations read no API at all, so outside demo mode they rendered their build plan and the nav said SOON.
+The identity (`mailto:`, `tel:`, `wa.me`) landed in the same week and is described below.
+
+**Then the owner was asked, and answered: delete the sample data entirely.** P25.1 removed it: `lib/demo.ts`,
+`lib/mock.ts`, the door on the sign-in screen, the banner above the screens, the `?demo=1` query string, the
+`VITE_WX_DEMO` build flag and the plumbing that carried them through ~15 files. The pipeline board and the
+quotation builder were prototype screens with no API behind them at all — they went with the fixtures, and
+their routes (`/pipeline`, `/quotes`) are registered `planned`, so the nav says SOON and the tile says what it
+will do. `Dashboard.tsx` and `Leads.tsx` are now two-state wrappers: with a session they render the reading
+screen, and without one they render a sentence. The smoke test's assertions were rewritten to the absence —
+see §5 — and the *two* conformance checks that had proved demo mode's coverage now prove that nothing
+sample-shaped is reachable from a screen.
 
 **The identity.** `mailto:`, `tel:` and `wa.me` are the three facts a page states, each with more than one
 spelling. `wx_chrome_identity_links()` reads a page (value, count, and the words a visitor reads — the last
@@ -470,10 +490,11 @@ prose: a number in a sentence, a map link or a PDF is left alone, and the counts
 `GET /connectors`, `POST /connectors`, `DELETE /connectors/{id}`, `POST /connectors/{id}/test`,
 `POST /connectors/{id}/push` — the 0600 store with its write-only secret, the generated 24-card gallery, and
 the off-site backup. What is left is **`/connectors` itself**: a screen replacing the `Placeholder` tile at
-`App.tsx:277` (the tile already names the actions, and `Placeholder.tsx` carries the `integrations:` row), with
-demo fixtures for the two reads it makes. Then, separately, `conn_gmail_send`/`conn_gmail_use`, which need an
-SMTP client this API does not have yet — they are named in `wx_conn_list()['unported']` so the screen can say
-which half it has.
+`App.tsx:265` (the tile already names the actions, and `Placeholder.tsx` carries the `integrations:` row). There
+are no fixtures to write for it any more (§8c3) — the screen reads `GET /connectors` and has one sentence for
+a host that does not answer. Then, separately, `conn_gmail_send`/`conn_gmail_use`, which need an SMTP client
+this API does not have yet — they are named in `wx_conn_list()['unported']` so the screen can say which half
+it has.
 
 Still open elsewhere in the phase: `page_delete` (trash + redirect) has no route, and
 `LiveServices`/`LiveCities` as screens of their own stay unbuilt on purpose — both are views over the pages. The pages screen's remaining v2.1 action is
@@ -498,15 +519,18 @@ they are the reason the table exists.
 
 ### f. Housekeeping, in the order it hurts
 
-1. ~~Four screens fall back to the design's mock when the API does not answer.~~ **Done at `13d37db`**: the
-   fallback is demo mode only, and outside it those four screens show a sentence and no figures (§8c3). What is
-   left of this question is only whether demo mode itself should be retired — a decision to ask for, not to
-   take: the owner reviews the console through it.
-2. **Four admin generations coexist** (`admin/`, `wf-admin/`, `frontend-v1/admin/`, and history's v2.1) —
-   plan §2's finding. Nothing is deleted until Phase 6; the names belong in the README so nobody guesses.
-3. **The old release zips** (`deploy/p17…p20`, `woodex-master-P22/`, `woodex-vlive-P20/`) were removed from
-   the tree in P25 to keep the repository navigable. Their record is in `CHANGELOG.md` and their bytes are
-   recoverable from history (`git log --diff-filter=A -- <path>`, then `git show <sha>:<path>`).
+1. ~~Four screens fall back to the design's mock when the API does not answer.~~ **Done at `13d37db`** (the
+   fallback became demo mode only), and **closed at `aa2a57f`**: the owner was asked whether to keep, hide or
+   delete demo mode and answered *delete it entirely*. The fixtures, the door, the banner, the flag and the two
+   prototype screens are gone (§8c3).
+2. ~~Four admin generations coexist~~ — **two now** (`frontend-v1/admin/`, the live v2.0 admin, and the v2.5
+   console; history's v2.1 is not in the tree). `admin/` (v1) and `wf-admin/` (v2 serverless) were deleted in
+   P25.1, which is the point at which plan §2's finding stopped being true.
+3. ~~The old release zips~~ — **the sweep completed in P25.1**: `deploy/p15…p20`, `deploy/release/`,
+   `woodex-vlive-P20/` and the two retired admin copies are out of the tree; the P19 security audit was kept and
+   moved to `docs/p19-security-audit/`. `woodex-master-P22/` (28 KB of documents, its zips long gone) and
+   `deploy/agentbridge.zip` (25 KB, not one of ours) were left in place deliberately. The record is in
+   `CHANGELOG.md`; the bytes come back with `git log --diff-filter=A -- <path>` then `git show <sha>:<path>`.
 4. The v26 pages at the root are not the release's pages (§2). Either they replace the live ones later, or
    the release should stop carrying the older generation — an owner decision, not a build decision.
 
@@ -536,10 +560,11 @@ These were all learned the hard way in this project; they are the difference bet
 1. **Fix the function that produces a label, not the string.** When something wrong appears on screen,
    find the one place that computes it (`linkLabel()`, `wx_notify_*`) and make *that* true, so the same
    wrongness cannot appear from a second screen.
-2. **The console never presents a prototype as the product**, and never invents a number. `demo data` only
-   in demo mode, `not answering` with a reason when the host is silent, `live · api/v2 <version>` when it
-   is not. With neither a server nor a demo request, a screen shows a sentence and **no figures at all** —
-   the third state is the default; the sample appears only because somebody asked for it.
+2. **The console never presents a prototype as the product**, and never invents a number — *anywhere, for any
+   reason, including a design review*. `not answering` with a reason when the host is silent,
+   `live · api/v2 <version>` when it is not, and a sentence with **no figures at all** in between. Since P25.1
+   there is no flag, no fixture and no query string that can put a number on a screen the server did not send;
+   the smoke test's sweep over the offline renders is what keeps it that way (§5).
 3. **A pasted label is evidence, not a complaint to be deleted.** Trace it to the code, then fix the code.
 4. **The preview must be current, and proving it is part of restarting it** — fetch a module, not the HTML
    shell, and say which commit it is serving.
