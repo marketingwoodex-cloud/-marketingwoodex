@@ -1,21 +1,21 @@
 {
   "release": "woodex-master-P25",
-  "builtAt": "2026-10-14T00:11Z",
-  "gitSha": "93b66f0aa94b2550caa80d1712f3bfe5ff13dd33",
+  "builtAt": "2026-10-15T04:55Z",
+  "gitSha": "ae192dbbd82a4a664c17f13a54e0433991d60e8f",
   "gitDirty": false,
   "branch": "arena/4150341e-marketingwoodex",
   "apiVersion": "2.5.0-p1",
-  "console": "93b66f0 · built 2026-10-14 00:11Z",
+  "console": "ae192db · built 2026-10-15 04:55Z",
   "consoleBase": "/admin-next/",
   "payload": {
     "zip": "woodex-master-P25.zip",
-    "zipBytes": 29233475,
-    "zipSha256": "0efdf3d393e7426c7b530f5eb5bab8f58584c1681a0fb2521702944159205360",
-    "files": 722,
-    "bytes": 45221424,
+    "zipBytes": 29158455,
+    "zipSha256": "8a8388fcf51601a8ec09f96f82c3a03f13e6b5b78e73f6abf31754e360157bea",
+    "files": 727,
+    "bytes": 44926168,
     "byArea": {
       "assets": 335,
-      "api": 116,
+      "api": 121,
       "admin": 69,
       "insights": 49,
       "db": 19,
@@ -118,7 +118,7 @@
   },
   "files": {
     "api/v2/index.php": "87a1f801943f6ccc805473e118db9309780bfe6bcdda0d2d7aa1c3f484404e7c",
-    "admin-next/index.html": "bf2b2d6d92da4a0202fe8cf9840b5510d7d3f84cb18a6a60c6d77312b7092d32"
+    "admin-next/index.html": "86eac9b5952c14b405017ae4e6a5a72e6f9ad2962359ec4e569101ea837aa732"
   },
   "migrations": [
     "000_platform.sql",
@@ -139,8 +139,8 @@
   ],
   "docs": {
     "MEMORY-PLAN.md": {
-      "sha256": "beeea0013ed81613f40cc9c92f4b4ccdae0bc9a65058d0bedc3e322436d2e4d9",
-      "bytes": 26149,
+      "sha256": "62b6546a654d01c2e006a343e7a4acfb5ade3dd72660f82f383507541f345fdc",
+      "bytes": 45758,
       "from": "WORK-SANDBOX-MEMORY.md"
     },
     "README.md": {
@@ -148,8 +148,8 @@
       "bytes": 5679
     },
     "CHANGELOG.md": {
-      "sha256": "ee99e296f32dee37ab8ba305650914d44fdb6b52a067d32efbbc62af42cecaf6",
-      "bytes": 4405
+      "sha256": "55d2eaa9119b434e9219d7e8c4c9a400c9c2ae6cfbd0f0c50a4a158dcb1d51b6",
+      "bytes": 7003
     }
   },
   "rollback": "the previous release zip, or `git show <sha>:<path>` for any file in this payload"
