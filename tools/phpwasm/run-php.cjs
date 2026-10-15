@@ -98,7 +98,9 @@ const MOUNT = ["api", "tests", "db", "frontend-v1/api", "frontend-v1/_database"]
  * rather than against a constant: the home page's footer is where the business details live, and the two
  * scripts beside it are the files an apply rewrites. Without them the sandbox skips that leg and the only
  * place it runs is a host — which is the same as never running it in the gate. */
-const MOUNT_FILES = ["index.html", "assets/site.js", "assets/site.css", "assets/js/whatsapp-widget.js"];
+const MOUNT_FILES = ["index.html", "assets/site.js", "assets/site.css", "assets/js/whatsapp-widget.js",
+  /* v2.1's social-row table and the site it wrote, so the parity test runs here and not only on CI. */
+  "frontend-v1/index.html", "frontend-v1/admin/admin-fields.js"];
 
 function copyTree(from, to, php, stats) {
   for (const entry of fs.readdirSync(from)) {
