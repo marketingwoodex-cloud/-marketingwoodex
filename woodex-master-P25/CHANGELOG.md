@@ -1,5 +1,38 @@
 # Changelog
 
+## P25.1 — the console with no sample data in it (15 October 2026)
+
+**What changed.** The console's sample data is deleted — entirely, not retired. `?demo=1`, `VITE_WX_DEMO=1`,
+the door on the sign-in screen, the banner above the screens, `lib/demo.ts`, `lib/mock.ts` and the plumbing
+that carried them through ~15 files are gone. Every screen now has the same three states as every other one:
+it reads api/v2, or it says why it cannot, in its own words, with no figures on it. The two screens that
+existed *only* as prototypes — the Pipeline board and the Quotation builder — went with them; their routes are
+registered `planned`, so the navigation says SOON and the route says what it will do.
+
+**Why.** A console that is going to touch a real studio's pages should not contain a switch that prints
+invented numbers, and the screens the sample was most useful on — the dashboard, the enquiries list — are the
+screens where a sample reads as the studio's own figures. The release before this one could be opened by
+somebody and mistaken for their business; this one cannot.
+
+**What was added to the gates.** The render smoke test now renders 28 screens with no API behind them and
+asserts, in one sweep, that every one of them names the state it is in and that **none** of them shows a
+figure or the words the strip used to carry. Two conformance checks were rewritten in the same spirit: one
+that used to prove demo mode answered exactly the screens with a fixture now proves no fixture is reachable
+from any screen, and one that used to check the demo strip's wording now checks that the strip tells one
+story about the host and that no number in the console comes from a file.
+
+**The repository was tidied in the same pass.** The retired admin copies (`admin/`, `wf-admin/`,
+`woodex-vlive-P20/`) and the superseded release material under `deploy/` (P15–P20) are deleted from the tree —
+about 1,045 files. The P19 security audit was kept and moved to `docs/p19-security-audit/`; everything deleted
+is recoverable from history (`git log --diff-filter=A -- <path>`).
+
+**Measured at this commit:** `tests/run.php` 1283 · 0 · 14 · `tests/conformance.mjs` 86 · 0 · php-lint 163
+files · `admin-v25` smoke 154 · 0 · 65 routes · four generators up to date.
+
+**Still true, and not to be lost:** the real gate (an editor publishes an article, the header changes across
+150 pages, the change rolls back from page history) is a host run and has never been executed; migrations have
+never run against MySQL.
+
 ## P25 — admin v2.5, first release (14 October 2026)
 
 **What ships.** One payload: the live 150-page site (unchanged), plus the v2.5 stack — `api/v2/` (the new
@@ -29,10 +62,11 @@ The repository was tidied in the same release: the loose audit and plan document
 superseded release zips (P15–P22, `deploy/`) were removed from the tree — their record is below and their
 bytes are recoverable from history (`git log --diff-filter=A -- <path>`).
 
-**Not done yet, and known:** the real gate (publish an article → change the header across 150 pages → roll
-it back) is a host run and has never been executed; migrations have never run against MySQL; the dashboard
-is still wired to `lib/mock.ts`; the remaining Phase 3 screens (services & cities, SEO, integrations) and
-the `cms_announce_*` / `cms_ai_*` endpoints are next — see `MEMORY-PLAN.md` §8.
+**Not done yet, and known** *(as of this release; the sample data it mentions was deleted in P25.1)*: the real
+gate (publish an article → change the header across 150 pages → roll it back) is a host run and has never been
+executed; migrations have never run against MySQL; the dashboard was still wired to `lib/mock.ts`; the remaining
+Phase 3 screens (services & cities, SEO, integrations) and the `cms_announce_*` / `cms_ai_*` endpoints are next —
+see `MEMORY-PLAN.md` §8.
 
 ## P22.1 (8 October 2026) — the previous release
 - Rebuilt as a standard zip with folder entries (158 folders, 623 files). Same code as P22.
