@@ -84,11 +84,12 @@
   // ---------------------------------------------------------------- Quotation v2 (Phase 9)
   // One flowing A4 document: the letterhead (thead) and footer repeat on every printed page, long tables flow onto
   // extra pages with their column headings repeated, and "Page X of Y" is printed in the page margin.
-  // Three designs: classic (navy), minimal (white), premium (wood / cream).
+  // Three designs: modern cyan, classic, minimal, royal gold.
   var THEMES = {
-    classic: { label: "Classic", ink: "#0a0f1e", acc: "#b8924c", th: "#0a0f1e", thT: "#ffffff", zeb: "#fafaf7", soft: "#f4efe6", line: "#e4e7ec", hdr: "#ffffff" },
-    minimal: { label: "Minimal", ink: "#111827", acc: "#111827", th: "#ffffff", thT: "#111827", zeb: "#ffffff", soft: "#f3f4f6", line: "#e5e7eb", hdr: "#ffffff" },
-    premium: { label: "Premium", ink: "#2b2118", acc: "#b8956a", th: "#2b2118", thT: "#f4efe7", zeb: "#fbf8f3", soft: "#f4efe7", line: "#e8dfd1", hdr: "#f4efe7" }
+    cyan: { label: "Modern Studio Cyan", ink: "#0a0f1e", acc: "#00b8db", th: "#0a0f1e", thT: "#00b8db", zeb: "#f8fafc", soft: "#f0fdfa", line: "#e2e8f0", hdr: "#ffffff" },
+    classic: { label: "Classic Navy", ink: "#0a0f1e", acc: "#b8924c", th: "#0a0f1e", thT: "#ffffff", zeb: "#fafaf7", soft: "#f4efe6", line: "#e4e7ec", hdr: "#ffffff" },
+    minimal: { label: "Minimalist", ink: "#111827", acc: "#00b8db", th: "#ffffff", thT: "#111827", zeb: "#ffffff", soft: "#f3f4f6", line: "#e5e7eb", hdr: "#ffffff" },
+    premium: { label: "Royal Gold", ink: "#2b2118", acc: "#b8956a", th: "#2b2118", thT: "#f4efe7", zeb: "#fbf8f3", soft: "#f4efe7", line: "#e8dfd1", hdr: "#f4efe7" }
   };
   P.THEMES = THEMES;
   var LOGO = "/assets/img/img-f941b08b9510.png";
