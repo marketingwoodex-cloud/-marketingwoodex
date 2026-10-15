@@ -46,6 +46,14 @@ function jwrite(string $f, array $d): void {
     @chmod($tmp, 0600);
     if (!@rename($tmp, $f)) { @unlink($tmp); file_put_contents($f, $json, LOCK_EX); @chmod($f, 0600); }
 }
+/** P22.2: replace a public file (.htaccess, sitemap.xml) in one step, so a crash cannot leave half of it. */
+function atomic_put(string $f, string $data, int $mode = 0644): void {
+    $tmp = @tempnam(dirname($f), 'wx_');
+    if ($tmp === false) { file_put_contents($f, $data, LOCK_EX); @chmod($f, $mode); return; }
+    file_put_contents($tmp, $data, LOCK_EX);
+    @chmod($tmp, $mode);
+    if (!@rename($tmp, $f)) { @unlink($tmp); file_put_contents($f, $data, LOCK_EX); @chmod($f, $mode); }
+}
 
 // ---------- shared secret (same as builder.php) ----------
 function bsecret(): string {
@@ -225,7 +233,7 @@ function publish_rules(): void {
     $lines[] = '</IfModule>'; $lines[] = '# END WOODEX-ADMIN';
     $ht = ROOT_DIR . '/.htaccess'; $cur = is_file($ht) ? (string)file_get_contents($ht) : '';
     $cur = preg_replace('~\n?# BEGIN WOODEX-ADMIN.*?# END WOODEX-ADMIN\n?~s', "\n", $cur);
-    file_put_contents($ht, rtrim($cur) . "\n\n" . implode("\n", $lines) . "\n", LOCK_EX);
+    atomic_put($ht, rtrim($cur) . "\n\n" . implode("\n", $lines) . "\n"); // P22.2: a truncated .htaccess takes the whole site down
     // sitemap
     $sm = ROOT_DIR . '/sitemap.xml'; $base = 'https://woodex.com.pk';
     if (is_file($sm) && preg_match('~<loc>(https?://[^/<]+)~', (string)file_get_contents($sm), $b)) $base = $b[1];
@@ -236,7 +244,7 @@ function publish_rules(): void {
         if (($m = find_meta($head, 'name', 'robots')) && stripos(tag_attr($m, 'content'), 'noindex') !== false) continue;
         $x .= '  <url><loc>' . $base . url_of($rel) . '</loc><lastmod>' . date('Y-m-d', filemtime(ROOT_DIR . '/' . $rel)) . "</lastmod></url>\n";
     }
-    file_put_contents($sm, $x . "</urlset>\n", LOCK_EX);
+    atomic_put($sm, $x . "</urlset>\n");
 }
 function region_spans(string $h, array $scope): array {
     $pats = ['header' => '~<header class="site-header".*?</header>~s', 'mobile' => '~<nav class="mobile-panel".*?</nav>~s', 'footer' => '~<footer class="footer".*?</footer>~s'];
