@@ -15,7 +15,10 @@ Run it after changing tools/entity.json. It is idempotent: a second run changes 
   3. Footer. The social row ends with the footer profiles, in exactly the markup the admin's
      Business info screen writes (data-soc anchors, its SVG paths, its order). A later "Update website"
      from that screen with the same links therefore changes nothing.
-  4. llms.txt. The address line, and an "Official profiles" section.
+  4. Reviews. The home page's score panel shows the Google listing's real rating and count
+     (google.rating in entity.json), and no review card claims to be "Verified": Google itself says
+     its reviews are not verified.
+  5. llms.txt. The address line, and an "Official profiles" section.
 
 Pages are what the live admin treats as pages (admin.php all_pages(): every .html file outside
 _private/, builder/, admin/, api/ and assets/). Schema blocks are re-serialised compactly with UTF-8,
@@ -55,6 +58,9 @@ LEGACY_MAP_LINKS = [
 PLACE_LINK_RX = re.compile(
     r"https://www\.google\.com/maps/search/\?api=1&amp;query=Woodex%20Interior%20Lahore&amp;query_place_id=[A-Za-z0-9_-]+"
 )
+# The home page's review score: stars, their label and the count.
+SCORE_RX = re.compile(r'(<div class="st big" aria-label=")[^"]*(">).*?(</div><p>)Based on <b>[^<]*</b>(</p>)', re.S)
+VERIFIED_TICK = '<i title="Verified" aria-hidden="true">✓</i>'
 # The contact page's embedded map, before and after this tool.
 EMBED_RX = re.compile(r'(src=")https://maps\.google\.com/maps\?q=[^"&]*(&amp;t=m&amp;z=16&amp;ie=UTF8&amp;iwloc=&amp;output=embed")')
 
@@ -96,7 +102,7 @@ def put(d: dict, key: str, value, after: str | None = None) -> dict:
 class Run:
     def __init__(self, root: Path, ent: dict, soc: list[list[str]]):
         self.root, self.ent, self.soc = root, ent, soc
-        self.n = {k: 0 for k in ("pages", "pages_changed", "full", "stub", "org", "links", "embed", "rows", "no_row")}
+        self.n = {k: 0 for k in ("pages", "pages_changed", "full", "stub", "org", "links", "embed", "rows", "no_row", "score", "ticks")}
         self.skipped: list[str] = []
         g = ent["google"]
         self.place_link = esc(g["placeLink"])
@@ -197,6 +203,27 @@ class Run:
         self.n["rows"] += 1
         return s[: m.start(2)] + inner + s[m.end(2):]
 
+    # ---------------------------------------------------------------- reviews
+    def reviews(self, s: str) -> str:
+        if 'class="hm-rv-' not in s:
+            return s
+        r = self.ent["google"]["rating"]
+        full, half = divmod(round(float(r["value"]) * 2), 2)
+        stars = "★" * full + ("<span>★</span>" if half else "")
+
+        def score(m):
+            new = f'{m.group(1)}{r["value"]} out of 5 stars{m.group(2)}{stars}{m.group(3)}Based on <b>{r["count"]} Google reviews</b>{m.group(4)}'
+            if new != m.group(0):
+                self.n["score"] += 1
+            return new
+
+        s = SCORE_RX.sub(score, s, count=1)
+        c = s.count(VERIFIED_TICK)
+        if c:
+            self.n["ticks"] += c
+            s = s.replace(VERIFIED_TICK, "")
+        return s
+
     # ---------------------------------------------------------------- llms.txt
     def llms(self, s: str) -> str:
         e, a = self.ent, self.ent["address"]
@@ -251,7 +278,7 @@ def main() -> int:
     for p, rel in run.pages():
         run.n["pages"] += 1
         old = read(p)
-        new = run.footer(run.links(run.schema(old, rel)))
+        new = run.reviews(run.footer(run.links(run.schema(old, rel))))
         if new != old:
             run.n["pages_changed"] += 1
             stale.append(rel)
@@ -272,6 +299,7 @@ def main() -> int:
     print(f"  schema: {n['full']} full LocalBusiness nodes, {n['stub']} references, {n['org']} Organization nodes")
     print(f"  links:  {n['links']} map links, {n['embed']} embedded map(s)")
     print(f"  footer: {n['rows']} social rows updated, {n['no_row']} pages without a social row")
+    print(f"  reviews: {n['score']} score panel(s) set from the Google listing, {n['ticks']} 'Verified' tick(s) removed")
     for s in run.skipped:
         print("  skipped " + s)
     if args.check and stale:
