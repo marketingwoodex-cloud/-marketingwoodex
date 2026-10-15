@@ -291,8 +291,9 @@ run there.
 ## 7. The P25 release pack
 
 `woodex-master-P25/` — `README.md` (install + upgrade), `CHANGELOG.md`, `MANIFEST.json`, this document, and
-`woodex-master-P25.zip` (29,158,455 bytes · 727 files in the payload · 894 entries in the zip · 42.8 MB
-uncompressed). Rebuilt in P25.1, so the zipped console is the one with no sample data in it — its bundle
+`woodex-master-P25.zip` (~29.16 MB · 727 files in the payload · 894 entries in the zip · 42.8 MB
+uncompressed; the exact bytes and the SHA-256 are the manifest's, never this file's — the console's build
+stamp is inside the zip, so two builds of the same commit differ by a byte). Rebuilt in P25.1, so the zipped console is the one with no sample data in it — its bundle
 carries no `DemoBanner`, no fixture and no flag, and it does carry the sentence that replaced them.
 
 **What the zip is.** The Hostinger payload: the live 150-page site (`frontend-v1/`) untouched, plus
