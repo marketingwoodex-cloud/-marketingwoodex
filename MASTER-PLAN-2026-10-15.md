@@ -11,7 +11,59 @@ One plan for the whole project: the live website, the PHP/MySQL backend, the adm
 | **Keeps** | `ADMIN-V2.5-MASTER-PLAN-2026-10-13.md` as the *design specification* of v2.5. This plan adopts it and schedules it. |
 | **Convention** | No password, token or key appears in this document. Findings cite `file:line` or a URL. Nothing was signed into and no credential was tried. |
 
-**How to read it.** Owner: section 1, then Appendix A today. Developers: sections 4, 6 and 8. Marketing: section 7.
+**How to read it.** Owner: section 0, section 1, then Appendix A today. Developers: sections 0, 4, 6 and 8. Marketing: section 7.
+
+---
+
+## 0. Progress, 15 October (evening): decisions taken and work done
+
+The owner accepted the recommendation (v2.5 is the only line; v2.0 stays live) and answered the open decisions. The work below is on branch `arena/9e181806-marketingwoodex`; its pull request into `main` waits for the owner's review, as section 8.1 requires.
+
+### 0.1 Decisions
+
+| # | Decision | Outcome |
+|---|---|---|
+| D-1 | v2.5 is the only development line; v2.0 stays live with security fixes only | **Taken.** PR #7 was merged into `main` (`aa96524`) after a local gate |
+| D-2 | Make the repository private | **Taken; the owner has to click it.** The GitHub connection agent sessions use cannot change settings (HTTP 403). Settings → Danger zone → Change visibility → Private. On the free plan a private repository loses branch protection; rotate the keys either way |
+| D-3 | Delete the old 87-page root site | **Taken; moved one step later.** `api/v2` resolves `WX_SITE_ROOT` to the repository root, so the v2.5 tests and dev tools use the old site as their working copy. Task 1.8 points them at a scratch copy of `frontend-v1/` first |
+| D-4 | Hostinger only | **Taken and done.** `netlify/`, `netlify.toml`, `vercel.json`, `api/router.mjs`, `supabase/`, `mcp-server/` and `tools/preview-server.mjs` are removed |
+| D-5 | Publish real client projects | **Not yet:** consent from each client first. The six studies stay and are now called "Design studies" |
+| D-6 | NAP for Woodex Interior | **The website's:** M-71 Zainab Tower, Model Town Link Road, Lahore · +92 322 4000768 · info@woodex.com.pk |
+| — | Linear | **Not used.** This plan and `STATUS.md` are the tracker (section 8.4) |
+
+### 0.2 Done
+
+| Task | What happened |
+|---|---|
+| 1.4 | PR #7 merged. Gate on `d042415`: php-lint, conformance 86/0, `tests/run.php` 1,283 passed / 0 failed / 14 skipped, smoke 154/0 over 65 routes, `tsc`, build, 550 kB shipped (budget 700). A secret scan of the tree and the P25 zip found no keys |
+| 1.2 | `5dbf5461` folded in selectively: the client-link fix, the SQLite runner and its schema fixes, the dev seeder, and the dashboard and document-rule fixes. Its demo removal and connectors API were already superseded by PR #7. Its Integrations screen (`82e60cf`) moves to Phase 4c, so keep that branch until it is ported |
+| new | **The Phase 1 and Phase 2 gates ran end to end for the first time** (SQLite under php-wasm). Migrations 000–014 apply, then re-apply as a no-op and verify; round trip 47/0; money path 89/0; the payments backfill dry run and verify pass. The bugs this found are N8–N10 below |
+| 1.3 (part) | `ci/verify.yml` would have failed every push (N11); fixed. Turning CI on needs the owner (0.3, step 3) |
+| 2.1–2.2 | Hotfix P22.2 built: `woodex-hotfix-P22.2/` holds 11 files (144 KB), a manifest with before/after hashes, the `.htaccess` lines to paste and the hPanel steps. Beyond the planned scope it also writes `.htaccess` and `sitemap.xml` atomically (N14) |
+| 1.5 | PRs #1, #4, #5 and #6 closed with a salvage note. Their branches are kept; deleting them is the owner's step |
+| G1 | The six studies are called "Design studies" (73 label changes over 7 pages and `llms.txt`) |
+
+### 0.3 What the owner does next, in order
+
+1. **Phase 0 (Appendix A) is still open.** Re-checked during this work on 15 October, `/downloads.html` still showed an admin login and `/wx-install.php` still answered. Back up, delete the five files, rotate every credential.
+2. **Make the repository private** (D-2).
+3. **Turn on CI:** GitHub → Actions → New workflow → "set up a workflow yourself", paste `ci/verify.yml` and commit. This needs no special token. The migrations job then runs on real MySQL 8.
+4. **Review and merge the pull request from `arena/9e181806-marketingwoodex`.** It touches sign-in, `.htaccess` and migration-adjacent code, so section 8.1 requires the owner's approval.
+5. **Upload hotfix P22.2**, after step 1, by following `woodex-hotfix-P22.2/README.md`.
+6. **Delete the branches of the closed PRs** (#1, #4, #5, #6) once the repository is private. Keep `5dbf5461` until `82e60cf` is ported.
+
+### 0.4 New findings from today's work
+
+| ID | Finding | Status |
+|---|---|---|
+| N8 | The v2.5 database gates could never pass. `wx_set_cookie()` skipped test capture once any output had been printed, and `wx_current_user()` cached the first request's answer in a function static, so every later write failed CSRF with a valid token | Fixed (`447b189`); test path only, no production change |
+| N9 | `db/backfill_payments.php` selected `payload` from `wx_invoices`, but the v2.1 schema production runs names that column `data`. The Phase 3 receipt backfill would have failed on the live database | Fixed: it uses `wx_payload_column()` |
+| N10 | The approval gate answered "sent for approval" with an empty `at` and a nonsense `ageHours`. After a replay `WX_APPR_USER` stayed set, so later writes in the same process acted as the Master | Fixed |
+| N11 | The `ci/verify.yml` bundle budget counted source maps (2,336 kB against 700). The shipped files are 550 kB | Fixed (`59d7ecd`) |
+| N12 | The v2.5 dev and test site root is the repository root, i.e. the old site (see D-3) | Open: task 1.8 |
+| N13 | `tests/run.php --db` on SQLite: 1,330 passed, 4 failed, 7 skipped. The 4 depend on seeded redirect rules and the site tree | Open: confirm on MySQL once CI runs |
+| N14 | v2.0 `publish_rules()` rewrote `.htaccess` and `sitemap.xml` non-atomically; a half-written `.htaccess` takes the site down | Fixed in P22.2 |
+| N15 | The README setup line ran `cd tools/phpwasm` from inside `admin-v25/` | Fixed |
 
 ---
 
@@ -216,6 +268,8 @@ public_html/
 
 ### 5.3 Decisions needed from the owner
 
+D-1 to D-6 were taken on 15 October; the outcomes are in section 0.1. D-7 to D-9 are still open.
+
 | # | Decision | Recommendation | Needed by |
 |---|---|---|---|
 | D-1 | Which admin line is the future | **v2.5 (PR #7)**; v2.0 security fixes only; close v2.1 | 17 Oct |
@@ -258,7 +312,8 @@ Each phase ends with a **gate**: a check anyone can run. The next phase does not
 | 1.4 | Merge PR #7 into `main`; protect `main` (a PR and green CI required) | O + D |
 | 1.5 | Close PR #1, #4, #5 and #6 with a salvage note (Appendix B); delete their branches and the 9 stale `arena/*` branches | O + D |
 | 1.6 | Production inventory: list every file in `public_html` with its SHA-256 and diff it against `frontend-v1/` | D |
-| 1.7 | Create the Linear projects (section 8.4) and move this plan's phases into them | D |
+| 1.7 | Linear projects: not used (owner decision, 15 Oct); track the phases in `STATUS.md` instead (section 8.4) | D |
+| 1.8 | Point the v2.5 dev and test site root (`WX_SITE_ROOT`) at a scratch copy of `frontend-v1/`, then delete the old root site (D-3, N12) | D |
 
 **Gate 1:** `main` contains v2.5 and `frontend-v1`; CI is green on `main`; the only open PRs are active work; a production inventory exists and every difference in it is explained.
 
@@ -412,10 +467,10 @@ Sources: the mavric.pk, hiline.pk, spacezandplaces.com and interioreight.com hom
 The repeated drift comes from several sessions working at once from different starting points: four admin generations, three of them built in parallel this week. Every session, human or agent:
 
 1. Starts from `main` (after Phase 1), never from another session's branch unless told to.
-2. Reads this plan and the status file first (`WORK-SANDBOX-MEMORY.md`, to be renamed `STATUS.md`).
-3. Works on **one** Linear issue, and its PR links that issue.
+2. Reads this plan and `STATUS.md` first. `WORK-SANDBOX-MEMORY.md` stays as the v2.5 engineering log.
+3. Works on **one** `STATUS.md` item, and its PR names that item.
 4. Never writes a password, token or key into a file, a page, a PR description or a shared document. This is the same rule `make-release.mjs` enforces for packages.
-5. Ends by updating the status file and the Linear issue.
+5. Ends by updating `STATUS.md`.
 6. Never shares an area (website, API or console) with another session at the same time.
 
 ### 8.3 Release discipline
@@ -425,9 +480,11 @@ The repeated drift comes from several sessions working at once from different st
 - Installers and diagnostics never ship. `db/migrate.php` and `db/owner.php` run from the command line.
 - Release notes say what changed for the studio, not just for developers.
 
-### 8.4 Linear structure (team MAR, plus a new engineering team)
+### 8.4 Tracking: `STATUS.md` (decision of 15 October: no Linear)
 
-| Project | Target date | Labels |
+The owner chose to keep tracking in the repository. `STATUS.md` lists every phase below with its tasks as checkboxes, the owner's actions, and the open findings. Each PR ticks what it finished. The milestones are unchanged:
+
+| Milestone | Target date | Area |
 |---|---|---|
 | P0 Containment | 17 Oct 2026 | security, owner-action |
 | P1 One source of truth | 23 Oct 2026 | repo, ci |

@@ -46,12 +46,19 @@ release is additive until that is decided.
 ## Working here
 
 ```bash
-cd admin-v25 && npm ci && cd tools/phpwasm && npm ci && cd ../phplint && npm ci && cd ../..
+cd admin-v25 && npm ci && cd ../tools/phpwasm && npm ci && cd ../phplint && npm ci && cd ../..
 
-node tools/phpwasm/run-php.cjs tests/run.php    # 1283 passed · 0 failed · 14 skipped
+node tools/phpwasm/run-php.cjs tests/run.php    # 1284 passed · 0 failed · 14 skipped
 node tests/conformance.mjs                      # 86 passed · 0 failed
-node tools/phplint/php-lint.mjs                 # 163 PHP files parse clean
+node tools/phplint/php-lint.mjs                 # 164 PHP files parse clean
 cd admin-v25 && npm run typecheck && npm run smoke && cd ..   # tsc clean · 154 checks · 65 routes
+
+# The database gates on SQLite in WebAssembly (no MySQL needed). This writes _private/db.json and
+# _private/woodex.sqlite, both git-ignored; delete them to start again. MySQL in CI stays the real gate.
+export WX_HOST_FS=1
+node tools/phpwasm/run-php.cjs db/migrate.php --sqlite-init   # 15 migrations applied (a second run applies 0)
+node tools/phpwasm/run-php.cjs tests/roundtrip.php            # Phase 1 gate: 47 passed · 0 failed
+node tools/phpwasm/run-php.cjs tests/money-path.php           # Phase 2 gate: 89 passed · 0 failed
 
 cd admin-v25 && npm exec vite -- --host 0.0.0.0 --port 5173   # the console, against api/v2
 ```
