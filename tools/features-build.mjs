@@ -1,6 +1,6 @@
-// Rebuild admin/features.html from FEATURES.md: cd ~/.cache/md && npm i marked && node <repo>/tools/features-build.mjs
+// Rebuild admin/features.html from docs/FEATURES.md: cd ~/.cache/md && npm i marked && node <repo>/tools/features-build.mjs
 import { marked } from "marked"; import fs from "fs";
-const R="/home/user/-marketingwoodex/"; const md=fs.readFileSync(R+"FEATURES.md","utf8");
+const R="/home/user/-marketingwoodex/"; const md=fs.readFileSync(R+"docs/FEATURES.md","utf8");
 const slug=s=>s.toLowerCase().replace(/<[^>]+>/g,"").replace(/[^\w\s-]/g,"").trim().replace(/\s/g,"-");
 const toc=[]; const r=new marked.Renderer();
 r.heading=function({tokens,depth}){const t=this.parser.parseInline(tokens);const id=slug(t);if(depth===2||depth===3)toc.push([depth,id,t.replace(/<[^>]+>/g,"")]);return `<h${depth} id="${id}">${t}</h${depth}>`;};
