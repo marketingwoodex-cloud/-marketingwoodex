@@ -48,10 +48,10 @@ function money(n: number | string): string {
 }
 
 export function LiveEstimator() {
-  const { link, reason, demo } = useSession();
+  const { link, reason } = useSession();
   const live = useLive<EstData>("/estimator");
 
-  if (link !== "live" && !demo) {
+  if (link !== "live") {
     return (
       <>
         <PageHead title="Estimator" sub="The figures every price starts from." />

@@ -62,7 +62,7 @@ function scoreTone(score: number): "ok" | "warn" | "danger" {
 }
 
 export function LiveSeo() {
-  const { link, reason, demo } = useSession();
+  const { link, reason } = useSession();
   const [rel, setRel] = useState<string | null>(null);
   const [q, setQ] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
@@ -182,10 +182,9 @@ export function LiveSeo() {
 
   /* ---------------- the states that must not lie ---------------- */
 
-  /* Demo mode is the one case where an offline link still has an answer to draw — and it is asked for by
-     name, never inferred (`lib/demo.ts`). Without it, no API means no audit: this screen will not invent a
-     score for a page it cannot read. */
-  if (link !== "live" && !demo) {
+  /* With no API there is no audit to draw: the score would be a number this screen invented about a site it
+     cannot see, and the site's robots.txt would be a file nobody read. It refuses instead. */
+  if (link !== "live") {
     return (
       <>
         <PageHead title="Search and findability" sub="What each page tells Google, and what is missing" />

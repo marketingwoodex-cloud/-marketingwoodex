@@ -655,23 +655,9 @@ tr.is-late td:first-child { box-shadow: inset 3px 0 0 var(--danger); }
   position: absolute; top: -20px; left: 2px; font-size: var(--fs-10); color: var(--warn); font-weight: 650;
 }
 
-/* ---------------------------------------------------------------- demo mode
-   The banner is deliberately not subtle, and it is the same words on every screen: what is on screen did
-   not come from the server. `link-btn` is the way out (or in) without pretending to be a primary action. */
-.demo-banner {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 6px;
-  margin: 0 0 var(--s-4);
-  padding: 10px 14px;
-  border: 1px dashed color-mix(in srgb, var(--warn) 55%, transparent);
-  border-radius: var(--r-2);
-  background: color-mix(in srgb, var(--warn) 10%, transparent);
-  color: var(--text-1);
-  font-size: var(--fs-13);
-}
-
+/* A link that behaves like a link but is a button: used where the action is a call rather than a form —
+   "Check the site" on the business screen, "Leave" on the states the shell names. It is deliberately not a
+   primary action, so it is never the loudest thing on the screen. */
 .link-btn {
   padding: 0;
   border: 0;
@@ -786,7 +772,7 @@ tr.is-late td:first-child { box-shadow: inset 3px 0 0 var(--danger); }
    white-lists nothing, and `@media print` is where that is decided rather than in a stylesheet a screen
    might not load. */
 @media print {
-  .side, .topbar, .demo-banner, .page-head, .btn, .chip-row { display: none !important; }
+  .side, .topbar, .page-head, .btn, .chip-row { display: none !important; }
   .doc-wrap { background: #fff; padding: 0; }
   .doc { width: auto; box-shadow: none; padding: 0; }
   @page { size: A4; margin: 12mm; }

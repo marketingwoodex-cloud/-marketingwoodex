@@ -41,7 +41,7 @@ const TONE: Record<string, "ok" | "warn" | "danger" | "info" | "neutral"> = {
 };
 
 export function LiveApprovals() {
-  const { link, reason, demo } = useSession();
+  const { link, reason } = useSession();
   const [status, setStatus] = useState<ApprStatus>("pending");
   const [openId, setOpenId] = useState<number | null>(null);
   const [note, setNote] = useState<string | null>(null);
@@ -58,9 +58,9 @@ export function LiveApprovals() {
     if (openId !== null) detail.reload();
   }
 
-  /* Demo mode reaches its sample below, the way every other screen does; "not connected" is for a host
-     that was asked and did not answer. */
-  if (link !== "live" && !demo) {
+  /* One state, one sentence: there is no sample below to reach, and a queue shown empty would read as "nothing
+     is waiting for you" — a claim about the studio's morning that this screen cannot make. */
+  if (link !== "live") {
     return (
       <>
         <PageHead title="Approvals" sub="Manager changes waiting for the master" />
@@ -166,7 +166,6 @@ export function LiveApprovals() {
         <ApprovalDetail
           id={openId}
           canDecide={detail.data?.canDecide ?? data?.canDecide ?? false}
-          demo={demo}
           data={detail.data}
           loading={detail.loading}
           error={detail.error}
@@ -176,7 +175,7 @@ export function LiveApprovals() {
         />
       )}
 
-      {data?.canDecide && <ApprovalPolicy cfg={data.cfg} demo={demo} onDone={flash} onBad={setBad} />}
+      {data?.canDecide && <ApprovalPolicy cfg={data.cfg} onDone={flash} onBad={setBad} />}
     </>
   );
 }
@@ -188,14 +187,13 @@ export function LiveApprovals() {
  * from what the replay does.
  */
 function ApprovalDetail({
-  id, data, loading, error, canDecide, demo, onClose, onDone, onBad,
+  id, data, loading, error, canDecide, onClose, onDone, onBad,
 }: {
   id: number;
   data: ApprDetailData | null;
   loading: boolean;
   error: ApiFailure | null;
   canDecide: boolean;
-  demo: boolean;
   onClose: () => void;
   onDone: (message: string) => void;
   onBad: (e: ApiFailure) => void;
@@ -275,7 +273,7 @@ function ApprovalDetail({
             </Note>
           )}
 
-          {canDecide && a.status === "pending" && !demo && (
+          {canDecide && a.status === "pending" && (
             <div className="stack" style={{ marginTop: 12 }}>
               <Input value={why} placeholder="Why not (only used when you refuse)" onChange={(e) => setWhy(e.target.value)} />
               <div className="row">
@@ -291,14 +289,6 @@ function ApprovalDetail({
                 </span>
               </div>
             </div>
-          )}
-
-          {canDecide && a.status === "pending" && demo && (
-            <Note tone="info" title="A sample request">
-              This is the layout of a decision, not a decision: there is no queue behind this preview, so
-              there is nothing here to approve. In the live console these are real buttons, and approving
-              replays the stored request as you.
-            </Note>
           )}
 
           {!canDecide && a.status === "pending" && (
@@ -317,11 +307,9 @@ function ApprovalDetail({
  * that a Manager cannot decide their own changes do not need approval.
  */
 function ApprovalPolicy({
-  cfg, demo, onDone, onBad,
+  cfg, onDone, onBad,
 }: {
   cfg: { manager: boolean; developer: boolean; notify?: boolean; expire_days?: number };
-  /** Switches stay live for a review; the save does not, because there is no policy behind a sample. */
-  demo: boolean;
   onDone: (message: string) => void;
   onBad: (e: ApiFailure) => void;
 }) {
@@ -358,17 +346,8 @@ function ApprovalPolicy({
         <Switch label="A developer's change waits too" checked={developer} onChange={setDeveloper} />
         <Switch label="Tell me when something is waiting" checked={notify} onChange={setNotify} />
         <div className="row">
-          {demo ? (
-            <span className="cell-sub">
-              A sample: flip these to see how the screen reads, but there is no policy stored behind this
-              preview, so nothing can be saved here.
-            </span>
-          ) : (
-            <>
-              <Btn variant="primary" disabled={busy || !dirty} onClick={save}>Save the policy</Btn>
-              {!dirty && <span className="cell-sub">Nothing has changed yet.</span>}
-            </>
-          )}
+          <Btn variant="primary" disabled={busy || !dirty} onClick={save}>Save the policy</Btn>
+          {!dirty && <span className="cell-sub">Nothing has changed yet.</span>}
         </div>
       </div>
     </Card>

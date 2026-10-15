@@ -48,16 +48,18 @@ release is additive until that is decided.
 ```bash
 cd admin-v25 && npm ci && cd tools/phpwasm && npm ci && cd ../phplint && npm ci && cd ../..
 
-node tools/phpwasm/run-php.cjs tests/run.php    # 995 passed · 0 failed · 13 skipped
-node tests/conformance.mjs                      # 84 passed · 0 failed
-node tools/phplint/php-lint.mjs                 # 157 PHP files parse clean
-cd admin-v25 && npm run typecheck && npm run smoke && cd ..   # tsc clean · 147 checks · 65 routes
+node tools/phpwasm/run-php.cjs tests/run.php    # 1283 passed · 0 failed · 14 skipped
+node tests/conformance.mjs                      # 86 passed · 0 failed
+node tools/phplint/php-lint.mjs                 # 163 PHP files parse clean
+cd admin-v25 && npm run typecheck && npm run smoke && cd ..   # tsc clean · 154 checks · 65 routes
 
-cd admin-v25 && VITE_WX_DEMO=1 npm exec vite -- --host 0.0.0.0 --port 5173   # the console, sample data
+cd admin-v25 && npm exec vite -- --host 0.0.0.0 --port 5173   # the console, against api/v2
 ```
 
 There is no PHP and no MySQL in a build sandbox — `api/v2` cannot answer there, and every screen says so
-rather than inventing data. The real gate (an editor publishes an article, the header changes across 150
+rather than inventing data. The console has no sample data and no flag to turn any on: the four generators
+(`node tools/gen-*.mjs --check`) are the other four gates, and they compare the console's constants against
+the v2.1 files they were read from. The real gate (an editor publishes an article, the header changes across 150
 pages, the change rolls back from page history) is a host run; `WORK-SANDBOX-MEMORY.md` §5 and §8e have the
 steps.
 

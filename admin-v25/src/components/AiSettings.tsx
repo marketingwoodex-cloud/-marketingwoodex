@@ -32,7 +32,7 @@ const KEY_FIELD: Record<string, string> = {
 };
 
 export function AiSettings() {
-  const { link, reason, demo, user } = useSession();
+  const { link, reason, user } = useSession();
   const canEdit = user?.role === "owner" || user?.role === "admin";
   const read = useLive<AiState>(canEdit ? "/ai/settings" : null);
 
@@ -289,13 +289,7 @@ export function AiSettings() {
         {tested && <Note tone="ok" title="The key works">{tested}</Note>}
         {bad && <Note tone="danger" title="The server refused it">{bad.message}</Note>}
 
-        {demo ? (
-          <Note tone="info" title="This is a sample">
-            Demo mode: nothing here is saved and no provider is called. The fields, the masked key and the model
-            list are the ones the live console would show.
-          </Note>
-        ) : (
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             <Btn icon={<Save size={14} />} onClick={save} disabled={busy !== ""}>
               {busy === "save" ? "Saving…" : "Save the settings"}
             </Btn>
@@ -310,8 +304,7 @@ export function AiSettings() {
             >
               {busy === "test" ? "Testing…" : "Test the key"}
             </Btn>
-          </div>
-        )}
+        </div>
 
         <span className="cell-sub">
           {data.file} · {data.exists ? "saved once already" : "nothing saved yet"}

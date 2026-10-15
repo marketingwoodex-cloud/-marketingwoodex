@@ -30,8 +30,6 @@ export function Shell({
   crumbs,
   link,
   linkText,
-  /** True only in demo mode (`?demo=1`): the strip may label a design preview as one, and nothing else. */
-  demo,
   user,
   onSignOut,
 }: {
@@ -49,14 +47,13 @@ export function Shell({
   /** live | signedOut | offline | checking — decides the strip, and whether the role switcher is real */
   link: "checking" | "offline" | "signedOut" | "live";
   linkText: string;
-  demo?: boolean;
   user: { name: string; roleLabel: string } | null;
   onSignOut: () => void;
 }) {
   const [mini, setMini] = useState(false);
   const loc = useLocation();
   /* One label for the link, derived here so the pill and the sentence it leads can never disagree. */
-  const pill = linkPill(link, demo);
+  const pill = linkPill(link);
 
   // expanded sub-groups; the group holding the current route opens by itself
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
@@ -145,9 +142,8 @@ export function Shell({
           </Btn>
         </div>
         {navBody}
-        {/* The foot names the person the *server* says is signed in. It used to name a fixed person in
-            every state — including no session at all — which is the same mistake as a demo pill over a
-            dead host: a name where a name has not been read. */}
+        {/* The foot names the person the *server* says is signed in. It used to name a fixed person in every
+            state — including no session at all: a name where a name has not been read. */}
         <div className="side-foot">
           {user ? (
             <>
@@ -192,7 +188,7 @@ export function Shell({
           </button>
 
           <div className="row" style={{ marginLeft: "auto", gap: "var(--s-3)" }}>
-            {/* In demo mode this previews the layout as another role. When the API is answering, the
+            {/* The layout preview, as another role, when nobody is signed in. Once the API is answering the
                 server decides what you may see — a switcher here would be a lie with a dropdown. */}
             {link === "live" ? (
               user && <Pill tone="ok" plain>{user.roleLabel}</Pill>
@@ -203,7 +199,7 @@ export function Shell({
                 value={role}
                 onChange={(e) => setRole(e.target.value as Role)}
                 aria-label="Preview as role"
-                title={demo ? "Preview the console as another role (demo data)" : "Preview the console as another role — the layouts, not what the account can do"}
+                title="Preview the console as another role — the layouts, not what the account can do"
               >
                 {(Object.keys(ROLE_LABEL) as Role[]).map((r) => (
                   <option key={r} value={r}>{ROLE_LABEL[r]}</option>
@@ -247,7 +243,8 @@ export function Shell({
             </Btn>
 
             <div className="row" style={{ gap: "var(--s-2)" }}>
-              <Avatar name={user?.name ?? "Demo user"} />
+              {/* No session, so no name: the avatar is the studio's mark, not a person's initials. */}
+              <Avatar name={user?.name ?? "Woodex"} />
               {link === "live" && (
                 <Btn variant="ghost" size="sm" iconOnly title="Sign out" onClick={onSignOut}>
                   <LogOut size={16} />
@@ -266,14 +263,6 @@ export function Shell({
         >
           <Pill tone={pill.tone} plain>{pill.label}</Pill>
           <span>{linkText}</span>
-          {/* One clause, one fact, and no repetition: the pill already says "demo data" and the sentence
-              beside it already says nothing was read from your site. What a reviewer still needs to know is
-              that nothing here can be *written* either — the buttons are live, and the API behind them is
-              not there. (It used to add "layouts and interactions from the v2.5 Pro plan", which described
-              the old clickable prototype and read, next to the demo sentence, like a glitch.) */}
-          {demo && link !== "live" && (
-            <span className="muted">· nothing here can be saved: there is no server behind this preview</span>
-          )}
         </div>
 
         <main className="content">{children}</main>

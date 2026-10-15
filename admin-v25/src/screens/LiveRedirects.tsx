@@ -141,7 +141,7 @@ export function LiveRedirects() {
           title={link === "offline" ? "api/v2 is not answering" : "Sign in to see the rules"}
           sub={
             link === "offline"
-              ? "This screen edits the redirect rules on the server, so there is nothing here to show from demo data."
+              ? "This screen edits the redirect rules on the server, so it will show nothing rather than an empty table that reads as \u201cnothing redirects\u201d."
               : `The API answered${reason ? ` but ${reason}` : ""}, and this screen needs a session.`
           }
         />

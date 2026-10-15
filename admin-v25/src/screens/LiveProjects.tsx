@@ -44,8 +44,8 @@ const MS_LABEL: Record<string, string> = {
 };
 
 export function LiveProjects() {
-  const { link, reason, demo } = useSession();
-  if (link !== "live" && !demo) {
+  const { link, reason } = useSession();
+  if (link !== "live") {
     return (
       <>
         <PageHead title="Projects" sub="Live projects, their stages and their money." />

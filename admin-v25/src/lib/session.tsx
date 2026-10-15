@@ -12,11 +12,10 @@
  *   · `offline` — no API (a static preview, a host that has not been migrated, a network failure).
  *     Nothing is invented: the shell names the state, and each screen says the same thing in its own words.
  *
- * Falling back to demo data was ruled out in both directions: while the API is *reachable* a screen
- * showing mock numbers is worse than no screen, because somebody will believe the numbers — and saying
- * "demo data" about a host that is merely down is the same lie told the other way round. A screen that
- * shows mock numbers while a real backend is answering is worse than no screen: someone will believe
- * the numbers. When the API answers and is not ready, the shell says which check failed.
+ * Sample data was removed from this console entirely — there is no flag, no query string and no fixture left.
+ * A screen showing invented numbers is worse than no screen, because somebody will believe the numbers, and
+ * a "demo" that looks like the product is the same lie with a caption. When the API answers and is not ready,
+ * the shell says which check failed, and when it does not answer, every screen says that instead.
  *
  * The health probe is polled every 60 seconds, because the interesting case is a host that was up when
  * the tab opened and is not now — that is exactly when the old admin kept showing stale data.
@@ -29,8 +28,6 @@ export type LinkState = "checking" | "offline" | "signedOut" | "live";
 
 export interface SessionValue {
   link: LinkState;
-  /** Sample-data mode, asked for by `?demo=1` or the build flag — never a fallback for a missing API. */
-  demo: boolean;
   /** Why the link is offline, in words a person can act on. Empty when it is not. */
   reason: string;
   health: Health | null;
@@ -59,9 +56,9 @@ export function useSession(): SessionValue {
 /** A cached CSRF token on a hard reload is stale; the API refuses it, and the refetch below fixes it. */
 const MAX_HEALTH_FAILURES = 3;
 
-export function SessionProvider({ children, demo }: { children: ReactNode; demo: boolean }) {
+export function SessionProvider({ children }: { children: ReactNode }) {
   const [health, setHealth] = useState<Health | null>(null);
-  const [link, setLink] = useState<LinkState>(demo ? "offline" : "checking");
+  const [link, setLink] = useState<LinkState>("checking");
   const [reason, setReason] = useState("");
   const [me, setMe] = useState<MeResponse | null>(null);
   const failures = useRef(0);
@@ -94,11 +91,6 @@ export function SessionProvider({ children, demo }: { children: ReactNode; demo:
   useEffect(() => {
     alive.current = true;
     (async () => {
-      if (demo) {
-        setLink("offline");
-        setReason("demo mode was requested");
-        return;
-      }
       let reachable = await probe();
       const up = reachable;
       if (!alive.current) return;
@@ -141,12 +133,11 @@ export function SessionProvider({ children, demo }: { children: ReactNode; demo:
 
   /* Steady state: a health check a minute, because the interesting failure is a host that stops. */
   useEffect(() => {
-    if (demo) return;
     const id = window.setInterval(() => {
       void probe();
     }, 60_000);
     return () => window.clearInterval(id);
-  }, [demo, probe]);
+  }, [probe]);
 
   /* The API says "sign in again" (session expired, password changed elsewhere). One handler, so every
      screen behaves the same way instead of each deciding what a 401 means. */
@@ -190,8 +181,8 @@ export function SessionProvider({ children, demo }: { children: ReactNode; demo:
   }, [probe]);
 
   const value = useMemo<SessionValue>(
-    () => ({ link, demo, reason, health, me, user: me?.user ?? null, signIn, signInTwoFactor, signOut, refreshHealth }),
-    [link, demo, reason, health, me, signIn, signInTwoFactor, signOut, refreshHealth],
+    () => ({ link, reason, health, me, user: me?.user ?? null, signIn, signInTwoFactor, signOut, refreshHealth }),
+    [link, reason, health, me, signIn, signInTwoFactor, signOut, refreshHealth],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

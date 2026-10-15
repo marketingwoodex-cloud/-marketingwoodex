@@ -535,7 +535,9 @@ check("001_roles.sql is generated, not hand-written", () => {
 
 check("C1: no shared demo password is printed or hard-coded", () => {
   const offenders = [];
-  for (const dir of ["frontend-v1", "woodex-live-p29-v2.1-pro/site", "woodex-vlive-P20/site"]) {
+  /* The trees that are in the repository. `woodex-vlive-P20/` and the other retired copies were deleted in P25
+     (the record is in the memory's §8f, the bytes are in git history), so this check reads what ships. */
+  for (const dir of ["frontend-v1", "woodex-live-p29-v2.1-pro/site"]) {
     if (!exists(dir)) continue;
     for (const f of readdirSync(join(ROOT, dir)).filter((x) => x.endsWith(".php") || x.endsWith(".html"))) {
       const src = read(`/${dir}/${f}`.slice(1));
@@ -572,7 +574,7 @@ check("C4: _private is not web-readable", () => {
      api/v2/lib/bootstrap.php computes it as dirname(dirname(WX_V2_DIR)) . '/_private'. So the guard has
      to exist in every deployment root, not inside the library folder. */
   const guarded = [];
-  for (const dir of ["_private", "frontend-v1/_private", "woodex-vlive-P20/site/_private"]) {
+  for (const dir of ["_private", "frontend-v1/_private"]) {
     if (!exists(`${dir}/.htaccess`)) continue;
     const rule = read(`${dir}/.htaccess`);
     assert(/Require all denied|Deny from all/.test(rule), `${dir}/.htaccess exists but does not deny`);
@@ -1102,70 +1104,66 @@ check("the checker\u2019s own comment stripper keeps string literals", () => {
   assert(!out.includes("a comment"), "the real block comment is gone");
   assert(!out.includes("trailing"), "and so is a line-leading one, after the quote closed");
 });
-check("demo mode answers exactly the screens that have a sample", () => {
-  /* Demo mode is what a design review sees where there is no PHP and no MySQL, so it has two failure modes and
-     this check is here for both. A screen that reads a path with no sample silently goes back to "not
-     answering" — the preview looks broken and nobody knows why. And a sample keyed by a path no screen reads is
-     data that will rot, because nothing will ever fail when it stops matching the server's shape.
-     Both directions, then: the sample must cover what the six newest screens read, and every sample key must be
-     a path one of them reads. */
-  const demo = readCode("admin-v25/src/lib/demo.ts");
-  const keys = new Set([...demo.matchAll(/^\s{2}"([^"]+)":/gm)].map((m) => m[1]));
-  assert(keys.size >= 6, `the fixtures must be keyed by path (found ${keys.size})`);
-  for (const k of ["/projects", "/projects/{id}", "/notifications", "/forms", "/estimator", "/heroes", "/approvals"]) {
-    assert(keys.has(k), `there is a sample for ${k}, so a design review can open that screen`);
-  }
-  /* A screen is not only a file in `screens/`: the panels live in `components/`, and the AI settings — which
-     read a path on mount and offer two on-demand calls — are one of them. The list below is the files a
-     design review would open, wherever they sit. */
-  const screens = ["LiveProjects", "LiveTimeline", "LiveUpdates", "LiveForms", "LiveEstimator", "LiveHeroes", "LiveTemplates", "LiveBusiness", "LiveApprovals", "AiSettings", "LiveSeo",
-    /* The chrome and the announcement bar: two components in one file, and both reads are in it. They were
-       the screens with no sample at all, which is why the check had to be told about them the day they got one. */
-    "LiveGlobal"];
-  const want = [];
-  const served = new Set();
-  for (const name of screens) {
-    const src = readCode(name === "AiSettings" ? "admin-v25/src/components/AiSettings.tsx" : `admin-v25/src/screens/${name}.tsx`);
-    /* Any literal in the call's arguments, not just the first one: a screen that reads a detail on demand
-       writes `useLive(openId === null ? null : `/approvals/${openId}`)`, and an extraction that only looked
-       at the first character after `(` would report the sample for that read as one nobody uses. A path
-       built with a value is compared as its literal prefix, which is what the `{id}` sample stands for. */
-    for (const m of src.matchAll(/useLive<[^>]*>\(([\s\S]{0,400}?)\)/g)) {
-      for (const lit of m[1].matchAll(/[`"]([^`"]*)/g)) {
-        const path = lit[1].split("$")[0];
-        if (path.startsWith("/")) want.push([name, path]);
-      }
+check("no screen has a sample behind it, and every screen that reads the API says so when it cannot", () => {
+  /* This replaced the check that demo mode answered exactly the screens with a fixture. The fixtures are gone —
+     `lib/demo.ts`, `lib/mock.ts`, the door, the banner, `?demo=1`, `VITE_WX_DEMO` — and the failure mode this
+     guards is the reverse of the old one: a screen that still has a way to draw numbers nobody sent. The three
+     things asserted are (1) nothing sample-shaped survives anywhere in the console, (2) every screen that reads
+     a path through `useLive` has a branch for a host that does not answer, and (3) the offline sentence is the
+     shell's own words rather than each screen's invention. */
+  const files = [];
+  const walk = (dir) => {
+    for (const e of readdirSync(dir, { withFileTypes: true })) {
+      const p = `${dir}/${e.name}`;
+      if (e.isDirectory()) walk(p);
+      else if (/\.(ts|tsx)$/.test(e.name)) files.push(p);
     }
-    /* On-demand calls: the model list is fetched when somebody presses a button, never on mount, so it can
-       never appear in `want` — and it still deserves a sample, because the picker is part of the screen a
-       design review is looking at. This set is what the orphan test consults; `want` remains what the
-       coverage test consults, because a screen that *mounts* on a path with no sample goes back to "not
-       answering" in every preview, which is the failure the coverage half exists for. */
-    for (const m of src.matchAll(/api\.(?:get|post)<[^>]*>\(\s*[`"]([^`"]*)/g)) {
-      served.add(m[1].split("$")[0]);
-    }
+  };
+  walk("admin-v25/src");
+  assert(files.length >= 40, `the console has sources to read (found ${files.length})`);
+  assert(!existsSync("admin-v25/src/lib/demo.ts") && !existsSync("admin-v25/src/lib/mock.ts"), "the sample files are deleted, not merely unused");
+
+  const forbidden = [
+    [/VITE_WX_DEMO/, "the demo flag"],
+    [/demoFixture|\bmock\.ts\b|\.\/lib\/demo\b/, "an import of a fixture"],
+    [/DemoBanner|DemoDoor/, "the banner or the door"],
+    [/[?&]demo=1/, "the query string"],
+  ];
+  const offenders = [];
+  for (const f of files) {
+    const src = stripComments(read(f));
+    for (const [re, what] of forbidden) if (re.test(src)) offenders.push(`${f} → ${what}`);
   }
-  assert(want.length >= 6, `the screens read paths at all (found ${want.length})`);
-  const covered = (p) =>
-    keys.has(p) ||
-    /* A path built with a value in it (`/projects/${id}`) is the `{id}` sample. */
-    keys.has(`${p}{id}`) ||
-    (p.includes("?") && keys.has(p.slice(0, p.indexOf("?")))) ||
-    [...keys].some((k) => k.endsWith("*") && p.startsWith(k.slice(0, -1)));
-  const missing = want.filter(([, p]) => !covered(p)).map(([n, p]) => `${n} → ${p}`);
-  assertEq(missing.length, 0, `screens reading a path with no sample: ${missing.join(", ")}`);
-  /* Every sample key must be read by a screen, or be the `{id}` form of one that is. */
-  const orphans = [...keys].filter((k) => {
-    /* `/projects/{id}` stands in for the screen that builds `/projects/${id}`: same read, a value in it. */
-    const base = k.replace("{id}", "").replace(/\*$/, "");
-    const used = [...want.map(([, p]) => p), ...served];
-    return !used.some((p) => p === base || p.startsWith(base) || (k.endsWith("*") && p.startsWith(base)));
-  });
-  assertEq(orphans.length, 0, `samples no screen reads: ${orphans.join(", ")}`);
-  /* And the shell must never turn it on by itself: the flag is asked for by name. */
-  assert(/VITE_WX_DEMO === "1"/.test(demo), "demo mode is requested, not inferred");
-  const app = readCode("admin-v25/src/App.tsx");
-  assert(/demoOn\(\)/.test(app), "the flag comes from one place");
+  assertEq(offenders.length, 0, `sample data reaching a screen again: ${offenders.join(", ")}`);
+
+  /* A screen is not only a file in `screens/`: the panels live in `components/`. Every file that reads a path
+     on mount has to have an answer for a host that does not answer it — the state a cut-over spends its time
+     in, and the state that used to be papered over with a sample. */
+  const screens = ["LiveProjects", "LiveTimeline", "LiveUpdates", "LiveForms", "LiveEstimator", "LiveHeroes",
+    "LiveTemplates", "LiveBusiness", "LiveApprovals", "LiveSeo", "LivePages", "LiveLibrary", "LiveSiteTheme",
+    "LivePlacements", "LiveRedirects", "LiveContent", "LiveMedia", "LiveGlobal"];
+  const path = (n) => (n === "LiveGlobal" ? "admin-v25/src/screens/LiveGlobal.tsx" : `admin-v25/src/screens/${n}.tsx`);
+  const silent = [];
+  let readers = 0;
+  for (const n of screens) {
+    const src = read(path(n));
+    if (!/useLive</.test(src)) continue;
+    readers++;
+    /* The offline branch: either the screen names the host itself, or it hands the same state to `Empty` and
+       the shared pill says it — both are honest, so the check accepts either and requires one. */
+    if (!/api\/v2 is not answering|Not connected|link === "offline"/.test(src)) silent.push(n);
+  }
+  assert(readers >= 12, `screens read the API at all (found ${readers})`);
+  assertEq(silent.length, 0, `screens with no state for a host that does not answer: ${silent.join(", ")}`);
+
+  /* And the sentence is one function, so it cannot differ between screens. */
+  const live = readCode("admin-v25/src/lib/live.ts");
+  assert(/export function linkLabel\(/.test(live), "the strip's sentence is one function");
+  assert(/api\/v2 is not answering/.test(live), "and it names the host rather than a sample");
+  assert(!/demo data/i.test(live), "with no clause about sample data left in it");
+  const shell = readCode("admin-v25/src/components/Shell.tsx");
+  assert(/linkPill\(link\)/.test(shell) && /linkText/.test(shell), "the shell draws the pill and the sentence it was given");
+  assert(!/demo/i.test(shell), "and the shell carries no demo anything");
 });
 
 check("the starter quotation templates are generated from the file the site loads", () => {
@@ -1400,32 +1398,55 @@ check("the bar the console writes is the bar the browser draws", () => {
   assertEq(other.body.children[0].children[1].rel, "noopener", "without handing it the window");
 });
 
-check("the demo strip says one true thing per clause, and the queue is not counted out of mock data", () => {
-  /* Two claims the console made about somebody's business while showing a design preview. The strip added
-     "layouts and interactions from the v2.5 Pro plan" next to "Demo data — a design preview. Nothing on
-     these screens is read from your site": the pill already said demo and the sentence already said
-     nothing was read, so the third clause was a stale description of the old clickable prototype, and it
-     read as a glitch. The dashboard's approvals banner said "3 changes are waiting for the master" — a
-     number from `lib/mock.ts`, presented as a fact about the studio, with a link to a screen that was
-     still a placeholder. */
+check("the strip tells one story about the host, and no number on any screen comes from a fixture", () => {
+  /* What this replaced: a check that the demo strip said one true thing per clause. The strip had three clauses
+     and one of them was stale; then it had a sample behind it to explain; now there is no sample, so the strip
+     has a single job — keep "we cannot reach your site" apart from "the API answered and said no" — and the
+     failure this guards is a screen that counts something. The dashboard's approvals banner once said "3
+     changes are waiting for the master" out of `lib/mock.ts`, presented as a fact about the studio. */
   const shell = readCode("admin-v25/src/components/Shell.tsx");
+  const live = readCode("admin-v25/src/lib/live.ts");
   const dash = readCode("admin-v25/src/screens/Dashboard.tsx");
-  assert(!shell.includes("layouts and interactions from the v2.5 Pro plan"), "the stale prototype clause is gone from the strip");
-  assert(shell.includes("nothing here can be saved: there is no server behind this preview"), "and the clause that replaced it says what a reviewer needs: writes cannot land");
-  assert(/In this sample, \{approvals\.length\} changes are waiting/.test(dash), "the dashboard's sample count says it is a sample");
-  assert(!/to="\/approvals"/.test(readCode("admin-v25/src/App.tsx").split("Placeholder")[0]) || true, "placeholder check below");
+  assert(!/demo/i.test(shell), "no clause in the strip mentions a sample");
+  assert(!shell.includes("layouts and interactions from the v2.5 Pro plan"), "nor the stale prototype clause");
+  /* Four states, four sentences: each one is a different claim about the host, and the pill agrees with it. */
+  for (const [what, re] of [
+    ["checking", /link === "checking"/],
+    ["offline", /link === "offline"/],
+    ["signed out", /link === "signedOut"/],
+    ["answering but not ready", /health\.ready/],
+  ]) assert(re.test(live), `the strip has a sentence for ${what}`);
+  /* `sample` is a live word in this file — a quotation template has a sample document printed on it, marked as
+     such on the page — so the check is about the phrase the strip used to carry. */
+  assert(!/demo data/i.test(live), "and none of them is about sample data");
 
-  /* And the queue itself exists: the badge used to point at a build-plan card, so "3 waiting" had nowhere
-     to go. The screen, its route and its sample are three separate facts, so all three are asserted. */
+  /* The dashboard: no count it did not receive. The screen must not hold a number of its own — it draws what
+     the API sent, and with no API it draws the notice instead. */
+  assert(!/changes are waiting/.test(dash), "the dashboard does not announce a number of its own");
+  assert(/api\/v2 is not answering|Not connected|link === "offline"/.test(dash), "and says what it is when there is no API");
+  /* The dashboard is a two-state wrapper: with a session it renders the screen that reads the API, and the
+     reading itself is asserted in that file, so this is where the delegation is checked rather than assumed. */
+  assert(/LiveDashboard/.test(dash), "with a session the dashboard is the screen that reads the API");
+  assert(/useLive</.test(read("admin-v25/src/screens/LiveDashboard.tsx")), "and that screen reads it rather than drawing it");
+
+  /* The sidebar's counts are the server's answer or nothing at all — never a fixture's. */
   const app = readCode("admin-v25/src/App.tsx");
+  assert(/badgeCounts\(bell\.data\)/.test(app.replace(/\s+/g, " ")), "the sidebar counts come from the bell endpoint's answer");
+  assert(!/mock|fixture/i.test(app), "and not from a fixture");
+
+  /* And the queue itself exists: the badge used to point at a build-plan card, so "3 waiting" had nowhere to
+     go. The screen and its route are separate facts, so both are asserted. */
   assert(app.includes('import { LiveApprovals }'), "the approvals screen is imported");
-  assert(/"business", "approvals"/.test(app.replace(/\s+/g, " ")), "and registered as built");
+  /* Every route the nav knows is either built here or served by the placeholder, and `approvals` is built. */
+  assert(/const BUILT_IDS = new Set\(\[/.test(app), "the built screens are one list the router reads");
+  assert(/BUILT_IDS\.has\(r\.id\)/.test(app), "so a screen is built by being in it, not by being edited into the router");
+  const built = app.slice(app.indexOf("const BUILT_IDS"), app.indexOf("];", app.indexOf("const BUILT_IDS")));
+  assert(/"approvals"/.test(built), "and approvals is in it, so the queue has a screen rather than a build plan");
   assert(app.includes('path="/approvals" element={<LiveApprovals />}'), "with a route of its own");
-  const demo = readCode("admin-v25/src/lib/demo.ts");
-  assert(demo.includes('"/approvals": APPR'), "and a sample, so a design review can open it");
   const screen = readCode("admin-v25/src/screens/LiveApprovals.tsx");
   assert(/api\.post<[^>]*>\(`\/approvals\/\$\{id\}\/\$\{kind\}`/.test(screen.replace(/\s+/g, " ")) || /\/approvals\/\$\{id\}\/\$\{kind\}/.test(screen), "approving posts to the replay endpoint rather than retyping the change");
   assert(screen.includes("Only the master decides"), "and a manager is told whose buttons those are");
+  assert(!/demo/i.test(screen), "with no sample branch in it");
 });
 
 check("the pages screen publishes through the API, and reads the three facts rather than working them out", () => {

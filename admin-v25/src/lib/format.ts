@@ -24,8 +24,8 @@ export const initials = (name: string) =>
     .join("");
 
 /** "3m ago" · "2h ago" · "12 Oct" ·
- *  The clock defaults to *now*. The prototype pinned it to the day the mock data was written, which
- *  made every relative time correct against the mock and wrong against a live row. */
+ *  The clock defaults to *now*. A fixed date — of the kind a prototype pins so its own samples read
+ *  correctly — makes every relative time wrong against a live row, and the error is invisible. */
 export function timeAgo(iso: string, now = new Date()): string {
   const d = new Date(iso);
   const mins = Math.round((now.getTime() - d.getTime()) / 60000);

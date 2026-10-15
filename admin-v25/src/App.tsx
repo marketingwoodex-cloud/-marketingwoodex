@@ -4,13 +4,10 @@ import { Shell, type Badges } from "./components/Shell";
 import { CommandPalette } from "./components/CommandPalette";
 import { Dashboard } from "./screens/Dashboard";
 import { Leads } from "./screens/Leads";
-import { Pipeline } from "./screens/Pipeline";
-import { Quotations } from "./screens/Quotations";
 import { Theme } from "./screens/Theme";
 import { Placeholder } from "./screens/Placeholder";
 import { ROUTES, resolveRoute, type Role } from "./lib/nav";
 import { useAppearance } from "./lib/theme";
-import { approvals, leads } from "./lib/mock";
 import { SessionProvider, useSession } from "./lib/session";
 import { SignIn } from "./screens/SignIn";
 import { LiveRedirects } from "./screens/LiveRedirects";
@@ -32,12 +29,11 @@ import { LiveBusiness } from "./screens/LiveBusiness";
 import { LiveApprovals } from "./screens/LiveApprovals";
 import { LiveSeo } from "./screens/LiveSeo";
 import { linkLabel, useLive, type BellData } from "./lib/live";
-import { demoOn, setDemo } from "./lib/demo";
-import { Btn, Card, Note, PageHead } from "./components/primitives";
+import { Btn, Card, PageHead } from "./components/primitives";
 
 /** Route ids implemented by a real screen in this prototype (Phase 0). */
 const BUILT_IDS = new Set([
-  "dashboard", "leads", "enquiries", "pipeline", "quotes", "theme", "redirects", "media", "blog", "portfolio", "cities", "global", "pages", "library", "site-theme",
+  "dashboard", "leads", "enquiries", "theme", "redirects", "media", "blog", "portfolio", "cities", "global", "pages", "library", "site-theme",
   "testimonials", "team", "heroes",
   "forms", "estimator", "projects", "timeline", "notifications", "templates",
   "business", "approvals", "seo",
@@ -45,38 +41,25 @@ const BUILT_IDS = new Set([
 
 /** The public entry point: one provider, then the app proper. */
 export default function App() {
-  /* `?demo=1` (or a build with VITE_WX_DEMO=1) is the static-preview mode: no API is called at all, and the
-     screens that have sample data answer from it. The flag lives in `lib/demo.ts` because it has to survive a
-     click — a query string does not, and a preview that stops working on the first navigation is a puzzle
-     rather than a preview. Everything else tries the API. */
-  const demo = demoOn();
   return (
-    <SessionProvider demo={demo}>
-      <Frame demo={demo} />
+    <SessionProvider>
+      <Frame />
     </SessionProvider>
   );
 }
 
-/* The sidebar's counts, as a function of the three things that can know them — a function rather than a
- * block inside the component so it can be asserted without a browser.
+/* The sidebar's counts: the server's, or none at all — a function rather than a block inside the component,
+ * so the rule can be asserted without a browser.
  *
- * A count beside *Leads* is a claim about the studio's day. Three sources may answer it and they are not
- * interchangeable: the server (`/notifications/poll`, one poll a minute), the design's own sample — only in
- * demo mode, where the shell says **demo data** in words above every screen — and, when neither is there,
- * nothing. The third state is the one that used to be a claim: the mock's three approvals and its new-lead
- * count were drawn whenever the API was not answering, beside a strip that said the host was not answering.
- * A zero renders no badge at all, so the honest answer is a sidebar with no numbers on it. */
-export function badgeCounts(bell: BellData | null, demo: boolean, role: Role): Badges {
+ * A count beside *Leads* is a claim about the studio's day, and exactly one source may make it: the server
+ * (`/notifications/poll`, one poll a minute). Until this slice the prototype's own numbers filled the gap
+ * whenever the API was not answering, which is a claim about the studio's day invented from nothing. A zero
+ * renders no badge at all, so the honest answer is a sidebar with no numbers on it. */
+export function badgeCounts(bell: BellData | null): Badges {
   if (bell) {
     return { leads: bell.leads, chat: bell.chats, approvals: bell.approvals, total: bell.total };
   }
-  if (!demo) {
-    return { leads: 0, chat: 0, approvals: 0, total: 0 };
-  }
-  const fresh = leads.filter((l) => l.stage === "new").length;
-  const chat = 3;
-  const appr = role === "support" ? 0 : approvals.length;
-  return { leads: fresh, chat, approvals: appr, total: fresh + chat + appr };
+  return { leads: 0, chat: 0, approvals: 0, total: 0 };
 }
 
 /**
@@ -88,10 +71,10 @@ export function badgeCounts(bell: BellData | null, demo: boolean, role: Role): B
  *   · the API is there, nobody is signed in → SignIn
  *   · signed in → the app, with the role and the counts the *server* reported
  *
- * `demo` (from `?demo=1` or the build flag) is the only thing any of this calls a demo; without it, an
- * unreachable host is reported as an unreachable host.
+ * There is no fifth state. The prototype could be opened with sample data beside any of these; that door is
+ * gone, and an unreachable host is reported as an unreachable host.
  */
-function Frame({ demo }: { demo: boolean }) {
+function Frame() {
   const appearance = useAppearance();
   const [role, setRole] = useState<Role>("owner");
   const [paletteOpen, setPaletteOpen] = useState(false);
@@ -113,13 +96,11 @@ function Frame({ demo }: { demo: boolean }) {
      the SPA will use, and the first screen that proves `GET /notifications/poll` end to end. */
   const bell = useLive<BellData>(live ? "/notifications/poll" : null, role);
 
-  const badges: Badges = useMemo(() => badgeCounts(bell.data, demo, role), [bell.data, demo, role]);
+  const badges: Badges = useMemo(() => badgeCounts(bell.data), [bell.data]);
 
-  /* `demo` is the only thing that may be called a demo: it is set by `?demo=1` or the build flag, and the
-     strip, the pill and the plan label are all derived from it together with the link state. */
-  const strip = linkLabel(health, link, reason, demo);
+  const strip = linkLabel(health, link, reason);
 
-  /* The role the *server* says, when there is one. The demo switcher still drives the design preview. */
+  /* The role the *server* says, when there is one; otherwise the switcher is a layout preview. */
   const effectiveRole = live && user ? (user.role as Role) : role;
 
   // ⌘K / Ctrl-K opens the palette
@@ -162,11 +143,10 @@ function Frame({ demo }: { demo: boolean }) {
         crumbs={crumbs}
         link={link}
         linkText={strip}
-        demo={demo}
         user={null}
         onSignOut={() => void signOut()}
       >
-        <SignIn door={<DemoDoor on={demo} />} />
+        <SignIn />
       </Shell>
     );
   }
@@ -186,29 +166,20 @@ function Frame({ demo }: { demo: boolean }) {
         crumbs={crumbs}
         link={link}
         linkText={strip}
-        demo={demo}
         user={user ? { name: user.name, roleLabel: user.roleLabel } : null}
         onSignOut={() => void signOut()}
       >
-        {/* A host that is not answering is the other place the door belongs: every screen below is about to say
-            it cannot read anything, and the person should not have to guess that a preview mode exists. */}
-        {link === "offline" && !demo ? <DemoDoor on={false} /> : null}
-        <DemoBanner on={demo} />
         <Routes>
-          {/* Phase 0 — screens implemented in this prototype */}
+          {/* Phase 0 — the screens that came first */}
           <Route path="/dashboard" element={<Dashboard role={effectiveRole} />} />
           {/* The Master's queue. A Phase 2 screen that was still a placeholder: the gate, the replay and the
               audit were built and tested, but the only way to *decide* anything was calling the API by hand
-              — and the shell linked to it from a badge counted out of the prototype's mock data. */}
+              — and the shell linked to it from a badge that had no reading behind it. */}
           <Route path="/approvals" element={<LiveApprovals />} />
           <Route path="/leads" element={<Leads />} />
           <Route path="/enquiries" element={<Leads />} />
-          <Route path="/pipeline" element={<Pipeline />} />
-          <Route path="/quotes" element={<Quotations />} />
-          {/* Phase 3 — delivery. These have no demo layout on purpose: a design of the redirect table
-              that is not connected to a redirect table teaches nobody anything, and the two screens
-              read the site's own files. Offline they say so, in words, rather than showing an empty
-              table that looks like data. */}
+          {/* Phase 3 — delivery. Every screen here reads the site's own files, so offline they say so in
+              words rather than showing an empty table that looks like data. */}
           <Route path="/redirects" element={<LiveRedirects />} />
           <Route path="/media" element={<LiveMedia />} />
           {/* The content CMS. Three routes, one screen: an article, a case study and a city page are the
@@ -307,51 +278,3 @@ function NotFound({ path, onHome }: { path: string; onHome: () => void }) {
   );
 }
 
-/**
- * The door into demo mode, and the banner that keeps it honest.
- *
- * Exported for the render smoke test, exactly like `SessionCtx`: they are the two elements that carry the
- * promise "this is not your data", and a promise nobody can test is a promise nobody keeps.
- *
- * Both exist because of the same repeated experience: a console that reads a real API shows nothing at all
- * where there is no API — a laptop, this sandbox, a hosted preview — and the person looking at it cannot tell
- * whether the product is broken or the host is. The door is offered **by name**, and the banner is impossible
- * to mistake for the product: it says the data is made up, it names where it came from, and it offers the way
- * back out. Nothing here turns itself on.
- */
-export function DemoDoor({ on }: { on: boolean }) {
-  return (
-    <Note tone="info" title={on ? "Demo mode is on" : "No server here?"}>
-      {on ? (
-        <>
-          This console is showing sample data so its design can be reviewed. Turn it off to read your own
-          server again.{" "}
-          <button type="button" className="link-btn" onClick={() => setDemo(false)}>
-            Leave demo mode
-          </button>
-        </>
-      ) : (
-        <>
-          If this is a preview with no PHP and no MySQL behind it,{" "}
-          <button type="button" className="link-btn" onClick={() => setDemo(true)}>
-            open the console with sample data
-          </button>{" "}
-          — same screens, invented figures, and it says so on every one of them.
-        </>
-      )}
-    </Note>
-  );
-}
-
-export function DemoBanner({ on }: { on: boolean }) {
-  if (!on) return null;
-  return (
-    <div className="demo-banner" role="status">
-      <b>Demo data.</b> Everything on this screen is a sample written for the design review — no part of it came
-      from your server. Turn it off to read the real thing.{" "}
-      <button type="button" className="link-btn" onClick={() => setDemo(false)}>
-        Leave demo mode
-      </button>
-    </div>
-  );
-}

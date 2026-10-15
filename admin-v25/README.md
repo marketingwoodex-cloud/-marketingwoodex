@@ -3,36 +3,34 @@
 The admin dashboard described in [`../ADMIN-V2.5-MASTER-PLAN-2026-10-13.md`](../ADMIN-V2.5-MASTER-PLAN-2026-10-13.md),
 over the PHP API in `../api/v2`.
 
-**It is no longer a prototype with no backend.** The app asks `GET /health` and `GET /me` when it
-starts, and everything follows from the answers — three states, and the shell always shows which one
-you are in:
+**It is not a prototype, and there is no sample data left in it.** The app asks `GET /health` and `GET /me`
+when it starts, and everything follows from the answers — three states, and the shell always shows which
+one you are in:
 
 | State | When | What the screens show |
 |---|---|---|
 | **live** | api/v2 answers and someone is signed in | `GET /dashboard`, `GET /leads`, `GET /notifications/poll` — real rows, server-side filters and paging, the counts on the page are the counts the server sent |
 | **signed out** | api/v2 answers, nobody signed in | the sign-in screen: password, then the two-factor code, with the API's own error text and request-id |
-| **demo data** | api/v2 is not answering | the original mock layouts, for design review — labelled as demo in the strip, with the reason |
+| **offline** | api/v2 is not answering | the shell's strip says so and names the reason, and every screen says it in its own words — no figures, no empty table that would read as "you have no quotations", no button that would fail on its first click |
 
-Falling back to mock data *while the API is answering* was deliberately ruled out. A screen that shows
-invented numbers beside a live backend is worse than no screen, because somebody will believe them.
-What is not built yet says so on the screen ("values inside the documents, not summed here"), and a
-failed load shows the failure with its request-id rather than a stale figure.
+The console *did* ship sample data — the design's own layouts, behind a `?demo=1` flag, for a design
+review on a host with no PHP. It was removed rather than retired: a screen that shows invented numbers is
+worse than no screen, because somebody will believe the numbers, and the screens a reviewer most wants to
+see are the ones where that matters most. What is not built yet says so on the screen ("values inside the
+documents, not summed here"), and a failed load shows the failure with its request-id rather than a
+stale figure.
 
 ```bash
 npm install
 npm run dev            # http://localhost:5173  (binds 0.0.0.0, proxies /api → the API)
 npm run dev:api        # php -S 127.0.0.1:8080 api/v2/index.php — needs PHP (see below)
 npm run verify         # typecheck + 65-route render smoke + production build
-npm run dev -- --mode demo     # or open ?demo=1 — static preview, no API calls at all
 ```
 
 `/api` is **proxied, not called cross-origin** — api/v2 is same-origin by design (no CORS, a
 SameSite session cookie, a CSRF token tied to it), and a dev server that had to weaken all three to
 work would be the one place the prototype behaved differently from production. Point it somewhere
 else with `WX_API_TARGET=https://… npm run dev`.
-
-**Demo mode** (`?demo=1`, or `VITE_WX_DEMO=1` in the build environment — which is what the Netlify and
-Vercel previews should use) skips the API entirely and renders the mock layouts.
 
 **When the API is not running**, the dev server says so in the API's own envelope. `/api` and `/assets`
 answer `502 UPSTREAM` with the command that fixes it, instead of an empty 500 that reads like a bug in
@@ -43,10 +41,9 @@ the API:
 ```
 
 Vite still logs its own `http proxy error` line for each request — that is vite's dev logging, not the
-app. The front end is unaffected: it settles into the offline state, renders the design from demo data,
-and the status strip carries the reason. A sandbox with no PHP and no MySQL (the build sandbox, for
-instance) therefore runs the front end quite happily and shows nothing from the server — which is why
-`npm run dev:api` is the one script here that needs the host.
+app. The front end is unaffected: it settles into the offline state and the status strip carries the
+reason, which is what a sandbox with no PHP and no MySQL (the build sandbox, for instance) shows on
+purpose — which is why `npm run dev:api` is the one script here that needs the host.
 
 ## What works
 
@@ -54,13 +51,14 @@ instance) therefore runs the front end quite happily and shows nothing from the 
 |---|---|---|
 | Dashboard | `#/dashboard` | 4-up KPI row, quoted-vs-won chart, "needs attention" rules, activity feed, quick actions, role-aware money |
 | Leads | `#/leads` | filters, search, sort, bulk selection bar, empty state, footer totals |
-| Pipeline | `#/pipeline` | drag-and-drop stage board **plus** keyboard move (← / →), weighted forecast, stage-discipline bars |
-| Quotations | `#/quotes` | 34-line BOQ builder, dual-bank routing, server-PDF honesty note |
 | Theme | `#/theme` | live token contract — switch theme, accent and density and the whole app (and every chart) follows |
 | Any other route | e.g. `#/backups` | the build plan for that screen: phase, API actions, the v2.1 module it replaces |
 
+The board and the quotation builder were prototype screens with no API behind them; they are deleted and
+their routes are registered as `planned`, so the nav says SOON and the tile says what it will do.
+
 Plus: ⌘K command palette over all 65 routes, collapsible sidebar groups, light/dark, three accents,
-two densities, prototype banner, and an explicit 404 screen.
+two densities, a status strip that names the API's state, and an explicit 404 screen.
 
 ## Architecture notes
 
@@ -78,22 +76,25 @@ two densities, prototype banner, and an explicit 404 screen.
 ## What the render smoke test covers
 
 `npm run smoke` renders all 65 routes through React's real reconciler (the crash test v2.1 lacked) and
-then, because `renderToString` does not run effects, renders the three states a *server* causes by
-handing the tree a session: signed out (the sign-in form must exist and not be blank), live dashboard
-(which must show "Loading…" and must **not** contain a KPI value before the server answers), and live
-leads. The last pair is the assertion that matters — it is the test that fails if someone later
-"helpfully" renders zeros while a request is in flight.
+then, because `renderToString` does not run effects, renders the states a *server* causes by handing the
+tree a session: signed out (the sign-in form must exist and not be blank), live dashboard (which must
+show "Loading…" and must **not** contain a KPI value before the server answers), and 28 renders of
+screens with no API behind them. Those last ones are the assertions that matter: each must name the state
+it is in, and a sweep asserts that **none of them carries a sample** — in figures, or in the words the
+strip used to carry. The test that fails if someone later "helpfully" renders zeros while a request is in
+flight is the same test that fails if someone renders them when the request never left.
 
 ## Measured
 
 
 ```
 npm run typecheck   → clean (strict, noUnusedLocals, noUnusedParameters)
-npm run smoke       → 70 checks · 65 routes · 0 failures
+npm run smoke       → 154 checks · 65 routes · 0 failures
 npm run build       → index 80 kB · vendor 160 kB · icons 36 kB · charts 388 kB (lazy)
 ```
 
 ## Not included (deliberately)
 
-No API client, no auth, no state library, no tests beyond the render smoke, no i18n.
-Those are Phase 1 of the master plan, not prototype scope.
+No state library, no i18n, no component library, and no test framework beyond the render smoke — the
+suites live at the repository root (`tests/run.php`, `tests/conformance.mjs`), where they can read the PHP
+and the console in one pass.

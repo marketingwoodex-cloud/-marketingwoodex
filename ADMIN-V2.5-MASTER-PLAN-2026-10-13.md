@@ -517,7 +517,7 @@ working as intended, not a gap hidden by a fallback.
 ### Phase 3 — Content, assets and delivery · **in progress** · 4 weeks
 
 *Measured at this commit:* `tests/run.php` **1283 passed · 0 failed · 14 skipped** · `tests/conformance.mjs`
-**86 · 0** · php-lint **163 files** · `admin-v25` smoke **171 checks · 65 routes** · legacy bridge **163 of 365
+**86 · 0** · php-lint **163 files** · `admin-v25` smoke **154 checks · 65 routes** · legacy bridge **163 of 365
 actions** (45%). Migrations **000–014** are written and none has run on a database yet.
 
 Three generators are part of this phase's gate rather than a convention, because each one replaces a second
@@ -546,18 +546,27 @@ back from page history — all through v2.5.
 spinner: the API is being looked for, it is not answering, it is answering and you are not signed in, or you are
 signed in. The first one is the state nobody could see — the door used to render a live Sign in button against a
 server that had not answered yet — so it now says it is still looking and stays closed. The third one is where a prototype lies by habit — it falls back to mock data under a green
-label. Here the shell names the state — its pill reads `live`, `checking`, `signed out`, `not answering` or `demo data`,
-and the pill and the sentence beside it are derived from the same two facts so they cannot disagree — and each
-screen then says only what is true about *itself*: the sign-in screen shows no site data whatever, so it says there is nothing behind the form to
-open a session rather than telling the person they are "looking at the UI with demo data" — a sentence that was
-true of the prototype with a mock behind it and false of a real door with a disabled button. The words "demo data", and the label naming the v2.5 Pro plan, appear in **demo mode only**: an admin that
-cannot reach its own host is reported as an unreachable host, because calling that a demo tells the person their
-console is a mock-up when it is really a door that cannot open yet. A screen that cannot load its data offers no
-button that would pretend to work, and the smoke test asserts both halves of that. The last thing that inferred
-a sample was the sidebar: a count beside *Leads* is a claim about the studio's day, and it was being answered
-out of the design's mock whenever `/notifications/poll` had not replied. It is the server's answer, the sample
-**only** in demo mode, and otherwise nothing at all — a zero renders no badge, so the honest answer is a
-sidebar with no numbers on it.
+label. Here the shell names the state — its pill reads `live`, `checking`, `signed out` or `not answering`, and the
+pill and the sentence beside it are derived from the same two facts so they cannot disagree — and each screen then
+says only what is true about *itself*: the sign-in screen shows no site data whatever, so it says there is nothing
+behind the form to open a session rather than telling the person they are "looking at the UI with demo data" — a
+sentence that was true of the prototype with a mock behind it and false of a real door with a disabled button. An
+admin that cannot reach its own host is reported as an unreachable host, because calling that a demo tells the
+person their console is a mock-up when it is really a door that cannot open yet. A screen that cannot load its data
+offers no button that would pretend to work, and the smoke test asserts both halves of that. The last thing that
+inferred a sample was the sidebar: a count beside *Leads* is a claim about the studio's day, and it was being
+answered out of the design's mock whenever `/notifications/poll` had not replied. It is now the server's answer or
+nothing at all — a zero renders no badge, so the honest answer is a sidebar with no numbers on it.
+
+**And the sample data itself is deleted** (P25, this slice). The console had a fifth state, demo mode, asked for by
+name through `?demo=1` or a build flag, so that a design review on a host with no PHP could see the layouts. It was
+removed on the owner's instruction rather than retired: a console that is going to touch a real studio's pages should
+not contain a switch that makes it print inventing numbers, and every screen it was ever useful on is a screen where
+the sample read as the studio's own. What replaced it is not a smaller sample but the same three states as
+everywhere else, with one sentence per screen — and a smoke assertion that sweeps all 28 offline renders together
+and fails if any of them shows a figure or the words the strip used to carry. The two screens that existed *only* as
+prototypes — the Pipeline board and the Quotation builder — went with it: they read no API at all, they are registered
+`planned`, and their routes now say what they will do instead of drawing a board of strangers' names.
 
 **All three sentences of the gate are now wired**, and the wiring is asserted (`tests/run.php`, "the gate,
 as wiring"): `POST /content/{id}/publish` composes and writes the article and returns the batch that undoes
@@ -638,7 +647,7 @@ already did.
 
 | Delivered — demo mode, so a preview shows the console | Where | Note |
 |---|---|---|
-| The screens built in this phase, with sample data behind a label that cannot be missed | `admin-v25/src/lib/demo.ts` (fixtures keyed by API path), `useLive()`, `DemoDoor`/`DemoBanner` in `App.tsx` | A console that reads a real API shows nothing at all where there is no API — a laptop, a sandbox, a hosted preview — and the one thing a preview must never do is let somebody think they are looking at their own figures. So demo mode is *asked for* (`?demo=1`, or the door on any screen that is saying the host is not answering) and never inferred; the shell says **demo data**; a banner above every screen says no part of it came from the server and offers the way out; and a screen whose data nobody has invented yet keeps its honest "not answering" notice, which is how the next slice announces itself. **Three states, not two, is the rule that came out of this**: a screen with neither a server nor a request for a sample shows a sentence and no figures at all — the dashboard drew the design's KPI row beside a strip saying the host was not answering, and a row of names that are not your clients is worse than an empty screen. The pipeline board and the quotation builder read no API at all, so outside demo mode they render their own build plan and the nav marks them SOON; the four screens that used to be one branch now render twice in the smoke test, with and without demo mode, and the difference is asserted rather than commented. The fixtures are typed against the same interfaces the server's answers are, so when a shape changes the sample stops compiling rather than quietly becoming a nicer product than the product. Also fixed here: a failed `GET /me` used to turn a settled "host not answering" into a sign-in form — a door that cannot open, inviting a password into nothing |
+| Delivered — demo mode, so a preview shows the console *(**deleted in P25**: the fixtures, the door, the banner, the flag and the two prototype screens are gone — a console that will touch a real studio's pages does not keep a switch that prints invented numbers)* |  `admin-v25/src/lib/demo.ts` (fixtures keyed by API path), `useLive()`, `DemoDoor`/`DemoBanner` in `App.tsx` | A console that reads a real API shows nothing at all where there is no API — a laptop, a sandbox, a hosted preview — and the one thing a preview must never do is let somebody think they are looking at their own figures. So demo mode is *asked for* (`?demo=1`, or the door on any screen that is saying the host is not answering) and never inferred; the shell says **demo data**; a banner above every screen says no part of it came from the server and offers the way out; and a screen whose data nobody has invented yet keeps its honest "not answering" notice, which is how the next slice announces itself. **Three states, not two, is the rule that came out of this**: a screen with neither a server nor a request for a sample shows a sentence and no figures at all — the dashboard drew the design's KPI row beside a strip saying the host was not answering, and a row of names that are not your clients is worse than an empty screen. The pipeline board and the quotation builder read no API at all, so outside demo mode they render their own build plan and the nav marks them SOON; the four screens that used to be one branch now render twice in the smoke test, with and without demo mode, and the difference is asserted rather than commented. The fixtures are typed against the same interfaces the server's answers are, so when a shape changes the sample stops compiling rather than quietly becoming a nicer product than the product. Also fixed here: a failed `GET /me` used to turn a settled "host not answering" into a sign-in form — a door that cannot open, inviting a password into nothing |
 
 | Delivered — business info, read off the site instead of out of a copy of the defaults | Where | Note |
 |---|---|---|
@@ -868,7 +877,7 @@ Everything in `admin-v25/` runs today:
 | Evidence | Result |
 |---|---|
 | Type check | clean, strict, `noUnusedLocals` |
-| Render smoke | **171 checks · 65 routes · 0 failures** |
+| Render smoke | **154 checks · 65 routes · 0 failures** |
 | Production build | 3 chunks, content-hashed, sourcemaps on |
 | Token contract | switching theme, accent and density re-themes all charts and screens |
 | Routing defects | AD-3, AD-4 and AD-12 structurally impossible in the registry |

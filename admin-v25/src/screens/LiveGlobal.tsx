@@ -47,7 +47,7 @@ const TAB_REGIONS: Record<Exclude<Tab, "replace" | "announce">, string[]> = {
 };
 
 export function LiveGlobal() {
-  const { link, reason, demo } = useSession();
+  const { link, reason } = useSession();
   const mine = useLive<ChromeData>("/chrome");
 
   /* The tab lives in the address as well as in the state, so `/global?tab=footer` opens the footer — a link
@@ -234,11 +234,8 @@ export function LiveGlobal() {
 
   /* ---------------- the states that must not lie ---------------- */
 
-  /* Without a server there is nothing this screen's buttons could do, so it says so instead of drawing them.
-     Demo mode is the one exception: a preview whose whole purpose is to show the design has to be able to
-     open this screen, the sample is labelled by the shell above it, and a press still tells the truth (the
-     write fails, and the failure is shown). */
-  if (link !== "live" && !demo) {
+  /* Without a server there is nothing this screen's buttons could do, so it says so instead of drawing them. */
+  if (link !== "live") {
     return (
       <>
         <PageHead title="Header & footer" sub="One change, every page" />
@@ -274,14 +271,6 @@ export function LiveGlobal() {
 
   return (
     <>
-      {demo && link !== "live" && (
-        <Note tone="warn" title="Demo mode">
-          The header, the footer and the identity below are the design's own sample, drawn because no api/v2 is
-          answering. Check and Apply will fail honestly: nothing can be written to a site this console is not
-          talking to.
-        </Note>
-      )}
-
       <PageHead
         title="Header & footer"
         sub={
@@ -611,7 +600,7 @@ const ANN_SKIN: Record<string, { bg: string; fg: string }> = {
 };
 
 export function AnnounceBar() {
-  const { link, reason, demo } = useSession();
+  const { link, reason } = useSession();
   const read = useLive<AnnounceData>("/chrome/announce");
   const [draft, setDraft] = useState<AnnounceRecord | null>(null);
   const [busy, setBusy] = useState(false);
@@ -656,8 +645,7 @@ export function AnnounceBar() {
   }
 
   /* Three states, and the order matters: "there is no API to ask" is not "the answer had nothing in it",
-     and a panel that said the second when the first is true would be inventing a server. Demo mode answers
-     from the sample, so it draws the design — with the sample's own words, and the shell's banner above it. */
+     and a panel that said the second when the first is true would be inventing a server. */
   if (!data && read.error) {
     return <Note tone="danger" title="The announcement could not be read">{read.error.message}</Note>;
   }
@@ -682,12 +670,6 @@ export function AnnounceBar() {
 
   return (
     <>
-      {demo && link !== "live" && (
-        <Note tone="warn" title="Demo mode">
-          The bar below is the design's own sample, drawn because no api/v2 is answering. Saving will fail
-          honestly: there is no server to publish to.
-        </Note>
-      )}
       <Card>
         <div className="row-between">
           <div className="stack">
