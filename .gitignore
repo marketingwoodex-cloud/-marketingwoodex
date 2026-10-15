@@ -33,3 +33,11 @@ admin-v25/.smoke/
 
 # Python bytecode from tools/*.py
 __pycache__/
+
+# Salvaged from PR #4 (bd53b01): logs, OS files, and every runtime file in the root _private/ (the v2.5 dev
+# tools write connectors and settings there, which can hold real keys); only its .htaccess is tracked.
+*.log
+.DS_Store
+Thumbs.db
+_private/*
+!_private/.htaccess
