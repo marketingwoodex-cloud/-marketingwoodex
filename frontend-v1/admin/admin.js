@@ -314,7 +314,23 @@
   }
   function head(title, crumb, right) { return '<div class="ph"><div><h1>' + esc(title) + '</h1><div class="crumb"><a href="#/dashboard">Home</a> / ' + esc(crumb || title) + "</div></div>" + (right ? '<div class="toolbar">' + right + "</div>" : "") + "</div>"; }
 
-  var VIEWS = {};
+  var _viewsTarget = {};
+  var VIEWS = typeof Proxy !== "undefined" ? new Proxy(_viewsTarget, {
+    set: function (t, prop, val) {
+      t[prop] = val;
+      if (S.user) {
+        var cleanHash = location.hash.replace(/^#\/?/, "") || "dashboard";
+        var cur = cleanHash.split("/")[0] || "dashboard";
+        if (cur === prop && typeof val === "function" && val !== t.soon) {
+          setTimeout(function () { if (S.user) route(); }, 10);
+        }
+      }
+      return true;
+    },
+    get: function (t, prop) {
+      return t[prop];
+    }
+  }) : _viewsTarget;
 
   // ---------------- dashboard
   VIEWS.dashboard = function (el) {
@@ -467,8 +483,15 @@
   };
 
   /* Screens from separate files (defer scripts) may not exist yet when the first screen is drawn after a refresh:
-     redraw once everything has loaded, if a placeholder was shown for a screen that now exists. */
-  window.addEventListener("load", function () { setTimeout(function () { if (S.user && document.querySelector("#view .soon-box")) { var v = (location.hash.replace(/^#\/?/, "").split("/")[0] || "dashboard"); if (VIEWS[v] && VIEWS[v] !== VIEWS.soon) route(); } }, 0); });
+     redraw once everything has loaded, so the active screen mounts reliably. */
+  window.addEventListener("load", function () {
+    setTimeout(function () {
+      if (S.user) {
+        var v = (location.hash.replace(/^#\/?/, "").split("/")[0] || "dashboard");
+        if (VIEWS[v] && VIEWS[v] !== VIEWS.soon) route();
+      }
+    }, 20);
+  });
   window.WXA = { formDraft: formDraft, S: S, signedIn: signedIn, showAuth: showAuth, api: api, bapi: bapi, modal: modal, closeModal: closeModal, toast: toast, esc: esc, ic: ic, fillIcons: fillIcons, ago: ago, head: head, navBadges: function () { navBadges(); }, can: can, ROLE_LABEL: ROLE_LABEL, PERM_LABEL: PERM_LABEL, VIEWS: VIEWS, $: $, $$: $$, route: function () { route(); } };
   Object.assign(ACT, { "page.meta": ["file-text", "updated SEO/settings of"], "page.delete": ["x", "deleted page"], "redirects.save": ["refresh-cw", "saved redirects"], "global.menu": ["panel-left", "updated the site menu on"], "global.replace": ["refresh-cw", "replaced in header/footer"], "global.chrome": ["panel-left", "published header & footer on"] });
 

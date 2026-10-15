@@ -34,7 +34,16 @@ if (!file_exists(PRIVATE_DIR . '/.htaccess')) @file_put_contents(PRIVATE_DIR . '
 function out(array $d, int $code = 200): void { http_response_code($code); echo json_encode($d, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE); exit; }
 function fail(string $m, int $code = 400): void { out(['ok' => false, 'error' => $m], $code); }
 function jread(string $f): array { clearstatcache(true, $f); $r = is_file($f) ? @file_get_contents($f) : false; return $r ? (json_decode($r, true) ?: []) : []; }
-function jwrite(string $f, array $d): void { file_put_contents($f, json_encode($d, JSON_PRETTY_PRINT), LOCK_EX); @chmod($f, 0600); }
+function jwrite(string $f, array $d): void {
+    $dir = dirname($f);
+    if (!is_dir($dir)) @mkdir($dir, 0750, true);
+    $tmp = @tempnam($dir, 'wx_');
+    $json = json_encode($d, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+    if ($tmp === false) { file_put_contents($f, $json, LOCK_EX); @chmod($f, 0600); return; }
+    file_put_contents($tmp, $json, LOCK_EX);
+    @chmod($tmp, 0600);
+    if (!@rename($tmp, $f)) { @unlink($tmp); file_put_contents($f, $json, LOCK_EX); @chmod($f, 0600); }
+}
 
 // ---------- shared secret (same as builder.php) ----------
 function bsecret(): string { $c = jread(BCONFIG); if (empty($c['secret'])) { $c['secret'] = bin2hex(random_bytes(32)); jwrite(BCONFIG, $c); } return $c['secret']; }

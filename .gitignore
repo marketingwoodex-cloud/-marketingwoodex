@@ -1,6 +1,17 @@
 node_modules/
 mcp-server/.env
+.env
+*.log
 
-# Page builder private data (password hash, sessions, backups)
+# Private runtime data stores & backups (ignored across all trees)
+_private/*
+!_private/.htaccess
 frontend-v1/_private/*
 !frontend-v1/_private/.htaccess
+woodex-live-p29-v2.1-pro/_private/*
+!woodex-live-p29-v2.1-pro/_private/.htaccess
+
+# Local OS & editor files
+.DS_Store
+Thumbs.db
+

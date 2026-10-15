@@ -73,6 +73,25 @@ const server = http.createServer((req, res) => {
     return router(req, res);
   }
 
+  // API proxy: forward PHP APIs (/api/*.php) to the frontend-v1 backend on port 8080
+  if (urlPath.startsWith("/api/")) {
+    const proxyReq = http.request({
+      hostname: "127.0.0.1",
+      port: 8080,
+      path: req.url,
+      method: req.method,
+      headers: { ...req.headers, host: "localhost:8080" }
+    }, (proxyRes) => {
+      res.writeHead(proxyRes.statusCode, proxyRes.headers);
+      proxyRes.pipe(res, { end: true });
+    });
+    proxyReq.on("error", () => {
+      send(res, 502, JSON.stringify({ ok: false, error: "Backend API offline" }), { "content-type": "application/json" });
+    });
+    req.pipe(proxyReq, { end: true });
+    return;
+  }
+
   // 1) configured redirects (Vercel parity)
   for (const r of REDIRECTS) {
     let m = null;
